@@ -8,6 +8,8 @@ from starlette.config import environ
 environ["DATABASE_HOSTNAME"] = "localhost"
 environ["DATABASE_CREDENTIALS"] = "dispatch:dispatch"
 environ["JWKS_URL"] = "example.com"
+environ["DISPATCH_HELP_EMAIL"] = "example@example.com"
+environ["DISPATCH_HELP_SLACK_CHANNEL"] = "help-me"
 environ["INCIDENT_CONVERSATION_APP_USER_SLUG"] = "XXX"
 environ["INCIDENT_CONVERSATION_APP_BOT_SLUG"] = "XXX"
 environ["INCIDENT_NOTIFICATION_CONVERSATIONS"] = "sirt-dev-test-notify"
