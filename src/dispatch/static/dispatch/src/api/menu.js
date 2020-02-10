@@ -1,6 +1,13 @@
 const Menu = [
   { header: "Incidents" },
   {
+    title: "Dashboard",
+    group: "dashboard",
+    component: "Dashboard",
+    icon: "language",
+    href: "/dashboard"
+  },
+  {
     title: "Incidents",
     group: "incidents",
     component: "Incidents",

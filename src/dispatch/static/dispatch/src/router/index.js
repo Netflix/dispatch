@@ -20,9 +20,6 @@ import store from "@/store"
 const requestor = new FetchRequestor()
 const routes = publicRoute.concat(protectedRoute)
 
-// TODO make this configurable
-// const openIdConnectUrl = "https://meechum.prod.netflix.net"
-// const clientId = "sirtdispatch-pkce"
 const clientId = process.env.VUE_APP_DISPATCH_CLIENT_ID
 const openIdConnectUrl = process.env.VUE_APP_DISPATCH_OPEN_ID_CONNECT_URL
 const scope = "openid profile email"
