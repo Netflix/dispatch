@@ -459,6 +459,7 @@ def clean_incident_artifacts(pattern):
 
 def sync_triggers():
     from sqlalchemy_searchable import sync_trigger
+
     sync_trigger(engine, "application", "search_vector", ["name"])
     sync_trigger(engine, "definition", "search_vector", ["text"])
     sync_trigger(engine, "incident", "search_vector", ["name", "title", "description"])

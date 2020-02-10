@@ -1,38 +1,17 @@
-# Install
+# Dispatch
 
-Create a new pyenv with python 3.7:
+.. image:: https://img.shields.io/badge/NetflixOSS-active-brightgreen.svg
 
-Create a new .env file:
+Wat is Dispatch? In one line, we would describe Dispatch as:
 
-Start a postgres database (if developing locally) install
+_All of the ad-hoc things you’re doing to manage incidents today, done for you, and much more!_
 
-Install backend
-pip install -e .
+Generally, this means creating resources, assembling participants, sending out notifications, tracking tasks, and assisting with post-incident reviews.
 
-Run
-dispatch db init
+# Project resources
 
-Run api
-dispatch server run --debug
-
-Install frontend
-
-Install nvm
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
-
-check node version
-nvm ls
--> v12.7.0
-system
-default -> node (-> v12.7.0)
-node -> stable (-> v12.7.0) (default)
-stable -> 12.7 (-> v12.7.0) (default)
-Install frontend
-
-npm install
-
-install yarn
-https://yarnpkg.com/lang/en/docs/install/#mac-stable
-
-Run frontend
-yarn run serve
+- `Dispatch Blog Post <>`\_
+- `Documentation <>`\_
+- `Source code <https://github.com/netflix/dispatch>`\_
+- `Issue tracker <https://github.com/netflix/dispatch/issues>`\_
+- `Docker <https://github.com/Netflix/dispatch-docker>`\_

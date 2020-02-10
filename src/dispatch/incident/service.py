@@ -41,7 +41,9 @@ def resolve_incident_commander_email(
     elif ENV == "test":
         return reporter_email
 
-    commander_service = incident_type_service.get_by_name(db_session=db_session, name=incident_type).commander_service
+    commander_service = incident_type_service.get_by_name(
+        db_session=db_session, name=incident_type
+    ).commander_service
 
     p = plugins.get(commander_service.type)
 
@@ -100,7 +102,13 @@ def create(
     )
 
     commander_email = resolve_incident_commander_email(
-        db_session, reporter_email, incident_type.name, incident_priority.name, "", title, description
+        db_session,
+        reporter_email,
+        incident_type.name,
+        incident_priority.name,
+        "",
+        title,
+        description,
     )
 
     commander_info = individual_service.resolve_user_by_email(commander_email)

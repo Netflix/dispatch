@@ -5,7 +5,6 @@ from starlette.testclient import TestClient
 from starlette.config import environ
 
 # set test config
-environ["TESTING"] = "TRUE"
 environ["DATABASE_HOSTNAME"] = "localhost"
 environ["DATABASE_CREDENTIALS"] = "dispatch:dispatch"
 environ["JWKS_URL"] = "example.com"
@@ -14,7 +13,6 @@ environ["INCIDENT_CONVERSATION_APP_BOT_SLUG"] = "XXX"
 environ["INCIDENT_NOTIFICATION_CONVERSATIONS"] = "sirt-dev-test-notify"
 environ["INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS"] = "sirt-dev-test-notify@example.com"
 environ["INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID"] = "XXXXX"
-environ["DISPATCH_DOMAIN"] = ""
 environ["METRIC_PROVIDERS"] = ""  # TODO move this to the default
 environ["STATIC_DIR"] = ""  # we don't need static files for tests
 
