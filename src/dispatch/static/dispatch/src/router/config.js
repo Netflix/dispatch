@@ -1,0 +1,217 @@
+import { AuthLayout, DefaultLayout } from "@/components/layouts"
+
+export const publicRoute = [
+  {
+    path: "*",
+    component: () => import(/* webpackChunkName: "errors-404" */ "@/views/error/NotFound.vue")
+  },
+  {
+    path: "/404",
+    name: "404",
+    meta: { title: "Not Found" },
+    component: () => import(/* webpackChunkName: "errors-404" */ "@/views/error/NotFound.vue")
+  },
+
+  {
+    path: "/500",
+    name: "500",
+    meta: { title: "Server Error" },
+    component: () => import(/* webpackChunkName: "errors-500" */ "@/views/error/Error.vue")
+  }
+]
+
+export const protectedRoute = [
+  {
+    path: "/",
+    component: DefaultLayout,
+    meta: { title: "Incident Report", group: "incidents", icon: "" },
+    redirect: "/incidents/report",
+    children: [
+      {
+        path: "/403",
+        name: "Forbidden",
+        meta: { title: "Access Denied", hiddenInMenu: true },
+        component: () => import(/* webpackChunkName: "error-403" */ "@/views/error/Deny.vue")
+      }
+    ]
+  },
+  {
+    path: "/incidents/status",
+    component: DefaultLayout,
+    meta: { title: "Status", icon: "", requiresAuth: true },
+    component: () => import(/* webpackChunkName: "incidents-report" */ "@/incident/Status.vue")
+  },
+
+  {
+    path: "/incidents/report",
+    component: DefaultLayout,
+    meta: { title: "Report", icon: "", requiresAuth: true },
+    component: () => import(/* webpackChunkName: "incidents-report" */ "@/incident/ReportForm.vue")
+  },
+
+  //list
+  {
+    path: "/incidents",
+    component: DefaultLayout,
+    meta: { title: "Incidents", icon: "view_compact", group: "incidents", requiresAuth: true },
+    children: [
+      {
+        path: "/incidents",
+        name: "IncidentTable",
+        component: () => import(/* webpackChunkName: "incident-table" */ "@/incident/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/services",
+    component: DefaultLayout,
+    meta: { title: "Services", icon: "view_compact", group: "contacts", requiresAuth: true },
+    children: [
+      {
+        path: "/services",
+        name: "ServiceTable",
+        component: () => import(/* webpackChunkName: "service-table" */ "@/service/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/individuals",
+    component: DefaultLayout,
+    meta: { title: "Individuals", icon: "view_compact", group: "contacts", requiresAuth: true },
+    children: [
+      {
+        path: "/individuals",
+        name: "IndividualTable",
+        component: () => import(/* webpackChunkName: "individual-table" */ "@/individual/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/teams",
+    component: DefaultLayout,
+    meta: { title: "Teams", icon: "view_compact", group: "contacts", requiresAuth: true },
+    children: [
+      {
+        path: "/teams",
+        name: "TeamTable",
+        component: () => import(/* webpackChunkName: "team-table" */ "@/team/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/applications",
+    component: DefaultLayout,
+    meta: { title: "Applications", icon: "view_compact", group: "contacts", requiresAuth: true },
+    children: [
+      {
+        path: "/applications",
+        name: "ApplicationTable",
+        component: () =>
+          import(/* webpackChunkName: "application-table" */ "@/application/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/search",
+    component: DefaultLayout,
+    meta: { title: "Search", icon: "view_compact", group: "search", requiresAuth: true },
+    children: [
+      {
+        path: "/search",
+        name: "ResultList",
+        component: () =>
+          import(/* webpackChunkName: "search-result-list" */ "@/search/ResultList.vue")
+      }
+    ]
+  },
+  {
+    path: "/documents",
+    component: DefaultLayout,
+    meta: { title: "Documents", icon: "view_compact", group: "knowledge", requiresAuth: true },
+    children: [
+      {
+        path: "/Documents",
+        name: "DocumentTable",
+        component: () => import(/* webpackChunkName: "definition-table" */ "@/document/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/definitions",
+    component: DefaultLayout,
+    meta: { title: "Definitions", icon: "view_compact", group: "knowledge", requiresAuth: true },
+    children: [
+      {
+        path: "/Definitions",
+        name: "DefinitionTable",
+        component: () => import(/* webpackChunkName: "definition-table" */ "@/definition/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/tasks",
+    component: DefaultLayout,
+    meta: { title: "Tasks", icon: "view_compact", group: "incident", requiresAuth: true },
+    children: [
+      {
+        path: "/tasks",
+        name: "TaskTable",
+        component: () => import(/* webpackChunkName: "knowledge-table" */ "@/task/Table.vue")
+      }
+    ]
+  },
+
+  {
+    path: "/terms",
+    component: DefaultLayout,
+    meta: { title: "Terms", icon: "view_compact", group: "knowledge", requiresAuth: true },
+    children: [
+      {
+        path: "/terms",
+        name: "TermTable",
+        component: () => import(/* webpackChunkName: "knowledge-table" */ "@/term/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/policies",
+    component: DefaultLayout,
+    meta: { title: "Policies", icon: "view_compact", group: "routing", requiresAuth: true },
+    children: [
+      {
+        path: "/policies",
+        name: "PoliciesTable",
+        component: () => import(/* webpackChunkName: "policy-table" */ "@/policy/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/route",
+    component: DefaultLayout,
+    meta: { title: "Route", icon: "view_compact", group: "routing", requiresAuth: true },
+    children: [
+      {
+        path: "/route",
+        name: "RouteTable",
+        component: () => import(/* webpackChunkName: "routing-table" */ "@/route/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/incidents/types",
+    component: DefaultLayout,
+    meta: {
+      title: "Incident Types",
+      icon: "view_compact",
+      group: "configuration",
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: "/incidents/types",
+        name: "IncidentTypeTable",
+        component: () => import(/* webpackChunkName: "routing-table" */ "@/incident_type/Table.vue")
+      }
+    ]
+  }
+]

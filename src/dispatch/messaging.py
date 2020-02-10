@@ -1,0 +1,436 @@
+import copy
+from enum import Enum
+
+from jinja2 import Template
+
+from typing import List
+
+from dispatch.conversation.enums import ConversationButtonActions
+from dispatch.incident.enums import IncidentStatus
+from dispatch.incident_priority.models import IncidentPriorityType
+
+from .config import (
+    INCIDENT_DOCUMENT_FAQ_DOCUMENT_SLUG,
+    INCIDENT_DOCUMENT_INCIDENT_REVIEW_DOCUMENT_SLUG,
+    INCIDENT_DOCUMENT_INVESTIGATION_DOCUMENT_SLUG,
+    INCIDENT_DOCUMENT_INVESTIGATION_SHEET_SLUG,
+    INCIDENT_FORM_FEEDBACK_FORM_SLUG,
+)
+
+
+class MessageType(str, Enum):
+    incident_daily_summary = "incident-daily-summary"
+    incident_notification = "incident-notification"
+    incident_participant_welcome = "incident-participant-welcome"
+    incident_resources_message = "incident-resources-message"
+    incident_status_report = "incident-status-report"
+    incident_task_list = "incident-task-list"
+    incident_task_reminder = "incident-task-reminder"
+
+
+INCIDENT_PRIORITY_DESCRIPTIONS = {
+    IncidentPriorityType.info: "This incident is in tracking only mode and is not under active investigation.",
+    IncidentPriorityType.low: "This incident will require you to perform tasks during working hours until the incident is stable.",
+    IncidentPriorityType.medium: "This incident requires your full attention during working hours until the incident is stable.",
+    IncidentPriorityType.high: "This incident requires your full attention, and should be prioritized over all other work until the incident is stable.",
+}
+
+INCIDENT_PRIORITY_DESCRIPTIONS_FYI = {
+    IncidentPriorityType.info: "This incident is in tracking only mode and is not under active investigation.",
+    IncidentPriorityType.low: "This incident may require your team's attention during working hours, until the incident is stable.",
+    IncidentPriorityType.medium: "This incident may require your team's full attention during working hours, until the incident is stable.",
+    IncidentPriorityType.high: "This incident may require your team's full attention, and should be prioritized over all other work, until the incident is stable.",
+}
+
+INCIDENT_STATUS_DESCRIPTIONS = {
+    IncidentStatus.active: "This incident is under active investigation.",
+    IncidentStatus.stable: "This incident is stable, the bulk of the investigation has been completed or most of the risk has been mitigated.",
+    IncidentStatus.closed: "This no longer requires additional involvement, long term incident action items have been assigned to their respective owners.",
+}
+
+INCIDENT_STATUS_REPORT_DESCRIPTION = """
+This is an incident status update.
+""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_TASK_REMINDER_DESCRIPTION = """
+You are assigned to the following incident tasks.
+This is a reminder that these tasks have *passed* their due date.
+Please review and update as appropriate.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_TASK_LIST_DESCRIPTION = """The following are open incident tasks."""
+
+INCIDENT_DAILY_SUMMARY_DESCRIPTION = """
+Daily Summary of *Active* incidents:""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_COMMANDER_DESCRIPTION = """
+The Incident Commander (IC) is responsible for
+knowing the full context of the incident.
+Contact them about any questions or concerns.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_COMMANDER_READDED_DESCRIPTION = """
+{{ commander_fullname }} (Incident Commander) has been re-added to the conversation.
+Please, handoff the Incident Commander role before leaving the conversation.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_TICKET_DESCRIPTION = """
+Ticket for tracking purposes. It contains a description of
+the incident and links to resources.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_CONVERSATION_DESCRIPTION = """
+Private conversation for real-time discussion. All incident participants get added to it.
+""".replace(
+    "\n", ""
+).strip()
+
+INCIDENT_STORAGE_DESCRIPTION = """
+Common storage for all incident artifacts and
+documents. Add logs, screen captures, or any other data collected during the
+investigation to this drive. It is shared with all incident participants.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION = """
+This is a document for all incident facts and context. All
+incident participants are expected to contribute to this document.
+It is shared with all incident participants.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_INVESTIGATION_SHEET_DESCRIPTION = """
+This is a sheet for tracking impacted assets. All
+incident participants are expected to contribute to this sheet.
+It is shared with all incident participants.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_FAQ_DOCUMENT_DESCRIPTION = """
+First time responding to an information security incident? This
+document answers common questions encountered when
+helping us respond to an incident.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_REVIEW_DOCUMENT_DESCRIPTION = """
+This document will capture all lessons learned, questions, and action items raised during the incident.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_FEEDBACK_FORM_DESCRIPTION = """
+We love feedback. Please let us know how you think this incident went.""".replace(
+    "\n", " "
+).strip()
+
+
+INCIDENT_DOCUMENT_DESCRIPTIONS = {
+    INCIDENT_DOCUMENT_FAQ_DOCUMENT_SLUG: INCIDENT_FAQ_DOCUMENT_DESCRIPTION,
+    INCIDENT_DOCUMENT_INCIDENT_REVIEW_DOCUMENT_SLUG: INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,
+    INCIDENT_DOCUMENT_INVESTIGATION_DOCUMENT_SLUG: INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,
+    INCIDENT_DOCUMENT_INVESTIGATION_SHEET_SLUG: INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
+    INCIDENT_FORM_FEEDBACK_FORM_SLUG: INCIDENT_FEEDBACK_FORM_DESCRIPTION,
+}
+
+INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION = """
+You\'re being contacted because we think you may
+be able to help us during this information security incident.
+Please review the content below and join us in the
+incident Slack channel.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_WELCOME_CONVERSATION_COPY = """
+This is the incident conversation. Please pull in any
+individuals you feel may be able to help resolve this incident.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_NOTIFICATION_PURPOSES_FYI = """
+This message is for notification purposes only.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_GET_INVOLVED_BUTTON_DESCRIPTION = """
+Click the button to be added to the incident conversation.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_CAN_REPORT_REMINDER = """
+It's time to send a new CAN report. Go to the Demisto UI and run the
+CAN Report playbook from the Playground Work Plan.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_VULNERABILITY_DESCRIPTION = """
+We are tracking the details of the vulnerability that led to this incident
+in the VUL Jira issue linked above.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_STABLE_DESCRIPTION = """
+The risk has been contained and the incident marked as stable.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_CLOSED_DESCRIPTION = """
+The incident has been resolved and marked as closed.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_STATUS_REPORT_DESCRIPTION = """
+The following conditions, actions, and needs summarize the current status of the incident.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_NEW_ROLE_DESCRIPTION = """
+{{assigner_fullname}} has assigned the role of {{assignee_role}} to {{assignee_fullname}}.
+Please, contact {{assignee_firstname}} about any questions or concerns.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_STATUS_REPORT_REMINDER_DESCRIPTION = """You have not provided a status report for this incident recently.
+Consider providing one to inform participants of the current conditions, actions, and needs.
+You can use `{{command}}` in the conversation to assist you in writing one.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_TASK_NEW_DESCRIPTION = """
+The following incident task has been created in the incident document.\n\n*Description:* {{task_description}}\n\n*Assignees:* {{task_assignees}}"""
+
+INCIDENT_TASK_RESOLVED_DESCRIPTION = """
+The following incident task has been resolved in the incident document.\n\n*Description:* {{task_description}}\n\n*Assignees:* {{task_assignees}}"""
+
+INCIDENT_TYPE_CHANGE_DESCRIPTION = """
+The incident type has been changed from *{{ incident_type_old }}* to *{{ incident_type_new }}*."""
+
+INCIDENT_PRIORITY_CHANGE_DESCRIPTION = """
+The incident priority has been changed from *{{ incident_priority_old }}* to *{{ incident_priority_new }}*."""
+
+INCIDENT_NAME = {
+    "title": "{{name}} Incident Notification",
+    "title_link": "{{ticket_weblink}}",
+    "text": INCIDENT_NOTIFICATION_PURPOSES_FYI,
+}
+
+INCIDENT_TITLE = {"title": "Incident Title", "text": "{{title}}"}
+
+INCIDENT_DESCRIPTION = {"title": "Incident Description", "text": "{{description}}"}
+
+INCIDENT_STATUS = {
+    "title": "Incident Status - {{status}}",
+    "status_mapping": INCIDENT_STATUS_DESCRIPTIONS,
+}
+
+INCIDENT_PRIORITY = {
+    "title": "Incident Priority - {{priority}}",
+    "priority_mapping": INCIDENT_PRIORITY_DESCRIPTIONS,
+}
+
+INCIDENT_PRIORITY_FYI = {
+    "title": "Incident Priority - {{priority}}",
+    "priority_mapping": INCIDENT_PRIORITY_DESCRIPTIONS_FYI,
+}
+
+INCIDENT_COMMANDER = {
+    "title": "Incident Commander - {{commander_fullname}}",
+    "title_link": "{{commander_weblink}}",
+    "text": INCIDENT_COMMANDER_DESCRIPTION,
+}
+
+INCIDENT_STORAGE = {
+    "title": "Incident Storage",
+    "title_link": "{{storage_weblink}}",
+    "text": INCIDENT_STORAGE_DESCRIPTION,
+}
+
+INCIDENT_INVESTIGATION_DOCUMENT = {
+    "title": "Incident Investigation Document",
+    "title_link": "{{document_weblink}}",
+    "text": INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,
+}
+
+INCIDENT_INVESTIGATION_SHEET = {
+    "title": "Incident Investigation Sheet",
+    "title_link": "{{sheet_weblink}}",
+    "text": INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
+}
+
+INCIDENT_FAQ_DOCUMENT = {
+    "title": "Incident FAQ Document",
+    "title_link": "{{faq_weblink}}",
+    "text": INCIDENT_FAQ_DOCUMENT_DESCRIPTION,
+}
+
+INCIDENT_TYPE_CHANGE = {"title": "Incident Type Change", "text": INCIDENT_TYPE_CHANGE_DESCRIPTION}
+
+INCIDENT_PRIORITY_CHANGE = {
+    "title": "Incident Priority Change",
+    "text": INCIDENT_PRIORITY_CHANGE_DESCRIPTION,
+}
+
+INCIDENT_PARTICIPANT_WELCOME = {
+    "title": "Welcome to {{name}}",
+    "title_link": "{{ticket_weblink}}",
+    "text": INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION,
+}
+
+INCIDENT_GET_INVOLVED_BUTTON = {
+    "title": "Get Involved",
+    "text": INCIDENT_GET_INVOLVED_BUTTON_DESCRIPTION,
+    "button_text": "Get Involved",
+    "button_value": "{{incident_id}}",
+    "button_action": ConversationButtonActions.invite_user,
+}
+
+INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
+    INCIDENT_PARTICIPANT_WELCOME,
+    INCIDENT_TITLE,
+    INCIDENT_STATUS,
+    INCIDENT_PRIORITY,
+    INCIDENT_COMMANDER,
+    INCIDENT_INVESTIGATION_DOCUMENT,
+    INCIDENT_STORAGE,
+    INCIDENT_FAQ_DOCUMENT,
+]
+
+INCIDENT_RESOURCES_MESSAGE = [
+    INCIDENT_COMMANDER,
+    INCIDENT_INVESTIGATION_DOCUMENT,
+    INCIDENT_STORAGE,
+    INCIDENT_FAQ_DOCUMENT,
+]
+
+INCIDENT_NOTIFICATION_COMMON = [INCIDENT_NAME, INCIDENT_TITLE]
+
+INCIDENT_NOTIFICATION = INCIDENT_NOTIFICATION_COMMON.copy()
+INCIDENT_NOTIFICATION.extend(
+    [INCIDENT_STATUS, INCIDENT_PRIORITY_FYI, INCIDENT_COMMANDER, INCIDENT_GET_INVOLVED_BUTTON]
+)
+
+INCIDENT_NOTIFICATION_TYPE_CHANGE = INCIDENT_NOTIFICATION_COMMON.copy()
+INCIDENT_NOTIFICATION_TYPE_CHANGE.extend([INCIDENT_TYPE_CHANGE, INCIDENT_COMMANDER])
+
+INCIDENT_NOTIFICATION_PRIORITY_CHANGE = INCIDENT_NOTIFICATION_COMMON.copy()
+INCIDENT_NOTIFICATION_PRIORITY_CHANGE.extend([INCIDENT_PRIORITY_CHANGE, INCIDENT_COMMANDER])
+
+INCIDENT_NOTIFICATION_TYPE_AND_PRIORITY_CHANGE = INCIDENT_NOTIFICATION_COMMON.copy()
+INCIDENT_NOTIFICATION_TYPE_AND_PRIORITY_CHANGE.extend(
+    [INCIDENT_TYPE_CHANGE, INCIDENT_PRIORITY_CHANGE, INCIDENT_COMMANDER]
+)
+
+INCIDENT_DAILY_SUMMARY = [
+    {
+        "title": "{{name}}",
+        "title_link": "{{ticket_weblink}}",
+        "text": "{{title}}\n*Priority*: {{priority}}\n*Incident Commander*: <{{commander_weblink}}|{{commander_fullname}}>",
+    }
+]
+
+INCIDENT_STATUS_REPORT = [
+    {"title": "Incident Status Report", "text": INCIDENT_STATUS_REPORT_DESCRIPTION},
+    {"title": "Conditions", "text": "{{conditions}}"},
+    {"title": "Actions", "text": "{{actions}}"},
+    {"title": "Needs", "text": "{{needs}}"},
+]
+
+INCIDENT_STATUS_REPORT_REMINDER = [
+    {
+        "title": "{{name}} Incident - Status Report Reminder",
+        "title_link": "{{ticket_weblink}}",
+        "text": INCIDENT_STATUS_REPORT_REMINDER_DESCRIPTION,
+    },
+    INCIDENT_TITLE,
+]
+
+INCIDENT_TASK_REMINDER = [
+    {"title": "Incident - {{ name }}", "text": "{{ title }}"},
+    {"title": "Creator", "text": "{{ creator }}"},
+    {"title": "Description", "text": "{{ description }}"},
+    {"title": "Priority", "text": "{{ priority }}"},
+    {"title": "Created At", "text": "", "datetime": "{{ created_at}}"},
+    {"title": "Resolve By", "text": "", "datetime": "{{ resolve_by }}"},
+    {"title": "Link", "text": "{{ weblink }}"},
+]
+
+INCIDENT_REVIEW_DOCUMENT_NOTIFICATION = [
+    {
+        "title": "Incident Review Document",
+        "title_link": "{{incident_review_document_weblink}}",
+        "text": INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,
+    }
+]
+
+INCIDENT_FEEDBACK_FORM_NOTIFICATION = [
+    {
+        "title": "Incident Feedback Form",
+        "title_link": "{{feedback_form_weblink}}",
+        "text": INCIDENT_FEEDBACK_FORM_DESCRIPTION,
+    }
+]
+
+INCIDENT_NEW_ROLE_NOTIFICATION = [
+    {
+        "title": "New {{assignee_role}} - {{assignee_fullname}}",
+        "title_link": "{{assignee_weblink}}",
+        "text": INCIDENT_NEW_ROLE_DESCRIPTION,
+    }
+]
+
+INCIDENT_TASK_NEW_NOTIFICATION = [
+    {
+        "title": "New Incident Task",
+        "title_link": "{{task_weblink}}",
+        "text": INCIDENT_TASK_NEW_DESCRIPTION,
+    }
+]
+
+INCIDENT_TASK_RESOLVED_NOTIFICATION = [
+    {
+        "title": "Resolved Incident Task",
+        "title_link": "{{task_weblink}}",
+        "text": INCIDENT_TASK_RESOLVED_DESCRIPTION,
+    }
+]
+
+INCIDENT_COMMANDER_READDED_NOTIFICATION = [
+    {"title": "Incident Commander Re-Added", "text": INCIDENT_COMMANDER_READDED_DESCRIPTION}
+]
+
+
+def render_message_template(message_template: List[dict], **kwargs):
+    """Renders the jinja data included in the template itself."""
+    data = []
+    new_copy = copy.deepcopy(message_template)
+    for d in new_copy:
+        if d.get("priority_mapping"):
+            d["text"] = d["priority_mapping"][kwargs["priority"]]
+
+        if d.get("status_mapping"):
+            d["text"] = d["status_mapping"][kwargs["status"]]
+
+        if d.get("datetime"):
+            d["datetime"] = Template(d["datetime"]).render(**kwargs)
+
+        d["text"] = Template(d["text"]).render(**kwargs)
+        d["title"] = Template(d["title"]).render(**kwargs)
+
+        if d.get("title_link"):
+            d["title_link"] = Template(d["title_link"]).render(**kwargs)
+
+        if d.get("button_text"):
+            d["button_text"] = Template(d["button_text"]).render(**kwargs)
+
+        if d.get("button_value"):
+            d["button_value"] = Template(d["button_value"]).render(**kwargs)
+
+        data.append(d)
+    return data

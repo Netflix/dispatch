@@ -1,0 +1,23 @@
+{% extends 'templates/base.html' %} {% block description %}
+<p style="font-weight:normal!important;line-height:140%;margin-top:0">
+  This message is for <b>notification</b> purposes only. No direct action of you
+  is currently required.
+</p>
+<p style="font-weight:normal!important;line-height:140%;margin-top:0">
+  Please be aware that this is a point in time update and the details below will
+  likely change.
+</p>
+{% endblock %} {% block items %}
+<ul style="list-style-type:none; padding-left: 0;">
+  <li><b>Conditions</b></li>
+  <li>{{ conditions }}</li>
+</ul>
+<ul style="list-style-type:none; padding-left: 0;">
+  <li><b>Actions</b></li>
+  <li>{{ actions }}</li>
+</ul>
+<ul style="list-style-type:none; padding-left: 0;">
+  <li><b>Needs</b></li>
+  <li>{{ needs }}</li>
+</ul>
+{% endblock %}

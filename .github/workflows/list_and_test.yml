@@ -1,0 +1,39 @@
+name: Python application
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: dispatch
+          POSTGRES_PASSWORD: dispatch
+          POSTGRES_DB: dispatch
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          export DISPATCH_LIGHT_BUILD=1
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Run linters
+        uses: samuelmeuli/lint-action@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          # Enable linters
+          black: true
+          flake8: true
+      - name: Test with pytest
+        run: |
+          pytest

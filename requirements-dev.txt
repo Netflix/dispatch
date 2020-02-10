@@ -1,0 +1,8 @@
+black
+flake8
+vulture
+coverage
+pytest
+factory-boy
+faker
+devtools

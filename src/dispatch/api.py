@@ -1,0 +1,79 @@
+from fastapi import APIRouter, Depends
+from fastapi.openapi.docs import get_redoc_html
+from fastapi.openapi.utils import get_openapi
+from starlette.responses import JSONResponse
+
+from dispatch.application.views import router as application_router
+from dispatch.auth.service import get_current_user
+from dispatch.definition.views import router as definition_router
+from dispatch.incident.views import router as incident_router
+from dispatch.incident_priority.views import router as incident_priority_router
+from dispatch.incident_type.views import router as incident_type_router
+from dispatch.individual.views import router as individual_contact_router
+
+from dispatch.policy.views import router as policy_router
+from dispatch.route.views import router as route_router
+from dispatch.search.views import router as search_router
+from dispatch.service.views import router as service_router
+from dispatch.team.views import router as team_contact_router
+from dispatch.term.views import router as team_router
+from dispatch.document.views import router as document_router
+from dispatch.task.views import router as task_router
+
+from .common.utils.cli import install_plugins, install_plugin_events
+
+api_router = APIRouter()  # WARNING: Don't use this unless you want unauthenticated routes
+authenticated_api_router = APIRouter()
+
+
+# NOTE: All api routes should be authenticated by default
+authenticated_api_router.include_router(document_router, prefix="/documents", tags=["documents"])
+authenticated_api_router.include_router(
+    application_router, prefix="/applications", tags=["applications"]
+)
+authenticated_api_router.include_router(service_router, prefix="/services", tags=["services"])
+authenticated_api_router.include_router(team_contact_router, prefix="/teams", tags=["teams"])
+authenticated_api_router.include_router(
+    individual_contact_router, prefix="/individuals", tags=["individuals"]
+)
+authenticated_api_router.include_router(route_router, prefix="/route", tags=["route"])
+authenticated_api_router.include_router(policy_router, prefix="/policies", tags=["policies"])
+authenticated_api_router.include_router(
+    definition_router, prefix="/definitions", tags=["definitions"]
+)
+authenticated_api_router.include_router(team_router, prefix="/terms", tags=["terms"])
+authenticated_api_router.include_router(task_router, prefix="/tasks", tags=["tags"])
+authenticated_api_router.include_router(search_router, prefix="/search", tags=["search"])
+authenticated_api_router.include_router(incident_router, prefix="/incidents", tags=["incidents"])
+authenticated_api_router.include_router(
+    incident_type_router, prefix="/incident_types", tags=["incident_types"]
+)
+authenticated_api_router.include_router(
+    incident_priority_router, prefix="/incident_priorities", tags=["incident_priorities"]
+)
+
+doc_router = APIRouter()
+
+
+@doc_router.get("/openapi.json")
+async def get_open_api_endpoint():
+    return JSONResponse(get_openapi(title="Dispatch Docs", version=1, routes=api_router.routes))
+
+
+@doc_router.get("/")
+async def get_documentation():
+    return get_redoc_html(openapi_url="/api/v1/docs/openapi.json", title="Dispatch Docs")
+
+
+authenticated_api_router.include_router(doc_router, prefix="/docs")
+
+
+@api_router.get("/healthcheck")
+def healthcheck():
+    return {"status": "ok"}
+
+
+install_plugins()
+install_plugin_events(api_router)
+
+api_router.include_router(authenticated_api_router, dependencies=[Depends(get_current_user)])
