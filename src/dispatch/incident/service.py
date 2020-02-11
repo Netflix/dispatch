@@ -8,9 +8,7 @@ from dispatch.config import (
     ANNUAL_COST_EMPLOYEE,
     BUSINESS_HOURS_YEAR,
     ENV,
-    HOURS_IN_DAY,
     INCIDENT_ONCALL_PLUGIN_SLUG,
-    SECONDS_IN_HOUR,
 )
 from dispatch.database import SessionLocal
 from dispatch.incident_priority import service as incident_priority_service
@@ -24,6 +22,10 @@ from dispatch.plugins.base import plugins
 
 from .enums import IncidentStatus
 from .models import Incident, IncidentUpdate
+
+
+HOURS_IN_DAY = 24
+SECONDS_IN_HOUR = 3600
 
 
 def resolve_incident_commander_email(
