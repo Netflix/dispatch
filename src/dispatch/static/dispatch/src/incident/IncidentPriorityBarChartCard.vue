@@ -1,35 +1,43 @@
 <template>
-  <v-card>
+  <v-card :loading="loading">
     <v-card-title>Priorities</v-card-title>
     <apexchart type="bar" height="250" :options="chartOptions" :series="series"></apexchart>
   </v-card>
 </template>
 
 <script>
+import _ from "lodash"
+
 import VueApexCharts from "vue-apexcharts"
 export default {
   name: "IncidentPriorityBarChartCard",
 
+  props: {
+    value: {
+      type: Object,
+      default: function() {
+        return {}
+      }
+    },
+    loading: {
+      type: Boolean,
+      default: function() {
+        return false
+      }
+    }
+  },
+
   components: {
     apexchart: VueApexCharts
   },
+
   data() {
-    return {
-      series: [
-        {
-          name: "Low",
-          data: [44, 55, 41, 67, 22, 43, 21, 49]
-        },
-        {
-          name: "Medium",
-          data: [13, 23, 20, 8, 13, 27, 33, 12]
-        },
-        {
-          name: "High",
-          data: [11, 17, 15, 15, 21, 14, 15, 13]
-        }
-      ],
-      chartOptions: {
+    return {}
+  },
+
+  computed: {
+    chartOptions() {
+      return {
         chart: {
           type: "bar",
           height: 350,
@@ -48,7 +56,7 @@ export default {
           }
         ],
         xaxis: {
-          categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
+          categories: this.categoryData || [],
           title: {
             text: "Month"
           }
@@ -60,6 +68,30 @@ export default {
           position: "top"
         }
       }
+    },
+    series() {
+      let series = []
+      _.forEach(this.value, function(value, key) {
+        let typeCount = _.map(
+          _.countBy(value, function(item) {
+            return item.incident_priority.name
+          }),
+          function(value, key) {
+            return { name: key, data: [value] }
+          }
+        )
+
+        series = _.mergeWith(series, typeCount, function(objValue, srcValue) {
+          if (_.isArray(objValue)) {
+            return objValue.concat(srcValue)
+          }
+        })
+      })
+
+      return series
+    },
+    categoryData() {
+      return Object.keys(this.value)
     }
   }
 }

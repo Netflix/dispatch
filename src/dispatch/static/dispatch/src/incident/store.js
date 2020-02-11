@@ -51,17 +51,7 @@ const state = {
 }
 
 const getters = {
-  getField,
-  incidentsByYear: state => {
-    return _.groupBy(state.rows.items, function(item) {
-      return item.created_at.substring(0, 4)
-    })
-  },
-  incidentsByMonth: state => {
-    return _.groupBy(state.rows.items, function(item) {
-      return item.created_at.substring(0, 7)
-    })
-  }
+  getField
 }
 
 const actions = {

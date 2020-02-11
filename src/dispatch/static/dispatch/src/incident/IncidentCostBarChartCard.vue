@@ -1,27 +1,38 @@
 <template>
-  <v-card>
-    <v-card-title>Cost</v-card-title>
+  <v-card :loading="loading">
+    <v-card-title>Total Cost</v-card-title>
     <apexchart type="bar" height="250" :options="chartOptions" :series="series"></apexchart>
   </v-card>
 </template>
 
 <script>
+import _ from "lodash"
 import VueApexCharts from "vue-apexcharts"
 export default {
   name: "IncidentCostBarChartCard",
 
+  props: {
+    value: {
+      type: Object,
+      default: function() {
+        return {}
+      }
+    },
+    loading: {
+      type: Boolean,
+      default: function() {
+        return false
+      }
+    }
+  },
+
   components: {
     apexchart: VueApexCharts
   },
-  data() {
-    return {
-      series: [
-        {
-          name: "Studio",
-          data: [44, 55, 41, 67, 22, 43, 21, 49]
-        }
-      ],
-      chartOptions: {
+
+  computed: {
+    chartOptions() {
+      return {
         chart: {
           type: "bar",
           height: 350,
@@ -39,9 +50,22 @@ export default {
           }
         ],
         xaxis: {
-          categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
+          categories: this.categoryData || [],
           title: {
             text: "Month"
+          }
+        },
+        yaxis: {
+          labels: {
+            show: false,
+            formatter: function(val) {
+              var formatter = new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD"
+              })
+
+              return formatter.format(val) /* $2,500.00 */
+            }
           }
         },
         fill: {
@@ -49,8 +73,30 @@ export default {
         },
         legend: {
           position: "top"
+        },
+        dataLabels: {
+          enabled: true,
+          formatter: function(val) {
+            var formatter = new Intl.NumberFormat("en-US", {
+              style: "currency",
+              currency: "USD"
+            })
+
+            return formatter.format(val) /* $2,500.00 */
+          }
         }
       }
+    },
+    series() {
+      let series = { name: "cost", data: [] }
+      _.forEach(this.value, function(value, key) {
+        series.data.push(_.sumBy(value, "cost"))
+      })
+
+      return [series]
+    },
+    categoryData() {
+      return Object.keys(this.value)
     }
   }
 }
