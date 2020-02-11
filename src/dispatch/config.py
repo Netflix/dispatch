@@ -37,7 +37,12 @@ except Exception:
 
 config = Config(".env")
 
+ENV = config("ENV", default="test")
 LOG_LEVEL = config("LOG_LEVEL", default=logging.WARNING)
+
+DISPATCH_DOMAIN = config("DISPATCH_DOMAIN")
+DISPATCH_HELP_EMAIL = config("DISPATCH_HELP_EMAIL")
+DISPATCH_HELP_SLACK_CHANNEL = config("DISPATCH_HELP_SLACK_CHANNEL")
 
 # authentication
 JWKS_URL = config("JWKS_URL")
@@ -47,10 +52,8 @@ DEFAULT_STATIC_DIR = os.path.join(
 )
 STATIC_DIR = config("STATIC_DIR", default=DEFAULT_STATIC_DIR)
 
+# metrics
 METRIC_PROVIDERS = config("METRIC_PROVIDERS", cast=CommaSeparatedStrings, default="")
-
-DISPATCH_HELP_EMAIL = config("DISPATCH_HELP_EMAIL")
-DISPATCH_HELP_SLACK_CHANNEL = config("DISPATCH_HELP_SLACK_CHANNEL")
 
 # sentry middleware
 SENTRY_DSN = config("SENTRY_DSN", cast=Secret, default=None)
@@ -62,6 +65,7 @@ DATABASE_NAME = config("DATABASE_NAME", default="dispatch")
 DATABASE_PORT = config("DATABASE_PORT", default="5432")
 SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{DATABASE_CREDENTIALS}@{DATABASE_HOSTNAME}:{DATABASE_PORT}/{DATABASE_NAME}"
 
+# Incident
 INCIDENT_CONTACT_PLUGIN_SLUG = config("INCIDENT_CONTACT_PLUGIN_SLUG", default="pandora-contact")
 INCIDENT_CONVERSATION_APP_USER_SLUG = config("INCIDENT_CONVERSATION_APP_USER_SLUG")
 INCIDENT_CONVERSATION_APP_BOT_SLUG = config("INCIDENT_CONVERSATION_APP_BOT_SLUG")
@@ -120,5 +124,10 @@ INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS = config(
     "INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS", cast=CommaSeparatedStrings
 )
 
+INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID = config(
+    "INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID", default=None
+)
+
 # Incident Cost Configuration
 ANNUAL_COST_EMPLOYEE = config("ANNUAL_COST_EMPLOYEE", cast=int, default="650000")
+BUSINESS_HOURS_YEAR = config("BUSINESS_HOURS_YEAR", cast=int, default="2080")

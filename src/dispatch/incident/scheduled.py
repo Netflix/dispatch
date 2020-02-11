@@ -1,24 +1,33 @@
 import logging
 from datetime import datetime
-
 from schedule import every
-
 
 from dispatch.config import (
     INCIDENT_CONVERSATION_SLUG,
+    INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID,
     INCIDENT_NOTIFICATION_CONVERSATIONS,
     INCIDENT_TICKET_PLUGIN_SLUG,
 )
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.decorators import background_task
 from dispatch.incident_priority.models import IncidentPriorityType
-from dispatch.messaging import INCIDENT_DAILY_SUMMARY, INCIDENT_STATUS_REPORT_REMINDER, MessageType
+from dispatch.individual import service as individual_service
+from dispatch.messaging import (
+    INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION,
+    INCIDENT_DAILY_SUMMARY_DESCRIPTION,
+    INCIDENT_DAILY_SUMMARY_NO_ACTIVE_INCIDENTS_DESCRIPTION,
+    INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
+    INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
+    INCIDENT_STATUS_REPORT_REMINDER,
+    MessageType,
+)
+from dispatch.extensions import sentry_sdk
 from dispatch.plugins.base import plugins
 from dispatch.scheduler import scheduler
-from dispatch.extensions import sentry_sdk
+from dispatch.service import service as service_service
 
 from .enums import IncidentStatus
-from .service import calculate_cost, get_all_by_status
+from .service import calculate_cost, get_all_by_status, get_all_last_x_hours_by_status
 
 # TODO figure out a way to do mapping in the config file
 # reminder (in hours)
@@ -85,32 +94,126 @@ def status_report_reminder(db_session=None):
 @background_task
 def daily_summary(db_session=None):
     """Fetches all open incidents and provides a daily summary."""
-    incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active)
-    convo_plugin = plugins.get(INCIDENT_CONVERSATION_SLUG)
 
-    incident_data = []
-    if incidents:
-        for incident in incidents:
-            incident_data.append(
+    blocks = []
+    blocks.append(
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"*{INCIDENT_DAILY_SUMMARY_DESCRIPTION}*"},
+        }
+    )
+
+    active_incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active)
+    if active_incidents:
+        blocks.append(
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*{INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION}*",
+                },
+            }
+        )
+        for incident in active_incidents:
+            try:
+                blocks.append(
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": (
+                                f"*<{incident.ticket.weblink}|{incident.name}>*\n"
+                                f"*Title*: {incident.title}\n"
+                                f"*Priority*: {incident.incident_priority.name}\n"
+                                f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
+                            ),
+                        },
+                    }
+                )
+            except Exception as e:
+                sentry_sdk.capture_exception(e)
+    else:
+        blocks.append(
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": INCIDENT_DAILY_SUMMARY_NO_ACTIVE_INCIDENTS_DESCRIPTION,
+                },
+            }
+        )
+
+    blocks.append({"type": "divider"})
+    blocks.append(
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": f"*{INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION}*",
+            },
+        }
+    )
+
+    hours = 24
+    stable_closed_incidents = get_all_last_x_hours_by_status(
+        db_session=db_session, status=IncidentStatus.stable, hours=hours
+    ) + get_all_last_x_hours_by_status(
+        db_session=db_session, status=IncidentStatus.closed, hours=hours
+    )
+    if stable_closed_incidents:
+        for incident in stable_closed_incidents:
+            try:
+                blocks.append(
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": (
+                                f"*<{incident.ticket.weblink}|{incident.name}>*\n"
+                                f"*Title*: {incident.title}\n"
+                                f"*Status*: {incident.status}\n"
+                                f"*Priority*: {incident.incident_priority.name}\n"
+                                f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
+                            ),
+                        },
+                    }
+                )
+            except Exception as e:
+                sentry_sdk.capture_exception(e)
+    else:
+        blocks.append(
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
+                },
+            }
+        )
+
+    oncall_service = service_service.get_by_external_id(
+        db_session=db_session, external_id=INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID
+    )
+    oncall_plugin = plugins.get(oncall_service.type)
+    oncall_email = oncall_plugin.get(service_id=INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID)
+
+    oncall_individual = individual_service.resolve_user_by_email(oncall_email)
+
+    blocks.append(
+        {
+            "type": "context",
+            "elements": [
                 {
-                    "name": incident.name,
-                    "title": incident.title,
-                    "status": incident.status,
-                    "priority": incident.incident_priority.name,
-                    "ticket_weblink": incident.ticket.weblink,
-                    "commander_fullname": incident.commander.name,
-                    "commander_weblink": incident.commander.weblink,
+                    "type": "mrkdwn",
+                    "text": f"For questions, reach out to <{oncall_individual['weblink']}|{oncall_individual['fullname']}> (current on-call)",
                 }
-            )
+            ],
+        }
+    )
 
-        for c in INCIDENT_NOTIFICATION_CONVERSATIONS:
-            convo_plugin.send(
-                c,
-                "Incident Summary",
-                INCIDENT_DAILY_SUMMARY,
-                MessageType.incident_daily_summary,
-                items=incident_data,
-            )
+    convo_plugin = plugins.get(INCIDENT_CONVERSATION_SLUG)
+    for c in INCIDENT_NOTIFICATION_CONVERSATIONS:
+        convo_plugin.send(c, "Incident Daily Summary", {}, "", blocks=blocks)
 
 
 @scheduler.add(every(5).minutes, name="calculate-incident-cost")

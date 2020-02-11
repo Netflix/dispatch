@@ -9,7 +9,6 @@ from typing import List, Optional
 from jinja2 import Template
 
 from dispatch.messaging import (
-    INCIDENT_DAILY_SUMMARY_DESCRIPTION,
     INCIDENT_TASK_LIST_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
     MessageType,
@@ -106,10 +105,6 @@ def get_template(message_type: MessageType):
         MessageType.incident_task_reminder: (
             default_notification,
             INCIDENT_TASK_REMINDER_DESCRIPTION,
-        ),
-        MessageType.incident_daily_summary: (
-            default_notification,
-            INCIDENT_DAILY_SUMMARY_DESCRIPTION,
         ),
         MessageType.incident_task_list: (default_notification, INCIDENT_TASK_LIST_DESCRIPTION),
     }
