@@ -39,7 +39,7 @@ export const protectedRoute = [
     path: "/incidents/status",
     component: DefaultLayout,
     meta: { title: "Status", icon: "", requiresAuth: true },
-    component: () => import(/* webpackChunkName: "incidents-report" */ "@/incident/Status.vue")
+    component: () => import(/* webpackChunkName: "incidents-status" */ "@/incident/Status.vue")
   },
 
   {
@@ -50,6 +50,19 @@ export const protectedRoute = [
   },
 
   //list
+  {
+    path: "/dashboard",
+    component: DefaultLayout,
+    meta: { title: "Dashboard", icon: "view_compact", group: "dashboard", requiresAuth: true },
+    children: [
+      {
+        path: "/dashboard",
+        name: "Dashboard",
+        component: () =>
+          import(/* webpackChunkName: "incident-dashboard" */ "@/dashboard/Dashboard.vue")
+      }
+    ]
+  },
   {
     path: "/incidents",
     component: DefaultLayout,

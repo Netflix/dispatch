@@ -1,6 +1,6 @@
-import base64
 import logging
 import os
+import base64
 
 from starlette.config import Config
 from starlette.datastructures import CommaSeparatedStrings
@@ -37,10 +37,12 @@ except Exception:
 
 config = Config(".env")
 
-DEBUG = config("DEBUG", cast=bool, default=False)
 ENV = config("ENV", default="test")
-TESTING = config("TESTING", cast=bool, default=False)
 LOG_LEVEL = config("LOG_LEVEL", default=logging.WARNING)
+
+DISPATCH_DOMAIN = config("DISPATCH_DOMAIN")
+DISPATCH_HELP_EMAIL = config("DISPATCH_HELP_EMAIL")
+DISPATCH_HELP_SLACK_CHANNEL = config("DISPATCH_HELP_SLACK_CHANNEL")
 
 # authentication
 JWKS_URL = config("JWKS_URL")
@@ -50,11 +52,8 @@ DEFAULT_STATIC_DIR = os.path.join(
 )
 STATIC_DIR = config("STATIC_DIR", default=DEFAULT_STATIC_DIR)
 
+# metrics
 METRIC_PROVIDERS = config("METRIC_PROVIDERS", cast=CommaSeparatedStrings, default="")
-
-DISPATCH_DOMAIN = config("DISPATCH_DOMAIN")
-DISPATCH_HELP_EMAIL = config("DISPATCH_HELP_EMAIL")
-DISPATCH_HELP_SLACK_CHANNEL = config("DISPATCH_HELP_SLACK_CHANNEL")
 
 # sentry middleware
 SENTRY_DSN = config("SENTRY_DSN", cast=Secret, default=None)
@@ -66,6 +65,7 @@ DATABASE_NAME = config("DATABASE_NAME", default="dispatch")
 DATABASE_PORT = config("DATABASE_PORT", default="5432")
 SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{DATABASE_CREDENTIALS}@{DATABASE_HOSTNAME}:{DATABASE_PORT}/{DATABASE_NAME}"
 
+# Incident
 INCIDENT_CONTACT_PLUGIN_SLUG = config("INCIDENT_CONTACT_PLUGIN_SLUG", default="pandora-contact")
 INCIDENT_CONVERSATION_APP_USER_SLUG = config("INCIDENT_CONVERSATION_APP_USER_SLUG")
 INCIDENT_CONVERSATION_APP_BOT_SLUG = config("INCIDENT_CONVERSATION_APP_BOT_SLUG")
@@ -112,27 +112,7 @@ INCIDENT_NOTIFICATIONS_GROUP_SLUG = config(
 INCIDENT_TICKET_PLUGIN_SLUG = config("INCIDENT_TICKET_PLUGIN_SLUG", default="jira-ticket")
 INCIDENT_TASK_PLUGIN_SLUG = config("INCIDENT_TASK_PLUGIN_SLUG", default="google-drive-task")
 INCIDENT_TASK_SLUG = config("INCIDENT_TASK_SLUG", default="google-docs-incident-task")
-
-# Should we enum these?
-INCIDENT_DOCUMENT_INVESTIGATION_DOCUMENT_MAPPING = {
-    "brand": "1DvOrzmZ2VFxCJuCXIY2mpLeFNjiLvEWHOzX3YksXa64",
-    "business_data": "1h6O463GgYr1cGri8g9O3sidC8PdRlDSleoGKTBNkHsM",
-    "customer_data": "1w68woCGd4HKHw8vuOO9xCeq05yQsIUbMIRBes5CCBDc",
-    "service_availability": "1a5cWYUm_M2aVl0rH6uWKXy8Ed_Lu4gcZwmk5DDvBX_0",
-    "studio_and_production_data": "11d8_83SbX17tECkYoenLOXjK5zXNU4Kdn2wtI4WeA_k",
-    "vulnerability": "1Knp4yNg40E1uCgoLcqdLmfuL7Fc8ugpFzbkjaTXfq60",
-    "simulation": "101B_Fw2HjWSs4i_wxO_I7IB4S3Zz96gIbc26EAd0IZM",
-    "default": "1uSKfArHafY2aN2kHi5Muv6LM8d5t83uVEMRkW0swfjA",
-}
-INCIDENT_COMMANDER_MAPPING = {
-    "vulnerability": {"type": "service", "value": "PT81J41"},
-    "default": {"type": "service", "value": "PJK9LA4"},
-}
-
-
-INCIDENT_DOCUMENT_INVESTIGATION_SHEET_ID = config(
-    "INCIDENT_DOCUMENT_INVESTIGATION_SHEET_ID", default=None
-)
+INCIDENT_DOCUMENT_INVESTIGATION_SHEET_ID = config("INCIDENT_DOCUMENT_INVESTIGATION_SHEET_ID")
 
 INCIDENT_FAQ_DOCUMENT_ID = config("INCIDENT_FAQ_DOCUMENT_ID")
 
@@ -144,8 +124,10 @@ INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS = config(
     "INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS", cast=CommaSeparatedStrings
 )
 
+INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID = config(
+    "INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID", default=None
+)
+
 # Incident Cost Configuration
 ANNUAL_COST_EMPLOYEE = config("ANNUAL_COST_EMPLOYEE", cast=int, default="650000")
 BUSINESS_HOURS_YEAR = config("BUSINESS_HOURS_YEAR", cast=int, default="2080")
-SECONDS_IN_HOUR = config("SECONDS_IN_HOUR", cast=int, default="3600")
-HOURS_IN_DAY = config("HOURS_IN_DAY", cast=int, default="24")

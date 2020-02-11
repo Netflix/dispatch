@@ -5,16 +5,21 @@ from starlette.testclient import TestClient
 from starlette.config import environ
 
 # set test config
-environ["TESTING"] = "TRUE"
-environ["DATABASE_HOSTNAME"] = "localhost"
 environ["DATABASE_CREDENTIALS"] = "dispatch:dispatch"
-environ["JWKS_URL"] = "example.com"
-environ["INCIDENT_CONVERSATION_APP_USER_SLUG"] = "XXX"
+environ["DATABASE_HOSTNAME"] = "localhost"
+environ["DISPATCH_DOMAIN"] = "example.com"
+environ["DISPATCH_HELP_EMAIL"] = "example@example.com"
+environ["DISPATCH_HELP_SLACK_CHANNEL"] = "help-me"
 environ["INCIDENT_CONVERSATION_APP_BOT_SLUG"] = "XXX"
+environ["INCIDENT_CONVERSATION_APP_USER_SLUG"] = "XXX"
+environ["INCIDENT_DOCUMENT_INVESTIGATION_SHEET_ID"] = "XXX"
+environ["INCIDENT_FAQ_DOCUMENT_ID"] = "XXX"
 environ["INCIDENT_NOTIFICATION_CONVERSATIONS"] = "sirt-dev-test-notify"
 environ["INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS"] = "sirt-dev-test-notify@example.com"
-environ["INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID"] = "XXXXX"
-environ["DISPATCH_DOMAIN"] = ""
+environ["INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID"] = "XXX"
+environ["INCIDENT_STORAGE_DRIVE_ID_SLUG"] = "XXX"  # we don't need static files for tests
+environ["INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID_SLUG"] = "XXX"
+environ["JWKS_URL"] = "example.com"
 environ["METRIC_PROVIDERS"] = ""  # TODO move this to the default
 environ["STATIC_DIR"] = ""  # we don't need static files for tests
 

@@ -240,9 +240,8 @@
 </template>
 
 <script>
-import _ from "lodash"
 import { mapFields } from "vuex-map-fields"
-import { mapState, mapActions, mapMutations } from "vuex"
+import { mapActions  } from "vuex"
 import { ValidationObserver, ValidationProvider } from "vee-validate"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"

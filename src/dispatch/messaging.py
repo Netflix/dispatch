@@ -20,6 +20,7 @@ from .config import (
 
 class MessageType(str, Enum):
     incident_daily_summary = "incident-daily-summary"
+    incident_daily_summary_no_incidents = "incident-daily-summary-no-incidents"
     incident_notification = "incident-notification"
     incident_participant_welcome = "incident-participant-welcome"
     incident_resources_message = "incident-resources-message"
@@ -64,7 +65,27 @@ Please review and update as appropriate.""".replace(
 INCIDENT_TASK_LIST_DESCRIPTION = """The following are open incident tasks."""
 
 INCIDENT_DAILY_SUMMARY_DESCRIPTION = """
-Daily Summary of *Active* incidents:""".replace(
+Daily Incidents Summary""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION = """
+Active Incidents""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_DAILY_SUMMARY_NO_ACTIVE_INCIDENTS_DESCRIPTION = """
+There are no active incidents at this moment.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION = """
+Stable or Closed Incidents""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION = """
+There are no stable or closed incidents in the last 24 hours.""".replace(
     "\n", " "
 ).strip()
 
@@ -326,14 +347,6 @@ INCIDENT_NOTIFICATION_TYPE_AND_PRIORITY_CHANGE = INCIDENT_NOTIFICATION_COMMON.co
 INCIDENT_NOTIFICATION_TYPE_AND_PRIORITY_CHANGE.extend(
     [INCIDENT_TYPE_CHANGE, INCIDENT_PRIORITY_CHANGE, INCIDENT_COMMANDER]
 )
-
-INCIDENT_DAILY_SUMMARY = [
-    {
-        "title": "{{name}}",
-        "title_link": "{{ticket_weblink}}",
-        "text": "{{title}}\n*Priority*: {{priority}}\n*Incident Commander*: <{{commander_weblink}}|{{commander_fullname}}>",
-    }
-]
 
 INCIDENT_STATUS_REPORT = [
     {"title": "Incident Status Report", "text": INCIDENT_STATUS_REPORT_DESCRIPTION},

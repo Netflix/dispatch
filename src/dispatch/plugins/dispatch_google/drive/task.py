@@ -8,8 +8,6 @@
 import re
 from typing import Any, List, Dict
 
-from dispatch.config import DISPATCH_DOMAIN
-
 from .drive import get_file, list_comments
 from .config import GOOGLE_DOMAIN
 
@@ -18,7 +16,7 @@ def get_assignees(content: str) -> List[str]:
     """Gets assignees from comment."""
     regex = r"(?<=\+).*?(?=\@)"
     matches = re.finditer(regex, content, re.DOTALL)
-    return [f"{m.group()}@{DISPATCH_DOMAIN}" for m in matches]
+    return [f"{m.group()}@{GOOGLE_DOMAIN}" for m in matches]
 
 
 def parse_comment(content: str) -> Dict:
