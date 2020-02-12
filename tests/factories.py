@@ -222,7 +222,7 @@ class IncidentPriorityFactory(BaseFactory):
 class IncidentTypeFactory(BaseFactory):
     """Incident Type Factory."""
 
-    name = FuzzyChoice(["Brand", "Buisness Data", "Customer Data"])
+    name = FuzzyChoice(["Brand", "Business Data", "Customer Data"])
     description = FuzzyText()
 
     class Meta:
@@ -585,15 +585,11 @@ class TermFactory(BaseFactory):
 class TicketFactory(ResourceBaseFactory):
     """Ticket Factory."""
 
+    resource_id = FuzzyText()
+    resource_type = FuzzyText()
+    weblink = FuzzyText()
+
     class Meta:
         """Factory Configuration."""
 
         model = Ticket
-
-    def terms(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for term in extracted:
-                self.terms.append(term)

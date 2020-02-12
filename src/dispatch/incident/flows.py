@@ -50,6 +50,7 @@ from dispatch.plugins.base import plugins
 from dispatch.service import service as service_service
 from dispatch.storage import service as storage_service
 from dispatch.ticket import service as ticket_service
+from dispatch.ticket.models import TicketCreate
 
 from .messaging import (
     send_incident_change_notifications,
@@ -334,7 +335,8 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         incident.commander.email,
         incident.reporter.email,
     )
-    incident.ticket = ticket_service.create(db_session=db_session, **ticket)
+
+    incident.ticket = ticket_service.create(db_session=db_session, ticket_in=TicketCreate(**ticket))
 
     log.debug("Added ticket to incident.")
 
