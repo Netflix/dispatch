@@ -80,7 +80,7 @@ There are no active incidents at this moment.""".replace(
 ).strip()
 
 INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION = """
-Stable or Closed Incidents""".replace(
+Stable or Closed Incidents (last 24 hours)""".replace(
     "\n", " "
 ).strip()
 
