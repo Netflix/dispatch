@@ -205,7 +205,7 @@ def daily_summary(db_session=None):
             "elements": [
                 {
                     "type": "mrkdwn",
-                    "text": f"For questions, reach out to <{oncall_individual['weblink']}|{oncall_individual['fullname']}> (current on-call)",
+                    "text": f"For questions about this notification, reach out to <{oncall_individual['weblink']}|{oncall_individual['fullname']}> (current on-call)",
                 }
             ],
         }
