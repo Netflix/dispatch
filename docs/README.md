@@ -12,12 +12,21 @@ Dispatch was created with one motto in mind; "People Resolve Incidents" all the 
 
 As such Dispatch aims not to automate people out of incident response but instead to augment their abilities, allowing them to focus on what humans are good at; solving complex and ambigous questions, not record keeping or creating resources.
 
+<p align="center">
+  <img src="https://github.com/netflix/dispatch/raw/master/docs/images/screenshots/thumb-1.png" width="290">
+  <img src="https://github.com/netflix/dispatch/raw/master/docs/images/screenshots/thumb-2.png" width="290">
+  <img src="https://github.com/netflix/dispatch/raw/master/docs/images/screenshots/thumb-3.png" width="290">
+  <img src="https://github.com/netflix/dispatch/raw/master/docs/images/screenshots/thumb-4.png" width="290">
+</p>
+
 ## What's next?
 
 If the above sounds interesting to you, continue reading! Also checkout our blog post and project resources:
 
-- Dispatch Blog Post
-- Documentation
-- Source Code
-- Issue tracker
-- Docker Image
+# Project resources
+
+- [Dispatch Blog Post]()
+- [Documentation](https://kevgliss.gitbook.io/dispatch)
+- [Source Code](https://github.com/netflix/dispatch)
+- [Issue tracker](https://github.com/netflix/dispatch/issues)
+- [Docker](https://github.com/Netflix/dispatch-docker)
