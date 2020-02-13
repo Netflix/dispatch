@@ -8,8 +8,9 @@
 import re
 from typing import Any, List, Dict
 
+from dispatch.plugins.dispatch_google.config import GOOGLE_DOMAIN
+
 from .drive import get_file, list_comments
-from .config import GOOGLE_DOMAIN
 
 
 def get_assignees(content: str) -> List[str]:
