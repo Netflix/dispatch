@@ -3,7 +3,7 @@ import logging
 from schedule import every
 from sqlalchemy import func
 
-from dispatch.config import INCIDENT_STORAGE_SLUG
+from dispatch.config import INCIDENT_PLUGIN_STORAGE_SLUG
 from dispatch.decorators import background_task
 from dispatch.plugins.base import plugins
 from dispatch.route import service as route_service
@@ -25,7 +25,7 @@ def sync_document_terms(db_session=None):
     for doc in documents:
         log.debug(f"Processing document. Name: {doc.name}")
         p = plugins.get(
-            INCIDENT_STORAGE_SLUG
+            INCIDENT_PLUGIN_STORAGE_SLUG
         )  # this may need to be refactored if we support multiple document types
 
         try:

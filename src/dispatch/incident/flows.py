@@ -11,25 +11,24 @@ import logging
 from typing import Any, List, Optional
 
 from dispatch.config import (
-    INCIDENT_CONTACT_PLUGIN_SLUG,
-    INCIDENT_CONVERSATION_SLUG,
-    INCIDENT_DOCUMENT_FAQ_DOCUMENT_SLUG,
-    INCIDENT_DOCUMENT_INCIDENT_REVIEW_DOCUMENT_SLUG,
-    INCIDENT_DOCUMENT_INVESTIGATION_DOCUMENT_SLUG,
+    INCIDENT_PLUGIN_CONTACT_SLUG,
+    INCIDENT_PLUGIN_CONVERSATION_SLUG,
+    INCIDENT_RESOURCE_FAQ_DOCUMENT,
+    INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
+    INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
     INCIDENT_DOCUMENT_INVESTIGATION_SHEET_ID,
-    INCIDENT_DOCUMENT_INVESTIGATION_SHEET_SLUG,
-    INCIDENT_DOCUMENT_RESOLVER_PLUGIN_SLUG,
-    INCIDENT_DOCUMENT_SLUG,
+    INCIDENT_RESOURCE_INVESTIGATION_SHEET,
+    INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG,
+    INCIDENT_PLUGIN_DOCUMENT_SLUG,
     INCIDENT_FAQ_DOCUMENT_ID,
-    INCIDENT_GROUP_SLUG,
-    INCIDENT_NOTIFICATIONS_GROUP_SLUG,
-    INCIDENT_PARTICIPANT_PLUGIN_SLUG,
-    INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID_SLUG,
-    INCIDENT_STORAGE_DRIVE_ID_SLUG,
-    INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID_SLUG,
-    INCIDENT_STORAGE_SLUG,
-    INCIDENT_TACTICAL_GROUP_SLUG,
-    INCIDENT_TICKET_PLUGIN_SLUG,
+    INCIDENT_PLUGIN_GROUP_SLUG,
+    INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
+    INCIDENT_PLUGIN_PARTICIPANT_SLUG,
+    INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID,
+    INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID,
+    INCIDENT_PLUGIN_STORAGE_SLUG,
+    INCIDENT_RESOURCE_TACTICAL_GROUP,
+    INCIDENT_PLUGIN_TICKET_SLUG,
 )
 from dispatch.conversation import service as conversation_service
 from dispatch.decorators import background_task
@@ -74,7 +73,7 @@ def get_incident_participants(
     db_session, incident_type: IncidentTypeRead, priority: IncidentPriorityRead, description: str
 ):
     """Get additional incident participants based on priority, type, and description."""
-    p = plugins.get(INCIDENT_PARTICIPANT_PLUGIN_SLUG)
+    p = plugins.get(INCIDENT_PLUGIN_PARTICIPANT_SLUG)
     individual_contacts, team_contacts = p.get(
         incident_type, priority, description, db_session=db_session
     )
@@ -85,7 +84,7 @@ def get_incident_documents(
     db_session, incident_type: IncidentTypeRead, priority: IncidentPriorityRead, description: str
 ):
     """Get additional incident documents based on priority, type, and description."""
-    p = plugins.get(INCIDENT_DOCUMENT_RESOLVER_PLUGIN_SLUG)
+    p = plugins.get(INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG)
     documents = p.get(incident_type, priority, description, db_session=db_session)
     return documents
 
@@ -94,9 +93,9 @@ def create_incident_ticket(
     title: str, incident_type: str, priority: str, commander: str, reporter: str
 ):
     """Create an external ticket for tracking."""
-    p = plugins.get(INCIDENT_TICKET_PLUGIN_SLUG)
+    p = plugins.get(INCIDENT_PLUGIN_TICKET_SLUG)
     ticket = p.create(title, incident_type, priority, commander, reporter)
-    ticket.update({"resource_type": INCIDENT_TICKET_PLUGIN_SLUG})
+    ticket.update({"resource_type": INCIDENT_PLUGIN_TICKET_SLUG})
     return ticket
 
 
@@ -116,7 +115,7 @@ def update_incident_ticket(
     cost: str = None,
 ):
     """Update external incident ticket."""
-    p = plugins.get(INCIDENT_TICKET_PLUGIN_SLUG)
+    p = plugins.get(INCIDENT_PLUGIN_TICKET_SLUG)
     p.update(
         ticket_id,
         title=title,
@@ -140,7 +139,7 @@ def create_participant_groups(
     name: str, indirect_participants: List[Any], direct_participants: List[Any]
 ):
     """Create external participant groups."""
-    p = plugins.get(INCIDENT_GROUP_SLUG)
+    p = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
 
     group_name = f"{name}"
     notification_group_name = f"{group_name}-notifications"
@@ -157,11 +156,11 @@ def create_participant_groups(
     notification_group = p.create(notification_group_name, indirect_participant_emails)
 
     tactical_group.update(
-        {"resource_type": INCIDENT_TACTICAL_GROUP_SLUG, "resource_id": tactical_group["id"]}
+        {"resource_type": INCIDENT_RESOURCE_TACTICAL_GROUP, "resource_id": tactical_group["id"]}
     )
     notification_group.update(
         {
-            "resource_type": INCIDENT_NOTIFICATIONS_GROUP_SLUG,
+            "resource_type": INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
             "resource_id": notification_group["id"],
         }
     )
@@ -171,9 +170,9 @@ def create_participant_groups(
 
 def create_incident_storage(name: str, participant_group_emails: List[str]):
     """Create an external file store for incident storage."""
-    p = plugins.get(INCIDENT_STORAGE_SLUG)
+    p = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
     storage = p.create(name, participant_group_emails)
-    storage.update({"resource_type": INCIDENT_STORAGE_SLUG, "resource_id": storage["id"]})
+    storage.update({"resource_type": INCIDENT_PLUGIN_STORAGE_SLUG, "resource_id": storage["id"]})
     return storage
 
 
@@ -181,7 +180,7 @@ def create_collaboration_documents(
     name: str, incident_type: str, storage_id: str, template_id: int
 ):
     """Create external collaboration document."""
-    p = plugins.get(INCIDENT_STORAGE_SLUG)
+    p = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
 
     document_name = f"{name} - Incident Document"
 
@@ -203,14 +202,14 @@ def create_collaboration_documents(
     document.update(
         {
             "name": document_name,
-            "resource_type": INCIDENT_DOCUMENT_INVESTIGATION_DOCUMENT_SLUG,
+            "resource_type": INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
             "resource_id": document["id"],
         }
     )
     sheet.update(
         {
             "name": sheet_name,
-            "resource_type": INCIDENT_DOCUMENT_INVESTIGATION_SHEET_SLUG,
+            "resource_type": INCIDENT_RESOURCE_INVESTIGATION_SHEET,
             "resource_id": sheet["id"],
         }
     )
@@ -221,11 +220,11 @@ def create_collaboration_documents(
 def create_conversation(incident: Incident, participants: List[str]):
     """Create external communication conversation."""
     # we create the conversation
-    convo_plugin = plugins.get(INCIDENT_CONVERSATION_SLUG)
+    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
     conversation = convo_plugin.create(incident.name, participants)
 
     conversation.update(
-        {"resource_type": INCIDENT_CONVERSATION_SLUG, "resource_id": conversation["name"]}
+        {"resource_type": INCIDENT_PLUGIN_CONVERSATION_SLUG, "resource_id": conversation["name"]}
     )
 
     return conversation
@@ -233,7 +232,7 @@ def create_conversation(incident: Incident, participants: List[str]):
 
 def set_conversation_topic(incident: Incident):
     """Sets the conversation topic."""
-    convo_plugin = plugins.get(INCIDENT_CONVERSATION_SLUG)
+    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
     conversation_topic = f":helmet_with_white_cross: {incident.commander.name} - Type: {incident.incident_type.name} - Priority: {incident.incident_priority.name} - Status: {incident.status}"
     convo_plugin.set_topic(incident.conversation.channel_id, conversation_topic)
 
@@ -255,7 +254,7 @@ def update_document(
     form_weblink: str = None,
 ):
     """Update external collaboration document."""
-    p = plugins.get(INCIDENT_DOCUMENT_SLUG)
+    p = plugins.get(INCIDENT_PLUGIN_DOCUMENT_SLUG)
     p.update(
         document_id,
         name=name,
@@ -285,7 +284,7 @@ def update_incident_status(db_session, incident: Incident, status: str):
 
 def add_participant_to_conversation(conversation_id: str, participant_email: str):
     """Adds a participant to the conversation."""
-    convo_plugin = plugins.get(INCIDENT_CONVERSATION_SLUG)
+    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
     convo_plugin.add(conversation_id, [participant_email])
 
 
@@ -294,10 +293,12 @@ def add_participant_to_tactical_group(user_email: str, incident_id: int, db_sess
     """Adds participant to the tactical group."""
     # we get the tactical group
     tactical_group = get_group(
-        db_session=db_session, incident_id=incident_id, resource_type=INCIDENT_TACTICAL_GROUP_SLUG
+        db_session=db_session,
+        incident_id=incident_id,
+        resource_type=INCIDENT_RESOURCE_TACTICAL_GROUP,
     )
 
-    p = plugins.get(INCIDENT_GROUP_SLUG)
+    p = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
     p.add(tactical_group.email, [user_email])
 
     log.debug(f"{user_email} has been added to tactical group {tactical_group.email}")
@@ -391,7 +392,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         "name": "Incident FAQ",
         "resource_id": INCIDENT_FAQ_DOCUMENT_ID,
         "weblink": f"https://docs.google.com/document/d/{INCIDENT_FAQ_DOCUMENT_ID}",
-        "resource_type": INCIDENT_DOCUMENT_FAQ_DOCUMENT_SLUG,
+        "resource_type": INCIDENT_RESOURCE_FAQ_DOCUMENT,
     }
 
     for d in [incident_document, incident_sheet, faq_document]:
@@ -487,7 +488,7 @@ def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     if incident.status == IncidentStatus.active:
         if command:
-            convo_plugin = plugins.get(INCIDENT_CONVERSATION_SLUG)
+            convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
             convo_plugin.send_ephemeral(
                 command["channel_id"],
                 command["user_id"],
@@ -535,7 +536,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     if incident.status == IncidentStatus.stable:
         if command:
-            convo_plugin = plugins.get(INCIDENT_CONVERSATION_SLUG)
+            convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
             convo_plugin.send_ephemeral(
                 command["channel_id"],
                 command["user_id"],
@@ -578,24 +579,24 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     incident_review_document = get_document(
         db_session=db_session,
         incident_id=incident.id,
-        resource_type=INCIDENT_DOCUMENT_INCIDENT_REVIEW_DOCUMENT_SLUG,
+        resource_type=INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
     )
 
     if not incident_review_document:
-        storage_plugin = plugins.get(INCIDENT_STORAGE_SLUG)
+        storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
 
         # we create a copy of the incident review document template and we move it to the incident storage
         incident_review_document_name = f"{incident.name} - Post Incident Review Document"
         incident_review_document = storage_plugin.copy_file(
-            team_drive_id=INCIDENT_STORAGE_DRIVE_ID_SLUG,
-            file_id=INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID_SLUG,
+            team_drive_id=incident.storage.resource_id,
+            file_id=INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID,
             name=incident_review_document_name,
         )
 
         incident_review_document.update(
             {
                 "name": incident_review_document_name,
-                "resource_type": INCIDENT_DOCUMENT_INCIDENT_REVIEW_DOCUMENT_SLUG,
+                "resource_type": INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
             }
         )
 
@@ -624,7 +625,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
         incident_document = get_document(
             db_session=db_session,
             incident_id=incident_id,
-            resource_type=INCIDENT_DOCUMENT_INVESTIGATION_DOCUMENT_SLUG,
+            resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
         )
 
         # we update the incident review document
@@ -668,7 +669,7 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     if incident.status == IncidentStatus.active:
         # we run the stable flow and let the user know
         if command:
-            convo_plugin = plugins.get(INCIDENT_CONVERSATION_SLUG)
+            convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
             convo_plugin.send_ephemeral(
                 command["channel_id"],
                 command["user_id"],
@@ -691,7 +692,7 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     log.debug(f"We have updated the cost of the incident.")
 
     # we archive the conversation
-    convo_plugin = plugins.get(INCIDENT_CONVERSATION_SLUG)
+    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
     convo_plugin.archive(incident.conversation.channel_id)
     log.debug("We have archived the incident conversation.")
 
@@ -709,10 +710,10 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     log.debug(f"We have updated the status of the external ticket to {IncidentStatus.closed}.")
 
     # we archive the artifacts in the storage
-    storage_plugin = plugins.get(INCIDENT_STORAGE_SLUG)
+    storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
     storage_plugin.archive(
         source_team_drive_id=incident.storage.resource_id,
-        dest_team_drive_id=INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID_SLUG,
+        dest_team_drive_id=INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID,
         folder_name=incident.name,
     )
     log.debug(
@@ -721,17 +722,19 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     # we get the tactical group
     tactical_group = get_group(
-        db_session=db_session, incident_id=incident_id, resource_type=INCIDENT_TACTICAL_GROUP_SLUG
+        db_session=db_session,
+        incident_id=incident_id,
+        resource_type=INCIDENT_RESOURCE_TACTICAL_GROUP,
     )
 
     # we get the notifications group
     notifications_group = get_group(
         db_session=db_session,
         incident_id=incident_id,
-        resource_type=INCIDENT_NOTIFICATIONS_GROUP_SLUG,
+        resource_type=INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
     )
 
-    group_plugin = plugins.get(INCIDENT_GROUP_SLUG)
+    group_plugin = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
     group_plugin.delete(email=tactical_group.email)
     group_plugin.delete(email=notifications_group.email)
     log.debug("We have deleted the notification and tactical groups.")
@@ -805,7 +808,7 @@ def incident_edit_flow(user_email: str, incident_id: int, action: dict, db_sessi
     incident_document = get_document(
         db_session=db_session,
         incident_id=incident_id,
-        resource_type=INCIDENT_DOCUMENT_INVESTIGATION_DOCUMENT_SLUG,
+        resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
     )
 
     # we update the external ticket
@@ -838,12 +841,12 @@ def incident_edit_flow(user_email: str, incident_id: int, action: dict, db_sessi
     notification_group = get_group(
         db_session=db_session,
         incident_id=incident.id,
-        resource_type=INCIDENT_NOTIFICATIONS_GROUP_SLUG,
+        resource_type=INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
     )
     team_participant_emails = [x.email for x in team_participants]
 
     # we add the team distributions lists to the notifications group
-    group_plugin = plugins.get(INCIDENT_GROUP_SLUG)
+    group_plugin = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
     group_plugin.add(notification_group.email, team_participant_emails)
 
     log.debug(f"Resolved and added new participants to the incident.")
@@ -856,11 +859,11 @@ def incident_assign_role_flow(assigner_email: str, incident_id: int, action: dic
     assignee_role = action["submission"]["role"]
 
     # we resolve the assignee's email address
-    convo_plugin = plugins.get(INCIDENT_CONVERSATION_SLUG)
+    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
     assignee_email = convo_plugin.get_participant_email(assignee_user_id)
 
     # we resolve the assigner and assignee's contact information
-    contact_plugin = plugins.get(INCIDENT_CONTACT_PLUGIN_SLUG)
+    contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
     assigner_contact_info = contact_plugin.get(assigner_email)
     assignee_contact_info = contact_plugin.get(assignee_email)
 
@@ -911,7 +914,7 @@ def incident_assign_role_flow(assigner_email: str, incident_id: int, action: dic
         incident_document = get_document(
             db_session=db_session,
             incident_id=incident_id,
-            resource_type=INCIDENT_DOCUMENT_INVESTIGATION_DOCUMENT_SLUG,
+            resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
         )
 
         # we update the external ticket
@@ -961,7 +964,7 @@ def incident_add_or_reactivate_participant_flow(
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # We get information about the individual
-    contact_plugin = plugins.get(INCIDENT_CONTACT_PLUGIN_SLUG)
+    contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
     individual_info = contact_plugin.get(user_email)
 
     participant = participant_service.get_by_incident_id_and_email(

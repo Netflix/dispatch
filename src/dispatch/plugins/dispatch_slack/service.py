@@ -14,9 +14,7 @@ import re
 import slack
 import time
 
-from dispatch.config import INCIDENT_CONVERSATION_APP_USER_SLUG
-
-from .config import SLACK_API_BOT_TOKEN, SLACK_USER_ID_OVERRIDE
+from .config import SLACK_API_BOT_TOKEN, SLACK_USER_ID_OVERRIDE, SLACK_APP_USER_SLUG
 
 
 log = logging.getLogger(__name__)
@@ -367,7 +365,7 @@ def message_filter(message):
 
 def is_user(slack_user: str):
     """Returns true if it's a regular user, false if dispatch bot'."""
-    return slack_user != INCIDENT_CONVERSATION_APP_USER_SLUG
+    return slack_user != SLACK_APP_USER_SLUG
 
 
 def open_dialog_with_user(client: Any, trigger_id: str, dialog: dict):

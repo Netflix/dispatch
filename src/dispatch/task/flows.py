@@ -10,7 +10,7 @@ import logging
 from collections import defaultdict
 from datetime import datetime
 
-from dispatch.config import INCIDENT_EMAIL_SLUG
+from dispatch.config import INCIDENT_PLUGIN_EMAIL_SLUG
 from dispatch.messaging import INCIDENT_TASK_REMINDER
 from dispatch.plugins.base import plugins
 
@@ -28,7 +28,7 @@ def group_tasks_by_assignee(tasks):
 def create_reminder(db_session, assignee, tasks):
     """Contains the logic for incident task reminders."""
     # send email
-    email_plugin = plugins.get(INCIDENT_EMAIL_SLUG)
+    email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
     message_template = INCIDENT_TASK_REMINDER
 
     notification_type = "incident-task-reminder"
@@ -38,7 +38,7 @@ def create_reminder(db_session, assignee, tasks):
 
     # We currently think DM's might be too agressive
     # send slack
-    # convo_plugin = plugins.get(INCIDENT_CONVERSATION_SLUG)
+    # convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
     # convo_plugin.send_direct(
     #    assignee, notification_text, message_template, notification_type, items=tasks
     # )
