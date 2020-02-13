@@ -10,6 +10,7 @@ By default Dispatch ships with Jira support; each Jira installation is unqiue so
 
 > Password for the Jira service account.
 
-#### `JIRA_USERNAME` [secret: True]
+#### `JIRA_USERNAME` \[secret: True\]
 
 > Password for the Jira service account.
+

@@ -1,0 +1,23 @@
+# Table of contents
+
+* [README](README.md)
+* [docs](docs/README.md)
+  * [Upgrading](docs/upgrading.md)
+  * [FAQ](docs/faq.md)
+  * [Changelog](docs/changelog.md)
+  * [configuration](docs/configuration/README.md)
+    * [plugins](docs/configuration/plugins/README.md)
+      * [Configuring PagerDuty](docs/configuration/plugins/pagerduty.md)
+      * [Configuring GSuite](docs/configuration/plugins/google.md)
+      * [Configuring Slack](docs/configuration/plugins/slack.md)
+      * [Configuring Jira](docs/configuration/plugins/jira.md)
+    * [Configuring Dispatch](docs/configuration/configuration.md)
+  * [Command Line Interface](docs/command-line-interface.md)
+  * [Security](docs/security.md)
+  * [Table of contents](docs/SUMMARY.md)
+  * [User Guide](docs/user-guide.md)
+  * [Installation](docs/installation.md)
+  * [License](docs/license.md)
+  * [Plugins](docs/plugins.md)
+  * [Contributing](docs/development.md)
+
