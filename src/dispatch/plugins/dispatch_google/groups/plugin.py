@@ -15,9 +15,7 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import ParticipantGroupPlugin
 from dispatch.plugins.dispatch_google import groups as google_group_plugin
 from dispatch.plugins.dispatch_google.common import get_service
-from dispatch.plugins.dispatch_google.config import GOOGLE_USER_OVERRIDE
-
-from .config import GOOGLE_DOMAIN
+from dispatch.plugins.dispatch_google.config import GOOGLE_USER_OVERRIDE, GOOGLE_DOMAIN
 
 log = logging.getLogger(__name__)
 

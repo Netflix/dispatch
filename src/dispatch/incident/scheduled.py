@@ -3,10 +3,10 @@ from datetime import datetime
 from schedule import every
 
 from dispatch.config import (
-    INCIDENT_CONVERSATION_SLUG,
+    INCIDENT_PLUGIN_CONVERSATION_SLUG,
     INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID,
     INCIDENT_NOTIFICATION_CONVERSATIONS,
-    INCIDENT_TICKET_PLUGIN_SLUG,
+    INCIDENT_PLUGIN_TICKET_SLUG,
 )
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.decorators import background_task
@@ -47,7 +47,7 @@ def status_report_reminder(db_session=None):
     """Sends status report reminders to active incident commanders."""
     incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active)
 
-    convo_plugin = plugins.get(INCIDENT_CONVERSATION_SLUG)
+    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
     status_report_command = convo_plugin.get_command_name(ConversationCommands.status_report)
 
     for incident in incidents:
@@ -211,7 +211,7 @@ def daily_summary(db_session=None):
         }
     )
 
-    convo_plugin = plugins.get(INCIDENT_CONVERSATION_SLUG)
+    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
     for c in INCIDENT_NOTIFICATION_CONVERSATIONS:
         convo_plugin.send(c, "Incident Daily Summary", {}, "", blocks=blocks)
 
@@ -234,7 +234,7 @@ def active_incidents_cost(db_session=None):
 
             if incident.ticket.resource_id:
                 # we update the external ticket
-                ticket_plugin = plugins.get(INCIDENT_TICKET_PLUGIN_SLUG)
+                ticket_plugin = plugins.get(INCIDENT_PLUGIN_TICKET_SLUG)
                 ticket_plugin.update(
                     incident.ticket.resource_id,
                     cost=incident_cost,
