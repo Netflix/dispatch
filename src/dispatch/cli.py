@@ -176,9 +176,9 @@ def incident_load_csv_command(input, first_row_is_header):
 #    from dispatch.ticket import service as ticket_service
 #    from dispatch.conversation import service as conversation_service
 #    from dispatch.config import (
-#        INCIDENT_DOCUMENT_INVESTIGATION_DOCUMENT_SLUG,
-#        INCIDENT_CONVERSATION_SLUG,
-#        INCIDENT_TICKET_PLUGIN_SLUG,
+#        INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
+#        INCIDENT_PLUGIN_CONVERSATION_SLUG,
+#        INCIDENT_PLUGIN_TICKET_SLUG,
 #    )
 #    from dispatch.document import service as document_service
 #    from dispatch.document.models import DocumentCreate
@@ -256,7 +256,7 @@ def incident_load_csv_command(input, first_row_is_header):
 #                        incident_document_weblink = m_link
 #
 #                ticket = {
-#                    "resource_type": INCIDENT_TICKET_PLUGIN_SLUG,
+#                    "resource_type": INCIDENT_PLUGIN_TICKET_SLUG,
 #                    "weblink": f"{JIRA_URL}/projects/SEC/{incident_name}",
 #                }
 #                ticket_obj = ticket_service.create(db_session=db_session, **ticket)
@@ -266,7 +266,7 @@ def incident_load_csv_command(input, first_row_is_header):
 #                    document_in = DocumentCreate(
 #                        name=f"{incident_name} - Investigation Document",
 #                        resource_id=incident_document_weblink.split("/")[-2],
-#                        resource_type=INCIDENT_DOCUMENT_INVESTIGATION_DOCUMENT_SLUG,
+#                        resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
 #                        weblink=incident_document_weblink,
 #                    )
 #
@@ -281,7 +281,7 @@ def incident_load_csv_command(input, first_row_is_header):
 #                    conversation_obj = conversation_service.create(
 #                        db_session=db_session,
 #                        resource_id=incident_name.lower(),
-#                        resource_type=INCIDENT_CONVERSATION_SLUG,
+#                        resource_type=INCIDENT_PLUGIN_CONVERSATION_SLUG,
 #                        weblink=conversation_weblink,
 #                        channel_id=incident_name.lower(),
 #                    )

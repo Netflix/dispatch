@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from starlette.requests import Request
 from starlette.responses import Response
 
-from dispatch.config import INCIDENT_CONTACT_PLUGIN_SLUG
+from dispatch.config import INCIDENT_PLUGIN_CONTACT_SLUG
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.conversation.service import get_by_channel_id
 from dispatch.database import get_db, SessionLocal
@@ -236,7 +236,7 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
         db_session=db_session, incident_id=incident_id
     )
 
-    contact_plugin = plugins.get(INCIDENT_CONTACT_PLUGIN_SLUG)
+    contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
 
     for participant in participants:
         if participant.is_active:

@@ -7,8 +7,6 @@ from fastapi.encoders import jsonable_encoder
 from dispatch.config import (
     ANNUAL_COST_EMPLOYEE,
     BUSINESS_HOURS_YEAR,
-    ENV,
-    INCIDENT_ONCALL_PLUGIN_SLUG,
 )
 from dispatch.database import SessionLocal
 from dispatch.incident_priority import service as incident_priority_service
@@ -39,8 +37,6 @@ def resolve_incident_commander_email(
 ):
     """Resolve the correct incident commander email based on given parameters."""
     if incident_priority == IncidentPriorityType.info:
-        return reporter_email
-    elif ENV == "test":
         return reporter_email
 
     commander_service = incident_type_service.get_by_name(
