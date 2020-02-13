@@ -32,7 +32,7 @@ def test_get_all(session, service):
 
 def test_create(session):
     from dispatch.service.service import create
-    from dispatch.models import ServiceCreate
+    from dispatch.service.models import ServiceCreate
 
     name = "createName"
     service_in = ServiceCreate(name=name)
@@ -44,7 +44,7 @@ def test_create(session):
 @pytest.mark.skip()
 def test_update(session, service):
     from dispatch.service.service import update
-    from dispatch.models import ServiceUpdate
+    from dispatch.service.models import ServiceUpdate
 
     name = "nameUpdate"
     service_in = ServiceUpdate(name=name)
