@@ -11,11 +11,11 @@ import logging
 from schedule import every
 
 from dispatch.config import (
-    INCIDENT_CONVERSATION_SLUG,
-    INCIDENT_DOCUMENT_INCIDENT_REVIEW_DOCUMENT_SLUG,
-    INCIDENT_DOCUMENT_INVESTIGATION_DOCUMENT_SLUG,
-    INCIDENT_TASK_PLUGIN_SLUG,
-    INCIDENT_TASK_SLUG,
+    INCIDENT_PLUGIN_CONVERSATION_SLUG,
+    INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
+    INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
+    INCIDENT_PLUGIN_TASK_SLUG,
+    INCIDENT_RESOURCE_INCIDENT_TASK,
 )
 from dispatch.decorators import background_task
 from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
@@ -61,12 +61,12 @@ def sync_tasks(db_session=None):
     incidents = active_incidents + stable_incidents
 
     # we create an instance of the drive task plugin
-    drive_task_plugin = plugins.get(INCIDENT_TASK_PLUGIN_SLUG)
+    drive_task_plugin = plugins.get(INCIDENT_PLUGIN_TASK_SLUG)
 
     for incident in incidents:
         for doc_type in [
-            INCIDENT_DOCUMENT_INVESTIGATION_DOCUMENT_SLUG,
-            INCIDENT_DOCUMENT_INCIDENT_REVIEW_DOCUMENT_SLUG,
+            INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
+            INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
         ]:
             # we get the document object
             document = get_document(
@@ -109,7 +109,7 @@ def sync_tasks(db_session=None):
                             # we send a notification to the incident conversation
                             notification_text = "Incident Notification"
                             notification_type = "incident-notification"
-                            convo_plugin = plugins.get(INCIDENT_CONVERSATION_SLUG)
+                            convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
                             convo_plugin.send(
                                 incident.conversation.channel_id,
                                 notification_text,
@@ -128,7 +128,7 @@ def sync_tasks(db_session=None):
                         description=description,
                         status=status,
                         resource_id=resource_id,
-                        resource_type=INCIDENT_TASK_SLUG,
+                        resource_type=INCIDENT_RESOURCE_INCIDENT_TASK,
                         weblink=weblink,
                     )
                     incident.tasks.append(task)
@@ -138,7 +138,7 @@ def sync_tasks(db_session=None):
                     # we send a notification to the incident conversation
                     notification_text = "Incident Notification"
                     notification_type = "incident-notification"
-                    convo_plugin = plugins.get(INCIDENT_CONVERSATION_SLUG)
+                    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
                     convo_plugin.send(
                         incident.conversation.channel_id,
                         notification_text,

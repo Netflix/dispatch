@@ -19,7 +19,7 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from .config import GOOGLE_DOMAIN
+from dispatch.plugins.dispatch_google.config import GOOGLE_DOMAIN
 
 log = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 import logging
 
-from dispatch.config import INCIDENT_CONVERSATION_SLUG
+from dispatch.config import INCIDENT_PLUGIN_CONVERSATION_SLUG
 from dispatch.database import SessionLocal
 from dispatch.decorators import background_task
 from dispatch.incident import service as incident_service
@@ -55,7 +55,7 @@ def send_most_recent_status_report_to_conversation(incident_id: int, db_session:
     status_report = get_most_recent_by_incident_id(db_session=db_session, incident_id=incident_id)
 
     # we send the status report to the conversation
-    convo_plugin = plugins.get(INCIDENT_CONVERSATION_SLUG)
+    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
     convo_plugin.send(
         incident.conversation.channel_id,
         "Incident Status Report",

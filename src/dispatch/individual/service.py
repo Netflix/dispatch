@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi.encoders import jsonable_encoder
 
-from dispatch.config import DISPATCH_DOMAIN, INCIDENT_CONTACT_PLUGIN_SLUG
+from dispatch.config import INCIDENT_PLUGIN_CONTACT_SLUG
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.plugins.base import plugins
@@ -13,13 +13,8 @@ from .models import IndividualContact, IndividualContactCreate, IndividualContac
 
 def resolve_user_by_email(email):
     """Resolves a user's details given their email."""
-    p = plugins.get(INCIDENT_CONTACT_PLUGIN_SLUG)
+    p = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
     return p.get(email)
-
-
-def resolve_user_by_username(username: str):
-    """Resolves a user's details given their username."""
-    return resolve_user_by_email(f"{username}@{DISPATCH_DOMAIN}")
 
 
 def get(*, db_session, individual_contact_id: int) -> Optional[IndividualContact]:
@@ -44,7 +39,7 @@ def get_or_create(*, db_session, email: str, **kwargs) -> IndividualContact:
     contact = get_by_email(db_session=db_session, email=email)
 
     if not contact:
-        contact_plugin = plugins.get(INCIDENT_CONTACT_PLUGIN_SLUG)
+        contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
         individual_info = contact_plugin.get(email)
         kwargs["email"] = individual_info["email"]
         kwargs["name"] = individual_info["fullname"]

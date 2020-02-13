@@ -1,6 +1,6 @@
 import logging
 
-from dispatch.config import INCIDENT_CONTACT_PLUGIN_SLUG
+from dispatch.config import INCIDENT_PLUGIN_CONTACT_SLUG
 from dispatch.database import SessionLocal
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
@@ -51,7 +51,7 @@ def remove_participant(user_email: str, incident_id: int, db_session: SessionLoc
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # We get information about the individual
-    contact_plugin = plugins.get(INCIDENT_CONTACT_PLUGIN_SLUG)
+    contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
     individual_info = contact_plugin.get(user_email)
     individual_fullname = individual_info["fullname"]
 
@@ -95,7 +95,7 @@ def reactivate_participant(user_email: str, incident_id: int, db_session: Sessio
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # We get information about the individual
-    contact_plugin = plugins.get(INCIDENT_CONTACT_PLUGIN_SLUG)
+    contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
     individual_info = contact_plugin.get(user_email)
     individual_fullname = individual_info["fullname"]
 
