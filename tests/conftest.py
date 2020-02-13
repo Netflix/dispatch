@@ -21,10 +21,9 @@ environ["JWKS_URL"] = "example.com"
 environ["METRIC_PROVIDERS"] = ""  # TODO move this to the default
 environ["STATIC_DIR"] = ""  # we don't need static files for tests
 
-
-from dispatch.main import app
 from dispatch import config
 from dispatch.database import Base, engine, SessionLocal
+from dispatch.main import app
 
 from .factories import (
     ApplicationFactory,
@@ -32,11 +31,12 @@ from .factories import (
     DefinitionFactory,
     DocumentFactory,
     GroupFactory,
-    IncidentTypeFactory,
+    IncidentFactory,
     IncidentPriorityFactory,
+    IncidentTypeFactory,
     IndividualContactFactory,
-    ParticipantRoleFactory,
     ParticipantFactory,
+    ParticipantRoleFactory,
     PolicyFactory,
     RecommendationAccuracyFactory,
     RecommendationFactory,
@@ -321,3 +321,8 @@ def term(session):
 @pytest.fixture
 def ticket(session):
     return TicketFactory()
+
+
+@pytest.fixture
+def incident(session):
+    return IncidentFactory()
