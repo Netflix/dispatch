@@ -4,7 +4,7 @@
 
 ## What's Dispatch?
 
-Okay, but what is Dispatch? Put simply, Dispatch is:
+Put simply, Dispatch is:
 
 > All of the ad-hoc things you’re doing to manage incidents today, done for you, and a bunch of other things you should've been doing, but have not had the time!
 
