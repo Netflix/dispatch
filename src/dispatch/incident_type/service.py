@@ -53,11 +53,13 @@ def update(
         template_document = document_service.get(
             db_session=db_session, document_id=incident_type_in.template_document.id
         )
+        incident_type.template_document = template_document
 
     if incident_type_in.commander_service:
         commander_service = service_service.get(
             db_session=db_session, service_id=incident_type_in.commander_service.id
         )
+        incident_type.commander_service = commander_service
 
     incident_type_data = jsonable_encoder(incident_type)
 
@@ -68,9 +70,6 @@ def update(
     for field in incident_type_data:
         if field in update_data:
             setattr(incident_type, field, update_data[field])
-
-    incident_type.commander_service = commander_service
-    incident_type.template_document = template_document
 
     db_session.add(incident_type)
     db_session.commit()
