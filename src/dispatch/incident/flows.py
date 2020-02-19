@@ -31,6 +31,7 @@ from dispatch.config import (
     INCIDENT_PLUGIN_TICKET_SLUG,
 )
 from dispatch.conversation import service as conversation_service
+from dispatch.conversation.models import ConversationCreate
 from dispatch.decorators import background_task
 from dispatch.document import service as document_service
 from dispatch.document.models import DocumentCreate
@@ -417,13 +418,18 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     log.debug("Conversation created. Participants and bots added.")
 
-    incident.conversation = conversation_service.create(
-        db_session=db_session,
+    conversation_in = ConversationCreate(
         resource_id=conversation["resource_id"],
         resource_type=conversation["resource_type"],
         weblink=conversation["weblink"],
         channel_id=conversation["id"],
     )
+    incident.conversation = conversation_service.create(
+        db_session=db_session, conversation_in=conversation_in
+    )
+
+    log.debug("Added conversation to incident.")
+
     db_session.add(incident)
     db_session.commit()
 
