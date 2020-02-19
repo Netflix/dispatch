@@ -11,7 +11,7 @@ from .models import Document, DocumentCreate, DocumentUpdate
 
 def get(*, db_session, document_id: int) -> Optional[Document]:
     """Returns a document based on the given document id."""
-    return db_session.query(Document).filter(Document.id == document_id).first()
+    return db_session.query(Document).filter(Document.id == document_id).one_or_none()
 
 
 def get_by_incident_id_and_resource_type(
