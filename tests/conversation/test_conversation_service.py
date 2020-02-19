@@ -1,6 +1,13 @@
 import pytest
 
 
+def test_get_conversation(session, conversation):
+    from dispatch.conversation.service import get
+
+    t_conversation = get(db_session=session, conversation_id=conversation.id)
+    assert t_conversation.id == conversation.id
+
+
 def test_get_by_channel_id(session, conversation):
     from dispatch.conversation.service import get_by_channel_id
 
@@ -29,3 +36,10 @@ def test_create(session):
     )
     conversation = create(db_session=session, conversation_in=conversation_in)
     assert conversation
+
+
+def test_delete(session, conversation):
+    from dispatch.conversation.service import delete, get
+
+    delete(db_session=session, conversation_id=conversation.id)
+    assert not get(db_session=session, conversation_id=conversation.id)
