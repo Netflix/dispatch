@@ -8,13 +8,15 @@ from .models import IncidentPriority, IncidentPriorityCreate, IncidentPriorityUp
 def get(*, db_session, incident_priority_id: int) -> Optional[IncidentPriority]:
     """Returns an incident priority based on the given priority id."""
     return (
-        db_session.query(IncidentPriority).filter(IncidentPriority.id == incident_priority_id).one()
+        db_session.query(IncidentPriority)
+        .filter(IncidentPriority.id == incident_priority_id)
+        .one_or_none()
     )
 
 
 def get_by_name(*, db_session, name: str) -> Optional[IncidentPriority]:
     """Returns an incident priority based on the given priority name."""
-    return db_session.query(IncidentPriority).filter(IncidentPriority.name == name).one()
+    return db_session.query(IncidentPriority).filter(IncidentPriority.name == name).one_or_none()
 
 
 def get_all(*, db_session) -> List[Optional[IncidentPriority]]:
