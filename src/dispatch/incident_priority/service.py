@@ -35,7 +35,7 @@ def create(*, db_session, incident_priority_in: IncidentPriorityCreate) -> Incid
 def update(
     *, db_session, incident_priority: IncidentPriority, incident_priority_in: IncidentPriorityUpdate
 ) -> IncidentPriority:
-    """Updates an incident_priority."""
+    """Updates an incident priority."""
     incident_priority_data = jsonable_encoder(incident_priority)
     update_data = incident_priority_in.dict(skip_defaults=True)
 
@@ -49,6 +49,6 @@ def update(
 
 
 def delete(*, db_session, incident_priority_id: int):
-    """Deletes an incident_priority."""
+    """Deletes an incident priority."""
     db_session.query(IncidentPriority).filter(IncidentPriority.id == incident_priority_id).delete()
     db_session.commit()
