@@ -16,7 +16,7 @@ from dispatch.conversation.enums import ConversationCommands
 from dispatch.decorators import apply, counter, timer
 from dispatch.exceptions import DispatchPluginException
 from dispatch.plugins import dispatch_slack as slack_plugin
-from dispatch.plugins.bases import ConversationPlugin, DocumentPlugin
+from dispatch.plugins.bases import ConversationPlugin, DocumentPlugin, ContactPlugin
 
 from .config import (
     SLACK_API_BOT_TOKEN,
@@ -41,6 +41,7 @@ from .service import (
     get_user_avatar_url,
     get_user_email,
     get_user_info_by_id,
+    get_user_info_by_email,
     get_user_username,
     list_conversation_messages,
     list_conversations,
@@ -175,6 +176,37 @@ class SlackConversationPlugin(ConversationPlugin):
     def get_command_name(self, command: str):
         """Gets the command name."""
         return command_mappings.get(command, [])
+
+
+@apply(counter, exclude=["__init__"])
+@apply(timer, exclude=["__init__"])
+class SlackContactPlugin(ContactPlugin):
+    title = "Slack - Contact"
+    slug = "slack-contact"
+    description = "Uses slack to resolve user details."
+    version = slack_plugin.__version__
+
+    author = "Kevin Glisson"
+    author_url = "https://github.com/netflix/dispatch.git"
+
+    def __init__(self):
+        self.client = slack.WebClient(token=SLACK_API_BOT_TOKEN)
+
+    def get(self, email: str):
+        """Fetch user info about email."""
+        info = get_user_info_by_email(self.client, email)
+        profile = info["profile"]
+
+        return {
+            "fullname": profile["real_name"],
+            "email": profile["email"],
+            "title": "",
+            "team": "",
+            "department": "",
+            "location": info["tz"],
+            "weblink": "",
+            "thumbnail": profile["image_512"],
+        }
 
 
 class SlackDocumentPlugin(DocumentPlugin):
