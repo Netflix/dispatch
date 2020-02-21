@@ -251,7 +251,7 @@ class ParticipantRoleFactory(BaseFactory):
     """Participant Factory."""
 
     assume_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
-    renouce_at = None
+    renounce_at = None
     role = FuzzyChoice(["Incident Commander", "Reporter"])
 
     class Meta:
@@ -273,7 +273,7 @@ class ParticipantFactory(BaseFactory):
 
     is_active = True
     active_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
-    participant_role = SubFactory(ParticipantRoleFactory)
+    inactive_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
 
     class Meta:
         """Factory Configuration."""
@@ -289,6 +289,14 @@ class ParticipantFactory(BaseFactory):
             self.incident_id = extracted.id
 
     @post_generation
+    def individual_contact(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.individual_contact_id = extracted.id
+
+    @post_generation
     def team(self, create, extracted, **kwargs):
         if not create:
             return
@@ -297,12 +305,22 @@ class ParticipantFactory(BaseFactory):
             self.team_id = extracted.id
 
     @post_generation
+    def participant_roles(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for participant_role in extracted:
+                self.participant_roles.append(participant_role)
+
+    @post_generation
     def status_reports(self, create, extracted, **kwargs):
         if not create:
             return
 
-        for report in extracted:
-            self.status_reports.append(report)
+        if extracted:
+            for report in extracted:
+                self.status_reports.append(report)
 
 
 class PolicyFactory(BaseFactory):
