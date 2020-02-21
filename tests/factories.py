@@ -210,7 +210,7 @@ class GroupFactory(ResourceBaseFactory):
 class IncidentPriorityFactory(BaseFactory):
     """Incident Priority Factory."""
 
-    name = FuzzyChoice(["High", "Medium", "Low", "Info"])
+    name = FuzzyText()
     description = FuzzyText()
 
     class Meta:
@@ -222,8 +222,9 @@ class IncidentPriorityFactory(BaseFactory):
 class IncidentTypeFactory(BaseFactory):
     """Incident Type Factory."""
 
-    name = FuzzyChoice(["Brand", "Business Data", "Customer Data"])
+    name = FuzzyText()
     description = FuzzyText()
+    slug = FuzzyText()
 
     class Meta:
         """Factory Configuration."""

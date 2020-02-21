@@ -109,7 +109,7 @@ RUN set -x \
     && apt-get update \
     && apt-get install -y --no-install-recommends $buildDeps \
     # remove internal index when internal plugins are seperated
-    && pip install -i https://smartiproxy.mgmt.netflix.net/pypi /tmp/dist/*.whl \  
+    && pip install /tmp/dist/*.whl \  
     && apt-get purge -y --auto-remove $buildDeps \
     # We install run-time dependencies strictly after
     # build dependencies to prevent accidental collusion.
