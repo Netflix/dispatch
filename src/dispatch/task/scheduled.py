@@ -45,7 +45,7 @@ def create_task_reminders(db_session=None):
 
 
 def sync_tasks(db_session, incidents, notify: bool = False):
-    """Sendings task update notifications to incident channels."""
+    """Syncs tasks and sends update notifications to incident channels."""
     drive_task_plugin = plugins.get(INCIDENT_PLUGIN_TASK_SLUG)
     for incident in incidents:
         for doc_type in [
@@ -78,7 +78,7 @@ def sync_tasks(db_session, incidents, notify: bool = False):
 @scheduler.add(every(1).day, name="incident-daily-task-sync")
 @background_task
 def daily_sync_task(db_session=None):
-    """Sync alls incident tasks daily."""
+    """Syncs all incident tasks daily."""
     incidents = incident_service.get_all(db_session=db_session)
     sync_tasks(db_session, incidents, notify=False)
 
