@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 
@@ -18,24 +18,28 @@ def resolve_user_by_email(email):
 
 
 def get(*, db_session, individual_contact_id: int) -> Optional[IndividualContact]:
+    """Returns an individual given an individual id."""
     return (
         db_session.query(IndividualContact)
         .filter(IndividualContact.id == individual_contact_id)
-        .first()
+        .one_or_none()
     )
 
 
 def get_by_email(*, db_session, email: str) -> Optional[IndividualContact]:
+    """Returns an individual given an individual email address."""
     return (
         db_session.query(IndividualContact).filter(IndividualContact.email == email).one_or_none()
     )
 
 
-def get_all(*, db_session):
+def get_all(*, db_session) -> List[Optional[IndividualContact]]:
+    """Returns all individuals."""
     return db_session.query(IndividualContact)
 
 
 def get_or_create(*, db_session, email: str, **kwargs) -> IndividualContact:
+    """Gets or creates an individual."""
     contact = get_by_email(db_session=db_session, email=email)
 
     if not contact:
@@ -44,13 +48,14 @@ def get_or_create(*, db_session, email: str, **kwargs) -> IndividualContact:
         kwargs["email"] = individual_info["email"]
         kwargs["name"] = individual_info["fullname"]
         kwargs["weblink"] = individual_info["weblink"]
-        individual_contact = IndividualContactCreate(**kwargs)
-        contact = create(db_session=db_session, individual_contact_in=individual_contact)
+        individual_contact_in = IndividualContactCreate(**kwargs)
+        contact = create(db_session=db_session, individual_contact_in=individual_contact_in)
 
     return contact
 
 
 def create(*, db_session, individual_contact_in: IndividualContactCreate) -> IndividualContact:
+    """Creates an individual."""
     terms = [
         term_service.get_or_create(db_session=db_session, term_in=t)
         for t in individual_contact_in.terms
