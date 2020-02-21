@@ -1,9 +1,11 @@
 from typing import List, Optional
+
 from fastapi.encoders import jsonable_encoder
 
-from .models import Participant, ParticipantCreate, ParticipantUpdate
 from dispatch.individual.models import IndividualContact
 from dispatch.participant_role.models import ParticipantRole
+
+from .models import Participant, ParticipantCreate, ParticipantUpdate
 
 
 def get(*, db_session, participant_id: int) -> Optional[Participant]:
@@ -57,7 +59,7 @@ def get_by_incident_id_and_email(
     )
 
 
-def get_all(*, db_session) -> List[Participant]:
+def get_all(*, db_session) -> List[Optional[Participant]]:
     """
     Get all participants.
     """
@@ -69,7 +71,9 @@ def get_all_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Par
     return db_session.query(Participant).filter(Participant.incident_id == incident_id)
 
 
-def get_or_create(*, db_session, incident_id: int, individual_id: int, role: ParticipantRole):
+def get_or_create(
+    *, db_session, incident_id: int, individual_id: int, role: ParticipantRole
+) -> Participant:
     """Gets an existing participant object or creates a new one."""
     participant = (
         db_session.query(Participant)
