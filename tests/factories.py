@@ -625,3 +625,12 @@ class IncidentFactory(BaseFactory):
         """Factory Configuration."""
 
         model = Incident
+
+    @post_generation
+    def participants(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for participant in extracted:
+                self.participants.append(participant)
