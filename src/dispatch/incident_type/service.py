@@ -1,42 +1,51 @@
-from typing import Optional
+from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 
 from dispatch.document import service as document_service
+from dispatch.document.models import Document
 from dispatch.service import service as service_service
+from dispatch.service.models import Service
 
 from .models import IncidentType, IncidentTypeCreate, IncidentTypeUpdate
 
 
 def get(*, db_session, incident_type_id: int) -> Optional[IncidentType]:
-    return db_session.query(IncidentType).filter(IncidentType.id == incident_type_id).one()
+    """Returns an incident type based on the given type id."""
+    return db_session.query(IncidentType).filter(IncidentType.id == incident_type_id).one_or_none()
 
 
 def get_by_name(*, db_session, name: str) -> Optional[IncidentType]:
-    return db_session.query(IncidentType).filter(IncidentType.name == name).one()
+    """Returns an incident type based on the given type name."""
+    return db_session.query(IncidentType).filter(IncidentType.name == name).one_or_none()
 
 
 def get_by_slug(*, db_session, slug: str) -> Optional[IncidentType]:
-    return db_session.query(IncidentType).filter(IncidentType.slug == slug).one()
+    """Returns an incident type based on the given type slug."""
+    return db_session.query(IncidentType).filter(IncidentType.slug == slug).one_or_none()
 
 
-def get_all(*, db_session):
+def get_all(*, db_session) -> List[Optional[IncidentType]]:
+    """Returns all incident types."""
     return db_session.query(IncidentType)
 
 
 def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
+    """Creates an incident type."""
+    template_document = Document()
     if incident_type_in.template_document:
         template_document = document_service.get(
             db_session=db_session, document_id=incident_type_in.template_document.id
         )
 
+    commander_service = Service()
     if incident_type_in.commander_service:
         commander_service = service_service.get(
             db_session=db_session, service_id=incident_type_in.commander_service.id
         )
 
     incident_type = IncidentType(
-        **incident_type_in.dict(exclude={"commander_service", "template_document"},),
+        **incident_type_in.dict(exclude={"commander_service", "template_document"}),
         commander_service=commander_service,
         template_document=template_document,
     )
@@ -48,7 +57,7 @@ def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
 def update(
     *, db_session, incident_type: IncidentType, incident_type_in: IncidentTypeUpdate
 ) -> IncidentType:
-
+    """Updates an incident type."""
     if incident_type_in.template_document:
         template_document = document_service.get(
             db_session=db_session, document_id=incident_type_in.template_document.id
@@ -74,3 +83,9 @@ def update(
     db_session.add(incident_type)
     db_session.commit()
     return incident_type
+
+
+def delete(*, db_session, incident_type_id: int):
+    """Deletes an incident type."""
+    db_session.query(IncidentType).filter(IncidentType.id == incident_type_id).delete()
+    db_session.commit()
