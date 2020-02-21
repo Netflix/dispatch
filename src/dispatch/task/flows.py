@@ -15,9 +15,12 @@ from dispatch.config import (
     INCIDENT_PLUGIN_CONVERSATION_SLUG,
     INCIDENT_RESOURCE_INCIDENT_TASK,
 )
-from dispatch.messaging import INCIDENT_TASK_REMINDER
+from dispatch.messaging import (
+    INCIDENT_TASK_REMINDER
+    INCIDENT_TASK_NEW_NOTIFICATION, 
+    INCIDENT_TASK_RESOLVED_NOTIFICATION
+)
 from dispatch.plugins.base import plugins
-from dispatch.messaging import INCIDENT_TASK_NEW_NOTIFICATION, INCIDENT_TASK_RESOLVED_NOTIFICATION
 from dispatch.task.models import TaskStatus
 from dispatch.task import service as task_service
 
@@ -73,7 +76,7 @@ def send_task_notification(conversation_id, notification_type, assignees, descri
 
 
 def create_or_update_task(db_session, incident, task: dict, notify: bool = False):
-    """Creates a new task database or updates an existing one."""
+    """Creates a new task in the database or updates an existing one."""
     # TODO we should standarize this interface (kglisson)
     creator = task["owner"]
     assignees = ", ".join(task["assignees"])
