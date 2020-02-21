@@ -106,8 +106,10 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
 
         self.client = get_service("docs", "v1", scopes).documents()
 
-    def update(self, document_id: str, **kwargs):
+    def update(self, document_id: str, raw: bool = False, **kwargs):
         """Replaces text in document."""
         # TODO escape and use f strings? (kglisson)
-        kwargs = {"{{" + k + "}}": v for k, v in kwargs.items()}
+        if not raw:
+            kwargs = {"{{" + k + "}}": v for k, v in kwargs.items()}
+
         return replace_text(self.client, document_id, kwargs)

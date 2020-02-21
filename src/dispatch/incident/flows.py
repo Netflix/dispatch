@@ -493,6 +493,18 @@ def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_se
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
+    # we get the incident document
+    incident_document = get_document(
+        db_session=db_session,
+        incident_id=incident_id,
+        resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
+    )
+
+    # update the incident document
+    document_updates = {f"Status: {incident.status}": f"Status: Active"}
+    document_plugin = plugins.get(INCIDENT_PLUGIN_DOCUMENT_SLUG)
+    document_plugin.update(incident_document.id, document_updates, raw=True)
+
     if incident.status == IncidentStatus.active:
         if command:
             convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
@@ -540,6 +552,18 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     """Runs the incident stable flow."""
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    # we get the incident document
+    incident_document = get_document(
+        db_session=db_session,
+        incident_id=incident_id,
+        resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
+    )
+
+    # update the incident document
+    document_updates = {f"Status: {incident.status}": f"Status: Stable"}
+    document_plugin = plugins.get(INCIDENT_PLUGIN_DOCUMENT_SLUG)
+    document_plugin.update(incident_document.id, document_updates, raw=True)
 
     if incident.status == IncidentStatus.stable:
         if command:
@@ -673,6 +697,18 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
+    # we get the incident document
+    incident_document = get_document(
+        db_session=db_session,
+        incident_id=incident_id,
+        resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
+    )
+
+    # update the incident document
+    document_updates = {f"Status: {incident.status}": f"Status: Closed"}
+    document_plugin = plugins.get(INCIDENT_PLUGIN_DOCUMENT_SLUG)
+    document_plugin.update(incident_document.id, document_updates, raw=True)
+
     if incident.status == IncidentStatus.active:
         # we run the stable flow and let the user know
         if command:
@@ -770,6 +806,7 @@ def incident_edit_flow(user_email: str, incident_id: int, action: dict, db_sessi
     incident.description = incident_description
     log.debug(f"Updated the incident description to {incident_description}.")
 
+    document_updates = {}
     if incident_type != incident.incident_type.name:
         # we update the incident type
         incident_type_obj = incident_type_service.get_by_name(
@@ -777,9 +814,14 @@ def incident_edit_flow(user_email: str, incident_id: int, action: dict, db_sessi
         )
         incident.incident_type_id = incident_type_obj.id
 
-        log.debug(f"Updated the incident type to {incident_type}.")
+        # update related documents with new data
+        document_updates.update(
+            {f"Incident Type: {incident.incident_type.name}": f"Incident Type: {incident_type}",}
+        )
 
         conversation_topic_change = True
+
+        log.debug(f"Updated the incident type to {incident_type}.")
 
     if incident_priority != incident.incident_priority.name:
         # we update the incident priority
@@ -788,9 +830,14 @@ def incident_edit_flow(user_email: str, incident_id: int, action: dict, db_sessi
         )
         incident.incident_priority_id = incident_priority_obj.id
 
-        log.debug(f"Updated the incident priority to {incident_priority}.")
+        # update related documents with new data
+        document_updates.update(
+            {f"Priority: {incident.incident_priority.name}": f"Priority: {incident_priority}",}
+        )
 
         conversation_topic_change = True
+
+        log.debug(f"Updated the incident priority to {incident_priority}.")
 
     if incident_visibility != incident.visibility:
         # we update the incident visibility
@@ -817,6 +864,9 @@ def incident_edit_flow(user_email: str, incident_id: int, action: dict, db_sessi
         incident_id=incident_id,
         resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
     )
+
+    document_plugin = plugins.get(INCIDENT_PLUGIN_DOCUMENT_SLUG)
+    document_plugin.update(incident_document.id, document_updates, raw=True)
 
     # we update the external ticket
     update_incident_ticket(
@@ -877,6 +927,8 @@ def incident_assign_role_flow(assigner_email: str, incident_id: int, action: dic
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
+    old_commander_name = incident.commander.name
+
     # we get the participant object for the assignee
     assignee_participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident.id, email=assignee_contact_info["email"]
@@ -914,6 +966,20 @@ def incident_assign_role_flow(assigner_email: str, incident_id: int, action: dic
         )
 
     if assignee_role == ParticipantRoleType.incident_commander:
+        # we get the incident document
+        incident_document = get_document(
+            db_session=db_session,
+            incident_id=incident_id,
+            resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
+        )
+
+        # update the incident document
+        document_updates = {
+            f"Incident Commander: {old_commander_name}": f"Incident Commander: {incident.commander.name}"
+        }
+        document_plugin = plugins.get(INCIDENT_PLUGIN_DOCUMENT_SLUG)
+        document_plugin.update(incident_document.id, document_updates, raw=True)
+
         # we update the conversation topic
         set_conversation_topic(incident)
 
