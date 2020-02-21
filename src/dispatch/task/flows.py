@@ -17,8 +17,8 @@ from dispatch.config import (
 )
 from dispatch.messaging import (
     INCIDENT_TASK_REMINDER,
-    INCIDENT_TASK_NEW_NOTIFICATION, 
-    INCIDENT_TASK_RESOLVED_NOTIFICATION
+    INCIDENT_TASK_NEW_NOTIFICATION,
+    INCIDENT_TASK_RESOLVED_NOTIFICATION,
 )
 from dispatch.plugins.base import plugins
 from dispatch.task.models import TaskStatus
