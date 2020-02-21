@@ -423,11 +423,10 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         weblink=conversation["weblink"],
         channel_id=conversation["id"],
     )
+
     incident.conversation = conversation_service.create(
         db_session=db_session, conversation_in=conversation_in
     )
-
-    log.debug("Added conversation to incident.")
 
     db_session.add(incident)
     db_session.commit()
