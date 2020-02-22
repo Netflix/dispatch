@@ -275,6 +275,11 @@ def participant(session):
 
 
 @pytest.fixture
+def participants(session):
+    return [ParticipantFactory(), ParticipantFactory()]
+
+
+@pytest.fixture
 def policy(session):
     return PolicyFactory()
 
