@@ -9,10 +9,9 @@ from dispatch.database import SessionLocal
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.incident_type import service as incident_type_service
-from dispatch.individual import service as individual_service
-from dispatch.participant import service as participant_service
+from dispatch.participant import flows as participant_flows
 from dispatch.participant_role import service as participant_role_service
-from dispatch.participant_role.models import ParticipantRoleType
+from dispatch.participant_role.models import ParticipantRoleType, ParticipantRoleCreate
 from dispatch.plugins.base import plugins
 
 from .enums import IncidentStatus
@@ -32,7 +31,7 @@ def resolve_incident_commander_email(
     incident_title: str,
     incident_description: str,
 ):
-    """Resolve the correct incident commander email based on given parameters."""
+    """Resolves the correct incident commander email based on given parameters."""
     if incident_priority == IncidentPriorityType.info:
         return reporter_email
 
@@ -56,20 +55,24 @@ def resolve_incident_commander_email(
 
 
 def get(*, db_session, incident_id: str) -> Optional[Incident]:
+    """Returns an incident based on the given id."""
     return db_session.query(Incident).filter(Incident.id == incident_id).first()
 
 
 def get_by_name(*, db_session, incident_name: str) -> Optional[Incident]:
+    """Returns an incident based on the given name."""
     return db_session.query(Incident).filter(Incident.name == incident_name).first()
 
 
-def get_all(*, db_session) -> Optional[Tuple]:
+def get_all(*, db_session) -> List[Optional[Incident]]:
+    """Returns all incidents."""
     return db_session.query(Incident)
 
 
 def get_all_by_status(
     *, db_session, status: IncidentStatus, skip=0, limit=100
 ) -> List[Optional[Incident]]:
+    """Returns all incidents based on the given status."""
     return (
         db_session.query(Incident).filter(Incident.status == status).offset(skip).limit(limit).all()
     )
@@ -122,79 +125,68 @@ def create(
     status: str,
     description: str,
 ) -> Incident:
-    participants = []
-
-    # TODO should some of this logic be in the incident_create_flow_instead? (kglisson)
-    incident_priority = incident_priority_service.get_by_name(
-        db_session=db_session, name=incident_priority["name"]
-    )
-
+    """Creates a new incident."""
+    # We get the incident type by name
     incident_type = incident_type_service.get_by_name(
         db_session=db_session, name=incident_type["name"]
     )
 
-    commander_email = resolve_incident_commander_email(
-        db_session,
-        reporter_email,
-        incident_type.name,
-        incident_priority.name,
-        "",
-        title,
-        description,
+    # We get the incident priority by name
+    incident_priority = incident_priority_service.get_by_name(
+        db_session=db_session, name=incident_priority["name"]
     )
 
-    commander_info = individual_service.resolve_user_by_email(commander_email)
-
-    incident_commander_role = participant_role_service.create(
-        db_session=db_session, role=ParticipantRoleType.incident_commander
-    )
-
-    commander_participant = participant_service.create(
-        db_session=db_session, participant_role=[incident_commander_role]
-    )
-
-    commander = individual_service.get_or_create(
-        db_session=db_session,
-        email=commander_info["email"],
-        name=commander_info["fullname"],
-        weblink=commander_info["weblink"],
-    )
-
-    incident_reporter_role = participant_role_service.create(
-        db_session=db_session, role=ParticipantRoleType.reporter
-    )
-
-    if reporter_email == commander_email:
-        commander_participant.participant_role.append(incident_reporter_role)
-    else:
-        reporter_participant = participant_service.create(
-            db_session=db_session, participant_role=[incident_reporter_role]
-        )
-        reporter_info = individual_service.resolve_user_by_email(reporter_email)
-        reporter = individual_service.get_or_create(
-            db_session=db_session,
-            email=reporter_info["email"],
-            name=reporter_info["fullname"],
-            weblink=commander_info["weblink"],
-        )
-        reporter.participant.append(reporter_participant)
-        db_session.add(reporter)
-        participants.append(reporter_participant)
-
-    participants.append(commander_participant)
+    # We create the incident
     incident = Incident(
         title=title,
         description=description,
         status=status,
-        incident_priority=incident_priority,
         incident_type=incident_type,
-        participants=participants,
+        incident_priority=incident_priority,
     )
-
-    commander.participant.append(commander_participant)
-    db_session.add(commander)
     db_session.add(incident)
     db_session.commit()
+
+    # We add the reporter to the incident
+    reporter_participant = participant_flows.add_participant(
+        reporter_email, incident.id, db_session, ParticipantRoleType.reporter
+    )
+
+    if incident_priority.name == IncidentPriorityType.info:
+        # NOTE: Info incidents are handled by the reporter
+
+        # We create an incident commander role
+        incident_commander_participant_role_in = ParticipantRoleCreate(
+            role=ParticipantRoleType.incident_commander
+        )
+        incident_commander_role = participant_role_service.create(
+            db_session=db_session, participant_role_in=incident_commander_participant_role_in
+        )
+
+        # We make the reporter the incident commander
+        reporter_participant.participant_role.append(incident_commander_role)
+        db_session.add(reporter_participant)
+        db_session.commit()
+    else:
+        # We resolve the incident commander email
+        incident_commander_email = resolve_incident_commander_email(
+            db_session,
+            reporter_email,
+            incident_type.name,
+            incident_priority.name,
+            incident.name,
+            title,
+            description,
+        )
+
+        # We add the incident commander to the incident
+        participant_flows.add_participant(
+            incident_commander_email,
+            incident.id,
+            db_session,
+            ParticipantRoleType.incident_commander,
+        )
+
     return incident
 
 
@@ -208,11 +200,6 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
     incident_type = incident_type_service.get_by_name(
         db_session=db_session, name=incident_in.incident_type.name
     )
-
-    # TODO find code to add command as participant incident.commander = commander
-    # commander = individual_service.get_by_email(
-    #    db_session=db_session, email=incident_in.commander.email
-    # )
 
     update_data = incident_in.dict(
         skip_defaults=True, exclude={"incident_type", "incident_priority", "commander"}

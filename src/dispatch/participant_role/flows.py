@@ -5,7 +5,7 @@ from dispatch.incident.models import Incident
 from dispatch.participant import service as participant_service
 
 from .models import ParticipantRoleType
-from .service import create, get_active_roles, renounce_role
+from .service import create, get_all_active_roles, renounce_role
 
 log = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ def assign_role_flow(
         renounce_role(
             db_session=db_session,
             participant_id=participant_with_assignee_role.id,
-            role_type=assignee_role,
+            role=assignee_role,
         )
 
         # we create a new role for the participant
@@ -59,7 +59,7 @@ def assign_role_flow(
 
     if assignee_participant:
         # we make the assignee renounce to their current role
-        assignee_participant_active_roles = get_active_roles(
+        assignee_participant_active_roles = get_all_active_roles(
             db_session=db_session, participant_id=assignee_participant.id
         )
 
@@ -68,7 +68,7 @@ def assign_role_flow(
                 renounce_role(
                     db_session=db_session,
                     participant_id=assignee_participant.id,
-                    role_type=active_role.role,
+                    role=active_role.role,
                 )
 
         # we create a new role for the assignee

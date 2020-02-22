@@ -5,7 +5,7 @@ from dispatch.database import SessionLocal
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.participant_role import service as participant_role_service
-from dispatch.participant_role.models import ParticipantRoleType
+from dispatch.participant_role.models import ParticipantRoleType, ParticipantRoleCreate
 from dispatch.plugins.base import plugins
 
 from .service import get_or_create, get_by_incident_id_and_email
@@ -21,15 +21,21 @@ def add_participant(
     # We load the incident
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    # We add the participant to the incident
+    # We get or create a new individual
     individual = individual_service.get_or_create(db_session=db_session, email=user_email)
 
-    participant_role = participant_role_service.create(db_session=db_session, role=role)
+    # We create a role for the participant
+    participant_role_in = ParticipantRoleCreate(role=role)
+    participant_role = participant_role_service.create(
+        db_session=db_session, participant_role_in=participant_role_in
+    )
+
+    # We get or create a new participant
     participant = get_or_create(
         db_session=db_session,
         incident_id=incident.id,
         individual_id=individual.id,
-        role=participant_role,
+        participant_roles=[participant_role],
     )
 
     individual.participant.append(participant)
@@ -77,7 +83,7 @@ def remove_participant(user_email: str, incident_id: int, db_session: SessionLoc
 
     for active_role in participant_active_roles:
         participant_role_service.renounce_role(
-            db_session=db_session, participant_id=participant.id, role_type=active_role.role
+            db_session=db_session, participant_id=participant.id, role=active_role.role
         )
 
     # We add and commit the changes

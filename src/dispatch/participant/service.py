@@ -3,7 +3,8 @@ from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 
 from dispatch.individual.models import IndividualContact
-from dispatch.participant_role.models import ParticipantRole
+from dispatch.participant_role import service as participant_role_service
+from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
 
 from .models import Participant, ParticipantCreate, ParticipantUpdate
 
@@ -72,7 +73,11 @@ def get_all_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Par
 
 
 def get_or_create(
-    *, db_session, incident_id: int, individual_id: int, role: ParticipantRole
+    *,
+    db_session,
+    incident_id: int,
+    individual_id: int,
+    participant_roles: List[ParticipantRoleType]
 ) -> Participant:
     """Gets an existing participant object or creates a new one."""
     participant = (
@@ -83,7 +88,8 @@ def get_or_create(
     )
 
     if not participant:
-        participant = create(db_session=db_session, participant_role=[role])
+        participant_in = ParticipantCreate(participant_role=participant_roles)
+        participant = create(db_session=db_session, participant_in=participant_in)
 
     return participant
 
@@ -92,7 +98,13 @@ def create(*, db_session, participant_in: ParticipantCreate) -> Participant:
     """
     Create a new participant.
     """
-    participant = Participant(**participant_in.dict())
+    participant_roles = [
+        participant_role_service.create(db_session=db_session, participant_role_in=participant_role)
+        for participant_role in participant_in.participant_role
+    ]
+    participant = Participant(
+        **participant_in.dict(exclude={"participant_role"}), participant_role=participant_roles
+    )
     db_session.add(participant)
     db_session.commit()
     return participant
