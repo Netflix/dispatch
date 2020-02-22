@@ -88,11 +88,11 @@ def get_or_create(
     return participant
 
 
-def create(*, db_session, **kwargs) -> Participant:
+def create(*, db_session, participant_in: ParticipantCreate) -> Participant:
     """
     Create a new participant.
     """
-    participant = Participant(**kwargs)
+    participant = Participant(**participant_in.dict())
     db_session.add(participant)
     db_session.commit()
     return participant
