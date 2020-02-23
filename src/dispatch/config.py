@@ -38,6 +38,7 @@ except Exception:
 config = Config(".env")
 
 LOG_LEVEL = config("LOG_LEVEL", default=logging.WARNING)
+ENV = config("ENV", default="local")
 
 DISPATCH_HELP_EMAIL = config("DISPATCH_HELP_EMAIL")
 DISPATCH_HELP_SLACK_CHANNEL = config("DISPATCH_HELP_SLACK_CHANNEL")
