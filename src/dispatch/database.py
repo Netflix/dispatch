@@ -116,6 +116,10 @@ def search_filter_sort_paginate(
 
     sort_spec = create_sort_spec(model, sort_by, descending)
     query = apply_sort(query, sort_spec)
+
+    if items_per_page == -1:
+        items_per_page = None
+
     query, pagination = apply_pagination(query, page_number=page, page_size=items_per_page)
 
     return {
