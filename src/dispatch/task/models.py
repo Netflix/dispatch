@@ -6,7 +6,7 @@ from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, e
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
-from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin
+from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin, IncidentRead
 
 
 # SQLAlchemy models
@@ -74,6 +74,7 @@ class TaskBase(DispatchBase):
     priority: Optional[str]
     description: Optional[str]
     weblink: Optional[str]
+    incident: Optional[IncidentRead]
 
 
 class TaskCreate(TaskBase):

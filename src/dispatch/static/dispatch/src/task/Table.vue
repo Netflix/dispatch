@@ -66,6 +66,9 @@ export default {
   data() {
     return {
       headers: [
+        { text: "Incident Name", value: "incident.name", sortable: false },
+        { text: "Incident Priority", value: "incident.incident_priority.name", sortable: false },
+        { text: "Incident Type", value: "incident.incident_type.name", sortable: false },
         { text: "Status", value: "status", sortable: true },
         { text: "Creator", value: "creator", sortable: true },
         { text: "Assignees", value: "assignees", sortable: false },
@@ -86,7 +89,7 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
-      "table.options.loading",
+      "table.loading",
       "table.rows.items",
       "table.rows.total"
     ])

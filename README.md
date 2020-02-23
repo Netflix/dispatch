@@ -22,7 +22,7 @@ This means you can let Dispatch focus on creating resources, assembling particip
 # Project resources
 
 - [Dispatch Blog Post]()
-- [Documentation](https://kevgliss.gitbook.io/dispatch)
+- [Documentation](https://hawkins.gitbook.io/dispatch)
 - [Source Code](https://github.com/netflix/dispatch)
 - [Issue tracker](https://github.com/netflix/dispatch/issues)
 - [Docker](https://github.com/Netflix/dispatch-docker)
