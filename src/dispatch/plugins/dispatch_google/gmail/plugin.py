@@ -94,15 +94,14 @@ def create_multi_message_body(
 def create_message_body(message_template: dict, message_type: MessageType, **kwargs):
     """Creates the correct message body based on message type."""
     template, description = get_template(message_type)
-    rendered = render_message_template(message_template, **kwargs)
     kwargs.update(
         {
-            "items": rendered,
-            "description": description,
             "dispatch_help_email": DISPATCH_HELP_EMAIL,
             "dispatch_help_slack_channel": DISPATCH_HELP_SLACK_CHANNEL,
         }
     )
+    rendered = render_message_template(message_template, **kwargs)
+    kwargs.update({"items": rendered, "description": description})
     return template.render(**kwargs)
 
 
