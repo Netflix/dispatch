@@ -21,7 +21,7 @@ This means you can let Dispatch focus on creating resources, assembling particip
 
 # Project resources
 
-- [Dispatch Blog Post]()
+- [Dispatch Blog Post](https://medium.com/@NetflixTechBlog/introducing-dispatch-da4b8a2a8072)
 - [Documentation](https://hawkins.gitbook.io/dispatch)
 - [Source Code](https://github.com/netflix/dispatch)
 - [Issue tracker](https://github.com/netflix/dispatch/issues)
