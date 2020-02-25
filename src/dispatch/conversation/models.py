@@ -16,7 +16,10 @@ class Conversation(Base, ResourceMixin):
 
 # Pydantic models...
 class ConversationBase(DispatchBase):
-    pass
+    resource_id: str
+    resource_type: str
+    weblink: str
+    channel_id: str
 
 
 class ConversationCreate(ConversationBase):
@@ -28,7 +31,6 @@ class ConversationUpdate(ConversationBase):
 
 
 class ConversationRead(ConversationBase):
-    weblink: str
     description: Optional[str]
 
     @validator("description", pre=True, always=True)
