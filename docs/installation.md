@@ -10,6 +10,21 @@ Dispatch relies on multiple services to work, which are all orchestrated by `Doc
 - At least 2400MB memory
 - 2 CPU Cores
 
+## Building a Docker Image
+
+The Netflix team builds Docker images to run Dispatch. To run locally, run the
+following from the project root:
+
+```
+docker build -t docker-local .
+```
+
+This is only useful for local development purposes, as you should use the
+published Docker image described in the next section.
+
+Users who do not have network visibility to `smartiproxy.mgmt.netflix.net` will
+not be able to build this image locally.
+
 ## Installing Dispatch Server
 
 We strongly recommend using Docker, for installing Dispatch and all it's services. If you need to to something custom, you can use this repository as the basis of your setup. If you do not wish to use the Docker images we provide, you can still find Dispatch on PyPI. However, we don't recommend that method. You'll need to work your way back from the main Dispatch image. It is not too hard, but you are likely to spend a lot more time and hit some bumps.
