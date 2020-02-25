@@ -22,8 +22,6 @@ docker build -t docker-local .
 This is only useful for local development purposes, as you should use the
 published Docker image described in the next section.
 
-Users who do not have network visibility to `smartiproxy.mgmt.netflix.net` will
-not be able to build this image locally.
 
 ## Installing Dispatch Server
 
