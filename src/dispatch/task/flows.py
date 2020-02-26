@@ -59,7 +59,7 @@ def create_reminder(db_session, assignee, tasks):
         db_session.commit()
 
 
-def send_task_notification(conversation_id, notification_type, assignees, description, weblink):
+def send_task_notification(conversation_id, message_template, assignees, description, weblink):
     """Sends a task notification."""
     # we send a notification to the incident conversation
     notification_text = "Incident Notification"
@@ -68,6 +68,7 @@ def send_task_notification(conversation_id, notification_type, assignees, descri
     convo_plugin.send(
         conversation_id,
         notification_text,
+        message_template,
         notification_type,
         task_assignees=assignees,
         task_description=description,
