@@ -31,12 +31,13 @@ from dispatch.config import (
     INCIDENT_PLUGIN_TICKET_SLUG,
 )
 from dispatch.conversation import service as conversation_service
+from dispatch.conversation.models import ConversationCreate
 from dispatch.decorators import background_task
 from dispatch.document import service as document_service
 from dispatch.document.models import DocumentCreate
 from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
 from dispatch.group import service as group_service
-from dispatch.group.service import get_by_incident_id_and_resource_type as get_group
+from dispatch.group.models import GroupCreate
 from dispatch.incident import service as incident_service
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_priority.models import IncidentPriorityRead
@@ -293,7 +294,7 @@ def add_participant_to_conversation(conversation_id: str, participant_email: str
 def add_participant_to_tactical_group(user_email: str, incident_id: int, db_session=None):
     """Adds participant to the tactical group."""
     # we get the tactical group
-    tactical_group = get_group(
+    tactical_group = group_service.get_by_incident_id_and_resource_type(
         db_session=db_session,
         incident_id=incident_id,
         resource_type=INCIDENT_RESOURCE_TACTICAL_GROUP,
@@ -353,15 +354,14 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     )
 
     for g in [tactical_group, notification_group]:
-        group = group_service.create(
-            db_session=db_session,
+        group_in = GroupCreate(
             name=g["name"],
             email=g["email"],
             resource_type=g["resource_type"],
             resource_id=g["resource_id"],
             weblink=g["weblink"],
         )
-        incident.groups.append(group)
+        incident.groups.append(group_service.create(db_session=db_session, group_in=group_in))
 
     log.debug("Added groups to incident.")
 
@@ -417,13 +417,18 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     log.debug("Conversation created. Participants and bots added.")
 
-    incident.conversation = conversation_service.create(
-        db_session=db_session,
+    conversation_in = ConversationCreate(
         resource_id=conversation["resource_id"],
         resource_type=conversation["resource_type"],
         weblink=conversation["weblink"],
         channel_id=conversation["id"],
     )
+    incident.conversation = conversation_service.create(
+        db_session=db_session, conversation_in=conversation_in
+    )
+
+    log.debug("Added conversation to incident.")
+
     db_session.add(incident)
     db_session.commit()
 
@@ -723,14 +728,14 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     )
 
     # we get the tactical group
-    tactical_group = get_group(
+    tactical_group = group_service.get_by_incident_id_and_resource_type(
         db_session=db_session,
         incident_id=incident_id,
         resource_type=INCIDENT_RESOURCE_TACTICAL_GROUP,
     )
 
     # we get the notifications group
-    notifications_group = get_group(
+    notifications_group = group_service.get_by_incident_id_and_resource_type(
         db_session=db_session,
         incident_id=incident_id,
         resource_type=INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
@@ -840,7 +845,7 @@ def incident_edit_flow(user_email: str, incident_id: int, action: dict, db_sessi
         )
 
     # we get the tactical group
-    notification_group = get_group(
+    notification_group = group_service.get_by_incident_id_and_resource_type(
         db_session=db_session,
         incident_id=incident.id,
         resource_type=INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,

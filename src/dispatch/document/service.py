@@ -10,12 +10,14 @@ from .models import Document, DocumentCreate, DocumentUpdate
 
 
 def get(*, db_session, document_id: int) -> Optional[Document]:
-    return db_session.query(Document).filter(Document.id == document_id).first()
+    """Returns a document based on the given document id."""
+    return db_session.query(Document).filter(Document.id == document_id).one_or_none()
 
 
 def get_by_incident_id_and_resource_type(
-    *, db_session, incident_id: str, resource_type: str
+    *, db_session, incident_id: int, resource_type: str
 ) -> Optional[Document]:
+    """Returns a document based on the given incident and id and document resource type."""
     return (
         db_session.query(Document)
         .filter(Document.incident_id == incident_id)
@@ -25,14 +27,12 @@ def get_by_incident_id_and_resource_type(
 
 
 def get_all(*, db_session) -> List[Optional[Document]]:
+    """Returns all documents."""
     return db_session.query(Document)
 
 
-def get_by_terms(*, db_session, terms) -> List[Optional[Document]]:
-    return db_session.query(Document).filter(Document.terms.any(terms))
-
-
 def create(*, db_session, document_in: DocumentCreate) -> Document:
+    """Creates a new document."""
     terms = [
         term_service.get_or_create(db_session=db_session, term_in=t) for t in document_in.terms
     ]
@@ -56,6 +56,7 @@ def create(*, db_session, document_in: DocumentCreate) -> Document:
 
 
 def update(*, db_session, document: Document, document_in: DocumentUpdate) -> Document:
+    """Updates a document."""
     document_data = jsonable_encoder(document)
     update_data = document_in.dict(skip_defaults=True)
 
@@ -69,5 +70,6 @@ def update(*, db_session, document: Document, document_in: DocumentUpdate) -> Do
 
 
 def delete(*, db_session, document_id: int):
+    """Deletes a document."""
     db_session.query(Document).filter(Document.id == document_id).delete()
     db_session.commit()

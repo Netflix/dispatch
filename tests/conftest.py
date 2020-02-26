@@ -18,13 +18,13 @@ environ["INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS"] = "sirt-dev-test-notify@exam
 environ["INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID"] = "XXX"
 environ["INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID"] = "XXX"
 environ["JWKS_URL"] = "example.com"
+environ["ENV"] = "pytest"
 environ["METRIC_PROVIDERS"] = ""  # TODO move this to the default
 environ["STATIC_DIR"] = ""  # we don't need static files for tests
 
-
-from dispatch.main import app
 from dispatch import config
 from dispatch.database import Base, engine, SessionLocal
+from dispatch.main import app
 
 from .factories import (
     ApplicationFactory,
@@ -32,11 +32,12 @@ from .factories import (
     DefinitionFactory,
     DocumentFactory,
     GroupFactory,
-    IncidentTypeFactory,
+    IncidentFactory,
     IncidentPriorityFactory,
+    IncidentTypeFactory,
     IndividualContactFactory,
-    ParticipantRoleFactory,
     ParticipantFactory,
+    ParticipantRoleFactory,
     PolicyFactory,
     RecommendationAccuracyFactory,
     RecommendationFactory,
@@ -321,3 +322,8 @@ def term(session):
 @pytest.fixture
 def ticket(session):
     return TicketFactory()
+
+
+@pytest.fixture
+def incident(session):
+    return IncidentFactory()

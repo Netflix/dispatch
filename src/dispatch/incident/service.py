@@ -4,10 +4,7 @@ from typing import List, Optional, Tuple
 
 from fastapi.encoders import jsonable_encoder
 
-from dispatch.config import (
-    ANNUAL_COST_EMPLOYEE,
-    BUSINESS_HOURS_YEAR,
-)
+from dispatch.config import ANNUAL_COST_EMPLOYEE, BUSINESS_HOURS_YEAR
 from dispatch.database import SessionLocal
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_priority.models import IncidentPriorityType

@@ -4,7 +4,6 @@ from factory import Sequence, post_generation, SubFactory
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime
 
-
 from dispatch.database import SessionLocal
 
 from dispatch.application.models import Application
@@ -12,6 +11,7 @@ from dispatch.conversation.models import Conversation
 from dispatch.definition.models import Definition
 from dispatch.document.models import Document
 from dispatch.group.models import Group
+from dispatch.incident.models import Incident
 from dispatch.incident_priority.models import IncidentPriority
 from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
@@ -210,7 +210,7 @@ class GroupFactory(ResourceBaseFactory):
 class IncidentPriorityFactory(BaseFactory):
     """Incident Priority Factory."""
 
-    name = FuzzyChoice(["High", "Medium", "Low", "Info"])
+    name = FuzzyText()
     description = FuzzyText()
 
     class Meta:
@@ -222,8 +222,9 @@ class IncidentPriorityFactory(BaseFactory):
 class IncidentTypeFactory(BaseFactory):
     """Incident Type Factory."""
 
-    name = FuzzyChoice(["Brand", "Business Data", "Customer Data"])
+    name = FuzzyText()
     description = FuzzyText()
+    slug = FuzzyText()
 
     class Meta:
         """Factory Configuration."""
@@ -593,3 +594,16 @@ class TicketFactory(ResourceBaseFactory):
         """Factory Configuration."""
 
         model = Ticket
+
+
+class IncidentFactory(BaseFactory):
+    """Incident Factory."""
+
+    title = FuzzyText()
+    description = FuzzyText()
+    status = FuzzyChoice(["Active", "Stable", "Closed"])
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Incident

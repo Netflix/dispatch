@@ -38,6 +38,7 @@ except Exception:
 config = Config(".env")
 
 LOG_LEVEL = config("LOG_LEVEL", default=logging.WARNING)
+ENV = config("ENV", default="local")
 
 DISPATCH_HELP_EMAIL = config("DISPATCH_HELP_EMAIL")
 DISPATCH_HELP_SLACK_CHANNEL = config("DISPATCH_HELP_SLACK_CHANNEL")
@@ -64,7 +65,7 @@ DATABASE_PORT = config("DATABASE_PORT", default="5432")
 SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{DATABASE_CREDENTIALS}@{DATABASE_HOSTNAME}:{DATABASE_PORT}/{DATABASE_NAME}"
 
 # incident plugins
-INCIDENT_PLUGIN_CONTACT_SLUG = config("INCIDENT_PLUGIN_CONTACT_SLUG", default="pandora-contact")
+INCIDENT_PLUGIN_CONTACT_SLUG = config("INCIDENT_PLUGIN_CONTACT_SLUG", default="slack-contact")
 INCIDENT_PLUGIN_CONVERSATION_SLUG = config(
     "INCIDENT_PLUGIN_CONVERSATION_SLUG", default="slack-conversation"
 )
