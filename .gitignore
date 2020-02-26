@@ -208,3 +208,6 @@ yarn-error.log*
 selenium-debug.log
 node_modules
 release
+
+# exclude docker env files
+docker/.env
