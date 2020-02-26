@@ -25,7 +25,7 @@ published Docker image described in the next section.
 
 ## Installing Dispatch Server
 
-We strongly recommend using Docker, for installing Dispatch and all its services. If you need to to something custom, you can use this repository as the basis of your setup. If you do not wish to use the Docker images we provide, you can still find Dispatch on PyPI. However, we don't recommend that method. You'll need to work your way back from the main Dispatch image. It is not too hard, but you are likely to spend a lot more time and hit some bumps.
+We strongly recommend using Docker, for installing Dispatch and all it's services. If you need to install something custom, you can use this repository as the basis of your setup. If you do not wish to use the Docker images we provide, you can still find Dispatch on PyPI. However, we don't recommend that method. You'll need to work your way back from the main Dispatch image. It is not too hard, but you are likely to spend a lot more time and hit some bumps.
 
 To install Dispatch from the repository, clone the repository locally:
 

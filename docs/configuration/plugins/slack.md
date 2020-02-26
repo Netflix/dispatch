@@ -68,7 +68,7 @@ Note: The `Slack` plugin relies on the [Events API](https://api.slack.com/events
 
 ## Commands
 
-To enable Dispatch's slash commands you must create them an point them to the approriate endpoint:
+To enable Dispatch's slash commands you must create them an point them to the appropriate endpoint:
 
 ![commands0](../../../.gitbook/assets/slack-setup-commands-0.png)
 
