@@ -9,9 +9,9 @@ if [ "${1:0:1}" = '-' ]; then
 fi
 
 case "$1" in
-	server start|database upgrade| database downgrade)
+	"server start" | "database upgrade" | "database downgrade" )
 		set -- dispatch "$@"
-	;;
+	  ;;
 esac
 
 exec "$@"
