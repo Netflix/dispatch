@@ -127,8 +127,10 @@ RUN chmod u+x $DISPATCH_CONF/docker-entrypoint.sh
 EXPOSE 8000
 VOLUME /var/lib/dispatch/files
 
-ENTRYPOINT exec $DISPATCH_CONF/docker-entrypoint.sh $0 $@
-CMD ["server"]
+#ENTRYPOINT exec $DISPATCH_CONF/docker-entrypoint.sh $0 $@
+#CMD ["server"]
+
+ENTRYPOINT ["dispatch", "server start"]
 
 ARG SOURCE_COMMIT
 LABEL org.opencontainers.image.revision=$SOURCE_COMMIT
