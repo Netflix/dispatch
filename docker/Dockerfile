@@ -122,6 +122,7 @@ RUN set -x \
     && rm -rf /var/lib/apt/lists/*
 
 COPY ./docker/docker-entrypoint.sh $DISPATCH_CONF/
+RUN chmod 0755 $DISPATCH_CONF/docker-entrypoint.sh
 
 EXPOSE 8000
 VOLUME /var/lib/dispatch/files
