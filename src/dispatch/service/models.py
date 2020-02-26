@@ -96,6 +96,10 @@ class ServiceRead(ServiceBase):
     updated_at: Optional[datetime] = None
 
 
+class ServiceNested(ServiceBase):
+    id: int
+
+
 class ServicePagination(DispatchBase):
     total: int
     items: List[ServiceRead] = []

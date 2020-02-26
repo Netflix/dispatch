@@ -59,19 +59,29 @@ class Service(DispatchBase):
 class IncidentTypeBase(DispatchBase):
     name: str
     description: Optional[str]
+
+
+class IncidentTypeCreate(IncidentTypeBase):
     template_document: Optional[Document]
     commander_service: Optional[Service]
 
 
-class IncidentTypeCreate(IncidentTypeBase):
-    pass
-
-
 class IncidentTypeUpdate(IncidentTypeBase):
     id: int
+    template_document: Optional[Document]
+    commander_service: Optional[Service]
 
 
 class IncidentTypeRead(IncidentTypeBase):
+    id: int
+    template_document: Optional[Document]
+    commander_service: Optional[Service]
+
+    class Config:
+        orm_mode = True
+
+
+class IncidentTypeNested(IncidentTypeBase):
     id: int
 
 
