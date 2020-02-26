@@ -127,7 +127,7 @@ EXPOSE 8000
 VOLUME /var/lib/dispatch/files
 
 ENTRYPOINT exec $DISPATCH_CONF/docker-entrypoint.sh $0 $@
-CMD ["server"]
+CMD ["'server start'"]
 
 ARG SOURCE_COMMIT
 LABEL org.opencontainers.image.revision=$SOURCE_COMMIT
