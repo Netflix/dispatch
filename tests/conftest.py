@@ -270,6 +270,11 @@ def participant_role(session):
 
 
 @pytest.fixture
+def participant_roles(session):
+    return [ParticipantRoleFactory(), ParticipantRoleFactory()]
+
+
+@pytest.fixture
 def participant(session):
     return ParticipantFactory()
 
