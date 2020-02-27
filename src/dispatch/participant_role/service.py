@@ -33,17 +33,11 @@ def get_all_active_roles(*, db_session, participant_id: int) -> List[Optional[Pa
     )
 
 
-def renounce_role(
-    *, db_session, participant_id: int, role: str = ParticipantRoleType.participant
-) -> Optional[ParticipantRole]:
-    """Makes the participant renounce to the given role."""
-    participant_roles = get_all_active_roles(db_session=db_session, participant_id=participant_id)
-
-    for participant_role in participant_roles:
-        if participant_role.role == role:
-            participant_role.renounce_at = datetime.utcnow()
-            break
-
+def renounce_role(*, db_session, participant_role: ParticipantRole) -> ParticipantRole:
+    """Renounces the given role."""
+    participant_role.renounce_at = datetime.utcnow()
+    db_session.add(participant_role)
+    db_session.commit()
     return participant_role
 
 

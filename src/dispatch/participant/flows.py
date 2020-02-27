@@ -76,14 +76,13 @@ def remove_participant(user_email: str, incident_id: int, db_session: SessionLoc
     # We mark the participant as inactive
     participant.is_active = False
 
-    # We make the participant renouce to their active roles
-    participant_active_roles = participant_role_service.get_active_roles(
+    # We make the participant renounce to their active roles
+    participant_active_roles = participant_role_service.get_all_active_roles(
         db_session=db_session, participant_id=participant.id
     )
-
-    for active_role in participant_active_roles:
-        participant_role_service.renounce_role(
-            db_session=db_session, participant_id=participant.id, role=active_role.role
+    for participant_active_role in participant_active_roles:
+        participant_role_service.expire_role(
+            db_session=db_session, participant_role=participant_active_role
         )
 
     # We add and commit the changes
