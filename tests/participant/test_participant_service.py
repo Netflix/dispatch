@@ -8,30 +8,35 @@ def test_get(session, participant):
     assert t_participant.id == participant.id
 
 
-@pytest.mark.skip()
-def test_get_by_individual_contact_id(session, individual_contact):
+def test_get_by_individual_contact_id(session, participant, individual_contact):
     from dispatch.participant.service import get_by_individual_contact_id
+
+    individual_contact.participant.append(participant)
 
     t_participant = get_by_individual_contact_id(
         db_session=session, individual_contact_id=individual_contact.id
     )
-    assert t_participant.id == individual_contact.participant.id
+    assert t_participant.individual_contact_id == individual_contact.id
 
 
-@pytest.mark.skip()
-def test_get_by_incident_id_and_role(session, incident, participant_role):
+def test_get_by_incident_id_and_role(session, incident, participant, participant_role):
     from dispatch.participant.service import get_by_incident_id_and_role
+
+    participant.participant_role.append(participant_role)
+    incident.participants.append(participant)
 
     t_participant = get_by_incident_id_and_role(
         db_session=session, incident_id=incident.id, role=participant_role.role
     )
     assert t_participant.incident_id == incident.id
-    assert t_participant.participant_role.role == participant_role.role
+    assert t_participant.participant_role[0].role == participant_role.role
 
 
-@pytest.mark.skip()
-def test_get_by_incident_id_and_email(session, incident, individual_contact):
+def test_get_by_incident_id_and_email(session, incident, participant, individual_contact):
     from dispatch.participant.service import get_by_incident_id_and_email
+
+    individual_contact.participant.append(participant)
+    incident.participants.append(participant)
 
     t_participant = get_by_incident_id_and_email(
         db_session=session, incident_id=incident.id, email=individual_contact.email
@@ -47,9 +52,11 @@ def test_get_all(session, participants):
     assert len(t_participants) > 1
 
 
-@pytest.mark.skip()
 def test_get_all_by_incident_id(session, incident, participants):
     from dispatch.participant.service import get_all_by_incident_id
+
+    for participant in participants:
+        incident.participants.append(participant)
 
     t_participants = get_all_by_incident_id(db_session=session, incident_id=incident.id).all()
     assert len(t_participants) > 1
