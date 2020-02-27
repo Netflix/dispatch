@@ -16,6 +16,17 @@ Vue.filter("capitalize", function(value) {
   return value.charAt(0).toUpperCase() + value.slice(1)
 })
 
+Vue.filter("dollars", function(value) {
+  if (value) {
+    var formatter = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD"
+    })
+    return formatter.format(value)
+  }
+  return value
+})
+
 Vue.filter("deslug", function(value) {
   if (value) {
     return value
