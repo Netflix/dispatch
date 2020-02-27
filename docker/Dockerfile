@@ -121,12 +121,10 @@ RUN set -x \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY ./docker/docker-entrypoint.sh $DISPATCH_CONF/
-
 EXPOSE 8000
 VOLUME /var/lib/dispatch/files
 
-ENTRYPOINT exec $DISPATCH_CONF/docker-entrypoint.sh $0 $@
+ENTRYPOINT ["dispatch"]
 CMD ["server", "start", "dispatch.main:app"]
 
 ARG SOURCE_COMMIT
