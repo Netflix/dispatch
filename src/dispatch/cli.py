@@ -501,66 +501,49 @@ def init_database():
     click.secho("Success.", fg="green")
 
 
-@dispatch_database.command("populate")
-@click.argument("settings-file", type=click.File("rb"))
-def populate_database(settings_file):
-    """Populates database with default values."""
-    import json
-    from dispatch.database import SessionLocal
-    from dispatch.service import service as service_service
-    from dispatch.service.models import ServiceCreate
-    from dispatch.incident_type import service as incident_type_service
-    from dispatch.incident_type.models import IncidentTypeCreate
-    from dispatch.document import service as document_service
-    from dispatch.document.models import DocumentCreate
-    from dispatch.incident_priority import service as incident_priority_service
-    from dispatch.incident_priority.models import IncidentPriorityCreate
+@dispatch_database.command("restore")
+def restore_database():
+    """Restores the database via pg_restore."""
+    from sh import psql
+    from dispatch.config import DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_CREDENTIALS
 
-    db_session = SessionLocal()
+    username, password = str(DATABASE_CREDENTIALS).split(":")
 
-    data = json.loads(settings_file.read())
-
-    for priority in data["incident_priorities"]:
-        incident_priority_service.create(
-            db_session=db_session, incident_priority_in=IncidentPriorityCreate(**priority)
+    print(
+        psql(
+            "-h",
+            DATABASE_HOSTNAME,
+            "-p",
+            DATABASE_PORT,
+            "-U",
+            username,
+            "-f",
+            "dispatch-backup.dump",
+            _env={"PGPASSWORD": password},
         )
-
-    for i_type in data["incident_types"]:
-        incident_type_service.create(
-            db_session=db_session, incident_type_in=IncidentTypeCreate(**i_type)
-        )
-
-    click.secho("Success.", fg="green")
+    )
 
 
-@dispatch_database.command("settings")
-def dump_settings():
-    """Creates a json blob that can be used by populate."""
-    import json
-    from dispatch.database import SessionLocal
-    from dispatch.incident_type import service as incident_type_service
-    from dispatch.incident_type.models import IncidentTypeRead
-    from dispatch.incident_priority import service as incident_priority_service
-    from dispatch.incident_priority.models import IncidentPriorityRead
+@dispatch_database.command("dump")
+def dump_database():
+    """Dumps the database via pg_dump."""
+    from sh import pg_dump
+    from dispatch.config import DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_CREDENTIALS
 
-    settings = {}
-    db_session = SessionLocal()
+    username, password = str(DATABASE_CREDENTIALS).split(":")
 
-    incident_types = [
-        json.loads(IncidentTypeRead(**x.__dict__).json(exclude={"id"}))
-        for x in incident_type_service.get_all(db_session=db_session)
-    ]
-    incident_priorities = [
-        json.loads(IncidentPriorityRead(**x.__dict__).json(exclude={"id"}))
-        for x in incident_priority_service.get_all(db_session=db_session)
-    ]
-
-    settings = {
-        "incident_types": incident_types,
-        "incident_priorities": incident_priorities,
-    }
-
-    click.secho(json.dumps(settings, indent=2))
+    pg_dump(
+        "-f",
+        "dispatch-backup.dump",
+        "-h",
+        DATABASE_HOSTNAME,
+        "-p",
+        DATABASE_PORT,
+        "-U",
+        username,
+        "dispatch",
+        _env={"PGPASSWORD": password},
+    )
 
 
 @dispatch_database.command("drop")

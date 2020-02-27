@@ -77,9 +77,6 @@ class IncidentTypeRead(IncidentTypeBase):
     template_document: Optional[Document]
     commander_service: Optional[Service]
 
-    class Config:
-        orm_mode = True
-
 
 class IncidentTypeNested(IncidentTypeBase):
     id: int
