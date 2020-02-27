@@ -235,6 +235,11 @@ def conversation(session):
 
 
 @pytest.fixture
+def conversations(session):
+    return [ConversationFactory(), ConversationFactory()]
+
+
+@pytest.fixture
 def definition(session):
     return DefinitionFactory()
 
@@ -250,13 +255,28 @@ def group(session):
 
 
 @pytest.fixture
+def groups(session):
+    return [GroupFactory(), GroupFactory()]
+
+
+@pytest.fixture
 def incident_priority(session):
     return IncidentPriorityFactory()
 
 
 @pytest.fixture
+def incident_priorities(session):
+    return [IncidentPriorityFactory(), IncidentPriorityFactory()]
+
+
+@pytest.fixture
 def incident_type(session):
     return IncidentTypeFactory()
+
+
+@pytest.fixture
+def incident_types(session):
+    return [IncidentTypeFactory(), IncidentTypeFactory()]
 
 
 @pytest.fixture
@@ -305,6 +325,11 @@ def service(session):
 
 
 @pytest.fixture
+def services(session):
+    return [ServiceFactory(), ServiceFactory()]
+
+
+@pytest.fixture
 def status_report(session):
     return StatusReportFactory()
 
@@ -332,6 +357,11 @@ def term(session):
 @pytest.fixture
 def ticket(session):
     return TicketFactory()
+
+
+@pytest.fixture
+def tickets(session):
+    return [TicketFactory(), TicketFactory()]
 
 
 @pytest.fixture

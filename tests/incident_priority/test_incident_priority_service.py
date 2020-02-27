@@ -15,7 +15,7 @@ def test_get_by_name(session, incident_priority):
     assert t_incident_priority.name == incident_priority.name
 
 
-def test_get_all(session, incident_priority):
+def test_get_all(session, incident_priorities):
     from dispatch.incident_priority.service import get_all
 
     t_incident_priorities = get_all(db_session=session).all()

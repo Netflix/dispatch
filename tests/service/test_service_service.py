@@ -15,14 +15,14 @@ def test_get_by_external_id(session, service):
     assert t_service.external_id == service.external_id
 
 
-def test_get_by_status(session, service):
+def test_get_by_status(session, services):
     from dispatch.service.service import get_all_by_status
 
-    t_services = get_all_by_status(db_session=session, is_active=service.is_active).all()
+    t_services = get_all_by_status(db_session=session, is_active=True).all()
     assert len(t_services) > 1
 
 
-def test_get_all(session, service):
+def test_get_all(session, services):
     from dispatch.service.service import get_all
 
     t_services = get_all(db_session=session).all()

@@ -8,7 +8,7 @@ def test_get_group(session, group):
     assert t_group.id == group.id
 
 
-def test_get_all(session, group):
+def test_get_all(session, groups):
     from dispatch.group.service import get_all
 
     t_groups = get_all(db_session=session).all()
