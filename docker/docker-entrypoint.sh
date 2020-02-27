@@ -12,7 +12,7 @@ fi
 # to the "dispatch" binary. Other parameters are passed through
 # Example: "./docker-entrpoint.sh server start" becomes "dispatch server start"
 case "${@:1:2}" in
-	"server start" | "database upgrade" | "database downgrade" | "scheduler start" )
+	"server start dispatch.main:app" | "database upgrade" | "database downgrade" | "scheduler start" )
 		set -- dispatch "$@"
 		;;
 esac
