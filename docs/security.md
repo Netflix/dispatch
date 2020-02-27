@@ -13,7 +13,7 @@ We ask that you do not report security issue to our normal GitHub issue tracker.
 
 If you believe you've identified a security issue with `Dispatch`, please report it to security@netflix.com.
 
-Once you've submitted the issue via email, you should receive an acknowledgement within 48 hous, and depending on the action to be take, you may receive further follow-up emails.
+Once you've submitted the issue via email, you should receive an acknowledgement within 48 hours, and depending on the action to be take, you may receive further follow-up emails.
 
 ## Support Versions
 

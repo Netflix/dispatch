@@ -109,7 +109,7 @@ RUN set -x \
     && apt-get update \
     && apt-get install -y --no-install-recommends $buildDeps \
     # remove internal index when internal plugins are seperated
-    && pip install /tmp/dist/*.whl \  
+    && pip install /tmp/dist/*.whl \
     && apt-get purge -y --auto-remove $buildDeps \
     # We install run-time dependencies strictly after
     # build dependencies to prevent accidental collusion.
@@ -119,15 +119,13 @@ RUN set -x \
     pkg-config \
     \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* 
-
-COPY ./docker/docker-entrypoint.sh ./docker/.env $DISPATCH_CONF/
+    && rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8000
 VOLUME /var/lib/dispatch/files
 
-ENTRYPOINT exec $DISPATCH_CONF/docker-entrypoint.sh $0 $@
-CMD ["server"]
+ENTRYPOINT ["dispatch"]
+CMD ["server", "start", "dispatch.main:app"]
 
 ARG SOURCE_COMMIT
 LABEL org.opencontainers.image.revision=$SOURCE_COMMIT
