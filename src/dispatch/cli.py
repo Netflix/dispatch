@@ -501,22 +501,49 @@ def init_database():
     click.secho("Success.", fg="green")
 
 
-@dispatch_database.command("populate")
-def populate_database():
-    """Populates database with default values."""
-    from dispatch.database import SessionLocal
-    from dispatch.incident_type.models import IncidentType
-    from dispatch.incident_priority.models import IncidentPriority, IncidentPriorityType
+@dispatch_database.command("restore")
+def restore_database():
+    """Restores the database via pg_restore."""
+    from sh import psql
+    from dispatch.config import DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_CREDENTIALS
 
-    db_session = SessionLocal()
+    username, password = str(DATABASE_CREDENTIALS).split(":")
 
-    db_session.add(IncidentType(name="Other", slug="other", description="Default incident type."))
+    print(
+        psql(
+            "-h",
+            DATABASE_HOSTNAME,
+            "-p",
+            DATABASE_PORT,
+            "-U",
+            username,
+            "-f",
+            "dispatch-backup.dump",
+            _env={"PGPASSWORD": password},
+        )
+    )
 
-    for i in IncidentPriorityType:
-        db_session.add(IncidentPriority(name=i.value))
 
-    db_session.commit()
-    click.secho("Success.", fg="green")
+@dispatch_database.command("dump")
+def dump_database():
+    """Dumps the database via pg_dump."""
+    from sh import pg_dump
+    from dispatch.config import DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_CREDENTIALS
+
+    username, password = str(DATABASE_CREDENTIALS).split(":")
+
+    pg_dump(
+        "-f",
+        "dispatch-backup.dump",
+        "-h",
+        DATABASE_HOSTNAME,
+        "-p",
+        DATABASE_PORT,
+        "-U",
+        username,
+        "dispatch",
+        _env={"PGPASSWORD": password},
+    )
 
 
 @dispatch_database.command("drop")
