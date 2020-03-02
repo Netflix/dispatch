@@ -46,9 +46,11 @@ def add_participant(
     db_session.add(incident)
     db_session.commit()
 
-    log.debug(f"{individual.name} has been added to incident {incident.name}.")
+    log.debug(
+        f"{individual.name} with email address {individual.email} has been added to incident id {incident.id} with role {participant_role.role}."
+    )
 
-    return True
+    return participant
 
 
 def remove_participant(user_email: str, incident_id: int, db_session: SessionLocal):
@@ -81,7 +83,7 @@ def remove_participant(user_email: str, incident_id: int, db_session: SessionLoc
         db_session=db_session, participant_id=participant.id
     )
     for participant_active_role in participant_active_roles:
-        participant_role_service.expire_role(
+        participant_role_service.renounce_role(
             db_session=db_session, participant_role=participant_active_role
         )
 
@@ -120,7 +122,10 @@ def reactivate_participant(user_email: str, incident_id: int, db_session: Sessio
     participant.is_active = True
 
     # We create a role for the participant
-    participant_role = participant_role_service.create(db_session=db_session)
+    participant_role_in = ParticipantRoleCreate(role=ParticipantRoleType.participant)
+    participant_role = participant_role_service.create(
+        db_session=db_session, participant_role_in=participant_role_in
+    )
     participant.participant_role.append(participant_role)
 
     # We add and commit the changes

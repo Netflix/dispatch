@@ -8,9 +8,10 @@ def test_get(session, participant):
     assert t_participant.id == participant.id
 
 
-def test_get_by_individual_contact_id(session, participant, individual_contact):
+def test_get_by_individual_contact_id(session, incident, participant, individual_contact):
     from dispatch.participant.service import get_by_individual_contact_id
 
+    incident.participants.append(participant)
     individual_contact.participant.append(participant)
 
     t_participant = get_by_individual_contact_id(

@@ -10,6 +10,7 @@ from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.incident_type import service as incident_type_service
 from dispatch.participant import flows as participant_flows
+from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType, ParticipantRoleCreate
 from dispatch.plugins.base import plugins
@@ -152,9 +153,18 @@ def create(
         reporter_email, incident.id, db_session, ParticipantRoleType.reporter
     )
 
-    if incident_priority.name == IncidentPriorityType.info:
-        # NOTE: Info incidents are handled by the reporter
+    # We resolve the incident commander email
+    incident_commander_email = resolve_incident_commander_email(
+        db_session,
+        reporter_email,
+        incident_type.name,
+        incident_priority.name,
+        "",
+        title,
+        description,
+    )
 
+    if reporter_email == incident_commander_email:
         # We create an incident commander role
         incident_commander_participant_role_in = ParticipantRoleCreate(
             role=ParticipantRoleType.incident_commander
@@ -163,23 +173,14 @@ def create(
             db_session=db_session, participant_role_in=incident_commander_participant_role_in
         )
 
-        # We make the reporter the incident commander
-        reporter_participant.participant_role.append(incident_commander_role)
-        db_session.add(reporter_participant)
-        db_session.commit()
-    else:
-        # We resolve the incident commander email
-        incident_commander_email = resolve_incident_commander_email(
-            db_session,
-            reporter_email,
-            incident_type.name,
-            incident_priority.name,
-            incident.name,
-            title,
-            description,
+        # We add the role of incident commander the reporter
+        participant_service.add_participant_role(
+            participant=reporter_participant,
+            participant_role=incident_commander_role,
+            db_session=db_session,
         )
-
-        # We add the incident commander to the incident
+    else:
+        # We create a new participant for the incident commander and we add it to the incident
         participant_flows.add_participant(
             incident_commander_email,
             incident.id,

@@ -72,6 +72,16 @@ def get_all_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Par
     return db_session.query(Participant).filter(Participant.incident_id == incident_id)
 
 
+def add_participant_role(
+    *, db_session, participant: Participant, participant_role: ParticipantRole
+):
+    """Adds a role to a participant."""
+    participant.participant_role.append(participant_role)
+    db_session.add(participant)
+    db_session.commit()
+    return participant
+
+
 def get_or_create(
     *,
     db_session,

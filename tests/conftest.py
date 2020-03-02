@@ -5,7 +5,7 @@ from starlette.testclient import TestClient
 from starlette.config import environ
 
 # set test config
-environ["DATABASE_CREDENTIALS"] = "dispatch:dispatch"
+environ["DATABASE_CREDENTIALS"] = "postgres:dispatch"
 environ["DATABASE_HOSTNAME"] = "localhost"
 environ["DISPATCH_DOMAIN"] = "example.com"
 environ["DISPATCH_HELP_EMAIL"] = "example@example.com"
