@@ -87,7 +87,7 @@ def get_or_create(
     db_session,
     incident_id: int,
     individual_id: int,
-    participant_roles: List[ParticipantRoleType]
+    participant_roles: List[ParticipantRoleType],
 ) -> Participant:
     """Gets an existing participant object or creates a new one."""
     participant = (
