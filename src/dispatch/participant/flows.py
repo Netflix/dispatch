@@ -5,7 +5,7 @@ from dispatch.database import SessionLocal
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.participant_role import service as participant_role_service
-from dispatch.participant_role.models import ParticipantRoleType
+from dispatch.participant_role.models import ParticipantRoleType, ParticipantRoleCreate
 from dispatch.plugins.base import plugins
 
 from .service import get_or_create, get_by_incident_id_and_email
@@ -21,15 +21,21 @@ def add_participant(
     # We load the incident
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    # We add the participant to the incident
+    # We get or create a new individual
     individual = individual_service.get_or_create(db_session=db_session, email=user_email)
 
-    participant_role = participant_role_service.create(db_session=db_session, role=role)
+    # We create a role for the participant
+    participant_role_in = ParticipantRoleCreate(role=role)
+    participant_role = participant_role_service.create(
+        db_session=db_session, participant_role_in=participant_role_in
+    )
+
+    # We get or create a new participant
     participant = get_or_create(
         db_session=db_session,
         incident_id=incident.id,
         individual_id=individual.id,
-        role=participant_role,
+        participant_roles=[participant_role],
     )
 
     individual.participant.append(participant)
@@ -40,9 +46,11 @@ def add_participant(
     db_session.add(incident)
     db_session.commit()
 
-    log.debug(f"{individual.name} has been added to incident {incident.name}.")
+    log.debug(
+        f"{individual.name} with email address {individual.email} has been added to incident id {incident.id} with role {participant_role.role}."
+    )
 
-    return True
+    return participant
 
 
 def remove_participant(user_email: str, incident_id: int, db_session: SessionLocal):
@@ -70,14 +78,13 @@ def remove_participant(user_email: str, incident_id: int, db_session: SessionLoc
     # We mark the participant as inactive
     participant.is_active = False
 
-    # We make the participant renouce to their active roles
-    participant_active_roles = participant_role_service.get_active_roles(
+    # We make the participant renounce to their active roles
+    participant_active_roles = participant_role_service.get_all_active_roles(
         db_session=db_session, participant_id=participant.id
     )
-
-    for active_role in participant_active_roles:
+    for participant_active_role in participant_active_roles:
         participant_role_service.renounce_role(
-            db_session=db_session, participant_id=participant.id, role_type=active_role.role
+            db_session=db_session, participant_role=participant_active_role
         )
 
     # We add and commit the changes
@@ -115,7 +122,10 @@ def reactivate_participant(user_email: str, incident_id: int, db_session: Sessio
     participant.is_active = True
 
     # We create a role for the participant
-    participant_role = participant_role_service.create(db_session=db_session)
+    participant_role_in = ParticipantRoleCreate(role=ParticipantRoleType.participant)
+    participant_role = participant_role_service.create(
+        db_session=db_session, participant_role_in=participant_role_in
+    )
     participant.participant_role.append(participant_role)
 
     # We add and commit the changes

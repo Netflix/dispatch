@@ -9,7 +9,7 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_USER: dispatch
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: dispatch
           POSTGRES_DB: dispatch
         ports:

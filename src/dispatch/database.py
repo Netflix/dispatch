@@ -1,13 +1,12 @@
 import re
 from typing import Any, List
 
-from sqlalchemy_searchable import search as search_db
-from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
-
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import Query, sessionmaker
+from sqlalchemy.orm import Query, sessionmaker, scoped_session
+from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
 from sqlalchemy_searchable import make_searchable
+from sqlalchemy_searchable import search as search_db
 from starlette.requests import Request
 
 from dispatch.common.utils.composite_search import CompositeSearch
@@ -15,7 +14,8 @@ from dispatch.common.utils.composite_search import CompositeSearch
 from .config import SQLALCHEMY_DATABASE_URI
 
 engine = create_engine(str(SQLALCHEMY_DATABASE_URI))
-SessionLocal = sessionmaker(bind=engine)
+session_factory = sessionmaker(bind=engine)
+SessionLocal = scoped_session(session_factory)
 
 
 def resolve_table_name(name):

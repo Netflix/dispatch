@@ -32,6 +32,7 @@ from dispatch.config import (
 )
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.models import ConversationCreate
+from dispatch.database import SessionLocal
 from dispatch.decorators import background_task
 from dispatch.document import service as document_service
 from dispatch.document.models import DocumentCreate
@@ -284,10 +285,15 @@ def update_incident_status(db_session, incident: Incident, status: str):
     log.debug(f"The incident has been marked as {status}.")
 
 
-def add_participant_to_conversation(conversation_id: str, participant_email: str):
+def add_participant_to_conversation(
+    participant_email: str, incident_id: int, db_session: SessionLocal
+):
     """Adds a participant to the conversation."""
+    # we load the incident instance
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
-    convo_plugin.add(conversation_id, [participant_email])
+    convo_plugin.add(incident.conversation.channel_id, [participant_email])
 
 
 @background_task
@@ -326,7 +332,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             db_session=db_session, user_email=individual.email, incident_id=incident.id
         )
 
-    log.debug(f"Added {len(individual_participants)} to incident.")
+    log.debug(f"Added {len(individual_participants)} participants to incident id {incident.id}.")
 
     # create the incident ticket
     ticket = create_incident_ticket(
@@ -343,7 +349,6 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     # we set the incident name
     name = ticket["resource_id"]
-
     incident.name = name
 
     log.debug("Added name to incident.")
@@ -423,11 +428,10 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         weblink=conversation["weblink"],
         channel_id=conversation["id"],
     )
+
     incident.conversation = conversation_service.create(
         db_session=db_session, conversation_in=conversation_in
     )
-
-    log.debug("Added conversation to incident.")
 
     db_session.add(incident)
     db_session.commit()
@@ -472,12 +476,12 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     for participant in incident.participants:
         # we announce the participant in the conversation
         send_incident_participant_announcement_message(
-            participant.individual.email, incident, db_session
+            participant.individual.email, incident.id, db_session
         )
 
         # we send the welcome messages to the participant
         send_incident_welcome_participant_messages(
-            participant.individual.email, incident, db_session
+            participant.individual.email, incident.id, db_session
         )
 
     log.debug("Sent incident welcome and announcement notifications.")
@@ -967,9 +971,6 @@ def incident_add_or_reactivate_participant_flow(
     user_email: str, incident_id: int, role: ParticipantRoleType = None, db_session=None
 ):
     """Runs the add or reactivate incident participant flow."""
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
     # We get information about the individual
     contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
     individual_info = contact_plugin.get(user_email)
@@ -981,7 +982,6 @@ def incident_add_or_reactivate_participant_flow(
     if participant:
         if participant.is_active:
             log.debug(f"{individual_info['fullname']} is already an active participant.")
-            return
         else:
             # we reactivate the participant
             reactivated = participant_flows.reactivate_participant(
@@ -990,31 +990,31 @@ def incident_add_or_reactivate_participant_flow(
 
             if reactivated:
                 # we add the participant to the conversation
-                add_participant_to_conversation(incident.conversation.channel_id, user_email)
+                add_participant_to_conversation(user_email, incident_id, db_session)
 
                 # we announce the participant in the conversation
-                send_incident_participant_announcement_message(user_email, incident, db_session)
+                send_incident_participant_announcement_message(user_email, incident_id, db_session)
 
                 # we send the welcome messages to the participant
-                send_incident_welcome_participant_messages(user_email, incident, db_session)
-
-            return
+                send_incident_welcome_participant_messages(user_email, incident_id, db_session)
     else:
         # we add the participant to the incident
-        added = participant_flows.add_participant(user_email, incident_id, db_session, role=role)
+        participant = participant_flows.add_participant(
+            user_email, incident_id, db_session, role=role
+        )
 
-        if added:
+        if participant:
             # we add the participant to the tactical group
             add_participant_to_tactical_group(user_email, incident_id)
 
             # we add the participant to the conversation
-            add_participant_to_conversation(incident.conversation.channel_id, user_email)
+            add_participant_to_conversation(user_email, incident_id, db_session)
 
             # we announce the participant in the conversation
-            send_incident_participant_announcement_message(user_email, incident, db_session)
+            send_incident_participant_announcement_message(user_email, incident_id, db_session)
 
             # we send the welcome messages to the participant
-            send_incident_welcome_participant_messages(user_email, incident, db_session)
+            send_incident_welcome_participant_messages(user_email, incident_id, db_session)
 
 
 @background_task
@@ -1025,13 +1025,13 @@ def incident_remove_participant_flow(user_email: str, incident_id: int, db_sessi
 
     if user_email == incident.commander.email:
         # we add the incident commander to the conversation again
-        add_participant_to_conversation(incident.conversation.channel_id, user_email)
+        add_participant_to_conversation(user_email, incident_id, db_session)
 
         # we send a notification to the channel
-        send_incident_commander_readded_notification(incident)
+        send_incident_commander_readded_notification(incident_id, db_session)
 
         log.debug(
-            f"Incident Commander {incident.commander.name} has been re-added to conversation {incident.conversation.channel_id}."
+            f"Incident Commander with email {user_email} has been re-added to the incident conversation."
         )
     else:
         # we remove the participant from the incident

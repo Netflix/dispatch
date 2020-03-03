@@ -250,7 +250,7 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
             participant_avatar_url = dispatch_slack_service.get_user_avatar_url(
                 slack_client, participant_email
             )
-            participant_active_roles = participant_role_service.get_active_roles(
+            participant_active_roles = participant_role_service.get_all_active_roles(
                 db_session=db_session, participant_id=participant.id
             )
             participant_roles = []

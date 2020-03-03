@@ -5,7 +5,7 @@ from starlette.testclient import TestClient
 from starlette.config import environ
 
 # set test config
-environ["DATABASE_CREDENTIALS"] = "dispatch:dispatch"
+environ["DATABASE_CREDENTIALS"] = "postgres:dispatch"
 environ["DATABASE_HOSTNAME"] = "localhost"
 environ["DISPATCH_DOMAIN"] = "example.com"
 environ["DISPATCH_HELP_EMAIL"] = "example@example.com"
@@ -235,6 +235,11 @@ def conversation(session):
 
 
 @pytest.fixture
+def conversations(session):
+    return [ConversationFactory(), ConversationFactory()]
+
+
+@pytest.fixture
 def definition(session):
     return DefinitionFactory()
 
@@ -250,13 +255,28 @@ def group(session):
 
 
 @pytest.fixture
+def groups(session):
+    return [GroupFactory(), GroupFactory()]
+
+
+@pytest.fixture
 def incident_priority(session):
     return IncidentPriorityFactory()
 
 
 @pytest.fixture
+def incident_priorities(session):
+    return [IncidentPriorityFactory(), IncidentPriorityFactory()]
+
+
+@pytest.fixture
 def incident_type(session):
     return IncidentTypeFactory()
+
+
+@pytest.fixture
+def incident_types(session):
+    return [IncidentTypeFactory(), IncidentTypeFactory()]
 
 
 @pytest.fixture
@@ -270,8 +290,18 @@ def participant_role(session):
 
 
 @pytest.fixture
+def participant_roles(session):
+    return [ParticipantRoleFactory(), ParticipantRoleFactory()]
+
+
+@pytest.fixture
 def participant(session):
     return ParticipantFactory()
+
+
+@pytest.fixture
+def participants(session):
+    return [ParticipantFactory(), ParticipantFactory()]
 
 
 @pytest.fixture
@@ -292,6 +322,11 @@ def recommendation(session):
 @pytest.fixture
 def service(session):
     return ServiceFactory()
+
+
+@pytest.fixture
+def services(session):
+    return [ServiceFactory(), ServiceFactory()]
 
 
 @pytest.fixture
@@ -322,6 +357,11 @@ def term(session):
 @pytest.fixture
 def ticket(session):
     return TicketFactory()
+
+
+@pytest.fixture
+def tickets(session):
+    return [TicketFactory(), TicketFactory()]
 
 
 @pytest.fixture

@@ -29,6 +29,7 @@ from dispatch.messaging import (
     MessageType,
 )
 from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
+from dispatch.incident import service as incident_service
 from dispatch.incident.models import Incident
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
@@ -39,20 +40,21 @@ log = logging.getLogger(__name__)
 
 
 def send_welcome_ephemeral_message_to_participant(
-    participant_email: str, incident: Incident, db_session: SessionLocal
+    participant_email: str, incident_id: int, db_session: SessionLocal
 ):
     """Sends an ephemeral message to the participant."""
+    # we load the incident instance
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
     # we get the incident documents
     incident_document = get_document(
         db_session=db_session,
-        incident_id=incident.id,
+        incident_id=incident_id,
         resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
     )
 
     incident_faq = get_document(
-        db_session=db_session,
-        incident_id=incident.id,
-        resource_type=INCIDENT_RESOURCE_FAQ_DOCUMENT,
+        db_session=db_session, incident_id=incident_id, resource_type=INCIDENT_RESOURCE_FAQ_DOCUMENT
     )
 
     # we send the ephemeral message
@@ -79,20 +81,21 @@ def send_welcome_ephemeral_message_to_participant(
 
 
 def send_welcome_email_to_participant(
-    participant_email: str, incident: Incident, db_session: SessionLocal
+    participant_email: str, incident_id: int, db_session: SessionLocal
 ):
     """Sends a welcome email to the participant."""
+    # we load the incident instance
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
     # we get the incident documents
     incident_document = get_document(
         db_session=db_session,
-        incident_id=incident.id,
+        incident_id=incident_id,
         resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
     )
 
     incident_faq = get_document(
-        db_session=db_session,
-        incident_id=incident.id,
-        resource_type=INCIDENT_RESOURCE_FAQ_DOCUMENT,
+        db_session=db_session, incident_id=incident_id, resource_type=INCIDENT_RESOURCE_FAQ_DOCUMENT
     )
 
     email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
@@ -116,14 +119,14 @@ def send_welcome_email_to_participant(
 
 
 def send_incident_welcome_participant_messages(
-    participant_email: str, incident: Incident, db_session: SessionLocal
+    participant_email: str, incident_id: int, db_session: SessionLocal
 ):
     """Sends welcome messages to the participant."""
     # we send the welcome ephemeral message
-    send_welcome_ephemeral_message_to_participant(participant_email, incident, db_session)
+    send_welcome_ephemeral_message_to_participant(participant_email, incident_id, db_session)
 
     # we send the welcome email
-    send_welcome_email_to_participant(participant_email, incident, db_session)
+    send_welcome_email_to_participant(participant_email, incident_id, db_session)
 
     log.debug(f"Welcome participant messages sent {participant_email}.")
 
@@ -142,9 +145,7 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
     )
 
     incident_faq = get_document(
-        db_session=db_session,
-        incident_id=incident.id,
-        resource_type=INCIDENT_RESOURCE_FAQ_DOCUMENT,
+        db_session=db_session, incident_id=incident.id, resource_type=INCIDENT_RESOURCE_FAQ_DOCUMENT
     )
 
     # we send status notifications to conversations
@@ -268,15 +269,18 @@ def send_incident_change_notifications(
 
 
 def send_incident_participant_announcement_message(
-    participant_email: str, incident: Incident, db_session=SessionLocal
+    participant_email: str, incident_id: int, db_session=SessionLocal
 ):
     """Announces a participant in the conversation."""
     notification_text = "New Incident Participant"
     notification_type = MessageType.incident_notification
     notification_template = []
 
+    # we load the incident instance
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
     participant = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=incident.id, email=participant_email
+        db_session=db_session, incident_id=incident_id, email=participant_email
     )
 
     contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
@@ -291,7 +295,7 @@ def send_incident_participant_announcement_message(
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
     participant_avatar_url = convo_plugin.get_participant_avatar_url(participant_email)
 
-    participant_active_roles = participant_role_service.get_active_roles(
+    participant_active_roles = participant_role_service.get_all_active_roles(
         db_session=db_session, participant_id=participant.id
     )
     participant_roles = []
@@ -330,10 +334,13 @@ def send_incident_participant_announcement_message(
     log.debug(f"Incident participant announcement message sent.")
 
 
-def send_incident_commander_readded_notification(incident: Incident):
+def send_incident_commander_readded_notification(incident_id: int, db_session: SessionLocal):
     """Sends a notification about re-adding the incident commander to the conversation."""
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
+
+    # we load the incident instance
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
     convo_plugin.send(
@@ -451,9 +458,7 @@ def send_incident_resources_ephemeral_message_to_participant(
     )
 
     incident_faq = get_document(
-        db_session=db_session,
-        incident_id=incident.id,
-        resource_type=INCIDENT_RESOURCE_FAQ_DOCUMENT,
+        db_session=db_session, incident_id=incident.id, resource_type=INCIDENT_RESOURCE_FAQ_DOCUMENT
     )
 
     # we send the ephemeral message
