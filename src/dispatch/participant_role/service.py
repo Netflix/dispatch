@@ -4,6 +4,8 @@ from fastapi.encoders import jsonable_encoder
 
 from typing import List, Optional
 
+from dispatch.participant import service as participant_service
+
 from .models import (
     ParticipantRole,
     ParticipantRoleType,
@@ -31,6 +33,19 @@ def get_all_active_roles(*, db_session, participant_id: int) -> List[Optional[Pa
         .filter(ParticipantRole.participant_id == participant_id)
         .filter(ParticipantRole.renounce_at.is_(None))
     )
+
+
+def add_role(
+    *, db_session, participant_id: int, participant_role: ParticipantRoleType
+) -> ParticipantRole:
+    """Adds a role to a participant."""
+    participant = participant_service.get(db_session=db_session, participant_id=participant_id)
+    participant_role_in = ParticipantRoleCreate(role=participant_role)
+    participant_role = create(db_session=db_session, participant_role_in=participant_role_in)
+    participant.participant_role.append(participant_role)
+    db_session.add(participant)
+    db_session.commit()
+    return participant_role
 
 
 def renounce_role(*, db_session, participant_role: ParticipantRole) -> ParticipantRole:

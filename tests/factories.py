@@ -253,7 +253,7 @@ class ParticipantRoleFactory(BaseFactory):
 
     assume_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
     renounce_at = None
-    role = FuzzyChoice(["Incident Commander", "Reporter"])
+    role = FuzzyChoice(["Incident Commander", "Reporter", "Scribe", "Liaison"])
 
     class Meta:
         """Factory Configuration."""

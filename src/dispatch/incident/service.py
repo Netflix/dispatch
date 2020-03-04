@@ -10,9 +10,8 @@ from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.incident_type import service as incident_type_service
 from dispatch.participant import flows as participant_flows
-from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
-from dispatch.participant_role.models import ParticipantRoleType, ParticipantRoleCreate
+from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugins.base import plugins
 
 from .enums import IncidentStatus
@@ -165,18 +164,10 @@ def create(
     )
 
     if reporter_email == incident_commander_email:
-        # We create an incident commander role
-        incident_commander_participant_role_in = ParticipantRoleCreate(
-            role=ParticipantRoleType.incident_commander
-        )
-        incident_commander_role = participant_role_service.create(
-            db_session=db_session, participant_role_in=incident_commander_participant_role_in
-        )
-
         # We add the role of incident commander the reporter
-        participant_service.add_participant_role(
-            participant=reporter_participant,
-            participant_role=incident_commander_role,
+        participant_role_service.add_role(
+            participant_id=reporter_participant.id,
+            participant_role=ParticipantRoleType.incident_commander,
             db_session=db_session,
         )
     else:
