@@ -82,6 +82,7 @@ def create_issue_fields(
     labels: List[str] = None,
     cost: str = None,
 ):
+    """Creates Jira issue fields."""
     issue_fields = {}
 
     if title:
@@ -148,11 +149,13 @@ def create_vul_issue(
 
 
 def create(client: Any, issue_fields: dict, type: str = JIRA_PROJECT_KEY) -> dict:
+    """Creates a Jira issue."""
     issue = client.create_issue(fields=issue_fields)
     return {"resource_id": issue.key, "weblink": f"{JIRA_URL}/browse/{issue.key}"}
 
 
 def update(client: Any, issue: Any, issue_fields: dict, transition: str = None) -> dict:
+    """Updates a Jira issue."""
     data = {"resource_id": issue.key, "link": f"{JIRA_URL}/browse/{issue.key}"}
 
     if issue_fields:
@@ -169,6 +172,7 @@ def update(client: Any, issue: Any, issue_fields: dict, transition: str = None) 
 
 
 def link_issues(client: Any, link_type: str, issue_id_a: str, issue_id_b: str):
+    """Links two Jira issues."""
     issue_key_a = client.issue(issue_id_b).key
     issue_key_b = client.issue(issue_id_b).key
 
@@ -188,28 +192,8 @@ def link_issues(client: Any, link_type: str, issue_id_a: str, issue_id_b: str):
     }
 
 
-def get_incident_data(client: Any, filter: str, start_marker: str, end_marker: str):
-    incident_data = []
-    issues_in_project = client.search_issues(filter)
-    for issue in issues_in_project:
-        description = ""
-        if issue.fields.description:
-            start_index = issue.fields.description.find(start_marker) + len(start_marker)
-            end_index = issue.fields.description.find(end_marker)
-            description = issue.fields.description[start_index:end_index].strip()
-
-        incident_data.append(
-            {"key": issue.key, "title": issue.fields.summary, "summary": description}
-        )
-    return incident_data
-
-
-def get_issue(client: Any, key: str):
-    return client.issue(key)
-
-
 def get_user_name(email):
-    """Attempts to get username."""
+    """Returns username part of email, if valid email is provided."""
     if "@" in email:
         return email.split("@")[0]
     return email
