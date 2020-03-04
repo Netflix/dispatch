@@ -5,18 +5,18 @@
     :license: Apache, see LICENSE for more details.
 """
 import datetime
-import uuid
-from typing import Any, List
-
 import pytz
+import uuid
+
 from jinja2 import Template
 from jira import JIRA
+from typing import Any, List
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_jira as jira_plugin
 from dispatch.plugins.bases import TicketPlugin
 
-from .config import JIRA_PASSWORD, JIRA_URL, JIRA_USERNAME
+from .config import JIRA_URL, JIRA_API_URL, JIRA_USERNAME, JIRA_PASSWORD
 
 INCIDENT_TEMPLATE = """
 {color:red}*CONFIDENTIAL -- Internal use only{color}*
@@ -32,16 +32,6 @@ INCIDENT_TEMPLATE = """
 [Incident Document|{{document_weblink}}]
 [Incident Storage|{{storage_weblink}}]
 """
-
-
-def get_issue_key(issue: Any) -> str:
-    """Get a real or fake issue key depending on which jira we are talking to."""
-    if "dev" in JIRA_URL:
-        key = uuid.uuid4().hex[:8]
-        project = issue.fields.project
-        return f"{project}-test-{key}"
-    return issue.key
-
 
 INCIDENT_PRIORITY_MAP = {
     "low": {"id": "28668"},
@@ -218,12 +208,12 @@ def get_user_name(email):
     return email
 
 
-@apply(timer)
-@apply(counter)
+@apply(counter, exclude=["__init__"])
+@apply(timer, exclude=["__init__"])
 class JiraTicketPlugin(TicketPlugin):
     title = "Jira - Ticket"
     slug = "jira-ticket"
-    description = "Uses jira as an external ticket creator."
+    description = "Uses Jira as an external ticket creator."
     version = jira_plugin.__version__
 
     author = "Kevin Glisson"
@@ -231,18 +221,20 @@ class JiraTicketPlugin(TicketPlugin):
 
     _schema = None
 
+    def __init__(self):
+        self.client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
+
     def create(
         self, title: str, incident_type: str, incident_priority: str, commander: str, reporter: str
     ):
-        """Creates a jira ticket."""
-        client = JIRA(str(JIRA_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
+        """Creates a Jira ticket."""
         commander_username = get_user_name(commander)
         reporter_username = get_user_name(reporter)
         if incident_type == "vulnerability":
-            return create_vul_issue(client, title, commander_username, reporter_username)
+            return create_vul_issue(self.client, title, commander_username, reporter_username)
         else:
             return create_sec_issue(
-                client,
+                self.client,
                 title,
                 incident_priority,
                 incident_type,
@@ -267,12 +259,10 @@ class JiraTicketPlugin(TicketPlugin):
         cost: str = None,
     ):
         """Updates Jira ticket fields."""
-        client = JIRA(str(JIRA_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
-
         commander_username = get_user_name(commander_email) if commander_email else None
         reporter_username = get_user_name(reporter_email) if reporter_email else None
 
-        issue = client.issue(ticket_id)
+        issue = self.client.issue(ticket_id)
         issue_fields = create_issue_fields(
             title=title,
             description=description,
@@ -286,4 +276,4 @@ class JiraTicketPlugin(TicketPlugin):
             labels=labels,
             cost=cost,
         )
-        return update(client, issue, issue_fields, status)
+        return update(self.client, issue, issue_fields, status)
