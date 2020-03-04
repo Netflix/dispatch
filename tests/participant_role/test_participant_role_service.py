@@ -27,6 +27,16 @@ def test_get_all_active_roles(session, participant, participant_roles):
     assert len(t_participant_roles) > 1
 
 
+def test_add_role(session, participant, participant_role):
+    from dispatch.participant_role.service import add_role
+
+    t_participant_role = add_role(
+        db_session=session, participant_id=participant.id, participant_role=participant_role.role
+    )
+    assert t_participant_role.participant_id == participant.id
+    assert t_participant_role.role == participant_role.role
+
+
 def test_renounce_role(session, participant_role):
     from dispatch.participant_role.service import renounce_role
 
