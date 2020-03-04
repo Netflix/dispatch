@@ -887,14 +887,14 @@ def incident_assign_role_flow(assigner_email: str, incident_id: int, action: dic
     )
 
     if not assignee_participant:
-        # The assignee is not a participant. We add them to the incident with the given role
+        # The assignee is not a participant. We add them to the incident
         incident_add_or_reactivate_participant_flow(
             assignee_email, incident.id, db_session=db_session
         )
 
     # we run the participant assign role flow
     result = participant_role_flows.assign_role_flow(
-        db_session, incident, assignee_contact_info, assignee_role
+        incident.id, assignee_contact_info, assignee_role, db_session
     )
 
     if result == "assignee_has_role":
