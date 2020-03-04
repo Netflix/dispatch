@@ -1031,7 +1031,7 @@ def incident_remove_participant_flow(user_email: str, incident_id: int, db_sessi
         send_incident_commander_readded_notification(incident_id, db_session)
 
         log.debug(
-            f"Incident Commander with email {user_email} has been re-added to the incident conversation."
+            f"Incident Commander {incident.commander.name} has been re-added to the incident conversation."
         )
     else:
         # we remove the participant from the incident
