@@ -16,7 +16,14 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_jira as jira_plugin
 from dispatch.plugins.bases import TicketPlugin
 
-from .config import JIRA_URL, JIRA_API_URL, JIRA_USERNAME, JIRA_PASSWORD
+from .config import (
+    JIRA_URL,
+    JIRA_API_URL,
+    JIRA_USERNAME,
+    JIRA_PASSWORD,
+    JIRA_PROJECT_KEY,
+    JIRA_ISSUE_TYPE_ID,
+)
 
 INCIDENT_TEMPLATE = """
 {color:red}*CONFIDENTIAL -- Internal use only{color}*
@@ -50,8 +57,8 @@ def create_sec_issue(
     reporter_username: str,
 ):
     issue_fields = {
-        "project": {"key": "SEC"},
-        "issuetype": {"id": "53"},
+        "project": {"key": JIRA_PROJECT_KEY},
+        "issuetype": {"id": JIRA_ISSUE_TYPE_ID},
         "summary": title,
         "assignee": {"name": commander_username},
         "components": [{"name": incident_type}],
@@ -59,7 +66,7 @@ def create_sec_issue(
         "customfield_10551": INCIDENT_PRIORITY_MAP[priority.lower()],
     }
 
-    return create(client, issue_fields, type="SEC")
+    return create(client, issue_fields, type=JIRA_PROJECT_KEY)
 
 
 def create_issue_fields(
@@ -140,7 +147,7 @@ def create_vul_issue(
     return create(client, issue_fields, type="VUL")
 
 
-def create(client: Any, issue_fields: dict, type: str = "SEC") -> dict:
+def create(client: Any, issue_fields: dict, type: str = JIRA_PROJECT_KEY) -> dict:
     issue = client.create_issue(fields=issue_fields)
     return {"resource_id": issue.key, "weblink": f"{JIRA_URL}/browse/{issue.key}"}
 
