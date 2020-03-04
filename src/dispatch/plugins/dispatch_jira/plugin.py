@@ -17,7 +17,7 @@ from dispatch.plugins import dispatch_jira as jira_plugin
 from dispatch.plugins.bases import TicketPlugin
 
 from .config import (
-    JIRA_URL,
+    JIRA_BROWSER_URL,
     JIRA_API_URL,
     JIRA_USERNAME,
     JIRA_PASSWORD,
@@ -151,12 +151,12 @@ def create_vul_issue(
 def create(client: Any, issue_fields: dict, type: str = JIRA_PROJECT_KEY) -> dict:
     """Creates a Jira issue."""
     issue = client.create_issue(fields=issue_fields)
-    return {"resource_id": issue.key, "weblink": f"{JIRA_URL}/browse/{issue.key}"}
+    return {"resource_id": issue.key, "weblink": f"{JIRA_BROWSER_URL}/browse/{issue.key}"}
 
 
 def update(client: Any, issue: Any, issue_fields: dict, transition: str = None) -> dict:
     """Updates a Jira issue."""
-    data = {"resource_id": issue.key, "link": f"{JIRA_URL}/browse/{issue.key}"}
+    data = {"resource_id": issue.key, "link": f"{JIRA_BROWSER_URL}/browse/{issue.key}"}
 
     if issue_fields:
         issue.update(fields=issue_fields)
@@ -186,9 +186,9 @@ def link_issues(client: Any, link_type: str, issue_id_a: str, issue_id_b: str):
 
     return {
         "key_a": issue_key_a,
-        "link_a": f"{JIRA_URL}/browse/{issue_key_a}",
+        "link_a": f"{JIRA_BROWSER_URL}/browse/{issue_key_a}",
         "key_b": issue_key_b,
-        "link_b": f"{JIRA_URL}/browse/{issue_key_b}",
+        "link_b": f"{JIRA_BROWSER_URL}/browse/{issue_key_b}",
     }
 
 

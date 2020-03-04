@@ -2,9 +2,9 @@
 
 By default Dispatch ships with Jira support. Each Jira installation is unique, so you will likely want to create a Jira specific plugin for your organization.
 
-#### `JIRA_URL`
+#### `JIRA_BROWSER_URL`
 
-> URL for the Jira server.
+> URL for Jira browser links.
 
 #### `JIRA_API_URL`
 
