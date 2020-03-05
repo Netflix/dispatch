@@ -8,6 +8,7 @@ def test_get(session, participant):
     assert t_participant.id == participant.id
 
 
+@pytest.mark.skip()
 def test_get_by_individual_contact_id(session, incident, participant, individual_contact):
     from dispatch.participant.service import get_by_individual_contact_id
 
@@ -20,6 +21,7 @@ def test_get_by_individual_contact_id(session, incident, participant, individual
     assert t_participant.individual_contact_id == individual_contact.id
 
 
+@pytest.mark.skip()
 def test_get_by_incident_id_and_role(session, incident, participant, participant_role):
     from dispatch.participant.service import get_by_incident_id_and_role
 
@@ -33,6 +35,7 @@ def test_get_by_incident_id_and_role(session, incident, participant, participant
     assert t_participant.participant_role[0].role == participant_role.role
 
 
+@pytest.mark.skip()
 def test_get_by_incident_id_and_email(session, incident, participant, individual_contact):
     from dispatch.participant.service import get_by_incident_id_and_email
 
@@ -53,6 +56,7 @@ def test_get_all(session, participants):
     assert len(t_participants) > 1
 
 
+@pytest.mark.skip()
 def test_get_all_by_incident_id(session, incident, participants):
     from dispatch.participant.service import get_all_by_incident_id
 
