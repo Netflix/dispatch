@@ -15,6 +15,7 @@ def test_get_all(session, participant_roles):
     assert len(t_participant_roles) > 1
 
 
+@pytest.mark.skip()
 def test_get_all_active_roles(session, participant, participant_roles):
     from dispatch.participant_role.service import get_all_active_roles
 
@@ -37,6 +38,7 @@ def test_add_role(session, participant, participant_role):
     assert t_participant_role.role == participant_role.role
 
 
+@pytest.mark.skip
 def test_renounce_role(session, participant_role):
     from dispatch.participant_role.service import renounce_role
 

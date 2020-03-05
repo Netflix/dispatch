@@ -14,8 +14,7 @@ from dispatch.common.utils.composite_search import CompositeSearch
 from .config import SQLALCHEMY_DATABASE_URI
 
 engine = create_engine(str(SQLALCHEMY_DATABASE_URI))
-session_factory = sessionmaker(bind=engine)
-SessionLocal = scoped_session(session_factory)
+SessionLocal = sessionmaker(bind=engine)
 
 
 def resolve_table_name(name):

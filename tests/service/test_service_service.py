@@ -41,6 +41,7 @@ def test_create(session):
     assert name == service.name
 
 
+@pytest.mark.skip
 def test_update(session, service):
     from dispatch.service.service import update
     from dispatch.service.models import ServiceUpdate
