@@ -125,7 +125,7 @@ EXPOSE 8000
 VOLUME /var/lib/dispatch/files
 
 ENTRYPOINT ["dispatch"]
-CMD ["server", "start", "dispatch.main:app"]
+CMD ["server", "start", "dispatch.main:app", "--host=0.0.0.0"]
 
 ARG SOURCE_COMMIT
 LABEL org.opencontainers.image.revision=$SOURCE_COMMIT
