@@ -44,7 +44,6 @@ def test_get_or_create(session, individual_contact):
             office_phone=office_phone,
             weblink=weblink,
         )
-        individual_contact = create(db_session=session, individual_contact_in=individual_contact_in)
         contact = create(db_session=session, individual_contact_in=individual_contact_in)
 
     assert contact

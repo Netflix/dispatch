@@ -22,7 +22,7 @@ def test_get_by_slug(session, incident_type):
     assert t_incident_type.slug == incident_type.slug
 
 
-def test_get_all(session, incident_type):
+def test_get_all(session, incident_types):
     from dispatch.incident_type.service import get_all
 
     t_incident_types = get_all(db_session=session).all()
