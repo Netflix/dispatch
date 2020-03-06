@@ -95,7 +95,7 @@ def contact_load_csv_command(input, first_row_is_header):
     if first_row_is_header:
         reader = csv.DictReader(input)
         for row in reader:
-            row = dict((k.lower(), v) for k, v in row.items())
+            row = {k.lower(): v for k, v in row.items()}
             if not row.get("email"):
                 continue
 
