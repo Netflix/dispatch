@@ -1,5 +1,5 @@
 """
-.. module: dispatch.plugins.dispatch_jira.plugin
+.. module: dispatch.plugins.dispatch_gitlab.plugin
     :platform: Unix
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
