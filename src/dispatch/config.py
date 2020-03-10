@@ -44,8 +44,21 @@ DISPATCH_HELP_EMAIL = config("DISPATCH_HELP_EMAIL")
 DISPATCH_HELP_SLACK_CHANNEL = config("DISPATCH_HELP_SLACK_CHANNEL")
 
 # authentication
-JWKS_URL = config("JWKS_URL")
+DISPATCH_PKCE_AUTH_ENABLED = config("DISPATCH_PKCE_AUTH", default=True)
+DISPATCH_HEADER_AUTH_ENABLED = config("DISPATCH_HEADER_AUTH", default=False)
 
+DISPATCH_AUTH_HEADER_KEY = config("DISPACH_AUTH_HEADER", default=None)
+JWKS_URL = config("JWKS_URL", default=None)
+
+if DISPATCH_PKCE_AUTH_ENABLED:
+    if not JWKS_URL:
+        raise Exception("JWKS_URL must be set when DISPATCH_PKCE_AUTH_ENABLED")
+
+if DISPATCH_HEADER_AUTH_ENABLED:
+    if not DISPATCH_AUTH_HEADER_KEY:
+        raise Exception("DISPATCH_AUTH_HEADER_KEY must be when when DISPATCH_HEADER_AUTH_ENABLED")
+
+# static files
 DEFAULT_STATIC_DIR = os.path.join(
     os.path.abspath(os.path.dirname(__file__)), "static/dispatch/dist"
 )
