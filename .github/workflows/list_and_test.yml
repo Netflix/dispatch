@@ -1,10 +1,11 @@
 name: Python application
 
-on: [push]
+on: [pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     services:
       postgres:
         image: postgres
@@ -16,17 +17,22 @@ jobs:
           - 5432:5432
         # needed because the postgres container does not provide a healthcheck
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
     steps:
-      - uses: actions/checkout@v1
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
       - name: Set up Python 3.8
         uses: actions/setup-python@v1
         with:
           python-version: 3.8
+
       - name: Install dependencies
         run: |
           export DISPATCH_LIGHT_BUILD=1
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
+
       - name: Run linters
         uses: samuelmeuli/lint-action@v1
         with:
@@ -34,6 +40,7 @@ jobs:
           # Enable linters
           black: true
           flake8: true
+
       - name: Test with pytest
         run: |
           pytest
