@@ -15,7 +15,7 @@ def test_get_by_channel_id(session, conversation):
     assert t_conversation.channel_id == conversation.channel_id
 
 
-def test_get_all(session, conversation):
+def test_get_all(session, conversations):
     from dispatch.conversation.service import get_all
 
     t_conversations = get_all(db_session=session).all()

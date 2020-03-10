@@ -7,6 +7,7 @@ from sqlalchemy import Column, Boolean, Integer, ForeignKey, DateTime, event
 
 from dispatch.database import Base
 from dispatch.models import DispatchBase
+from dispatch.participant_role.models import ParticipantRoleCreate
 
 
 class Participant(Base):
@@ -41,7 +42,7 @@ class ParticipantBase(DispatchBase):
 
 
 class ParticipantCreate(ParticipantBase):
-    pass
+    participant_role: Optional[List[ParticipantRoleCreate]] = []
 
 
 class ParticipantUpdate(ParticipantBase):

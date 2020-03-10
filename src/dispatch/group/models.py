@@ -12,7 +12,11 @@ class Group(Base, ResourceMixin):
 
 # Pydantic models...
 class GroupBase(DispatchBase):
-    pass
+    name: str
+    email: str
+    resource_id: str
+    resource_type: str
+    weblink: str
 
 
 class GroupCreate(GroupBase):

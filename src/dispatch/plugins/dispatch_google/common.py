@@ -8,7 +8,7 @@ import googleapiclient.discovery
 from .config import (
     GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL,
     GOOGLE_SERVICE_ACCOUNT_CLIENT_ID,
-    GOOGLE_SERVICE_ACCOUNT_DELAGATED_ACCOUNT,
+    GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT,
     GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
     GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID,
     GOOGLE_SERVICE_ACCOUNT_PROJECT_ID,
@@ -40,7 +40,7 @@ def get_service(service_name: str, version: str, scopes: list):
             service_account_file.name, scopes=scopes
         )
 
-        delegated_credentials = credentials.with_subject(GOOGLE_SERVICE_ACCOUNT_DELAGATED_ACCOUNT)
+        delegated_credentials = credentials.with_subject(GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT)
 
         return googleapiclient.discovery.build(
             service_name,

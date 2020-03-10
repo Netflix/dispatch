@@ -27,6 +27,7 @@ sentry_sdk
 slackclient
 spacy
 sqlalchemy
+sh
 tabulate
 tenacity
 uvicorn

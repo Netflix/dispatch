@@ -40,13 +40,15 @@ By default, the config will be read from environment variables and/or `.env` fil
 
 > Used by Dispatch's authentication backend to pull the JSON Web Key Set \(JWKS\) public key from our specified provider. The result of this URL is cached for up to 1 hour.
 
-#### `VUE_APP_DISPATCH_OPEN_ID_CONNECT`
+#### `VUE_APP_DISPATCH_OPEN_ID_CONNECT_URL`
 
 > Used by the Dispatch Web UI send the user via Proof Key Code Exchange \(PKCE\) to a correct open id connect endpoint.
+> Configuration located at: `/src/dispatch/static/dispatch/.env` 
 
 #### `VUE_APP_DISPATCH_CLIENT_ID`
 
 > The client id to send to the open id connect endpoint.
+> Configuration located at: `/src/dispatch/static/dispatch/.env` 
 
 ### Persistence
 
