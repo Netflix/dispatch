@@ -4,6 +4,8 @@ import { publicRoute, protectedRoute } from "./config"
 import NProgress from "nprogress"
 import "nprogress/nprogress.css"
 
+import env from "good-env"
+
 import { BasicQueryStringUtils } from "@openid/appauth/built/query_string_utils"
 import { LocalStorageBackend } from "@openid/appauth/built/storage"
 import { AuthorizationRequest } from "@openid/appauth/built/authorization_request"
@@ -20,6 +22,7 @@ import store from "@/store"
 const requestor = new FetchRequestor()
 const routes = publicRoute.concat(protectedRoute)
 
+const pkce_auth = env.getBool(process.env.VUE_APP_DISPATCH_PKCE_AUTH) || true
 const clientId = process.env.VUE_APP_DISPATCH_CLIENT_ID
 const openIdConnectUrl = process.env.VUE_APP_DISPATCH_OPEN_ID_CONNECT_URL
 const scope = "openid profile email"
@@ -95,8 +98,13 @@ authorizationHandler.setAuthorizationNotifier(notifier)
 // router guards
 router.beforeEach((to, from, next) => {
   store.dispatch("app/setLoading", true)
+
+  NProgress.start()
+  if (!pkce_auth) {
+    next()
+  }
+
   getCfg().then(cfg => {
-    NProgress.start()
     if (!store.state.account.status.loggedIn) {
       if (to.query.code && to.query.state) {
         authorizationHandler.completeAuthorizationRequestIfPossible()
