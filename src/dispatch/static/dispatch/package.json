@@ -15,6 +15,7 @@
     "axios": "^0.19.1",
     "date-fns": "^2.9.0",
     "font-awesome": "^4.7.0",
+    "good-env": "^5.1.1",
     "lodash.truncate": "^4.4.2",
     "moment": "^2.24.0",
     "nprogress": "^0.2.0",
