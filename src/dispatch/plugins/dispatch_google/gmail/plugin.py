@@ -26,7 +26,7 @@ from dispatch.plugins.dispatch_google import gmail as google_gmail_plugin
 from dispatch.plugins.dispatch_google.common import get_service
 from dispatch.plugins.dispatch_google.config import (
     GOOGLE_USER_OVERRIDE,
-    GOOGLE_SERVICE_ACCOUNT_DELAGATED_ACCOUNT,
+    GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT,
 )
 
 from .filters import env
@@ -50,7 +50,7 @@ def create_html_message(recipient: str, subject: str, body: str) -> Dict:
         log.warning("GOOGLE_USER_OVERIDE set. Using override.")
 
     message["to"] = recipient
-    message["from"] = GOOGLE_SERVICE_ACCOUNT_DELAGATED_ACCOUNT
+    message["from"] = GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT
     message["subject"] = subject
     return {"raw": base64.urlsafe_b64encode(message.as_bytes()).decode()}
 

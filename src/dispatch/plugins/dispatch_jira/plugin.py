@@ -5,18 +5,25 @@
     :license: Apache, see LICENSE for more details.
 """
 import datetime
-import uuid
-from typing import Any, List
-
 import pytz
+import uuid
+
 from jinja2 import Template
 from jira import JIRA
+from typing import Any, List
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_jira as jira_plugin
 from dispatch.plugins.bases import TicketPlugin
 
-from .config import JIRA_PASSWORD, JIRA_URL, JIRA_USERNAME
+from .config import (
+    JIRA_BROWSER_URL,
+    JIRA_API_URL,
+    JIRA_USERNAME,
+    JIRA_PASSWORD,
+    JIRA_PROJECT_KEY,
+    JIRA_ISSUE_TYPE_ID,
+)
 
 INCIDENT_TEMPLATE = """
 {color:red}*CONFIDENTIAL -- Internal use only{color}*
@@ -32,16 +39,6 @@ INCIDENT_TEMPLATE = """
 [Incident Document|{{document_weblink}}]
 [Incident Storage|{{storage_weblink}}]
 """
-
-
-def get_issue_key(issue: Any) -> str:
-    """Get a real or fake issue key depending on which jira we are talking to."""
-    if "dev" in JIRA_URL:
-        key = uuid.uuid4().hex[:8]
-        project = issue.fields.project
-        return f"{project}-test-{key}"
-    return issue.key
-
 
 INCIDENT_PRIORITY_MAP = {
     "low": {"id": "28668"},
@@ -60,8 +57,8 @@ def create_sec_issue(
     reporter_username: str,
 ):
     issue_fields = {
-        "project": {"key": "SEC"},
-        "issuetype": {"id": "53"},
+        "project": {"key": JIRA_PROJECT_KEY},
+        "issuetype": {"id": JIRA_ISSUE_TYPE_ID},
         "summary": title,
         "assignee": {"name": commander_username},
         "components": [{"name": incident_type}],
@@ -69,7 +66,7 @@ def create_sec_issue(
         "customfield_10551": INCIDENT_PRIORITY_MAP[priority.lower()],
     }
 
-    return create(client, issue_fields, type="SEC")
+    return create(client, issue_fields, type=JIRA_PROJECT_KEY)
 
 
 def create_issue_fields(
@@ -85,6 +82,7 @@ def create_issue_fields(
     labels: List[str] = None,
     cost: str = None,
 ):
+    """Creates Jira issue fields."""
     issue_fields = {}
 
     if title:
@@ -150,13 +148,15 @@ def create_vul_issue(
     return create(client, issue_fields, type="VUL")
 
 
-def create(client: Any, issue_fields: dict, type: str = "SEC") -> dict:
+def create(client: Any, issue_fields: dict, type: str = JIRA_PROJECT_KEY) -> dict:
+    """Creates a Jira issue."""
     issue = client.create_issue(fields=issue_fields)
-    return {"resource_id": issue.key, "weblink": f"{JIRA_URL}/browse/{issue.key}"}
+    return {"resource_id": issue.key, "weblink": f"{JIRA_BROWSER_URL}/browse/{issue.key}"}
 
 
 def update(client: Any, issue: Any, issue_fields: dict, transition: str = None) -> dict:
-    data = {"resource_id": issue.key, "link": f"{JIRA_URL}/browse/{issue.key}"}
+    """Updates a Jira issue."""
+    data = {"resource_id": issue.key, "link": f"{JIRA_BROWSER_URL}/browse/{issue.key}"}
 
     if issue_fields:
         issue.update(fields=issue_fields)
@@ -172,6 +172,7 @@ def update(client: Any, issue: Any, issue_fields: dict, transition: str = None) 
 
 
 def link_issues(client: Any, link_type: str, issue_id_a: str, issue_id_b: str):
+    """Links two Jira issues."""
     issue_key_a = client.issue(issue_id_b).key
     issue_key_b = client.issue(issue_id_b).key
 
@@ -185,45 +186,25 @@ def link_issues(client: Any, link_type: str, issue_id_a: str, issue_id_b: str):
 
     return {
         "key_a": issue_key_a,
-        "link_a": f"{JIRA_URL}/browse/{issue_key_a}",
+        "link_a": f"{JIRA_BROWSER_URL}/browse/{issue_key_a}",
         "key_b": issue_key_b,
-        "link_b": f"{JIRA_URL}/browse/{issue_key_b}",
+        "link_b": f"{JIRA_BROWSER_URL}/browse/{issue_key_b}",
     }
 
 
-def get_incident_data(client: Any, filter: str, start_marker: str, end_marker: str):
-    incident_data = []
-    issues_in_project = client.search_issues(filter)
-    for issue in issues_in_project:
-        description = ""
-        if issue.fields.description:
-            start_index = issue.fields.description.find(start_marker) + len(start_marker)
-            end_index = issue.fields.description.find(end_marker)
-            description = issue.fields.description[start_index:end_index].strip()
-
-        incident_data.append(
-            {"key": issue.key, "title": issue.fields.summary, "summary": description}
-        )
-    return incident_data
-
-
-def get_issue(client: Any, key: str):
-    return client.issue(key)
-
-
 def get_user_name(email):
-    """Attempts to get username."""
+    """Returns username part of email, if valid email is provided."""
     if "@" in email:
         return email.split("@")[0]
     return email
 
 
-@apply(timer)
-@apply(counter)
+@apply(counter, exclude=["__init__"])
+@apply(timer, exclude=["__init__"])
 class JiraTicketPlugin(TicketPlugin):
     title = "Jira - Ticket"
     slug = "jira-ticket"
-    description = "Uses jira as an external ticket creator."
+    description = "Uses Jira as an external ticket creator."
     version = jira_plugin.__version__
 
     author = "Kevin Glisson"
@@ -231,18 +212,20 @@ class JiraTicketPlugin(TicketPlugin):
 
     _schema = None
 
+    def __init__(self):
+        self.client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
+
     def create(
         self, title: str, incident_type: str, incident_priority: str, commander: str, reporter: str
     ):
-        """Creates a jira ticket."""
-        client = JIRA(str(JIRA_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
+        """Creates a Jira ticket."""
         commander_username = get_user_name(commander)
         reporter_username = get_user_name(reporter)
         if incident_type == "vulnerability":
-            return create_vul_issue(client, title, commander_username, reporter_username)
+            return create_vul_issue(self.client, title, commander_username, reporter_username)
         else:
             return create_sec_issue(
-                client,
+                self.client,
                 title,
                 incident_priority,
                 incident_type,
@@ -267,12 +250,10 @@ class JiraTicketPlugin(TicketPlugin):
         cost: str = None,
     ):
         """Updates Jira ticket fields."""
-        client = JIRA(str(JIRA_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
-
         commander_username = get_user_name(commander_email) if commander_email else None
         reporter_username = get_user_name(reporter_email) if reporter_email else None
 
-        issue = client.issue(ticket_id)
+        issue = self.client.issue(ticket_id)
         issue_fields = create_issue_fields(
             title=title,
             description=description,
@@ -286,4 +267,4 @@ class JiraTicketPlugin(TicketPlugin):
             labels=labels,
             cost=cost,
         )
-        return update(client, issue, issue_fields, status)
+        return update(self.client, issue, issue_fields, status)

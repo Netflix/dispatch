@@ -22,7 +22,7 @@ def test_get_by_resource_type(session, ticket):
     assert t_ticket.resource_type == ticket.resource_type
 
 
-def test_get_all(session):
+def test_get_all(session, tickets):
     from dispatch.ticket.service import get_all
 
     t_tickets = get_all(db_session=session).all()

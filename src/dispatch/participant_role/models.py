@@ -26,11 +26,11 @@ class ParticipantRole(Base):
 
 # Pydantic models...
 class ParticipantRoleBase(DispatchBase):
-    role: ParticipantRoleType
+    pass
 
 
 class ParticipantRoleCreate(ParticipantRoleBase):
-    pass
+    role: Optional[ParticipantRoleType]
 
 
 class ParticipantRoleUpdate(ParticipantRoleBase):
