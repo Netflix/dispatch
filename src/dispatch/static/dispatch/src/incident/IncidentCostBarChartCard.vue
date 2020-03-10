@@ -1,6 +1,6 @@
 <template>
   <v-card :loading="loading">
-    <v-card-title>Total Cost</v-card-title>
+    <v-card-title>Cost</v-card-title>
     <apexchart type="bar" height="250" :options="chartOptions" :series="series"></apexchart>
   </v-card>
 </template>
