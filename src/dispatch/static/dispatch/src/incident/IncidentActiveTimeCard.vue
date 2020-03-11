@@ -1,6 +1,6 @@
 <template>
   <v-card :loading="loading">
-    <v-card-title>Mean Days Active (Active -> Stable)</v-card-title>
+    <v-card-title>Mean Active (Active -> Stable)</v-card-title>
     <apexchart type="line" height="250" :options="chartOptions" :series="series"></apexchart>
   </v-card>
 </template>
@@ -42,7 +42,6 @@ export default {
     return {}
   },
 
-  // TODO convert to reported_at
   computed: {
     series() {
       let series = { name: "Average Days Active", data: [] }
@@ -54,7 +53,7 @@ export default {
               if (item.stable_at) {
                 endTime = item.stable_at
               }
-              return differenceInCalendarDays(parseISO(endTime), parseISO(item.created_at))
+              return differenceInCalendarDays(parseISO(endTime), parseISO(item.reported_at))
             }) / value.length
           )
         )

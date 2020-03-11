@@ -1,6 +1,6 @@
 <template>
   <v-card :loading="loading">
-    <v-card-title>Mean Days to Resolution (Active -> Closed)</v-card-title>
+    <v-card-title>Mean Resolution (Active -> Closed)</v-card-title>
     <apexchart type="line" height="250" :options="chartOptions" :series="series"></apexchart>
   </v-card>
 </template>
