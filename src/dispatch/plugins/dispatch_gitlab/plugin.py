@@ -26,7 +26,7 @@ from .config import (
     GITLAB_PRIORITY_LABEL_MEDIUM,
     GITLAB_PRIORITY_LABEL_HIGH,
     GITLAB_PRIORITY_LABEL_VULNERABILITY,
-  )
+)
 
 INCIDENT_TEMPLATE = """
 # CONFIDENTIAL -- Internal use only
@@ -57,60 +57,81 @@ Commander : @{{commander_username}}
 """
 
 INCIDENT_PRIORITY_MAP = {
-    "low": "Incident::Low",
-    "medium": "Incident::Medium",
-    "high": "Incident::High",
-    "info": "Incident::Info",
-    "vulnerability": "Incident::vulnerability"
+    "info": GITLAB_PRIORITY_LABEL_INFO,
+    "low": GITLAB_PRIORITY_LABEL_LOW,
+    "medium": GITLAB_PRIORITY_LABEL_MEDIUM,
+    "high": GITLAB_PRIORITY_LABEL_HIGH,
+    "vulnerability": GITLAB_PRIORITY_LABEL_VULNERABILITY,
 }
 
-def create_incident_issue(gitlab, title, incident_priority, incident_type, commander_username, reporter_username,):
+
+def create_incident_issue(
+    gitlab, title, incident_priority, incident_type, commander_username, reporter_username,
+):
     """Generates an incident ticket in gitlab"""
-    project = gitlab.projects.get(GITLAB_INCIDENT_PROJECT_ID)
-    return project.issues.create({
-      'title': title,
-      'labels': INCIDENT_PRIORITY_MAP[incident_priority.lower()],
-      'description': Template(INCIDENT_INIT_TEMPLATE).render(
+    project = gitlab.projects.get(GITLAB_PROJECT_ID)
+    return project.issues.create(
+        {
+            "title": title,
+            "labels": INCIDENT_PRIORITY_MAP[incident_priority.lower()],
+            "description": Template(INCIDENT_INIT_TEMPLATE).render(
+                commander_username=commander_username, reporter_username=reporter_username
+            ),
+        }
+    ).iid
+
+
+def update_issue(
+    issue,
+    title,
+    description,
+    incident_type,
+    priority,
+    commander_username,
+    commander_id,
+    reporter_username,
+    conversation_weblink,
+    document_weblink,
+    storage_weblink,
+    labels,
+    cost,
+    status,
+):
+    """Update an issue to reflect latest information"""
+    if status.lower() == "closed":
+        issue.closed = True
+
+    if title:
+        issue.title = title
+
+    if (
+        description
+        and commander_username
+        and document_weblink
+        and conversation_weblink
+        and storage_weblink
+    ):
+        description = Template(INCIDENT_TEMPLATE).render(
+            description=description,
             commander_username=commander_username,
-            reporter_username=reporter_username
+            reporter_username=reporter_username,
+            document_weblink=document_weblink,
+            conversation_weblink=conversation_weblink,
+            storage_weblink=storage_weblink,
         )
-    }).iid
+        issue.description = description
 
-def update_issue(issue, title, description, incident_type, priority, commander_username, reporter_username, conversation_weblink, document_weblink, storage_weblink, labels, cost, status):
-  if status.lower() == 'closed':
-    issue.closed = True
+    if commander_id:
+        issue.assignee_ids = [commander_id]
 
-  if title:
-      issue.title = title
+    if labels:
+        issue.labels = labels
 
-  if (
-      description
-      and commander_username
-      and document_weblink
-      and conversation_weblink
-      and storage_weblink
-  ):
-      description = Template(INCIDENT_TEMPLATE).render(
-          description=description,
-          commander_username=commander_username,
-          reporter_username=reporter_username,
-          document_weblink=document_weblink,
-          conversation_weblink=conversation_weblink,
-          storage_weblink=storage_weblink,
-      )
-      issue.description = description
+    if priority:
+        issue.labels = issue.labels + "," + INCIDENT_PRIORITY_MAP[priority.lower()]
 
-  if commander_id:
-    issue.assignee_ids = [commander_id]
-
-  if labels:
-    issue.labels = labels
-
-  if priority:
-    issue.labels = issue.labels + "," + INCIDENT_PRIORITY_MAP[incident_priority.lower()]
-
-  if incident_type:
-    issue.labels = issue.labels + "," + INCIDENT_TYPE_MAP[incident_type.lower()]
+    if incident_type:
+        issue.labels = issue.labels + "," + incident_type
 
 
 def get_user_name(email):
@@ -119,11 +140,13 @@ def get_user_name(email):
         return email.split("@")[0]
     return email
 
+
 def get_user_id(client, username):
-  try:
-    return client.users.list(username=username)[0].id
-  except expression as identifier:
-    return None
+    try:
+        return client.users.list(username=username)[0].id
+    except Exception:
+        return None
+
 
 @apply(counter, exclude=["__init__"])
 @apply(timer, exclude=["__init__"])
@@ -172,7 +195,7 @@ class GitlabTicketPlugin(TicketPlugin):
         labels: List[str] = None,
         cost: str = None,
     ):
-        project_id = GITLAB_INCIDENT_PROJECT_ID
+        project_id = GITLAB_PROJECT_ID
 
         """Updates Gitlab ticket fields."""
         commander_username = get_user_name(commander_email) if commander_email else None
@@ -180,19 +203,19 @@ class GitlabTicketPlugin(TicketPlugin):
 
         issue = self.client.projects.get(project_id).issues.get(ticket_id)
         update_issue(
-          issue = issue,
-          title = title,
-          description = description,
-          incident_type = incident_type,
-          priority = priority,
-          commander_username = commander_username,
-          commander_id = get_user_id(self.client, commander_username)
-          reporter_username = reporter_username,
-          conversation_weblink = conversation_weblink,
-          document_weblink = document_weblink,
-          storage_weblink = storage_weblink,
-          labels = labels,
-          cost = cost,
-          status = status
+            issue=issue,
+            title=title,
+            description=description,
+            incident_type=incident_type,
+            priority=priority,
+            commander_username=commander_username,
+            commander_id=get_user_id(self.client, commander_username),
+            reporter_username=reporter_username,
+            conversation_weblink=conversation_weblink,
+            document_weblink=document_weblink,
+            storage_weblink=storage_weblink,
+            labels=labels,
+            cost=cost,
+            status=status,
         )
         return issue.save()
