@@ -31,7 +31,7 @@ export default {
       required: false
     },
     title: {
-      type: String,
+      type: [Number, String],
       required: false
     },
     icon: {
