@@ -71,9 +71,13 @@ def search(*, db_session, query_str: str, model: str):
 def create_filter_spec(model, fields, ops, values):
     """Creates a filter spec."""
     filter_spec = []
+
     if fields and ops and values:
         for field, op, value in zip(fields, ops, values):
             filter_spec.append({"model": model, "field": field, "op": op, "value": value})
+    # NOTE we default to AND filters
+    if filter_spec:
+        return {"and": filter_spec}
     return filter_spec
 
 
@@ -111,6 +115,7 @@ def search_filter_sort_paginate(
         query = get_all(db_session=db_session, model=model)
 
     filter_spec = create_filter_spec(model, fields, ops, values)
+    print(filter_spec)
     query = apply_filters(query, filter_spec)
 
     sort_spec = create_sort_spec(model, sort_by, descending)

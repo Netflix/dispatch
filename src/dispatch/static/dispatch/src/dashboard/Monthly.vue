@@ -1,47 +1,41 @@
 <template>
   <v-container fluid grid-list-xl>
-    <v-toolbar dense floating>
-      <v-text-field hide-details prepend-icon="search" single-line></v-text-field>
-
-      <v-btn icon>
-        <v-icon>my_location</v-icon>
-      </v-btn>
-
-      <v-btn icon>
-        <v-icon>mdi-dots-vertical</v-icon>
-      </v-btn>
-    </v-toolbar>
+    <v-layout row>
+      <!-- Filters -->
+      <v-flex lg2 sm3 xs6>
+        <v-select v-model="selectedMonth" :items="months" label="Month" dense return-object></v-select>
+      </v-flex>
+      <!-- Filters Ends-->
+    </v-layout>
     <v-layout row wrap>
       <!-- Widgets-->
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="domain" title="388" supTitle="Incidents" />
+        <stat-widget icon="domain" :title="totalIncidents" supTitle="Incidents" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="attach_money" title="$141,291" supTitle="Total Cost" />
+        <stat-widget icon="attach_money" :title="totalCost | toUSD" supTitle="Total Cost" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="show_chart" title="$100,000" supTitle="Avg Cost" />
+        <stat-widget icon="show_chart" :title="avgCost | toUSD" supTitle="Avg Cost" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="watch_later" title="1300" supTitle="Incident Hours" />
+        <stat-widget icon="watch_later" :title="totalHours" supTitle="Total Hours" />
       </v-flex>
       <!-- Widgets Ends -->
       <!-- Statistics -->
       <v-flex lg6 sm6 xs12>
-        <incident-type-bar-chart-card v-model="groupedItems" :loading="loading"></incident-type-bar-chart-card>
+        <incident-priority-basic-bar-chart-card v-model="items" :loading="loading" />
       </v-flex>
       <v-flex lg6 sm6 xs12>
-        <incident-priority-bar-chart-card v-model="groupedItems" :loading="loading"></incident-priority-bar-chart-card>
+        <incident-type-basic-bar-chart-card v-model="items" :loading="loading" />
       </v-flex>
       <v-flex lg6 sm6 xs12>
-        <incident-cost-bar-chart-card v-model="groupedItems" :loading="loading"></incident-cost-bar-chart-card>
+        <incident-cost-basic-bar-chart-card v-model="items" :loading="loading" />
       </v-flex>
       <v-flex lg6 sm6 xs12>
-        <incident-active-time-card v-model="groupedItems" :loading="loading"></incident-active-time-card>
+        <incident-active-basic-bar-chart-card v-model="items" :loading="loading" />
       </v-flex>
-      <v-flex lg6 sm6 xs12>
-        <incident-resolve-time-card v-model="groupedItems" :loading="loading"></incident-resolve-time-card>
-      </v-flex>
+      <v-flex lg6 sm6 xs12></v-flex>
       <!-- Statistics Ends -->
     </v-layout>
   </v-container>
@@ -50,23 +44,28 @@
 <script>
 import _ from "lodash"
 import parseISO from "date-fns/parseISO"
+import formatISO from "date-fns/formatISO"
+import startOfMonth from "date-fns/startOfMonth"
+import endOfMonth from "date-fns/endOfMonth"
+import differenceInHours from "date-fns/differenceInHours"
+import subMonths from "date-fns/subMonths"
+import eachMonthOfInterval from "date-fns/eachMonthOfInterval"
+import format from "date-fns/format"
 import IncidentApi from "@/incident/api"
+import IncidentPriorityBasicBarChartCard from "@/incident/IncidentPriorityBasicBarChartCard"
+import IncidentTypeBasicBarChartCard from "@/incident/IncidentTypeBasicBarChartCard"
+import IncidentCostBasicBarChartCard from "@/incident/IncidentCostBasicBarChartCard"
+import IncidentActiveBasicBarChartCard from "@/incident/IncidentActiveBasicBarChartCard"
 import StatWidget from "@/components/StatWidget.vue"
-import IncidentTypeBarChartCard from "@/incident/IncidentTypeBarChartCard.vue"
-import IncidentActiveTimeCard from "@/incident/IncidentActiveTimeCard.vue"
-import IncidentResolveTimeCard from "@/incident/IncidentResolveTimeCard.vue"
-import IncidentCostBarChartCard from "@/incident/IncidentCostBarChartCard.vue"
-import IncidentPriorityBarChartCard from "@/incident/IncidentPriorityBarChartCard.vue"
 export default {
   name: "IncidentDashboard",
 
   components: {
-    StatWidget,
-    IncidentTypeBarChartCard,
-    IncidentResolveTimeCard,
-    IncidentActiveTimeCard,
-    IncidentCostBarChartCard,
-    IncidentPriorityBarChartCard
+    IncidentPriorityBasicBarChartCard,
+    IncidentTypeBasicBarChartCard,
+    IncidentCostBasicBarChartCard,
+    IncidentActiveBasicBarChartCard,
+    StatWidget
   },
 
   data() {
@@ -74,43 +73,75 @@ export default {
       tab: null,
       loading: false,
       items: [],
-      range: { text: "90 Days" },
-      window: { text: "Month" },
-      windows: [{ text: "Month" }, { text: "Year" }, { text: "Quarter" }],
-      ranges: [{ text: "30 Days" }, { text: "90 Days" }, { text: "1 Year" }, { text: "2 Year" }]
+      selectedMonth: null
+    }
+  },
+
+  methods: {
+    fetchData() {
+      this.loading = true
+      let start = formatISO(startOfMonth(this.selectedMonth.value))
+      let end = formatISO(endOfMonth(this.selectedMonth.value))
+      IncidentApi.getAll({
+        itemsPerPage: 10,
+        sortBy: ["reported_at"],
+        fields: ["reported_at", "reported_at"],
+        ops: ["<=", ">="],
+        values: [end, start],
+        descending: [true]
+      }).then(response => {
+        this.loading = false
+
+        // ignore all simulated incidents
+        this.items = _.remove(_.sortBy(response.data.items, "reported_at"), function(item) {
+          return item.incident_type.name !== "Simulation"
+        })
+      })
     }
   },
 
   computed: {
-    incidentsByYear() {
-      return _.groupBy(this.items, function(item) {
-        return parseISO(item.created_at).getYear()
+    months() {
+      var monthsArr = eachMonthOfInterval({
+        end: new Date(),
+        start: subMonths(new Date(), 6)
       })
-    },
-    incidentsByMonth() {
-      return _.groupBy(this.items, function(item) {
-        return parseISO(item.created_at).toLocaleString("default", { month: "short" })
+
+      var monthsSelect = []
+      _.forEach(monthsArr, function(month) {
+        monthsSelect.push({ text: format(month, "LLLL"), value: month })
       })
+
+      return _.reverse(monthsSelect)
     },
-    incidentsByQuarter() {
-      return _.groupBy(this.items, function(item) {
-        return "Q" + Math.floor(parseISO(item.created_at).getMonth() + 3) / 3
+    totalIncidents() {
+      return this.items.length
+    },
+    totalCost() {
+      return _.sumBy(this.items, "cost")
+    },
+    avgCost() {
+      return this.totalCost / this.totalIncidents
+    },
+    totalHours() {
+      return _.sumBy(this.items, function(item) {
+        let endTime = new Date().toISOString()
+        if (item.stable_at) {
+          endTime = item.stable_at
+        }
+        return differenceInHours(parseISO(endTime), parseISO(item.reported_at))
       })
-    },
-    groupedItems() {
-      return this.incidentsByMonth
+    }
+  },
+
+  watch: {
+    selectedMonth: function() {
+      this.fetchData()
     }
   },
 
   created() {
-    this.loading = true
-    // TODO make this reported_at
-    IncidentApi.getAll({ itemsPerPage: 100, sortBy: ["created_at"], descending: [true] }).then(
-      response => {
-        this.items = _.sortBy(response.data.items, "created_at")
-        this.loading = false
-      }
-    )
+    this.selectedMonth = this.months[0]
   }
 }
 </script>
