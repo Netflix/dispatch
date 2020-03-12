@@ -7,7 +7,7 @@
 
 <script>
 import _ from "lodash"
-import differenceInCalendarDays from "date-fns/differenceInCalendarDays"
+import differenceInHours from "date-fns/differenceInHours"
 import parseISO from "date-fns/parseISO"
 import VueApexCharts from "vue-apexcharts"
 export default {
@@ -54,7 +54,7 @@ export default {
               if (item.closed_at) {
                 endTime = item.closed_at
               }
-              return differenceInCalendarDays(parseISO(endTime), parseISO(item.created_at))
+              return differenceInHours(parseISO(endTime), parseISO(item.created_at))
             }) / value.length
           )
         )
@@ -88,7 +88,7 @@ export default {
         },
         yaxis: {
           title: {
-            text: "Days"
+            text: "Hours"
           }
         },
         legend: {

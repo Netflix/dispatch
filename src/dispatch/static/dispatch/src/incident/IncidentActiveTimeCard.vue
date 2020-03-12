@@ -7,7 +7,7 @@
 
 <script>
 import _ from "lodash"
-import differenceInCalendarDays from "date-fns/differenceInCalendarDays"
+import differenceInHours from "date-fns/differenceInHours"
 import parseISO from "date-fns/parseISO"
 import VueApexCharts from "vue-apexcharts"
 export default {
@@ -44,7 +44,7 @@ export default {
 
   computed: {
     series() {
-      let series = { name: "Average Days Active", data: [] }
+      let series = { name: "Average Hours Active", data: [] }
       _.forEach(this.value, function(value, key) {
         series.data.push(
           Math.round(
@@ -53,7 +53,7 @@ export default {
               if (item.stable_at) {
                 endTime = item.stable_at
               }
-              return differenceInCalendarDays(parseISO(endTime), parseISO(item.reported_at))
+              return differenceInHours(parseISO(endTime), parseISO(item.reported_at))
             }) / value.length
           )
         )
@@ -87,7 +87,7 @@ export default {
         },
         yaxis: {
           title: {
-            text: "Days"
+            text: "Hours"
           }
         },
         legend: {
