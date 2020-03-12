@@ -115,7 +115,6 @@ def search_filter_sort_paginate(
         query = get_all(db_session=db_session, model=model)
 
     filter_spec = create_filter_spec(model, fields, ops, values)
-    print(filter_spec)
     query = apply_filters(query, filter_spec)
 
     sort_spec = create_sort_spec(model, sort_by, descending)
