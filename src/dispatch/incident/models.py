@@ -104,7 +104,8 @@ class Incident(Base, TimeStampMixin):
     @staticmethod
     def _status_time(mapper, connection, target):
         if target.status == IncidentStatus.stable:
-            target.stable_at = datetime.utcnow()
+            if not target.stable_at:
+                target.stable_at = datetime.utcnow()
         elif target.status == IncidentStatus.closed:
             target.closed_at = datetime.utcnow()
 
