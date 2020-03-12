@@ -3,6 +3,7 @@ import App from "./App.vue"
 import vuetify from "./vuetify/"
 import router from "./router/"
 import store from "./store"
+import filters from "./filters" // this must be defined to register all filters
 import "./registerServiceWorker"
 import "roboto-fontface/css/roboto/roboto-fontface.css"
 import "font-awesome/css/font-awesome.css"

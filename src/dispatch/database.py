@@ -71,9 +71,13 @@ def search(*, db_session, query_str: str, model: str):
 def create_filter_spec(model, fields, ops, values):
     """Creates a filter spec."""
     filter_spec = []
+
     if fields and ops and values:
         for field, op, value in zip(fields, ops, values):
             filter_spec.append({"model": model, "field": field, "op": op, "value": value})
+    # NOTE we default to AND filters
+    if filter_spec:
+        return {"and": filter_spec}
     return filter_spec
 
 

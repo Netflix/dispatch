@@ -2,16 +2,12 @@
   <v-layout>
     <v-tabs>
       <v-tab>Overview</v-tab>
-      <v-tab>Month</v-tab>
-      <v-tab>Incident Type</v-tab>
+      <v-tab>By Month</v-tab>
       <v-tab-item>
         <dashboard-overview></dashboard-overview>
       </v-tab-item>
       <v-tab-item>
         <dashboard-monthly></dashboard-monthly>
-      </v-tab-item>
-      <v-tab-item>
-        <dashboard-incident-type></dashboard-incident-type>
       </v-tab-item>
     </v-tabs>
   </v-layout>
