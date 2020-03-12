@@ -1,6 +1,6 @@
 name: Python application
 
-on: [pull_request]
+on: [push]
 
 jobs:
   build:
