@@ -6,13 +6,8 @@ from sqlalchemy.orm import Session
 from dispatch.auth.service import get_current_user
 from dispatch.database import get_db, search_filter_sort_paginate
 
-from .flows import (
-    incident_create_flow,
-    incident_active_flow,
-    incident_stable_flow,
-    incident_closed_flow,
-)
-from .models import IncidentStatus, IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
+from .flows import incident_create_flow, incident_update_flow
+from .models import IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
 from .service import create, delete, get, update
 
 router = APIRouter()
@@ -74,6 +69,7 @@ def create_incident(
     )
 
     background_tasks.add_task(incident_create_flow, incident_id=incident.id)
+
     return incident
 
 
@@ -93,13 +89,9 @@ def update_incident(
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
     incident = update(db_session=db_session, incident=incident, incident_in=incident_in)
 
-    if incident_in.status.name != incident.status:
-        if incident_in.status == IncidentStatus.active:
-            background_tasks.add_task(incident_active_flow, incident_id=incident.id)
-        elif incident_in.status == IncidentStatus.closed:
-            background_tasks.add_task(incident_closed_flow, incident_id=incident.id)
-        elif incident_in.status == IncidentStatus.stable:
-            background_tasks.add_task(incident_stable_flow, incident_id=incident.id)
+    background_tasks.add_task(
+        incident_update_flow, incident_id=incident.id, incident_in=incident_in
+    )
 
     return incident
 

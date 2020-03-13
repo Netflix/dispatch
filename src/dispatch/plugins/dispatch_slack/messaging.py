@@ -17,7 +17,7 @@ from dispatch.messaging import (
 
 from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
-    SLACK_COMMAND_EDIT_INCIDENT_SLUG,
+    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
@@ -65,9 +65,9 @@ INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
         "response_type": "ephemeral",
         "text": "Opening a dialog to assign a role to a participant...",
     },
-    SLACK_COMMAND_EDIT_INCIDENT_SLUG: {
+    SLACK_COMMAND_UPDATE_INCIDENT_SLUG: {
         "response_type": "ephemeral",
-        "text": "Opening a dialog to edit incident information...",
+        "text": "Opening a dialog to update incident information...",
     },
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG: {
         "response_type": "ephemeral",

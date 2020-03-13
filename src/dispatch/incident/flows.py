@@ -8,6 +8,7 @@
 .. moduleauthor:: Marc Vilanova <mvilanova@netflix.com>
 """
 import logging
+from datetime import datetime
 from typing import Any, List, Optional
 
 from dispatch.config import (
@@ -40,6 +41,7 @@ from dispatch.document.service import get_by_incident_id_and_resource_type as ge
 from dispatch.group import service as group_service
 from dispatch.group.models import GroupCreate
 from dispatch.incident import service as incident_service
+from dispatch.incident.models import IncidentUpdate
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_priority.models import IncidentPriorityRead
 from dispatch.incident_type import service as incident_type_service
@@ -569,6 +571,8 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     log.debug(f"We have updated the status of the incident to {IncidentStatus.stable}.")
 
+    incident.stable_at = datetime.utcnow()
+
     # we update the incident cost
     incident_cost = incident_service.calculate_cost(incident_id, db_session)
 
@@ -627,9 +631,6 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
             document_service.create(db_session=db_session, document_in=document_in)
         )
 
-        db_session.add(incident)
-        db_session.commit()
-
         log.debug("We have added the incident review document to the incident.")
 
         # we get the incident investigation and faq documents
@@ -668,6 +669,9 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     # we send the stable notifications
     send_incident_status_notifications(incident, db_session)
 
+    db_session.add(incident)
+    db_session.commit()
+
     log.debug("We have sent the incident stable notifications.")
 
 
@@ -693,6 +697,10 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
                 ],
             )
         incident_stable_flow(incident_id, command=command, db_session=db_session)
+
+    incident.closed_at = datetime.utcnow()
+    db_session.add(incident)
+    db_session.commit()
 
     # we update the status of the incident
     update_incident_status(db_session=db_session, incident=incident, status=IncidentStatus.closed)
@@ -752,64 +760,25 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
 
 
 @background_task
-def incident_edit_flow(user_email: str, incident_id: int, action: dict, db_session=None):
-    """Runs the incident edit flow."""
-    notify = action["submission"]["notify"]
-    incident_title = action["submission"]["title"]
-    incident_description = action["submission"]["description"]
-    incident_type = action["submission"]["type"]
-    incident_priority = action["submission"]["priority"]
-    incident_visibility = action["submission"]["visibility"]
-
+def incident_update_flow(
+    user_email: str, incident_id: int, incident_in: IncidentUpdate, notify=True, db_session=None
+):
+    """Runs the incident update flow."""
     conversation_topic_change = False
 
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    # we update the incident title
-    incident.title = incident_title
-    log.debug(f"Updated the incident title to {incident_title}.")
-
-    # we update the incident description
-    incident.description = incident_description
-    log.debug(f"Updated the incident description to {incident_description}.")
-
-    if incident_type != incident.incident_type.name:
-        # we update the incident type
-        incident_type_obj = incident_type_service.get_by_name(
-            db_session=db_session, name=incident_type
-        )
-        incident.incident_type_id = incident_type_obj.id
-
-        log.debug(f"Updated the incident type to {incident_type}.")
-
+    if incident_in.type != incident.incident_type.name:
         conversation_topic_change = True
 
-    if incident_priority != incident.incident_priority.name:
-        # we update the incident priority
-        incident_priority_obj = incident_priority_service.get_by_name(
-            db_session=db_session, name=incident_priority
-        )
-        incident.incident_priority_id = incident_priority_obj.id
-
-        log.debug(f"Updated the incident priority to {incident_priority}.")
-
+    if incident_in.incident_priority != incident.incident_priority.name:
         conversation_topic_change = True
-
-    if incident_visibility != incident.visibility:
-        # we update the incident visibility
-        incident.visibility = incident_visibility
-
-        log.debug(f"Updated the incident visibility to {incident_visibility}.")
 
     if notify == "Yes":
         send_incident_change_notifications(
-            incident, incident_title, incident_type, incident_priority
+            incident, incident.title, incident.incident_type, incident.incident_priority
         )
-
-    # we commit the changes to the incident
-    db_session.add(incident)
-    db_session.commit()
 
     if conversation_topic_change:
         # we update the conversation topic
@@ -827,8 +796,8 @@ def incident_edit_flow(user_email: str, incident_id: int, action: dict, db_sessi
         incident.ticket.resource_id,
         title=incident.title,
         description=incident.description,
-        incident_type=incident_type,
-        priority=incident_priority,
+        incident_type=incident.incident_type,
+        priority=incident.incident_priority,
         commander_email=incident.commander.email,
         conversation_weblink=incident.conversation.weblink,
         document_weblink=incident_document.weblink,
@@ -861,6 +830,14 @@ def incident_edit_flow(user_email: str, incident_id: int, action: dict, db_sessi
     group_plugin.add(notification_group.email, team_participant_emails)
 
     log.debug(f"Resolved and added new participants to the incident.")
+
+    if incident_in.status.name != incident.status:
+        if incident_in.status == IncidentStatus.active:
+            incident_active_flow(incident_id=incident.id, db_session=db_session)
+        elif incident_in.status == IncidentStatus.closed:
+            incident_closed_flow(incident_id=incident.id, db_session=db_session)
+        elif incident_in.status == IncidentStatus.stable:
+            incident_stable_flow(incident_id=incident.id, db_session=db_session)
 
 
 @background_task

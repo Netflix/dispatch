@@ -22,7 +22,7 @@ from dispatch.database import get_db, SessionLocal
 from dispatch.decorators import background_task
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
-from dispatch.incident.models import IncidentVisibility
+from dispatch.incident.models import IncidentVisibility, IncidentUpdate
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.incident_type import service as incident_type_service
@@ -40,7 +40,7 @@ from dispatch.task.models import TaskStatus
 from . import __version__
 from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
-    SLACK_COMMAND_EDIT_INCIDENT_SLUG,
+    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
@@ -313,7 +313,7 @@ def create_assign_role_dialog(incident_id: int, command: dict = None):
 
 
 @background_task
-def create_edit_incident_dialog(incident_id: int, command: dict = None, db_session=None):
+def create_update_incident_dialog(incident_id: int, command: dict = None, db_session=None):
     """Creates a dialog for editing incident information."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
@@ -388,7 +388,7 @@ def create_engage_oncall_dialog(incident_id: int, command: dict = None, db_sessi
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"No oncall services have been defined. You can define them in the Disparch UI at /services",
+                    "text": f"No oncall services have been defined. You can define them in the Dispatch UI at /services",
                 },
             }
         ]
@@ -495,7 +495,7 @@ def command_functions(command: str):
     """Interprets the command and routes it the appropriate function."""
     command_mappings = {
         SLACK_COMMAND_ASSIGN_ROLE_SLUG: [create_assign_role_dialog],
-        SLACK_COMMAND_EDIT_INCIDENT_SLUG: [create_edit_incident_dialog],
+        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_dialog],
         SLACK_COMMAND_LIST_PARTICIPANTS_SLUG: [list_participants],
         SLACK_COMMAND_LIST_RESOURCES_SLUG: [incident_flows.incident_list_resources_flow],
         SLACK_COMMAND_LIST_TASKS_SLUG: [list_tasks],
@@ -509,12 +509,30 @@ def command_functions(command: str):
     return command_mappings.get(command, [])
 
 
+@background_task
+def handle_update_incident_action(user_email, incident_id, action, db_session=None):
+    """Messages slack dialog data into something that Dispatch can use."""
+    submission = action["submission"]
+    notify = submission["notify"]
+    incident_in = IncidentUpdate(
+        title=submission["title"],
+        description=submission["description"],
+        incident_type=submission["type"],
+        incident_priority=submission["priority"],
+        visibility=submission["visability"],
+    )
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    incident_service.update(db_session=db_session, incident=incident, incident_in=incident_in)
+
+    incident_flows.incident_update_flow(user_email, incident_id, incident_in, notify)
+
+
 def action_functions(action: str):
     """Interprets the action and routes it the appropriate function."""
     action_mappings = {
         SLACK_COMMAND_STATUS_REPORT_SLUG: [status_report_flows.new_status_report_flow],
         SLACK_COMMAND_ASSIGN_ROLE_SLUG: [incident_flows.incident_assign_role_flow],
-        SLACK_COMMAND_EDIT_INCIDENT_SLUG: [incident_flows.incident_edit_flow],
+        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [handle_update_incident_action],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [incident_flows.incident_engage_oncall_flow],
         ConversationButtonActions.invite_user: [add_user_to_conversation],
     }

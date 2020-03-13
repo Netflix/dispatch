@@ -1,7 +1,8 @@
 import math
 from datetime import datetime, timedelta
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
+from fastapi import BackgroundTasks
 from fastapi.encoders import jsonable_encoder
 
 from dispatch.config import ANNUAL_COST_EMPLOYEE, BUSINESS_HOURS_YEAR
@@ -184,7 +185,6 @@ def create(
 
 def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> Incident:
     incident_data = jsonable_encoder(incident)
-
     incident_priority = incident_priority_service.get_by_name(
         db_session=db_session, name=incident_in.incident_priority.name
     )
@@ -206,6 +206,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
 
     db_session.add(incident)
     db_session.commit()
+
     return incident
 
 

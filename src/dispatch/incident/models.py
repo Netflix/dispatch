@@ -11,7 +11,6 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     String,
     Table,
-    event,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -100,18 +99,6 @@ class Incident(Base, TimeStampMixin):
     status_reports = relationship("StatusReport", backref="incident")
     tasks = relationship("Task", backref="incident")
     terms = relationship("Term", secondary=assoc_incident_terms, backref="incidents")
-
-    @staticmethod
-    def _status_time(mapper, connection, target):
-        if target.status == IncidentStatus.stable:
-            if not target.stable_at:
-                target.stable_at = datetime.utcnow()
-        elif target.status == IncidentStatus.closed:
-            target.closed_at = datetime.utcnow()
-
-    @classmethod
-    def __declare_last__(cls):
-        event.listen(cls, "before_update", cls._status_time)
 
 
 # Pydantic models...
