@@ -110,7 +110,7 @@ def client(testapp, session, client):
 @pytest.fixture
 def conference_plugin():
     from dispatch.plugins.base import register
-    from .plugins.conference import TestConferencePlugin
+    from dispatch.plugins.dispatch_test.conference import TestConferencePlugin
 
     register(TestConferencePlugin)
     return TestConferencePlugin
@@ -119,7 +119,7 @@ def conference_plugin():
 @pytest.fixture
 def contact_plugin():
     from dispatch.plugins.base import register
-    from .plugins.contact import TestContactPlugin
+    from dispatch.plugins.dispatch_test.contact import TestContactPlugin
 
     register(TestContactPlugin)
     return TestContactPlugin
@@ -128,7 +128,7 @@ def contact_plugin():
 @pytest.fixture
 def conversation_plugin():
     from dispatch.plugins.base import register
-    from .plugins.conversation import TestConversationPlugin
+    from dispatch.plugins.dispatch_test.conversation import TestConversationPlugin
 
     register(TestConversationPlugin)
     return TestConversationPlugin
@@ -137,7 +137,7 @@ def conversation_plugin():
 @pytest.fixture
 def definition_plugin():
     from dispatch.plugins.base import register
-    from .plugins.definition import TestDefinitionPlugin
+    from dispatch.plugins.dispatch_test.definition import TestDefinitionPlugin
 
     register(TestDefinitionPlugin)
     return TestDefinitionPlugin
@@ -146,7 +146,7 @@ def definition_plugin():
 @pytest.fixture
 def document_resolver_plugin():
     from dispatch.plugins.base import register
-    from .plugins.document_resolver import TestDocumentResolverPlugin
+    from dispatch.plugins.dispatch_test.document_resolver import TestDocumentResolverPlugin
 
     register(TestDocumentResolverPlugin)
     return TestDocumentResolverPlugin
@@ -155,7 +155,7 @@ def document_resolver_plugin():
 @pytest.fixture
 def document_plugin():
     from dispatch.plugins.base import register
-    from .plugins.document import TestDocumentPlugin
+    from dispatch.plugins.dispatch_test.document import TestDocumentPlugin
 
     register(TestDocumentPlugin)
     return TestDocumentPlugin
@@ -164,7 +164,7 @@ def document_plugin():
 @pytest.fixture
 def oncall_plugin():
     from dispatch.plugins.base import register
-    from .plugins.oncall import TestOncallPlugin
+    from .dispatch.plugins.dispatch_test.oncall import TestOncallPlugin
 
     register(TestOncallPlugin)
     return TestOncallPlugin
@@ -173,7 +173,7 @@ def oncall_plugin():
 @pytest.fixture
 def participant_group_plugin():
     from dispatch.plugins.base import register
-    from .plugins.participant_group import TestParticipantGroupPlugin
+    from dispatch.plugins.dispatch_test.participant_group import TestParticipantGroupPlugin
 
     register(TestParticipantGroupPlugin)
     return TestParticipantGroupPlugin
@@ -182,7 +182,7 @@ def participant_group_plugin():
 @pytest.fixture
 def participant_plugin():
     from dispatch.plugins.base import register
-    from .plugins.participant import TestParticipantPlugin
+    from dispatch.plugins.dispatch_test.participant import TestParticipantPlugin
 
     register(TestParticipantPlugin)
     return TestParticipantPlugin
@@ -191,7 +191,7 @@ def participant_plugin():
 @pytest.fixture
 def storage_plugin():
     from dispatch.plugins.base import register
-    from .plugins.storage import TestStoragePlugin
+    from dispatch.plugins.dispatch_test.storage import TestStoragePlugin
 
     register(TestStoragePlugin)
     return TestStoragePlugin
@@ -200,7 +200,7 @@ def storage_plugin():
 @pytest.fixture
 def task_plugin():
     from dispatch.plugins.base import register
-    from .plugins.task import TestTaskPlugin
+    from dispatch.plugins.dispatch_test.task import TestTaskPlugin
 
     register(TestTaskPlugin)
     return TestTaskPlugin
@@ -209,7 +209,7 @@ def task_plugin():
 @pytest.fixture
 def term_plugin():
     from dispatch.plugins.base import register
-    from .plugins.term import TestTermPlugin
+    from dispatch.plugins.dispatch_test.term import TestTermPlugin
 
     register(TestTermPlugin)
     return TestTermPlugin
@@ -218,7 +218,7 @@ def term_plugin():
 @pytest.fixture
 def ticket_plugin():
     from dispatch.plugins.base import register
-    from .plugins.ticket import TestTicketPlugin
+    from dispatch.plugins.dispatch_test.ticket import TestTicketPlugin
 
     register(TestTicketPlugin)
     return TestTicketPlugin
