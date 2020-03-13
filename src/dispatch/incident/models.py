@@ -19,8 +19,12 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.conversation.models import ConversationRead
 from dispatch.database import Base
 from dispatch.document.models import DocumentRead
-from dispatch.incident_priority.models import IncidentPriorityCreate, IncidentPriorityRead
-from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead
+from dispatch.incident_priority.models import (
+    IncidentPriorityCreate,
+    IncidentPriorityRead,
+    IncidentPriorityBase,
+)
+from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
 from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.storage.models import StorageRead
@@ -127,12 +131,12 @@ class IncidentCreate(IncidentBase):
 
 class IncidentUpdate(IncidentBase):
     visibility: IncidentVisibility
-    incident_priority: IncidentPriorityRead
-    incident_type: IncidentTypeRead
+    incident_priority: IncidentPriorityBase
+    incident_type: IncidentTypeBase
     reported_at: Optional[datetime] = None
     stable_at: Optional[datetime] = None
-    commander: IndividualReadNested
-    reporter: IndividualReadNested
+    commander: Optional[IndividualReadNested]
+    reporter: Optional[IndividualReadNested]
 
 
 class IncidentRead(IncidentBase):

@@ -769,15 +769,15 @@ def incident_update_flow(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    if incident_in.type != incident.incident_type.name:
+    if incident_in.incident_type.name != incident.incident_type.name:
         conversation_topic_change = True
 
-    if incident_in.incident_priority != incident.incident_priority.name:
+    if incident_in.incident_priority.name != incident.incident_priority.name:
         conversation_topic_change = True
 
     if notify == "Yes":
         send_incident_change_notifications(
-            incident, incident.title, incident.incident_type, incident.incident_priority
+            incident, incident.title, incident.incident_type.name, incident.incident_priority.name
         )
 
     if conversation_topic_change:
@@ -796,8 +796,8 @@ def incident_update_flow(
         incident.ticket.resource_id,
         title=incident.title,
         description=incident.description,
-        incident_type=incident.incident_type,
-        priority=incident.incident_priority,
+        incident_type=incident.incident_type.name,
+        priority=incident.incident_priority.name,
         commander_email=incident.commander.email,
         conversation_weblink=incident.conversation.weblink,
         document_weblink=incident_document.weblink,

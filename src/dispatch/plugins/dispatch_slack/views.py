@@ -22,7 +22,7 @@ from dispatch.database import get_db, SessionLocal
 from dispatch.decorators import background_task
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
-from dispatch.incident.models import IncidentVisibility, IncidentUpdate
+from dispatch.incident.models import IncidentVisibility, IncidentUpdate, IncidentRead
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.incident_type import service as incident_type_service
@@ -517,14 +517,17 @@ def handle_update_incident_action(user_email, incident_id, action, db_session=No
     incident_in = IncidentUpdate(
         title=submission["title"],
         description=submission["description"],
-        incident_type=submission["type"],
-        incident_priority=submission["priority"],
-        visibility=submission["visability"],
+        incident_type={"name": submission["type"]},
+        incident_priority={"name": submission["priority"]},
+        visibility=submission["visibility"],
     )
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    existing_incident = IncidentRead(incident.__dict__)
     incident_service.update(db_session=db_session, incident=incident, incident_in=incident_in)
 
-    incident_flows.incident_update_flow(user_email, incident_id, incident_in, notify)
+    incident_flows.incident_update_flow(
+        user_email, incident_id, incident_in, incident_existing, notify
+    )
 
 
 def action_functions(action: str):
@@ -688,7 +691,9 @@ async def handle_command(
         for f in command_functions(command.get("command")):
             background_tasks.add_task(f, conversation.incident_id, command=command)
 
-        return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(command.get("command"), "")
+        return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(
+            command.get("command"), f"Unable to find message. Command: {command.get('command')}"
+        )
     else:
         return render_non_incident_conversation_command_error_message(command.get("command"))
 
@@ -719,6 +724,7 @@ async def handle_action(
 
     # We resolve the user's email
     user_id = action["user"]["id"]
+    print(user_id)
     user_email = await dispatch_slack_service.get_user_email_async(slack_async_client, user_id)
 
     # We resolve the action name based on the type
