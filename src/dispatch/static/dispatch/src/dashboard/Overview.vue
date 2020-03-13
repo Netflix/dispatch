@@ -76,7 +76,7 @@ export default {
       let start = formatISO(subMonths(new Date(), 6))
       let end = formatISO(new Date())
       IncidentApi.getAll({
-        itemsPerPage: 1000,
+        itemsPerPage: -1,
         sortBy: ["reported_at"],
         fields: ["reported_at", "reported_at"],
         ops: ["<=", ">="],
