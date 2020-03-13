@@ -83,7 +83,7 @@ export default {
       let start = formatISO(startOfMonth(this.selectedMonth.value))
       let end = formatISO(endOfMonth(this.selectedMonth.value))
       IncidentApi.getAll({
-        itemsPerPage: 10,
+        itemsPerPage: -1,
         sortBy: ["reported_at"],
         fields: ["reported_at", "reported_at"],
         ops: ["<=", ">="],
