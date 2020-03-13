@@ -9,8 +9,9 @@ from sentry_asgi import SentryMiddleware
 from starlette.applications import Starlette
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
-from starlette.responses import FileResponse, Response
+from starlette.responses import FileResponse, Response, StreamingResponse
 from starlette.staticfiles import StaticFiles
+import httpx
 
 from .api import api_router
 from .config import STATIC_DIR
@@ -45,7 +46,20 @@ def get_path_template(request: Request) -> str:
 async def default_page(request, call_next):
     response = await call_next(request)
     if response.status_code == 404:
-        return FileResponse(path.join(STATIC_DIR, "index.html"))
+        if STATIC_DIR:
+            return FileResponse(path.join(STATIC_DIR, "index.html"))
+        else:
+            async with httpx.AsyncClient() as client:
+                remote_resp = await client.get(
+                    str(request.url.replace(port=8080)),
+                    headers=dict(request.headers)
+                )
+                return StreamingResponse(
+                    remote_resp.aiter_bytes(),
+                    headers=remote_resp.headers,
+                    status_code=remote_resp.status_code,
+                    media_type=remote_resp.headers.get('content-type')
+                )
     return response
 
 
