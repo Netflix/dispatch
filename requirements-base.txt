@@ -31,3 +31,4 @@ sh
 tabulate
 tenacity
 uvicorn
+httpx

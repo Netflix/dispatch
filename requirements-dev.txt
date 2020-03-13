@@ -6,3 +6,4 @@ pytest
 factory-boy
 faker
 devtools
+IPython
