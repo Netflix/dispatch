@@ -769,6 +769,7 @@ def run_server(log_level):
     if not config.STATIC_DIR:
         import atexit
         from subprocess import Popen
+
         p = Popen(["npm", "run", "serve"], cwd="src/dispatch/static/dispatch")
         atexit.register(p.terminate)
     uvicorn.run("dispatch.main:app", debug=True, log_level=log_level)
