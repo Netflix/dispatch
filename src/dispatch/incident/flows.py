@@ -11,24 +11,26 @@ import logging
 from typing import Any, List, Optional
 
 from dispatch.config import (
+    INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_ID,
+    INCIDENT_DOCUMENT_INVESTIGATION_SHEET_ID,
+    INCIDENT_FAQ_DOCUMENT_ID,
     INCIDENT_PLUGIN_CONTACT_SLUG,
     INCIDENT_PLUGIN_CONVERSATION_SLUG,
+    INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG,
+    INCIDENT_PLUGIN_DOCUMENT_SLUG,
+    INCIDENT_PLUGIN_GROUP_SLUG,
+    INCIDENT_PLUGIN_PARTICIPANT_SLUG,
+    INCIDENT_PLUGIN_STORAGE_SLUG,
+    INCIDENT_PLUGIN_TICKET_SLUG,
+    INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
     INCIDENT_RESOURCE_FAQ_DOCUMENT,
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
-    INCIDENT_DOCUMENT_INVESTIGATION_SHEET_ID,
     INCIDENT_RESOURCE_INVESTIGATION_SHEET,
-    INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG,
-    INCIDENT_PLUGIN_DOCUMENT_SLUG,
-    INCIDENT_FAQ_DOCUMENT_ID,
-    INCIDENT_PLUGIN_GROUP_SLUG,
     INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
-    INCIDENT_PLUGIN_PARTICIPANT_SLUG,
+    INCIDENT_RESOURCE_TACTICAL_GROUP,
     INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID,
     INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID,
-    INCIDENT_PLUGIN_STORAGE_SLUG,
-    INCIDENT_RESOURCE_TACTICAL_GROUP,
-    INCIDENT_PLUGIN_TICKET_SLUG,
 )
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.models import ConversationCreate
@@ -402,7 +404,19 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         "resource_type": INCIDENT_RESOURCE_FAQ_DOCUMENT,
     }
 
-    for d in [incident_document, incident_sheet, faq_document]:
+    conversation_commands_reference_document = {
+        "name": "Incident FAQ",
+        "resource_id": INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_ID,
+        "weblink": f"https://docs.google.com/document/d/{INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_ID}",
+        "resource_type": INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
+    }
+
+    for d in [
+        incident_document,
+        incident_sheet,
+        faq_document,
+        conversation_commands_reference_document,
+    ]:
         document_in = DocumentCreate(
             name=d["name"],
             resource_id=d["resource_id"],
@@ -1041,10 +1055,7 @@ def incident_remove_participant_flow(user_email: str, incident_id: int, db_sessi
 @background_task
 def incident_list_resources_flow(incident_id: int, command: Optional[dict] = None, db_session=None):
     """Runs the list incident resources flow."""
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
     # we send the list of resources to the participant
     send_incident_resources_ephemeral_message_to_participant(
-        command["user_id"], incident, db_session
+        command["user_id"], incident_id, db_session
     )
