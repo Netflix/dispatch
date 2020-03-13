@@ -7,13 +7,14 @@
 import logging
 
 from dispatch.config import (
-    INCIDENT_PLUGIN_CONTACT_SLUG,
-    INCIDENT_PLUGIN_CONVERSATION_SLUG,
-    INCIDENT_RESOURCE_FAQ_DOCUMENT,
-    INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
-    INCIDENT_PLUGIN_EMAIL_SLUG,
     INCIDENT_NOTIFICATION_CONVERSATIONS,
     INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS,
+    INCIDENT_PLUGIN_CONTACT_SLUG,
+    INCIDENT_PLUGIN_CONVERSATION_SLUG,
+    INCIDENT_PLUGIN_EMAIL_SLUG,
+    INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
+    INCIDENT_RESOURCE_FAQ_DOCUMENT,
+    INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
 )
 from dispatch.database import SessionLocal
 from dispatch.messaging import (
@@ -57,6 +58,12 @@ def send_welcome_ephemeral_message_to_participant(
         db_session=db_session, incident_id=incident_id, resource_type=INCIDENT_RESOURCE_FAQ_DOCUMENT
     )
 
+    incident_conversation_commands_reference_document = get_document(
+        db_session=db_session,
+        incident_id=incident_id,
+        resource_type=INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
+    )
+
     # we send the ephemeral message
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
     convo_plugin.send_ephemeral(
@@ -75,6 +82,7 @@ def send_welcome_ephemeral_message_to_participant(
         storage_weblink=incident.storage.weblink,
         ticket_weblink=incident.ticket.weblink,
         faq_weblink=incident_faq.weblink,
+        conversation_commands_reference_document_weblink=incident_conversation_commands_reference_document.weblink,
     )
 
     log.debug(f"Welcome ephemeral message sent to {participant_email}.")
@@ -98,6 +106,12 @@ def send_welcome_email_to_participant(
         db_session=db_session, incident_id=incident_id, resource_type=INCIDENT_RESOURCE_FAQ_DOCUMENT
     )
 
+    incident_conversation_commands_reference_document = get_document(
+        db_session=db_session,
+        incident_id=incident_id,
+        resource_type=INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
+    )
+
     email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
     email_plugin.send(
         participant_email,
@@ -113,6 +127,7 @@ def send_welcome_email_to_participant(
         storage_weblink=incident.storage.weblink,
         ticket_weblink=incident.ticket.weblink,
         faq_weblink=incident_faq.weblink,
+        conversation_commands_reference_document_weblink=incident_conversation_commands_reference_document.weblink,
     )
 
     log.debug(f"Welcome email sent to {participant_email}.")
@@ -447,18 +462,27 @@ def send_incident_review_document_notification(
 
 
 def send_incident_resources_ephemeral_message_to_participant(
-    user_id: str, incident: Incident, db_session: SessionLocal
+    user_id: str, incident_id: int, db_session: SessionLocal
 ):
     """Sends the list of incident resources to the participant via an ephemeral message."""
+    # we load the incident instance
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
     # we get the incident documents
     incident_document = get_document(
         db_session=db_session,
-        incident_id=incident.id,
+        incident_id=incident_id,
         resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
     )
 
     incident_faq = get_document(
-        db_session=db_session, incident_id=incident.id, resource_type=INCIDENT_RESOURCE_FAQ_DOCUMENT
+        db_session=db_session, incident_id=incident_id, resource_type=INCIDENT_RESOURCE_FAQ_DOCUMENT
+    )
+
+    incident_conversation_commands_reference_document = get_document(
+        db_session=db_session,
+        incident_id=incident_id,
+        resource_type=INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
     )
 
     # we send the ephemeral message
@@ -474,6 +498,7 @@ def send_incident_resources_ephemeral_message_to_participant(
         document_weblink=incident_document.weblink,
         storage_weblink=incident.storage.weblink,
         faq_weblink=incident_faq.weblink,
+        conversation_commands_reference_document_weblink=incident_conversation_commands_reference_document.weblink,
     )
 
     log.debug(f"List of incident resources sent to {user_id} via ephemeral message.")

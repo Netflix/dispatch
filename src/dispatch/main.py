@@ -51,14 +51,13 @@ async def default_page(request, call_next):
         else:
             async with httpx.AsyncClient() as client:
                 remote_resp = await client.get(
-                    str(request.url.replace(port=8080)),
-                    headers=dict(request.headers)
+                    str(request.url.replace(port=8080)), headers=dict(request.headers)
                 )
                 return StreamingResponse(
                     remote_resp.aiter_bytes(),
                     headers=remote_resp.headers,
                     status_code=remote_resp.status_code,
-                    media_type=remote_resp.headers.get('content-type')
+                    media_type=remote_resp.headers.get("content-type"),
                 )
     return response
 
