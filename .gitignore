@@ -211,3 +211,5 @@ release
 
 # exclude docker env files
 docker/.env
+
+*.dump

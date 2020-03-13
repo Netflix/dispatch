@@ -29,8 +29,8 @@ SLACK_COMMAND_LIST_PARTICIPANTS_SLUG = config(
 SLACK_COMMAND_ASSIGN_ROLE_SLUG = config(
     "SLACK_COMMAND_ASSIGN_ROLE_SLUG", default="/dispatch-assign-role"
 )
-SLACK_COMMAND_EDIT_INCIDENT_SLUG = config(
-    "SLACK_COMMAND_EDIT_INCIDENT_SLUG", default="/dispatch-edit-incident"
+SLACK_COMMAND_UPDATE_INCIDENT_SLUG = config(
+    "SLACK_COMMAND_UPDATE_INCIDENT_SLUG", default="/dispatch-update-incident"
 )
 SLACK_COMMAND_ENGAGE_ONCALL_SLUG = config(
     "SLACK_COMMAND_ENGAGE_ONCALL_SLUG", default="/dispatch-engage-oncall"

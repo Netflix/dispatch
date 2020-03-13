@@ -212,20 +212,18 @@ class JiraTicketPlugin(TicketPlugin):
 
     _schema = None
 
-    def __init__(self):
-        self.client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
-
     def create(
         self, title: str, incident_type: str, incident_priority: str, commander: str, reporter: str
     ):
         """Creates a Jira ticket."""
+        client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
         commander_username = get_user_name(commander)
         reporter_username = get_user_name(reporter)
         if incident_type == "vulnerability":
-            return create_vul_issue(self.client, title, commander_username, reporter_username)
+            return create_vul_issue(client, title, commander_username, reporter_username)
         else:
             return create_sec_issue(
-                self.client,
+                client,
                 title,
                 incident_priority,
                 incident_type,
@@ -253,7 +251,9 @@ class JiraTicketPlugin(TicketPlugin):
         commander_username = get_user_name(commander_email) if commander_email else None
         reporter_username = get_user_name(reporter_email) if reporter_email else None
 
-        issue = self.client.issue(ticket_id)
+        client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
+
+        issue = client.issue(ticket_id)
         issue_fields = create_issue_fields(
             title=title,
             description=description,
@@ -267,4 +267,4 @@ class JiraTicketPlugin(TicketPlugin):
             labels=labels,
             cost=cost,
         )
-        return update(self.client, issue, issue_fields, status)
+        return update(client, issue, issue_fields, status)
