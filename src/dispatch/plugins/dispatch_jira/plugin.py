@@ -4,10 +4,6 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
-import datetime
-import pytz
-import uuid
-
 from jinja2 import Template
 from jira import JIRA
 from typing import Any, List
@@ -107,45 +103,7 @@ def create_issue_fields(
     if commander_username:
         issue_fields.update({"assignee": {"name": commander_username}})
 
-    # TODO can we get ride of this specific logic for vulnerabilities? (kglisson)
-    if "vulnerability" != incident_type.lower():
-        if reporter_username:
-            issue_fields.update({"reporter": {"name": reporter_username}})
-
-        if incident_type:
-            issue_fields.update({"components": [{"name": incident_type}]})
-
-        if priority:
-            issue_fields.update({"customfield_10551": INCIDENT_PRIORITY_MAP[priority.lower()]})
-
-        if labels:
-            issue_fields.update({"labels": labels})
-
-        if cost:
-            issue_fields.update({"customfield_20250": cost})
-
     return issue_fields
-
-
-def create_vul_issue(
-    client: Any, title: str, commander_username: str = None, reporter_username: str = None
-):
-    now = datetime.datetime.now(pytz.timezone("America/Los_Angeles")).strftime(
-        "%Y-%m-%dT%H:%M:%S.000%z"
-    )
-    issue_fields = {
-        "project": {"key": "VUL"},
-        "issuetype": {"id": "42"},
-        "summary": title,
-        "assignee": {"name": commander_username},
-        "reporter": {"name": reporter_username},
-        "customfield_12253": {"value": "Design Review"},
-        "customfield_12254": {"value": "Command Injection"},
-        "customfield_13060": {"value": "Prod"},
-        "customfield_12250": now,
-    }
-
-    return create(client, issue_fields, type="VUL")
 
 
 def create(client: Any, issue_fields: dict, type: str = JIRA_PROJECT_KEY) -> dict:
@@ -219,17 +177,9 @@ class JiraTicketPlugin(TicketPlugin):
         client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
         commander_username = get_user_name(commander)
         reporter_username = get_user_name(reporter)
-        if incident_type == "vulnerability":
-            return create_vul_issue(client, title, commander_username, reporter_username)
-        else:
-            return create_sec_issue(
-                client,
-                title,
-                incident_priority,
-                incident_type,
-                commander_username,
-                reporter_username,
-            )
+        return create_sec_issue(
+            client, title, incident_priority, incident_type, commander_username, reporter_username,
+        )
 
     def update(
         self,
