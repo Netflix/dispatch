@@ -41,10 +41,8 @@ from dispatch.document.service import get_by_incident_id_and_resource_type as ge
 from dispatch.group import service as group_service
 from dispatch.group.models import GroupCreate
 from dispatch.incident import service as incident_service
-from dispatch.incident.models import IncidentUpdate
-from dispatch.incident_priority import service as incident_priority_service
+from dispatch.incident.models import IncidentRead
 from dispatch.incident_priority.models import IncidentPriorityRead
-from dispatch.incident_type import service as incident_type_service
 from dispatch.incident_type.models import IncidentTypeRead
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
@@ -499,30 +497,6 @@ def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_se
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    if incident.status == IncidentStatus.active:
-        if command:
-            convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
-            convo_plugin.send_ephemeral(
-                command["channel_id"],
-                command["user_id"],
-                "Incident Already Active Notification",
-                blocks=[
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "plain_text",
-                            "text": "The incident is already active. Aborting command...",
-                        },
-                    }
-                ],
-            )
-        return
-
-    # we update the status of the incident
-    update_incident_status(db_session=db_session, incident=incident, status=IncidentStatus.active)
-
-    log.debug(f"We have updated the status of the incident to {IncidentStatus.active}.")
-
     # we update the status of the external ticket
     update_incident_ticket(
         incident.ticket.resource_id,
@@ -530,46 +504,12 @@ def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_se
         status=IncidentStatus.active.lower(),
     )
 
-    log.debug(f"We have updated the status of the external ticket to {IncidentStatus.active}.")
-
-    # we update the conversation topic
-    set_conversation_topic(incident)
-
-    # we send the active notifications
-    send_incident_status_notifications(incident, db_session)
-
-    log.debug("We have sent the incident active notifications.")
-
 
 @background_task
 def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_session=None):
     """Runs the incident stable flow."""
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-    if incident.status == IncidentStatus.stable:
-        if command:
-            convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
-            convo_plugin.send_ephemeral(
-                command["channel_id"],
-                command["user_id"],
-                "Incident Already Stable Notification",
-                blocks=[
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "plain_text",
-                            "text": "The incident is already stable. Aborting command...",
-                        },
-                    }
-                ],
-            )
-            return
-
-    # we update the status of the incident
-    update_incident_status(db_session=db_session, incident=incident, status=IncidentStatus.stable)
-
-    log.debug(f"We have updated the status of the incident to {IncidentStatus.stable}.")
 
     incident.stable_at = datetime.utcnow()
 
@@ -587,9 +527,6 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     )
 
     log.debug(f"We have updated the status of the external ticket to {IncidentStatus.stable}.")
-
-    # we update the conversation topic
-    set_conversation_topic(incident)
 
     incident_review_document = get_document(
         db_session=db_session,
@@ -666,9 +603,6 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
             "We have sent a notification about the incident review document to the conversation."
         )
 
-    # we send the stable notifications
-    send_incident_status_notifications(incident, db_session)
-
     db_session.add(incident)
     db_session.commit()
 
@@ -680,31 +614,7 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     """Runs the incident closed flow."""
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-    if incident.status == IncidentStatus.active:
-        # we run the stable flow and let the user know
-        if command:
-            convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
-            convo_plugin.send_ephemeral(
-                command["channel_id"],
-                command["user_id"],
-                "Mark Incident Stable Notification",
-                blocks=[
-                    {
-                        "type": "section",
-                        "text": {"type": "plain_text", "text": "Marking the incident as stable..."},
-                    }
-                ],
-            )
-        incident_stable_flow(incident_id, command=command, db_session=db_session)
-
     incident.closed_at = datetime.utcnow()
-    db_session.add(incident)
-    db_session.commit()
-
-    # we update the status of the incident
-    update_incident_status(db_session=db_session, incident=incident, status=IncidentStatus.closed)
-    log.debug(f"We have updated the status of the incident to {IncidentStatus.closed}.")
 
     # we update the incident cost
     incident_cost = incident_service.calculate_cost(incident_id, db_session)
@@ -714,10 +624,6 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
     convo_plugin.archive(incident.conversation.channel_id)
     log.debug("We have archived the incident conversation.")
-
-    # we send the closed notifications
-    send_incident_status_notifications(incident, db_session)
-    log.debug("We have sent the incident closed notifications.")
 
     # we update the external ticket
     update_incident_ticket(
@@ -758,10 +664,13 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     group_plugin.delete(email=notifications_group.email)
     log.debug("We have deleted the notification and tactical groups.")
 
+    db_session.add(incident)
+    db_session.commit()
+
 
 @background_task
 def incident_update_flow(
-    user_email: str, incident_id: int, incident_in: IncidentUpdate, notify=True, db_session=None
+    user_email: str, incident_id: int, previous_incident: IncidentRead, notify=True, db_session=None
 ):
     """Runs the incident update flow."""
     conversation_topic_change = False
@@ -769,15 +678,21 @@ def incident_update_flow(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    if incident_in.incident_type.name != incident.incident_type.name:
+    if previous_incident.incident_type.name != incident.incident_type.name:
         conversation_topic_change = True
 
-    if incident_in.incident_priority.name != incident.incident_priority.name:
+    if previous_incident.incident_priority.name != incident.incident_priority.name:
         conversation_topic_change = True
 
-    if notify == "Yes":
+    if previous_incident.status.name != incident.status:
+        conversation_topic_change = True
+
+    if notify:
         send_incident_change_notifications(
-            incident, incident.title, incident.incident_type.name, incident.incident_priority.name
+            incident,
+            incident.title,
+            previous_incident.incident_type.name,
+            previous_incident.incident_priority.name,
         )
 
     if conversation_topic_change:
@@ -831,25 +746,22 @@ def incident_update_flow(
 
     log.debug(f"Resolved and added new participants to the incident.")
 
-    if incident_in.status.name != incident.status:
-        if incident_in.status == IncidentStatus.active:
+    if previous_incident.status.name != incident.status:
+        if previous_incident.status == IncidentStatus.active:
             incident_active_flow(incident_id=incident.id, db_session=db_session)
-        elif incident_in.status == IncidentStatus.closed:
+        elif previous_incident.status == IncidentStatus.closed:
             incident_closed_flow(incident_id=incident.id, db_session=db_session)
-        elif incident_in.status == IncidentStatus.stable:
+        elif previous_incident.status == IncidentStatus.stable:
             incident_stable_flow(incident_id=incident.id, db_session=db_session)
+
+        log.debug(f"Finished running status flow. Status: {incident.status}")
 
 
 @background_task
-def incident_assign_role_flow(assigner_email: str, incident_id: int, action: dict, db_session=None):
+def incident_assign_role_flow(
+    assigner_email: str, incident_id: int, assignee_email: str, assignee_role: str, db_session=None
+):
     """Runs the incident participant role assignment flow."""
-    assignee_user_id = action["submission"]["participant"]
-    assignee_role = action["submission"]["role"]
-
-    # we resolve the assignee's email address
-    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
-    assignee_email = convo_plugin.get_participant_email(assignee_user_id)
-
     # we resolve the assigner and assignee's contact information
     contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
     assigner_contact_info = contact_plugin.get(assigner_email)
@@ -875,17 +787,19 @@ def incident_assign_role_flow(assigner_email: str, incident_id: int, action: dic
     )
 
     if result == "assignee_has_role":
+        # NOTE: This is disabled until we can determine the source of the caller
         # we let the assigner know that the assignee already has this role
-        send_incident_participant_has_role_ephemeral_message(
-            assigner_email, assignee_contact_info, assignee_role, incident
-        )
+        # send_incident_participant_has_role_ephemeral_message(
+        #    assigner_email, assignee_contact_info, assignee_role, incident
+        # )
         return
 
     if result == "role_not_assigned":
+        # NOTE: This is disabled until we can determine the source of the caller
         # we let the assigner know that we were not able to assign the role
-        send_incident_participant_role_not_assigned_ephemeral_message(
-            assigner_email, assignee_contact_info, assignee_role, incident
-        )
+        # send_incident_participant_role_not_assigned_ephemeral_message(
+        #    assigner_email, assignee_contact_info, assignee_role, incident
+        # )
         return
 
     if assignee_role != ParticipantRoleType.participant:

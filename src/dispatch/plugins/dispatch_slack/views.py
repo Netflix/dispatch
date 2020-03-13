@@ -56,6 +56,8 @@ from .messaging import (
     render_non_incident_conversation_command_error_message,
 )
 
+from .service import get_user_email
+
 once_a_day_cache = TTLCache(maxsize=1000, ttl=60 * 60 * 24)
 
 
@@ -513,7 +515,7 @@ def command_functions(command: str):
 def handle_update_incident_action(user_email, incident_id, action, db_session=None):
     """Messages slack dialog data into something that Dispatch can use."""
     submission = action["submission"]
-    notify = submission["notify"]
+    notify = True if submission["notify"] == "Yes" else False
     incident_in = IncidentUpdate(
         title=submission["title"],
         description=submission["description"],
@@ -522,12 +524,18 @@ def handle_update_incident_action(user_email, incident_id, action, db_session=No
         visibility=submission["visibility"],
     )
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-    existing_incident = IncidentRead(incident.__dict__)
+    existing_incident = IncidentRead.from_orm(incident)
     incident_service.update(db_session=db_session, incident=incident, incident_in=incident_in)
+    incident_flows.incident_update_flow(user_email, incident_id, existing_incident, notify)
 
-    incident_flows.incident_update_flow(
-        user_email, incident_id, incident_in, incident_existing, notify
-    )
+
+@background_task
+def handle_assign_role_action(user_email, incident_id, action, db_session=None):
+    """Messages slack dialog daa into some thing that Dispatch can use."""
+    assignee_user_id = action["submission"]["participant"]
+    assignee_role = action["submission"]["role"]
+    assignee_email = get_user_email(client=slack_client, user_id=assignee_user_id)
+    incident_flows.incident_assign_role_flow(user_email, incident_id, assignee_email, assignee_role)
 
 
 def action_functions(action: str):

@@ -6,7 +6,9 @@ from sqlalchemy.orm import Session
 from dispatch.auth.service import get_current_user
 from dispatch.database import get_db, search_filter_sort_paginate
 
-from .flows import incident_create_flow, incident_update_flow
+from dispatch.participant_role.models import ParticipantRoleType
+
+from .flows import incident_create_flow, incident_update_flow, incident_assign_role_flow
 from .models import IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
 from .service import create, delete, get, update
 
@@ -79,6 +81,7 @@ def update_incident(
     db_session: Session = Depends(get_db),
     incident_id: str,
     incident_in: IncidentUpdate,
+    current_user_email: str = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
     """
@@ -87,10 +90,35 @@ def update_incident(
     incident = get(db_session=db_session, incident_id=incident_id)
     if not incident:
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
+
+    previous_incident = IncidentRead.from_orm(incident)
+
+    # NOTE: Order matters we have to get the previous state for change detection
     incident = update(db_session=db_session, incident=incident, incident_in=incident_in)
 
     background_tasks.add_task(
-        incident_update_flow, incident_id=incident.id, incident_in=incident_in
+        incident_update_flow,
+        user_email=current_user_email,
+        incident_id=incident.id,
+        previous_incident=previous_incident,
+    )
+
+    # assign commander
+    background_tasks.add_task(
+        incident_assign_role_flow,
+        current_user_email,
+        incident_id=incident.id,
+        assignee_email=incident_in.commander.email,
+        assignee_role=ParticipantRoleType.incident_commander,
+    )
+
+    # assign reporter
+    background_tasks.add_task(
+        incident_assign_role_flow,
+        current_user_email,
+        incident_id=incident.id,
+        assignee_email=incident_in.reporter.email,
+        assignee_role=ParticipantRoleType.reporter,
     )
 
     return incident

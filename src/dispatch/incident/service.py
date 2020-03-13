@@ -2,11 +2,10 @@ import math
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from fastapi import BackgroundTasks
-from fastapi.encoders import jsonable_encoder
 
 from dispatch.config import ANNUAL_COST_EMPLOYEE, BUSINESS_HOURS_YEAR
 from dispatch.database import SessionLocal
+from dispatch.individual import service as individual_service
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.incident_type import service as incident_type_service
@@ -184,7 +183,6 @@ def create(
 
 
 def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> Incident:
-    incident_data = jsonable_encoder(incident)
     incident_priority = incident_priority_service.get_by_name(
         db_session=db_session, name=incident_in.incident_priority.name
     )
@@ -194,12 +192,22 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
     )
 
     update_data = incident_in.dict(
-        skip_defaults=True, exclude={"incident_type", "incident_priority", "commander"}
+        skip_defaults=True,
+        exclude={
+            "incident_type",
+            "incident_priority",
+            "commander",
+            "reporter",
+            "status",
+            "visibility",
+        },
     )
 
-    for field in incident_data:
-        if field in update_data:
-            setattr(incident, field, update_data[field])
+    for field in update_data.keys():
+        setattr(incident, field, update_data[field])
+
+    incident.status = incident_in.status
+    incident.visibility = incident_in.visibility
 
     incident.incident_priority = incident_priority
     incident.incident_type = incident_type
