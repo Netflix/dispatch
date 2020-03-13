@@ -6,7 +6,7 @@ from jose import JWTError, jwt
 from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
 
-from dispatch.config import JWKS_URL, DISPATCH_AUTH_HEADER_KEY
+from dispatch.config import JWKS_URL, DISPATCH_AUTH_HEADER_KEY, DISPATCH_CLIENT_ID
 
 jwk_key_cache = TTLCache(maxsize=1, ttl=60 * 60)
 
@@ -28,7 +28,7 @@ def from_bearer_token(request: Request):
         jwk_key_cache[JWKS_URL] = key
 
     try:
-        data = jwt.decode(token, key)
+        data = jwt.decode(token, key, audience=DISPATCH_CLIENT_ID)
     except JWTError:
         return
 
@@ -65,7 +65,7 @@ def get_current_user(*, request: Request):
         jwk_key_cache[JWKS_URL] = key
 
     try:
-        data = jwt.decode(token, key)
+        data = jwt.decode(token, key, audience=DISPATCH_CLIENT_ID)
     except JWTError:
         raise credentials_exception
 

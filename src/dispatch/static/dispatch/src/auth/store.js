@@ -5,7 +5,7 @@ import { differenceInMilliseconds, fromUnixTime, subMinutes } from "date-fns"
 const state = {
   status: { loggedIn: false },
   userInfo: null,
-  accessToken: null
+  idToken: null
 }
 
 const actions = {
@@ -38,20 +38,20 @@ const actions = {
 }
 
 const mutations = {
-  SET_USER_LOGIN(state, accessToken) {
-    state.accessToken = accessToken
+  SET_USER_LOGIN(state, idToken) {
+    state.idToken = idToken
     state.status = { loggedIn: true }
-    state.userInfo = jwt_decode(accessToken)
+    state.userInfo = jwt_decode(idToken)
   },
   SET_USER_LOGOUT(state) {
     state.status = { loggedIn: false }
     state.userInfo = null
-    state.accessToken = null
+    state.idToken = null
   }
 }
 
 const getters = {
-  accessToken: status => state.accessToken,
+  idToken: status => state.idToken,
   email: status => state.userInfo.email,
   exp: status => state.userInfo.exp
 }
