@@ -30,6 +30,7 @@
               :loading="loading"
               loading-text="Loading... Please wait"
             >
+              <template v-slot:item.cost="{ item }">{{ item.cost | toUSD }}</template>
               <template v-slot:item.commander="{ item }">
                 <div v-if="item.commander">
                   <div v-if="item.commander.name">{{ item.commander.name }}</div>
@@ -74,6 +75,7 @@ export default {
         { text: "Status", value: "status", width: "10%" },
         { text: "Type", value: "incident_type.name" },
         { text: "Priority", value: "incident_priority.name", width: "10%" },
+        { text: "Cost", value: "cost" },
         { text: "Commander", value: "commander" },
         { text: "Reporter", value: "reporter" },
         { text: "Reported At", value: "reported_at" },
