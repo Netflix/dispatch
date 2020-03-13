@@ -1,6 +1,6 @@
 name: Python application
 
-on: [pull_request]
+on: pull_request
 
 jobs:
   build:
@@ -34,7 +34,7 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run linters
-        uses: samuelmeuli/lint-action@v1
+        uses: samuelmeuli/lint-action@v1.2.0
         with:
           github_token: ${{ secrets.github_token }}
           # Enable linters

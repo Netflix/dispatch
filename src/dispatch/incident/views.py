@@ -26,9 +26,9 @@ def get_incidents(
     query_str: str = Query(None, alias="q"),
     sort_by: List[str] = Query(None, alias="sortBy[]"),
     descending: List[bool] = Query(None, alias="descending[]"),
-    fields: List[str] = Query(None, alias="field[]"),
-    ops: List[str] = Query(None, alias="op[]"),
-    values: List[str] = Query(None, alias="value[]"),
+    fields: List[str] = Query(None, alias="fields[]"),
+    ops: List[str] = Query(None, alias="ops[]"),
+    values: List[str] = Query(None, alias="values[]"),
 ):
     """
     Retrieve a list of all incidents.

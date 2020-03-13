@@ -10,13 +10,18 @@ Vue.filter("formatDate", function(value) {
   }
 })
 
+Vue.filter("asString", function(value) {
+  if (!value) return ""
+  return value.toString()
+})
+
 Vue.filter("capitalize", function(value) {
   if (!value) return ""
   value = value.toString()
   return value.charAt(0).toUpperCase() + value.slice(1)
 })
 
-Vue.filter("dollars", function(value) {
+Vue.filter("toUSD", function(value) {
   if (value) {
     var formatter = new Intl.NumberFormat("en-US", {
       style: "currency",

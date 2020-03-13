@@ -6,10 +6,10 @@
         <stat-widget icon="domain" :title="totalIncidents" supTitle="Incidents" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="attach_money" :title="totalCost | dollars" supTitle="Total Cost" />
+        <stat-widget icon="attach_money" :title="totalCost | toUSD" supTitle="Total Cost" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="show_chart" :title="avgCost | dollars" supTitle="Avg Cost" />
+        <stat-widget icon="show_chart" :title="avgCost | toUSD" supTitle="Avg Cost" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
         <stat-widget icon="watch_later" :title="totalHours" supTitle="Total Hours" />
@@ -39,6 +39,8 @@
 <script>
 import _ from "lodash"
 import parseISO from "date-fns/parseISO"
+import formatISO from "date-fns/formatISO"
+import subMonths from "date-fns/subMonths"
 import differenceInHours from "date-fns/differenceInHours"
 
 import IncidentApi from "@/incident/api"
@@ -64,28 +66,47 @@ export default {
     return {
       tab: null,
       loading: false,
-      items: [],
-      range: { text: "90 Days" },
-      window: { text: "Month" },
-      windows: [{ text: "Month" }, { text: "Year" }, { text: "Quarter" }],
-      ranges: [{ text: "30 Days" }, { text: "90 Days" }, { text: "1 Year" }, { text: "2 Year" }]
+      items: []
+    }
+  },
+
+  methods: {
+    fetchData(range) {
+      this.loading = true
+      let start = formatISO(subMonths(new Date(), 6))
+      let end = formatISO(new Date())
+      IncidentApi.getAll({
+        itemsPerPage: 1000,
+        sortBy: ["reported_at"],
+        fields: ["reported_at", "reported_at"],
+        ops: ["<=", ">="],
+        values: [end, start],
+        descending: [true]
+      }).then(response => {
+        this.loading = false
+
+        // ignore all simulated incidents
+        this.items = _.remove(_.sortBy(response.data.items, "reported_at"), function(item) {
+          return item.incident_type.name !== "Simulation"
+        })
+      })
     }
   },
 
   computed: {
     incidentsByYear() {
       return _.groupBy(this.items, function(item) {
-        return parseISO(item.created_at).getYear()
+        return parseISO(item.reported_at).getYear()
       })
     },
     incidentsByMonth() {
       return _.groupBy(this.items, function(item) {
-        return parseISO(item.created_at).toLocaleString("default", { month: "short" })
+        return parseISO(item.reported_at).toLocaleString("default", { month: "short" })
       })
     },
     incidentsByQuarter() {
       return _.groupBy(this.items, function(item) {
-        return "Q" + Math.floor(parseISO(item.created_at).getMonth() + 3) / 3
+        return "Q" + Math.floor(parseISO(item.reported_at).getMonth() + 3) / 3
       })
     },
     groupedItems() {
@@ -111,15 +132,15 @@ export default {
     }
   },
 
+  watch: {
+    selectedRange: function() {
+      this.fetchData()
+    }
+  },
+
   created() {
-    this.loading = true
-    // TODO make this reported_at
-    IncidentApi.getAll({ itemsPerPage: 10, sortBy: ["reported_at"], descending: [true] }).then(
-      response => {
-        this.items = _.sortBy(response.data.items, "reported_at")
-        this.loading = false
-      }
-    )
+    this.fetchData()
+    //this.selectedMonth = this.months[0]
   }
 }
 </script>
