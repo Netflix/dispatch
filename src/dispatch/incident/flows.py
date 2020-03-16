@@ -405,7 +405,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     }
 
     conversation_commands_reference_document = {
-        "name": "Incident FAQ",
+        "name": "Incident Conversation Commands Reference Document",
         "resource_id": INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_ID,
         "weblink": f"https://docs.google.com/document/d/{INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_ID}",
         "resource_type": INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
