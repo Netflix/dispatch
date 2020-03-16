@@ -518,6 +518,8 @@ def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_se
         status=IncidentStatus.active.lower(),
     )
 
+    log.debug(f"We have updated the status of the external ticket to {IncidentStatus.active}.")
+
 
 @background_task
 def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_session=None):
