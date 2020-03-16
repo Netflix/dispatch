@@ -531,7 +531,7 @@ def handle_update_incident_action(user_email, incident_id, action, db_session=No
 
 @background_task
 def handle_assign_role_action(user_email, incident_id, action, db_session=None):
-    """Messages slack dialog daa into some thing that Dispatch can use."""
+    """Messages slack dialog data into some thing that Dispatch can use."""
     assignee_user_id = action["submission"]["participant"]
     assignee_role = action["submission"]["role"]
     assignee_email = get_user_email(client=slack_client, user_id=assignee_user_id)
@@ -542,7 +542,7 @@ def action_functions(action: str):
     """Interprets the action and routes it the appropriate function."""
     action_mappings = {
         SLACK_COMMAND_STATUS_REPORT_SLUG: [status_report_flows.new_status_report_flow],
-        SLACK_COMMAND_ASSIGN_ROLE_SLUG: [incident_flows.incident_assign_role_flow],
+        SLACK_COMMAND_ASSIGN_ROLE_SLUG: [handle_assign_role_action],
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [handle_update_incident_action],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [incident_flows.incident_engage_oncall_flow],
         ConversationButtonActions.invite_user: [add_user_to_conversation],
@@ -732,7 +732,6 @@ async def handle_action(
 
     # We resolve the user's email
     user_id = action["user"]["id"]
-    print(user_id)
     user_email = await dispatch_slack_service.get_user_email_async(slack_async_client, user_id)
 
     # We resolve the action name based on the type
