@@ -22,7 +22,12 @@ from dispatch.database import get_db, SessionLocal
 from dispatch.decorators import background_task
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
-from dispatch.incident.models import IncidentVisibility, IncidentUpdate, IncidentRead
+from dispatch.incident.models import (
+    IncidentVisibility,
+    IncidentUpdate,
+    IncidentRead,
+    IncidentStatus,
+)
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.incident_type import service as incident_type_service
@@ -316,7 +321,7 @@ def create_assign_role_dialog(incident_id: int, command: dict = None):
 
 @background_task
 def create_update_incident_dialog(incident_id: int, command: dict = None, db_session=None):
-    """Creates a dialog for editing incident information."""
+    """Creates a dialog for updating incident information."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     type_options = []
@@ -331,11 +336,15 @@ def create_update_incident_dialog(incident_id: int, command: dict = None, db_ses
     for visibility in IncidentVisibility:
         visibility_options.append({"label": visibility.value, "value": visibility.value})
 
+    status_options = []
+    for status in IncidentStatus:
+        status_options.append({"label": status.value, "value": status.value})
+
     notify_options = [{"label": "Yes", "value": "Yes"}, {"label": "No", "value": "No"}]
 
     dialog = {
         "callback_id": command["command"],
-        "title": "Edit Incident",
+        "title": "Update Incident",
         "submit_label": "Save",
         "elements": [
             {"type": "textarea", "label": "Title", "name": "title", "value": incident.title},
@@ -351,6 +360,13 @@ def create_update_incident_dialog(incident_id: int, command: dict = None, db_ses
                 "name": "type",
                 "value": incident.incident_type.name,
                 "options": type_options,
+            },
+            {
+                "label": "Status",
+                "type": "select",
+                "name": "status",
+                "value": incident.status,
+                "options": status_options,
             },
             {
                 "label": "Priority",
@@ -501,9 +517,9 @@ def command_functions(command: str):
         SLACK_COMMAND_LIST_PARTICIPANTS_SLUG: [list_participants],
         SLACK_COMMAND_LIST_RESOURCES_SLUG: [incident_flows.incident_list_resources_flow],
         SLACK_COMMAND_LIST_TASKS_SLUG: [list_tasks],
-        SLACK_COMMAND_MARK_ACTIVE_SLUG: [incident_flows.incident_active_flow],
-        SLACK_COMMAND_MARK_CLOSED_SLUG: [incident_flows.incident_closed_flow],
-        SLACK_COMMAND_MARK_STABLE_SLUG: [incident_flows.incident_stable_flow],
+        SLACK_COMMAND_MARK_ACTIVE_SLUG: [],
+        SLACK_COMMAND_MARK_CLOSED_SLUG: [],
+        SLACK_COMMAND_MARK_STABLE_SLUG: [],
         SLACK_COMMAND_STATUS_REPORT_SLUG: [create_status_report_dialog],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [create_engage_oncall_dialog],
     }
@@ -521,6 +537,7 @@ def handle_update_incident_action(user_email, incident_id, action, db_session=No
         description=submission["description"],
         incident_type={"name": submission["type"]},
         incident_priority={"name": submission["priority"]},
+        status=submission["status"],
         visibility=submission["visibility"],
     )
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
