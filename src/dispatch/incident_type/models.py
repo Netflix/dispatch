@@ -5,6 +5,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
+from dispatch.enums import Visibility
 from dispatch.models import Base, DispatchBase
 
 
@@ -28,6 +29,7 @@ class IncidentType(Base):
     name = Column(String, unique=True)
     slug = Column(String)
     description = Column(String)
+    visibility = Column(String, default=Visibility.open)
 
     template_document_id = Column(Integer, ForeignKey("document.id"))
     template_document = relationship("Document")
@@ -68,12 +70,14 @@ class IncidentTypeCreate(IncidentTypeBase):
 
 class IncidentTypeUpdate(IncidentTypeBase):
     id: int
+    visibility: Optional[Visibility]
     template_document: Optional[Document]
     commander_service: Optional[Service]
 
 
 class IncidentTypeRead(IncidentTypeBase):
     id: int
+    visibility: Optional[Visibility]
     template_document: Optional[Document]
     commander_service: Optional[Service]
 
