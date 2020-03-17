@@ -39,7 +39,7 @@
                     label="Description"
                     :error-messages="errors"
                     :success="valid"
-                    hint="The incdent type's description."
+                    hint="A description for your incident type."
                     clearable
                     required
                   />
