@@ -46,7 +46,13 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <service-select v-model="visibility" />
+                <v-select
+                  v-model="visibility"
+                  label="Visibility"
+                  :items="visibilities"
+                  hint="A visibility for your incident type"
+                  clearable
+                />
               </v-flex>
               <v-flex xs12>
                 <service-select v-model="commander_service" />
@@ -77,7 +83,6 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider } from "vee-validate"
-import VisibilitySelect from "@/visibility/VisibilitySelect.vue"
 import ServiceSelect from "@/service/ServiceSelect.vue"
 import DocumentSelect from "@/document/DocumentSelect.vue"
 
@@ -87,9 +92,14 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    VisibilitySelect,
     ServiceSelect,
     DocumentSelect
+  },
+
+  data() {
+    return {
+      visibilities: ["Open", "Restricted"]
+    }
   },
 
   computed: {
