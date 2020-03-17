@@ -20,9 +20,10 @@ from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.conversation.service import get_by_channel_id
 from dispatch.database import get_db, SessionLocal
 from dispatch.decorators import background_task
+from dispatch.enums import Visibility
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
-from dispatch.incident.models import IncidentVisibility, IncidentUpdate, IncidentRead
+from dispatch.incident.models import IncidentUpdate, IncidentRead
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.incident_type import service as incident_type_service
@@ -328,7 +329,7 @@ def create_update_incident_dialog(incident_id: int, command: dict = None, db_ses
         priority_options.append({"label": priority.name, "value": priority.name})
 
     visibility_options = []
-    for visibility in IncidentVisibility:
+    for visibility in Visibility:
         visibility_options.append({"label": visibility.value, "value": visibility.value})
 
     notify_options = [{"label": "Yes", "value": "Yes"}, {"label": "No", "value": "No"}]

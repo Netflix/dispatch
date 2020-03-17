@@ -19,6 +19,7 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.conversation.models import ConversationRead
 from dispatch.database import Base
 from dispatch.document.models import DocumentRead
+from dispatch.enums import Visibility
 from dispatch.incident_priority.models import (
     IncidentPriorityCreate,
     IncidentPriorityRead,
@@ -30,7 +31,7 @@ from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.storage.models import StorageRead
 from dispatch.ticket.models import TicketRead
 
-from .enums import IncidentStatus, IncidentVisibility
+from .enums import IncidentStatus
 
 assoc_incident_terms = Table(
     "assoc_incident_terms",
@@ -48,7 +49,7 @@ class Incident(Base, TimeStampMixin):
     description = Column(String, nullable=False)
     status = Column(String, default=IncidentStatus.active)
     cost = Column(Float, default=0)
-    visibility = Column(String, default=IncidentVisibility.open)
+    visibility = Column(String, default=Visibility.open)
 
     # auto generated
     reported_at = Column(DateTime, default=datetime.utcnow)
@@ -130,7 +131,7 @@ class IncidentCreate(IncidentBase):
 
 
 class IncidentUpdate(IncidentBase):
-    visibility: IncidentVisibility
+    visibility: Visibility
     incident_priority: IncidentPriorityBase
     incident_type: IncidentTypeBase
     reported_at: Optional[datetime] = None
@@ -153,7 +154,7 @@ class IncidentRead(IncidentBase):
     ticket: Optional[TicketRead] = None
     documents: Optional[List[DocumentRead]] = []
     conversation: Optional[ConversationRead] = None
-    visibility: IncidentVisibility
+    visibility: Visibility
 
     created_at: Optional[datetime] = None
     reported_at: Optional[datetime] = None
