@@ -9,21 +9,6 @@ from dispatch.enums import Visibility
 from dispatch.models import Base, DispatchBase
 
 
-class IncidentTypeType(str, Enum):
-    # Note: The reporting form uses these types for the Type drop-down list.
-    # Add them in the order you want
-    # them to be displayed.
-
-    brand = "Brand"
-    business_data = "Business Data"
-    customer_data = "Customer Data"
-    studio_and_production_data = "Studio and Production Data"
-    service_availability = "Service Availability"
-    vulnerability = "Vulnerability"
-    simulation = "Simulation"
-    other = "Other"
-
-
 class IncidentType(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
