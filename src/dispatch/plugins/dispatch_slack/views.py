@@ -531,6 +531,7 @@ def command_functions(command: str):
 def handle_update_incident_action(user_email, incident_id, action, db_session=None):
     """Messages slack dialog data into something that Dispatch can use."""
     submission = action["submission"]
+    print(submission)
     notify = True if submission["notify"] == "Yes" else False
     incident_in = IncidentUpdate(
         title=submission["title"],
