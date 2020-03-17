@@ -46,6 +46,9 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
+                <service-select v-model="visibility" />
+              </v-flex>
+              <v-flex xs12>
                 <service-select v-model="commander_service" />
               </v-flex>
               <v-flex xs12>
@@ -74,6 +77,7 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider } from "vee-validate"
+import VisibilitySelect from "@/visibility/VisibilitySelect.vue"
 import ServiceSelect from "@/service/ServiceSelect.vue"
 import DocumentSelect from "@/document/DocumentSelect.vue"
 
@@ -83,20 +87,22 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
+    VisibilitySelect,
     ServiceSelect,
     DocumentSelect
   },
 
   computed: {
     ...mapFields("incident_type", [
-      "selected.name",
-      "selected.slug",
-      "selected.id",
-      "selected.template_document",
+      "dialogs.showCreateEdit",
       "selected.commander_service",
       "selected.description",
+      "selected.id",
       "selected.loading",
-      "dialogs.showCreateEdit"
+      "selected.name",
+      "selected.slug",
+      "selected.template_document",
+      "selected.visibility"
     ])
   },
 
