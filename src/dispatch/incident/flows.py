@@ -278,15 +278,6 @@ def update_document(
     log.debug("The external collaboration document has been updated.")
 
 
-def update_incident_status(db_session, incident: Incident, status: str):
-    """Updates the status of the incident (active, stable, or closed)."""
-    incident.status = status
-    db_session.add(incident)
-    db_session.commit()
-
-    log.debug(f"The incident has been marked as {status}.")
-
-
 def add_participant_to_conversation(
     participant_email: str, incident_id: int, db_session: SessionLocal
 ):
