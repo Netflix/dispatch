@@ -698,13 +698,7 @@ def incident_update_flow(
         set_conversation_topic(incident)
 
     if notify:
-        send_incident_change_notifications(
-            incident,
-            incident.title,
-            previous_incident.incident_type.name,
-            previous_incident.incident_priority.name,
-            previous_incident.status,
-        )
+        send_incident_change_notifications(incident, previous_incident)
 
     # we get the incident document
     incident_document = get_document(

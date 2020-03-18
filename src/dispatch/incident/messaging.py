@@ -21,9 +21,11 @@ from dispatch.messaging import (
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
     INCIDENT_NEW_ROLE_NOTIFICATION,
     INCIDENT_NOTIFICATION,
+    INCIDENT_NAME,
     INCIDENT_PRIORITY_CHANGE,
     INCIDENT_STATUS_CHANGE,
     INCIDENT_TYPE_CHANGE,
+    INCIDENT_GET_INVOLVED_BUTTON,
     INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
     INCIDENT_RESOURCES_MESSAGE,
     INCIDENT_REVIEW_DOCUMENT_NOTIFICATION,
@@ -217,27 +219,27 @@ def send_incident_notifications(incident: Incident, db_session: SessionLocal):
 
 
 def send_incident_change_notifications(
-    incident: Incident,
-    incident_title: str,
-    incident_type: str,
-    incident_priority: str,
-    incident_status: str,
+    incident: Incident, previous_incident: str,
 ):
     """Sends notifications about incident changes."""
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
-    notification_template = []
+    notification_template = [INCIDENT_NAME]
 
-    if incident_type != incident.incident_type.name:
+    change = False
+    if previous_incident.incident_type.name != incident.incident_type.name:
+        change = True
         notification_template.append(INCIDENT_TYPE_CHANGE)
 
-    if incident_priority != incident.incident_priority.name:
+    if previous_incident.incident_priority.name != incident.incident_priority.name:
+        change = True
         notification_template.append(INCIDENT_PRIORITY_CHANGE)
 
-    if incident_status != incident.status:
+    if previous_incident.status != incident.status:
+        change = True
         notification_template.append(INCIDENT_STATUS_CHANGE)
 
-    if not notification_template:
+    if not change:
         # we don't need to notify
         log.debug(f"Incident change notifications not sent.")
         return
@@ -256,18 +258,19 @@ def send_incident_change_notifications(
         notification_type,
         name=incident.name,
         ticket_weblink=incident.ticket.weblink,
-        title=incident_title,
-        incident_type_old=incident.incident_type.name,
-        incident_type_new=incident_type,
-        incident_priority_old=incident.incident_priority.name,
-        incident_priority_new=incident_priority,
-        incident_status_old=incident.status,
-        incident_status_new=incident_status.name,
+        title=incident.title,
+        incident_type_old=previous_incident.incident_type.name,
+        incident_type_new=incident.incident_type.name,
+        incident_priority_old=previous_incident.incident_priority.name,
+        incident_priority_new=incident.incident_priority.name,
+        incident_status_old=previous_incident.status.value,
+        incident_status_new=incident.status,
         commander_fullname=incident.commander.name,
         commander_weblink=incident.commander.weblink,
     )
 
     # we notify the notification conversations
+    notification_template.append(INCIDENT_GET_INVOLVED_BUTTON)
     for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
         convo_plugin.send(
             conversation,
@@ -276,13 +279,13 @@ def send_incident_change_notifications(
             notification_type,
             name=incident.name,
             ticket_weblink=incident.ticket.weblink,
-            title=incident_title,
-            incident_type_old=incident.incident_type.name,
-            incident_type_new=incident_type,
-            incident_priority_old=incident.incident_priority.name,
-            incident_priority_new=incident_priority,
-            incident_status_old=incident.status,
-            incident_status_new=incident_status.name,
+            title=incident.title,
+            incident_type_old=previous_incident.incident_type.name,
+            incident_type_new=incident.incident_type.name,
+            incident_priority_old=previous_incident.incident_priority.name,
+            incident_priority_new=incident.incident_priority.name,
+            incident_status_old=previous_incident.status.value,
+            incident_status_new=incident.status,
             commander_fullname=incident.commander.name,
             commander_weblink=incident.commander.weblink,
         )
