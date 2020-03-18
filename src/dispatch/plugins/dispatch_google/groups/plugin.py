@@ -119,21 +119,21 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
             "https://www.googleapis.com/auth/admin.directory.group",
             "https://www.googleapis.com/auth/apps.groups.settings",
         ]
-        self.client = get_service("admin", "directory_v1", scopes)
 
     def create(
         self, name: str, participants: List[str], description: str = None, role: str = "MEMBER"
     ):
         """Creates a new Google Group."""
+        client = get_service("admin", "directory_v1", self.scopes)
         group_key = f"{name.lower()}@{GOOGLE_DOMAIN}"
 
         if not description:
             description = "Group automatically created by Dispatch."
 
-        group = create_group(self.client, name, group_key, description)
+        group = create_group(client, name, group_key, description)
 
         for p in participants:
-            add_member(self.client, group_key, p, role)
+            add_member(client, group_key, p, role)
 
         group.update(
             {
@@ -144,14 +144,17 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
 
     def add(self, email: str, participants: List[str], role: str = "MEMBER"):
         """Adds participants to existing Google Group."""
+        client = get_service("admin", "directory_v1", self.scopes)
         for p in participants:
-            add_member(self.client, email, p, role)
+            add_member(client, email, p, role)
 
     def remove(self, email: str, participants: List[str]):
         """Removes participants from existing Google Group."""
+        client = get_service("admin", "directory_v1", self.scopes)
         for p in participants:
-            remove_member(self.client, email, p)
+            remove_member(client, email, p)
 
     def delete(self, email: str):
         """Deletes an existing google group."""
-        delete_group(self.client, email)
+        client = get_service("admin", "directory_v1", self.scopes)
+        delete_group(client, email)

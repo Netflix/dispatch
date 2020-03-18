@@ -66,7 +66,6 @@ from .messaging import (
     send_incident_participant_role_not_assigned_ephemeral_message,
     send_incident_resources_ephemeral_message_to_participant,
     send_incident_review_document_notification,
-    send_incident_status_notifications,
     send_incident_welcome_participant_messages,
 )
 from .models import Incident, IncidentStatus
@@ -713,6 +712,7 @@ def incident_update_flow(
             incident.title,
             previous_incident.incident_type.name,
             previous_incident.incident_priority.name,
+            previous_incident.status,
         )
 
     # we get the incident document
