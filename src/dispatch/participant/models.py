@@ -44,7 +44,7 @@ class ParticipantBase(DispatchBase):
 
 class ParticipantCreate(ParticipantBase):
     participant_role: Optional[List[ParticipantRoleCreate]] = []
-    geo: Optional[str]
+    location: Optional[str]
 
 
 class ParticipantUpdate(ParticipantBase):
