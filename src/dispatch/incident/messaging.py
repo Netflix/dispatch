@@ -17,7 +17,7 @@ from dispatch.config import (
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
 )
 from dispatch.database import SessionLocal
-from dispatch.enum import Visibility
+from dispatch.enums import Visibility
 from dispatch.incident.enums import IncidentStatus
 from dispatch.messaging import (
     INCIDENT_COMMANDER_READDED_NOTIFICATION,

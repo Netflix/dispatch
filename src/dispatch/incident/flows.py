@@ -469,7 +469,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         conversation_weblink=incident.conversation.weblink,
         document_weblink=incident_document["weblink"],
         storage_weblink=incident.storage.weblink,
-        visibility=incident.visibilty,
+        visibility=incident.visibility,
     )
 
     log.debug("Updated incident ticket.")
@@ -742,7 +742,7 @@ def incident_update_flow(
         conversation_weblink=incident.conversation.weblink,
         document_weblink=incident_document.weblink,
         storage_weblink=incident.storage.weblink,
-        visibilty=incident.visibility,
+        visibility=incident.visibility,
     )
 
     log.debug(f"Updated the external ticket {incident.ticket.resource_id}.")

@@ -25,7 +25,7 @@ from dispatch.scheduler import scheduler
 from dispatch.service import service as service_service
 
 from .enums import IncidentStatus
-from .service import calculate_cost, get_all_by_status, get_all_last_x_hours_by_status
+from .service import calculate_cost, get_all, get_all_by_status, get_all_last_x_hours_by_status
 from .messaging import send_incident_status_report_reminder
 
 # TODO figure out a way to do mapping in the config file
