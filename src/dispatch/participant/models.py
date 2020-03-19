@@ -18,7 +18,8 @@ class Participant(Base):
     incident_id = Column(Integer, ForeignKey("incident.id"))
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
     location = Column(String)
-    team_id = Column(Integer, ForeignKey("team_contact.id"))
+    team = Column(String)
+    department = Column(String)
     participant_role = relationship("ParticipantRole", lazy="subquery", backref="participant")
     status_reports = relationship("StatusReport", backref="participant")
 
@@ -45,6 +46,8 @@ class ParticipantBase(DispatchBase):
 class ParticipantCreate(ParticipantBase):
     participant_role: Optional[List[ParticipantRoleCreate]] = []
     location: Optional[str]
+    team: Optional[str]
+    department: Optional[str]
 
 
 class ParticipantUpdate(ParticipantBase):
