@@ -115,7 +115,7 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
     _schema = None
 
     def __init__(self):
-        scopes = [
+        self.scopes = [
             "https://www.googleapis.com/auth/admin.directory.group",
             "https://www.googleapis.com/auth/apps.groups.settings",
         ]
