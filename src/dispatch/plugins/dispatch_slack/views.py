@@ -536,6 +536,7 @@ def handle_update_incident_action(user_email, incident_id, action, db_session=No
         status=submission["status"],
         visibility=submission["visibility"],
     )
+
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     existing_incident = IncidentRead.from_orm(incident)
     incident_service.update(db_session=db_session, incident=incident, incident_in=incident_in)

@@ -57,7 +57,7 @@ from dispatch.ticket import service as ticket_service
 from dispatch.ticket.models import TicketCreate
 
 from .messaging import (
-    send_incident_change_notifications,
+    send_incident_update_notifications,
     send_incident_commander_readded_notification,
     send_incident_new_role_assigned_notification,
     send_incident_notifications,
@@ -66,7 +66,6 @@ from .messaging import (
     send_incident_participant_role_not_assigned_ephemeral_message,
     send_incident_resources_ephemeral_message_to_participant,
     send_incident_review_document_notification,
-    send_incident_status_notifications,
     send_incident_welcome_participant_messages,
 )
 from .models import Incident, IncidentStatus
@@ -699,12 +698,7 @@ def incident_update_flow(
         set_conversation_topic(incident)
 
     if notify:
-        send_incident_change_notifications(
-            incident,
-            incident.title,
-            previous_incident.incident_type.name,
-            previous_incident.incident_priority.name,
-        )
+        send_incident_update_notifications(incident, previous_incident)
 
     # we get the incident document
     incident_document = get_document(
