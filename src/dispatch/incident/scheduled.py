@@ -9,6 +9,8 @@ from dispatch.config import (
     INCIDENT_PLUGIN_TICKET_SLUG,
 )
 from dispatch.decorators import background_task
+from dispatch.enum import Visibility
+from dispatch.extensions import sentry_sdk
 from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.individual import service as individual_service
 from dispatch.messaging import (
@@ -18,17 +20,12 @@ from dispatch.messaging import (
     INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
     INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
 )
-from dispatch.extensions import sentry_sdk
 from dispatch.plugins.base import plugins
 from dispatch.scheduler import scheduler
 from dispatch.service import service as service_service
 
 from .enums import IncidentStatus
-from .service import (
-    calculate_cost,
-    get_all_by_status,
-    get_all_last_x_hours_by_status,
-)
+from .service import calculate_cost, get_all_by_status, get_all_last_x_hours_by_status
 from .messaging import send_incident_status_report_reminder
 
 # TODO figure out a way to do mapping in the config file
@@ -99,23 +96,24 @@ def daily_summary(db_session=None):
             }
         )
         for incident in active_incidents:
-            try:
-                blocks.append(
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": (
-                                f"*<{incident.ticket.weblink}|{incident.name}>*\n"
-                                f"*Title*: {incident.title}\n"
-                                f"*Priority*: {incident.incident_priority.name}\n"
-                                f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
-                            ),
-                        },
-                    }
-                )
-            except Exception as e:
-                sentry_sdk.capture_exception(e)
+            if incident.visibility == Visibility.open:
+                try:
+                    blocks.append(
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": (
+                                    f"*<{incident.ticket.weblink}|{incident.name}>*\n"
+                                    f"*Title*: {incident.title}\n"
+                                    f"*Priority*: {incident.incident_priority.name}\n"
+                                    f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
+                                ),
+                            },
+                        }
+                    )
+                except Exception as e:
+                    sentry_sdk.capture_exception(e)
     else:
         blocks.append(
             {
@@ -146,24 +144,25 @@ def daily_summary(db_session=None):
     )
     if stable_closed_incidents:
         for incident in stable_closed_incidents:
-            try:
-                blocks.append(
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": (
-                                f"*<{incident.ticket.weblink}|{incident.name}>*\n"
-                                f"*Title*: {incident.title}\n"
-                                f"*Status*: {incident.status}\n"
-                                f"*Priority*: {incident.incident_priority.name}\n"
-                                f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
-                            ),
-                        },
-                    }
-                )
-            except Exception as e:
-                sentry_sdk.capture_exception(e)
+            if incident.visibility == Visibility.open:
+                try:
+                    blocks.append(
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": (
+                                    f"*<{incident.ticket.weblink}|{incident.name}>*\n"
+                                    f"*Title*: {incident.title}\n"
+                                    f"*Status*: {incident.status}\n"
+                                    f"*Priority*: {incident.incident_priority.name}\n"
+                                    f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
+                                ),
+                            },
+                        }
+                    )
+                except Exception as e:
+                    sentry_sdk.capture_exception(e)
     else:
         blocks.append(
             {
