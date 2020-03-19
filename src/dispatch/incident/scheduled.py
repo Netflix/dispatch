@@ -30,10 +30,6 @@ from .service import (
     get_all_last_x_hours_by_status,
 )
 from .messaging import send_incident_status_report_reminder
-    get_all,
-    get_all_by_status,
-    get_all_last_x_hours_by_status,
-)
 
 # TODO figure out a way to do mapping in the config file
 # reminder (in hours)
