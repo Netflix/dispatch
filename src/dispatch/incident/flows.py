@@ -872,9 +872,6 @@ def incident_add_or_reactivate_participant_flow(
     user_email: str, incident_id: int, role: ParticipantRoleType = None, db_session=None
 ):
     """Runs the add or reactivate incident participant flow."""
-    # We get information about the individual
-    contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
-    individual_info = contact_plugin.get(user_email)
 
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident_id, email=user_email
@@ -882,7 +879,7 @@ def incident_add_or_reactivate_participant_flow(
 
     if participant:
         if participant.is_active:
-            log.debug(f"{individual_info['fullname']} is already an active participant.")
+            log.debug(f"{user_email} is already an active participant.")
         else:
             # we reactivate the participant
             reactivated = participant_flows.reactivate_participant(

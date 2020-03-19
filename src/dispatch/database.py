@@ -3,7 +3,7 @@ from typing import Any, List
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import Query, sessionmaker, scoped_session
+from sqlalchemy.orm import Query, sessionmaker
 from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
 from sqlalchemy_searchable import make_searchable
 from sqlalchemy_searchable import search as search_db
@@ -36,6 +36,11 @@ make_searchable(Base.metadata)
 
 def get_db(request: Request):
     return request.state.db
+
+
+def get_model_name_by_tablename(table_fullname: str) -> str:
+    """Returns the model name of a given table."""
+    return get_class_by_tablename(table_fullname=table_fullname).__name__
 
 
 def get_class_by_tablename(table_fullname: str) -> Any:
@@ -74,7 +79,19 @@ def create_filter_spec(model, fields, ops, values):
 
     if fields and ops and values:
         for field, op, value in zip(fields, ops, values):
-            filter_spec.append({"model": model, "field": field, "op": op, "value": value})
+            # we have a complex field, we may need to join
+            if "." in field:
+                complex_model, complex_field = field.split(".")
+                filter_spec.append(
+                    {
+                        "model": get_model_name_by_tablename(complex_model),
+                        "field": complex_field,
+                        "op": op,
+                        "value": value,
+                    }
+                )
+            else:
+                filter_spec.append({"model": model, "field": field, "op": op, "value": value})
     # NOTE we default to AND filters
     if filter_spec:
         return {"and": filter_spec}
@@ -87,7 +104,20 @@ def create_sort_spec(model, sort_by, descending):
     if sort_by and descending:
         for field, direction in zip(sort_by, descending):
             direction = "desc" if direction else "asc"
-            sort_spec.append({"model": model, "field": field, "direction": direction})
+
+            # we have a complex field, we may need to join
+            if "." in field:
+                complex_model, complex_field = field.split(".")
+
+                sort_spec.append(
+                    {
+                        "model": get_model_name_by_tablename(complex_model),
+                        "field": complex_field,
+                        "direction": direction,
+                    }
+                )
+            else:
+                sort_spec.append({"model": model, "field": field, "direction": direction})
     return sort_spec
 
 

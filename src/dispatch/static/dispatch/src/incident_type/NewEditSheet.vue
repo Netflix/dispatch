@@ -39,11 +39,20 @@
                     label="Description"
                     :error-messages="errors"
                     :success="valid"
-                    hint="The incdent type's description."
+                    hint="A description for your incident type."
                     clearable
                     required
                   />
                 </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <v-select
+                  v-model="visibility"
+                  label="Visibility"
+                  :items="visibilities"
+                  hint="A visibility for your incident type"
+                  clearable
+                />
               </v-flex>
               <v-flex xs12>
                 <service-select v-model="commander_service" />
@@ -87,16 +96,23 @@ export default {
     DocumentSelect
   },
 
+  data() {
+    return {
+      visibilities: ["Open", "Restricted"]
+    }
+  },
+
   computed: {
     ...mapFields("incident_type", [
-      "selected.name",
-      "selected.slug",
-      "selected.id",
-      "selected.template_document",
+      "dialogs.showCreateEdit",
       "selected.commander_service",
       "selected.description",
+      "selected.id",
       "selected.loading",
-      "dialogs.showCreateEdit"
+      "selected.name",
+      "selected.slug",
+      "selected.template_document",
+      "selected.visibility"
     ])
   },
 

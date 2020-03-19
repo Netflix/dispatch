@@ -30,6 +30,10 @@ from .service import (
     get_all_last_x_hours_by_status,
 )
 from .messaging import send_incident_status_report_reminder
+    get_all,
+    get_all_by_status,
+    get_all_last_x_hours_by_status,
+)
 
 # TODO figure out a way to do mapping in the config file
 # reminder (in hours)
@@ -200,16 +204,22 @@ def daily_summary(db_session=None):
         convo_plugin.send(c, "Incident Daily Summary", {}, "", blocks=blocks)
 
 
-@scheduler.add(every(5).minutes, name="calculate-incident-cost")
+@scheduler.add(every(5).minutes, name="calculate-incidents-cost")
 @background_task
-def active_incidents_cost(db_session=None):
-    """Calculates the cost of all active incidents."""
-    active_incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active)
+def calcuate_incidents_cost(db_session=None):
+    """Calculates the cost of all incidents."""
 
-    for incident in active_incidents:
+    # we want to update all incidents, all the time
+    incidents = get_all(db_session=db_session)
+
+    for incident in incidents:
         # we calculate the cost
         try:
             incident_cost = calculate_cost(incident.id, db_session)
+
+            # if the cost hasn't changed don't continue
+            if incident.cost == incident_cost:
+                continue
 
             # we update the incident
             incident.cost = incident_cost
