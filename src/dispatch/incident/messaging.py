@@ -30,9 +30,12 @@ from dispatch.messaging import (
     INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
     INCIDENT_RESOURCES_MESSAGE,
     INCIDENT_REVIEW_DOCUMENT_NOTIFICATION,
+    INCIDENT_STATUS_REPORT_REMINDER,
     INCIDENT_COMMANDER,
     MessageType,
 )
+
+from dispatch.conversation.enums import ConversationCommands
 from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import Incident, IncidentRead
@@ -42,6 +45,29 @@ from dispatch.plugins.base import plugins
 
 
 log = logging.getLogger(__name__)
+
+
+def send_incident_status_report_reminder(incident: Incident):
+    """Sends the incident commander a direct message indicating that they should complete a status report."""
+    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
+    status_report_command = convo_plugin.get_command_name(ConversationCommands.status_report)
+
+    items = [
+        {
+            "name": incident.name,
+            "ticket_weblink": incident.ticket.weblink,
+            "title": incident.title,
+            "command": status_report_command,
+        }
+    ]
+
+    convo_plugin.send_direct(
+        incident.commander.email,
+        "Incident Status Report Reminder",
+        INCIDENT_STATUS_REPORT_REMINDER,
+        MessageType.incident_status_report,
+        items=items,
+    )
 
 
 def send_welcome_ephemeral_message_to_participant(

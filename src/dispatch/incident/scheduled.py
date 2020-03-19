@@ -8,7 +8,6 @@ from dispatch.config import (
     INCIDENT_NOTIFICATION_CONVERSATIONS,
     INCIDENT_PLUGIN_TICKET_SLUG,
 )
-from dispatch.conversation.enums import ConversationCommands
 from dispatch.decorators import background_task
 from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.individual import service as individual_service
@@ -18,8 +17,6 @@ from dispatch.messaging import (
     INCIDENT_DAILY_SUMMARY_NO_ACTIVE_INCIDENTS_DESCRIPTION,
     INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
     INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
-    INCIDENT_STATUS_REPORT_REMINDER,
-    MessageType,
 )
 from dispatch.extensions import sentry_sdk
 from dispatch.plugins.base import plugins
@@ -29,10 +26,10 @@ from dispatch.service import service as service_service
 from .enums import IncidentStatus
 from .service import (
     calculate_cost,
-    get_all,
     get_all_by_status,
     get_all_last_x_hours_by_status,
 )
+from .messaging import send_incident_status_report_reminder
 
 # TODO figure out a way to do mapping in the config file
 # reminder (in hours)
@@ -52,9 +49,6 @@ def status_report_reminder(db_session=None):
     """Sends status report reminders to active incident commanders."""
     incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active)
 
-    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
-    status_report_command = convo_plugin.get_command_name(ConversationCommands.status_report)
-
     for incident in incidents:
         try:
             notification_hour = STATUS_REPORT_REMINDER_MAPPING[
@@ -73,23 +67,8 @@ def status_report_reminder(db_session=None):
 
             q, r = divmod(hours, notification_hour)
             if q >= 1 and r == 0:  # it's time to send the reminder
-                if incident.ticket:  # TODO remove once we get clean data
-                    items = [
-                        {
-                            "name": incident.name,
-                            "ticket_weblink": incident.ticket.weblink,
-                            "title": incident.title,
-                            "command": status_report_command,
-                        }
-                    ]
+                send_incident_status_report_reminder(incident)
 
-                    convo_plugin.send_direct(
-                        incident.commander.email,
-                        "Incident Status Report Reminder",
-                        INCIDENT_STATUS_REPORT_REMINDER,
-                        MessageType.incident_status_report,
-                        items=items,
-                    )
         except Exception as e:
             # we shouldn't fail to update all incidents when one fails
             sentry_sdk.capture_exception(e)

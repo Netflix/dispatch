@@ -67,6 +67,7 @@ from .messaging import (
     send_incident_resources_ephemeral_message_to_participant,
     send_incident_review_document_notification,
     send_incident_welcome_participant_messages,
+    send_incident_status_report_reminder,
 )
 from .models import Incident, IncidentStatus
 
@@ -508,6 +509,8 @@ def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_se
         status=IncidentStatus.active.lower(),
     )
 
+    send_incident_status_report_reminder(incident)
+
     log.debug(f"We have updated the status of the external ticket to {IncidentStatus.active}.")
 
 
@@ -517,6 +520,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
+    send_incident_status_report_reminder(incident)
     incident.stable_at = datetime.utcnow()
 
     # we update the incident cost
