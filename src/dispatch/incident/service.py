@@ -142,6 +142,7 @@ def create(
         status=status,
         incident_type=incident_type,
         incident_priority=incident_priority,
+        visibility=incident_type.visibility,
     )
     db_session.add(incident)
     db_session.commit()
