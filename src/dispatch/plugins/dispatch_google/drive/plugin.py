@@ -105,7 +105,7 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         response["weblink"] = response["webViewLink"]
         return response
 
-    def archive(self, source_team_drive_id, dest_team_drive_id, folder_name):
+    def archive(self, source_team_drive_id: str, dest_team_drive_id: str, folder_name: str):
         """Archives a shared team drive to a specific folder."""
         response = archive_team_drive(
             self.client, source_team_drive_id, dest_team_drive_id, folder_name

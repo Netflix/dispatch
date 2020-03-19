@@ -532,12 +532,15 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    send_incident_status_report_reminder(incident)
+    # we set the stable time
     incident.stable_at = datetime.utcnow()
+    log.debug(f"We have set the stable time.")
+
+    # we remind the incident commander to write a status report
+    send_incident_status_report_reminder(incident)
 
     # we update the incident cost
     incident_cost = incident_service.calculate_cost(incident_id, db_session)
-
     log.debug(f"We have updated the cost of the incident.")
 
     # we update the external ticket
@@ -636,7 +639,10 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     """Runs the incident closed flow."""
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    # we set the closed time
     incident.closed_at = datetime.utcnow()
+    log.debug(f"We have set the closed time.")
 
     # we update the incident cost
     incident_cost = incident_service.calculate_cost(incident_id, db_session)
@@ -656,35 +662,37 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     )
     log.debug(f"We have updated the status of the external ticket to {IncidentStatus.closed}.")
 
-    # we archive the artifacts in the storage
-    storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
-    storage_plugin.archive(
-        source_team_drive_id=incident.storage.resource_id,
-        dest_team_drive_id=INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID,
-        folder_name=incident.name,
-    )
-    log.debug(
-        "We have archived the incident artifacts in the archival folder and re-applied permissions and deleted the source."
-    )
+    if incident.visibility == Visibility.open:
+        # we archive the artifacts in the storage
+        storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
+        storage_plugin.archive(
+            source_team_drive_id=incident.storage.resource_id,
+            dest_team_drive_id=INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID,
+            folder_name=incident.name,
+            visibility=incident.visibility,
+        )
+        log.debug(
+            "We have archived the incident artifacts in the archival folder and re-applied permissions and deleted the source."
+        )
 
-    # we get the tactical group
-    tactical_group = group_service.get_by_incident_id_and_resource_type(
-        db_session=db_session,
-        incident_id=incident_id,
-        resource_type=INCIDENT_RESOURCE_TACTICAL_GROUP,
-    )
+        # we get the tactical group
+        tactical_group = group_service.get_by_incident_id_and_resource_type(
+            db_session=db_session,
+            incident_id=incident_id,
+            resource_type=INCIDENT_RESOURCE_TACTICAL_GROUP,
+        )
 
-    # we get the notifications group
-    notifications_group = group_service.get_by_incident_id_and_resource_type(
-        db_session=db_session,
-        incident_id=incident_id,
-        resource_type=INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
-    )
+        # we get the notifications group
+        notifications_group = group_service.get_by_incident_id_and_resource_type(
+            db_session=db_session,
+            incident_id=incident_id,
+            resource_type=INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
+        )
 
-    group_plugin = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
-    group_plugin.delete(email=tactical_group.email)
-    group_plugin.delete(email=notifications_group.email)
-    log.debug("We have deleted the notification and tactical groups.")
+        group_plugin = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
+        group_plugin.delete(email=tactical_group.email)
+        group_plugin.delete(email=notifications_group.email)
+        log.debug("We have deleted the notification and tactical groups.")
 
     db_session.add(incident)
     db_session.commit()
