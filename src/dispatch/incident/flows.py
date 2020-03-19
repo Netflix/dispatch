@@ -624,7 +624,6 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     """Runs the incident closed flow."""
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-    send_incident_status_report_reminder(incident)
     incident.closed_at = datetime.utcnow()
 
     # we update the incident cost
