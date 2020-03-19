@@ -221,9 +221,9 @@ def daily_summary(db_session=None):
         convo_plugin.send(c, "Incident Daily Summary", {}, "", blocks=blocks)
 
 
-@scheduler.add(every(5).minutes, name="calculate-incident-cost")
+@scheduler.add(every(5).minutes, name="calculate-incidents-cost")
 @background_task
-def incidents_cost(db_session=None):
+def calcuate_incidents_cost(db_session=None):
     """Calculates the cost of all incidents."""
 
     # we want to update all incidents, all the time
