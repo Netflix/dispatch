@@ -503,9 +503,9 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     log.debug("Sent incident welcome and announcement notifications.")
 
-    send_incident_notifications(incident, db_session)
-
-    log.debug("Sent incident notifications.")
+    if incident.visibility == Visibility.open:
+        send_incident_notifications(incident, db_session)
+        log.debug("Sent incident notifications.")
 
 
 @background_task
