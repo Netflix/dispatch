@@ -18,7 +18,7 @@ class Participant(Base):
     incident_id = Column(Integer, ForeignKey("incident.id"))
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
     location = Column(String)
-    team_id = Column(Integer, ForeignKey("team_contact.id"))
+    # team_id = Column(Integer, ForeignKey("team_contact.id"))
     participant_role = relationship("ParticipantRole", lazy="subquery", backref="participant")
     status_reports = relationship("StatusReport", backref="participant")
 
