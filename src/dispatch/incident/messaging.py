@@ -17,11 +17,12 @@ from dispatch.config import (
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
 )
 from dispatch.database import SessionLocal
+from dispatch.incident.enums import IncidentStatus
 from dispatch.messaging import (
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
     INCIDENT_NEW_ROLE_NOTIFICATION,
     INCIDENT_NOTIFICATION,
-    INCIDENT_NAME,
+    INCIDENT_NOTIFICATION_COMMON,
     INCIDENT_PRIORITY_CHANGE,
     INCIDENT_STATUS_CHANGE,
     INCIDENT_TYPE_CHANGE,
@@ -34,7 +35,7 @@ from dispatch.messaging import (
 )
 from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
 from dispatch.incident import service as incident_service
-from dispatch.incident.models import Incident
+from dispatch.incident.models import Incident, IncidentRead
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.plugins.base import plugins
@@ -218,19 +219,15 @@ def send_incident_notifications(incident: Incident, db_session: SessionLocal):
     log.debug(f"Incident notifications sent.")
 
 
-def send_incident_change_notifications(
-    incident: Incident, previous_incident: str,
+def send_incident_update_notifications(
+    incident: Incident, previous_incident: IncidentRead,
 ):
     """Sends notifications about incident changes."""
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
-    notification_template = [INCIDENT_NAME]
+    notification_template = INCIDENT_NOTIFICATION_COMMON.copy()
 
     change = False
-    if previous_incident.incident_type.name != incident.incident_type.name:
-        change = True
-        notification_template.append(INCIDENT_TYPE_CHANGE)
-
     if previous_incident.incident_priority.name != incident.incident_priority.name:
         change = True
         notification_template.append(INCIDENT_PRIORITY_CHANGE)
@@ -239,14 +236,16 @@ def send_incident_change_notifications(
         change = True
         notification_template.append(INCIDENT_STATUS_CHANGE)
 
+    if previous_incident.incident_type.name != incident.incident_type.name:
+        change = True
+        notification_template.append(INCIDENT_TYPE_CHANGE)
+
     if not change:
         # we don't need to notify
         log.debug(f"Incident change notifications not sent.")
         return
 
     notification_template.append(INCIDENT_COMMANDER)
-
-    print(notification_template)
 
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
 
@@ -270,7 +269,10 @@ def send_incident_change_notifications(
     )
 
     # we notify the notification conversations
-    notification_template.append(INCIDENT_GET_INVOLVED_BUTTON)
+
+    if incident.status != IncidentStatus.closed:
+        notification_template.append(INCIDENT_GET_INVOLVED_BUTTON)
+
     for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
         convo_plugin.send(
             conversation,
