@@ -9,7 +9,7 @@ from dispatch.config import (
     INCIDENT_PLUGIN_TICKET_SLUG,
 )
 from dispatch.decorators import background_task
-from dispatch.enum import Visibility
+from dispatch.enums import Visibility
 from dispatch.extensions import sentry_sdk
 from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.individual import service as individual_service
