@@ -90,21 +90,24 @@ class GoogleCalendarConferencePlugin(ConferencePlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
-        scopes = ["https://www.googleapis.com/auth/calendar"]
-        self.client = get_service("calendar", "v3", scopes).events()
+        self.scopes = ["https://www.googleapis.com/auth/calendar"]
 
     def create(self, name: str, description: str, title: str, participants: List[str] = []):
         """Create a new event."""
-        return create_event(self.client, name, description, title, participants)
+        client = get_service("calendar", "v3", self.scopes).events()
+        return create_event(client, name, description, title, participants)
 
     def delete(self, event_id: str):
         """Deletes an existing event."""
-        return delete_event(self.client, event_id)
+        client = get_service("calendar", "v3", self.scopes).events()
+        return delete_event(client, event_id)
 
     def add_participant(self, event_id: str, participant: str):
         """Adds a new participant to event."""
-        return add_participant(self.client, event_id, participant)
+        client = get_service("calendar", "v3", self.scopes).events()
+        return add_participant(client, event_id, participant)
 
     def remove_participant(self, event_id: str, participant: str):
         """Removes a participant from event."""
-        return remove_participant(self.client, event_id, participant)
+        client = get_service("calendar", "v3", self.scopes).events()
+        return remove_participant(client, event_id, participant)

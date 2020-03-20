@@ -131,8 +131,7 @@ class GoogleGmailConversationPlugin(ConversationPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
-        scopes = ["https://mail.google.com/"]
-        self.client = get_service("gmail", "v1", scopes)
+        self.scopes = ["https://mail.google.com/"]
 
     def send(
         self,
@@ -144,6 +143,8 @@ class GoogleGmailConversationPlugin(ConversationPlugin):
     ):
         """Sends an html email based on the type."""
         # TODO allow for bulk sending (kglisson)
+        client = get_service("gmail", "v1", self.scopes)
+
         if kwargs.get("subject"):
             subject = kwargs["subject"]
         else:
@@ -158,4 +159,4 @@ class GoogleGmailConversationPlugin(ConversationPlugin):
 
         # render_email("task-reminder.html", message_body)
         html_message = create_html_message(user, subject, message_body)
-        return send_message(self.client, html_message)
+        return send_message(client, html_message)

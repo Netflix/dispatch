@@ -99,15 +99,14 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
-        scopes = [
+        self.scopes = [
             "https://www.googleapis.com/auth/documents",
             "https://www.googleapis.com/auth/drive",
         ]
-
-        self.client = get_service("docs", "v1", scopes).documents()
 
     def update(self, document_id: str, **kwargs):
         """Replaces text in document."""
         # TODO escape and use f strings? (kglisson)
         kwargs = {"{{" + k + "}}": v for k, v in kwargs.items()}
-        return replace_text(self.client, document_id, kwargs)
+        client = get_service("docs", "v1", self.scopes).documents()
+        return replace_text(client, document_id, kwargs)
