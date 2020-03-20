@@ -43,8 +43,9 @@ from dispatch.document.models import DocumentCreate
 from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
 from dispatch.enums import Visibility
 from dispatch.group import service as group_service
-from dispatch.conference import service as conference_service
 from dispatch.group.models import GroupCreate
+from dispatch.conference import service as conference_service
+from dispatch.conference.models import ConferenceCreate
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
 from dispatch.incident_priority.models import IncidentPriorityRead
@@ -433,14 +434,16 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     conference = create_conference(incident, [tactical_group["email"]])
 
-    log.debug("Conference created. Tacticle group added.")
+    log.debug("Conference created. Tactical group added.")
 
-    incident.conference = conference_service.create(
-        db_session=db_session,
+    conference_in = ConferenceCreate(
         resource_id=conference["resource_id"],
         resource_type=conference["resource_type"],
         weblink=conference["weblink"],
         conference_id=conference["id"],
+    )
+    incident.conference = conference_service.create(
+        db_session=db_session, conference_in=conference_in
     )
 
     log.debug("Added conference to incident.")

@@ -15,7 +15,10 @@ class Conference(Base, ResourceMixin):
 
 # Pydantic models...
 class ConferenceBase(DispatchBase):
-    pass
+    resource_id: str
+    resource_type: str
+    weblink: str
+    conference_id: str
 
 
 class ConferenceCreate(ConferenceBase):
