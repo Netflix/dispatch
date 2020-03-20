@@ -592,9 +592,18 @@ def drop_database():
 @click.option("--revision", nargs=1, default="head", help="Revision identifier.")
 def upgrade_database(tag, sql, revision):
     """Upgrades database schema to newest version."""
+    from sqlalchemy_utils import database_exists, create_database
+
     alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
     alembic_cfg = AlembicConfig(alembic_path)
-    alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
+    if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
+        create_database(str(config.SQLALCHEMY_DATABASE_URI))
+        Base.metadata.create_all(engine)
+        alembic_command.stamp(alembic_cfg, "head")
+    else:
+        alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
+        alembic_cfg = AlembicConfig(alembic_path)
+        alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
     click.secho("Success.", fg="green")
 
 
