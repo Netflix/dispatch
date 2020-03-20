@@ -545,10 +545,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     # we update the external ticket
     update_incident_ticket(
-        incident.ticket.resource_id,
-        incident_type=incident.incident_type.name,
-        status=IncidentStatus.stable.lower(),
-        cost=incident_cost,
+        incident.ticket.resource_id, status=IncidentStatus.stable.lower(), cost=incident_cost
     )
 
     log.debug(f"We have updated the status of the external ticket to {IncidentStatus.stable}.")
@@ -655,10 +652,7 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     # we update the external ticket
     update_incident_ticket(
-        incident.ticket.resource_id,
-        incident_type=incident.incident_type.name,
-        status=IncidentStatus.closed.lower(),
-        cost=incident_cost,
+        incident.ticket.resource_id, status=IncidentStatus.closed.lower(), cost=incident_cost
     )
     log.debug(f"We have updated the status of the external ticket to {IncidentStatus.closed}.")
 
