@@ -94,7 +94,9 @@ class DocumentRead(DocumentBase):
     @validator("description", pre=True, always=True)
     def set_description(cls, v, values):
         """Sets the description"""
-        return INCIDENT_DOCUMENT_DESCRIPTIONS.get(values["resource_type"], "No Description")
+        if not v:
+            return INCIDENT_DOCUMENT_DESCRIPTIONS.get(values["resource_type"], "No Description")
+        return v
 
 
 class DocumentNested(DocumentBase):
