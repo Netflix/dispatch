@@ -35,6 +35,7 @@ from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.storage.models import StorageRead
 from dispatch.ticket.models import TicketRead
+from dispatch.conference.models import ConferenceRead
 
 from .enums import IncidentStatus
 
@@ -112,6 +113,7 @@ class Incident(Base, TimeStampMixin):
     # resources
     groups = relationship("Group", lazy="subquery", backref="incident")
     conversation = relationship("Conversation", uselist=False, backref="incident")
+    conference = relationship("Conference", uselist=False, backref="incident")
     storage = relationship("Storage", uselist=False, backref="incident")
     ticket = relationship("Ticket", uselist=False, backref="incident")
     documents = relationship("Document", lazy="subquery", backref="incident")
@@ -172,6 +174,7 @@ class IncidentRead(IncidentBase):
     storage: Optional[StorageRead] = None
     ticket: Optional[TicketRead] = None
     documents: Optional[List[DocumentRead]] = []
+    conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
     visibility: Visibility
 

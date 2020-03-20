@@ -17,6 +17,7 @@ from dispatch.config import (
     INCIDENT_FAQ_DOCUMENT_ID,
     INCIDENT_PLUGIN_CONTACT_SLUG,
     INCIDENT_PLUGIN_CONVERSATION_SLUG,
+    INCIDENT_PLUGIN_CONFERENCE_SLUG,
     INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG,
     INCIDENT_PLUGIN_DOCUMENT_SLUG,
     INCIDENT_PLUGIN_GROUP_SLUG,
@@ -42,6 +43,7 @@ from dispatch.document.models import DocumentCreate
 from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
 from dispatch.enums import Visibility
 from dispatch.group import service as group_service
+from dispatch.conference import service as conference_service
 from dispatch.group.models import GroupCreate
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
@@ -121,6 +123,7 @@ def update_incident_ticket(
     conversation_weblink: str = None,
     document_weblink: str = None,
     storage_weblink: str = None,
+    conference_weblink: str = None,
     labels: List[str] = None,
     cost: str = None,
     visibility: str = None,
@@ -143,6 +146,7 @@ def update_incident_ticket(
         conversation_weblink=conversation_weblink,
         document_weblink=document_weblink,
         storage_weblink=storage_weblink,
+        conference_weblink=conference_weblink,
         labels=labels,
         cost=cost,
     )
@@ -181,6 +185,18 @@ def create_participant_groups(
     )
 
     return tactical_group, notification_group
+
+
+def create_conference(incident: Incident, participants: List[str]):
+    """Create external conference room."""
+    conference_plugin = plugins.get(INCIDENT_PLUGIN_CONFERENCE_SLUG)
+    conference = conference_plugin.create(incident.name, participants=participants)
+
+    conference.update(
+        {"resource_type": INCIDENT_PLUGIN_CONFERENCE_SLUG, "resource_id": conference["id"]}
+    )
+
+    return conference
 
 
 def create_incident_storage(name: str, participant_group_emails: List[str]):
@@ -264,6 +280,7 @@ def update_document(
     commander_fullname: str,
     conversation_weblink: str,
     document_weblink: str,
+    conference_weblink: str,
     storage_weblink: str,
     ticket_weblink: str,
     form_weblink: str = None,
@@ -283,6 +300,7 @@ def update_document(
         storage_weblink=storage_weblink,
         ticket_weblink=ticket_weblink,
         form_weblink=form_weblink,
+        conference_weblink=conference_weblink,
     )
 
     log.debug("The external collaboration document has been updated.")
@@ -413,6 +431,20 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         "resource_type": INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
     }
 
+    conference = create_conference(incident, [tactical_group["email"]])
+
+    log.debug("Conference created. Tacticle group added.")
+
+    incident.conference = conference_service.create(
+        db_session=db_session,
+        resource_id=conference["resource_id"],
+        resource_type=conference["resource_type"],
+        weblink=conference["weblink"],
+        conference_id=conference["id"],
+    )
+
+    log.debug("Added conference to incident.")
+
     for d in [
         incident_document,
         incident_sheet,
@@ -469,6 +501,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         conversation_weblink=incident.conversation.weblink,
         document_weblink=incident_document["weblink"],
         storage_weblink=incident.storage.weblink,
+        conference_weblink=incident.conference.weblink,
         visibility=incident.visibility,
     )
 
@@ -486,6 +519,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         incident_document["weblink"],
         incident.storage.weblink,
         incident.ticket.weblink,
+        incident.conference.weblink,
     )
 
     log.debug("Updated incident document.")

@@ -91,6 +91,26 @@
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider />
+                <v-list-item v-if="conference" :href="conference.weblink" target="_blank">
+                  <v-list-item-content>
+                    <v-list-item-title>Video Conference</v-list-item-title>
+                    <v-list-item-subtitle>{{ conference.description }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                    <v-list-item-action>
+                        <v-list-item-icon>
+                            <v-icon>open_in_new</v-icon>
+                        </v-list-item-icon>
+                    </v-list-item-action>
+                </v-list-item>
+                <v-list-item v-else>
+                  <v-list-item-content>
+                    <v-list-item-title>Video Conference</v-list-item-title>
+                    <v-list-item-subtitle>
+                      <v-progress-circular indeterminate color="primary" />
+                    </v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-divider />
                 <v-list-item v-if="conversation" :href="conversation.weblink" target="_blank">
                   <v-list-item-content>
                     <v-list-item-title>Conversation</v-list-item-title>
@@ -269,6 +289,7 @@ export default {
       "selected.title",
       "selected.description",
       "selected.conversation",
+      "selected.conference",
       "selected.storage",
       "selected.documents",
       "selected.loading",

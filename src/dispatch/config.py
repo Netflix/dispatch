@@ -100,6 +100,10 @@ INCIDENT_PLUGIN_PARTICIPANT_SLUG = config(
 INCIDENT_PLUGIN_STORAGE_SLUG = config(
     "INCIDENT_PLUGIN_STORAGE_SLUG", default="google-drive-storage"
 )
+
+INCIDENT_PLUGIN_CONFERENCE_SLUG = config(
+    "INCIDENT_PLUGIN_CONFERENCE_SLUG", default="google-calendar-conference"
+)
 INCIDENT_PLUGIN_TICKET_SLUG = config("INCIDENT_PLUGIN_TICKET_SLUG", default="jira-ticket")
 INCIDENT_PLUGIN_TASK_SLUG = config("INCIDENT_PLUGIN_TASK_SLUG", default="google-drive-task")
 

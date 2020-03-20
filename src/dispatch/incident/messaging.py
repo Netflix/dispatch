@@ -113,6 +113,7 @@ def send_welcome_ephemeral_message_to_participant(
         storage_weblink=incident.storage.weblink,
         ticket_weblink=incident.ticket.weblink,
         faq_weblink=incident_faq.weblink,
+        conference_weblink=incident.conference.weblink,
         conversation_commands_reference_document_weblink=incident_conversation_commands_reference_document.weblink,
     )
 
@@ -158,6 +159,7 @@ def send_welcome_email_to_participant(
         storage_weblink=incident.storage.weblink,
         ticket_weblink=incident.ticket.weblink,
         faq_weblink=incident_faq.weblink,
+        conference_weblink=incident.conference.weblink,
         conversation_commands_reference_document_weblink=incident_conversation_commands_reference_document.weblink,
     )
 
