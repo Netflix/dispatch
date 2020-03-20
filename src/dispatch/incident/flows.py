@@ -624,6 +624,10 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     """Runs the incident closed flow."""
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    if incident.status == IncidentStatus.active:
+        incident_stable_flow(incident_id=incident.id, db_session=db_session)
+
     incident.closed_at = datetime.utcnow()
 
     # we update the incident cost
@@ -694,7 +698,7 @@ def incident_update_flow(
     if previous_incident.incident_priority.name != incident.incident_priority.name:
         conversation_topic_change = True
 
-    if previous_incident.status.name != incident.status:
+    if previous_incident.status.value != incident.status:
         conversation_topic_change = True
 
     if conversation_topic_change:
@@ -751,13 +755,13 @@ def incident_update_flow(
 
     log.debug(f"Resolved and added new participants to the incident.")
 
-    if previous_incident.status.name != incident.status:
-        if previous_incident.status == IncidentStatus.active:
+    if previous_incident.status.value != incident.status:
+        if incident.status == IncidentStatus.active:
             incident_active_flow(incident_id=incident.id, db_session=db_session)
-        elif previous_incident.status == IncidentStatus.closed:
-            incident_closed_flow(incident_id=incident.id, db_session=db_session)
-        elif previous_incident.status == IncidentStatus.stable:
+        elif incident.status == IncidentStatus.stable:
             incident_stable_flow(incident_id=incident.id, db_session=db_session)
+        elif incident.status == IncidentStatus.closed:
+            incident_closed_flow(incident_id=incident.id, db_session=db_session)
 
         log.debug(f"Finished running status flow. Status: {incident.status}")
 
