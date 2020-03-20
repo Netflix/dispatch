@@ -8,6 +8,7 @@ from alembic import command as alembic_command
 from alembic.config import Config as AlembicConfig
 from tabulate import tabulate
 from uvicorn import main as uvicorn_main
+from sqlalchemy_utils import create_database, database_exists, drop_database
 
 from dispatch import __version__, config
 from dispatch.application.models import *  # noqa
@@ -589,7 +590,14 @@ def upgrade_database(tag, sql, revision):
     """Upgrades database schema to newest version."""
     alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
     alembic_cfg = AlembicConfig(alembic_path)
-    alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
+    if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
+        create_database(str(config.SQLALCHEMY_DATABASE_URI))
+        Base.metadata.create_all(engine)
+        alembic_command.stamp(alembic_cfg, "head")
+    else:
+        alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
+        alembic_cfg = AlembicConfig(alembic_path)
+        alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
     click.secho("Success.", fg="green")
 
 
