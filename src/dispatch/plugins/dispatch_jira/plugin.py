@@ -34,6 +34,7 @@ INCIDENT_TEMPLATE = """
 [Incident Conversation|{{conversation_weblink}}]
 [Incident Document|{{document_weblink}}]
 [Incident Storage|{{storage_weblink}}]
+[Incident Conference|{{conference_weblink}}]
 """
 
 INCIDENT_PRIORITY_MAP = {
@@ -75,6 +76,7 @@ def create_issue_fields(
     conversation_weblink: str = None,
     document_weblink: str = None,
     storage_weblink: str = None,
+    conference_weblink: str = None,
     labels: List[str] = None,
     cost: str = None,
 ):
@@ -95,6 +97,7 @@ def create_issue_fields(
             description=description,
             commander_username=commander_username,
             document_weblink=document_weblink,
+            conference_weblink=conference_weblink,
             conversation_weblink=conversation_weblink,
             storage_weblink=storage_weblink,
         )
@@ -207,6 +210,7 @@ class JiraTicketPlugin(TicketPlugin):
         commander_email: str = None,
         reporter_email: str = None,
         conversation_weblink: str = None,
+        conference_weblink: str = None,
         document_weblink: str = None,
         storage_weblink: str = None,
         labels: List[str] = None,
@@ -227,6 +231,7 @@ class JiraTicketPlugin(TicketPlugin):
             commander_username=commander_username,
             reporter_username=reporter_username,
             conversation_weblink=conversation_weblink,
+            conference_weblink=conference_weblink,
             document_weblink=document_weblink,
             storage_weblink=storage_weblink,
             labels=labels,

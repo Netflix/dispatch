@@ -120,6 +120,12 @@ and participants in the incident conversation.""".replace(
     "\n", " "
 ).strip()
 
+INCIDENT_CONFERENCE_DESCRIPTION = """
+Video conference and phone bridge to be used throughout the incident.
+""".replace(
+    "\n", ""
+).strip()
+
 INCIDENT_STORAGE_DESCRIPTION = """
 Common storage for all incident artifacts and
 documents. Add logs, screen captures, or any other data collected during the
@@ -270,6 +276,12 @@ INCIDENT_COMMANDER = {
     "text": INCIDENT_COMMANDER_DESCRIPTION,
 }
 
+INCIDENT_CONFERENCE = {
+    "title": "Incident Conference",
+    "title_link": "{{conference_weblink}}",
+    "text": INCIDENT_CONFERENCE_DESCRIPTION,
+}
+
 INCIDENT_STORAGE = {
     "title": "Incident Storage",
     "title_link": "{{storage_weblink}}",
@@ -334,6 +346,7 @@ INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
     INCIDENT_COMMANDER,
     INCIDENT_INVESTIGATION_DOCUMENT,
     INCIDENT_STORAGE,
+    INCIDENT_CONFERENCE,
     INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
     INCIDENT_FAQ_DOCUMENT,
 ]
@@ -342,6 +355,7 @@ INCIDENT_RESOURCES_MESSAGE = [
     INCIDENT_COMMANDER,
     INCIDENT_INVESTIGATION_DOCUMENT,
     INCIDENT_STORAGE,
+    INCIDENT_CONFERENCE,
     INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
     INCIDENT_FAQ_DOCUMENT,
 ]

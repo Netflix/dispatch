@@ -12,6 +12,7 @@ const getDefaultSelectedState = () => {
     title: null,
     description: null,
     conversation: null,
+    conference: null,
     storage: null,
     ticket: null,
     documents: null,
