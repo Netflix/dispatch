@@ -504,23 +504,28 @@ def init_database():
 @dispatch_database.command("restore")
 def restore_database():
     """Restores the database via pg_restore."""
+    import sh
     from sh import psql, createdb
     from dispatch.config import DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_CREDENTIALS
 
     username, password = str(DATABASE_CREDENTIALS).split(":")
 
-    print(
-        createdb(
-            "-h",
-            DATABASE_HOSTNAME,
-            "-p",
-            DATABASE_PORT,
-            "-U",
-            username,
-            "dispatch",
-            _env={"PGPASSWORD": password},
+    try:
+        print(
+            createdb(
+                "-h",
+                DATABASE_HOSTNAME,
+                "-p",
+                DATABASE_PORT,
+                "-U",
+                username,
+                "dispatch",
+                _env={"PGPASSWORD": password},
+            )
         )
-    )
+    except sh.ErrorReturnCode_1:
+        print("Database already exists.")
+
     print(
         psql(
             "-h",
