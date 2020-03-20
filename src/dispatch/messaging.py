@@ -10,6 +10,7 @@ from dispatch.incident.enums import IncidentStatus
 from dispatch.incident_priority.models import IncidentPriorityType
 
 from .config import (
+    INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
     INCIDENT_RESOURCE_FAQ_DOCUMENT,
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
@@ -110,6 +111,18 @@ the incident and links to resources.""".replace(
 INCIDENT_CONVERSATION_DESCRIPTION = """
 Private conversation for real-time discussion. All incident participants get added to it.
 """.replace(
+    "\n", " "
+).strip()
+
+INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_DESCRIPTION = """
+Document containing the list of slash commands available to the Incident Commander (IC)
+and participants in the incident conversation.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_CONFERENCE_DESCRIPTION = """
+Video conference and phone bridge to be used throughout the incident.
+""".replace(
     "\n", ""
 ).strip()
 
@@ -151,6 +164,7 @@ INCIDENT_DOCUMENT_DESCRIPTIONS = {
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT: INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT: INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,
     INCIDENT_RESOURCE_INVESTIGATION_SHEET: INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
+    INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT: INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_DESCRIPTION,
 }
 
 INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION = """
@@ -225,6 +239,9 @@ The following incident task has been resolved in the incident document.\n\n*Desc
 INCIDENT_TYPE_CHANGE_DESCRIPTION = """
 The incident type has been changed from *{{ incident_type_old }}* to *{{ incident_type_new }}*."""
 
+INCIDENT_STATUS_CHANGE_DESCRIPTION = """
+The incident status has been changed from *{{ incident_status_old }}* to *{{ incident_status_new }}*."""
+
 INCIDENT_PRIORITY_CHANGE_DESCRIPTION = """
 The incident priority has been changed from *{{ incident_priority_old }}* to *{{ incident_priority_new }}*."""
 
@@ -259,10 +276,22 @@ INCIDENT_COMMANDER = {
     "text": INCIDENT_COMMANDER_DESCRIPTION,
 }
 
+INCIDENT_CONFERENCE = {
+    "title": "Incident Conference",
+    "title_link": "{{conference_weblink}}",
+    "text": INCIDENT_CONFERENCE_DESCRIPTION,
+}
+
 INCIDENT_STORAGE = {
     "title": "Incident Storage",
     "title_link": "{{storage_weblink}}",
     "text": INCIDENT_STORAGE_DESCRIPTION,
+}
+
+INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT = {
+    "title": "Incident Conversation Commands Reference Document",
+    "title_link": "{{conversation_commands_reference_document_weblink}}",
+    "text": INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_DESCRIPTION,
 }
 
 INCIDENT_INVESTIGATION_DOCUMENT = {
@@ -284,6 +313,11 @@ INCIDENT_FAQ_DOCUMENT = {
 }
 
 INCIDENT_TYPE_CHANGE = {"title": "Incident Type Change", "text": INCIDENT_TYPE_CHANGE_DESCRIPTION}
+
+INCIDENT_STATUS_CHANGE = {
+    "title": "Incident Status Change",
+    "text": INCIDENT_STATUS_CHANGE_DESCRIPTION,
+}
 
 INCIDENT_PRIORITY_CHANGE = {
     "title": "Incident Priority Change",
@@ -312,6 +346,8 @@ INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
     INCIDENT_COMMANDER,
     INCIDENT_INVESTIGATION_DOCUMENT,
     INCIDENT_STORAGE,
+    INCIDENT_CONFERENCE,
+    INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
     INCIDENT_FAQ_DOCUMENT,
 ]
 
@@ -319,6 +355,8 @@ INCIDENT_RESOURCES_MESSAGE = [
     INCIDENT_COMMANDER,
     INCIDENT_INVESTIGATION_DOCUMENT,
     INCIDENT_STORAGE,
+    INCIDENT_CONFERENCE,
+    INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
     INCIDENT_FAQ_DOCUMENT,
 ]
 
@@ -327,17 +365,6 @@ INCIDENT_NOTIFICATION_COMMON = [INCIDENT_NAME, INCIDENT_TITLE]
 INCIDENT_NOTIFICATION = INCIDENT_NOTIFICATION_COMMON.copy()
 INCIDENT_NOTIFICATION.extend(
     [INCIDENT_STATUS, INCIDENT_PRIORITY_FYI, INCIDENT_COMMANDER, INCIDENT_GET_INVOLVED_BUTTON]
-)
-
-INCIDENT_NOTIFICATION_TYPE_CHANGE = INCIDENT_NOTIFICATION_COMMON.copy()
-INCIDENT_NOTIFICATION_TYPE_CHANGE.extend([INCIDENT_TYPE_CHANGE, INCIDENT_COMMANDER])
-
-INCIDENT_NOTIFICATION_PRIORITY_CHANGE = INCIDENT_NOTIFICATION_COMMON.copy()
-INCIDENT_NOTIFICATION_PRIORITY_CHANGE.extend([INCIDENT_PRIORITY_CHANGE, INCIDENT_COMMANDER])
-
-INCIDENT_NOTIFICATION_TYPE_AND_PRIORITY_CHANGE = INCIDENT_NOTIFICATION_COMMON.copy()
-INCIDENT_NOTIFICATION_TYPE_AND_PRIORITY_CHANGE.extend(
-    [INCIDENT_TYPE_CHANGE, INCIDENT_PRIORITY_CHANGE, INCIDENT_COMMANDER]
 )
 
 INCIDENT_STATUS_REPORT = [

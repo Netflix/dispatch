@@ -21,7 +21,7 @@ from dispatch.plugins.bases import ConversationPlugin, DocumentPlugin, ContactPl
 from .config import (
     SLACK_API_BOT_TOKEN,
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
-    SLACK_COMMAND_EDIT_INCIDENT_SLUG,
+    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
@@ -64,7 +64,7 @@ command_mappings = {
     ConversationCommands.list_tasks: SLACK_COMMAND_LIST_TASKS_SLUG,
     ConversationCommands.list_participants: SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     ConversationCommands.assign_role: SLACK_COMMAND_ASSIGN_ROLE_SLUG,
-    ConversationCommands.edit_incident: SLACK_COMMAND_EDIT_INCIDENT_SLUG,
+    ConversationCommands.edit_incident: SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     ConversationCommands.engage_oncall: SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
     ConversationCommands.list_resources: SLACK_COMMAND_LIST_RESOURCES_SLUG,
 }

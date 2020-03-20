@@ -17,7 +17,7 @@ from dispatch.messaging import (
 
 from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
-    SLACK_COMMAND_EDIT_INCIDENT_SLUG,
+    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
@@ -39,15 +39,15 @@ INCIDENT_CONVERSATION_STATUS_REPORT_SUGGESTION = (
 INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
     SLACK_COMMAND_MARK_ACTIVE_SLUG: {
         "response_type": "ephemeral",
-        "text": f"Marking the incident as active... {INCIDENT_CONVERSATION_STATUS_REPORT_SUGGESTION}.",
+        "text": f"The command `{SLACK_COMMAND_MARK_ACTIVE_SLUG}` has been deprecated. Please use `{SLACK_COMMAND_UPDATE_INCIDENT_SLUG}` instead.",
     },
     SLACK_COMMAND_MARK_STABLE_SLUG: {
         "response_type": "ephemeral",
-        "text": f"Marking the incident as stable... {INCIDENT_CONVERSATION_STATUS_REPORT_SUGGESTION}.",
+        "text": f"The command `{SLACK_COMMAND_MARK_STABLE_SLUG}` has been deprecated. Please use `{SLACK_COMMAND_UPDATE_INCIDENT_SLUG}` instead.",
     },
     SLACK_COMMAND_MARK_CLOSED_SLUG: {
         "response_type": "ephemeral",
-        "text": "Marking the incident as closed...",
+        "text": f"The command `{SLACK_COMMAND_MARK_CLOSED_SLUG}` has been deprecated. Please use `{SLACK_COMMAND_UPDATE_INCIDENT_SLUG}` instead.",
     },
     SLACK_COMMAND_STATUS_REPORT_SLUG: {
         "response_type": "ephemeral",
@@ -65,9 +65,9 @@ INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
         "response_type": "ephemeral",
         "text": "Opening a dialog to assign a role to a participant...",
     },
-    SLACK_COMMAND_EDIT_INCIDENT_SLUG: {
+    SLACK_COMMAND_UPDATE_INCIDENT_SLUG: {
         "response_type": "ephemeral",
-        "text": "Opening a dialog to edit incident information...",
+        "text": "Opening a dialog to update incident information...",
     },
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG: {
         "response_type": "ephemeral",

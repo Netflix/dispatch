@@ -30,6 +30,7 @@
               :loading="loading"
               loading-text="Loading... Please wait"
             >
+              <template v-slot:item.cost="{ item }">{{ item.cost | toUSD }}</template>
               <template v-slot:item.commander="{ item }">
                 <div v-if="item.commander">
                   <div v-if="item.commander.name">{{ item.commander.name }}</div>
@@ -45,11 +46,7 @@
               <template v-slot:item.actions="{ item }">
                 <v-icon small class="mr-2" @click="createEditShow(item)">edit</v-icon>
               </template>
-              <template v-slot:item.created_at="{ item }">
-                {{
-                item.created_at | formatDate
-                }}
-              </template>
+              <template v-slot:item.reported_at="{ item }">{{ item.reported_at | formatDate }}</template>
             </v-data-table>
           </v-card>
         </v-flex>
@@ -78,9 +75,10 @@ export default {
         { text: "Status", value: "status", width: "10%" },
         { text: "Type", value: "incident_type.name" },
         { text: "Priority", value: "incident_priority.name", width: "10%" },
+        { text: "Cost", value: "cost" },
         { text: "Commander", value: "commander" },
         { text: "Reporter", value: "reporter" },
-        { text: "Created At", value: "created_at" },
+        { text: "Reported At", value: "reported_at" },
         { text: "Actions", value: "actions", sortable: false, align: "right", width: "5%" }
       ]
     }

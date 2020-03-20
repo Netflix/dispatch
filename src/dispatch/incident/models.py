@@ -11,23 +11,33 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     String,
     Table,
-    event,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
+from dispatch.config import (
+    INCIDENT_RESOURCE_FAQ_DOCUMENT,
+    INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
+)
+
 from dispatch.conversation.models import ConversationRead
 from dispatch.database import Base
 from dispatch.document.models import DocumentRead
-from dispatch.incident_priority.models import IncidentPriorityCreate, IncidentPriorityRead
-from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead
+from dispatch.enums import Visibility
+from dispatch.incident_priority.models import (
+    IncidentPriorityCreate,
+    IncidentPriorityRead,
+    IncidentPriorityBase,
+)
+from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
 from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.storage.models import StorageRead
 from dispatch.ticket.models import TicketRead
+from dispatch.conference.models import ConferenceRead
 
-from .enums import IncidentStatus, IncidentVisibility
+from .enums import IncidentStatus
 
 assoc_incident_terms = Table(
     "assoc_incident_terms",
@@ -45,7 +55,7 @@ class Incident(Base, TimeStampMixin):
     description = Column(String, nullable=False)
     status = Column(String, default=IncidentStatus.active)
     cost = Column(Float, default=0)
-    visibility = Column(String, default=IncidentVisibility.open)
+    visibility = Column(String, default=Visibility.open)
 
     # auto generated
     reported_at = Column(DateTime, default=datetime.utcnow)
@@ -82,6 +92,20 @@ class Incident(Base, TimeStampMixin):
                         return p.individual
 
     @hybrid_property
+    def incident_document(self):
+        if self.documents:
+            for d in self.documents:
+                if d.resource_type == INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT:
+                    return d
+
+    @hybrid_property
+    def incident_faq(self):
+        if self.documents:
+            for d in self.documents:
+                if d.resource_type == INCIDENT_RESOURCE_FAQ_DOCUMENT:
+                    return d
+
+    @hybrid_property
     def last_status_report(self):
         if self.status_reports:
             return sorted(self.status_reports, key=lambda r: r.created_at)[-1]
@@ -89,6 +113,7 @@ class Incident(Base, TimeStampMixin):
     # resources
     groups = relationship("Group", lazy="subquery", backref="incident")
     conversation = relationship("Conversation", uselist=False, backref="incident")
+    conference = relationship("Conference", uselist=False, backref="incident")
     storage = relationship("Storage", uselist=False, backref="incident")
     ticket = relationship("Ticket", uselist=False, backref="incident")
     documents = relationship("Document", lazy="subquery", backref="incident")
@@ -100,17 +125,6 @@ class Incident(Base, TimeStampMixin):
     status_reports = relationship("StatusReport", backref="incident")
     tasks = relationship("Task", backref="incident")
     terms = relationship("Term", secondary=assoc_incident_terms, backref="incidents")
-
-    @staticmethod
-    def _status_time(mapper, connection, target):
-        if target.status == IncidentStatus.stable:
-            target.stable_at = datetime.utcnow()
-        elif target.status == IncidentStatus.closed:
-            target.closed_at = datetime.utcnow()
-
-    @classmethod
-    def __declare_last__(cls):
-        event.listen(cls, "before_update", cls._status_time)
 
 
 # Pydantic models...
@@ -138,13 +152,13 @@ class IncidentCreate(IncidentBase):
 
 
 class IncidentUpdate(IncidentBase):
-    visibility: IncidentVisibility
-    incident_priority: IncidentPriorityRead
-    incident_type: IncidentTypeRead
+    visibility: Visibility
+    incident_priority: IncidentPriorityBase
+    incident_type: IncidentTypeBase
     reported_at: Optional[datetime] = None
     stable_at: Optional[datetime] = None
-    commander: IndividualReadNested
-    reporter: IndividualReadNested
+    commander: Optional[IndividualReadNested]
+    reporter: Optional[IndividualReadNested]
 
 
 class IncidentRead(IncidentBase):
@@ -160,8 +174,9 @@ class IncidentRead(IncidentBase):
     storage: Optional[StorageRead] = None
     ticket: Optional[TicketRead] = None
     documents: Optional[List[DocumentRead]] = []
+    conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
-    visibility: IncidentVisibility
+    visibility: Visibility
 
     created_at: Optional[datetime] = None
     reported_at: Optional[datetime] = None

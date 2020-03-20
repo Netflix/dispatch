@@ -20,9 +20,10 @@ from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.conversation.service import get_by_channel_id
 from dispatch.database import get_db, SessionLocal
 from dispatch.decorators import background_task
+from dispatch.enums import Visibility
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
-from dispatch.incident.models import IncidentVisibility
+from dispatch.incident.models import IncidentUpdate, IncidentRead, IncidentStatus
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.incident_type import service as incident_type_service
@@ -40,7 +41,7 @@ from dispatch.task.models import TaskStatus
 from . import __version__
 from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
-    SLACK_COMMAND_EDIT_INCIDENT_SLUG,
+    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
@@ -55,6 +56,8 @@ from .messaging import (
     INCIDENT_CONVERSATION_COMMAND_MESSAGE,
     render_non_incident_conversation_command_error_message,
 )
+
+from .service import get_user_email
 
 once_a_day_cache = TTLCache(maxsize=1000, ttl=60 * 60 * 24)
 
@@ -313,8 +316,8 @@ def create_assign_role_dialog(incident_id: int, command: dict = None):
 
 
 @background_task
-def create_edit_incident_dialog(incident_id: int, command: dict = None, db_session=None):
-    """Creates a dialog for editing incident information."""
+def create_update_incident_dialog(incident_id: int, command: dict = None, db_session=None):
+    """Creates a dialog for updating incident information."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     type_options = []
@@ -325,15 +328,19 @@ def create_edit_incident_dialog(incident_id: int, command: dict = None, db_sessi
     for priority in incident_priority_service.get_all(db_session=db_session):
         priority_options.append({"label": priority.name, "value": priority.name})
 
+    status_options = []
+    for status in IncidentStatus:
+        status_options.append({"label": status.value, "value": status.value})
+
     visibility_options = []
-    for visibility in IncidentVisibility:
+    for visibility in Visibility:
         visibility_options.append({"label": visibility.value, "value": visibility.value})
 
     notify_options = [{"label": "Yes", "value": "Yes"}, {"label": "No", "value": "No"}]
 
     dialog = {
         "callback_id": command["command"],
-        "title": "Edit Incident",
+        "title": "Update Incident",
         "submit_label": "Save",
         "elements": [
             {"type": "textarea", "label": "Title", "name": "title", "value": incident.title},
@@ -356,6 +363,13 @@ def create_edit_incident_dialog(incident_id: int, command: dict = None, db_sessi
                 "name": "priority",
                 "value": incident.incident_priority.name,
                 "options": priority_options,
+            },
+            {
+                "label": "Status",
+                "type": "select",
+                "name": "status",
+                "value": incident.status,
+                "options": status_options,
             },
             {
                 "label": "Visibility",
@@ -388,7 +402,7 @@ def create_engage_oncall_dialog(incident_id: int, command: dict = None, db_sessi
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"No oncall services have been defined. You can define them in the Disparch UI at /services",
+                    "text": f"No oncall services have been defined. You can define them in the Dispatch UI at /services",
                 },
             }
         ]
@@ -495,13 +509,13 @@ def command_functions(command: str):
     """Interprets the command and routes it the appropriate function."""
     command_mappings = {
         SLACK_COMMAND_ASSIGN_ROLE_SLUG: [create_assign_role_dialog],
-        SLACK_COMMAND_EDIT_INCIDENT_SLUG: [create_edit_incident_dialog],
+        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_dialog],
         SLACK_COMMAND_LIST_PARTICIPANTS_SLUG: [list_participants],
         SLACK_COMMAND_LIST_RESOURCES_SLUG: [incident_flows.incident_list_resources_flow],
         SLACK_COMMAND_LIST_TASKS_SLUG: [list_tasks],
-        SLACK_COMMAND_MARK_ACTIVE_SLUG: [incident_flows.incident_active_flow],
-        SLACK_COMMAND_MARK_CLOSED_SLUG: [incident_flows.incident_closed_flow],
-        SLACK_COMMAND_MARK_STABLE_SLUG: [incident_flows.incident_stable_flow],
+        SLACK_COMMAND_MARK_ACTIVE_SLUG: [],
+        SLACK_COMMAND_MARK_CLOSED_SLUG: [],
+        SLACK_COMMAND_MARK_STABLE_SLUG: [],
         SLACK_COMMAND_STATUS_REPORT_SLUG: [create_status_report_dialog],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [create_engage_oncall_dialog],
     }
@@ -509,12 +523,41 @@ def command_functions(command: str):
     return command_mappings.get(command, [])
 
 
+@background_task
+def handle_update_incident_action(user_email, incident_id, action, db_session=None):
+    """Messages slack dialog data into something that Dispatch can use."""
+    submission = action["submission"]
+    notify = True if submission["notify"] == "Yes" else False
+    incident_in = IncidentUpdate(
+        title=submission["title"],
+        description=submission["description"],
+        incident_type={"name": submission["type"]},
+        incident_priority={"name": submission["priority"]},
+        status=submission["status"],
+        visibility=submission["visibility"],
+    )
+
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    existing_incident = IncidentRead.from_orm(incident)
+    incident_service.update(db_session=db_session, incident=incident, incident_in=incident_in)
+    incident_flows.incident_update_flow(user_email, incident_id, existing_incident, notify)
+
+
+@background_task
+def handle_assign_role_action(user_email, incident_id, action, db_session=None):
+    """Messages slack dialog data into some thing that Dispatch can use."""
+    assignee_user_id = action["submission"]["participant"]
+    assignee_role = action["submission"]["role"]
+    assignee_email = get_user_email(client=slack_client, user_id=assignee_user_id)
+    incident_flows.incident_assign_role_flow(user_email, incident_id, assignee_email, assignee_role)
+
+
 def action_functions(action: str):
     """Interprets the action and routes it the appropriate function."""
     action_mappings = {
         SLACK_COMMAND_STATUS_REPORT_SLUG: [status_report_flows.new_status_report_flow],
-        SLACK_COMMAND_ASSIGN_ROLE_SLUG: [incident_flows.incident_assign_role_flow],
-        SLACK_COMMAND_EDIT_INCIDENT_SLUG: [incident_flows.incident_edit_flow],
+        SLACK_COMMAND_ASSIGN_ROLE_SLUG: [handle_assign_role_action],
+        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [handle_update_incident_action],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [incident_flows.incident_engage_oncall_flow],
         ConversationButtonActions.invite_user: [add_user_to_conversation],
     }
@@ -670,7 +713,9 @@ async def handle_command(
         for f in command_functions(command.get("command")):
             background_tasks.add_task(f, conversation.incident_id, command=command)
 
-        return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(command.get("command"), "")
+        return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(
+            command.get("command"), f"Unable to find message. Command: {command.get('command')}"
+        )
     else:
         return render_non_incident_conversation_command_error_message(command.get("command"))
 

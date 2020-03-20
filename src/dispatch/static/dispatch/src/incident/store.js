@@ -12,6 +12,7 @@ const getDefaultSelectedState = () => {
     title: null,
     description: null,
     conversation: null,
+    conference: null,
     storage: null,
     ticket: null,
     documents: null,
@@ -43,7 +44,7 @@ const state = {
       q: "",
       page: 1,
       itemsPerPage: 10,
-      sortBy: ["created_at"],
+      sortBy: ["reported_at"],
       descending: [true]
     },
     loading: false

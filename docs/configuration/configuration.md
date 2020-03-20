@@ -130,7 +130,11 @@ By default, the config will be read from environment variables and/or `.env` fil
 
 #### `INCIDENT_FAQ_DOCUMENT_ID`
 
-> Controls which document id to use as the FAQ.
+> Controls which document id to use for the Frequently Asked Questions (FAQ) document.
+
+#### `INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_ID`
+
+> Controls which document id to use for the conversation commands reference document.
 
 #### `INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID`
 
@@ -175,4 +179,3 @@ By default, the config will be read from environment variables and/or `.env` fil
 #### `INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT` \[default: 'google-docs-incident-review-document'\]
 
 > Controls the resource type to use for the incident review document.
-

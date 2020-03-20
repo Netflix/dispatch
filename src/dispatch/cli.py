@@ -504,11 +504,23 @@ def init_database():
 @dispatch_database.command("restore")
 def restore_database():
     """Restores the database via pg_restore."""
-    from sh import psql
+    from sh import psql, createdb
     from dispatch.config import DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_CREDENTIALS
 
     username, password = str(DATABASE_CREDENTIALS).split(":")
 
+    print(
+        createdb(
+            "-h",
+            DATABASE_HOSTNAME,
+            "-p",
+            DATABASE_PORT,
+            "-U",
+            username,
+            "dispatch",
+            _env={"PGPASSWORD": password},
+        )
+    )
     print(
         psql(
             "-h",
@@ -676,7 +688,7 @@ def revision_database(
 def dispatch_scheduler():
     """Container for all dispatch scheduler commands."""
     # we need scheduled tasks to be imported
-    from .incident.scheduled import daily_summary, active_incidents_cost  # noqa
+    from .incident.scheduled import daily_summary, calculate_incidents_cost  # noqa
     from .task.scheduled import sync_tasks, create_task_reminders  # noqa
     from .term.scheduled import sync_terms  # noqa
     from .document.scheduled import sync_document_terms  # noqa
@@ -769,6 +781,7 @@ def run_server(log_level):
     if not config.STATIC_DIR:
         import atexit
         from subprocess import Popen
+
         p = Popen(["npm", "run", "serve"], cwd="src/dispatch/static/dispatch")
         atexit.register(p.terminate)
     uvicorn.run("dispatch.main:app", debug=True, log_level=log_level)
