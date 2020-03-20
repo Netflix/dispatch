@@ -40,6 +40,7 @@ from dispatch.decorators import background_task
 from dispatch.document import service as document_service
 from dispatch.document.models import DocumentCreate
 from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
+from dispatch.enums import Visibility
 from dispatch.group import service as group_service
 from dispatch.group.models import GroupCreate
 from dispatch.incident import service as incident_service
@@ -95,10 +96,14 @@ def get_incident_documents(
 
 
 def create_incident_ticket(
-    title: str, incident_type: str, priority: str, commander: str, reporter: str
+    title: str, incident_type: str, priority: str, commander: str, reporter: str, visibility: str
 ):
     """Create an external ticket for tracking."""
     p = plugins.get(INCIDENT_PLUGIN_TICKET_SLUG)
+
+    if visibility == Visibility.restricted:
+        title = incident_type
+
     ticket = p.create(title, incident_type, priority, commander, reporter)
     ticket.update({"resource_type": INCIDENT_PLUGIN_TICKET_SLUG})
     return ticket
@@ -118,9 +123,14 @@ def update_incident_ticket(
     storage_weblink: str = None,
     labels: List[str] = None,
     cost: str = None,
+    visibility: str = None,
 ):
     """Update external incident ticket."""
     p = plugins.get(INCIDENT_PLUGIN_TICKET_SLUG)
+
+    if visibility == Visibility.restricted:
+        title = description = incident_type
+
     p.update(
         ticket_id,
         title=title,
@@ -334,6 +344,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         incident.incident_priority.name,
         incident.commander.email,
         incident.reporter.email,
+        incident.visibility,
     )
 
     incident.ticket = ticket_service.create(db_session=db_session, ticket_in=TicketCreate(**ticket))
@@ -448,16 +459,17 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     update_incident_ticket(
         incident.ticket.resource_id,
-        incident.title,
-        incident.description,
-        incident.incident_type.name,
-        incident.incident_priority.name,
-        incident.status,
-        incident.commander.email,
-        incident.reporter.email,
-        incident.conversation.weblink,
-        incident_document["weblink"],
-        incident.storage.weblink,
+        title=incident.title,
+        description=incident.description,
+        incident_type=incident.incident_type.name,
+        priority=incident.incident_priority.name,
+        status=incident.status,
+        commander_email=incident.commander.email,
+        reporter_email=incident.reporter.email,
+        conversation_weblink=incident.conversation.weblink,
+        document_weblink=incident_document["weblink"],
+        storage_weblink=incident.storage.weblink,
+        visibility=incident.visibility,
     )
 
     log.debug("Updated incident ticket.")
@@ -491,9 +503,9 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     log.debug("Sent incident welcome and announcement notifications.")
 
-    send_incident_notifications(incident, db_session)
-
-    log.debug("Sent incident notifications.")
+    if incident.visibility == Visibility.open:
+        send_incident_notifications(incident, db_session)
+        log.debug("Sent incident notifications.")
 
 
 @background_task
@@ -520,12 +532,15 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    send_incident_status_report_reminder(incident)
+    # we set the stable time
     incident.stable_at = datetime.utcnow()
+    log.debug(f"We have set the stable time.")
+
+    # we remind the incident commander to write a status report
+    send_incident_status_report_reminder(incident)
 
     # we update the incident cost
     incident_cost = incident_service.calculate_cost(incident_id, db_session)
-
     log.debug(f"We have updated the cost of the incident.")
 
     # we update the external ticket
@@ -625,10 +640,9 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    if incident.status == IncidentStatus.active:
-        incident_stable_flow(incident_id=incident.id, db_session=db_session)
-
+    # we set the closed time
     incident.closed_at = datetime.utcnow()
+    log.debug(f"We have set the closed time.")
 
     # we update the incident cost
     incident_cost = incident_service.calculate_cost(incident_id, db_session)
@@ -648,35 +662,37 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     )
     log.debug(f"We have updated the status of the external ticket to {IncidentStatus.closed}.")
 
-    # we archive the artifacts in the storage
-    storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
-    storage_plugin.archive(
-        source_team_drive_id=incident.storage.resource_id,
-        dest_team_drive_id=INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID,
-        folder_name=incident.name,
-    )
-    log.debug(
-        "We have archived the incident artifacts in the archival folder and re-applied permissions and deleted the source."
-    )
+    if incident.visibility == Visibility.open:
+        # we archive the artifacts in the storage
+        storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
+        storage_plugin.archive(
+            source_team_drive_id=incident.storage.resource_id,
+            dest_team_drive_id=INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID,
+            folder_name=incident.name,
+            visibility=incident.visibility,
+        )
+        log.debug(
+            "We have archived the incident artifacts in the archival folder and re-applied permissions and deleted the source."
+        )
 
-    # we get the tactical group
-    tactical_group = group_service.get_by_incident_id_and_resource_type(
-        db_session=db_session,
-        incident_id=incident_id,
-        resource_type=INCIDENT_RESOURCE_TACTICAL_GROUP,
-    )
+        # we get the tactical group
+        tactical_group = group_service.get_by_incident_id_and_resource_type(
+            db_session=db_session,
+            incident_id=incident_id,
+            resource_type=INCIDENT_RESOURCE_TACTICAL_GROUP,
+        )
 
-    # we get the notifications group
-    notifications_group = group_service.get_by_incident_id_and_resource_type(
-        db_session=db_session,
-        incident_id=incident_id,
-        resource_type=INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
-    )
+        # we get the notifications group
+        notifications_group = group_service.get_by_incident_id_and_resource_type(
+            db_session=db_session,
+            incident_id=incident_id,
+            resource_type=INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
+        )
 
-    group_plugin = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
-    group_plugin.delete(email=tactical_group.email)
-    group_plugin.delete(email=notifications_group.email)
-    log.debug("We have deleted the notification and tactical groups.")
+        group_plugin = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
+        group_plugin.delete(email=tactical_group.email)
+        group_plugin.delete(email=notifications_group.email)
+        log.debug("We have deleted the notification and tactical groups.")
 
     db_session.add(incident)
     db_session.commit()
@@ -726,6 +742,7 @@ def incident_update_flow(
         conversation_weblink=incident.conversation.weblink,
         document_weblink=incident_document.weblink,
         storage_weblink=incident.storage.weblink,
+        visibility=incident.visibility,
     )
 
     log.debug(f"Updated the external ticket {incident.ticket.resource_id}.")
@@ -761,6 +778,8 @@ def incident_update_flow(
         elif incident.status == IncidentStatus.stable:
             incident_stable_flow(incident_id=incident.id, db_session=db_session)
         elif incident.status == IncidentStatus.closed:
+            if previous_incident.status.value == IncidentStatus.active:
+                incident_stable_flow(incident_id=incident.id, db_session=db_session)
             incident_closed_flow(incident_id=incident.id, db_session=db_session)
 
         log.debug(f"Finished running status flow. Status: {incident.status}")
@@ -837,6 +856,7 @@ def incident_assign_role_flow(
             conversation_weblink=incident.conversation.weblink,
             document_weblink=incident_document.weblink,
             storage_weblink=incident.storage.weblink,
+            visibility=incident.visibility,
         )
 
 

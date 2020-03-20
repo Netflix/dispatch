@@ -17,6 +17,7 @@ from dispatch.config import (
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
 )
 from dispatch.database import SessionLocal
+from dispatch.enums import Visibility
 from dispatch.incident.enums import IncidentStatus
 from dispatch.messaging import (
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
@@ -245,9 +246,7 @@ def send_incident_notifications(incident: Incident, db_session: SessionLocal):
     log.debug(f"Incident notifications sent.")
 
 
-def send_incident_update_notifications(
-    incident: Incident, previous_incident: IncidentRead,
-):
+def send_incident_update_notifications(incident: Incident, previous_incident: IncidentRead):
     """Sends notifications about incident changes."""
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
@@ -275,7 +274,7 @@ def send_incident_update_notifications(
 
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
 
-    # we notify the incident conversation
+    # we send an update to the incident conversation
     convo_plugin.send(
         incident.conversation.channel_id,
         notification_text,
@@ -294,51 +293,51 @@ def send_incident_update_notifications(
         commander_weblink=incident.commander.weblink,
     )
 
-    # we notify the notification conversations
-
     if incident.status != IncidentStatus.closed:
         notification_template.append(INCIDENT_GET_INVOLVED_BUTTON)
 
-    for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
-        convo_plugin.send(
-            conversation,
-            notification_text,
-            notification_template,
-            notification_type,
-            name=incident.name,
-            ticket_weblink=incident.ticket.weblink,
-            title=incident.title,
-            incident_type_old=previous_incident.incident_type.name,
-            incident_type_new=incident.incident_type.name,
-            incident_priority_old=previous_incident.incident_priority.name,
-            incident_priority_new=incident.incident_priority.name,
-            incident_status_old=previous_incident.status.value,
-            incident_status_new=incident.status,
-            commander_fullname=incident.commander.name,
-            commander_weblink=incident.commander.weblink,
-        )
+    if incident.visibility == Visibility.open:
+        # we send an update to the incident notification conversations
+        for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
+            convo_plugin.send(
+                conversation,
+                notification_text,
+                notification_template,
+                notification_type,
+                name=incident.name,
+                ticket_weblink=incident.ticket.weblink,
+                title=incident.title,
+                incident_type_old=previous_incident.incident_type.name,
+                incident_type_new=incident.incident_type.name,
+                incident_priority_old=previous_incident.incident_priority.name,
+                incident_priority_new=incident.incident_priority.name,
+                incident_status_old=previous_incident.status.value,
+                incident_status_new=incident.status,
+                commander_fullname=incident.commander.name,
+                commander_weblink=incident.commander.weblink,
+            )
 
-    # we send change notifications to distribution lists
-    email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
-    for distro in INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS:
-        email_plugin.send(
-            distro,
-            notification_template,
-            notification_type,
-            name=incident.name,
-            title=incident.title,
-            status=incident.status,
-            priority=incident.incident_priority.name,
-            commander_fullname=incident.commander.name,
-            commander_weblink=incident.commander.weblink,
-            document_weblink=incident.incident_document.weblink,
-            storage_weblink=incident.storage.weblink,
-            ticket_weblink=incident.ticket.weblink,
-            faq_weblink=incident.incident_faq.weblink,
-            incident_id=incident.id,
-        )
+        # we send an update to the incident notification distribution lists
+        email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
+        for distro in INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS:
+            email_plugin.send(
+                distro,
+                notification_template,
+                notification_type,
+                name=incident.name,
+                title=incident.title,
+                status=incident.status,
+                priority=incident.incident_priority.name,
+                commander_fullname=incident.commander.name,
+                commander_weblink=incident.commander.weblink,
+                document_weblink=incident.incident_document.weblink,
+                storage_weblink=incident.storage.weblink,
+                ticket_weblink=incident.ticket.weblink,
+                faq_weblink=incident.incident_faq.weblink,
+                incident_id=incident.id,
+            )
 
-    log.debug(f"Incident change notifications sent.")
+    log.debug(f"Incident update notifications sent.")
 
 
 def send_incident_participant_announcement_message(
