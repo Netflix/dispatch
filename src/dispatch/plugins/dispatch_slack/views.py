@@ -328,13 +328,13 @@ def create_update_incident_dialog(incident_id: int, command: dict = None, db_ses
     for priority in incident_priority_service.get_all(db_session=db_session):
         priority_options.append({"label": priority.name, "value": priority.name})
 
-    visibility_options = []
-    for visibility in Visibility:
-        visibility_options.append({"label": visibility.value, "value": visibility.value})
-
     status_options = []
     for status in IncidentStatus:
         status_options.append({"label": status.value, "value": status.value})
+
+    visibility_options = []
+    for visibility in Visibility:
+        visibility_options.append({"label": visibility.value, "value": visibility.value})
 
     notify_options = [{"label": "Yes", "value": "Yes"}, {"label": "No", "value": "No"}]
 
@@ -358,18 +358,18 @@ def create_update_incident_dialog(incident_id: int, command: dict = None, db_ses
                 "options": type_options,
             },
             {
-                "label": "Status",
-                "type": "select",
-                "name": "status",
-                "value": incident.status,
-                "options": status_options,
-            },
-            {
                 "label": "Priority",
                 "type": "select",
                 "name": "priority",
                 "value": incident.incident_priority.name,
                 "options": priority_options,
+            },
+            {
+                "label": "Status",
+                "type": "select",
+                "name": "status",
+                "value": incident.status,
+                "options": status_options,
             },
             {
                 "label": "Visibility",
