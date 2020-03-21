@@ -545,7 +545,12 @@ def restore_database():
 def dump_database():
     """Dumps the database via pg_dump."""
     from sh import pg_dump
-    from dispatch.config import DATABASE_HOSTNAME, DATABASE_NAME, DATABASE_PORT, DATABASE_CREDENTIALS
+    from dispatch.config import (
+        DATABASE_HOSTNAME,
+        DATABASE_NAME,
+        DATABASE_PORT,
+        DATABASE_CREDENTIALS,
+    )
 
     username, password = str(DATABASE_CREDENTIALS).split(":")
 
@@ -796,7 +801,11 @@ def run_server(log_level):
         import atexit
         from subprocess import Popen
 
-        p = Popen(["npm", "run", "serve"], cwd="src/dispatch/static/dispatch")
+        # take our frontend vars and export them for the frontend to consume
+        envvars = os.environ.copy()
+        envvars.update({x: getattr(config, x) for x in dir(config) if x.startswith("VUE_APP_")})
+
+        p = Popen(["npm", "run", "serve"], cwd="src/dispatch/static/dispatch", env=envvars)
         atexit.register(p.terminate)
     uvicorn.run("dispatch.main:app", debug=True, log_level=log_level)
 

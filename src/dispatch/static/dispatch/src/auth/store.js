@@ -4,7 +4,7 @@ import { differenceInMilliseconds, fromUnixTime, subMinutes } from "date-fns"
 
 const state = {
   status: { loggedIn: false },
-  userInfo: null,
+  userInfo: { email: "" },
   accessToken: null
 }
 
