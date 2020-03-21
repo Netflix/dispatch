@@ -545,7 +545,7 @@ def restore_database():
 def dump_database():
     """Dumps the database via pg_dump."""
     from sh import pg_dump
-    from dispatch.config import DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_CREDENTIALS
+    from dispatch.config import DATABASE_HOSTNAME, DATABASE_NAME, DATABASE_PORT, DATABASE_CREDENTIALS
 
     username, password = str(DATABASE_CREDENTIALS).split(":")
 
@@ -558,7 +558,7 @@ def dump_database():
         DATABASE_PORT,
         "-U",
         username,
-        "dispatch",
+        DATABASE_NAME,
         _env={"PGPASSWORD": password},
     )
 
