@@ -10,6 +10,7 @@ from dispatch.incident.enums import IncidentStatus
 from dispatch.incident_priority.models import IncidentPriorityType
 
 from .config import (
+    DISPATCH_UI_URL,
     INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
     INCIDENT_RESOURCE_FAQ_DOCUMENT,
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
@@ -69,8 +70,8 @@ Daily Incidents Summary""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION = """
-Active Incidents""".replace(
+INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION = f"""
+Active Incidents <{DISPATCH_UI_URL}/incidents/status|Details>""".replace(
     "\n", " "
 ).strip()
 
