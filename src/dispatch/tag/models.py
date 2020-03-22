@@ -6,39 +6,41 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
-from dispatch.models import DispatchBase, applications_incidents, TimeStampMixin
+from dispatch.models import DispatchBase, tags_incidents, TimeStampMixin
 
 
-class Application(Base, TimeStampMixin):
+class Tag(Base, TimeStampMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     description = Column(String)
     uri = Column(String)
     source = Column(String)
-    incidents = relationship("Incident", secondary=applications_incidents, backref="applications")
+    type = Column(String)
+    incidents = relationship("Incident", secondary=tags_incidents, backref="tags")
     search_vector = Column(TSVectorType("name"))
 
 
 # Pydantic models
-class ApplicationBase(DispatchBase):
+class TagBase(DispatchBase):
     name: str
     source: str
+    type: str
     uri: Optional[str]
     description: Optional[str]
 
 
-class ApplicationCreate(ApplicationBase):
+class TagCreate(TagBase):
     pass
 
 
-class ApplicationUpdate(ApplicationBase):
+class TagUpdate(TagBase):
     id: int
 
 
-class ApplicationRead(ApplicationBase):
+class TagRead(TagBase):
     id: int
 
 
-class ApplicationPagination(DispatchBase):
-    items: List[ApplicationRead]
+class TagPagination(DispatchBase):
+    items: List[TagRead]
     total: int

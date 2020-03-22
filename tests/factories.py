@@ -7,7 +7,7 @@ from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime
 
 from dispatch.database import SessionLocal
 
-from dispatch.application.models import Application
+from dispatch.tag.models import Tag
 from dispatch.conversation.models import Conversation
 from dispatch.definition.models import Definition
 from dispatch.document.models import Document
@@ -121,8 +121,8 @@ class ContactBaseFactory(TimeStampBaseFactory):
                 self.terms.append(term)
 
 
-class ApplicationFactory(BaseFactory):
-    """Application Factory."""
+class TagFactory(BaseFactory):
+    """Tag Factory."""
 
     name = Sequence(lambda n: f"app{n}")
     uri = "https://example.com"
@@ -131,7 +131,7 @@ class ApplicationFactory(BaseFactory):
     class Meta:
         """Factory Configuration."""
 
-        model = Application
+        model = Tag
 
     @post_generation
     def incidents(self, create, extracted, **kwargs):

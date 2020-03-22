@@ -2,7 +2,7 @@
   <v-layout wrap>
     <new-edit-sheet />
     <delete-dialog />
-    <div class="headline">Applications</div>
+    <div class="headline">Tags</div>
     <v-spacer />
     <v-btn color="primary" dark class="mb-2" @click="createEditShow()">New</v-btn>
     <v-flex xs12>
@@ -44,10 +44,10 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import DeleteDialog from "@/application/DeleteDialog.vue"
-import NewEditSheet from "@/application/NewEditSheet.vue"
+import DeleteDialog from "@/tag/DeleteDialog.vue"
+import NewEditSheet from "@/tag/NewEditSheet.vue"
 export default {
-  name: "ApplicationTable",
+  name: "TagTable",
 
   components: {
     DeleteDialog,
@@ -57,14 +57,15 @@ export default {
     return {
       headers: [
         { text: "Name", value: "name", sortable: true },
-        { text: "Source", value: "source", sortable: false },
+        { text: "Type", value: "type", sortable: true },
+        { text: "Source", value: "source", sortable: true },
         { text: "Actions", value: "actions", sortable: false }
       ]
     }
   },
 
   computed: {
-    ...mapFields("application", [
+    ...mapFields("tag", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
@@ -88,7 +89,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("application", ["getAll", "createEditShow", "removeShow"])
+    ...mapActions("tag", ["getAll", "createEditShow", "removeShow"])
   }
 }
 </script>

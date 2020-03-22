@@ -60,11 +60,11 @@ const Menu = [
   },
   { header: "Knowledge" },
   {
-    title: "Applications",
+    title: "Tags",
     group: "contacts",
-    name: "Applications",
-    icon: "computer",
-    href: "/applications"
+    name: "Tags",
+    icon: "label",
+    href: "/Tags"
   },
   {
     title: "Documents",
@@ -92,7 +92,7 @@ const Menu = [
     title: "Incident Types",
     group: "Configuration",
     name: "Incident Types",
-    icon: "settings_applications",
+    icon: "settings",
     href: "/incidents/types"
   }
 ]

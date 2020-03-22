@@ -112,15 +112,14 @@ export const protectedRoute = [
     ]
   },
   {
-    path: "/applications",
+    path: "/tags",
     component: DefaultLayout,
-    meta: { title: "Applications", icon: "view_compact", group: "contacts", requiresAuth: true },
+    meta: { title: "Tags", icon: "view_compact", group: "contacts", requiresAuth: true },
     children: [
       {
-        path: "/applications",
-        name: "ApplicationTable",
-        component: () =>
-          import(/* webpackChunkName: "application-table" */ "@/application/Table.vue")
+        path: "/tags",
+        name: "TagTable",
+        component: () => import(/* webpackChunkName: "tag-table" */ "@/tag/Table.vue")
       }
     ]
   },
