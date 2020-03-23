@@ -10,11 +10,11 @@ By default Dispatch ships with Jira support. Each Jira installation is unique, s
 
 > URL for the Jira API server.
 
-#### `JIRA_USERNAME` \[secret: True\]
+#### `JIRA_USERNAME`
 
 > Username for the Jira service account.
 
-#### `JIRA_PASSWORD`
+#### `JIRA_PASSWORD` \[secret: True\]
 
 > Password for the Jira service account.
 

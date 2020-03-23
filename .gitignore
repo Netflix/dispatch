@@ -154,12 +154,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-### VisualStudioCode ###
-.vscode/*
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
 .history
@@ -193,7 +187,6 @@ Sessionx.vim
 *~
 # Persistent undo
 [._]*.un~
-.vscode/launch.json
 
 src/dispatch/static/test/unit/coverage/
 src/dispatch/static/test/e2e/reports/

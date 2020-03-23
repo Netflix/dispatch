@@ -489,9 +489,10 @@ def database_trigger_sync():
 @dispatch_database.command("init")
 def init_database():
     """Initializes a new database."""
-    from sqlalchemy_utils import create_database
+    from sqlalchemy_utils import create_database, database_exists
 
-    create_database(str(config.SQLALCHEMY_DATABASE_URI))
+    if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
+        create_database(str(config.SQLALCHEMY_DATABASE_URI))
     Base.metadata.create_all(engine)
     alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
     alembic_cfg = AlembicConfig(alembic_path)
@@ -801,7 +802,11 @@ def run_server(log_level):
         import atexit
         from subprocess import Popen
 
-        p = Popen(["npm", "run", "serve"], cwd="src/dispatch/static/dispatch")
+        # take our frontend vars and export them for the frontend to consume
+        envvars = os.environ.copy()
+        envvars.update({x: getattr(config, x) for x in dir(config) if x.startswith("VUE_APP_")})
+
+        p = Popen(["npm", "run", "serve"], cwd="src/dispatch/static/dispatch", env=envvars)
         atexit.register(p.terminate)
     uvicorn.run("dispatch.main:app", debug=True, log_level=log_level)
 

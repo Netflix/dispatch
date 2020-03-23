@@ -26,18 +26,6 @@ Note: The `Slack` plugin relies on the [Events API](https://api.slack.com/events
 
 > Used during development to funnel all messages to a particular user.
 
-#### `SLACK_COMMAND_MARK_ACTIVE_SLUG` \[default: '/dispatch-mark-active'\]
-
-> Active command as displayed in Slack.
-
-#### `SLACK_COMMAND_MARK_STABLE_SLUG` \[default: '/dispatch-mark-stable'\]
-
-> Stable command as displayed in Slack.
-
-#### `SLACK_COMMAND_MARK_CLOSED_SLUG` \[default: '/dispatch-mark-closed'\]
-
-> Close command as displayed in Slack.
-
 #### `SLACK_COMMAND_STATUS_REPORT_SLUG` \[default: '/dispatch-status-report'\]
 
 > Status report command as displayed in Slack.
@@ -54,9 +42,9 @@ Note: The `Slack` plugin relies on the [Events API](https://api.slack.com/events
 
 > Assign role command as displayed in Slack.
 
-#### `SLACK_COMMAND_EDIT_INCIDENT` \[default: '/dispatch-edit-incident'\]
+#### `SLACK_COMMAND_UPDATE_INCIDENT` \[default: '/dispatch-update-incident'\]
 
-> Edit incident command as displayed in Slack.
+> Update incident command as displayed in Slack.
 
 #### `SLACK_COMMAND_ENGAGE_ONCALL` \[default: '/dispatch-engage-oncall'\]
 

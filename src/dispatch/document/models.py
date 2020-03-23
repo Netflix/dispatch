@@ -69,6 +69,8 @@ class DocumentBase(DispatchBase):
     description: Optional[str]
     weblink: str
     name: str
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
 
 class DocumentCreate(DocumentBase):
@@ -88,8 +90,6 @@ class DocumentRead(DocumentBase):
     incident_priorities: Optional[List[IncidentPriorityRead]] = []
     incident_types: Optional[List[IncidentTypeRead]] = []
     terms: Optional[List[TermReadNested]] = []
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
 
     @validator("description", pre=True, always=True)
     def set_description(cls, v, values):
