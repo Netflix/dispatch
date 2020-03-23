@@ -405,6 +405,7 @@ setup(
         "dispatch.plugins": [
             "dispatch_participants = dispatch.plugins.dispatch_core.plugin:DispatchParticipantPlugin",
             "dispatch_document_resolver = dispatch.plugins.dispatch_core.plugin:DispatchDocumentResolverPlugin",
+            "dispatch_pkce_auth = dispatch.plugins.dispatch_core.plugin:PKCEAuthProviderPlugin",
             "google_docs_document = dispatch.plugins.dispatch_google.docs.plugin:GoogleDocsDocumentPlugin",
             "google_drive_storage = dispatch.plugins.dispatch_google.drive.plugin:GoogleDriveStoragePlugin",
             "google_drive_task = dispatch.plugins.dispatch_google.drive.plugin:GoogleDriveTaskPlugin",

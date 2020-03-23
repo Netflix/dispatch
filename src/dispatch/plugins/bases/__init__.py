@@ -12,3 +12,4 @@ from .term import TermPlugin  # noqa
 from .ticket import TicketPlugin  # noqa
 from .document_resolver import DocumentResolverPlugin  # noqa
 from .application import ApplicationPlugin  # noqa
+from .auth_provider import AuthenticationProviderPlugin  # noqa
