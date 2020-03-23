@@ -237,3 +237,12 @@ def calculate_incidents_cost(db_session=None):
         except Exception as e:
             # we shouldn't fail to update all incidents when one fails
             sentry_sdk.capture_exception(e)
+
+
+@scheduler.add(every(1).day, name="forecast-future-incidents")
+@background_task
+def forecast_future_incidents(db_session=None):
+    """Forecasts future incidents."""
+
+    forecast = make_forecast(db_session=db_session)
+    print(forecast)
