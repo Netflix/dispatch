@@ -32,7 +32,30 @@ try:
 
 
 except Exception:
-    from starlette.datastructures import Secret
+    # Let's see if we have boto3 for KMS available to us, let's use it to decrypt our secrets in memory
+    try:
+        import boto3
+
+        class Secret:
+            """
+            Holds a string value that should not be revealed in tracebacks etc.
+            You should cast the value to `str` at the point it is required.
+            """
+
+            def __init__(self, value: str):
+                self._value = value
+                self._decrypted_value = (
+                    boto3.client('kms').decrypt(CiphertextBlob=base64.b64decode(value))['Plaintext'].decode("utf-8")
+                )
+
+            def __repr__(self) -> str:
+                class_name = self.__class__.__name__
+                return f"{class_name}('**********')"
+
+            def __str__(self) -> str:
+                return self._decrypted_value
+    except Exception:
+        from starlette.datastructures import Secret
 
 
 config = Config(".env")
