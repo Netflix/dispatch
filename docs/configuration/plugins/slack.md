@@ -54,7 +54,7 @@ Note: The `Slack` plugin relies on the [Events API](https://api.slack.com/events
 
 > Assign role command as displayed in Slack.
 
-#### `SLACK_COMMAND_EDIT_INCIDENT` \[default: '/dispatch-edit-incident'\]
+#### `SLACK_COMMAND_UPDATE_INCIDENT` \[default: '/dispatch-update-incident'\]
 
 > Edit incident command as displayed in Slack.
 
