@@ -71,7 +71,7 @@ Daily Incidents Summary""".replace(
 ).strip()
 
 INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION = f"""
-Active Incidents <{DISPATCH_UI_URL}/incidents/status|Details>""".replace(
+Active Incidents (<{DISPATCH_UI_URL}/incidents/status|Details>)""".replace(
     "\n", " "
 ).strip()
 
