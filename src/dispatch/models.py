@@ -34,12 +34,12 @@ definition_terms = Table(
     PrimaryKeyConstraint("definition_id", "term_id"),
 )
 
-applications_incidents = Table(
-    "applications_incidents",
+tags_incidents = Table(
+    "tags_incidents",
     Base.metadata,
     Column("incident_id", Integer, ForeignKey("incident.id")),
-    Column("application_id", Integer, ForeignKey("application.id")),
-    PrimaryKeyConstraint("incident_id", "application_id"),
+    Column("tag_id", Integer, ForeignKey("tag.id")),
+    PrimaryKeyConstraint("incident_id", "tag_id"),
 )
 
 
@@ -164,7 +164,7 @@ class PolicyReadNested(DispatchBase):
     pass
 
 
-from dispatch.application.models import *  # noqa
+from dispatch.tag.models import *  # noqa
 from dispatch.conversation.models import *  # noqa
 from dispatch.definition.models import *  # noqa
 from dispatch.document.models import Document  # noqa

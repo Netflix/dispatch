@@ -1,6 +1,6 @@
 <template>
   <v-layout wrap>
-    <div class="headline">Applications</div>
+    <div class="headline">Tags</div>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -24,7 +24,7 @@
                 </v-list-item>
               </template>
               <v-card-title primary-title>
-                <div>Foo</div>
+                <div>{{ item.description }}</div>
               </v-card-title>
             </v-list-group>
           </v-list>
@@ -36,7 +36,7 @@
 
 <script>
 export default {
-  name: "ApplicationList",
+  name: "TagList",
   props: {
     items: {
       type: Array,

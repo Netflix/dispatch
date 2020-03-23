@@ -5,7 +5,7 @@
         <v-list-item-content>
           <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
           <v-list-item-title v-else class="title">New</v-list-item-title>
-          <v-list-item-subtitle>Application</v-list-item-subtitle>
+          <v-list-item-subtitle>Tag</v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
     </template>
@@ -24,36 +24,50 @@
                     slot-scope="{ errors, valid }"
                     :error-messages="errors"
                     :success="valid"
-                    label="name"
-                    hint="a name for your application."
+                    label="Name"
+                    hint="A name for your tag."
                     clearable
                     required
                   />
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="source" rules="required" immediate>
+                <ValidationProvider name="type" rules="required" immediate>
+                  <v-text-field
+                    v-model="type"
+                    slot-scope="{ errors, valid }"
+                    :error-messages="errors"
+                    :success="valid"
+                    label="Type"
+                    hint="This tags type."
+                    clearable
+                    required
+                  />
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="source" immediate>
                   <v-text-field
                     v-model="source"
                     slot-scope="{ errors, valid }"
                     :error-messages="errors"
                     :success="valid"
                     label="Source"
-                    hint="Application's source."
+                    hint="Tag's source."
                     clearable
                     required
                   />
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="uri" rules="required" immediate>
+                <ValidationProvider name="uri" immediate>
                   <v-text-field
                     v-model="uri"
                     slot-scope="{ errors, valid }"
                     :error-messages="errors"
                     :success="valid"
                     label="URI"
-                    hint="Application's URI."
+                    hint="Tag's URI."
                     clearable
                     required
                   />
@@ -67,7 +81,7 @@
                     label="Description"
                     :error-messages="errors"
                     :success="valid"
-                    hint="The application's description."
+                    hint="The tag's description."
                     clearable
                     required
                   />
@@ -96,7 +110,7 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider } from "vee-validate"
 export default {
-  name: "ApplicationNewEditSheet",
+  name: "TagNewEditSheet",
 
   components: {
     ValidationObserver,
@@ -104,9 +118,10 @@ export default {
   },
 
   computed: {
-    ...mapFields("application", [
+    ...mapFields("tag", [
       "selected.name",
       "selected.id",
+      "selected.type",
       "selected.uri",
       "selected.description",
       "selected.source",
@@ -116,7 +131,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("application", ["save", "closeCreateEdit"])
+    ...mapActions("tag", ["save", "closeCreateEdit"])
   }
 }
 </script>

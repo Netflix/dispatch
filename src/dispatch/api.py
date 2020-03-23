@@ -3,7 +3,7 @@ from fastapi.openapi.docs import get_redoc_html
 from fastapi.openapi.utils import get_openapi
 from starlette.responses import JSONResponse
 
-from dispatch.application.views import router as application_router
+from dispatch.tag.views import router as tag_router
 from dispatch.auth.service import get_current_user
 from dispatch.definition.views import router as definition_router
 from dispatch.incident.views import router as incident_router
@@ -28,9 +28,7 @@ authenticated_api_router = APIRouter()
 
 # NOTE: All api routes should be authenticated by default
 authenticated_api_router.include_router(document_router, prefix="/documents", tags=["documents"])
-authenticated_api_router.include_router(
-    application_router, prefix="/applications", tags=["applications"]
-)
+authenticated_api_router.include_router(tag_router, prefix="/tags", tags=["Tags"])
 authenticated_api_router.include_router(service_router, prefix="/services", tags=["services"])
 authenticated_api_router.include_router(team_contact_router, prefix="/teams", tags=["teams"])
 authenticated_api_router.include_router(

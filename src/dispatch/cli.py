@@ -10,7 +10,7 @@ from tabulate import tabulate
 from uvicorn import main as uvicorn_main
 
 from dispatch import __version__, config
-from dispatch.application.models import *  # noqa
+from dispatch.tag.models import *  # noqa
 from dispatch.common.utils.cli import install_plugin_events, install_plugins
 
 from .database import Base, engine
@@ -457,7 +457,7 @@ def clean_incident_artifacts(pattern):
 def sync_triggers():
     from sqlalchemy_searchable import sync_trigger
 
-    sync_trigger(engine, "application", "search_vector", ["name"])
+    sync_trigger(engine, "Tag", "search_vector", ["name"])
     sync_trigger(engine, "definition", "search_vector", ["text"])
     sync_trigger(engine, "incident", "search_vector", ["name", "title", "description"])
     sync_trigger(
@@ -712,7 +712,7 @@ def dispatch_scheduler():
     from .task.scheduled import sync_tasks, create_task_reminders  # noqa
     from .term.scheduled import sync_terms  # noqa
     from .document.scheduled import sync_document_terms  # noqa
-    from .application.scheduled import sync_applications  # noqa
+    from .tag.scheduled import sync_tags  # noqa
 
     install_plugins()
 

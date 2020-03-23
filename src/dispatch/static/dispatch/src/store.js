@@ -15,7 +15,7 @@ import team from "@/team/store"
 import term from "@/term/store"
 import account from "@/auth/store"
 import document from "@/document/store"
-import application from "@/application/store"
+import tag from "@/tag/store"
 import task from "@/task/store"
 
 Vue.use(Vuex)
@@ -25,7 +25,7 @@ export default new Vuex.Store({
     app,
     account,
     task,
-    application,
+    tag,
     definition,
     document,
     incident,
