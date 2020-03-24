@@ -504,10 +504,8 @@ def init_database():
 
 @dispatch_database.command("restore")
 @click.option(
-    "--data-only", help="Restore only the data in the dump.", is_flag=True, default=False)
-@click.option(
     "--dump-file", default='dispatch-backup.dump', help="Path to a PostgreSQL dump file.")
-def restore_database(dump_file, data_only):
+def restore_database(dump_file):
     """Restores the database via pg_restore."""
     import sh
     from sh import psql, createdb
@@ -536,21 +534,19 @@ def restore_database(dump_file, data_only):
     except sh.ErrorReturnCode_1:
         print("Database already exists.")
 
-    cmd_args = [
-        "-h",
-        DATABASE_HOSTNAME,
-        "-p",
-        DATABASE_PORT,
-        "-U",
-        username,
-        "-f",
-        dump_file
-    ]
-    cmd_kwargs = {"_env": {"PGPASSWORD": password}}
-    if data_only:
-        cmd_args.insert(0, '--data-only')
-
-    print(psql(*cmd_args, **cmd_kwargs))
+    print(
+        psql(
+            "-h",
+            DATABASE_HOSTNAME,
+            "-p",
+            DATABASE_PORT,
+            "-U",
+            username,
+            "-f",
+            dump_file,
+            _env={"PGPASSWORD": password},
+        )
+    )
     click.secho("Success.", fg="green")
 
 
@@ -579,15 +575,6 @@ def dump_database():
         DATABASE_NAME,
         _env={"PGPASSWORD": password},
     )
-
-
-@dispatch_database.command("load_sample_data")
-@click.option(
-    "--dump-file", default='dispatch-backup.dump', help="Path to a PostgreSQL dump file.")
-def load_sample_data(dump_file):
-    """Load sample data into the database."""
-    data_only = True
-    restore_database(dump_file, data_only)
 
 
 @dispatch_database.command("drop")
