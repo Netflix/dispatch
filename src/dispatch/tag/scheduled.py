@@ -29,6 +29,6 @@ def sync_tags(db_session=None):
             tag = tag_service.get_by_name(db_session=db_session, name=tag_in.name)
 
             if tag:
-                tag_service.update(db_session=db_session, app=tag, app_in=tag_in)
+                tag_service.update(db_session=db_session, tag=tag, tag_in=tag_in)
             else:
-                tag_service.create(db_session=db_session, app_in=tag_in)
+                tag_service.create(db_session=db_session, tag_in=tag_in)
