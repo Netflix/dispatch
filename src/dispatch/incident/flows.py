@@ -281,10 +281,9 @@ def update_document(
     commander_fullname: str,
     conversation_weblink: str,
     document_weblink: str,
-    conference_weblink: str,
     storage_weblink: str,
     ticket_weblink: str,
-    form_weblink: str = None,
+    conference_weblink: str = None,
 ):
     """Update external collaboration document."""
     p = plugins.get(INCIDENT_PLUGIN_DOCUMENT_SLUG)
@@ -300,7 +299,6 @@ def update_document(
         document_weblink=document_weblink,
         storage_weblink=storage_weblink,
         ticket_weblink=ticket_weblink,
-        form_weblink=form_weblink,
         conference_weblink=conference_weblink,
     )
 
