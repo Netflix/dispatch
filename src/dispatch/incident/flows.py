@@ -33,6 +33,7 @@ from dispatch.config import (
     INCIDENT_RESOURCE_TACTICAL_GROUP,
     INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID,
     INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID,
+    INCIDENT_STORAGE_RESTRICTED,
 )
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.models import ConversationCreate
@@ -205,6 +206,11 @@ def create_incident_storage(name: str, participant_group_emails: List[str]):
     p = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
     storage = p.create(name, participant_group_emails)
     storage.update({"resource_type": INCIDENT_PLUGIN_STORAGE_SLUG, "resource_id": storage["id"]})
+
+    if INCIDENT_STORAGE_RESTRICTED:
+        p.restrict(storage["resource_id"])
+        log.debug("The storage drive has been restricted.")
+
     return storage
 
 

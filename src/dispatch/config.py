@@ -45,7 +45,9 @@ except Exception:
             def __init__(self, value: str):
                 self._value = value
                 self._decrypted_value = (
-                    boto3.client('kms').decrypt(CiphertextBlob=base64.b64decode(value))['Plaintext'].decode("utf-8")
+                    boto3.client("kms")
+                    .decrypt(CiphertextBlob=base64.b64decode(value))["Plaintext"]
+                    .decode("utf-8")
                 )
 
             def __repr__(self) -> str:
@@ -54,6 +56,7 @@ except Exception:
 
             def __str__(self) -> str:
                 return self._decrypted_value
+
     except Exception:
         from starlette.datastructures import Secret
 
@@ -144,6 +147,7 @@ INCIDENT_DOCUMENT_INVESTIGATION_SHEET_ID = config("INCIDENT_DOCUMENT_INVESTIGATI
 INCIDENT_FAQ_DOCUMENT_ID = config("INCIDENT_FAQ_DOCUMENT_ID")
 INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID = config("INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID")
 INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID = config("INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID")
+INCIDENT_STORAGE_RESTRICTED = config("INCIDENT_STORAGE_RESTRICTED", default=True)
 
 INCIDENT_NOTIFICATION_CONVERSATIONS = config(
     "INCIDENT_NOTIFICATION_CONVERSATIONS", cast=CommaSeparatedStrings, default=""

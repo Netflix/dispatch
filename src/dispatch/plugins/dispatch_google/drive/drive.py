@@ -193,9 +193,27 @@ def create_team_drive(client: Any, name: str, members: List[str], role: Roles):
     return drive_data
 
 
+@retry(stop=stop_after_attempt(5), retry=retry_if_exception_type(TryAgain))
+def restrict_team_drive(client: Any, team_drive_id: str):
+    """Applies a set of restrictions and capabilities to the shared drive."""
+    body = {
+        "restrictions": {
+            "domainUsersOnly": True,
+            "driveMembersOnly": True,
+            "copyRequiresWriterPermission": True,
+        },
+        "capabilities": {
+            "canChangeDomainUsersOnlyRestriction": False,
+            "canChangeDriveMembersOnlyRestriction": False,
+            "canChangeCopyRequiresWriterPermissionRestriction": False,
+            "canShare": False,
+        },
+    }
+    return make_call(client.drives(), "update", driveId=team_drive_id, body=body)
+
+
 def create_file(client: Any, parent_id: str, name: str, file_type: str = "folder"):
     """Creates a new folder with the specified parents."""
-
     if file_type == "folder":
         mimetype = "application/vnd.google-apps.folder"
 
