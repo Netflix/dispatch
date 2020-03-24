@@ -201,7 +201,7 @@ def daily_summary(db_session=None):
 
 @scheduler.add(every(5).minutes, name="calculate-incidents-cost")
 @background_task
-def calcuate_incidents_cost(db_session=None):
+def calculate_incidents_cost(db_session=None):
     """Calculates the cost of all incidents."""
 
     # we want to update all incidents, all the time
