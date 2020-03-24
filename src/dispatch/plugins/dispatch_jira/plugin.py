@@ -92,6 +92,7 @@ def create_issue_fields(
         and document_weblink
         and conversation_weblink
         and storage_weblink
+        and conference_weblink
     ):
         description = Template(INCIDENT_TEMPLATE).render(
             description=description,

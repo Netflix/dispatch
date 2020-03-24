@@ -887,6 +887,7 @@ def incident_assign_role_flow(
             document_weblink=incident_document.weblink,
             storage_weblink=incident.storage.weblink,
             visibility=incident.visibility,
+            conference_weblink=incident.conference.weblink,
         )
 
 
