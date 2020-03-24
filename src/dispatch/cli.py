@@ -708,7 +708,7 @@ def revision_database(
 def dispatch_scheduler():
     """Container for all dispatch scheduler commands."""
     # we need scheduled tasks to be imported
-    from .incident.scheduled import daily_summary, calcuate_incidents_cost  # noqa
+    from .incident.scheduled import daily_summary, calculate_incidents_cost  # noqa
     from .task.scheduled import sync_tasks, create_task_reminders  # noqa
     from .term.scheduled import sync_terms  # noqa
     from .document.scheduled import sync_document_terms  # noqa
