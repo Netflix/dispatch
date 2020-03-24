@@ -568,10 +568,28 @@ def dump_database():
         _env={"PGPASSWORD": password},
     )
 
+
 @dispatch_database.command("load_sample_data")
 def load_sample_data():
     """Load sample data into the database."""
-    pass
+    from sh import pg_restore
+    from dispatch.config import DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_CREDENTIALS
+
+    username, password = str(DATABASE_CREDENTIALS).split(":")
+    pg_restore(
+       "--data-only",
+       "data/dispatch-sample-data.dump",
+       "-h",
+        DATABASE_HOSTNAME,
+        "-p",
+        DATABASE_PORT,
+        "-U",
+        username,
+        DATABASE_NAME,
+        _env={"PGPASSWORD": password},
+    )
+    click.secho("Success.", fg="green")
+
 
 @dispatch_database.command("drop")
 @click.option(
