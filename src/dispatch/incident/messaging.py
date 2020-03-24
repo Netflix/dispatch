@@ -309,6 +309,7 @@ def send_incident_update_notifications(incident: Incident, previous_incident: In
                 name=incident.name,
                 ticket_weblink=incident.ticket.weblink,
                 title=incident.title,
+                incident_id=incident.id,
                 incident_type_old=previous_incident.incident_type.name,
                 incident_type_new=incident.incident_type.name,
                 incident_priority_old=previous_incident.incident_priority.name,
