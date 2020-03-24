@@ -559,6 +559,7 @@ def send_incident_resources_ephemeral_message_to_participant(
         storage_weblink=incident.storage.weblink,
         faq_weblink=incident_faq.weblink,
         conversation_commands_reference_document_weblink=incident_conversation_commands_reference_document.weblink,
+        conference_weblink=incident.conference.weblink,
     )
 
     log.debug(f"List of incident resources sent to {user_id} via ephemeral message.")
