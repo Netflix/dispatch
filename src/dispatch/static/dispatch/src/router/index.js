@@ -85,10 +85,12 @@ function loginwithPKCE(to, from, next) {
         tokenHandler
           .performTokenRequest(cfg, req)
           .then(response => {
+            // Redirect to the uri in session storage and then delete it from storage
             store.dispatch("account/login", {
               token: response.accessToken,
-              redirectUri: request.redirectUri
+              redirectUri: localStorage.getItem("redirect_uri")
             })
+            localStorage.removeItem("redirect_uri")
           })
           .catch(e => {
             console.error(e)
@@ -102,7 +104,10 @@ function loginwithPKCE(to, from, next) {
       authorizationHandler.completeAuthorizationRequestIfPossible()
     } else if (to.matched.some(record => record.meta.requiresAuth)) {
       // Test if we already have a valid access token
-      let redirect_uri = window.location.protocol + "//" + window.location.host + to.path
+      // Set the redirect_uri to a single location and store the real redirect uri in session storage.
+      // This enables easier enablement of SPA on providers like Okta where each route must be whitelisted.
+      let redirect_uri = window.location.protocol + "//" + window.location.host + "/implicit/callback"
+      localStorage.setItem("redirect_uri", window.location.protocol + "//" + window.location.host + to.path)
       const request = new AuthorizationRequest({
         client_id: clientId,
         redirect_uri: redirect_uri,

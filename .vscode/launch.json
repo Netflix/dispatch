@@ -9,6 +9,14 @@
       "type": "python",
       "request": "launch",
       "program": "${workspaceFolder}/src/dispatch/run.py"
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Front End Debug",
+      "url": "http://localhost:8080",
+      "webRoot": "${workspaceFolder}/src/dispatch/static/dispatch",
+      "breakOnLoad": true
     }
   ]
 }
