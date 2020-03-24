@@ -55,6 +55,15 @@
                 />
               </v-flex>
               <v-flex xs12>
+                <v-select
+                  v-model="visibility"
+                  label="Visibility"
+                  :items="visibilities"
+                  hint="The incident's current's visibilty"
+                  clearable
+                />
+              </v-flex>
+              <v-flex xs12>
                 <incident-type-select v-model="incident_type" />
               </v-flex>
               <v-flex xs12>
@@ -166,12 +175,14 @@ export default {
 
   data() {
     return {
-      statuses: ["Active", "Stable", "Closed"]
+      statuses: ["Active", "Stable", "Closed"],
+      visibilities: ["Open", "Restricted"]
     }
   },
 
   computed: {
     ...mapFields("incident", [
+      "selected.id",
       "selected.name",
       "selected.title",
       "selected.description",
@@ -184,7 +195,7 @@ export default {
       "selected.terms",
       "selected.incident_priority",
       "selected.incident_type",
-      "selected.id",
+      "selected.visibility",
       "selected.loading",
       "dialogs.showCreateEdit"
     ])
