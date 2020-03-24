@@ -771,6 +771,7 @@ def incident_update_flow(
         priority=incident.incident_priority.name,
         commander_email=incident.commander.email,
         conversation_weblink=incident.conversation.weblink,
+        conference_weblink=incident.conference.weblink,
         document_weblink=incident_document.weblink,
         storage_weblink=incident.storage.weblink,
         visibility=incident.visibility,
