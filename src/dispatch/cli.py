@@ -504,10 +504,10 @@ def init_database():
 
 @dispatch_database.command("restore")
 @click.option(
-    "--data-only", help="Restore only the data in the dump.", default=False)
+    "--data-only", help="Restore only the data in the dump.", is_flag=True, default=False)
 @click.option(
     "--dump-file", default='dispatch-backup.dump', help="Path to a PostgreSQL dump file.")
-def restore_database(dump_file, data_only=False):
+def restore_database(dump_file, data_only):
     """Restores the database via pg_restore."""
     import sh
     from sh import psql, createdb
@@ -548,7 +548,7 @@ def restore_database(dump_file, data_only=False):
     ]
     cmd_kwargs = {"_env": {"PGPASSWORD": password}}
     if data_only:
-        cmd_args.insert(-1, '--data-only')
+        cmd_args.insert(0, '--data-only')
 
     print(psql(*cmd_args, **cmd_kwargs))
     click.secho("Success.", fg="green")
@@ -586,7 +586,8 @@ def dump_database():
     "--dump-file", default='dispatch-backup.dump', help="Path to a PostgreSQL dump file.")
 def load_sample_data(dump_file):
     """Load sample data into the database."""
-    restore_database(dump_file, data_only=True)
+    data_only = True
+    restore_database(dump_file, data_only)
 
 
 @dispatch_database.command("drop")
