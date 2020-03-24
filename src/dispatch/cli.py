@@ -568,6 +568,10 @@ def dump_database():
         _env={"PGPASSWORD": password},
     )
 
+@dispatch_database.command("load_sample_data")
+def load_sample_data():
+    """Load sample data into the database."""
+    pass
 
 @dispatch_database.command("drop")
 @click.option(
