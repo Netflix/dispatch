@@ -47,6 +47,14 @@ assoc_incident_terms = Table(
     PrimaryKeyConstraint("incident_id", "term_id"),
 )
 
+assoc_incident_tags = Table(
+    "assoc_incident_tags",
+    Base.metadata,
+    Column("incident_id", Integer, ForeignKey("incident.id")),
+    Column("tag_id", Integer, ForeignKey("tag.id")),
+    PrimaryKeyConstraint("incident_id", "tag_id"),
+)
+
 
 class Incident(Base, TimeStampMixin):
     id = Column(Integer, primary_key=True)
@@ -124,6 +132,7 @@ class Incident(Base, TimeStampMixin):
     incident_priority = relationship("IncidentPriority", backref="incident")
     status_reports = relationship("StatusReport", backref="incident")
     tasks = relationship("Task", backref="incident")
+    tags = relationship("Tag", secondary=assoc_incident_tags, backref="incidents")
     terms = relationship("Term", secondary=assoc_incident_terms, backref="incidents")
 
 
@@ -132,6 +141,7 @@ class IncidentBase(DispatchBase):
     title: str
     description: str
     status: Optional[IncidentStatus] = IncidentStatus.active
+    visibility: Visibility
 
     @validator("title")
     def title_required(cls, v):
@@ -152,13 +162,15 @@ class IncidentCreate(IncidentBase):
 
 
 class IncidentUpdate(IncidentBase):
-    visibility: Visibility
     incident_priority: IncidentPriorityBase
     incident_type: IncidentTypeBase
     reported_at: Optional[datetime] = None
     stable_at: Optional[datetime] = None
     commander: Optional[IndividualReadNested]
     reporter: Optional[IndividualReadNested]
+    tags: Optional[List[Any]] = []  # any until we figure out circular imports
+    terms: Optional[List[Any]] = []  # any until we figure out circular imports
+    visibility: Visibility
 
 
 class IncidentRead(IncidentBase):
@@ -174,6 +186,8 @@ class IncidentRead(IncidentBase):
     storage: Optional[StorageRead] = None
     ticket: Optional[TicketRead] = None
     documents: Optional[List[DocumentRead]] = []
+    tags: Optional[List[Any]] = []  # any until we figure out circular imports
+    terms: Optional[List[Any]] = []  # any until we figure out circular imports
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
     visibility: Visibility

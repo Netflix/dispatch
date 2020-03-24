@@ -4,7 +4,7 @@
     :items="items"
     :search-input.sync="search"
     hide-selected
-    label="Add some terms"
+    label="Add terms"
     multiple
     chips
     :loading="loading"
@@ -15,7 +15,8 @@
         <v-list-item-content>
           <v-list-item-title>
             No Terms matching "
-            <strong>{{ search }}</strong>". Press <kbd>enter</kbd> to create a new one
+            <strong>{{ search }}</strong>". Press
+            <kbd>enter</kbd> to create a new one
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>

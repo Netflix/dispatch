@@ -2,11 +2,10 @@ from typing import Optional, List
 
 from sqlalchemy import Column, Integer, String
 
-from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
-from dispatch.models import DispatchBase, tags_incidents, TimeStampMixin
+from dispatch.models import DispatchBase, TimeStampMixin
 
 
 class Tag(Base, TimeStampMixin):
@@ -16,17 +15,16 @@ class Tag(Base, TimeStampMixin):
     uri = Column(String)
     source = Column(String)
     type = Column(String)
-    incidents = relationship("Incident", secondary=tags_incidents, backref="tags")
     search_vector = Column(TSVectorType("name"))
 
 
 # Pydantic models
 class TagBase(DispatchBase):
     name: str
-    source: str
-    type: str
+    source: Optional[str] = "dispatch"
+    type: Optional[str] = "generic"
     uri: Optional[str]
-    description: Optional[str]
+    description: Optional[str] = "Generic user tag"
 
 
 class TagCreate(TagBase):

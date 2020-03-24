@@ -4,7 +4,7 @@
     :items="items"
     item-text="name"
     :menu-props="{ maxHeight: '400' }"
-    label="Add some incident priorities"
+    label="Add incident priorities"
     multiple
     chips
     return-object
