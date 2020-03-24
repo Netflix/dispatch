@@ -22,17 +22,25 @@ log = logging.getLogger(__name__)
 
 @retry(
     stop=stop_after_attempt(3),
-    retry=retry_if_exception_type(HttpError),
+    retry=retry_if_exception_type(TryAgain),
     wait=wait_exponential(multiplier=1, min=2, max=5),
 )
 def make_call(client: Any, func: Any, delay: int = None, propagate_errors: bool = False, **kwargs):
     """Make an google client api call."""
-    data = getattr(client, func)(**kwargs).execute()
+    try:
+        data = getattr(client, func)(**kwargs).execute()
 
-    if delay:
-        time.sleep(delay)
+        if delay:
+            time.sleep(delay)
 
-    return data
+        return data
+    except HttpError as e:
+        if e.resp.status in [409]:
+            log.error(e.content.decode())
+            if propagate_errors:
+                raise e
+
+        raise TryAgain
 
 
 def expand_group(client: Any, group_key: str):
