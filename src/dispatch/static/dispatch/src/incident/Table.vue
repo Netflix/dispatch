@@ -73,6 +73,7 @@ export default {
         { text: "Id", value: "name", align: "left", width: "10%" },
         { text: "Title", value: "title", sortable: false },
         { text: "Status", value: "status", width: "10%" },
+        { text: "Visibility", value: "visibility", width: "10%" },
         { text: "Type", value: "incident_type.name" },
         { text: "Priority", value: "incident_priority.name", width: "10%" },
         { text: "Cost", value: "cost" },

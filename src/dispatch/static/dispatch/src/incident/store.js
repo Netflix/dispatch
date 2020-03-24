@@ -5,24 +5,25 @@ import { debounce } from "lodash"
 
 const getDefaultSelectedState = () => {
   return {
+    commander: null,
+    conference: null,
+    conversation: null,
+    created_at: null,
+    description: null,
+    documents: null,
+    id: null,
     incident_priority: null,
     incident_type: null,
-    commander: null,
-    reporter: null,
-    title: null,
-    description: null,
-    conversation: null,
-    conference: null,
-    storage: null,
-    ticket: null,
-    documents: null,
-    stable_at: null,
-    reported_at: null,
-    created_at: null,
     name: null,
+    reported_at: null,
+    reporter: null,
+    stable_at: null,
     status: null,
+    storage: null,
     terms: null,
-    id: null,
+    ticket: null,
+    title: null,
+    visibility: null,
     loading: false
   }
 }
