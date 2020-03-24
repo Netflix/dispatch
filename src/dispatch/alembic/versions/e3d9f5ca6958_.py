@@ -1,7 +1,7 @@
 """Adding reported_at timestamp
 
 Revision ID: e3d9f5ca6958
-Revises: d0501fc6be89
+Revises: e75e103693f2
 Create Date: 2020-02-04 10:40:49.342897
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "e3d9f5ca6958"
-down_revision = "d0501fc6be89"
+down_revision = "e75e103693f2"
 branch_labels = None
 depends_on = None
 

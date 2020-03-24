@@ -1,7 +1,7 @@
 """Adds additional fields to incident_type model.
 
 Revision ID: 4691fc21e309
-Revises: d0501fc6be89
+Revises: e3d9f5ca6958
 Create Date: 2020-01-30 14:56:28.797631
 
 """
