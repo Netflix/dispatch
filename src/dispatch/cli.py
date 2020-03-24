@@ -503,11 +503,20 @@ def init_database():
 
 
 @dispatch_database.command("restore")
-def restore_database():
+@click.option(
+    "--data-only", help="Restore only the data in the dump.", default=False)
+@click.option(
+    "--dump-file", default='dispatch-backup.dump', help="Path to a PostgreSQL dump file.")
+def restore_database(dump_file, data_only=False):
     """Restores the database via pg_restore."""
     import sh
     from sh import psql, createdb
-    from dispatch.config import DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_CREDENTIALS
+    from dispatch.config import (
+        DATABASE_HOSTNAME,
+        DATABASE_NAME,
+        DATABASE_PORT,
+        DATABASE_CREDENTIALS
+    )
 
     username, password = str(DATABASE_CREDENTIALS).split(":")
 
@@ -520,26 +529,29 @@ def restore_database():
                 DATABASE_PORT,
                 "-U",
                 username,
-                "dispatch",
+                DATABASE_NAME,
                 _env={"PGPASSWORD": password},
             )
         )
     except sh.ErrorReturnCode_1:
         print("Database already exists.")
 
-    print(
-        psql(
-            "-h",
-            DATABASE_HOSTNAME,
-            "-p",
-            DATABASE_PORT,
-            "-U",
-            username,
-            "-f",
-            "dispatch-backup.dump",
-            _env={"PGPASSWORD": password},
-        )
-    )
+    cmd_args = [
+        "-h",
+        DATABASE_HOSTNAME,
+        "-p",
+        DATABASE_PORT,
+        "-U",
+        username,
+        "-f",
+        dump_file
+    ]
+    cmd_kwargs = {"_env": {"PGPASSWORD": password}}
+    if data_only:
+        cmd_args.insert(-1, '--data-only')
+
+    print(psql(*cmd_args, **cmd_kwargs))
+    click.secho("Success.", fg="green")
 
 
 @dispatch_database.command("dump")
@@ -570,25 +582,11 @@ def dump_database():
 
 
 @dispatch_database.command("load_sample_data")
-def load_sample_data():
+@click.option(
+    "--dump-file", default='dispatch-backup.dump', help="Path to a PostgreSQL dump file.")
+def load_sample_data(dump_file):
     """Load sample data into the database."""
-    from sh import pg_restore
-    from dispatch.config import DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_CREDENTIALS
-
-    username, password = str(DATABASE_CREDENTIALS).split(":")
-    pg_restore(
-       "--data-only",
-       "data/dispatch-sample-data.dump",
-       "-h",
-        DATABASE_HOSTNAME,
-        "-p",
-        DATABASE_PORT,
-        "-U",
-        username,
-        DATABASE_NAME,
-        _env={"PGPASSWORD": password},
-    )
-    click.secho("Success.", fg="green")
+    restore_database(dump_file, data_only=True)
 
 
 @dispatch_database.command("drop")
