@@ -36,14 +36,8 @@ def make_call(client: Any, func: Any, delay: int = None, propagate_errors: bool 
             time.sleep(delay)
 
         return data
-    except HttpError as e:
-        if e.resp.status in [500, 502, 503, 504]:
-            raise TryAgain
-
-        log.error(kwargs)
-        log.error(e.content.decode())
-        if propagate_errors:
-            raise e
+    except HttpError:
+        raise TryAgain
 
 
 def get_event(client: Any, event_id: str):
