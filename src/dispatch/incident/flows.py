@@ -209,7 +209,7 @@ def create_incident_storage(name: str, participant_group_emails: List[str]):
 
     if INCIDENT_STORAGE_RESTRICTED:
         p.restrict(storage["resource_id"])
-        log.debug("The storage drive has been restricted.")
+        log.debug("The incident storage has been restricted.")
 
     return storage
 
