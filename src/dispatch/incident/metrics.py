@@ -1,53 +1,76 @@
+import json
 from itertools import groupby
 
 from datetime import date
+from dateutil.relativedelta import relativedelta
+
 from calendar import monthrange
 
 from fbprophet import Prophet
 import pandas as pd
 
-from .models import Incident
+from dispatch.config import INCIDENT_METRIC_FORECAST_REGRESSIONS
 from dispatch.incident_type.models import IncidentType
+from .models import Incident
+
+
+def month_grouper(item):
+    """Determines the last day of a given month."""
+    key = date(
+        item.reported_at.year,
+        item.reported_at.month,
+        monthrange(item.reported_at.year, item.reported_at.month)[-1],
+    )
+    return key
 
 
 def make_forecast(
     db_session, incident_type: str = None, periods: int = 24, grouping: str = "month"
 ):
     """Makes an incident forecast."""
-    # filter out all simulations, exclude current month
-
     query = db_session.query(Incident).join(IncidentType)
 
     # exclude simulations
     query = query.filter(IncidentType.name != "Simulation")
 
+    # exclude current month
+    query = query.filter(Incident.reported_at < date.today().replace(day=1))
+
     if incident_type:
         query = query.filter(IncidentType.name == incident_type)
 
+    if grouping == "month":
+        grouper = month_grouper
+        query.filter(Incident.reported_at > date.today() + relativedelta(months=-periods))
+
     incidents = query.all()
-
-    def grouper(item):
-        key = date(
-            item.reported_at.year,
-            item.reported_at.month,
-            monthrange(item.reported_at.year, item.reported_at.month)[-1],
-        )
-        return key
-
     incidents_sorted = sorted(incidents, key=grouper)
 
+    # TODO ensure there are no missing periods (e.g. periods with no incidents)
     dataframe_dict = {"ds": [], "y": []}
+
+    regression_keys = []
+    if INCIDENT_METRIC_FORECAST_REGRESSIONS:
+        # assumes json file with key as column and list of values
+        regression_data = json.loads(INCIDENT_METRIC_FORECAST_REGRESSIONS)
+        regression_keys = regression_data.keys()
+        dataframe_dict.update(regression_data)
+
     for (last_day, items) in groupby(incidents_sorted, grouper):
-        dataframe_dict["ds"].append(last_day)
+        dataframe_dict["ds"].append(str(last_day))
         dataframe_dict["y"].append(len(list(items)))
 
     dataframe = pd.DataFrame.from_dict(dataframe_dict)
 
     forecaster = Prophet()
+
+    for r in regression_keys:
+        forecaster.add_regressor(r)
+
     forecaster.fit(dataframe, algorithm="LBFGS")
 
-    future = forecaster.make_future_dataframe(periods=2, freq="M")
-
+    # https://facebook.github.io/prophet/docs/quick_start.html#python-api
+    future = forecaster.make_future_dataframe(periods=periods, freq="M")
     forecast = forecaster.predict(future)
 
     return forecast

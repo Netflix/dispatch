@@ -34,3 +34,4 @@ uvicorn
 httpx
 pystan
 fbprophet
+python-dateutil

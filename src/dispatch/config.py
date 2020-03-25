@@ -45,7 +45,9 @@ except Exception:
             def __init__(self, value: str):
                 self._value = value
                 self._decrypted_value = (
-                    boto3.client('kms').decrypt(CiphertextBlob=base64.b64decode(value))['Plaintext'].decode("utf-8")
+                    boto3.client("kms")
+                    .decrypt(CiphertextBlob=base64.b64decode(value))["Plaintext"]
+                    .decode("utf-8")
                 )
 
             def __repr__(self) -> str:
@@ -54,6 +56,7 @@ except Exception:
 
             def __str__(self) -> str:
                 return self._decrypted_value
+
     except Exception:
         from starlette.datastructures import Secret
 
@@ -183,6 +186,8 @@ INCIDENT_RESOURCE_FAQ_DOCUMENT = config(
 INCIDENT_RESOURCE_INCIDENT_TASK = config(
     "INCIDENT_RESOURCE_INCIDENT_TASK", default="google-docs-incident-task"
 )
+
+INCIDENT_METRIC_FORECAST_REGRESSIONS = config("INCIDENT_METRIC_FORECAST_REGRESSIONS", default=None)
 
 # Incident Cost Configuration
 ANNUAL_COST_EMPLOYEE = config("ANNUAL_COST_EMPLOYEE", cast=int, default="650000")
