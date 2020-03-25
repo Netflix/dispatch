@@ -136,6 +136,10 @@ By default, the config will be read from environment variables and/or `.env` fil
 
 > Controls the folder where to archive incident information.
 
+#### `INCIDENT_STORAGE_RESTRICTED` \[default: 'True'\]
+
+> Controls whether a set of restrictions and capabilities to prevent content sharing need to be applied.
+
 #### `INCIDENT_NOTIFICATION_CONVERSATIONS` \[default: ''\]
 
 > Comma separated list of conversations \(e.g. Slack channels\) to be notified of new incidents.

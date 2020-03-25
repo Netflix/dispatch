@@ -15,6 +15,7 @@ from dispatch.plugins.dispatch_google.common import get_service
 from .drive import (
     Roles,
     add_permission,
+    archive_team_drive,
     copy_file,
     create_file,
     create_team_drive,
@@ -25,7 +26,7 @@ from .drive import (
     list_team_drives,
     move_file,
     remove_permission,
-    archive_team_drive,
+    restrict_team_drive,
 )
 from .task import list_tasks
 
@@ -124,6 +125,12 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         """Lists all files in team drive."""
         client = get_service("drive", "v3", self.scopes)
         return list_files(client, team_drive_id, q)
+
+    def restrict(self, team_drive_id: str):
+        """Applies a set of restrictions and capabilities to the team drive."""
+        client = get_service("drive", "v3", self.scopes)
+        response = restrict_team_drive(client, team_drive_id)
+        return response
 
 
 class GoogleDriveTaskPlugin(TaskPlugin):
