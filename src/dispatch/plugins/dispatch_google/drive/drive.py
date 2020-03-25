@@ -193,7 +193,6 @@ def create_team_drive(client: Any, name: str, members: List[str], role: Roles):
     return drive_data
 
 
-@retry(stop=stop_after_attempt(5), retry=retry_if_exception_type(TryAgain))
 def restrict_team_drive(client: Any, team_drive_id: str):
     """Applies a set of restrictions and capabilities to the shared drive."""
     body = {
