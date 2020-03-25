@@ -73,4 +73,4 @@ def make_forecast(
     future = forecaster.make_future_dataframe(periods=periods, freq="M")
     forecast = forecaster.predict(future)
 
-    return forecast
+    return forecast.to_dict("series")
