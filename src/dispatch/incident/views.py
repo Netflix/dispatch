@@ -136,9 +136,9 @@ def delete_incident(*, db_session: Session = Depends(get_db), incident_id: str):
     delete(db_session=db_session, incident_id=incident.id)
 
 
-@router.get("/forecast", summary="Get incident forecast data.")
-def get_incident_forecast(*, db_session: Session = Depends(get_db)):
+@router.get("/metric/forecast/{incident_type}", summary="Get incident forecast data.")
+def get_incident_forecast(*, db_session: Session = Depends(get_db), incident_type: str):
     """
     Get incident forecast data.
     """
-    return make_forecast()
+    return make_forecast(db_session=db_session, incident_type=incident_type)

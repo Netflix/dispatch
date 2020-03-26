@@ -1,4 +1,5 @@
 import json
+import math
 from itertools import groupby
 
 from datetime import date
@@ -36,8 +37,9 @@ def make_forecast(
     # exclude current month
     query = query.filter(Incident.reported_at < date.today().replace(day=1))
 
-    if incident_type:
-        query = query.filter(IncidentType.name == incident_type)
+    if incident_type != "all":
+        if incident_type:
+            query = query.filter(IncidentType.name == incident_type)
 
     if grouping == "month":
         grouper = month_grouper
@@ -73,4 +75,22 @@ def make_forecast(
     future = forecaster.make_future_dataframe(periods=periods, freq="M")
     forecast = forecaster.predict(future)
 
-    return forecast.to_dict("series")
+    forecast_data = forecast.to_dict("series")
+
+    return {
+        "categories": list(forecast_data["ds"]),
+        "series": [
+            {
+                "name": "Upper",
+                "data": [max(math.ceil(x), 0) for x in list(forecast_data["yhat_upper"])],
+            },
+            {
+                "name": "Predicted",
+                "data": [max(math.ceil(x), 0) for x in list(forecast_data["yhat"])],
+            },
+            {
+                "name": "Lower",
+                "data": [max(math.ceil(x), 0) for x in list(forecast_data["yhat_lower"])],
+            },
+        ],
+    }

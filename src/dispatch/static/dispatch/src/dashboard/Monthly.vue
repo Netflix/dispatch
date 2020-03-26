@@ -10,7 +10,7 @@
     <v-layout row wrap>
       <!-- Widgets-->
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="domain" :title="totalIncidents" supTitle="Incidents" />
+        <stat-widget icon="domain" :title="totalIncidents | toNumberString" supTitle="Incidents" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
         <stat-widget icon="attach_money" :title="totalCost | toUSD" supTitle="Total Cost" />
@@ -19,7 +19,11 @@
         <stat-widget icon="show_chart" :title="avgCost | toUSD" supTitle="Avg Cost" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="watch_later" :title="totalHours" supTitle="Total Hours" />
+        <stat-widget
+          icon="watch_later"
+          :title="totalHours | toNumberString"
+          supTitle="Total Hours"
+        />
       </v-flex>
       <!-- Widgets Ends -->
       <!-- Statistics -->
