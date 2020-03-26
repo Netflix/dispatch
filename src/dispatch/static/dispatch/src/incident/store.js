@@ -43,6 +43,12 @@ const state = {
       total: null
     },
     options: {
+      filters: {
+        reporters: [],
+        commanders: [],
+        incidentTypes: [],
+        status: []
+      },
       q: "",
       page: 1,
       itemsPerPage: 10,
