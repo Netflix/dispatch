@@ -58,7 +58,7 @@ class IPlugin(local):
     events: Any = None
 
     # Global enabled state
-    enabled: bool = True
+    enabled: bool = False
     can_disable: bool = True
 
     def validate_options(self, options: dict) -> Any:
@@ -79,12 +79,7 @@ class IPlugin(local):
         If ``project`` is passed, it will limit the scope to that project.
         >>> plugin.is_enabled()
         """
-        if not self.enabled:
-            return False
-        if not self.can_disable:
-            return True
-
-        return True
+        return self.enabled
 
     def get_title(self) -> Optional[str]:
         """
