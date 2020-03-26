@@ -1,10 +1,11 @@
 <template>
   <v-combobox
-    v-model="definitions"
+    v-model="tags"
     :items="items"
+    item-text="name"
     :search-input.sync="search"
     hide-selected
-    label="Add definitions"
+    label="Add tags"
     multiple
     chips
     :loading="loading"
@@ -14,7 +15,7 @@
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No results matching "
+            No Tags matching "
             <strong>{{ search }}</strong>". Press
             <kbd>enter</kbd> to create a new one
           </v-list-item-title>
@@ -25,10 +26,11 @@
 </template>
 
 <script>
-import DefinitionApi from "@/definition/api"
+import TagApi from "@/tag/api"
 import _ from "lodash"
+import { mapState, mapActions } from "vuex"
 export default {
-  name: "DefinitionCombobox",
+  name: "TagCombobox",
   props: {
     value: {
       type: Array,
@@ -37,7 +39,6 @@ export default {
       }
     }
   },
-
   data() {
     return {
       loading: false,
@@ -47,21 +48,21 @@ export default {
   },
 
   computed: {
-    definitions: {
+    tags: {
       get() {
         return _.cloneDeep(this.value)
       },
       set(value) {
-        this._definitions = value.map(v => {
+        this._tags = value.map(v => {
           if (typeof v === "string") {
             v = {
-              text: v
+              name: v
             }
             this.items.push(v)
           }
           return v
         })
-        this.$emit("input", this._definitions)
+        this.$emit("input", this._tags)
       }
     }
   },
@@ -74,7 +75,7 @@ export default {
     fetchData(filterOptions) {
       this.error = null
       this.loading = true
-      DefinitionApi.getAll(filterOptions).then(response => {
+      TagApi.getAll(filterOptions).then(response => {
         this.items = response.data.items
         this.loading = false
       })

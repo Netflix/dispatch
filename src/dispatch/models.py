@@ -34,14 +34,6 @@ definition_terms = Table(
     PrimaryKeyConstraint("definition_id", "term_id"),
 )
 
-tags_incidents = Table(
-    "tags_incidents",
-    Base.metadata,
-    Column("incident_id", Integer, ForeignKey("incident.id")),
-    Column("tag_id", Integer, ForeignKey("tag.id")),
-    PrimaryKeyConstraint("incident_id", "tag_id"),
-)
-
 
 # SQLAlchemy models...
 class TimeStampMixin(object):
@@ -164,12 +156,11 @@ class PolicyReadNested(DispatchBase):
     pass
 
 
-from dispatch.tag.models import *  # noqa
+from dispatch.incident.models import *  # noqa
 from dispatch.conversation.models import *  # noqa
 from dispatch.definition.models import *  # noqa
 from dispatch.document.models import Document  # noqa
 from dispatch.group.models import *  # noqa
-from dispatch.incident.models import *  # noqa
 from dispatch.incident_priority.models import *  # noqa
 from dispatch.incident_type.models import *  # noqa
 from dispatch.individual.models import *  # noqa
@@ -183,5 +174,6 @@ from dispatch.storage.models import *  # noqa
 from dispatch.task.models import *  # noqa
 from dispatch.team.models import *  # noqa
 from dispatch.term.models import *  # noqa
+from dispatch.tag.models import *  # noqa
 from dispatch.ticket.models import *  # noqa
 from dispatch.conference.models import *  # noqa

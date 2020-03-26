@@ -5,6 +5,10 @@ from typing import List, Optional
 
 from dispatch.config import ANNUAL_COST_EMPLOYEE, BUSINESS_HOURS_YEAR
 from dispatch.database import SessionLocal
+from dispatch.term import service as term_service
+from dispatch.term.models import TermUpdate
+from dispatch.tag.models import TagUpdate
+from dispatch.tag import service as tag_service
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.incident_type import service as incident_type_service
@@ -191,6 +195,14 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
         db_session=db_session, name=incident_in.incident_type.name
     )
 
+    tags = []
+    for t in incident_in.tags:
+        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=TagUpdate(**t)))
+
+    terms = []
+    for t in incident_in.terms:
+        terms.append(term_service.get_or_create(db_session=db_session, term_in=TermUpdate(**t)))
+
     update_data = incident_in.dict(
         skip_defaults=True,
         exclude={
@@ -200,11 +212,16 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
             "reporter",
             "status",
             "visibility",
+            "tags",
+            "terms",
         },
     )
 
     for field in update_data.keys():
         setattr(incident, field, update_data[field])
+
+    incident.terms = terms
+    incident.tags = tags
 
     incident.status = incident_in.status
     incident.visibility = incident_in.visibility

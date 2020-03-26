@@ -73,6 +73,9 @@
                 <term-combobox v-model="terms" />
               </v-flex>
               <v-flex xs12>
+                <tag-combobox v-model="tags" />
+              </v-flex>
+              <v-flex xs12>
                 <span class="subtitle-2">People</span>
               </v-flex>
               <v-flex xs12>
@@ -158,6 +161,7 @@ import IndividualSelect from "@/individual/IndividualSelect.vue"
 import DatePickerMenu from "@/components/DatePickerMenu.vue"
 import TimePickerMenu from "@/components/TimePickerMenu.vue"
 import TermCombobox from "@/term/TermCombobox.vue"
+import TagCombobox from "@/tag/TagCombobox.vue"
 
 export default {
   name: "IncidentNewEditSheet",
@@ -169,6 +173,7 @@ export default {
     IncidentTypeSelect,
     IndividualSelect,
     TermCombobox,
+    TagCombobox,
     TimePickerMenu,
     DatePickerMenu
   },
@@ -193,6 +198,7 @@ export default {
       "selected.reported_at",
       "selected.status",
       "selected.terms",
+      "selected.tags",
       "selected.incident_priority",
       "selected.incident_type",
       "selected.visibility",

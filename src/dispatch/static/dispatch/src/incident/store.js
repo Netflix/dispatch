@@ -20,10 +20,11 @@ const getDefaultSelectedState = () => {
     stable_at: null,
     status: null,
     storage: null,
-    terms: null,
     ticket: null,
     title: null,
     visibility: null,
+    terms: [],
+    tags: [],
     loading: false
   }
 }
