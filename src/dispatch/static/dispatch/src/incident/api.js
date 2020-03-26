@@ -11,6 +11,10 @@ export default {
     return API.get(`${resource}/${incidentId}`)
   },
 
+  getMetricForecast(incidentType) {
+    return API.get(`${resource}/metric/forecast/${incidentType}`)
+  },
+
   create(payload) {
     return API.post(`${resource}/`, payload)
   },

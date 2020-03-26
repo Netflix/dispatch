@@ -32,3 +32,6 @@ tabulate
 tenacity
 uvicorn
 httpx
+pystan
+fbprophet
+python-dateutil

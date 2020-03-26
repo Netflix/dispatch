@@ -68,7 +68,8 @@ export default {
             formatter: function(val) {
               var formatter = new Intl.NumberFormat("en-US", {
                 style: "currency",
-                currency: "USD"
+                currency: "USD",
+                maximumSignificantDigits: 6
               })
 
               return formatter.format(val) /* $2,500.00 */

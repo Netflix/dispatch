@@ -188,6 +188,8 @@ INCIDENT_RESOURCE_INCIDENT_TASK = config(
     "INCIDENT_RESOURCE_INCIDENT_TASK", default="google-docs-incident-task"
 )
 
+INCIDENT_METRIC_FORECAST_REGRESSIONS = config("INCIDENT_METRIC_FORECAST_REGRESSIONS", default=None)
+
 # Incident Cost Configuration
 ANNUAL_COST_EMPLOYEE = config("ANNUAL_COST_EMPLOYEE", cast=int, default="650000")
 BUSINESS_HOURS_YEAR = config("BUSINESS_HOURS_YEAR", cast=int, default="2080")

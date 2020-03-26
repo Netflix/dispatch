@@ -3,7 +3,7 @@
     <v-layout row wrap>
       <!-- Widgets-->
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="domain" :title="totalIncidents" supTitle="Incidents" />
+        <stat-widget icon="domain" :title="totalIncidents | toNumberString" supTitle="Incidents" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
         <stat-widget icon="attach_money" :title="totalCost | toUSD" supTitle="Total Cost" />
@@ -12,7 +12,11 @@
         <stat-widget icon="show_chart" :title="avgCost | toUSD" supTitle="Avg Cost" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="watch_later" :title="totalHours" supTitle="Total Hours" />
+        <stat-widget
+          icon="watch_later"
+          :title="totalHours | toNumberString"
+          supTitle="Total Hours"
+        />
       </v-flex>
       <!-- Widgets Ends -->
       <!-- Statistics -->
@@ -24,6 +28,9 @@
       </v-flex>
       <v-flex lg6 sm6 xs12>
         <incident-cost-bar-chart-card v-model="groupedItems" :loading="loading"></incident-cost-bar-chart-card>
+      </v-flex>
+      <v-flex lg6 sm6 xs12>
+        <incident-forecast-card></incident-forecast-card>
       </v-flex>
       <v-flex lg6 sm6 xs12>
         <incident-active-time-card v-model="groupedItems" :loading="loading"></incident-active-time-card>
@@ -50,6 +57,7 @@ import IncidentActiveTimeCard from "@/incident/IncidentActiveTimeCard.vue"
 import IncidentResolveTimeCard from "@/incident/IncidentResolveTimeCard.vue"
 import IncidentCostBarChartCard from "@/incident/IncidentCostBarChartCard.vue"
 import IncidentPriorityBarChartCard from "@/incident/IncidentPriorityBarChartCard.vue"
+import IncidentForecastCard from "@/incident/IncidentForecastCard.vue"
 export default {
   name: "IncidentDashboard",
 
@@ -59,7 +67,8 @@ export default {
     IncidentResolveTimeCard,
     IncidentActiveTimeCard,
     IncidentCostBarChartCard,
-    IncidentPriorityBarChartCard
+    IncidentPriorityBarChartCard,
+    IncidentForecastCard
   },
 
   data() {
