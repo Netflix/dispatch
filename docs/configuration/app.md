@@ -1,12 +1,21 @@
-# Configuring Dispatch
+---
+description: >-
+  Describes additional configuration options available for the Dispatch server
+  itself. Additional plugin-specific configuration can be found in the plugin's
+  documentation.
+---
 
-okThis document describes additional configuration options available for the Dispatch server itself. Additional plugin specific configuration can be found in the plugin's documentation.
+# App
 
 ## First Install
 
 Dispatch uses the same configuration system as [Starlette](https://www.starlette.io/config/).
 
 By default, the config will be read from environment variables and/or `.env` files.
+
+{% hint style="info" %}
+All config items prefixed with `VUE_APP` are envvars for the Vue frontend. These variables are used only during the building of the javascript bundle. See [here](https://cli.vuejs.org/guide/mode-and-env.html) for details.
+{% endhint %}
 
 ### General
 
@@ -26,6 +35,10 @@ By default, the config will be read from environment variables and/or `.env` fil
 
 > Optional configuration for using Sentry to report Dispatch errors.
 
+#### `VUE_APP_SENTRY_DSN` \[default: none\]
+
+> Optional configuration for using Sentry to report Dispatch errors.
+
 #### `DISPATCH_HELP_EMAIL`
 
 > Email address to be used by Dispatch when a help message is created.
@@ -36,9 +49,15 @@ By default, the config will be read from environment variables and/or `.env` fil
 
 ### Authentication
 
-#### `JWKS_URL`
+#### PKCE
 
-> Used by Dispatch's authentication backend to pull the JSON Web Key Set \(JWKS\) public key from our specified provider. The result of this URL is cached for up to 1 hour.
+#### `DISPATCH_PKCE_AUTH_ENABLED` \['default': true\]
+
+> Used by Dispatch's authentication backend to enable PKCE bearer token checking.
+
+#### `VUE_APP_DISPATCH_PKCE_AUTH` \['default': true\]
+
+> Used by Dispatch's authentication frontend to kick off the PKCE auth flow.
 
 #### `VUE_APP_DISPATCH_OPEN_ID_CONNECT`
 
@@ -47,6 +66,20 @@ By default, the config will be read from environment variables and/or `.env` fil
 #### `VUE_APP_DISPATCH_CLIENT_ID`
 
 > The client id to send to the open id connect endpoint.
+
+#### `JWKS_URL`
+
+> Used by Dispatch's authentication backend to pull the JSON Web Key Set \(JWKS\) public key from our specified provider. The result of this URL is cached for up to 1 hour.
+
+#### HEADER
+
+#### `DISPATCH_HEADER_AUTH_ENABLED` \['default': false\]
+
+> Used by Dispatch's authentication backend to enable header based authentication.
+
+#### `DISPATCH_AUTH_HEADER_KEY` 
+
+> Used by Dispatch's authentication backend to determine which header key to grab the users email address from.
 
 ### Persistence
 
@@ -80,7 +113,7 @@ By default, the config will be read from environment variables and/or `.env` fil
 
 ### Incident Plugin Configuration
 
-#### `INCIDENT_PLUGIN_CONTACT_SLUG` \[default: 'pandora-contact'\]
+#### `INCIDENT_PLUGIN_CONTACT_SLUG` \[default: 'slack-contact'\]
 
 > Controls which plugin will be used to resolve incident participant email addresses. The plugin will also be used to gather additional participant information such as name, team, location, etc.
 
@@ -92,9 +125,13 @@ By default, the config will be read from environment variables and/or `.env` fil
 
 > Controls which plugin will be used for incident document creation.
 
-#### \`INCIDENT\_PLUGIN\_DOCUMENT\_RESOLVER\_SLUG \[default: 'dispatch-document-resolver'\]
+#### `INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG` \[default: 'dispatch-document-resolver'\]
 
 > Controls which plugin will be used to recommend documents to be automatically included for a given incident.
+
+#### `INCIDENT_PLUGIN_CONFERENCE_PLUGIN` \[default: 'google-calendar-conference'\]
+
+> Controls which plugin will be used to create a conference.
 
 #### `INCIDENT_PLUGIN_EMAIL_SLUG` \[default: 'google-gmail-conversation'\]
 

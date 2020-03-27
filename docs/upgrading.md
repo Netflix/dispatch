@@ -1,3 +1,7 @@
+---
+description: Staying up to date.
+---
+
 # Upgrading
 
 If you're upgrading to a new major release, it's always recommended to start by generating a new configuration file \(using the new version of Dispatch\). This will ensure that any new settings which may have been added are clearly visable and get configurated correctly.
@@ -20,7 +24,7 @@ pip install --upgrade dispatch
 
 You may prefer to install a fixed version rather than just assuming the latest, as it will allow you to better understand what is changing.
 
-If you're instlal from source, you may have additional requirements that are unfulfilled, so take the neessary precautions of testing your environment before committing to the upgrade.
+If you're installing from source, you may have additional requirements that are unfulfilled, so take the necessary precautions of testing your environment before committing to the upgrade.
 
 ### Running Migrations
 
@@ -36,6 +40,6 @@ You'll need to ensure that _all_ services running Dispatch code are restarted af
 
 These services include:
 
-* webserver -- `dispatch server start`
+* server -- `dispatch server start`
 * scheduler -- `dispatch scheduler start`
 

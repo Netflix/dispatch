@@ -1,2 +1,6 @@
+---
+description: Plugin Configurations
+---
+
 # Plugins
 

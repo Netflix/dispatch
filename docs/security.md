@@ -1,7 +1,7 @@
 ---
 description: >-
   We take the security of Dispatch seriously. The following are a set of
-  policies we have adopted to ensure that security issues are address in a
+  policies we have adopted to ensure that security issues are addressed in a
   timely fashion.
 ---
 
@@ -11,9 +11,9 @@ description: >-
 
 We ask that you do not report security issue to our normal GitHub issue tracker.
 
-If you believe you've identified a security issue with `Dispatch`, please report it to security@netflix.com.
+If you believe you've identified a security issue with `Dispatch`, please report it via our public Netflix bug bounty program at: [https://bugcrowd.com/netflix](https://bugcrowd.com/netflix)
 
-Once you've submitted the issue via email, you should receive an acknowledgement within 48 hous, and depending on the action to be take, you may receive further follow-up emails.
+Once you've submitted the issue it will be handled by our triage team, typically within 48 hours.
 
 ## Support Versions
 

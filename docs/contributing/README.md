@@ -1,6 +1,6 @@
 ---
 description: >-
-  Want to contribute back to Dispatch? This page describes the general
+  Want to contribute back to Dispatch? These pages describe the general
   development flow, our philosophy, the test suite, and issue tracking.
 ---
 
