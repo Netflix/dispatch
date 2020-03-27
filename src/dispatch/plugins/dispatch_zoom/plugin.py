@@ -7,6 +7,7 @@
 """
 import logging
 import random
+from typing import List
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import ConferencePlugin
