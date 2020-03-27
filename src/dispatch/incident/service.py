@@ -140,6 +140,7 @@ def create(
     title: str,
     status: str,
     description: str,
+    visibility: str = None,
 ) -> Incident:
     """Creates a new incident."""
     # We get the incident type by name
@@ -152,6 +153,9 @@ def create(
         db_session=db_session, name=incident_priority["name"]
     )
 
+    if not visibility:
+        visibility = incident_type.visibility
+
     # We create the incident
     incident = Incident(
         title=title,
@@ -159,7 +163,7 @@ def create(
         status=status,
         incident_type=incident_type,
         incident_priority=incident_priority,
-        visibility=incident_type.visibility,
+        visibility=visibility,
     )
     db_session.add(incident)
     db_session.commit()

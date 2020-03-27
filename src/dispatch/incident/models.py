@@ -141,7 +141,7 @@ class IncidentBase(DispatchBase):
     title: str
     description: str
     status: Optional[IncidentStatus] = IncidentStatus.active
-    visibility: Optional[Visibility] = Visibility.open
+    visibility: Optional[Visibility]
 
     @validator("title")
     def title_required(cls, v):
