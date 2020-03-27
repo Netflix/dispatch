@@ -7,7 +7,6 @@ click
 email-validator
 emails
 fastapi
-# fbprophet
 google-api-python-client
 google-auth-oauthlib
 httpx
@@ -18,7 +17,6 @@ oauth2client
 psycopg2-binary
 pyparsing
 pypd  # pagerduty plugin
-# pystan==2.18  # NOTE newer versions require C++14
 python-dateutil
 python-jose
 python-multipart
