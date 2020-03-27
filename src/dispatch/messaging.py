@@ -280,7 +280,7 @@ INCIDENT_COMMANDER = {
 INCIDENT_CONFERENCE = {
     "title": "Incident Conference",
     "title_link": "{{conference_weblink}}",
-    "text": INCIDENT_CONFERENCE_DESCRIPTION,
+    "text": INCIDENT_CONFERENCE_DESCRIPTION + " Password: {{conference_challenge}}",
 }
 
 INCIDENT_STORAGE = {

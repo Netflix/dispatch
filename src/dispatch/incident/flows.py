@@ -35,6 +35,7 @@ from dispatch.config import (
     INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID,
     INCIDENT_STORAGE_RESTRICTED,
 )
+from dispatch.conference import service as conference_service
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.models import ConversationCreate
 from dispatch.database import SessionLocal
@@ -290,6 +291,7 @@ def update_document(
     storage_weblink: str,
     ticket_weblink: str,
     conference_weblink: str = None,
+    conference_challenge: str = None,
 ):
     """Update external collaboration document."""
     p = plugins.get(INCIDENT_PLUGIN_DOCUMENT_SLUG)
@@ -306,6 +308,7 @@ def update_document(
         storage_weblink=storage_weblink,
         ticket_weblink=ticket_weblink,
         conference_weblink=conference_weblink,
+        conference_challenge=conference_challenge,
     )
 
     log.debug("The external collaboration document has been updated.")
@@ -445,6 +448,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         resource_type=conference["resource_type"],
         weblink=conference["weblink"],
         conference_id=conference["id"],
+        conference_challenge=conference["challenge"]
     )
     incident.conference = conference_service.create(
         db_session=db_session, conference_in=conference_in
@@ -527,6 +531,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         incident.storage.weblink,
         incident.ticket.weblink,
         incident.conference.weblink,
+        incident.conference.conference_challenge,
     )
 
     log.debug("Updated incident document.")
@@ -727,6 +732,14 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
         group_plugin.delete(email=tactical_group.email)
         group_plugin.delete(email=notifications_group.email)
         log.debug("We have deleted the notification and tactical groups.")
+
+    # Delete the conference
+    conference = conference_service.get_by_incident_id(
+        db_session=db_session,
+        incident_id=incident_id
+    )
+    conference_plugin = plugins.get(INCIDENT_PLUGIN_CONFERENCE_SLUG)
+    conference_plugin.delete(conference.conference_id)
 
     db_session.add(incident)
     db_session.commit()

@@ -23,6 +23,14 @@ def get_by_conference_id(db_session, conference_id: str) -> Optional[Conference]
     )
 
 
+def get_by_incident_id(*, db_session, incident_id: str) -> Optional[Conference]:
+    return (
+        db_session.query(Conference)
+        .filter(Conference.incident_id == incident_id)
+        .one()
+    )
+
+
 def get_all(*, db_session):
     return db_session.query(Conference)
 

@@ -140,7 +140,7 @@ class GoogleCalendarConferencePlugin(ConferencePlugin):
             if entry_point["entryPointType"] == "video":
                 meet_url = entry_point["uri"]
 
-        return {"weblink": meet_url, "id": conference["id"]}
+        return {"weblink": meet_url, "id": conference["id"], "challenge": ""}
 
     def delete(self, event_id: str):
         """Deletes an existing event."""
