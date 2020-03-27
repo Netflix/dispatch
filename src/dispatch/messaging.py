@@ -122,7 +122,7 @@ and participants in the incident conversation.""".replace(
 ).strip()
 
 INCIDENT_CONFERENCE_DESCRIPTION = """
-Video conference and phone bridge to be used throughout the incident.
+Video conference and phone bridge to be used throughout the incident.  Password: {{conference_challenge}}
 """.replace(
     "\n", ""
 ).strip()

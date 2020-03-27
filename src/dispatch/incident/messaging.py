@@ -114,6 +114,7 @@ def send_welcome_ephemeral_message_to_participant(
         ticket_weblink=incident.ticket.weblink,
         faq_weblink=incident_faq.weblink,
         conference_weblink=incident.conference.weblink,
+        conference_challenge=incident.conference.conference_challenge,
         conversation_commands_reference_document_weblink=incident_conversation_commands_reference_document.weblink,
     )
 
@@ -160,6 +161,7 @@ def send_welcome_email_to_participant(
         ticket_weblink=incident.ticket.weblink,
         faq_weblink=incident_faq.weblink,
         conference_weblink=incident.conference.weblink,
+        conference_challenge=incident.conference.conference_challenge,
         conversation_commands_reference_document_weblink=incident_conversation_commands_reference_document.weblink,
     )
 
@@ -338,6 +340,12 @@ def send_incident_update_notifications(incident: Incident, previous_incident: In
                 ticket_weblink=incident.ticket.weblink,
                 faq_weblink=incident.incident_faq.weblink,
                 incident_id=incident.id,
+                incident_priority_old=previous_incident.incident_priority.name,
+                incident_priority_new=incident.incident_priority.name,
+                incident_type_old=previous_incident.incident_type.name,
+                incident_type_new=incident.incident_type.name,
+                incident_status_old=previous_incident.status.value,
+                incident_status_new=incident.status,
             )
 
     log.debug(f"Incident update notifications sent.")

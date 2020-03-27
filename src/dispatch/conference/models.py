@@ -11,6 +11,7 @@ from dispatch.models import DispatchBase, ResourceMixin
 class Conference(Base, ResourceMixin):
     id = Column(Integer, primary_key=True)
     conference_id = Column(String)
+    conference_challenge = Column(String, nullable=False, server_default="N/A")
 
 
 # Pydantic models...
@@ -19,6 +20,7 @@ class ConferenceBase(DispatchBase):
     resource_type: str
     weblink: str
     conference_id: str
+    conference_challenge: str
 
 
 class ConferenceCreate(ConferenceBase):
@@ -31,6 +33,7 @@ class ConferenceUpdate(ConferenceBase):
 
 class ConferenceRead(ConferenceBase):
     weblink: str
+    conference_challenge: str
     description: Optional[str]
 
     @validator("description", pre=True, always=True)
