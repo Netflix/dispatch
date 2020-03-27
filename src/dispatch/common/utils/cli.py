@@ -38,6 +38,8 @@ def install_plugins():
         logger.debug(f"Loading plugin {ep.name}")
         try:
             plugin = ep.load()
+        except KeyError as e:
+            logger.warning(f"Failed to load plugin {ep.name}. Reason: {e}")
         except Exception:
             import traceback
 
