@@ -35,7 +35,7 @@ from dispatch.config import (
     INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID,
     INCIDENT_STORAGE_RESTRICTED,
 )
-from dispatch.conference import service as conference_service
+
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.models import ConversationCreate
 from dispatch.database import SessionLocal
