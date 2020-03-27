@@ -6,7 +6,7 @@ description: View and manage all incidents.
 
 ## Dashboard
 
-The dashboard should be pretty self-explanatory. It attempts to provide some meaningful insights across all of incident managed by Dispatch. Do we have an uptick in a particular type of incident? Are we getting better at responding to incidents? 
+The dashboard should be pretty self-explanatory. It attempts to provide some meaningful insights across all of incident managed by Dispatch. Do we have an uptick in a particular type of incident? Are we getting better at responding to incidents?
 
 ## Incidents
 
@@ -14,5 +14,5 @@ During an incident most actions are managed by the incident channel ops commands
 
 ## Tasks
 
-Similar to `Incident` most incident tasks are managed in the incident channel itself. But when you want to view _all_ incident tasks across the organization this admin view gives you that ability. 
+Similar to `Incident` most incident tasks are managed in the incident channel itself. But when you want to view _all_ incident tasks across the organization this admin view gives you that ability.
 

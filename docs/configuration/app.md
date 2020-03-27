@@ -47,39 +47,37 @@ All config items prefixed with `VUE_APP` are envvars for the Vue frontend. These
 
 > Slack channel name to be used by Dispatch when a help message is created.
 
+#### `DISPATCH_UI_URL`
+
+> URL being used for Dispatch's Admin UI. Used in messaging to refer to the Admin UI.
+
 ### Authentication
 
-#### PKCE
+#### `DISPATCH_AUTHENTICATION_PROVIDER` \['default': dispatch-auth-provider-pkce\]
 
-#### `DISPATCH_PKCE_AUTH_ENABLED` \['default': true\]
+> Used by Dispatch to determine which authentication provider to use, by default Dispatch ships with a PKCE authentication provider.
 
-> Used by Dispatch's authentication backend to enable PKCE bearer token checking.
+{% hint style="info" %}
+If you wish to disabled authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
+{% endhint %}
 
-#### `VUE_APP_DISPATCH_PKCE_AUTH` \['default': true\]
+#### `DISPATCH_AUTHENTICATION_DEFAULT_USER` \['default': dispatch@example.com\]
 
-> Used by Dispatch's authentication frontend to kick off the PKCE auth flow.
+> Used when authentication is disable as the default anonymous user.
 
-#### `VUE_APP_DISPATCH_OPEN_ID_CONNECT`
+#### Configuration for `dispatch-auth-provider-pkce`
+
+#### `DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWK` \['default': true\]
+
+> Used by Dispatch's authentication backend to pull the JSON Web Key Set \(JWKS\) public key from the specified provider.
+
+#### `VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT`
 
 > Used by the Dispatch Web UI send the user via Proof Key Code Exchange \(PKCE\) to a correct open id connect endpoint.
 
-#### `VUE_APP_DISPATCH_CLIENT_ID`
+#### `VUE_APP_DISPATCH_AUTHENTICATOIN_PROVIDER_PKCE_CLIENT_ID`
 
 > The client id to send to the open id connect endpoint.
-
-#### `JWKS_URL`
-
-> Used by Dispatch's authentication backend to pull the JSON Web Key Set \(JWKS\) public key from our specified provider. The result of this URL is cached for up to 1 hour.
-
-#### HEADER
-
-#### `DISPATCH_HEADER_AUTH_ENABLED` \['default': false\]
-
-> Used by Dispatch's authentication backend to enable header based authentication.
-
-#### `DISPATCH_AUTH_HEADER_KEY` 
-
-> Used by Dispatch's authentication backend to determine which header key to grab the users email address from.
 
 ### Persistence
 

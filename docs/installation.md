@@ -2,7 +2,7 @@
 
 Dispatch relies on multiple services to work, which are all orchestrated by `Docker Compose`.
 
-#### Requirements
+### Requirements
 
 * [Docker](https://www.docker.com/) 17.05.0+
 * [Docker Compose](https://docs.docker.com/compose/) 1.19.0+

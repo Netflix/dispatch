@@ -32,15 +32,15 @@ The `Slack` plugin relies on the [Events API](https://api.slack.com/events-api) 
 
 > Used during development to funnel all messages to a particular user.
 
-#### `SLACK_COMMAND_MARK_ACTIVE_SLUG` \[default: '/dispatch-mark-active'\]
+#### `SLACK_COMMAND_MARK_ACTIVE_SLUG` \[default: '/dispatch-mark-active'\] \[DEPRECATED\]
 
 > Active command as displayed in Slack.
 
-#### `SLACK_COMMAND_MARK_STABLE_SLUG` \[default: '/dispatch-mark-stable'\]
+#### `SLACK_COMMAND_MARK_STABLE_SLUG` \[default: '/dispatch-mark-stable'\] \[DEPRECATED\]
 
 > Stable command as displayed in Slack.
 
-#### `SLACK_COMMAND_MARK_CLOSED_SLUG` \[default: '/dispatch-mark-closed'\]
+#### `SLACK_COMMAND_MARK_CLOSED_SLUG` \[default: '/dispatch-mark-closed'\] \[DEPRECATED\]
 
 > Close command as displayed in Slack.
 
@@ -60,9 +60,9 @@ The `Slack` plugin relies on the [Events API](https://api.slack.com/events-api) 
 
 > Assign role command as displayed in Slack.
 
-#### `SLACK_COMMAND_EDIT_INCIDENT` \[default: '/dispatch-edit-incident'\]
+#### `SLACK_COMMAND_UPDATE_INCIDENT` \[default: '/dispatch-update-incident'\]
 
-> Edit incident command as displayed in Slack.
+> Update incident command as displayed in Slack.
 
 #### `SLACK_COMMAND_ENGAGE_ONCALL` \[default: '/dispatch-engage-oncall'\]
 
@@ -76,7 +76,7 @@ The `Slack` plugin relies on the [Events API](https://api.slack.com/events-api) 
 
 To enable Dispatch's slash commands you must create them an point them to the appropriate endpoint:
 
-![](../../.gitbook/assets/slack-setup-commands-0.png)
+![](../../.gitbook/assets/slack-setup-commands-0%20%281%29.png)
 
 ![](../../.gitbook/assets/slack-setup-commands-1.png)
 
@@ -86,7 +86,7 @@ Ensure that the `Command` matches the configuration variables above and that `Re
 
 To enable Dispatch to process slack events ensure you configuration looks similar to the following:
 
-![](../../.gitbook/assets/slack-setup-events.png)
+![](../../.gitbook/assets/slack-setup-events%20%281%29.png)
 
 ## Dialogs
 

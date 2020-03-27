@@ -43,7 +43,7 @@ class PluginName(ConversationPlugin):
 
     def add(self, items, **kwargs):
         return "User Added"
-    
+
     def send(self, items, **kwargs):
         return "Message sent"
 ```
@@ -82,6 +82,6 @@ Once your plugin files are in place and the you can load your plugin into your i
 ```
 
 {% hint style="info" %}
-For more information about python packages see: [Python Packaging](https://packaging.python.org/en/latest/distributing.html) 
+For more information about python packages see: [Python Packaging](https://packaging.python.org/en/latest/distributing.html)
 {% endhint %}
 

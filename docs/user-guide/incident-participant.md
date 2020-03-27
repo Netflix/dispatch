@@ -24,11 +24,7 @@ After an incident is created Dispatch will start to automatically pull new parti
 
 Each new participant receives a welcome message \(Email + Slack\) providing them resources and information to help orient them for this given incident.
 
-
-
 ![Incident welcome email](https://lh3.googleusercontent.com/9AhkQ-y5h-sQN0F6KLrBEE_6cGA-XN4Qu1cj4NAGNj1OOfA7p4c4z0G7BYxydz3oOYCVkqTkl_EYAeO4SOsCWkVXme5hUByCnYNDkFPQhQTkNYulc--rOQNQGD856s4uPZPYHEwvlk0)
-
-
 
 ![Incident welcome slack \(ephemeral\)](https://lh4.googleusercontent.com/EgiaPr7p7X-MsmhU7LCNn9BoM0qgqlj-yFBRsxHYGFY6GWSVmYkqNjDzFB-iTNpZBlaxjpVJ_R8HC5jO9gu12ehtIGfT3-7At7lQms-dppkxiFZTyOA8LUQyubCDqLAU23NYwcoQfrw)
 

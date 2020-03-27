@@ -24,7 +24,7 @@ Within Dispatch, any installed application plugins are run by the scheduler ever
 
 ## Conversation
 
-Conversation plugins are deeply integrated within Dispatch. They server as the real-time communication channel used for incidents. By default Dispatch supports `Slack` as a conversation channel, if you wish to  use another platform for conversations you will need to implement the following interface:
+Conversation plugins are deeply integrated within Dispatch. They server as the real-time communication channel used for incidents. By default Dispatch supports `Slack` as a conversation channel, if you wish to use another platform for conversations you will need to implement the following interface:
 
 ```python
 def create(self, name: str, participants: List[dict], is_private: bool = True):
@@ -84,7 +84,7 @@ def send_ephemeral(
         "id": "abc123",
         "timestamp": "1232324384"
     }
-   
+
 def add(self, conversation_id: str, participants: List[str]):
     """Adds users to conversation."""
     return
@@ -165,7 +165,6 @@ def counter(self, name: str, value=None, tags=None):
 def timer(self, name: str, value, tags=None):
     """Create a new timer metric."""
     return
-
 ```
 
 ## Oncall
@@ -182,12 +181,11 @@ def page(
 ):
     """Pages the oncall person."""
     return
-
 ```
 
 ## Participant Group
 
-Often permissions for resources are manage by external entities or "groups". By default Dispatch uses Google Groups to help manage these permissions as these groups permission integrate nicely with the rest of the G Suite. 
+Often permissions for resources are manage by external entities or "groups". By default Dispatch uses Google Groups to help manage these permissions as these groups permission integrate nicely with the rest of the G Suite.
 
 ```python
 def create(
@@ -207,11 +205,10 @@ def add(self, email: str, participants: List[str], role: str = "MEMBER"):
 def remove(self, email: str, participants: List[str]):
     """Removes participants from existing participant group."""
     return 
-    
+
 def delete(self, email: str):
     """Deletes an existing participant group."""
     return
-
 ```
 
 ## Participant
@@ -325,7 +322,7 @@ def list_files(self, drive_id: str, q: str = None):
 ## Task
 
 {% hint style="info" %}
-This interface is not stable and will need to be refactored and/or generalized. Please file an issue for guidance if you are trying to extend tasks. 
+This interface is not stable and will need to be refactored and/or generalized. Please file an issue for guidance if you are trying to extend tasks.
 {% endhint %}
 
 Dispatch supports a lightweight tasking system to track incident tasks. By default this uses the G Suit comment system to assign, create and resolve tasks. If you have an external system you'd like Dispatch to monitor the following interface can be used:
@@ -383,8 +380,5 @@ def update(
 ):
     """Updates ticket fields."""
     return
-
 ```
-
-
 

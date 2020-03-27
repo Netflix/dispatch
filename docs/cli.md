@@ -8,7 +8,7 @@ Dispatch ships with a robust CLI, providing configuration, server, scheduler, pl
 
 ## Server
 
-The server sub-command contains all Dispatch server related commands. 
+The server sub-command contains all Dispatch server related commands.
 
 ```bash
 > dispatch server --help                                                                        develop ⬇ ◼
@@ -99,9 +99,9 @@ To start Dispatch you will need to tell the start command where to find the `dis
 > dispatch server start dispatch.main:app --workers 6 --host 127.0.0.1 --port 8000 --proxy-headers
 ```
 
-##  Scheduler
+## Scheduler
 
-The `scheduler` command contains all of the Dispatch scheduler logic. 
+The `scheduler` command contains all of the Dispatch scheduler logic.
 
 ```bash
 > dispatch scheduler --help
@@ -119,7 +119,7 @@ Commands:
 
 ### List
 
-The `list` command lists all tasks that are currently registered with the scheduler. Today the scheduler periods are hard coded and cannot be adjusted. 
+The `list` command lists all tasks that are currently registered with the scheduler. Today the scheduler periods are hard coded and cannot be adjusted.
 
 ```bash
 > dispatch scheduler list
@@ -189,7 +189,7 @@ The `init` command takes a fresh database and creates the necessary tables and v
 
 ### Revision
 
-The `revision` command is an `alembic` command that creates a new database schema revision based on the models defined within the application. 
+The `revision` command is an `alembic` command that creates a new database schema revision based on the models defined within the application.
 
 It's most often used with the `--autogenerate` flag:
 
@@ -224,6 +224,4 @@ Google Gmail - Conversation       google-gmail-conversation       0.1.0       co
 Google Group - Participant Group  google-group-participant-group  0.1.0       participant_group  Kevin Glisson  Uses Google Groups to help manage participant membership.
 ...
 ```
-
-
 

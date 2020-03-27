@@ -5,7 +5,7 @@ description: Quick guide for setting your environment for Dispatch development.
 # Environment
 
 {% hint style="info" %}
-This guide assumes you're using an OS of the Linux/Unix variant \(Ubuntu/OS X\). These guide is not meant to be exhaustive. 
+This guide assumes you're using an OS of the Linux/Unix variant \(Ubuntu/OS X\). These guide is not meant to be exhaustive.
 {% endhint %}
 
 ## Easy Mode
@@ -51,7 +51,7 @@ Dispatch uses uses async functionality and requires `python 3.7.3+`.
 Create a new virtualenv just for Dispatch:
 
 ```bash
-> pyenv virtualenv dispatch 
+> pyenv virtualenv dispatch
 ```
 
 Install Dispatch with pip:
@@ -68,7 +68,7 @@ Test it would by seeing if the `dispatch` command is in your path:
 
 ## UI
 
-Dispatch use the [Vue Cli](https://cli.vuejs.org/) to manage it's single page app \(SPA\) and the [Vuetify](https://vuetifyjs.com/en/) framework for material based components. 
+Dispatch use the [Vue Cli](https://cli.vuejs.org/) to manage it's single page app \(SPA\) and the [Vuetify](https://vuetifyjs.com/en/) framework for material based components.
 
 To get started developing with Vue, first navigate to the root static directory:
 
@@ -83,7 +83,7 @@ Ensure you have node installed:
 /home/kglisson/.nvm/versions/node/v12.7.0/bin/node
 ```
 
-Notice that we are using [nvm](https://github.com/nvm-sh/nvm) to manage our installations of node, the rest of the guide assumes the usage of nvm. 
+Notice that we are using [nvm](https://github.com/nvm-sh/nvm) to manage our installations of node, the rest of the guide assumes the usage of nvm.
 
 Check to make sure we have the correct version of node:
 
