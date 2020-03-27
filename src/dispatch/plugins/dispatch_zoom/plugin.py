@@ -6,15 +6,7 @@
 .. moduleauthor:: Will Bengtson <wbengtson@hashicorp.com>
 """
 import logging
-import time
-import uuid
 import random
-from datetime import datetime, timedelta
-from typing import Any, List
-
-from googleapiclient.errors import HttpError
-from pytz import timezone
-from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import ConferencePlugin
@@ -30,7 +22,7 @@ def gen_conference_challenge(length: int):
     if length > 10:
         length = 10
     field = "abcdefghijklmnopqrstuvwxyz01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    return "".join(random.sample(field,length))
+    return "".join(random.sample(field, length))
 
 
 def delete_meeting(client, event_id: int):
@@ -67,12 +59,6 @@ class ZoomConferencePlugin(ConferencePlugin):
     title = "Zoom - Conference"
     slug = "zoom-conference"
     description = "Uses Zoom to manage conference meetings."
-
-    author = "Will Bengtson"
-    author_url = "https://github.com/netflix/dispatch.git"
-
-    # def __init__(self):
-    #     self.scopes = ["https://www.googleapis.com/auth/calendar"]
 
     def create(
         self, name: str, description: str = None, title: str = None, participants: List[str] = []

@@ -1,4 +1,4 @@
-"""empty message
+"""Adds column for conference challenge
 
 Revision ID: 5d4dee3e24fc
 Revises: 8b67c774279d

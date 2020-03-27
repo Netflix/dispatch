@@ -122,7 +122,7 @@ and participants in the incident conversation.""".replace(
 ).strip()
 
 INCIDENT_CONFERENCE_DESCRIPTION = """
-Video conference and phone bridge to be used throughout the incident.
+Video conference and phone bridge to be used throughout the incident.  Password: {{conference_challenge}}
 """.replace(
     "\n", ""
 ).strip()
@@ -280,7 +280,7 @@ INCIDENT_COMMANDER = {
 INCIDENT_CONFERENCE = {
     "title": "Incident Conference",
     "title_link": "{{conference_weblink}}",
-    "text": INCIDENT_CONFERENCE_DESCRIPTION + " Password: {{conference_challenge}}",
+    "text": INCIDENT_CONFERENCE_DESCRIPTION,
 }
 
 INCIDENT_STORAGE = {

@@ -342,6 +342,10 @@ def send_incident_update_notifications(incident: Incident, previous_incident: In
                 incident_id=incident.id,
                 incident_priority_old=previous_incident.incident_priority.name,
                 incident_priority_new=incident.incident_priority.name,
+                incident_type_old=previous_incident.incident_type.name,
+                incident_type_new=incident.incident_type.name,
+                incident_status_old=previous_incident.status.value,
+                incident_status_new=incident.status,
             )
 
     log.debug(f"Incident update notifications sent.")

@@ -19,7 +19,7 @@ class ZoomClient():
 
     def _get_headers(self):
         headers = {}
-        headers["authorization"] = "Bearer {}".format(self.token)
+        headers["authorization"] = f"Bearer {self.token}"
         headers["content-type"] = "application/json"
         return headers
 
