@@ -1,5 +1,6 @@
 import json
 import math
+import logging
 from itertools import groupby
 
 from datetime import date
@@ -7,12 +8,18 @@ from dateutil.relativedelta import relativedelta
 
 from calendar import monthrange
 
-from fbprophet import Prophet
-import pandas as pd
-
 from dispatch.config import INCIDENT_METRIC_FORECAST_REGRESSIONS
 from dispatch.incident_type.models import IncidentType
 from .models import Incident
+
+
+log = logging.getLogger(__name__)
+
+try:
+    from fbprophet import Prophet
+    import pandas as pd
+except ImportError:
+    log.warning("Unable to import fbprophet, some metrics will not be usable.")
 
 
 def month_grouper(item):
