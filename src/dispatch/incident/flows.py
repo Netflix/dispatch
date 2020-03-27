@@ -704,7 +704,6 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
             source_team_drive_id=incident.storage.resource_id,
             dest_team_drive_id=INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID,
             folder_name=incident.name,
-            visibility=incident.visibility,
         )
         log.debug(
             "We have archived the incident artifacts in the archival folder and re-applied permissions and deleted the source."
