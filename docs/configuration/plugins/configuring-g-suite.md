@@ -6,39 +6,39 @@ description: Configuration page for all G Suite plugins.
 
 By default Dispatch ships with several G Suite plugins \(Docs, Groups, Drive, etc.,\). This page documents the available configuration for these plugins and the permissions required to enable them.
 
-### `GOOGLE_DOMAIN`
+#### `GOOGLE_DOMAIN`
 
 > Base domain for which this Google Cloud Platform \(GCP\) service account resides.
 
-### `GOOGLE_DEVELOPER_KEY` \[secret: True\]
+#### `GOOGLE_DEVELOPER_KEY` \[secret: True\]
 
 > This is used by the Google API Discovery Service and prevents rate limiting.
 
-### `GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL`
+#### `GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL`
 
 > Client email for the Google Cloud Platform \(GCP\) service account.
 
-### `GOOGLE_SERVICE_ACCOUNT_CLIENT_ID`
+#### `GOOGLE_SERVICE_ACCOUNT_CLIENT_ID`
 
 > Client ID for the Google Cloud Platform \(GCP\) service account.
 
-### `GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT`
+#### `GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT`
 
 > Account to delegate to from the Google Cloud Platform \(GCP\) service account.
 
-### `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` \[secret: True\]
+#### `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` \[secret: True\]
 
 > Private key \(PEM format\) for the Google Cloud Platform \(GCP\) service account.
 
-### `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID`
+#### `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID`
 
 > Private key ID for the Google Cloud Platform \(GCP\) service account.
 
-### `GOOGLE_SERVICE_ACCOUNT_PROJECT_ID`
+#### `GOOGLE_SERVICE_ACCOUNT_PROJECT_ID`
 
 > Project ID for the Google Cloud Platform \(GCP\) service account.
 
-### `GOOGLE_USER_OVERRIDE` \[default: None\]
+#### `GOOGLE_USER_OVERRIDE` \[default: None\]
 
 > Used for development to funnel all emails to a specific user.
 

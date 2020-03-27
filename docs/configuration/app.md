@@ -101,7 +101,7 @@ If you wish to disabled authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
 
 ### Incident Cost
 
-#### `ANNUAL_COST_EMPLOYEE` \[default: '650000'\]
+#### `ANNUAL_COST_EMPLOYEE` \[default: '50000'\]
 
 > Used for incident cost modeling, specifies the total `all-in` cost for an average employee working on incidents.
 
@@ -161,9 +161,17 @@ If you wish to disabled authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
 
 > Controls which document id to use as the FAQ.
 
+#### `INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_ID`
+
+> Controls which document id to use for the conversation commands reference document.
+
 #### `INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID`
 
 > Controls the folder where to archive incident information.
+
+#### `INCIDENT_STORAGE_RESTRICTED` \[default: 'True'\]
+
+> Controls whether a set of restrictions and capabilities to prevent content sharing need to be applied.
 
 #### `INCIDENT_NOTIFICATION_CONVERSATIONS` \[default: ''\]
 
