@@ -26,6 +26,18 @@ Note: The `Slack` plugin relies on the [Events API](https://api.slack.com/events
 
 > Used during development to funnel all messages to a particular user.
 
+#### `SLACK_COMMAND_MARK_ACTIVE_SLUG` \[default: '/dispatch-mark-active'\]
+
+> Active command as displayed in Slack.
+
+#### `SLACK_COMMAND_MARK_STABLE_SLUG` \[default: '/dispatch-mark-stable'\]
+
+> Stable command as displayed in Slack.
+
+#### `SLACK_COMMAND_MARK_CLOSED_SLUG` \[default: '/dispatch-mark-closed'\]
+
+> Close command as displayed in Slack.
+
 #### `SLACK_COMMAND_STATUS_REPORT_SLUG` \[default: '/dispatch-status-report'\]
 
 > Status report command as displayed in Slack.
@@ -42,9 +54,9 @@ Note: The `Slack` plugin relies on the [Events API](https://api.slack.com/events
 
 > Assign role command as displayed in Slack.
 
-#### `SLACK_COMMAND_UPDATE_INCIDENT` \[default: '/dispatch-update-incident'\]
+#### `SLACK_COMMAND_EDIT_INCIDENT` \[default: '/dispatch-edit-incident'\]
 
-> Update incident command as displayed in Slack.
+> Edit incident command as displayed in Slack.
 
 #### `SLACK_COMMAND_ENGAGE_ONCALL` \[default: '/dispatch-engage-oncall'\]
 
@@ -56,11 +68,11 @@ Note: The `Slack` plugin relies on the [Events API](https://api.slack.com/events
 
 ## Commands
 
-To enable Dispatch's slash commands you must create them an point them to the appropriate endpoint:
+To enable Dispatch's slash commands you must create them an point them to the approriate endpoint:
 
-![commands0](https://github.com/Netflix/dispatch/tree/d59303e2cfb16d0d8e02ce64ebe9e3acd44cdbed/.gitbook/assets/slack-setup-commands-0.png)
+![commands0](https://github.com/Netflix/dispatch/tree/742e80ece059ad83fcf4894c2a145e5109daedf8/.gitbook/assets/slack-setup-commands-0.png)
 
-![commands1](https://github.com/Netflix/dispatch/tree/d59303e2cfb16d0d8e02ce64ebe9e3acd44cdbed/.gitbook/assets/slack-setup-commands-1.png)
+![commands1](https://github.com/Netflix/dispatch/tree/742e80ece059ad83fcf4894c2a145e5109daedf8/.gitbook/assets/slack-setup-commands-1.png)
 
 Ensure that the `Command` matches the configuration variables above and that `Request URL` points to the events endpoint of the dispatch server \(`/api/v1/events/slack/command`\).
 
@@ -68,13 +80,13 @@ Ensure that the `Command` matches the configuration variables above and that `Re
 
 To enable Dispatch to process slack events ensure you configuration looks similar to the following:
 
-![events0](https://github.com/Netflix/dispatch/tree/d59303e2cfb16d0d8e02ce64ebe9e3acd44cdbed/.gitbook/assets/slack-setup-events.png)
+![events0](https://github.com/Netflix/dispatch/tree/742e80ece059ad83fcf4894c2a145e5109daedf8/.gitbook/assets/slack-setup-events.png)
 
 ## Dialogs
 
 To enable Dispatch Dialogs ensure your configuration looks similar to the following:
 
-![dialogs0](https://github.com/Netflix/dispatch/tree/d59303e2cfb16d0d8e02ce64ebe9e3acd44cdbed/.gitbook/assets/slack-setup-dialogs.png)
+![dialogs0](https://github.com/Netflix/dispatch/tree/742e80ece059ad83fcf4894c2a145e5109daedf8/.gitbook/assets/slack-setup-dialogs.png)
 
 ## Permissions
 

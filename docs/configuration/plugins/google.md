@@ -26,11 +26,11 @@ By default Dispatch ships with several G Suite plugins \(Docs, Groups, Drive, et
 
 > Private key \(PEM format\) for the Google Cloud Platform \(GCP\) service account.
 
-### `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID`
+### `GOOGLE_ACCOUNT_PRIVATE_KEY_ID`
 
 > Private key ID for the Google Cloud Platform \(GCP\) service account.
 
-### `GOOGLE_SERVICE_ACCOUNT_PROJECT_ID`
+### `GOOGLE_ACCOUNT_PROJECT_ID`
 
 > Project ID for the Google Cloud Platform \(GCP\) service account.
 
@@ -48,9 +48,9 @@ Create a new service account \(APIs & Services &gt; Credentials &gt; Create Cred
 
 Once created, download the JSON based key and use it's values to populate the above configuration values:
 
-* `project_id` -&gt; `GOOGLE_SERVICE_ACCOUNT_PROJECT_ID`
-* `private_key_id` -&gt; `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID`
-* `private_key` -&gt; `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`
+* `project_id` -&gt; `GOOGLE_ACCOUNT_PROJECT_ID`
+* `private_key_id` -&gt; `GOOGLE_SERVICE_PRIVATE_KEY_ID`
+* `private_key` -&gt; `GOOGLE_SERVICE_PRIVATE_KEY`
 * `client_email` -&gt; `GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL`
 * `client_id` -&gt; `GOOGLE_SERVICE_ACCOUNT_CLIENT_ID`
 

@@ -1,6 +1,6 @@
 # Upgrading
 
-If you're upgrading to a new major release, it's always recommended to start by generating a new configuration file \(using the new version of Dispatch\). This will ensure that any new settings which may have been added are clearly visible and get configurated correctly.
+If you're upgrading to a new major release, it's always recommended to start by generating a new configuration file \(using the new version of Dispatch\). This will ensure that any new settings which may have been added are clearly visable and get configurated correctly.
 
 Beyond that, upgrades are simple as bumping the version of Dispatch \(which will cause any changed dependencies to upgrade\), running data migrations, and restarting all related services.
 
@@ -12,7 +12,7 @@ In some cases you may want to stop services before doing the upgrade process or 
 
 ### Upgrading the package
 
-The easiest way to upgrade the Dispatch package using `pip`:
+The easiest way to upgrade the Dispatch package using`pip`:
 
 ```bash
 pip install --upgrade dispatch
@@ -20,7 +20,7 @@ pip install --upgrade dispatch
 
 You may prefer to install a fixed version rather than just assuming the latest, as it will allow you to better understand what is changing.
 
-If you're installing from source, you may have additional requirements that are unfulfilled, so take the necessary precautions of testing your environment before committing to the upgrade.
+If you're instlal from source, you may have additional requirements that are unfulfilled, so take the neessary precautions of testing your environment before committing to the upgrade.
 
 ### Running Migrations
 

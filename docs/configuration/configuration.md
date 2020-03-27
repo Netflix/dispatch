@@ -40,13 +40,13 @@ By default, the config will be read from environment variables and/or `.env` fil
 
 > Used by Dispatch's authentication backend to pull the JSON Web Key Set \(JWKS\) public key from our specified provider. The result of this URL is cached for up to 1 hour.
 
-#### `VUE_APP_DISPATCH_OPEN_ID_CONNECT_URL`
+#### `VUE_APP_DISPATCH_OPEN_ID_CONNECT`
 
-> Used by the Dispatch Web UI send the user via Proof Key Code Exchange \(PKCE\) to a correct open id connect endpoint. Configuration located at: `/src/dispatch/static/dispatch/.env`
+> Used by the Dispatch Web UI send the user via Proof Key Code Exchange \(PKCE\) to a correct open id connect endpoint.
 
 #### `VUE_APP_DISPATCH_CLIENT_ID`
 
-> The client id to send to the open id connect endpoint. Configuration located at: `/src/dispatch/static/dispatch/.env`
+> The client id to send to the open id connect endpoint.
 
 ### Persistence
 
@@ -124,19 +124,11 @@ By default, the config will be read from environment variables and/or `.env` fil
 
 #### `INCIDENT_FAQ_DOCUMENT_ID`
 
-> Controls which document id to use for the Frequently Asked Questions \(FAQ\) document.
-
-#### `INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_ID`
-
-> Controls which document id to use for the conversation commands reference document.
+> Controls which document id to use as the FAQ.
 
 #### `INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID`
 
 > Controls the folder where to archive incident information.
-
-#### `INCIDENT_STORAGE_RESTRICTED` \[default: 'True'\]
-
-> Controls whether a set of restrictions and capabilities to prevent content sharing need to be applied.
 
 #### `INCIDENT_NOTIFICATION_CONVERSATIONS` \[default: ''\]
 
