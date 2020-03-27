@@ -141,7 +141,7 @@ class IncidentBase(DispatchBase):
     title: str
     description: str
     status: Optional[IncidentStatus] = IncidentStatus.active
-    visibility: Visibility
+    visibility: Optional[Visibility] = Visibility.open
 
     @validator("title")
     def title_required(cls, v):
@@ -170,7 +170,6 @@ class IncidentUpdate(IncidentBase):
     reporter: Optional[IndividualReadNested]
     tags: Optional[List[Any]] = []  # any until we figure out circular imports
     terms: Optional[List[Any]] = []  # any until we figure out circular imports
-    visibility: Visibility
 
 
 class IncidentRead(IncidentBase):
@@ -190,7 +189,6 @@ class IncidentRead(IncidentBase):
     terms: Optional[List[Any]] = []  # any until we figure out circular imports
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
-    visibility: Visibility
 
     created_at: Optional[datetime] = None
     reported_at: Optional[datetime] = None
