@@ -1,8 +1,8 @@
 # Upgrading
 
-If you're upgrading to a new major release, it's always recommended to start by generating a new configuration file (using the new version of Dispatch). This will ensure that any new settings which may have been added are clearly visible and get configurated correctly.
+If you're upgrading to a new major release, it's always recommended to start by generating a new configuration file \(using the new version of Dispatch\). This will ensure that any new settings which may have been added are clearly visible and get configurated correctly.
 
-Beyond that, upgrades are simple as bumping the version of Dispatch (which will cause any changed dependencies to upgrade), running data migrations, and restarting all related services.
+Beyond that, upgrades are simple as bumping the version of Dispatch \(which will cause any changed dependencies to upgrade\), running data migrations, and restarting all related services.
 
 {% hint style="info" %}
 In some cases you may want to stop services before doing the upgrade process or avoid intermittent errors.
@@ -36,5 +36,6 @@ You'll need to ensure that _all_ services running Dispatch code are restarted af
 
 These services include:
 
-- webserver -- `dispatch server start`
-- scheduler -- `dispatch scheduler start`
+* webserver -- `dispatch server start`
+* scheduler -- `dispatch scheduler start`
+

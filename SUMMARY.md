@@ -14,7 +14,7 @@
     * [Configuring Dispatch](docs/configuration/configuration.md)
   * [Command Line Interface](docs/command-line-interface.md)
   * [Security](docs/security.md)
-  * [Table of contents](docs/SUMMARY.md)
+  * [Table of contents](docs/summary.md)
   * [User Guide](docs/user-guide.md)
   * [Installation](docs/installation.md)
   * [License](docs/license.md)

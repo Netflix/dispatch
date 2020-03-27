@@ -16,8 +16,9 @@ Creating a release of Dispatch requires the following steps.
 
 ### Bumping the version number
 
-- Update the version number in `dispatch/__about__.py`
-- Create a new entry in the change log
-- Create a commit with the change log changes
-- Create a pull request with the change
-- Merge change
+* Update the version number in `dispatch/__about__.py`
+* Create a new entry in the change log
+* Create a commit with the change log changes
+* Create a pull request with the change
+* Merge change
+

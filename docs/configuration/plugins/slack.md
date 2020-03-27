@@ -58,9 +58,9 @@ Note: The `Slack` plugin relies on the [Events API](https://api.slack.com/events
 
 To enable Dispatch's slash commands you must create them an point them to the appropriate endpoint:
 
-![commands0](../../../.gitbook/assets/slack-setup-commands-0.png)
+![commands0](https://github.com/Netflix/dispatch/tree/d59303e2cfb16d0d8e02ce64ebe9e3acd44cdbed/.gitbook/assets/slack-setup-commands-0.png)
 
-![commands1](../../../.gitbook/assets/slack-setup-commands-1.png)
+![commands1](https://github.com/Netflix/dispatch/tree/d59303e2cfb16d0d8e02ce64ebe9e3acd44cdbed/.gitbook/assets/slack-setup-commands-1.png)
 
 Ensure that the `Command` matches the configuration variables above and that `Request URL` points to the events endpoint of the dispatch server \(`/api/v1/events/slack/command`\).
 
@@ -68,13 +68,13 @@ Ensure that the `Command` matches the configuration variables above and that `Re
 
 To enable Dispatch to process slack events ensure you configuration looks similar to the following:
 
-![events0](../../../.gitbook/assets/slack-setup-events.png)
+![events0](https://github.com/Netflix/dispatch/tree/d59303e2cfb16d0d8e02ce64ebe9e3acd44cdbed/.gitbook/assets/slack-setup-events.png)
 
 ## Dialogs
 
 To enable Dispatch Dialogs ensure your configuration looks similar to the following:
 
-![dialogs0](../../../.gitbook/assets/slack-setup-dialogs.png)
+![dialogs0](https://github.com/Netflix/dispatch/tree/d59303e2cfb16d0d8e02ce64ebe9e3acd44cdbed/.gitbook/assets/slack-setup-dialogs.png)
 
 ## Permissions
 

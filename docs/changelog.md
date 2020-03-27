@@ -6,5 +6,3 @@
 
 * Initial release
 
-
-
