@@ -345,6 +345,7 @@ def get_requirements(env):
 
 install_requires = get_requirements("base")
 dev_requires = get_requirements("dev")
+metrics_requires = get_requirements("metrics")
 
 
 class DispatchSDistCommand(SDistCommand):
@@ -396,7 +397,7 @@ setup(
     packages=find_packages("src"),
     python_requires=">=3.7",
     install_requires=install_requires,
-    extras_require={"dev": dev_requires},
+    extras_require={"dev": dev_requires, "metrics": metrics_requires},
     cmdclass=cmdclass,
     zip_save=False,
     include_package_data=True,
