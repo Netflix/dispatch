@@ -1,0 +1,593 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 9.6.17
+-- Dumped by pg_dump version 12.2 (Debian 12.2-2.pgdg90+1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Data for Name: alembic_version; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.alembic_version (version_num) FROM stdin;
+b12f7a59ced9
+\.
+
+
+--
+-- Data for Name: application; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.application (id, name, description, uri, source, search_vector, created_at, updated_at) FROM stdin;
+1	Application1	Application1 description	https://example.com/application1	https://example.com/application1	'application1':1	2020-03-23 11:08:50.406011	2020-03-23 11:08:50.406002
+\.
+
+
+--
+-- Data for Name: incident_priority; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.incident_priority (id, name, description) FROM stdin;
+4	high	things on fire
+5	medium	things gettings worse
+6	low	get a coffee and fix this
+\.
+
+
+--
+-- Data for Name: service; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.service (id, is_active, name, type, external_id, search_vector, created_at, updated_at) FROM stdin;
+2	t	SomeService1	pagerduty-oncall	serviceID1	'someservice1':1	2020-03-22 17:55:03.755493	2020-03-22 17:55:03.7555
+\.
+
+
+--
+-- Data for Name: incident_type; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.incident_type (id, name, slug, description, visibility, template_document_id, commander_service_id, search_vector) FROM stdin;
+6	IncidentType1	\N	IncidentType description	Open	2	2	'descript':3 'incidenttyp':2 'incidenttype1':1
+\.
+
+
+--
+-- Data for Name: incident; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.incident (id, name, title, description, status, cost, visibility, reported_at, stable_at, closed_at, search_vector, incident_type_id, incident_priority_id, created_at, updated_at) FROM stdin;
+1	\N	Incident1	Some incident	Active	0	Open	2020-03-23 11:46:16.096746	\N	\N	'incid':3 'incident1':1	6	4	2020-03-23 11:46:16.096768	2020-03-23 11:46:16.096764
+2	\N	Another incident	Some other incident \nLorem ipsum	Active	0	Open	2020-03-23 14:08:20.649311	\N	\N	'anoth':1 'incid':2,5 'ipsum':7 'lorem':6	6	5	2020-03-23 14:08:20.649322	2020-03-23 14:08:20.649327
+3	\N	Some incident report	An incident report demo	Active	0	Open	2020-03-23 14:14:23.924364	\N	\N	'demo':7 'incid':2,5 'report':3,6	6	5	2020-03-23 14:14:23.924372	2020-03-23 14:14:23.924376
+\.
+
+
+--
+-- Data for Name: applications_incidents; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.applications_incidents (incident_id, application_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: term; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.term (id, text, search_vector) FROM stdin;
+1	foobar	'foobar':1
+\.
+
+
+--
+-- Data for Name: assoc_incident_terms; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.assoc_incident_terms (incident_id, term_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: team_contact; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.team_contact (is_active, is_external, contact_type, email, company, owner, id, name, notes, search_vector, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: individual_contact; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.individual_contact (is_active, is_external, contact_type, email, company, notes, owner, id, name, mobile_phone, office_phone, title, weblink, team_contact_id, search_vector, created_at, updated_at) FROM stdin;
+t	f	\N	foobar@example.com	Foobar Co.	\N	\N	1	Foobar	\N	\N	\N	\N	\N	'co':3 'foobar':1,2	2020-03-22 17:53:06.780529	2020-03-22 17:53:06.780518
+\.
+
+
+--
+-- Data for Name: assoc_individual_contact_incident_priority; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.assoc_individual_contact_incident_priority (incident_priority_id, individual_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: assoc_individual_contact_incident_type; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.assoc_individual_contact_incident_type (incident_type_id, individual_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: assoc_individual_contact_terms; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.assoc_individual_contact_terms (term_id, individual_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: conference; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.conference (resource_type, resource_id, weblink, id, conference_id, incident_id, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: conversation; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.conversation (resource_type, resource_id, weblink, id, channel_id, incident_id, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: definition; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.definition (id, text, source, search_vector) FROM stdin;
+1	foobar	dispatch	'foobar':1
+2	foo bar	dispatch	'bar':2 'foo':1
+3	foo	dispatch	'foo':1
+4	bar	dispatch	'bar':1
+\.
+
+
+--
+-- Data for Name: definition_teams; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.definition_teams (definition_id, team_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: definition_terms; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.definition_terms (definition_id, term_id) FROM stdin;
+1	1
+2	1
+3	1
+4	1
+\.
+
+
+--
+-- Data for Name: document; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.document (resource_type, resource_id, weblink, id, name, description, search_vector, incident_id, created_at, updated_at) FROM stdin;
+documentation	document-id1234	https://example.com/weblink/document	2	Document1	Some document description	'document1':1	\N	2020-03-22 17:55:45.310754	2020-03-22 17:55:45.310762
+document	document1	https://example.com/document1	3	Document1	Some document description	'document1':1	\N	2020-03-23 11:09:25.533527	2020-03-23 11:09:25.533521
+document	document1	https://example.com/document1	6	document1	document description	'document1':1	\N	2020-03-23 11:11:19.313263	2020-03-23 11:11:19.313257
+\.
+
+
+--
+-- Data for Name: document_incident; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.document_incident (incident_id, document_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: document_incident_priority; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.document_incident_priority (incident_priority_id, document_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: document_incident_type; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.document_incident_type (incident_type_id, document_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: document_terms; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.document_terms (term_id, document_id) FROM stdin;
+1	6
+\.
+
+
+--
+-- Data for Name: group; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public."group" (resource_type, resource_id, weblink, id, name, email, incident_id, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: participant; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.participant (id, is_active, active_at, inactive_at, incident_id, individual_contact_id, location, team, department) FROM stdin;
+\.
+
+
+--
+-- Data for Name: participant_role; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.participant_role (id, assume_at, renounce_at, role, participant_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: policy; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.policy (id, name, description, expression, search_vector) FROM stdin;
+1	Policy1	some policy	foobar=foo	'polici':3 'policy1':1
+\.
+
+
+--
+-- Data for Name: recommendation; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.recommendation (id, text) FROM stdin;
+\.
+
+
+--
+-- Data for Name: recommendation_accuracy; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.recommendation_accuracy (id, recommendation_id, correct, resource_id, resource_type) FROM stdin;
+\.
+
+
+--
+-- Data for Name: recommendation_documents; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.recommendation_documents (document_id, recommendation_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: recommendation_incident_priorities; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.recommendation_incident_priorities (incident_priority_id, recommendation_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: recommendation_incident_types; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.recommendation_incident_types (incident_type_id, recommendation_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: recommendation_individual_contacts; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.recommendation_individual_contacts (individual_contact_id, recommendation_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: recommendation_services; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.recommendation_services (service_id, recommendation_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: recommendation_team_contacts; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.recommendation_team_contacts (team_contact_id, recommendation_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: recommendation_terms; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.recommendation_terms (term_id, recommendation_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: service_incident; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.service_incident (incident_id, service_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: service_incident_priority; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.service_incident_priority (incident_priority_id, service_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: service_incident_type; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.service_incident_type (incident_type_id, service_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: service_terms; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.service_terms (term_id, service_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: status_report; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.status_report (id, created_at, conditions, actions, needs, incident_id, participant_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: storage; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.storage (resource_type, resource_id, weblink, id, incident_id, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: task; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.task (resource_type, resource_id, weblink, id, resolved_at, resolve_by, last_reminder_at, creator, assignees, description, source, priority, status, reminders, incident_id, search_vector, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: team_contact_incident; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.team_contact_incident (incident_id, team_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: team_contact_incident_priority; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.team_contact_incident_priority (incident_priority_id, team_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: team_contact_incident_type; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.team_contact_incident_type (incident_type_id, team_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: team_contact_terms; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.team_contact_terms (term_id, team_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: ticket; Type: TABLE DATA; Schema: public; Owner: main
+--
+
+COPY public.ticket (resource_type, resource_id, weblink, id, incident_id, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Name: application_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.application_id_seq', 1, true);
+
+
+--
+-- Name: conference_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.conference_id_seq', 1, false);
+
+
+--
+-- Name: conversation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.conversation_id_seq', 1, false);
+
+
+--
+-- Name: definition_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.definition_id_seq', 4, true);
+
+
+--
+-- Name: document_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.document_id_seq', 6, true);
+
+
+--
+-- Name: group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.group_id_seq', 1, false);
+
+
+--
+-- Name: incident_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.incident_id_seq', 3, true);
+
+
+--
+-- Name: incident_priority_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.incident_priority_id_seq', 6, true);
+
+
+--
+-- Name: incident_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.incident_type_id_seq', 6, true);
+
+
+--
+-- Name: individual_contact_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.individual_contact_id_seq', 1, true);
+
+
+--
+-- Name: participant_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.participant_id_seq', 1, false);
+
+
+--
+-- Name: participant_role_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.participant_role_id_seq', 1, false);
+
+
+--
+-- Name: policy_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.policy_id_seq', 1, true);
+
+
+--
+-- Name: recommendation_accuracy_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.recommendation_accuracy_id_seq', 1, false);
+
+
+--
+-- Name: recommendation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.recommendation_id_seq', 1, false);
+
+
+--
+-- Name: service_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.service_id_seq', 2, true);
+
+
+--
+-- Name: status_report_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.status_report_id_seq', 1, false);
+
+
+--
+-- Name: storage_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.storage_id_seq', 1, false);
+
+
+--
+-- Name: task_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.task_id_seq', 1, false);
+
+
+--
+-- Name: team_contact_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.team_contact_id_seq', 1, false);
+
+
+--
+-- Name: term_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.term_id_seq', 1, true);
+
+
+--
+-- Name: ticket_id_seq; Type: SEQUENCE SET; Schema: public; Owner: main
+--
+
+SELECT pg_catalog.setval('public.ticket_id_seq', 1, false);
+
+
+--
+-- PostgreSQL database dump complete
+--
+

@@ -1,0 +1,3563 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 9.6.17
+-- Dumped by pg_dump version 12.2 (Debian 12.2-2.pgdg90+1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: tsq_state; Type: TYPE; Schema: public; Owner: dispatch
+--
+
+CREATE TYPE public.tsq_state AS (
+	search_query text,
+	parentheses_stack integer,
+	skip_for integer,
+	current_token text,
+	current_index integer,
+	current_char text,
+	previous_char text,
+	tokens text[]
+);
+
+
+ALTER TYPE public.tsq_state OWNER TO dispatch;
+
+--
+-- Name: application_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.application_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                NEW.search_vector = to_tsvector('pg_catalog.english', coalesce(NEW.name, ''));
+                RETURN NEW;
+            END
+            $$;
+
+
+ALTER FUNCTION public.application_search_vector_update() OWNER TO dispatch;
+
+--
+-- Name: array_nremove(anyarray, anyelement, integer); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.array_nremove(anyarray, anyelement, integer) RETURNS anyarray
+    LANGUAGE sql IMMUTABLE
+    AS $_$
+    WITH replaced_positions AS (
+        SELECT UNNEST(
+            CASE
+            WHEN $2 IS NULL THEN
+                '{}'::int[]
+            WHEN $3 > 0 THEN
+                (array_positions($1, $2))[1:$3]
+            WHEN $3 < 0 THEN
+                (array_positions($1, $2))[
+                    (cardinality(array_positions($1, $2)) + $3 + 1):
+                ]
+            ELSE
+                '{}'::int[]
+            END
+        ) AS position
+    )
+    SELECT COALESCE((
+        SELECT array_agg(value)
+        FROM unnest($1) WITH ORDINALITY AS t(value, index)
+        WHERE index NOT IN (SELECT position FROM replaced_positions)
+    ), $1[1:0]);
+$_$;
+
+
+ALTER FUNCTION public.array_nremove(anyarray, anyelement, integer) OWNER TO dispatch;
+
+--
+-- Name: definition_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.definition_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                NEW.search_vector = to_tsvector('pg_catalog.english', coalesce(NEW.text, ''));
+                RETURN NEW;
+            END
+            $$;
+
+
+ALTER FUNCTION public.definition_search_vector_update() OWNER TO dispatch;
+
+--
+-- Name: document_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.document_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                NEW.search_vector = to_tsvector('pg_catalog.english', coalesce(NEW.name, ''));
+                RETURN NEW;
+            END
+            $$;
+
+
+ALTER FUNCTION public.document_search_vector_update() OWNER TO dispatch;
+
+--
+-- Name: incident_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.incident_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                NEW.search_vector = (to_tsvector('pg_catalog.english', coalesce(NEW.name, '')) || to_tsvector('pg_catalog.english', coalesce(NEW.title, ''))) || to_tsvector('pg_catalog.english', coalesce(NEW.description, ''));
+                RETURN NEW;
+            END
+            $$;
+
+
+ALTER FUNCTION public.incident_search_vector_update() OWNER TO dispatch;
+
+--
+-- Name: incident_type_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.incident_type_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                NEW.search_vector = to_tsvector('pg_catalog.english', coalesce(NEW.name, '')) || to_tsvector('pg_catalog.english', coalesce(NEW.description, ''));
+                RETURN NEW;
+            END
+            $$;
+
+
+ALTER FUNCTION public.incident_type_search_vector_update() OWNER TO dispatch;
+
+--
+-- Name: individual_contact_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.individual_contact_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                NEW.search_vector = ((to_tsvector('pg_catalog.english', coalesce(NEW.name, '')) || to_tsvector('pg_catalog.english', coalesce(NEW.title, ''))) || to_tsvector('pg_catalog.english', coalesce(NEW.company, ''))) || to_tsvector('pg_catalog.english', coalesce(NEW.notes, ''));
+                RETURN NEW;
+            END
+            $$;
+
+
+ALTER FUNCTION public.individual_contact_search_vector_update() OWNER TO dispatch;
+
+--
+-- Name: policy_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.policy_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                NEW.search_vector = to_tsvector('pg_catalog.english', coalesce(NEW.name, '')) || to_tsvector('pg_catalog.english', coalesce(NEW.description, ''));
+                RETURN NEW;
+            END
+            $$;
+
+
+ALTER FUNCTION public.policy_search_vector_update() OWNER TO dispatch;
+
+--
+-- Name: service_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.service_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                NEW.search_vector = to_tsvector('pg_catalog.english', coalesce(NEW.name, ''));
+                RETURN NEW;
+            END
+            $$;
+
+
+ALTER FUNCTION public.service_search_vector_update() OWNER TO dispatch;
+
+--
+-- Name: task_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.task_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                NEW.search_vector = to_tsvector('pg_catalog.english', coalesce(NEW.description, ''));
+                RETURN NEW;
+            END
+            $$;
+
+
+ALTER FUNCTION public.task_search_vector_update() OWNER TO dispatch;
+
+--
+-- Name: team_contact_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.team_contact_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                NEW.search_vector = (to_tsvector('pg_catalog.english', coalesce(NEW.name, '')) || to_tsvector('pg_catalog.english', coalesce(NEW.company, ''))) || to_tsvector('pg_catalog.english', coalesce(NEW.notes, ''));
+                RETURN NEW;
+            END
+            $$;
+
+
+ALTER FUNCTION public.team_contact_search_vector_update() OWNER TO dispatch;
+
+--
+-- Name: term_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.term_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                NEW.search_vector = to_tsvector('pg_catalog.english', coalesce(NEW.text, ''));
+                RETURN NEW;
+            END
+            $$;
+
+
+ALTER FUNCTION public.term_search_vector_update() OWNER TO dispatch;
+
+--
+-- Name: tsq_append_current_token(public.tsq_state); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.tsq_append_current_token(state public.tsq_state) RETURNS public.tsq_state
+    LANGUAGE plpgsql IMMUTABLE
+    AS $$
+BEGIN
+    IF state.current_token != '' THEN
+        state.tokens := array_append(state.tokens, state.current_token);
+        state.current_token := '';
+    END IF;
+    RETURN state;
+END;
+$$;
+
+
+ALTER FUNCTION public.tsq_append_current_token(state public.tsq_state) OWNER TO dispatch;
+
+--
+-- Name: tsq_parse(text); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.tsq_parse(search_query text) RETURNS tsquery
+    LANGUAGE sql IMMUTABLE
+    AS $$
+    SELECT tsq_parse(get_current_ts_config(), search_query);
+$$;
+
+
+ALTER FUNCTION public.tsq_parse(search_query text) OWNER TO dispatch;
+
+--
+-- Name: tsq_parse(regconfig, text); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.tsq_parse(config regconfig, search_query text) RETURNS tsquery
+    LANGUAGE sql IMMUTABLE
+    AS $$
+    SELECT tsq_process_tokens(config, tsq_tokenize(search_query));
+$$;
+
+
+ALTER FUNCTION public.tsq_parse(config regconfig, search_query text) OWNER TO dispatch;
+
+--
+-- Name: tsq_parse(text, text); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.tsq_parse(config text, search_query text) RETURNS tsquery
+    LANGUAGE sql IMMUTABLE
+    AS $$
+    SELECT tsq_parse(config::regconfig, search_query);
+$$;
+
+
+ALTER FUNCTION public.tsq_parse(config text, search_query text) OWNER TO dispatch;
+
+--
+-- Name: tsq_process_tokens(text[]); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.tsq_process_tokens(tokens text[]) RETURNS tsquery
+    LANGUAGE sql IMMUTABLE
+    AS $$
+    SELECT tsq_process_tokens(get_current_ts_config(), tokens);
+$$;
+
+
+ALTER FUNCTION public.tsq_process_tokens(tokens text[]) OWNER TO dispatch;
+
+--
+-- Name: tsq_process_tokens(regconfig, text[]); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.tsq_process_tokens(config regconfig, tokens text[]) RETURNS tsquery
+    LANGUAGE plpgsql IMMUTABLE
+    AS $$
+DECLARE
+    result_query text;
+    previous_value text;
+    value text;
+BEGIN
+    result_query := '';
+
+    FOREACH value IN ARRAY tokens LOOP
+        IF value = '"' THEN
+            CONTINUE;
+        END IF;
+
+        IF value = 'or' THEN
+            value := ' | ';
+        END IF;
+
+        IF left(value, 1) = '"' AND right(value, 1) = '"' THEN
+            value := phraseto_tsquery(config, value);
+        ELSIF value NOT IN ('(', ' | ', ')', '-') THEN
+            value := quote_literal(value) || ':*';
+        END IF;
+
+        IF previous_value = '-' THEN
+            IF value = '(' THEN
+                value := '!' || value;
+            ELSIF value = ' | ' THEN
+                CONTINUE;
+            ELSE
+                value := '!(' || value || ')';
+            END IF;
+        END IF;
+
+        SELECT
+            CASE
+                WHEN result_query = '' THEN value
+                WHEN previous_value = ' | ' AND value = ' | ' THEN result_query
+                WHEN previous_value = ' | ' THEN result_query || ' | ' || value
+                WHEN previous_value IN ('!(', '(') OR value = ')' THEN result_query || value
+                WHEN value != ' | ' THEN result_query || ' & ' || value
+                ELSE result_query
+            END
+        INTO result_query;
+        previous_value := value;
+    END LOOP;
+
+    IF result_query = ' | ' THEN
+        RETURN to_tsquery('');
+    END IF;
+
+    RETURN to_tsquery(config, result_query);
+END;
+$$;
+
+
+ALTER FUNCTION public.tsq_process_tokens(config regconfig, tokens text[]) OWNER TO dispatch;
+
+--
+-- Name: tsq_tokenize(text); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.tsq_tokenize(search_query text) RETURNS text[]
+    LANGUAGE plpgsql IMMUTABLE
+    AS $$
+DECLARE
+    state tsq_state;
+BEGIN
+    SELECT
+        search_query::text AS search_query,
+        0::int AS parentheses_stack,
+        0 AS skip_for,
+        ''::text AS current_token,
+        0 AS current_index,
+        ''::text AS current_char,
+        ''::text AS previous_char,
+        '{}'::text[] AS tokens
+    INTO state;
+
+    state.search_query := lower(trim(
+        regexp_replace(search_query, '""+', '""', 'g')
+    ));
+
+    FOR state.current_index IN (
+        SELECT generate_series(1, length(state.search_query))
+    ) LOOP
+        state.current_char := substring(
+            search_query FROM state.current_index FOR 1
+        );
+
+        IF state.skip_for > 0 THEN
+            state.skip_for := state.skip_for - 1;
+            CONTINUE;
+        END IF;
+
+        state := tsq_tokenize_character(state);
+        state.previous_char := state.current_char;
+    END LOOP;
+    state := tsq_append_current_token(state);
+
+    state.tokens := array_nremove(state.tokens, '(', -state.parentheses_stack);
+
+    RETURN state.tokens;
+END;
+$$;
+
+
+ALTER FUNCTION public.tsq_tokenize(search_query text) OWNER TO dispatch;
+
+--
+-- Name: tsq_tokenize_character(public.tsq_state); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.tsq_tokenize_character(state public.tsq_state) RETURNS public.tsq_state
+    LANGUAGE plpgsql IMMUTABLE
+    AS $$
+BEGIN
+    IF state.current_char = '(' THEN
+        state.tokens := array_append(state.tokens, '(');
+        state.parentheses_stack := state.parentheses_stack + 1;
+        state := tsq_append_current_token(state);
+    ELSIF state.current_char = ')' THEN
+        IF (state.parentheses_stack > 0 AND state.current_token != '') THEN
+            state := tsq_append_current_token(state);
+            state.tokens := array_append(state.tokens, ')');
+            state.parentheses_stack := state.parentheses_stack - 1;
+        END IF;
+    ELSIF state.current_char = '"' THEN
+        state.skip_for := position('"' IN substring(
+            state.search_query FROM state.current_index + 1
+        ));
+
+        IF state.skip_for > 1 THEN
+            state.tokens = array_append(
+                state.tokens,
+                substring(
+                    state.search_query
+                    FROM state.current_index FOR state.skip_for + 1
+                )
+            );
+        ELSIF state.skip_for = 0 THEN
+            state.current_token := state.current_token || state.current_char;
+        END IF;
+    ELSIF (
+        state.current_char = '-' AND
+        (state.current_index = 1 OR state.previous_char = ' ')
+    ) THEN
+        state.tokens := array_append(state.tokens, '-');
+    ELSIF state.current_char = ' ' THEN
+        state := tsq_append_current_token(state);
+    ELSE
+        state.current_token = state.current_token || state.current_char;
+    END IF;
+    RETURN state;
+END;
+$$;
+
+
+ALTER FUNCTION public.tsq_tokenize_character(state public.tsq_state) OWNER TO dispatch;
+
+SET default_tablespace = '';
+
+--
+-- Name: alembic_version; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.alembic_version (
+    version_num character varying(32) NOT NULL
+);
+
+
+ALTER TABLE public.alembic_version OWNER TO dispatch;
+
+--
+-- Name: application; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.application (
+    id integer NOT NULL,
+    name character varying,
+    description character varying,
+    uri character varying,
+    source character varying,
+    search_vector tsvector,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE public.application OWNER TO dispatch;
+
+--
+-- Name: application_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.application_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.application_id_seq OWNER TO dispatch;
+
+--
+-- Name: application_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.application_id_seq OWNED BY public.application.id;
+
+
+--
+-- Name: applications_incidents; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.applications_incidents (
+    incident_id integer NOT NULL,
+    application_id integer NOT NULL
+);
+
+
+ALTER TABLE public.applications_incidents OWNER TO dispatch;
+
+--
+-- Name: assoc_incident_terms; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.assoc_incident_terms (
+    incident_id integer NOT NULL,
+    term_id integer NOT NULL
+);
+
+
+ALTER TABLE public.assoc_incident_terms OWNER TO dispatch;
+
+--
+-- Name: assoc_individual_contact_incident_priority; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.assoc_individual_contact_incident_priority (
+    incident_priority_id integer NOT NULL,
+    individual_contact_id integer NOT NULL
+);
+
+
+ALTER TABLE public.assoc_individual_contact_incident_priority OWNER TO dispatch;
+
+--
+-- Name: assoc_individual_contact_incident_type; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.assoc_individual_contact_incident_type (
+    incident_type_id integer NOT NULL,
+    individual_contact_id integer NOT NULL
+);
+
+
+ALTER TABLE public.assoc_individual_contact_incident_type OWNER TO dispatch;
+
+--
+-- Name: assoc_individual_contact_terms; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.assoc_individual_contact_terms (
+    term_id integer NOT NULL,
+    individual_contact_id integer NOT NULL
+);
+
+
+ALTER TABLE public.assoc_individual_contact_terms OWNER TO dispatch;
+
+--
+-- Name: conference; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.conference (
+    resource_type character varying,
+    resource_id character varying,
+    weblink character varying,
+    id integer NOT NULL,
+    conference_id character varying,
+    incident_id integer,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE public.conference OWNER TO dispatch;
+
+--
+-- Name: conference_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.conference_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.conference_id_seq OWNER TO dispatch;
+
+--
+-- Name: conference_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.conference_id_seq OWNED BY public.conference.id;
+
+
+--
+-- Name: conversation; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.conversation (
+    resource_type character varying,
+    resource_id character varying,
+    weblink character varying,
+    id integer NOT NULL,
+    channel_id character varying,
+    incident_id integer,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE public.conversation OWNER TO dispatch;
+
+--
+-- Name: conversation_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.conversation_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.conversation_id_seq OWNER TO dispatch;
+
+--
+-- Name: conversation_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.conversation_id_seq OWNED BY public.conversation.id;
+
+
+--
+-- Name: definition; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.definition (
+    id integer NOT NULL,
+    text character varying,
+    source character varying,
+    search_vector tsvector
+);
+
+
+ALTER TABLE public.definition OWNER TO dispatch;
+
+--
+-- Name: definition_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.definition_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.definition_id_seq OWNER TO dispatch;
+
+--
+-- Name: definition_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.definition_id_seq OWNED BY public.definition.id;
+
+
+--
+-- Name: definition_teams; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.definition_teams (
+    definition_id integer NOT NULL,
+    team_contact_id integer NOT NULL
+);
+
+
+ALTER TABLE public.definition_teams OWNER TO dispatch;
+
+--
+-- Name: definition_terms; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.definition_terms (
+    definition_id integer NOT NULL,
+    term_id integer NOT NULL
+);
+
+
+ALTER TABLE public.definition_terms OWNER TO dispatch;
+
+--
+-- Name: document; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.document (
+    resource_type character varying,
+    resource_id character varying,
+    weblink character varying,
+    id integer NOT NULL,
+    name character varying,
+    description character varying,
+    search_vector tsvector,
+    incident_id integer,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE public.document OWNER TO dispatch;
+
+--
+-- Name: document_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.document_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.document_id_seq OWNER TO dispatch;
+
+--
+-- Name: document_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.document_id_seq OWNED BY public.document.id;
+
+
+--
+-- Name: document_incident; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.document_incident (
+    incident_id integer NOT NULL,
+    document_id integer NOT NULL
+);
+
+
+ALTER TABLE public.document_incident OWNER TO dispatch;
+
+--
+-- Name: document_incident_priority; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.document_incident_priority (
+    incident_priority_id integer NOT NULL,
+    document_id integer NOT NULL
+);
+
+
+ALTER TABLE public.document_incident_priority OWNER TO dispatch;
+
+--
+-- Name: document_incident_type; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.document_incident_type (
+    incident_type_id integer NOT NULL,
+    document_id integer NOT NULL
+);
+
+
+ALTER TABLE public.document_incident_type OWNER TO dispatch;
+
+--
+-- Name: document_terms; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.document_terms (
+    term_id integer NOT NULL,
+    document_id integer NOT NULL
+);
+
+
+ALTER TABLE public.document_terms OWNER TO dispatch;
+
+--
+-- Name: group; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public."group" (
+    resource_type character varying,
+    resource_id character varying,
+    weblink character varying,
+    id integer NOT NULL,
+    name character varying,
+    email character varying,
+    incident_id integer,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE public."group" OWNER TO dispatch;
+
+--
+-- Name: group_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.group_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.group_id_seq OWNER TO dispatch;
+
+--
+-- Name: group_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.group_id_seq OWNED BY public."group".id;
+
+
+--
+-- Name: incident; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.incident (
+    id integer NOT NULL,
+    name character varying,
+    title character varying NOT NULL,
+    description character varying NOT NULL,
+    status character varying,
+    cost double precision,
+    visibility character varying,
+    reported_at timestamp without time zone,
+    stable_at timestamp without time zone,
+    closed_at timestamp without time zone,
+    search_vector tsvector,
+    incident_type_id integer,
+    incident_priority_id integer,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE public.incident OWNER TO dispatch;
+
+--
+-- Name: incident_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.incident_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.incident_id_seq OWNER TO dispatch;
+
+--
+-- Name: incident_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.incident_id_seq OWNED BY public.incident.id;
+
+
+--
+-- Name: incident_priority; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.incident_priority (
+    id integer NOT NULL,
+    name character varying,
+    description character varying
+);
+
+
+ALTER TABLE public.incident_priority OWNER TO dispatch;
+
+--
+-- Name: incident_priority_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.incident_priority_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.incident_priority_id_seq OWNER TO dispatch;
+
+--
+-- Name: incident_priority_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.incident_priority_id_seq OWNED BY public.incident_priority.id;
+
+
+--
+-- Name: incident_type; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.incident_type (
+    id integer NOT NULL,
+    name character varying,
+    slug character varying,
+    description character varying,
+    visibility character varying,
+    template_document_id integer,
+    commander_service_id integer,
+    search_vector tsvector
+);
+
+
+ALTER TABLE public.incident_type OWNER TO dispatch;
+
+--
+-- Name: incident_type_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.incident_type_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.incident_type_id_seq OWNER TO dispatch;
+
+--
+-- Name: incident_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.incident_type_id_seq OWNED BY public.incident_type.id;
+
+
+--
+-- Name: individual_contact; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.individual_contact (
+    is_active boolean,
+    is_external boolean,
+    contact_type character varying,
+    email character varying,
+    company character varying,
+    notes character varying,
+    owner character varying,
+    id integer NOT NULL,
+    name character varying,
+    mobile_phone character varying,
+    office_phone character varying,
+    title character varying,
+    weblink character varying,
+    team_contact_id integer,
+    search_vector tsvector,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE public.individual_contact OWNER TO dispatch;
+
+--
+-- Name: individual_contact_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.individual_contact_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.individual_contact_id_seq OWNER TO dispatch;
+
+--
+-- Name: individual_contact_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.individual_contact_id_seq OWNED BY public.individual_contact.id;
+
+
+--
+-- Name: participant; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.participant (
+    id integer NOT NULL,
+    is_active boolean,
+    active_at timestamp without time zone,
+    inactive_at timestamp without time zone,
+    incident_id integer,
+    individual_contact_id integer,
+    location character varying,
+    team character varying,
+    department character varying
+);
+
+
+ALTER TABLE public.participant OWNER TO dispatch;
+
+--
+-- Name: participant_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.participant_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.participant_id_seq OWNER TO dispatch;
+
+--
+-- Name: participant_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.participant_id_seq OWNED BY public.participant.id;
+
+
+--
+-- Name: participant_role; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.participant_role (
+    id integer NOT NULL,
+    assume_at timestamp without time zone,
+    renounce_at timestamp without time zone,
+    role character varying,
+    participant_id integer
+);
+
+
+ALTER TABLE public.participant_role OWNER TO dispatch;
+
+--
+-- Name: participant_role_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.participant_role_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.participant_role_id_seq OWNER TO dispatch;
+
+--
+-- Name: participant_role_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.participant_role_id_seq OWNED BY public.participant_role.id;
+
+
+--
+-- Name: policy; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.policy (
+    id integer NOT NULL,
+    name character varying,
+    description character varying,
+    expression character varying,
+    search_vector tsvector
+);
+
+
+ALTER TABLE public.policy OWNER TO dispatch;
+
+--
+-- Name: policy_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.policy_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.policy_id_seq OWNER TO dispatch;
+
+--
+-- Name: policy_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.policy_id_seq OWNED BY public.policy.id;
+
+
+--
+-- Name: recommendation; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.recommendation (
+    id integer NOT NULL,
+    text character varying
+);
+
+
+ALTER TABLE public.recommendation OWNER TO dispatch;
+
+--
+-- Name: recommendation_accuracy; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.recommendation_accuracy (
+    id integer NOT NULL,
+    recommendation_id integer,
+    correct boolean,
+    resource_id integer,
+    resource_type character varying
+);
+
+
+ALTER TABLE public.recommendation_accuracy OWNER TO dispatch;
+
+--
+-- Name: recommendation_accuracy_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.recommendation_accuracy_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.recommendation_accuracy_id_seq OWNER TO dispatch;
+
+--
+-- Name: recommendation_accuracy_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.recommendation_accuracy_id_seq OWNED BY public.recommendation_accuracy.id;
+
+
+--
+-- Name: recommendation_documents; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.recommendation_documents (
+    document_id integer NOT NULL,
+    recommendation_id integer NOT NULL
+);
+
+
+ALTER TABLE public.recommendation_documents OWNER TO dispatch;
+
+--
+-- Name: recommendation_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.recommendation_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.recommendation_id_seq OWNER TO dispatch;
+
+--
+-- Name: recommendation_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.recommendation_id_seq OWNED BY public.recommendation.id;
+
+
+--
+-- Name: recommendation_incident_priorities; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.recommendation_incident_priorities (
+    incident_priority_id integer NOT NULL,
+    recommendation_id integer NOT NULL
+);
+
+
+ALTER TABLE public.recommendation_incident_priorities OWNER TO dispatch;
+
+--
+-- Name: recommendation_incident_types; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.recommendation_incident_types (
+    incident_type_id integer NOT NULL,
+    recommendation_id integer NOT NULL
+);
+
+
+ALTER TABLE public.recommendation_incident_types OWNER TO dispatch;
+
+--
+-- Name: recommendation_individual_contacts; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.recommendation_individual_contacts (
+    individual_contact_id integer NOT NULL,
+    recommendation_id integer NOT NULL
+);
+
+
+ALTER TABLE public.recommendation_individual_contacts OWNER TO dispatch;
+
+--
+-- Name: recommendation_services; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.recommendation_services (
+    service_id integer NOT NULL,
+    recommendation_id integer NOT NULL
+);
+
+
+ALTER TABLE public.recommendation_services OWNER TO dispatch;
+
+--
+-- Name: recommendation_team_contacts; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.recommendation_team_contacts (
+    team_contact_id integer NOT NULL,
+    recommendation_id integer NOT NULL
+);
+
+
+ALTER TABLE public.recommendation_team_contacts OWNER TO dispatch;
+
+--
+-- Name: recommendation_terms; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.recommendation_terms (
+    term_id integer NOT NULL,
+    recommendation_id integer NOT NULL
+);
+
+
+ALTER TABLE public.recommendation_terms OWNER TO dispatch;
+
+--
+-- Name: service; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.service (
+    id integer NOT NULL,
+    is_active boolean,
+    name character varying,
+    type character varying,
+    external_id character varying,
+    search_vector tsvector,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE public.service OWNER TO dispatch;
+
+--
+-- Name: service_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.service_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.service_id_seq OWNER TO dispatch;
+
+--
+-- Name: service_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.service_id_seq OWNED BY public.service.id;
+
+
+--
+-- Name: service_incident; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.service_incident (
+    incident_id integer NOT NULL,
+    service_id integer NOT NULL
+);
+
+
+ALTER TABLE public.service_incident OWNER TO dispatch;
+
+--
+-- Name: service_incident_priority; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.service_incident_priority (
+    incident_priority_id integer NOT NULL,
+    service_id integer NOT NULL
+);
+
+
+ALTER TABLE public.service_incident_priority OWNER TO dispatch;
+
+--
+-- Name: service_incident_type; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.service_incident_type (
+    incident_type_id integer NOT NULL,
+    service_id integer NOT NULL
+);
+
+
+ALTER TABLE public.service_incident_type OWNER TO dispatch;
+
+--
+-- Name: service_terms; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.service_terms (
+    term_id integer NOT NULL,
+    service_id integer NOT NULL
+);
+
+
+ALTER TABLE public.service_terms OWNER TO dispatch;
+
+--
+-- Name: status_report; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.status_report (
+    id integer NOT NULL,
+    created_at timestamp without time zone,
+    conditions character varying,
+    actions character varying,
+    needs character varying,
+    incident_id integer,
+    participant_id integer
+);
+
+
+ALTER TABLE public.status_report OWNER TO dispatch;
+
+--
+-- Name: status_report_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.status_report_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.status_report_id_seq OWNER TO dispatch;
+
+--
+-- Name: status_report_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.status_report_id_seq OWNED BY public.status_report.id;
+
+
+--
+-- Name: storage; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.storage (
+    resource_type character varying,
+    resource_id character varying,
+    weblink character varying,
+    id integer NOT NULL,
+    incident_id integer,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE public.storage OWNER TO dispatch;
+
+--
+-- Name: storage_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.storage_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.storage_id_seq OWNER TO dispatch;
+
+--
+-- Name: storage_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.storage_id_seq OWNED BY public.storage.id;
+
+
+--
+-- Name: task; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.task (
+    resource_type character varying,
+    resource_id character varying,
+    weblink character varying,
+    id integer NOT NULL,
+    resolved_at timestamp without time zone,
+    resolve_by timestamp without time zone,
+    last_reminder_at timestamp without time zone,
+    creator character varying,
+    assignees character varying,
+    description character varying,
+    source character varying,
+    priority character varying,
+    status character varying,
+    reminders boolean,
+    incident_id integer,
+    search_vector tsvector,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE public.task OWNER TO dispatch;
+
+--
+-- Name: task_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.task_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.task_id_seq OWNER TO dispatch;
+
+--
+-- Name: task_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.task_id_seq OWNED BY public.task.id;
+
+
+--
+-- Name: team_contact; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.team_contact (
+    is_active boolean,
+    is_external boolean,
+    contact_type character varying,
+    email character varying,
+    company character varying,
+    owner character varying,
+    id integer NOT NULL,
+    name character varying,
+    notes character varying,
+    search_vector tsvector,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE public.team_contact OWNER TO dispatch;
+
+--
+-- Name: team_contact_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.team_contact_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.team_contact_id_seq OWNER TO dispatch;
+
+--
+-- Name: team_contact_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.team_contact_id_seq OWNED BY public.team_contact.id;
+
+
+--
+-- Name: team_contact_incident; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.team_contact_incident (
+    incident_id integer NOT NULL,
+    team_contact_id integer NOT NULL
+);
+
+
+ALTER TABLE public.team_contact_incident OWNER TO dispatch;
+
+--
+-- Name: team_contact_incident_priority; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.team_contact_incident_priority (
+    incident_priority_id integer NOT NULL,
+    team_contact_id integer NOT NULL
+);
+
+
+ALTER TABLE public.team_contact_incident_priority OWNER TO dispatch;
+
+--
+-- Name: team_contact_incident_type; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.team_contact_incident_type (
+    incident_type_id integer NOT NULL,
+    team_contact_id integer NOT NULL
+);
+
+
+ALTER TABLE public.team_contact_incident_type OWNER TO dispatch;
+
+--
+-- Name: team_contact_terms; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.team_contact_terms (
+    term_id integer NOT NULL,
+    team_contact_id integer NOT NULL
+);
+
+
+ALTER TABLE public.team_contact_terms OWNER TO dispatch;
+
+--
+-- Name: term; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.term (
+    id integer NOT NULL,
+    text character varying,
+    search_vector tsvector
+);
+
+
+ALTER TABLE public.term OWNER TO dispatch;
+
+--
+-- Name: term_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.term_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.term_id_seq OWNER TO dispatch;
+
+--
+-- Name: term_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.term_id_seq OWNED BY public.term.id;
+
+
+--
+-- Name: ticket; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.ticket (
+    resource_type character varying,
+    resource_id character varying,
+    weblink character varying,
+    id integer NOT NULL,
+    incident_id integer,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+ALTER TABLE public.ticket OWNER TO dispatch;
+
+--
+-- Name: ticket_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.ticket_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.ticket_id_seq OWNER TO dispatch;
+
+--
+-- Name: ticket_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.ticket_id_seq OWNED BY public.ticket.id;
+
+
+--
+-- Name: application id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.application ALTER COLUMN id SET DEFAULT nextval('public.application_id_seq'::regclass);
+
+
+--
+-- Name: conference id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.conference ALTER COLUMN id SET DEFAULT nextval('public.conference_id_seq'::regclass);
+
+
+--
+-- Name: conversation id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.conversation ALTER COLUMN id SET DEFAULT nextval('public.conversation_id_seq'::regclass);
+
+
+--
+-- Name: definition id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.definition ALTER COLUMN id SET DEFAULT nextval('public.definition_id_seq'::regclass);
+
+
+--
+-- Name: document id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.document ALTER COLUMN id SET DEFAULT nextval('public.document_id_seq'::regclass);
+
+
+--
+-- Name: group id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public."group" ALTER COLUMN id SET DEFAULT nextval('public.group_id_seq'::regclass);
+
+
+--
+-- Name: incident id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.incident ALTER COLUMN id SET DEFAULT nextval('public.incident_id_seq'::regclass);
+
+
+--
+-- Name: incident_priority id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.incident_priority ALTER COLUMN id SET DEFAULT nextval('public.incident_priority_id_seq'::regclass);
+
+
+--
+-- Name: incident_type id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.incident_type ALTER COLUMN id SET DEFAULT nextval('public.incident_type_id_seq'::regclass);
+
+
+--
+-- Name: individual_contact id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.individual_contact ALTER COLUMN id SET DEFAULT nextval('public.individual_contact_id_seq'::regclass);
+
+
+--
+-- Name: participant id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.participant ALTER COLUMN id SET DEFAULT nextval('public.participant_id_seq'::regclass);
+
+
+--
+-- Name: participant_role id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.participant_role ALTER COLUMN id SET DEFAULT nextval('public.participant_role_id_seq'::regclass);
+
+
+--
+-- Name: policy id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.policy ALTER COLUMN id SET DEFAULT nextval('public.policy_id_seq'::regclass);
+
+
+--
+-- Name: recommendation id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation ALTER COLUMN id SET DEFAULT nextval('public.recommendation_id_seq'::regclass);
+
+
+--
+-- Name: recommendation_accuracy id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_accuracy ALTER COLUMN id SET DEFAULT nextval('public.recommendation_accuracy_id_seq'::regclass);
+
+
+--
+-- Name: service id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.service ALTER COLUMN id SET DEFAULT nextval('public.service_id_seq'::regclass);
+
+
+--
+-- Name: status_report id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.status_report ALTER COLUMN id SET DEFAULT nextval('public.status_report_id_seq'::regclass);
+
+
+--
+-- Name: storage id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.storage ALTER COLUMN id SET DEFAULT nextval('public.storage_id_seq'::regclass);
+
+
+--
+-- Name: task id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.task ALTER COLUMN id SET DEFAULT nextval('public.task_id_seq'::regclass);
+
+
+--
+-- Name: team_contact id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.team_contact ALTER COLUMN id SET DEFAULT nextval('public.team_contact_id_seq'::regclass);
+
+
+--
+-- Name: term id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.term ALTER COLUMN id SET DEFAULT nextval('public.term_id_seq'::regclass);
+
+
+--
+-- Name: ticket id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.ticket ALTER COLUMN id SET DEFAULT nextval('public.ticket_id_seq'::regclass);
+
+
+--
+-- Data for Name: alembic_version; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.alembic_version (version_num) FROM stdin;
+b12f7a59ced9
+\.
+
+
+--
+-- Data for Name: application; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.application (id, name, description, uri, source, search_vector, created_at, updated_at) FROM stdin;
+1	Application1	Application1 description	https://example.com/application1	https://example.com/application1	'application1':1	2020-03-23 11:08:50.406011	2020-03-23 11:08:50.406002
+\.
+
+
+--
+-- Data for Name: applications_incidents; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.applications_incidents (incident_id, application_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: assoc_incident_terms; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.assoc_incident_terms (incident_id, term_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: assoc_individual_contact_incident_priority; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.assoc_individual_contact_incident_priority (incident_priority_id, individual_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: assoc_individual_contact_incident_type; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.assoc_individual_contact_incident_type (incident_type_id, individual_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: assoc_individual_contact_terms; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.assoc_individual_contact_terms (term_id, individual_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: conference; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.conference (resource_type, resource_id, weblink, id, conference_id, incident_id, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: conversation; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.conversation (resource_type, resource_id, weblink, id, channel_id, incident_id, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: definition; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.definition (id, text, source, search_vector) FROM stdin;
+1	foobar	dispatch	'foobar':1
+2	foo bar	dispatch	'bar':2 'foo':1
+3	foo	dispatch	'foo':1
+4	bar	dispatch	'bar':1
+\.
+
+
+--
+-- Data for Name: definition_teams; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.definition_teams (definition_id, team_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: definition_terms; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.definition_terms (definition_id, term_id) FROM stdin;
+1	1
+2	1
+3	1
+4	1
+\.
+
+
+--
+-- Data for Name: document; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.document (resource_type, resource_id, weblink, id, name, description, search_vector, incident_id, created_at, updated_at) FROM stdin;
+documentation	document-id1234	https://example.com/weblink/document	2	Document1	Some document description	'document1':1	\N	2020-03-22 17:55:45.310754	2020-03-22 17:55:45.310762
+document	document1	https://example.com/document1	3	Document1	Some document description	'document1':1	\N	2020-03-23 11:09:25.533527	2020-03-23 11:09:25.533521
+document	document1	https://example.com/document1	6	document1	document description	'document1':1	\N	2020-03-23 11:11:19.313263	2020-03-23 11:11:19.313257
+\.
+
+
+--
+-- Data for Name: document_incident; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.document_incident (incident_id, document_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: document_incident_priority; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.document_incident_priority (incident_priority_id, document_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: document_incident_type; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.document_incident_type (incident_type_id, document_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: document_terms; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.document_terms (term_id, document_id) FROM stdin;
+1	6
+\.
+
+
+--
+-- Data for Name: group; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public."group" (resource_type, resource_id, weblink, id, name, email, incident_id, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: incident; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.incident (id, name, title, description, status, cost, visibility, reported_at, stable_at, closed_at, search_vector, incident_type_id, incident_priority_id, created_at, updated_at) FROM stdin;
+1	\N	Incident1	Some incident	Active	0	Open	2020-03-23 11:46:16.096746	\N	\N	'incid':3 'incident1':1	6	4	2020-03-23 11:46:16.096768	2020-03-23 11:46:16.096764
+\.
+
+
+--
+-- Data for Name: incident_priority; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.incident_priority (id, name, description) FROM stdin;
+4	high	things on fire
+5	medium	things gettings worse
+6	low	get a coffee and fix this
+\.
+
+
+--
+-- Data for Name: incident_type; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.incident_type (id, name, slug, description, visibility, template_document_id, commander_service_id, search_vector) FROM stdin;
+6	IncidentType1	\N	IncidentType description	Open	2	2	'descript':3 'incidenttyp':2 'incidenttype1':1
+\.
+
+
+--
+-- Data for Name: individual_contact; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.individual_contact (is_active, is_external, contact_type, email, company, notes, owner, id, name, mobile_phone, office_phone, title, weblink, team_contact_id, search_vector, created_at, updated_at) FROM stdin;
+t	f	\N	foobar@example.com	Foobar Co.	\N	\N	1	Foobar	\N	\N	\N	\N	\N	'co':3 'foobar':1,2	2020-03-22 17:53:06.780529	2020-03-22 17:53:06.780518
+\.
+
+
+--
+-- Data for Name: participant; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.participant (id, is_active, active_at, inactive_at, incident_id, individual_contact_id, location, team, department) FROM stdin;
+\.
+
+
+--
+-- Data for Name: participant_role; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.participant_role (id, assume_at, renounce_at, role, participant_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: policy; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.policy (id, name, description, expression, search_vector) FROM stdin;
+1	Policy1	some policy	foobar=foo	'polici':3 'policy1':1
+\.
+
+
+--
+-- Data for Name: recommendation; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.recommendation (id, text) FROM stdin;
+\.
+
+
+--
+-- Data for Name: recommendation_accuracy; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.recommendation_accuracy (id, recommendation_id, correct, resource_id, resource_type) FROM stdin;
+\.
+
+
+--
+-- Data for Name: recommendation_documents; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.recommendation_documents (document_id, recommendation_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: recommendation_incident_priorities; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.recommendation_incident_priorities (incident_priority_id, recommendation_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: recommendation_incident_types; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.recommendation_incident_types (incident_type_id, recommendation_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: recommendation_individual_contacts; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.recommendation_individual_contacts (individual_contact_id, recommendation_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: recommendation_services; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.recommendation_services (service_id, recommendation_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: recommendation_team_contacts; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.recommendation_team_contacts (team_contact_id, recommendation_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: recommendation_terms; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.recommendation_terms (term_id, recommendation_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: service; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.service (id, is_active, name, type, external_id, search_vector, created_at, updated_at) FROM stdin;
+2	t	SomeService1	pagerduty-oncall	serviceID1	'someservice1':1	2020-03-22 17:55:03.755493	2020-03-22 17:55:03.7555
+\.
+
+
+--
+-- Data for Name: service_incident; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.service_incident (incident_id, service_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: service_incident_priority; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.service_incident_priority (incident_priority_id, service_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: service_incident_type; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.service_incident_type (incident_type_id, service_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: service_terms; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.service_terms (term_id, service_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: status_report; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.status_report (id, created_at, conditions, actions, needs, incident_id, participant_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: storage; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.storage (resource_type, resource_id, weblink, id, incident_id, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: task; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.task (resource_type, resource_id, weblink, id, resolved_at, resolve_by, last_reminder_at, creator, assignees, description, source, priority, status, reminders, incident_id, search_vector, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: team_contact; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.team_contact (is_active, is_external, contact_type, email, company, owner, id, name, notes, search_vector, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Data for Name: team_contact_incident; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.team_contact_incident (incident_id, team_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: team_contact_incident_priority; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.team_contact_incident_priority (incident_priority_id, team_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: team_contact_incident_type; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.team_contact_incident_type (incident_type_id, team_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: team_contact_terms; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.team_contact_terms (term_id, team_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: term; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.term (id, text, search_vector) FROM stdin;
+1	foobar	'foobar':1
+\.
+
+
+--
+-- Data for Name: ticket; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.ticket (resource_type, resource_id, weblink, id, incident_id, created_at, updated_at) FROM stdin;
+\.
+
+
+--
+-- Name: application_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.application_id_seq', 1, true);
+
+
+--
+-- Name: conference_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.conference_id_seq', 1, false);
+
+
+--
+-- Name: conversation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.conversation_id_seq', 1, false);
+
+
+--
+-- Name: definition_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.definition_id_seq', 4, true);
+
+
+--
+-- Name: document_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.document_id_seq', 6, true);
+
+
+--
+-- Name: group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.group_id_seq', 1, false);
+
+
+--
+-- Name: incident_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.incident_id_seq', 1, true);
+
+
+--
+-- Name: incident_priority_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.incident_priority_id_seq', 6, true);
+
+
+--
+-- Name: incident_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.incident_type_id_seq', 6, true);
+
+
+--
+-- Name: individual_contact_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.individual_contact_id_seq', 1, true);
+
+
+--
+-- Name: participant_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.participant_id_seq', 1, false);
+
+
+--
+-- Name: participant_role_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.participant_role_id_seq', 1, false);
+
+
+--
+-- Name: policy_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.policy_id_seq', 1, true);
+
+
+--
+-- Name: recommendation_accuracy_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.recommendation_accuracy_id_seq', 1, false);
+
+
+--
+-- Name: recommendation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.recommendation_id_seq', 1, false);
+
+
+--
+-- Name: service_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.service_id_seq', 2, true);
+
+
+--
+-- Name: status_report_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.status_report_id_seq', 1, false);
+
+
+--
+-- Name: storage_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.storage_id_seq', 1, false);
+
+
+--
+-- Name: task_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.task_id_seq', 1, false);
+
+
+--
+-- Name: team_contact_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.team_contact_id_seq', 1, false);
+
+
+--
+-- Name: term_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.term_id_seq', 1, true);
+
+
+--
+-- Name: ticket_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.ticket_id_seq', 1, false);
+
+
+--
+-- Name: alembic_version alembic_version_pkc; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.alembic_version
+    ADD CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num);
+
+
+--
+-- Name: application application_name_key; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.application
+    ADD CONSTRAINT application_name_key UNIQUE (name);
+
+
+--
+-- Name: application application_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.application
+    ADD CONSTRAINT application_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: applications_incidents applications_incidents_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.applications_incidents
+    ADD CONSTRAINT applications_incidents_pkey PRIMARY KEY (incident_id, application_id);
+
+
+--
+-- Name: assoc_incident_terms assoc_incident_terms_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.assoc_incident_terms
+    ADD CONSTRAINT assoc_incident_terms_pkey PRIMARY KEY (incident_id, term_id);
+
+
+--
+-- Name: assoc_individual_contact_incident_priority assoc_individual_contact_incident_priority_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.assoc_individual_contact_incident_priority
+    ADD CONSTRAINT assoc_individual_contact_incident_priority_pkey PRIMARY KEY (incident_priority_id, individual_contact_id);
+
+
+--
+-- Name: assoc_individual_contact_incident_type assoc_individual_contact_incident_type_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.assoc_individual_contact_incident_type
+    ADD CONSTRAINT assoc_individual_contact_incident_type_pkey PRIMARY KEY (incident_type_id, individual_contact_id);
+
+
+--
+-- Name: assoc_individual_contact_terms assoc_individual_contact_terms_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.assoc_individual_contact_terms
+    ADD CONSTRAINT assoc_individual_contact_terms_pkey PRIMARY KEY (term_id, individual_contact_id);
+
+
+--
+-- Name: conference conference_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.conference
+    ADD CONSTRAINT conference_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: conversation conversation_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.conversation
+    ADD CONSTRAINT conversation_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: definition definition_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.definition
+    ADD CONSTRAINT definition_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: definition_teams definition_teams_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.definition_teams
+    ADD CONSTRAINT definition_teams_pkey PRIMARY KEY (definition_id, team_contact_id);
+
+
+--
+-- Name: definition_terms definition_terms_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.definition_terms
+    ADD CONSTRAINT definition_terms_pkey PRIMARY KEY (definition_id, term_id);
+
+
+--
+-- Name: definition definition_text_key; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.definition
+    ADD CONSTRAINT definition_text_key UNIQUE (text);
+
+
+--
+-- Name: document_incident document_incident_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.document_incident
+    ADD CONSTRAINT document_incident_pkey PRIMARY KEY (incident_id, document_id);
+
+
+--
+-- Name: document_incident_priority document_incident_priority_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.document_incident_priority
+    ADD CONSTRAINT document_incident_priority_pkey PRIMARY KEY (incident_priority_id, document_id);
+
+
+--
+-- Name: document_incident_type document_incident_type_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.document_incident_type
+    ADD CONSTRAINT document_incident_type_pkey PRIMARY KEY (incident_type_id, document_id);
+
+
+--
+-- Name: document document_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.document
+    ADD CONSTRAINT document_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: document_terms document_terms_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.document_terms
+    ADD CONSTRAINT document_terms_pkey PRIMARY KEY (term_id, document_id);
+
+
+--
+-- Name: group group_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public."group"
+    ADD CONSTRAINT group_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: incident incident_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.incident
+    ADD CONSTRAINT incident_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: incident_priority incident_priority_name_key; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.incident_priority
+    ADD CONSTRAINT incident_priority_name_key UNIQUE (name);
+
+
+--
+-- Name: incident_priority incident_priority_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.incident_priority
+    ADD CONSTRAINT incident_priority_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: incident_type incident_type_name_key; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.incident_type
+    ADD CONSTRAINT incident_type_name_key UNIQUE (name);
+
+
+--
+-- Name: incident_type incident_type_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.incident_type
+    ADD CONSTRAINT incident_type_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: individual_contact individual_contact_email_key; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.individual_contact
+    ADD CONSTRAINT individual_contact_email_key UNIQUE (email);
+
+
+--
+-- Name: individual_contact individual_contact_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.individual_contact
+    ADD CONSTRAINT individual_contact_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: participant participant_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.participant
+    ADD CONSTRAINT participant_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: participant_role participant_role_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.participant_role
+    ADD CONSTRAINT participant_role_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: policy policy_name_key; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.policy
+    ADD CONSTRAINT policy_name_key UNIQUE (name);
+
+
+--
+-- Name: policy policy_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.policy
+    ADD CONSTRAINT policy_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: recommendation_accuracy recommendation_accuracy_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_accuracy
+    ADD CONSTRAINT recommendation_accuracy_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: recommendation_documents recommendation_documents_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_documents
+    ADD CONSTRAINT recommendation_documents_pkey PRIMARY KEY (document_id, recommendation_id);
+
+
+--
+-- Name: recommendation_incident_priorities recommendation_incident_priorities_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_incident_priorities
+    ADD CONSTRAINT recommendation_incident_priorities_pkey PRIMARY KEY (incident_priority_id, recommendation_id);
+
+
+--
+-- Name: recommendation_incident_types recommendation_incident_types_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_incident_types
+    ADD CONSTRAINT recommendation_incident_types_pkey PRIMARY KEY (incident_type_id, recommendation_id);
+
+
+--
+-- Name: recommendation_individual_contacts recommendation_individual_contacts_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_individual_contacts
+    ADD CONSTRAINT recommendation_individual_contacts_pkey PRIMARY KEY (individual_contact_id, recommendation_id);
+
+
+--
+-- Name: recommendation recommendation_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation
+    ADD CONSTRAINT recommendation_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: recommendation_services recommendation_services_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_services
+    ADD CONSTRAINT recommendation_services_pkey PRIMARY KEY (service_id, recommendation_id);
+
+
+--
+-- Name: recommendation_team_contacts recommendation_team_contacts_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_team_contacts
+    ADD CONSTRAINT recommendation_team_contacts_pkey PRIMARY KEY (team_contact_id, recommendation_id);
+
+
+--
+-- Name: recommendation_terms recommendation_terms_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_terms
+    ADD CONSTRAINT recommendation_terms_pkey PRIMARY KEY (term_id, recommendation_id);
+
+
+--
+-- Name: service_incident service_incident_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.service_incident
+    ADD CONSTRAINT service_incident_pkey PRIMARY KEY (incident_id, service_id);
+
+
+--
+-- Name: service_incident_priority service_incident_priority_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.service_incident_priority
+    ADD CONSTRAINT service_incident_priority_pkey PRIMARY KEY (incident_priority_id, service_id);
+
+
+--
+-- Name: service_incident_type service_incident_type_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.service_incident_type
+    ADD CONSTRAINT service_incident_type_pkey PRIMARY KEY (incident_type_id, service_id);
+
+
+--
+-- Name: service service_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.service
+    ADD CONSTRAINT service_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: service_terms service_terms_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.service_terms
+    ADD CONSTRAINT service_terms_pkey PRIMARY KEY (term_id, service_id);
+
+
+--
+-- Name: status_report status_report_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.status_report
+    ADD CONSTRAINT status_report_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: storage storage_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.storage
+    ADD CONSTRAINT storage_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: task task_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.task
+    ADD CONSTRAINT task_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: team_contact team_contact_email_key; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.team_contact
+    ADD CONSTRAINT team_contact_email_key UNIQUE (email);
+
+
+--
+-- Name: team_contact_incident team_contact_incident_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.team_contact_incident
+    ADD CONSTRAINT team_contact_incident_pkey PRIMARY KEY (incident_id, team_contact_id);
+
+
+--
+-- Name: team_contact_incident_priority team_contact_incident_priority_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.team_contact_incident_priority
+    ADD CONSTRAINT team_contact_incident_priority_pkey PRIMARY KEY (incident_priority_id, team_contact_id);
+
+
+--
+-- Name: team_contact_incident_type team_contact_incident_type_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.team_contact_incident_type
+    ADD CONSTRAINT team_contact_incident_type_pkey PRIMARY KEY (incident_type_id, team_contact_id);
+
+
+--
+-- Name: team_contact team_contact_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.team_contact
+    ADD CONSTRAINT team_contact_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: team_contact_terms team_contact_terms_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.team_contact_terms
+    ADD CONSTRAINT team_contact_terms_pkey PRIMARY KEY (term_id, team_contact_id);
+
+
+--
+-- Name: term term_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.term
+    ADD CONSTRAINT term_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: term term_text_key; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.term
+    ADD CONSTRAINT term_text_key UNIQUE (text);
+
+
+--
+-- Name: ticket ticket_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.ticket
+    ADD CONSTRAINT ticket_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ix_application_search_vector; Type: INDEX; Schema: public; Owner: dispatch
+--
+
+CREATE INDEX ix_application_search_vector ON public.application USING gin (search_vector);
+
+
+--
+-- Name: ix_definition_search_vector; Type: INDEX; Schema: public; Owner: dispatch
+--
+
+CREATE INDEX ix_definition_search_vector ON public.definition USING gin (search_vector);
+
+
+--
+-- Name: ix_document_search_vector; Type: INDEX; Schema: public; Owner: dispatch
+--
+
+CREATE INDEX ix_document_search_vector ON public.document USING gin (search_vector);
+
+
+--
+-- Name: ix_incident_search_vector; Type: INDEX; Schema: public; Owner: dispatch
+--
+
+CREATE INDEX ix_incident_search_vector ON public.incident USING gin (search_vector);
+
+
+--
+-- Name: ix_incident_type_search_vector; Type: INDEX; Schema: public; Owner: dispatch
+--
+
+CREATE INDEX ix_incident_type_search_vector ON public.incident_type USING gin (search_vector);
+
+
+--
+-- Name: ix_individual_contact_search_vector; Type: INDEX; Schema: public; Owner: dispatch
+--
+
+CREATE INDEX ix_individual_contact_search_vector ON public.individual_contact USING gin (search_vector);
+
+
+--
+-- Name: ix_policy_search_vector; Type: INDEX; Schema: public; Owner: dispatch
+--
+
+CREATE INDEX ix_policy_search_vector ON public.policy USING gin (search_vector);
+
+
+--
+-- Name: ix_service_search_vector; Type: INDEX; Schema: public; Owner: dispatch
+--
+
+CREATE INDEX ix_service_search_vector ON public.service USING gin (search_vector);
+
+
+--
+-- Name: ix_task_search_vector; Type: INDEX; Schema: public; Owner: dispatch
+--
+
+CREATE INDEX ix_task_search_vector ON public.task USING gin (search_vector);
+
+
+--
+-- Name: ix_team_contact_search_vector; Type: INDEX; Schema: public; Owner: dispatch
+--
+
+CREATE INDEX ix_team_contact_search_vector ON public.team_contact USING gin (search_vector);
+
+
+--
+-- Name: ix_term_search_vector; Type: INDEX; Schema: public; Owner: dispatch
+--
+
+CREATE INDEX ix_term_search_vector ON public.term USING gin (search_vector);
+
+
+--
+-- Name: application application_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
+--
+
+CREATE TRIGGER application_search_vector_trigger BEFORE INSERT OR UPDATE ON public.application FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name');
+
+
+--
+-- Name: definition definition_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
+--
+
+CREATE TRIGGER definition_search_vector_trigger BEFORE INSERT OR UPDATE ON public.definition FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'text');
+
+
+--
+-- Name: document document_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
+--
+
+CREATE TRIGGER document_search_vector_trigger BEFORE INSERT OR UPDATE ON public.document FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name');
+
+
+--
+-- Name: incident incident_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
+--
+
+CREATE TRIGGER incident_search_vector_trigger BEFORE INSERT OR UPDATE ON public.incident FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'title', 'description');
+
+
+--
+-- Name: incident_type incident_type_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
+--
+
+CREATE TRIGGER incident_type_search_vector_trigger BEFORE INSERT OR UPDATE ON public.incident_type FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'description');
+
+
+--
+-- Name: individual_contact individual_contact_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
+--
+
+CREATE TRIGGER individual_contact_search_vector_trigger BEFORE INSERT OR UPDATE ON public.individual_contact FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'title', 'company', 'notes');
+
+
+--
+-- Name: policy policy_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
+--
+
+CREATE TRIGGER policy_search_vector_trigger BEFORE INSERT OR UPDATE ON public.policy FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'description');
+
+
+--
+-- Name: service service_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
+--
+
+CREATE TRIGGER service_search_vector_trigger BEFORE INSERT OR UPDATE ON public.service FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name');
+
+
+--
+-- Name: task task_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
+--
+
+CREATE TRIGGER task_search_vector_trigger BEFORE INSERT OR UPDATE ON public.task FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'description');
+
+
+--
+-- Name: team_contact team_contact_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
+--
+
+CREATE TRIGGER team_contact_search_vector_trigger BEFORE INSERT OR UPDATE ON public.team_contact FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'company', 'notes');
+
+
+--
+-- Name: term term_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
+--
+
+CREATE TRIGGER term_search_vector_trigger BEFORE INSERT OR UPDATE ON public.term FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'text');
+
+
+--
+-- Name: applications_incidents applications_incidents_application_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.applications_incidents
+    ADD CONSTRAINT applications_incidents_application_id_fkey FOREIGN KEY (application_id) REFERENCES public.application(id);
+
+
+--
+-- Name: applications_incidents applications_incidents_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.applications_incidents
+    ADD CONSTRAINT applications_incidents_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- Name: assoc_incident_terms assoc_incident_terms_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.assoc_incident_terms
+    ADD CONSTRAINT assoc_incident_terms_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- Name: assoc_incident_terms assoc_incident_terms_term_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.assoc_incident_terms
+    ADD CONSTRAINT assoc_incident_terms_term_id_fkey FOREIGN KEY (term_id) REFERENCES public.term(id);
+
+
+--
+-- Name: assoc_individual_contact_incident_priority assoc_individual_contact_incident_pr_individual_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.assoc_individual_contact_incident_priority
+    ADD CONSTRAINT assoc_individual_contact_incident_pr_individual_contact_id_fkey FOREIGN KEY (individual_contact_id) REFERENCES public.individual_contact(id);
+
+
+--
+-- Name: assoc_individual_contact_incident_priority assoc_individual_contact_incident_pri_incident_priority_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.assoc_individual_contact_incident_priority
+    ADD CONSTRAINT assoc_individual_contact_incident_pri_incident_priority_id_fkey FOREIGN KEY (incident_priority_id) REFERENCES public.incident_priority(id);
+
+
+--
+-- Name: assoc_individual_contact_incident_type assoc_individual_contact_incident_ty_individual_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.assoc_individual_contact_incident_type
+    ADD CONSTRAINT assoc_individual_contact_incident_ty_individual_contact_id_fkey FOREIGN KEY (individual_contact_id) REFERENCES public.individual_contact(id);
+
+
+--
+-- Name: assoc_individual_contact_incident_type assoc_individual_contact_incident_type_incident_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.assoc_individual_contact_incident_type
+    ADD CONSTRAINT assoc_individual_contact_incident_type_incident_type_id_fkey FOREIGN KEY (incident_type_id) REFERENCES public.incident_type(id);
+
+
+--
+-- Name: assoc_individual_contact_terms assoc_individual_contact_terms_individual_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.assoc_individual_contact_terms
+    ADD CONSTRAINT assoc_individual_contact_terms_individual_contact_id_fkey FOREIGN KEY (individual_contact_id) REFERENCES public.individual_contact(id);
+
+
+--
+-- Name: assoc_individual_contact_terms assoc_individual_contact_terms_term_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.assoc_individual_contact_terms
+    ADD CONSTRAINT assoc_individual_contact_terms_term_id_fkey FOREIGN KEY (term_id) REFERENCES public.term(id);
+
+
+--
+-- Name: conference conference_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.conference
+    ADD CONSTRAINT conference_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- Name: conversation conversation_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.conversation
+    ADD CONSTRAINT conversation_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- Name: definition_teams definition_teams_definition_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.definition_teams
+    ADD CONSTRAINT definition_teams_definition_id_fkey FOREIGN KEY (definition_id) REFERENCES public.definition(id);
+
+
+--
+-- Name: definition_teams definition_teams_team_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.definition_teams
+    ADD CONSTRAINT definition_teams_team_contact_id_fkey FOREIGN KEY (team_contact_id) REFERENCES public.team_contact(id);
+
+
+--
+-- Name: definition_terms definition_terms_definition_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.definition_terms
+    ADD CONSTRAINT definition_terms_definition_id_fkey FOREIGN KEY (definition_id) REFERENCES public.definition(id);
+
+
+--
+-- Name: definition_terms definition_terms_term_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.definition_terms
+    ADD CONSTRAINT definition_terms_term_id_fkey FOREIGN KEY (term_id) REFERENCES public.term(id);
+
+
+--
+-- Name: document_incident document_incident_document_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.document_incident
+    ADD CONSTRAINT document_incident_document_id_fkey FOREIGN KEY (document_id) REFERENCES public.document(id);
+
+
+--
+-- Name: document document_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.document
+    ADD CONSTRAINT document_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- Name: document_incident document_incident_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.document_incident
+    ADD CONSTRAINT document_incident_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- Name: document_incident_priority document_incident_priority_document_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.document_incident_priority
+    ADD CONSTRAINT document_incident_priority_document_id_fkey FOREIGN KEY (document_id) REFERENCES public.document(id);
+
+
+--
+-- Name: document_incident_priority document_incident_priority_incident_priority_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.document_incident_priority
+    ADD CONSTRAINT document_incident_priority_incident_priority_id_fkey FOREIGN KEY (incident_priority_id) REFERENCES public.incident_priority(id);
+
+
+--
+-- Name: document_incident_type document_incident_type_document_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.document_incident_type
+    ADD CONSTRAINT document_incident_type_document_id_fkey FOREIGN KEY (document_id) REFERENCES public.document(id);
+
+
+--
+-- Name: document_incident_type document_incident_type_incident_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.document_incident_type
+    ADD CONSTRAINT document_incident_type_incident_type_id_fkey FOREIGN KEY (incident_type_id) REFERENCES public.incident_type(id);
+
+
+--
+-- Name: document_terms document_terms_document_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.document_terms
+    ADD CONSTRAINT document_terms_document_id_fkey FOREIGN KEY (document_id) REFERENCES public.document(id);
+
+
+--
+-- Name: document_terms document_terms_term_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.document_terms
+    ADD CONSTRAINT document_terms_term_id_fkey FOREIGN KEY (term_id) REFERENCES public.term(id);
+
+
+--
+-- Name: group group_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public."group"
+    ADD CONSTRAINT group_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- Name: incident incident_incident_priority_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.incident
+    ADD CONSTRAINT incident_incident_priority_id_fkey FOREIGN KEY (incident_priority_id) REFERENCES public.incident_priority(id);
+
+
+--
+-- Name: incident incident_incident_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.incident
+    ADD CONSTRAINT incident_incident_type_id_fkey FOREIGN KEY (incident_type_id) REFERENCES public.incident_type(id);
+
+
+--
+-- Name: incident_type incident_type_commander_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.incident_type
+    ADD CONSTRAINT incident_type_commander_service_id_fkey FOREIGN KEY (commander_service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: incident_type incident_type_template_document_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.incident_type
+    ADD CONSTRAINT incident_type_template_document_id_fkey FOREIGN KEY (template_document_id) REFERENCES public.document(id);
+
+
+--
+-- Name: individual_contact individual_contact_team_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.individual_contact
+    ADD CONSTRAINT individual_contact_team_contact_id_fkey FOREIGN KEY (team_contact_id) REFERENCES public.team_contact(id);
+
+
+--
+-- Name: participant participant_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.participant
+    ADD CONSTRAINT participant_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- Name: participant participant_individual_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.participant
+    ADD CONSTRAINT participant_individual_contact_id_fkey FOREIGN KEY (individual_contact_id) REFERENCES public.individual_contact(id);
+
+
+--
+-- Name: participant_role participant_role_participant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.participant_role
+    ADD CONSTRAINT participant_role_participant_id_fkey FOREIGN KEY (participant_id) REFERENCES public.participant(id);
+
+
+--
+-- Name: recommendation_accuracy recommendation_accuracy_recommendation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_accuracy
+    ADD CONSTRAINT recommendation_accuracy_recommendation_id_fkey FOREIGN KEY (recommendation_id) REFERENCES public.recommendation(id);
+
+
+--
+-- Name: recommendation_documents recommendation_documents_document_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_documents
+    ADD CONSTRAINT recommendation_documents_document_id_fkey FOREIGN KEY (document_id) REFERENCES public.document(id);
+
+
+--
+-- Name: recommendation_documents recommendation_documents_recommendation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_documents
+    ADD CONSTRAINT recommendation_documents_recommendation_id_fkey FOREIGN KEY (recommendation_id) REFERENCES public.recommendation(id);
+
+
+--
+-- Name: recommendation_incident_priorities recommendation_incident_priorities_incident_priority_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_incident_priorities
+    ADD CONSTRAINT recommendation_incident_priorities_incident_priority_id_fkey FOREIGN KEY (incident_priority_id) REFERENCES public.incident_priority(id);
+
+
+--
+-- Name: recommendation_incident_priorities recommendation_incident_priorities_recommendation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_incident_priorities
+    ADD CONSTRAINT recommendation_incident_priorities_recommendation_id_fkey FOREIGN KEY (recommendation_id) REFERENCES public.recommendation(id);
+
+
+--
+-- Name: recommendation_incident_types recommendation_incident_types_incident_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_incident_types
+    ADD CONSTRAINT recommendation_incident_types_incident_type_id_fkey FOREIGN KEY (incident_type_id) REFERENCES public.incident_type(id);
+
+
+--
+-- Name: recommendation_incident_types recommendation_incident_types_recommendation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_incident_types
+    ADD CONSTRAINT recommendation_incident_types_recommendation_id_fkey FOREIGN KEY (recommendation_id) REFERENCES public.recommendation(id);
+
+
+--
+-- Name: recommendation_individual_contacts recommendation_individual_contacts_individual_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_individual_contacts
+    ADD CONSTRAINT recommendation_individual_contacts_individual_contact_id_fkey FOREIGN KEY (individual_contact_id) REFERENCES public.individual_contact(id);
+
+
+--
+-- Name: recommendation_individual_contacts recommendation_individual_contacts_recommendation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_individual_contacts
+    ADD CONSTRAINT recommendation_individual_contacts_recommendation_id_fkey FOREIGN KEY (recommendation_id) REFERENCES public.recommendation(id);
+
+
+--
+-- Name: recommendation_services recommendation_services_recommendation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_services
+    ADD CONSTRAINT recommendation_services_recommendation_id_fkey FOREIGN KEY (recommendation_id) REFERENCES public.recommendation(id);
+
+
+--
+-- Name: recommendation_services recommendation_services_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_services
+    ADD CONSTRAINT recommendation_services_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: recommendation_team_contacts recommendation_team_contacts_recommendation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_team_contacts
+    ADD CONSTRAINT recommendation_team_contacts_recommendation_id_fkey FOREIGN KEY (recommendation_id) REFERENCES public.recommendation(id);
+
+
+--
+-- Name: recommendation_team_contacts recommendation_team_contacts_team_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_team_contacts
+    ADD CONSTRAINT recommendation_team_contacts_team_contact_id_fkey FOREIGN KEY (team_contact_id) REFERENCES public.team_contact(id);
+
+
+--
+-- Name: recommendation_terms recommendation_terms_recommendation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_terms
+    ADD CONSTRAINT recommendation_terms_recommendation_id_fkey FOREIGN KEY (recommendation_id) REFERENCES public.recommendation(id);
+
+
+--
+-- Name: recommendation_terms recommendation_terms_term_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.recommendation_terms
+    ADD CONSTRAINT recommendation_terms_term_id_fkey FOREIGN KEY (term_id) REFERENCES public.term(id);
+
+
+--
+-- Name: service_incident service_incident_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.service_incident
+    ADD CONSTRAINT service_incident_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- Name: service_incident_priority service_incident_priority_incident_priority_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.service_incident_priority
+    ADD CONSTRAINT service_incident_priority_incident_priority_id_fkey FOREIGN KEY (incident_priority_id) REFERENCES public.incident_priority(id);
+
+
+--
+-- Name: service_incident_priority service_incident_priority_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.service_incident_priority
+    ADD CONSTRAINT service_incident_priority_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: service_incident service_incident_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.service_incident
+    ADD CONSTRAINT service_incident_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: service_incident_type service_incident_type_incident_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.service_incident_type
+    ADD CONSTRAINT service_incident_type_incident_type_id_fkey FOREIGN KEY (incident_type_id) REFERENCES public.incident_type(id);
+
+
+--
+-- Name: service_incident_type service_incident_type_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.service_incident_type
+    ADD CONSTRAINT service_incident_type_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: service_terms service_terms_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.service_terms
+    ADD CONSTRAINT service_terms_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: service_terms service_terms_term_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.service_terms
+    ADD CONSTRAINT service_terms_term_id_fkey FOREIGN KEY (term_id) REFERENCES public.term(id);
+
+
+--
+-- Name: status_report status_report_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.status_report
+    ADD CONSTRAINT status_report_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- Name: status_report status_report_participant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.status_report
+    ADD CONSTRAINT status_report_participant_id_fkey FOREIGN KEY (participant_id) REFERENCES public.participant(id);
+
+
+--
+-- Name: storage storage_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.storage
+    ADD CONSTRAINT storage_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- Name: task task_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.task
+    ADD CONSTRAINT task_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- Name: team_contact_incident team_contact_incident_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.team_contact_incident
+    ADD CONSTRAINT team_contact_incident_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- Name: team_contact_incident_priority team_contact_incident_priority_incident_priority_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.team_contact_incident_priority
+    ADD CONSTRAINT team_contact_incident_priority_incident_priority_id_fkey FOREIGN KEY (incident_priority_id) REFERENCES public.incident_priority(id);
+
+
+--
+-- Name: team_contact_incident_priority team_contact_incident_priority_team_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.team_contact_incident_priority
+    ADD CONSTRAINT team_contact_incident_priority_team_contact_id_fkey FOREIGN KEY (team_contact_id) REFERENCES public.team_contact(id);
+
+
+--
+-- Name: team_contact_incident team_contact_incident_team_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.team_contact_incident
+    ADD CONSTRAINT team_contact_incident_team_contact_id_fkey FOREIGN KEY (team_contact_id) REFERENCES public.team_contact(id);
+
+
+--
+-- Name: team_contact_incident_type team_contact_incident_type_incident_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.team_contact_incident_type
+    ADD CONSTRAINT team_contact_incident_type_incident_type_id_fkey FOREIGN KEY (incident_type_id) REFERENCES public.incident_type(id);
+
+
+--
+-- Name: team_contact_incident_type team_contact_incident_type_team_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.team_contact_incident_type
+    ADD CONSTRAINT team_contact_incident_type_team_contact_id_fkey FOREIGN KEY (team_contact_id) REFERENCES public.team_contact(id);
+
+
+--
+-- Name: team_contact_terms team_contact_terms_team_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.team_contact_terms
+    ADD CONSTRAINT team_contact_terms_team_contact_id_fkey FOREIGN KEY (team_contact_id) REFERENCES public.team_contact(id);
+
+
+--
+-- Name: team_contact_terms team_contact_terms_term_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.team_contact_terms
+    ADD CONSTRAINT team_contact_terms_term_id_fkey FOREIGN KEY (term_id) REFERENCES public.term(id);
+
+
+--
+-- Name: ticket ticket_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.ticket
+    ADD CONSTRAINT ticket_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- PostgreSQL database dump complete
+--
+

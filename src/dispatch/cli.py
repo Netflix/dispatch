@@ -503,11 +503,18 @@ def init_database():
 
 
 @dispatch_database.command("restore")
-def restore_database():
+@click.option(
+    "--dump-file", default='dispatch-backup.dump', help="Path to a PostgreSQL dump file.")
+def restore_database(dump_file):
     """Restores the database via pg_restore."""
     import sh
     from sh import psql, createdb
-    from dispatch.config import DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_CREDENTIALS
+    from dispatch.config import (
+        DATABASE_HOSTNAME,
+        DATABASE_NAME,
+        DATABASE_PORT,
+        DATABASE_CREDENTIALS
+    )
 
     username, password = str(DATABASE_CREDENTIALS).split(":")
 
@@ -520,7 +527,7 @@ def restore_database():
                 DATABASE_PORT,
                 "-U",
                 username,
-                "dispatch",
+                DATABASE_NAME,
                 _env={"PGPASSWORD": password},
             )
         )
@@ -536,10 +543,11 @@ def restore_database():
             "-U",
             username,
             "-f",
-            "dispatch-backup.dump",
+            dump_file,
             _env={"PGPASSWORD": password},
         )
     )
+    click.secho("Success.", fg="green")
 
 
 @dispatch_database.command("dump")
@@ -708,7 +716,7 @@ def revision_database(
 def dispatch_scheduler():
     """Container for all dispatch scheduler commands."""
     # we need scheduled tasks to be imported
-    from .incident.scheduled import daily_summary, calculate_incidents_cost  # noqa
+    from .incident.scheduled import daily_summary  # noqa
     from .task.scheduled import sync_tasks, create_task_reminders  # noqa
     from .term.scheduled import sync_terms  # noqa
     from .document.scheduled import sync_document_terms  # noqa

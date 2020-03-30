@@ -202,5 +202,5 @@ release
 
 # exclude docker env files
 docker/.env
-
 *.dump
+!data/dispatch-sample-data.dump
