@@ -31,3 +31,4 @@ To start, run the install script:
 ```bash
 ./install.sh
 ```
+

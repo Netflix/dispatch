@@ -17,6 +17,10 @@ By default, the config will be read from environment variables and/or `.env` fil
 All config items prefixed with `VUE_APP` are envvars for the Vue frontend. These variables are used only during the building of the javascript bundle. See [here](https://cli.vuejs.org/guide/mode-and-env.html) for details.
 {% endhint %}
 
+{% hint style="info" %}
+In general, do not include any quotation marks when adding configuration values.
+{% endhint %}
+
 ### General
 
 #### `LOG_LEVEL` \[default: 'warning'\]

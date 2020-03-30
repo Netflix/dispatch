@@ -8,26 +8,27 @@ description: Configuration options for the Jira plugin.
 By default Dispatch ships with Jira support. Each Jira installation is unique, so you will likely want to create a Jira specific plugin for your organization.
 {% endhint %}
 
-#### `JIRA_BROWSER_URL`
+## `JIRA_BROWSER_URL`
 
 > URL for Jira browser links.
 
-#### `JIRA_API_URL`
+## `JIRA_API_URL`
 
 > URL for the Jira API server.
 
-#### `JIRA_USERNAME`
+## `JIRA_USERNAME`
 
 > Username for the Jira service account.
 
-#### `JIRA_PASSWORD` \[secret: True\]
+## `JIRA_PASSWORD` \[secret: True\]
 
 > Password for the Jira service account.
 
-#### `JIRA_PROJECT_KEY`
+## `JIRA_PROJECT_KEY`
 
 > Key for Jira project.
 
-#### `JIRA_ISSUE_TYPE_ID`
+## `JIRA_ISSUE_TYPE_ID`
 
 > Id for Jira issue type.
+
