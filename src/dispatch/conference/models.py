@@ -4,7 +4,7 @@ from pydantic import validator
 from sqlalchemy import Column, Integer, String
 
 from dispatch.database import Base
-from dispatch.messaging import INCIDENT_CONFERENCE_DESCRIPTION
+from dispatch.messaging import INCIDENT_CONFERENCE, render_message_template
 from dispatch.models import DispatchBase, ResourceMixin
 
 
@@ -37,9 +37,12 @@ class ConferenceRead(ConferenceBase):
     description: Optional[str]
 
     @validator("description", pre=True, always=True)
-    def set_description(cls, v):
+    def set_description(cls, v, values):
         """Sets the description"""
-        return INCIDENT_CONFERENCE_DESCRIPTION
+        description = render_message_template(
+            [INCIDENT_CONFERENCE], conference_challenge=values["conference_challenge"]
+        )[0]["text"]
+        return description
 
 
 class ConferenceNested(ConferenceBase):
