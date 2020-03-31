@@ -106,7 +106,7 @@ export default {
   methods: {
     getActive() {
       this.loading = true
-      IncidentApi.getAll({ field: ["status"], op: ["=="], value: ["Active"] }).then(response => {
+      IncidentApi.getAll({ fields: ["status"], ops: ["=="], values: ["Active"] }).then(response => {
         this.items = response.data.items
         this.loading = false
       })
