@@ -18,6 +18,7 @@
     * [Configuring Slack](configuration/plugins/configuring-slack.md)
     * [Configuring PagerDuty](configuration/plugins/configuring-pagerduty.md)
     * [Configuring Jira](configuration/plugins/configuring-jira.md)
+    * [Configuring Zoom](configuration/plugins/configuring-zoom.md)
 * [CLI](cli.md)
 * [Contributing](contributing/README.md)
   * [Plugins](contributing/plugins/README.md)
@@ -29,4 +30,3 @@
 * [License](license.md)
 * [Changelog](changelog.md)
 * [FAQ](faq.md)
-
