@@ -96,7 +96,7 @@ def daily_summary(db_session=None):
                 },
             }
         )
-        for incident in active_incidents:
+        for idx, incident in enumerate(active_incidents):
             if incident.visibility == Visibility.open:
                 try:
                     blocks.append(
@@ -110,9 +110,12 @@ def daily_summary(db_session=None):
                                     f"*Priority*: {incident.incident_priority.name}\n"
                                     f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
                                 ),
-                                "button_text": "Get Involved",
-                                "button_value": f"{incident.id}",
-                                "button_action": f"{ConversationButtonActions.invite_user}",
+                            },
+                            "block_id": f"{ConversationButtonActions.invite_user}-{idx}",
+                            "accessory": {
+                                "type": "button",
+                                "text": {"type": "plain_text", "text": "Get Involved"},
+                                "value": f"{incident.id}",
                             },
                         }
                     )
