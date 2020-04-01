@@ -18,7 +18,6 @@ from dispatch.config import (
 )
 from dispatch.database import SessionLocal
 from dispatch.enums import Visibility
-from dispatch.incident.enums import IncidentStatus
 from dispatch.messaging import (
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
     INCIDENT_NEW_ROLE_NOTIFICATION,
@@ -27,7 +26,6 @@ from dispatch.messaging import (
     INCIDENT_PRIORITY_CHANGE,
     INCIDENT_STATUS_CHANGE,
     INCIDENT_TYPE_CHANGE,
-    INCIDENT_GET_INVOLVED_BUTTON,
     INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
     INCIDENT_RESOURCES_MESSAGE,
     INCIDENT_REVIEW_DOCUMENT_NOTIFICATION,
@@ -296,9 +294,6 @@ def send_incident_update_notifications(incident: Incident, previous_incident: In
         commander_fullname=incident.commander.name,
         commander_weblink=incident.commander.weblink,
     )
-
-    if incident.status != IncidentStatus.closed:
-        notification_template.append(INCIDENT_GET_INVOLVED_BUTTON)
 
     if incident.visibility == Visibility.open:
         # we send an update to the incident notification conversations

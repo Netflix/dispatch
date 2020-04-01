@@ -71,7 +71,9 @@ def send_most_recent_status_report_to_conversation(incident_id: int, db_session:
 
 
 @background_task
-def new_status_report_flow(user_email: str, incident_id: int, action: dict, db_session=None):
+def new_status_report_flow(
+    user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
+):
     """Stores and sends a new status report to a conversation."""
     conditions = action["submission"]["conditions"]
     actions = action["submission"]["actions"]

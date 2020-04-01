@@ -476,15 +476,22 @@ def create_status_report_dialog(incident_id: int, command: dict = None, db_sessi
 
 
 @background_task
-def add_user_to_conversation(user_email: str, incident_id: int, action: dict, db_session=None):
+def add_user_to_conversation(
+    user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
+):
     """Adds a user to a conversation."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    user_id = dispatch_slack_service.resolve_user(slack_client, user_email)["id"]
-
-    dispatch_slack_service.add_users_to_conversation(
-        slack_client, incident.conversation.channel_id, user_id
-    )
+    print(action)
+    if incident.status == IncidentStatus.closed:
+        message = f"Sorry we cannot add you to a closed incident. Please reach out to the incident commander ({incident.commander.name}) for details."
+        dispatch_slack_service.send_ephemeral_message(
+            slack_client, action["container"]["channel_id"], user_id, message
+        )
+    else:
+        dispatch_slack_service.add_users_to_conversation(
+            slack_client, incident.conversation.channel_id, user_id
+        )
 
 
 def event_functions(event: EventEnvelope):
@@ -524,7 +531,7 @@ def command_functions(command: str):
 
 
 @background_task
-def handle_update_incident_action(user_email, incident_id, action, db_session=None):
+def handle_update_incident_action(user_id, user_email, incident_id, action, db_session=None):
     """Messages slack dialog data into something that Dispatch can use."""
     submission = action["submission"]
     notify = True if submission["notify"] == "Yes" else False
@@ -544,7 +551,7 @@ def handle_update_incident_action(user_email, incident_id, action, db_session=No
 
 
 @background_task
-def handle_assign_role_action(user_email, incident_id, action, db_session=None):
+def handle_assign_role_action(user_id, user_email, incident_id, action, db_session=None):
     """Messages slack dialog data into some thing that Dispatch can use."""
     assignee_user_id = action["submission"]["participant"]
     assignee_role = action["submission"]["role"]
@@ -756,7 +763,7 @@ async def handle_action(
 
     # Dispatch action functions to be executed in the background
     for f in action_functions(action_name):
-        background_tasks.add_task(f, user_email, incident_id, action)
+        background_tasks.add_task(f, user_id, user_email, incident_id, action)
 
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()

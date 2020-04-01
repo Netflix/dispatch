@@ -250,6 +250,9 @@ INCIDENT_NAME = {
     "title": "{{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
     "text": INCIDENT_NOTIFICATION_PURPOSES_FYI,
+    "button_text": "Get Involved",
+    "button_value": "{{incident_id}}",
+    "button_action": ConversationButtonActions.invite_user,
 }
 
 INCIDENT_TITLE = {"title": "Incident Title", "text": "{{title}}"}
@@ -364,9 +367,7 @@ INCIDENT_RESOURCES_MESSAGE = [
 INCIDENT_NOTIFICATION_COMMON = [INCIDENT_NAME, INCIDENT_TITLE]
 
 INCIDENT_NOTIFICATION = INCIDENT_NOTIFICATION_COMMON.copy()
-INCIDENT_NOTIFICATION.extend(
-    [INCIDENT_STATUS, INCIDENT_PRIORITY_FYI, INCIDENT_COMMANDER, INCIDENT_GET_INVOLVED_BUTTON]
-)
+INCIDENT_NOTIFICATION.extend([INCIDENT_STATUS, INCIDENT_PRIORITY_FYI, INCIDENT_COMMANDER])
 
 INCIDENT_STATUS_REPORT = [
     {"title": "Incident Status Report", "text": INCIDENT_STATUS_REPORT_DESCRIPTION},

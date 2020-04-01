@@ -910,7 +910,7 @@ def incident_assign_role_flow(
 
 
 @background_task
-def incident_engage_oncall_flow(user_email: str, incident_id: int, action: dict, db_session=None):
+def incident_engage_oncall_flow(user_id: str, user_email: str, incident_id: int, action: dict, db_session=None):
     """Runs the incident engage oncall flow."""
     oncall_service_id = action["submission"]["oncall_service_id"]
     page = action["submission"]["page"]
