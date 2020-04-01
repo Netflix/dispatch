@@ -12,22 +12,16 @@ By default Dispatch ships with Zoom conference support. The Zoom plugin creats a
 
 > Email / User ID attached to the JWT credentials
 
-## `JIRA_API_URL`
+## `ZOOM_API_KEY`
 
-> URL for the Jira API server.
+> JWT API Key
 
-## `JIRA_USERNAME`
+## `ZOOM_API_SECRET` \[secret: True\]
 
-> Username for the Jira service account.
+> JWT API Secret
 
-## `JIRA_PASSWORD` \[secret: True\]
+## Create the Zoom Application for your API Keys
 
-> Password for the Jira service account.
+To create the API Keys required for the Zoom plugin, navigate to the Zoom Marketplace and [create an App](https://marketplace.zoom.us/develop/create). Make sure you are logged in as the user that you wish to tie the API credentials to.
 
-## `JIRA_PROJECT_KEY`
-
-> Key for Jira project.
-
-## `JIRA_ISSUE_TYPE_ID`
-
-> Id for Jira issue type.
+Create a `JWT` application to generate the JWT API Key and Secret. Make sure to set the `Intent to publish: No`.
