@@ -174,25 +174,28 @@ def daily_summary(db_session=None):
             }
         )
 
-    oncall_service = service_service.get_by_external_id(
-        db_session=db_session, external_id=INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID
-    )
-    oncall_plugin = plugins.get(oncall_service.type)
-    oncall_email = oncall_plugin.get(service_id=INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID)
+    # NOTE INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID is optional
+    if INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID:
+        oncall_service = service_service.get_by_external_id(
+            db_session=db_session, external_id=INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID
+        )
 
-    oncall_individual = individual_service.resolve_user_by_email(oncall_email)
+        oncall_plugin = plugins.get(oncall_service.type)
+        oncall_email = oncall_plugin.get(service_id=INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID)
 
-    blocks.append(
-        {
-            "type": "context",
-            "elements": [
-                {
-                    "type": "mrkdwn",
-                    "text": f"For questions about this notification, reach out to <{oncall_individual['weblink']}|{oncall_individual['fullname']}> (current on-call)",
-                }
-            ],
-        }
-    )
+        oncall_individual = individual_service.resolve_user_by_email(oncall_email)
+
+        blocks.append(
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": f"For questions about this notification, reach out to <{oncall_individual['weblink']}|{oncall_individual['fullname']}> (current on-call)",
+                    }
+                ],
+            }
+        )
 
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
     for c in INCIDENT_NOTIFICATION_CONVERSATIONS:
