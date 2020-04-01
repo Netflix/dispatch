@@ -78,12 +78,14 @@ https://www.googleapis.com/auth/drive
 https://mail.google.com/
 https://www.googleapis.com/auth/admin.directory.group
 https://www.googleapis.com/auth/apps.groups.settings
+https://www.googleapis.com/auth/calendar
 ```
+
+**Note:** If you will not use Google Meet for your conference then you do not need the `https://www.googleapis.com/auth/calendar` scope.
 
 Then construct this link and click it:
 
 ```text
-https://admin.google.com/AdminHome?clientScopeToAdd=https://www.googleapis.com/auth/document,https://www.googleapis.com/auth/drive,https://mail.google.com/,https://www.googleapis.com/auth/admin.directory.group,https://www.googleapis.com/auth/apps.groups.settings
+https://admin.google.com/AdminHome?clientScopeToAdd=https://www.googleapis.com/auth/document,https://www.googleapis.com/auth/drive,https://mail.google.com/,https://www.googleapis.com/auth/admin.directory.group,https://www.googleapis.com/auth/apps.groups.settings,https://www.googleapis.com/auth/calendar
 &clientNameToAdd=<INSERTCLIENTIDHERE>&chromeless=1#OGX:ManageOauthClients
 ```
-

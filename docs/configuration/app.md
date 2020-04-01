@@ -35,7 +35,7 @@ In general, do not include any quotation marks when adding configuration values.
 
 > A comma separated list of metric providers Dispatch will send key system metrics to.
 
-#### `SENTRY_DSN` \[default: none\]
+#### `SENTRY_DSN` \[default: none\] \[secret: True\]
 
 > Optional configuration for using Sentry to report Dispatch errors.
 
@@ -89,7 +89,7 @@ If you wish to disabled authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
 
 > Dispatch relies on a `Postgres` database. This host name should point to a supporter version of `Postgres (9.6+)`.
 
-#### `DATABASE_CREDENTIALS`
+#### `DATABASE_CREDENTIALS` \[secret: True\]
 
 > Credentials specified in `username:password` format to be used to authenticate to the `postgres` database.
 
@@ -216,4 +216,3 @@ If you wish to disabled authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
 #### `INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT` \[default: 'google-docs-incident-review-document'\]
 
 > Controls the resource type to use for the incident review document.
-
