@@ -23,7 +23,7 @@ def get_by_uuid(*, db_session, uuid: UUID) -> Optional[Event]:
 
 def get_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Event]]:
     """
-    Get an event by incident id.
+    Get events by incident id.
     """
     return db_session.query(Event).filter(Event.incident_id == incident_id)
 
@@ -32,7 +32,7 @@ def get_by_incident_id_and_source(
     *, db_session, incident_id: int, source: str
 ) -> List[Optional[Event]]:
     """
-    Get an event by incident id and source.
+    Get events by incident id and source.
     """
     return (
         db_session.query(Event)
@@ -45,7 +45,7 @@ def get_by_incident_id_and_individual_id(
     *, db_session, incident_id: int, individual_id: int
 ) -> List[Optional[Event]]:
     """
-    Get an event by incident id and individual id.
+    Get events by incident id and individual id.
     """
     return (
         db_session.query(Event)
