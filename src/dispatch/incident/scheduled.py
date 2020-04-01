@@ -24,6 +24,7 @@ from dispatch.plugins.base import plugins
 from dispatch.scheduler import scheduler
 from dispatch.service import service as service_service
 
+from dispatch.conversation.enums import ConversationButtonActions
 from .enums import IncidentStatus
 from .service import calculate_cost, get_all, get_all_by_status, get_all_last_x_hours_by_status
 from .messaging import send_incident_status_report_reminder
@@ -109,6 +110,9 @@ def daily_summary(db_session=None):
                                     f"*Priority*: {incident.incident_priority.name}\n"
                                     f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
                                 ),
+                                "button_text": "Get Involved",
+                                "button_value": f"{incident.id}",
+                                "button_action": f"{ConversationButtonActions.invite_user}",
                             },
                         }
                     )
