@@ -669,12 +669,3 @@ class EventFactory(BaseFactory):
 
         if extracted:
             self.individual_contact_id = extracted.id
-
-    @post_generation
-    def tags(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for tag in extracted:
-                self.tags.append(tag)
