@@ -568,7 +568,11 @@ def action_functions(action: str):
         ConversationButtonActions.invite_user: [add_user_to_conversation],
     }
 
-    return action_mappings.get(action, [])
+    # this allows for unique action blocks e.g. invite-user or invite-user-1, etc
+    for key in action_mappings.keys():
+        if key in action:
+            return action_mappings[key]
+    return []
 
 
 def get_action_name_by_action_type(action: dict):
