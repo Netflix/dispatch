@@ -23,19 +23,6 @@ from dispatch.models import DispatchBase, TimeStampMixin
 from dispatch.plugins.base import plugins
 
 
-EventSource = Enum(
-    "EventSource", [[plugin.slug.replace("-", "_"), plugin.title] for plugin in plugins.all()]
-)
-
-assoc_event_tags = Table(
-    "assoc_event_tags",
-    Base.metadata,
-    Column("event_id", Integer, ForeignKey("event.id")),
-    Column("tag_id", Integer, ForeignKey("tag.id")),
-    PrimaryKeyConstraint("event_id", "tag_id"),
-)
-
-
 # SQLAlchemy Model
 class Event(Base, TimeStampMixin):
     # columns
@@ -49,7 +36,6 @@ class Event(Base, TimeStampMixin):
     # relationships
     individual_id = Column(Integer, ForeignKey("individual_contact.id"))
     incident_id = Column(Integer, ForeignKey("incident.id"))
-    tags = relationship("Tag", secondary=assoc_event_tags, backref="events")
 
     # full text search capabilities
     search_vector = Column(

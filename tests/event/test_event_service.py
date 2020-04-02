@@ -54,7 +54,7 @@ def test_get_all(session, events):
 
 def test_create(session):
     from dispatch.event.service import create
-    from dispatch.event.models import EventSource, EventCreate
+    from dispatch.event.models import EventCreate
 
     uuid = uuid4()
     print(uuid)
