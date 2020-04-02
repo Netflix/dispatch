@@ -1,16 +1,18 @@
+import uuid
+
 from pytz import UTC
 from datetime import datetime
 
-from factory import Sequence, post_generation, SubFactory
+from factory import Sequence, post_generation, SubFactory, LazyAttribute
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime
 
 from dispatch.database import SessionLocal
 
-from dispatch.tag.models import Tag
 from dispatch.conversation.models import Conversation
 from dispatch.definition.models import Definition
 from dispatch.document.models import Document
+from dispatch.event.models import Event
 from dispatch.group.models import Group
 from dispatch.incident.models import Incident
 from dispatch.incident_priority.models import IncidentPriority
@@ -23,6 +25,7 @@ from dispatch.route.models import Recommendation, RecommendationAccuracy
 from dispatch.service.models import Service
 from dispatch.status_report.models import StatusReport
 from dispatch.storage.models import Storage
+from dispatch.tag.models import Tag
 from dispatch.task.models import Task
 from dispatch.team.models import TeamContact
 from dispatch.term.models import Term
@@ -635,3 +638,34 @@ class IncidentFactory(BaseFactory):
         if extracted:
             for participant in extracted:
                 self.participants.append(participant)
+
+
+class EventFactory(BaseFactory):
+    """Event Factory."""
+
+    uuid = LazyAttribute(lambda _: str(uuid.uuid4()))
+    started_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
+    ended_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
+    source = FuzzyText()
+    description = FuzzyText()
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Event
+
+    @post_generation
+    def incident(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.incident_id = extracted.id
+
+    @post_generation
+    def individual_contact(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.individual_contact_id = extracted.id
