@@ -23,6 +23,8 @@ from dispatch.messaging import (
     INCIDENT_NEW_ROLE_NOTIFICATION,
     INCIDENT_NOTIFICATION,
     INCIDENT_NOTIFICATION_COMMON,
+    INCIDENT_NAME,
+    INCIDENT_NAME_WITH_ENGAGEMENT,
     INCIDENT_PRIORITY_CHANGE,
     INCIDENT_STATUS_CHANGE,
     INCIDENT_TYPE_CHANGE,
@@ -34,6 +36,7 @@ from dispatch.messaging import (
     MessageType,
 )
 
+from dispatch.incident.enums import IncidentStatus
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
 from dispatch.incident import service as incident_service
@@ -198,6 +201,12 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
 
     # we send status notifications to conversations
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
+
+    if incident.status != IncidentStatus.closed:
+        message_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
+    else:
+        message_template.insert(0, INCIDENT_NAME)
+
     for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
         convo_plugin.send(
             conversation,
@@ -273,14 +282,16 @@ def send_incident_update_notifications(incident: Incident, previous_incident: In
         return
 
     notification_template.append(INCIDENT_COMMANDER)
-
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
 
     # we send an update to the incident conversation
+    incident_conversation_notification_template = notification_template.copy()
+    incident_conversation_notification_template.insert(0, INCIDENT_NAME)
+
     convo_plugin.send(
         incident.conversation.channel_id,
         notification_text,
-        notification_template,
+        incident_conversation_notification_template,
         notification_type,
         name=incident.name,
         ticket_weblink=incident.ticket.weblink,
@@ -296,12 +307,18 @@ def send_incident_update_notifications(incident: Incident, previous_incident: In
     )
 
     if incident.visibility == Visibility.open:
+        notification_coversation_notification_template = notification_template.copy()
+        if incident.status != IncidentStatus.closed:
+            notification_coversation_notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
+        else:
+            notification_coversation_notification_template.insert(0, INCIDENT_NAME)
+
         # we send an update to the incident notification conversations
         for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
             convo_plugin.send(
                 conversation,
                 notification_text,
-                notification_template,
+                notification_coversation_notification_template,
                 notification_type,
                 name=incident.name,
                 ticket_weblink=incident.ticket.weblink,
