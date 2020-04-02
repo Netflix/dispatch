@@ -1,4 +1,6 @@
+from datetime import datetime
 from enum import Enum
+from uuid import UUID
 
 from typing import Optional
 
@@ -12,7 +14,7 @@ from sqlalchemy import (
     Table,
     event,
 )
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID as SQLAlchemyUUID
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
@@ -38,14 +40,14 @@ assoc_event_tags = Table(
 class Event(Base, TimeStampMixin):
     # columns
     id = Column(Integer, primary_key=True)
-    uuid = Column(UUID(as_uuid=True), unique=True, nullable=False)
-    started_at = Column(DateTime)
+    uuid = Column(SQLAlchemyUUID(as_uuid=True), unique=True, nullable=False)
+    started_at = Column(DateTime, nullable=False)
     ended_at = Column(DateTime)
     source = Column(String, nullable=False)
     description = Column(String, nullable=False)
 
     # relationships
-    individual_id = Column(Integer, ForeignKey("individual.id"))
+    individual_id = Column(Integer, ForeignKey("individual_contact.id"))
     incident_id = Column(Integer, ForeignKey("incident.id"))
     tags = relationship("Tag", secondary=assoc_event_tags, backref="events")
 
@@ -66,9 +68,10 @@ class Event(Base, TimeStampMixin):
 
 # Pydantic Models
 class EventBase(DispatchBase):
-    started_at: DateTime
-    ended_at: DateTime
-    source: EventSource
+    uuid: UUID
+    started_at: datetime
+    ended_at: datetime
+    source: str
     description: str
 
 
