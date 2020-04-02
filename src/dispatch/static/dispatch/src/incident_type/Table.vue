@@ -54,6 +54,9 @@ export default {
       headers: [
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
+        { text: "Visibility", value: "visibility", sortable: false },
+        { text: "Service", value: "commander_service.name", sortable: false },
+        { text: "Document", value: "template_document.name", sortable: false },
         { text: "Actions", value: "actions", sortable: false }
       ]
     }
