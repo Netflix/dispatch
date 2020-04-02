@@ -11,7 +11,6 @@ from dispatch.config import (
 from dispatch.decorators import background_task
 from dispatch.enums import Visibility
 from dispatch.extensions import sentry_sdk
-from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.individual import service as individual_service
 from dispatch.messaging import (
     INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION,
@@ -29,14 +28,6 @@ from .enums import IncidentStatus
 from .service import calculate_cost, get_all, get_all_by_status, get_all_last_x_hours_by_status
 from .messaging import send_incident_status_report_reminder
 
-# TODO figure out a way to do mapping in the config file
-# reminder (in hours)
-STATUS_REPORT_REMINDER_MAPPING = {
-    IncidentPriorityType.high.name: 2,
-    IncidentPriorityType.medium.name: 6,
-    IncidentPriorityType.low.name: 12,
-    IncidentPriorityType.info.name: 24,
-}
 
 log = logging.getLogger(__name__)
 
@@ -49,9 +40,7 @@ def status_report_reminder(db_session=None):
 
     for incident in incidents:
         try:
-            notification_hour = STATUS_REPORT_REMINDER_MAPPING[
-                incident.incident_priority.name.lower()
-            ]
+            notification_hour = incident.incident_priority.status_reminder
 
             if incident.last_status_report:
                 remind_after = incident.last_status_report.created_at

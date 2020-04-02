@@ -45,7 +45,7 @@ export default {
   created() {
     this.error = null
     this.loading = true
-    IncidentPriorityApi.getAll().then(response => {
+    IncidentPriorityApi.getAll({sortBy: ["view_order"], descending: [false]}).then(response => {
       this.items = response.data.items
       this.loading = false
     })
