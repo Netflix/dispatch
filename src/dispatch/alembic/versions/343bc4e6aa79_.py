@@ -1,17 +1,17 @@
 """Creates table for event model
 
-Revision ID: 58cd04f02b60
+Revision ID: 343bc4e6aa79
 Revises: 5d4dee3e24fc
-Create Date: 2020-04-02 14:01:23.431153
+Create Date: 2020-04-02 14:26:13.628645
 
 """
 from alembic import op
-from sqlalchemy.dialects import postgresql
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 import sqlalchemy_utils
 
 # revision identifiers, used by Alembic.
-revision = "58cd04f02b60"
+revision = "343bc4e6aa79"
 down_revision = "5d4dee3e24fc"
 branch_labels = None
 depends_on = None
@@ -24,14 +24,14 @@ def upgrade():
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("uuid", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("started_at", sa.DateTime(), nullable=False),
-        sa.Column("ended_at", sa.DateTime(), nullable=True),
+        sa.Column("ended_at", sa.DateTime(), nullable=False),
         sa.Column("source", sa.String(), nullable=False),
         sa.Column("description", sa.String(), nullable=False),
         sa.Column("individual_id", sa.Integer(), nullable=True),
         sa.Column("incident_id", sa.Integer(), nullable=True),
         sa.Column("search_vector", sqlalchemy_utils.types.ts_vector.TSVectorType(), nullable=True),
-        sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=True),
+        sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(["incident_id"], ["incident.id"]),
         sa.ForeignKeyConstraint(["individual_id"], ["individual_contact.id"]),
         sa.PrimaryKeyConstraint("id"),
