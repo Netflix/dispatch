@@ -29,7 +29,7 @@ class Event(Base, TimeStampMixin):
     id = Column(Integer, primary_key=True)
     uuid = Column(SQLAlchemyUUID(as_uuid=True), unique=True, nullable=False)
     started_at = Column(DateTime, nullable=False)
-    ended_at = Column(DateTime)
+    ended_at = Column(DateTime, nullable=False)
     source = Column(String, nullable=False)
     description = Column(String, nullable=False)
 
@@ -56,7 +56,7 @@ class Event(Base, TimeStampMixin):
 class EventBase(DispatchBase):
     uuid: UUID
     started_at: datetime
-    ended_at: datetime
+    ended_at: Optional[datetime] = None
     source: str
     description: str
 

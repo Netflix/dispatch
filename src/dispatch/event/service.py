@@ -1,3 +1,6 @@
+import datetime
+from uuid import uuid4
+
 from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
@@ -94,3 +97,26 @@ def delete(*, db_session, event_id: int):
     event = db_session.query(Event).filter(Event.id == event_id).first()
     db_session.delete(event)
     db_session.commit()
+
+
+def log(
+    *,
+    db_session,
+    source: str,
+    description: str,
+    started_at: datetime = None,
+    ended_at: datetime = None
+) -> Event:
+    """
+    Logs an event
+    """
+    uuid = uuid4()
+
+    if not started_at:
+        started_at = datetime.datetime.now()
+
+    event_in = EventCreate(
+        uuid=uuid, started_at=started_at, ended_at=ended_at, source=source, description=description
+    )
+    event = create(db_session=db_session, event_in=event_in)
+    return event

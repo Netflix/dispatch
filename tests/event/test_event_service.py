@@ -84,3 +84,20 @@ def test_delete(session, event):
 
     delete(db_session=session, event_id=event.id)
     assert not get(db_session=session, event_id=event.id)
+
+
+def test_log(session):
+    from dispatch.event.service import log
+    from dispatch.event.models import EventCreate
+
+    started_at = ended_at = datetime.datetime.now()
+    source = "Dispatch event source"
+    description = "Dispatch event description"
+    event = log(
+        db_session=session,
+        started_at=started_at,
+        ended_at=ended_at,
+        source=source,
+        description=description,
+    )
+    assert source == event.source
