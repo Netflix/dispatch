@@ -28,10 +28,10 @@ from dispatch.database import Base, engine, SessionLocal
 from dispatch.main import app
 
 from .factories import (
-    TagFactory,
     ConversationFactory,
     DefinitionFactory,
     DocumentFactory,
+    EventFactory,
     GroupFactory,
     IncidentFactory,
     IncidentPriorityFactory,
@@ -45,6 +45,7 @@ from .factories import (
     ServiceFactory,
     StatusReportFactory,
     StorageFactory,
+    TagFactory,
     TaskFactory,
     TeamContactFactory,
     TermFactory,
@@ -368,3 +369,13 @@ def tickets(session):
 @pytest.fixture
 def incident(session):
     return IncidentFactory()
+
+
+@pytest.fixture
+def event(session):
+    return EventFactory()
+
+
+@pytest.fixture
+def events(session):
+    return [EventFactory(), EventFactory()]
