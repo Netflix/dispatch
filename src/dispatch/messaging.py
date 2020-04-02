@@ -50,12 +50,6 @@ INCIDENT_STATUS_DESCRIPTIONS = {
     IncidentStatus.closed: "This no longer requires additional involvement, long term incident action items have been assigned to their respective owners.",
 }
 
-INCIDENT_STATUS_REPORT_DESCRIPTION = """
-This is an incident status update.
-""".replace(
-    "\n", " "
-).strip()
-
 INCIDENT_TASK_REMINDER_DESCRIPTION = """
 You are assigned to the following incident tasks.
 This is a reminder that these tasks have *passed* their due date.
