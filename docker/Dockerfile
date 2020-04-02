@@ -122,7 +122,7 @@ RUN set -x \
     # These are also installed last as they are needed
     # during container run and can have the same deps w/
     && apt-get install -y --no-install-recommends \
-    pkg-config \
+    pkg-config postgresql-client\
     \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
