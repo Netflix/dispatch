@@ -41,8 +41,6 @@ def install_plugins():
         except KeyError as e:
             logger.warning(f"Failed to load plugin {ep.name}. Reason: {e}")
         except Exception:
-            import traceback
-
             logger.error(f"Failed to load plugin {ep.name}:{traceback.format_exc()}")
         else:
             register(plugin)

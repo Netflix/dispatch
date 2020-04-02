@@ -53,7 +53,6 @@ class Service(TimeStampMixin, Base):
     type = Column(String, default="pagerduty-oncall")
     external_id = Column(String)
     incidents = relationship("Incident", secondary=assoc_service_incidents, backref="services")
-    incident_types = relationship("IncidentType")
     incident_priorities = relationship(
         "IncidentPriority", secondary=assoc_service_incident_priorities, backref="services"
     )
