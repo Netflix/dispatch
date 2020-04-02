@@ -57,7 +57,6 @@ def test_create(session):
     from dispatch.event.models import EventCreate
 
     uuid = uuid4()
-    print(uuid)
     started_at = datetime.datetime.now()
     ended_at = datetime.datetime.now()
     source = "Dispatch event source"
