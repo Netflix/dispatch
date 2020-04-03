@@ -5,10 +5,7 @@ from typing import List, Optional
 
 from dispatch.config import ANNUAL_COST_EMPLOYEE, BUSINESS_HOURS_YEAR
 from dispatch.database import SessionLocal
-from dispatch.term import service as term_service
-from dispatch.term.models import TermUpdate
-from dispatch.tag.models import TagUpdate
-from dispatch.tag import service as tag_service
+from dispatch.event import service as event_service
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.incident_type import service as incident_type_service
@@ -16,6 +13,10 @@ from dispatch.participant import flows as participant_flows
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugins.base import plugins
+from dispatch.tag import service as tag_service
+from dispatch.tag.models import TagUpdate
+from dispatch.term import service as term_service
+from dispatch.term.models import TermUpdate
 
 from .enums import IncidentStatus
 from .models import Incident, IncidentUpdate
@@ -167,6 +168,13 @@ def create(
     )
     db_session.add(incident)
     db_session.commit()
+
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch App",
+        description="Incident created",
+        incident_id=incident.id,
+    )
 
     # We add the reporter to the incident
     reporter_participant = participant_flows.add_participant(

@@ -116,21 +116,22 @@ class Incident(Base, TimeStampMixin):
             return sorted(self.status_reports, key=lambda r: r.created_at)[-1]
 
     # resources
-    groups = relationship("Group", lazy="subquery", backref="incident")
-    conversation = relationship("Conversation", uselist=False, backref="incident")
     conference = relationship("Conference", uselist=False, backref="incident")
-    storage = relationship("Storage", uselist=False, backref="incident")
-    ticket = relationship("Ticket", uselist=False, backref="incident")
+    conversation = relationship("Conversation", uselist=False, backref="incident")
     documents = relationship("Document", lazy="subquery", backref="incident")
-    participants = relationship("Participant", backref="incident")
-    incident_type_id = Column(Integer, ForeignKey("incident_type.id"))
-    incident_type = relationship("IncidentType", backref="incident")
-    incident_priority_id = Column(Integer, ForeignKey("incident_priority.id"))
+    events = relationship("Event", backref="incident")
+    groups = relationship("Group", lazy="subquery", backref="incident")
     incident_priority = relationship("IncidentPriority", backref="incident")
+    incident_priority_id = Column(Integer, ForeignKey("incident_priority.id"))
+    incident_type = relationship("IncidentType", backref="incident")
+    incident_type_id = Column(Integer, ForeignKey("incident_type.id"))
+    participants = relationship("Participant", backref="incident")
     status_reports = relationship("StatusReport", backref="incident")
-    tasks = relationship("Task", backref="incident")
+    storage = relationship("Storage", uselist=False, backref="incident")
     tags = relationship("Tag", secondary=assoc_incident_tags, backref="incidents")
+    tasks = relationship("Task", backref="incident")
     terms = relationship("Term", secondary=assoc_incident_terms, backref="incidents")
+    ticket = relationship("Ticket", uselist=False, backref="incident")
 
 
 # Pydantic models...

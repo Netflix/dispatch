@@ -42,21 +42,12 @@ class Event(Base, TimeStampMixin):
         TSVectorType("source", "description", weights={"source": "A", "description": "B"})
     )
 
-    @staticmethod
-    def _ended_at(mapper, connection, target):
-        if not target.ended_at:
-            target.ended_at = target.started_at
-
-    @classmethod
-    def __declare_last__(cls):
-        event.listen(cls, "before_update", cls._ended_at)
-
 
 # Pydantic Models
 class EventBase(DispatchBase):
     uuid: UUID
     started_at: datetime
-    ended_at: Optional[datetime] = None
+    ended_at: datetime
     source: str
     description: str
 
