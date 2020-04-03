@@ -7,6 +7,9 @@ from fastapi.encoders import jsonable_encoder
 
 from sqlalchemy.dialects.postgresql import UUID
 
+from dispatch.incident import service as incident_service
+from dispatch.individual import service as individual_service
+
 from .models import Event, EventCreate, EventUpdate
 
 
@@ -100,23 +103,38 @@ def delete(*, db_session, event_id: int):
 
 
 def log(
-    *,
     db_session,
     source: str,
     description: str,
-    started_at: datetime = None,
-    ended_at: datetime = None
+    incident_id: int,
+    individual_id: int = None,
+    started_at: datetime = datetime.datetime.now(),
+    ended_at: datetime = None,
 ) -> Event:
     """
     Logs an event
     """
     uuid = uuid4()
 
-    if not started_at:
-        started_at = datetime.datetime.now()
+    if not ended_at:
+        ended_at = started_at
 
     event_in = EventCreate(
         uuid=uuid, started_at=started_at, ended_at=ended_at, source=source, description=description
     )
     event = create(db_session=db_session, event_in=event_in)
+
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    incident.events.append(event)
+    db_session.add(incident)
+
+    if individual_id:
+        individual = individual_service.get(
+            db_session=db_session, individual_contact_id=individual_id
+        )
+        individual.events.append(event)
+        db_session.add(individual)
+
+    db_session.commit()
+
     return event
