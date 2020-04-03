@@ -542,6 +542,8 @@ def restore_database(dump_file):
             DATABASE_PORT,
             "-U",
             username,
+            "-d",
+            DATABASE_NAME,
             "-f",
             dump_file,
             _env={"PGPASSWORD": password},
