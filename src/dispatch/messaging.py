@@ -243,14 +243,16 @@ INCIDENT_STATUS = {
     "status_mapping": INCIDENT_STATUS_DESCRIPTIONS,
 }
 
+INCIDENT_TYPE = {"title": "Incident Type - {{type}}", "text": "{{type_description}}"}
+
 INCIDENT_PRIORITY = {
     "title": "Incident Priority - {{priority}}",
-    "text": "{{ priority_description }}",
+    "text": "{{priority_description}}",
 }
 
 INCIDENT_PRIORITY_FYI = {
     "title": "Incident Priority - {{priority}}",
-    "text": "{{ priority_description }}",
+    "text": "{{priority_description}}",
 }
 
 INCIDENT_COMMANDER = {
@@ -325,6 +327,7 @@ INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
     INCIDENT_PARTICIPANT_WELCOME,
     INCIDENT_TITLE,
     INCIDENT_STATUS,
+    INCIDENT_TYPE,
     INCIDENT_PRIORITY,
     INCIDENT_COMMANDER,
     INCIDENT_INVESTIGATION_DOCUMENT,
@@ -346,7 +349,9 @@ INCIDENT_RESOURCES_MESSAGE = [
 INCIDENT_NOTIFICATION_COMMON = [INCIDENT_NAME, INCIDENT_TITLE]
 
 INCIDENT_NOTIFICATION = INCIDENT_NOTIFICATION_COMMON.copy()
-INCIDENT_NOTIFICATION.extend([INCIDENT_STATUS, INCIDENT_PRIORITY_FYI, INCIDENT_COMMANDER])
+INCIDENT_NOTIFICATION.extend(
+    [INCIDENT_STATUS, INCIDENT_TYPE, INCIDENT_PRIORITY_FYI, INCIDENT_COMMANDER]
+)
 
 INCIDENT_STATUS_REPORT = [
     {"title": "Incident Status Report", "text": INCIDENT_STATUS_REPORT_DESCRIPTION},
