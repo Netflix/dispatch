@@ -5,17 +5,17 @@ from typing import List, Optional
 
 from dispatch.config import ANNUAL_COST_EMPLOYEE, BUSINESS_HOURS_YEAR
 from dispatch.database import SessionLocal
-from dispatch.term import service as term_service
-from dispatch.term.models import TermUpdate
-from dispatch.tag.models import TagUpdate
-from dispatch.tag import service as tag_service
+from dispatch.event import service as event_service
 from dispatch.incident_priority import service as incident_priority_service
-from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.incident_type import service as incident_type_service
 from dispatch.participant import flows as participant_flows
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugins.base import plugins
+from dispatch.tag import service as tag_service
+from dispatch.tag.models import TagUpdate
+from dispatch.term import service as term_service
+from dispatch.term.models import TermUpdate
 
 from .enums import IncidentStatus
 from .models import Incident, IncidentUpdate
@@ -29,15 +29,12 @@ def resolve_incident_commander_email(
     db_session: SessionLocal,
     reporter_email: str,
     incident_type: str,
-    incident_priority: str,
     incident_name: str,
     incident_title: str,
     incident_description: str,
+    page_commander: bool,
 ):
     """Resolves the correct incident commander email based on given parameters."""
-    if incident_priority == IncidentPriorityType.info:
-        return reporter_email
-
     commander_service = incident_type_service.get_by_name(
         db_session=db_session, name=incident_type
     ).commander_service
@@ -46,7 +43,7 @@ def resolve_incident_commander_email(
 
     # page for high priority incidents
     # we could do this at the end but it seems pretty important...
-    if incident_priority == IncidentPriorityType.high:
+    if page_commander:
         p.page(
             service_id=commander_service.external_id,
             incident_name=incident_name,
@@ -168,6 +165,13 @@ def create(
     db_session.add(incident)
     db_session.commit()
 
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch App",
+        description="Incident created",
+        incident_id=incident.id,
+    )
+
     # We add the reporter to the incident
     reporter_participant = participant_flows.add_participant(
         reporter_email, incident.id, db_session, ParticipantRoleType.reporter
@@ -178,10 +182,10 @@ def create(
         db_session,
         reporter_email,
         incident_type.name,
-        incident_priority.name,
         "",
         title,
         description,
+        incident_priority.page_commander,
     )
 
     if reporter_email == incident_commander_email:

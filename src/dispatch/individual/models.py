@@ -45,13 +45,10 @@ class IndividualContact(ContactMixin, Base):
     title = Column(String)
     weblink = Column(String)
 
-    team_contact_id = Column(Integer, ForeignKey("team_contact.id"))
-    team_contact = relationship("TeamContact", backref="individuals")
-
     # this is a self referential relationship lets punt on this for now.
     # relationship_owner_id = Column(Integer, ForeignKey("individual_contact.id"))
     # relationship_owner = relationship("IndividualContact", backref="individual_contacts")
-    participant = relationship("Participant", lazy="subquery", backref="individual")
+    events = relationship("Event", backref="individual")
     incident_types = relationship(
         "IncidentType", secondary=assoc_individual_contact_incident_types, backref="individuals"
     )
@@ -60,7 +57,11 @@ class IndividualContact(ContactMixin, Base):
         secondary=assoc_individual_contact_incident_priorities,
         backref="individuals",
     )
+    participant = relationship("Participant", lazy="subquery", backref="individual")
+    team_contact_id = Column(Integer, ForeignKey("team_contact.id"))
+    team_contact = relationship("TeamContact", backref="individuals")
     terms = relationship("Term", secondary=assoc_individual_contact_terms, backref="individuals")
+
     search_vector = Column(
         TSVectorType(
             "name",
