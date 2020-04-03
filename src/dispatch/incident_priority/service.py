@@ -20,7 +20,7 @@ def get_by_name(*, db_session, name: str) -> Optional[IncidentPriority]:
 
 
 def get_by_slug(*, db_session, slug: str) -> Optional[IncidentPriority]:
-    """Returns an incident type based on the given type slug."""
+    """Returns an incident priority based on the given type slug."""
     return db_session.query(IncidentPriority).filter(IncidentPriority.slug == slug).one_or_none()
 
 
