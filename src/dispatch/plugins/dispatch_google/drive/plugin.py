@@ -15,7 +15,7 @@ from dispatch.plugins.dispatch_google.common import get_service
 from .drive import (
     Roles,
     add_permission,
-    archive_team_drive,
+    archive_folder,
     copy_file,
     create_file,
     create_team_drive,
@@ -26,7 +26,7 @@ from .drive import (
     list_team_drives,
     move_file,
     remove_permission,
-    restrict_team_drive,
+    restrict_folder,
 )
 from .task import list_tasks
 
@@ -87,10 +87,17 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         for p in participants:
             remove_permission(client, p, team_drive_id)
 
-    def create_file(self, team_drive_id: str, name: str, file_type: str = "folder"):
+    def create_file(
+        self,
+        parent_id: str,
+        name: str,
+        participants: List[str] = [],
+        role: str = Roles.writer.value,
+        file_type: str = "folder"
+    ):
         """Creates a new file in existing Google Drive."""
         client = get_service("drive", "v3", self.scopes)
-        response = create_file(client, team_drive_id, name, file_type)
+        response = create_file(client, parent_id, name, participants, role, file_type)
         response["weblink"] = response["webViewLink"]
         return response
 
@@ -115,10 +122,10 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         response["weblink"] = response["webViewLink"]
         return response
 
-    def archive(self, source_team_drive_id: str, dest_team_drive_id: str, folder_name: str):
+    def archive(self, folder_id: str):
         """Archives a shared team drive to a specific folder."""
         client = get_service("drive", "v3", self.scopes)
-        response = archive_team_drive(client, source_team_drive_id, dest_team_drive_id, folder_name)
+        response = archive_folder(client, folder_id)
         return response
 
     def list_files(self, team_drive_id: str, q: str = None):
@@ -129,7 +136,7 @@ class GoogleDriveStoragePlugin(StoragePlugin):
     def restrict(self, team_drive_id: str):
         """Applies a set of restrictions and capabilities to the team drive."""
         client = get_service("drive", "v3", self.scopes)
-        response = restrict_team_drive(client, team_drive_id)
+        response = restrict_folder(client, team_drive_id)
         return response
 
 

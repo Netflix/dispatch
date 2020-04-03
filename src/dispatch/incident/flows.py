@@ -31,9 +31,9 @@ from dispatch.config import (
     INCIDENT_RESOURCE_INVESTIGATION_SHEET,
     INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
     INCIDENT_RESOURCE_TACTICAL_GROUP,
-    INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID,
+    INCIDENT_STORAGE_FOLDER_ID,
+    INCIDENT_STORAGE_OPEN_ON_CLOSE,
     INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID,
-    INCIDENT_STORAGE_RESTRICTED,
 )
 
 from dispatch.conference import service as conference_service
@@ -291,25 +291,8 @@ def create_incident_storage(
 ):
     """Create an external file store for incident storage."""
     p = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
-    storage = p.create(incident.name, participant_group_emails)
+    storage = p.create_file(INCIDENT_STORAGE_FOLDER_ID, name, participant_group_emails)
     storage.update({"resource_type": INCIDENT_PLUGIN_STORAGE_SLUG, "resource_id": storage["id"]})
-
-    event_service.log(
-        db_session=db_session,
-        source=p.title,
-        description="Incident storage created",
-        incident_id=incident.id,
-    )
-
-    if INCIDENT_STORAGE_RESTRICTED:
-        p.restrict(storage["resource_id"])
-        event_service.log(
-            db_session=db_session,
-            source=p.title,
-            description="Incident storage restricted",
-            incident_id=incident.id,
-        )
-
     return storage
 
 
@@ -865,8 +848,17 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     )
 
     if incident.visibility == Visibility.open:
-        # we archive the artifacts in the storage
-        archive_incident_artifacts(incident, db_session)
+
+        # open file to domain on closure
+        if INCIDENT_STORAGE_OPEN_ON_CLOSE:
+            # we archive the artifacts in the storage
+            storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
+            storage_plugin.archive(
+                folder_id=incident.storage.resource_id,
+            )
+            log.debug(
+                "We have archived the incident artifacts."
+            )
 
         # we delete the tactical and notification groups
         delete_participant_groups(incident, db_session)

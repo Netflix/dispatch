@@ -193,7 +193,7 @@ def create_team_drive(client: Any, name: str, members: List[str], role: Roles):
     return drive_data
 
 
-def restrict_team_drive(client: Any, team_drive_id: str):
+def restrict_folder(client: Any, folder_id: str):
     """Applies a set of restrictions and capabilities to the shared drive."""
     body = {
         "restrictions": {
@@ -208,23 +208,35 @@ def restrict_team_drive(client: Any, team_drive_id: str):
             "canShare": False,
         },
     }
-    return make_call(client.drives(), "update", driveId=team_drive_id, body=body)
+    return make_call(client.drives(), "update", driveId=id, body=body)
 
 
-def create_file(client: Any, parent_id: str, name: str, file_type: str = "folder"):
+def create_file(
+    client: Any,
+    parent_id: str,
+    name: str,
+    members: List[str],
+    role: Roles = Roles.writer.value,
+    file_type: str = "folder"
+):
     """Creates a new folder with the specified parents."""
     if file_type == "folder":
         mimetype = "application/vnd.google-apps.folder"
 
     file_metadata = {"name": name, "mimeType": mimetype, "parents": [parent_id]}
 
-    return make_call(
+    file_data = make_call(
         client.files(),
         "create",
         body=file_metadata,
         supportsTeamDrives=True,
         fields="id, name, parents, webViewLink",
     )
+
+    for member in members:
+        add_permission(client, member, file_data["id"], role, "user")
+
+    return file_data
 
 
 def delete_team_drive(client: Any, team_drive_id: str, empty: bool = True):
@@ -239,23 +251,18 @@ def delete_team_drive(client: Any, team_drive_id: str, empty: bool = True):
     return make_call(client.teamdrives(), "delete", teamDriveId=team_drive_id)
 
 
-def archive_team_drive(
-    client: Any, source_team_drive_id: str, dest_team_drive_id: str, folder_name: str
+def archive_folder(
+    client: Any, folder_id: str,
 ):
     """Archives a google team drive to a specified folder."""
-    folder = create_file(client, parent_id=dest_team_drive_id, name=folder_name)
-
     files = list_files(
         client,
-        team_drive_id=source_team_drive_id,
+        team_drive_id=folder_id,
         q="mimeType != 'application/vnd.google-apps.folder'",
     )
 
     for f in files:
         add_domain_permission(client, f["id"], domain=GOOGLE_DOMAIN)
-        move_file(client, folder["id"], f["id"])
-
-    delete_team_drive(client, source_team_drive_id)
 
 
 @paginated("files")
