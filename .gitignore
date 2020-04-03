@@ -163,9 +163,15 @@ dmypy.json
 ### Vuejs ###
 # Recommended template: Node.gitignore
 
+assets.json
+node_modules*
 node_modules/
-npm-debug.log
-yarn-error.log
+npm-debug.log*
+release
+selenium-debug.log
+yarn-debug.log*
+yarn-error.log*
+yarn.lock
 
 
 # End of https://www.gitignore.io/api/macos,visualstudiocode,python
