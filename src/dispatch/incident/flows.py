@@ -795,16 +795,18 @@ def incident_update_flow(
 
     log.debug(f"Updated the external ticket {incident.ticket.resource_id}.")
 
-    # get the incident participants based on incident type and priority
-    individual_participants, team_participants = get_incident_participants(
-        db_session, incident.incident_type, incident.incident_priority, incident.description
-    )
-
-    # we add the individuals as incident participants
-    for individual in individual_participants:
-        incident_add_or_reactivate_participant_flow(
-            individual.email, incident.id, db_session=db_session
+    # lets not attempt to add new participants for non-active incidents (it's confusing)
+    if incident.status == IncidentStatus.active:
+        # get the incident participants based on incident type and priority
+        individual_participants, team_participants = get_incident_participants(
+            db_session, incident.incident_type, incident.incident_priority, incident.description
         )
+
+        # we add the individuals as incident participants
+        for individual in individual_participants:
+            incident_add_or_reactivate_participant_flow(
+                individual.email, incident.id, db_session=db_session
+            )
 
     # we get the tactical group
     notification_group = group_service.get_by_incident_id_and_resource_type(
