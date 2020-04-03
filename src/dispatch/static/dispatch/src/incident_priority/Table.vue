@@ -1,7 +1,7 @@
 <template>
   <v-layout wrap>
     <new-edit-sheet />
-    <div class="headline">Incident Types</div>
+    <div class="headline">Incident Priorities</div>
     <v-spacer />
     <v-btn color="primary" dark class="mb-2" @click="createEditShow()">New</v-btn>
     <v-flex xs12>
@@ -28,6 +28,7 @@
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
             >
+              <template v-slot:item.page_commander="{ item }">{{ item.page_commander | capitalize }}</template>
               <template v-slot:item.actions="{ item }">
                 <v-icon small class="mr-2" @click="createEditShow(item)">edit</v-icon>
               </template>
@@ -42,9 +43,9 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import NewEditSheet from "@/incident_type/NewEditSheet.vue"
+import NewEditSheet from "@/incident_priority/NewEditSheet.vue"
 export default {
-  name: "IncidentTypeTable",
+  name: "IncidentPriorityTable",
 
   components: {
     NewEditSheet
@@ -54,16 +55,15 @@ export default {
       headers: [
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
-        { text: "Visibility", value: "visibility", sortable: false },
-        { text: "Service", value: "commander_service.name", sortable: false },
-        { text: "Document", value: "template_document.name", sortable: false },
+        { text: "View Order", value: "view_order", sortable: true },
+        { text: "Page Commander", value: "page_commander", sortable: true },
         { text: "Actions", value: "actions", sortable: false }
       ]
     }
   },
 
   computed: {
-    ...mapFields("incident_type", [
+    ...mapFields("incident_priority", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
@@ -81,13 +81,14 @@ export default {
     this.$watch(
       vm => [vm.q, vm.page, vm.itemsPerPage, vm.sortBy, vm.descending],
       () => {
+          console.log("foo")
         this.getAll()
       }
     )
   },
 
   methods: {
-    ...mapActions("incident_type", ["getAll", "createEditShow", "removeShow"])
+    ...mapActions("incident_priority", ["getAll", "createEditShow", "removeShow"])
   }
 }
 </script>

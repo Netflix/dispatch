@@ -7,7 +7,6 @@ from typing import List
 
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.incident.enums import IncidentStatus
-from dispatch.incident_priority.models import IncidentPriorityType
 
 from .config import (
     DISPATCH_UI_URL,
@@ -29,20 +28,6 @@ class MessageType(str, Enum):
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
 
-
-INCIDENT_PRIORITY_DESCRIPTIONS = {
-    IncidentPriorityType.info: "This incident is in tracking only mode and is not under active investigation.",
-    IncidentPriorityType.low: "This incident will require you to perform tasks during working hours until the incident is stable.",
-    IncidentPriorityType.medium: "This incident requires your full attention during working hours until the incident is stable.",
-    IncidentPriorityType.high: "This incident requires your full attention, and should be prioritized over all other work until the incident is stable.",
-}
-
-INCIDENT_PRIORITY_DESCRIPTIONS_FYI = {
-    IncidentPriorityType.info: "This incident is in tracking only mode and is not under active investigation.",
-    IncidentPriorityType.low: "This incident may require your team's attention during working hours, until the incident is stable.",
-    IncidentPriorityType.medium: "This incident may require your team's full attention during working hours, until the incident is stable.",
-    IncidentPriorityType.high: "This incident may require your team's full attention, and should be prioritized over all other work, until the incident is stable.",
-}
 
 INCIDENT_STATUS_DESCRIPTIONS = {
     IncidentStatus.active: "This incident is under active investigation.",
@@ -260,12 +245,12 @@ INCIDENT_STATUS = {
 
 INCIDENT_PRIORITY = {
     "title": "Incident Priority - {{priority}}",
-    "priority_mapping": INCIDENT_PRIORITY_DESCRIPTIONS,
+    "text": "{{ priority_description }}",
 }
 
 INCIDENT_PRIORITY_FYI = {
     "title": "Incident Priority - {{priority}}",
-    "priority_mapping": INCIDENT_PRIORITY_DESCRIPTIONS_FYI,
+    "text": "{{ priority_description }}",
 }
 
 INCIDENT_COMMANDER = {
@@ -431,9 +416,6 @@ def render_message_template(message_template: List[dict], **kwargs):
     data = []
     new_copy = copy.deepcopy(message_template)
     for d in new_copy:
-        if d.get("priority_mapping"):
-            d["text"] = d["priority_mapping"][kwargs["priority"]]
-
         if d.get("status_mapping"):
             d["text"] = d["status_mapping"][kwargs["status"]]
 

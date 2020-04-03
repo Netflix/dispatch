@@ -1,31 +1,35 @@
-from enum import Enum
 from typing import List, Optional
+from pydantic import StrictBool
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
 from dispatch.models import DispatchBase
 
 
-class IncidentPriorityType(str, Enum):
-    # Note: The reporting form uses these types for the Priority drop-down list. Add them in the order you want
-    # them to be displayed.
-
-    high = "High"
-    medium = "Medium"
-    low = "Low"
-    info = "Info"
-
-
 class IncidentPriority(Base):
     id = Column(Integer, primary_key=True)
-    name = Column(String, default=IncidentPriorityType.info, unique=True)
+    name = Column(String, unique=True)
+    page_commander = Column(Boolean, default=False)
+
+    # This column is used to control how priorities should be displayed.
+    # Lower orders will be shown first.
+    view_order = Column(Integer, default=9999)
+
+    # number of hours after which a status report should be sent.
+    status_reminder = Column(Integer, default=24)
     description = Column(String)
+
+    search_vector = Column(TSVectorType("name", "description"))
 
 
 # Pydantic models...
 class IncidentPriorityBase(DispatchBase):
     name: str
+    page_commander: Optional[StrictBool]
+    view_order: Optional[int]
+    status_reminder: Optional[int]
     description: Optional[str]
 
 

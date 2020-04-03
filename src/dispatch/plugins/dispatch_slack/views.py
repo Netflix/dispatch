@@ -25,7 +25,6 @@ from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentUpdate, IncidentRead, IncidentStatus
 from dispatch.incident_priority import service as incident_priority_service
-from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.incident_type import service as incident_type_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
@@ -148,15 +147,6 @@ def after_hours(user_email: str, incident_id: int, db_session=None):
         return
     except Exception:
         pass  # we don't care if there is nothing here
-
-    # bail early if we don't care for a given severity
-    priority_types = [
-        IncidentPriorityType.info,
-        IncidentPriorityType.low,
-        IncidentPriorityType.medium,
-    ]
-    if incident.incident_priority.name.lower() not in priority_types:
-        return
 
     # get their timezone from slack
     commander_info = dispatch_slack_service.get_user_info_by_email(

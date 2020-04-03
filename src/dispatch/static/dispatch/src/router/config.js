@@ -225,5 +225,23 @@ export const protectedRoute = [
         component: () => import(/* webpackChunkName: "routing-table" */ "@/incident_type/Table.vue")
       }
     ]
+  },
+  {
+    path: "/incidents/priorities",
+    component: DefaultLayout,
+    meta: {
+      title: "Incident Priorities",
+      icon: "view_compact",
+      group: "configuration",
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: "/incidents/priorities",
+        name: "IncidentTypeTable",
+        component: () =>
+          import(/* webpackChunkName: "routing-table" */ "@/incident_priority/Table.vue")
+      }
+    ]
   }
 ]
