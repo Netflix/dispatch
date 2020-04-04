@@ -798,8 +798,7 @@ def incident_update_flow(
     # lets not attempt to add new participants for non-active incidents (it's confusing)
     if incident.status == IncidentStatus.active:
         # get the incident participants based on incident type and priority
-        individual_participants, team_participants = get_incident_participants(
-            db_session, incident.incident_type, incident.incident_priority, incident.description
+        individual_participants, team_participants = get_incident_participants(incident, db_session)
         )
 
         # we add the individuals as incident participants
