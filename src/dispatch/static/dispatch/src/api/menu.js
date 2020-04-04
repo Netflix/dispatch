@@ -94,6 +94,13 @@ const Menu = [
     name: "Incident Types",
     icon: "settings",
     href: "/incidents/types"
+  },
+  {
+    title: "Incident Priorities",
+    group: "Configuration",
+    name: "Incident Priorities",
+    icon: "report",
+    href: "/incidents/priorities"
   }
 ]
 // reorder menu
