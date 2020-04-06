@@ -724,6 +724,13 @@ def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_se
         status=IncidentStatus.active.lower(),
     )
 
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch App",
+        description=f"Incident marked as {incident.status}",
+        incident_id=incident.id,
+    )
+
 
 @background_task
 def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_session=None):
@@ -828,6 +835,13 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     db_session.add(incident)
     db_session.commit()
 
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch App",
+        description=f"Incident marked as {incident.status}",
+        incident_id=incident.id,
+    )
+
 
 @background_task
 def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_session=None):
@@ -862,6 +876,13 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     db_session.add(incident)
     db_session.commit()
+
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch App",
+        description=f"Incident marked as {incident.status}",
+        incident_id=incident.id,
+    )
 
 
 @background_task
@@ -946,13 +967,6 @@ def incident_update_flow(
             if previous_incident.status.value == IncidentStatus.active:
                 incident_stable_flow(incident_id=incident.id, db_session=db_session)
             incident_closed_flow(incident_id=incident.id, db_session=db_session)
-
-        event_service.log(
-            db_session=db_session,
-            source="Dispatch App",
-            description=f"{incident.status} status flow completed",
-            incident_id=incident.id,
-        )
 
 
 @background_task
@@ -1073,7 +1087,11 @@ def incident_engage_oncall_flow(
 
 @background_task
 def incident_add_or_reactivate_participant_flow(
-    user_email: str, incident_id: int, role: ParticipantRoleType = None, db_session=None
+    user_email: str,
+    incident_id: int,
+    role: ParticipantRoleType = None,
+    event: dict = None,
+    db_session=None,
 ):
     """Runs the add or reactivate incident participant flow."""
     participant = participant_service.get_by_incident_id_and_email(
@@ -1119,7 +1137,9 @@ def incident_add_or_reactivate_participant_flow(
 
 
 @background_task
-def incident_remove_participant_flow(user_email: str, incident_id: int, db_session=None):
+def incident_remove_participant_flow(
+    user_email: str, incident_id: int, event: dict = None, db_session=None
+):
     """Runs the remove participant flow."""
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
