@@ -125,7 +125,7 @@ def add_evidence_to_storage(event: EventEnvelope, incident_id: int, db_session=N
 def is_business_hours(commander_tz: str):
     """Determines if it's currently office hours where the incident commander is located."""
     now = arrow.utcnow().to(commander_tz)
-    return now.weekday() not in [5, 6] and now.hour < 9 and now.hour > 16
+    return now.weekday() not in [5, 6] and now.hour > 9 and now.hour < 17
 
 
 def create_cache_key(user_id: str, channel_id: str):
@@ -164,8 +164,8 @@ def after_hours(user_email: str, incident_id: int, db_session=None):
                     "type": "mrkdwn",
                     "text": (
                         (
-                            f"Responses may be delayed. The current incident severity is *{incident.incident_severity.name}*"
-                            f" and your message was sent outside of the incident commander's working hours (Weekdays, 9am-5pm, {commander_tz})."
+                            f"Responses may be delayed. The current incident priority is *{incident.incident_priority.name}*"
+                            f" and your message was sent outside of the Incident Commander's working hours (Weekdays, 9am-5pm, {commander_tz} timezone)."
                         )
                     ),
                 },
