@@ -15,7 +15,7 @@ from dispatch.individual import service as individual_service
 from .models import Event, EventCreate, EventUpdate
 
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def get(*, db_session, event_id: int) -> Optional[Event]:
@@ -142,6 +142,6 @@ def log(
 
     db_session.commit()
 
-    log.info(f"{source}: {description}")
+    logger.info(f"{source}: {description}")
 
     return event
