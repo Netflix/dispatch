@@ -225,13 +225,19 @@ The incident status has been changed from *{{ incident_status_old }}* to *{{ inc
 INCIDENT_PRIORITY_CHANGE_DESCRIPTION = """
 The incident priority has been changed from *{{ incident_priority_old }}* to *{{ incident_priority_new }}*."""
 
+INCIDENT_NAME_WITH_ENGAGEMENT = {
+    "title": "{{name}} Incident Notification",
+    "title_link": "{{ticket_weblink}}",
+    "text": INCIDENT_NOTIFICATION_PURPOSES_FYI,
+    "button_text": "Join Incident",
+    "button_value": "{{incident_id}}",
+    "button_action": ConversationButtonActions.invite_user,
+}
+
 INCIDENT_NAME = {
     "title": "{{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
     "text": INCIDENT_NOTIFICATION_PURPOSES_FYI,
-    "button_text": "Get Involved",
-    "button_value": "{{incident_id}}",
-    "button_action": ConversationButtonActions.invite_user,
 }
 
 INCIDENT_TITLE = {"title": "Incident Title", "text": "{{title}}"}
@@ -346,7 +352,7 @@ INCIDENT_RESOURCES_MESSAGE = [
     INCIDENT_FAQ_DOCUMENT,
 ]
 
-INCIDENT_NOTIFICATION_COMMON = [INCIDENT_NAME, INCIDENT_TITLE]
+INCIDENT_NOTIFICATION_COMMON = [INCIDENT_TITLE]
 
 INCIDENT_NOTIFICATION = INCIDENT_NOTIFICATION_COMMON.copy()
 INCIDENT_NOTIFICATION.extend(
