@@ -1,4 +1,6 @@
 import datetime
+import logging
+
 from uuid import uuid4
 
 from typing import List, Optional
@@ -11,6 +13,9 @@ from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 
 from .models import Event, EventCreate, EventUpdate
+
+
+logger = logging.getLogger(__name__)
 
 
 def get(*, db_session, event_id: int) -> Optional[Event]:
@@ -136,5 +141,7 @@ def log(
         db_session.add(individual)
 
     db_session.commit()
+
+    logger.info(f"{source}: {description}")
 
     return event

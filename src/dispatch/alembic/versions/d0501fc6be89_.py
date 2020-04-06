@@ -1,4 +1,4 @@
-"""empty message
+"""Adds new columns to application data model
 
 Revision ID: d0501fc6be89
 Revises: e75e103693f2
