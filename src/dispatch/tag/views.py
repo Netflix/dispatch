@@ -4,16 +4,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from dispatch.database import get_db, search_filter_sort_paginate
-from dispatch.search.service import search
 
 from .models import (
-    Tag,
     TagCreate,
     TagPagination,
     TagRead,
     TagUpdate,
 )
-from .service import create, delete, get, get_all, update
+from .service import create, delete, get, update
 
 router = APIRouter()
 
@@ -47,44 +45,44 @@ def get_tags(
     )
 
 
-@router.get("/{app_id}", response_model=TagRead)
-def get_tag(*, db_session: Session = Depends(get_db), app_id: str):
+@router.get("/{tag_id}", response_model=TagRead)
+def get_tag(*, db_session: Session = Depends(get_db), tag_id: str):
     """
     Given its unique ID, retrieve details about a single tag.
     """
-    app = get(db_session=db_session, app_id=app_id)
-    if not app:
+    tag = get(db_session=db_session, tag_id=tag_id)
+    if not tag:
         raise HTTPException(status_code=404, detail="The requested tag does not exist.")
-    return app
+    return tag
 
 
 @router.post("/", response_model=TagRead)
-def create_tag(*, db_session: Session = Depends(get_db), app_in: TagCreate):
+def create_tag(*, db_session: Session = Depends(get_db), tag_in: TagCreate):
     """
     Create a new tag.
     """
-    app = create(db_session=db_session, app_in=app_in)
-    return app
+    tag = create(db_session=db_session, tag_in=tag_in)
+    return tag
 
 
-@router.put("/{app_id}", response_model=TagRead)
-def update_tag(*, db_session: Session = Depends(get_db), app_id: int, app_in: TagUpdate):
+@router.put("/{tag_id}", response_model=TagRead)
+def update_tag(*, db_session: Session = Depends(get_db), tag_id: int, tag_in: TagUpdate):
     """
     Given its unique ID, update details of an tag.
     """
-    app = get(db_session=db_session, app_id=app_id)
-    if not app:
+    tag = get(db_session=db_session, tag_id=tag_id)
+    if not tag:
         raise HTTPException(status_code=404, detail="An tag with this ID does not exist.")
-    app = update(db_session=db_session, app=app, app_in=app_in)
-    return app
+    tag = update(db_session=db_session, tag=tag, tag_in=tag_in)
+    return tag
 
 
-@router.delete("/{app_id}")
-def delete_tag(*, db_session: Session = Depends(get_db), app_id: int):
+@router.delete("/{tag_id}")
+def delete_tag(*, db_session: Session = Depends(get_db), tag_id: int):
     """
     Delete an tag, returning only an HTTP 200 OK if successful.
     """
-    app = get(db_session=db_session, app_id=app_id)
-    if not app:
+    tag = get(db_session=db_session, tag_id=tag_id)
+    if not tag:
         raise HTTPException(status_code=404, detail="An tag with this ID does not exist.")
-    delete(db_session=db_session, app_id=app_id)
+    delete(db_session=db_session, tag_id=tag_id)
