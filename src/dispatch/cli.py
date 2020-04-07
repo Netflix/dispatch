@@ -405,7 +405,7 @@ def close_incidents(name, username):
 def clean_incident_artifacts(pattern):
     """This command will clean up incident artifacts. Useful for development."""
     import re
-    from dispatch.plugins.dispatch_google.drive.config import GOOGLE_DOMAIN
+    from dispatch.plugins.dispatch_google.config import GOOGLE_DOMAIN
     from dispatch.plugins.dispatch_google.common import get_service
     from dispatch.plugins.dispatch_google.drive.drive import delete_team_drive, list_team_drives
 
