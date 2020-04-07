@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 from starlette.requests import Request
 from starlette.responses import Response
 
-from dispatch.config import INCIDENT_PLUGIN_CONTACT_SLUG
+from dispatch.config import INCIDENT_PLUGIN_CONTACT_SLUG, INCIDENT_PLUGIN_CONVERSATION_SLUG
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.conversation.service import get_by_channel_id
 from dispatch.database import get_db, SessionLocal
@@ -151,10 +151,12 @@ def handle_reaction_added_event(
             db_session=db_session, email=message_sender_email
         )
 
+        convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
+
         # we log the event
         event_service.log(
             db_session=db_session,
-            source="Slack - Conversation",
+            source=convo_plugin.title,
             description=message_text,
             incident_id=incident_id,
             individual_id=individual.id,
