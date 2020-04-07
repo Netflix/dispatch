@@ -17,6 +17,7 @@ from .database import Base, engine
 from .exceptions import DispatchException
 from .plugins.base import plugins
 from .scheduler import scheduler
+from .logging import configure_logging
 
 from dispatch.models import *  # noqa; noqa
 
@@ -38,7 +39,7 @@ def insert_newlines(string, every=64):
 @click.version_option(version=__version__)
 def dispatch_cli():
     """Command-line interface to Dispatch."""
-    pass
+    configure_logging()
 
 
 @dispatch_cli.group("plugins")
@@ -503,8 +504,7 @@ def init_database():
 
 
 @dispatch_database.command("restore")
-@click.option(
-    "--dump-file", default='dispatch-backup.dump', help="Path to a PostgreSQL dump file.")
+@click.option("--dump-file", default="dispatch-backup.dump", help="Path to a PostgreSQL dump file.")
 def restore_database(dump_file):
     """Restores the database via pg_restore."""
     import sh
@@ -513,7 +513,7 @@ def restore_database(dump_file):
         DATABASE_HOSTNAME,
         DATABASE_NAME,
         DATABASE_PORT,
-        DATABASE_CREDENTIALS
+        DATABASE_CREDENTIALS,
     )
 
     username, password = str(DATABASE_CREDENTIALS).split(":")
@@ -718,7 +718,7 @@ def revision_database(
 def dispatch_scheduler():
     """Container for all dispatch scheduler commands."""
     # we need scheduled tasks to be imported
-    from .incident.scheduled import daily_summary  # noqa
+    from .incident.scheduled import daily_summary, auto_tagger  # noqa
     from .task.scheduled import sync_tasks, create_task_reminders  # noqa
     from .term.scheduled import sync_terms  # noqa
     from .document.scheduled import sync_document_terms  # noqa
