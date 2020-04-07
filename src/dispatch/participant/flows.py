@@ -50,7 +50,7 @@ def add_participant(
     event_service.log(
         db_session=db_session,
         source="Dispatch App",
-        description=f"{individual.name} added to incident with role {participant_role.role}",
+        description=f"{individual.name} added to incident with {participant_role.role} role",
         incident_id=incident_id,
     )
 

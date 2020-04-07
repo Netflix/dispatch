@@ -113,13 +113,16 @@ def log(
     description: str,
     incident_id: int,
     individual_id: int = None,
-    started_at: datetime = datetime.datetime.now(),
+    started_at: datetime = None,
     ended_at: datetime = None,
 ) -> Event:
     """
     Logs an event
     """
     uuid = uuid4()
+
+    if not started_at:
+        started_at = datetime.datetime.utcnow()
 
     if not ended_at:
         ended_at = started_at
