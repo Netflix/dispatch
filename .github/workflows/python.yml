@@ -1,4 +1,4 @@
-name: Lint and Test
+name: Python Lint and Test
 
 on: pull_request
 
@@ -27,7 +27,9 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: Install dependencies
+      - name: Set up Node
+
+      - name: Install python dependencies
         run: |
           export DISPATCH_LIGHT_BUILD=1
           python -m pip install --upgrade pip
@@ -40,11 +42,6 @@ jobs:
       - name: Run Flake8
         run: |
           flake8 .
-
-      - name: Run ESLint
-        working-directory: src/dispatch/static/dispatch
-        run: |
-          eslint .
 
       - name: Test with pytest
         run: |
