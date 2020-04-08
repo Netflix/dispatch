@@ -9,16 +9,15 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v2
-
-      - name: Use Node.js 12.7.0
-        uses: actions/setup-node@v1
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v1.4.1
         with:
           node-version: 12.7.0
       - name: Install dev deps
         working-directory: src/dispatch/static/dispatch
         run: |
-          npm install -D
+          npm install
       - name: Run ESLint
         working-directory: src/dispatch/static/dispatch
         run: |
-          eslint .
+          npm run lint

@@ -27,8 +27,6 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: Set up Node
-
       - name: Install python dependencies
         run: |
           export DISPATCH_LIGHT_BUILD=1
