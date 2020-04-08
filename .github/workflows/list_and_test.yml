@@ -42,7 +42,7 @@ jobs:
           flake8 .
 
       - name: Run ESLint
-        working-directory: src/dispatch/static/dispath
+        working-directory: src/dispatch/static/dispatch
         run: |
           eslint .
 
