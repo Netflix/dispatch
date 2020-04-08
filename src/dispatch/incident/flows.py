@@ -291,25 +291,9 @@ def create_incident_storage(
 ):
     """Create an external file store for incident storage."""
     p = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
-    storage = p.create_file(INCIDENT_STORAGE_FOLDER_ID, name, participant_group_emails)
+    storage = p.create_file(INCIDENT_STORAGE_FOLDER_ID, incident.title, participant_group_emails)
     storage.update({"resource_type": INCIDENT_PLUGIN_STORAGE_SLUG, "resource_id": storage["id"]})
     return storage
-
-
-def archive_incident_artifacts(incident: Incident, db_session: SessionLocal):
-    """Archives artifacts in the incident storage."""
-    p = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
-    p.archive(
-        source_team_drive_id=incident.storage.resource_id,
-        dest_team_drive_id=INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID,
-        folder_name=incident.name,
-    )
-    event_service.log(
-        db_session=db_session,
-        source=p.title,
-        description="Incident artifacts archived",
-        incident_id=incident.id,
-    )
 
 
 def create_collaboration_documents(incident: Incident, db_session: SessionLocal):
@@ -853,12 +837,8 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
         if INCIDENT_STORAGE_OPEN_ON_CLOSE:
             # we archive the artifacts in the storage
             storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
-            storage_plugin.archive(
-                folder_id=incident.storage.resource_id,
-            )
-            log.debug(
-                "We have archived the incident artifacts."
-            )
+            storage_plugin.archive(folder_id=incident.storage.resource_id,)
+            log.debug("We have archived the incident artifacts.")
 
         # we delete the tactical and notification groups
         delete_participant_groups(incident, db_session)
