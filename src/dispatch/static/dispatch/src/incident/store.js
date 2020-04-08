@@ -47,7 +47,8 @@ const state = {
         reporters: [],
         commanders: [],
         incidentTypes: [],
-        status: []
+        incidentPriorities: [],
+        incidentStatuses: []
       },
       q: "",
       page: 1,

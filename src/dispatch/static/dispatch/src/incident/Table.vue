@@ -7,42 +7,39 @@
     <v-btn color="primary" dark @click="createEditShow()">New</v-btn>
     <v-menu v-model="filterMenu" :close-on-content-click="false" :nudge-width="300" offset-y>
       <template v-slot:activator="{ on }">
-        <v-btn class="ml-2" color="secondary" dark v-on="on">Filters</v-btn>
+        <v-badge :value="numFilters" bordered overlap :content="numFilters">
+          <v-btn class="ml-2" color="secondary" dark v-on="on">Filters</v-btn>
+        </v-badge>
       </template>
 
       <v-card>
         <v-list>
           <v-list-item>
             <v-list-item-content>
-              <individual-combobox v-model="filters.commanders" label="Commanders"></individual-combobox>
+              <individual-combobox v-model="commanders" label="Commanders"></individual-combobox>
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
             <v-list-item-content>
-              <individual-combobox v-model="filters.reporters" label="Reporters"></individual-combobox>
+              <individual-combobox v-model="reporters" label="Reporters"></individual-combobox>
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
             <v-list-item-content>
-              <incident-type-combobox v-model="filters.incidentTypes"></incident-type-combobox>
+              <incident-type-combobox v-model="incidentTypes" />
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title class="font-weight-bold">Status</v-list-item-title>
-              <div class="aligh-center">
-                <v-checkbox v-model="filters.status" label="Active" value="Active"></v-checkbox>
-                <v-checkbox v-model="filters.status" label="Stable" value="Stable"></v-checkbox>
-                <v-checkbox v-model="filters.status" label="Closed" value="Closed"></v-checkbox>
-              </div>
+              <incident-priority-combobox v-model="incidentPriorities" />
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-content>
+              <incident-status-multi-select v-model="incidentStatuses" />
             </v-list-item-content>
           </v-list-item>
         </v-list>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn text @click="filterMenu = false">Cancel</v-btn>
-          <v-btn color="primary" text @click="menu = false">Save</v-btn>
-        </v-card-actions>
       </v-card>
     </v-menu>
     <v-flex xs12>
@@ -98,12 +95,16 @@
 </template>
 
 <script>
+import _ from "lodash"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 // import DeleteDialog from "@/incident/DeleteDialog.vue"
 import NewEditSheet from "@/incident/NewEditSheet.vue"
+import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
 import IndividualCombobox from "@/individual/IndividualCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
+import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
+
 export default {
   name: "IncidentTable",
 
@@ -111,7 +112,9 @@ export default {
     // DeleteDialog
     NewEditSheet,
     IndividualCombobox,
-    IncidentTypeCombobox
+    IncidentTypeCombobox,
+    IncidentPriorityCombobox,
+    IncidentStatusMultiSelect
   },
   data() {
     return {
@@ -138,12 +141,25 @@ export default {
       "table.options.page",
       "table.options.itemsPerPage",
       "table.options.sortBy",
-      "table.options.filters",
+      "table.options.filters.commanders",
+      "table.options.filters.reporters",
+      "table.options.filters.incidentTypes",
+      "table.options.filters.incidentPriorities",
+      "table.options.filters.incidentStatuses",
       "table.options.descending",
       "table.loading",
       "table.rows.items",
       "table.rows.total"
-    ])
+    ]),
+    numFilters: function() {
+      return _.sum([
+        this.reporters.length,
+        this.commanders.length,
+        this.incidentTypes.length,
+        this.incidentPriorities.length,
+        this.incidentStatuses.length
+      ])
+    }
   },
 
   mounted() {
