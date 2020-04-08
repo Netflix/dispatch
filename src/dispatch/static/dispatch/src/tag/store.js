@@ -74,7 +74,7 @@ const actions = {
   save({ commit, dispatch }) {
     if (!state.selected.id) {
       return TagApi.create(state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "Tag created successfully." }, { root: true })
@@ -91,7 +91,7 @@ const actions = {
         })
     } else {
       return TagApi.update(state.selected.id, state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "Tag updated successfully." }, { root: true })

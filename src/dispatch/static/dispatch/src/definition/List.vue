@@ -1,23 +1,13 @@
 <template>
-  <v-layout
-    row
-    wrap
-  >
+  <v-layout row wrap>
     <div class="headline">
       Definitions
     </div>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
-          <v-list
-            two-line
-            class="elevation-2"
-          >
-            <v-list-group
-              v-for="item in items"
-              :key="item.content.id"
-              no-action
-            >
+          <v-list two-line class="elevation-2">
+            <v-list-group v-for="item in items" :key="item.content.id" no-action>
               <template v-slot:activator>
                 <v-list-item>
                   <v-layout>

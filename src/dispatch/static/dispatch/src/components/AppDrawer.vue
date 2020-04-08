@@ -1,13 +1,6 @@
 <template>
-  <v-navigation-drawer
-    app
-    :value="toggleDrawer"
-    clipped
-  >
-    <vue-perfect-scrollbar
-      class="drawer-menu--scroll"
-      :settings="scrollSettings"
-    >
+  <v-navigation-drawer app :value="toggleDrawer" clipped>
+    <vue-perfect-scrollbar class="drawer-menu--scroll" :settings="scrollSettings">
       <v-list dense>
         <template v-for="item in menus">
           <!--group with subitems-->
@@ -18,10 +11,7 @@
             :prepend-icon="item.icon"
             no-action="no-action"
           >
-            <v-list-item
-              slot="activator"
-              ripple="ripple"
-            >
+            <v-list-item slot="activator" ripple="ripple">
               <v-list-item-content>
                 <v-list-item-title>{{ item.title }}</v-list-item-title>
               </v-list-item-content>
@@ -34,10 +24,7 @@
                 :group="subItem.group"
                 sub-group="sub-group"
               >
-                <v-list-item
-                  slot="activator"
-                  ripple="ripple"
-                >
+                <v-list-item slot="activator" ripple="ripple">
                   <v-list-item-content>
                     <v-list-item-title>{{ subItem.title }}</v-list-item-title>
                   </v-list-item-content>
@@ -75,16 +62,10 @@
               </v-list-item>
             </template>
           </v-list-group>
-          <v-subheader
-            v-else-if="item.header"
-            :key="item.name"
-          >
+          <v-subheader v-else-if="item.header" :key="item.name">
             {{ item.header }}
           </v-subheader>
-          <v-divider
-            v-else-if="item.divider"
-            :key="item.name"
-          />
+          <v-divider v-else-if="item.divider" :key="item.name" />
           <!--top-level link-->
           <v-list-item
             v-else

@@ -28,7 +28,9 @@
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
             >
-              <template v-slot:item.page_commander="{ item }">{{ item.page_commander | capitalize }}</template>
+              <template v-slot:item.page_commander="{ item }">{{
+                item.page_commander | capitalize
+              }}</template>
               <template v-slot:item.actions="{ item }">
                 <v-icon small class="mr-2" @click="createEditShow(item)">edit</v-icon>
               </template>
@@ -81,7 +83,7 @@ export default {
     this.$watch(
       vm => [vm.q, vm.page, vm.itemsPerPage, vm.sortBy, vm.descending],
       () => {
-          console.log("foo")
+        console.log("foo")
         this.getAll()
       }
     )

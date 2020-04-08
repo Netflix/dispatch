@@ -72,7 +72,8 @@
             :loading="loading"
             :disabled="invalid || !validated"
             @click="save()"
-          >Save</v-btn>
+            >Save</v-btn
+          >
         </v-card-actions>
       </v-card>
     </ValidationObserver>

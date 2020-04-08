@@ -16,15 +16,13 @@
 <script>
 import DashboardOverview from "@/dashboard/Overview.vue"
 import DashboardMonthly from "@/dashboard/Monthly.vue"
-import DashboardIncidentType from "@/dashboard/IncidentType.vue"
 
 export default {
   name: "IncidentDashboard",
 
   components: {
     DashboardOverview,
-    DashboardMonthly,
-    DashboardIncidentType
+    DashboardMonthly
   },
 
   data() {

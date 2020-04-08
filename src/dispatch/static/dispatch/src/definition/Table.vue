@@ -6,8 +6,7 @@
       Definitions
     </div>
     <v-spacer />
-    <v-btn color="primary"
-dark class="mb-2" @click="createEditShow()">
+    <v-btn color="primary" dark class="mb-2" @click="createEditShow()">
       New
     </v-btn>
     <v-flex xs12>
@@ -35,12 +34,10 @@ dark class="mb-2" @click="createEditShow()">
               :sort-desc="descending"
             >
               <template v-slot:item.actions="{ item }">
-                <v-icon small
-class="mr-2" @click="createEditShow(item)">
+                <v-icon small class="mr-2" @click="createEditShow(item)">
                   edit
                 </v-icon>
-                <v-icon small
-@click="removeShow(item)">
+                <v-icon small @click="removeShow(item)">
                   delete
                 </v-icon>
               </template>

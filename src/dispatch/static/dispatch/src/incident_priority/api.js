@@ -4,7 +4,7 @@ const resource = "/incident_priorities"
 
 export default {
   getAll(options) {
-    return API.get(`${resource}/`, { params: { ...options }})
+    return API.get(`${resource}/`, { params: { ...options } })
   },
   get(incidentPriorityId) {
     return API.get(`${resource}/${incidentPriorityId}`)

@@ -29,9 +29,15 @@
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
             >
-              <template v-slot:item.resolve_by="{ item }">{{ item.resolve_by | formatDate }}</template>
-              <template v-slot:item.created_at="{ item }">{{ item.created_at | formatDate }}</template>
-              <template v-slot:item.resolved_at="{ item }">{{ item.resolved_at | formatDate }}</template>
+              <template v-slot:item.resolve_by="{ item }">{{
+                item.resolve_by | formatDate
+              }}</template>
+              <template v-slot:item.created_at="{ item }">{{
+                item.created_at | formatDate
+              }}</template>
+              <template v-slot:item.resolved_at="{ item }">{{
+                item.resolved_at | formatDate
+              }}</template>
               <template v-slot:item.source="{ item }">
                 <a :href="item.weblink" target="_blank" style="text-decoration: none;">
                   {{ item.source }}
@@ -51,9 +57,8 @@
 </template>
 
 <script>
-import _ from "lodash"
 import { mapFields } from "vuex-map-fields"
-import { mapState, mapActions, mapMutations } from "vuex"
+import { mapActions } from "vuex"
 import DeleteDialog from "@/task/DeleteDialog.vue"
 import NewEditSheet from "@/task/NewEditSheet.vue"
 export default {

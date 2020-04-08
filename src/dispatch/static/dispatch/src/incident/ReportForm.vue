@@ -2,7 +2,6 @@
   <v-app>
     <v-content>
       <v-card flat>
-
         <v-toolbar color="red darken-2" dark extended flat height="150" />
 
         <v-card class="mx-auto" max-width="600" style="margin-top: -64px;">
@@ -30,9 +29,9 @@
                       <v-list-item-subtitle>{{ commander.name }}</v-list-item-subtitle>
                     </v-list-item-content>
                     <v-list-item-action>
-                        <v-list-item-icon>
-                            <v-icon>open_in_new</v-icon>
-                        </v-list-item-icon>
+                      <v-list-item-icon>
+                        <v-icon>open_in_new</v-icon>
+                      </v-list-item-icon>
                     </v-list-item-action>
                   </v-list-item>
                   <v-divider />
@@ -76,11 +75,11 @@
                     <v-list-item-title>Ticket</v-list-item-title>
                     <v-list-item-subtitle>{{ ticket.description }}</v-list-item-subtitle>
                   </v-list-item-content>
-                    <v-list-item-action>
-                        <v-list-item-icon>
-                            <v-icon>open_in_new</v-icon>
-                        </v-list-item-icon>
-                    </v-list-item-action>
+                  <v-list-item-action>
+                    <v-list-item-icon>
+                      <v-icon>open_in_new</v-icon>
+                    </v-list-item-icon>
+                  </v-list-item-action>
                 </v-list-item>
                 <v-list-item v-else>
                   <v-list-item-content>
@@ -96,11 +95,11 @@
                     <v-list-item-title>Video Conference</v-list-item-title>
                     <v-list-item-subtitle>{{ conference.description }}</v-list-item-subtitle>
                   </v-list-item-content>
-                    <v-list-item-action>
-                        <v-list-item-icon>
-                            <v-icon>open_in_new</v-icon>
-                        </v-list-item-icon>
-                    </v-list-item-action>
+                  <v-list-item-action>
+                    <v-list-item-icon>
+                      <v-icon>open_in_new</v-icon>
+                    </v-list-item-icon>
+                  </v-list-item-action>
                 </v-list-item>
                 <v-list-item v-else>
                   <v-list-item-content>
@@ -116,11 +115,11 @@
                     <v-list-item-title>Conversation</v-list-item-title>
                     <v-list-item-subtitle>{{ conversation.description }}</v-list-item-subtitle>
                   </v-list-item-content>
-                    <v-list-item-action>
-                        <v-list-item-icon>
-                            <v-icon>open_in_new</v-icon>
-                        </v-list-item-icon>
-                    </v-list-item-action>
+                  <v-list-item-action>
+                    <v-list-item-icon>
+                      <v-icon>open_in_new</v-icon>
+                    </v-list-item-icon>
+                  </v-list-item-action>
                 </v-list-item>
                 <v-list-item v-else>
                   <v-list-item-content>
@@ -136,11 +135,11 @@
                     <v-list-item-title>Storage</v-list-item-title>
                     <v-list-item-subtitle>{{ storage.description }}</v-list-item-subtitle>
                   </v-list-item-content>
-                    <v-list-item-action>
-                        <v-list-item-icon>
-                            <v-icon>open_in_new</v-icon>
-                        </v-list-item-icon>
-                    </v-list-item-action>
+                  <v-list-item-action>
+                    <v-list-item-icon>
+                      <v-icon>open_in_new</v-icon>
+                    </v-list-item-icon>
+                  </v-list-item-action>
                 </v-list-item>
                 <v-list-item v-else>
                   <v-list-item-content>
@@ -151,21 +150,22 @@
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider />
-                <span v-for="document in documents" v-if="documents" :key="document.resource_id">
-                  <v-list-item :href="document.weblink" target="_blank">
-                    <v-list-item-content>
-                      <v-list-item-title>{{ document.resource_type | deslug }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
-                    </v-list-item-content>
-                    <v-list-item-action>
+                <div v-if="documents">
+                  <span v-for="document in documents" :key="document.resource_id">
+                    <v-list-item :href="document.weblink" target="_blank">
+                      <v-list-item-content>
+                        <v-list-item-title>{{ document.resource_type | deslug }}</v-list-item-title>
+                        <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
+                      </v-list-item-content>
+                      <v-list-item-action>
                         <v-list-item-icon>
-                            <v-icon>open_in_new</v-icon>
+                          <v-icon>open_in_new</v-icon>
                         </v-list-item-icon>
-                    </v-list-item-action>
-                </v-list-item>
-                  </v-list-item>
-                  <v-divider />
-                </span>
+                      </v-list-item-action>
+                    </v-list-item>
+                    <v-divider />
+                  </span>
+                </div>
                 <span v-else>
                   <v-list-item>
                     <v-list-item-content>
@@ -181,7 +181,9 @@
             </v-list>
             <v-container grid-list-md>
               <v-flex xs12>
-                <v-btn color="primary" depressed @click="resetSelected()">Report another incident</v-btn>-
+                <v-btn color="primary" depressed @click="resetSelected()">
+                  Report another incident
+                </v-btn>
               </v-flex>
             </v-container>
           </v-card-text>
@@ -190,8 +192,8 @@
               <div>Dispatch</div>
               <p class="display-1 text--primary">Security Incident Report</p>
               <p>
-                If you suspect a security incident and require help from security, please fill out the
-                following to the best of your abilities.
+                If you suspect a security incident and require help from security, please fill out
+                the following to the best of your abilities.
               </p>
               <v-form>
                 <v-container grid-list-md>
@@ -241,7 +243,8 @@
                     :loading="loading"
                     :disabled="invalid || !validated"
                     @click="save()"
-                  >Submit</v-btn>
+                    >Submit</v-btn
+                  >
                 </v-container>
               </v-form>
             </v-card-text>
@@ -261,7 +264,7 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
-import { mapActions  } from "vuex"
+import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider } from "vee-validate"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"

@@ -5,19 +5,16 @@
         {{ $route.meta.title || "" }}
       </h3>
     </div>
-    <v-breadcrumbs divider="/"
-:items="breadcrumbs">
+    <v-breadcrumbs divider="/" :items="breadcrumbs">
       <template v-slot:item="props">
-        <router-link :to="props.item.href"
-:class="[props.item.disabled && 'disabled']">
+        <router-link :to="props.item.href" :class="[props.item.disabled && 'disabled']">
           {{ props.item.text }}
         </router-link>
       </template>
     </v-breadcrumbs>
     <v-spacer />
     <div class="page-header-right">
-      <v-btn icon
-@click="refresh">
+      <v-btn icon @click="refresh">
         <v-icon class="text--secondary">
           refresh
         </v-icon>

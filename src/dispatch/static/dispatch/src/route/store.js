@@ -44,7 +44,7 @@ const actions = {
         commit("SET_LOADING", false)
         commit("SET_RECOMMENDATION", response.data.recommendation)
       })
-      .catch(err => {
+      .catch(() => {
         commit("SET_LOADING", false)
       })
   }

@@ -46,7 +46,7 @@ export default {
   computed: {
     series() {
       let series = { name: "Average Days Closed", data: [] }
-      _.forEach(this.value, function(value, key) {
+      _.forEach(this.value, function(value) {
         series.data.push(
           Math.round(
             _.sumBy(value, function(item) {

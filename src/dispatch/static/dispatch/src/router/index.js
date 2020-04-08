@@ -73,6 +73,9 @@ function loginwithPKCE(to, from, next) {
   authorizationHandler.setAuthorizationNotifier(notifier)
 
   notifier.setAuthorizationListener((request, response, error) => {
+    if (error) {
+      console.log(error)
+    }
     if (response) {
       let req = new TokenRequest({
         client_id: clientId,
@@ -106,8 +109,12 @@ function loginwithPKCE(to, from, next) {
       // Test if we already have a valid access token
       // Set the redirect_uri to a single location and store the real redirect uri in session storage.
       // This enables easier enablement of SPA on providers like Okta where each route must be whitelisted.
-      let redirect_uri = window.location.protocol + "//" + window.location.host + "/implicit/callback"
-      localStorage.setItem("redirect_uri", window.location.protocol + "//" + window.location.host + to.path)
+      let redirect_uri =
+        window.location.protocol + "//" + window.location.host + "/implicit/callback"
+      localStorage.setItem(
+        "redirect_uri",
+        window.location.protocol + "//" + window.location.host + to.path
+      )
       const request = new AuthorizationRequest({
         client_id: clientId,
         redirect_uri: redirect_uri,

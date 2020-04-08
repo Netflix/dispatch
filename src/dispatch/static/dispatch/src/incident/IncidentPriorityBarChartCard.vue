@@ -74,7 +74,7 @@ export default {
     },
     series() {
       let aggCount = {}
-      _.forEach(this.value, function(value, key) {
+      _.forEach(this.value, function(value, _) {
         let count = _.countBy(value, function(item) {
           return item.incident_priority.name
         })

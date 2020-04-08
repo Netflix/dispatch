@@ -69,7 +69,7 @@ const actions = {
   save({ commit, dispatch }) {
     if (!state.selected.id) {
       return DefinitionApi.create(state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "Definition created successfully." }, { root: true })
@@ -86,7 +86,7 @@ const actions = {
         })
     } else {
       return DefinitionApi.update(state.selected.id, state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "Definition updated successfully." }, { root: true })

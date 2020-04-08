@@ -1,4 +1,4 @@
-import { AuthLayout, DefaultLayout } from "@/components/layouts"
+import { DefaultLayout } from "@/components/layouts"
 
 export const publicRoute = [
   {
@@ -37,14 +37,12 @@ export const protectedRoute = [
   },
   {
     path: "/incidents/status",
-    component: DefaultLayout,
     meta: { title: "Status", icon: "", requiresAuth: true },
     component: () => import(/* webpackChunkName: "incidents-status" */ "@/incident/Status.vue")
   },
 
   {
     path: "/incidents/report",
-    component: DefaultLayout,
     meta: { title: "Report", icon: "", requiresAuth: true },
     component: () => import(/* webpackChunkName: "incidents-report" */ "@/incident/ReportForm.vue")
   },
@@ -238,7 +236,7 @@ export const protectedRoute = [
     children: [
       {
         path: "/incidents/priorities",
-        name: "IncidentTypeTable",
+        name: "IncidentPriorityTable",
         component: () =>
           import(/* webpackChunkName: "routing-table" */ "@/incident_priority/Table.vue")
       }
