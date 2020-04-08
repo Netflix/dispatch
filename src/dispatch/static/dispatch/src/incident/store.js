@@ -2,6 +2,7 @@ import IncidentApi from "@/incident/api"
 
 import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
+import _ from "lodash"
 
 const getDefaultSelectedState = () => {
   return {
@@ -44,11 +45,11 @@ const state = {
     },
     options: {
       filters: {
-        reporters: [],
-        commanders: [],
-        incidentTypes: [],
-        incidentPriorities: [],
-        incidentStatuses: []
+        reporter: [],
+        commander: [],
+        incident_type: [],
+        incident_priority: [],
+        status: []
       },
       q: "",
       page: 1,
@@ -61,13 +62,38 @@ const state = {
 }
 
 const getters = {
-  getField
+  getField,
+  tableOptions({ state }) {
+    // format our filters
+    return state.table.options
+  }
 }
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", true)
-    return IncidentApi.getAll(state.table.options).then(response => {
+
+    let tableOptions = Object.assign({}, state.table.options)
+    delete tableOptions.filters
+
+    tableOptions.fields = []
+    tableOptions.ops = []
+    tableOptions.values = []
+
+    _.forEach(state.table.options.filters, function(value, key) {
+      _.each(value, function(value) {
+        if (_.has(value, "id")) {
+          tableOptions.fields.push(key + ".id")
+          tableOptions.values.push(value.id)
+        } else {
+          tableOptions.fields.push(key)
+          tableOptions.values.push(value)
+        }
+        tableOptions.ops.push("==")
+      })
+    })
+    console.log(tableOptions)
+    return IncidentApi.getAll(tableOptions).then(response => {
       commit("SET_TABLE_LOADING", false)
       commit("SET_TABLE_ROWS", response.data)
     })

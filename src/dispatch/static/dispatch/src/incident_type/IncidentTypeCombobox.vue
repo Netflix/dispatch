@@ -10,6 +10,7 @@
     multiple
     chips
     close
+    clearable
     :loading="loading"
     @update:search-input="fetchData({ q: $event })"
   >
@@ -18,7 +19,8 @@
         <v-list-item-content>
           <v-list-item-title>
             No Incident Types matching "
-            <strong>{{ search }}</strong>".
+            <strong>{{ search }}</strong
+            >".
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>

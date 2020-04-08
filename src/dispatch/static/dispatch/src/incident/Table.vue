@@ -4,44 +4,48 @@
     <!--<delete-dialog />-->
     <div class="headline">Incidents</div>
     <v-spacer />
-    <v-btn color="primary" dark @click="createEditShow()">New</v-btn>
-    <v-menu v-model="filterMenu" :close-on-content-click="false" :nudge-width="300" offset-y>
+    <v-dialog v-model="filterDialog" max-width="600px">
       <template v-slot:activator="{ on }">
         <v-badge :value="numFilters" bordered overlap :content="numFilters">
-          <v-btn class="ml-2" color="secondary" dark v-on="on">Filters</v-btn>
+          <v-btn color="secondary" dark v-on="on">Filter Columns</v-btn>
         </v-badge>
       </template>
-
       <v-card>
-        <v-list>
+        <v-card-title>
+          <span class="headline">Column Filters</span>
+        </v-card-title>
+        <v-list dense>
+          <!--
           <v-list-item>
             <v-list-item-content>
-              <individual-combobox v-model="commanders" label="Commanders"></individual-combobox>
+              <individual-combobox v-model="commander" label="Commanders"></individual-combobox>
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
             <v-list-item-content>
-              <individual-combobox v-model="reporters" label="Reporters"></individual-combobox>
+              <individual-combobox v-model="reporter" label="Reporters"></individual-combobox>
+            </v-list-item-content>
+          </v-list-item>
+          -->
+          <v-list-item>
+            <v-list-item-content>
+              <incident-type-combobox v-model="incident_type" />
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
             <v-list-item-content>
-              <incident-type-combobox v-model="incidentTypes" />
+              <incident-priority-combobox v-model="incident_priority" />
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
             <v-list-item-content>
-              <incident-priority-combobox v-model="incidentPriorities" />
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item>
-            <v-list-item-content>
-              <incident-status-multi-select v-model="incidentStatuses" />
+              <incident-status-multi-select v-model="status" />
             </v-list-item-content>
           </v-list-item>
         </v-list>
       </v-card>
-    </v-menu>
+    </v-dialog>
+    <v-btn color="primary" class="ml-2" dark @click="createEditShow()">New</v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -101,7 +105,7 @@ import { mapActions } from "vuex"
 // import DeleteDialog from "@/incident/DeleteDialog.vue"
 import NewEditSheet from "@/incident/NewEditSheet.vue"
 import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
-import IndividualCombobox from "@/individual/IndividualCombobox.vue"
+// import IndividualCombobox from "@/individual/IndividualCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
 
@@ -111,14 +115,14 @@ export default {
   components: {
     // DeleteDialog
     NewEditSheet,
-    IndividualCombobox,
+    // IndividualCombobox,
     IncidentTypeCombobox,
     IncidentPriorityCombobox,
     IncidentStatusMultiSelect
   },
   data() {
     return {
-      filterMenu: false,
+      filterDialog: false,
       headers: [
         { text: "Id", value: "name", align: "left", width: "10%" },
         { text: "Title", value: "title", sortable: false },
@@ -141,11 +145,11 @@ export default {
       "table.options.page",
       "table.options.itemsPerPage",
       "table.options.sortBy",
-      "table.options.filters.commanders",
-      "table.options.filters.reporters",
-      "table.options.filters.incidentTypes",
-      "table.options.filters.incidentPriorities",
-      "table.options.filters.incidentStatuses",
+      "table.options.filters.commander",
+      "table.options.filters.reporter",
+      "table.options.filters.incident_type",
+      "table.options.filters.incident_priority",
+      "table.options.filters.status",
       "table.options.descending",
       "table.loading",
       "table.rows.items",
@@ -153,11 +157,11 @@ export default {
     ]),
     numFilters: function() {
       return _.sum([
-        this.reporters.length,
-        this.commanders.length,
-        this.incidentTypes.length,
-        this.incidentPriorities.length,
-        this.incidentStatuses.length
+        this.reporter.length,
+        this.commander.length,
+        this.incident_type.length,
+        this.incident_priority.length,
+        this.status.length
       ])
     }
   },
@@ -166,7 +170,18 @@ export default {
     this.getAll({})
 
     this.$watch(
-      vm => [vm.q, vm.page, vm.itemsPerPage, vm.sortBy, vm.descending],
+      vm => [
+        vm.q,
+        vm.page,
+        vm.itemsPerPage,
+        vm.sortBy,
+        vm.descending,
+        vm.commander,
+        vm.reporter,
+        vm.incident_type,
+        vm.incident_priority,
+        vm.status
+      ],
       () => {
         this.getAll()
       }
