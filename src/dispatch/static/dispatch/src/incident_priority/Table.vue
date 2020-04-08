@@ -83,7 +83,6 @@ export default {
     this.$watch(
       vm => [vm.q, vm.page, vm.itemsPerPage, vm.sortBy, vm.descending],
       () => {
-        console.log("foo")
         this.getAll()
       }
     )
