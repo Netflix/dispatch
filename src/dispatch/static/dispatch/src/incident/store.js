@@ -92,7 +92,6 @@ const actions = {
         tableOptions.ops.push("==")
       })
     })
-    console.log(tableOptions)
     return IncidentApi.getAll(tableOptions).then(response => {
       commit("SET_TABLE_LOADING", false)
       commit("SET_TABLE_ROWS", response.data)
