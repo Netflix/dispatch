@@ -1,4 +1,4 @@
-name: Python application
+name: Lint and Test
 
 on: pull_request
 
@@ -36,10 +36,15 @@ jobs:
       - name: Run Black
         run: |
           black .
-      
+
       - name: Run Flake8
         run: |
           flake8 .
+
+      - name: Run ESLint
+        working-directory: src/dispatch/static/dispath
+        run: |
+          eslint .
 
       - name: Test with pytest
         run: |
