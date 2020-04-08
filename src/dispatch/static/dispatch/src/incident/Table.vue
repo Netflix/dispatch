@@ -46,7 +46,9 @@
               <template v-slot:item.actions="{ item }">
                 <v-icon small class="mr-2" @click="createEditShow(item)">edit</v-icon>
               </template>
-              <template v-slot:item.reported_at="{ item }">{{ item.reported_at | formatDate }}</template>
+              <template v-slot:item.reported_at="{ item }">{{
+                item.reported_at | formatDate
+              }}</template>
             </v-data-table>
           </v-card>
         </v-flex>

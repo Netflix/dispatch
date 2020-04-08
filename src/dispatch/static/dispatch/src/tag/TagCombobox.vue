@@ -28,7 +28,6 @@
 <script>
 import TagApi from "@/tag/api"
 import _ from "lodash"
-import { mapState, mapActions } from "vuex"
 export default {
   name: "TagCombobox",
   props: {

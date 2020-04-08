@@ -106,10 +106,10 @@ const actions = {
             }
           }, 5000)
         })
-        .catch(err => {})
+        .catch(() => {})
     } else {
       return IncidentApi.update(state.selected.id, state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "Incident updated successfully." }, { root: true })

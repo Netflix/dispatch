@@ -50,9 +50,8 @@
 </template>
 
 <script>
-import _ from "lodash"
 import { mapFields } from "vuex-map-fields"
-import { mapState, mapActions, mapMutations } from "vuex"
+import { mapActions } from "vuex"
 import DeleteDialog from "@/definition/DeleteDialog.vue"
 import NewEditSheet from "@/definition/NewEditSheet.vue"
 export default {
@@ -89,7 +88,7 @@ export default {
 
     this.$watch(
       vm => [vm.q, vm.page, vm.itemsPerPage, vm.sortBy, vm.descending],
-      val => {
+      () => {
         this.getAll()
       }
     )
