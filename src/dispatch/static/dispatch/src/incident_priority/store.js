@@ -72,7 +72,7 @@ const actions = {
   save({ commit, state, dispatch }) {
     if (!state.selected.id) {
       return IncidentPriorityApi.create(state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
@@ -93,7 +93,7 @@ const actions = {
         })
     } else {
       return IncidentPriorityApi.update(state.selected.id, state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(

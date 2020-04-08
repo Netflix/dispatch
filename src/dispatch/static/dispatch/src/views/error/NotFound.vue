@@ -1,23 +1,14 @@
 <template>
   <v-app class="exception">
-    <v-container
-      fluid
-      fill-height
-    >
-      <v-layout
-        align-center
-        justify-center
-      >
+    <v-container fluid fill-height>
+      <v-layout align-center justify-center>
         <div class="text-md-center">
           <h1>404</h1>
           <h2 class="my-3 headline">
             Sorry, page not found
           </h2>
           <div>
-            <v-btn
-              color="primary"
-              @click="goHome"
-            >
+            <v-btn color="primary" @click="goHome">
               Go Home
             </v-btn>
           </div>
@@ -42,6 +33,7 @@ h1 {
   line-height: 150px;
   font-weight: 700;
   color: #252932;
-  text-shadow: rgba(61, 61, 61, 0.3) 1px 1px, rgba(61, 61, 61, 0.2) 2px 2px, rgba(61, 61, 61, 0.3) 3px 3px;
+  text-shadow: rgba(61, 61, 61, 0.3) 1px 1px, rgba(61, 61, 61, 0.2) 2px 2px,
+    rgba(61, 61, 61, 0.3) 3px 3px;
 }
 </style>

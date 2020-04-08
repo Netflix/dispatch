@@ -75,7 +75,7 @@ const actions = {
   save({ commit, dispatch }) {
     if (!state.selected.id) {
       return TeamApi.create(state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "Team created successfully." }, { root: true })
@@ -92,7 +92,7 @@ const actions = {
         })
     } else {
       return TeamApi.update(state.selected.id, state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "Team updated successfully." }, { root: true })

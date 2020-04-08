@@ -1,6 +1,5 @@
 <template>
-  <v-dialog v-model="showRemove"
-persistent max-width="800px">
+  <v-dialog v-model="showRemove" persistent max-width="800px">
     <v-card>
       <v-card-title>
         <span class="headline">Delete Definition?</span>
@@ -14,12 +13,10 @@ persistent max-width="800px">
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="blue darken-1"
-text @click="closeRemove()">
+        <v-btn color="blue darken-1" text @click="closeRemove()">
           Cancel
         </v-btn>
-        <v-btn color="red darken-1"
-text @click="remove()">
+        <v-btn color="red darken-1" text @click="remove()">
           Delete
         </v-btn>
       </v-card-actions>
@@ -28,7 +25,7 @@ text @click="remove()">
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex"
+import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 export default {
   name: "DefinitionDeleteDialog",

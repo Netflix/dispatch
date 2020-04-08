@@ -6,12 +6,7 @@
       Policies
     </div>
     <v-spacer />
-    <v-btn
-      color="primary"
-      dark
-      class="mb-2"
-      @click="createPolicy()"
-    >
+    <v-btn color="primary" dark class="mb-2" @click="createPolicy()">
       New
     </v-btn>
     <v-flex xs12>
@@ -37,17 +32,10 @@
               @update:options="setFilterOptions($event)"
             >
               <template v-slot:item.actions="{ item }">
-                <v-icon
-                  small
-                  class="mr-2"
-                  @click="editPolicy(item)"
-                >
+                <v-icon small class="mr-2" @click="editPolicy(item)">
                   edit
                 </v-icon>
-                <v-icon
-                  small
-                  @click="deletePolicy(item)"
-                >
+                <v-icon small @click="deletePolicy(item)">
                   delete
                 </v-icon>
               </template>

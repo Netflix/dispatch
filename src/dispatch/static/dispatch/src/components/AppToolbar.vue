@@ -48,7 +48,7 @@
   </v-app-bar>
 </template>
 <script>
-import { mapActions, mapMutations, mapState, mapGetters } from "vuex"
+import { mapActions, mapMutations, mapState } from "vuex"
 
 import Util from "@/util"
 export default {

@@ -3,7 +3,13 @@
     <v-layout row>
       <!-- Filters -->
       <v-flex lg2 sm3 xs6>
-        <v-select v-model="selectedMonth" :items="months" label="Month" dense return-object></v-select>
+        <v-select
+          v-model="selectedMonth"
+          :items="months"
+          label="Month"
+          dense
+          return-object
+        ></v-select>
       </v-flex>
       <!-- Filters Ends-->
     </v-layout>

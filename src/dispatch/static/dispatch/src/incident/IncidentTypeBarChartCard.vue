@@ -71,7 +71,7 @@ export default {
     },
     series() {
       let series = []
-      _.forEach(this.value, function(value, key) {
+      _.forEach(this.value, function(value) {
         let typeCount = _.map(
           _.countBy(value, function(item) {
             return item.incident_type.name

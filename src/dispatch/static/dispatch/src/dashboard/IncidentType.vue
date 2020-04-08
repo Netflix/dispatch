@@ -34,24 +34,39 @@
     </v-row>
     <v-row dense>
       <v-col md="6">
-        <incident-type-bar-chart-card v-model="groupedItems" :loading="loading"></incident-type-bar-chart-card>
+        <incident-type-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+        ></incident-type-bar-chart-card>
       </v-col>
       <v-col md="6">
-        <incident-priority-bar-chart-card v-model="groupedItems" :loading="loading"></incident-priority-bar-chart-card>
+        <incident-priority-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+        ></incident-priority-bar-chart-card>
       </v-col>
     </v-row>
     <v-row dense>
       <v-col md="6">
-        <incident-cost-bar-chart-card v-model="groupedItems" :loading="loading"></incident-cost-bar-chart-card>
+        <incident-cost-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+        ></incident-cost-bar-chart-card>
       </v-col>
       <v-col md="6"></v-col>
     </v-row>
     <v-row dense>
       <v-col md="6">
-        <incident-active-time-card v-model="groupedItems" :loading="loading"></incident-active-time-card>
+        <incident-active-time-card
+          v-model="groupedItems"
+          :loading="loading"
+        ></incident-active-time-card>
       </v-col>
       <v-col md="6">
-        <incident-resolve-time-card v-model="groupedItems" :loading="loading"></incident-resolve-time-card>
+        <incident-resolve-time-card
+          v-model="groupedItems"
+          :loading="loading"
+        ></incident-resolve-time-card>
       </v-col>
     </v-row>
   </v-layout>

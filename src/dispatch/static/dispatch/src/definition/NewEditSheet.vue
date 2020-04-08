@@ -1,15 +1,12 @@
 <template>
-  <v-navigation-drawer v-model="showCreateEdit"
-app clipped right width="500">
+  <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
     <template v-slot:prepend>
       <v-list-item two-line>
         <v-list-item-content>
-          <v-list-item-title v-if="id"
-class="title">
+          <v-list-item-title v-if="id" class="title">
             Edit
           </v-list-item-title>
-          <v-list-item-title v-else
-class="title">
+          <v-list-item-title v-else class="title">
             New
           </v-list-item-title>
           <v-list-item-subtitle>Definition</v-list-item-subtitle>
@@ -17,14 +14,12 @@ class="title">
       </v-list-item>
     </template>
     <ValidationObserver>
-      <v-card slot-scope="{ invalid, validated }"
-flat>
+      <v-card slot-scope="{ invalid, validated }" flat>
         <v-card-text>
           <v-container grid-list-md>
             <v-layout wrap>
               <v-flex xs12>
-                <ValidationProvider name="Text"
-rules="required" immediate>
+                <ValidationProvider name="Text" rules="required" immediate>
                   <v-textarea
                     v-model="text"
                     slot-scope="{ errors, valid }"
@@ -46,8 +41,7 @@ rules="required" immediate>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="secondary"
-@click="closeCreateEdit()">
+          <v-btn color="secondary" @click="closeCreateEdit()">
             Cancel
           </v-btn>
           <v-btn
@@ -66,7 +60,7 @@ rules="required" immediate>
 
 <script>
 import { mapFields } from "vuex-map-fields"
-import { mapState, mapActions } from "vuex"
+import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider } from "vee-validate"
 import TermCombobox from "@/term/TermCombobox.vue"
 export default {

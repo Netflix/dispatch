@@ -15,8 +15,8 @@
         <v-list-item-content>
           <v-list-item-title>
             No Terms matching "
-            <strong>{{ search }}</strong>". Press
-            <kbd>enter</kbd> to create a new one
+            <strong>{{ search }}</strong
+            >". Press <kbd>enter</kbd> to create a new one
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
@@ -27,7 +27,6 @@
 <script>
 import TermApi from "@/term/api"
 import _ from "lodash"
-import { mapState, mapActions, mapMutations } from "vuex"
 export default {
   name: "TermCombobox",
   props: {

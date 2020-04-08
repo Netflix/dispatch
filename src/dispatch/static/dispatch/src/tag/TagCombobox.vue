@@ -16,8 +16,8 @@
         <v-list-item-content>
           <v-list-item-title>
             No Tags matching "
-            <strong>{{ search }}</strong>". Press
-            <kbd>enter</kbd> to create a new one
+            <strong>{{ search }}</strong
+            >". Press <kbd>enter</kbd> to create a new one
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
@@ -28,7 +28,6 @@
 <script>
 import TagApi from "@/tag/api"
 import _ from "lodash"
-import { mapState, mapActions } from "vuex"
 export default {
   name: "TagCombobox",
   props: {

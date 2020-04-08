@@ -31,7 +31,6 @@ import AppToolbar from "@/components/AppToolbar"
 import PageHeader from "@/components/PageHeader"
 import Snackbar from "@/components/Snackbar.vue"
 import Refresh from "@/components/Refresh.vue"
-import Loading from "@/components/Loading.vue"
 
 export default {
   components: {
@@ -39,8 +38,7 @@ export default {
     AppToolbar,
     PageHeader,
     Snackbar,
-    Refresh,
-    Loading
+    Refresh
   },
 
   created() {

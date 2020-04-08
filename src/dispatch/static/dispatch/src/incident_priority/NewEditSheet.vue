@@ -76,7 +76,11 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex>
-                <v-switch v-model="page_commander" label="Page Commander" hint="Would you like Dispatch to page the incident commander on incident creation?"></v-switch>
+                <v-switch
+                  v-model="page_commander"
+                  label="Page Commander"
+                  hint="Would you like Dispatch to page the incident commander on incident creation?"
+                ></v-switch>
               </v-flex>
             </v-layout>
           </v-container>
@@ -90,7 +94,8 @@
             :loading="loading"
             :disabled="invalid || !validated"
             @click="save()"
-          >Save</v-btn>
+            >Save</v-btn
+          >
         </v-card-actions>
       </v-card>
     </ValidationObserver>

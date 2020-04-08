@@ -1,11 +1,15 @@
 <template>
   <v-combobox
-    v-model="individual"
+    v-model="incidentPriority"
     :items="items"
     item-text="name"
     :search-input.sync="search"
     :menu-props="{ maxHeight: '400' }"
+    hide-selected
     :label="label"
+    multiple
+    chips
+    clearable
     :loading="loading"
     @update:search-input="fetchData({ q: $event })"
   >
@@ -13,7 +17,7 @@
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No Indivduals matching "
+            No Incident Priorities matching "
             <strong>{{ search }}</strong
             >".
           </v-list-item-title>
@@ -24,21 +28,21 @@
 </template>
 
 <script>
-import IndividualApi from "@/individual/api"
+import IncidentPriorityApi from "@/incident_priority/api"
 import _ from "lodash"
 export default {
-  name: "IndividualSelect",
+  name: "IncidentPriorityComboBox",
   props: {
     value: {
-      type: Object,
+      priority: Array,
       default: function() {
-        return {}
+        return []
       }
     },
     label: {
-      type: String,
+      priority: String,
       default: function() {
-        return "Individual"
+        return "Priorities"
       }
     }
   },
@@ -52,12 +56,21 @@ export default {
   },
 
   computed: {
-    individual: {
+    incidentPriority: {
       get() {
         return _.cloneDeep(this.value)
       },
       set(value) {
-        this.$emit("input", value)
+        this._incidentPriorities = value.map(v => {
+          if (typeof v === "string") {
+            v = {
+              name: v
+            }
+            this.items.push(v)
+          }
+          return v
+        })
+        this.$emit("input", this._incidentPriorities)
       }
     }
   },
@@ -70,11 +83,14 @@ export default {
     fetchData(filterOptions) {
       this.error = null
       this.loading = true
-      IndividualApi.getAll(filterOptions).then(response => {
+      IncidentPriorityApi.getAll(filterOptions).then(response => {
         this.items = response.data.items
         this.loading = false
       })
-    }
+    },
+    getFilteredData: _.debounce(function(options) {
+      this.fetchData(options)
+    }, 500)
   }
 }
 </script>

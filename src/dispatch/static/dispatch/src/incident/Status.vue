@@ -20,7 +20,9 @@
                 <v-toolbar flat>
                   <v-toolbar-title>Active Security Incidents</v-toolbar-title>
                   <v-spacer></v-spacer>
-                  <v-btn color="primary" dark class="mb-2" to="/incidents/report">Report an Incident</v-btn>
+                  <v-btn color="primary" dark class="mb-2" to="/incidents/report"
+                    >Report an Incident</v-btn
+                  >
                 </v-toolbar>
               </template>
               <template v-slot:item.commander="{ item }">

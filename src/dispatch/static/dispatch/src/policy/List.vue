@@ -10,14 +10,8 @@
     <v-flex xs12>
       <v-layout column>
         <v-flex>
-          <v-list
-            two-line
-            class="elevation-2"
-          >
-            <v-layout
-              v-for="item in items"
-              :key="item.content.id"
-            >
+          <v-list two-line class="elevation-2">
+            <v-layout v-for="item in items" :key="item.content.id">
               <v-flex xs3>
                 <v-list-item>
                   <v-list-item-action>

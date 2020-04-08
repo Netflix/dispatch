@@ -1,0 +1,23 @@
+name: Javascript Lint and Test
+
+on: pull_request
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v1.4.1
+        with:
+          node-version: 12.7.0
+      - name: Install dev deps
+        working-directory: src/dispatch/static/dispatch
+        run: |
+          npm install
+      - name: Run ESLint
+        working-directory: src/dispatch/static/dispatch
+        run: |
+          npm run lint

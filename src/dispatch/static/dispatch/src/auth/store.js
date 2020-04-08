@@ -11,6 +11,7 @@ const state = {
 const actions = {
   loginRedirect({ state }, redirectUri) {
     let redirectUrl = new URL(redirectUri)
+    void state
     router.push({ path: redirectUrl.pathname })
   },
   login({ dispatch, commit }, payload) {
@@ -51,9 +52,9 @@ const mutations = {
 }
 
 const getters = {
-  accessToken: status => state.accessToken,
-  email: status => state.userInfo.email,
-  exp: status => state.userInfo.exp
+  accessToken: () => state.accessToken,
+  email: () => state.userInfo.email,
+  exp: () => state.userInfo.exp
 }
 
 export default {

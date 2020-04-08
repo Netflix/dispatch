@@ -69,7 +69,7 @@ const actions = {
   save({ commit, dispatch }) {
     if (!state.selected.id) {
       return TermApi.create(state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "Term created successfully." }, { root: true })
@@ -86,7 +86,7 @@ const actions = {
         })
     } else {
       return TermApi.update(state.selected.id, state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "Term updated successfully." }, { root: true })

@@ -73,7 +73,7 @@ const actions = {
   save({ commit, state, dispatch }) {
     if (!state.selected.id) {
       return IncidentTypeApi.create(state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "IncidentType created successfully." }, { root: true })
@@ -90,7 +90,7 @@ const actions = {
         })
     } else {
       return IncidentTypeApi.update(state.selected.id, state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
