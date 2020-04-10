@@ -28,6 +28,7 @@
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
               :loading="loading"
+              @click:row="createEditShow"
               loading-text="Loading... Please wait"
             >
               <template v-slot:item.cost="{ item }">{{ item.cost | toUSD }}</template>
@@ -42,9 +43,6 @@
                   <div v-if="item.reporter.name">{{ item.reporter.name }}</div>
                   <div v-else>{{ item.reporter.email }}</div>
                 </div>
-              </template>
-              <template v-slot:item.actions="{ item }">
-                <v-icon small class="mr-2" @click="createEditShow(item)">edit</v-icon>
               </template>
               <template v-slot:item.reported_at="{ item }">{{
                 item.reported_at | formatDate
@@ -81,8 +79,7 @@ export default {
         { text: "Cost", value: "cost" },
         { text: "Commander", value: "commander" },
         { text: "Reporter", value: "reporter" },
-        { text: "Reported At", value: "reported_at" },
-        { text: "Actions", value: "actions", sortable: false, align: "right", width: "5%" }
+        { text: "Reported At", value: "reported_at" }
       ]
     }
   },

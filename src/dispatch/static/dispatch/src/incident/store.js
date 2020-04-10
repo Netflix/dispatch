@@ -25,6 +25,7 @@ const getDefaultSelectedState = () => {
     visibility: null,
     terms: [],
     tags: [],
+    participants: null,
     loading: false
   }
 }

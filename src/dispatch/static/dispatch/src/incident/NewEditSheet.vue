@@ -1,22 +1,37 @@
 <template>
-  <v-navigation-drawer v-model="showCreateEdit" app clipped right width="800">
-    <template v-slot:prepend>
-      <v-list-item two-line>
-        <v-list-item-content>
-          <v-list-item-title v-if="id" class="title">Edit - {{ name }}</v-list-item-title>
-          <v-list-item-title v-else class="title">New</v-list-item-title>
-          <v-list-item-subtitle>Created: {{ created_at | formatDate }}</v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
-    </template>
-    <ValidationObserver>
-      <v-card slot-scope="{ invalid, validated }" flat>
-        <v-card-text>
+  <ValidationObserver>
+    <v-navigation-drawer v-model="showCreateEdit" app clipped right width="800">
+      <template v-slot:prepend scope-slot="{ invalid, validated }">
+        <v-list-item two-line>
+          <v-list-item-content>
+            <v-list-item-title v-if="id" class="title">{{ name }}</v-list-item-title>
+            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-subtitle>Reported - {{ reported_at | formatDate }}</v-list-item-subtitle>
+          </v-list-item-content>
+          <v-btn
+            icon
+            color="primary"
+            :loading="loading"
+            :disabled="invalid || !validated"
+            @click="save()"
+          >
+            <v-icon>save</v-icon>
+          </v-btn>
+          <v-btn icon color="secondary" @click="closeCreateEdit()">
+            <v-icon>close</v-icon>
+          </v-btn>
+        </v-list-item>
+      </template>
+      <v-tabs fixed-tabs v-model="tab">
+        <v-tab key="details">Details</v-tab>
+        <v-tab key="resources">Resources</v-tab>
+        <v-tab key="people">People</v-tab>
+        <v-tab key="timeline">Timeline</v-tab>
+      </v-tabs>
+      <v-tabs-items v-model="tab">
+        <v-tab-item key="details">
           <v-container grid-list-md>
             <v-layout wrap>
-              <v-flex xs12>
-                <span class="subtitle-2">Details</span>
-              </v-flex>
               <v-flex xs12>
                 <ValidationProvider name="Title" rules="required" immediate>
                   <v-text-field
@@ -45,40 +60,29 @@
                   />
                 </ValidationProvider>
               </v-flex>
-              <v-flex xs12>
+              <v-flex xs6>
                 <v-select
                   v-model="status"
                   label="Status"
                   :items="statuses"
                   hint="The incident's current status"
-                  clearable
                 />
               </v-flex>
-              <v-flex xs12>
+              <v-flex xs6>
                 <v-select
                   v-model="visibility"
                   label="Visibility"
                   :items="visibilities"
                   hint="The incident's current's visibilty"
-                  clearable
                 />
               </v-flex>
-              <v-flex xs12>
+              <v-flex xs6>
                 <incident-type-select v-model="incident_type" />
               </v-flex>
-              <v-flex xs12>
+              <v-flex xs6>
                 <incident-priority-select v-model="incident_priority" />
               </v-flex>
-              <v-flex xs12>
-                <term-combobox v-model="terms" />
-              </v-flex>
-              <v-flex xs12>
-                <tag-combobox v-model="tags" />
-              </v-flex>
-              <v-flex xs12>
-                <span class="subtitle-2">People</span>
-              </v-flex>
-              <v-flex xs12>
+              <v-flex xs6>
                 <ValidationProvider name="Commander" rules="required" immediate>
                   <individual-select
                     v-model="commander"
@@ -92,7 +96,7 @@
                   ></individual-select>
                 </ValidationProvider>
               </v-flex>
-              <v-flex xs12>
+              <v-flex xs6>
                 <ValidationProvider name="Reporter" rules="required" immediate>
                   <individual-select
                     v-model="reporter"
@@ -132,24 +136,106 @@
                   </v-col>
                 </v-row>
               </v-flex>
+              <v-flex xs12>
+                <term-combobox v-model="terms" />
+              </v-flex>
+              <v-flex xs12>
+                <tag-combobox v-model="tags" />
+              </v-flex>
             </v-layout>
           </v-container>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer />
-          <v-btn color="secondary" @click="closeCreateEdit()">Cancel</v-btn>
-          <v-btn
-            color="primary"
-            :loading="loading"
-            :disabled="invalid || !validated"
-            @click="save()"
-            >Save</v-btn
-          >
-        </v-card-actions>
-      </v-card>
-    </ValidationObserver>
-  </v-navigation-drawer>
+        </v-tab-item>
+        <v-tab-item key="resources">
+          <v-list>
+            <v-list-item :href="ticket.weblink" target="_blank">
+              <v-list-item-content>
+                <v-list-item-title>Ticket</v-list-item-title>
+                <v-list-item-subtitle>{{ ticket.description }}</v-list-item-subtitle>
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-list-item-icon>
+                  <v-icon>open_in_new</v-icon>
+                </v-list-item-icon>
+              </v-list-item-action>
+            </v-list-item>
+            <v-divider />
+            <v-list-item :href="conference.weblink" target="_blank">
+              <v-list-item-content>
+                <v-list-item-title>Video Conference</v-list-item-title>
+                <v-list-item-subtitle>{{ conference.description }}</v-list-item-subtitle>
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-list-item-icon>
+                  <v-icon>open_in_new</v-icon>
+                </v-list-item-icon>
+              </v-list-item-action>
+            </v-list-item>
+            <v-divider />
+            <v-list-item :href="conversation.weblink" target="_blank">
+              <v-list-item-content>
+                <v-list-item-title>Conversation</v-list-item-title>
+                <v-list-item-subtitle>{{ conversation.description }}</v-list-item-subtitle>
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-list-item-icon>
+                  <v-icon>open_in_new</v-icon>
+                </v-list-item-icon>
+              </v-list-item-action>
+            </v-list-item>
+            <v-divider />
+            <v-list-item :href="storage.weblink" target="_blank">
+              <v-list-item-content>
+                <v-list-item-title>Storage</v-list-item-title>
+                <v-list-item-subtitle>{{ storage.description }}</v-list-item-subtitle>
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-list-item-icon>
+                  <v-icon>open_in_new</v-icon>
+                </v-list-item-icon>
+              </v-list-item-action>
+            </v-list-item>
+            <v-divider />
+            <span v-for="document in documents" :key="document.resource_id">
+              <v-list-item :href="document.weblink" target="_blank">
+                <v-list-item-content>
+                  <v-list-item-title>{{ document.resource_type | deslug }}</v-list-item-title>
+                  <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
+                </v-list-item-content>
+                <v-list-item-action>
+                  <v-list-item-icon>
+                    <v-icon>open_in_new</v-icon>
+                  </v-list-item-icon>
+                </v-list-item-action>
+              </v-list-item>
+              <v-divider />
+            </span>
+          </v-list>
+        </v-tab-item>
+        <v-tab-item key="people">
+          <span v-for="participant in participants" :key="participant.id">
+            <v-list-item :href="participant.individual.weblink" target="_blank">
+              <v-list-item-content>
+                <v-list-item-title
+                  >{{ participant.individual.name }} ({{
+                    participant.participant_role | commaString("role")
+                  }})</v-list-item-title
+                >
+                <v-list-item-subtitle>
+                  {{ participant.team }} - {{ participant.location }}
+                </v-list-item-subtitle>
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-list-item-icon>
+                  <v-icon>open_in_new</v-icon>
+                </v-list-item-icon>
+              </v-list-item-action>
+            </v-list-item>
+            <v-divider />
+          </span>
+        </v-tab-item>
+      </v-tabs-items>
+    </v-navigation-drawer>
+  </ValidationObserver>
 </template>
 
 <script>
@@ -181,6 +267,7 @@ export default {
 
   data() {
     return {
+      tab: null,
       statuses: ["Active", "Stable", "Closed"],
       visibilities: ["Open", "Restricted"]
     }
@@ -203,6 +290,12 @@ export default {
       "selected.incident_priority",
       "selected.incident_type",
       "selected.visibility",
+      "selected.ticket",
+      "selected.storage",
+      "selected.documents",
+      "selected.conference",
+      "selected.conversation",
+      "selected.participants",
       "selected.loading",
       "dialogs.showCreateEdit"
     ])
