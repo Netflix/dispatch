@@ -1,11 +1,7 @@
-from typing import List
-
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends
 from sqlalchemy import exc
 from sqlalchemy.orm import Session
-
-from dispatch.auth.service import get_current_user
-from dispatch.database import get_db, search_filter_sort_paginate
+from dispatch.database import get_db
 
 
 from .models import DispatchUser, UserLoginForm, UserLoginResponse
@@ -13,18 +9,19 @@ from .service import fetch_user, encode_jwt, credentials_exception
 
 router = APIRouter()
 
+
 @router.post("/login", response_model=UserLoginResponse, summary="Login via email, returns a jwt")
 def login_user(
-    user: UserLoginForm,
+    form: UserLoginForm,
     db_session: Session = Depends(get_db),
 ):
-    user = fetch_user(db_session, user.email)
-    if user:
-        return {"jwt":encode_jwt({"email":user.email})}
+    user = fetch_user(db_session, form.email)
+    if user and user.email == form.email:
+        return {"jwt": encode_jwt({"email": user.email})}
     raise credentials_exception
 
 
-@router.post("/register", response_model=UserLoginResponse, summary="Login via email, returns a jwt")
+@router.post("/register", response_model=UserLoginResponse, summary="Creates a user, returns jwt")
 def register_user(
     user: UserLoginForm,
     db_session: Session = Depends(get_db),
@@ -34,7 +31,7 @@ def register_user(
     try:
         db_session.commit()
     except exc.IntegrityError:
-        ## TODO replace exception
+        # TODO replace exception
         raise credentials_exception
 
-    return {"jwt":encode_jwt({"email":user.email})}
+    return {"jwt": encode_jwt({"email": user.email})}

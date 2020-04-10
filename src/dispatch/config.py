@@ -5,9 +5,11 @@ import base64
 from starlette.config import Config
 from starlette.datastructures import CommaSeparatedStrings
 
+
 class DefaultConfig(Config):
     def __call__(self, key, cast=None, default=""):
         return self.get(key, cast, default)
+
 
 # if we have metatron available to us, lets use it to decrypt our secrets in memory
 try:
