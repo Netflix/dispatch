@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy import exc
 from sqlalchemy.orm import Session
 from dispatch.database import get_db
 
-
 from .models import DispatchUser, UserLoginForm, UserLoginResponse
-from .service import fetch_user, encode_jwt, credentials_exception
+from .service import fetch_user, encode_jwt, credentials_exception, get_current_user
 
 router = APIRouter()
 
@@ -35,3 +34,11 @@ def register_user(
         raise credentials_exception
 
     return {"jwt": encode_jwt({"email": user.email})}
+
+
+@router.get("/user", response_model=UserLoginResponse, summary="Retrives current user")
+def get_user(
+    req: Request,
+    db_session: Session = Depends(get_db),
+):
+    return {"jwt": get_current_user(request=req)}
