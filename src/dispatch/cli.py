@@ -19,6 +19,7 @@ from .plugins.base import plugins
 from .scheduler import scheduler
 
 from dispatch.models import *  # noqa; noqa
+from dispatch.auth.models import *
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 

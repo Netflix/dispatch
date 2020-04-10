@@ -20,12 +20,19 @@ from dispatch.term.views import router as team_router
 from dispatch.document.views import router as document_router
 from dispatch.task.views import router as task_router
 
+from dispatch.auth.views import router as auth_router
+
 from .common.utils.cli import install_plugins, install_plugin_events
 
 api_router = APIRouter()  # WARNING: Don't use this unless you want unauthenticated routes
 authenticated_api_router = APIRouter()
 
 
+api_router.include_router(
+    auth_router,
+    prefix="/auth",
+    tags=["auth"]
+)
 # NOTE: All api routes should be authenticated by default
 authenticated_api_router.include_router(document_router, prefix="/documents", tags=["documents"])
 authenticated_api_router.include_router(

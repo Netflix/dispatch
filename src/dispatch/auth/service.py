@@ -1,14 +1,23 @@
 import requests
+import logging
 from cachetools import TTLCache
 from fastapi import HTTPException
 from fastapi.security.utils import get_authorization_scheme_param
 from jose import JWTError, jwt
 from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
-
-from dispatch.config import JWKS_URL, DISPATCH_AUTH_HEADER_KEY
+from .models import DispatchUser
+from dispatch.config import (
+    JWKS_URL, 
+    DISPATCH_AUTH_HEADER_KEY, 
+    DISPATCH_JWT_SECRET
+)
 
 jwk_key_cache = TTLCache(maxsize=1, ttl=60 * 60)
+
+credentials_exception = HTTPException(
+    status_code=HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"
+)
 
 
 def from_bearer_token(request: Request):
@@ -23,7 +32,7 @@ def from_bearer_token(request: Request):
     # TODO should we warm this cache up on application start?
     try:
         key = jwk_key_cache[JWKS_URL]
-    except Exception:
+    except KeyError:
         key = requests.get(JWKS_URL).json()["keys"][0]
         jwk_key_cache[JWKS_URL] = key
 
@@ -42,10 +51,6 @@ def from_headers(request: Request):
 
 def get_current_user(*, request: Request):
     """Gets the current user based on the token."""
-    credentials_exception = HTTPException(
-        status_code=HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"
-    )
-
     user_email = from_bearer_token(request)
 
     if not user_email:
@@ -56,13 +61,7 @@ def get_current_user(*, request: Request):
         raise credentials_exception
 
     token = authorization.split()[1]
-
-    # TODO should we warm this cache up on application start?
-    try:
-        key = jwk_key_cache[JWKS_URL]
-    except Exception:
-        key = requests.get(JWKS_URL).json()["keys"][0]
-        jwk_key_cache[JWKS_URL] = key
+    key = get_jwt_key()
 
     try:
         data = jwt.decode(token, key)
@@ -70,3 +69,26 @@ def get_current_user(*, request: Request):
         raise credentials_exception
 
     return data["email"]
+
+
+def get_jwt_key():
+    if JWKS_URL is None:
+        return DISPATCH_JWT_SECRET
+
+    # TODO should we warm this cache up on application start?
+    try:
+        key = jwk_key_cache[JWKS_URL]
+    except KeyError:
+        key = requests.get(JWKS_URL).json()["keys"][0]
+        jwk_key_cache[JWKS_URL] = key
+    return key
+
+
+def fetch_user(db_session, email: str):
+    return db_session.query(DispatchUser).filter(email == email).first()
+
+def encode_jwt(user):
+    return jwt.encode(user, DISPATCH_JWT_SECRET)
+
+def decode_jwt(user):
+    return jwt.decode(user, DISPATCH_JWT_SECRET)
