@@ -9,7 +9,13 @@
     min-width="290px"
   >
     <template v-slot:activator="{ on }">
-      <v-text-field v-model="date" label="Select Date" prepend-icon="event" readonly v-on="on"></v-text-field>
+      <v-text-field
+        v-model="date"
+        label="Select Date"
+        prepend-icon="event"
+        readonly
+        v-on="on"
+      ></v-text-field>
     </template>
     <v-date-picker v-model="date" no-title scrollable>
       <v-spacer></v-spacer>

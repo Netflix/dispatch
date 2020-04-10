@@ -79,7 +79,7 @@ const actions = {
   save({ commit, dispatch }) {
     if (!state.selected.id) {
       return IndividualApi.create(state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "Individual created successfully." }, { root: true })
@@ -96,7 +96,7 @@ const actions = {
         })
     } else {
       return IndividualApi.update(state.selected.id, state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "Individual updated successfully." }, { root: true })
@@ -115,7 +115,7 @@ const actions = {
   },
   remove({ commit, dispatch }) {
     return IndividualApi.delete(state.selected.id)
-      .then(function() {
+      .then(() => {
         dispatch("closeRemove")
         dispatch("getAll")
         commit("app/SET_SNACKBAR", { text: "Individual deleted successfully." }, { root: true })

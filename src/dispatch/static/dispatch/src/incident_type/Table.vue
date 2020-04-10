@@ -24,9 +24,9 @@
               :items="items"
               :server-items-length="total"
               :page.sync="page"
-              :items-per-page="itemsPerPage"
-              :sort-by="sortBy"
-              :sort-desc="descending"
+              :items-per-page.sync="itemsPerPage"
+              :sort-by.sync="sortBy"
+              :sort-desc.sync="descending"
             >
               <template v-slot:item.actions="{ item }">
                 <v-icon small class="mr-2" @click="createEditShow(item)">edit</v-icon>
@@ -54,6 +54,9 @@ export default {
       headers: [
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
+        { text: "Visibility", value: "visibility", sortable: false },
+        { text: "Service", value: "commander_service.name", sortable: false },
+        { text: "Document", value: "template_document.name", sortable: false },
         { text: "Actions", value: "actions", sortable: false }
       ]
     }

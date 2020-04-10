@@ -40,6 +40,10 @@ export default {
   watch: {
     search(val) {
       val && val !== this.select && this.querySelections(val)
+    },
+    value(val) {
+      if (!val) return
+      this.items.push(val)
     }
   },
 
@@ -65,7 +69,7 @@ export default {
     }
   },
 
-  created() {
+  mounted() {
     this.error = null
     this.loading = true
     DocumentApi.getAll().then(response => {

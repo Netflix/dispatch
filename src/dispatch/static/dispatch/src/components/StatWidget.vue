@@ -5,7 +5,7 @@
         <div class="layout row ma-0">
           <div class="sm4 xs4 flex">
             <div class="layout column ma-0 justify-center align-center">
-              <v-icon size="76px">{{icon}}</v-icon>
+              <v-icon size="76px">{{ icon }}</v-icon>
             </div>
           </div>
           <div class="layout column ma-0 justify-center">

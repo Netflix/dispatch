@@ -42,7 +42,6 @@
 </template>
 
 <script>
-import _ from "lodash"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import DeleteDialog from "@/service/DeleteDialog.vue"

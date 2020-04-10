@@ -1,9 +1,9 @@
+IPython
 black
-flake8
-vulture
 coverage
-pytest
+devtools
 factory-boy
 faker
-devtools
-IPython
+flake8
+pytest
+vulture

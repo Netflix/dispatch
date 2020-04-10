@@ -1,10 +1,16 @@
+---
+description: Short description of changes.
+---
+
 # Changelog
 
-## 0.1.0 - 2042-12-03
+{% hint style="info" %}
+Dispatch uses the [calver](https://calver.org/) version schema.
+{% endhint %}
+
+## 2020.02.14
 
 ### Added
 
 * Initial release
-
-
 

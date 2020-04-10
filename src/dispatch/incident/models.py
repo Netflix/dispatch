@@ -16,9 +16,12 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
+from dispatch.config import INCIDENT_RESOURCE_FAQ_DOCUMENT, INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT
+
 from dispatch.conversation.models import ConversationRead
 from dispatch.database import Base
 from dispatch.document.models import DocumentRead
+from dispatch.enums import Visibility
 from dispatch.incident_priority.models import (
     IncidentPriorityCreate,
     IncidentPriorityRead,
@@ -29,8 +32,9 @@ from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.storage.models import StorageRead
 from dispatch.ticket.models import TicketRead
+from dispatch.conference.models import ConferenceRead
 
-from .enums import IncidentStatus, IncidentVisibility
+from .enums import IncidentStatus
 
 assoc_incident_terms = Table(
     "assoc_incident_terms",
@@ -38,6 +42,14 @@ assoc_incident_terms = Table(
     Column("incident_id", Integer, ForeignKey("incident.id")),
     Column("term_id", Integer, ForeignKey("term.id")),
     PrimaryKeyConstraint("incident_id", "term_id"),
+)
+
+assoc_incident_tags = Table(
+    "assoc_incident_tags",
+    Base.metadata,
+    Column("incident_id", Integer, ForeignKey("incident.id")),
+    Column("tag_id", Integer, ForeignKey("tag.id")),
+    PrimaryKeyConstraint("incident_id", "tag_id"),
 )
 
 
@@ -48,7 +60,7 @@ class Incident(Base, TimeStampMixin):
     description = Column(String, nullable=False)
     status = Column(String, default=IncidentStatus.active)
     cost = Column(Float, default=0)
-    visibility = Column(String, default=IncidentVisibility.open)
+    visibility = Column(String, default=Visibility.open)
 
     # auto generated
     reported_at = Column(DateTime, default=datetime.utcnow)
@@ -85,24 +97,41 @@ class Incident(Base, TimeStampMixin):
                         return p.individual
 
     @hybrid_property
+    def incident_document(self):
+        if self.documents:
+            for d in self.documents:
+                if d.resource_type == INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT:
+                    return d
+
+    @hybrid_property
+    def incident_faq(self):
+        if self.documents:
+            for d in self.documents:
+                if d.resource_type == INCIDENT_RESOURCE_FAQ_DOCUMENT:
+                    return d
+
+    @hybrid_property
     def last_status_report(self):
         if self.status_reports:
             return sorted(self.status_reports, key=lambda r: r.created_at)[-1]
 
     # resources
-    groups = relationship("Group", lazy="subquery", backref="incident")
+    conference = relationship("Conference", uselist=False, backref="incident")
     conversation = relationship("Conversation", uselist=False, backref="incident")
-    storage = relationship("Storage", uselist=False, backref="incident")
-    ticket = relationship("Ticket", uselist=False, backref="incident")
     documents = relationship("Document", lazy="subquery", backref="incident")
-    participants = relationship("Participant", backref="incident")
-    incident_type_id = Column(Integer, ForeignKey("incident_type.id"))
-    incident_type = relationship("IncidentType", backref="incident")
-    incident_priority_id = Column(Integer, ForeignKey("incident_priority.id"))
+    events = relationship("Event", backref="incident")
+    groups = relationship("Group", lazy="subquery", backref="incident")
     incident_priority = relationship("IncidentPriority", backref="incident")
+    incident_priority_id = Column(Integer, ForeignKey("incident_priority.id"))
+    incident_type = relationship("IncidentType", backref="incident")
+    incident_type_id = Column(Integer, ForeignKey("incident_type.id"))
+    participants = relationship("Participant", backref="incident")
     status_reports = relationship("StatusReport", backref="incident")
+    storage = relationship("Storage", uselist=False, backref="incident")
+    tags = relationship("Tag", secondary=assoc_incident_tags, backref="incidents")
     tasks = relationship("Task", backref="incident")
     terms = relationship("Term", secondary=assoc_incident_terms, backref="incidents")
+    ticket = relationship("Ticket", uselist=False, backref="incident")
 
 
 # Pydantic models...
@@ -110,6 +139,7 @@ class IncidentBase(DispatchBase):
     title: str
     description: str
     status: Optional[IncidentStatus] = IncidentStatus.active
+    visibility: Optional[Visibility]
 
     @validator("title")
     def title_required(cls, v):
@@ -130,13 +160,14 @@ class IncidentCreate(IncidentBase):
 
 
 class IncidentUpdate(IncidentBase):
-    visibility: IncidentVisibility
     incident_priority: IncidentPriorityBase
     incident_type: IncidentTypeBase
     reported_at: Optional[datetime] = None
     stable_at: Optional[datetime] = None
     commander: Optional[IndividualReadNested]
     reporter: Optional[IndividualReadNested]
+    tags: Optional[List[Any]] = []  # any until we figure out circular imports
+    terms: Optional[List[Any]] = []  # any until we figure out circular imports
 
 
 class IncidentRead(IncidentBase):
@@ -152,8 +183,10 @@ class IncidentRead(IncidentBase):
     storage: Optional[StorageRead] = None
     ticket: Optional[TicketRead] = None
     documents: Optional[List[DocumentRead]] = []
+    tags: Optional[List[Any]] = []  # any until we figure out circular imports
+    terms: Optional[List[Any]] = []  # any until we figure out circular imports
+    conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
-    visibility: IncidentVisibility
 
     created_at: Optional[datetime] = None
     reported_at: Optional[datetime] = None

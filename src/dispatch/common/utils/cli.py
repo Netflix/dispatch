@@ -37,9 +37,9 @@ def install_plugins():
     for ep in pkg_resources.iter_entry_points("dispatch.plugins"):
         try:
             plugin = ep.load()
+        except KeyError as e:
+            logger.warning(f"Failed to load plugin {ep.name}. Reason: {e}")
         except Exception:
-            import traceback
-
             logger.error(f"Failed to load plugin {ep.name}:{traceback.format_exc()}")
         else:
             if not plugin.enabled:

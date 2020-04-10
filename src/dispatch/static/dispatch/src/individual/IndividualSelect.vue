@@ -14,7 +14,8 @@
         <v-list-item-content>
           <v-list-item-title>
             No Indivduals matching "
-            <strong>{{ search }}</strong>".
+            <strong>{{ search }}</strong
+            >".
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>

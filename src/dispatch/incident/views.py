@@ -11,6 +11,7 @@ from dispatch.participant_role.models import ParticipantRoleType
 from .flows import incident_create_flow, incident_update_flow, incident_assign_role_flow
 from .models import IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
 from .service import create, delete, get, update
+from .metrics import make_forecast
 
 router = APIRouter()
 
@@ -133,3 +134,11 @@ def delete_incident(*, db_session: Session = Depends(get_db), incident_id: str):
     if not incident:
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
     delete(db_session=db_session, incident_id=incident.id)
+
+
+@router.get("/metric/forecast/{incident_type}", summary="Get incident forecast data.")
+def get_incident_forecast(*, db_session: Session = Depends(get_db), incident_type: str):
+    """
+    Get incident forecast data.
+    """
+    return make_forecast(db_session=db_session, incident_type=incident_type)

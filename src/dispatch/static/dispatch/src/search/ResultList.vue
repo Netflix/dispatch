@@ -1,40 +1,14 @@
 <template>
-  <v-layout
-    row
-    wrap
-  >
+  <v-layout row wrap>
     <v-flex>
-      <service-list
-        v-if="services.length"
-        :items="services"
-      />
-      <individual-list
-        v-if="individuals.length"
-        :items="individuals"
-      />
-      <team-list
-        v-if="teams.length"
-        :items="teams"
-      />
-      <definition-list
-        v-if="definitions.length"
-        :items="definitions"
-      />
-      <term-list
-        v-if="terms.length"
-        :items="terms"
-      />
-      <v-layout
-        v-if="!results.length"
-        align-center
-        justify-center
-        row
-      >
+      <service-list v-if="services.length" :items="services" />
+      <individual-list v-if="individuals.length" :items="individuals" />
+      <team-list v-if="teams.length" :items="teams" />
+      <definition-list v-if="definitions.length" :items="definitions" />
+      <term-list v-if="terms.length" :items="terms" />
+      <v-layout v-if="!results.length" align-center justify-center row>
         <div class="mr-3 hidden-sm-and-down">
-          <img
-            src="/static/error/500.svg"
-            alt
-          >
+          <img src="/static/error/500.svg" alt />
         </div>
         <div class="text-md-center">
           <h1>Nothing to see here.</h1>

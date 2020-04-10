@@ -46,7 +46,9 @@
               <template v-slot:item.actions="{ item }">
                 <v-icon small class="mr-2" @click="createEditShow(item)">edit</v-icon>
               </template>
-              <template v-slot:item.reported_at="{ item }">{{ item.reported_at | formatDate }}</template>
+              <template v-slot:item.reported_at="{ item }">{{
+                item.reported_at | formatDate
+              }}</template>
             </v-data-table>
           </v-card>
         </v-flex>
@@ -73,6 +75,7 @@ export default {
         { text: "Id", value: "name", align: "left", width: "10%" },
         { text: "Title", value: "title", sortable: false },
         { text: "Status", value: "status", width: "10%" },
+        { text: "Visibility", value: "visibility", width: "10%" },
         { text: "Type", value: "incident_type.name" },
         { text: "Priority", value: "incident_priority.name", width: "10%" },
         { text: "Cost", value: "cost" },

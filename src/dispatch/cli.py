@@ -10,7 +10,7 @@ from tabulate import tabulate
 from uvicorn import main as uvicorn_main
 
 from dispatch import __version__, config
-from dispatch.application.models import *  # noqa
+from dispatch.tag.models import *  # noqa
 from dispatch.common.utils.cli import install_plugin_events, install_plugins
 
 from .database import Base, engine
@@ -406,7 +406,7 @@ def close_incidents(name, username):
 def clean_incident_artifacts(pattern):
     """This command will clean up incident artifacts. Useful for development."""
     import re
-    from dispatch.plugins.dispatch_google.drive.config import GOOGLE_DOMAIN
+    from dispatch.plugins.dispatch_google.config import GOOGLE_DOMAIN
     from dispatch.plugins.dispatch_google.common import get_service
     from dispatch.plugins.dispatch_google.drive.drive import delete_team_drive, list_team_drives
 
@@ -458,7 +458,7 @@ def clean_incident_artifacts(pattern):
 def sync_triggers():
     from sqlalchemy_searchable import sync_trigger
 
-    sync_trigger(engine, "application", "search_vector", ["name"])
+    sync_trigger(engine, "tag", "search_vector", ["name"])
     sync_trigger(engine, "definition", "search_vector", ["text"])
     sync_trigger(engine, "incident", "search_vector", ["name", "title", "description"])
     sync_trigger(
@@ -490,9 +490,10 @@ def database_trigger_sync():
 @dispatch_database.command("init")
 def init_database():
     """Initializes a new database."""
-    from sqlalchemy_utils import create_database
+    from sqlalchemy_utils import create_database, database_exists
 
-    create_database(str(config.SQLALCHEMY_DATABASE_URI))
+    if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
+        create_database(str(config.SQLALCHEMY_DATABASE_URI))
     Base.metadata.create_all(engine)
     alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
     alembic_cfg = AlembicConfig(alembic_path)
@@ -503,25 +504,37 @@ def init_database():
 
 
 @dispatch_database.command("restore")
-def restore_database():
+@click.option(
+    "--dump-file", default='dispatch-backup.dump', help="Path to a PostgreSQL dump file.")
+def restore_database(dump_file):
     """Restores the database via pg_restore."""
+    import sh
     from sh import psql, createdb
-    from dispatch.config import DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_CREDENTIALS
+    from dispatch.config import (
+        DATABASE_HOSTNAME,
+        DATABASE_NAME,
+        DATABASE_PORT,
+        DATABASE_CREDENTIALS
+    )
 
     username, password = str(DATABASE_CREDENTIALS).split(":")
 
-    print(
-        createdb(
-            "-h",
-            DATABASE_HOSTNAME,
-            "-p",
-            DATABASE_PORT,
-            "-U",
-            username,
-            "dispatch",
-            _env={"PGPASSWORD": password},
+    try:
+        print(
+            createdb(
+                "-h",
+                DATABASE_HOSTNAME,
+                "-p",
+                DATABASE_PORT,
+                "-U",
+                username,
+                DATABASE_NAME,
+                _env={"PGPASSWORD": password},
+            )
         )
-    )
+    except sh.ErrorReturnCode_1:
+        print("Database already exists.")
+
     print(
         psql(
             "-h",
@@ -530,18 +543,26 @@ def restore_database():
             DATABASE_PORT,
             "-U",
             username,
+            "-d",
+            DATABASE_NAME,
             "-f",
-            "dispatch-backup.dump",
+            dump_file,
             _env={"PGPASSWORD": password},
         )
     )
+    click.secho("Success.", fg="green")
 
 
 @dispatch_database.command("dump")
 def dump_database():
     """Dumps the database via pg_dump."""
     from sh import pg_dump
-    from dispatch.config import DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_CREDENTIALS
+    from dispatch.config import (
+        DATABASE_HOSTNAME,
+        DATABASE_NAME,
+        DATABASE_PORT,
+        DATABASE_CREDENTIALS,
+    )
 
     username, password = str(DATABASE_CREDENTIALS).split(":")
 
@@ -554,7 +575,7 @@ def dump_database():
         DATABASE_PORT,
         "-U",
         username,
-        "dispatch",
+        DATABASE_NAME,
         _env={"PGPASSWORD": password},
     )
 
@@ -588,9 +609,18 @@ def drop_database():
 @click.option("--revision", nargs=1, default="head", help="Revision identifier.")
 def upgrade_database(tag, sql, revision):
     """Upgrades database schema to newest version."""
+    from sqlalchemy_utils import database_exists, create_database
+
     alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
     alembic_cfg = AlembicConfig(alembic_path)
-    alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
+    if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
+        create_database(str(config.SQLALCHEMY_DATABASE_URI))
+        Base.metadata.create_all(engine)
+        alembic_command.stamp(alembic_cfg, "head")
+    else:
+        alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
+        alembic_cfg = AlembicConfig(alembic_path)
+        alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
     click.secho("Success.", fg="green")
 
 
@@ -689,11 +719,11 @@ def revision_database(
 def dispatch_scheduler():
     """Container for all dispatch scheduler commands."""
     # we need scheduled tasks to be imported
-    from .incident.scheduled import daily_summary, active_incidents_cost  # noqa
+    from .incident.scheduled import daily_summary  # noqa
     from .task.scheduled import sync_tasks, create_task_reminders  # noqa
     from .term.scheduled import sync_terms  # noqa
     from .document.scheduled import sync_document_terms  # noqa
-    from .application.scheduled import sync_applications  # noqa
+    from .tag.scheduled import sync_tags  # noqa
 
     install_plugins()
 
@@ -783,7 +813,11 @@ def run_server(log_level):
         import atexit
         from subprocess import Popen
 
-        p = Popen(["npm", "run", "serve"], cwd="src/dispatch/static/dispatch")
+        # take our frontend vars and export them for the frontend to consume
+        envvars = os.environ.copy()
+        envvars.update({x: getattr(config, x) for x in dir(config) if x.startswith("VUE_APP_")})
+
+        p = Popen(["npm", "run", "serve"], cwd="src/dispatch/static/dispatch", env=envvars)
         atexit.register(p.terminate)
     uvicorn.run("dispatch.main:app", debug=True, log_level=log_level)
 

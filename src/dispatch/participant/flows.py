@@ -2,6 +2,7 @@ import logging
 
 from dispatch.config import INCIDENT_PLUGIN_CONTACT_SLUG
 from dispatch.database import SessionLocal
+from dispatch.event import service as event_service
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.participant_role import service as participant_role_service
@@ -46,8 +47,11 @@ def add_participant(
     db_session.add(incident)
     db_session.commit()
 
-    log.debug(
-        f"{individual.name} with email address {individual.email} has been added to incident id {incident.id} with role {participant_role.role}."
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch App",
+        description=f"{individual.name} added to incident with {participant_role.role} role",
+        incident_id=incident_id,
     )
 
     return participant
@@ -91,7 +95,12 @@ def remove_participant(user_email: str, incident_id: int, db_session: SessionLoc
     db_session.add(participant)
     db_session.commit()
 
-    log.debug(f"Participant {participant.individual.name} has been removed from the incident.")
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch App",
+        description=f"{participant.individual.name} removed from incident",
+        incident_id=incident_id,
+    )
 
     return True
 
@@ -132,6 +141,11 @@ def reactivate_participant(user_email: str, incident_id: int, db_session: Sessio
     db_session.add(participant)
     db_session.commit()
 
-    log.debug(f"{individual_fullname} has been reactivated.")
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch App",
+        description=f"{individual_fullname} reactivated",
+        incident_id=incident_id,
+    )
 
     return True

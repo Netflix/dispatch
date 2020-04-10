@@ -5,23 +5,26 @@ import { debounce } from "lodash"
 
 const getDefaultSelectedState = () => {
   return {
+    commander: null,
+    conference: null,
+    conversation: null,
+    created_at: null,
+    description: null,
+    documents: null,
+    id: null,
     incident_priority: null,
     incident_type: null,
-    commander: null,
+    name: null,
+    reported_at: null,
     reporter: null,
-    title: null,
-    description: null,
-    conversation: null,
+    stable_at: null,
+    status: null,
     storage: null,
     ticket: null,
-    documents: null,
-    stable_at: null,
-    reported_at: null,
-    created_at: null,
-    name: null,
-    status: null,
-    terms: null,
-    id: null,
+    title: null,
+    visibility: null,
+    terms: [],
+    tags: [],
     loading: false
   }
 }
@@ -103,10 +106,10 @@ const actions = {
             }
           }, 5000)
         })
-        .catch(err => {})
+        .catch(() => {})
     } else {
       return IncidentApi.update(state.selected.id, state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "Incident updated successfully." }, { root: true })

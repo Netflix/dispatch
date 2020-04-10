@@ -6,8 +6,7 @@
       Definitions
     </div>
     <v-spacer />
-    <v-btn color="primary"
-dark class="mb-2" @click="createEditShow()">
+    <v-btn color="primary" dark class="mb-2" @click="createEditShow()">
       New
     </v-btn>
     <v-flex xs12>
@@ -35,12 +34,10 @@ dark class="mb-2" @click="createEditShow()">
               :sort-desc="descending"
             >
               <template v-slot:item.actions="{ item }">
-                <v-icon small
-class="mr-2" @click="createEditShow(item)">
+                <v-icon small class="mr-2" @click="createEditShow(item)">
                   edit
                 </v-icon>
-                <v-icon small
-@click="removeShow(item)">
+                <v-icon small @click="removeShow(item)">
                   delete
                 </v-icon>
               </template>
@@ -53,9 +50,8 @@ class="mr-2" @click="createEditShow(item)">
 </template>
 
 <script>
-import _ from "lodash"
 import { mapFields } from "vuex-map-fields"
-import { mapState, mapActions, mapMutations } from "vuex"
+import { mapActions } from "vuex"
 import DeleteDialog from "@/definition/DeleteDialog.vue"
 import NewEditSheet from "@/definition/NewEditSheet.vue"
 export default {
@@ -92,7 +88,7 @@ export default {
 
     this.$watch(
       vm => [vm.q, vm.page, vm.itemsPerPage, vm.sortBy, vm.descending],
-      val => {
+      () => {
         this.getAll()
       }
     )

@@ -1,24 +1,12 @@
 <template>
-  <v-navigation-drawer
-    :value="showNewEditSheet"
-    app
-    clipped
-    right
-    width="500"
-  >
+  <v-navigation-drawer :value="showNewEditSheet" app clipped right width="500">
     <template v-slot:prepend>
       <v-list-item two-line>
         <v-list-item-content>
-          <v-list-item-title
-            v-if="selectedPolicy.id"
-            class="title"
-          >
+          <v-list-item-title v-if="selectedPolicy.id" class="title">
             Edit
           </v-list-item-title>
-          <v-list-item-title
-            v-else
-            class="title"
-          >
+          <v-list-item-title v-else class="title">
             New
           </v-list-item-title>
           <v-list-item-subtitle>Term</v-list-item-subtitle>
@@ -56,18 +44,10 @@
 
       <v-card-actions>
         <v-spacer />
-        <v-btn
-          color="blue darken-1"
-          text
-          @click="close"
-        >
+        <v-btn color="blue darken-1" text @click="close">
           Cancel
         </v-btn>
-        <v-btn
-          color="blue darken-1"
-          text
-          @click="performSave(selectedPolicy)"
-        >
+        <v-btn color="blue darken-1" text @click="performSave(selectedPolicy)">
           Save
         </v-btn>
       </v-card-actions>
@@ -87,14 +67,20 @@ export default {
   },
 
   methods: {
-    ...mapActions("policy", ["createPolicy", "updatePolicy", "addTerm", "removeTerm", "updateSelectedPolicy"]),
+    ...mapActions("policy", [
+      "createPolicy",
+      "updatePolicy",
+      "addTerm",
+      "removeTerm",
+      "updateSelectedPolicy"
+    ]),
 
     close() {
       this.$store.dispatch("policy/showNewEditSheet", false)
     },
 
     performSave(policy) {
-      if (!this.selectedPolicy.hasOwnProperty("id")) {
+      if (!this.selectedPolicy.id) {
         this.$store.dispatch("policy/createPolicy", policy)
       } else {
         this.$store.dispatch("policy/updatePolicy", policy)

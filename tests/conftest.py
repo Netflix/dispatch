@@ -9,6 +9,7 @@ environ["DATABASE_CREDENTIALS"] = "postgres:dispatch"
 environ["DATABASE_HOSTNAME"] = "localhost"
 environ["DISPATCH_HELP_EMAIL"] = "example@example.com"
 environ["DISPATCH_HELP_SLACK_CHANNEL"] = "help-me"
+environ["DISPATCH_UI_URL"] = "https://example.com"
 environ["SLACK_APP_USER_SLUG"] = "XXX"
 environ["INCIDENT_DOCUMENT_INVESTIGATION_SHEET_ID"] = "XXX"
 environ["INCIDENT_FAQ_DOCUMENT_ID"] = "XXX"
@@ -27,10 +28,10 @@ from dispatch.database import Base, engine, SessionLocal
 from dispatch.main import app
 
 from .factories import (
-    ApplicationFactory,
     ConversationFactory,
     DefinitionFactory,
     DocumentFactory,
+    EventFactory,
     GroupFactory,
     IncidentFactory,
     IncidentPriorityFactory,
@@ -44,6 +45,7 @@ from .factories import (
     ServiceFactory,
     StatusReportFactory,
     StorageFactory,
+    TagFactory,
     TaskFactory,
     TeamContactFactory,
     TermFactory,
@@ -225,8 +227,8 @@ def ticket_plugin():
 
 
 @pytest.fixture
-def application(session):
-    return ApplicationFactory()
+def Tag(session):
+    return TagFactory()
 
 
 @pytest.fixture
@@ -367,3 +369,13 @@ def tickets(session):
 @pytest.fixture
 def incident(session):
     return IncidentFactory()
+
+
+@pytest.fixture
+def event(session):
+    return EventFactory()
+
+
+@pytest.fixture
+def events(session):
+    return [EventFactory(), EventFactory()]

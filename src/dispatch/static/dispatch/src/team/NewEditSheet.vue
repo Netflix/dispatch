@@ -1,15 +1,12 @@
 <template>
-  <v-navigation-drawer v-model="showCreateEdit"
-app clipped right width="500">
+  <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
     <template v-slot:prepend>
       <v-list-item two-line>
         <v-list-item-content>
-          <v-list-item-title v-if="id"
-class="title">
+          <v-list-item-title v-if="id" class="title">
             Edit
           </v-list-item-title>
-          <v-list-item-title v-else
-class="title">
+          <v-list-item-title v-else class="title">
             New
           </v-list-item-title>
           <v-list-item-subtitle>Service</v-list-item-subtitle>
@@ -17,8 +14,7 @@ class="title">
       </v-list-item>
     </template>
     <ValidationObserver>
-      <v-card slot-scope="{ invalid, validated }"
-flat>
+      <v-card slot-scope="{ invalid, validated }" flat>
         <v-card-text>
           <v-container grid-list-md>
             <v-layout wrap>
@@ -26,8 +22,7 @@ flat>
                 <span class="subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Name"
-rules="required" immediate>
+                <ValidationProvider name="Name" rules="required" immediate>
                   <v-text-field
                     v-model="name"
                     slot-scope="{ errors, valid }"
@@ -41,8 +36,7 @@ rules="required" immediate>
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Email"
-rules="required" immediate>
+                <ValidationProvider name="Email" rules="required" immediate>
                   <v-text-field
                     v-model="email"
                     slot-scope="{ errors, valid }"
@@ -56,8 +50,7 @@ rules="required" immediate>
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Company"
-rules="required" immediate>
+                <ValidationProvider name="Company" rules="required" immediate>
                   <v-text-field
                     v-model="company"
                     slot-scope="{ errors, valid }"
@@ -88,8 +81,7 @@ rules="required" immediate>
 
         <v-card-actions>
           <v-spacer />
-          <v-btn color="secondary"
-@click="closeCreateEdit()">
+          <v-btn color="secondary" @click="closeCreateEdit()">
             Cancel
           </v-btn>
           <v-btn

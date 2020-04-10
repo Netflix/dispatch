@@ -72,6 +72,11 @@ ENV DISPATCH_BUILD=${SOURCE_COMMIT:-unknown}
 LABEL org.opencontainers.image.revision=$SOURCE_COMMIT
 LABEL org.opencontainers.image.licenses="https://github.com/netflix/dispatch/blob/${SOURCE_COMMIT:-master}/LICENSE"
 
+ARG DISPATCH_LIGHT_BUILD
+ENV DISPATCH_LIGHT_BUILD=${DISPATCH_LIGHT_BUILD}
+
+RUN echo "DISPATCH_LIGHT_BUILD=${DISPATCH_LIGHT_BUILD}"
+
 COPY . /usr/src/dispatch/
 RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
     && cd /usr/src/dispatch \
@@ -103,6 +108,7 @@ ENV PIP_NO_CACHE_DIR=off \
     # Dispatch config params
     DISPATCH_CONF=/etc/dispatch
 
+
 COPY --from=sdist /dist/*.whl /tmp/dist/
 RUN set -x \
     && buildDeps="" \
@@ -116,7 +122,7 @@ RUN set -x \
     # These are also installed last as they are needed
     # during container run and can have the same deps w/
     && apt-get install -y --no-install-recommends \
-    pkg-config \
+    pkg-config postgresql-client\
     \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

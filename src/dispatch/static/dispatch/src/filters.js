@@ -25,7 +25,18 @@ Vue.filter("toUSD", function(value) {
   if (value) {
     var formatter = new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD"
+      currency: "USD",
+      maximumSignificantDigits: 6
+    })
+    return formatter.format(value)
+  }
+  return value
+})
+
+Vue.filter("toNumberString", function(value) {
+  if (value) {
+    var formatter = new Intl.NumberFormat("en-US", {
+      maximumSignificantDigits: 6
     })
     return formatter.format(value)
   }

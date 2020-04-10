@@ -1,4 +1,4 @@
-import { AuthLayout, DefaultLayout } from "@/components/layouts"
+import { DefaultLayout } from "@/components/layouts"
 
 export const publicRoute = [
   {
@@ -37,14 +37,12 @@ export const protectedRoute = [
   },
   {
     path: "/incidents/status",
-    component: DefaultLayout,
     meta: { title: "Status", icon: "", requiresAuth: true },
     component: () => import(/* webpackChunkName: "incidents-status" */ "@/incident/Status.vue")
   },
 
   {
     path: "/incidents/report",
-    component: DefaultLayout,
     meta: { title: "Report", icon: "", requiresAuth: true },
     component: () => import(/* webpackChunkName: "incidents-report" */ "@/incident/ReportForm.vue")
   },
@@ -112,15 +110,14 @@ export const protectedRoute = [
     ]
   },
   {
-    path: "/applications",
+    path: "/tags",
     component: DefaultLayout,
-    meta: { title: "Applications", icon: "view_compact", group: "contacts", requiresAuth: true },
+    meta: { title: "Tags", icon: "view_compact", group: "contacts", requiresAuth: true },
     children: [
       {
-        path: "/applications",
-        name: "ApplicationTable",
-        component: () =>
-          import(/* webpackChunkName: "application-table" */ "@/application/Table.vue")
+        path: "/tags",
+        name: "TagTable",
+        component: () => import(/* webpackChunkName: "tag-table" */ "@/tag/Table.vue")
       }
     ]
   },
@@ -224,6 +221,24 @@ export const protectedRoute = [
         path: "/incidents/types",
         name: "IncidentTypeTable",
         component: () => import(/* webpackChunkName: "routing-table" */ "@/incident_type/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/incidents/priorities",
+    component: DefaultLayout,
+    meta: {
+      title: "Incident Priorities",
+      icon: "view_compact",
+      group: "configuration",
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: "/incidents/priorities",
+        name: "IncidentPriorityTable",
+        component: () =>
+          import(/* webpackChunkName: "routing-table" */ "@/incident_priority/Table.vue")
       }
     ]
   }

@@ -34,6 +34,7 @@ INCIDENT_TEMPLATE = """
 [Incident Conversation|{{conversation_weblink}}]
 [Incident Document|{{document_weblink}}]
 [Incident Storage|{{storage_weblink}}]
+[Incident Conference|{{conference_weblink}}]
 """
 
 INCIDENT_PRIORITY_MAP = {
@@ -75,6 +76,7 @@ def create_issue_fields(
     conversation_weblink: str = None,
     document_weblink: str = None,
     storage_weblink: str = None,
+    conference_weblink: str = None,
     labels: List[str] = None,
     cost: str = None,
 ):
@@ -90,11 +92,13 @@ def create_issue_fields(
         and document_weblink
         and conversation_weblink
         and storage_weblink
+        and conference_weblink
     ):
         description = Template(INCIDENT_TEMPLATE).render(
             description=description,
             commander_username=commander_username,
             document_weblink=document_weblink,
+            conference_weblink=conference_weblink,
             conversation_weblink=conversation_weblink,
             storage_weblink=storage_weblink,
         )
@@ -102,6 +106,21 @@ def create_issue_fields(
 
     if commander_username:
         issue_fields.update({"assignee": {"name": commander_username}})
+
+    if reporter_username:
+        issue_fields.update({"reporter": {"name": reporter_username}})
+
+    if incident_type:
+        issue_fields.update({"components": [{"name": incident_type}]})
+
+    if priority:
+        issue_fields.update({"customfield_10551": INCIDENT_PRIORITY_MAP[priority.lower()]})
+
+    if labels:
+        issue_fields.update({"labels": labels})
+
+    if cost:
+        issue_fields.update({"customfield_20250": cost})
 
     return issue_fields
 
@@ -178,7 +197,7 @@ class JiraTicketPlugin(TicketPlugin):
         commander_username = get_user_name(commander)
         reporter_username = get_user_name(reporter)
         return create_sec_issue(
-            client, title, incident_priority, incident_type, commander_username, reporter_username,
+            client, title, incident_priority, incident_type, commander_username, reporter_username
         )
 
     def update(
@@ -192,6 +211,7 @@ class JiraTicketPlugin(TicketPlugin):
         commander_email: str = None,
         reporter_email: str = None,
         conversation_weblink: str = None,
+        conference_weblink: str = None,
         document_weblink: str = None,
         storage_weblink: str = None,
         labels: List[str] = None,
@@ -212,6 +232,7 @@ class JiraTicketPlugin(TicketPlugin):
             commander_username=commander_username,
             reporter_username=reporter_username,
             conversation_weblink=conversation_weblink,
+            conference_weblink=conference_weblink,
             document_weblink=document_weblink,
             storage_weblink=storage_weblink,
             labels=labels,

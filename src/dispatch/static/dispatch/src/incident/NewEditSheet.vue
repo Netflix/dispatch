@@ -55,6 +55,15 @@
                 />
               </v-flex>
               <v-flex xs12>
+                <v-select
+                  v-model="visibility"
+                  label="Visibility"
+                  :items="visibilities"
+                  hint="The incident's current's visibilty"
+                  clearable
+                />
+              </v-flex>
+              <v-flex xs12>
                 <incident-type-select v-model="incident_type" />
               </v-flex>
               <v-flex xs12>
@@ -62,6 +71,9 @@
               </v-flex>
               <v-flex xs12>
                 <term-combobox v-model="terms" />
+              </v-flex>
+              <v-flex xs12>
+                <tag-combobox v-model="tags" />
               </v-flex>
               <v-flex xs12>
                 <span class="subtitle-2">People</span>
@@ -132,7 +144,8 @@
             :loading="loading"
             :disabled="invalid || !validated"
             @click="save()"
-          >Save</v-btn>
+            >Save</v-btn
+          >
         </v-card-actions>
       </v-card>
     </ValidationObserver>
@@ -149,6 +162,7 @@ import IndividualSelect from "@/individual/IndividualSelect.vue"
 import DatePickerMenu from "@/components/DatePickerMenu.vue"
 import TimePickerMenu from "@/components/TimePickerMenu.vue"
 import TermCombobox from "@/term/TermCombobox.vue"
+import TagCombobox from "@/tag/TagCombobox.vue"
 
 export default {
   name: "IncidentNewEditSheet",
@@ -160,18 +174,21 @@ export default {
     IncidentTypeSelect,
     IndividualSelect,
     TermCombobox,
+    TagCombobox,
     TimePickerMenu,
     DatePickerMenu
   },
 
   data() {
     return {
-      statuses: ["Active", "Stable", "Closed"]
+      statuses: ["Active", "Stable", "Closed"],
+      visibilities: ["Open", "Restricted"]
     }
   },
 
   computed: {
     ...mapFields("incident", [
+      "selected.id",
       "selected.name",
       "selected.title",
       "selected.description",
@@ -182,9 +199,10 @@ export default {
       "selected.reported_at",
       "selected.status",
       "selected.terms",
+      "selected.tags",
       "selected.incident_priority",
       "selected.incident_type",
-      "selected.id",
+      "selected.visibility",
       "selected.loading",
       "dialogs.showCreateEdit"
     ])

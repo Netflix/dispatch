@@ -3,6 +3,7 @@ import logging
 from dispatch.config import INCIDENT_PLUGIN_CONVERSATION_SLUG
 from dispatch.database import SessionLocal
 from dispatch.decorators import background_task
+from dispatch.event import service as event_service
 from dispatch.incident import service as incident_service
 from dispatch.messaging import INCIDENT_STATUS_REPORT, MessageType
 from dispatch.participant import service as participant_service
@@ -43,7 +44,12 @@ def save_status_report(
     db_session.add(incident)
     db_session.commit()
 
-    log.debug(f"New status report created by {participant.individual.name}")
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch App",
+        description=f"New status report created by {participant.individual.name}",
+        incident_id=incident_id,
+    )
 
 
 def send_most_recent_status_report_to_conversation(incident_id: int, db_session: SessionLocal):
@@ -67,11 +73,11 @@ def send_most_recent_status_report_to_conversation(incident_id: int, db_session:
         needs=status_report.needs,
     )
 
-    log.debug(f"Status report sent to conversation {incident.conversation.channel_id}")
-
 
 @background_task
-def new_status_report_flow(user_email: str, incident_id: int, action: dict, db_session=None):
+def new_status_report_flow(
+    user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
+):
     """Stores and sends a new status report to a conversation."""
     conditions = action["submission"]["conditions"]
     actions = action["submission"]["actions"]

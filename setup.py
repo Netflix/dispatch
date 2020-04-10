@@ -345,6 +345,7 @@ def get_requirements(env):
 
 install_requires = get_requirements("base")
 dev_requires = get_requirements("dev")
+metrics_requires = get_requirements("metrics")
 
 
 class DispatchSDistCommand(SDistCommand):
@@ -396,7 +397,7 @@ setup(
     packages=find_packages("src"),
     python_requires=">=3.7",
     install_requires=install_requires,
-    extras_require={"dev": dev_requires},
+    extras_require={"dev": dev_requires, "metrics": metrics_requires},
     cmdclass=cmdclass,
     zip_save=False,
     include_package_data=True,
@@ -405,11 +406,14 @@ setup(
         "dispatch.plugins": [
             "dispatch_participants = dispatch.plugins.dispatch_core.plugin:DispatchParticipantPlugin",
             "dispatch_document_resolver = dispatch.plugins.dispatch_core.plugin:DispatchDocumentResolverPlugin",
+            "dispatch_pkce_auth = dispatch.plugins.dispatch_core.plugin:PKCEAuthProviderPlugin",
             "google_docs_document = dispatch.plugins.dispatch_google.docs.plugin:GoogleDocsDocumentPlugin",
             "google_drive_storage = dispatch.plugins.dispatch_google.drive.plugin:GoogleDriveStoragePlugin",
             "google_drive_task = dispatch.plugins.dispatch_google.drive.plugin:GoogleDriveTaskPlugin",
             "google_gmail_conversation = dispatch.plugins.dispatch_google.gmail.plugin:GoogleGmailConversationPlugin",
             "google_groups_participants = dispatch.plugins.dispatch_google.groups.plugin:GoogleGroupParticipantGroupPlugin",
+            "google_calendar_conference = dispatch.plugins.dispatch_google.calendar.plugin:GoogleCalendarConferencePlugin",
+            "zoom_conference = dispatch.plugins.dispatch_zoom.plugin:ZoomConferencePlugin",
             "jira_ticket = dispatch.plugins.dispatch_jira.plugin:JiraTicketPlugin",
             "pagerduty_oncall = dispatch.plugins.dispatch_pagerduty.plugin:PagerDutyOncallPlugin",
             "slack_conversation = dispatch.plugins.dispatch_slack.plugin:SlackConversationPlugin",

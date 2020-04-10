@@ -1,11 +1,17 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from dispatch.database import get_db, search_filter_sort_paginate
 
-from .models import IncidentPriorityPagination
+from .models import (
+    IncidentPriorityCreate,
+    IncidentPriorityPagination,
+    IncidentPriorityRead,
+    IncidentPriorityUpdate,
+)
+from .service import create, get, update
 
 router = APIRouter()
 
@@ -37,3 +43,50 @@ def get_incident_priorities(
         values=values,
         ops=ops,
     )
+
+
+@router.post("/", response_model=IncidentPriorityRead)
+def create_incident_priority(
+    *, db_session: Session = Depends(get_db), incident_priority_in: IncidentPriorityCreate
+):
+    """
+    Create a new incident_priority.
+    """
+    incident_priority = create(db_session=db_session, incident_priority_in=incident_priority_in)
+    return incident_priority
+
+
+@router.put("/{incident_priority_id}", response_model=IncidentPriorityRead)
+def update_incident_priority(
+    *,
+    db_session: Session = Depends(get_db),
+    incident_priority_id: int,
+    incident_priority_in: IncidentPriorityUpdate,
+):
+    """
+    Update an existing incident_priority.
+    """
+    incident_priority = get(db_session=db_session, incident_priority_id=incident_priority_id)
+    if not incident_priority:
+        raise HTTPException(
+            status_code=404, detail="The incident_priority with this id does not exist."
+        )
+    incident_priority = update(
+        db_session=db_session,
+        incident_priority=incident_priority,
+        incident_priority_in=incident_priority_in,
+    )
+    return incident_priority
+
+
+@router.get("/{incident_priority_id}", response_model=IncidentPriorityRead)
+def get_incident_priority(*, db_session: Session = Depends(get_db), incident_priority_id: int):
+    """
+    Get a single incident_priority.
+    """
+    incident_priority = get(db_session=db_session, incident_priority_id=incident_priority_id)
+    if not incident_priority:
+        raise HTTPException(
+            status_code=404, detail="The incident_priority with this id does not exist."
+        )
+    return incident_priority

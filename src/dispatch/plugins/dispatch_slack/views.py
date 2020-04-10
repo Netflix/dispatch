@@ -1,36 +1,38 @@
+import arrow
+import datetime
 import hashlib
 import hmac
 import json
 import logging
 import platform
 import sys
+
+from cachetools import TTLCache
 from time import time
 from typing import List
 
-import arrow
-from cachetools import TTLCache
 from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException
+
 from pydantic import BaseModel
+
 from sqlalchemy.orm import Session
+
 from starlette.requests import Request
 from starlette.responses import Response
 
-from dispatch.config import INCIDENT_PLUGIN_CONTACT_SLUG
+from dispatch.config import INCIDENT_PLUGIN_CONTACT_SLUG, INCIDENT_PLUGIN_CONVERSATION_SLUG
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.conversation.service import get_by_channel_id
 from dispatch.database import get_db, SessionLocal
 from dispatch.decorators import background_task
+from dispatch.enums import Visibility
+from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
-from dispatch.incident.models import (
-    IncidentVisibility,
-    IncidentUpdate,
-    IncidentRead,
-    IncidentStatus,
-)
+from dispatch.incident.models import IncidentUpdate, IncidentRead, IncidentStatus
 from dispatch.incident_priority import service as incident_priority_service
-from dispatch.incident_priority.models import IncidentPriorityType
 from dispatch.incident_type import service as incident_type_service
+from dispatch.individual import service as individual_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType
@@ -44,8 +46,9 @@ from dispatch.task.models import TaskStatus
 
 from . import __version__
 from .config import (
+    SLACK_API_BOT_TOKEN,
+    SLACK_API_USER_TOKEN,
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
-    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
@@ -54,7 +57,9 @@ from .config import (
     SLACK_COMMAND_MARK_CLOSED_SLUG,
     SLACK_COMMAND_MARK_STABLE_SLUG,
     SLACK_COMMAND_STATUS_REPORT_SLUG,
+    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_SIGNING_SECRET,
+    SLACK_TIMELINE_EVENT_REACTION,
 )
 from .messaging import (
     INCIDENT_CONVERSATION_COMMAND_MESSAGE,
@@ -67,7 +72,7 @@ once_a_day_cache = TTLCache(maxsize=1000, ttl=60 * 60 * 24)
 
 
 router = APIRouter()
-slack_client = dispatch_slack_service.create_slack_client()
+slack_bot_client = dispatch_slack_service.create_slack_client(token=SLACK_API_BOT_TOKEN)
 log = logging.getLogger(__name__)
 
 
@@ -75,21 +80,32 @@ class SlackEventAppException(Exception):
     pass
 
 
+class EventBodyItem(BaseModel):
+    """Body item of the Slack event."""
+
+    type: str = None
+    channel: str = None
+    ts: str = None
+
+
 class EventBody(BaseModel):
     """Body of the Slack event."""
 
     channel: str = None
-    channel_type: str = None
     channel_id: str = None
+    channel_type: str = None
+    deleted_ts: str = None
+    event_ts: str = None
     file_id: str = None
-    deleted_ts: float = None
-    event_ts: float = None
     hidden: bool = None
     inviter: str = None
+    item: EventBodyItem = None
+    item_user: str = None
+    reaction: str = None
+    subtype: str = None
     team: str = None
     text: str = None
     type: str
-    subtype: str = None
     user: str = None
     user_id: str = None
 
@@ -97,32 +113,67 @@ class EventBody(BaseModel):
 class EventEnvelope(BaseModel):
     """Envelope of the Slack event."""
 
-    challenge: str = None
-    token: str = None
-    team_id: str = None
-    enterprise_id: str = None
     api_app_id: str = None
+    authed_users: List[str] = []
+    challenge: str = None
+    enterprise_id: str = None
     event: EventBody = None
-    type: str
     event_id: str = None
     event_time: int = None
-    authed_users: List[str] = []
+    team_id: str = None
+    token: str = None
+    type: str
 
 
 @background_task
-def add_message_to_timeline(event: EventEnvelope, incident_id: int, db_session=None):
-    """Uses reaction to add messages to timelines."""
+def handle_reaction_added_event(
+    user_email: str, incident_id: int, event: dict = None, db_session=None
+):
+    """Handles an event where a reaction is added to a message."""
+    reaction = event.event.reaction
+
+    if reaction == SLACK_TIMELINE_EVENT_REACTION:
+        conversation_id = event.event.item.channel
+        message_ts = event.event.item.ts
+        message_ts_utc = datetime.datetime.utcfromtimestamp(float(message_ts))
+
+        # we fetch the message information
+        slack_user_client = dispatch_slack_service.create_slack_client(token=SLACK_API_USER_TOKEN)
+        response = dispatch_slack_service.list_conversation_messages(
+            slack_user_client, conversation_id, latest=message_ts, limit=1, inclusive=1
+        )
+        message_text = response["messages"][0]["text"]
+        message_sender_id = response["messages"][0]["user"]
+
+        # we fetch the individual who sent the message
+        message_sender_email = get_user_email(client=slack_bot_client, user_id=message_sender_id)
+        individual = individual_service.get_by_email(
+            db_session=db_session, email=message_sender_email
+        )
+
+        convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
+
+        # we log the event
+        event_service.log(
+            db_session=db_session,
+            source=convo_plugin.title,
+            description=message_text,
+            incident_id=incident_id,
+            individual_id=individual.id,
+            started_at=message_ts_utc,
+        )
+
+
+@background_task
+def handle_reaction_removed_event(
+    user_email: str, incident_id: int, event: dict = None, db_session=None
+):
+    """Handles an event where a reaction is removed from a message."""
     pass
 
 
 @background_task
-def remove_message_from_timeline(event: EventEnvelope, incident_id: int, db_session=None):
-    """Uses reaction to remove messages from timeline."""
-    pass
-
-
-@background_task
-def add_evidence_to_storage(event: EventEnvelope, incident_id: int, db_session=None):
+def add_evidence_to_storage(user_email: str, incident_id: int, event: dict = None, db_session=None):
     """Adds evidence (e.g. files) added/shared in the conversation to storage."""
     pass
 
@@ -130,7 +181,7 @@ def add_evidence_to_storage(event: EventEnvelope, incident_id: int, db_session=N
 def is_business_hours(commander_tz: str):
     """Determines if it's currently office hours where the incident commander is located."""
     now = arrow.utcnow().to(commander_tz)
-    return now.weekday() not in [5, 6] and now.hour < 9 and now.hour > 16
+    return now.weekday() not in [5, 6] and now.hour >= 9 and now.hour < 17
 
 
 def create_cache_key(user_id: str, channel_id: str):
@@ -139,11 +190,11 @@ def create_cache_key(user_id: str, channel_id: str):
 
 
 @background_task
-def after_hours(user_email: str, incident_id: int, db_session=None):
+def after_hours(user_email: str, incident_id: int, event: dict = None, db_session=None):
     """Notifies the user that this incident is current in after hours mode."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    user_id = dispatch_slack_service.resolve_user(slack_client, user_email)["id"]
+    user_id = dispatch_slack_service.resolve_user(slack_bot_client, user_email)["id"]
 
     # NOTE Limitations: Does not sync across instances. Does not survive webserver restart
     cache_key = create_cache_key(user_id, incident.conversation.channel_id)
@@ -153,18 +204,9 @@ def after_hours(user_email: str, incident_id: int, db_session=None):
     except Exception:
         pass  # we don't care if there is nothing here
 
-    # bail early if we don't care for a given severity
-    priority_types = [
-        IncidentPriorityType.info,
-        IncidentPriorityType.low,
-        IncidentPriorityType.medium,
-    ]
-    if incident.incident_priority.name.lower() not in priority_types:
-        return
-
     # get their timezone from slack
     commander_info = dispatch_slack_service.get_user_info_by_email(
-        slack_client, email=incident.commander.email
+        slack_bot_client, email=incident.commander.email
     )
 
     commander_tz = commander_info["tz"]
@@ -178,15 +220,15 @@ def after_hours(user_email: str, incident_id: int, db_session=None):
                     "type": "mrkdwn",
                     "text": (
                         (
-                            f"Responses may be delayed. The current incident severity is *{incident.incident_severity.name}*"
-                            f" and your message was sent outside of the incident commander's working hours (Weekdays, 9am-5pm, {commander_tz})."
+                            f"Responses may be delayed. The current incident priority is *{incident.incident_priority.name}*"
+                            f" and your message was sent outside of the Incident Commander's working hours (Weekdays, 9am-5pm, {commander_tz} timezone)."
                         )
                     ),
                 },
             }
         ]
         dispatch_slack_service.send_ephemeral_message(
-            slack_client, incident.conversation.channel_id, user_id, "", blocks=blocks
+            slack_bot_client, incident.conversation.channel_id, user_id, "", blocks=blocks
         )
         once_a_day_cache[cache_key] = True
 
@@ -223,7 +265,7 @@ def list_tasks(incident_id: int, command: dict = None, db_session=None):
         blocks.append({"type": "divider"})
 
     dispatch_slack_service.send_ephemeral_message(
-        slack_client,
+        slack_bot_client,
         command["channel_id"],
         command["user_id"],
         "Incident List Tasks",
@@ -255,7 +297,7 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
             participant_location = participant_info["location"]
             participant_weblink = participant_info["weblink"]
             participant_avatar_url = dispatch_slack_service.get_user_avatar_url(
-                slack_client, participant_email
+                slack_bot_client, participant_email
             )
             participant_active_roles = participant_role_service.get_all_active_roles(
                 db_session=db_session, participant_id=participant.id
@@ -286,7 +328,7 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
             blocks.append({"type": "divider"})
 
     dispatch_slack_service.send_ephemeral_message(
-        slack_client,
+        slack_bot_client,
         command["channel_id"],
         command["user_id"],
         "Incident List Participants",
@@ -316,7 +358,7 @@ def create_assign_role_dialog(incident_id: int, command: dict = None):
         ],
     }
 
-    dispatch_slack_service.open_dialog_with_user(slack_client, command["trigger_id"], dialog)
+    dispatch_slack_service.open_dialog_with_user(slack_bot_client, command["trigger_id"], dialog)
 
 
 @background_task
@@ -332,13 +374,13 @@ def create_update_incident_dialog(incident_id: int, command: dict = None, db_ses
     for priority in incident_priority_service.get_all(db_session=db_session):
         priority_options.append({"label": priority.name, "value": priority.name})
 
-    visibility_options = []
-    for visibility in IncidentVisibility:
-        visibility_options.append({"label": visibility.value, "value": visibility.value})
-
     status_options = []
     for status in IncidentStatus:
         status_options.append({"label": status.value, "value": status.value})
+
+    visibility_options = []
+    for visibility in Visibility:
+        visibility_options.append({"label": visibility.value, "value": visibility.value})
 
     notify_options = [{"label": "Yes", "value": "Yes"}, {"label": "No", "value": "No"}]
 
@@ -362,18 +404,18 @@ def create_update_incident_dialog(incident_id: int, command: dict = None, db_ses
                 "options": type_options,
             },
             {
-                "label": "Status",
-                "type": "select",
-                "name": "status",
-                "value": incident.status,
-                "options": status_options,
-            },
-            {
                 "label": "Priority",
                 "type": "select",
                 "name": "priority",
                 "value": incident.incident_priority.name,
                 "options": priority_options,
+            },
+            {
+                "label": "Status",
+                "type": "select",
+                "name": "status",
+                "value": incident.status,
+                "options": status_options,
             },
             {
                 "label": "Visibility",
@@ -392,7 +434,7 @@ def create_update_incident_dialog(incident_id: int, command: dict = None, db_ses
         ],
     }
 
-    dispatch_slack_service.open_dialog_with_user(slack_client, command["trigger_id"], dialog)
+    dispatch_slack_service.open_dialog_with_user(slack_bot_client, command["trigger_id"], dialog)
 
 
 @background_task
@@ -411,7 +453,7 @@ def create_engage_oncall_dialog(incident_id: int, command: dict = None, db_sessi
             }
         ]
         dispatch_slack_service.send_ephemeral_message(
-            slack_client,
+            slack_bot_client,
             command["channel_id"],
             command["user_id"],
             "No Oncall Services Defined",
@@ -448,7 +490,7 @@ def create_engage_oncall_dialog(incident_id: int, command: dict = None, db_sessi
         ],
     }
 
-    dispatch_slack_service.open_dialog_with_user(slack_client, command["trigger_id"], dialog)
+    dispatch_slack_service.open_dialog_with_user(slack_bot_client, command["trigger_id"], dialog)
 
 
 @background_task
@@ -476,19 +518,25 @@ def create_status_report_dialog(incident_id: int, command: dict = None, db_sessi
         ],
     }
 
-    dispatch_slack_service.open_dialog_with_user(slack_client, command["trigger_id"], dialog)
+    dispatch_slack_service.open_dialog_with_user(slack_bot_client, command["trigger_id"], dialog)
 
 
 @background_task
-def add_user_to_conversation(user_email: str, incident_id: int, action: dict, db_session=None):
+def add_user_to_conversation(
+    user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
+):
     """Adds a user to a conversation."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    user_id = dispatch_slack_service.resolve_user(slack_client, user_email)["id"]
-
-    dispatch_slack_service.add_users_to_conversation(
-        slack_client, incident.conversation.channel_id, user_id
-    )
+    if incident.status == IncidentStatus.closed:
+        message = f"Sorry, we cannot add you to a closed incident. Please reach out to the incident commander ({incident.commander.name}) for details."
+        dispatch_slack_service.send_ephemeral_message(
+            slack_bot_client, action["container"]["channel_id"], user_id, message
+        )
+    else:
+        dispatch_slack_service.add_users_to_conversation(
+            slack_bot_client, incident.conversation.channel_id, [user_id]
+        )
 
 
 def event_functions(event: EventEnvelope):
@@ -502,8 +550,8 @@ def event_functions(event: EventEnvelope):
         "member_left_channel": [incident_flows.incident_remove_participant_flow],
         "message.groups": [],
         "message.im": [],
-        "reaction_added": [add_message_to_timeline],
-        "reaction_removed": [remove_message_from_timeline],
+        "reaction_added": [handle_reaction_added_event],
+        "reaction_removed": [handle_reaction_removed_event],
     }
 
     return event_mappings.get(event.event.type, [])
@@ -528,7 +576,7 @@ def command_functions(command: str):
 
 
 @background_task
-def handle_update_incident_action(user_email, incident_id, action, db_session=None):
+def handle_update_incident_action(user_id, user_email, incident_id, action, db_session=None):
     """Messages slack dialog data into something that Dispatch can use."""
     submission = action["submission"]
     notify = True if submission["notify"] == "Yes" else False
@@ -540,6 +588,7 @@ def handle_update_incident_action(user_email, incident_id, action, db_session=No
         status=submission["status"],
         visibility=submission["visibility"],
     )
+
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     existing_incident = IncidentRead.from_orm(incident)
     incident_service.update(db_session=db_session, incident=incident, incident_in=incident_in)
@@ -547,11 +596,11 @@ def handle_update_incident_action(user_email, incident_id, action, db_session=No
 
 
 @background_task
-def handle_assign_role_action(user_email, incident_id, action, db_session=None):
+def handle_assign_role_action(user_id, user_email, incident_id, action, db_session=None):
     """Messages slack dialog data into some thing that Dispatch can use."""
     assignee_user_id = action["submission"]["participant"]
     assignee_role = action["submission"]["role"]
-    assignee_email = get_user_email(client=slack_client, user_id=assignee_user_id)
+    assignee_email = get_user_email(client=slack_bot_client, user_id=assignee_user_id)
     incident_flows.incident_assign_role_flow(user_email, incident_id, assignee_email, assignee_role)
 
 
@@ -565,7 +614,11 @@ def action_functions(action: str):
         ConversationButtonActions.invite_user: [add_user_to_conversation],
     }
 
-    return action_mappings.get(action, [])
+    # this allows for unique action blocks e.g. invite-user or invite-user-1, etc
+    for key in action_mappings.keys():
+        if key in action:
+            return action_mappings[key]
+    return []
 
 
 def get_action_name_by_action_type(action: dict):
@@ -628,6 +681,19 @@ def verify_timestamp(timestamp: int):
         raise HTTPException(status_code=403, detail="Invalid request timestamp")
 
 
+def get_channel_id(event_body: dict):
+    """Returns the channel id from the Slack event."""
+    channel_id = ""
+    if event_body.channel_id:
+        return event_body.channel_id
+    if event_body.channel:
+        return event_body.channel
+    if event_body.item.channel:
+        return event_body.item.channel
+
+    return channel_id
+
+
 @router.post("/slack/event")
 async def handle_event(
     event: EventEnvelope,
@@ -661,23 +727,23 @@ async def handle_event(
         return {"ok"}
 
     user_id = event_body.user
-
-    # Fetch conversation by channel id
-    channel_id = (  # We ensure channel_id always has a value
-        event_body.channel_id if event_body.channel_id else event_body.channel
-    )
+    channel_id = get_channel_id(event_body)
     conversation = get_by_channel_id(db_session=db_session, channel_id=channel_id)
 
     if conversation and dispatch_slack_service.is_user(user_id):
         # We create an async Slack client
-        slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
+        slack_async_bot_client = dispatch_slack_service.create_slack_client(
+            token=SLACK_API_BOT_TOKEN, run_async=True
+        )
 
         # We resolve the user's email
-        user_email = await dispatch_slack_service.get_user_email_async(slack_async_client, user_id)
+        user_email = await dispatch_slack_service.get_user_email_async(
+            slack_async_bot_client, user_id
+        )
 
         # Dispatch event functions to be executed in the background
         for f in event_functions(event):
-            background_tasks.add_task(f, user_email, conversation.incident_id)
+            background_tasks.add_task(f, user_email, conversation.incident_id, event=event)
 
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()
@@ -745,11 +811,13 @@ async def handle_action(
     verify_signature(raw_request_body, x_slack_request_timestamp, x_slack_signature)
 
     # We create an async Slack client
-    slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
+    slack_async_bot_client = dispatch_slack_service.create_slack_client(
+        token=SLACK_API_BOT_TOKEN, run_async=True
+    )
 
     # We resolve the user's email
     user_id = action["user"]["id"]
-    user_email = await dispatch_slack_service.get_user_email_async(slack_async_client, user_id)
+    user_email = await dispatch_slack_service.get_user_email_async(slack_async_bot_client, user_id)
 
     # We resolve the action name based on the type
     action_name = get_action_name_by_action_type(action)
@@ -759,7 +827,7 @@ async def handle_action(
 
     # Dispatch action functions to be executed in the background
     for f in action_functions(action_name):
-        background_tasks.add_task(f, user_email, incident_id, action)
+        background_tasks.add_task(f, user_id, user_email, incident_id, action)
 
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()
