@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 """
 import logging
+import bcrypt
 
 from starlette.requests import Request
 from dispatch.plugins.base import plugins
@@ -65,7 +66,7 @@ def from_bearer_token(request: Request):
 
 
 def fetch_user(db_session, email: str):
-    return db_session.query(DispatchUser).filter(email == email).first()
+    return db_session.query(DispatchUser).get(email)
 
 
 def encode_jwt(user):
@@ -74,3 +75,15 @@ def encode_jwt(user):
 
 def decode_jwt(user):
     return jwt.decode(user, DISPATCH_JWT_SECRET)
+
+
+def check_password(passwd, hashed):
+    res = bcrypt.checkpw(passwd.encode("utf-8"), hashed)
+    print(res)
+    return res
+
+
+def hash_password(pw: str):
+    pw = bytes(pw, "utf-8")
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(pw, salt)

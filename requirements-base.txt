@@ -33,3 +33,4 @@ sqlalchemy-filters
 tabulate
 tenacity
 uvicorn
+bcrypt
