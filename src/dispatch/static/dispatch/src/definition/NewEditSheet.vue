@@ -3,12 +3,8 @@
     <template v-slot:prepend>
       <v-list-item two-line>
         <v-list-item-content>
-          <v-list-item-title v-if="id" class="title">
-            Edit
-          </v-list-item-title>
-          <v-list-item-title v-else class="title">
-            New
-          </v-list-item-title>
+          <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
+          <v-list-item-title v-else class="title">New</v-list-item-title>
           <v-list-item-subtitle>Definition</v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
@@ -41,17 +37,13 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="secondary" @click="closeCreateEdit()">
-            Cancel
-          </v-btn>
+          <v-btn color="secondary" @click="closeCreateEdit()">Cancel</v-btn>
           <v-btn
             color="primary"
             :loading="loading"
             :disabled="invalid || !validated"
             @click="save()"
-          >
-            Save
-          </v-btn>
+          >Save</v-btn>
         </v-card-actions>
       </v-card>
     </ValidationObserver>
@@ -62,7 +54,14 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider } from "vee-validate"
+import { required } from "vee-validate/dist/rules"
 import TermCombobox from "@/term/TermCombobox.vue"
+
+extend("required", {
+  ...required,
+  message: "This field is required"
+})
+
 export default {
   name: "DefinitionNewEditSheet",
 
