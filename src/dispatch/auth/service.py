@@ -77,10 +77,8 @@ def decode_jwt(user):
     return jwt.decode(user, DISPATCH_JWT_SECRET)
 
 
-def check_password(passwd, hashed):
-    res = bcrypt.checkpw(passwd.encode("utf-8"), hashed)
-    print(res)
-    return res
+def check_password(passwd: str, hashed: bytes):
+    return bcrypt.checkpw(passwd.encode("utf-8"), hashed)
 
 
 def hash_password(pw: str):
