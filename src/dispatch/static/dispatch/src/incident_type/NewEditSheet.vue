@@ -72,8 +72,7 @@
             :loading="loading"
             :disabled="invalid || !validated"
             @click="save()"
-            >Save</v-btn
-          >
+          >Save</v-btn>
         </v-card-actions>
       </v-card>
     </ValidationObserver>
@@ -84,8 +83,14 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider } from "vee-validate"
+import { required } from "vee-validate/dist/rules"
 import ServiceSelect from "@/service/ServiceSelect.vue"
 import DocumentSelect from "@/document/DocumentSelect.vue"
+
+extend("required", {
+  ...required,
+  message: "This field is required"
+})
 
 export default {
   name: "IncidentTypeNewEditSheet",

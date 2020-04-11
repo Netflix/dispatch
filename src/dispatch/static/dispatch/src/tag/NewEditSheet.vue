@@ -98,8 +98,7 @@
             :loading="loading"
             :disabled="invalid || !validated"
             @click="save()"
-            >Save</v-btn
-          >
+          >Save</v-btn>
         </v-card-actions>
       </v-card>
     </ValidationObserver>
@@ -110,6 +109,13 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider } from "vee-validate"
+import { required } from "vee-validate/dist/rules"
+
+extend("required", {
+  ...required,
+  message: "This field is required"
+})
+
 export default {
   name: "TagNewEditSheet",
 
