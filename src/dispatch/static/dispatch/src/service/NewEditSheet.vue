@@ -31,6 +31,20 @@
                   />
                 </ValidationProvider>
               </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="Description" rules="required" immediate>
+                  <v-textarea
+                    v-model="description"
+                    slot-scope="{ errors, valid }"
+                    label="Description"
+                    :error-messages="errors"
+                    :success="valid"
+                    hint="A description for your service."
+                    clearable
+                    required
+                  />
+                </ValidationProvider>
+              </v-flex>
               <!--Disable type (default to pager duty) until we have a way to validate.
               <v-flex xs12>
                 <ValidationProvider name="Type"
@@ -129,6 +143,7 @@ export default {
       "selected.incident_priorities",
       "selected.incident_types",
       "selected.id",
+      "selected.description",
       "selected.external_id",
       "selected.is_active",
       "selected.loading",
