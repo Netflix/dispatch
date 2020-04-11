@@ -181,7 +181,9 @@
             </v-list>
             <v-container grid-list-md>
               <v-flex xs12>
-                <v-btn color="primary" depressed @click="resetSelected()">Report another incident</v-btn>
+                <v-btn color="primary" depressed @click="resetSelected()"
+                  >Report another incident</v-btn
+                >
               </v-flex>
             </v-container>
           </v-card-text>
@@ -241,7 +243,8 @@
                     :loading="loading"
                     :disabled="invalid || !validated"
                     @click="save()"
-                  >Submit</v-btn>
+                    >Submit</v-btn
+                  >
                 </v-container>
               </v-form>
             </v-card-text>
