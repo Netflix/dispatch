@@ -1,10 +1,11 @@
 <template>
   <v-layout wrap>
-    <new-edit-sheet />
+    <edit-sheet />
+    <new-sheet />
     <!--<delete-dialog />-->
     <div class="headline">Incidents</div>
     <v-spacer />
-    <v-btn color="primary" dark class="mb-2" @click="createEditShow()">New</v-btn>
+    <v-btn color="primary" dark class="mb-2" @click="showNewSheet()">New</v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -28,7 +29,7 @@
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
               :loading="loading"
-              @click:row="createEditShow"
+              @click:row="showEditSheet"
               loading-text="Loading... Please wait"
             >
               <template v-slot:item.cost="{ item }">{{ item.cost | toUSD }}</template>
@@ -59,13 +60,15 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 // import DeleteDialog from "@/incident/DeleteDialog.vue"
-import NewEditSheet from "@/incident/NewEditSheet.vue"
+import EditSheet from "@/incident/EditSheet.vue"
+import NewSheet from "@/incident/NewSheet.vue"
 export default {
   name: "IncidentTable",
 
   components: {
     // DeleteDialog
-    NewEditSheet
+    EditSheet,
+    NewSheet
   },
   data() {
     return {
@@ -109,7 +112,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident", ["getAll", "createEditShow", "removeShow"])
+    ...mapActions("incident", ["getAll", "showNewSheet", "showEditSheet", "removeShow"])
   }
 }
 </script>

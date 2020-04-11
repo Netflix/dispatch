@@ -35,7 +35,8 @@ const state = {
     ...getDefaultSelectedState()
   },
   dialogs: {
-    showCreateEdit: false,
+    showEditSheet: false,
+    showNewSheet: false,
     showRemove: false
   },
   table: {
@@ -71,19 +72,29 @@ const actions = {
       commit("SET_SELECTED", response.data)
     })
   },
-  createEditShow({ commit }, incident) {
-    commit("SET_DIALOG_CREATE_EDIT", true)
+  showNewSheet({ commit }, incident) {
+    commit("SET_DIALOG_SHOW_NEW_SHEET", true)
     if (incident) {
       commit("SET_SELECTED", incident)
     }
   },
+  closeNewSheet({ commit }) {
+    commit("SET_DIALOG_SHOW_NEW_SHEET", false)
+    commit("RESET_SELECTED")
+  },
+  showEditSheet({ commit }, incident) {
+    commit("SET_DIALOG_SHOW_EDIT_SHEET", true)
+    if (incident) {
+      commit("SET_SELECTED", incident)
+    }
+  },
+  closeEditSheet({ commit }) {
+    commit("SET_DIALOG_SHOW_EDIT_SHEET", false)
+    commit("RESET_SELECTED")
+  },
   removeShow({ commit }, incident) {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", incident)
-  },
-  closeCreateEdit({ commit }) {
-    commit("SET_DIALOG_CREATE_EDIT", false)
-    commit("RESET_SELECTED")
   },
   closeRemove({ commit }) {
     commit("SET_DIALOG_DELETE", false)
@@ -161,8 +172,11 @@ const mutations = {
   SET_TABLE_ROWS(state, value) {
     state.table.rows = value
   },
-  SET_DIALOG_CREATE_EDIT(state, value) {
-    state.dialogs.showCreateEdit = value
+  SET_DIALOG_SHOW_EDIT_SHEET(state, value) {
+    state.dialogs.showEditSheet = value
+  },
+  SET_DIALOG_SHOW_NEW_SHEET(state, value) {
+    state.dialogs.showNewSheet = value
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showRemove = value

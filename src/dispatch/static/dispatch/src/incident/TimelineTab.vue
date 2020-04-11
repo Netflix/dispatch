@@ -1,7 +1,7 @@
 <template>
-  <ValidationObserver>
+  <ValidationObserver v-slot="{ invalid, validated }">
     <v-navigation-drawer v-model="showCreateEdit" app clipped right width="800">
-      <template v-slot:prepend scope-slot="{ invalid, validated }">
+      <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title">{{ name }}</v-list-item-title>
