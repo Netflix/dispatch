@@ -12,7 +12,12 @@
                 <v-text-field v-model="email" label="E-mail" required> </v-text-field>
               </v-col>
               <v-col cols="12" md="12">
-                <v-text-field v-model="password" :type="'password'" label="Password" required></v-text-field>
+                <v-text-field
+                  v-model="password"
+                  :type="'password'"
+                  label="Password"
+                  required
+                ></v-text-field>
               </v-col>
             </v-row>
             <p>Don't have a account? <a href="/register">Sign In</a></p>
@@ -28,11 +33,10 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
-import { mapActions } from "vuex"
 
 export default {
   methods: {
-    loginUser: function(ev) {
+    loginUser: function() {
       this.$store.dispatch("account/basicLogin")
     }
   },
@@ -42,5 +46,4 @@ export default {
 }
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

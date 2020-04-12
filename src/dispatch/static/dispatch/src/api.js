@@ -22,11 +22,11 @@ instance.interceptors.request.use(
 
 instance.interceptors.response.use(
   function(res) {
-    return res;
+    return res
   },
   function(err) {
     let path = router.currentRoute.path
-    if (err.response.status == 401  && (path != "/login" && path != "/register")) {
+    if (err.response.status == 401 && path != "/login" && path != "/register") {
       router.push("/login")
     }
     Promise.reject(err)
