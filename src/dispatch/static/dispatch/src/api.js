@@ -1,5 +1,5 @@
 import axios from "axios"
-
+import router from "@/router"
 import store from "@/store"
 
 const instance = axios.create({
@@ -17,6 +17,20 @@ instance.interceptors.request.use(
   },
   error => {
     return Promise.reject(error)
+  }
+)
+
+instance.interceptors.response.use(
+  function(res) {
+    return res;
+  },
+  function(err) {
+    let path = router.currentRoute.path
+    if (err.response.status == 401  && (path != "/login" && path != "/register")) {
+      router.push("/login")
+    }
+    Promise.reject(err)
+    return err
   }
 )
 
