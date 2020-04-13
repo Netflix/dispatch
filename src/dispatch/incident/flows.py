@@ -291,7 +291,7 @@ def create_incident_storage(
 ):
     """Create an external file store for incident storage."""
     p = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
-    storage = p.create_file(INCIDENT_STORAGE_FOLDER_ID, incident.title, participant_group_emails)
+    storage = p.create_file(INCIDENT_STORAGE_FOLDER_ID, incident.name, participant_group_emails)
     storage.update({"resource_type": INCIDENT_PLUGIN_STORAGE_SLUG, "resource_id": storage["id"]})
     return storage
 
