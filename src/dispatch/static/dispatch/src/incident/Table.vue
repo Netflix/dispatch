@@ -46,7 +46,7 @@
         </v-list>
       </v-card>
     </v-dialog>
-    <v-btn color="primary" dark class="mb-2" @click="showNewSheet()">New</v-btn>
+    <v-btn color="primary" dark class="ml-2" @click="showNewSheet()">New</v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>

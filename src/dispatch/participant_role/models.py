@@ -26,7 +26,7 @@ class ParticipantRole(Base):
 
 # Pydantic models...
 class ParticipantRoleBase(DispatchBase):
-    pass
+    role: str
 
 
 class ParticipantRoleCreate(ParticipantRoleBase):
