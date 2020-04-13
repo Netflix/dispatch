@@ -1,5 +1,6 @@
 import re
 from typing import Any, List
+from itertools import groupby
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
@@ -75,14 +76,14 @@ def search(*, db_session, query_str: str, model: str):
 
 def create_filter_spec(model, fields, ops, values):
     """Creates a filter spec."""
-    filter_spec = []
+    filters = []
 
     if fields and ops and values:
         for field, op, value in zip(fields, ops, values):
             # we have a complex field, we may need to join
             if "." in field:
                 complex_model, complex_field = field.split(".")
-                filter_spec.append(
+                filters.append(
                     {
                         "model": get_model_name_by_tablename(complex_model),
                         "field": complex_field,
@@ -91,10 +92,17 @@ def create_filter_spec(model, fields, ops, values):
                     }
                 )
             else:
-                filter_spec.append({"model": model, "field": field, "op": op, "value": value})
-    # NOTE we default to AND filters
+                filters.append({"model": model, "field": field, "op": op, "value": value})
+
+    filter_spec = []
+    # group by field (or for same fields and for different fields)
+    data = sorted(filters, key=lambda x: x["model"])
+    for k, g in groupby(data, key=lambda x: x["model"]):
+        filter_spec.append({"or": list(g)})
+
     if filter_spec:
         return {"and": filter_spec}
+
     return filter_spec
 
 
