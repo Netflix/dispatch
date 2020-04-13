@@ -241,7 +241,8 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider } from "vee-validate"
+import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "vee-validate/dist/rules"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import IndividualSelect from "@/individual/IndividualSelect.vue"
@@ -249,6 +250,11 @@ import DatePickerMenu from "@/components/DatePickerMenu.vue"
 import TimePickerMenu from "@/components/TimePickerMenu.vue"
 import TermCombobox from "@/term/TermCombobox.vue"
 import TagCombobox from "@/tag/TagCombobox.vue"
+
+extend("required", {
+  ...required,
+  message: "This field is required"
+})
 
 export default {
   name: "IncidentNewEditSheet",

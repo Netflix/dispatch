@@ -83,9 +83,15 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider } from "vee-validate"
+import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "vee-validate/dist/rules"
 import ServiceSelect from "@/service/ServiceSelect.vue"
 import DocumentSelect from "@/document/DocumentSelect.vue"
+
+extend("required", {
+  ...required,
+  message: "This field is required"
+})
 
 export default {
   name: "IncidentTypeNewEditSheet",

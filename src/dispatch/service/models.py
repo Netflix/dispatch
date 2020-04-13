@@ -51,6 +51,7 @@ class Service(TimeStampMixin, Base):
     is_active = Column(Boolean, default=True)
     name = Column(String)
     type = Column(String, default="pagerduty-oncall")
+    description = Column(String)
     external_id = Column(String)
     incidents = relationship("Incident", secondary=assoc_service_incidents, backref="services")
     incident_priorities = relationship(
@@ -70,6 +71,7 @@ class Service(TimeStampMixin, Base):
 class ServiceBase(DispatchBase):
     name: Optional[str] = None
     external_id: Optional[str] = None
+    description: Optional[str] = None
     is_active: Optional[bool] = None
     type: Optional[str] = None
 
