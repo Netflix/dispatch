@@ -833,7 +833,7 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     if incident.visibility == Visibility.open:
 
-        # open file to domain on closure
+        # open folder to domain on closure
         if INCIDENT_STORAGE_OPEN_ON_CLOSE:
             # we archive the artifacts in the storage
             storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
