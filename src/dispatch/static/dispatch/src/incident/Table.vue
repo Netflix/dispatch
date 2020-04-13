@@ -1,6 +1,7 @@
 <template>
   <v-layout wrap>
-    <new-edit-sheet />
+    <edit-sheet />
+    <new-sheet />
     <!--<delete-dialog />-->
     <div class="headline">Incidents</div>
     <v-spacer />
@@ -45,7 +46,7 @@
         </v-list>
       </v-card>
     </v-dialog>
-    <v-btn color="primary" class="ml-2" dark @click="createEditShow()">New</v-btn>
+    <v-btn color="primary" dark class="mb-2" @click="showNewSheet()">New</v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -69,6 +70,7 @@
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
               :loading="loading"
+              @click:row="showEditSheet"
               loading-text="Loading... Please wait"
             >
               <template v-slot:item.cost="{ item }">{{ item.cost | toUSD }}</template>
@@ -83,9 +85,6 @@
                   <div v-if="item.reporter.name">{{ item.reporter.name }}</div>
                   <div v-else>{{ item.reporter.email }}</div>
                 </div>
-              </template>
-              <template v-slot:item.actions="{ item }">
-                <v-icon small class="mr-2" @click="createEditShow(item)">edit</v-icon>
               </template>
               <template v-slot:item.reported_at="{ item }">{{
                 item.reported_at | formatDate
@@ -103,7 +102,8 @@ import _ from "lodash"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 // import DeleteDialog from "@/incident/DeleteDialog.vue"
-import NewEditSheet from "@/incident/NewEditSheet.vue"
+import EditSheet from "@/incident/EditSheet.vue"
+import NewSheet from "@/incident/NewSheet.vue"
 import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
 // import IndividualCombobox from "@/individual/IndividualCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
@@ -114,7 +114,8 @@ export default {
 
   components: {
     // DeleteDialog
-    NewEditSheet,
+    EditSheet,
+    NewSheet,
     // IndividualCombobox,
     IncidentTypeCombobox,
     IncidentPriorityCombobox,
@@ -133,8 +134,7 @@ export default {
         { text: "Cost", value: "cost" },
         { text: "Commander", value: "commander" },
         { text: "Reporter", value: "reporter" },
-        { text: "Reported At", value: "reported_at" },
-        { text: "Actions", value: "actions", sortable: false, align: "right", width: "5%" }
+        { text: "Reported At", value: "reported_at" }
       ]
     }
   },
@@ -189,7 +189,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident", ["getAll", "createEditShow", "removeShow"])
+    ...mapActions("incident", ["getAll", "showNewSheet", "showEditSheet", "removeShow"])
   }
 }
 </script>

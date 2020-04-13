@@ -29,6 +29,7 @@ from dispatch.incident_priority.models import (
 )
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
 from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
+from dispatch.participant.models import ParticipantRead
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.storage.models import StorageRead
 from dispatch.ticket.models import TicketRead
@@ -179,7 +180,7 @@ class IncidentRead(IncidentBase):
     last_status_report: Optional[Any]
     incident_priority: IncidentPriorityRead
     incident_type: IncidentTypeRead
-    # participants: Any # List[IndividualReadNested]
+    participants: List[ParticipantRead]
     storage: Optional[StorageRead] = None
     ticket: Optional[TicketRead] = None
     documents: Optional[List[DocumentRead]] = []

@@ -54,3 +54,13 @@ Vue.filter("deslug", function(value) {
       .join(" ")
   }
 })
+
+Vue.filter("commaString", function(value, key) {
+  if (value) {
+    return value
+      .map(function(el) {
+        return el[key]
+      })
+      .join(", ")
+  }
+})
