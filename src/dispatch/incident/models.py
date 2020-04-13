@@ -81,11 +81,11 @@ class Incident(Base, TimeStampMixin):
     def commander(self):
         if self.participants:
             for p in self.participants:
-                for pr in p.participant_role:
+                for pr in p.participant_roles:
                     if (
                         pr.role == ParticipantRoleType.incident_commander
-                        and pr.renounce_at
-                        is None  # Column renounce_at will be null for the current incident commander
+                        and pr.renounced_at
+                        is None  # Column renounced_at will be null for the current incident commander
                     ):
                         return p.individual
 
@@ -93,7 +93,7 @@ class Incident(Base, TimeStampMixin):
     def reporter(self):
         if self.participants:
             for p in self.participants:
-                for role in p.participant_role:
+                for role in p.participant_roles:
                     if role.role == ParticipantRoleType.reporter:
                         return p.individual
 

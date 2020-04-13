@@ -12,15 +12,17 @@ from dispatch.participant_role.models import ParticipantRoleCreate, ParticipantR
 
 class Participant(Base):
     id = Column(Integer, primary_key=True)
-    is_active = Column(Boolean, default=True)
-    active_at = Column(DateTime, default=datetime.utcnow)
-    inactive_at = Column(DateTime)
+    is_active = Column(Boolean, default=True)  # TODO(mvilanova): make it a hybrid property
+    active_at = Column(
+        DateTime, default=datetime.utcnow
+    )  # TODO(mvilanova): make it a hybrid property
+    inactive_at = Column(DateTime)  # TODO(mvilanova): make it a hybrid property
     incident_id = Column(Integer, ForeignKey("incident.id"))
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
     location = Column(String)
     team = Column(String)
     department = Column(String)
-    participant_role = relationship("ParticipantRole", backref="participant")
+    participant_roles = relationship("ParticipantRole", backref="participant")
     status_reports = relationship("StatusReport", backref="participant")
 
     @staticmethod
@@ -46,7 +48,10 @@ class ParticipantBase(DispatchBase):
 
 
 class ParticipantCreate(ParticipantBase):
-    participant_role: Optional[List[ParticipantRoleCreate]] = []
+    participant_roles: Optional[List[ParticipantRoleCreate]] = []
+    location: Optional[str]
+    team: Optional[str]
+    department: Optional[str]
 
 
 class ParticipantUpdate(ParticipantBase):
