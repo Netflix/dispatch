@@ -1,13 +1,13 @@
 from datetime import datetime
 
-from typing import Optional, List, Any
+from typing import Optional, List
 
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Boolean, String, Integer, ForeignKey, DateTime, event
 
 from dispatch.database import Base
 from dispatch.models import DispatchBase, IndividualReadNested
-from dispatch.participant_role.models import ParticipantRoleCreate
+from dispatch.participant_role.models import ParticipantRoleCreate, ParticipantRoleRead
 
 
 class Participant(Base):
@@ -55,7 +55,7 @@ class ParticipantUpdate(ParticipantBase):
 
 class ParticipantRead(ParticipantBase):
     id: int
-    participant_role: Optional[Any]
+    participant_role: Optional[ParticipantRoleRead]
     individual: Optional[IndividualReadNested]
     active_at: Optional[datetime] = None
     inactive_at: Optional[datetime] = None
