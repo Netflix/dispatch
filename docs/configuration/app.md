@@ -175,7 +175,7 @@ If you wish to disabled authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
 
 #### `INCIDENT_STORAGE_OPEN_ON_CLOSE` \[default: 'true'\]
 
-> After an incident is closed, Netflix as an organization, tries to be transparent and allow others within the organization to view incident data. This is may not desirable in all organizations. This open controls whether to open up incident data on incident close.
+> After an incident is closed, Netflix as an organization, tries to be transparent and allow others within the organization to view incident data. This is may not desirable in all organizations. This controls whether to open up incident data on incident close.
 
 #### `INCIDENT_NOTIFICATION_CONVERSATIONS` \[default: ''\]
 
