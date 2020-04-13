@@ -20,7 +20,7 @@ class Participant(Base):
     location = Column(String)
     team = Column(String)
     department = Column(String)
-    participant_role = relationship("ParticipantRole", lazy="subquery", backref="participant")
+    participant_role = relationship("ParticipantRole", backref="participant")
     status_reports = relationship("StatusReport", backref="participant")
 
     @staticmethod
@@ -55,7 +55,7 @@ class ParticipantUpdate(ParticipantBase):
 
 class ParticipantRead(ParticipantBase):
     id: int
-    participant_role: Optional[ParticipantRoleRead]
+    participant_role: Optional[List[ParticipantRoleRead]] = []
     individual: Optional[IndividualReadNested]
     active_at: Optional[datetime] = None
     inactive_at: Optional[datetime] = None

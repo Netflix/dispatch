@@ -180,7 +180,7 @@ class IncidentRead(IncidentBase):
     last_status_report: Optional[Any]
     incident_priority: IncidentPriorityRead
     incident_type: IncidentTypeRead
-    participants: List[ParticipantRead]
+    participants: Optional[List[ParticipantRead]] = []
     storage: Optional[StorageRead] = None
     ticket: Optional[TicketRead] = None
     documents: Optional[List[DocumentRead]] = []
