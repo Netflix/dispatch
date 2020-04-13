@@ -208,7 +208,7 @@ def restrict_folder(client: Any, folder_id: str):
             "canShare": False,
         },
     }
-    return make_call(client.drives(), "update", driveId=id, body=body)
+    return make_call(client.drives(), "update", driveId=folder_id, body=body)
 
 
 def create_file(
