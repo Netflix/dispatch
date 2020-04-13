@@ -14,7 +14,7 @@ import re
 import slack
 import time
 
-from .config import SLACK_USER_ID_OVERRIDE, SLACK_APP_USER_SLUG
+from .config import SLACK_API_BOT_TOKEN, SLACK_APP_USER_SLUG, SLACK_USER_ID_OVERRIDE
 
 
 log = logging.getLogger(__name__)
@@ -24,9 +24,9 @@ class NoConversationFoundException(Exception):
     pass
 
 
-def create_slack_client(token: str, run_async: bool = False):
+def create_slack_client(run_async: bool = False):
     """Creates a Slack Web API client."""
-    return slack.WebClient(token=token, run_async=run_async)
+    return slack.WebClient(token=SLACK_API_BOT_TOKEN, run_async=run_async)
 
 
 def contains_numbers(string):
@@ -162,6 +162,7 @@ def list_conversations(client: Any, **kwargs):
 
 # @time_pagination("messages")
 def list_conversation_messages(client: Any, conversation_id: str, **kwargs):
+    """Returns a list of conversation messages."""
     return make_call(client, "conversations.history", channel=conversation_id, **kwargs)
 
 

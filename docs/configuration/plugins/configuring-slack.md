@@ -24,10 +24,6 @@ The `Slack` plugin relies on the [Events API](https://api.slack.com/events-api) 
 
 > Bot token used to communicate with the Slack API.
 
-#### `SLACK_API_USER_TOKEN` \[secret: True\]
-
-> User token used to communicate with the Slack API.
-
 #### `SLACK_SIGNING_SECRET` \[secret: True\]
 
 > Secret used to verify signatures included on each HTTP request that Slack sends.
