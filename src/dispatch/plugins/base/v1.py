@@ -12,8 +12,6 @@ from typing import Any, List, Optional
 
 from pydantic.schema import schema
 
-from dispatch.plugins import service as plugin_service
-
 logger = logging.getLogger(__name__)
 
 
