@@ -1,18 +1,12 @@
 from datetime import datetime
-from enum import Enum
 from uuid import UUID
-
-from typing import Optional
 
 from sqlalchemy import (
     Column,
     DateTime,
     ForeignKey,
     Integer,
-    PrimaryKeyConstraint,
     String,
-    Table,
-    event,
 )
 from sqlalchemy.dialects.postgresql import UUID as SQLAlchemyUUID
 from sqlalchemy_utils import TSVectorType

@@ -34,10 +34,6 @@ def update(*, db_session, plugin: Plugin, plugin_in: PluginUpdate) -> Plugin:
     plugin_data = jsonable_encoder(plugin)
     update_data = plugin_in.dict(skip_defaults=True)
 
-    # modify our current enablement in memory
-    plugin_instance = plugins.get(plugin_in.slug)
-    plugin_instance.enabled = plugin_in.enabled
-
     for field in plugin_data:
         if field in update_data:
             setattr(plugin, field, update_data[field])

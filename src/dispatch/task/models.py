@@ -6,7 +6,9 @@ from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, e
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
-from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin, IncidentRead
+from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin
+
+from dispatch.incident.models import IncidentRead
 
 
 # SQLAlchemy models

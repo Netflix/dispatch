@@ -115,7 +115,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     """Create an external ticket for tracking."""
     p = plugins.get(INCIDENT_PLUGIN_TICKET_SLUG)
 
-    if not p.enabled():
+    if not p.enabled:
         resource_id = f"dispatch-{incident.id}"
         return {
             "resource_id": resource_id,
@@ -166,7 +166,7 @@ def update_incident_ticket(
     """Update external incident ticket."""
     p = plugins.get(INCIDENT_PLUGIN_TICKET_SLUG)
 
-    if not p.enabled():
+    if not p.enabled:
         return
 
     if visibility == Visibility.restricted:

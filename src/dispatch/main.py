@@ -13,12 +13,37 @@ from starlette.responses import FileResponse, Response, StreamingResponse
 from starlette.staticfiles import StaticFiles
 import httpx
 
+from dispatch.conference.models import Conference  # noqa
+from dispatch.team.models import TeamContact  # noqa
+from dispatch.conversation.models import Conversation  # noqa
+from dispatch.definition.models import Definition  # noqa
+from dispatch.document.models import Document  # noqa
+from dispatch.event.models import Event  # noqa
+from dispatch.group.models import Group  # noqa
+from dispatch.incident.models import Incident  # noqa
+from dispatch.incident_priority.models import IncidentPriority  # noqa
+from dispatch.incident_type.models import IncidentType  # noqa
+from dispatch.individual.models import IndividualContact  # noqa
+from dispatch.participant.models import Participant  # noqa
+from dispatch.participant_role.models import ParticipantRole  # noqa
+from dispatch.policy.models import Policy  # noqa
+from dispatch.route.models import Recommendation, RecommendationAccuracy  # noqa
+from dispatch.service.models import Service  # noqa
+from dispatch.status_report.models import StatusReport  # noqa
+from dispatch.storage.models import Storage  # noqa
+from dispatch.tag.models import Tag  # noqa
+from dispatch.task.models import Task  # noqa
+from dispatch.term.models import Term  # noqa
+from dispatch.ticket.models import Ticket  # noqa
+from dispatch.plugin.models import Plugin  # noqa
+
 from .api import api_router
 from .config import STATIC_DIR
 from .database import SessionLocal
 from .metrics import provider as metric_provider
 from .logging import configure_logging
 from .extensions import configure_extensions
+from .common.utils.cli import install_plugins, install_plugin_events
 
 log = logging.getLogger(__name__)
 
@@ -109,6 +134,9 @@ class MetricsMiddleware(BaseHTTPMiddleware):
 app.add_middleware(SentryMiddleware)
 app.add_middleware(MetricsMiddleware)
 # app.add_middleware(GZipMiddleware)
+
+install_plugins()
+install_plugin_events(api_router)
 
 configure_logging()
 configure_extensions()

@@ -2,37 +2,8 @@ from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    PrimaryKeyConstraint,
-    String,
-    Table,
-    event,
-)
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, event, ForeignKey
 from sqlalchemy.ext.declarative import declared_attr
-
-from .database import Base
-
-# Association tables
-definition_teams = Table(
-    "definition_teams",
-    Base.metadata,
-    Column("definition_id", Integer, ForeignKey("definition.id")),
-    Column("team_contact_id", Integer, ForeignKey("team_contact.id")),
-    PrimaryKeyConstraint("definition_id", "team_contact_id"),
-)
-
-definition_terms = Table(
-    "definition_terms",
-    Base.metadata,
-    Column("definition_id", Integer, ForeignKey("definition.id")),
-    Column("term_id", Integer, ForeignKey("term.id")),
-    PrimaryKeyConstraint("definition_id", "term_id"),
-)
 
 
 # SQLAlchemy models...
@@ -154,28 +125,3 @@ class TeamReadNested(ContactBase):
 
 class PolicyReadNested(DispatchBase):
     pass
-
-
-from dispatch.conference.models import Conference  # noqa
-from dispatch.conversation.models import Conversation  # noqa
-from dispatch.definition.models import Definition  # noqa
-from dispatch.document.models import Document  # noqa
-from dispatch.event.models import Event  # noqa
-from dispatch.group.models import Group  # noqa
-from dispatch.incident.models import Incident  # noqa
-from dispatch.incident_priority.models import IncidentPriority  # noqa
-from dispatch.incident_type.models import IncidentType  # noqa
-from dispatch.individual.models import IndividualContact  # noqa
-from dispatch.participant.models import Participant  # noqa
-from dispatch.participant_role.models import ParticipantRole  # noqa
-from dispatch.policy.models import Policy  # noqa
-from dispatch.route.models import Recommendation, RecommendationAccuracy  # noqa
-from dispatch.service.models import Service  # noqa
-from dispatch.status_report.models import StatusReport  # noqa
-from dispatch.storage.models import Storage  # noqa
-from dispatch.tag.models import Tag  # noqa
-from dispatch.task.models import Task  # noqa
-from dispatch.team.models import Team  # noqa
-from dispatch.term.models import Term  # noqa
-from dispatch.ticket.models import Ticket  # noqa
-from dispatch.plugin.models import Plugin  # noqa

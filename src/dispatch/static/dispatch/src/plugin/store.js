@@ -68,7 +68,7 @@ const actions = {
     if (!state.selected.id) {
       return PluginApi.create(state.selected)
         .then(() => {
-          dispatch("closeCreateEdit")
+          dispatch("closeEdit")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "Plugin created successfully." }, { root: true })
         })
@@ -85,7 +85,7 @@ const actions = {
     } else {
       return PluginApi.update(state.selected.id, state.selected)
         .then(() => {
-          dispatch("closeCreateEdit")
+          dispatch("closeEdit")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "Plugin updated successfully." }, { root: true })
         })

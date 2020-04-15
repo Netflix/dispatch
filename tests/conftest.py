@@ -166,7 +166,7 @@ def document_plugin():
 @pytest.fixture
 def oncall_plugin():
     from dispatch.plugins.base import register
-    from .dispatch.plugins.dispatch_test.oncall import TestOncallPlugin
+    from dispatch.plugins.dispatch_test.oncall import TestOncallPlugin
 
     register(TestOncallPlugin)
     return TestOncallPlugin

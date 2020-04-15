@@ -10,7 +10,6 @@ from tabulate import tabulate
 from uvicorn import main as uvicorn_main
 
 from dispatch import __version__, config
-from dispatch.tag.models import *  # noqa
 from dispatch.common.utils.cli import install_plugin_events, install_plugins
 
 from .database import Base, engine
@@ -764,7 +763,7 @@ def start_tasks(tasks, eager):
 @dispatch_cli.group("server")
 def dispatch_server():
     """Container for all dispatch server commands."""
-    install_plugins()
+    pass
 
 
 @dispatch_server.command("routes")

@@ -35,7 +35,7 @@
                 </a>
               </template>
               <template v-slot:item.enabled="{ item }">
-                {{ item.enabled | capitalize }}
+                {{ item.enabled ? "Enabled" : "Disabled" }}
               </template>
             </v-data-table>
           </v-card>
@@ -62,7 +62,7 @@ export default {
         { text: "Slug", value: "slug", sortable: true },
         { text: "Author", value: "author", sortable: true },
         { text: "Version", value: "version", sortable: true },
-        { text: "Enabled", value: "enabled", sortable: true },
+        { text: "Status", value: "enabled", sortable: true },
         { text: "Type", value: "type", sortable: true }
       ]
     }
