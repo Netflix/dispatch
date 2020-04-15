@@ -805,9 +805,7 @@ async def handle_action(
     verify_signature(raw_request_body, x_slack_request_timestamp, x_slack_signature)
 
     # We create an async Slack client
-    slack_async_client = dispatch_slack_service.create_slack_client(
-        token=SLACK_API_BOT_TOKEN, run_async=True
-    )
+    slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
 
     # We resolve the user's email
     user_id = action["user"]["id"]
