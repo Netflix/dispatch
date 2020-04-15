@@ -2,7 +2,6 @@ from dispatch.config import config, Secret
 
 # Configuration
 SLACK_API_BOT_TOKEN = config("SLACK_API_BOT_TOKEN", cast=Secret)
-SLACK_API_USER_TOKEN = config("SLACK_API_USER_TOKEN", cast=Secret)
 SLACK_APP_USER_SLUG = config("SLACK_APP_USER_SLUG")
 SLACK_SIGNING_SECRET = config("SLACK_SIGNING_SECRET", cast=Secret)
 SLACK_TIMELINE_EVENT_REACTION = config("SLACK_TIMELINE_EVENT_REACTION", default="stopwatch")
