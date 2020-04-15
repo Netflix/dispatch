@@ -43,7 +43,7 @@ def test_renounce_role(session, participant_role):
     from dispatch.participant_role.service import renounce_role
 
     t_participant_role = renounce_role(db_session=session, participant_role=participant_role)
-    assert t_participant_role.renounce_at
+    assert t_participant_role.renounced_at
 
 
 def test_create(session, participant_role):

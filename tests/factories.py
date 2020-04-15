@@ -254,8 +254,8 @@ class IndividualContactFactory(ContactBaseFactory):
 class ParticipantRoleFactory(BaseFactory):
     """Participant Factory."""
 
-    assume_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
-    renounce_at = None
+    assumed_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
+    renounced_at = None
     role = FuzzyChoice(["Incident Commander", "Reporter", "Scribe", "Liaison"])
 
     class Meta:
