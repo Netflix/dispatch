@@ -1,4 +1,4 @@
-"""Renames colums in participant role model
+"""Renames columns in participant role model
 
 Revision ID: 14d7a4703d7c
 Revises: 057604415f6c
