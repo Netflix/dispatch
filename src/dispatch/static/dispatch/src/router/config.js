@@ -241,5 +241,22 @@ export const protectedRoute = [
           import(/* webpackChunkName: "routing-table" */ "@/incident_priority/Table.vue")
       }
     ]
+  },
+  {
+    path: "/plugins",
+    component: DefaultLayout,
+    meta: {
+      title: "Plugins",
+      icon: "view_compact",
+      group: "configuration",
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: "/plugins",
+        name: "PluginTable",
+        component: () => import(/* webpackChunkName: "routing-table" */ "@/plugin/Table.vue")
+      }
+    ]
   }
 ]

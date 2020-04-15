@@ -470,6 +470,7 @@ def sync_triggers():
     sync_trigger(engine, "policy", "search_vector", ["name", "description"])
     sync_trigger(engine, "service", "search_vector", ["name"])
     sync_trigger(engine, "task", "search_vector", ["description"])
+    sync_trigger(engine, "plugin", "search_vector", ["title"])
 
 
 @dispatch_cli.group("database")
@@ -503,8 +504,7 @@ def init_database():
 
 
 @dispatch_database.command("restore")
-@click.option(
-    "--dump-file", default='dispatch-backup.dump', help="Path to a PostgreSQL dump file.")
+@click.option("--dump-file", default="dispatch-backup.dump", help="Path to a PostgreSQL dump file.")
 def restore_database(dump_file):
     """Restores the database via pg_restore."""
     import sh
@@ -513,7 +513,7 @@ def restore_database(dump_file):
         DATABASE_HOSTNAME,
         DATABASE_NAME,
         DATABASE_PORT,
-        DATABASE_CREDENTIALS
+        DATABASE_CREDENTIALS,
     )
 
     username, password = str(DATABASE_CREDENTIALS).split(":")

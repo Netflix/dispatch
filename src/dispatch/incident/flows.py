@@ -12,6 +12,7 @@ from datetime import datetime
 from typing import Any, List, Optional
 
 from dispatch.config import (
+    DISPATCH_UI_URL,
     INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_ID,
     INCIDENT_DOCUMENT_INVESTIGATION_SHEET_ID,
     INCIDENT_FAQ_DOCUMENT_ID,
@@ -114,6 +115,14 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     """Create an external ticket for tracking."""
     p = plugins.get(INCIDENT_PLUGIN_TICKET_SLUG)
 
+    if not p.enabled():
+        resource_id = f"dispatch-{incident.id}"
+        return {
+            "resource_id": resource_id,
+            "weblink": f"{DISPATCH_UI_URL}/incidents/{resource_id}",
+            "resource_type": "dispatch-internal-ticket",
+        }
+
     title = incident.title
     if incident.visibility == Visibility.restricted:
         title = incident.incident_type.name
@@ -156,6 +165,9 @@ def update_incident_ticket(
 ):
     """Update external incident ticket."""
     p = plugins.get(INCIDENT_PLUGIN_TICKET_SLUG)
+
+    if not p.enabled():
+        return
 
     if visibility == Visibility.restricted:
         title = description = incident_type

@@ -6,7 +6,11 @@ import pkg_resources
 
 import click
 
+from dispatch.database import SessionLocal
 from dispatch.plugins.base import plugins
+from dispatch.plugins import service as plugin_service
+from dispatch.plugins.models import PluginCreate
+
 from .dynamic_click import params_factory
 
 
@@ -43,6 +47,22 @@ def install_plugins():
         except Exception:
             logger.error(f"Failed to load plugin {ep.name}:{traceback.format_exc()}")
         else:
+            # ensure that the plugin is available in the database
+            db_session = SessionLocal()
+            record = plugin_service.get_by_slug(db_session=db_session, slug=plugin.slug)
+            if not record:
+                plugin_service.create(
+                    db_session=db_session,
+                    plugin_in=PluginCreate(
+                        title=plugin.title,
+                        slug=plugin.slug,
+                        type=plugin.type,
+                        version=plugin.version,
+                        author=plugin.author,
+                        author_url=plugin.author_url,
+                        description=plugin.description,
+                    ),
+                )
             register(plugin)
 
 
