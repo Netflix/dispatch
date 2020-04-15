@@ -25,7 +25,6 @@ environ["STATIC_DIR"] = ""  # we don't need static files for tests
 
 from dispatch import config
 from dispatch.database import Base, engine, SessionLocal
-from dispatch.main import app
 
 from .factories import (
     ConversationFactory,
@@ -74,6 +73,7 @@ def pytest_runtest_makereport(item, call):
 def testapp():
     # we only want to use test plugins so unregister everybody else
     from dispatch.plugins.base import unregister, plugins
+    from dispatch.main import app
 
     for p in plugins.all():
         unregister(p)
@@ -106,7 +106,7 @@ def session(db):
 
 @pytest.yield_fixture(scope="function")
 def client(testapp, session, client):
-    yield TestClient(app)
+    yield TestClient(testapp)
 
 
 @pytest.fixture
