@@ -2,8 +2,8 @@ from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 
+from dispatch.plugins.base import plugins
 from .models import Plugin, PluginCreate, PluginUpdate
-from .base import plugins
 
 
 def get(*, db_session, plugin_id: int) -> Optional[Plugin]:
