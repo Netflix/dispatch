@@ -15,12 +15,10 @@ from sqlalchemy import (
     event,
 )
 from sqlalchemy.dialects.postgresql import UUID as SQLAlchemyUUID
-from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
 from dispatch.models import DispatchBase, TimeStampMixin
-from dispatch.plugins.base import plugins
 
 
 # SQLAlchemy Model
