@@ -6,8 +6,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Boolean, String, Integer, ForeignKey, DateTime, event
 
 from dispatch.database import Base
-from dispatch.models import DispatchBase
-from dispatch.participant_role.models import ParticipantRoleCreate
+from dispatch.models import DispatchBase, IndividualReadNested
+from dispatch.participant_role.models import ParticipantRoleCreate, ParticipantRoleRead
 
 
 class Participant(Base):
@@ -20,7 +20,7 @@ class Participant(Base):
     location = Column(String)
     team = Column(String)
     department = Column(String)
-    participant_role = relationship("ParticipantRole", lazy="subquery", backref="participant")
+    participant_role = relationship("ParticipantRole", backref="participant")
     status_reports = relationship("StatusReport", backref="participant")
 
     @staticmethod
@@ -40,14 +40,13 @@ class Participant(Base):
 
 
 class ParticipantBase(DispatchBase):
-    pass
+    location: Optional[str]
+    team: Optional[str]
+    department: Optional[str]
 
 
 class ParticipantCreate(ParticipantBase):
     participant_role: Optional[List[ParticipantRoleCreate]] = []
-    location: Optional[str]
-    team: Optional[str]
-    department: Optional[str]
 
 
 class ParticipantUpdate(ParticipantBase):
@@ -56,6 +55,8 @@ class ParticipantUpdate(ParticipantBase):
 
 class ParticipantRead(ParticipantBase):
     id: int
+    participant_role: Optional[List[ParticipantRoleRead]] = []
+    individual: Optional[IndividualReadNested]
     active_at: Optional[datetime] = None
     inactive_at: Optional[datetime] = None
 

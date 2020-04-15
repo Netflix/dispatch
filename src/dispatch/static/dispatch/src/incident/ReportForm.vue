@@ -181,9 +181,9 @@
             </v-list>
             <v-container grid-list-md>
               <v-flex xs12>
-                <v-btn color="primary" depressed @click="resetSelected()">
-                  Report another incident
-                </v-btn>
+                <v-btn color="primary" depressed @click="resetSelected()"
+                  >Report another incident</v-btn
+                >
               </v-flex>
             </v-container>
           </v-card-text>
@@ -265,9 +265,15 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider } from "vee-validate"
+import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "vee-validate/dist/rules"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
+
+extend("required", {
+  ...required,
+  message: "This field is required"
+})
 
 // import IncidentMembersCombobox from "@/incident/IncidentMembersCombobox.vue"
 export default {
