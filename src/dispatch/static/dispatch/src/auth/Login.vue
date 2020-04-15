@@ -25,7 +25,7 @@
         </v-form>
       </v-card-text>
       <v-card-actions>
-        <v-btn color="blue" outlined v-on:click="loginUser">Login</v-btn>
+        <v-btn color="primary" outlined @click="loginUser">Login</v-btn>
       </v-card-actions>
     </v-card>
   </div>
@@ -42,6 +42,12 @@ export default {
   },
   computed: {
     ...mapFields("account", ["creds.email", "creds.password"])
+  },
+  mounted: function() {
+    let token = localStorage.getItem("token")
+    if (token) {
+      this.$store.dispatch("account/loginWithToken", token)
+    }
   }
 }
 </script>

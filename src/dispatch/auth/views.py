@@ -6,7 +6,7 @@ from dispatch.database import get_db
 from .models import DispatchUser, UserLoginForm, UserLoginResponse
 from .service import (
     fetch_user,
-    encode_jwt,
+    gen_token,
     credentials_exception,
     get_current_user,
     hash_password,
@@ -22,8 +22,8 @@ def login_user(
     db_session: Session = Depends(get_db),
 ):
     user = fetch_user(db_session, form.email)
-    if user and user.email == form.email and check_password(form.password, user.password):
-        return {"token": encode_jwt({"email": user.email})}
+    if user and check_password(form.password, user.password):
+        return {"token": gen_token({"email": user.email})}
     raise credentials_exception
 
 
@@ -41,7 +41,7 @@ def register_user(
         logging.warn(e)
         raise credentials_exception
 
-    return {"token": encode_jwt({"email": user.email})}
+    return {"token": gen_token({"email": user.email})}
 
 
 @router.get("/user", response_model=UserLoginResponse, summary="Retrives current user")

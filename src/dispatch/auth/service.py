@@ -6,15 +6,15 @@
 """
 import logging
 import bcrypt
-
+from datetime import datetime, timedelta
 from starlette.requests import Request
 from dispatch.plugins.base import plugins
 from dispatch.config import (
     DISPATCH_AUTHENTICATION_PROVIDER_SLUG,
-    DISPATCH_JWT_SECRET
+    DISPATCH_JWT_SECRET,
+    DISPATCH_JWT_EXP
 )
 
-from cachetools import TTLCache
 from fastapi import HTTPException
 from fastapi.security.utils import get_authorization_scheme_param
 from jose import JWTError, jwt
@@ -22,8 +22,6 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 from .models import DispatchUser
 
 log = logging.getLogger(__name__)
-
-jwk_key_cache = TTLCache(maxsize=1, ttl=60 * 60)
 
 credentials_exception = HTTPException(
     status_code=HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"
@@ -36,8 +34,8 @@ def get_current_user(*, request: Request):
         auth_plugin = plugins.get(DISPATCH_AUTHENTICATION_PROVIDER_SLUG)
         return auth_plugin.get_current_user(request)
 
-    log.warning(
-        "No authentication provider has been provided. Default one will be used"
+    log.debug(
+        "No authentication provider. Default one will be used"
     )
     user_email = from_bearer_token(request)
 
@@ -56,25 +54,36 @@ def from_bearer_token(request: Request):
 
     token = authorization.split()[1]
 
-    # TODO should we warm this cache up on application start?
     try:
-        data = jwt.decode(token, DISPATCH_JWT_SECRET)
-    except JWTError:
-        return
-
+        data = decode_jwt(token)
+    except JWTError as e:
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED, detail=str(e)
+        )
     return data["email"]
+
+
+def gen_token(user):
+    user = add_claims(user)
+    return encode_jwt(user)
 
 
 def fetch_user(db_session, email: str):
     return db_session.query(DispatchUser).get(email)
 
 
-def encode_jwt(user):
+def add_claims(user: dict):
+    now = datetime.now()
+    user["exp"] = (now + timedelta(seconds=DISPATCH_JWT_EXP)).timestamp()
+    return user
+
+
+def encode_jwt(user: dict):
     return jwt.encode(user, DISPATCH_JWT_SECRET)
 
 
-def decode_jwt(user):
-    return jwt.decode(user, DISPATCH_JWT_SECRET)
+def decode_jwt(token):
+    return jwt.decode(token, DISPATCH_JWT_SECRET)
 
 
 def check_password(passwd: str, hashed: bytes):

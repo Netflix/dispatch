@@ -27,6 +27,10 @@ const actions = {
         commit("app/SET_SNACKBAR", { text: "Invalid credentials", color: "red" }, { root: true })
       })
   },
+  loginWithToken({ commit }, token) {
+    commit("SET_USER_LOGIN", token)
+    router.push("/dashboard")
+  },
   register({ commit }) {
     LoginApi.register(state.creds.email, state.creds.password)
       .then(function(res) {
@@ -67,11 +71,13 @@ const mutations = {
     state.accessToken = accessToken
     state.status = { loggedIn: true }
     state.userInfo = jwt_decode(accessToken)
+    localStorage.setItem("token", accessToken)
   },
   SET_USER_LOGOUT(state) {
     state.status = { loggedIn: false }
     state.userInfo = null
     state.accessToken = null
+    localStorage.removeItem("token")
   }
 }
 
