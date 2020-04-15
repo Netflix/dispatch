@@ -28,5 +28,4 @@
       "source.organizeImports": false
     }
   },
-  "python.pythonPath": ".venv/bin/python"
 }

@@ -1,5 +1,4 @@
 import axios from "axios"
-import router from "@/router"
 import store from "@/store"
 
 const instance = axios.create({
@@ -25,9 +24,8 @@ instance.interceptors.response.use(
     return res
   },
   function(err) {
-    let path = router.currentRoute.path
-    if (err.response.status == 401 && path != "/login" && path != "/register") {
-      router.push("/login")
+    if (err.response.status == 401) {
+      store.dispatch("account/logout")
     }
     Promise.reject(err)
     return err
