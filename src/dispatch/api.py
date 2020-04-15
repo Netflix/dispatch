@@ -19,7 +19,7 @@ from dispatch.team.views import router as team_contact_router
 from dispatch.term.views import router as team_router
 from dispatch.document.views import router as document_router
 from dispatch.task.views import router as task_router
-from dispatch.plugins.views import router as plugin_router
+from dispatch.plugin.views import router as plugin_router
 
 from .common.utils.cli import install_plugins, install_plugin_events
 

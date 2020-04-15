@@ -9,8 +9,8 @@ import logging
 from dispatch.common.managers import InstanceManager
 
 from dispatch.database import SessionLocal
-from dispatch.plugins import service as plugin_service
-from dispatch.plugins.models import PluginCreate
+from dispatch.plugin import service as plugin_service
+from dispatch.plugin.models import PluginCreate
 
 
 logger = logging.getLogger(__name__)

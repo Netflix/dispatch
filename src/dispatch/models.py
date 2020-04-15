@@ -178,4 +178,4 @@ from dispatch.task.models import *  # noqa
 from dispatch.team.models import *  # noqa
 from dispatch.term.models import *  # noqa
 from dispatch.ticket.models import *  # noqa
-from dispatch.plugins.models import *  # noqa
+from dispatch.plugin.models import *  # noqa
