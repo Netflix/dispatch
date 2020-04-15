@@ -273,17 +273,17 @@ def get_engagement_multiplier(participant_role: str):
         ParticipantRoleType.reporter: 0.5,
     }
 
-    return engagement_mappings.get(participant_role, [])
+    return engagement_mappings.get(participant_role)
 
 
 def calculate_cost(incident_id: int, db_session: SessionLocal, incident_review=True):
     """Calculates the cost of a given incident."""
     incident = get(db_session=db_session, incident_id=incident_id)
 
-    participants_total_response_time_seconds = 0.0
+    participants_total_response_time_seconds = 0
     for participant in incident.participants:
 
-        participant_total_roles_time_seconds = 0.0
+        participant_total_roles_time_seconds = 0
         for participant_role in participant.participant_roles:
             # TODO(mvilanova): skip if we did not see activity from the participant in the incident conversation
 
@@ -311,7 +311,7 @@ def calculate_cost(incident_id: int, db_session: SessionLocal, incident_review=T
 
             # we make the assumption that participants spend more or less time based on their role
             # and we adjust the time spent based on that
-            participant_role_time_seconds = (
+            participant_role_time_seconds = int(
                 participant_role_time_hours
                 * SECONDS_IN_HOUR
                 * get_engagement_multiplier(participant_role.role)
@@ -337,6 +337,11 @@ def calculate_cost(incident_id: int, db_session: SessionLocal, incident_review=T
     hourly_rate = math.ceil(ANNUAL_COST_EMPLOYEE / BUSINESS_HOURS_YEAR)
 
     # we calculate, round up, and format the incident cost
-    incident_cost = f"{math.ceil(((participants_total_response_time_seconds / SECONDS_IN_HOUR) + incident_review_hours) * hourly_rate):.2f}"
+    incident_cost = int(
+        math.ceil(
+            ((participants_total_response_time_seconds / SECONDS_IN_HOUR) + incident_review_hours)
+            * hourly_rate
+        )
+    )
 
     return incident_cost

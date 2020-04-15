@@ -60,7 +60,7 @@ class ParticipantUpdate(ParticipantBase):
 
 class ParticipantRead(ParticipantBase):
     id: int
-    participant_role: Optional[List[ParticipantRoleRead]] = []
+    participant_roles: Optional[List[ParticipantRoleRead]] = []
     individual: Optional[IndividualReadNested]
     active_at: Optional[datetime] = None
     inactive_at: Optional[datetime] = None
