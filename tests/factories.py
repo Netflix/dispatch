@@ -9,27 +9,30 @@ from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime
 
 from dispatch.database import SessionLocal
 
-from dispatch.conversation.models import Conversation
-from dispatch.definition.models import Definition
-from dispatch.document.models import Document
-from dispatch.event.models import Event
-from dispatch.group.models import Group
-from dispatch.incident.models import Incident
-from dispatch.incident_priority.models import IncidentPriority
-from dispatch.incident_type.models import IncidentType
-from dispatch.individual.models import IndividualContact
-from dispatch.participant.models import Participant
-from dispatch.participant_role.models import ParticipantRole
-from dispatch.policy.models import Policy
-from dispatch.route.models import Recommendation, RecommendationAccuracy
-from dispatch.service.models import Service
-from dispatch.status_report.models import StatusReport
-from dispatch.storage.models import Storage
-from dispatch.tag.models import Tag
-from dispatch.task.models import Task
-from dispatch.team.models import TeamContact
-from dispatch.term.models import Term
-from dispatch.ticket.models import Ticket
+from dispatch.models import (
+    Conversation,
+    Definition,
+    Document,
+    Event,
+    Incident,
+    Group,
+    IncidentPriority,
+    IncidentType,
+    IndividualContact,
+    Participant,
+    ParticipantRole,
+    Policy,
+    Recommendation,
+    RecommendationAccuracy,
+    Service,
+    StatusReport,
+    Storage,
+    Tag,
+    Task,
+    TeamContact,
+    Term,
+    Ticket,
+)
 
 
 class BaseFactory(SQLAlchemyModelFactory):
