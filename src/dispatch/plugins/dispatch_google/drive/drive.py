@@ -197,12 +197,12 @@ def restrict_team_drive(client: Any, team_drive_id: str):
     """Applies a set of restrictions and capabilities to the shared drive."""
     body = {
         "restrictions": {
-            "domainUsersOnly": True,
+            "domainUsersOnly": False,
             "driveMembersOnly": True,
             "copyRequiresWriterPermission": True,
         },
         "capabilities": {
-            "canChangeDomainUsersOnlyRestriction": False,
+            "canChangeDomainUsersOnlyRestriction": True,
             "canChangeDriveMembersOnlyRestriction": False,
             "canChangeCopyRequiresWriterPermissionRestriction": False,
             "canShare": False,
