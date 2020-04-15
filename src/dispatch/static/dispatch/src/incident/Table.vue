@@ -121,6 +121,9 @@ export default {
     IncidentPriorityCombobox,
     IncidentStatusMultiSelect
   },
+
+  props: ["name"],
+
   data() {
     return {
       filterDialog: false,
@@ -167,7 +170,11 @@ export default {
   },
 
   mounted() {
-    this.getAll({})
+    // process our props
+    if (this.name) {
+      this.q = this.name
+    }
+    this.getAll()
 
     this.$watch(
       vm => [

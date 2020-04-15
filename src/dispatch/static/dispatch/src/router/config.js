@@ -70,6 +70,12 @@ export const protectedRoute = [
         path: "/incidents",
         name: "IncidentTable",
         component: () => import(/* webpackChunkName: "incident-table" */ "@/incident/Table.vue")
+      },
+      {
+        path: "/incidents/:name",
+        name: "IncidentTable",
+        component: () => import(/* webpackChunkName: "incident-table" */ "@/incident/Table.vue"),
+        props: true
       }
     ]
   },
