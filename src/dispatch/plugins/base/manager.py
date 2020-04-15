@@ -8,6 +8,10 @@
 import logging
 from dispatch.common.managers import InstanceManager
 
+from dispatch.database import SessionLocal
+from dispatch.plugins import service as plugin_service
+from dispatch.plugins.models import PluginCreate
+
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +63,22 @@ class PluginManager(InstanceManager):
                 return result
 
     def register(self, cls):
+        # ensure that the plugin is available in the database
+        db_session = SessionLocal()
+        record = plugin_service.get_by_slug(db_session=db_session, slug=cls.slug)
+        if not record:
+            plugin_service.create(
+                db_session=db_session,
+                plugin_in=PluginCreate(
+                    title=cls.title,
+                    slug=cls.slug,
+                    type=cls.type,
+                    version=cls.version,
+                    author=cls.author,
+                    author_url=cls.author_url,
+                    description=cls.description,
+                ),
+            )
         self.add(f"{cls.__module__}.{cls.__name__}")
         return cls
 

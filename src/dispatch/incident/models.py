@@ -18,7 +18,6 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.config import INCIDENT_RESOURCE_FAQ_DOCUMENT, INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT
 
-from dispatch.conversation.models import ConversationRead
 from dispatch.database import Base
 from dispatch.document.models import DocumentRead
 from dispatch.enums import Visibility
@@ -27,13 +26,14 @@ from dispatch.incident_priority.models import (
     IncidentPriorityRead,
     IncidentPriorityBase,
 )
+from dispatch.conversation.models import ConversationRead
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
-from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
 from dispatch.participant.models import ParticipantRead
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.storage.models import StorageRead
 from dispatch.ticket.models import TicketRead
 from dispatch.conference.models import ConferenceRead
+from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
 
 from .enums import IncidentStatus
 
