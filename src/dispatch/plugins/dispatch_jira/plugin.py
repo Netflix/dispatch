@@ -190,7 +190,13 @@ class JiraTicketPlugin(TicketPlugin):
     _schema = None
 
     def create(
-        self, title: str, incident_type: str, incident_priority: str, commander: str, reporter: str
+        self,
+        incident_id: int,
+        title: str,
+        incident_type: str,
+        incident_priority: str,
+        commander: str,
+        reporter: str,
     ):
         """Creates a Jira ticket."""
         client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))

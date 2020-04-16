@@ -1,14 +1,31 @@
+import logging
 from typing import List, Optional
-
 from fastapi.encoders import jsonable_encoder
 
-from dispatch.plugins.base import plugins
 from .models import Plugin, PluginCreate, PluginUpdate
+
+
+log = logging.getLogger(__name__)
 
 
 def get(*, db_session, plugin_id: int) -> Optional[Plugin]:
     """Returns a plugin based on the given plugin id."""
     return db_session.query(Plugin).filter(Plugin.id == plugin_id).one_or_none()
+
+
+def get_active(*, db_session, plugin_type: str):
+    """Fetches the current active plugin for the given type."""
+    return (
+        db_session.query(Plugin)
+        .filter(Plugin.type == plugin_type)
+        .filter(Plugin.enabled == True)  # noqa
+        .one_or_none()
+    )
+
+
+def get_by_type(*, db_session, plugin_type: str):
+    """Fetches all plugins for a given type."""
+    return db_session.query(Plugin).filter(Plugin.type == plugin_type).all()
 
 
 def get_all(*, db_session) -> List[Optional[Plugin]]:
@@ -33,6 +50,16 @@ def update(*, db_session, plugin: Plugin, plugin_in: PluginUpdate) -> Plugin:
     """Updates a plugin."""
     plugin_data = jsonable_encoder(plugin)
     update_data = plugin_in.dict(skip_defaults=True)
+
+    # TODO can this be moved to a table trigger?
+    # ensure that only one plugin is enabled per plugin type
+    plugins_t = get_by_type(db_session=db_session, plugin_type=plugin.type)
+
+    for p in plugins_t:
+        if p.enabled:
+            log.debug(f"Disabling existing plugin. {p.slug}")
+            p.enabled = False
+            db_session.add(p)
 
     for field in plugin_data:
         if field in update_data:

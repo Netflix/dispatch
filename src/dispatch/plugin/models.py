@@ -5,6 +5,7 @@ from sqlalchemy_utils import TSVectorType, JSONType
 
 from dispatch.database import Base
 from dispatch.models import DispatchBase
+from dispatch.plugins.base import plugins
 
 
 class Plugin(Base):
@@ -18,6 +19,11 @@ class Plugin(Base):
     type = Column(String)
     enabled = Column(Boolean)
     configuration = Column(JSONType)
+
+    @property
+    def instance(self):
+        """Fetches a plugin instance that matches this record."""
+        return plugins.get(self.slug)
 
     search_vector = Column(TSVectorType("title"))
 

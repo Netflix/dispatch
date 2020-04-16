@@ -39,7 +39,11 @@
               />
             </v-flex>
             <v-flex xs12>
-              <v-switch v-model="enabled" :label="enabled ? 'Enabled' : 'Disabled'" />
+              <v-switch
+                v-model="enabled"
+                hint="Each plugin type can only ever have one enabled plugin. Existing enabled plugins will be de-activated."
+                :label="enabled ? 'Enabled' : 'Disabled'"
+              />
             </v-flex>
           </v-layout>
         </v-container>
