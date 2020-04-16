@@ -31,6 +31,7 @@
         <incident-details-tab />
         <incident-resources-tab />
         <incident-participants-tab />
+        <incident-timeline-tab />
       </v-tabs-items>
     </v-navigation-drawer>
   </ValidationObserver>
@@ -44,6 +45,7 @@ import { ValidationObserver } from "vee-validate"
 import IncidentDetailsTab from "@/incident/DetailsTab.vue"
 import IncidentResourcesTab from "@/incident/ResourcesTab.vue"
 import IncidentParticipantsTab from "@/incident/ParticipantsTab.vue"
+import IncidentTimelineTab from "@/incident/TimelineTab.vue"
 
 export default {
   name: "IncidentEditSheet",
@@ -52,7 +54,8 @@ export default {
     ValidationObserver,
     IncidentDetailsTab,
     IncidentResourcesTab,
-    IncidentParticipantsTab
+    IncidentParticipantsTab,
+    IncidentTimelineTab
   },
 
   data() {
