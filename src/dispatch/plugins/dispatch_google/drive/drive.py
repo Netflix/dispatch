@@ -197,15 +197,15 @@ def restrict_team_drive(client: Any, team_drive_id: str):
     """Applies a set of restrictions and capabilities to the shared drive."""
     body = {
         "restrictions": {
-            "domainUsersOnly": False,
+            # "domainUsersOnly": False,
             "driveMembersOnly": True,
             "copyRequiresWriterPermission": True,
         },
         "capabilities": {
-            "canChangeDomainUsersOnlyRestriction": True,
+            # "canChangeDomainUsersOnlyRestriction": True,
             "canChangeDriveMembersOnlyRestriction": False,
             "canChangeCopyRequiresWriterPermissionRestriction": False,
-            "canShare": False,
+            # "canShare": False,
         },
     }
     return make_call(client.drives(), "update", driveId=team_drive_id, body=body)
