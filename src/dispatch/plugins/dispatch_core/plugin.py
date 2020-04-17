@@ -16,7 +16,6 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 from starlette.requests import Request
 
 from dispatch.config import DISPATCH_UI_URL
-from dispatch.incident.models import Incident
 from dispatch.individual import service as individual_service
 from dispatch.plugins import dispatch_core as dispatch_plugin
 from dispatch.plugins.base import plugins
