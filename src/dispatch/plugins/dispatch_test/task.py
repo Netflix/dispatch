@@ -2,7 +2,7 @@ from dispatch.plugins.bases import TaskPlugin
 
 
 class TestTaskPlugin(TaskPlugin):
-    title = "Test Task"
+    title = "Dispatch Test Plugin - Task"
     slug = "test-task"
 
     def get(self, **kwargs):

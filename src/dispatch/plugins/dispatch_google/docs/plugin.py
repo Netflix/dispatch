@@ -90,9 +90,9 @@ def insert_incident_data(client: Any, document_id: str, index: int, incident_dat
 @apply(timer, exclude=["__init__"])
 @apply(counter, exclude=["__init__"])
 class GoogleDocsDocumentPlugin(DocumentPlugin):
-    title = "Google Docs - Document"
+    title = "Google Docs Plugin - Document Management"
     slug = "google-docs-document"
-    description = "Uses google docs to manage document contents."
+    description = "Uses Google docs to manage document contents."
     version = __version__
 
     author = "Kevin Glisson"

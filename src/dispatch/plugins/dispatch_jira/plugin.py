@@ -179,9 +179,9 @@ def get_user_name(email):
 @apply(counter, exclude=["__init__"])
 @apply(timer, exclude=["__init__"])
 class JiraTicketPlugin(TicketPlugin):
-    title = "Jira - Ticket"
+    title = "Jira Plugin - Ticket Management"
     slug = "jira-ticket"
-    description = "Uses Jira as an external ticket creator."
+    description = "Uses Jira to hepl manage external tickets."
     version = jira_plugin.__version__
 
     author = "Kevin Glisson"
