@@ -43,7 +43,7 @@ def get_plugins(
 @router.get("/{plugin_id}", response_model=PluginRead)
 def get_plugin(*, db_session: Session = Depends(get_db), plugin_id: int):
     """
-    Update a plugin.
+    Get a plugin.
     """
     plugin = get(db_session=db_session, plugin_id=plugin_id)
     if not plugin:
