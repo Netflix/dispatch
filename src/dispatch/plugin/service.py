@@ -57,7 +57,7 @@ def update(*, db_session, plugin: Plugin, plugin_in: PluginUpdate) -> Plugin:
 
     for p in plugins_t:
         if p.enabled:
-            log.debug(f"Disabling existing plugin. {p.slug}")
+            log.debug(f"Disabling existing plugin: {p.slug}")
             p.enabled = False
             db_session.add(p)
 
