@@ -167,7 +167,7 @@ def create(
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch App",
+        source="Dispatch Core App",
         description="Incident created",
         incident_id=incident.id,
     )

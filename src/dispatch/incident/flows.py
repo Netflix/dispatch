@@ -489,7 +489,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch App",
+        source="Dispatch Core App",
         description="Incident participants added to incident",
         incident_id=incident.id,
     )
@@ -500,7 +500,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch App",
+        source="Dispatch Core App",
         description="External ticket added to incident",
         incident_id=incident.id,
     )
@@ -527,7 +527,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch App",
+        source="Dispatch Core App",
         description="Tactical and notification groups added to incident",
         incident_id=incident.id,
     )
@@ -545,7 +545,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch App",
+        source="Dispatch Core App",
         description="Storage added to incident",
         incident_id=incident.id,
     )
@@ -593,7 +593,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch App",
+        source="Dispatch Core App",
         description="Documents added to incident",
         incident_id=incident.id,
     )
@@ -613,7 +613,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch App",
+        source="Dispatch Core App",
         description="Conference added to incident",
         incident_id=incident.id,
     )
@@ -634,7 +634,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch App",
+        source="Dispatch Core App",
         description="Conversation added to incident",
         incident_id=incident.id,
     )
@@ -693,7 +693,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch App",
+        source="Dispatch Core App",
         description="Participants announced and welcome messages sent",
         incident_id=incident.id,
     )
@@ -702,7 +702,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         send_incident_notifications(incident, db_session)
         event_service.log(
             db_session=db_session,
-            source="Dispatch App",
+            source="Dispatch Core App",
             description="Incident notifications sent",
             incident_id=incident.id,
         )
@@ -726,7 +726,7 @@ def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch App",
+        source="Dispatch Core App",
         description=f"Incident marked as {incident.status}",
         incident_id=incident.id,
     )
@@ -799,7 +799,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
 
         event_service.log(
             db_session=db_session,
-            source="Dispatch App",
+            source="Dispatch Core App",
             description="Incident review document added to incident",
             incident_id=incident.id,
         )
@@ -837,7 +837,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch App",
+        source="Dispatch Core App",
         description=f"Incident marked as {incident.status}",
         incident_id=incident.id,
     )
@@ -879,7 +879,7 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch App",
+        source="Dispatch Core App",
         description=f"Incident marked as {incident.status}",
         incident_id=incident.id,
     )

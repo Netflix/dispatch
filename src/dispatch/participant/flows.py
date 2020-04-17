@@ -49,7 +49,7 @@ def add_participant(
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch App",
+        source="Dispatch Core App",
         description=f"{individual.name} added to incident with {participant_role.role} role",
         incident_id=incident_id,
     )
@@ -97,7 +97,7 @@ def remove_participant(user_email: str, incident_id: int, db_session: SessionLoc
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch App",
+        source="Dispatch Core App",
         description=f"{participant.individual.name} removed from incident",
         incident_id=incident_id,
     )
@@ -143,7 +143,7 @@ def reactivate_participant(user_email: str, incident_id: int, db_session: Sessio
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch App",
+        source="Dispatch Core App",
         description=f"{individual_fullname} reactivated",
         incident_id=incident_id,
     )
