@@ -13,7 +13,7 @@ def get(*, db_session, plugin_id: int) -> Optional[Plugin]:
     return db_session.query(Plugin).filter(Plugin.id == plugin_id).one_or_none()
 
 
-def get_active(*, db_session, plugin_type: str):
+def get_active(*, db_session, plugin_type: str) -> Optional[Plugin]:
     """Fetches the current active plugin for the given type."""
     return (
         db_session.query(Plugin)
