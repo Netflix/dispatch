@@ -116,9 +116,9 @@ def create_event(
 @apply(timer, exclude=["__init__"])
 @apply(counter, exclude=["__init__"])
 class GoogleCalendarConferencePlugin(ConferencePlugin):
-    title = "Google Calendar - Conference"
+    title = "Google Calendar Plugin - Conference Management"
     slug = "google-calendar-conference"
-    description = "Uses google calendar to manage conference rooms/meets."
+    description = "Uses Google calendar to manage conference rooms/meets."
 
     author = "Kevin Glisson"
     author_url = "https://github.com/netflix/dispatch.git"

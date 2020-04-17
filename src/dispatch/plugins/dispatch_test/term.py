@@ -2,7 +2,7 @@ from dispatch.plugins.bases import TermPlugin
 
 
 class TestTermPlugin(TermPlugin):
-    title = "Test Term"
+    title = "Dispatch Test Plugin - Term"
     slug = "test-term"
 
     def get(self, **kwargs):

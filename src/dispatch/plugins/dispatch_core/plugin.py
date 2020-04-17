@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 
 
 class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
-    title = "Dispatch - PKCE Authentication Provider"
+    title = "Dispatch Plugin - PKCE Authentication Provider"
     slug = "dispatch-auth-provider-pkce"
     description = "Generic PCKE authentication provider."
     version = dispatch_plugin.__version__
@@ -62,7 +62,7 @@ class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
 
 
 class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
-    title = "Dispatch - Document Resolver"
+    title = "Dispatch Plugin - Document Resolver"
     slug = "dispatch-document-resolver"
     description = "Uses dispatch itself to resolve incident documents."
     version = dispatch_plugin.__version__
@@ -88,21 +88,17 @@ class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
         return recommendation.documents
 
 
-class DispatchParticipantPlugin(ParticipantPlugin):
-    title = "Dispatch - Participants"
-    slug = "dispatch-participants"
-    description = "Uses dispatch itself to determine participants."
+class DispatchParticipantResolverPlugin(ParticipantPlugin):
+    title = "Dispatch Plugin - Participant Resolver"
+    slug = "dispatch-participant-resolver"
+    description = "Uses dispatch itself to resolve incident participants."
     version = dispatch_plugin.__version__
 
     author = "Kevin Glisson"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def get(
-        self,
-        incident_type: str,
-        incident_priority: str,
-        incident_description: str,
-        db_session=None,
+        self, incident_type: str, incident_priority: str, incident_description: str, db_session=None
     ):
         """Fetches participants from Dispatch."""
         route_in = {
@@ -125,7 +121,7 @@ class DispatchParticipantPlugin(ParticipantPlugin):
             individual_email = p.get(s.external_id)
 
             individual = individual_service.get_or_create(
-                db_session=db_session, email=individual_email,
+                db_session=db_session, email=individual_email
             )
             recommendation.individual_contacts.append(individual)
 

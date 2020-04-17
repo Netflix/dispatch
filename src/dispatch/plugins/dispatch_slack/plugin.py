@@ -73,9 +73,9 @@ command_mappings = {
 @apply(counter, exclude=["__init__"])
 @apply(timer, exclude=["__init__"])
 class SlackConversationPlugin(ConversationPlugin):
-    title = "Slack - Conversation"
+    title = "Slack Plugin - Conversation Management"
     slug = "slack-conversation"
-    description = "Uses slack to facilitate conversations."
+    description = "Uses Slack to facilitate conversations."
     version = slack_plugin.__version__
     events = slack_event_router
 
@@ -181,9 +181,9 @@ class SlackConversationPlugin(ConversationPlugin):
 @apply(counter, exclude=["__init__"])
 @apply(timer, exclude=["__init__"])
 class SlackContactPlugin(ContactPlugin):
-    title = "Slack - Contact"
+    title = "Slack Plugin - Contact Information Resolver"
     slug = "slack-contact"
-    description = "Uses slack to resolve user details."
+    description = "Uses Slack to resolve contact information details."
     version = slack_plugin.__version__
 
     author = "Kevin Glisson"
@@ -210,9 +210,9 @@ class SlackContactPlugin(ContactPlugin):
 
 
 class SlackDocumentPlugin(DocumentPlugin):
-    title = "Slack - Document"
+    title = "Slack Plugin - Document Interrogator"
     slug = "slack-document"
-    description = "Uses slack as a document source"
+    description = "Uses Slack as a document source."
     version = slack_plugin.__version__
 
     author = "Kevin Glisson"

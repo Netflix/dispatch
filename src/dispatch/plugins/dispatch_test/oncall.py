@@ -8,7 +8,7 @@ from dispatch.plugins.bases import OncallPlugin
 
 
 class TestOncallPlugin(OncallPlugin):
-    title = "Test Oncall"
+    title = "Dispatch Test Plugin - Oncall"
     slug = "test-oncall"
     description = "Oncall plugin for testing purposes"
 

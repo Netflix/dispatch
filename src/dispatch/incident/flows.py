@@ -21,7 +21,7 @@ from dispatch.config import (
     INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG,
     INCIDENT_PLUGIN_DOCUMENT_SLUG,
     INCIDENT_PLUGIN_GROUP_SLUG,
-    INCIDENT_PLUGIN_PARTICIPANT_SLUG,
+    INCIDENT_PLUGIN_PARTICIPANT_RESOLVER_SLUG,
     INCIDENT_PLUGIN_STORAGE_SLUG,
     INCIDENT_PLUGIN_TICKET_SLUG,
     INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
@@ -83,7 +83,7 @@ log = logging.getLogger(__name__)
 
 def get_incident_participants(incident: Incident, db_session: SessionLocal):
     """Get additional incident participants based on priority, type, and description."""
-    p = plugins.get(INCIDENT_PLUGIN_PARTICIPANT_SLUG)
+    p = plugins.get(INCIDENT_PLUGIN_PARTICIPANT_RESOLVER_SLUG)
     individual_contacts, team_contacts = p.get(
         incident.incident_type,
         incident.incident_priority,
