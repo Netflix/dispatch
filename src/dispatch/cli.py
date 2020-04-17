@@ -10,8 +10,8 @@ from tabulate import tabulate
 from uvicorn import main as uvicorn_main
 
 from dispatch import __version__, config
-from dispatch.common.utils.cli import install_plugin_events, install_plugins
 
+from .main import *  # noqa
 from .database import Base, engine
 from .exceptions import DispatchException
 from .plugins.base import plugins
@@ -43,7 +43,7 @@ def dispatch_cli():
 @dispatch_cli.group("plugins")
 def plugins_group():
     """All commands for plugin manipulation."""
-    install_plugins()
+    pass
 
 
 @plugins_group.command("list")
@@ -379,8 +379,6 @@ def close_incidents(name, username):
     from dispatch.incident.models import Incident
     from dispatch.database import SessionLocal
 
-    install_plugins()
-
     incidents = []
     db_session = SessionLocal()
 
@@ -416,8 +414,6 @@ def clean_incident_artifacts(pattern):
     from dispatch.plugins.dispatch_slack.config import SLACK_API_BOT_TOKEN
 
     from dispatch.plugins.dispatch_google.groups.plugin import delete_group, list_groups
-
-    install_plugins()
 
     patterns = [re.compile(p) for p in pattern]
 
@@ -723,8 +719,6 @@ def dispatch_scheduler():
     from .document.scheduled import sync_document_terms  # noqa
     from .tag.scheduled import sync_tags  # noqa
 
-    install_plugins()
-
 
 @dispatch_scheduler.command("list")
 def list_tasks():
@@ -770,8 +764,6 @@ def dispatch_server():
 def show_routes():
     """Prints all available routes."""
     from dispatch.api import api_router
-
-    install_plugin_events(api_router)
 
     table = []
     for r in api_router.routes:
