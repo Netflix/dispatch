@@ -38,7 +38,7 @@ def install_plugins():
         try:
             plugin = ep.load()
             register(plugin)
-            logger.debug(f"Successfully loaded plugin:{ep.name}")
+            logger.debug(f"Successfully loaded plugin: {ep.name}")
         except KeyError as e:
             logger.warning(f"Failed to load plugin: {ep.name} Reason: {e}")
         except Exception:
