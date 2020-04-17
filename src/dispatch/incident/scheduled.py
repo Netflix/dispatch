@@ -43,16 +43,16 @@ from .messaging import send_incident_status_report_reminder
 log = logging.getLogger(__name__)
 
 
-@scheduler.add(every(1).hours, name="incident-auto-tagger")
+@scheduler.add(every(1).hours, name="incident-tagger")
 @background_task
 def auto_tagger(db_session):
     """Attempts to take existing tags and associate them with incidents."""
     tags = tag_service.get_all(db_session=db_session).all()
     log.debug(f"Fetched {len(tags)} tags from database.")
 
-    tag_strings = [t.name.lower() for t in tags]
+    tag_strings = [t.name.lower() for t in tags if t.discoverable]
     phrases = build_term_vocab(tag_strings)
-    matcher = build_phrase_matcher("tag", phrases)
+    matcher = build_phrase_matcher("dispatch-tag", phrases)
 
     p = plugins.get(
         INCIDENT_PLUGIN_STORAGE_SLUG
@@ -66,19 +66,22 @@ def auto_tagger(db_session):
             mime_type = "text/plain"
             text = p.get(doc.resource_id, mime_type)
         except Exception as e:
-            log.debug(f"Failed to get document. Reason: {e}")
+            print(f"Failed to get document. Reason: {e}")
             sentry_sdk.capture_exception(e)
             continue
 
         extracted_tags = list(set(extract_terms_from_text(text, matcher)))
 
-        # matched_tags = (
-        #    db_session.query(Tag)
-        #    .filter(func.upper(Tag.name).in_([func.upper(t) for t in extracted_tags]))
-        #    .all()
-        # )
+        matched_tags = (
+            db_session.query(Tag)
+            .filter(func.upper(Tag.name).in_([func.upper(t) for t in extracted_tags]))
+            .all()
+        )
 
-        print(f"{doc.incident.name},{doc.weblink},{extracted_tags}")
+        incident.tags.extend(matched_tags)
+        db_session.commit()
+
+        print(f"Associating tags with incident. Incident: {incident.name}, Tags: {extracted_tags}")
 
 
 @scheduler.add(every(1).hours, name="incident-status-report-reminder")

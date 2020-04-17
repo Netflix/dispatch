@@ -10,22 +10,8 @@ nlp = spacy.load("en_core_web_sm")
 nlp.vocab.lex_attr_getters = {}
 
 
-# NOTE
-# This is kinda slow so we might cheat and just build this
-# periodically or cache it
 def build_term_vocab(terms: List[str]):
     """Builds nlp vocabulary."""
-    # We need to build four sets of vocabulary
-    # such that we can more accurately match
-    #
-    # - No change
-    # - Lower
-    # - Upper
-    # - Title
-    #
-    # We may also normalize the document itself at some point
-    # but it unclear how this will affect the things like
-    # Parts-of-speech (POS) analysis.
     for v in terms:
         texts = [v, v.lower(), v.upper(), v.title()]
         for t in texts:
@@ -39,7 +25,7 @@ def build_term_vocab(terms: List[str]):
 def build_phrase_matcher(name: str, phrases: List[str]) -> PhraseMatcher:
     """Builds a PhraseMatcher object."""
     matcher = PhraseMatcher(nlp.tokenizer.vocab)
-    matcher.add(name, None, *phrases)  # TODO customize
+    matcher.add(name, phrases)
     return matcher
 
 
@@ -61,6 +47,6 @@ def extract_terms_from_text(text: str, matcher: PhraseMatcher) -> List[str]:
         if token.is_stop:
             continue
 
-        terms.append(token.text)
+        terms.append(token.text.lower())
 
     return terms
