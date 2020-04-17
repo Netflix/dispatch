@@ -65,7 +65,7 @@ class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
 
 
 class DispatchTicketPlugin(TicketPlugin):
-    title = "Dispatch - Ticket"
+    title = "Dispatch Plugin - Ticket Management"
     slug = "dispatch-ticket"
     description = "Uses dispatch itself to create a ticket."
     version = dispatch_plugin.__version__
