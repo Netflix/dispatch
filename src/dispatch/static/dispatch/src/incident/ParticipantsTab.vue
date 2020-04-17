@@ -27,7 +27,7 @@
 import { mapFields } from "vuex-map-fields"
 
 export default {
-  name: "IncidentPeopleTab",
+  name: "IncidentParticipantsTab",
   computed: {
     ...mapFields("incident", ["selected.participants"])
   }
