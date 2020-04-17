@@ -18,13 +18,16 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.config import INCIDENT_RESOURCE_FAQ_DOCUMENT, INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT
 
+from dispatch.conference.models import ConferenceRead
+from dispatch.conversation.models import ConversationRead
 from dispatch.database import Base
 from dispatch.document.models import DocumentRead
 from dispatch.enums import Visibility
+from dispatch.event.models import EventRead
 from dispatch.incident_priority.models import (
+    IncidentPriorityBase,
     IncidentPriorityCreate,
     IncidentPriorityRead,
-    IncidentPriorityBase,
 )
 from dispatch.conversation.models import ConversationRead
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
@@ -188,6 +191,7 @@ class IncidentRead(IncidentBase):
     terms: Optional[List[Any]] = []  # any until we figure out circular imports
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
+    events: Optional[List[EventRead]] = []
 
     created_at: Optional[datetime] = None
     reported_at: Optional[datetime] = None
