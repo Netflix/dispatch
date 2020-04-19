@@ -151,8 +151,10 @@ router.beforeEach((to, from, next) => {
   if (!store.state.account.status.loggedIn) {
     if (authProviderSlug === "dispatch-auth-provider-pkce") {
       loginwithPKCE(to, from, next)
-    } else {
+    } else if (authProviderSlug === "dispatch-auth-provider-basic") {
       loginBasic(to, from, next)
+    } else {
+      next()
     }
   } else {
     next()

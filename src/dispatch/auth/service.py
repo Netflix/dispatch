@@ -30,7 +30,7 @@ credentials_exception = HTTPException(
 
 def get_current_user(*, request: Request):
     """Attempts to get the current user depending on the configured authentication provider."""
-    if DISPATCH_AUTHENTICATION_PROVIDER_SLUG:
+    if DISPATCH_AUTHENTICATION_PROVIDER_SLUG != "dispatch-auth-provider-basic":
         auth_plugin = plugins.get(DISPATCH_AUTHENTICATION_PROVIDER_SLUG)
         return auth_plugin.get_current_user(request)
 
