@@ -42,6 +42,7 @@ def get_incidents(
         fields=fields,
         values=values,
         ops=ops,
+        join_attrs=[("tag", "tags")],
     )
 
 

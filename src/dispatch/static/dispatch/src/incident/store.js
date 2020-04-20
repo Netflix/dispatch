@@ -52,7 +52,8 @@ const state = {
         commander: [],
         incident_type: [],
         incident_priority: [],
-        status: []
+        status: [],
+        tag: []
       },
       q: "",
       page: 1,
