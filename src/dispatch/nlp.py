@@ -6,7 +6,7 @@ from spacy.matcher import PhraseMatcher
 
 log = logging.getLogger(__name__)
 
-nlp = spacy.load("en_core_web_sm")
+nlp = spacy.blank("en")
 nlp.vocab.lex_attr_getters = {}
 
 
