@@ -66,7 +66,7 @@ def auto_tagger(db_session):
             mime_type = "text/plain"
             text = p.get(doc.resource_id, mime_type)
         except Exception as e:
-            print(f"Failed to get document. Reason: {e}")
+            log.debug(f"Failed to get document. Reason: {e}")
             sentry_sdk.capture_exception(e)
             continue
 
@@ -81,7 +81,9 @@ def auto_tagger(db_session):
         incident.tags.extend(matched_tags)
         db_session.commit()
 
-        print(f"Associating tags with incident. Incident: {incident.name}, Tags: {extracted_tags}")
+        log.debug(
+            f"Associating tags with incident. Incident: {incident.name}, Tags: {extracted_tags}"
+        )
 
 
 @scheduler.add(every(1).hours, name="incident-status-report-reminder")
