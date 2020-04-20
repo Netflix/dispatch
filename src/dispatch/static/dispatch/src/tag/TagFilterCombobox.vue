@@ -23,6 +23,15 @@
         </v-list-item-content>
       </v-list-item>
     </template>
+    <template v-slot:append-item>
+      <v-list-item v-if="more" @click="loadMore()">
+        <v-list-item-content>
+          <v-list-item-subtitle>
+            Load More
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
   </v-combobox>
 </template>
 
@@ -47,6 +56,8 @@ export default {
     return {
       loading: false,
       items: [],
+      more: false,
+      numItems: 5,
       search: null
     }
   },
@@ -66,6 +77,7 @@ export default {
           }
           return v
         })
+        this.search = null
         this.$emit("input", this._tags)
       }
     }
@@ -76,11 +88,23 @@ export default {
   },
 
   methods: {
+    loadMore() {
+      this.numItems = this.numItems + 5
+      this.getFilteredData({ q: this.search, itemsPerPage: this.numItems })
+    },
     fetchData(filterOptions) {
       this.error = null
       this.loading = true
       TagApi.getAll(filterOptions).then(response => {
         this.items = response.data.items
+        this.total = response.data.total
+
+        if (this.items.length < this.total) {
+          this.more = true
+        } else {
+          this.more = false
+        }
+
         this.loading = false
       })
     },
