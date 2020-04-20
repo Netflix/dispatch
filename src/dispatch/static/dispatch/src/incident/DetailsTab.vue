@@ -1,120 +1,118 @@
 <template>
-  <v-tab-item key="details">
-    <v-container grid-list-md>
-      <v-layout wrap>
-        <v-flex xs12>
-          <ValidationProvider name="Title" rules="required" immediate>
-            <v-text-field
-              v-model="title"
-              slot-scope="{ errors, valid }"
-              :error-messages="errors"
-              :success="valid"
-              label="Title"
-              hint="Title of incident."
-              clearable
-              required
-            />
-          </ValidationProvider>
-        </v-flex>
-        <v-flex xs12>
-          <ValidationProvider name="Description" rules="required" immediate>
-            <v-textarea
-              v-model="description"
-              slot-scope="{ errors, valid }"
-              :error-messages="errors"
-              :success="valid"
-              label="Description"
-              hint="Description of incident."
-              clearable
-              required
-            />
-          </ValidationProvider>
-        </v-flex>
-        <v-flex xs6>
-          <v-select
-            v-model="status"
-            label="Status"
-            :items="statuses"
-            hint="The incident's current status"
+  <v-container grid-list-md>
+    <v-layout wrap>
+      <v-flex xs12>
+        <ValidationProvider name="Title" rules="required" immediate>
+          <v-text-field
+            v-model="title"
+            slot-scope="{ errors, valid }"
+            :error-messages="errors"
+            :success="valid"
+            label="Title"
+            hint="Title of incident."
+            clearable
+            required
           />
-        </v-flex>
-        <v-flex xs6>
-          <v-select
-            v-model="visibility"
-            label="Visibility"
-            :items="visibilities"
-            hint="The incident's current's visibilty"
+        </ValidationProvider>
+      </v-flex>
+      <v-flex xs12>
+        <ValidationProvider name="Description" rules="required" immediate>
+          <v-textarea
+            v-model="description"
+            slot-scope="{ errors, valid }"
+            :error-messages="errors"
+            :success="valid"
+            label="Description"
+            hint="Description of incident."
+            clearable
+            required
           />
-        </v-flex>
-        <v-flex xs6>
-          <incident-type-select v-model="incident_type" />
-        </v-flex>
-        <v-flex xs6>
-          <incident-priority-select v-model="incident_priority" />
-        </v-flex>
-        <v-flex xs6>
-          <ValidationProvider name="Commander" rules="required" immediate>
-            <individual-select
-              v-model="commander"
-              slot-scope="{ errors, valid }"
-              label="Commander"
-              :error-messages="errors"
-              :success="valid"
-              hint="The incident's current commander"
-              clearable
-              required
-            ></individual-select>
-          </ValidationProvider>
-        </v-flex>
-        <v-flex xs6>
-          <ValidationProvider name="Reporter" rules="required" immediate>
-            <individual-select
-              v-model="reporter"
-              slot-scope="{ errors, valid }"
-              label="Reporter"
-              :error-messages="errors"
-              :success="valid"
-              hint="The incident's current reporter"
-              clearable
-              required
-            ></individual-select>
-          </ValidationProvider>
-        </v-flex>
-        <v-flex xs12>
-          <span class="subtitle-2">Reported At</span>
-        </v-flex>
-        <v-flex xs12>
-          <v-row>
-            <v-col cols="6">
-              <date-picker-menu v-model="reported_at"></date-picker-menu>
-            </v-col>
-            <v-col cols="6">
-              <time-picker-menu v-model="reported_at"></time-picker-menu>
-            </v-col>
-          </v-row>
-        </v-flex>
-        <v-flex xs12>
-          <span class="subtitle-2">Stable At</span>
-        </v-flex>
-        <v-flex xs12>
-          <v-row>
-            <v-col cols="6">
-              <date-picker-menu v-model="stable_at"></date-picker-menu>
-            </v-col>
-            <v-col cols="6">
-              <time-picker-menu v-model="stable_at"></time-picker-menu>
-            </v-col>
-          </v-row>
-        </v-flex>
-        <v-flex xs12>
-          <term-combobox v-model="terms" />
-        </v-flex>
-        <v-flex xs12>
-          <tag-combobox v-model="tags" />
-        </v-flex>
-      </v-layout>
-    </v-container>
-  </v-tab-item>
+        </ValidationProvider>
+      </v-flex>
+      <v-flex xs6>
+        <v-select
+          v-model="status"
+          label="Status"
+          :items="statuses"
+          hint="The incident's current status"
+        />
+      </v-flex>
+      <v-flex xs6>
+        <v-select
+          v-model="visibility"
+          label="Visibility"
+          :items="visibilities"
+          hint="The incident's current's visibilty"
+        />
+      </v-flex>
+      <v-flex xs6>
+        <incident-type-select v-model="incident_type" />
+      </v-flex>
+      <v-flex xs6>
+        <incident-priority-select v-model="incident_priority" />
+      </v-flex>
+      <v-flex xs6>
+        <ValidationProvider name="Commander" rules="required" immediate>
+          <individual-select
+            v-model="commander"
+            slot-scope="{ errors, valid }"
+            label="Commander"
+            :error-messages="errors"
+            :success="valid"
+            hint="The incident's current commander"
+            clearable
+            required
+          ></individual-select>
+        </ValidationProvider>
+      </v-flex>
+      <v-flex xs6>
+        <ValidationProvider name="Reporter" rules="required" immediate>
+          <individual-select
+            v-model="reporter"
+            slot-scope="{ errors, valid }"
+            label="Reporter"
+            :error-messages="errors"
+            :success="valid"
+            hint="The incident's current reporter"
+            clearable
+            required
+          ></individual-select>
+        </ValidationProvider>
+      </v-flex>
+      <v-flex xs12>
+        <span class="subtitle-2">Reported At</span>
+      </v-flex>
+      <v-flex xs12>
+        <v-row>
+          <v-col cols="6">
+            <date-picker-menu v-model="reported_at"></date-picker-menu>
+          </v-col>
+          <v-col cols="6">
+            <time-picker-menu v-model="reported_at"></time-picker-menu>
+          </v-col>
+        </v-row>
+      </v-flex>
+      <v-flex xs12>
+        <span class="subtitle-2">Stable At</span>
+      </v-flex>
+      <v-flex xs12>
+        <v-row>
+          <v-col cols="6">
+            <date-picker-menu v-model="stable_at"></date-picker-menu>
+          </v-col>
+          <v-col cols="6">
+            <time-picker-menu v-model="stable_at"></time-picker-menu>
+          </v-col>
+        </v-row>
+      </v-flex>
+      <v-flex xs12>
+        <term-combobox v-model="terms" />
+      </v-flex>
+      <v-flex xs12>
+        <tag-combobox v-model="tags" />
+      </v-flex>
+    </v-layout>
+  </v-container>
 </template>
 
 <script>
