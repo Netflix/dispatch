@@ -34,7 +34,7 @@ from .task import list_tasks
 @apply(timer, exclude=["__init__"])
 @apply(counter, exclude=["__init__"])
 class GoogleDriveStoragePlugin(StoragePlugin):
-    title = "Google Drive - Storage"
+    title = "Google Drive Plugin - Storage Management"
     slug = "google-drive-storage"
     description = "Uses Google Drive to help manage incident storage."
     version = google_drive_plugin.__version__
@@ -134,7 +134,7 @@ class GoogleDriveStoragePlugin(StoragePlugin):
 
 
 class GoogleDriveTaskPlugin(TaskPlugin):
-    title = "Google Drive - Task"
+    title = "Google Drive Plugin - Task Management"
     slug = "google-drive-task"
     description = "Uses Google Drive to help manage incident tasks."
     version = google_drive_plugin.__version__

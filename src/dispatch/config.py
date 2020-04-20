@@ -126,8 +126,8 @@ INCIDENT_PLUGIN_EMAIL_SLUG = config(
 INCIDENT_PLUGIN_GROUP_SLUG = config(
     "INCIDENT_PLUGIN_GROUP_SLUG", default="google-group-participant-group"
 )
-INCIDENT_PLUGIN_PARTICIPANT_SLUG = config(
-    "INCIDENT_PLUGIN_PARTICIPANT_SLUG", default="dispatch-participants"
+INCIDENT_PLUGIN_PARTICIPANT_RESOLVER_SLUG = config(
+    "INCIDENT_PLUGIN_PARTICIPANT_RESOLVER_SLUG", default="dispatch-participant-resolver"
 )
 INCIDENT_PLUGIN_STORAGE_SLUG = config(
     "INCIDENT_PLUGIN_STORAGE_SLUG", default="google-drive-storage"

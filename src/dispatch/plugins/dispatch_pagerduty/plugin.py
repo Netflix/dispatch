@@ -19,11 +19,11 @@ log = logging.getLogger(__name__)
 @apply(timer)
 @apply(counter)
 class PagerDutyOncallPlugin(OncallPlugin):
-    title = "PagerDuty - Oncall"
+    title = "PagerDuty Plugin - Oncall Management"
     slug = "pagerduty-oncall"
     author = "Netflix"
     author_url = "https://github.com/Netflix/dispatch"
-    description = "Uses PagerDuty to resolve oncall identities"
+    description = "Uses PagerDuty to resolve and page oncall teams."
     version = pagerduty_oncall_plugin.__version__
 
     def get(self, service_id: str = None, service_name: str = None):

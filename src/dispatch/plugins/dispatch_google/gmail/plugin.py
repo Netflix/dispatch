@@ -122,7 +122,7 @@ def render_email(name, message):
 @apply(timer, exclude=["__init__"])
 @apply(counter, exclude=["__init__"])
 class GoogleGmailConversationPlugin(ConversationPlugin):
-    title = "Google Gmail - Conversation"
+    title = "Google Gmail Plugin - Conversation Management"
     slug = "google-gmail-conversation"
     description = "Uses gmail to facilitate conversations."
     version = google_gmail_plugin.__version__

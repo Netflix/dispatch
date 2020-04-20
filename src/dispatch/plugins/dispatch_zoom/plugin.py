@@ -43,21 +43,16 @@ def create_meeting(
         "agenda": description if description else f"Situation Room for {name}. Please join.",
         "duration": duration,
         "password": gen_conference_challenge(8),
-        "settings": {
-            "join_before_host": True
-        }
+        "settings": {"join_before_host": True},
     }
 
-    return client.post(
-        "/users/{}/meetings".format(ZOOM_API_USER_ID),
-        data=body
-    )
+    return client.post("/users/{}/meetings".format(ZOOM_API_USER_ID), data=body)
 
 
 @apply(timer, exclude=["__init__"])
 @apply(counter, exclude=["__init__"])
 class ZoomConferencePlugin(ConferencePlugin):
-    title = "Zoom - Conference"
+    title = "Zoom Plugin - Conference Management"
     slug = "zoom-conference"
     description = "Uses Zoom to manage conference meetings."
 
@@ -67,16 +62,14 @@ class ZoomConferencePlugin(ConferencePlugin):
         """Create a new event."""
         client = ZoomClient(ZOOM_API_KEY, str(ZOOM_API_SECRET))
 
-        conference_response = create_meeting(
-            client, name, description=description, title=title
-        )
+        conference_response = create_meeting(client, name, description=description, title=title)
 
         conference_json = conference_response.json()
 
         return {
             "weblink": conference_json.get("join_url", "https://zoom.us"),
-            "id": conference_json.get('id', '1'),
-            "challenge": conference_json.get('password', '123')
+            "id": conference_json.get("id", "1"),
+            "challenge": conference_json.get("password", "123"),
         }
 
     def delete(self, event_id: str):

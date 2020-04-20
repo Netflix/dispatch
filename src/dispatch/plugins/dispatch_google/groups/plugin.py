@@ -112,7 +112,7 @@ def list_groups(client: Any, **kwargs):
 @apply(timer, exclude=["__init__"])
 @apply(counter, exclude=["__init__"])
 class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
-    title = "Google Group - Participant Group"
+    title = "Google Group Plugin - Participant Group Management"
     slug = "google-group-participant-group"
     description = "Uses Google Groups to help manage participant membership."
     version = google_group_plugin.__version__
