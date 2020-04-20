@@ -151,7 +151,7 @@ def update_incident_ticket(
     storage_weblink: str = None,
     conference_weblink: str = None,
     labels: List[str] = None,
-    cost: str = None,
+    cost: int = None,
     visibility: str = None,
 ):
     """Update external incident ticket."""
