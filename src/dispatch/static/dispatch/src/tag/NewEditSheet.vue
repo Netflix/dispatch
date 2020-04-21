@@ -87,6 +87,13 @@
                   />
                 </ValidationProvider>
               </v-flex>
+              <v-flex>
+                <v-switch
+                  v-model="discoverable"
+                  label="Discoverable"
+                  hint="Is this tag a common word or is it eligible for auto-detection?"
+                ></v-switch>
+              </v-flex>
             </v-layout>
           </v-container>
         </v-card-text>
@@ -133,6 +140,7 @@ export default {
       "selected.uri",
       "selected.description",
       "selected.source",
+      "selected.discoverable",
       "selected.loading",
       "dialogs.showCreateEdit"
     ])

@@ -29,6 +29,9 @@
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
             >
+              <template v-slot:item.discoverable="{ item }">{{
+                item.discoverable | capitalize
+              }}</template>
               <template v-slot:item.actions="{ item }">
                 <v-icon small class="mr-2" @click="createEditShow(item)">edit</v-icon>
                 <v-icon small @click="removeShow(item)">delete</v-icon>
@@ -59,6 +62,7 @@ export default {
         { text: "Name", value: "name", sortable: true },
         { text: "Type", value: "type", sortable: true },
         { text: "Source", value: "source", sortable: true },
+        { text: "Discoverable", value: "discoverable", sortable: true },
         { text: "Actions", value: "actions", sortable: false }
       ]
     }
