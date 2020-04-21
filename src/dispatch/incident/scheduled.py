@@ -207,11 +207,11 @@ def calculate_incidents_cost(db_session=None):
     incidents = get_all(db_session=db_session)
 
     for incident in incidents:
-        # we calculate the cost
         try:
+            # we calculate the cost
             incident_cost = calculate_cost(incident.id, db_session)
 
-            # if the cost hasn't changed don't continue
+            # if the cost hasn't changed, don't continue
             if incident.cost == incident_cost:
                 continue
 
@@ -219,6 +219,8 @@ def calculate_incidents_cost(db_session=None):
             incident.cost = incident_cost
             db_session.add(incident)
             db_session.commit()
+
+            log.debug(f"Incident cost for {incident.name} updated in the database.")
 
             if incident.ticket.resource_id:
                 # we update the external ticket
@@ -230,9 +232,8 @@ def calculate_incidents_cost(db_session=None):
                 )
                 log.debug(f"Incident cost for {incident.name} updated in the ticket.")
             else:
-                log.debug(f"Incident cost for {incident.name} not updated. Ticket not found.")
+                log.debug(f"Ticket not found. Incident cost for {incident.name} not updated.")
 
-            log.debug(f"Incident cost for {incident.name} updated in the database.")
         except Exception as e:
             # we shouldn't fail to update all incidents when one fails
             sentry_sdk.capture_exception(e)

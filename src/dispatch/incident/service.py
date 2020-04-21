@@ -336,12 +336,10 @@ def calculate_cost(incident_id: int, db_session: SessionLocal, incident_review=T
     # we calculate and round up the hourly rate
     hourly_rate = math.ceil(ANNUAL_COST_EMPLOYEE / BUSINESS_HOURS_YEAR)
 
-    # we calculate, round up, and format the incident cost
-    incident_cost = int(
-        math.ceil(
-            ((participants_total_response_time_seconds / SECONDS_IN_HOUR) + incident_review_hours)
-            * hourly_rate
-        )
+    # we calculate and round up the incident cost
+    incident_cost = math.ceil(
+        ((participants_total_response_time_seconds / SECONDS_IN_HOUR) + incident_review_hours)
+        * hourly_rate
     )
 
     return incident_cost
