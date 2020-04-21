@@ -11,7 +11,6 @@ from uvicorn import main as uvicorn_main
 
 from dispatch import __version__, config
 
-from .main import *  # noqa
 from .database import Base, engine
 from .exceptions import DispatchException
 from .plugins.base import plugins
@@ -19,7 +18,7 @@ from .scheduler import scheduler
 from .logging import configure_logging
 
 from dispatch.models import *  # noqa; noqa
-from dispatch.auth.models import * # noqa; noqa
+from dispatch.auth.models import *  # noqa; noqa
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -657,6 +656,24 @@ def downgrade_database(tag, sql, revision):
 
     alembic_command.downgrade(alembic_cfg, revision, sql=sql, tag=tag)
     click.secho("Success.", fg="green")
+
+
+@dispatch_database.command("stamp")
+@click.argument("revision", nargs=1, default="head")
+@click.option(
+    "--tag", default=None, help="Arbitrary 'tag' name - can be used by custom env.py scripts."
+)
+@click.option(
+    "--sql",
+    is_flag=True,
+    default=False,
+    help="Don't emit SQL to database - dump to standard output instead.",
+)
+def stamp_database(revision, tag, sql):
+    """Forces the database to a given revision."""
+    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
+    alembic_cfg = AlembicConfig(alembic_path)
+    alembic_command.stamp(alembic_cfg, revision, sql=sql, tag=tag)
 
 
 @dispatch_database.command("revision")

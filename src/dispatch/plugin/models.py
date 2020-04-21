@@ -38,7 +38,7 @@ class PluginCreate(PluginBase):
     slug: str
     author: str
     author_url: str
-    type: Optional[str]
+    type: str
     enabled: Optional[bool] = True
     description: Optional[str]
     configuration: Optional[dict]

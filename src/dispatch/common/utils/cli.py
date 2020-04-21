@@ -3,6 +3,7 @@ import sys
 import traceback
 import logging
 import pkg_resources
+from sqlalchemy.exc import SQLAlchemyError
 
 import click
 from dispatch.plugins.base import plugins, register
@@ -37,15 +38,19 @@ def install_plugins():
         logger.debug(f"Attempting to load plugin: {ep.name}")
         try:
             plugin = ep.load()
+            register(plugin)
             logger.debug(f"Successfully loaded plugin: {ep.name}")
         except KeyError as e:
             logger.warning(f"Failed to load plugin: {ep.name} Reason: {e}")
+        except SQLAlchemyError:
+            logger.error(
+                "Something went wrong with creating plugin rows, is the database setup correctly?"
+            )
         except Exception:
             logger.error(f"Failed to load plugin {ep.name}:{traceback.format_exc()}")
         else:
             if not plugin.enabled:
                 continue
-            register(plugin)
 
 
 def with_plugins(plugin_type: str):
