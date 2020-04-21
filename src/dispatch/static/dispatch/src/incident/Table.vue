@@ -30,6 +30,11 @@
           -->
           <v-list-item>
             <v-list-item-content>
+              <tag-filter-combobox v-model="tag" label="Tags" />
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-content>
               <incident-type-combobox v-model="incident_type" />
             </v-list-item-content>
           </v-list-item>
@@ -101,11 +106,11 @@
 import _ from "lodash"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-// import DeleteDialog from "@/incident/DeleteDialog.vue"
 import EditSheet from "@/incident/EditSheet.vue"
 import NewSheet from "@/incident/NewSheet.vue"
 import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
 // import IndividualCombobox from "@/individual/IndividualCombobox.vue"
+import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
 
@@ -113,10 +118,10 @@ export default {
   name: "IncidentTable",
 
   components: {
-    // DeleteDialog
     EditSheet,
     NewSheet,
     // IndividualCombobox,
+    TagFilterCombobox,
     IncidentTypeCombobox,
     IncidentPriorityCombobox,
     IncidentStatusMultiSelect
@@ -150,6 +155,7 @@ export default {
       "table.options.filters.incident_type",
       "table.options.filters.incident_priority",
       "table.options.filters.status",
+      "table.options.filters.tag",
       "table.options.descending",
       "table.loading",
       "table.rows.items",
@@ -180,7 +186,8 @@ export default {
         vm.reporter,
         vm.incident_type,
         vm.incident_priority,
-        vm.status
+        vm.status,
+        vm.tag
       ],
       () => {
         this.getAll()

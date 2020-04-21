@@ -134,6 +134,22 @@ def get_all(*, db_session, model):
     return db_session.query(get_class_by_tablename(model))
 
 
+def join_required_attrs(query, model, join_attrs, fields):
+    """Determines which attrs (if any) require a join."""
+    if not fields:
+        return query
+
+    if not join_attrs:
+        return query
+
+    for field, attr in join_attrs:
+        for f in fields:
+            if field in f:
+                query = query.join(getattr(model, attr))
+
+    return query
+
+
 def search_filter_sort_paginate(
     db_session,
     model,
@@ -145,12 +161,16 @@ def search_filter_sort_paginate(
     fields: List[str] = None,
     ops: List[str] = None,
     values: List[str] = None,
+    join_attrs: List[str] = None,
 ):
     """Common functionality for searching, filtering and sorting"""
+    model_cls = get_class_by_tablename(model)
     if query_str:
         query = search(db_session=db_session, query_str=query_str, model=model)
     else:
-        query = get_all(db_session=db_session, model=model)
+        query = db_session.query(model_cls)
+
+    query = join_required_attrs(query, model_cls, join_attrs, fields)
 
     filter_spec = create_filter_spec(model, fields, ops, values)
     query = apply_filters(query, filter_spec)
