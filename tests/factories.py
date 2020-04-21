@@ -9,6 +9,7 @@ from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime
 
 from dispatch.database import SessionLocal
 
+from dispatch.team.models import TeamContact
 from dispatch.conversation.models import Conversation
 from dispatch.definition.models import Definition
 from dispatch.document.models import Document
@@ -27,7 +28,6 @@ from dispatch.status_report.models import StatusReport
 from dispatch.storage.models import Storage
 from dispatch.tag.models import Tag
 from dispatch.task.models import Task
-from dispatch.team.models import TeamContact
 from dispatch.term.models import Term
 from dispatch.ticket.models import Ticket
 

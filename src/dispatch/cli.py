@@ -10,9 +10,8 @@ from tabulate import tabulate
 from uvicorn import main as uvicorn_main
 
 from dispatch import __version__, config
-from dispatch.tag.models import *  # noqa
-from dispatch.common.utils.cli import install_plugin_events, install_plugins
 
+from .main import *  # noqa
 from .database import Base, engine
 from .exceptions import DispatchException
 from .plugins.base import plugins
@@ -46,7 +45,7 @@ def dispatch_cli():
 @dispatch_cli.group("plugins")
 def plugins_group():
     """All commands for plugin manipulation."""
-    install_plugins()
+    pass
 
 
 @plugins_group.command("list")
@@ -382,8 +381,6 @@ def close_incidents(name, username):
     from dispatch.incident.models import Incident
     from dispatch.database import SessionLocal
 
-    install_plugins()
-
     incidents = []
     db_session = SessionLocal()
 
@@ -419,8 +416,6 @@ def clean_incident_artifacts(pattern):
     from dispatch.plugins.dispatch_slack.config import SLACK_API_BOT_TOKEN
 
     from dispatch.plugins.dispatch_google.groups.plugin import delete_group, list_groups
-
-    install_plugins()
 
     patterns = [re.compile(p) for p in pattern]
 
@@ -472,6 +467,7 @@ def sync_triggers():
     sync_trigger(engine, "policy", "search_vector", ["name", "description"])
     sync_trigger(engine, "service", "search_vector", ["name"])
     sync_trigger(engine, "task", "search_vector", ["description"])
+    sync_trigger(engine, "plugin", "search_vector", ["title"])
 
 
 @dispatch_cli.group("database")
@@ -725,8 +721,6 @@ def dispatch_scheduler():
     from .document.scheduled import sync_document_terms  # noqa
     from .tag.scheduled import sync_tags  # noqa
 
-    install_plugins()
-
 
 @dispatch_scheduler.command("list")
 def list_tasks():
@@ -765,15 +759,13 @@ def start_tasks(tasks, eager):
 @dispatch_cli.group("server")
 def dispatch_server():
     """Container for all dispatch server commands."""
-    install_plugins()
+    pass
 
 
 @dispatch_server.command("routes")
 def show_routes():
     """Prints all available routes."""
     from dispatch.api import api_router
-
-    install_plugin_events(api_router)
 
     table = []
     for r in api_router.routes:

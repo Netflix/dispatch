@@ -30,12 +30,11 @@ from dispatch.incident_priority.models import (
     IncidentPriorityRead,
 )
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
-from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
 from dispatch.participant.models import ParticipantRead
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.storage.models import StorageRead
 from dispatch.ticket.models import TicketRead
-
+from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
 
 from .enums import IncidentStatus
 

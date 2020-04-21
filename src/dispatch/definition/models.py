@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Table, Column, Integer, String, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
@@ -9,8 +9,23 @@ from dispatch.models import (
     DispatchBase,
     TermNested,
     TermReadNested,
-    definition_teams,
-    definition_terms,
+)
+
+# Association tables
+definition_teams = Table(
+    "definition_teams",
+    Base.metadata,
+    Column("definition_id", Integer, ForeignKey("definition.id")),
+    Column("team_contact_id", Integer, ForeignKey("team_contact.id")),
+    PrimaryKeyConstraint("definition_id", "team_contact_id"),
+)
+
+definition_terms = Table(
+    "definition_terms",
+    Base.metadata,
+    Column("definition_id", Integer, ForeignKey("definition.id")),
+    Column("term_id", Integer, ForeignKey("term.id")),
+    PrimaryKeyConstraint("definition_id", "term_id"),
 )
 
 

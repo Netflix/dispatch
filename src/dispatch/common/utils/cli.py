@@ -5,8 +5,8 @@ import logging
 import pkg_resources
 
 import click
+from dispatch.plugins.base import plugins, register
 
-from dispatch.plugins.base import plugins
 from .dynamic_click import params_factory
 
 
@@ -32,19 +32,19 @@ def install_plugins():
     Installs plugins associated with dispatch
     :return:
     """
-    from dispatch.plugins.base import register
 
     for ep in pkg_resources.iter_entry_points("dispatch.plugins"):
+        logger.debug(f"Attempting to load plugin: {ep.name}")
         try:
             plugin = ep.load()
+            logger.debug(f"Successfully loaded plugin: {ep.name}")
         except KeyError as e:
-            logger.warning(f"Failed to load plugin {ep.name}. Reason: {e}")
+            logger.warning(f"Failed to load plugin: {ep.name} Reason: {e}")
         except Exception:
             logger.error(f"Failed to load plugin {ep.name}:{traceback.format_exc()}")
         else:
             if not plugin.enabled:
                 continue
-            logger.debug(f"Loading plugin {ep.name}")
             register(plugin)
 
 

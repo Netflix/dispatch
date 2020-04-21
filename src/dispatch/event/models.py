@@ -1,26 +1,18 @@
 from datetime import datetime
-from enum import Enum
 from uuid import UUID
-
-from typing import Optional
 
 from sqlalchemy import (
     Column,
     DateTime,
     ForeignKey,
     Integer,
-    PrimaryKeyConstraint,
     String,
-    Table,
-    event,
 )
 from sqlalchemy.dialects.postgresql import UUID as SQLAlchemyUUID
-from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
 from dispatch.models import DispatchBase, TimeStampMixin
-from dispatch.plugins.base import plugins
 
 
 # SQLAlchemy Model

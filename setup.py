@@ -407,6 +407,7 @@ setup(
             "dispatch_document_resolver = dispatch.plugins.dispatch_core.plugin:DispatchDocumentResolverPlugin",
             "dispatch_participant_resolver = dispatch.plugins.dispatch_core.plugin:DispatchParticipantResolverPlugin",
             "dispatch_pkce_auth = dispatch.plugins.dispatch_core.plugin:PKCEAuthProviderPlugin",
+            "dispatch_ticket = dispatch.plugins.dispatch_core.plugin:DispatchTicketPlugin",
             "google_calendar_conference = dispatch.plugins.dispatch_google.calendar.plugin:GoogleCalendarConferencePlugin",
             "google_docs_document = dispatch.plugins.dispatch_google.docs.plugin:GoogleDocsDocumentPlugin",
             "google_drive_storage = dispatch.plugins.dispatch_google.drive.plugin:GoogleDriveStoragePlugin",

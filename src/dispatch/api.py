@@ -19,10 +19,8 @@ from dispatch.team.views import router as team_contact_router
 from dispatch.term.views import router as team_router
 from dispatch.document.views import router as document_router
 from dispatch.task.views import router as task_router
-
+from dispatch.plugin.views import router as plugin_router
 from dispatch.auth.views import router as auth_router
-
-from .common.utils.cli import install_plugins, install_plugin_events
 
 api_router = APIRouter()  # WARNING: Don't use this unless you want unauthenticated routes
 authenticated_api_router = APIRouter()
@@ -56,6 +54,7 @@ authenticated_api_router.include_router(
 authenticated_api_router.include_router(
     incident_priority_router, prefix="/incident_priorities", tags=["incident_priorities"]
 )
+authenticated_api_router.include_router(plugin_router, prefix="/plugins", tags=["plugins"])
 
 doc_router = APIRouter()
 
@@ -77,8 +76,5 @@ authenticated_api_router.include_router(doc_router, prefix="/docs")
 def healthcheck():
     return {"status": "ok"}
 
-
-install_plugins()
-install_plugin_events(api_router)
 
 api_router.include_router(authenticated_api_router, dependencies=[Depends(get_current_user)])

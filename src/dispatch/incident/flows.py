@@ -23,7 +23,6 @@ from dispatch.config import (
     INCIDENT_PLUGIN_GROUP_SLUG,
     INCIDENT_PLUGIN_PARTICIPANT_RESOLVER_SLUG,
     INCIDENT_PLUGIN_STORAGE_SLUG,
-    INCIDENT_PLUGIN_TICKET_SLUG,
     INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
     INCIDENT_RESOURCE_FAQ_DOCUMENT,
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
@@ -58,6 +57,7 @@ from dispatch.participant import service as participant_service
 from dispatch.participant_role import flows as participant_role_flows
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugins.base import plugins
+from dispatch.plugin import service as plugin_service
 from dispatch.service import service as service_service
 from dispatch.storage import service as storage_service
 from dispatch.ticket import service as ticket_service
@@ -112,24 +112,25 @@ def get_incident_documents(
 
 def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     """Create an external ticket for tracking."""
-    p = plugins.get(INCIDENT_PLUGIN_TICKET_SLUG)
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="ticket")
 
     title = incident.title
     if incident.visibility == Visibility.restricted:
         title = incident.incident_type.name
 
-    ticket = p.create(
+    ticket = plugin.instance.create(
+        incident.id,
         title,
         incident.incident_type.name,
         incident.incident_priority.name,
         incident.commander.email,
         incident.reporter.email,
     )
-    ticket.update({"resource_type": INCIDENT_PLUGIN_TICKET_SLUG})
+    ticket.update({"resource_type": plugin.slug})
 
     event_service.log(
         db_session=db_session,
-        source=p.title,
+        source=plugin.title,
         description="External ticket created",
         incident_id=incident.id,
     )
@@ -138,6 +139,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
 
 
 def update_incident_ticket(
+    db_session: SessionLocal,
     ticket_id: str,
     title: str = None,
     description: str = None,
@@ -155,12 +157,12 @@ def update_incident_ticket(
     visibility: str = None,
 ):
     """Update external incident ticket."""
-    p = plugins.get(INCIDENT_PLUGIN_TICKET_SLUG)
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="ticket")
 
     if visibility == Visibility.restricted:
         title = description = incident_type
 
-    p.update(
+    plugin.instance.update(
         ticket_id,
         title=title,
         description=description,

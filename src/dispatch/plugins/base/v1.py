@@ -25,6 +25,7 @@ class PluginMount(type):
             new_cls.title = new_cls.__name__
         if not new_cls.slug:
             new_cls.slug = new_cls.title.replace(" ", "-").lower()
+
         return new_cls
 
 
@@ -76,7 +77,6 @@ class IPlugin(local):
     def is_enabled(self) -> bool:
         """
         Returns a boolean representing if this plugin is enabled.
-        If ``project`` is passed, it will limit the scope to that project.
         >>> plugin.is_enabled()
         """
         if not self.enabled:

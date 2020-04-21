@@ -17,6 +17,7 @@ import account from "@/auth/store"
 import document from "@/document/store"
 import tag from "@/tag/store"
 import task from "@/task/store"
+import plugin from "@/plugin/store"
 
 Vue.use(Vuex)
 
@@ -33,6 +34,7 @@ export default new Vuex.Store({
     incident_priority,
     individual,
     policy,
+    plugin,
     route,
     search,
     service,

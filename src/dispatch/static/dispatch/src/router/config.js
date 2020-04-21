@@ -77,6 +77,12 @@ export const protectedRoute = [
         path: "/incidents",
         name: "IncidentTable",
         component: () => import(/* webpackChunkName: "incident-table" */ "@/incident/Table.vue")
+      },
+      {
+        path: "/incidents/:name",
+        name: "IncidentTable",
+        component: () => import(/* webpackChunkName: "incident-table" */ "@/incident/Table.vue"),
+        props: true
       }
     ]
   },
@@ -246,6 +252,23 @@ export const protectedRoute = [
         name: "IncidentPriorityTable",
         component: () =>
           import(/* webpackChunkName: "routing-table" */ "@/incident_priority/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/plugins",
+    component: DefaultLayout,
+    meta: {
+      title: "Plugins",
+      icon: "view_compact",
+      group: "configuration",
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: "/plugins",
+        name: "PluginTable",
+        component: () => import(/* webpackChunkName: "routing-table" */ "@/plugin/Table.vue")
       }
     ]
   }

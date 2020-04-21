@@ -59,6 +59,25 @@ class PluginManager(InstanceManager):
                 return result
 
     def register(self, cls):
+        from dispatch.database import SessionLocal
+        from dispatch.plugin import service as plugin_service
+        from dispatch.plugin.models import PluginCreate
+
+        db_session = SessionLocal()
+        record = plugin_service.get_by_slug(db_session=db_session, slug=cls.slug)
+        if not record:
+            plugin_service.create(
+                db_session=db_session,
+                plugin_in=PluginCreate(
+                    title=cls.title,
+                    slug=cls.slug,
+                    type=cls.type,
+                    version=cls.version,
+                    author=cls.author,
+                    author_url=cls.author_url,
+                    description=cls.description,
+                ),
+            )
         self.add(f"{cls.__module__}.{cls.__name__}")
         return cls
 
