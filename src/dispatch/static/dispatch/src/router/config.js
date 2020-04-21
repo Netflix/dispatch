@@ -1,4 +1,4 @@
-import { DefaultLayout } from "@/components/layouts"
+import { DefaultLayout, AuthLayout } from "@/components/layouts"
 
 export const publicRoute = [
   {
@@ -7,11 +7,27 @@ export const publicRoute = [
   },
   {
     path: "/login",
-    component: () => import(/* webpackChunkName: "auth-login" */ "@/auth/Login.vue")
+    component: AuthLayout,
+    meta: { title: "Login", icon: "view_compact", group: "auth" },
+    children: [
+      {
+        path: "/login",
+        name: "Login",
+        component: () => import(/* webpackChunkName: "auth-login" */ "@/auth/Login.vue")
+      }
+    ]
   },
   {
     path: "/register",
-    component: () => import(/* webpackChunkName: "auth-register" */ "@/auth/Register.vue")
+    component: AuthLayout,
+    meta: { title: "Register", icon: "view_compact", group: "auth" },
+    children: [
+      {
+        path: "/register",
+        name: "Register",
+        component: () => import(/* webpackChunkName: "auth-register" */ "@/auth/Register.vue")
+      }
+    ]
   },
   {
     path: "/404",

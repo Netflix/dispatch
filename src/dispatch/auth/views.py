@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy import exc
 from sqlalchemy.orm import Session
 from dispatch.database import get_db
+from dispatch.config import DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 from .models import DispatchUser, UserLoginForm, UserLoginResponse
 from .service import (
     fetch_user,
@@ -10,7 +11,7 @@ from .service import (
     credentials_exception,
     get_current_user,
     hash_password,
-    check_password
+    check_password,
 )
 
 router = APIRouter()
@@ -18,8 +19,7 @@ router = APIRouter()
 
 @router.post("/login", response_model=UserLoginResponse, summary="Login via email, returns a jwt")
 def login_user(
-    form: UserLoginForm,
-    db_session: Session = Depends(get_db),
+    form: UserLoginForm, db_session: Session = Depends(get_db),
 ):
     user = fetch_user(db_session, form.email)
     if user and check_password(form.password, user.password):
@@ -29,8 +29,7 @@ def login_user(
 
 @router.post("/register", response_model=UserLoginResponse, summary="Creates a user, returns jwt")
 def register_user(
-    user: UserLoginForm,
-    db_session: Session = Depends(get_db),
+    user: UserLoginForm, db_session: Session = Depends(get_db),
 ):
     user = DispatchUser(email=user.email, password=hash_password(user.password))
     db_session.add(user)
@@ -46,7 +45,6 @@ def register_user(
 
 @router.get("/user", response_model=UserLoginResponse, summary="Retrives current user")
 def get_user(
-    req: Request,
-    db_session: Session = Depends(get_db),
+    req: Request, db_session: Session = Depends(get_db),
 ):
     return {"token": get_current_user(request=req)}

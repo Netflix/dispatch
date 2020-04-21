@@ -134,12 +134,10 @@ function loginBasic(to, from, next) {
   let token = localStorage.getItem("token")
   if (token) {
     store.dispatch("account/loginWithToken", token)
-    return
   }
 
   if (to.path != "/login") {
     next("/login")
-    return
   }
   next()
 }
