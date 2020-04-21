@@ -5,6 +5,7 @@ import base64
 from starlette.config import Config
 from starlette.datastructures import CommaSeparatedStrings
 
+
 # if we have metatron available to us, lets use it to decrypt our secrets in memory
 try:
     import metatron.decrypt
@@ -70,9 +71,13 @@ DISPATCH_UI_URL = config("DISPATCH_UI_URL")
 DISPATCH_HELP_EMAIL = config("DISPATCH_HELP_EMAIL")
 DISPATCH_HELP_SLACK_CHANNEL = config("DISPATCH_HELP_SLACK_CHANNEL")
 
+DISPATCH_JWT_SECRET = config("DISPATCH_JWT_SECRET", default="s3cr3t")
+DISPATCH_JWT_ALG = config("DISPATCH_JWT_ALG", default="HS256")
+DISPATCH_JWT_EXP = config("DISPATCH_JWT_EXP", default=86400)  # Seconds
+
 # authentication
 DISPATCH_AUTHENTICATION_PROVIDER_SLUG = config(
-    "DISPATCH_AUTHENTICATION_PROVIDER_SLUG", default="dispatch-auth-provider-pkce"
+    "DISPATCH_AUTHENTICATION_PROVIDER_SLUG", default="dispatch-auth-provider-basic"
 )
 VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG = DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 

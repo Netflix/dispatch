@@ -83,7 +83,6 @@ class IPlugin(local):
             return False
         if not self.can_disable:
             return True
-
         return True
 
     def get_title(self) -> Optional[str]:

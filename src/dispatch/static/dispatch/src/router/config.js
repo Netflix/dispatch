@@ -6,12 +6,19 @@ export const publicRoute = [
     component: () => import(/* webpackChunkName: "errors-404" */ "@/views/error/NotFound.vue")
   },
   {
+    path: "/login",
+    component: () => import(/* webpackChunkName: "auth-login" */ "@/auth/Login.vue")
+  },
+  {
+    path: "/register",
+    component: () => import(/* webpackChunkName: "auth-register" */ "@/auth/Register.vue")
+  },
+  {
     path: "/404",
     name: "404",
     meta: { title: "Not Found" },
     component: () => import(/* webpackChunkName: "errors-404" */ "@/views/error/NotFound.vue")
   },
-
   {
     path: "/500",
     name: "500",

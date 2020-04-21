@@ -35,7 +35,6 @@ def install_plugins():
     from dispatch.plugins.base import register
 
     for ep in pkg_resources.iter_entry_points("dispatch.plugins"):
-        logger.debug(f"Loading plugin {ep.name}")
         try:
             plugin = ep.load()
         except KeyError as e:
@@ -43,6 +42,9 @@ def install_plugins():
         except Exception:
             logger.error(f"Failed to load plugin {ep.name}:{traceback.format_exc()}")
         else:
+            if not plugin.enabled:
+                continue
+            logger.debug(f"Loading plugin {ep.name}")
             register(plugin)
 
 

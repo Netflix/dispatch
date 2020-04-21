@@ -130,6 +130,20 @@ function loginwithPKCE(to, from, next) {
   })
 }
 
+function loginBasic(to, from, next) {
+  let token = localStorage.getItem("token")
+  if (token) {
+    store.dispatch("account/loginWithToken", token)
+    return
+  }
+
+  if (to.path != "/login") {
+    next("/login")
+    return
+  }
+  next()
+}
+
 // router guards
 router.beforeEach((to, from, next) => {
   store.dispatch("app/setLoading", true)
@@ -137,6 +151,8 @@ router.beforeEach((to, from, next) => {
   if (!store.state.account.status.loggedIn) {
     if (authProviderSlug === "dispatch-auth-provider-pkce") {
       loginwithPKCE(to, from, next)
+    } else if (authProviderSlug === "dispatch-auth-provider-basic") {
+      loginBasic(to, from, next)
     } else {
       next()
     }
