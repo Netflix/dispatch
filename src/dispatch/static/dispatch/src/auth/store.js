@@ -1,11 +1,14 @@
 import jwt_decode from "jwt-decode"
 import router from "@/router/index"
 import { differenceInMilliseconds, fromUnixTime, subMinutes } from "date-fns"
+import { getField, updateField } from "vuex-map-fields"
+import LoginApi from "./api"
 
 const state = {
   status: { loggedIn: false },
   userInfo: { email: "" },
-  accessToken: null
+  accessToken: null,
+  creds: { email: "", password: "" }
 }
 
 const actions = {
@@ -13,6 +16,30 @@ const actions = {
     let redirectUrl = new URL(redirectUri)
     void state
     router.push({ path: redirectUrl.pathname })
+  },
+  basicLogin({ commit }) {
+    LoginApi.login(state.creds.email, state.creds.password)
+      .then(function(res) {
+        commit("SET_USER_LOGIN", res.data.token)
+        router.push("/dashboard")
+      })
+      .catch(function() {
+        commit("app/SET_SNACKBAR", { text: "Invalid credentials", color: "red" }, { root: true })
+      })
+  },
+  loginWithToken({ commit }, token) {
+    commit("SET_USER_LOGIN", token)
+    router.push("/dashboard")
+  },
+  register({ commit }) {
+    LoginApi.register(state.creds.email, state.creds.password)
+      .then(function(res) {
+        commit("SET_USER_LOGIN", res.data.token)
+        router.push("/dashboard")
+      })
+      .catch(function() {
+        commit("app/SET_SNACKBAR", { text: "Invalid credentials", color: "red" }, { root: true })
+      })
   },
   login({ dispatch, commit }, payload) {
     commit("SET_USER_LOGIN", payload.token)
@@ -39,22 +66,26 @@ const actions = {
 }
 
 const mutations = {
+  updateField,
   SET_USER_LOGIN(state, accessToken) {
     state.accessToken = accessToken
     state.status = { loggedIn: true }
     state.userInfo = jwt_decode(accessToken)
+    localStorage.setItem("token", accessToken)
   },
   SET_USER_LOGOUT(state) {
     state.status = { loggedIn: false }
     state.userInfo = null
     state.accessToken = null
+    localStorage.removeItem("token")
   }
 }
 
 const getters = {
   accessToken: () => state.accessToken,
   email: () => state.userInfo.email,
-  exp: () => state.userInfo.exp
+  exp: () => state.userInfo.exp,
+  getField
 }
 
 export default {

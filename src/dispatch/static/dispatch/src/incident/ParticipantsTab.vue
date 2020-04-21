@@ -1,5 +1,5 @@
 <template>
-  <v-tab-item key="participants">
+  <div>
     <span v-for="participant in participants" :key="participant.id">
       <v-list-item :href="participant.individual.weblink" target="_blank">
         <v-list-item-content>
@@ -20,7 +20,7 @@
       </v-list-item>
       <v-divider />
     </span>
-  </v-tab-item>
+  </div>
 </template>
 
 <script>

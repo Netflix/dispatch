@@ -78,7 +78,7 @@ def create_issue_fields(
     storage_weblink: str = None,
     conference_weblink: str = None,
     labels: List[str] = None,
-    cost: str = None,
+    cost: int = None,
 ):
     """Creates Jira issue fields."""
     issue_fields = {}
@@ -120,7 +120,7 @@ def create_issue_fields(
         issue_fields.update({"labels": labels})
 
     if cost:
-        issue_fields.update({"customfield_20250": cost})
+        issue_fields.update({"customfield_20250": str(cost)})
 
     return issue_fields
 
@@ -221,7 +221,7 @@ class JiraTicketPlugin(TicketPlugin):
         document_weblink: str = None,
         storage_weblink: str = None,
         labels: List[str] = None,
-        cost: str = None,
+        cost: int = None,
     ):
         """Updates Jira ticket fields."""
         commander_username = get_user_name(commander_email) if commander_email else None

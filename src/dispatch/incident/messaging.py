@@ -276,10 +276,6 @@ def send_incident_update_notifications(incident: Incident, previous_incident: In
     notification_template = INCIDENT_NOTIFICATION_COMMON.copy()
 
     change = False
-    if previous_incident.incident_priority.name != incident.incident_priority.name:
-        change = True
-        notification_template.append(INCIDENT_PRIORITY_CHANGE)
-
     if previous_incident.status != incident.status:
         change = True
         notification_template.append(INCIDENT_STATUS_CHANGE)
@@ -287,6 +283,10 @@ def send_incident_update_notifications(incident: Incident, previous_incident: In
     if previous_incident.incident_type.name != incident.incident_type.name:
         change = True
         notification_template.append(INCIDENT_TYPE_CHANGE)
+
+    if previous_incident.incident_priority.name != incident.incident_priority.name:
+        change = True
+        notification_template.append(INCIDENT_PRIORITY_CHANGE)
 
     if not change:
         # we don't need to notify

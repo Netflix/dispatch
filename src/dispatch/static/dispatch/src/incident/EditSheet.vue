@@ -28,10 +28,18 @@
         <v-tab key="timeline">Timeline</v-tab>
       </v-tabs>
       <v-tabs-items v-model="tab">
-        <incident-details-tab />
-        <incident-resources-tab />
-        <incident-participants-tab />
-        <incident-timeline-tab />
+        <v-tab-item key="details">
+          <incident-details-tab />
+        </v-tab-item>
+        <v-tab-item key="resources">
+          <incident-resources-tab />
+        </v-tab-item>
+        <v-tab-item key="participants">
+          <incident-participants-tab />
+        </v-tab-item>
+        <v-tab-item key="timeline">
+          <incident-timeline-tab />
+        </v-tab-item>
       </v-tabs-items>
     </v-navigation-drawer>
   </ValidationObserver>

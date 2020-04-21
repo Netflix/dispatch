@@ -1,5 +1,4 @@
 import axios from "axios"
-
 import store from "@/store"
 
 const instance = axios.create({
@@ -17,6 +16,19 @@ instance.interceptors.request.use(
   },
   error => {
     return Promise.reject(error)
+  }
+)
+
+instance.interceptors.response.use(
+  function(res) {
+    return res
+  },
+  function(err) {
+    if (err.response.status == 401) {
+      store.dispatch("account/logout")
+    }
+    Promise.reject(err)
+    return err
   }
 )
 

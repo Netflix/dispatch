@@ -12,6 +12,7 @@ const getDefaultSelectedState = () => {
     id: null,
     description: null,
     created_at: null,
+    discoverable: null,
     updated_at: null,
     loading: false
   }

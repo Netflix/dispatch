@@ -16,8 +16,10 @@ from .database import Base, engine
 from .exceptions import DispatchException
 from .plugins.base import plugins
 from .scheduler import scheduler
+from .logging import configure_logging
 
 from dispatch.models import *  # noqa; noqa
+from dispatch.auth.models import * # noqa; noqa
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -37,7 +39,7 @@ def insert_newlines(string, every=64):
 @click.version_option(version=__version__)
 def dispatch_cli():
     """Command-line interface to Dispatch."""
-    pass
+    configure_logging()
 
 
 @dispatch_cli.group("plugins")
@@ -713,7 +715,7 @@ def revision_database(
 def dispatch_scheduler():
     """Container for all dispatch scheduler commands."""
     # we need scheduled tasks to be imported
-    from .incident.scheduled import daily_summary  # noqa
+    from .incident.scheduled import daily_summary, auto_tagger  # noqa
     from .task.scheduled import sync_tasks, create_task_reminders  # noqa
     from .term.scheduled import sync_terms  # noqa
     from .document.scheduled import sync_document_terms  # noqa
