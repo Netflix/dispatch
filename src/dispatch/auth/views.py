@@ -3,12 +3,10 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy import exc
 from sqlalchemy.orm import Session
 from dispatch.database import get_db
-from dispatch.config import DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 from .models import DispatchUser, UserLoginForm, UserLoginResponse
 from .service import (
     fetch_user,
     gen_token,
-    credentials_exception,
     get_current_user,
     hash_password,
     check_password,
@@ -24,10 +22,10 @@ def login_user(
     user = fetch_user(db_session, form.email)
     if user and check_password(form.password, user.password):
         return {"token": gen_token({"email": user.email})}
-    raise credentials_exception
+    return {"error": "Invalid username or password"}
 
 
-@router.post("/register", response_model=UserLoginResponse, summary="Creates a user, returns jwt")
+@router.post("/register", summary="Creates a new user.")
 def register_user(
     user: UserLoginForm, db_session: Session = Depends(get_db),
 ):
@@ -38,9 +36,9 @@ def register_user(
     except exc.IntegrityError as e:
         # User already exists
         logging.warn(e)
-        raise credentials_exception
+        return {"error": "User with that email already exists."}
 
-    return {"token": gen_token({"email": user.email})}
+    return {"msg": "Successfully registered."}
 
 
 @router.get("/user", response_model=UserLoginResponse, summary="Retrives current user")

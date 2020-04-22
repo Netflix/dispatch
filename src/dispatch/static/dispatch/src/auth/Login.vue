@@ -31,7 +31,9 @@
           >
         </v-list-item-content>
         <v-row align="center" justify="end">
-          <v-btn color="primary" @click="loginUser">Login</v-btn>
+          <v-btn color="primary" @click="basicLogin({ email: email, password: password })"
+            >Login</v-btn
+          >
         </v-row>
       </v-list-item>
     </v-card-actions>
@@ -39,22 +41,17 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
+import { mapActions } from "vuex"
 
 export default {
+  data() {
+    return {
+      email: "",
+      password: ""
+    }
+  },
   methods: {
-    loginUser: function() {
-      this.$store.dispatch("account/basicLogin")
-    }
-  },
-  computed: {
-    ...mapFields("account", ["creds.email", "creds.password"])
-  },
-  mounted: function() {
-    let token = localStorage.getItem("token")
-    if (token) {
-      this.$store.dispatch("account/loginWithToken", token)
-    }
+    ...mapActions("account", ["basicLogin"])
   }
 }
 </script>

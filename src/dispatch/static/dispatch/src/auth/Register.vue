@@ -30,7 +30,9 @@
           </v-list-item-subtitle>
         </v-list-item-content>
         <v-row align="center" justify="end">
-          <v-btn color="primary" v-on:click="registerUser">Register</v-btn>
+          <v-btn color="primary" @click="register({ email: email, password: password })"
+            >Register</v-btn
+          >
         </v-row>
       </v-list-item>
     </v-card-actions>
@@ -38,16 +40,17 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
+import { mapActions } from "vuex"
 
 export default {
-  methods: {
-    registerUser: function() {
-      this.$store.dispatch("account/register")
+  data() {
+    return {
+      email: "",
+      password: ""
     }
   },
-  computed: {
-    ...mapFields("account", ["creds.email", "creds.password"])
+  methods: {
+    ...mapActions("account", ["register"])
   }
 }
 </script>

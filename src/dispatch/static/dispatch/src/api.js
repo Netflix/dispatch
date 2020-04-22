@@ -1,5 +1,6 @@
 import axios from "axios"
 import store from "@/store"
+import router from "./router"
 
 const instance = axios.create({
   baseURL: "/api/v1"
@@ -24,8 +25,9 @@ instance.interceptors.response.use(
     return res
   },
   function(err) {
+    // TODO account for other auth providers
     if (err.response.status == 401) {
-      store.dispatch("account/logout")
+      router.push({ path: "/login" })
     }
     Promise.reject(err)
     return err

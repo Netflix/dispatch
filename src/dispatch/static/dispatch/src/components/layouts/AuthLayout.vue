@@ -1,5 +1,6 @@
 <template>
   <v-app>
+    <snackbar />
     <v-content>
       <v-card flat>
         <v-toolbar color="primary" extended flat height="150" />
@@ -17,7 +18,11 @@
 </template>
 
 <script>
+import Snackbar from "@/components/Snackbar.vue"
 export default {
+  components: {
+    Snackbar
+  },
   data: () => ({}),
 
   methods: {}

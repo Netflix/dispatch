@@ -1,4 +1,4 @@
-"""empty message
+"""Adding dispatch user table
 
 Revision ID: 62465f508f69
 Revises: 1221a4d60f03
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "62465f508f69"
-down_revision = "1221a4d60f03"
+down_revision = "895ae7783033"
 branch_labels = None
 depends_on = None
 

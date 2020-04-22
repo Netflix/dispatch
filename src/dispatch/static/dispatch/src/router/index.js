@@ -132,14 +132,17 @@ function loginwithPKCE(to, from, next) {
 
 function loginBasic(to, from, next) {
   let token = localStorage.getItem("token")
-  if (token) {
-    store.dispatch("account/loginWithToken", token)
-  }
 
-  if (to.path != "/login") {
-    next("/login")
+  // we already have a token tell vuex about it
+  if (token) {
+    store.commit("account/SET_USER_LOGIN", token)
+    next()
+  } else {
+    // prevent redirect loop
+    if (to.path !== "/login") {
+      next("/login")
+    }
   }
-  next()
 }
 
 // router guards
@@ -152,6 +155,7 @@ router.beforeEach((to, from, next) => {
     } else if (authProviderSlug === "dispatch-auth-provider-basic") {
       loginBasic(to, from, next)
     } else {
+      // if auth is disabled
       next()
     }
   } else {

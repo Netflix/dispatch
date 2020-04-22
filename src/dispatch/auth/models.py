@@ -1,3 +1,4 @@
+from typing import Optional
 from sqlalchemy import Column, String, Binary
 from dispatch.database import Base
 from dispatch.models import TimeStampMixin, DispatchBase
@@ -27,4 +28,5 @@ class UserLoginForm(DispatchBase):
 
 
 class UserLoginResponse(DispatchBase):
-    token: str
+    token: Optional[str]
+    error: Optional[str]

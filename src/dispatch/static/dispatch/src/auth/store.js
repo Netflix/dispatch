@@ -7,8 +7,7 @@ import LoginApi from "./api"
 const state = {
   status: { loggedIn: false },
   userInfo: { email: "" },
-  accessToken: null,
-  creds: { email: "", password: "" }
+  accessToken: null
 }
 
 const actions = {
@@ -17,29 +16,24 @@ const actions = {
     void state
     router.push({ path: redirectUrl.pathname })
   },
-  basicLogin({ commit }) {
-    LoginApi.login(state.creds.email, state.creds.password)
-      .then(function(res) {
+  basicLogin({ commit }, payload) {
+    LoginApi.login(payload.email, payload.password).then(function(res) {
+      if (res.data.error) {
+        commit("app/SET_SNACKBAR", { text: res.data.error, color: "red" }, { root: true })
+      } else {
         commit("SET_USER_LOGIN", res.data.token)
-        router.push("/dashboard")
-      })
-      .catch(function() {
-        commit("app/SET_SNACKBAR", { text: "Invalid credentials", color: "red" }, { root: true })
-      })
+        router.push({ path: "/dashboard" })
+      }
+    })
   },
-  loginWithToken({ commit }, token) {
-    commit("SET_USER_LOGIN", token)
-    router.push("/dashboard")
-  },
-  register({ commit }) {
-    LoginApi.register(state.creds.email, state.creds.password)
-      .then(function(res) {
-        commit("SET_USER_LOGIN", res.data.token)
-        router.push("/dashboard")
-      })
-      .catch(function() {
-        commit("app/SET_SNACKBAR", { text: "Invalid credentials", color: "red" }, { root: true })
-      })
+  register({ dispatch, commit }, payload) {
+    LoginApi.register(payload.email, payload.password).then(function(res) {
+      if (res.data.error) {
+        commit("app/SET_SNACKBAR", { text: res.data.error, color: "red" }, { root: true })
+      } else {
+        dispatch("basicLogin", payload)
+      }
+    })
   },
   login({ dispatch, commit }, payload) {
     commit("SET_USER_LOGIN", payload.token)
