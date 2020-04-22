@@ -57,7 +57,7 @@ In general, do not include any quotation marks when adding configuration values.
 
 ### Authentication
 
-#### `DISPATCH_AUTHENTICATION_PROVIDER` \['default': dispatch-auth-provider-basic\]
+#### `DISPATCH_AUTHENTICATION_PROVIDER_SLUG` \['default': dispatch-auth-provider-basic\]
 
 > Used by Dispatch to determine which authentication provider to use, by default Dispatch ships with a PKCE authentication provider.
 
