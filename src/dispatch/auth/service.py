@@ -11,8 +11,9 @@ from starlette.requests import Request
 from dispatch.plugins.base import plugins
 from dispatch.config import (
     DISPATCH_AUTHENTICATION_PROVIDER_SLUG,
+    DISPATCH_AUTHENTICATION_DEFAULT_USER,
     DISPATCH_JWT_SECRET,
-    DISPATCH_JWT_EXP
+    DISPATCH_JWT_EXP,
 )
 
 from fastapi import HTTPException
@@ -30,13 +31,14 @@ credentials_exception = HTTPException(
 
 def get_current_user(*, request: Request):
     """Attempts to get the current user depending on the configured authentication provider."""
-    if DISPATCH_AUTHENTICATION_PROVIDER_SLUG != "dispatch-auth-provider-basic":
-        auth_plugin = plugins.get(DISPATCH_AUTHENTICATION_PROVIDER_SLUG)
-        return auth_plugin.get_current_user(request)
+    if DISPATCH_AUTHENTICATION_PROVIDER_SLUG:
+        if DISPATCH_AUTHENTICATION_PROVIDER_SLUG != "dispatch-auth-provider-basic":
+            auth_plugin = plugins.get(DISPATCH_AUTHENTICATION_PROVIDER_SLUG)
+            return auth_plugin.get_current_user(request)
+    else:
+        return DISPATCH_AUTHENTICATION_DEFAULT_USER
 
-    log.debug(
-        "No authentication provider. Default one will be used"
-    )
+    log.debug("No authentication provider. Default one will be used")
     user_email = from_bearer_token(request)
 
     if not user_email:
@@ -57,9 +59,7 @@ def from_bearer_token(request: Request):
     try:
         data = decode_jwt(token)
     except JWTError as e:
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED, detail=str(e)
-        )
+        raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail=str(e))
     return data["email"]
 
 
