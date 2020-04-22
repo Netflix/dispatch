@@ -52,6 +52,7 @@ from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
 from dispatch.incident_priority.models import IncidentPriorityRead
 from dispatch.incident_type.models import IncidentTypeRead
+from dispatch.individual import service as individual_service
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import flows as participant_role_flows
@@ -726,13 +727,6 @@ def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_se
         status=IncidentStatus.active.lower(),
     )
 
-    event_service.log(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description=f"Incident marked as {incident.status}",
-        incident_id=incident.id,
-    )
-
 
 @background_task
 def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_session=None):
@@ -837,13 +831,6 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     db_session.add(incident)
     db_session.commit()
 
-    event_service.log(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description=f"Incident marked as {incident.status}",
-        incident_id=incident.id,
-    )
-
 
 @background_task
 def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_session=None):
@@ -879,13 +866,6 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     db_session.add(incident)
     db_session.commit()
 
-    event_service.log(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description=f"Incident marked as {incident.status}",
-        incident_id=incident.id,
-    )
-
 
 @background_task
 def incident_update_flow(
@@ -897,14 +877,59 @@ def incident_update_flow(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
+    # we load the individual
+    individual = individual_service.get_by_email(db_session=db_session, email=user_email)
+
+    if previous_incident.title != incident.title:
+        event_service.log(
+            db_session=db_session,
+            source="Incident Participant",
+            description=f"{individual.name} has changed the incident title to: {incident.title}",
+            incident_id=incident.id,
+            individual_id=individual.id,
+        )
+
+    if previous_incident.description != incident.description:
+        event_service.log(
+            db_session=db_session,
+            source="Incident Participant",
+            description=f"{individual.name} has changed the incident description to: {incident.description}",
+            incident_id=incident.id,
+            individual_id=individual.id,
+        )
+
     if previous_incident.incident_type.name != incident.incident_type.name:
         conversation_topic_change = True
+
+        event_service.log(
+            db_session=db_session,
+            source="Incident Participant",
+            description=f"{individual.name} has changed the incident type to {incident.incident_type.name}",
+            incident_id=incident.id,
+            individual_id=individual.id,
+        )
 
     if previous_incident.incident_priority.name != incident.incident_priority.name:
         conversation_topic_change = True
 
+        event_service.log(
+            db_session=db_session,
+            source="Incident Participant",
+            description=f"{individual.name} has changed the incident priority to {incident.incident_priority.name}",
+            incident_id=incident.id,
+            individual_id=individual.id,
+        )
+
     if previous_incident.status.value != incident.status:
         conversation_topic_change = True
+
+        event_service.log(
+            db_session=db_session,
+            source="Incident Participant",
+            description=f"{individual.name} has marked the incident as {incident.status}",
+            incident_id=incident.id,
+            individual_id=individual.id,
+        )
 
     if conversation_topic_change:
         # we update the conversation topic
