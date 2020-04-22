@@ -57,13 +57,31 @@ In general, do not include any quotation marks when adding configuration values.
 
 ### Authentication
 
-#### `DISPATCH_AUTHENTICATION_PROVIDER` \['default': dispatch-auth-provider-pkce\]
+#### `DISPATCH_AUTHENTICATION_PROVIDER` \['default': dispatch-auth-provider-basic\]
 
 > Used by Dispatch to determine which authentication provider to use, by default Dispatch ships with a PKCE authentication provider.
 
 {% hint style="info" %}
 If you wish to disable authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
 {% endhint %}
+
+#### Configuration for `dispatch-auth-provider-basic`
+
+{% hint style="warning" %}
+Today, basic authentication allows self registration without approval.
+{% endhint %}
+
+#### `DISPATCH_JWT_SECRET`
+
+> Uses by the basic auth provider to mint JWT tokens.
+
+#### `DISPATCH_JWT_ALG` ['default': 'HS256']
+
+> Used by the basic auth provider to mint JWT tokens.
+
+#### `DISPATCH_JWT_EXP` ['default': 86400 ]
+
+> Used by the basic auth provider to mint JWT tokens and set their expiration.
 
 #### `DISPATCH_AUTHENTICATION_DEFAULT_USER` \['default': dispatch@example.com\]
 

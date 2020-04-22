@@ -20,6 +20,7 @@ environ["INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID"] = "XXX"
 environ["INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID"] = "XXX"
 environ["JWKS_URL"] = "example.com"
 environ["ENV"] = "pytest"
+environ["DISPATCH_AUTHENTICATION_PROVIDER_SLUG"] = ""  # disable authentication for tests
 environ["METRIC_PROVIDERS"] = ""  # TODO move this to the default
 environ["STATIC_DIR"] = ""  # we don't need static files for tests
 
