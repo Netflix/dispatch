@@ -23,11 +23,7 @@ from dispatch.messaging import (
     INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
 )
 
-from dispatch.nlp import (
-    build_phrase_matcher,
-    build_term_vocab,
-    extract_terms_from_text,
-)
+from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.plugins.base import plugins
 from dispatch.scheduler import scheduler
 from dispatch.service import service as service_service
@@ -157,7 +153,7 @@ def daily_summary(db_session=None):
                             "block_id": f"{ConversationButtonActions.invite_user}-{idx}",
                             "accessory": {
                                 "type": "button",
-                                "text": {"type": "plain_text", "text": "Get Involved"},
+                                "text": {"type": "plain_text", "text": "Join Incident"},
                                 "value": f"{incident.id}",
                             },
                         }
