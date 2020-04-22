@@ -1,7 +1,4 @@
-from sqlalchemy import (
-    Column,
-    String,
-    Binary)
+from sqlalchemy import Column, String, Binary
 from dispatch.database import Base
 from dispatch.models import TimeStampMixin, DispatchBase
 from pydantic import validator
@@ -9,7 +6,7 @@ from pydantic import validator
 
 class DispatchUser(Base, TimeStampMixin):
     email = Column(String, primary_key=True)
-    password = Column(Binary)
+    password = Column(Binary, nullable=False)
 
 
 class UserLoginForm(DispatchBase):
