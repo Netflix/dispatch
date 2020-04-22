@@ -29,9 +29,33 @@ from dispatch.plugins.bases import (
 from dispatch.route import service as route_service
 from dispatch.route.models import RouteRequest
 
-from dispatch.config import DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS
+from dispatch.config import DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS, DISPATCH_JWT_SECRET
 
 log = logging.getLogger(__name__)
+
+
+class BasicAuthProviderPlugin(AuthenticationProviderPlugin):
+    title = "Dispatch Plugin - Basic Authentication Provider"
+    slug = "dispatch-auth-provider-basic"
+    description = "Generic basic authentication provider."
+    version = dispatch_plugin.__version__
+
+    author = "Netflix"
+    author_url = "https://github.com/netflix/dispatch.git"
+
+    def get_current_user(self, request: Request, **kwargs):
+        authorization: str = request.headers.get("Authorization")
+        scheme, param = get_authorization_scheme_param(authorization)
+        if not authorization or scheme.lower() != "bearer":
+            return
+
+        token = authorization.split()[1]
+
+        try:
+            data = jwt.decode(token, DISPATCH_JWT_SECRET)
+        except JWTError as e:
+            raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail=str(e))
+        return data["email"]
 
 
 class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
@@ -40,7 +64,7 @@ class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
     description = "Generic PCKE authentication provider."
     version = dispatch_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def get_current_user(self, request: Request, **kwargs):
