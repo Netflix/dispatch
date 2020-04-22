@@ -5,6 +5,7 @@ import base64
 from starlette.config import Config
 from starlette.datastructures import CommaSeparatedStrings
 
+log = logging.getLogger(__name__)
 
 # if we have metatron available to us, lets use it to decrypt our secrets in memory
 try:
@@ -77,25 +78,28 @@ DISPATCH_AUTHENTICATION_PROVIDER_SLUG = config(
 )
 VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG = DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 
-if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-basic":
-    DISPATCH_JWT_SECRET = config("DISPATCH_JWT_SECRET")
-    DISPATCH_JWT_ALG = config("DISPATCH_JWT_ALG", default="HS256")
-    DISPATCH_JWT_EXP = config("DISPATCH_JWT_EXP", default=86400)  # Seconds
+DISPATCH_JWT_SECRET = config("DISPATCH_JWT_SECRET", default=None)
+DISPATCH_JWT_ALG = config("DISPATCH_JWT_ALG", default="HS256")
+DISPATCH_JWT_EXP = config("DISPATCH_JWT_EXP", default=86400)  # Seconds
+
+log.warn("No JWT secret specified, this is required if you are using basic authentication.")
 
 DISPATCH_AUTHENTICATION_DEFAULT_USER = config(
     "DISPATCH_AUTHENTICATION_DEFAULT_USER", default="dispatch@example.com"
 )
 
-if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-pkce":
-    DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS = config(
-        "DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS", default=None
-    )
-    VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL = config(
-        "VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL", default=None
-    )
-    VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID = config(
-        "VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID", default=None
-    )
+DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS = config(
+    "DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS", default=None
+)
+
+log.warn("No PKCE JWKS url provided, this is required if you are using PKCE authentication.")
+
+VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL = config(
+    "VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL", default=None
+)
+VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID = config(
+    "VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID", default=None
+)
 
 # static files
 DEFAULT_STATIC_DIR = os.path.join(
