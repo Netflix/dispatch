@@ -62,12 +62,12 @@ In general, do not include any quotation marks when adding configuration values.
 > Used by Dispatch to determine which authentication provider to use, by default Dispatch ships with a PKCE authentication provider.
 
 {% hint style="info" %}
-If you wish to disabled authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
+If you wish to disable authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
 {% endhint %}
 
 #### `DISPATCH_AUTHENTICATION_DEFAULT_USER` \['default': dispatch@example.com\]
 
-> Used when authentication is disable as the default anonymous user.
+> Used as the default anonymous user when authentication is disabled.
 
 #### Configuration for `dispatch-auth-provider-pkce`
 
@@ -77,11 +77,11 @@ If you wish to disabled authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
 
 #### `VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT`
 
-> Used by the Dispatch Web UI send the user via Proof Key Code Exchange \(PKCE\) to a correct open id connect endpoint.
+> Used by the Dispatch Web UI send the user via Proof Key Code Exchange \(PKCE\) to a correct OpenID Connect endpoint.
 
 #### `VUE_APP_DISPATCH_AUTHENTICATOIN_PROVIDER_PKCE_CLIENT_ID`
 
-> The client id to send to the open id connect endpoint.
+> The client id to send to the OpenID Connect endpoint.
 
 ### Persistence
 
@@ -105,13 +105,15 @@ If you wish to disabled authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
 
 ### Incident Cost
 
+Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/service.py#L279) the cost of an incident by adding up the time participants have spent on each incident role (e.g. Incident Commander) and applying an [engagement multiplier](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/service.py#L266) that's based on the incident role. It also includes time spent on incident review related activities. Dispatch calculates and published the cost for all incidents [every 5 minutes](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/scheduled.py#L257).
+
 #### `ANNUAL_COST_EMPLOYEE` \[default: '50000'\]
 
-> Used for incident cost modeling, specifies the total `all-in` cost for an average employee working on incidents.
+> Used for incident cost modeling, specifies the total `all-in` average cost for an employee working on incidents.
 
 #### `BUSINESS_HOURS_YEAR` \[default: '2080'\]
 
-> Used for incident cost modeling, specifies the number of hours in an employee's work week.
+> Used for incident cost modeling, specifies the number of hours in an employee's work year.
 
 ### Incident Plugin Configuration
 
