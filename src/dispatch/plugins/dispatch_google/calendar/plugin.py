@@ -120,7 +120,7 @@ class GoogleCalendarConferencePlugin(ConferencePlugin):
     slug = "google-calendar-conference"
     description = "Uses Google calendar to manage conference rooms/meets."
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):

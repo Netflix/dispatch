@@ -82,7 +82,9 @@ DISPATCH_JWT_SECRET = config("DISPATCH_JWT_SECRET", default=None)
 DISPATCH_JWT_ALG = config("DISPATCH_JWT_ALG", default="HS256")
 DISPATCH_JWT_EXP = config("DISPATCH_JWT_EXP", default=86400)  # Seconds
 
-log.warn("No JWT secret specified, this is required if you are using basic authentication.")
+if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-basic":
+    if not DISPATCH_JWT_SECRET:
+        log.warn("No JWT secret specified, this is required if you are using basic authentication.")
 
 DISPATCH_AUTHENTICATION_DEFAULT_USER = config(
     "DISPATCH_AUTHENTICATION_DEFAULT_USER", default="dispatch@example.com"
@@ -92,7 +94,11 @@ DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS = config(
     "DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS", default=None
 )
 
-log.warn("No PKCE JWKS url provided, this is required if you are using PKCE authentication.")
+if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-pkce":
+    if not DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS:
+        log.warn(
+            "No PKCE JWKS url provided, this is required if you are using PKCE authentication."
+        )
 
 VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL = config(
     "VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL", default=None

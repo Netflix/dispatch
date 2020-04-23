@@ -29,8 +29,7 @@ instance.interceptors.response.use(
     if (err.response.status == 401) {
       router.push({ path: "/login" })
     }
-    Promise.reject(err)
-    return err
+    return Promise.reject(err)
   }
 )
 

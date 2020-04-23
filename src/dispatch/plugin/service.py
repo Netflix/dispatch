@@ -2,6 +2,7 @@ import logging
 from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 
+from dispatch.exceptions import InvalidConfiguration
 from .models import Plugin, PluginCreate, PluginUpdate
 
 
@@ -28,6 +29,16 @@ def get_by_type(*, db_session, plugin_type: str) -> List[Optional[Plugin]]:
     return db_session.query(Plugin).filter(Plugin.type == plugin_type).all()
 
 
+def get_enabled_by_type(*, db_session, plugin_type: str) -> List[Optional[Plugin]]:
+    """Fetches all plugins for a given type."""
+    return (
+        db_session.query(Plugin)
+        .filter(Plugin.type == plugin_type)
+        .filter(Plugin.enabled == True)  # noqa
+        .all()
+    )
+
+
 def get_all(*, db_session) -> List[Optional[Plugin]]:
     """Returns all plugins."""
     return db_session.query(Plugin)
@@ -51,15 +62,19 @@ def update(*, db_session, plugin: Plugin, plugin_in: PluginUpdate) -> Plugin:
     plugin_data = jsonable_encoder(plugin)
     update_data = plugin_in.dict(skip_defaults=True)
 
-    # TODO can this be moved to a table trigger?
-    # ensure that only one plugin is enabled per plugin type
-    plugins_t = get_by_type(db_session=db_session, plugin_type=plugin.type)
+    # we can't have multiple plugins of this type disable the currently enabled one
+    if plugin_in.enabled:
+        if not plugin.multiple:
+            enabled_plugins = get_enabled_by_type(db_session=db_session, plugin_type=plugin.type)
+            if enabled_plugins:
+                enabled_plugins[0].enabled = False
+                db_session.add(enabled_plugins[0])
 
-    for p in plugins_t:
-        if p.enabled:
-            log.debug(f"Disabling existing plugin: {p.slug}")
-            p.enabled = False
-            db_session.add(p)
+    if not plugin_in.enabled:
+        if plugin.required:
+            raise InvalidConfiguration(
+                "Cannot disable plugin, it is required and no other plugins of it's type are enabled."
+            )
 
     for field in plugin_data:
         if field in update_data:

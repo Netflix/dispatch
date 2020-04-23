@@ -37,6 +37,12 @@
               <template v-slot:item.enabled="{ item }">
                 {{ item.enabled ? "Enabled" : "Disabled" }}
               </template>
+              <template v-slot:item.multiple="{ item }">
+                {{ item.multiple ? "Yes" : "No" }}
+              </template>
+              <template v-slot:item.required="{ item }">
+                {{ item.required ? "Yes" : "No" }}
+              </template>
             </v-data-table>
           </v-card>
         </v-flex>
@@ -63,6 +69,8 @@ export default {
         { text: "Author", value: "author", sortable: true },
         { text: "Version", value: "version", sortable: true },
         { text: "Status", value: "enabled", sortable: true },
+        { text: "Required", value: "required", sortable: true },
+        { text: "Multiple Allowed", value: "multiple", sortable: true },
         { text: "Type", value: "type", sortable: true }
       ]
     }

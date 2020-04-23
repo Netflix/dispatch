@@ -39,7 +39,7 @@ class GoogleDriveStoragePlugin(StoragePlugin):
     description = "Uses Google Drive to help manage incident storage."
     version = google_drive_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     _schema = None

@@ -3,6 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from dispatch.exceptions import InvalidConfiguration
 from dispatch.database import get_db, search_filter_sort_paginate
 
 from .models import PluginCreate, PluginPagination, PluginRead, PluginUpdate
@@ -61,5 +62,10 @@ def update_plugin(
     plugin = get(db_session=db_session, plugin_id=plugin_id)
     if not plugin:
         raise HTTPException(status_code=404, detail="The plugin with this id does not exist.")
-    plugin = update(db_session=db_session, plugin=plugin, plugin_in=plugin_in)
+
+    try:
+        plugin = update(db_session=db_session, plugin=plugin, plugin_in=plugin_in)
+    except InvalidConfiguration as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
     return plugin

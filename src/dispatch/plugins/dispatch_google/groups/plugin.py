@@ -117,7 +117,7 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
     description = "Uses Google Groups to help manage participant membership."
     version = google_group_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     _schema = None

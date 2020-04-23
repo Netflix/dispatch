@@ -184,7 +184,7 @@ class JiraTicketPlugin(TicketPlugin):
     description = "Uses Jira to hepl manage external tickets."
     version = jira_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     _schema = None
