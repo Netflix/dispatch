@@ -650,6 +650,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     # we update the incident ticket
     update_incident_ticket(
+        db_session,
         incident.ticket.resource_id,
         title=incident.title,
         description=incident.description,
@@ -722,6 +723,7 @@ def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     # we update the status of the external ticket
     update_incident_ticket(
+        db_session,
         incident.ticket.resource_id,
         incident_type=incident.incident_type.name,
         status=IncidentStatus.active.lower(),
@@ -850,7 +852,10 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     # we update the external ticket
     update_incident_ticket(
-        incident.ticket.resource_id, status=IncidentStatus.closed.lower(), cost=incident_cost
+        db_session,
+        incident.ticket.resource_id,
+        status=IncidentStatus.closed.lower(),
+        cost=incident_cost,
     )
 
     if incident.visibility == Visibility.open:
@@ -947,6 +952,7 @@ def incident_update_flow(
 
     # we update the external ticket
     update_incident_ticket(
+        db_session,
         incident.ticket.resource_id,
         title=incident.title,
         description=incident.description,
@@ -1060,6 +1066,7 @@ def incident_assign_role_flow(
 
         # we update the external ticket
         update_incident_ticket(
+            db_session,
             incident.ticket.resource_id,
             description=incident.description,
             incident_type=incident.incident_type.name,
