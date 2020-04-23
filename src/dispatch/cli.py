@@ -782,7 +782,7 @@ def dispatch_server():
 @dispatch_server.command("routes")
 def show_routes():
     """Prints all available routes."""
-    from dispatch.api import api_router
+    from dispatch.main import api_router
 
     table = []
     for r in api_router.routes:
