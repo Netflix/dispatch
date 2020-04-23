@@ -69,8 +69,41 @@ export const protectedRoute = [
     meta: { title: "Report", icon: "", requiresAuth: true },
     component: () => import(/* webpackChunkName: "incidents-report" */ "@/incident/ReportForm.vue")
   },
-
-  //list
+  {
+    path: "/incidents/types",
+    component: DefaultLayout,
+    meta: {
+      title: "Incident Types",
+      icon: "view_compact",
+      group: "configuration",
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: "/incidents/types",
+        name: "IncidentTypeTable",
+        component: () => import(/* webpackChunkName: "routing-table" */ "@/incident_type/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/incidents/priorities",
+    component: DefaultLayout,
+    meta: {
+      title: "Incident Priorities",
+      icon: "view_compact",
+      group: "configuration",
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: "/incidents/priorities",
+        name: "IncidentPriorityTable",
+        component: () =>
+          import(/* webpackChunkName: "routing-table" */ "@/incident_priority/Table.vue")
+      }
+    ]
+  },
   {
     path: "/dashboard",
     component: DefaultLayout,
@@ -233,41 +266,6 @@ export const protectedRoute = [
         path: "/route",
         name: "RouteTable",
         component: () => import(/* webpackChunkName: "routing-table" */ "@/route/Table.vue")
-      }
-    ]
-  },
-  {
-    path: "/incidents/types",
-    component: DefaultLayout,
-    meta: {
-      title: "Incident Types",
-      icon: "view_compact",
-      group: "configuration",
-      requiresAuth: true
-    },
-    children: [
-      {
-        path: "/incidents/types",
-        name: "IncidentTypeTable",
-        component: () => import(/* webpackChunkName: "routing-table" */ "@/incident_type/Table.vue")
-      }
-    ]
-  },
-  {
-    path: "/incidents/priorities",
-    component: DefaultLayout,
-    meta: {
-      title: "Incident Priorities",
-      icon: "view_compact",
-      group: "configuration",
-      requiresAuth: true
-    },
-    children: [
-      {
-        path: "/incidents/priorities",
-        name: "IncidentPriorityTable",
-        component: () =>
-          import(/* webpackChunkName: "routing-table" */ "@/incident_priority/Table.vue")
       }
     ]
   },
