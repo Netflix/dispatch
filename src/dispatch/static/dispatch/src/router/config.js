@@ -43,6 +43,7 @@ export const publicRoute = [
   }
 ]
 
+// NOTE: The order in which routes are added to the list matters when evaluated. For example, /incidents/report will take precendence over /incidents/:name.
 export const protectedRoute = [
   {
     path: "/",
