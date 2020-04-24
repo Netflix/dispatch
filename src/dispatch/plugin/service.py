@@ -73,7 +73,7 @@ def update(*, db_session, plugin: Plugin, plugin_in: PluginUpdate) -> Plugin:
     if not plugin_in.enabled:
         if plugin.required:
             raise InvalidConfiguration(
-                "Cannot disable plugin, it is required and no other plugins of it's type are enabled."
+                f"Cannot disable plugin: {plugin.title}. It is required and no other plugins of type {plugin.type} are enabled."
             )
 
     for field in plugin_data:
