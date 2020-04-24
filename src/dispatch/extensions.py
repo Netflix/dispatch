@@ -5,6 +5,7 @@ from sentry_sdk.integrations.logging import LoggingIntegration
 
 from .config import SENTRY_DSN, ENV
 
+
 log = logging.getLogger(__file__)
 
 sentry_logging = LoggingIntegration(
