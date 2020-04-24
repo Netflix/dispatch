@@ -747,7 +747,10 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     # we update the external ticket
     update_incident_ticket(
-        incident.ticket.resource_id, status=IncidentStatus.stable.lower(), cost=incident_cost
+        db_session,
+        incident.ticket.resource_id,
+        status=IncidentStatus.stable.lower(),
+        cost=incident_cost,
     )
 
     incident_review_document = get_document(
