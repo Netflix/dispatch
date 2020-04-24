@@ -95,7 +95,7 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
     description = "Uses Google docs to manage document contents."
     version = __version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):

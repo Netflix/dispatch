@@ -14,6 +14,8 @@ const getDefaultSelectedState = () => {
     author_url: null,
     enabled: null,
     type: null,
+    required: null,
+    multiple: null,
     configuration: null,
     loading: false
   }

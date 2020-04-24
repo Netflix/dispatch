@@ -61,6 +61,8 @@ class IPlugin(local):
     # Global enabled state
     enabled: bool = True
     can_disable: bool = True
+    multiple: bool = False
+    required: bool = True
 
     def validate_options(self, options: dict) -> Any:
         """

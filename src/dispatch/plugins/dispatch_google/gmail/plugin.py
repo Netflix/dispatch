@@ -127,7 +127,7 @@ class GoogleGmailConversationPlugin(ConversationPlugin):
     description = "Uses gmail to facilitate conversations."
     version = google_gmail_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):

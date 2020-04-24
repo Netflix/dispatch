@@ -18,6 +18,8 @@ class Plugin(Base):
     author_url = Column(String)
     type = Column(String)
     enabled = Column(Boolean)
+    required = Column(Boolean)
+    multiple = Column(Boolean)
     configuration = Column(JSONType)
 
     @property
@@ -39,14 +41,25 @@ class PluginCreate(PluginBase):
     author: str
     author_url: str
     type: str
-    enabled: Optional[bool] = True
+    enabled: Optional[bool]
+    required: Optional[bool] = True
+    multiple: Optional[bool] = False
     description: Optional[str]
     configuration: Optional[dict]
 
 
 class PluginUpdate(PluginBase):
     id: int
-    enabled: Optional[bool] = True
+    title: str
+    slug: str
+    author: str
+    author_url: str
+    type: str
+    enabled: Optional[bool]
+    required: Optional[bool] = True
+    multiple: Optional[bool] = False
+    description: Optional[str]
+    configuration: Optional[dict]
 
 
 class PluginRead(PluginBase):
@@ -55,8 +68,10 @@ class PluginRead(PluginBase):
     slug: str
     author: str
     author_url: str
-    type: Optional[str]
-    enabled: Optional[bool] = True
+    type: str
+    enabled: bool
+    required: bool
+    multiple: bool
     description: Optional[str]
     configuration: Optional[dict]
 

@@ -79,7 +79,7 @@ class SlackConversationPlugin(ConversationPlugin):
     version = slack_plugin.__version__
     events = slack_event_router
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
@@ -186,7 +186,7 @@ class SlackContactPlugin(ContactPlugin):
     description = "Uses Slack to resolve contact information details."
     version = slack_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
@@ -215,7 +215,7 @@ class SlackDocumentPlugin(DocumentPlugin):
     description = "Uses Slack as a document source."
     version = slack_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
