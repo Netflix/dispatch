@@ -30,7 +30,7 @@ def get_by_type(*, db_session, plugin_type: str) -> List[Optional[Plugin]]:
 
 
 def get_enabled_by_type(*, db_session, plugin_type: str) -> List[Optional[Plugin]]:
-    """Fetches all plugins for a given type."""
+    """Fetches all enabled plugins for a given type."""
     return (
         db_session.query(Plugin)
         .filter(Plugin.type == plugin_type)
