@@ -22,9 +22,9 @@ from dispatch.participant.models import Participant  # noqa lgtm[py/unused-impor
 from dispatch.participant_role.models import ParticipantRole  # noqa lgtm[py/unused-import]
 from dispatch.policy.models import Policy  # noqa lgtm[py/unused-import]
 from dispatch.route.models import (
-    Recommendation,
-    RecommendationAccuracy,
-)  # noqa lgtm[py/unused-import]
+    Recommendation,  # noqa lgtm[py/unused-import]
+    RecommendationAccuracy,  # noqa lgtm[py/unused-import]
+)
 from dispatch.service.models import Service  # noqa lgtm[py/unused-import]
 from dispatch.status_report.models import StatusReport  # noqa lgtm[py/unused-import]
 from dispatch.storage.models import Storage  # noqa lgtm[py/unused-import]
