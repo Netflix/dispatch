@@ -401,11 +401,16 @@ def show_routes():
 @dispatch_server.command("config")
 def show_config():
     """Prints the current config as dispatch sees it."""
-    from dispatch.config import config
+    import sys
+    import inspect
+    from dispatch import config
+
+    func_members = inspect.getmembers(sys.modules[config.__name__])
 
     table = []
-    for k, v in config.file_values.items():
-        table.append([k, v])
+    for key, value in func_members:
+        if key.isupper():
+            table.append([key, value])
 
     click.secho(tabulate(table, headers=["Key", "Value"]), fg="blue")
 
