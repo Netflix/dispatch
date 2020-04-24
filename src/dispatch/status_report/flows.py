@@ -47,12 +47,7 @@ def save_status_report(
     event_service.log(
         db_session=db_session,
         source="Incident Participant",
-        description=(
-            f"New status report created by {participant.individual.name}:\n"
-            f"Conditions: {conditions}\n"
-            f"Actions: {actions}\n"
-            f"Needs: {needs}\n"
-        ),
+        description=f"{participant.individual.name} created a new status report. Conditions: {conditions}; Actions: {actions}; Needs: {needs}",
         incident_id=incident_id,
         individual_id=participant.individual.id,
     )

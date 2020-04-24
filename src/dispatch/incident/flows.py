@@ -889,7 +889,7 @@ def incident_update_flow(
         event_service.log(
             db_session=db_session,
             source="Incident Participant",
-            description=f"{individual.name} has changed the incident title to: {incident.title}",
+            description=f"{individual.name} changed the incident title to: {incident.title}",
             incident_id=incident.id,
             individual_id=individual.id,
         )
@@ -898,7 +898,7 @@ def incident_update_flow(
         event_service.log(
             db_session=db_session,
             source="Incident Participant",
-            description=f"{individual.name} has changed the incident description to: {incident.description}",
+            description=f"{individual.name} changed the incident description to: {incident.description}",
             incident_id=incident.id,
             individual_id=individual.id,
         )
@@ -909,7 +909,7 @@ def incident_update_flow(
         event_service.log(
             db_session=db_session,
             source="Incident Participant",
-            description=f"{individual.name} has changed the incident type to {incident.incident_type.name}",
+            description=f"{individual.name} changed the incident type to {incident.incident_type.name}",
             incident_id=incident.id,
             individual_id=individual.id,
         )
@@ -920,7 +920,7 @@ def incident_update_flow(
         event_service.log(
             db_session=db_session,
             source="Incident Participant",
-            description=f"{individual.name} has changed the incident priority to {incident.incident_priority.name}",
+            description=f"{individual.name} changed the incident priority to {incident.incident_priority.name}",
             incident_id=incident.id,
             individual_id=individual.id,
         )
@@ -931,7 +931,7 @@ def incident_update_flow(
         event_service.log(
             db_session=db_session,
             source="Incident Participant",
-            description=f"{individual.name} has marked the incident as {incident.status}",
+            description=f"{individual.name} marked the incident as {incident.status}",
             incident_id=incident.id,
             individual_id=individual.id,
         )
