@@ -155,7 +155,7 @@ def handle_reaction_added_event(
         event_service.log(
             db_session=db_session,
             source=convo_plugin.title,
-            description=message_text,
+            description=f'"{message_text}," said {individual.name}',
             incident_id=incident_id,
             individual_id=individual.id,
             started_at=message_ts_utc,
