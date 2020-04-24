@@ -1,8 +1,10 @@
 from typing import List
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi_permissions import has_permission
 from sqlalchemy.orm import Session
 
+from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.database import get_db, search_filter_sort_paginate
 
@@ -47,13 +49,25 @@ def get_incidents(
 
 
 @router.get("/{incident_id}", response_model=IncidentRead, summary="Retrieve a single incident.")
-def get_incident(*, db_session: Session = Depends(get_db), incident_id: str):
+def get_incident(
+    *,
+    db_session: Session = Depends(get_db),
+    incident_id: str,
+    current_user: DispatchUser = Depends(get_current_user),
+):
     """
     Retrieve details about a specific incident.
     """
     incident = get(db_session=db_session, incident_id=incident_id)
     if not incident:
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
+
+        # we want to provide additional protections around restricted incidents
+        if not has_permission(current_user.principals, "view", IncidentRead.__acl__):
+            raise HTTPException(
+                status_code=401, detail="You do no have permission to view this incident."
+            )
+
     return incident
 
 

@@ -5,22 +5,20 @@
     :license: Apache, see LICENSE for more details.
 """
 import logging
-import bcrypt
-from datetime import datetime, timedelta
-from jose import jwt
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
 from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
+from fastapi_permissions import Authenticated, configure_permissions
+
+from sqlalchemy.orm import Session
+from dispatch.database import get_db
 
 from dispatch.plugins.base import plugins
 from dispatch.config import (
     DISPATCH_AUTHENTICATION_PROVIDER_SLUG,
     DISPATCH_AUTHENTICATION_DEFAULT_USER,
-    DISPATCH_JWT_SECRET,
-    DISPATCH_JWT_ALG,
-    DISPATCH_JWT_EXP,
 )
-from .models import DispatchUser
+from .models import DispatchUser, UserRegister
 
 log = logging.getLogger(__name__)
 
@@ -29,36 +27,45 @@ credentials_exception = HTTPException(
 )
 
 
-def get_current_user(*, request: Request):
-    """Attempts to get the current user depending on the configured authentication provider."""
-    if DISPATCH_AUTHENTICATION_PROVIDER_SLUG:
-        auth_plugin = plugins.get(DISPATCH_AUTHENTICATION_PROVIDER_SLUG)
-        return auth_plugin.get_current_user(request)
-
-    log.debug("No authentication provider. Default one will be used")
-    return DISPATCH_AUTHENTICATION_DEFAULT_USER
+def get(*, db_session, email: str):
+    return db_session.query(DispatchUser).filter(DispatchUser.email == email).one_or_none()
 
 
-def gen_token(user):
-    user = add_claims(user)
-    return jwt.encode(user, DISPATCH_JWT_SECRET, algorithm=DISPATCH_JWT_ALG)
-
-
-def fetch_user(db_session, email: str):
-    return db_session.query(DispatchUser).get(email)
-
-
-def add_claims(user: dict):
-    now = datetime.now()
-    user["exp"] = (now + timedelta(seconds=DISPATCH_JWT_EXP)).timestamp()
+def create(*, db_session, user_in: UserRegister):
+    """Creates a new dispatch user."""
+    # pydantic forces a string password, but we really want bytes
+    password = bytes(user_in.password, "utf-8")
+    user = DispatchUser(**user_in.dict(exclude={"password"}), password=password)
+    db_session.add(user)
+    db_session.commit()
     return user
 
 
-def check_password(passwd: str, hashed: bytes):
-    return bcrypt.checkpw(passwd.encode("utf-8"), hashed)
+def get_or_create(*, db_session, user_in: UserRegister):
+    """Gets an existing user or creates a new one."""
+    user = get(db_session=db_session, email=user_in.email)
+    if not user:
+        return create(db_session=db_session, user_in=user_in)
+    return user
 
 
-def hash_password(pw: str):
-    pw = bytes(pw, "utf-8")
-    salt = bcrypt.gensalt()
-    return bcrypt.hashpw(pw, salt)
+def get_current_user(*, db_session: Session = Depends(get_db), request: Request):
+    """Attempts to get the current user depending on the configured authentication provider."""
+    if DISPATCH_AUTHENTICATION_PROVIDER_SLUG:
+        auth_plugin = plugins.get(DISPATCH_AUTHENTICATION_PROVIDER_SLUG)
+        user_email = auth_plugin.get_current_user(request)
+    else:
+        log.debug("No authentication provider. Default user will be used")
+        user_email = DISPATCH_AUTHENTICATION_DEFAULT_USER
+
+    return get_or_create(db_session=db_session, user_in=UserRegister(email=user_email))
+
+
+def get_active_principals(user: DispatchUser = Depends(get_current_user)):
+    """Fetches the current participants for a given user."""
+    principals = [Authenticated]
+    principals.extend(getattr(user, "principals", []))
+    return principals
+
+
+Permission = configure_permissions(get_active_principals)

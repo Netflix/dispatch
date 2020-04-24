@@ -1,47 +1,40 @@
-import logging
-from fastapi import APIRouter, Depends, Request
-from sqlalchemy import exc
+from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.orm import Session
 from dispatch.database import get_db
-from .models import DispatchUser, UserLoginForm, UserLoginResponse
+from .models import UserLogin, UserRegister, UserLoginResponse, UserRegisterResponse
 from .service import (
-    fetch_user,
-    gen_token,
+    get,
+    create,
     get_current_user,
-    hash_password,
-    check_password,
 )
 
 router = APIRouter()
 
 
-@router.post("/login", response_model=UserLoginResponse, summary="Login via email, returns a jwt")
+@router.post("/login", response_model=UserLoginResponse, summary="Login a user")
 def login_user(
-    form: UserLoginForm, db_session: Session = Depends(get_db),
+    user_in: UserLogin, db_session: Session = Depends(get_db),
 ):
-    user = fetch_user(db_session, form.email)
-    if user and check_password(form.password, user.password):
-        return {"token": gen_token({"email": user.email})}
-    return {"error": "Invalid username or password"}
+    user = get(db_session=db_session, email=user_in.email)
+    if user and user.check_password:
+        return {"token": user.token}
+    raise HTTPException(status_code=400, detail="Invalid username or password")
 
 
-@router.post("/register", summary="Creates a new user.")
+@router.post("/register", response_model=UserRegisterResponse, summary="Registers a new user.")
 def register_user(
-    user: UserLoginForm, db_session: Session = Depends(get_db),
+    user_in: UserRegister, db_session: Session = Depends(get_db),
 ):
-    user = DispatchUser(email=user.email, password=hash_password(user.password))
-    db_session.add(user)
-    try:
-        db_session.commit()
-    except exc.IntegrityError as e:
-        # User already exists
-        logging.warn(e)
-        return {"error": "User with that email already exists."}
+    user = get(db_session=db_session, email=user_in.email)
+    if not user:
+        user = create(db_session=db_session, user_in=user_in)
+    else:
+        raise HTTPException(status_code=400, detail="User with that email address exists.")
 
-    return {"msg": "Successfully registered."}
+    return user
 
 
-@router.get("/user", response_model=UserLoginResponse, summary="Retrives current user")
+@router.get("/user", response_model=UserLoginResponse, summary="Returns current user")
 def get_user(
     req: Request, db_session: Session = Depends(get_db),
 ):
