@@ -14,27 +14,30 @@ from starlette.staticfiles import StaticFiles
 import httpx
 
 from .api import api_router
+from .common.utils.cli import install_plugins, install_plugin_events
 from .config import STATIC_DIR
 from .database import SessionLocal
-from .metrics import provider as metric_provider
-from .logging import configure_logging
 from .extensions import configure_extensions
-from .common.utils.cli import install_plugins, install_plugin_events
+from .logging import configure_logging
+from .metrics import provider as metric_provider
+
 
 log = logging.getLogger(__name__)
 
+# we configure the logging level and format
+configure_logging()
+
+# we configure the extensions such as Sentry
+configure_extensions()
+
+# we create the ASGI for the app
 app = Starlette()
+
+# we create the ASGI for the frontend
 frontend = Starlette()
 
+# we create the Web API framework
 api = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
-
-api.include_router(api_router, prefix="/v1")
-
-if STATIC_DIR:
-    frontend.mount("/", StaticFiles(directory=STATIC_DIR), name="app")
-
-app.mount("/api", app=api)
-app.mount("/", app=frontend)
 
 
 def get_path_template(request: Request) -> str:
@@ -107,16 +110,29 @@ class MetricsMiddleware(BaseHTTPMiddleware):
         return response
 
 
+# we add a middleware class for logging exceptions to Sentry
 app.add_middleware(SentryMiddleware)
-app.add_middleware(MetricsMiddleware)
-# app.add_middleware(GZipMiddleware)
 
+# we add a middleware class for capturing metrics using Dispatch's metrics provider
+app.add_middleware(MetricsMiddleware)
+
+# we install all the plugins
 install_plugins()
+
+# we add all the plugin event API routes to the API router
 install_plugin_events(api_router)
 
-configure_logging()
-configure_extensions()
+# we add all API routes to the Web API framework
+api.include_router(api_router, prefix="/v1")
 
+# we mount the frontend and app
+if STATIC_DIR:
+    frontend.mount("/", StaticFiles(directory=STATIC_DIR), name="app")
+
+app.mount("/api", app=api)
+app.mount("/", app=frontend)
+
+# we print all the registered API routes to the console
 table = []
 for r in api_router.routes:
     auth = False
