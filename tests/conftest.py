@@ -28,6 +28,7 @@ from dispatch import config
 from dispatch.database import Base, engine, SessionLocal
 
 from .factories import (
+    ConferenceFactory,
     ConversationFactory,
     DefinitionFactory,
     DocumentFactory,
@@ -230,6 +231,11 @@ def ticket_plugin():
 @pytest.fixture
 def Tag(session):
     return TagFactory()
+
+
+@pytest.fixture
+def conference(session):
+    return ConferenceFactory()
 
 
 @pytest.fixture

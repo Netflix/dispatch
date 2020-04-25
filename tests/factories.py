@@ -10,6 +10,7 @@ from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime
 from dispatch.database import SessionLocal
 
 from dispatch.team.models import TeamContact
+from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
 from dispatch.definition.models import Definition
 from dispatch.document.models import Document
@@ -83,6 +84,18 @@ class ResourceBaseFactory(TimeStampBaseFactory):
         if extracted:
             for term in extracted:
                 self.terms.append(term)
+
+
+class ConferenceFactory(ResourceBaseFactory):
+    """Conference Factory."""
+
+    conference_id = Sequence(lambda n: f"conference{n}")
+    conference_challenge = FuzzyText()
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Conference
 
 
 class ContactBaseFactory(TimeStampBaseFactory):
