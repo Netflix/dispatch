@@ -503,8 +503,7 @@ def init_database():
 
 
 @dispatch_database.command("restore")
-@click.option(
-    "--dump-file", default='dispatch-backup.dump', help="Path to a PostgreSQL dump file.")
+@click.option("--dump-file", default="dispatch-backup.dump", help="Path to a PostgreSQL dump file.")
 def restore_database(dump_file):
     """Restores the database via pg_restore."""
     import sh
@@ -513,7 +512,7 @@ def restore_database(dump_file):
         DATABASE_HOSTNAME,
         DATABASE_NAME,
         DATABASE_PORT,
-        DATABASE_CREDENTIALS
+        DATABASE_CREDENTIALS,
     )
 
     username, password = str(DATABASE_CREDENTIALS).split(":")
@@ -617,9 +616,11 @@ def upgrade_database(tag, sql, revision):
         Base.metadata.create_all(engine)
         alembic_command.stamp(alembic_cfg, "head")
     else:
-        alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-        alembic_cfg = AlembicConfig(alembic_path)
-        alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
+        if not alembic_command.current(alembic_cfg):
+            Base.metadata.create_all(engine)
+            alembic_command.stamp(alembic_cfg, "head")
+        else:
+            alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
     click.secho("Success.", fg="green")
 
 
