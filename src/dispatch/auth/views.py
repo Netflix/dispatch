@@ -16,7 +16,7 @@ def login_user(
     user_in: UserLogin, db_session: Session = Depends(get_db),
 ):
     user = get(db_session=db_session, email=user_in.email)
-    if user and user.check_password:
+    if user and user.check_password(user_in.password):
         return {"token": user.token}
     raise HTTPException(status_code=400, detail="Invalid username or password")
 

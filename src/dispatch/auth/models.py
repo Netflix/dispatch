@@ -1,4 +1,3 @@
-
 import string
 import secrets
 from enum import Enum
@@ -6,7 +5,7 @@ from datetime import datetime, timedelta
 
 import bcrypt
 from jose import jwt
-from typing import Optional
+from typing import List, Optional
 from pydantic import validator
 from sqlalchemy import Column, String, Binary
 
@@ -22,10 +21,9 @@ from dispatch.config import (
 
 def generate_password():
     """Generates a resonable password if none is provided."""
-
-    alphabet = string.ascii_letters + string.digits
+    alphanumeric = string.ascii_letters + string.digits
     while True:
-        password = "".join(secrets.choice(alphabet) for i in range(10))
+        password = "".join(secrets.choice(alphanumeric) for i in range(10))
         if (
             any(c.islower() for c in password)
             and any(c.isupper() for c in password)
@@ -43,9 +41,9 @@ def hash_password(password: str):
 
 
 class UserRoles(str, Enum):
-    user = "user"
-    poweruser = "poweruser"
-    admin = "admin"
+    user = "User"
+    poweruser = "Poweruser"
+    admin = "Admin"
 
 
 class DispatchUser(Base, TimeStampMixin):
@@ -68,15 +66,13 @@ class DispatchUser(Base, TimeStampMixin):
 
 class UserBase(DispatchBase):
     email: str
+    roles: List[str]
 
     @validator("email")
     def email_required(cls, v):
         if not v:
             raise ValueError("Must not be empty string and must be a email")
         return v
-
-    def principals(self):
-        return [f"user:{self.name}"]
 
 
 class UserLogin(UserBase):
