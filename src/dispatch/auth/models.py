@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 import bcrypt
 from jose import jwt
-from typing import List, Optional
+from typing import Optional
 from pydantic import validator
 from sqlalchemy import Column, String, Binary
 
@@ -55,7 +55,7 @@ class DispatchUser(Base, TimeStampMixin):
         return bcrypt.checkpw(password.encode("utf-8"), self.password)
 
     def token(self):
-        now = datetime.now()
+        now = datetime.utcnow()
         exp = (now + timedelta(seconds=DISPATCH_JWT_EXP)).timestamp()
         data = {"exp": exp, "email": self.email, "role": self.role}
         return jwt.encode(data, DISPATCH_JWT_SECRET, algorithm=DISPATCH_JWT_ALG)
@@ -66,7 +66,6 @@ class DispatchUser(Base, TimeStampMixin):
 
 class UserBase(DispatchBase):
     email: str
-    roles: List[str]
 
     @validator("email")
     def email_required(cls, v):
@@ -97,6 +96,10 @@ class UserRegister(UserLogin):
 
 class UserLoginResponse(DispatchBase):
     token: Optional[str]
+
+
+class UserRead(UserBase):
+    role: str
 
 
 class UserRegisterResponse(DispatchBase):

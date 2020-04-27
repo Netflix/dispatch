@@ -20,6 +20,7 @@ from fastapi_permissions import Allow
 
 from dispatch.config import INCIDENT_RESOURCE_FAQ_DOCUMENT, INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT
 
+from dispatch.auth.models import UserRoles
 from dispatch.conference.models import ConferenceRead
 from dispatch.conversation.models import ConversationRead
 from dispatch.database import Base
@@ -200,8 +201,14 @@ class IncidentRead(IncidentBase):
 
     def __acl__(self):
         if self.visibility == Visibility.restricted:
-            return [(Allow, "role:admin", "view"), (Allow, "role:admin", "edit")]
-        return [(Allow, "role:user", "view"), (Allow, "role:user", "edit")]
+            return [
+                (Allow, f"role:{UserRoles.admin}", "view"),
+                (Allow, f"role:{UserRoles.admin}", "edit"),
+            ]
+        return [
+            (Allow, f"role:{UserRoles.user}", "view"),
+            (Allow, f"role:{UserRoles.user}", "edit"),
+        ]
 
 
 class IncidentPagination(DispatchBase):

@@ -4,12 +4,14 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from fastapi_permissions import has_permission
 from sqlalchemy.orm import Session
 
+from dispatch.enums import Visibility
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.database import get_db, search_filter_sort_paginate
 
 from dispatch.participant_role.models import ParticipantRoleType
 
+from dispatch.auth.models import UserRoles
 from .flows import incident_create_flow, incident_update_flow, incident_assign_role_flow
 from .models import IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
 from .service import create, delete, get, update
@@ -17,7 +19,7 @@ from .metrics import make_forecast
 
 router = APIRouter()
 
-# TODO add additional routes to get incident by e.g. deeplink
+
 @router.get("/", response_model=IncidentPagination, summary="Retrieve a list of all incidents.")
 def get_incidents(
     db_session: Session = Depends(get_db),
@@ -26,13 +28,23 @@ def get_incidents(
     query_str: str = Query(None, alias="q"),
     sort_by: List[str] = Query(None, alias="sortBy[]"),
     descending: List[bool] = Query(None, alias="descending[]"),
-    fields: List[str] = Query(None, alias="fields[]"),
-    ops: List[str] = Query(None, alias="ops[]"),
-    values: List[str] = Query(None, alias="values[]"),
+    fields: List[str] = Query([], alias="fields[]"),
+    ops: List[str] = Query([], alias="ops[]"),
+    values: List[str] = Query([], alias="values[]"),
+    current_user: DispatchUser = Depends(get_current_user),
 ):
     """
     Retrieve a list of all incidents.
     """
+    # we want to provide additional protections around restricted incidents
+    # Because we want to proactively filter (instead of when the item is returned
+    # we don't use fastapi_permissions acls.
+    if current_user.role != UserRoles.admin:
+        # add a filter for restricted incidents
+        fields.append("visibility")
+        values.append(Visibility.restricted)
+        ops.append("!=")
+
     return search_filter_sort_paginate(
         db_session=db_session,
         model="Incident",
