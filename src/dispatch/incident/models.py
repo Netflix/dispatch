@@ -200,8 +200,8 @@ class IncidentRead(IncidentBase):
 
     def __acl__(self):
         if self.visibility == Visibility.restricted:
-            return [(Allow, "role:admin", "view")(Allow, "role:admin", "edit")]
-        return [(Allow, "role:user", "view")(Allow, "role:user", "edit")]
+            return [(Allow, "role:admin", "view"), (Allow, "role:admin", "edit")]
+        return [(Allow, "role:user", "view"), (Allow, "role:user", "edit")]
 
 
 class IncidentPagination(DispatchBase):

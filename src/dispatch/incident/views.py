@@ -62,11 +62,11 @@ def get_incident(
     if not incident:
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
 
-        # we want to provide additional protections around restricted incidents
-        if not has_permission(current_user.principals, "view", IncidentRead.__acl__):
-            raise HTTPException(
-                status_code=401, detail="You do no have permission to view this incident."
-            )
+    # we want to provide additional protections around restricted incidents
+    if not has_permission(current_user.principals, "view", IncidentRead.__acl__):
+        raise HTTPException(
+            status_code=401, detail="You do no have permission to view this incident."
+        )
 
     return incident
 
