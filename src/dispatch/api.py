@@ -20,19 +20,19 @@ from dispatch.term.views import router as team_router
 from dispatch.document.views import router as document_router
 from dispatch.task.views import router as task_router
 from dispatch.plugin.views import router as plugin_router
-from dispatch.auth.views import router as auth_router
+from dispatch.auth.views import user_router, auth_router
 
 from .config import DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 
 api_router = APIRouter()  # WARNING: Don't use this unless you want unauthenticated routes
 authenticated_api_router = APIRouter()
 
-
 # NOTE we only advertise auth routes when basic auth is enabled
 if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-basic":
     api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 # NOTE: All api routes should be authenticated by default
+authenticated_api_router.include_router(user_router, prefix="/user", tags=["user"])
 authenticated_api_router.include_router(document_router, prefix="/documents", tags=["documents"])
 authenticated_api_router.include_router(tag_router, prefix="/tags", tags=["Tags"])
 authenticated_api_router.include_router(service_router, prefix="/services", tags=["services"])

@@ -108,6 +108,13 @@ const Menu = [
     name: "Plugins",
     icon: "power",
     href: "/plugins"
+  },
+  {
+    title: "Users",
+    group: "Configuration",
+    name: "Users",
+    icon: "account_box",
+    href: "/users"
   }
 ]
 // reorder menu

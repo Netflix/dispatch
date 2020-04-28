@@ -51,7 +51,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions("account", ["basicLogin"])
+    ...mapActions("auth", ["basicLogin"])
   }
 }
 </script>

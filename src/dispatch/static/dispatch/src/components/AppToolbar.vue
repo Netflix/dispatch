@@ -78,7 +78,7 @@ export default {
       this.$store.dispatch("search/getResults", this.$store.state.query)
       this.$router.push("/search")
     },
-    ...mapState("account", ["userInfo"]),
+    ...mapState("auth", ["userInfo"]),
     ...mapActions("search", ["setQuery"]),
     ...mapMutations("search", ["SET_QUERY"])
   }

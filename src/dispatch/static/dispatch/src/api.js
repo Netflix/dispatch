@@ -8,7 +8,7 @@ const instance = axios.create({
 
 instance.interceptors.request.use(
   config => {
-    let token = store.state.account.accessToken
+    let token = store.state.auth.accessToken
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`
     }

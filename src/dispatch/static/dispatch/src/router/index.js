@@ -89,7 +89,7 @@ function loginwithPKCE(to, from, next) {
           .performTokenRequest(cfg, req)
           .then(response => {
             // Redirect to the uri in session storage and then delete it from storage
-            store.dispatch("account/login", {
+            store.dispatch("auth/login", {
               token: response.accessToken,
               redirectUri: localStorage.getItem("redirect_uri")
             })
@@ -135,7 +135,7 @@ function loginBasic(to, from, next) {
 
   // we already have a token tell vuex about it
   if (token) {
-    store.commit("account/SET_USER_LOGIN", token)
+    store.commit("auth/SET_USER_LOGIN", token)
     next()
   } else {
     // prevent redirect loop
@@ -152,7 +152,7 @@ function loginBasic(to, from, next) {
 router.beforeEach((to, from, next) => {
   store.dispatch("app/setLoading", true)
   NProgress.start()
-  if (!store.state.account.status.loggedIn) {
+  if (!store.state.auth.status.loggedIn) {
     if (authProviderSlug === "dispatch-auth-provider-pkce") {
       loginwithPKCE(to, from, next)
     } else if (authProviderSlug === "dispatch-auth-provider-basic") {

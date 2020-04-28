@@ -2,22 +2,124 @@ import jwt_decode from "jwt-decode"
 import router from "@/router/index"
 import { differenceInMilliseconds, fromUnixTime, subMinutes } from "date-fns"
 import { getField, updateField } from "vuex-map-fields"
-import LoginApi from "./api"
+import { debounce } from "lodash"
+import UserApi from "./api"
+
+const getDefaultSelectedState = () => {
+  return {
+    id: null,
+    email: null,
+    role: null,
+    loading: false
+  }
+}
 
 const state = {
   status: { loggedIn: false },
   userInfo: { email: "" },
-  accessToken: null
+  accessToken: null,
+  selected: {
+    ...getDefaultSelectedState()
+  },
+  dialogs: {
+    showEdit: false
+  },
+  table: {
+    rows: {
+      items: [],
+      total: null
+    },
+    options: {
+      q: "",
+      page: 1,
+      itemsPerPage: 10,
+      sortBy: ["email"],
+      descending: [true]
+    },
+    loading: false
+  }
 }
 
 const actions = {
+  getAll: debounce(({ commit, state }) => {
+    commit("SET_TABLE_LOADING", true)
+    return UserApi.getAll(state.table.options).then(response => {
+      commit("SET_TABLE_LOADING", false)
+      commit("SET_TABLE_ROWS", response.data)
+    })
+  }, 200),
+  editShow({ commit }, plugin) {
+    commit("SET_DIALOG_EDIT", true)
+    if (plugin) {
+      commit("SET_SELECTED", plugin)
+    }
+  },
+  closeEdit({ commit }) {
+    commit("SET_DIALOG_EDIT", false)
+    commit("RESET_SELECTED")
+  },
+  save({ commit, dispatch }) {
+    if (!state.selected.id) {
+      return UserApi.create(state.selected)
+        .then(() => {
+          dispatch("closeEdit")
+          dispatch("getAll")
+          commit("app/SET_SNACKBAR", { text: "User created successfully." }, { root: true })
+        })
+        .catch(err => {
+          commit(
+            "app/SET_SNACKBAR",
+            {
+              text: "User not created. Reason: " + err.response.data.detail,
+              color: "red"
+            },
+            { root: true }
+          )
+        })
+    } else {
+      return UserApi.update(state.selected.id, state.selected)
+        .then(() => {
+          dispatch("closeEdit")
+          dispatch("getAll")
+          commit("app/SET_SNACKBAR", { text: "User updated successfully." }, { root: true })
+        })
+        .catch(err => {
+          commit(
+            "app/SET_SNACKBAR",
+            {
+              text: "User not updated. Reason: " + err.response.data.detail,
+              color: "red"
+            },
+            { root: true }
+          )
+        })
+    }
+  },
+  remove({ commit, dispatch }) {
+    return UserApi.delete(state.selected.id)
+      .then(function() {
+        dispatch("closeRemove")
+        dispatch("getAll")
+        commit("app/SET_SNACKBAR", { text: "User deleted successfully." }, { root: true })
+      })
+      .catch(err => {
+        commit(
+          "app/SET_SNACKBAR",
+          {
+            text: "User not deleted. Reason: " + err.response.data.detail,
+            color: "red"
+          },
+          { root: true }
+        )
+      })
+  },
   loginRedirect({ state }, redirectUri) {
     let redirectUrl = new URL(redirectUri)
     void state
     router.push({ path: redirectUrl.pathname })
   },
   basicLogin({ commit }, payload) {
-    LoginApi.login(payload.email, payload.password).then(function(res) {
+    UserApi.login(payload.email, payload.password).then(function(res) {
       if (res.data.error) {
         commit("app/SET_SNACKBAR", { text: res.data.error, color: "red" }, { root: true })
       } else {
@@ -27,7 +129,7 @@ const actions = {
     })
   },
   register({ dispatch, commit }, payload) {
-    LoginApi.register(payload.email, payload.password).then(function(res) {
+    UserApi.register(payload.email, payload.password).then(function(res) {
       if (res.data.error) {
         commit("app/SET_SNACKBAR", { text: res.data.error, color: "red" }, { root: true })
       } else {
@@ -61,6 +163,21 @@ const actions = {
 
 const mutations = {
   updateField,
+  SET_SELECTED(state, value) {
+    state.selected = Object.assign(state.selected, value)
+  },
+  SET_TABLE_LOADING(state, value) {
+    state.table.loading = value
+  },
+  SET_TABLE_ROWS(state, value) {
+    state.table.rows = value
+  },
+  SET_DIALOG_EDIT(state, value) {
+    state.dialogs.showEdit = value
+  },
+  RESET_SELECTED(state) {
+    state.selected = Object.assign(state.selected, getDefaultSelectedState())
+  },
   SET_USER_LOGIN(state, accessToken) {
     state.accessToken = accessToken
     state.status = { loggedIn: true }
@@ -76,10 +193,10 @@ const mutations = {
 }
 
 const getters = {
+  getField,
   accessToken: () => state.accessToken,
   email: () => state.userInfo.email,
-  exp: () => state.userInfo.exp,
-  getField
+  exp: () => state.userInfo.exp
 }
 
 export default {

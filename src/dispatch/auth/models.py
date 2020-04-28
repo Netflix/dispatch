@@ -1,5 +1,6 @@
 import string
 import secrets
+from typing import List
 from enum import Enum
 from datetime import datetime, timedelta
 
@@ -86,6 +87,7 @@ class UserLogin(UserBase):
 
 class UserRegister(UserLogin):
     password: Optional[str]
+    role: UserRoles = UserRoles.user
 
     @validator("password", pre=True, always=True)
     def password_required(cls, v):
@@ -102,5 +104,15 @@ class UserRead(UserBase):
     role: str
 
 
+class UserUpdate(DispatchBase):
+    id: int
+    role: UserRoles
+
+
 class UserRegisterResponse(DispatchBase):
     email: str
+
+
+class UserPagination(DispatchBase):
+    total: int
+    items: List[UserRead] = []
