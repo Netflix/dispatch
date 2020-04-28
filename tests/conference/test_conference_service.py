@@ -48,13 +48,13 @@ def test_conference_get_by_resource_type():
     raise NotImplementedError
 
 
-def test_conference_get_by_conference_id():
+def test_conference_get_by_conference_id(session, conference):
     raise NotImplementedError
 
 
-def test_conference_get_by_incident_id():
+def test_conference_get_by_incident_id(session, conference):
     raise NotImplementedError
 
 
-def test_conference_get_all():
+def test_conference_get_all(session, conference):
     raise NotImplementedError
