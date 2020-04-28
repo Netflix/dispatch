@@ -290,14 +290,22 @@ def calculate_cost(incident_id: int, db_session: SessionLocal, incident_review=T
             participant_role_assumed_at = participant_role.assumed_at
 
             if participant_role.renounced_at:
+                # the participant left the conversation or got assigned another role
+                # we use the renounced_at time
                 participant_role_renounced_at = participant_role.renounced_at
-            elif incident.status == IncidentStatus.stable:
+            elif incident.status != IncidentStatus.active:
+                # the incident is stable or closed. we use the stable_at time
                 participant_role_renounced_at = incident.stable_at
             else:
+                # the incident is still active. we use the current time
                 participant_role_renounced_at = datetime.utcnow()
 
             # we calculate the time the participant has spent in the incident role
             participant_role_time = participant_role_renounced_at - participant_role_assumed_at
+
+            if participant_role_time.total_seconds() < 0:
+                # the participant was added after the incident was marked as stable
+                continue
 
             # we calculate the number of hours the participant has spent in the incident role
             participant_role_time_hours = participant_role_time.total_seconds() / SECONDS_IN_HOUR
