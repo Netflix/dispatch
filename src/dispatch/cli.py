@@ -216,9 +216,11 @@ def upgrade_database(tag, sql, revision):
         Base.metadata.create_all(engine)
         alembic_command.stamp(alembic_cfg, "head")
     else:
-        alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-        alembic_cfg = AlembicConfig(alembic_path)
-        alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
+        if not alembic_command.current(alembic_cfg):
+            Base.metadata.create_all(engine)
+            alembic_command.stamp(alembic_cfg, "head")
+        else:
+            alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
     click.secho("Success.", fg="green")
 
 
