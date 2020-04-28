@@ -44,8 +44,15 @@ def test_conference_get_by_resource_id(session, conference):
     assert test_conference.conference_challenge == conference.conference_challenge
 
 
-def test_conference_get_by_resource_type():
-    raise NotImplementedError
+def test_conference_get_by_resource_type(session, conference):
+    """The service method returns a List of Conferences that match a given resource type. We'll test
+    to ensure that the first and last items returned match the desired resource type."""
+    from dispatch.conference.service import get_by_resource_type
+
+    conferences = get_by_resource_type(db_session=session, resource_type=conference.resource_type)
+
+    assert conferences[0].resource_type == conference.resource_type
+    assert conferences[-1].resource_type == conference.resource_type
 
 
 def test_conference_get_by_conference_id(session, conference):
