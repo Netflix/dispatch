@@ -8,7 +8,7 @@ import bcrypt
 from jose import jwt
 from typing import Optional
 from pydantic import validator
-from sqlalchemy import Column, String, Binary
+from sqlalchemy import Column, String, Binary, Integer
 
 from dispatch.database import Base
 from dispatch.models import TimeStampMixin, DispatchBase
@@ -48,7 +48,8 @@ class UserRoles(str, Enum):
 
 
 class DispatchUser(Base, TimeStampMixin):
-    email = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True)
+    email = Column(String, unique=True)
     password = Column(Binary, nullable=False)
     role = Column(String, nullable=False, default=UserRoles.user)
 
@@ -101,6 +102,7 @@ class UserLoginResponse(DispatchBase):
 
 
 class UserRead(UserBase):
+    id: int
     role: str
 
 
