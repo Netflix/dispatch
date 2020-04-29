@@ -76,6 +76,7 @@ class PluginManager(InstanceManager):
                 required=cls.required,
                 multiple=cls.multiple,
                 description=cls.description,
+                enabled=cls.enabled
             )
             db_session.add(plugin)
         else:
