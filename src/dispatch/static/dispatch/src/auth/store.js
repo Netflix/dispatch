@@ -119,23 +119,23 @@ const actions = {
     router.push({ path: redirectUrl.pathname })
   },
   basicLogin({ commit }, payload) {
-    UserApi.login(payload.email, payload.password).then(function(res) {
-      if (res.data.error) {
-        commit("app/SET_SNACKBAR", { text: res.data.error, color: "red" }, { root: true })
-      } else {
+    UserApi.login(payload.email, payload.password)
+      .then(function(res) {
         commit("SET_USER_LOGIN", res.data.token)
         router.push({ path: "/dashboard" })
-      }
-    })
+      })
+      .catch(err => {
+        commit("app/SET_SNACKBAR", { text: err.response.data.detail, color: "red" }, { root: true })
+      })
   },
   register({ dispatch, commit }, payload) {
-    UserApi.register(payload.email, payload.password).then(function(res) {
-      if (res.data.error) {
-        commit("app/SET_SNACKBAR", { text: res.data.error, color: "red" }, { root: true })
-      } else {
+    UserApi.register(payload.email, payload.password)
+      .then(function() {
         dispatch("basicLogin", payload)
-      }
-    })
+      })
+      .catch(err => {
+        commit("app/SET_SNACKBAR", { text: err.response.data.detail, color: "red" }, { root: true })
+      })
   },
   login({ dispatch, commit }, payload) {
     commit("SET_USER_LOGIN", payload.token)

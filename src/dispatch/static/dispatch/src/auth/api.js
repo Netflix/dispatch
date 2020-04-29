@@ -19,6 +19,6 @@ export default {
     return API.post(`/auth/login`, { email: email, password: password })
   },
   register(email, password) {
-    return API.post(`$/auth/register`, { email: email, password: password })
+    return API.post(`/auth/register`, { email: email, password: password })
   }
 }

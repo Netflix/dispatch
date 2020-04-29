@@ -56,6 +56,7 @@ class DispatchUser(Base, TimeStampMixin):
     def check_password(self, password):
         return bcrypt.checkpw(password.encode("utf-8"), self.password)
 
+    @property
     def token(self):
         now = datetime.utcnow()
         exp = (now + timedelta(seconds=DISPATCH_JWT_EXP)).timestamp()
