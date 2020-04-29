@@ -8,6 +8,7 @@
 .. moduleauthor:: Marc Vilanova <mvilanova@netflix.com>
 """
 import logging
+
 from datetime import datetime
 from typing import Any, List, Optional
 
@@ -901,7 +902,8 @@ def incident_update_flow(
         event_service.log(
             db_session=db_session,
             source="Incident Participant",
-            description=f'{individual.name} changed the incident description to "{incident.description}"',
+            description=f"{individual.name} changed the incident description",
+            details={"description": incident.description},
             incident_id=incident.id,
             individual_id=individual.id,
         )
