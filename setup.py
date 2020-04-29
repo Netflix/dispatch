@@ -399,7 +399,7 @@ setup(
     install_requires=install_requires,
     extras_require={"dev": dev_requires, "metrics": metrics_requires},
     cmdclass=cmdclass,
-    zip_save=False,
+    zip_safe=False,
     include_package_data=True,
     entry_points={
         "console_scripts": ["dispatch = dispatch.cli:entrypoint"],
