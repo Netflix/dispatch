@@ -14,6 +14,7 @@ from .models import (
 )
 from .service import (
     get,
+    get_by_email,
     update,
     create,
     get_current_user,
@@ -81,7 +82,7 @@ def update_user(*, db_session: Session = Depends(get_db), user_id: int, user_in:
 def login_user(
     user_in: UserLogin, db_session: Session = Depends(get_db),
 ):
-    user = get(db_session=db_session, email=user_in.email)
+    user = get_by_email(db_session=db_session, email=user_in.email)
     if user and user.check_password(user_in.password):
         return {"token": user.token}
     raise HTTPException(status_code=400, detail="Invalid username or password")
@@ -91,7 +92,7 @@ def login_user(
 def register_user(
     user_in: UserRegister, db_session: Session = Depends(get_db),
 ):
-    user = get(db_session=db_session, email=user_in.email)
+    user = get_by_email(db_session=db_session, email=user_in.email)
     if not user:
         user = create(db_session=db_session, user_in=user_in)
     else:
