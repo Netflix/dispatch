@@ -59,7 +59,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { remove, groupBy, sortBy, sumBy } from "lodash"
 import parseISO from "date-fns/parseISO"
 import formatISO from "date-fns/formatISO"
 import subMonths from "date-fns/subMonths"
@@ -110,7 +110,7 @@ export default {
         this.loading = false
 
         // ignore all simulated incidents
-        this.items = _.remove(_.sortBy(response.data.items, "reported_at"), function(item) {
+        this.items = remove(sortBy(response.data.items, "reported_at"), function(item) {
           return item.incident_type.name !== "Simulation"
         })
       })
@@ -119,17 +119,17 @@ export default {
 
   computed: {
     incidentsByYear() {
-      return _.groupBy(this.items, function(item) {
+      return groupBy(this.items, function(item) {
         return parseISO(item.reported_at).getYear()
       })
     },
     incidentsByMonth() {
-      return _.groupBy(this.items, function(item) {
+      return groupBy(this.items, function(item) {
         return parseISO(item.reported_at).toLocaleString("default", { month: "short" })
       })
     },
     incidentsByQuarter() {
-      return _.groupBy(this.items, function(item) {
+      return groupBy(this.items, function(item) {
         return "Q" + Math.floor(parseISO(item.reported_at).getMonth() + 3) / 3
       })
     },
@@ -140,13 +140,13 @@ export default {
       return this.items.length
     },
     totalCost() {
-      return _.sumBy(this.items, "cost")
+      return sumBy(this.items, "cost")
     },
     avgCost() {
       return this.totalCost / this.totalIncidents
     },
     totalHours() {
-      return _.sumBy(this.items, function(item) {
+      return sumBy(this.items, function(item) {
         let endTime = new Date().toISOString()
         if (item.stable_at) {
           endTime = item.stable_at

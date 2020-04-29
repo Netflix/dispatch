@@ -15,7 +15,7 @@
 
 <script>
 import ServiceApi from "@/service/api"
-import _ from "lodash"
+import { cloneDeep } from "lodash"
 export default {
   name: "ServiceSelect",
 
@@ -50,7 +50,7 @@ export default {
   computed: {
     service: {
       get() {
-        return _.cloneDeep(this.value)
+        return cloneDeep(this.value)
       },
       set(value) {
         this.$emit("input", value)

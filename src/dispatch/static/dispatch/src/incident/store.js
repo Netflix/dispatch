@@ -1,8 +1,7 @@
 import IncidentApi from "@/incident/api"
 
 import { getField, updateField } from "vuex-map-fields"
-import { debounce } from "lodash"
-import _ from "lodash"
+import { debounce, forEach, each, has } from "lodash"
 
 const getDefaultSelectedState = () => {
   return {
@@ -84,9 +83,9 @@ const actions = {
     tableOptions.ops = []
     tableOptions.values = []
 
-    _.forEach(state.table.options.filters, function(value, key) {
-      _.each(value, function(value) {
-        if (_.has(value, "id")) {
+    forEach(state.table.options.filters, function(value, key) {
+      each(value, function(value) {
+        if (has(value, "id")) {
           tableOptions.fields.push(key + ".id")
           tableOptions.values.push(value.id)
         } else {

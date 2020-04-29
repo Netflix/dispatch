@@ -1,4 +1,5 @@
 import re
+import logging
 from typing import Any, List
 from itertools import groupby
 
@@ -13,6 +14,8 @@ from starlette.requests import Request
 from dispatch.common.utils.composite_search import CompositeSearch
 
 from .config import SQLALCHEMY_DATABASE_URI
+
+log = logging.getLogger(__file__)
 
 engine = create_engine(str(SQLALCHEMY_DATABASE_URI))
 SessionLocal = sessionmaker(bind=engine)
@@ -98,7 +101,22 @@ def create_filter_spec(model, fields, ops, values):
     # group by field (or for same fields and for different fields)
     data = sorted(filters, key=lambda x: x["model"])
     for k, g in groupby(data, key=lambda x: x["model"]):
-        filter_spec.append({"or": list(g)})
+        # force 'and' for operations other than equality
+        filters = list(g)
+        force_and = False
+        for f in filters:
+            if ">" in f["op"]:
+                force_and = True
+
+            if "<" in f["op"]:
+                force_and = True
+
+        if force_and:
+            filter_spec.append({"and": filters})
+        else:
+            filter_spec.append({"or": filters})
+
+    log.debug(f"Filter Spec: {filter_spec}")
 
     if filter_spec:
         return {"and": filter_spec}

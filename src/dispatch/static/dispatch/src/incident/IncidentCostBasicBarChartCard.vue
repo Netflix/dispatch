@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { map } from "lodash"
 
 import VueApexCharts from "vue-apexcharts"
 export default {
@@ -91,10 +91,10 @@ export default {
       }
     },
     series() {
-      return [{ data: _.map(this.value, "cost") }]
+      return [{ data: map(this.value, "cost") }]
     },
     categoryData() {
-      return _.map(this.value, "name")
+      return map(this.value, "name")
     }
   }
 }

@@ -12,7 +12,7 @@
 
 <script>
 import IncidentTypeApi from "@/incident_type/api"
-import _ from "lodash"
+import { cloneDeep } from "lodash"
 export default {
   name: "IncidentTypeSelect",
 
@@ -35,7 +35,7 @@ export default {
   computed: {
     incident_type: {
       get() {
-        return _.cloneDeep(this.value)
+        return cloneDeep(this.value)
       },
       set(value) {
         this.$emit("input", value)

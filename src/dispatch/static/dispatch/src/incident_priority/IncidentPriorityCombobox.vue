@@ -29,7 +29,7 @@
 
 <script>
 import IncidentPriorityApi from "@/incident_priority/api"
-import _ from "lodash"
+import { cloneDeep, debounce } from "lodash"
 export default {
   name: "IncidentPriorityComboBox",
   props: {
@@ -58,7 +58,7 @@ export default {
   computed: {
     incidentPriority: {
       get() {
-        return _.cloneDeep(this.value)
+        return cloneDeep(this.value)
       },
       set(value) {
         this._incidentPriorities = value.map(v => {
@@ -88,7 +88,7 @@ export default {
         this.loading = false
       })
     },
-    getFilteredData: _.debounce(function(options) {
+    getFilteredData: debounce(function(options) {
       this.fetchData(options)
     }, 500)
   }
