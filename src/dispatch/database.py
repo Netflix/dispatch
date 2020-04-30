@@ -105,10 +105,7 @@ def create_filter_spec(model, fields, ops, values):
         filters = list(g)
         force_and = False
         for f in filters:
-            if ">" in f["op"]:
-                force_and = True
-
-            if "<" in f["op"]:
+            if ">" in f["op"] or "<" in f["op"]:
                 force_and = True
 
         if force_and:
