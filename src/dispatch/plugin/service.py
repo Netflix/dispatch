@@ -62,19 +62,21 @@ def update(*, db_session, plugin: Plugin, plugin_in: PluginUpdate) -> Plugin:
     plugin_data = jsonable_encoder(plugin)
     update_data = plugin_in.dict(skip_defaults=True)
 
-    # we can't have multiple plugins of this type disable the currently enabled one
-    if plugin_in.enabled:
+    if plugin_in.enabled:  # user wants to enable the plugin
         if not plugin.multiple:
+            # we can't have multiple plugins of this type disable the currently enabled one
             enabled_plugins = get_enabled_by_type(db_session=db_session, plugin_type=plugin.type)
             if enabled_plugins:
                 enabled_plugins[0].enabled = False
                 db_session.add(enabled_plugins[0])
 
-    if not plugin_in.enabled:
+    if not plugin_in.enabled:  # user wants to disable the plugin
         if plugin.required:
-            raise InvalidConfiguration(
-                f"Cannot disable plugin: {plugin.title}. It is required and no other plugins of type {plugin.type} are enabled."
-            )
+            enabled_plugins = get_enabled_by_type(db_session=db_session, plugin_type=plugin.type)
+            if len(enabled_plugins) == 1:
+                raise InvalidConfiguration(
+                    f"Cannot disable plugin: {plugin.title}. It is required and no other plugins of type {plugin.type} are enabled."
+                )
 
     for field in plugin_data:
         if field in update_data:
