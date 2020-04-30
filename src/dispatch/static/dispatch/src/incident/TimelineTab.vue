@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-timeline dense clipped>
+    <v-timeline v-if="events.length" dense clipped>
       <v-timeline-item v-for="event in events" :key="event.id" class="mb-4" color="blue" small>
         <v-row justify="space-between">
           <v-col cols="7">
@@ -11,6 +11,9 @@
         </v-row>
       </v-timeline-item>
     </v-timeline>
+    <div v-else>
+      No timeline data available.
+    </div>
   </v-container>
 </template>
 
