@@ -17,7 +17,9 @@ from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attemp
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import ConferencePlugin
+from dispatch.plugins.dispatch_google import calendar as google_calendar_plugin
 from dispatch.plugins.dispatch_google.common import get_service
+
 
 log = logging.getLogger(__name__)
 
@@ -119,6 +121,7 @@ class GoogleCalendarConferencePlugin(ConferencePlugin):
     title = "Google Calendar Plugin - Conference Management"
     slug = "google-calendar-conference"
     description = "Uses Google calendar to manage conference rooms/meets."
+    version = google_calendar_plugin.__version__
 
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
