@@ -141,7 +141,10 @@ function loginBasic(to, from, next) {
     // prevent redirect loop
     if (to.path !== "/login") {
       next("/login")
+      return
     }
+    // if no criteria is matched the user should continue on
+    next()
   }
 }
 
