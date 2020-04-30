@@ -103,7 +103,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import EditSheet from "@/incident/EditSheet.vue"
@@ -165,7 +165,7 @@ export default {
       "table.rows.total"
     ]),
     numFilters: function() {
-      return _.sum([
+      return sum([
         this.reporter.length,
         this.commander.length,
         this.incident_type.length,

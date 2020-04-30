@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { countBy } from "lodash"
 
 import VueApexCharts from "vue-apexcharts"
 export default {
@@ -88,7 +88,7 @@ export default {
       }
     },
     typeCount() {
-      return _.countBy(this.value, function(item) {
+      return countBy(this.value, function(item) {
         return item.incident_type.name
       })
     },

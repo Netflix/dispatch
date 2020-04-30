@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { countBy, isArray, mergeWith, forEach, map } from "lodash"
 
 import VueApexCharts from "vue-apexcharts"
 export default {
@@ -71,9 +71,9 @@ export default {
     },
     series() {
       let series = []
-      _.forEach(this.value, function(value) {
-        let typeCount = _.map(
-          _.countBy(value, function(item) {
+      forEach(this.value, function(value) {
+        let typeCount = map(
+          countBy(value, function(item) {
             return item.incident_type.name
           }),
           function(value, key) {
@@ -81,8 +81,8 @@ export default {
           }
         )
 
-        series = _.mergeWith(series, typeCount, function(objValue, srcValue) {
-          if (_.isArray(objValue)) {
+        series = mergeWith(series, typeCount, function(objValue, srcValue) {
+          if (isArray(objValue)) {
             return objValue.concat(srcValue)
           }
         })

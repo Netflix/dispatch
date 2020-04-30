@@ -26,7 +26,7 @@
 
 <script>
 import TermApi from "@/term/api"
-import _ from "lodash"
+import { cloneDeep, debounce } from "lodash"
 export default {
   name: "TermCombobox",
   props: {
@@ -48,7 +48,7 @@ export default {
   computed: {
     terms: {
       get() {
-        return _.cloneDeep(this.value)
+        return cloneDeep(this.value)
       },
       set(value) {
         this._terms = value.map(v => {
@@ -78,7 +78,7 @@ export default {
         this.loading = false
       })
     },
-    getFilteredData: _.debounce(function(options) {
+    getFilteredData: debounce(function(options) {
       this.fetchData(options)
     }, 500)
   }
