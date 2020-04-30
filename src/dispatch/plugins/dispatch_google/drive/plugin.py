@@ -139,7 +139,7 @@ class GoogleDriveTaskPlugin(TaskPlugin):
     description = "Uses Google Drive to help manage incident tasks."
     version = google_drive_plugin.__version__
 
-    author = "Marc Vilanova"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     _schema = None
