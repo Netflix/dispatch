@@ -50,7 +50,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions("account", ["register"])
+    ...mapActions("auth", ["register"])
   }
 }
 </script>

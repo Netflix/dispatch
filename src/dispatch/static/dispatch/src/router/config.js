@@ -286,5 +286,22 @@ export const protectedRoute = [
         component: () => import(/* webpackChunkName: "routing-table" */ "@/plugin/Table.vue")
       }
     ]
+  },
+  {
+    path: "/users",
+    component: DefaultLayout,
+    meta: {
+      title: "Users",
+      icon: "view_compact",
+      group: "configuration",
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: "/users",
+        name: "UserTable",
+        component: () => import(/* webpackChunkName: "routing-table" */ "@/auth/Table.vue")
+      }
+    ]
   }
 ]
