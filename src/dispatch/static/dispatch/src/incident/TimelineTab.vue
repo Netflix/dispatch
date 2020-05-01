@@ -1,9 +1,6 @@
 <template>
   <v-container>
-    <v-row justify="end">
-      <v-switch v-model="showDetails" label="Show details"></v-switch>
-    </v-row>
-    <v-timeline dense clipped>
+    <v-timeline v-if="events.length" dense clipped>
       <v-timeline-item
         v-for="event in events"
         v-bind:key="event.id"
@@ -28,6 +25,9 @@
         </v-row>
       </v-timeline-item>
     </v-timeline>
+    <div v-else>
+      No timeline data available.
+    </div>
   </v-container>
 </template>
 
