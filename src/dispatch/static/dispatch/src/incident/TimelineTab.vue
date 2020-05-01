@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-switch v-model="show" label="Show details"></v-switch>
+    <v-switch v-model="showDetails" label="Show details"></v-switch>
     <v-timeline dense clipped>
       <v-timeline-item
         v-for="event in events"
@@ -12,7 +12,7 @@
         <v-row justify="space-between">
           <v-col cols="7">
             {{ event.description }}
-            <transition-group name="slide" v-if="show">
+            <transition-group name="slide" v-if="showDetails">
               <template v-for="(value, key) in event.details">
                 <v-card flat="true" v-bind:key="key">
                   <v-card-title class="subtitle-1">{{ key | capitalize }}</v-card-title>
@@ -37,7 +37,7 @@ export default {
 
   data() {
     return {
-      show: false
+      showDetails: false
     }
   },
 
