@@ -153,10 +153,14 @@ router.beforeEach((to, from, next) => {
     } else if (authProviderSlug === "dispatch-auth-provider-basic") {
       loginBasic(to, from, next)
     } else {
-      // if auth is disabled
+      // if client auth is disabled
       next()
     }
   } else {
+    // get user info from the server if we don't already have it
+    if (!store.state.auth.userInfo) {
+      store.dispatch("auth/getUserInfo")
+    }
     next()
   }
 })

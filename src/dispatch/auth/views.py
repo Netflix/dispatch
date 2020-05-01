@@ -101,8 +101,8 @@ def register_user(
     return user
 
 
-@user_router.get("/me", response_model=UserLoginResponse, summary="Returns current user")
+@user_router.get("/me", response_model=UserRead, summary="Returns current user")
 def get_me(
     req: Request, db_session: Session = Depends(get_db),
 ):
-    return {"token": get_current_user(request=req)}
+    return get_current_user(request=req)
