@@ -1,5 +1,6 @@
 <template>
   <v-container>
+    <v-switch v-model="show" label="Show details"></v-switch>
     <v-timeline dense clipped>
       <v-timeline-item
         v-for="event in events"
@@ -9,7 +10,7 @@
         small
       >
         <v-row justify="space-between">
-          <v-col cols="7" @click="show = !show">
+          <v-col cols="7">
             {{ event.description }}
             <transition-group name="slide" v-if="show">
               <template v-for="(value, key) in event.details">
