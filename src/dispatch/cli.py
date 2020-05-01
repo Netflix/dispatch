@@ -208,6 +208,7 @@ def drop_database():
 def upgrade_database(tag, sql, revision):
     """Upgrades database schema to newest version."""
     from sqlalchemy_utils import database_exists, create_database
+    from alembic.migration import MigrationContext
 
     alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
     alembic_cfg = AlembicConfig(alembic_path)
@@ -216,11 +217,16 @@ def upgrade_database(tag, sql, revision):
         Base.metadata.create_all(engine)
         alembic_command.stamp(alembic_cfg, "head")
     else:
-        if not alembic_command.current(alembic_cfg):
+        conn = engine.connect()
+        context = MigrationContext.configure(conn)
+        current_rev = context.get_current_revision()
+        if not current_rev:
             Base.metadata.create_all(engine)
             alembic_command.stamp(alembic_cfg, "head")
         else:
             alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
+
+    sync_triggers()
     click.secho("Success.", fg="green")
 
 

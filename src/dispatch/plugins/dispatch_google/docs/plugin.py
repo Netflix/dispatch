@@ -10,8 +10,8 @@ from typing import Any, List
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import DocumentPlugin
+from dispatch.plugins.dispatch_google import docs as google_docs_plugin
 from dispatch.plugins.dispatch_google.common import get_service
-from ._version import __version__
 
 
 def remove_control_characters(s):
@@ -93,7 +93,7 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
     title = "Google Docs Plugin - Document Management"
     slug = "google-docs-document"
     description = "Uses Google docs to manage document contents."
-    version = __version__
+    version = google_docs_plugin.__version__
 
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
