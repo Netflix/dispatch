@@ -1,15 +1,11 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import (
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-)
+from typing import Optional
+
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID as SQLAlchemyUUID
-from sqlalchemy_utils import TSVectorType
+from sqlalchemy_utils import TSVectorType, JSONType
 
 from dispatch.database import Base
 from dispatch.models import DispatchBase, TimeStampMixin
@@ -24,6 +20,7 @@ class Event(Base, TimeStampMixin):
     ended_at = Column(DateTime, nullable=False)
     source = Column(String, nullable=False)
     description = Column(String, nullable=False)
+    details = Column(JSONType, nullable=True)
 
     # relationships
     individual_id = Column(Integer, ForeignKey("individual_contact.id"))
@@ -42,6 +39,7 @@ class EventBase(DispatchBase):
     ended_at: datetime
     source: str
     description: str
+    details: Optional[dict]
 
 
 class EventCreate(EventBase):
