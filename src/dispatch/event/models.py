@@ -4,7 +4,6 @@ from uuid import UUID
 from typing import Optional
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.dialects.postgresql import UUID as SQLAlchemyUUID
 from sqlalchemy_utils import TSVectorType, JSONType
 
