@@ -158,6 +158,11 @@ const actions = {
         { root: true }
       )
     }, differenceInMilliseconds(expire_at, now))
+  },
+  getUserInfo({ commit }) {
+    UserApi.getUserInfo().then(function(res) {
+      commit("SET_USER_INFO", res.data)
+    })
   }
 }
 
@@ -177,6 +182,9 @@ const mutations = {
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
+  },
+  SET_USER_INFO(state, info) {
+    state.userInfo = info
   },
   SET_USER_LOGIN(state, accessToken) {
     state.accessToken = accessToken
