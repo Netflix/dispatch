@@ -1,7 +1,7 @@
 """Adds primary key id to user table.
 
 Revision ID: 9a3478cbe76c
-Revises: b174201e181b
+Revises: 6f04af3f261b
 Create Date: 2020-04-29 12:21:04.458208
 
 """
@@ -13,7 +13,7 @@ from dispatch.auth.models import DispatchUser
 
 # revision identifiers, used by Alembic.
 revision = "9a3478cbe76c"
-down_revision = "b174201e181b"
+down_revision = "6f04af3f261b"
 branch_labels = None
 depends_on = None
 
