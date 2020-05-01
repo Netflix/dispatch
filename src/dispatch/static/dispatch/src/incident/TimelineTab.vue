@@ -14,12 +14,10 @@
             {{ event.description }}
             <transition-group name="slide" v-if="show">
               <template v-for="(value, key) in event.details">
-                <v-list v-bind:key="key">
-                  <v-list-item-content>
-                    <v-list-item-title>{{ key | capitalize }}</v-list-item-title>
-                    <v-list-item-subtitle>{{ value }}</v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list>
+                <v-card flat="true" v-bind:key="key">
+                  <v-card-title class="subtitle-1">{{ key | capitalize }}</v-card-title>
+                  <v-card-text>{{ value }}</v-card-text>
+                </v-card>
               </template>
             </transition-group>
             <div class="caption">{{ event.source }}</div>
