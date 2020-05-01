@@ -1,8 +1,6 @@
 import Vue from "vue"
 import Router from "vue-router"
 import { publicRoute, protectedRoute } from "./config"
-import NProgress from "nprogress"
-import "nprogress/nprogress.css"
 
 import { BasicQueryStringUtils } from "@openid/appauth/built/query_string_utils"
 import { LocalStorageBackend } from "@openid/appauth/built/storage"
@@ -149,7 +147,6 @@ function loginBasic(to, from, next) {
 // router guards
 router.beforeEach((to, from, next) => {
   store.dispatch("app/setLoading", true)
-  NProgress.start()
   if (!store.state.auth.status.loggedIn) {
     if (authProviderSlug === "dispatch-auth-provider-pkce") {
       loginwithPKCE(to, from, next)
@@ -166,7 +163,6 @@ router.beforeEach((to, from, next) => {
 
 router.afterEach(function() {
   store.dispatch("app/setLoading", false)
-  NProgress.done()
 })
 
 export default router
