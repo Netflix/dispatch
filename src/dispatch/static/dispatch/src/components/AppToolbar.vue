@@ -27,7 +27,12 @@
         <template v-slot:activator="{ on }">
           <v-btn icon large text v-on="on">
             <v-avatar size="30px">
-              <img :src="userInfo().thumbnailPhotoUrl" :alt="userInfo().fullName" />
+              <img
+                v-if="userInfo().thumbnailPhotoUrl"
+                :src="userInfo().thumbnailPhotoUrl"
+                :alt="userInfo().fullName"
+              />
+              <v-icon v-else dark>account_circle</v-icon>
             </v-avatar>
           </v-btn>
         </template>
