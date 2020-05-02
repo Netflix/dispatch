@@ -66,8 +66,11 @@ def test_conference_get_by_conference_id(session, conference):
 
 @pytest.mark.skip
 def test_conference_get_by_incident_id(session, conference):
-    raise NotImplementedError
+    from dispatch.conference.service import get_by_incident_id
 
+    """By the time we get here, several conferences have been added to the database. So this call to
+    get_by_incident_id will fail, as we assume only one() result there."""
+    test_conference = get_by_incident_id(db_session=session, incident_id=conference.incident_id)
 
 def test_conference_get_all(session, conference):
     raise NotImplementedError
