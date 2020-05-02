@@ -21,10 +21,10 @@ def test_conference_create(session):
     conference = create(db_session=session, conference_in=conference_in)
     assert conference
     assert conference.resource_id == "000000"
-    assert resource_type == "resourcetype"
-    assert weblink == "https://www.example.com"
-    assert conference_id == "12345"
-    assert conference_challenge == "a0v0a0v9a"
+    assert conference.resource_type == "resourcetype"
+    assert conference.weblink == "https://www.example.com"
+    assert conference.conference_id == "12345"
+    assert conference.conference_challenge == "a0v0a0v9a"
 
 
 def test_conference_get(session, conference):
