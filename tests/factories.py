@@ -88,14 +88,11 @@ class ResourceBaseFactory(TimeStampBaseFactory):
 
 class ConferenceFactory(ResourceBaseFactory):
     """Conference Factory."""
+    class Meta:
+        model = Conference
 
     conference_id = Sequence(lambda n: f"conference{n}")
     conference_challenge = FuzzyText()
-
-    class Meta:
-        """Factory Configuration."""
-
-        model = Conference
 
 
 class ContactBaseFactory(TimeStampBaseFactory):
