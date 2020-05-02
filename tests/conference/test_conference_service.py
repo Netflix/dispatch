@@ -56,9 +56,15 @@ def test_conference_get_by_resource_type(session, conference):
 
 
 def test_conference_get_by_conference_id(session, conference):
-    raise NotImplementedError
+    from dispatch.conference.service import get_by_conference_id
+
+    test_conference = get_by_conference_id(session, conference.conference_id)
+
+    assert test_conference.conference_id == conference.conference_id
+    assert test_conference.conference_challenge == conference.conference_challenge
 
 
+@pytest.mark.skip
 def test_conference_get_by_incident_id(session, conference):
     raise NotImplementedError
 
