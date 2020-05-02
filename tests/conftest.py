@@ -239,6 +239,11 @@ def conference(session):
 
 
 @pytest.fixture
+def conferences(session):
+    return [ConferenceFactory(), ConferenceFactory(), ConferenceFactory()]
+
+
+@pytest.fixture
 def conversation(session):
     return ConversationFactory()
 
