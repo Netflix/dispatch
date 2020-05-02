@@ -45,7 +45,7 @@ def test_conference_get_by_resource_id(session, conference):
 
 
 def test_conference_get_by_resource_type(session, conference):
-    """The service method returns a List of Conferences that match a given resource type. We'll test
+    """The service method returns a list of conferences that match a given resource type. We'll test
     to ensure that the first and last items returned match the desired resource type."""
     from dispatch.conference.service import get_by_resource_type
 
