@@ -72,5 +72,17 @@ def test_conference_get_by_incident_id(session, conference):
     get_by_incident_id will fail, as we assume only one() result there."""
     test_conference = get_by_incident_id(db_session=session, incident_id=conference.incident_id)
 
-def test_conference_get_all(session, conference):
-    raise NotImplementedError
+    assert test_conference.incident_id == conference.incident_id
+    assert test_conference.conference_challenge == conference.conference_challenge
+
+
+def test_conference_get_all(session, conferences):
+    """The test should not rely on the conferences created earlier, to pass.
+    Therefore, we pass "conferences" as an argument, to manually create several in the DB.
+    """
+
+    from dispatch.conference.service import get_all
+
+    test_conferences = get_all(db_session=session).all()
+
+    assert len(test_conferences) > 1
