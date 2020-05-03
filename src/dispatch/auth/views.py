@@ -78,7 +78,7 @@ def update_user(*, db_session: Session = Depends(get_db), user_id: int, user_in:
     return user
 
 
-@auth_router.post("/login", response_model=UserLoginResponse, summary="Login a user")
+@auth_router.post("/login", response_model=UserLoginResponse)
 def login_user(
     user_in: UserLogin, db_session: Session = Depends(get_db),
 ):
@@ -88,7 +88,7 @@ def login_user(
     raise HTTPException(status_code=400, detail="Invalid username or password")
 
 
-@auth_router.post("/register", response_model=UserRegisterResponse, summary="Registers a new user.")
+@auth_router.post("/register", response_model=UserRegisterResponse)
 def register_user(
     user_in: UserRegister, db_session: Session = Depends(get_db),
 ):
@@ -101,7 +101,7 @@ def register_user(
     return user
 
 
-@user_router.get("/me", response_model=UserRead, summary="Returns current user")
+@user_router.get("/me", response_model=UserRead)
 def get_me(
     req: Request, db_session: Session = Depends(get_db),
 ):

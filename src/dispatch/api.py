@@ -24,7 +24,9 @@ from dispatch.auth.views import user_router, auth_router
 
 from .config import DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 
-api_router = APIRouter()  # WARNING: Don't use this unless you want unauthenticated routes
+api_router = APIRouter(
+    default_response_class=JSONResponse
+)  # WARNING: Don't use this unless you want unauthenticated routes
 authenticated_api_router = APIRouter()
 
 # NOTE we only advertise auth routes when basic auth is enabled
@@ -60,20 +62,20 @@ authenticated_api_router.include_router(plugin_router, prefix="/plugins", tags=[
 doc_router = APIRouter()
 
 
-@doc_router.get("/openapi.json")
+@doc_router.get("/openapi.json", include_in_schema=False)
 async def get_open_api_endpoint():
     return JSONResponse(get_openapi(title="Dispatch Docs", version=1, routes=api_router.routes))
 
 
-@doc_router.get("/")
+@doc_router.get("/", include_in_schema=False)
 async def get_documentation():
     return get_redoc_html(openapi_url="/api/v1/docs/openapi.json", title="Dispatch Docs")
 
 
-authenticated_api_router.include_router(doc_router, prefix="/docs")
+api_router.include_router(doc_router, prefix="/docs")
 
 
-@api_router.get("/healthcheck")
+@api_router.get("/healthcheck", include_in_schema=False)
 def healthcheck():
     return {"status": "ok"}
 
