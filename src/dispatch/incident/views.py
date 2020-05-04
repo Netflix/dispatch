@@ -88,14 +88,14 @@ def create_incident(
     *,
     db_session: Session = Depends(get_db),
     incident_in: IncidentCreate,
-    current_user_email: str = Depends(get_current_user),
+    current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
     """
     Create a new incident.
     """
     incident = create(
-        db_session=db_session, reporter_email=current_user_email, **incident_in.dict()
+        db_session=db_session, reporter_email=current_user.email, **incident_in.dict()
     )
 
     background_tasks.add_task(incident_create_flow, incident_id=incident.id)
@@ -109,7 +109,7 @@ def update_incident(
     db_session: Session = Depends(get_db),
     incident_id: str,
     incident_in: IncidentUpdate,
-    current_user_email: str = Depends(get_current_user),
+    current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
     """
@@ -126,7 +126,7 @@ def update_incident(
 
     background_tasks.add_task(
         incident_update_flow,
-        user_email=current_user_email,
+        user_email=current_user.email,
         incident_id=incident.id,
         previous_incident=previous_incident,
     )
@@ -134,7 +134,7 @@ def update_incident(
     # assign commander
     background_tasks.add_task(
         incident_assign_role_flow,
-        current_user_email,
+        current_user.email,
         incident_id=incident.id,
         assignee_email=incident_in.commander.email,
         assignee_role=ParticipantRoleType.incident_commander,
@@ -143,7 +143,7 @@ def update_incident(
     # assign reporter
     background_tasks.add_task(
         incident_assign_role_flow,
-        current_user_email,
+        current_user.email,
         incident_id=incident.id,
         assignee_email=incident_in.reporter.email,
         assignee_role=ParticipantRoleType.reporter,
