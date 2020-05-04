@@ -22,6 +22,7 @@ class Participant(Base):
     location = Column(String)
     team = Column(String)
     department = Column(String)
+    after_hours_notification = Column(Boolean, default=False)
     participant_roles = relationship("ParticipantRole", backref="participant")
     status_reports = relationship("StatusReport", backref="participant")
 
