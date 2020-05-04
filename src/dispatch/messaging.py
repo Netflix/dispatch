@@ -37,7 +37,7 @@ INCIDENT_STATUS_DESCRIPTIONS = {
 
 INCIDENT_TASK_REMINDER_DESCRIPTION = """
 You are assigned to the following incident tasks.
-This is a reminder that these tasks have *passed* their due date.
+This is a reminder that these tasks have passed their due date.
 Please review and update them as appropriate. Resolving them will stop the reminders.""".replace(
     "\n", " "
 ).strip()
