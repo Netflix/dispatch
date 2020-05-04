@@ -87,7 +87,14 @@ def create_multi_message_body(
         data.update({"name": item.incident.name, "title": item.incident.title})
         master_map.append(render_message_template(message_template, **data))
 
-    kwargs.update({"items": master_map, "description": description})
+    kwargs.update(
+        {
+            "items": master_map,
+            "description": description,
+            "dispatch_help_email": DISPATCH_HELP_EMAIL,
+            "dispatch_help_slack_channel": DISPATCH_HELP_SLACK_CHANNEL,
+        }
+    )
     return template.render(**kwargs)
 
 
