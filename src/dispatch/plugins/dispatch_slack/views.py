@@ -7,7 +7,6 @@ import logging
 import platform
 import sys
 
-from cachetools import TTLCache
 from time import time
 from typing import List
 
@@ -46,7 +45,6 @@ from dispatch.task.models import TaskStatus
 
 from . import __version__
 from .config import (
-    SLACK_API_BOT_TOKEN,
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
@@ -66,8 +64,6 @@ from .messaging import (
 )
 
 from .service import get_user_email
-
-once_a_day_cache = TTLCache(maxsize=1000, ttl=60 * 60 * 24)
 
 
 router = APIRouter()
@@ -182,25 +178,10 @@ def is_business_hours(commander_tz: str):
     return now.weekday() not in [5, 6] and now.hour >= 9 and now.hour < 17
 
 
-def create_cache_key(user_id: str, channel_id: str):
-    """Uses information in the evenvelope to construct a caching key."""
-    return f"{channel_id}-{user_id}"
-
-
 @background_task
 def after_hours(user_email: str, incident_id: int, event: dict = None, db_session=None):
     """Notifies the user that this incident is current in after hours mode."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-    user_id = dispatch_slack_service.resolve_user(slack_client, user_email)["id"]
-
-    # NOTE Limitations: Does not sync across instances. Does not survive webserver restart
-    cache_key = create_cache_key(user_id, incident.conversation.channel_id)
-    try:
-        once_a_day_cache[cache_key]
-        return
-    except Exception:
-        pass  # we don't care if there is nothing here
 
     # get their timezone from slack
     commander_info = dispatch_slack_service.get_user_info_by_email(
@@ -225,10 +206,18 @@ def after_hours(user_email: str, incident_id: int, event: dict = None, db_sessio
                 },
             }
         ]
-        dispatch_slack_service.send_ephemeral_message(
-            slack_client, incident.conversation.channel_id, user_id, "", blocks=blocks
+
+        participant = participant_service.get_by_incident_id_and_email(
+            incident_id=incident_id, email=user_email
         )
-        once_a_day_cache[cache_key] = True
+        if not participant.after_hours_notification:
+            user_id = dispatch_slack_service.resolve_user(slack_client, user_email)["id"]
+            dispatch_slack_service.send_ephemeral_message(
+                slack_client, incident.conversation.channel_id, user_id, "", blocks=blocks
+            )
+            participant.after_hours_notification = True
+            db_session.add(participant)
+            db_session.commit()
 
 
 @background_task
