@@ -7,7 +7,6 @@ import logging
 import platform
 import sys
 
-from cachetools import TTLCache
 from time import time
 from typing import List
 
@@ -46,7 +45,6 @@ from dispatch.task.models import TaskStatus
 
 from . import __version__
 from .config import (
-    SLACK_API_BOT_TOKEN,
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
@@ -66,8 +64,6 @@ from .messaging import (
 )
 
 from .service import get_user_email
-
-once_a_day_cache = TTLCache(maxsize=1000, ttl=60 * 60 * 24)
 
 
 router = APIRouter()
