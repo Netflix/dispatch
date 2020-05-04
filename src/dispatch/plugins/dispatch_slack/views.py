@@ -544,7 +544,7 @@ def event_functions(event: EventEnvelope):
         "file_shared": [add_evidence_to_storage],
         "link_shared": [],
         "member_joined_channel": [incident_flows.incident_add_or_reactivate_participant_flow],
-        "message": [after_hours],
+        "message": [],
         "member_left_channel": [incident_flows.incident_remove_participant_flow],
         "message.groups": [],
         "message.im": [],
