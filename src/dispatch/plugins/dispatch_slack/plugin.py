@@ -51,6 +51,7 @@ from .service import (
     send_ephemeral_message,
     send_message,
     set_conversation_topic,
+    open_view_for_user,
 )
 
 
@@ -176,6 +177,10 @@ class SlackConversationPlugin(ConversationPlugin):
     def get_command_name(self, command: str):
         """Gets the command name."""
         return command_mappings.get(command, [])
+
+    def open_view(self, trigger_id: str, view: dict):
+        """Opens a view for a user."""
+        return open_view_for_user(client=self.client, trigger_id=trigger_id, view=view)
 
 
 @apply(counter, exclude=["__init__"])

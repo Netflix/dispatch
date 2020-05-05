@@ -373,3 +373,8 @@ def is_user(slack_user: str):
 def open_dialog_with_user(client: Any, trigger_id: str, dialog: dict):
     """Opens a dialog with a user."""
     return make_call(client, "dialog.open", trigger_id=trigger_id, dialog=dialog)
+
+
+def open_view_for_user(client: Any, trigger_id: str, view: dict):
+    """Opens a View for a user."""
+    return make_call(client, "views.open", trigger_id=trigger_id, view=view)
