@@ -86,15 +86,6 @@ class ResourceBaseFactory(TimeStampBaseFactory):
                 self.terms.append(term)
 
 
-class ConferenceFactory(ResourceBaseFactory):
-    """Conference Factory."""
-    class Meta:
-        model = Conference
-
-    conference_id = Sequence(lambda n: f"conference{n}")
-    conference_challenge = FuzzyText()
-
-
 class ContactBaseFactory(TimeStampBaseFactory):
     """Contact Base Factory."""
 
@@ -679,3 +670,14 @@ class EventFactory(BaseFactory):
 
         if extracted:
             self.individual_contact_id = extracted.id
+
+
+class ConferenceFactory(ResourceBaseFactory):
+    """Conference Factory."""
+
+    class Meta:
+        model = Conference
+
+    conference_id = Sequence(lambda n: f"conference{n}")
+    conference_challenge = FuzzyText()
+    incident = SubFactory(IncidentFactory)
