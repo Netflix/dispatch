@@ -64,15 +64,12 @@ def test_conference_get_by_conference_id(session, conference):
     assert test_conference.conference_challenge == conference.conference_challenge
 
 
-@pytest.mark.skip
 def test_conference_get_by_incident_id(session, conference):
     from dispatch.conference.service import get_by_incident_id
 
-    """By the time we get here, several conferences have been added to the database. So this call to
-    get_by_incident_id will fail, as we assume only one() result there."""
-    test_conference = get_by_incident_id(db_session=session, incident_id=conference.incident_id)
+    test_conference = get_by_incident_id(db_session=session, incident_id=conference.incident.id)
 
-    assert test_conference.incident_id == conference.incident_id
+    assert test_conference.incident.id == conference.incident.id
     assert test_conference.conference_challenge == conference.conference_challenge
 
 
