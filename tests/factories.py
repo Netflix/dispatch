@@ -622,6 +622,7 @@ class TicketFactory(ResourceBaseFactory):
 class IncidentFactory(BaseFactory):
     """Incident Factory."""
 
+    id = Sequence(lambda n: f'1{n}')
     title = FuzzyText()
     description = FuzzyText()
     status = FuzzyChoice(["Active", "Stable", "Closed"])
