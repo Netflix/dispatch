@@ -561,7 +561,7 @@ def command_functions(command: str):
         SLACK_COMMAND_MARK_STABLE_SLUG: [],
         SLACK_COMMAND_STATUS_REPORT_SLUG: [create_status_report_dialog],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [create_engage_oncall_dialog],
-        SLACK_COMMAND_START_INCIDENT_SLUG: [create_incident_open_modal],
+        SLACK_COMMAND_REPORT_INCIDENT_SLUG: [create_report_incident_modal],
     }
 
     return command_mappings.get(command, [])
