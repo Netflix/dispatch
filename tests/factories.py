@@ -10,6 +10,7 @@ from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime
 from dispatch.database import SessionLocal
 
 from dispatch.team.models import TeamContact
+from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
 from dispatch.definition.models import Definition
 from dispatch.document.models import Document
@@ -621,6 +622,7 @@ class TicketFactory(ResourceBaseFactory):
 class IncidentFactory(BaseFactory):
     """Incident Factory."""
 
+    id = Sequence(lambda n: f'1{n}')
     title = FuzzyText()
     description = FuzzyText()
     status = FuzzyChoice(["Active", "Stable", "Closed"])
@@ -669,3 +671,14 @@ class EventFactory(BaseFactory):
 
         if extracted:
             self.individual_contact_id = extracted.id
+
+
+class ConferenceFactory(ResourceBaseFactory):
+    """Conference Factory."""
+
+    class Meta:
+        model = Conference
+
+    conference_id = Sequence(lambda n: f"conference{n}")
+    conference_challenge = FuzzyText()
+    incident = SubFactory(IncidentFactory)

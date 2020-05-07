@@ -28,6 +28,7 @@ from dispatch import config
 from dispatch.database import Base, engine, SessionLocal
 
 from .factories import (
+    ConferenceFactory,
     ConversationFactory,
     DefinitionFactory,
     DocumentFactory,
@@ -70,7 +71,7 @@ def pytest_runtest_makereport(item, call):
             parent._previousfailed = item
 
 
-@pytest.yield_fixture(scope="session")
+@pytest.fixture(scope="session")
 def testapp():
     # we only want to use test plugins so unregister everybody else
     from dispatch.plugins.base import unregister, plugins
@@ -82,7 +83,7 @@ def testapp():
     yield app
 
 
-@pytest.yield_fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def db():
     if database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
         drop_database(str(config.SQLALCHEMY_DATABASE_URI))
@@ -94,7 +95,7 @@ def db():
     drop_database(str(config.SQLALCHEMY_DATABASE_URI))
 
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def session(db):
     """
     Creates a new database session with (with working transaction)
@@ -105,7 +106,7 @@ def session(db):
     db.rollback()
 
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def client(testapp, session, client):
     yield TestClient(testapp)
 
@@ -230,6 +231,16 @@ def ticket_plugin():
 @pytest.fixture
 def Tag(session):
     return TagFactory()
+
+
+@pytest.fixture
+def conference(session):
+    return ConferenceFactory()
+
+
+@pytest.fixture
+def conferences(session):
+    return [ConferenceFactory(), ConferenceFactory(), ConferenceFactory()]
 
 
 @pytest.fixture
