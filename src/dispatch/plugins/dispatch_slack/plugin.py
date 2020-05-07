@@ -178,9 +178,9 @@ class SlackConversationPlugin(ConversationPlugin):
         """Gets the command name."""
         return command_mappings.get(command, [])
 
-    def open_view(self, trigger_id: str, view: dict):
-        """Opens a view for a user."""
-        return open_view_for_user(client=self.client, trigger_id=trigger_id, view=view)
+    def open_modal(self, trigger_id: str, modal: dict):
+        """Opens a modal with a user."""
+        return open_modal_with_user(client=self.client, trigger_id=trigger_id, modal=modal)
 
 
 @apply(counter, exclude=["__init__"])
