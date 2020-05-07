@@ -146,6 +146,7 @@ def daily_summary(db_session=None):
                                 "text": (
                                     f"*<{incident.ticket.weblink}|{incident.name}>*\n"
                                     f"*Title*: {incident.title}\n"
+                                    f"*Type*: {incident.incident_type.name}\n"
                                     f"*Priority*: {incident.incident_priority.name}\n"
                                     f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
                                 ),
@@ -183,13 +184,14 @@ def daily_summary(db_session=None):
     )
 
     hours = 24
-    stable_closed_incidents = get_all_last_x_hours_by_status(
+    stable_incidents = get_all_last_x_hours_by_status(
         db_session=db_session, status=IncidentStatus.stable, hours=hours
-    ) + get_all_last_x_hours_by_status(
+    )
+    closed_incidents = get_all_last_x_hours_by_status(
         db_session=db_session, status=IncidentStatus.closed, hours=hours
     )
-    if stable_closed_incidents:
-        for incident in stable_closed_incidents:
+    if stable_incidents or closed_incidents:
+        for idx, incident in enumerate(stable_incidents):
             if incident.visibility == Visibility.open:
                 try:
                     blocks.append(
@@ -200,9 +202,38 @@ def daily_summary(db_session=None):
                                 "text": (
                                     f"*<{incident.ticket.weblink}|{incident.name}>*\n"
                                     f"*Title*: {incident.title}\n"
-                                    f"*Status*: {incident.status}\n"
+                                    f"*Type*: {incident.incident_type.name}\n"
                                     f"*Priority*: {incident.incident_priority.name}\n"
-                                    f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
+                                    f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>\n"
+                                    f"*Status*: {incident.status}"
+                                ),
+                            },
+                            "block_id": f"{ConversationButtonActions.invite_user}-{idx}",
+                            "accessory": {
+                                "type": "button",
+                                "text": {"type": "plain_text", "text": "Join Incident"},
+                                "value": f"{incident.id}",
+                            },
+                        }
+                    )
+                except Exception as e:
+                    sentry_sdk.capture_exception(e)
+
+        for incident in closed_incidents:
+            if incident.visibility == Visibility.open:
+                try:
+                    blocks.append(
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": (
+                                    f"*<{incident.ticket.weblink}|{incident.name}>*\n"
+                                    f"*Title*: {incident.title}\n"
+                                    f"*Type*: {incident.incident_type.name}\n"
+                                    f"*Priority*: {incident.incident_priority.name}\n"
+                                    f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>\n"
+                                    f"*Status*: {incident.status}"
                                 ),
                             },
                         }
