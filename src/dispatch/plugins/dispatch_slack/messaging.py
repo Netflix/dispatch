@@ -329,5 +329,5 @@ def create_modal_content(channel_id: str = None, incident_types: list = None, in
     return modal_view_template
 
 
-def create_incident_confirmation_msg(user: str = None, title: str = None, t: str = None, priority: str = None):
-    return f"{user} started an Incident *{title}*, Type: *{t}*, Priority: *{priority}*"
+def create_incident_confirmation_msg(user: str = None, title: str = None, incident_type: str = None, incident_priority: str = None):
+    return f"{user} reported an incident. Title: *{title}*, Type: *{incident_type}*, Priority: *{incident_priority}*"
