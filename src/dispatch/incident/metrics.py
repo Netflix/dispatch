@@ -8,7 +8,6 @@ from dateutil.relativedelta import relativedelta
 
 from calendar import monthrange
 
-from dispatch.config import INCIDENT_METRIC_FORECAST_REGRESSIONS
 from dispatch.incident_type.models import IncidentType
 from .models import Incident
 
@@ -16,10 +15,10 @@ from .models import Incident
 log = logging.getLogger(__name__)
 
 try:
-    from fbprophet import Prophet
     import pandas as pd
+    from statsmodels.tsa.api import ExponentialSmoothing
 except ImportError:
-    log.warning("Unable to import fbprophet, some metrics will not be usable.")
+    log.warning("Unable to import statsmodels, some metrics will not be usable.")
 
 
 def month_grouper(item):
@@ -55,49 +54,36 @@ def make_forecast(
     incidents = query.all()
     incidents_sorted = sorted(incidents, key=grouper)
 
-    # TODO ensure there are no missing periods (e.g. periods with no incidents)
     dataframe_dict = {"ds": [], "y": []}
-
-    regression_keys = []
-    if INCIDENT_METRIC_FORECAST_REGRESSIONS:
-        # assumes json file with key as column and list of values
-        regression_data = json.loads(INCIDENT_METRIC_FORECAST_REGRESSIONS)
-        regression_keys = regression_data.keys()
-        dataframe_dict.update(regression_data)
 
     for (last_day, items) in groupby(incidents_sorted, grouper):
         dataframe_dict["ds"].append(str(last_day))
         dataframe_dict["y"].append(len(list(items)))
 
     dataframe = pd.DataFrame.from_dict(dataframe_dict)
+    # reset index to by month and drop month column
+    dataframe.index = dataframe.ds
+    dataframe.index.freq = "M"
+    dataframe.drop("ds", inplace=True, axis=1)
 
-    forecaster = Prophet()
+    # fill periods without incidents with 0
+    idx = pd.date_range(dataframe.index[0], dataframe.index[-1], freq="M")
+    dataframe = dataframe.reindex(idx, fill_value=0)
 
-    for r in regression_keys:
-        forecaster.add_regressor(r)
+    forecaster = ExponentialSmoothing(dataframe, seasonal_periods=12, trend="add",
+                                      seasonal="add").fit(use_boxcox=True)
 
-    forecaster.fit(dataframe, algorithm="LBFGS")
+    forecast = forecaster.forecast(12)
+    forecast_df = pd.DataFrame({"ds": forecast.index.astype("str"), "yhat": forecast.values})
 
-    # https://facebook.github.io/prophet/docs/quick_start.html#python-api
-    future = forecaster.make_future_dataframe(periods=periods, freq="M")
-    forecast = forecaster.predict(future)
-
-    forecast_data = forecast.to_dict("series")
+    forecast_data = forecast_df.to_dict("series")
 
     return {
         "categories": list(forecast_data["ds"]),
         "series": [
             {
-                "name": "Upper",
-                "data": [max(math.ceil(x), 0) for x in list(forecast_data["yhat_upper"])],
-            },
-            {
                 "name": "Predicted",
                 "data": [max(math.ceil(x), 0) for x in list(forecast_data["yhat"])],
-            },
-            {
-                "name": "Lower",
-                "data": [max(math.ceil(x), 0) for x in list(forecast_data["yhat_lower"])],
-            },
+            }
         ],
     }
