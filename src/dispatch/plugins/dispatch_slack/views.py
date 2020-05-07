@@ -905,11 +905,10 @@ async def handle_action(
 
     # if the request was made as a form submission from slack then we skip getting the incident_id
     # the incident will be created in in the next step
+    incident_id = 0
     if action_name != incident_enums.NewIncidentSubmission.form_slack_view:
         # we resolve the incident id based on the action type
         incident_id = get_incident_id_by_action_type(action, db_session)
-    else:
-        incident_id = 0
 
     # Dispatch action functions to be executed in the background
     for f in action_functions(action_name):
