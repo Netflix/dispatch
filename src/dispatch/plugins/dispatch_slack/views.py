@@ -737,7 +737,7 @@ def parse_submitted_form(view_data: dict):
 
     return parsed_data
 
-
+@background_task
 def create_incident_from_submitted_form(
         user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
 ):
