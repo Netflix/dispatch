@@ -78,9 +78,9 @@ INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
         "response_type": "ephemeral",
         "text": "Listing all incident resources...",
     },
-    SLACK_COMMAND_START_INCIDENT_SLUG: {
+    SLACK_COMMAND_REPORT_INCIDENT_SLUG: {
         "response_type": "ephemeral",
-        "text": "Dispatching dispatch to start an Incident...",
+        "text": "Opening a dialog to report an incident...",
     },
 }
 
