@@ -7,7 +7,6 @@ try:
 except Exception:
     VERSION = "unknown"
 
-
 # sometimes we pull version info before dispatch is totally installed
 try:
     from dispatch.conference.models import Conference  # noqa lgtm[py/unused-import]

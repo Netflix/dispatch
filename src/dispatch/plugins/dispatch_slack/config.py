@@ -45,3 +45,6 @@ SLACK_COMMAND_LIST_RESOURCES_SLUG = config(
 SLACK_COMMAND_REPORT_INCIDENT_SLUG = config(
     "SLACK_COMMAND_REPORT_INCIDENT_SLUG", default="/dispatch-report-incident"
 )
+SLACK_COMMAND_INCIDENT_UPDATE_SLUG = config(
+    "SLACK_COMMAND_INCIDENT_UPDATE_SLUG", default="/dispatch-incident-update"
+)
