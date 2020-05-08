@@ -21,8 +21,8 @@ from dispatch.plugins.bases import ConversationPlugin, DocumentPlugin, ContactPl
 from .config import (
     SLACK_API_BOT_TOKEN,
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
-    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
+    SLACK_COMMAND_INCIDENT_UPDATE_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
     SLACK_COMMAND_LIST_TASKS_SLUG,
@@ -30,6 +30,7 @@ from .config import (
     SLACK_COMMAND_MARK_CLOSED_SLUG,
     SLACK_COMMAND_MARK_STABLE_SLUG,
     SLACK_COMMAND_STATUS_REPORT_SLUG,
+    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
 )
 from .views import router as slack_event_router
 from .messaging import create_message_blocks
@@ -57,16 +58,17 @@ from .service import (
 logger = logging.getLogger(__name__)
 
 command_mappings = {
-    ConversationCommands.mark_active: SLACK_COMMAND_MARK_ACTIVE_SLUG,
-    ConversationCommands.mark_stable: SLACK_COMMAND_MARK_STABLE_SLUG,
-    ConversationCommands.mark_closed: SLACK_COMMAND_MARK_CLOSED_SLUG,
-    ConversationCommands.status_report: SLACK_COMMAND_STATUS_REPORT_SLUG,
-    ConversationCommands.list_tasks: SLACK_COMMAND_LIST_TASKS_SLUG,
-    ConversationCommands.list_participants: SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     ConversationCommands.assign_role: SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     ConversationCommands.edit_incident: SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     ConversationCommands.engage_oncall: SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
+    ConversationCommands.incident_update: SLACK_COMMAND_INCIDENT_UPDATE_SLUG,
+    ConversationCommands.list_participants: SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     ConversationCommands.list_resources: SLACK_COMMAND_LIST_RESOURCES_SLUG,
+    ConversationCommands.list_tasks: SLACK_COMMAND_LIST_TASKS_SLUG,
+    ConversationCommands.mark_active: SLACK_COMMAND_MARK_ACTIVE_SLUG,
+    ConversationCommands.mark_closed: SLACK_COMMAND_MARK_CLOSED_SLUG,
+    ConversationCommands.mark_stable: SLACK_COMMAND_MARK_STABLE_SLUG,
+    ConversationCommands.status_report: SLACK_COMMAND_STATUS_REPORT_SLUG,
 }
 
 

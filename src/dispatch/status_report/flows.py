@@ -14,7 +14,7 @@ from .service import create, get_most_recent_by_incident_id
 log = logging.getLogger(__name__)
 
 
-def save_status_report(
+def create_status_report(
     user_email: str,
     conditions: str,
     actions: str,
@@ -22,7 +22,7 @@ def save_status_report(
     incident_id: int,
     db_session: SessionLocal,
 ):
-    """Saves a new status report."""
+    """Creates a new status report."""
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
@@ -77,16 +77,16 @@ def send_most_recent_status_report_to_conversation(incident_id: int, db_session:
 
 
 @background_task
-def new_status_report_flow(
+def new_status_report(
     user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
 ):
-    """Stores and sends a new status report to a conversation."""
+    """Creates and sends a new status report to a conversation."""
     conditions = action["submission"]["conditions"]
     actions = action["submission"]["actions"]
     needs = action["submission"]["needs"]
 
-    # we save the status report
-    save_status_report(user_email, conditions, actions, needs, incident_id, db_session)
+    # we create the status report
+    create_status_report(user_email, conditions, actions, needs, incident_id, db_session)
 
     # we send the status report to the conversation
     send_most_recent_status_report_to_conversation(incident_id, db_session)
