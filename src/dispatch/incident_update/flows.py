@@ -50,9 +50,9 @@ def create_incident_update(
         db_session=db_session, incident_id=incident_id, email=user_email
     )
 
-    # we save the status report
-    participant.status_reports.append(incident_update)
-    incident.status_reports.append(incident_update)
+    # we save the incident update
+    participant.incident_updates.append(incident_update)
+    incident.incident_updates.append(incident_update)
 
     db_session.add(participant)
     db_session.add(incident)
