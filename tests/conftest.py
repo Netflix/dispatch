@@ -18,6 +18,7 @@ environ["INCIDENT_NOTIFICATION_CONVERSATIONS"] = "sirt-dev-test-notify"
 environ["INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS"] = "sirt-dev-test-notify@example.com"
 environ["INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID"] = "XXX"
 environ["INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID"] = "XXX"
+environ["INCIDENT_STORAGE_INCIDENT_UPDATE_FILE_ID"] = "XXX"
 environ["JWKS_URL"] = "example.com"
 environ["ENV"] = "pytest"
 environ["DISPATCH_AUTHENTICATION_PROVIDER_SLUG"] = ""  # disable authentication for tests
