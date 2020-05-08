@@ -193,9 +193,42 @@ def slack_preview(message, block=None):
 
 
 def create_modal_content(channel_id: str = None, incident_types: list = None, incident_priorities: list = None):
+    """Helper function that will generate the slack modal / view message for (Create / start a new Incident) call"""
     from dispatch.incident.enums import IncidentSlackViewBlockId
 
-    """Helper function that will generate the slack modal / view message for (Create / start a new Incident) call"""
+    slack_options_template = {
+        "text": {
+            "type": "plain_text",
+            "text": "",
+            "emoji": True
+        },
+        "value": ""
+    }
+    incident_type_options = []
+    incident_priority_options = []
+
+    # below fields for incident type and priority are the same
+    # (label and value) are set from the caller function create_incident_open_modal
+    # if the value needs to be changed in the future to ID (from name to id) then modify them in the caller function
+
+    for incident_type in incident_types:
+        option = slack_options_template.copy()
+
+        option['text']['text'] = incident_type.get('label')
+        option['value'] = incident_type.get('value')
+
+        # the modal_view_template['blocks'][3] is the 4th block which is the incident Type
+        incident_type_options.append(option)
+
+    for incident_priority in incident_priorities:
+        option = slack_options_template.copy()
+
+        option['text']['text'] = incident_priority.get('label')
+        option['value'] = incident_priority.get('value')
+
+        # the modal_view_template['blocks'][4] is the 5th block which is the incident Priority
+        incident_priority_options.append(option)
+
     modal_view_template = {
         "type": "modal",
         "callback_id": 'ticket__' + channel_id,
@@ -267,7 +300,7 @@ def create_modal_content(channel_id: str = None, incident_types: list = None, in
                         "text": "Select Incident Type",
                         "emoji": True
                     },
-                    "options": []
+                    "options": incident_type_options
                 },
                 "label": {
                     "type": "plain_text",
@@ -285,7 +318,7 @@ def create_modal_content(channel_id: str = None, incident_types: list = None, in
                         "text": "Select Incident Priority",
                         "emoji": True
                     },
-                    "options": []
+                    "options": incident_priority_options
                 },
                 "label": {
                     "type": "plain_text",
@@ -295,39 +328,47 @@ def create_modal_content(channel_id: str = None, incident_types: list = None, in
             }
         ]
     }
-    slack_options_template = {
-        "text": {
-            "type": "plain_text",
-            "text": "",
-            "emoji": True
-        },
-        "value": ""
-    }
-
-    # below fields for incident type and priority are the same
-    # (label and value) are set from the caller function create_incident_open_modal
-    # if the value needs to be changed in the future to ID (from name to id) then modify them in the caller function
-
-    for incident_type in incident_types:
-        option = slack_options_template.copy()
-
-        option['text']['text'] = incident_type.get('label')
-        option['value'] = incident_type.get('value')
-
-        # the modal_view_template['blocks'][3] is the 4th block which is the incident Type
-        modal_view_template['blocks'][3]['element']['options'].append(option)
-
-    for incident_priority in incident_priorities:
-        option = slack_options_template.copy()
-
-        option['text']['text'] = incident_priority.get('label')
-        option['value'] = incident_priority.get('value')
-
-        # the modal_view_template['blocks'][4] is the 5th block which is the incident Priority
-        modal_view_template['blocks'][4]['element']['options'].append(option)
 
     return modal_view_template
 
 
-def create_incident_confirmation_msg(user: str = None, title: str = None, incident_type: str = None, incident_priority: str = None):
-    return f"{user} reported an incident. Title: *{title}*, Type: *{incident_type}*, Priority: *{incident_priority}*"
+def create_incident_confirmation_msg(
+        title: str = None, incident_type: str = None, priority: str = None
+):
+    return [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "You have reported an Incident with the following information."
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Incident Name*    : {title}".format(title=title)
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Incident Type*      : {type}".format(type=incident_type)
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "*Incident Priority* : {priority}".format(priority=priority)
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "a Slack channel will soon be created."
+            }
+        }
+    ]

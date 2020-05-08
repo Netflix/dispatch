@@ -51,7 +51,7 @@ from .service import (
     send_ephemeral_message,
     send_message,
     set_conversation_topic,
-    open_view_for_user,
+    open_modal_with_user,
 )
 
 

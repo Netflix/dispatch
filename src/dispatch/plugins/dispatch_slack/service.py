@@ -375,6 +375,6 @@ def open_dialog_with_user(client: Any, trigger_id: str, dialog: dict):
     return make_call(client, "dialog.open", trigger_id=trigger_id, dialog=dialog)
 
 
-def open_view_for_user(client: Any, trigger_id: str, view: dict):
-    """Opens a View for a user."""
-    return make_call(client, "views.open", trigger_id=trigger_id, view=view)
+def open_modal_with_user(client: Any, trigger_id: str, modal: dict):
+    """Opens a modal with a user."""
+    return make_call(client, "views.open", trigger_id=trigger_id, modal=modal)
