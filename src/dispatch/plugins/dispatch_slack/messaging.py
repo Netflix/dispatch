@@ -17,8 +17,8 @@ from dispatch.messaging import (
 
 from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
-    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
+    SLACK_COMMAND_INCIDENT_UPDATE_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
     SLACK_COMMAND_LIST_TASKS_SLUG,
@@ -26,6 +26,7 @@ from .config import (
     SLACK_COMMAND_MARK_CLOSED_SLUG,
     SLACK_COMMAND_MARK_STABLE_SLUG,
     SLACK_COMMAND_STATUS_REPORT_SLUG,
+    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
 )
 
 
@@ -33,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 INCIDENT_CONVERSATION_STATUS_REPORT_SUGGESTION = (
-    f"Consider providing a status report using the `{SLACK_COMMAND_STATUS_REPORT_SLUG}` command"
+    f"Consider providing a status report using the `{SLACK_COMMAND_STATUS_REPORT_SLUG}` command."
 )
 
 INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
@@ -77,6 +78,10 @@ INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
         "response_type": "ephemeral",
         "text": "Listing all incident resources...",
     },
+    SLACK_COMMAND_INCIDENT_UPDATE_SLUG: {
+        "response_type": "ephemeral",
+        "text": "Opening a dialog to write an incident update...",
+    },
 }
 
 INCIDENT_CONVERSATION_NON_INCIDENT_CONVERSATION_COMMAND_ERROR = """
@@ -102,6 +107,7 @@ def get_template(message_type: MessageType):
         MessageType.incident_participant_welcome: (default_notification, None),
         MessageType.incident_resources_message: (default_notification, None),
         MessageType.incident_status_report: (default_notification, None),
+        MessageType.incident_update: (default_notification, None),
         MessageType.incident_task_reminder: (
             default_notification,
             INCIDENT_TASK_REMINDER_DESCRIPTION,
@@ -118,7 +124,7 @@ def get_template(message_type: MessageType):
 
 
 def format_default_text(item: dict):
-    """Creates the correct slack text string based on the item context."""
+    """Creates the correct Slack text string based on the item context."""
     if item.get("title_link"):
         return f"*<{item['title_link']}|{item['title']}>*\n{item['text']}"
     if item.get("datetime"):
