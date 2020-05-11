@@ -6,6 +6,8 @@ const instance = axios.create({
   baseURL: "/api/v1"
 })
 
+const authProviderSlug = process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG
+
 instance.interceptors.request.use(
   config => {
     let token = store.state.auth.accessToken
@@ -26,8 +28,11 @@ instance.interceptors.response.use(
   },
   function(err) {
     // TODO account for other auth providers
+
     if (err.response.status == 401) {
-      router.push({ path: "/login" })
+      if (authProviderSlug === "dispatch-auth-provider-basic") {
+        router.push({ path: "/login" })
+      }
     }
     return Promise.reject(err)
   }

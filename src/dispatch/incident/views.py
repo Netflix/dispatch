@@ -75,10 +75,12 @@ def get_incident(
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
 
     # we want to provide additional protections around restricted incidents
-    if not has_permission(current_user.principals, "view", IncidentRead.__acl__):
-        raise HTTPException(
-            status_code=401, detail="You do no have permission to view this incident."
-        )
+    if incident.visibility == Visibility.restricted:
+        if not incident.reporter == current_user:
+            if not current_user.role != UserRoles.admin:
+                raise HTTPException(
+                    status_code=401, detail="You do no have permission to view this incident."
+                )
 
     return incident
 
