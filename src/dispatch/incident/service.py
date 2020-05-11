@@ -54,7 +54,7 @@ def resolve_incident_commander_email(
     return p.get(service_id=commander_service.external_id)
 
 
-def get(*, db_session, incident_id: str) -> Optional[Incident]:
+def get(*, db_session, incident_id: int) -> Optional[Incident]:
     """Returns an incident based on the given id."""
     return db_session.query(Incident).filter(Incident.id == incident_id).first()
 
@@ -334,8 +334,8 @@ def calculate_cost(incident_id: int, db_session: SessionLocal, incident_review=T
     if incident_review:
         num_participants = len(incident.participants)
         incident_review_prep = (
-            1
-        )  # we make the assumption that it takes an hour to prepare the incident review
+            1  # we make the assumption that it takes an hour to prepare the incident review
+        )
         incident_review_meeting = (
             num_participants * 0.5 * 1
         )  # we make the assumption that only half of the incident participants will attend the 1-hour, incident review session

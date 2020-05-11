@@ -45,7 +45,11 @@ def create_reminder(db_session, assignee, tasks):
 
     notification_type = "incident-task-reminder"
     email_plugin.send(
-        assignee, message_template, notification_type, name="Task Reminder", items=tasks
+        assignee.individual_contact.email,
+        message_template,
+        notification_type,
+        name="Task Reminder",
+        items=tasks,
     )
 
     # We currently think DM's might be too agressive
@@ -71,7 +75,7 @@ def send_task_notification(conversation_id, message_template, assignees, descrip
         notification_text,
         message_template,
         notification_type,
-        task_assignees=assignees,
+        task_assignees=[x.indiviual_contact.email for x in assignees],
         task_description=description,
         task_weblink=weblink,
     )
