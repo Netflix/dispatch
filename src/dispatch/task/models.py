@@ -2,7 +2,18 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Optional
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, event
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    event,
+    Table,
+    PrimaryKeyConstraint,
+)
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
@@ -38,13 +49,25 @@ def default_resolution_time(context):
     return datetime.utcnow() + timedelta(days=1)
 
 
+assoc_task_assignees = Table(
+    "task_assignees",
+    Base.metadata,
+    Column("participant_id", Integer, ForeignKey("participant.id")),
+    Column("task_id", Integer, ForeignKey("task.id")),
+    PrimaryKeyConstraint("participant_id", "task_id"),
+)
+
+
 class Task(Base, ResourceMixin, TimeStampMixin):
     id = Column(Integer, primary_key=True)
     resolved_at = Column(DateTime)
     resolve_by = Column(DateTime, default=default_resolution_time)
     last_reminder_at = Column(DateTime)
-    creator = Column(String)  # Should this be of type Participant?
-    assignees = Column(String)  # Should this be of type Participant?
+    creator = relationship("Participant", backref="created_tasks")
+    creator_id = Column(Integer, ForeignKey("participant.id"))
+    assignees = relationship(
+        "Participant", secondary=assoc_task_assignees, backref="assigned_tasks"
+    )
     description = Column(String)
     source = Column(String, default=TaskSource.incident)
     priority = Column(String, default=TaskPriority.low)

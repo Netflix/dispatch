@@ -21,6 +21,7 @@ from dispatch.messaging import (
     INCIDENT_TASK_RESOLVED_NOTIFICATION,
 )
 from dispatch.plugins.base import plugins
+from dispatch.incident.flows import incident_add_or_reactivate_participant_flow
 from dispatch.task.models import TaskStatus
 from dispatch.task import service as task_service
 
@@ -79,8 +80,19 @@ def send_task_notification(conversation_id, message_template, assignees, descrip
 def create_or_update_task(db_session, incident, task: dict, notify: bool = False):
     """Creates a new task in the database or updates an existing one."""
     # TODO we should standarize this interface (kglisson)
-    creator = task["owner"]
-    assignees = ", ".join(task["assignees"])
+
+    creator = incident_add_or_reactivate_participant_flow(
+        task["owner"], incident_id=incident.id, db_session=db_session
+    )
+
+    assignees = []
+    for a in task["assignees"]:
+        assignees.append(
+            incident_add_or_reactivate_participant_flow(
+                a, incident_id=incident.id, db_session=db_session
+            )
+        )
+
     description = task["description"][0]
     status = TaskStatus.open if not task["status"] else TaskStatus.resolved
     resource_id = task["id"]

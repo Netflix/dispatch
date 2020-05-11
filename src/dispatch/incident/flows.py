@@ -1174,18 +1174,19 @@ def incident_add_or_reactivate_participant_flow(
             user_email, incident_id, db_session, role=role
         )
 
-        if participant:
-            # we add the participant to the tactical group
-            add_participant_to_tactical_group(user_email, incident_id)
+        # we add the participant to the tactical group
+        add_participant_to_tactical_group(user_email, incident_id)
 
-            # we add the participant to the conversation
-            add_participant_to_conversation(user_email, incident_id, db_session)
+        # we add the participant to the conversation
+        add_participant_to_conversation(user_email, incident_id, db_session)
 
-            # we announce the participant in the conversation
-            send_incident_participant_announcement_message(user_email, incident_id, db_session)
+        # we announce the participant in the conversation
+        send_incident_participant_announcement_message(user_email, incident_id, db_session)
 
-            # we send the welcome messages to the participant
-            send_incident_welcome_participant_messages(user_email, incident_id, db_session)
+        # we send the welcome messages to the participant
+        send_incident_welcome_participant_messages(user_email, incident_id, db_session)
+
+    return participant
 
 
 @background_task
