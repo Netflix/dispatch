@@ -14,12 +14,6 @@ from .dynamic_click import params_factory
 logger = logging.getLogger(__name__)
 
 
-def chunk(l, n):
-    """Chunk a list to sublists."""
-    for i in range(0, len(l), n):
-        yield l[i : i + n]
-
-
 # Plugin endpoints should determine authentication # TODO allow them to specify (kglisson)
 def install_plugin_events(api):
     """Adds plugin endpoints to the event router."""

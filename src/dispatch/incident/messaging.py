@@ -551,7 +551,7 @@ def send_incident_review_document_notification(
         incident_review_document_weblink=incident_review_document_weblink,
     )
 
-    log.debug(f"Incident review document notification sent.")
+    log.debug("Incident review document notification sent.")
 
 
 def send_incident_resources_ephemeral_message_to_participant(

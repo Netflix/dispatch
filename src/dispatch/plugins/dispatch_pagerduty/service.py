@@ -46,7 +46,7 @@ def get_oncall(service_id: str = None, service_name: str = None):
 
         return get_oncall_email(service[0])
 
-    raise DispatchPluginException(f"Cannot fetch oncall. Must specify service_id or service_name.")
+    raise DispatchPluginException("Cannot fetch oncall. Must specify service_id or service_name.")
 
 
 def page_oncall(

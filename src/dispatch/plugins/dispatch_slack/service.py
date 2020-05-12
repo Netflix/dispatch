@@ -45,10 +45,10 @@ def resolve_user(client: Any, user_id: str):
     return {"id": user_id}
 
 
-def chunks(l, n):
+def chunks(ids, n):
     """Yield successive n-sized chunks from l."""
-    for i in range(0, len(l), n):
-        yield l[i : i + n]
+    for i in range(0, len(ids), n):
+        yield ids[i : i + n]
 
 
 def paginated(data_key):
