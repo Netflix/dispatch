@@ -18,7 +18,7 @@ from .common.utils.cli import install_plugins, install_plugin_events
 from .config import STATIC_DIR
 from .database import SessionLocal
 from .extensions import configure_extensions
-from .logging import configure_logging
+from .dispatch_logging import configure_logging
 from .metrics import provider as metric_provider
 
 
