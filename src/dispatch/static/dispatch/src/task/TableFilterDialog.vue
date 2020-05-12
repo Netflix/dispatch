@@ -9,8 +9,8 @@
       <v-card-title>
         <span class="headline">Column Filters</span>
       </v-card-title>
-      <v-list dense>
-        <!--
+      <v-list dense
+        ><!--
         <v-list-item>
           <v-list-item-content>
             <individual-combobox v-model="creator" label="Creator"></individual-combobox>
