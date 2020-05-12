@@ -10,36 +10,29 @@
         <span class="headline">Column Filters</span>
       </v-card-title>
       <v-list dense>
-        <!--
-          <v-list-item>
-            <v-list-item-content>
-              <individual-combobox v-model="commander" label="Commanders"></individual-combobox>
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item>
-            <v-list-item-content>
-              <individual-combobox v-model="reporter" label="Reporters"></individual-combobox>
-            </v-list-item-content>
-          </v-list-item>
-          -->
         <v-list-item>
           <v-list-item-content>
-            <tag-filter-combobox v-model="tag" label="Tags" />
+            <individual-combobox v-model="creator" label="Creator"></individual-combobox>
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-type-combobox v-model="incident_type" />
+            <individual-combobox v-model="assignee" label="Assignee"></individual-combobox>
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-priority-combobox v-model="incident_priority" />
+            <task-status-multi-select v-model="status" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-status-multi-select v-model="status" />
+            <incident-type-combobox v-model="incident_type" label="Incident Type" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
+            <incident-priority-combobox v-model="incident_priority" label="Incident Priority" />
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -50,21 +43,19 @@
 <script>
 import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
-import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
-// import IndividualCombobox from "@/individual/IndividualCombobox.vue"
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import IndividualCombobox from "@/individual/IndividualCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
+import TaskStatusMultiSelect from "@/task/TaskStatusMultiSelect.vue"
 
 export default {
-  name: "IncidentTableFilterDialog",
+  name: "TaskTableFilterDialog",
 
   components: {
-    // IndividualCombobox,
-    TagFilterCombobox,
+    IndividualCombobox,
     IncidentTypeCombobox,
     IncidentPriorityCombobox,
-    IncidentStatusMultiSelect
+    TaskStatusMultiSelect
   },
 
   data() {
@@ -74,21 +65,19 @@ export default {
   },
 
   computed: {
-    ...mapFields("incident", [
-      "table.options.filters.commander",
-      "table.options.filters.reporter",
+    ...mapFields("task", [
+      "table.options.filters.creator",
+      "table.options.filters.assignee",
       "table.options.filters.incident_type",
       "table.options.filters.incident_priority",
-      "table.options.filters.status",
-      "table.options.filters.tag"
+      "table.options.filters.status"
     ]),
     numFilters: function() {
       return sum([
-        this.reporter.length,
-        this.commander.length,
+        this.creator.length,
+        this.assignee.length,
         this.incident_type.length,
         this.incident_priority.length,
-        this.tag.length,
         this.status.length
       ])
     }

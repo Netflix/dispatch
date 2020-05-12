@@ -5,7 +5,7 @@
     <!--<delete-dialog />-->
     <div class="headline">Incidents</div>
     <v-spacer />
-    <table-filter-dialog v-model="filterDialog" />
+    <table-filter-dialog />
     <v-btn color="primary" dark class="ml-2" @click="showNewSheet()">New</v-btn>
     <v-flex xs12>
       <v-layout column>
@@ -77,7 +77,6 @@ export default {
 
   data() {
     return {
-      filterDialog: false,
       headers: [
         { text: "Id", value: "name", align: "left", width: "10%" },
         { text: "Title", value: "title", sortable: false },
