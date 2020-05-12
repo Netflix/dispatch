@@ -67,7 +67,11 @@ export default {
     IncidentStatusMultiSelect
   },
 
-  props: ["display"],
+  data() {
+    return {
+      display: false
+    }
+  },
 
   computed: {
     ...mapFields("incident", [
