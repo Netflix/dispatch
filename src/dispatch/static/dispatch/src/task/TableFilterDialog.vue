@@ -9,8 +9,8 @@
       <v-card-title>
         <span class="headline">Column Filters</span>
       </v-card-title>
-      <v-list dense
-        ><!--
+      <v-list dense>
+        <!--
         <v-list-item>
           <v-list-item-content>
             <individual-combobox v-model="creator" label="Creator"></individual-combobox>
@@ -20,7 +20,8 @@
           <v-list-item-content>
             <individual-combobox v-model="assignee" label="Assignee"></individual-combobox>
           </v-list-item-content>
-        </v-list-item>-->
+        </v-list-item>
+        -->
         <v-list-item>
           <v-list-item-content>
             <task-status-multi-select v-model="status" />
