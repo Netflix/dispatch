@@ -8,7 +8,7 @@
       "name": "Server Debug",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/src/dispatch/run.py"
+      "program": "${workspaceFolder}/bin/run.py"
     },
     {
       "type": "chrome",
