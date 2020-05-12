@@ -11,6 +11,7 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     String,
     Table,
+    select,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -33,8 +34,9 @@ from dispatch.incident_priority.models import (
     IncidentPriorityRead,
 )
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
+from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
 from dispatch.participant.models import ParticipantRead
-from dispatch.participant_role.models import ParticipantRoleType
+from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
 from dispatch.storage.models import StorageRead
 from dispatch.ticket.models import TicketRead
 from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
@@ -78,9 +80,6 @@ class Incident(Base, TimeStampMixin):
         )
     )
 
-    # NOTE these only work in python, if want them to be executed via sql we need to
-    # write the coresponding expressions. See:
-    # https://docs.sqlalchemy.org/en/13/orm/extensions/hybrid.html
     @hybrid_property
     def commander(self):
         if self.participants:
@@ -93,6 +92,15 @@ class Incident(Base, TimeStampMixin):
                     ):
                         return p.individual
 
+    @commander.expression
+    def commander(cls):
+        return (
+            select(ParticipantRole.individual)
+            .where(ParticipantRole.incident_id == cls.id)
+            .where(ParticipantRole.role == ParticipantRoleType.incident_commander)
+            .where(ParticipantRole.renounce_at == None)  # noqa
+        )
+
     @hybrid_property
     def reporter(self):
         if self.participants:
@@ -100,6 +108,15 @@ class Incident(Base, TimeStampMixin):
                 for role in p.participant_roles:
                     if role.role == ParticipantRoleType.reporter:
                         return p.individual
+
+    @reporter.expression
+    def reporter(cls):
+        return (
+            select(ParticipantRole.individual)
+            .where(ParticipantRole.incident_id == cls.id)
+            .where(ParticipantRole.role == ParticipantRoleType.reporter)
+            .where(ParticipantRole.renounce_at == None)  # noqa
+        )
 
     @hybrid_property
     def incident_document(self):
