@@ -2,6 +2,7 @@ SQLAlchemy-Searchable
 aiofiles
 alembic
 arrow
+bcrypt
 cachetools==3.1.1  # NOTE pinning for google-auth
 click
 email-validator
@@ -14,7 +15,9 @@ httpx
 jinja2
 jira
 joblib
+numpy
 oauth2client
+pandas
 psycopg2-binary
 pyparsing
 pypd  # pagerduty plugin
@@ -31,7 +34,7 @@ slackclient
 spacy
 sqlalchemy
 sqlalchemy-filters
+statsmodels
 tabulate
 tenacity
 uvicorn
-bcrypt
