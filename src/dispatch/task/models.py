@@ -20,6 +20,7 @@ from dispatch.database import Base
 from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin
 
 from dispatch.incident.models import IncidentRead
+from dispatch.participant.models import ParticipantRead
 
 
 # SQLAlchemy models
@@ -88,12 +89,12 @@ class Task(Base, ResourceMixin, TimeStampMixin):
 
 # Pydantic models
 class TaskBase(DispatchBase):
-    creator: Optional[str]
+    creator: Optional[ParticipantRead]
     created_at: Optional[datetime]
     resolved_at: Optional[datetime]
     resolve_by: Optional[datetime]
     updated_at: Optional[datetime]
-    assignees: Optional[str]
+    assignees: List[Optional[ParticipantRead]]
     source: Optional[str]
     status: Optional[str]
     priority: Optional[str]

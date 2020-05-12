@@ -34,16 +34,20 @@
             >
               <template v-slot:item.cost="{ item }">{{ item.cost | toUSD }}</template>
               <template v-slot:item.commander="{ item }">
-                <div v-if="item.commander">
-                  <div v-if="item.commander.name">{{ item.commander.name }}</div>
-                  <div v-else>{{ item.commander.email }}</div>
-                </div>
+                <v-chip class="ma-2" pill small :href="item.commander.weblink">
+                  <div v-if="item.commander">
+                    <div v-if="item.commander.name">{{ item.commander.name }}</div>
+                    <div v-else>{{ item.commander.email }}</div>
+                  </div>
+                </v-chip>
               </template>
               <template v-slot:item.reporter="{ item }">
-                <div v-if="item.reporter">
-                  <div v-if="item.reporter.name">{{ item.reporter.name }}</div>
-                  <div v-else>{{ item.reporter.email }}</div>
-                </div>
+                <v-chip class="ma-2" pill small :href="item.reporter.weblink">
+                  <div v-if="item.reporter">
+                    <div v-if="item.reporter.name">{{ item.reporter.name }}</div>
+                    <div v-else>{{ item.reporter.email }}</div>
+                  </div>
+                </v-chip>
               </template>
               <template v-slot:item.reported_at="{ item }">{{
                 item.reported_at | formatDate

@@ -83,7 +83,6 @@ def create_filter_spec(model, fields, ops, values):
 
     if fields and ops and values:
         for field, op, value in zip(fields, ops, values):
-            # we have a complex field, we may need to join
             if "." in field:
                 complex_model, complex_field = field.split(".")
                 filters.append(

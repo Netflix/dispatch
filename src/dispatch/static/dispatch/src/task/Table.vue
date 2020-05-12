@@ -4,6 +4,7 @@
     <delete-dialog />
     <div class="headline">Tasks</div>
     <v-spacer />
+    <table-filter-dialog />
     <!--<v-btn color="primary" dark class="mb-2" @click="createEditShow()">New</v-btn>-->
     <v-flex xs12>
       <v-layout column>
@@ -29,6 +30,23 @@
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
             >
+              <template v-slot:item.creator="{ item }">
+                <v-chip class="ma-2" pill small :href="item.creator.individual.weblink">
+                  {{ item.creator.individual.email }}
+                </v-chip>
+              </template>
+              <template v-slot:item.assignees="{ item }">
+                <v-chip
+                  v-for="assignee in item.assignees"
+                  :key="assignee.id"
+                  class="ma-2"
+                  pill
+                  small
+                  :href="assignee.individual.weblink"
+                >
+                  {{ assignee.individual.name }}
+                </v-chip>
+              </template>
               <template v-slot:item.resolve_by="{ item }">{{
                 item.resolve_by | formatDate
               }}</template>
@@ -61,10 +79,12 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import DeleteDialog from "@/task/DeleteDialog.vue"
 import NewEditSheet from "@/task/NewEditSheet.vue"
+import TableFilterDialog from "@/task/TableFilterDialog.vue"
 export default {
   name: "TaskTable",
 
   components: {
+    TableFilterDialog,
     DeleteDialog,
     NewEditSheet
   },
@@ -94,6 +114,11 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
+      "table.options.filters.creator",
+      "table.options.filters.assignee",
+      "table.options.filters.incident_type",
+      "table.options.filters.incident_priority",
+      "table.options.filters.status",
       "table.loading",
       "table.rows.items",
       "table.rows.total"
@@ -111,7 +136,17 @@ export default {
     )
 
     this.$watch(
-      vm => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
+      vm => [
+        vm.q,
+        vm.itemsPerPage,
+        vm.sortBy,
+        vm.descending,
+        vm.creator,
+        vm.assignee,
+        vm.incident_type,
+        vm.incident_priority,
+        vm.status
+      ],
       () => {
         this.page = 1
         this.getAll()
