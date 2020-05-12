@@ -62,9 +62,9 @@ from .config import (
 )
 from .messaging import (
     INCIDENT_CONVERSATION_COMMAND_MESSAGE,
-    render_non_incident_conversation_command_error_message,
+    create_incident_reported_confirmation_msg,
     create_modal_content,
-    create_incident_confirmation_msg
+    render_non_incident_conversation_command_error_message,
 )
 
 from .service import get_user_email
@@ -269,7 +269,7 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
     """Returns the list of incident participants to the user as an ephemeral message."""
     blocks = []
     blocks.append(
-        {"type": "section", "text": {"type": "mrkdwn", "text": f"*Incident Participants*"}}
+        {"type": "section", "text": {"type": "mrkdwn", "text": "*Incident Participants*"}}
     )
 
     participants = participant_service.get_all_by_incident_id(
@@ -623,7 +623,7 @@ def get_action_name_by_action_type(action: dict):
         action_name = action["actions"][0]["block_id"]
 
     # TODO: maybe use callback info in the future to differentiate action types
-    if action["type"] == 'view_submission':
+    if action["type"] == "view_submission":
         action_name = NewIncidentSubmission.form_slack_view
 
     return action_name
@@ -708,46 +708,52 @@ def create_report_incident_modal(command: dict = None, db_session: Session = Dep
         priority_options.append({"label": priority.name, "value": priority.name})
 
     modal_view_template = create_modal_content(
-        channel_id=channel_id,
-        incident_types=type_options,
-        incident_priorities=priority_options
+        channel_id=channel_id, incident_types=type_options, incident_priorities=priority_options
     )
 
-    dispatch_slack_service.open_modal_with_user(client=slack_client, trigger_id=trigger_id, modal=modal_view_template)
+    dispatch_slack_service.open_modal_with_user(
+        client=slack_client, trigger_id=trigger_id, modal=modal_view_template
+    )
 
 
 def parse_submitted_form(view_data: dict):
-    """Parse the submitted data and return important / required fields for dispatch to start an incident"""
+    """Parse the submitted data and return important / required fields for Dispatch to create an incident."""
     parsed_data = {}
-    state_elem = view_data.get('state')
-    state_values = state_elem.get('values')
+    state_elem = view_data.get("state")
+    state_values = state_elem.get("values")
     for state in state_values:
         state_key_value_pair = state_values[state]
 
         for elem_key in state_key_value_pair:
             elem_key_value_pair = state_values[state][elem_key]
 
-            if elem_key_value_pair.get('selected_option') and elem_key_value_pair.get('selected_option').get('value'):
+            if elem_key_value_pair.get("selected_option") and elem_key_value_pair.get(
+                "selected_option"
+            ).get("value"):
                 parsed_data[state] = {
-                    'name': elem_key_value_pair.get('selected_option').get('text').get('text'),
-                    'value': elem_key_value_pair.get('selected_option').get('value')
+                    "name": elem_key_value_pair.get("selected_option").get("text").get("text"),
+                    "value": elem_key_value_pair.get("selected_option").get("value"),
                 }
             else:
-                parsed_data[state] = elem_key_value_pair.get('value')
+                parsed_data[state] = elem_key_value_pair.get("value")
 
     return parsed_data
 
 
 @background_task
 def report_incident_from_submitted_form(
-        user_id: str, user_email: str, incident_id: int, action: dict, db_session: Session = Depends(get_db)
+    user_id: str,
+    user_email: str,
+    incident_id: int,
+    action: dict,
+    db_session: Session = Depends(get_db),
 ):
     from dispatch.incident.enums import IncidentSlackViewBlockId, IncidentStatus
 
-    submitted_form = action.get('view')
+    submitted_form = action.get("view")
 
     # Fetch channel_id from the callback_id submitted when the modal was opened
-    channel_id = submitted_form.get('callback_id').split('__')[1]
+    channel_id = submitted_form.get("callback_id").split("__")[1]
 
     parsed_form_data = parse_submitted_form(submitted_form)
 
@@ -756,7 +762,22 @@ def report_incident_from_submitted_form(
     requested_form_incident_type = parsed_form_data.get(IncidentSlackViewBlockId.type)
     requested_form_incident_priority = parsed_form_data.get(IncidentSlackViewBlockId.priority)
 
-    # create the incident object
+    # send an incident report confirmation to the user
+    msg_template = create_incident_reported_confirmation_msg(
+        title=requested_form_title,
+        incident_type=requested_form_incident_type.get("value"),
+        incident_priority=requested_form_incident_priority.get("value"),
+    )
+
+    dispatch_slack_service.send_ephemeral_message(
+        client=slack_client,
+        conversation_id=channel_id,
+        user_id=user_id,
+        text="",
+        blocks=msg_template,
+    )
+
+    # create the incident
     incident = incident_service.create(
         db_session=db_session,
         title=requested_form_title,
@@ -764,25 +785,10 @@ def report_incident_from_submitted_form(
         description=requested_form_description,
         incident_type=requested_form_incident_type,
         incident_priority=requested_form_incident_priority,
-        reporter_email=user_email
+        reporter_email=user_email,
     )
 
     incident_flows.incident_create_flow(incident_id=incident.id)
-
-    # respond back to user with a message that (a user has started an incident)
-    msg_template = create_incident_confirmation_msg(
-        title=requested_form_title,
-        priority=requested_form_incident_priority,
-        incident_type=requested_form_incident_type,
-    )
-
-    dispatch_slack_service.send_ephemeral_message(
-        client=slack_client,
-        conversation_id=channel_id,
-        user_id=user_id,
-        text='',
-        blocks=msg_template
-    )
 
 
 @router.post("/slack/event")
@@ -861,11 +867,9 @@ async def handle_command(
     response.headers["X-Slack-Powered-By"] = create_ua_string()
 
     # If the incoming slash command is equal to reporting new incident slug
-    if command.get('command') == SLACK_COMMAND_REPORT_INCIDENT_SLUG:
+    if command.get("command") == SLACK_COMMAND_REPORT_INCIDENT_SLUG:
         background_tasks.add_task(
-            func=create_report_incident_modal,
-            db_session=db_session,
-            command=command
+            func=create_report_incident_modal, db_session=db_session, command=command
         )
 
         return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(
