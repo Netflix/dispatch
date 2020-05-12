@@ -104,27 +104,26 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
 
     incident_task = task_service.get_by_resource_id(db_session=db_session, resource_id=task["id"])
     if incident_task:
-        if status == TaskStatus.open:
-            # we don't need to take any actions if the status of the task in the collaboration doc is open
+        if incident_task.status == TaskStatus.resolved:
+            # we don't need to take any actions if the task has already been marked as resolved in the database
             return
         else:
-            if incident_task.status == TaskStatus.resolved:
-                # we don't need to take any actions if the task has already been marked as resolved in the database
-                return
-            else:
-                # we mark the task as resolved in the database
-                incident_task.status = TaskStatus.resolved
-                db_session.add(incident_task)
-                db_session.commit()
+            # we mark the task as resolved in the database
+            incident_task.status = TaskStatus.resolved
 
-                if notify:
-                    send_task_notification(
-                        incident.conversation.channel_id,
-                        INCIDENT_TASK_RESOLVED_NOTIFICATION,
-                        assignees,
-                        description,
-                        weblink,
-                    )
+            if notify:
+                send_task_notification(
+                    incident.conversation.channel_id,
+                    INCIDENT_TASK_RESOLVED_NOTIFICATION,
+                    assignees,
+                    description,
+                    weblink,
+                )
+
+        # always sync assignees
+        incident_task.assignees = assignees
+        db_session.add(incident_task)
+        db_session.commit()
     else:
         # we add the task to the incident
         task = task_service.create(
