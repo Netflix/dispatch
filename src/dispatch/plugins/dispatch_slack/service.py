@@ -373,3 +373,9 @@ def is_user(slack_user: str):
 def open_dialog_with_user(client: Any, trigger_id: str, dialog: dict):
     """Opens a dialog with a user."""
     return make_call(client, "dialog.open", trigger_id=trigger_id, dialog=dialog)
+
+
+def open_modal_with_user(client: Any, trigger_id: str, modal: dict):
+    """Opens a modal with a user."""
+    # the argument should be view in the make call, since slack api expects view
+    return make_call(client, "views.open", trigger_id=trigger_id, view=modal)

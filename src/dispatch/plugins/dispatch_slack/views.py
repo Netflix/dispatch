@@ -26,6 +26,7 @@ from dispatch.database import get_db, SessionLocal
 from dispatch.decorators import background_task
 from dispatch.enums import Visibility
 from dispatch.event import service as event_service
+from dispatch.incident.enums import NewIncidentSubmission
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentUpdate, IncidentRead, IncidentStatus
@@ -55,12 +56,15 @@ from .config import (
     SLACK_COMMAND_MARK_STABLE_SLUG,
     SLACK_COMMAND_STATUS_REPORT_SLUG,
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
+    SLACK_COMMAND_REPORT_INCIDENT_SLUG,
     SLACK_SIGNING_SECRET,
     SLACK_TIMELINE_EVENT_REACTION,
 )
 from .messaging import (
     INCIDENT_CONVERSATION_COMMAND_MESSAGE,
     render_non_incident_conversation_command_error_message,
+    create_modal_content,
+    create_incident_confirmation_msg
 )
 
 from .service import get_user_email
@@ -175,7 +179,7 @@ def add_evidence_to_storage(user_email: str, incident_id: int, event: dict = Non
 def is_business_hours(commander_tz: str):
     """Determines if it's currently office hours where the incident commander is located."""
     now = arrow.utcnow().to(commander_tz)
-    return now.weekday() not in [5, 6] and now.hour >= 9 and now.hour < 17
+    return now.weekday() not in [5, 6] and 9 <= now.hour < 17
 
 
 @background_task
@@ -599,6 +603,7 @@ def action_functions(action: str):
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [handle_update_incident_action],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [incident_flows.incident_engage_oncall_flow],
         ConversationButtonActions.invite_user: [add_user_to_conversation],
+        NewIncidentSubmission.form_slack_view: [report_incident_from_submitted_form],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc
@@ -616,6 +621,10 @@ def get_action_name_by_action_type(action: dict):
 
     if action["type"] == "block_actions":
         action_name = action["actions"][0]["block_id"]
+
+    # TODO: maybe use callback info in the future to differentiate action types
+    if action["type"] == 'view_submission':
+        action_name = NewIncidentSubmission.form_slack_view
 
     return action_name
 
@@ -679,6 +688,101 @@ def get_channel_id(event_body: dict):
         return event_body.item.channel
 
     return channel_id
+
+
+@background_task
+def create_report_incident_modal(command: dict = None, db_session: Session = Depends(get_db)):
+    """
+    Prepare the Modal / View x
+    Ask slack to open a modal with the prepared Modal / View content
+    """
+    channel_id = command.get("channel_id")
+    trigger_id = command.get("trigger_id")
+
+    type_options = []
+    for t in incident_type_service.get_all(db_session=db_session):
+        type_options.append({"label": t.name, "value": t.name})
+
+    priority_options = []
+    for priority in incident_priority_service.get_all(db_session=db_session):
+        priority_options.append({"label": priority.name, "value": priority.name})
+
+    modal_view_template = create_modal_content(
+        channel_id=channel_id,
+        incident_types=type_options,
+        incident_priorities=priority_options
+    )
+
+    dispatch_slack_service.open_modal_with_user(client=slack_client, trigger_id=trigger_id, modal=modal_view_template)
+
+
+def parse_submitted_form(view_data: dict):
+    """Parse the submitted data and return important / required fields for dispatch to start an incident"""
+    parsed_data = {}
+    state_elem = view_data.get('state')
+    state_values = state_elem.get('values')
+    for state in state_values:
+        state_key_value_pair = state_values[state]
+
+        for elem_key in state_key_value_pair:
+            elem_key_value_pair = state_values[state][elem_key]
+
+            if elem_key_value_pair.get('selected_option') and elem_key_value_pair.get('selected_option').get('value'):
+                parsed_data[state] = {
+                    'name': elem_key_value_pair.get('selected_option').get('text').get('text'),
+                    'value': elem_key_value_pair.get('selected_option').get('value')
+                }
+            else:
+                parsed_data[state] = elem_key_value_pair.get('value')
+
+    return parsed_data
+
+
+@background_task
+def report_incident_from_submitted_form(
+        user_id: str, user_email: str, incident_id: int, action: dict, db_session: Session = Depends(get_db)
+):
+    from dispatch.incident.enums import IncidentSlackViewBlockId, IncidentStatus
+
+    submitted_form = action.get('view')
+
+    # Fetch channel_id from the callback_id submitted when the modal was opened
+    channel_id = submitted_form.get('callback_id').split('__')[1]
+
+    parsed_form_data = parse_submitted_form(submitted_form)
+
+    requested_form_title = parsed_form_data.get(IncidentSlackViewBlockId.title)
+    requested_form_description = parsed_form_data.get(IncidentSlackViewBlockId.description)
+    requested_form_incident_type = parsed_form_data.get(IncidentSlackViewBlockId.type)
+    requested_form_incident_priority = parsed_form_data.get(IncidentSlackViewBlockId.priority)
+
+    # create the incident object
+    incident = incident_service.create(
+        db_session=db_session,
+        title=requested_form_title,
+        status=IncidentStatus.active,
+        description=requested_form_description,
+        incident_type=requested_form_incident_type,
+        incident_priority=requested_form_incident_priority,
+        reporter_email=user_email
+    )
+
+    incident_flows.incident_create_flow(incident_id=incident.id)
+
+    # respond back to user with a message that (a user has started an incident)
+    msg_template = create_incident_confirmation_msg(
+        title=requested_form_title,
+        priority=requested_form_incident_priority,
+        incident_type=requested_form_incident_type,
+    )
+
+    dispatch_slack_service.send_ephemeral_message(
+        client=slack_client,
+        conversation_id=channel_id,
+        user_id=user_id,
+        text='',
+        blocks=msg_template
+    )
 
 
 @router.post("/slack/event")
@@ -756,20 +860,32 @@ async def handle_command(
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()
 
-    # Fetch conversation by channel id
-    channel_id = command.get("channel_id")
-    conversation = get_by_channel_id(db_session=db_session, channel_id=channel_id)
-
-    # Dispatch command functions to be executed in the background
-    if conversation:
-        for f in command_functions(command.get("command")):
-            background_tasks.add_task(f, conversation.incident_id, command=command)
+    # If the incoming slash command is equal to reporting new incident slug
+    if command.get('command') == SLACK_COMMAND_REPORT_INCIDENT_SLUG:
+        background_tasks.add_task(
+            func=create_report_incident_modal,
+            db_session=db_session,
+            command=command
+        )
 
         return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(
             command.get("command"), f"Unable to find message. Command: {command.get('command')}"
         )
     else:
-        return render_non_incident_conversation_command_error_message(command.get("command"))
+        # Fetch conversation by channel id
+        channel_id = command.get("channel_id")
+        conversation = get_by_channel_id(db_session=db_session, channel_id=channel_id)
+
+        # Dispatch command functions to be executed in the background
+        if conversation:
+            for f in command_functions(command.get("command")):
+                background_tasks.add_task(f, conversation.incident_id, command=command)
+
+            return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(
+                command.get("command"), f"Unable to find message. Command: {command.get('command')}"
+            )
+        else:
+            return render_non_incident_conversation_command_error_message(command.get("command"))
 
 
 @router.post("/slack/action")
@@ -803,8 +919,12 @@ async def handle_action(
     # We resolve the action name based on the type
     action_name = get_action_name_by_action_type(action)
 
-    # we resolve the incident id based on the action type
-    incident_id = get_incident_id_by_action_type(action, db_session)
+    # if the request was made as a form submission from slack then we skip getting the incident_id
+    # the incident will be created in in the next step
+    incident_id = 0
+    if action_name != NewIncidentSubmission.form_slack_view:
+        # we resolve the incident id based on the action type
+        incident_id = get_incident_id_by_action_type(action, db_session)
 
     # Dispatch action functions to be executed in the background
     for f in action_functions(action_name):

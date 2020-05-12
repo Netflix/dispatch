@@ -51,6 +51,7 @@ from .service import (
     send_ephemeral_message,
     send_message,
     set_conversation_topic,
+    open_modal_with_user,
 )
 
 
@@ -176,6 +177,10 @@ class SlackConversationPlugin(ConversationPlugin):
     def get_command_name(self, command: str):
         """Gets the command name."""
         return command_mappings.get(command, [])
+
+    def open_modal(self, trigger_id: str, modal: dict):
+        """Opens a modal with a user."""
+        return open_modal_with_user(client=self.client, trigger_id=trigger_id, modal=modal)
 
 
 @apply(counter, exclude=["__init__"])

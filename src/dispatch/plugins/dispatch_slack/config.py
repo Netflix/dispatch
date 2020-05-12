@@ -39,3 +39,6 @@ SLACK_COMMAND_ENGAGE_ONCALL_SLUG = config(
 SLACK_COMMAND_LIST_RESOURCES_SLUG = config(
     "SLACK_COMMAND_LIST_RESOURCES_SLUG", default="/dispatch-list-resources"
 )
+SLACK_COMMAND_REPORT_INCIDENT_SLUG = config(
+    "SLACK_COMMAND_REPORT_INCIDENT_SLUG", default="/dispatch-report-incident"
+)
