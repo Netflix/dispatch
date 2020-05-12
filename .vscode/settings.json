@@ -20,7 +20,11 @@
   "python.formatting.blackArgs": ["--line-length", "100"],
   "python.linting.enabled": true,
   "python.linting.flake8Enabled": true,
-  "python.linting.flake8Args": ["--ignore=E24,W504", "--verbose"],
+  "python.linting.flake8Args": [
+    "--ignore=E24,W504",
+    "--verbose",
+    "--max-line-length=170"
+  ],
   "python.testing.pytestEnabled": true,
   "python.sortImports.args": ["--settings-path", "${workspaceFolder}/setup.cfg"],
   "[python]": {
@@ -28,4 +32,11 @@
       "source.organizeImports": false
     }
   },
+  "[json]": {
+
+  },
+  "files.associations": {
+  
+  },
+  "python.pythonPath": "/Users/vagharshkandilian/projects/dispatch/venv/bin/python",
 }

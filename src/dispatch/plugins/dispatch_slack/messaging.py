@@ -192,18 +192,22 @@ def slack_preview(message, block=None):
         print(f"https://api.slack.com/docs/messages/builder?msg={message}")
 
 
-def create_modal_content(channel_id: str = None, incident_types: list = None, incident_priorities: list = None):
-    """Helper function that will generate the slack modal / view message for (Create / start a new Incident) call"""
-    from dispatch.incident.enums import IncidentSlackViewBlockId
-
-    slack_options_template = {
+def create_block_option_from_template(text: str, value: str):
+    """Helper function which generates the option block for modals / views"""
+    return {
         "text": {
             "type": "plain_text",
-            "text": "",
+            "text": str(text),
             "emoji": True
         },
-        "value": ""
+        "value": str(value)
     }
+
+
+def create_modal_content(channel_id: str = None, incident_types: list = None, incident_priorities: list = None):
+    """Helper function which generates the slack modal / view message for (Create / start a new Incident) call"""
+    from dispatch.incident.enums import IncidentSlackViewBlockId
+
     incident_type_options = []
     incident_priority_options = []
 
@@ -212,22 +216,16 @@ def create_modal_content(channel_id: str = None, incident_types: list = None, in
     # if the value needs to be changed in the future to ID (from name to id) then modify them in the caller function
 
     for incident_type in incident_types:
-        option = slack_options_template.copy()
-
-        option['text']['text'] = incident_type.get('label')
-        option['value'] = incident_type.get('value')
-
-        # the modal_view_template['blocks'][3] is the 4th block which is the incident Type
-        incident_type_options.append(option)
+        incident_type_options.append(create_block_option_from_template(
+            text=incident_type.get('label'),
+            value=incident_type.get('value')
+        ))
 
     for incident_priority in incident_priorities:
-        option = slack_options_template.copy()
-
-        option['text']['text'] = incident_priority.get('label')
-        option['value'] = incident_priority.get('value')
-
-        # the modal_view_template['blocks'][4] is the 5th block which is the incident Priority
-        incident_priority_options.append(option)
+        incident_priority_options.append(create_block_option_from_template(
+            text=incident_priority.get('label'),
+            value=incident_priority.get('value')
+        ))
 
     modal_view_template = {
         "type": "modal",
@@ -328,7 +326,6 @@ def create_modal_content(channel_id: str = None, incident_types: list = None, in
             }
         ]
     }
-
     return modal_view_template
 
 

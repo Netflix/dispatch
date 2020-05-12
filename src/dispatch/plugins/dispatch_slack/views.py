@@ -561,7 +561,6 @@ def command_functions(command: str):
         SLACK_COMMAND_MARK_STABLE_SLUG: [],
         SLACK_COMMAND_STATUS_REPORT_SLUG: [create_status_report_dialog],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [create_engage_oncall_dialog],
-        SLACK_COMMAND_REPORT_INCIDENT_SLUG: [create_report_incident_modal],
     }
 
     return command_mappings.get(command, [])
@@ -691,9 +690,10 @@ def get_channel_id(event_body: dict):
     return channel_id
 
 
-def create_report_incident_modal(command: dict = None, db_session=None):
+@background_task
+def create_report_incident_modal(command: dict = None, db_session: Session = Depends(get_db)):
     """
-    Prepare the Modal / View
+    Prepare the Modal / View x
     Ask slack to open a modal with the prepared Modal / View content
     """
     channel_id = command.get("channel_id")
@@ -740,7 +740,7 @@ def parse_submitted_form(view_data: dict):
 
 @background_task
 def report_incident_from_submitted_form(
-        user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
+        user_id: str, user_email: str, incident_id: int, action: dict, db_session: Session = Depends(get_db)
 ):
     from dispatch.incident.enums import IncidentSlackViewBlockId, IncidentStatus
 
@@ -860,20 +860,32 @@ async def handle_command(
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()
 
-    # Fetch conversation by channel id
-    channel_id = command.get("channel_id")
-    conversation = get_by_channel_id(db_session=db_session, channel_id=channel_id)
-
-    # Dispatch command functions to be executed in the background
-    if conversation:
-        for f in command_functions(command.get("command")):
-            background_tasks.add_task(f, conversation.incident_id, command=command)
+    # If the incoming slash command is equal to reporting new incident slug
+    if command.get('command') == SLACK_COMMAND_REPORT_INCIDENT_SLUG:
+        background_tasks.add_task(
+            func=create_report_incident_modal,
+            db_session=db_session,
+            command=command
+        )
 
         return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(
             command.get("command"), f"Unable to find message. Command: {command.get('command')}"
         )
     else:
-        return render_non_incident_conversation_command_error_message(command.get("command"))
+        # Fetch conversation by channel id
+        channel_id = command.get("channel_id")
+        conversation = get_by_channel_id(db_session=db_session, channel_id=channel_id)
+
+        # Dispatch command functions to be executed in the background
+        if conversation:
+            for f in command_functions(command.get("command")):
+                background_tasks.add_task(f, conversation.incident_id, command=command)
+
+            return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(
+                command.get("command"), f"Unable to find message. Command: {command.get('command')}"
+            )
+        else:
+            return render_non_incident_conversation_command_error_message(command.get("command"))
 
 
 @router.post("/slack/action")
