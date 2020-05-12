@@ -8,8 +8,7 @@
       "name": "Server Debug",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/venv/bin/dispatch",
-      "args": ["server", "develop"],
+      "program": "${workspaceFolder}/src/dispatch/run.py"
     },
     {
       "type": "chrome",
