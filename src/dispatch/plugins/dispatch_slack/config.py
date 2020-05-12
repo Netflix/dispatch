@@ -1,13 +1,14 @@
 from dispatch.config import config, Secret
 
-
+# Configuration
+SLACK_API_BOT_TOKEN = config("SLACK_API_BOT_TOKEN", cast=Secret)
 SLACK_APP_USER_SLUG = config("SLACK_APP_USER_SLUG")
+SLACK_SIGNING_SECRET = config("SLACK_SIGNING_SECRET", cast=Secret)
+SLACK_TIMELINE_EVENT_REACTION = config("SLACK_TIMELINE_EVENT_REACTION", default="stopwatch")
+SLACK_USER_ID_OVERRIDE = config("SLACK_USER_ID_OVERRIDE", default=None)
 SLACK_WORKSPACE_NAME = config("SLACK_WORKSPACE_NAME")
 
-SLACK_API_BOT_TOKEN = config("SLACK_API_BOT_TOKEN", cast=Secret)
-SLACK_SIGNING_SECRET = config("SLACK_SIGNING_SECRET", cast=Secret)
-SLACK_USER_ID_OVERRIDE = config("SLACK_USER_ID_OVERRIDE", default=None)
-
+# Slash commands
 SLACK_COMMAND_MARK_ACTIVE_SLUG = config(
     "SLACK_COMMAND_MARK_ACTIVE_SLUG", default="/dispatch-mark-active"
 )
@@ -37,4 +38,7 @@ SLACK_COMMAND_ENGAGE_ONCALL_SLUG = config(
 )
 SLACK_COMMAND_LIST_RESOURCES_SLUG = config(
     "SLACK_COMMAND_LIST_RESOURCES_SLUG", default="/dispatch-list-resources"
+)
+SLACK_COMMAND_REPORT_INCIDENT_SLUG = config(
+    "SLACK_COMMAND_REPORT_INCIDENT_SLUG", default="/dispatch-report-incident"
 )

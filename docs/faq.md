@@ -1,12 +1,16 @@
 # FAQ
 
-## Can I become who I want to be?
+## Running ‘dispatch database upgrade’ seems stuck.
 
-That's a tough question but thankfully, our team is on it. Please bear with us while we're investigating.
+Most likely, the upgrade is stuck because an existing query on the database is holding onto a lock that the migration needs.
 
-## Have you had a chance to answer the previous question?
+To resolve, login to your lemur database and run:
 
-Yes, after a few months we finally found the answer. Sadly, Mike is on vacations right now so I'm afraid we are not able to provide the answer at this point.
+> SELECT \* FROM pg\_locks l INNER JOIN pg\_stat\_activity s ON \(l.pid = s.pid\) WHERE waiting AND NOT granted;
 
+This will give you a list of queries that are currently waiting to be executed. From there attempt to idenity the PID of the query blocking the migration. Once found execute:
 
+> select pg\_terminate\_backend\(&lt;blocking-pid&gt;\);
+
+See [http://stackoverflow.com/questions/22896496/alembic-migration-stuck-with-postgresql](http://stackoverflow.com/questions/22896496/alembic-migration-stuck-with-postgresql) for more.
 

@@ -27,7 +27,12 @@
         <template v-slot:activator="{ on }">
           <v-btn icon large text v-on="on">
             <v-avatar size="30px">
-              <img :src="userInfo().thumbnailPhotoUrl" :alt="userInfo().fullName" />
+              <img
+                v-if="userInfo().thumbnailPhotoUrl"
+                :src="userInfo().thumbnailPhotoUrl"
+                :alt="userInfo().fullName"
+              />
+              <v-icon v-else dark>account_circle</v-icon>
             </v-avatar>
           </v-btn>
         </template>
@@ -48,7 +53,7 @@
   </v-app-bar>
 </template>
 <script>
-import { mapActions, mapMutations, mapState, mapGetters } from "vuex"
+import { mapActions, mapMutations, mapState } from "vuex"
 
 import Util from "@/util"
 export default {
@@ -78,7 +83,7 @@ export default {
       this.$store.dispatch("search/getResults", this.$store.state.query)
       this.$router.push("/search")
     },
-    ...mapState("account", ["userInfo"]),
+    ...mapState("auth", ["userInfo"]),
     ...mapActions("search", ["setQuery"]),
     ...mapMutations("search", ["SET_QUERY"])
   }

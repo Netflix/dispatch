@@ -19,17 +19,14 @@
         <v-list-item-content>
           <v-list-item-title>
             No Members matching "
-            <strong>{{ search }}</strong>". Press <kbd>enter</kbd> to add.
+            <strong>{{ search }}</strong
+            >". Press <kbd>enter</kbd> to add.
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
     </template>
     <template v-slot:selection="data">
-      <v-chip
-        close
-        class="chip--select-multi"
-        @input="removeMember($event)"
-      >
+      <v-chip close class="chip--select-multi" @input="removeMember($event)">
         {{ data.item.content.name }}
       </v-chip>
     </template>
@@ -51,7 +48,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { debounce } from "lodash"
 import { mapState, mapActions, mapMutations } from "vuex"
 export default {
   name: "IncidentMemberCombobox",
@@ -92,7 +89,7 @@ export default {
     removeMember(payload) {
       this.$emit("removeMember", payload)
     },
-    setFilterOptions: _.debounce(function() {}, 200)
+    setFilterOptions: debounce(function() {}, 200)
   }
 }
 </script>

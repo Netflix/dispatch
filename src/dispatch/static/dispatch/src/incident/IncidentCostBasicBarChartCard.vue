@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { map } from "lodash"
 
 import VueApexCharts from "vue-apexcharts"
 export default {
@@ -68,7 +68,8 @@ export default {
             formatter: function(val) {
               var formatter = new Intl.NumberFormat("en-US", {
                 style: "currency",
-                currency: "USD"
+                currency: "USD",
+                maximumSignificantDigits: 6
               })
 
               return formatter.format(val) /* $2,500.00 */
@@ -90,10 +91,10 @@ export default {
       }
     },
     series() {
-      return [{ data: _.map(this.value, "cost") }]
+      return [{ data: map(this.value, "cost") }]
     },
     categoryData() {
-      return _.map(this.value, "name")
+      return map(this.value, "name")
     }
   }
 }

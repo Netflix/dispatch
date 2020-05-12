@@ -87,7 +87,14 @@ def create_multi_message_body(
         data.update({"name": item.incident.name, "title": item.incident.title})
         master_map.append(render_message_template(message_template, **data))
 
-    kwargs.update({"items": master_map, "description": description})
+    kwargs.update(
+        {
+            "items": master_map,
+            "description": description,
+            "dispatch_help_email": DISPATCH_HELP_EMAIL,
+            "dispatch_help_slack_channel": DISPATCH_HELP_SLACK_CHANNEL,
+        }
+    )
     return template.render(**kwargs)
 
 
@@ -122,17 +129,16 @@ def render_email(name, message):
 @apply(timer, exclude=["__init__"])
 @apply(counter, exclude=["__init__"])
 class GoogleGmailConversationPlugin(ConversationPlugin):
-    title = "Google Gmail - Conversation"
+    title = "Google Gmail Plugin - Conversation Management"
     slug = "google-gmail-conversation"
     description = "Uses gmail to facilitate conversations."
     version = google_gmail_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
-        scopes = ["https://mail.google.com/"]
-        self.client = get_service("gmail", "v1", scopes)
+        self.scopes = ["https://mail.google.com/"]
 
     def send(
         self,
@@ -144,6 +150,8 @@ class GoogleGmailConversationPlugin(ConversationPlugin):
     ):
         """Sends an html email based on the type."""
         # TODO allow for bulk sending (kglisson)
+        client = get_service("gmail", "v1", self.scopes)
+
         if kwargs.get("subject"):
             subject = kwargs["subject"]
         else:
@@ -158,4 +166,4 @@ class GoogleGmailConversationPlugin(ConversationPlugin):
 
         # render_email("task-reminder.html", message_body)
         html_message = create_html_message(user, subject, message_body)
-        return send_message(self.client, html_message)
+        return send_message(client, html_message)

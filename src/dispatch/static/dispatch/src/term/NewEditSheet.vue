@@ -1,30 +1,21 @@
 <template>
-  <v-navigation-drawer v-model="showCreateEdit"
-app clipped right width="500">
+  <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
     <template v-slot:prepend>
       <v-list-item two-line>
         <v-list-item-content>
-          <v-list-item-title v-if="id"
-class="title">
-            Edit
-          </v-list-item-title>
-          <v-list-item-title v-else
-class="title">
-            New
-          </v-list-item-title>
+          <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
+          <v-list-item-title v-else class="title">New</v-list-item-title>
           <v-list-item-subtitle>Term</v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
     </template>
     <ValidationObserver>
-      <v-card slot-scope="{ invalid, validated }"
-flat>
+      <v-card slot-scope="{ invalid, validated }" flat>
         <v-card-text>
           <v-container grid-list-md>
             <v-layout wrap>
               <v-flex xs12>
-                <ValidationProvider name="Text"
-rules="required" immediate>
+                <ValidationProvider name="Text" rules="required" immediate>
                   <v-text-field
                     v-model="text"
                     slot-scope="{ errors, valid }"
@@ -46,18 +37,14 @@ rules="required" immediate>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="secondary"
-@click="closeCreateEdit()">
-            Cancel
-          </v-btn>
+          <v-btn color="secondary" @click="closeCreateEdit()">Cancel</v-btn>
           <v-btn
             color="primary"
             :disabled="invalid || !validated"
             :loading="loading"
             @click="save()"
+            >Save</v-btn
           >
-            Save
-          </v-btn>
         </v-card-actions>
       </v-card>
     </ValidationObserver>
@@ -67,8 +54,15 @@ rules="required" immediate>
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider } from "vee-validate"
+import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "vee-validate/dist/rules"
 import DefinitionCombobox from "@/definition/DefinitionCombobox.vue"
+
+extend("required", {
+  ...required,
+  message: "This field is required"
+})
+
 export default {
   name: "TermNewEditSheet",
 

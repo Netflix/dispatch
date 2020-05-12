@@ -43,7 +43,7 @@ def get_by_incident_id_and_role(
         db_session.query(Participant)
         .filter(Participant.incident_id == incident_id)
         .join(ParticipantRole)
-        .filter(ParticipantRole.renounce_at.is_(None))
+        .filter(ParticipantRole.renounced_at.is_(None))
         .filter(ParticipantRole.role == role)
         .one_or_none()
     )
@@ -99,7 +99,11 @@ def get_or_create(
         )
         individual_info = contact_plugin.get(individual_contact.email)
         location = individual_info["location"]
-        participant_in = ParticipantCreate(participant_role=participant_roles, location=location)
+        team = individual_info["team"]
+        department = individual_info["department"]
+        participant_in = ParticipantCreate(
+            participant_roles=participant_roles, team=team, department=department, location=location
+        )
         participant = create(db_session=db_session, participant_in=participant_in)
 
     return participant
@@ -111,10 +115,10 @@ def create(*, db_session, participant_in: ParticipantCreate) -> Participant:
     """
     participant_roles = [
         participant_role_service.create(db_session=db_session, participant_role_in=participant_role)
-        for participant_role in participant_in.participant_role
+        for participant_role in participant_in.participant_roles
     ]
     participant = Participant(
-        **participant_in.dict(exclude={"participant_role"}), participant_role=participant_roles
+        **participant_in.dict(exclude={"participant_roles"}), participant_roles=participant_roles
     )
     db_session.add(participant)
     db_session.commit()

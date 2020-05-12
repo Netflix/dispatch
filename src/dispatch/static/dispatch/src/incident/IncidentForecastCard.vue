@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card :loading="loading">
     <v-card-title>Forecast</v-card-title>
     <apexchart type="line" height="250" :options="chartOptions" :series="series"></apexchart>
   </v-card>
@@ -7,29 +7,25 @@
 
 <script>
 import VueApexCharts from "vue-apexcharts"
+import IncidentApi from "@/incident/api"
 export default {
-  name: "IncidentBarChartCard",
+  name: "IncidentForecastCard",
+  props: {
+    value: {
+      type: String,
+      default: function() {
+        return "all"
+      }
+    }
+  },
 
   components: {
     apexchart: VueApexCharts
   },
-  data() {
-    return {
-      series: [
-        {
-          name: "High",
-          data: [28, 29, 33, 36, 32, 32, 33]
-        },
-        {
-          name: "Predicted",
-          data: [20, 25, 30, 32, 30, 29, 30]
-        },
-        {
-          name: "Low",
-          data: [12, 11, 14, 18, 17, 13, 13]
-        }
-      ],
-      chartOptions: {
+
+  computed: {
+    chartOptions() {
+      return {
         chart: {
           height: 350,
           type: "line",
@@ -43,27 +39,52 @@ export default {
         stroke: {
           curve: "smooth"
         },
+        tooltip: {
+          x: {
+            format: "MMM yyyy"
+          }
+        },
         markers: {
           size: 1
         },
         xaxis: {
-          categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
-          title: {
-            text: "Month"
-          }
+          categories: this.categories,
+          type: "datetime",
+          tickAmount: 6
         },
         yaxis: {
+          min: 0,
           title: {
-            text: "Count"
-          },
-          min: 5,
-          max: 40
+            text: "Incidents"
+          }
         },
         legend: {
           position: "top"
         }
       }
     }
+  },
+  data() {
+    return {
+      loading: false,
+      series: [],
+      categories: []
+    }
+  },
+
+  methods: {
+    fetchData() {
+      this.loading = true
+      IncidentApi.getMetricForecast(this.value).then(response => {
+        this.loading = false
+        this.series = response.data.series
+        this.categories = response.data.categories
+      })
+    }
+  },
+
+  mounted() {
+    this.fetchData()
   }
 }
 </script>

@@ -31,6 +31,20 @@
                   />
                 </ValidationProvider>
               </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="Description" rules="required" immediate>
+                  <v-textarea
+                    v-model="description"
+                    slot-scope="{ errors, valid }"
+                    label="Description"
+                    :error-messages="errors"
+                    :success="valid"
+                    hint="A description for your service."
+                    clearable
+                    required
+                  />
+                </ValidationProvider>
+              </v-flex>
               <!--Disable type (default to pager duty) until we have a way to validate.
               <v-flex xs12>
                 <ValidationProvider name="Type"
@@ -88,7 +102,8 @@ rules="required" immediate>
             :loading="loading"
             :disabled="invalid || !validated"
             @click="save()"
-          >Save</v-btn>
+            >Save</v-btn
+          >
         </v-card-actions>
       </v-card>
     </ValidationObserver>
@@ -98,10 +113,17 @@ rules="required" immediate>
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider } from "vee-validate"
+import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "vee-validate/dist/rules"
 import IncidentPriorityMultiSelect from "@/incident_priority/IncidentPriorityMultiSelect.vue"
 import IncidentTypeMultiSelect from "@/incident_type/IncidentTypeMultiSelect.vue"
 import TermCombobox from "@/term/TermCombobox.vue"
+
+extend("required", {
+  ...required,
+  message: "This field is required"
+})
+
 export default {
   name: "ServiceNewEditSheet",
 
@@ -121,6 +143,7 @@ export default {
       "selected.incident_priorities",
       "selected.incident_types",
       "selected.id",
+      "selected.description",
       "selected.external_id",
       "selected.is_active",
       "selected.loading",

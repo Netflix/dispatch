@@ -10,15 +10,13 @@ from tabulate import tabulate
 from uvicorn import main as uvicorn_main
 
 from dispatch import __version__, config
-from dispatch.application.models import *  # noqa
-from dispatch.common.utils.cli import install_plugin_events, install_plugins
 
+from .main import *  # noqa
 from .database import Base, engine
 from .exceptions import DispatchException
 from .plugins.base import plugins
 from .scheduler import scheduler
-
-from dispatch.models import *  # noqa; noqa
+from .logging import configure_logging
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -30,21 +28,17 @@ def abort_if_false(ctx, param, value):
         ctx.abort()
 
 
-def insert_newlines(string, every=64):
-    return "\n".join(string[i : i + every] for i in range(0, len(string), every))
-
-
 @click.group()
 @click.version_option(version=__version__)
 def dispatch_cli():
     """Command-line interface to Dispatch."""
-    pass
+    configure_logging()
 
 
 @dispatch_cli.group("plugins")
 def plugins_group():
     """All commands for plugin manipulation."""
-    install_plugins()
+    pass
 
 
 @plugins_group.command("list")
@@ -59,405 +53,10 @@ def list_plugins():
     )
 
 
-@dispatch_cli.group("term")
-def term_command_group():
-    """All commands for term manipulation."""
-    pass
-
-
-@dispatch_cli.group("contact")
-def contact_command_group():
-    """All commands for contact manipulation."""
-    pass
-
-
-@contact_command_group.group("load")
-def contact_load_group():
-    """All contact load commands."""
-    pass
-
-
-@contact_load_group.command("csv")
-@click.argument("input", type=click.File("r"))
-@click.option("--first-row-is-header", is_flag=True, default=True)
-def contact_load_csv_command(input, first_row_is_header):
-    """Load contacts via CSV."""
-    import csv
-    from pydantic import ValidationError
-    from dispatch.individual import service as individual_service
-    from dispatch.team import service as team_service
-    from dispatch.database import SessionLocal
-
-    db_session = SessionLocal()
-
-    individual_contacts = []
-    team_contacts = []
-    if first_row_is_header:
-        reader = csv.DictReader(input)
-        for row in reader:
-            row = {k.lower(): v for k, v in row.items()}
-            if not row.get("email"):
-                continue
-
-            individual_contacts.append(row)
-
-    for i in individual_contacts:
-        i["is_external"] = True
-        try:
-            click.secho(f"Adding new individual contact. Email: {i['email']}", fg="blue")
-            individual_service.get_or_create(db_session=db_session, **i)
-        except ValidationError as e:
-            click.secho(f"Failed to add individual contact. {e} {row}", fg="red")
-
-    for t in team_contacts:
-        i["is_external"] = True
-        try:
-            click.secho(f"Adding new team contact. Email: {t['email']}", fg="blue")
-            team_service.get_or_create(db_session=db_session, **t)
-        except ValidationError as e:
-            click.secho(f"Failed to add team contact. {e} {row}", fg="red")
-
-
-@dispatch_cli.group("incident")
-def incident_command_group():
-    """All commands for incident manipulation."""
-    pass
-
-
-@incident_command_group.group("load")
-def incident_load_group():
-    """All incient load commands."""
-    pass
-
-
-@incident_load_group.command("csv")
-@click.argument("input", type=click.File("r"))
-@click.option("--first-row-is-header", is_flag=True, default=True)
-def incident_load_csv_command(input, first_row_is_header):
-    """Load incidents via CSV."""
-    import csv
-    from dispatch.database import SessionLocal
-    from datetime import datetime
-    from dispatch.incident import service as incident_service
-
-    db_session = SessionLocal()
-
-    if first_row_is_header:
-        reader = csv.DictReader(input)
-        for row in reader:
-            incident = incident_service.get_by_name(
-                db_session=db_session, incident_name=row["name"]
-            )
-            if incident:
-                incident.created_at = datetime.fromisoformat(row["created"])
-            else:
-                click.secho(f"No incident found. Name: {row['name']}", fg="red")
-
-
-# This has been left as an example of how to import a jira issue
-# @incident_load_group.command("jira")
-# @click.argument("query")
-# @click.option("--url", help="Jira instance url.", default=JIRA_URL)
-# @click.option("--username", help="Jira username.", default=JIRA_USERNAME)
-# @click.option("--password", help="Jira password.", default=JIRA_PASSWORD)
-# def incident_load_jira(query, url, username, password):
-#    """Loads incident data from jira."""
-#    install_plugins()
-#    import re
-#    from jira import JIRA
-#    from dispatch.incident.models import Incident
-#    from dispatch.database import SessionLocal
-#    from dispatch.incident_priority import service as incident_priority_service
-#    from dispatch.incident_type import service as incident_type_service
-#    from dispatch.individual import service as individual_service
-#    from dispatch.participant import service as participant_service
-#    from dispatch.participant_role import service as participant_role_service
-#    from dispatch.participant_role.models import ParticipantRoleType
-#    from dispatch.ticket import service as ticket_service
-#    from dispatch.conversation import service as conversation_service
-#    from dispatch.config import (
-#        INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
-#        INCIDENT_PLUGIN_CONVERSATION_SLUG,
-#        INCIDENT_PLUGIN_TICKET_SLUG,
-#    )
-#    from dispatch.document import service as document_service
-#    from dispatch.document.models import DocumentCreate
-#
-#    db_session = SessionLocal()
-#
-#    client = JIRA(str(JIRA_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
-#
-#    block_size = 100
-#    block_num = 0
-#
-#
-#    while True:
-#        start_idx = block_num * block_size
-#        issues = client.search_issues(query, start_idx, block_size)
-#
-#        click.secho(f"Collecting. PageSize: {block_size} PageNum: {block_num}", fg="blue")
-#        if not issues:
-#            # Retrieve issues until there are no more to come
-#            break
-#
-#        block_num += 1
-#
-#        for issue in issues:
-#            try:
-#                participants = []
-#                incident_name = issue.key
-#                created_at = issue.fields.created
-#
-#                # older tickets don't have a component
-#                if not issue.fields.components:
-#                    incident_type = "Other"
-#                else:
-#                    incident_type = issue.fields.components[0].name
-#
-#                title = issue.fields.summary
-#
-#                if issue.fields.reporter:
-#                    reporter_email = issue.fields.reporter.emailAddress
-#                else:
-#                    reporter_email = "joe@example.com"
-#
-#                status = issue.fields.status.name
-#
-#                # older tickets don't have priority
-#                if not issue.fields.customfield_10551:
-#                    incident_priority = "Low"
-#                else:
-#                    incident_priority = issue.fields.customfield_10551.value
-#
-#                incident_cost = issue.fields.customfield_20250
-#                if incident_cost:
-#                    incident_cost = incident_cost.replace("$", "")
-#                    incident_cost = incident_cost.replace(",", "")
-#                    incident_cost = float(incident_cost)
-#
-#                if issue.fields.assignee:
-#                    commander_email = issue.fields.assignee.emailAddress
-#                else:
-#                    commander_email = "joe@example.com"
-#
-#                resolved_at = issue.fields.resolutiondate
-#
-#                description = issue.fields.description or "No Description"
-#
-#                match = re.findall(r"\[(?P<type>.*?)\|(?P<link>.*?)\]", description)
-#
-#                conversation_weblink = None
-#                incident_document_weblink = None
-#                for m_type, m_link in match:
-#                    if "conversation" in m_type.lower():
-#                        conversation_weblink = m_link
-#
-#                    if "document" in m_type.lower():
-#                        incident_document_weblink = m_link
-#
-#                ticket = {
-#                    "resource_type": INCIDENT_PLUGIN_TICKET_SLUG,
-#                    "weblink": f"{JIRA_URL}/projects/SEC/{incident_name}",
-#                }
-#                ticket_obj = ticket_service.create(db_session=db_session, **ticket)
-#
-#                documents = []
-#                if incident_document_weblink:
-#                    document_in = DocumentCreate(
-#                        name=f"{incident_name} - Investigation Document",
-#                        resource_id=incident_document_weblink.split("/")[-2],
-#                        resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
-#                        weblink=incident_document_weblink,
-#                    )
-#
-#                    document_obj = document_service.create(
-#                        db_session=db_session, document_in=document_in
-#                    )
-#
-#                    documents.append(document_obj)
-#
-#                conversation_obj = None
-#                if conversation_weblink:
-#                    conversation_obj = conversation_service.create(
-#                        db_session=db_session,
-#                        resource_id=incident_name.lower(),
-#                        resource_type=INCIDENT_PLUGIN_CONVERSATION_SLUG,
-#                        weblink=conversation_weblink,
-#                        channel_id=incident_name.lower(),
-#                    )
-#
-#                # TODO should some of this logic be in the incident_create_flow_instead? (kglisson)
-#                incident_priority = incident_priority_service.get_by_name(
-#                    db_session=db_session, name=incident_priority
-#                )
-#
-#                incident_type = incident_type_service.get_by_name(
-#                    db_session=db_session, name=incident_type
-#                )
-#
-#                try:
-#                    commander_info = individual_service.resolve_user_by_email(commander_email)
-#                except KeyError:
-#                    commander_info = {"email": commander_email, "fullname": "", "weblink": ""}
-#
-#                incident_commander_role = participant_role_service.create(
-#                    db_session=db_session, role=ParticipantRoleType.incident_commander
-#                )
-#
-#                commander_participant = participant_service.create(
-#                    db_session=db_session, participant_role=[incident_commander_role]
-#                )
-#
-#                commander = individual_service.get_or_create(
-#                    db_session=db_session,
-#                    email=commander_info["email"],
-#                    name=commander_info["fullname"],
-#                    weblink=commander_info["weblink"],
-#                )
-#
-#                incident_reporter_role = participant_role_service.create(
-#                    db_session=db_session, role=ParticipantRoleType.reporter
-#                )
-#
-#                if reporter_email == commander_email:
-#                    commander_participant.participant_role.append(incident_reporter_role)
-#                else:
-#                    reporter_participant = participant_service.create(
-#                        db_session=db_session, participant_role=[incident_reporter_role]
-#                    )
-#
-#                    try:
-#                        reporter_info = individual_service.resolve_user_by_email(reporter_email)
-#                    except KeyError:
-#                        reporter_info = {"email": reporter_email, "fullname": "", "weblink": ""}
-#
-#                    reporter = individual_service.get_or_create(
-#                        db_session=db_session,
-#                        email=reporter_info["email"],
-#                        name=reporter_info["fullname"],
-#                        weblink=commander_info["weblink"],
-#                    )
-#                    reporter.participant.append(reporter_participant)
-#                    db_session.add(reporter)
-#                    participants.append(reporter_participant)
-#
-#                participants.append(commander_participant)
-#                incident = Incident(
-#                    title=title,
-#                    description=description,
-#                    status=status,
-#                    name=incident_name,
-#                    cost=incident_cost,
-#                    created_at=created_at,
-#                    closed_at=resolved_at,
-#                    incident_priority=incident_priority,
-#                    incident_type=incident_type,
-#                    participants=participants,
-#                    conversation=conversation_obj,
-#                    documents=documents,
-#                    ticket=ticket_obj,
-#                )
-#
-#                commander.participant.append(commander_participant)
-#                db_session.add(commander)
-#                db_session.add(incident)
-#                db_session.commit()
-#                click.secho(
-#                    f"Imported Issue. Key: {issue.key} Reporter: {incident.reporter.email}, Commander: {incident.commander.email}",
-#                    fg="blue",
-#                )
-#            except Exception as e:
-#                click.secho(f"Error importing issue. Key: {issue.key} Reason: {e}", fg="red")
-#
-
-
-@incident_command_group.command("close")
-@click.argument("username")
-@click.argument("name", nargs=-1)
-def close_incidents(name, username):
-    """This command will close a specific incident (running the close flow or all open incidents). Useful for development."""
-    from dispatch.incident.flows import incident_closed_flow
-    from dispatch.incident.models import Incident
-    from dispatch.database import SessionLocal
-
-    install_plugins()
-
-    incidents = []
-    db_session = SessionLocal()
-
-    if not name:
-        incidents = db_session.query(Incident).all()
-    else:
-        incidents = [db_session.query(Incident).filter(Incident.name == x).first() for x in name]
-
-    for i in incidents:
-        if i.conversation:
-            if i.status == "Active":
-                command = {"channel_id": i.conversation.channel_id, "user_id": username}
-                try:
-                    incident_closed_flow(command=command, db_session=db_session, incident_id=i.id)
-                except Exception:
-                    click.echo("Incident close failed.")
-
-
-@incident_command_group.command("clean")
-@click.argument("pattern", nargs=-1)
-def clean_incident_artifacts(pattern):
-    """This command will clean up incident artifacts. Useful for development."""
-    import re
-    from dispatch.plugins.dispatch_google.drive.config import GOOGLE_DOMAIN
-    from dispatch.plugins.dispatch_google.common import get_service
-    from dispatch.plugins.dispatch_google.drive.drive import delete_team_drive, list_team_drives
-
-    from dispatch.plugins.dispatch_slack.service import (
-        slack,
-        list_conversations,
-        archive_conversation,
-    )
-    from dispatch.plugins.dispatch_slack.config import SLACK_API_BOT_TOKEN
-
-    from dispatch.plugins.dispatch_google.groups.plugin import delete_group, list_groups
-
-    install_plugins()
-
-    patterns = [re.compile(p) for p in pattern]
-
-    click.secho("Deleting google groups...", fg="red")
-
-    scopes = [
-        "https://www.googleapis.com/auth/admin.directory.group",
-        "https://www.googleapis.com/auth/apps.groups.settings",
-    ]
-    client = get_service("admin", "directory_v1", scopes)
-
-    for group in list_groups(client, query="email:sec-test*", domain=GOOGLE_DOMAIN)["groups"]:
-        for p in patterns:
-            if p.match(group["name"]):
-                click.secho(group["name"], fg="red")
-                delete_group(client, group_key=group["email"])
-
-    click.secho("Archiving slack channels...", fg="red")
-    client = slack.WebClient(token=SLACK_API_BOT_TOKEN)
-    for c in list_conversations(client):
-        for p in patterns:
-            if p.match(c["name"]):
-                archive_conversation(client, c["id"])
-
-    click.secho("Deleting google drives...", fg="red")
-    scopes = ["https://www.googleapis.com/auth/drive"]
-    client = get_service("drive", "v3", scopes)
-
-    for drive in list_team_drives(client):
-        for p in patterns:
-            if p.match(drive["name"]):
-                click.secho(f"Deleting drive: {drive['name']}", fg="red")
-                delete_team_drive(client, drive["id"], empty=True)
-
-
 def sync_triggers():
     from sqlalchemy_searchable import sync_trigger
 
-    sync_trigger(engine, "application", "search_vector", ["name"])
+    sync_trigger(engine, "tag", "search_vector", ["name"])
     sync_trigger(engine, "definition", "search_vector", ["text"])
     sync_trigger(engine, "incident", "search_vector", ["name", "title", "description"])
     sync_trigger(
@@ -470,6 +69,7 @@ def sync_triggers():
     sync_trigger(engine, "policy", "search_vector", ["name", "description"])
     sync_trigger(engine, "service", "search_vector", ["name"])
     sync_trigger(engine, "task", "search_vector", ["description"])
+    sync_trigger(engine, "plugin", "search_vector", ["title"])
 
 
 @dispatch_cli.group("database")
@@ -489,9 +89,10 @@ def database_trigger_sync():
 @dispatch_database.command("init")
 def init_database():
     """Initializes a new database."""
-    from sqlalchemy_utils import create_database
+    from sqlalchemy_utils import create_database, database_exists
 
-    create_database(str(config.SQLALCHEMY_DATABASE_URI))
+    if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
+        create_database(str(config.SQLALCHEMY_DATABASE_URI))
     Base.metadata.create_all(engine)
     alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
     alembic_cfg = AlembicConfig(alembic_path)
@@ -502,25 +103,36 @@ def init_database():
 
 
 @dispatch_database.command("restore")
-def restore_database():
+@click.option("--dump-file", default="dispatch-backup.dump", help="Path to a PostgreSQL dump file.")
+def restore_database(dump_file):
     """Restores the database via pg_restore."""
+    import sh
     from sh import psql, createdb
-    from dispatch.config import DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_CREDENTIALS
+    from dispatch.config import (
+        DATABASE_HOSTNAME,
+        DATABASE_NAME,
+        DATABASE_PORT,
+        DATABASE_CREDENTIALS,
+    )
 
     username, password = str(DATABASE_CREDENTIALS).split(":")
 
-    print(
-        createdb(
-            "-h",
-            DATABASE_HOSTNAME,
-            "-p",
-            DATABASE_PORT,
-            "-U",
-            username,
-            "dispatch",
-            _env={"PGPASSWORD": password},
+    try:
+        print(
+            createdb(
+                "-h",
+                DATABASE_HOSTNAME,
+                "-p",
+                DATABASE_PORT,
+                "-U",
+                username,
+                DATABASE_NAME,
+                _env={"PGPASSWORD": password},
+            )
         )
-    )
+    except sh.ErrorReturnCode_1:
+        print("Database already exists.")
+
     print(
         psql(
             "-h",
@@ -529,18 +141,26 @@ def restore_database():
             DATABASE_PORT,
             "-U",
             username,
+            "-d",
+            DATABASE_NAME,
             "-f",
-            "dispatch-backup.dump",
+            dump_file,
             _env={"PGPASSWORD": password},
         )
     )
+    click.secho("Success.", fg="green")
 
 
 @dispatch_database.command("dump")
 def dump_database():
     """Dumps the database via pg_dump."""
     from sh import pg_dump
-    from dispatch.config import DATABASE_HOSTNAME, DATABASE_PORT, DATABASE_CREDENTIALS
+    from dispatch.config import (
+        DATABASE_HOSTNAME,
+        DATABASE_NAME,
+        DATABASE_PORT,
+        DATABASE_CREDENTIALS,
+    )
 
     username, password = str(DATABASE_CREDENTIALS).split(":")
 
@@ -553,7 +173,7 @@ def dump_database():
         DATABASE_PORT,
         "-U",
         username,
-        "dispatch",
+        DATABASE_NAME,
         _env={"PGPASSWORD": password},
     )
 
@@ -587,9 +207,26 @@ def drop_database():
 @click.option("--revision", nargs=1, default="head", help="Revision identifier.")
 def upgrade_database(tag, sql, revision):
     """Upgrades database schema to newest version."""
+    from sqlalchemy_utils import database_exists, create_database
+    from alembic.migration import MigrationContext
+
     alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
     alembic_cfg = AlembicConfig(alembic_path)
-    alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
+    if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
+        create_database(str(config.SQLALCHEMY_DATABASE_URI))
+        Base.metadata.create_all(engine)
+        alembic_command.stamp(alembic_cfg, "head")
+    else:
+        conn = engine.connect()
+        context = MigrationContext.configure(conn)
+        current_rev = context.get_current_revision()
+        if not current_rev:
+            Base.metadata.create_all(engine)
+            alembic_command.stamp(alembic_cfg, "head")
+        else:
+            alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
+
+    sync_triggers()
     click.secho("Success.", fg="green")
 
 
@@ -630,6 +267,24 @@ def downgrade_database(tag, sql, revision):
 
     alembic_command.downgrade(alembic_cfg, revision, sql=sql, tag=tag)
     click.secho("Success.", fg="green")
+
+
+@dispatch_database.command("stamp")
+@click.argument("revision", nargs=1, default="head")
+@click.option(
+    "--tag", default=None, help="Arbitrary 'tag' name - can be used by custom env.py scripts."
+)
+@click.option(
+    "--sql",
+    is_flag=True,
+    default=False,
+    help="Don't emit SQL to database - dump to standard output instead.",
+)
+def stamp_database(revision, tag, sql):
+    """Forces the database to a given revision."""
+    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
+    alembic_cfg = AlembicConfig(alembic_path)
+    alembic_command.stamp(alembic_cfg, revision, sql=sql, tag=tag)
 
 
 @dispatch_database.command("revision")
@@ -688,13 +343,11 @@ def revision_database(
 def dispatch_scheduler():
     """Container for all dispatch scheduler commands."""
     # we need scheduled tasks to be imported
-    from .incident.scheduled import daily_summary, active_incidents_cost  # noqa
+    from .incident.scheduled import daily_summary, auto_tagger  # noqa
     from .task.scheduled import sync_tasks, create_task_reminders  # noqa
     from .term.scheduled import sync_terms  # noqa
     from .document.scheduled import sync_document_terms  # noqa
-    from .application.scheduled import sync_applications  # noqa
-
-    install_plugins()
+    from .tag.scheduled import sync_tags  # noqa
 
 
 @dispatch_scheduler.command("list")
@@ -734,15 +387,13 @@ def start_tasks(tasks, eager):
 @dispatch_cli.group("server")
 def dispatch_server():
     """Container for all dispatch server commands."""
-    install_plugins()
+    pass
 
 
 @dispatch_server.command("routes")
 def show_routes():
     """Prints all available routes."""
-    from dispatch.api import api_router
-
-    install_plugin_events(api_router)
+    from dispatch.main import api_router
 
     table = []
     for r in api_router.routes:
@@ -758,11 +409,16 @@ def show_routes():
 @dispatch_server.command("config")
 def show_config():
     """Prints the current config as dispatch sees it."""
-    from dispatch.config import config
+    import sys
+    import inspect
+    from dispatch import config
+
+    func_members = inspect.getmembers(sys.modules[config.__name__])
 
     table = []
-    for k, v in config.file_values.items():
-        table.append([k, v])
+    for key, value in func_members:
+        if key.isupper():
+            table.append([key, value])
 
     click.secho(tabulate(table, headers=["Key", "Value"]), fg="blue")
 
@@ -782,7 +438,11 @@ def run_server(log_level):
         import atexit
         from subprocess import Popen
 
-        p = Popen(["npm", "run", "serve"], cwd="src/dispatch/static/dispatch")
+        # take our frontend vars and export them for the frontend to consume
+        envvars = os.environ.copy()
+        envvars.update({x: getattr(config, x) for x in dir(config) if x.startswith("VUE_APP_")})
+
+        p = Popen(["npm", "run", "serve"], cwd="src/dispatch/static/dispatch", env=envvars)
         atexit.register(p.terminate)
     uvicorn.run("dispatch.main:app", debug=True, log_level=log_level)
 

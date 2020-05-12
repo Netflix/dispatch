@@ -3,14 +3,20 @@
     <v-layout row>
       <!-- Filters -->
       <v-flex lg2 sm3 xs6>
-        <v-select v-model="selectedMonth" :items="months" label="Month" dense return-object></v-select>
+        <v-select
+          v-model="selectedMonth"
+          :items="months"
+          label="Month"
+          dense
+          return-object
+        ></v-select>
       </v-flex>
       <!-- Filters Ends-->
     </v-layout>
     <v-layout row wrap>
       <!-- Widgets-->
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="domain" :title="totalIncidents" supTitle="Incidents" />
+        <stat-widget icon="domain" :title="totalIncidents | toNumberString" supTitle="Incidents" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
         <stat-widget icon="attach_money" :title="totalCost | toUSD" supTitle="Total Cost" />
@@ -19,7 +25,11 @@
         <stat-widget icon="show_chart" :title="avgCost | toUSD" supTitle="Avg Cost" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="watch_later" :title="totalHours" supTitle="Total Hours" />
+        <stat-widget
+          icon="watch_later"
+          :title="totalHours | toNumberString"
+          supTitle="Total Hours"
+        />
       </v-flex>
       <!-- Widgets Ends -->
       <!-- Statistics -->
@@ -42,7 +52,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { remove, sortBy, reverse, forEach, sumBy } from "lodash"
 import parseISO from "date-fns/parseISO"
 import formatISO from "date-fns/formatISO"
 import startOfMonth from "date-fns/startOfMonth"
@@ -93,7 +103,7 @@ export default {
         this.loading = false
 
         // ignore all simulated incidents
-        this.items = _.remove(_.sortBy(response.data.items, "reported_at"), function(item) {
+        this.items = remove(sortBy(response.data.items, "reported_at"), function(item) {
           return item.incident_type.name !== "Simulation"
         })
       })
@@ -108,23 +118,23 @@ export default {
       })
 
       var monthsSelect = []
-      _.forEach(monthsArr, function(month) {
+      forEach(monthsArr, function(month) {
         monthsSelect.push({ text: format(month, "LLLL"), value: month })
       })
 
-      return _.reverse(monthsSelect)
+      return reverse(monthsSelect)
     },
     totalIncidents() {
       return this.items.length
     },
     totalCost() {
-      return _.sumBy(this.items, "cost")
+      return sumBy(this.items, "cost")
     },
     avgCost() {
       return this.totalCost / this.totalIncidents
     },
     totalHours() {
-      return _.sumBy(this.items, function(item) {
+      return sumBy(this.items, function(item) {
         let endTime = new Date().toISOString()
         if (item.stable_at) {
           endTime = item.stable_at

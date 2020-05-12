@@ -10,8 +10,8 @@ from typing import Any, List
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import DocumentPlugin
+from dispatch.plugins.dispatch_google import docs as google_docs_plugin
 from dispatch.plugins.dispatch_google.common import get_service
-from ._version import __version__
 
 
 def remove_control_characters(s):
@@ -90,24 +90,23 @@ def insert_incident_data(client: Any, document_id: str, index: int, incident_dat
 @apply(timer, exclude=["__init__"])
 @apply(counter, exclude=["__init__"])
 class GoogleDocsDocumentPlugin(DocumentPlugin):
-    title = "Google Docs - Document"
+    title = "Google Docs Plugin - Document Management"
     slug = "google-docs-document"
-    description = "Uses google docs to manage document contents."
-    version = __version__
+    description = "Uses Google docs to manage document contents."
+    version = google_docs_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
-        scopes = [
+        self.scopes = [
             "https://www.googleapis.com/auth/documents",
             "https://www.googleapis.com/auth/drive",
         ]
-
-        self.client = get_service("docs", "v1", scopes).documents()
 
     def update(self, document_id: str, **kwargs):
         """Replaces text in document."""
         # TODO escape and use f strings? (kglisson)
         kwargs = {"{{" + k + "}}": v for k, v in kwargs.items()}
-        return replace_text(self.client, document_id, kwargs)
+        client = get_service("docs", "v1", self.scopes).documents()
+        return replace_text(client, document_id, kwargs)

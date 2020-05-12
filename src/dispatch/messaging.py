@@ -7,9 +7,9 @@ from typing import List
 
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.incident.enums import IncidentStatus
-from dispatch.incident_priority.models import IncidentPriorityType
 
 from .config import (
+    DISPATCH_UI_URL,
     INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
     INCIDENT_RESOURCE_FAQ_DOCUMENT,
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
@@ -29,36 +29,16 @@ class MessageType(str, Enum):
     incident_task_reminder = "incident-task-reminder"
 
 
-INCIDENT_PRIORITY_DESCRIPTIONS = {
-    IncidentPriorityType.info: "This incident is in tracking only mode and is not under active investigation.",
-    IncidentPriorityType.low: "This incident will require you to perform tasks during working hours until the incident is stable.",
-    IncidentPriorityType.medium: "This incident requires your full attention during working hours until the incident is stable.",
-    IncidentPriorityType.high: "This incident requires your full attention, and should be prioritized over all other work until the incident is stable.",
-}
-
-INCIDENT_PRIORITY_DESCRIPTIONS_FYI = {
-    IncidentPriorityType.info: "This incident is in tracking only mode and is not under active investigation.",
-    IncidentPriorityType.low: "This incident may require your team's attention during working hours, until the incident is stable.",
-    IncidentPriorityType.medium: "This incident may require your team's full attention during working hours, until the incident is stable.",
-    IncidentPriorityType.high: "This incident may require your team's full attention, and should be prioritized over all other work, until the incident is stable.",
-}
-
 INCIDENT_STATUS_DESCRIPTIONS = {
     IncidentStatus.active: "This incident is under active investigation.",
     IncidentStatus.stable: "This incident is stable, the bulk of the investigation has been completed or most of the risk has been mitigated.",
     IncidentStatus.closed: "This no longer requires additional involvement, long term incident action items have been assigned to their respective owners.",
 }
 
-INCIDENT_STATUS_REPORT_DESCRIPTION = """
-This is an incident status update.
-""".replace(
-    "\n", " "
-).strip()
-
 INCIDENT_TASK_REMINDER_DESCRIPTION = """
 You are assigned to the following incident tasks.
-This is a reminder that these tasks have *passed* their due date.
-Please review and update as appropriate.""".replace(
+This is a reminder that these tasks have passed their due date.
+Please review and update them as appropriate. Resolving them will stop the reminders.""".replace(
     "\n", " "
 ).strip()
 
@@ -69,8 +49,8 @@ Daily Incidents Summary""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION = """
-Active Incidents""".replace(
+INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION = f"""
+Active Incidents (<{DISPATCH_UI_URL}/incidents/status|Details>)""".replace(
     "\n", " "
 ).strip()
 
@@ -118,6 +98,12 @@ INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_DESCRIPTION = """
 Document containing the list of slash commands available to the Incident Commander (IC)
 and participants in the incident conversation.""".replace(
     "\n", " "
+).strip()
+
+INCIDENT_CONFERENCE_DESCRIPTION = """
+Video conference and phone bridge to be used throughout the incident.  Password: {{conference_challenge}}
+""".replace(
+    "\n", ""
 ).strip()
 
 INCIDENT_STORAGE_DESCRIPTION = """
@@ -180,11 +166,6 @@ This message is for notification purposes only.""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_GET_INVOLVED_BUTTON_DESCRIPTION = """
-Click the button to be added to the incident conversation.""".replace(
-    "\n", " "
-).strip()
-
 INCIDENT_CAN_REPORT_REMINDER = """
 It's time to send a new CAN report. Go to the Demisto UI and run the
 CAN Report playbook from the Playground Work Plan.""".replace(
@@ -233,8 +214,20 @@ The following incident task has been resolved in the incident document.\n\n*Desc
 INCIDENT_TYPE_CHANGE_DESCRIPTION = """
 The incident type has been changed from *{{ incident_type_old }}* to *{{ incident_type_new }}*."""
 
+INCIDENT_STATUS_CHANGE_DESCRIPTION = """
+The incident status has been changed from *{{ incident_status_old }}* to *{{ incident_status_new }}*."""
+
 INCIDENT_PRIORITY_CHANGE_DESCRIPTION = """
 The incident priority has been changed from *{{ incident_priority_old }}* to *{{ incident_priority_new }}*."""
+
+INCIDENT_NAME_WITH_ENGAGEMENT = {
+    "title": "{{name}} Incident Notification",
+    "title_link": "{{ticket_weblink}}",
+    "text": INCIDENT_NOTIFICATION_PURPOSES_FYI,
+    "button_text": "Join Incident",
+    "button_value": "{{incident_id}}",
+    "button_action": ConversationButtonActions.invite_user,
+}
 
 INCIDENT_NAME = {
     "title": "{{name}} Incident Notification",
@@ -251,20 +244,28 @@ INCIDENT_STATUS = {
     "status_mapping": INCIDENT_STATUS_DESCRIPTIONS,
 }
 
+INCIDENT_TYPE = {"title": "Incident Type - {{type}}", "text": "{{type_description}}"}
+
 INCIDENT_PRIORITY = {
     "title": "Incident Priority - {{priority}}",
-    "priority_mapping": INCIDENT_PRIORITY_DESCRIPTIONS,
+    "text": "{{priority_description}}",
 }
 
 INCIDENT_PRIORITY_FYI = {
     "title": "Incident Priority - {{priority}}",
-    "priority_mapping": INCIDENT_PRIORITY_DESCRIPTIONS_FYI,
+    "text": "{{priority_description}}",
 }
 
 INCIDENT_COMMANDER = {
     "title": "Incident Commander - {{commander_fullname}}",
     "title_link": "{{commander_weblink}}",
     "text": INCIDENT_COMMANDER_DESCRIPTION,
+}
+
+INCIDENT_CONFERENCE = {
+    "title": "Incident Conference",
+    "title_link": "{{conference_weblink}}",
+    "text": INCIDENT_CONFERENCE_DESCRIPTION,
 }
 
 INCIDENT_STORAGE = {
@@ -299,6 +300,11 @@ INCIDENT_FAQ_DOCUMENT = {
 
 INCIDENT_TYPE_CHANGE = {"title": "Incident Type Change", "text": INCIDENT_TYPE_CHANGE_DESCRIPTION}
 
+INCIDENT_STATUS_CHANGE = {
+    "title": "Incident Status Change",
+    "text": INCIDENT_STATUS_CHANGE_DESCRIPTION,
+}
+
 INCIDENT_PRIORITY_CHANGE = {
     "title": "Incident Priority Change",
     "text": INCIDENT_PRIORITY_CHANGE_DESCRIPTION,
@@ -310,22 +316,16 @@ INCIDENT_PARTICIPANT_WELCOME = {
     "text": INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION,
 }
 
-INCIDENT_GET_INVOLVED_BUTTON = {
-    "title": "Get Involved",
-    "text": INCIDENT_GET_INVOLVED_BUTTON_DESCRIPTION,
-    "button_text": "Get Involved",
-    "button_value": "{{incident_id}}",
-    "button_action": ConversationButtonActions.invite_user,
-}
-
 INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
     INCIDENT_PARTICIPANT_WELCOME,
     INCIDENT_TITLE,
     INCIDENT_STATUS,
+    INCIDENT_TYPE,
     INCIDENT_PRIORITY,
     INCIDENT_COMMANDER,
     INCIDENT_INVESTIGATION_DOCUMENT,
     INCIDENT_STORAGE,
+    INCIDENT_CONFERENCE,
     INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
     INCIDENT_FAQ_DOCUMENT,
 ]
@@ -334,26 +334,16 @@ INCIDENT_RESOURCES_MESSAGE = [
     INCIDENT_COMMANDER,
     INCIDENT_INVESTIGATION_DOCUMENT,
     INCIDENT_STORAGE,
+    INCIDENT_CONFERENCE,
     INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
     INCIDENT_FAQ_DOCUMENT,
 ]
 
-INCIDENT_NOTIFICATION_COMMON = [INCIDENT_NAME, INCIDENT_TITLE]
+INCIDENT_NOTIFICATION_COMMON = [INCIDENT_TITLE]
 
 INCIDENT_NOTIFICATION = INCIDENT_NOTIFICATION_COMMON.copy()
 INCIDENT_NOTIFICATION.extend(
-    [INCIDENT_STATUS, INCIDENT_PRIORITY_FYI, INCIDENT_COMMANDER, INCIDENT_GET_INVOLVED_BUTTON]
-)
-
-INCIDENT_NOTIFICATION_TYPE_CHANGE = INCIDENT_NOTIFICATION_COMMON.copy()
-INCIDENT_NOTIFICATION_TYPE_CHANGE.extend([INCIDENT_TYPE_CHANGE, INCIDENT_COMMANDER])
-
-INCIDENT_NOTIFICATION_PRIORITY_CHANGE = INCIDENT_NOTIFICATION_COMMON.copy()
-INCIDENT_NOTIFICATION_PRIORITY_CHANGE.extend([INCIDENT_PRIORITY_CHANGE, INCIDENT_COMMANDER])
-
-INCIDENT_NOTIFICATION_TYPE_AND_PRIORITY_CHANGE = INCIDENT_NOTIFICATION_COMMON.copy()
-INCIDENT_NOTIFICATION_TYPE_AND_PRIORITY_CHANGE.extend(
-    [INCIDENT_TYPE_CHANGE, INCIDENT_PRIORITY_CHANGE, INCIDENT_COMMANDER]
+    [INCIDENT_STATUS, INCIDENT_TYPE, INCIDENT_PRIORITY_FYI, INCIDENT_COMMANDER]
 )
 
 INCIDENT_STATUS_REPORT = [
@@ -424,9 +414,6 @@ def render_message_template(message_template: List[dict], **kwargs):
     data = []
     new_copy = copy.deepcopy(message_template)
     for d in new_copy:
-        if d.get("priority_mapping"):
-            d["text"] = d["priority_mapping"][kwargs["priority"]]
-
         if d.get("status_mapping"):
             d["text"] = d["status_mapping"][kwargs["status"]]
 

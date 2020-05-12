@@ -6,15 +6,8 @@
     <v-flex xs12>
       <v-layout column>
         <v-flex>
-          <v-list
-            two-line
-            class="elevation-2"
-          >
-            <v-list-group
-              v-for="item in items"
-              :key="item.content.id"
-              no-action
-            >
+          <v-list two-line class="elevation-2">
+            <v-list-group v-for="item in items" :key="item.content.id" no-action>
               <template v-slot:activator>
                 <v-list-item>
                   <v-layout>
@@ -44,10 +37,7 @@
                   </v-layout>
                 </v-list-item>
               </template>
-              <v-card
-                v-for="description in item.content.descriptions"
-                :key="description.id"
-              >
+              <v-card v-for="description in item.content.descriptions" :key="description.id">
                 <v-card-title primary-title>
                   <div>{{ description.text }}</div>
                 </v-card-title>

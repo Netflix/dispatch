@@ -1,72 +1,92 @@
-import requests
-from cachetools import TTLCache
-from fastapi import HTTPException
-from fastapi.security.utils import get_authorization_scheme_param
-from jose import JWTError, jwt
+"""
+.. module: dispatch.auth.service
+    :platform: Unix
+    :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
+    :license: Apache, see LICENSE for more details.
+"""
+import logging
+from typing import List, Optional
+from fastapi import HTTPException, Depends
+from fastapi.encoders import jsonable_encoder
 from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
+from fastapi_permissions import Authenticated, configure_permissions
 
-from dispatch.config import JWKS_URL, DISPATCH_AUTH_HEADER_KEY
+from sqlalchemy.orm import Session
+from dispatch.database import get_db
 
-jwk_key_cache = TTLCache(maxsize=1, ttl=60 * 60)
+from dispatch.plugins.base import plugins
+from dispatch.config import (
+    DISPATCH_AUTHENTICATION_PROVIDER_SLUG,
+    DISPATCH_AUTHENTICATION_DEFAULT_USER,
+)
+from .models import DispatchUser, UserRegister, UserUpdate
 
+log = logging.getLogger(__name__)
 
-def from_bearer_token(request: Request):
-    """Fetches user from provided bearer token."""
-    authorization: str = request.headers.get("Authorization")
-    scheme, param = get_authorization_scheme_param(authorization)
-    if not authorization or scheme.lower() != "bearer":
-        return
-
-    token = authorization.split()[1]
-
-    # TODO should we warm this cache up on application start?
-    try:
-        key = jwk_key_cache[JWKS_URL]
-    except Exception:
-        key = requests.get(JWKS_URL).json()["keys"][0]
-        jwk_key_cache[JWKS_URL] = key
-
-    try:
-        data = jwt.decode(token, key)
-    except JWTError:
-        return
-
-    return data["email"]
+credentials_exception = HTTPException(
+    status_code=HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"
+)
 
 
-def from_headers(request: Request):
-    """Fetches user from provider headers. (Email header specified by DISPATCH_AUTH_HEADER)"""
-    return request.headers.get(DISPATCH_AUTH_HEADER_KEY)
+def get(*, db_session, user_id: int) -> Optional[DispatchUser]:
+    """Returns an user based on the given user id."""
+    return db_session.query(DispatchUser).filter(DispatchUser.id == user_id).one_or_none()
 
 
-def get_current_user(*, request: Request):
-    """Gets the current user based on the token."""
-    credentials_exception = HTTPException(
-        status_code=HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"
-    )
+def get_by_email(*, db_session, email: str) -> Optional[DispatchUser]:
+    """Returns an user object based on user email."""
+    return db_session.query(DispatchUser).filter(DispatchUser.email == email).one_or_none()
 
-    user_email = from_bearer_token(request)
 
-    if not user_email:
-        raise credentials_exception
-    authorization: str = request.headers.get("Authorization")
-    scheme, param = get_authorization_scheme_param(authorization)
-    if not authorization or scheme.lower() != "bearer":
-        raise credentials_exception
+def create(*, db_session, user_in: UserRegister) -> DispatchUser:
+    """Creates a new dispatch user."""
+    # pydantic forces a string password, but we really want bytes
+    password = bytes(user_in.password, "utf-8")
+    user = DispatchUser(**user_in.dict(exclude={"password"}), password=password)
+    db_session.add(user)
+    db_session.commit()
+    return user
 
-    token = authorization.split()[1]
 
-    # TODO should we warm this cache up on application start?
-    try:
-        key = jwk_key_cache[JWKS_URL]
-    except Exception:
-        key = requests.get(JWKS_URL).json()["keys"][0]
-        jwk_key_cache[JWKS_URL] = key
+def get_or_create(*, db_session, user_in: UserRegister) -> DispatchUser:
+    """Gets an existing user or creates a new one."""
+    user = get_by_email(db_session=db_session, email=user_in.email)
+    if not user:
+        return create(db_session=db_session, user_in=user_in)
+    return user
 
-    try:
-        data = jwt.decode(token, key)
-    except JWTError:
-        raise credentials_exception
 
-    return data["email"]
+def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUser:
+    """Updates a user."""
+    user_data = jsonable_encoder(user)
+    update_data = user_in.dict(skip_defaults=True)
+    for field in user_data:
+        if field in update_data:
+            setattr(user, field, update_data[field])
+
+    db_session.add(user)
+    db_session.commit()
+    return user
+
+
+def get_current_user(*, db_session: Session = Depends(get_db), request: Request) -> DispatchUser:
+    """Attempts to get the current user depending on the configured authentication provider."""
+    if DISPATCH_AUTHENTICATION_PROVIDER_SLUG:
+        auth_plugin = plugins.get(DISPATCH_AUTHENTICATION_PROVIDER_SLUG)
+        user_email = auth_plugin.get_current_user(request)
+    else:
+        log.debug("No authentication provider. Default user will be used")
+        user_email = DISPATCH_AUTHENTICATION_DEFAULT_USER
+
+    return get_or_create(db_session=db_session, user_in=UserRegister(email=user_email))
+
+
+def get_active_principals(user: DispatchUser = Depends(get_current_user)) -> List[str]:
+    """Fetches the current participants for a given user."""
+    principals = [Authenticated]
+    principals.extend(getattr(user, "principals", []))
+    return principals
+
+
+Permission = configure_permissions(get_active_principals)

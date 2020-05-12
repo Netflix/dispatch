@@ -6,15 +6,8 @@
     <v-flex xs12>
       <v-layout column>
         <v-flex>
-          <v-list
-            two-line
-            class="elevation-2"
-          >
-            <v-list-group
-              v-for="item in items"
-              :key="item.content.id"
-              no-action
-            >
+          <v-list two-line class="elevation-2">
+            <v-list-group v-for="item in items" :key="item.content.id" no-action>
               <template v-slot:activator>
                 <v-list-item>
                   <v-layout justify-space-around>
@@ -68,7 +61,9 @@
                           <v-icon>my_location</v-icon>
                         </v-list-item-action>
                         <v-list-item-content>
-                          <v-list-item-title>{{ incident.incident_priority.name }}</v-list-item-title>
+                          <v-list-item-title>{{
+                            incident.incident_priority.name
+                          }}</v-list-item-title>
                           <v-list-item-subtitle>Incident Priority</v-list-item-subtitle>
                         </v-list-item-content>
                       </v-list-item>

@@ -5,12 +5,13 @@ import { debounce } from "lodash"
 
 const getDefaultSelectedState = () => {
   return {
-    name: null,
+    id: null,
     slug: null,
+    name: null,
+    description: null,
+    visibility: null,
     commander_service: null,
     template_document: null,
-    description: null,
-    id: null,
     loading: false
   }
 }
@@ -72,7 +73,7 @@ const actions = {
   save({ commit, state, dispatch }) {
     if (!state.selected.id) {
       return IncidentTypeApi.create(state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "IncidentType created successfully." }, { root: true })
@@ -89,7 +90,7 @@ const actions = {
         })
     } else {
       return IncidentTypeApi.update(state.selected.id, state.selected)
-        .then(response => {
+        .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(

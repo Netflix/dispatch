@@ -1,4 +1,4 @@
-import { AuthLayout, DefaultLayout } from "@/components/layouts"
+import { DefaultLayout, AuthLayout } from "@/components/layouts"
 
 export const publicRoute = [
   {
@@ -6,12 +6,35 @@ export const publicRoute = [
     component: () => import(/* webpackChunkName: "errors-404" */ "@/views/error/NotFound.vue")
   },
   {
+    path: "/login",
+    component: AuthLayout,
+    meta: { title: "Login", icon: "view_compact", group: "auth" },
+    children: [
+      {
+        path: "/login",
+        name: "Login",
+        component: () => import(/* webpackChunkName: "auth-login" */ "@/auth/Login.vue")
+      }
+    ]
+  },
+  {
+    path: "/register",
+    component: AuthLayout,
+    meta: { title: "Register", icon: "view_compact", group: "auth" },
+    children: [
+      {
+        path: "/register",
+        name: "Register",
+        component: () => import(/* webpackChunkName: "auth-register" */ "@/auth/Register.vue")
+      }
+    ]
+  },
+  {
     path: "/404",
     name: "404",
     meta: { title: "Not Found" },
     component: () => import(/* webpackChunkName: "errors-404" */ "@/views/error/NotFound.vue")
   },
-
   {
     path: "/500",
     name: "500",
@@ -20,6 +43,7 @@ export const publicRoute = [
   }
 ]
 
+// NOTE: The order in which routes are added to the list matters when evaluated. For example, /incidents/report will take precendence over /incidents/:name.
 export const protectedRoute = [
   {
     path: "/",
@@ -37,19 +61,50 @@ export const protectedRoute = [
   },
   {
     path: "/incidents/status",
-    component: DefaultLayout,
     meta: { title: "Status", icon: "", requiresAuth: true },
     component: () => import(/* webpackChunkName: "incidents-status" */ "@/incident/Status.vue")
   },
 
   {
     path: "/incidents/report",
-    component: DefaultLayout,
     meta: { title: "Report", icon: "", requiresAuth: true },
     component: () => import(/* webpackChunkName: "incidents-report" */ "@/incident/ReportForm.vue")
   },
-
-  //list
+  {
+    path: "/incidents/types",
+    component: DefaultLayout,
+    meta: {
+      title: "Incident Types",
+      icon: "view_compact",
+      group: "configuration",
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: "/incidents/types",
+        name: "IncidentTypeTable",
+        component: () => import(/* webpackChunkName: "routing-table" */ "@/incident_type/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/incidents/priorities",
+    component: DefaultLayout,
+    meta: {
+      title: "Incident Priorities",
+      icon: "view_compact",
+      group: "configuration",
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: "/incidents/priorities",
+        name: "IncidentPriorityTable",
+        component: () =>
+          import(/* webpackChunkName: "routing-table" */ "@/incident_priority/Table.vue")
+      }
+    ]
+  },
   {
     path: "/dashboard",
     component: DefaultLayout,
@@ -72,6 +127,12 @@ export const protectedRoute = [
         path: "/incidents",
         name: "IncidentTable",
         component: () => import(/* webpackChunkName: "incident-table" */ "@/incident/Table.vue")
+      },
+      {
+        path: "/incidents/:name",
+        name: "IncidentTable",
+        component: () => import(/* webpackChunkName: "incident-table" */ "@/incident/Table.vue"),
+        props: true
       }
     ]
   },
@@ -112,15 +173,14 @@ export const protectedRoute = [
     ]
   },
   {
-    path: "/applications",
+    path: "/tags",
     component: DefaultLayout,
-    meta: { title: "Applications", icon: "view_compact", group: "contacts", requiresAuth: true },
+    meta: { title: "Tags", icon: "view_compact", group: "contacts", requiresAuth: true },
     children: [
       {
-        path: "/applications",
-        name: "ApplicationTable",
-        component: () =>
-          import(/* webpackChunkName: "application-table" */ "@/application/Table.vue")
+        path: "/tags",
+        name: "TagTable",
+        component: () => import(/* webpackChunkName: "tag-table" */ "@/tag/Table.vue")
       }
     ]
   },
@@ -211,19 +271,36 @@ export const protectedRoute = [
     ]
   },
   {
-    path: "/incidents/types",
+    path: "/plugins",
     component: DefaultLayout,
     meta: {
-      title: "Incident Types",
+      title: "Plugins",
       icon: "view_compact",
       group: "configuration",
       requiresAuth: true
     },
     children: [
       {
-        path: "/incidents/types",
-        name: "IncidentTypeTable",
-        component: () => import(/* webpackChunkName: "routing-table" */ "@/incident_type/Table.vue")
+        path: "/plugins",
+        name: "PluginTable",
+        component: () => import(/* webpackChunkName: "routing-table" */ "@/plugin/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/users",
+    component: DefaultLayout,
+    meta: {
+      title: "Users",
+      icon: "view_compact",
+      group: "configuration",
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: "/users",
+        name: "UserTable",
+        component: () => import(/* webpackChunkName: "routing-table" */ "@/auth/Table.vue")
       }
     ]
   }

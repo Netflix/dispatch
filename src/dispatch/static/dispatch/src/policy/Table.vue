@@ -6,12 +6,7 @@
       Policies
     </div>
     <v-spacer />
-    <v-btn
-      color="primary"
-      dark
-      class="mb-2"
-      @click="createPolicy()"
-    >
+    <v-btn color="primary" dark class="mb-2" @click="createPolicy()">
       New
     </v-btn>
     <v-flex xs12>
@@ -37,17 +32,10 @@
               @update:options="setFilterOptions($event)"
             >
               <template v-slot:item.actions="{ item }">
-                <v-icon
-                  small
-                  class="mr-2"
-                  @click="editPolicy(item)"
-                >
+                <v-icon small class="mr-2" @click="editPolicy(item)">
                   edit
                 </v-icon>
-                <v-icon
-                  small
-                  @click="deletePolicy(item)"
-                >
+                <v-icon small @click="deletePolicy(item)">
                   delete
                 </v-icon>
               </template>
@@ -60,7 +48,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { debounce } from "lodash"
 import { mapState, mapActions, mapMutations } from "vuex"
 import NewEditSheet from "@/policy/NewEditSheet.vue"
 import DeleteDialog from "@/policy/DeleteDialog.vue"
@@ -102,7 +90,7 @@ export default {
       this.$store.dispatch("policy/selectPolicy", policy)
       this.$store.dispatch("policy/showDeleteDialog", true)
     },
-    setFilterOptions: _.debounce(function(options) {
+    setFilterOptions: debounce(function(options) {
       this.$store.dispatch("policy/setFilterOptions", options)
     }, 200)
   }

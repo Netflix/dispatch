@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { forEach, sumBy } from "lodash"
 import VueApexCharts from "vue-apexcharts"
 export default {
   name: "IncidentCostBarChartCard",
@@ -61,7 +61,8 @@ export default {
             formatter: function(val) {
               var formatter = new Intl.NumberFormat("en-US", {
                 style: "currency",
-                currency: "USD"
+                currency: "USD",
+                maximumSignificantDigits: 6
               })
 
               return formatter.format(val) /* $2,500.00 */
@@ -79,7 +80,8 @@ export default {
           formatter: function(val) {
             var formatter = new Intl.NumberFormat("en-US", {
               style: "currency",
-              currency: "USD"
+              currency: "USD",
+              maximumSignificantDigits: 6
             })
 
             return formatter.format(val) /* $2,500.00 */
@@ -89,8 +91,8 @@ export default {
     },
     series() {
       let series = { name: "cost", data: [] }
-      _.forEach(this.value, function(value, key) {
-        series.data.push(_.sumBy(value, "cost"))
+      forEach(this.value, function(value) {
+        series.data.push(sumBy(value, "cost"))
       })
 
       return [series]

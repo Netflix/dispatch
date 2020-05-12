@@ -25,7 +25,18 @@ Vue.filter("toUSD", function(value) {
   if (value) {
     var formatter = new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD"
+      currency: "USD",
+      maximumSignificantDigits: 6
+    })
+    return formatter.format(value)
+  }
+  return value
+})
+
+Vue.filter("toNumberString", function(value) {
+  if (value) {
+    var formatter = new Intl.NumberFormat("en-US", {
+      maximumSignificantDigits: 6
     })
     return formatter.format(value)
   }
@@ -41,5 +52,15 @@ Vue.filter("deslug", function(value) {
         return word.charAt(0).toUpperCase() + word.slice(1)
       })
       .join(" ")
+  }
+})
+
+Vue.filter("commaString", function(value, key) {
+  if (value) {
+    return value
+      .map(function(el) {
+        return el[key]
+      })
+      .join(", ")
   }
 })

@@ -6,20 +6,24 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Boolean, String, Integer, ForeignKey, DateTime, event
 
 from dispatch.database import Base
-from dispatch.models import DispatchBase
-from dispatch.participant_role.models import ParticipantRoleCreate
+from dispatch.models import DispatchBase, IndividualReadNested
+from dispatch.participant_role.models import ParticipantRoleCreate, ParticipantRoleRead
 
 
 class Participant(Base):
     id = Column(Integer, primary_key=True)
-    is_active = Column(Boolean, default=True)
-    active_at = Column(DateTime, default=datetime.utcnow)
-    inactive_at = Column(DateTime)
+    is_active = Column(Boolean, default=True)  # TODO(mvilanova): make it a hybrid property
+    active_at = Column(
+        DateTime, default=datetime.utcnow
+    )  # TODO(mvilanova): make it a hybrid property
+    inactive_at = Column(DateTime)  # TODO(mvilanova): make it a hybrid property
     incident_id = Column(Integer, ForeignKey("incident.id"))
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
     location = Column(String)
-    team_id = Column(Integer, ForeignKey("team_contact.id"))
-    participant_role = relationship("ParticipantRole", lazy="subquery", backref="participant")
+    team = Column(String)
+    department = Column(String)
+    after_hours_notification = Column(Boolean, default=False)
+    participant_roles = relationship("ParticipantRole", backref="participant")
     status_reports = relationship("StatusReport", backref="participant")
 
     @staticmethod
@@ -39,12 +43,16 @@ class Participant(Base):
 
 
 class ParticipantBase(DispatchBase):
-    pass
+    location: Optional[str]
+    team: Optional[str]
+    department: Optional[str]
 
 
 class ParticipantCreate(ParticipantBase):
-    participant_role: Optional[List[ParticipantRoleCreate]] = []
+    participant_roles: Optional[List[ParticipantRoleCreate]] = []
     location: Optional[str]
+    team: Optional[str]
+    department: Optional[str]
 
 
 class ParticipantUpdate(ParticipantBase):
@@ -53,6 +61,8 @@ class ParticipantUpdate(ParticipantBase):
 
 class ParticipantRead(ParticipantBase):
     id: int
+    participant_roles: Optional[List[ParticipantRoleRead]] = []
+    individual: Optional[IndividualReadNested]
     active_at: Optional[datetime] = None
     inactive_at: Optional[datetime] = None
 

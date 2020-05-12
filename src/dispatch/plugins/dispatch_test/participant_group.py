@@ -2,7 +2,7 @@ from dispatch.plugins.bases import ParticipantGroupPlugin
 
 
 class TestParticipantGroupPlugin(ParticipantGroupPlugin):
-    title = "Test Participant Group"
+    title = "Dispatch Test Plugin - Participant Group"
     slug = "test-participant-group"
 
     def create(self, participants, **kwargs):

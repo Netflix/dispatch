@@ -1,9 +1,11 @@
 import re
+import logging
 from typing import Any, List
+from itertools import groupby
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import Query, sessionmaker, scoped_session
+from sqlalchemy.orm import Query, sessionmaker
 from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
 from sqlalchemy_searchable import make_searchable
 from sqlalchemy_searchable import search as search_db
@@ -12,6 +14,8 @@ from starlette.requests import Request
 from dispatch.common.utils.composite_search import CompositeSearch
 
 from .config import SQLALCHEMY_DATABASE_URI
+
+log = logging.getLogger(__file__)
 
 engine = create_engine(str(SQLALCHEMY_DATABASE_URI))
 SessionLocal = sessionmaker(bind=engine)
@@ -36,6 +40,11 @@ make_searchable(Base.metadata)
 
 def get_db(request: Request):
     return request.state.db
+
+
+def get_model_name_by_tablename(table_fullname: str) -> str:
+    """Returns the model name of a given table."""
+    return get_class_by_tablename(table_fullname=table_fullname).__name__
 
 
 def get_class_by_tablename(table_fullname: str) -> Any:
@@ -70,14 +79,45 @@ def search(*, db_session, query_str: str, model: str):
 
 def create_filter_spec(model, fields, ops, values):
     """Creates a filter spec."""
-    filter_spec = []
+    filters = []
 
     if fields and ops and values:
         for field, op, value in zip(fields, ops, values):
-            filter_spec.append({"model": model, "field": field, "op": op, "value": value})
-    # NOTE we default to AND filters
+            # we have a complex field, we may need to join
+            if "." in field:
+                complex_model, complex_field = field.split(".")
+                filters.append(
+                    {
+                        "model": get_model_name_by_tablename(complex_model),
+                        "field": complex_field,
+                        "op": op,
+                        "value": value,
+                    }
+                )
+            else:
+                filters.append({"model": model, "field": field, "op": op, "value": value})
+
+    filter_spec = []
+    # group by field (or for same fields and for different fields)
+    data = sorted(filters, key=lambda x: x["model"])
+    for k, g in groupby(data, key=lambda x: x["model"]):
+        # force 'and' for operations other than equality
+        filters = list(g)
+        force_and = False
+        for f in filters:
+            if ">" in f["op"] or "<" in f["op"]:
+                force_and = True
+
+        if force_and:
+            filter_spec.append({"and": filters})
+        else:
+            filter_spec.append({"or": filters})
+
+    log.debug(f"Filter Spec: {filter_spec}")
+
     if filter_spec:
         return {"and": filter_spec}
+
     return filter_spec
 
 
@@ -87,13 +127,42 @@ def create_sort_spec(model, sort_by, descending):
     if sort_by and descending:
         for field, direction in zip(sort_by, descending):
             direction = "desc" if direction else "asc"
-            sort_spec.append({"model": model, "field": field, "direction": direction})
+
+            # we have a complex field, we may need to join
+            if "." in field:
+                complex_model, complex_field = field.split(".")
+
+                sort_spec.append(
+                    {
+                        "model": get_model_name_by_tablename(complex_model),
+                        "field": complex_field,
+                        "direction": direction,
+                    }
+                )
+            else:
+                sort_spec.append({"model": model, "field": field, "direction": direction})
     return sort_spec
 
 
 def get_all(*, db_session, model):
     """Fetches a query object based on the model class name."""
     return db_session.query(get_class_by_tablename(model))
+
+
+def join_required_attrs(query, model, join_attrs, fields):
+    """Determines which attrs (if any) require a join."""
+    if not fields:
+        return query
+
+    if not join_attrs:
+        return query
+
+    for field, attr in join_attrs:
+        for f in fields:
+            if field in f:
+                query = query.join(getattr(model, attr))
+
+    return query
 
 
 def search_filter_sort_paginate(
@@ -107,12 +176,16 @@ def search_filter_sort_paginate(
     fields: List[str] = None,
     ops: List[str] = None,
     values: List[str] = None,
+    join_attrs: List[str] = None,
 ):
     """Common functionality for searching, filtering and sorting"""
+    model_cls = get_class_by_tablename(model)
     if query_str:
         query = search(db_session=db_session, query_str=query_str, model=model)
     else:
-        query = get_all(db_session=db_session, model=model)
+        query = db_session.query(model_cls)
+
+    query = join_required_attrs(query, model_cls, join_attrs, fields)
 
     filter_spec = create_filter_spec(model, fields, ops, values)
     query = apply_filters(query, filter_spec)

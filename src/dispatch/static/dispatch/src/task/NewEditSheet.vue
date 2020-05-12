@@ -43,7 +43,8 @@
             :disabled="invalid || !validated"
             :loading="loading"
             @click="save()"
-          >Save</v-btn>
+            >Save</v-btn
+          >
         </v-card-actions>
       </v-card>
     </ValidationObserver>
@@ -53,8 +54,15 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider } from "vee-validate"
+import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "vee-validate/dist/rules"
 import DefinitionCombobox from "@/definition/DefinitionCombobox.vue"
+
+extend("required", {
+  ...required,
+  message: "This field is required"
+})
+
 export default {
   name: "TaskNewEditSheet",
 

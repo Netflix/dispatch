@@ -34,31 +34,46 @@
     </v-row>
     <v-row dense>
       <v-col md="6">
-        <incident-type-bar-chart-card v-model="groupedItems" :loading="loading"></incident-type-bar-chart-card>
+        <incident-type-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+        ></incident-type-bar-chart-card>
       </v-col>
       <v-col md="6">
-        <incident-priority-bar-chart-card v-model="groupedItems" :loading="loading"></incident-priority-bar-chart-card>
+        <incident-priority-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+        ></incident-priority-bar-chart-card>
       </v-col>
     </v-row>
     <v-row dense>
       <v-col md="6">
-        <incident-cost-bar-chart-card v-model="groupedItems" :loading="loading"></incident-cost-bar-chart-card>
+        <incident-cost-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+        ></incident-cost-bar-chart-card>
       </v-col>
       <v-col md="6"></v-col>
     </v-row>
     <v-row dense>
       <v-col md="6">
-        <incident-active-time-card v-model="groupedItems" :loading="loading"></incident-active-time-card>
+        <incident-active-time-card
+          v-model="groupedItems"
+          :loading="loading"
+        ></incident-active-time-card>
       </v-col>
       <v-col md="6">
-        <incident-resolve-time-card v-model="groupedItems" :loading="loading"></incident-resolve-time-card>
+        <incident-resolve-time-card
+          v-model="groupedItems"
+          :loading="loading"
+        ></incident-resolve-time-card>
       </v-col>
     </v-row>
   </v-layout>
 </template>
 
 <script>
-import _ from "lodash"
+import { groupBy, sortBy } from "lodash"
 import parseISO from "date-fns/parseISO"
 import IncidentApi from "@/incident/api"
 import IncidentTypeBarChartCard from "@/incident/IncidentTypeBarChartCard.vue"
@@ -91,17 +106,17 @@ export default {
 
   computed: {
     incidentsByYear() {
-      return _.groupBy(this.items, function(item) {
+      return groupBy(this.items, function(item) {
         return parseISO(item.created_at).getYear()
       })
     },
     incidentsByMonth() {
-      return _.groupBy(this.items, function(item) {
+      return groupBy(this.items, function(item) {
         return parseISO(item.created_at).toLocaleString("default", { month: "short" })
       })
     },
     incidentsByQuarter() {
-      return _.groupBy(this.items, function(item) {
+      return groupBy(this.items, function(item) {
         return "Q" + Math.floor(parseISO(item.created_at).getMonth() + 3) / 3
       })
     },
@@ -115,7 +130,7 @@ export default {
     // TODO make this reported_at
     IncidentApi.getAll({ itemsPerPage: 100, sortBy: ["created_at"], descending: [true] }).then(
       response => {
-        this.items = _.sortBy(response.data.items, "created_at")
+        this.items = sortBy(response.data.items, "created_at")
         this.loading = false
       }
     )

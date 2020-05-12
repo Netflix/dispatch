@@ -1,12 +1,12 @@
-from enum import Enum
 from typing import List, Optional
 
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
+from dispatch.database import Base
 from dispatch.enums import Visibility
-from dispatch.models import Base, DispatchBase
+from dispatch.models import DispatchBase
 
 
 class IncidentType(Base):

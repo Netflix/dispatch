@@ -38,6 +38,8 @@ def create_task_reminders(db_session=None):
     """Creates multiple task reminders."""
     tasks = task_service.get_overdue_tasks(db_session=db_session)
     log.debug(f"New tasks that need reminders. NumTasks: {len(tasks)}")
+    # lets only remind for active incidents for now
+    tasks = [t for t in tasks if t.incident.status == IncidentStatus.active]
     if tasks:
         grouped_tasks = group_tasks_by_assignee(tasks)
         for assignee, tasks in grouped_tasks.items():

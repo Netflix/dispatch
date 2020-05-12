@@ -17,27 +17,59 @@ from dispatch.config import (
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
 )
 from dispatch.database import SessionLocal
+from dispatch.enums import Visibility
 from dispatch.messaging import (
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
     INCIDENT_NEW_ROLE_NOTIFICATION,
     INCIDENT_NOTIFICATION,
-    INCIDENT_NOTIFICATION_PRIORITY_CHANGE,
-    INCIDENT_NOTIFICATION_TYPE_AND_PRIORITY_CHANGE,
-    INCIDENT_NOTIFICATION_TYPE_CHANGE,
+    INCIDENT_NOTIFICATION_COMMON,
+    INCIDENT_NAME,
+    INCIDENT_NAME_WITH_ENGAGEMENT,
+    INCIDENT_PRIORITY_CHANGE,
+    INCIDENT_STATUS_CHANGE,
+    INCIDENT_TYPE_CHANGE,
     INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
     INCIDENT_RESOURCES_MESSAGE,
     INCIDENT_REVIEW_DOCUMENT_NOTIFICATION,
+    INCIDENT_STATUS_REPORT_REMINDER,
+    INCIDENT_COMMANDER,
     MessageType,
 )
+
+from dispatch.incident.enums import IncidentStatus
+from dispatch.conversation.enums import ConversationCommands
 from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
 from dispatch.incident import service as incident_service
-from dispatch.incident.models import Incident
+from dispatch.incident.models import Incident, IncidentRead
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.plugins.base import plugins
 
 
 log = logging.getLogger(__name__)
+
+
+def send_incident_status_report_reminder(incident: Incident):
+    """Sends the incident commander a direct message indicating that they should complete a status report."""
+    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
+    status_report_command = convo_plugin.get_command_name(ConversationCommands.status_report)
+
+    items = [
+        {
+            "name": incident.name,
+            "ticket_weblink": incident.ticket.weblink,
+            "title": incident.title,
+            "command": status_report_command,
+        }
+    ]
+
+    convo_plugin.send_direct(
+        incident.commander.email,
+        "Incident Status Report Reminder",
+        INCIDENT_STATUS_REPORT_REMINDER,
+        MessageType.incident_status_report,
+        items=items,
+    )
 
 
 def send_welcome_ephemeral_message_to_participant(
@@ -75,13 +107,18 @@ def send_welcome_ephemeral_message_to_participant(
         name=incident.name,
         title=incident.title,
         status=incident.status,
+        type=incident.incident_type.name,
+        type_description=incident.incident_type.description,
         priority=incident.incident_priority.name,
+        priority_description=incident.incident_priority.description,
         commander_fullname=incident.commander.name,
         commander_weblink=incident.commander.weblink,
         document_weblink=incident_document.weblink,
         storage_weblink=incident.storage.weblink,
         ticket_weblink=incident.ticket.weblink,
         faq_weblink=incident_faq.weblink,
+        conference_weblink=incident.conference.weblink,
+        conference_challenge=incident.conference.conference_challenge,
         conversation_commands_reference_document_weblink=incident_conversation_commands_reference_document.weblink,
     )
 
@@ -120,13 +157,18 @@ def send_welcome_email_to_participant(
         name=incident.name,
         title=incident.title,
         status=incident.status,
+        type=incident.incident_type.name,
+        type_description=incident.incident_type.description,
         priority=incident.incident_priority.name,
+        priority_description=incident.incident_priority.description,
         commander_fullname=incident.commander.name,
         commander_weblink=incident.commander.weblink,
         document_weblink=incident_document.weblink,
         storage_weblink=incident.storage.weblink,
         ticket_weblink=incident.ticket.weblink,
         faq_weblink=incident_faq.weblink,
+        conference_weblink=incident.conference.weblink,
+        conference_challenge=incident.conference.conference_challenge,
         conversation_commands_reference_document_weblink=incident_conversation_commands_reference_document.weblink,
     )
 
@@ -165,6 +207,12 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
 
     # we send status notifications to conversations
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
+
+    if incident.status != IncidentStatus.closed:
+        message_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
+    else:
+        message_template.insert(0, INCIDENT_NAME)
+
     for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
         convo_plugin.send(
             conversation,
@@ -175,6 +223,9 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
             title=incident.title,
             status=incident.status,
             priority=incident.incident_priority.name,
+            priority_description=incident.incident_priority.description,
+            type=incident.incident_type.name,
+            type_description=incident.incident_type.description,
             commander_fullname=incident.commander.name,
             commander_weblink=incident.commander.weblink,
             document_weblink=incident_document.weblink,
@@ -194,7 +245,10 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
             name=incident.name,
             title=incident.title,
             status=incident.status,
+            type=incident.incident_type.name,
+            type_description=incident.incident_type.description,
             priority=incident.incident_priority.name,
+            priority_description=incident.incident_priority.description,
             commander_fullname=incident.commander.name,
             commander_weblink=incident.commander.weblink,
             document_weblink=incident_document.weblink,
@@ -215,72 +269,111 @@ def send_incident_notifications(incident: Incident, db_session: SessionLocal):
     log.debug(f"Incident notifications sent.")
 
 
-def send_incident_change_notifications(
-    incident: Incident, incident_title: str, incident_type: str, incident_priority: str
-):
+def send_incident_update_notifications(incident: Incident, previous_incident: IncidentRead):
     """Sends notifications about incident changes."""
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
-    notification_template = []
+    notification_template = INCIDENT_NOTIFICATION_COMMON.copy()
 
-    if (
-        incident_type != incident.incident_type.name
-        and incident_priority != incident.incident_priority.name
-    ):
-        notification_template = INCIDENT_NOTIFICATION_TYPE_AND_PRIORITY_CHANGE
-    elif (
-        incident_type != incident.incident_type.name
-        and incident_priority == incident.incident_priority.name
-    ):
-        notification_template = INCIDENT_NOTIFICATION_TYPE_CHANGE
-    elif (
-        incident_type == incident.incident_type.name
-        and incident_priority != incident.incident_priority.name
-    ):
-        notification_template = INCIDENT_NOTIFICATION_PRIORITY_CHANGE
-    else:
+    change = False
+    if previous_incident.status != incident.status:
+        change = True
+        notification_template.append(INCIDENT_STATUS_CHANGE)
+
+    if previous_incident.incident_type.name != incident.incident_type.name:
+        change = True
+        notification_template.append(INCIDENT_TYPE_CHANGE)
+
+    if previous_incident.incident_priority.name != incident.incident_priority.name:
+        change = True
+        notification_template.append(INCIDENT_PRIORITY_CHANGE)
+
+    if not change:
         # we don't need to notify
         log.debug(f"Incident change notifications not sent.")
         return
 
+    notification_template.append(INCIDENT_COMMANDER)
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
 
-    # we notify the incident conversation
+    # we send an update to the incident conversation
+    incident_conversation_notification_template = notification_template.copy()
+    incident_conversation_notification_template.insert(0, INCIDENT_NAME)
+
     convo_plugin.send(
         incident.conversation.channel_id,
         notification_text,
-        notification_template,
+        incident_conversation_notification_template,
         notification_type,
         name=incident.name,
         ticket_weblink=incident.ticket.weblink,
-        title=incident_title,
-        incident_type_old=incident.incident_type.name,
-        incident_type_new=incident_type,
-        incident_priority_old=incident.incident_priority.name,
-        incident_priority_new=incident_priority,
+        title=incident.title,
+        incident_type_old=previous_incident.incident_type.name,
+        incident_type_new=incident.incident_type.name,
+        incident_priority_old=previous_incident.incident_priority.name,
+        incident_priority_new=incident.incident_priority.name,
+        incident_status_old=previous_incident.status.value,
+        incident_status_new=incident.status,
         commander_fullname=incident.commander.name,
         commander_weblink=incident.commander.weblink,
     )
 
-    # we notify the notification conversations
-    for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
-        convo_plugin.send(
-            conversation,
-            notification_text,
-            notification_template,
-            notification_type,
-            name=incident.name,
-            ticket_weblink=incident.ticket.weblink,
-            title=incident_title,
-            incident_type_old=incident.incident_type.name,
-            incident_type_new=incident_type,
-            incident_priority_old=incident.incident_priority.name,
-            incident_priority_new=incident_priority,
-            commander_fullname=incident.commander.name,
-            commander_weblink=incident.commander.weblink,
-        )
+    if incident.visibility == Visibility.open:
+        notification_coversation_notification_template = notification_template.copy()
+        if incident.status != IncidentStatus.closed:
+            notification_coversation_notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
+        else:
+            notification_coversation_notification_template.insert(0, INCIDENT_NAME)
 
-    log.debug(f"Incident change notifications sent.")
+        # we send an update to the incident notification conversations
+        for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
+            convo_plugin.send(
+                conversation,
+                notification_text,
+                notification_coversation_notification_template,
+                notification_type,
+                name=incident.name,
+                ticket_weblink=incident.ticket.weblink,
+                title=incident.title,
+                incident_id=incident.id,
+                incident_type_old=previous_incident.incident_type.name,
+                incident_type_new=incident.incident_type.name,
+                incident_priority_old=previous_incident.incident_priority.name,
+                incident_priority_new=incident.incident_priority.name,
+                incident_status_old=previous_incident.status.value,
+                incident_status_new=incident.status,
+                commander_fullname=incident.commander.name,
+                commander_weblink=incident.commander.weblink,
+            )
+
+        # we send an update to the incident notification distribution lists
+        email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
+        for distro in INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS:
+            email_plugin.send(
+                distro,
+                notification_template,
+                notification_type,
+                name=incident.name,
+                title=incident.title,
+                status=incident.status,
+                priority=incident.incident_priority.name,
+                priority_description=incident.incident_priority.description,
+                commander_fullname=incident.commander.name,
+                commander_weblink=incident.commander.weblink,
+                document_weblink=incident.incident_document.weblink,
+                storage_weblink=incident.storage.weblink,
+                ticket_weblink=incident.ticket.weblink,
+                faq_weblink=incident.incident_faq.weblink,
+                incident_id=incident.id,
+                incident_priority_old=previous_incident.incident_priority.name,
+                incident_priority_new=incident.incident_priority.name,
+                incident_type_old=previous_incident.incident_type.name,
+                incident_type_new=incident.incident_type.name,
+                incident_status_old=previous_incident.status.value,
+                incident_status_new=incident.status,
+            )
+
+    log.debug(f"Incident update notifications sent.")
 
 
 def send_incident_participant_announcement_message(
@@ -499,6 +592,7 @@ def send_incident_resources_ephemeral_message_to_participant(
         storage_weblink=incident.storage.weblink,
         faq_weblink=incident_faq.weblink,
         conversation_commands_reference_document_weblink=incident_conversation_commands_reference_document.weblink,
+        conference_weblink=incident.conference.weblink,
     )
 
     log.debug(f"List of incident resources sent to {user_id} via ephemeral message.")

@@ -18,15 +18,15 @@ class ParticipantRoleType(str, Enum):
 
 class ParticipantRole(Base):
     id = Column(Integer, primary_key=True)
-    assume_at = Column(DateTime, default=datetime.utcnow)
-    renounce_at = Column(DateTime)
+    assumed_at = Column(DateTime, default=datetime.utcnow)
+    renounced_at = Column(DateTime)
     role = Column(String, default=ParticipantRoleType.participant)
     participant_id = Column(Integer, ForeignKey("participant.id"))
 
 
 # Pydantic models...
 class ParticipantRoleBase(DispatchBase):
-    pass
+    role: str
 
 
 class ParticipantRoleCreate(ParticipantRoleBase):
@@ -39,8 +39,8 @@ class ParticipantRoleUpdate(ParticipantRoleBase):
 
 class ParticipantRoleRead(ParticipantRoleBase):
     id: int
-    assume_at: Optional[datetime] = None
-    renounce_at: Optional[datetime] = None
+    assumed_at: Optional[datetime] = None
+    renounced_at: Optional[datetime] = None
 
 
 class ParticipantRolePagination(ParticipantRoleBase):

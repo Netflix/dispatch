@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { countBy, forEach } from "lodash"
 
 import VueApexCharts from "vue-apexcharts"
 export default {
@@ -32,7 +32,9 @@ export default {
   },
 
   data() {
-    return {}
+    return {
+      order: ["High", "Medium", "Low", "Info"]
+    }
   },
 
   computed: {
@@ -55,6 +57,7 @@ export default {
             }
           }
         ],
+        colors: ["#FF4560", "#FEB019", "#00E396", "#008FFB"],
         xaxis: {
           categories: this.categoryData || [],
           title: {
@@ -70,24 +73,29 @@ export default {
       }
     },
     series() {
-      let series = []
-      _.forEach(this.value, function(value, key) {
-        let typeCount = _.map(
-          _.countBy(value, function(item) {
-            return item.incident_priority.name
-          }),
-          function(value, key) {
-            return { name: key, data: [value] }
-          }
-        )
+      let aggCount = {}
+      forEach(this.value, function(value) {
+        let count = countBy(value, function(item) {
+          return item.incident_priority.name
+        })
 
-        series = _.mergeWith(series, typeCount, function(objValue, srcValue) {
-          if (_.isArray(objValue)) {
-            return objValue.concat(srcValue)
+        forEach(count, function(value, key) {
+          if (aggCount[key]) {
+            aggCount[key].push(value)
+          } else {
+            aggCount[key] = [value]
           }
         })
       })
 
+      let series = []
+      forEach(this.order, function(o) {
+        if (aggCount[o]) {
+          series.push({ name: o, data: aggCount[o] })
+        } else {
+          series.push({ name: o, data: [0] })
+        }
+      })
       return series
     },
     categoryData() {

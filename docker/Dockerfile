@@ -11,8 +11,9 @@ LABEL org.opencontainers.image.authors="oss@netflix.com"
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Needed for GPG
     dirmngr \
-    gnupg \
+    gnupg2 \
     # Needed for fetching stuff
+    ca-certificates \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
@@ -35,16 +36,18 @@ RUN for key in \
     A48C2BEE680E841632CD4E44F07496B3EB3C1762 \
     B9E2F5981AA6E0CD28160D9FF13993A75599653C \
     ; do \
-    gpg --batch --keyserver hkps://mattrobenolt-keyserver.global.ssl.fastly.net:443 --recv-keys "$key"; \
+    gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$key"; \
     done
 
 # grab gosu for easy step-down from root
-ENV GOSU_VERSION 1.11
+ENV GOSU_VERSION 1.12
 RUN set -x \
-    && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" \
-    && wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture).asc" \
+    && dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"
+    && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch" \
+    && wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc" \
+    && export GNUPGHOME="$(mktemp -d)" \
     && gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu \
-    && rm -r /usr/local/bin/gosu.asc \
+    && rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc \
     && chmod +x /usr/local/bin/gosu
 
 # grab tini for signal processing and zombie killing
@@ -53,7 +56,7 @@ RUN set -x \
     && wget -O /usr/local/bin/tini "https://github.com/krallin/tini/releases/download/v$TINI_VERSION/tini" \
     && wget -O /usr/local/bin/tini.asc "https://github.com/krallin/tini/releases/download/v$TINI_VERSION/tini.asc" \
     && gpg --batch --verify /usr/local/bin/tini.asc /usr/local/bin/tini \
-    && rm /usr/local/bin/tini.asc \
+    && rm -f /usr/local/bin/tini.asc \
     && chmod +x /usr/local/bin/tini
 
 # Get and set up Node for front-end asset building
@@ -65,12 +68,17 @@ RUN cd /usr/src/dispatch \
     && gpg --batch --verify SHASUMS256.txt.asc \
     && grep " node-v$NODE_VERSION-linux-x64.tar.gz\$" SHASUMS256.txt.asc | sha256sum -c - \
     && tar -xzf "node-v$NODE_VERSION-linux-x64.tar.gz" -C /usr/local --strip-components=1 \
-    && rm -r "node-v$NODE_VERSION-linux-x64.tar.gz" SHASUMS256.txt.asc
+    && rm -f "node-v$NODE_VERSION-linux-x64.tar.gz" SHASUMS256.txt.asc
 
 ARG SOURCE_COMMIT
 ENV DISPATCH_BUILD=${SOURCE_COMMIT:-unknown}
 LABEL org.opencontainers.image.revision=$SOURCE_COMMIT
 LABEL org.opencontainers.image.licenses="https://github.com/netflix/dispatch/blob/${SOURCE_COMMIT:-master}/LICENSE"
+
+ARG DISPATCH_LIGHT_BUILD
+ENV DISPATCH_LIGHT_BUILD=${DISPATCH_LIGHT_BUILD}
+
+RUN echo "DISPATCH_LIGHT_BUILD=${DISPATCH_LIGHT_BUILD}"
 
 COPY . /usr/src/dispatch/
 RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
@@ -103,6 +111,7 @@ ENV PIP_NO_CACHE_DIR=off \
     # Dispatch config params
     DISPATCH_CONF=/etc/dispatch
 
+
 COPY --from=sdist /dist/*.whl /tmp/dist/
 RUN set -x \
     && buildDeps="" \
@@ -116,7 +125,7 @@ RUN set -x \
     # These are also installed last as they are needed
     # during container run and can have the same deps w/
     && apt-get install -y --no-install-recommends \
-    pkg-config \
+    pkg-config postgresql-client\
     \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

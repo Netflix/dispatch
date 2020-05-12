@@ -1,10 +1,6 @@
 import Vue from "vue"
 import Router from "vue-router"
 import { publicRoute, protectedRoute } from "./config"
-import NProgress from "nprogress"
-import "nprogress/nprogress.css"
-
-import env from "good-env"
 
 import { BasicQueryStringUtils } from "@openid/appauth/built/query_string_utils"
 import { LocalStorageBackend } from "@openid/appauth/built/storage"
@@ -22,11 +18,6 @@ import store from "@/store"
 const requestor = new FetchRequestor()
 const routes = publicRoute.concat(protectedRoute)
 
-const pkce_auth = env.getBool(process.env.VUE_APP_DISPATCH_PKCE_AUTH) || true
-const clientId = process.env.VUE_APP_DISPATCH_CLIENT_ID
-const openIdConnectUrl = process.env.VUE_APP_DISPATCH_OPEN_ID_CONNECT_URL
-const scope = "openid profile email"
-
 Vue.use(Router)
 
 const router = new Router({
@@ -35,102 +26,147 @@ const router = new Router({
   routes: routes
 })
 
-const notifier = new AuthorizationNotifier()
+const authProviderSlug = process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 
-const qsUtils = new BasicQueryStringUtils({ useHash: false })
-//const origParse = qsUtils.parse
-qsUtils.parse = input => {
-  return qsUtils.parseQueryString(input.search)
-}
+function loginwithPKCE(to, from, next) {
+  const clientId = process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID
+  const openIdConnectUrl =
+    process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL
+  const scope = "openid profile email"
 
-const authorizationHandler = new RedirectRequestHandler(new LocalStorageBackend(), qsUtils)
-const tokenHandler = new BaseTokenRequestHandler(requestor)
+  const notifier = new AuthorizationNotifier()
 
-// Get a the openIdConnect configuration
-let cfg = null
-function getCfg() {
-  let rslv, rej
-  const resolver = (resolve, reject) => {
-    rslv = resolve
-    rej = reject
+  const qsUtils = new BasicQueryStringUtils({ useHash: false })
+  //const origParse = qsUtils.parse
+  qsUtils.parse = input => {
+    return qsUtils.parseQueryString(input.search)
   }
 
-  const p = new Promise(resolver)
-  if (cfg === null) {
-    AuthorizationServiceConfiguration.fetchFromIssuer(openIdConnectUrl, requestor)
-      .then(response => {
-        cfg = response
-        rslv(cfg)
-      })
-      .catch(rej)
-  } else {
-    rslv(cfg)
-  }
-  return p
-}
+  const tokenHandler = new BaseTokenRequestHandler(requestor)
 
-notifier.setAuthorizationListener((request, response, error) => {
-  if (response) {
-    let req = new TokenRequest({
-      client_id: clientId,
-      redirect_uri: request.redirectUri,
-      grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
-      code: response.code,
-      extras: { code_verifier: request.internal["code_verifier"] }
-    })
-    getCfg().then(cfg => {
-      tokenHandler
-        .performTokenRequest(cfg, req)
+  // Get a the openIdConnect configuration
+  let cfg = null
+  function getCfg() {
+    let rslv, rej
+    const resolver = (resolve, reject) => {
+      rslv = resolve
+      rej = reject
+    }
+
+    const p = new Promise(resolver)
+    if (cfg === null) {
+      AuthorizationServiceConfiguration.fetchFromIssuer(openIdConnectUrl, requestor)
         .then(response => {
-          store.dispatch("account/login", {
-            token: response.accessToken,
-            redirectUri: request.redirectUri
+          cfg = response
+          rslv(cfg)
+        })
+        .catch(rej)
+    } else {
+      rslv(cfg)
+    }
+    return p
+  }
+
+  const authorizationHandler = new RedirectRequestHandler(new LocalStorageBackend(), qsUtils)
+  authorizationHandler.setAuthorizationNotifier(notifier)
+
+  notifier.setAuthorizationListener((request, response, error) => {
+    if (error) {
+      console.log(error)
+    }
+    if (response) {
+      let req = new TokenRequest({
+        client_id: clientId,
+        redirect_uri: request.redirectUri,
+        grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
+        code: response.code,
+        extras: { code_verifier: request.internal["code_verifier"] }
+      })
+      getCfg().then(cfg => {
+        tokenHandler
+          .performTokenRequest(cfg, req)
+          .then(response => {
+            // Redirect to the uri in session storage and then delete it from storage
+            store.dispatch("auth/login", {
+              token: response.accessToken,
+              redirectUri: localStorage.getItem("redirect_uri")
+            })
+            localStorage.removeItem("redirect_uri")
           })
-        })
-        .catch(e => {
-          console.error(e)
-        })
-    })
-  }
-})
-
-authorizationHandler.setAuthorizationNotifier(notifier)
-// router guards
-router.beforeEach((to, from, next) => {
-  store.dispatch("app/setLoading", true)
-
-  NProgress.start()
-  if (!pkce_auth) {
-    next()
-  }
+          .catch(e => {
+            console.error(e)
+          })
+      })
+    }
+  })
 
   getCfg().then(cfg => {
-    if (!store.state.account.status.loggedIn) {
-      if (to.query.code && to.query.state) {
-        authorizationHandler.completeAuthorizationRequestIfPossible()
-      } else if (to.matched.some(record => record.meta.requiresAuth)) {
-        // Test if we already have a valid access token
-        let redirect_uri = window.location.protocol + "//" + window.location.host + to.path
-        const request = new AuthorizationRequest({
-          client_id: clientId,
-          redirect_uri: redirect_uri,
-          scope: scope,
-          response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
-          state: undefined,
-          extras: {}
-        })
-        authorizationHandler.performAuthorizationRequest(cfg, request)
-      }
+    if (to.query.code && to.query.state) {
+      authorizationHandler.completeAuthorizationRequestIfPossible()
+    } else if (to.matched.some(record => record.meta.requiresAuth)) {
+      // Test if we already have a valid access token
+      // Set the redirect_uri to a single location and store the real redirect uri in session storage.
+      // This enables easier enablement of SPA on providers like Okta where each route must be whitelisted.
+      let redirect_uri =
+        window.location.protocol + "//" + window.location.host + "/implicit/callback"
+      localStorage.setItem(
+        "redirect_uri",
+        window.location.protocol + "//" + window.location.host + to.path
+      )
+      const request = new AuthorizationRequest({
+        client_id: clientId,
+        redirect_uri: redirect_uri,
+        scope: scope,
+        response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
+        state: undefined,
+        extras: {}
+      })
+      authorizationHandler.performAuthorizationRequest(cfg, request)
     } else {
       next()
     }
   })
+}
+
+function loginBasic(to, from, next) {
+  let token = localStorage.getItem("token")
+  // we already have a token tell vuex about it
+  if (token) {
+    store.commit("auth/SET_USER_LOGIN", token)
+    next()
+  }
+
+  // prevent redirect loop
+  if (to.path !== "/login") {
+    next("/login")
+  }
+
+  next()
+}
+
+// router guards
+router.beforeEach((to, from, next) => {
+  store.dispatch("app/setLoading", true)
+  if (!store.state.auth.status.loggedIn) {
+    if (authProviderSlug === "dispatch-auth-provider-pkce") {
+      loginwithPKCE(to, from, next)
+    } else if (authProviderSlug === "dispatch-auth-provider-basic") {
+      loginBasic(to, from, next)
+    } else {
+      // if client auth is disabled
+      next()
+    }
+  } else {
+    // get user info from the server if we don't already have it
+    if (!store.state.auth.userInfo) {
+      store.dispatch("auth/getUserInfo")
+    }
+    next()
+  }
 })
 
 router.afterEach(function() {
   store.dispatch("app/setLoading", false)
-
-  NProgress.done()
 })
 
 export default router

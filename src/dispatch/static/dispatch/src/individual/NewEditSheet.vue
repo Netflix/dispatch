@@ -1,24 +1,16 @@
 <template>
-  <v-navigation-drawer v-model="showCreateEdit"
-app clipped right width="500">
+  <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
     <template v-slot:prepend>
       <v-list-item two-line>
         <v-list-item-content>
-          <v-list-item-title v-if="id"
-class="title">
-            Edit
-          </v-list-item-title>
-          <v-list-item-title v-else
-class="title">
-            New
-          </v-list-item-title>
+          <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
+          <v-list-item-title v-else class="title">New</v-list-item-title>
           <v-list-item-subtitle>Individual</v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
     </template>
     <ValidationObserver>
-      <v-card slot-scope="{ invalid, validated }"
-flat>
+      <v-card slot-scope="{ invalid, validated }" flat>
         <v-card-text>
           <v-container grid-list-md>
             <v-layout wrap>
@@ -26,8 +18,7 @@ flat>
                 <span class="subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Name"
-rules="required" immediate>
+                <ValidationProvider name="Name" rules="required" immediate>
                   <v-text-field
                     v-model="name"
                     slot-scope="{ errors, valid }"
@@ -41,8 +32,7 @@ rules="required" immediate>
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Email"
-rules="required" immediate>
+                <ValidationProvider name="Email" rules="required" immediate>
                   <v-text-field
                     v-model="email"
                     slot-scope="{ errors, valid }"
@@ -56,8 +46,7 @@ rules="required" immediate>
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Company"
-rules="required" immediate>
+                <ValidationProvider name="Company" rules="required" immediate>
                   <v-text-field
                     v-model="company"
                     slot-scope="{ errors, valid }"
@@ -88,18 +77,14 @@ rules="required" immediate>
 
         <v-card-actions>
           <v-spacer />
-          <v-btn color="secondary"
-@click="closeCreateEdit()">
-            Cancel
-          </v-btn>
+          <v-btn color="secondary" @click="closeCreateEdit()">Cancel</v-btn>
           <v-btn
             color="primary"
             :loading="loading"
             :disabled="invalid || !validated"
             @click="save()"
+            >Save</v-btn
           >
-            Save
-          </v-btn>
         </v-card-actions>
       </v-card>
     </ValidationObserver>
@@ -109,10 +94,17 @@ rules="required" immediate>
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider } from "vee-validate"
+import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "vee-validate/dist/rules"
 import IncidentPriorityMultiSelect from "@/incident_priority/IncidentPriorityMultiSelect.vue"
 import IncidentTypeMultiSelect from "@/incident_type/IncidentTypeMultiSelect.vue"
 import TermCombobox from "@/term/TermCombobox.vue"
+
+extend("required", {
+  ...required,
+  message: "This field is required"
+})
+
 export default {
   name: "IndividualNewEditSheet",
 

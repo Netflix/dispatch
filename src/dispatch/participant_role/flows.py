@@ -1,6 +1,7 @@
 import logging
 
 from dispatch.database import SessionLocal
+from dispatch.event import service as event_service
 from dispatch.incident.models import Incident
 from dispatch.participant import service as participant_service
 
@@ -78,7 +79,12 @@ def assign_role_flow(
             participant_role=assignee_role,
         )
 
-        log.debug(f"We assigned the {assignee_role} role to {assignee_contact_info['fullname']}.")
+        event_service.log(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"{assignee_contact_info['fullname']} has been assigned the role of {assignee_role}",
+            incident_id=incident_id,
+        )
 
         return "role_assigned"
 

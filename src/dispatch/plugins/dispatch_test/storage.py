@@ -2,7 +2,7 @@ from dispatch.plugins.bases import StoragePlugin
 
 
 class TestStoragePlugin(StoragePlugin):
-    title = "Test Storage"
+    title = "Dispatch Test Plugin - Storage"
     slug = "test-storage"
 
     def get(self, **kwargs):

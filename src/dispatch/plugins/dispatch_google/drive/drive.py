@@ -193,9 +193,44 @@ def create_team_drive(client: Any, name: str, members: List[str], role: Roles):
     return drive_data
 
 
+def restrict_team_drive(client: Any, team_drive_id: str):
+    """Applies a set of restrictions and capabilities to the shared drive."""
+
+    # NOTE: You can list the drive metadata using the API explorer at
+    # https://developers.google.com/drive/api/v2/reference/drives/get and setting the "fields" field to *
+
+    body = {
+        "capabilities": {
+            "canAddChildren": True,
+            "canChangeCopyRequiresWriterPermissionRestriction": False,
+            "canChangeDomainUsersOnlyRestriction": False,
+            "canChangeDriveMembersOnlyRestriction": False,
+            "canComment": True,
+            "canCopy": True,
+            "canDeleteChildren": False,
+            "canDeleteDrive": False,
+            "canDownload": True,
+            "canEdit": True,
+            "canListChildren": True,
+            "canManageMembers": False,
+            "canReadRevisions": True,
+            "canRename": True,
+            "canRenameDrive": False,
+            "canShare": True,
+            "canTrashChildren": True,
+        },
+        "restrictions": {
+            "copyRequiresWriterPermission": True,
+            "domainUsersOnly": False,
+            "driveMembersOnly": True,
+        },
+    }
+
+    return make_call(client.drives(), "update", driveId=team_drive_id, body=body)
+
+
 def create_file(client: Any, parent_id: str, name: str, file_type: str = "folder"):
     """Creates a new folder with the specified parents."""
-
     if file_type == "folder":
         mimetype = "application/vnd.google-apps.folder"
 

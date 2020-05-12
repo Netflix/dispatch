@@ -72,17 +72,19 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
+.cache
+*.cover
 .coverage
 .coverage.*
-.cache
-nosetests.xml
 coverage.xml
-*.cover
+htmlcov/
 .hypothesis/
+nosetests.xml
+.nox/
 .pytest_cache/
+.tox/
+src/dispatch/static/test/unit/coverage/
+src/dispatch/static/test/e2e/reports/
 
 # Translations
 *.mo
@@ -135,6 +137,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.vscode/
 
 # Spyder project settings
 .spyderproject
@@ -154,12 +157,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-### VisualStudioCode ###
-.vscode/*
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
 .history
@@ -167,9 +164,15 @@ dmypy.json
 ### Vuejs ###
 # Recommended template: Node.gitignore
 
+assets.json
+node_modules*
 node_modules/
-npm-debug.log
-yarn-error.log
+npm-debug.log*
+release
+selenium-debug.log
+yarn-debug.log*
+yarn-error.log*
+yarn.lock
 
 
 # End of https://www.gitignore.io/api/macos,visualstudiocode,python
@@ -191,25 +194,13 @@ Sessionx.vim
 # Temporary
 .netrwhist
 *~
-# Auto-generated tag files
-tags
 # Persistent undo
 [._]*.un~
-.vscode/launch.json
 
-src/dispatch/static/test/unit/coverage/
-src/dispatch/static/test/e2e/reports/
-assets.json
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn.lock
-yarn-error.log*
-selenium-debug.log
-node_modules
-release
+# Ignore exuberant ctags, and other tags files
+tags
 
 # exclude docker env files
 docker/.env
-
 *.dump
+!data/dispatch-sample-data.dump

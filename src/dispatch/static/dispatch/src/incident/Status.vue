@@ -20,7 +20,9 @@
                 <v-toolbar flat>
                   <v-toolbar-title>Active Security Incidents</v-toolbar-title>
                   <v-spacer></v-spacer>
-                  <v-btn color="primary" dark class="mb-2" to="/incidents/report">Report an Incident</v-btn>
+                  <v-btn color="primary" dark class="mb-2" to="/incidents/report"
+                    >Report an Incident</v-btn
+                  >
                 </v-toolbar>
               </template>
               <template v-slot:item.commander="{ item }">
@@ -106,7 +108,7 @@ export default {
   methods: {
     getActive() {
       this.loading = true
-      IncidentApi.getAll({ field: ["status"], op: ["=="], value: ["Active"] }).then(response => {
+      IncidentApi.getAll({ fields: ["status"], ops: ["=="], values: ["Active"] }).then(response => {
         this.items = response.data.items
         this.loading = false
       })

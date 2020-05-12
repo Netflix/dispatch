@@ -1,10 +1,9 @@
 import logging
 from typing import Any, Dict, List
 
-import spacy
-from spacy.matcher import PhraseMatcher
 from sqlalchemy import func
 
+from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_priority.models import IncidentPriority
 from dispatch.incident_type import service as incident_type_service
@@ -15,74 +14,13 @@ from .models import Recommendation, RecommendationAccuracy, RouteRequest, Contex
 
 log = logging.getLogger(__name__)
 
-nlp = spacy.blank("en")
-nlp.vocab.lex_attr_getters = {}
-
-
-# NOTE
-# This is kinda slow so we might cheat and just build this
-# periodically or cache it
-def build_term_vocab(terms: List[Term]):
-    """Builds nlp vocabulary."""
-    # We need to build four sets of vocabulary
-    # such that we can more accurately match
-    #
-    # - No change
-    # - Lower
-    # - Upper
-    # - Title
-    #
-    # We may also normalize the document itself at some point
-    # but it unclear how this will affect the things like
-    # Parts-of-speech (POS) analysis.
-    for v in terms:
-        texts = [v.text, v.text.lower(), v.text.upper(), v.text.title()]
-        for t in texts:
-            if t:  # guard against `None`
-                phrase = nlp.tokenizer(t)
-                for w in phrase:
-                    _ = nlp.tokenizer.vocab[w.text]
-                    yield phrase
-
-
-def build_phrase_matcher(phrases: List[str]) -> PhraseMatcher:
-    """Builds a PhraseMatcher object."""
-    matcher = PhraseMatcher(nlp.tokenizer.vocab)
-    matcher.add("NFLX", None, *phrases)  # TODO customize
-    return matcher
-
-
-def extract_terms_from_document(
-    document: str, phrases: List[str], matcher: PhraseMatcher
-) -> List[str]:
-    """Extracts key terms out of documents."""
-    terms = []
-    doc = nlp.tokenizer(document)
-    for w in doc:
-        _ = doc.vocab[
-            w.text.lower()
-        ]  # We normalize our docs so that vocab doesn't take so long to build.
-
-    matches = matcher(doc)
-    for _, start, end in matches:
-        token = doc[start:end].merge()
-
-        # We try to filter out common stop words unless
-        # we have surrounding context that would suggest they are not stop words.
-        if token.is_stop:
-            continue
-
-        terms.append(token.text)
-
-    return terms
-
 
 def get_terms(db_session, text: str) -> List[str]:
     """Get terms from request."""
     all_terms = db_session.query(Term).all()
-    phrases = build_term_vocab(all_terms)
-    matcher = build_phrase_matcher(phrases)
-    extracted_terms = extract_terms_from_document(text, phrases, matcher)
+    phrases = build_term_vocab([t.text for t in all_terms])
+    matcher = build_phrase_matcher("dispatch-terms", phrases)
+    extracted_terms = extract_terms_from_text(text, matcher)
     return extracted_terms
 
 
@@ -202,7 +140,7 @@ def get_resources_from_terms(db_session, terms: List[str]):
     return matched_terms, resources
 
 
-# TODO ontacts could be List[Union(...)]
+# TODO contacts could be List[Union(...)]
 def create_recommendation(
     *, db_session, text=str, context: ContextBase, matched_terms: List[Term], resources: List[Any]
 ):

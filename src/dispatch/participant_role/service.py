@@ -31,7 +31,7 @@ def get_all_active_roles(*, db_session, participant_id: int) -> List[Optional[Pa
     return (
         db_session.query(ParticipantRole)
         .filter(ParticipantRole.participant_id == participant_id)
-        .filter(ParticipantRole.renounce_at.is_(None))
+        .filter(ParticipantRole.renounced_at.is_(None))
     )
 
 
@@ -42,7 +42,7 @@ def add_role(
     participant = participant_service.get(db_session=db_session, participant_id=participant_id)
     participant_role_in = ParticipantRoleCreate(role=participant_role)
     participant_role = create(db_session=db_session, participant_role_in=participant_role_in)
-    participant.participant_role.append(participant_role)
+    participant.participant_roles.append(participant_role)
     db_session.add(participant)
     db_session.commit()
     return participant_role
@@ -50,7 +50,7 @@ def add_role(
 
 def renounce_role(*, db_session, participant_role: ParticipantRole) -> ParticipantRole:
     """Renounces the given role."""
-    participant_role.renounce_at = datetime.utcnow()
+    participant_role.renounced_at = datetime.utcnow()
     db_session.add(participant_role)
     db_session.commit()
     return participant_role

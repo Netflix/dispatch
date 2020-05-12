@@ -51,6 +51,7 @@ from .service import (
     send_ephemeral_message,
     send_message,
     set_conversation_topic,
+    open_modal_with_user,
 )
 
 
@@ -73,13 +74,13 @@ command_mappings = {
 @apply(counter, exclude=["__init__"])
 @apply(timer, exclude=["__init__"])
 class SlackConversationPlugin(ConversationPlugin):
-    title = "Slack - Conversation"
+    title = "Slack Plugin - Conversation Management"
     slug = "slack-conversation"
-    description = "Uses slack to facilitate conversations."
+    description = "Uses Slack to facilitate conversations."
     version = slack_plugin.__version__
     events = slack_event_router
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
@@ -177,16 +178,20 @@ class SlackConversationPlugin(ConversationPlugin):
         """Gets the command name."""
         return command_mappings.get(command, [])
 
+    def open_modal(self, trigger_id: str, modal: dict):
+        """Opens a modal with a user."""
+        return open_modal_with_user(client=self.client, trigger_id=trigger_id, modal=modal)
+
 
 @apply(counter, exclude=["__init__"])
 @apply(timer, exclude=["__init__"])
 class SlackContactPlugin(ContactPlugin):
-    title = "Slack - Contact"
+    title = "Slack Plugin - Contact Information Resolver"
     slug = "slack-contact"
-    description = "Uses slack to resolve user details."
+    description = "Uses Slack to resolve contact information details."
     version = slack_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
@@ -210,12 +215,12 @@ class SlackContactPlugin(ContactPlugin):
 
 
 class SlackDocumentPlugin(DocumentPlugin):
-    title = "Slack - Document"
+    title = "Slack Plugin - Document Interrogator"
     slug = "slack-document"
-    description = "Uses slack as a document source"
+    description = "Uses Slack as a document source."
     version = slack_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):

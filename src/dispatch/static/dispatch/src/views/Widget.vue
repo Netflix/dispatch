@@ -1,13 +1,7 @@
 <template>
   <div id="page-lists">
-    <v-container
-      grid-list-lg
-      fluid
-    >
-      <v-layout
-        row
-        wrap
-      >
+    <v-container grid-list-lg fluid>
+      <v-layout row wrap>
         <v-flex lg4>
           <profile-card />
         </v-flex>
