@@ -439,7 +439,7 @@ def create_engage_oncall_dialog(incident_id: int, command: dict = None, db_sessi
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"No oncall services have been defined. You can define them in the Dispatch UI at /services",
+                    "text": "No oncall services have been defined. You can define them in the Dispatch UI at /services",
                 },
             }
         ]
