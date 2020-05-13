@@ -1,4 +1,3 @@
-import json
 import math
 import logging
 from itertools import groupby
@@ -8,17 +7,13 @@ from dateutil.relativedelta import relativedelta
 
 from calendar import monthrange
 
+import pandas as pd
+from statsmodels.tsa.api import ExponentialSmoothing
+
 from dispatch.incident_type.models import IncidentType
 from .models import Incident
 
-
 log = logging.getLogger(__name__)
-
-try:
-    import pandas as pd
-    from statsmodels.tsa.api import ExponentialSmoothing
-except ImportError:
-    log.warning("Unable to import statsmodels, some metrics will not be usable.")
 
 
 def month_grouper(item):
@@ -61,6 +56,13 @@ def make_forecast(
         dataframe_dict["y"].append(len(list(items)))
 
     dataframe = pd.DataFrame.from_dict(dataframe_dict)
+
+    if dataframe.empty:
+        return {
+            "categories": [],
+            "series": [{"name": "Predicted", "data": []}],
+        }
+
     # reset index to by month and drop month column
     dataframe.index = dataframe.ds
     dataframe.index.freq = "M"
@@ -70,8 +72,9 @@ def make_forecast(
     idx = pd.date_range(dataframe.index[0], dataframe.index[-1], freq="M")
     dataframe = dataframe.reindex(idx, fill_value=0)
 
-    forecaster = ExponentialSmoothing(dataframe, seasonal_periods=12, trend="add",
-                                      seasonal="add").fit(use_boxcox=True)
+    forecaster = ExponentialSmoothing(
+        dataframe, seasonal_periods=12, trend="add", seasonal="add"
+    ).fit(use_boxcox=True)
 
     forecast = forecaster.forecast(12)
     forecast_df = pd.DataFrame({"ds": forecast.index.astype("str"), "yhat": forecast.values})
