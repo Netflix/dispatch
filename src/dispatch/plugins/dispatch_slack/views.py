@@ -748,11 +748,10 @@ def report_incident_from_submitted_form(
     action: dict,
     db_session: Session = Depends(get_db),
 ):
-
     submitted_form = action.get("view")
 
-    # Fetch channel_id from the callback_id submitted when the modal was opened
-    channel_id = submitted_form.get("callback_id").split("__")[1]
+    # Fetch channel id from private metadata field
+    channel_id = submitted_form.get("private_metadata")
 
     parsed_form_data = parse_submitted_form(submitted_form)
 
