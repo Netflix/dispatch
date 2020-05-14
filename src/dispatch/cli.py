@@ -179,19 +179,18 @@ def dump_database():
 
 
 @dispatch_database.command("drop")
-@click.option(
-    "--yes",
-    is_flag=True,
-    callback=abort_if_false,
-    expose_value=False,
-    prompt="Are you sure you want to drop the database?",
-)
-def drop_database():
+@click.option("--yes", is_flag=True, help="Silences all confirmation prompts.")
+def drop_database(yes):
     """Drops all data in database."""
     from sqlalchemy_utils import drop_database
 
-    drop_database(str(config.SQLALCHEMY_DATABASE_URI))
-    click.secho("Success.", fg="green")
+    if yes:
+        drop_database(str(config.SQLALCHEMY_DATABASE_URI))
+        click.secho("Success.", fg="green")
+
+    if click.confirm(f"Are you sure you want to drop: '{config.DATABASE_HOSTNAME}:{config.DATABASE_NAME}'?"):
+        drop_database(str(config.SQLALCHEMY_DATABASE_URI))
+        click.secho("Success.", fg="green")
 
 
 @dispatch_database.command("upgrade")
