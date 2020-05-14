@@ -34,6 +34,17 @@ instance.interceptors.response.use(
         router.push({ path: "/login" })
       }
     }
+    if (err.response.status == 500) {
+      store.commit(
+        "app/SET_SNACKBAR",
+        {
+          text:
+            "Something has gone very wrong, please retry or let your admin know that you recieved this error.",
+          color: "red"
+        },
+        { root: true }
+      )
+    }
     return Promise.reject(err)
   }
 )
