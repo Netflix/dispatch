@@ -26,10 +26,10 @@ from dispatch.database import get_db, SessionLocal
 from dispatch.decorators import background_task
 from dispatch.enums import Visibility
 from dispatch.event import service as event_service
-from dispatch.incident.enums import NewIncidentSubmission
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
-from dispatch.incident.models import IncidentUpdate, IncidentRead, IncidentStatus
+from dispatch.incident.enums import IncidentStatus, NewIncidentSubmission, IncidentSlackViewBlockId
+from dispatch.incident.models import IncidentUpdate, IncidentRead
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.individual import service as individual_service
@@ -691,7 +691,7 @@ def get_channel_id(event_body: dict):
 
 
 @background_task
-def create_report_incident_modal(command: dict = None, db_session: Session = Depends(get_db)):
+def create_report_incident_modal(command: dict = None, db_session=None):
     """
     Prepare the Modal / View x
     Ask slack to open a modal with the prepared Modal / View content
@@ -748,7 +748,6 @@ def report_incident_from_submitted_form(
     action: dict,
     db_session: Session = Depends(get_db),
 ):
-    from dispatch.incident.enums import IncidentSlackViewBlockId, IncidentStatus
 
     submitted_form = action.get("view")
 
@@ -902,7 +901,6 @@ async def handle_action(
     db_session: Session = Depends(get_db),
 ):
     """Handle all incomming Slack actions."""
-
     raw_request_body = bytes.decode(await request.body())
     request_body_form = await request.form()
     action = json.loads(request_body_form.get("payload"))
@@ -938,5 +936,10 @@ async def handle_action(
     response.headers["X-Slack-Powered-By"] = create_ua_string()
 
     # When there are no exceptions within the dialog submission, your app must respond with 200 OK with an empty body.
-    # This will complete the dialog. (https://api.slack.com/dialogs#validation)
-    return {}
+    response_body = {}
+    if action_name == NewIncidentSubmission.form_slack_view:
+        # For modals we set "response_action" to "clear" to close all views in the modal.
+        # An empty body is currently not working.
+        response_body = {"response_action": "clear"}
+
+    return response_body
