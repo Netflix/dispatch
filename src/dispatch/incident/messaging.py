@@ -192,7 +192,7 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
     """Sends incident status notifications to conversations and distribution lists."""
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
-    message_template = INCIDENT_NOTIFICATION
+    message_template = INCIDENT_NOTIFICATION.copy()
 
     # we get the incident documents
     incident_document = get_document(
@@ -319,18 +319,18 @@ def send_incident_update_notifications(incident: Incident, previous_incident: In
     )
 
     if incident.visibility == Visibility.open:
-        notification_coversation_notification_template = notification_template.copy()
+        notification_conversation_notification_template = notification_template.copy()
         if incident.status != IncidentStatus.closed:
-            notification_coversation_notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
+            notification_conversation_notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
         else:
-            notification_coversation_notification_template.insert(0, INCIDENT_NAME)
+            notification_conversation_notification_template.insert(0, INCIDENT_NAME)
 
         # we send an update to the incident notification conversations
         for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
             convo_plugin.send(
                 conversation,
                 notification_text,
-                notification_coversation_notification_template,
+                notification_conversation_notification_template,
                 notification_type,
                 name=incident.name,
                 ticket_weblink=incident.ticket.weblink,
