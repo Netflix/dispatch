@@ -36,6 +36,7 @@ def get_incidents(
     """
     Retrieve a list of all incidents.
     """
+    raise Exception
     # we want to provide additional protections around restricted incidents
     # Because we want to proactively filter (instead of when the item is returned
     # we don't use fastapi_permissions acls.

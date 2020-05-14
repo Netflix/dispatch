@@ -95,10 +95,14 @@ const actions = {
         tableOptions.ops.push("==")
       })
     })
-    return IncidentApi.getAll(tableOptions).then(response => {
-      commit("SET_TABLE_LOADING", false)
-      commit("SET_TABLE_ROWS", response.data)
-    })
+    return IncidentApi.getAll(tableOptions)
+      .then(response => {
+        commit("SET_TABLE_LOADING", false)
+        commit("SET_TABLE_ROWS", response.data)
+      })
+      .catch(() => {
+        commit("SET_TABLE_LOADING", false)
+      })
   }, 200),
   get({ commit, state }) {
     return IncidentApi.get(state.selected.id).then(response => {
