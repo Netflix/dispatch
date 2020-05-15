@@ -8,6 +8,7 @@ import logging
 from typing import List, Optional
 from jinja2 import Template
 
+from dispatch.incident.enums import IncidentSlackViewBlockId
 from dispatch.messaging import (
     INCIDENT_TASK_LIST_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
@@ -201,8 +202,6 @@ def create_modal_content(
     channel_id: str = None, incident_types: list = None, incident_priorities: list = None
 ):
     """Helper function which generates the slack modal / view message for (Create / start a new Incident) call"""
-    from dispatch.incident.enums import IncidentSlackViewBlockId
-
     incident_type_options = []
     incident_priority_options = []
 
@@ -226,10 +225,7 @@ def create_modal_content(
 
     modal_view_template = {
         "type": "modal",
-        "callback_id": "ticket__" + channel_id,
-        "title": {"type": "plain_text", "text": "Security Incident Report", "emoji": True},
-        "submit": {"type": "plain_text", "text": "Submit", "emoji": True},
-        "close": {"type": "plain_text", "text": "Cancel", "emoji": True},
+        "title": {"type": "plain_text", "text": "Security Incident Report"},
         "blocks": [
             {
                 "type": "context",
@@ -242,8 +238,9 @@ def create_modal_content(
                 ],
             },
             {
-                "type": "input",
                 "block_id": IncidentSlackViewBlockId.title,
+                "type": "input",
+                "label": {"type": "plain_text", "text": "Title"},
                 "element": {
                     "type": "plain_text_input",
                     "placeholder": {
@@ -251,11 +248,11 @@ def create_modal_content(
                         "text": "A brief explanatory title. You can change this later.",
                     },
                 },
-                "label": {"type": "plain_text", "text": "Title"},
             },
             {
-                "type": "input",
                 "block_id": IncidentSlackViewBlockId.description,
+                "type": "input",
+                "label": {"type": "plain_text", "text": "Description"},
                 "element": {
                     "type": "plain_text_input",
                     "placeholder": {
@@ -264,38 +261,33 @@ def create_modal_content(
                     },
                     "multiline": True,
                 },
-                "label": {"type": "plain_text", "text": "Description", "emoji": True},
             },
             {
-                "type": "input",
                 "block_id": IncidentSlackViewBlockId.type,
+                "type": "input",
+                "label": {"type": "plain_text", "text": "Type"},
                 "element": {
                     "type": "static_select",
-                    "placeholder": {
-                        "type": "plain_text",
-                        "text": "Select Incident Type",
-                        "emoji": True,
-                    },
+                    "placeholder": {"type": "plain_text", "text": "Select Incident Type"},
                     "options": incident_type_options,
                 },
-                "label": {"type": "plain_text", "text": "Type", "emoji": True},
             },
             {
-                "type": "input",
                 "block_id": IncidentSlackViewBlockId.priority,
+                "type": "input",
+                "label": {"type": "plain_text", "text": "Priority", "emoji": True},
                 "element": {
                     "type": "static_select",
-                    "placeholder": {
-                        "type": "plain_text",
-                        "text": "Select Incident Priority",
-                        "emoji": True,
-                    },
+                    "placeholder": {"type": "plain_text", "text": "Select Incident Priority"},
                     "options": incident_priority_options,
                 },
-                "label": {"type": "plain_text", "text": "Priority", "emoji": True},
             },
         ],
+        "close": {"type": "plain_text", "text": "Cancel"},
+        "submit": {"type": "plain_text", "text": "Submit"},
+        "private_metadata": channel_id,
     }
+
     return modal_view_template
 
 
