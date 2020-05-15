@@ -12,26 +12,12 @@
     </v-list>
     <div v-else>
       <incident-list :items="incidents" />
-      <v-divider></v-divider>
-
       <task-list :items="tasks" />
-      <v-divider></v-divider>
-
       <term-list :items="terms" />
-      <v-divider></v-divider>
-
       <definition-list :items="definitions" />
-      <v-divider></v-divider>
-
       <tag-list :items="tags" />
-      <v-divider></v-divider>
-
       <individual-list :items="individuals" />
-      <v-divider></v-divider>
-
       <team-list :items="teams" />
-      <v-divider></v-divider>
-
       <service-list :items="services" />
     </div>
   </v-card>

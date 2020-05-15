@@ -1,7 +1,8 @@
 <template>
-  <div>
+  <div v-if="items.length">
     <new-edit-sheet />
-    <v-list v-if="items.length">
+    <v-divider></v-divider>
+    <v-list>
       <v-list-group prepend-icon="playlist_add_check" no-action color="primary">
         <template v-slot:activator>
           <v-list-item>
