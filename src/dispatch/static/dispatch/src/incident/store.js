@@ -195,6 +195,15 @@ const actions = {
   },
   resetSelected({ commit }) {
     commit("RESET_SELECTED")
+  },
+  joinIncident({ commit }, incidentId) {
+    IncidentApi.join(incidentId, {}).then(() => {
+      commit(
+        "app/SET_SNACKBAR",
+        { text: "You have successfully joined the incident." },
+        { root: true }
+      )
+    })
   }
 }
 

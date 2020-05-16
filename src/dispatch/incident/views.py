@@ -1,7 +1,6 @@
 from typing import List
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
-from fastapi_permissions import has_permission
 from sqlalchemy.orm import Session
 
 from dispatch.enums import Visibility
@@ -9,6 +8,7 @@ from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.database import get_db, search_filter_sort_paginate
 
+from dispatch.participant.flows import add_participant
 from dispatch.participant_role.models import ParticipantRoleType
 
 from dispatch.auth.models import UserRoles
@@ -152,6 +152,23 @@ def update_incident(
     )
 
     return incident
+
+
+@router.post("/{incident_id}/join", summary="Join an incident.")
+def join_incident(
+    *,
+    db_session: Session = Depends(get_db),
+    incident_id: str,
+    current_user: DispatchUser = Depends(get_current_user),
+):
+    """
+    Join an individual incident.
+    """
+    incident = get(db_session=db_session, incident_id=incident_id)
+    if not incident:
+        raise HTTPException(status_code=404, detail="The requested incident does not exist.")
+
+    add_participant(db_session=db_session, incident_id=incident_id, user_email=current_user.email)
 
 
 @router.delete("/{incident_id}", response_model=IncidentRead, summary="Delete an incident.")
