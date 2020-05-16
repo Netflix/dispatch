@@ -8,11 +8,15 @@ from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.database import get_db, search_filter_sort_paginate
 
-from dispatch.participant.flows import add_participant
 from dispatch.participant_role.models import ParticipantRoleType
 
 from dispatch.auth.models import UserRoles
-from .flows import incident_create_flow, incident_update_flow, incident_assign_role_flow
+from .flows import (
+    incident_create_flow,
+    incident_update_flow,
+    incident_assign_role_flow,
+    incident_add_or_reactivate_participant_flow,
+)
 from .models import IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
 from .service import create, delete, get, update
 from .metrics import make_forecast
@@ -160,6 +164,7 @@ def join_incident(
     db_session: Session = Depends(get_db),
     incident_id: str,
     current_user: DispatchUser = Depends(get_current_user),
+    background_tasks: BackgroundTasks,
 ):
     """
     Join an individual incident.
@@ -168,7 +173,9 @@ def join_incident(
     if not incident:
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
 
-    add_participant(db_session=db_session, incident_id=incident_id, user_email=current_user.email)
+    background_tasks.add_task(
+        incident_add_or_reactivate_participant_flow, current_user.email, incident_id=incident.id
+    )
 
 
 @router.delete("/{incident_id}", response_model=IncidentRead, summary="Delete an incident.")
