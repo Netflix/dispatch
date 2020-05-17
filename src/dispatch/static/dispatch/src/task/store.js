@@ -58,7 +58,7 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 200),
-  createEditShow({ commit }, task) {
+  showNewEditSheet({ commit }, task) {
     commit("SET_DIALOG_CREATE_EDIT", true)
     if (task) {
       commit("SET_SELECTED", task)
@@ -68,7 +68,7 @@ const actions = {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", task)
   },
-  closeCreateEdit({ commit }) {
+  closeNewEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
     commit("RESET_SELECTED")
   },
