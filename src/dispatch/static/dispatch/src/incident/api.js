@@ -23,6 +23,10 @@ export default {
     return API.put(`${resource}/${incidentId}`, payload)
   },
 
+  join(incidentId, payload) {
+    return API.post(`${resource}/${incidentId}/join`, payload)
+  },
+
   // TODO: Still not clear to me we'll actually use delete() here, and like
   // this, for incidents.
   delete(incidentId) {
