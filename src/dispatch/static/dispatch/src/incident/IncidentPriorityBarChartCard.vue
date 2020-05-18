@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import { countBy, isArray, mergeWith, forEach, map, find, sortBy } from "lodash"
+import { countBy, forEach } from "lodash"
 
 import VueApexCharts from "vue-apexcharts"
 import IncidentPriorityApi from "@/incident_priority/api"
@@ -80,34 +80,28 @@ export default {
       }
     },
     series() {
-      let series = []
-      let priorities = this.priorities
+      let aggCount = {}
       forEach(this.value, function(value) {
-        let priorityCounts = map(
-          countBy(value, function(item) {
-            return item.incident_priority.name
-          }),
-          function(value, key) {
-            return { name: key, data: [value] }
-          }
-        )
-
-        forEach(priorities, function(priority) {
-          let found = find(priorityCounts, { name: priority })
-          if (!found) {
-            priorityCounts.push({ name: priority, data: [0] })
-          }
+        let count = countBy(value, function(item) {
+          return item.incident_priority.name
         })
-        series = mergeWith(series, priorityCounts, function(objValue, srcValue) {
-          if (isArray(objValue)) {
-            return objValue.concat(srcValue)
+
+        forEach(count, function(value, key) {
+          if (aggCount[key]) {
+            aggCount[key].push(value)
+          } else {
+            aggCount[key] = [value]
           }
         })
       })
 
-      // sort
-      series = sortBy(series, function(obj) {
-        return priorities.indexOf(obj.name)
+      let series = []
+      forEach(this.order, function(o) {
+        if (aggCount[o]) {
+          series.push({ name: o, data: aggCount[o] })
+        } else {
+          series.push({ name: o, data: [0] })
+        }
       })
       return series
     },

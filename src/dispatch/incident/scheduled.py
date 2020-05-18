@@ -81,6 +81,49 @@ def auto_tagger(db_session):
         )
 
 
+@scheduler.add(every(1).hours, name="incident-status-report-reminder")
+@background_task
+def auto_tagger(db_session):
+    """Attempts to take existing tags and associate them with incidents."""
+    tags = tag_service.get_all(db_session=db_session).all()
+    log.debug(f"Fetched {len(tags)} tags from database.")
+
+    tag_strings = [t.name.lower() for t in tags if t.discoverable]
+    phrases = build_term_vocab(tag_strings)
+    matcher = build_phrase_matcher("dispatch-tag", phrases)
+
+    p = plugins.get(
+        INCIDENT_PLUGIN_STORAGE_SLUG
+    )  # this may need to be refactored if we support multiple document types
+
+    for incident in get_all(db_session=db_session).all():
+        log.debug(f"Processing incident. Name: {incident.name}")
+
+        doc = incident.incident_document
+        try:
+            mime_type = "text/plain"
+            text = p.get(doc.resource_id, mime_type)
+        except Exception as e:
+            log.debug(f"Failed to get document. Reason: {e}")
+            sentry_sdk.capture_exception(e)
+            continue
+
+        extracted_tags = list(set(extract_terms_from_text(text, matcher)))
+
+        matched_tags = (
+            db_session.query(Tag)
+            .filter(func.upper(Tag.name).in_([func.upper(t) for t in extracted_tags]))
+            .all()
+        )
+
+        incident.tags.extend(matched_tags)
+        db_session.commit()
+
+        log.debug(
+            f"Associating tags with incident. Incident: {incident.name}, Tags: {extracted_tags}"
+        )
+
+
 @scheduler.add(every(1).day.at("18:00"), name="incident-daily-summary")
 @background_task
 def daily_summary(db_session=None):
@@ -178,7 +221,7 @@ def daily_summary(db_session=None):
                                     f"*Status*: {incident.status}"
                                 ),
                             },
-                            "block_id": f"{ConversationButtonActions.invite_user}-stable-{idx}",
+                            "block_id": f"{ConversationButtonActions.invite_user}-{idx}",
                             "accessory": {
                                 "type": "button",
                                 "text": {"type": "plain_text", "text": "Join Incident"},

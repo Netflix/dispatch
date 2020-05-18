@@ -1,8 +1,5 @@
 <template>
   <v-container>
-    <v-row justify="end">
-      <v-switch v-model="showDetails" label="Show details"></v-switch>
-    </v-row>
     <v-timeline v-if="events.length" dense clipped>
       <v-timeline-item
         v-for="event in events"
@@ -17,7 +14,7 @@
             <transition-group name="slide" v-if="showDetails">
               <template v-for="(value, key) in event.details">
                 <v-card flat="true" v-bind:key="key">
-                  <v-card-title class="subtitle-1">{{ key | snakeToCamel }}</v-card-title>
+                  <v-card-title class="subtitle-1">{{ key | capitalize }}</v-card-title>
                   <v-card-text>{{ value }}</v-card-text>
                 </v-card>
               </template>

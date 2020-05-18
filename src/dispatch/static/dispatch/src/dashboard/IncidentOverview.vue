@@ -81,7 +81,10 @@
 </template>
 
 <script>
-import { groupBy, sumBy } from "lodash"
+import { remove, groupBy, sortBy, sumBy } from "lodash"
+import parseISO from "date-fns/parseISO"
+import formatISO from "date-fns/formatISO"
+import subMonths from "date-fns/subMonths"
 import differenceInHours from "date-fns/differenceInHours"
 import { parseISO } from "date-fns"
 
@@ -122,12 +125,25 @@ export default {
   },
 
   methods: {
-    update(data) {
-      this.items = data
-    },
-    setLoading(data) {
-      console.log(data)
-      this.loading = data
+    fetchData() {
+      this.loading = true
+      let start = formatISO(subMonths(new Date(), 6))
+      let end = formatISO(new Date())
+      IncidentApi.getAll({
+        itemsPerPage: -1,
+        sortBy: ["reported_at"],
+        fields: ["reported_at", "reported_at"],
+        ops: ["<=", ">="],
+        values: [end, start],
+        descending: [true]
+      }).then(response => {
+        this.loading = false
+
+        // ignore all simulated incidents
+        this.items = remove(sortBy(response.data.items, "reported_at"), function(item) {
+          return item.incident_type.name !== "Simulation"
+        })
+      })
     }
   },
 

@@ -69,8 +69,7 @@ def sync_triggers():
     sync_trigger(engine, "service", "search_vector", ["name"])
     sync_trigger(engine, "tag", "search_vector", ["name"])
     sync_trigger(engine, "task", "search_vector", ["description"])
-    sync_trigger(engine, "team_contact", "search_vector", ["name", "company", "notes"])
-    sync_trigger(engine, "term", "search_vector", ["text"])
+    sync_trigger(engine, "plugin", "search_vector", ["title"])
 
 
 @dispatch_cli.group("database")
@@ -189,9 +188,7 @@ def drop_database(yes):
         drop_database(str(config.SQLALCHEMY_DATABASE_URI))
         click.secho("Success.", fg="green")
 
-    if click.confirm(
-        f"Are you sure you want to drop: '{config.DATABASE_HOSTNAME}:{config.DATABASE_NAME}'?"
-    ):
+    if click.confirm(f"Are you sure you want to drop: '{config.DATABASE_HOSTNAME}:{config.DATABASE_NAME}'?"):
         drop_database(str(config.SQLALCHEMY_DATABASE_URI))
         click.secho("Success.", fg="green")
 
@@ -344,12 +341,13 @@ def revision_database(
 def dispatch_scheduler():
     """Container for all dispatch scheduler commands."""
     # we need scheduled tasks to be imported
+    from .incident.scheduled import daily_summary, auto_tagger  # noqa
+    from .task.scheduled import sync_tasks, create_task_reminders  # noqa
+    from .term.scheduled import sync_terms  # noqa
     from .document.scheduled import sync_document_terms  # noqa
     from .incident.scheduled import daily_summary, auto_tagger  # noqa
     from .report.scheduled import incident_report_reminders  # noqa
     from .tag.scheduled import sync_tags  # noqa
-    from .task.scheduled import sync_tasks, create_task_reminders  # noqa
-    from .term.scheduled import sync_terms  # noqa
 
 
 @dispatch_scheduler.command("list")

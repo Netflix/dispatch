@@ -11,10 +11,6 @@ export default {
     return API.get(`${resource}/${pluginId}`)
   },
 
-  getByType(pluginType) {
-    return API.get(`${resource}/${pluginType}`)
-  },
-
   update(pluginId, payload) {
     return API.put(`${resource}/${pluginId}`, payload)
   }

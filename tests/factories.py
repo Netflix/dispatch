@@ -9,6 +9,7 @@ from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime
 
 from dispatch.database import SessionLocal
 
+from dispatch.team.models import TeamContact
 from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
 from dispatch.definition.models import Definition
@@ -28,7 +29,6 @@ from dispatch.report.models import Report
 from dispatch.storage.models import Storage
 from dispatch.tag.models import Tag
 from dispatch.task.models import Task
-from dispatch.team.models import TeamContact
 from dispatch.term.models import Term
 from dispatch.ticket.models import Ticket
 
@@ -622,7 +622,7 @@ class TicketFactory(ResourceBaseFactory):
 class IncidentFactory(BaseFactory):
     """Incident Factory."""
 
-    id = Sequence(lambda n: f"1{n}")
+    id = Sequence(lambda n: f'1{n}')
     title = FuzzyText()
     description = FuzzyText()
     status = FuzzyChoice(["Active", "Stable", "Closed"])

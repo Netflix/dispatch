@@ -20,12 +20,7 @@ class Participant(Base):
     inactive_at = Column(DateTime)  # TODO(mvilanova): make it a hybrid property
     team = Column(String)
     department = Column(String)
-    location = Column(String)
     after_hours_notification = Column(Boolean, default=False)
-
-    # relationships
-    incident_id = Column(Integer, ForeignKey("incident.id"))
-    individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
     participant_roles = relationship("ParticipantRole", backref="participant")
     reports = relationship("Report", backref="participant")
 

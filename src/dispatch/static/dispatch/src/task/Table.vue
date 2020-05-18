@@ -141,23 +141,13 @@ export default {
     this.$watch(
       vm => [vm.page],
       () => {
+        this.page = 1
         this.getAll()
       }
     )
 
     this.$watch(
-      vm => [
-        vm.q,
-        vm.itemsPerPage,
-        vm.sortBy,
-        vm.descending,
-        vm.creator,
-        vm.assignee,
-        vm.incident,
-        vm.incident_type,
-        vm.incident_priority,
-        vm.status
-      ],
+      vm => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
       () => {
         this.page = 1
         this.getAll()

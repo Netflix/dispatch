@@ -8,36 +8,32 @@ try:
 except Exception:
     VERSION = "unknown"
 
-# sometimes we pull version info before dispatch is totally installed
-try:
-    from dispatch.conference.models import Conference  # noqa lgtm[py/unused-import]
-    from dispatch.team.models import TeamContact  # noqa lgtm[py/unused-import]
-    from dispatch.conversation.models import Conversation  # noqa lgtm[py/unused-import]
-    from dispatch.definition.models import Definition  # noqa lgtm[py/unused-import]
-    from dispatch.document.models import Document  # noqa lgtm[py/unused-import]
-    from dispatch.event.models import Event  # noqa lgtm[py/unused-import]
-    from dispatch.group.models import Group  # noqa lgtm[py/unused-import]
-    from dispatch.incident.models import Incident  # noqa lgtm[py/unused-import]
-    from dispatch.incident_priority.models import IncidentPriority  # noqa lgtm[py/unused-import]
-    from dispatch.incident_type.models import IncidentType  # noqa lgtm[py/unused-import]
-    from dispatch.individual.models import IndividualContact  # noqa lgtm[py/unused-import]
-    from dispatch.participant.models import Participant  # noqa lgtm[py/unused-import]
-    from dispatch.participant_role.models import ParticipantRole  # noqa lgtm[py/unused-import]
-    from dispatch.policy.models import Policy  # noqa lgtm[py/unused-import]
-    from dispatch.route.models import (
-        Recommendation,  # noqa lgtm[py/unused-import]
-        RecommendationAccuracy,  # noqa lgtm[py/unused-import]
-    )
-    from dispatch.service.models import Service  # noqa lgtm[py/unused-import]
-    from dispatch.report.models import Report  # noqa lgtm[py/unused-import]
-    from dispatch.storage.models import Storage  # noqa lgtm[py/unused-import]
-    from dispatch.tag.models import Tag  # noqa lgtm[py/unused-import]
-    from dispatch.task.models import Task  # noqa lgtm[py/unused-import]
-    from dispatch.term.models import Term  # noqa lgtm[py/unused-import]
-    from dispatch.ticket.models import Ticket  # noqa lgtm[py/unused-import]
-    from dispatch.plugin.models import Plugin  # noqa lgtm[py/unused-import]
-except Exception:
-    pass
+from dispatch.conference.models import Conference  # noqa lgtm[py/unused-import]
+from dispatch.team.models import TeamContact  # noqa lgtm[py/unused-import]
+from dispatch.conversation.models import Conversation  # noqa lgtm[py/unused-import]
+from dispatch.definition.models import Definition  # noqa lgtm[py/unused-import]
+from dispatch.document.models import Document  # noqa lgtm[py/unused-import]
+from dispatch.event.models import Event  # noqa lgtm[py/unused-import]
+from dispatch.group.models import Group  # noqa lgtm[py/unused-import]
+from dispatch.incident.models import Incident  # noqa lgtm[py/unused-import]
+from dispatch.incident_priority.models import IncidentPriority  # noqa lgtm[py/unused-import]
+from dispatch.incident_type.models import IncidentType  # noqa lgtm[py/unused-import]
+from dispatch.individual.models import IndividualContact  # noqa lgtm[py/unused-import]
+from dispatch.participant.models import Participant  # noqa lgtm[py/unused-import]
+from dispatch.participant_role.models import ParticipantRole  # noqa lgtm[py/unused-import]
+from dispatch.policy.models import Policy  # noqa lgtm[py/unused-import]
+from dispatch.route.models import (
+    Recommendation,  # noqa lgtm[py/unused-import]
+    RecommendationAccuracy,  # noqa lgtm[py/unused-import]
+)
+from dispatch.service.models import Service  # noqa lgtm[py/unused-import]
+from dispatch.status_report.models import StatusReport  # noqa lgtm[py/unused-import]
+from dispatch.storage.models import Storage  # noqa lgtm[py/unused-import]
+from dispatch.tag.models import Tag  # noqa lgtm[py/unused-import]
+from dispatch.task.models import Task  # noqa lgtm[py/unused-import]
+from dispatch.term.models import Term  # noqa lgtm[py/unused-import]
+from dispatch.ticket.models import Ticket  # noqa lgtm[py/unused-import]
+from dispatch.plugin.models import Plugin  # noqa lgtm[py/unused-import]
 
 
 def _get_git_revision(path):

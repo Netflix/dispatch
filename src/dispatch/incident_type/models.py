@@ -9,7 +9,6 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database import Base
 from dispatch.enums import Visibility
 from dispatch.models import DispatchBase
-from dispatch.plugin.models import PluginMetadata
 
 
 class IncidentType(Base):

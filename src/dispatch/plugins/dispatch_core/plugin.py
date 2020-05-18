@@ -26,15 +26,12 @@ from dispatch.plugins.bases import (
     DocumentResolverPlugin,
     AuthenticationProviderPlugin,
     TicketPlugin,
-    ContactPlugin,
 )
 
 from dispatch.route import service as route_service
 from dispatch.route.models import RouteRequest
 
 from dispatch.config import DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS, DISPATCH_JWT_SECRET
-
-from .config import DISPATCH_JWT_AUDIENCE, DISPATCH_JWT_EMAIL_OVERRIDE
 
 log = logging.getLogger(__name__)
 
@@ -109,6 +106,53 @@ class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
             return data[DISPATCH_JWT_EMAIL_OVERRIDE]
         else:
             return data["email"]
+
+
+class DispatchTicketPlugin(TicketPlugin):
+    title = "Dispatch Plugin - Ticket Management"
+    slug = "dispatch-ticket"
+    description = "Uses dispatch itself to create a ticket."
+    version = dispatch_plugin.__version__
+
+    author = "Netflix"
+    author_url = "https://github.com/netflix/dispatch.git"
+
+    def create(
+        self,
+        incident_id: int,
+        title: str,
+        incident_type: str,
+        incident_priority: str,
+        commander: str,
+        reporter: str,
+    ):
+        """Creates a dispatch ticket."""
+        resource_id = f"dispatch-{incident_id}"
+        return {
+            "resource_id": resource_id,
+            "weblink": f"{DISPATCH_UI_URL}/incidents/{resource_id}",
+            "resource_type": "dispatch-internal-ticket",
+        }
+
+    def update(
+        self,
+        ticket_id: str,
+        title: str = None,
+        description: str = None,
+        incident_type: str = None,
+        priority: str = None,
+        status: str = None,
+        commander_email: str = None,
+        reporter_email: str = None,
+        conversation_weblink: str = None,
+        conference_weblink: str = None,
+        document_weblink: str = None,
+        storage_weblink: str = None,
+        labels: List[str] = None,
+        cost: str = None,
+    ):
+        """Updates the incident."""
+        return
 
 
 class DispatchTicketPlugin(TicketPlugin):

@@ -23,9 +23,11 @@ from .config import (
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
     SLACK_COMMAND_LIST_TASKS_SLUG,
+    SLACK_COMMAND_MARK_ACTIVE_SLUG,
+    SLACK_COMMAND_MARK_CLOSED_SLUG,
+    SLACK_COMMAND_MARK_STABLE_SLUG,
+    SLACK_COMMAND_STATUS_REPORT_SLUG,
     SLACK_COMMAND_REPORT_INCIDENT_SLUG,
-    SLACK_COMMAND_TACTICAL_REPORT_SLUG,
-    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
 )
 
 
@@ -66,10 +68,6 @@ INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
     SLACK_COMMAND_REPORT_INCIDENT_SLUG: {
         "response_type": "ephemeral",
         "text": "Opening a dialog to report an incident...",
-    },
-    SLACK_COMMAND_EXECUTIVE_REPORT_SLUG: {
-        "response_type": "ephemeral",
-        "text": "Opening a dialog to write an executive report...",
     },
 }
 

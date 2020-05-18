@@ -62,8 +62,7 @@ from dispatch.participant_role import flows as participant_role_flows
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.base import plugins
-from dispatch.report.enums import ReportTypes
-from dispatch.report.messaging import send_incident_report_reminder
+from dispatch.plugin import service as plugin_service
 from dispatch.service import service as service_service
 from dispatch.storage import service as storage_service
 from dispatch.ticket import service as ticket_service
@@ -123,10 +122,6 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     if incident.visibility == Visibility.restricted:
         title = incident.incident_type.name
 
-    incident_type_plugin_metadata = incident_type_service.get_by_name(
-        db_session=db_session, name=incident.incident_type.name
-    ).get_meta(plugin.slug)
-
     ticket = plugin.instance.create(
         incident.id,
         title,
@@ -171,10 +166,6 @@ def update_incident_ticket(
 
     if visibility == Visibility.restricted:
         title = description = incident_type
-
-    incident_type_plugin_metadata = incident_type_service.get_by_name(
-        db_session=db_session, name=incident_type
-    ).get_meta(plugin.slug)
 
     plugin.instance.update(
         ticket_id,
@@ -763,7 +754,6 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     update_incident_ticket(
         db_session,
         incident.ticket.resource_id,
-        incident_type=incident.incident_type.name,
         status=IncidentStatus.stable.lower(),
         cost=incident_cost,
     )
@@ -872,7 +862,6 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     update_incident_ticket(
         db_session,
         incident.ticket.resource_id,
-        incident_type=incident.incident_type.name,
         status=IncidentStatus.closed.lower(),
         cost=incident_cost,
     )

@@ -62,7 +62,7 @@ In general, do not include any quotation marks when adding configuration values.
 > Used by Dispatch to determine which authentication provider to use, by default Dispatch ships with a PKCE authentication provider.
 
 {% hint style="info" %}
-If you wish to disable authentication set `DISPATCH_AUTHENTICATION_PROVIDER=`
+If you wish to disable authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
 {% endhint %}
 
 #### Configuration for `dispatch-auth-provider-basic`
@@ -82,14 +82,6 @@ Today, basic authentication allows self registration without approval.
 #### `DISPATCH_JWT_EXP` ['default': 86400 ]
 
 > Used by the basic auth provider to mint JWT tokens and set their expiration.
-
-#### `DISPATCH_JWT_AUDIENCE`
-
-> Override what the `Audience` is expected to be in the PKCE JWT decode
-
-#### `DISPATCH_JWT_EMAIL_OVERRIDE`
-
-> Override where Dispatch should find the user email in the idtoken.
 
 #### `DISPATCH_AUTHENTICATION_DEFAULT_USER` \['default': dispatch@example.com\]
 

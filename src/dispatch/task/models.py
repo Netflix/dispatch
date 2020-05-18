@@ -20,8 +20,6 @@ from dispatch.database import Base
 from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin
 
 from dispatch.incident.models import IncidentRead
-from dispatch.ticket.models import TicketRead
-from dispatch.participant.models import ParticipantRead
 
 
 # SQLAlchemy models

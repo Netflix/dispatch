@@ -57,29 +57,14 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", true)
-    let tableOptions = Object.assign({}, state.table.options)
-    delete tableOptions.filters
-
-    tableOptions.fields = []
-    tableOptions.ops = []
-    tableOptions.values = []
-
-    forEach(state.table.options.filters, function(value, key) {
-      each(value, function(value) {
-        if (has(value, "id")) {
-          tableOptions.fields.push(key + ".id")
-          tableOptions.values.push(value.id)
-        } else {
-          tableOptions.fields.push(key)
-          tableOptions.values.push(value)
-        }
-        tableOptions.ops.push("==")
+    return TaskApi.getAll(state.table.options)
+      .then(response => {
+        commit("SET_TABLE_LOADING", false)
+        commit("SET_TABLE_ROWS", response.data)
       })
-    })
-    return TaskApi.getAll(tableOptions).then(response => {
-      commit("SET_TABLE_LOADING", false)
-      commit("SET_TABLE_ROWS", response.data)
-    })
+      .catch(() => {
+        commit("SET_TABLE_LOADING", false)
+      })
   }, 200),
   showNewEditSheet({ commit }, task) {
     commit("SET_DIALOG_CREATE_EDIT", true)

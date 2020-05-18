@@ -76,16 +76,6 @@ class PluginRead(PluginBase):
     configuration: Optional[dict]
 
 
-class KeyValue(DispatchBase):
-    key: str
-    value: str
-
-
-class PluginMetadata(DispatchBase):
-    slug: str
-    metadata: List[KeyValue] = []
-
-
 class PluginPagination(DispatchBase):
     total: int
     items: List[PluginRead] = []

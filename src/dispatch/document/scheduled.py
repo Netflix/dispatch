@@ -36,7 +36,7 @@ def sync_document_terms(db_session=None):
 
             doc_text = p.get(doc.resource_id, mime_type)
             extracted_terms = route_service.get_terms(
-                db_session=db_session, text=doc_text
+                db_session=db_session, model=Term, text=doc_text
             )
 
             matched_terms = (

@@ -26,8 +26,10 @@ from .config import (
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
     SLACK_COMMAND_LIST_TASKS_SLUG,
-    SLACK_COMMAND_TACTICAL_REPORT_SLUG,
-    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
+    SLACK_COMMAND_MARK_ACTIVE_SLUG,
+    SLACK_COMMAND_MARK_CLOSED_SLUG,
+    SLACK_COMMAND_MARK_STABLE_SLUG,
+    SLACK_COMMAND_STATUS_REPORT_SLUG,
     SLACK_PROFILE_DEPARTMENT_FIELD_ID,
     SLACK_PROFILE_TEAM_FIELD_ID,
     SLACK_PROFILE_WEBLINK_FIELD_ID,
@@ -198,25 +200,19 @@ class SlackContactPlugin(ContactPlugin):
 
     def get(self, email: str, **kwargs):
         """Fetch user info by email."""
-        team = department = weblink = "Unknown"
-
         profile = get_user_profile_by_email(self.client, email)
-        profile_fields = profile.get("fields")
-        if profile_fields:
-            team = profile_fields.get(SLACK_PROFILE_TEAM_FIELD_ID, {}).get("value", "Unknown")
-            department = profile_fields.get(SLACK_PROFILE_DEPARTMENT_FIELD_ID, {}).get(
-                "value", "Unknown"
-            )
-            weblink = profile_fields.get(SLACK_PROFILE_WEBLINK_FIELD_ID, {}).get("value", "Unknown")
 
         return {
             "fullname": profile["real_name"],
             "email": profile["email"],
             "title": profile["title"],
-            "team": team,
-            "department": department,
+            "team": profile.get("fields", {}).get(
+                SLACK_PROFILE_TEAM_FIELD_ID, {}).get("value", ""),
+            "department": profile.get("fields", {}).get(
+                SLACK_PROFILE_DEPARTMENT_FIELD_ID, {}).get("value", ""),
             "location": profile["tz"],
-            "weblink": weblink,
+            "weblink": profile.get("fields", {}).get(
+                SLACK_PROFILE_WEBLINK_FIELD_ID, {}).get("value", ""),
             "thumbnail": profile["image_512"],
         }
 

@@ -41,36 +41,6 @@ def get_plugins(
     )
 
 
-@router.get("/{plugin_type}", response_model=PluginPagination)
-def get_plugins_by_type(
-    plugin_type: str,
-    db_session: Session = Depends(get_db),
-    page: int = 1,
-    items_per_page: int = Query(5, alias="itemsPerPage"),
-    query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query(None, alias="sortBy[]"),
-    descending: List[bool] = Query(None, alias="descending[]"),
-    fields: List[str] = Query(None, alias="field[]"),
-    ops: List[str] = Query(None, alias="op[]"),
-    values: List[str] = Query(None, alias="value[]"),
-):
-    """
-    Get all plugins.
-    """
-    return search_filter_sort_paginate(
-        db_session=db_session,
-        model="Plugin",
-        query_str=query_str,
-        page=page,
-        items_per_page=items_per_page,
-        sort_by=sort_by,
-        descending=descending,
-        fields=["type"],
-        values=[plugin_type],
-        ops=["=="],
-    )
-
-
 @router.get("/{plugin_id}", response_model=PluginRead)
 def get_plugin(*, db_session: Session = Depends(get_db), plugin_id: int):
     """

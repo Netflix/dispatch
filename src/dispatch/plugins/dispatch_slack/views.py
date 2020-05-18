@@ -56,6 +56,7 @@ from .config import (
     SLACK_COMMAND_REPORT_INCIDENT_SLUG,
     SLACK_COMMAND_TACTICAL_REPORT_SLUG,
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
+    SLACK_COMMAND_REPORT_INCIDENT_SLUG,
     SLACK_SIGNING_SECRET,
     SLACK_TIMELINE_EVENT_REACTION,
 )
@@ -633,9 +634,8 @@ def action_functions(action: str):
         NewIncidentSubmission.form_slack_view: [report_incident_from_submitted_form],
         SLACK_COMMAND_ASSIGN_ROLE_SLUG: [handle_assign_role_action],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [incident_flows.incident_engage_oncall_flow],
-        SLACK_COMMAND_EXECUTIVE_REPORT_SLUG: [report_flows.create_executive_report],
-        SLACK_COMMAND_TACTICAL_REPORT_SLUG: [report_flows.create_tactical_report],
-        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [handle_update_incident_action],
+        ConversationButtonActions.invite_user: [add_user_to_conversation],
+        NewIncidentSubmission.form_slack_view: [report_incident_from_submitted_form],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc
@@ -792,7 +792,7 @@ def report_incident_from_submitted_form(
     requested_form_incident_type = parsed_form_data.get(IncidentSlackViewBlockId.type)
     requested_form_incident_priority = parsed_form_data.get(IncidentSlackViewBlockId.priority)
 
-    # send a confirmation to the user
+    # send an incident report confirmation to the user
     msg_template = create_incident_reported_confirmation_msg(
         title=requested_form_title,
         incident_type=requested_form_incident_type.get("value"),
