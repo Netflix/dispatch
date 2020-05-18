@@ -224,7 +224,6 @@ def upgrade_database(tag, sql, revision):
             alembic_command.stamp(alembic_cfg, "head")
         else:
             alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
-
     sync_triggers()
     click.secho("Success.", fg="green")
 
