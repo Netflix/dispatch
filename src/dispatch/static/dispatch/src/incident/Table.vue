@@ -101,7 +101,7 @@ export default {
         { text: "Commander", value: "commander" },
         { text: "Reporter", value: "reporter" },
         { text: "Reported At", value: "reported_at" },
-                { text: "", value: "data-table-actions", sortable: false }
+        { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
     }
   },
