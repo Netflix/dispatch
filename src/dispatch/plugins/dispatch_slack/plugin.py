@@ -30,6 +30,9 @@ from .config import (
     SLACK_COMMAND_MARK_CLOSED_SLUG,
     SLACK_COMMAND_MARK_STABLE_SLUG,
     SLACK_COMMAND_STATUS_REPORT_SLUG,
+    SLACK_PROFILE_DEPARTMENT_FIELD_ID,
+    SLACK_PROFILE_TEAM_FIELD_ID,
+    SLACK_PROFILE_WEBLINK_FIELD_ID,
 )
 from .views import router as slack_event_router
 from .messaging import create_message_blocks
@@ -41,7 +44,7 @@ from .service import (
     get_user_avatar_url,
     get_user_email,
     get_user_info_by_id,
-    get_user_info_by_email,
+    get_user_profile_by_email,
     get_user_username,
     list_conversation_messages,
     list_conversations,
@@ -199,17 +202,19 @@ class SlackContactPlugin(ContactPlugin):
 
     def get(self, email: str):
         """Fetch user info by email."""
-        info = get_user_info_by_email(self.client, email)
-        profile = info["profile"]
+        profile = get_user_profile_by_email(self.client, email)
 
         return {
             "fullname": profile["real_name"],
             "email": profile["email"],
-            "title": "",
-            "team": "",
-            "department": "",
-            "location": info["tz"],
-            "weblink": "",
+            "title": profile["title"],
+            "team": profile.get("fields", {}).get(
+                SLACK_PROFILE_TEAM_FIELD_ID, {}).get("value", ""),
+            "department": profile.get("fields", {}).get(
+                SLACK_PROFILE_DEPARTMENT_FIELD_ID, {}).get("value", ""),
+            "location": profile["tz"],
+            "weblink": profile.get("fields", {}).get(
+                SLACK_PROFILE_WEBLINK_FIELD_ID, {}).get("value", ""),
             "thumbnail": profile["image_512"],
         }
 
