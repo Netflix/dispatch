@@ -29,9 +29,9 @@
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
             >
-              <template v-slot:item.discoverable="{ item }">{{
-                item.discoverable | capitalize
-              }}</template>
+              <template v-slot:item.discoverable="{ item }">
+                <v-simple-checkbox v-model="item.discoverable" disabled></v-simple-checkbox>
+              </template>
               <template v-slot:item.actions="{ item }">
                 <v-icon small class="mr-2" @click="createEditShow(item)">edit</v-icon>
                 <v-icon small @click="removeShow(item)">delete</v-icon>

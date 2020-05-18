@@ -30,12 +30,12 @@
               :loading="loading"
               loading-text="Loading... Please wait"
             >
-              <template v-slot:item.is_active="{ item }">{{
-                item.is_active | capitalize
-              }}</template>
-              <template v-slot:item.is_external="{ item }">{{
-                item.is_external | capitalize
-              }}</template>
+              <template v-slot:item.is_active="{ item }">
+                <v-simple-checkbox v-model="item.is_active" disabled></v-simple-checkbox>
+              </template>
+              <template v-slot:item.is_external="{ item }">
+                <v-simple-checkbox v-model="item.is_external" disabled></v-simple-checkbox>
+              </template>
               <template v-slot:item.actions="{ item }">
                 <v-icon small class="mr-2" @click="createEditShow(item)">edit</v-icon>
                 <v-icon small @click="removeShow(item)">delete</v-icon>
