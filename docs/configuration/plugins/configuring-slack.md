@@ -72,15 +72,15 @@ The `Slack` plugin relies on the [Events API](https://api.slack.com/events-api) 
 
 > List resources command as displayed in Slack.
 
-#### `SLACK_PROFILE_DEPARTMENT_FIELD_ID`
+#### `SLACK_DEPARTMENT_PROFILE_ID`
 
 > Specifies the profile field ID where Department is mapped
 
-#### `SLACK_PROFILE_TEAM_FIELD_ID`
+#### `SLACK_TEAM_PROFILE_ID`
 
 > Specifies the profile field ID where Team is mapped
 
-#### `SLACK_PROFILE_WEBLINK_FIELD_ID`
+#### `SLACK_WEBLINK_PROFILE_ID`
 
 > Specifies the profile field ID where the weblink is mapped
 
