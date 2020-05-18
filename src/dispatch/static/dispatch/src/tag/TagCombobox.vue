@@ -39,7 +39,7 @@ export default {
     },
     label: {
       type: String,
-      defualt: "Add Tags"
+      default: "Add Tags"
     }
   },
   data() {
