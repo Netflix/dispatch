@@ -4,7 +4,7 @@
     :items="items"
     :search-input.sync="search"
     hide-selected
-    label="Add terms"
+    :label="label"
     multiple
     chips
     :loading="loading"
@@ -35,6 +35,10 @@ export default {
       default: function() {
         return []
       }
+    },
+    label: {
+      type: String,
+      default: "Add Terms"
     }
   },
   data() {

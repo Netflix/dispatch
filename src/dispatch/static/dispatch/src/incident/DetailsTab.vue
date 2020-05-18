@@ -106,10 +106,10 @@
         </v-row>
       </v-flex>
       <v-flex xs12>
-        <term-combobox v-model="terms" />
+        <term-combobox label="Terms" v-model="terms" />
       </v-flex>
       <v-flex xs12>
-        <tag-combobox v-model="tags" />
+        <tag-combobox label="Tags" v-model="tags" />
       </v-flex>
     </v-layout>
   </v-container>
