@@ -30,7 +30,6 @@
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
               :loading="loading"
-              @click:row="showEditSheet"
               loading-text="Loading... Please wait"
             >
               <template v-slot:item.cost="{ item }">{{ item.cost | toUSD }}</template>
@@ -49,6 +48,20 @@
               <template v-slot:item.reported_at="{ item }">{{
                 item.reported_at | formatDate
               }}</template>
+              <template v-slot:item.data-table-actions="{ item }">
+                <v-menu bottom left>
+                  <template v-slot:activator="{ on }">
+                    <v-btn icon v-on="on">
+                      <v-icon>mdi-dots-vertical</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item @click="showEditSheet(item)">
+                      <v-list-item-title>Edit</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </template>
             </v-data-table>
           </v-card>
         </v-flex>
@@ -87,7 +100,8 @@ export default {
         { text: "Cost", value: "cost" },
         { text: "Commander", value: "commander" },
         { text: "Reporter", value: "reporter" },
-        { text: "Reported At", value: "reported_at" }
+        { text: "Reported At", value: "reported_at" },
+                { text: "", value: "data-table-actions", sortable: false }
       ]
     }
   },
