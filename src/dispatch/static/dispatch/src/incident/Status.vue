@@ -108,7 +108,6 @@ export default {
 
   mounted() {
     this.getActive()
-    this.joinIncident()
   },
 
   methods: {
