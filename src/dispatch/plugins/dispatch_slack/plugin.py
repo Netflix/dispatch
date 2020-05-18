@@ -30,9 +30,9 @@ from .config import (
     SLACK_COMMAND_MARK_CLOSED_SLUG,
     SLACK_COMMAND_MARK_STABLE_SLUG,
     SLACK_COMMAND_STATUS_REPORT_SLUG,
-    SLACK_DEPARTMENT_PROFILE_ID,
-    SLACK_TEAM_PROFILE_ID,
-    SLACK_WEBLINK_PROFILE_ID,
+    SLACK_PROFILE_DEPARTMENT_FIELD_ID,
+    SLACK_PROFILE_TEAM_FIELD_ID,
+    SLACK_PROFILE_WEBLINK_FIELD_ID,
 )
 from .views import router as slack_event_router
 from .messaging import create_message_blocks
@@ -209,11 +209,13 @@ class SlackContactPlugin(ContactPlugin):
             "fullname": profile["real_name"],
             "email": profile["email"],
             "title": profile["title"],
-            "team": profile.get("fields", {}).get(SLACK_TEAM_PROFILE_ID, {}).get("value", ""),
+            "team": profile.get("fields", {}).get(
+                SLACK_PROFILE_TEAM_FIELD_ID, {}).get("value", ""),
             "department": profile.get("fields", {}).get(
-                SLACK_DEPARTMENT_PROFILE_ID, {}).get("value", ""),
+                SLACK_PROFILE_DEPARTMENT_FIELD_ID, {}).get("value", ""),
             "location": profile["tz"],
-            "weblink": profile.get("fields", {}).get(SLACK_WEBLINK_PROFILE_ID, {}).get("value", ""),
+            "weblink": profile.get("fields", {}).get(
+                SLACK_PROFILE_WEBLINK_FIELD_ID, {}).get("value", ""),
             "thumbnail": profile["image_512"],
         }
 
