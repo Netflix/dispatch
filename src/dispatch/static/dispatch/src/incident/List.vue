@@ -1,106 +1,50 @@
 <template>
-  <v-layout wrap>
-    <div class="headline">
-      Incidents
-    </div>
-    <v-flex xs12>
-      <v-layout column>
-        <v-flex>
-          <v-list two-line class="elevation-2">
-            <v-list-group v-for="item in items" :key="item.content.id" no-action>
-              <template v-slot:activator>
-                <v-list-item>
-                  <v-layout justify-space-around>
-                    <v-flex xs3>
-                      <v-list-item>
-                        <v-list-item-action>
-                          <v-icon>fa-user-circle</v-icon>
-                        </v-list-item-action>
-                        <v-list-item-content>
-                          <v-list-item-title>{{ item.content.title }}</v-list-item-title>
-                          <v-list-item-subtitle>Incident Jira ID</v-list-item-subtitle>
-                        </v-list-item-content>
-                      </v-list-item>
-                    </v-flex>
-                    <v-flex xs3>
-                      <v-list-item>
-                        <v-list-item-action>
-                          <v-icon>fa-user-circle</v-icon>
-                        </v-list-item-action>
-                        <v-list-item-content>
-                          <v-list-item-title>{{ item.content.status }}</v-list-item-title>
-                          <v-list-item-subtitle>Status</v-list-item-subtitle>
-                        </v-list-item-content>
-                      </v-list-item>
-                    </v-flex>
-                    <v-flex xs3>
-                      <v-list-item>
-                        <v-list-item-action>
-                          <v-icon>fa-building</v-icon>
-                        </v-list-item-action>
-                        <v-list-item-content>
-                          <v-list-item-title>{{ item.commander.name }}</v-list-item-title>
-                          <v-list-item-subtitle>Incident Commander</v-list-item-subtitle>
-                        </v-list-item-content>
-                      </v-list-item>
-                    </v-flex>
-                    <v-flex xs3>
-                      <v-list-item>
-                        <v-list-item-action>
-                          <v-icon>my_location</v-icon>
-                        </v-list-item-action>
-                        <v-list-item-content>
-                          <v-list-item-title>{{ incident.title }}</v-list-item-title>
-                          <v-list-item-subtitle>Incident Title</v-list-item-subtitle>
-                        </v-list-item-content>
-                      </v-list-item>
-                    </v-flex>
-                    <v-flex xs3>
-                      <v-list-item>
-                        <v-list-item-action>
-                          <v-icon>my_location</v-icon>
-                        </v-list-item-action>
-                        <v-list-item-content>
-                          <v-list-item-title>{{
-                            incident.incident_priority.name
-                          }}</v-list-item-title>
-                          <v-list-item-subtitle>Incident Priority</v-list-item-subtitle>
-                        </v-list-item-content>
-                      </v-list-item>
-                    </v-flex>
-                    <v-flex xs3>
-                      <v-list-item>
-                        <v-list-item-action>
-                          <v-icon>my_location</v-icon>
-                        </v-list-item-action>
-                        <v-list-item-content>
-                          <v-list-item-title>{{ incident.summary }}</v-list-item-title>
-                          <v-list-item-subtitle>Incident Summary</v-list-item-subtitle>
-                        </v-list-item-content>
-                      </v-list-item>
-                    </v-flex>
-                  </v-layout>
-                </v-list-item>
-              </template>
-            </v-list-group>
-          </v-list>
-        </v-flex>
-      </v-layout>
-    </v-flex>
-  </v-layout>
+  <div v-if="items.length">
+    <edit-sheet />
+    <v-divider></v-divider>
+    <v-list>
+      <v-list-group prepend-icon="star" no-action color="primary">
+        <template v-slot:activator>
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title>Incidents ({{ items.length }})</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </template>
+        <v-list-item
+          v-for="item in items"
+          :key="item.content.id"
+          @click="showEditSheet(item.content)"
+        >
+          <v-list-item-content>
+            <v-list-item-title v-text="item.content.name"></v-list-item-title>
+            <v-list-item-subtitle>Name</v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list-group>
+    </v-list>
+  </div>
 </template>
-
 <script>
+import { mapActions } from "vuex"
+
+import EditSheet from "@/incident/EditSheet.vue"
 export default {
   name: "IncidentList",
+
+  components: {
+    EditSheet
+  },
+
   props: {
     items: {
       default: null,
       type: Array
     }
   },
-  data() {
-    return {}
+
+  methods: {
+    ...mapActions("incident", ["showEditSheet"])
   }
 }
 </script>

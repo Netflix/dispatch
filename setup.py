@@ -345,7 +345,6 @@ def get_requirements(env):
 
 install_requires = get_requirements("base")
 dev_requires = get_requirements("dev")
-metrics_requires = get_requirements("metrics")
 
 
 class DispatchSDistCommand(SDistCommand):
@@ -397,9 +396,9 @@ setup(
     packages=find_packages("src"),
     python_requires=">=3.7",
     install_requires=install_requires,
-    extras_require={"dev": dev_requires, "metrics": metrics_requires},
+    extras_require={"dev": dev_requires},
     cmdclass=cmdclass,
-    zip_save=False,
+    zip_safe=False,
     include_package_data=True,
     entry_points={
         "console_scripts": ["dispatch = dispatch.cli:entrypoint"],
@@ -407,6 +406,8 @@ setup(
             "dispatch_document_resolver = dispatch.plugins.dispatch_core.plugin:DispatchDocumentResolverPlugin",
             "dispatch_participant_resolver = dispatch.plugins.dispatch_core.plugin:DispatchParticipantResolverPlugin",
             "dispatch_pkce_auth = dispatch.plugins.dispatch_core.plugin:PKCEAuthProviderPlugin",
+            "dispatch_ticket = dispatch.plugins.dispatch_core.plugin:DispatchTicketPlugin",
+            "dispatch_basic_auth = dispatch.plugins.dispatch_core.plugin:BasicAuthProviderPlugin",
             "google_calendar_conference = dispatch.plugins.dispatch_google.calendar.plugin:GoogleCalendarConferencePlugin",
             "google_docs_document = dispatch.plugins.dispatch_google.docs.plugin:GoogleDocsDocumentPlugin",
             "google_drive_storage = dispatch.plugins.dispatch_google.drive.plugin:GoogleDriveStoragePlugin",

@@ -5,6 +5,8 @@ import base64
 from starlette.config import Config
 from starlette.datastructures import CommaSeparatedStrings
 
+log = logging.getLogger(__name__)
+
 # if we have metatron available to us, lets use it to decrypt our secrets in memory
 try:
     import metatron.decrypt
@@ -72,9 +74,17 @@ DISPATCH_HELP_SLACK_CHANNEL = config("DISPATCH_HELP_SLACK_CHANNEL")
 
 # authentication
 DISPATCH_AUTHENTICATION_PROVIDER_SLUG = config(
-    "DISPATCH_AUTHENTICATION_PROVIDER_SLUG", default="dispatch-auth-provider-pkce"
+    "DISPATCH_AUTHENTICATION_PROVIDER_SLUG", default="dispatch-auth-provider-basic"
 )
 VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG = DISPATCH_AUTHENTICATION_PROVIDER_SLUG
+
+DISPATCH_JWT_SECRET = config("DISPATCH_JWT_SECRET", default=None)
+DISPATCH_JWT_ALG = config("DISPATCH_JWT_ALG", default="HS256")
+DISPATCH_JWT_EXP = config("DISPATCH_JWT_EXP", default=86400)  # Seconds
+
+if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-basic":
+    if not DISPATCH_JWT_SECRET:
+        log.warn("No JWT secret specified, this is required if you are using basic authentication.")
 
 DISPATCH_AUTHENTICATION_DEFAULT_USER = config(
     "DISPATCH_AUTHENTICATION_DEFAULT_USER", default="dispatch@example.com"
@@ -83,6 +93,13 @@ DISPATCH_AUTHENTICATION_DEFAULT_USER = config(
 DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS = config(
     "DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS", default=None
 )
+
+if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-pkce":
+    if not DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS:
+        log.warn(
+            "No PKCE JWKS url provided, this is required if you are using PKCE authentication."
+        )
+
 VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL = config(
     "VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL", default=None
 )
@@ -137,6 +154,7 @@ INCIDENT_PLUGIN_CONFERENCE_SLUG = config(
     "INCIDENT_PLUGIN_CONFERENCE_SLUG", default="google-calendar-conference"
 )
 INCIDENT_PLUGIN_TICKET_SLUG = config("INCIDENT_PLUGIN_TICKET_SLUG", default="jira-ticket")
+
 INCIDENT_PLUGIN_TASK_SLUG = config("INCIDENT_PLUGIN_TASK_SLUG", default="google-drive-task")
 
 # incident resources
@@ -182,8 +200,6 @@ INCIDENT_RESOURCE_FAQ_DOCUMENT = config(
 INCIDENT_RESOURCE_INCIDENT_TASK = config(
     "INCIDENT_RESOURCE_INCIDENT_TASK", default="google-docs-incident-task"
 )
-
-INCIDENT_METRIC_FORECAST_REGRESSIONS = config("INCIDENT_METRIC_FORECAST_REGRESSIONS", default=None)
 
 # Incident Cost Configuration
 ANNUAL_COST_EMPLOYEE = config("ANNUAL_COST_EMPLOYEE", cast=int, default="650000")

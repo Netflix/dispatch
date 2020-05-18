@@ -93,6 +93,10 @@ def open_dialog(self, trigger_id: str, dialog: dict):
     """Opens a dialog with a user."""
     return
 
+def open_modal(self, trigger_id: str, modal: dict):
+    """Opens a modal with a user."""
+    return
+
 def archive(self, conversation_id: str):
     """Archives conversation."""
     return

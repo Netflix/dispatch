@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { countBy, forEach } from "lodash"
 
 import VueApexCharts from "vue-apexcharts"
 export default {
@@ -74,12 +74,12 @@ export default {
     },
     series() {
       let aggCount = {}
-      _.forEach(this.value, function(value, _) {
-        let count = _.countBy(value, function(item) {
+      forEach(this.value, function(value) {
+        let count = countBy(value, function(item) {
           return item.incident_priority.name
         })
 
-        _.forEach(count, function(value, key) {
+        forEach(count, function(value, key) {
           if (aggCount[key]) {
             aggCount[key].push(value)
           } else {
@@ -89,7 +89,7 @@ export default {
       })
 
       let series = []
-      _.forEach(this.order, function(o) {
+      forEach(this.order, function(o) {
         if (aggCount[o]) {
           series.push({ name: o, data: aggCount[o] })
         } else {

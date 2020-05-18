@@ -49,12 +49,16 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", true)
-    return TaskApi.getAll(state.table.options).then(response => {
-      commit("SET_TABLE_LOADING", false)
-      commit("SET_TABLE_ROWS", response.data)
-    })
+    return TaskApi.getAll(state.table.options)
+      .then(response => {
+        commit("SET_TABLE_LOADING", false)
+        commit("SET_TABLE_ROWS", response.data)
+      })
+      .catch(() => {
+        commit("SET_TABLE_LOADING", false)
+      })
   }, 200),
-  createEditShow({ commit }, task) {
+  showNewEditSheet({ commit }, task) {
     commit("SET_DIALOG_CREATE_EDIT", true)
     if (task) {
       commit("SET_SELECTED", task)
@@ -64,7 +68,7 @@ const actions = {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", task)
   },
-  closeCreateEdit({ commit }) {
+  closeNewEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
     commit("RESET_SELECTED")
   },

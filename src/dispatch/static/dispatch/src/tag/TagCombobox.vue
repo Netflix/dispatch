@@ -5,7 +5,7 @@
     item-text="name"
     :search-input.sync="search"
     hide-selected
-    label="Add tags"
+    :label="label"
     multiple
     chips
     :loading="loading"
@@ -27,7 +27,7 @@
 
 <script>
 import TagApi from "@/tag/api"
-import _ from "lodash"
+import { cloneDeep, debounce } from "lodash"
 export default {
   name: "TagCombobox",
   props: {
@@ -36,6 +36,10 @@ export default {
       default: function() {
         return []
       }
+    },
+    label: {
+      type: String,
+      default: "Add Tags"
     }
   },
   data() {
@@ -49,7 +53,7 @@ export default {
   computed: {
     tags: {
       get() {
-        return _.cloneDeep(this.value)
+        return cloneDeep(this.value)
       },
       set(value) {
         this._tags = value.map(v => {
@@ -79,7 +83,7 @@ export default {
         this.loading = false
       })
     },
-    getFilteredData: _.debounce(function(options) {
+    getFilteredData: debounce(function(options) {
       this.fetchData(options)
     }, 500)
   }

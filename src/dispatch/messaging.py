@@ -37,8 +37,8 @@ INCIDENT_STATUS_DESCRIPTIONS = {
 
 INCIDENT_TASK_REMINDER_DESCRIPTION = """
 You are assigned to the following incident tasks.
-This is a reminder that these tasks have *passed* their due date.
-Please review and update as appropriate.""".replace(
+This is a reminder that these tasks have passed their due date.
+Please review and update them as appropriate. Resolving them will stop the reminders.""".replace(
     "\n", " "
 ).strip()
 
@@ -163,11 +163,6 @@ individuals you feel may be able to help resolve this incident.""".replace(
 
 INCIDENT_NOTIFICATION_PURPOSES_FYI = """
 This message is for notification purposes only.""".replace(
-    "\n", " "
-).strip()
-
-INCIDENT_GET_INVOLVED_BUTTON_DESCRIPTION = """
-Click the button to be added to the incident conversation.""".replace(
     "\n", " "
 ).strip()
 
@@ -319,14 +314,6 @@ INCIDENT_PARTICIPANT_WELCOME = {
     "title": "Welcome to {{name}}",
     "title_link": "{{ticket_weblink}}",
     "text": INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION,
-}
-
-INCIDENT_GET_INVOLVED_BUTTON = {
-    "title": "Get Involved",
-    "text": INCIDENT_GET_INVOLVED_BUTTON_DESCRIPTION,
-    "button_text": "Get Involved",
-    "button_value": "{{incident_id}}",
-    "button_action": ConversationButtonActions.invite_user,
 }
 
 INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [

@@ -45,10 +45,10 @@ def resolve_user(client: Any, user_id: str):
     return {"id": user_id}
 
 
-def chunks(l, n):
+def chunks(ids, n):
     """Yield successive n-sized chunks from l."""
-    for i in range(0, len(l), n):
-        yield l[i : i + n]
+    for i in range(0, len(ids), n):
+        yield ids[i : i + n]
 
 
 def paginated(data_key):
@@ -99,7 +99,7 @@ def time_pagination(data_key):
 
 
 # NOTE I don't like this but slack client is annoying (kglisson)
-SLACK_GET_ENDPOINTS = ["users.lookupByEmail", "users.info", "conversations.history"]
+SLACK_GET_ENDPOINTS = ["users.lookupByEmail", "users.info", "conversations.history", "users.profile.get"]
 
 
 @retry(stop=stop_after_attempt(5), retry=retry_if_exception_type(TryAgain))
@@ -182,6 +182,15 @@ async def get_user_info_by_id_async(client: Any, user_id: str):
 def get_user_info_by_email(client: Any, email: str):
     """Gets profile information about a user by email."""
     return make_call(client, "users.lookupByEmail", email=email)["user"]
+
+
+@functools.lru_cache()
+def get_user_profile_by_email(client: Any, email: str):
+    """Gets extended profile information about a user by email."""
+    user = make_call(client, "users.lookupByEmail", email=email)["user"]
+    profile = make_call(client, "users.profile.get", user=user["id"])["profile"]
+    profile["tz"] = user["tz"]
+    return profile
 
 
 def get_user_email(client: Any, user_id: str):
@@ -373,3 +382,9 @@ def is_user(slack_user: str):
 def open_dialog_with_user(client: Any, trigger_id: str, dialog: dict):
     """Opens a dialog with a user."""
     return make_call(client, "dialog.open", trigger_id=trigger_id, dialog=dialog)
+
+
+def open_modal_with_user(client: Any, trigger_id: str, modal: dict):
+    """Opens a modal with a user."""
+    # the argument should be view in the make call, since slack api expects view
+    return make_call(client, "views.open", trigger_id=trigger_id, view=modal)

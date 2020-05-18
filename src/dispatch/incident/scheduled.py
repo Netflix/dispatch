@@ -1,5 +1,7 @@
 import logging
 from datetime import datetime
+from sqlalchemy import func
+
 from schedule import every
 
 from dispatch.config import (
@@ -7,6 +9,7 @@ from dispatch.config import (
     INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID,
     INCIDENT_NOTIFICATION_CONVERSATIONS,
     INCIDENT_PLUGIN_TICKET_SLUG,
+    INCIDENT_PLUGIN_STORAGE_SLUG,
 )
 from dispatch.decorators import background_task
 from dispatch.enums import Visibility
@@ -19,9 +22,13 @@ from dispatch.messaging import (
     INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
     INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
 )
+
+from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.plugins.base import plugins
 from dispatch.scheduler import scheduler
 from dispatch.service import service as service_service
+from dispatch.tag import service as tag_service
+from dispatch.tag.models import Tag
 
 from dispatch.conversation.enums import ConversationButtonActions
 from .enums import IncidentStatus
@@ -30,6 +37,49 @@ from .messaging import send_incident_status_report_reminder
 
 
 log = logging.getLogger(__name__)
+
+
+@scheduler.add(every(1).hours, name="incident-tagger")
+@background_task
+def auto_tagger(db_session):
+    """Attempts to take existing tags and associate them with incidents."""
+    tags = tag_service.get_all(db_session=db_session).all()
+    log.debug(f"Fetched {len(tags)} tags from database.")
+
+    tag_strings = [t.name.lower() for t in tags if t.discoverable]
+    phrases = build_term_vocab(tag_strings)
+    matcher = build_phrase_matcher("dispatch-tag", phrases)
+
+    p = plugins.get(
+        INCIDENT_PLUGIN_STORAGE_SLUG
+    )  # this may need to be refactored if we support multiple document types
+
+    for incident in get_all(db_session=db_session).all():
+        log.debug(f"Processing incident. Name: {incident.name}")
+
+        doc = incident.incident_document
+        try:
+            mime_type = "text/plain"
+            text = p.get(doc.resource_id, mime_type)
+        except Exception as e:
+            log.debug(f"Failed to get document. Reason: {e}")
+            sentry_sdk.capture_exception(e)
+            continue
+
+        extracted_tags = list(set(extract_terms_from_text(text, matcher)))
+
+        matched_tags = (
+            db_session.query(Tag)
+            .filter(func.upper(Tag.name).in_([func.upper(t) for t in extracted_tags]))
+            .all()
+        )
+
+        incident.tags.extend(matched_tags)
+        db_session.commit()
+
+        log.debug(
+            f"Associating tags with incident. Incident: {incident.name}, Tags: {extracted_tags}"
+        )
 
 
 @scheduler.add(every(1).hours, name="incident-status-report-reminder")
@@ -96,6 +146,7 @@ def daily_summary(db_session=None):
                                 "text": (
                                     f"*<{incident.ticket.weblink}|{incident.name}>*\n"
                                     f"*Title*: {incident.title}\n"
+                                    f"*Type*: {incident.incident_type.name}\n"
                                     f"*Priority*: {incident.incident_priority.name}\n"
                                     f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
                                 ),
@@ -103,7 +154,7 @@ def daily_summary(db_session=None):
                             "block_id": f"{ConversationButtonActions.invite_user}-{idx}",
                             "accessory": {
                                 "type": "button",
-                                "text": {"type": "plain_text", "text": "Get Involved"},
+                                "text": {"type": "plain_text", "text": "Join Incident"},
                                 "value": f"{incident.id}",
                             },
                         }
@@ -133,13 +184,14 @@ def daily_summary(db_session=None):
     )
 
     hours = 24
-    stable_closed_incidents = get_all_last_x_hours_by_status(
+    stable_incidents = get_all_last_x_hours_by_status(
         db_session=db_session, status=IncidentStatus.stable, hours=hours
-    ) + get_all_last_x_hours_by_status(
+    )
+    closed_incidents = get_all_last_x_hours_by_status(
         db_session=db_session, status=IncidentStatus.closed, hours=hours
     )
-    if stable_closed_incidents:
-        for incident in stable_closed_incidents:
+    if stable_incidents or closed_incidents:
+        for idx, incident in enumerate(stable_incidents):
             if incident.visibility == Visibility.open:
                 try:
                     blocks.append(
@@ -150,9 +202,38 @@ def daily_summary(db_session=None):
                                 "text": (
                                     f"*<{incident.ticket.weblink}|{incident.name}>*\n"
                                     f"*Title*: {incident.title}\n"
-                                    f"*Status*: {incident.status}\n"
+                                    f"*Type*: {incident.incident_type.name}\n"
                                     f"*Priority*: {incident.incident_priority.name}\n"
-                                    f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
+                                    f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>\n"
+                                    f"*Status*: {incident.status}"
+                                ),
+                            },
+                            "block_id": f"{ConversationButtonActions.invite_user}-{idx}",
+                            "accessory": {
+                                "type": "button",
+                                "text": {"type": "plain_text", "text": "Join Incident"},
+                                "value": f"{incident.id}",
+                            },
+                        }
+                    )
+                except Exception as e:
+                    sentry_sdk.capture_exception(e)
+
+        for incident in closed_incidents:
+            if incident.visibility == Visibility.open:
+                try:
+                    blocks.append(
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": (
+                                    f"*<{incident.ticket.weblink}|{incident.name}>*\n"
+                                    f"*Title*: {incident.title}\n"
+                                    f"*Type*: {incident.incident_type.name}\n"
+                                    f"*Priority*: {incident.incident_priority.name}\n"
+                                    f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>\n"
+                                    f"*Status*: {incident.status}"
                                 ),
                             },
                         }

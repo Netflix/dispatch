@@ -1,8 +1,6 @@
 import Vue from "vue"
 import Router from "vue-router"
 import { publicRoute, protectedRoute } from "./config"
-import NProgress from "nprogress"
-import "nprogress/nprogress.css"
 
 import { BasicQueryStringUtils } from "@openid/appauth/built/query_string_utils"
 import { LocalStorageBackend } from "@openid/appauth/built/storage"
@@ -89,7 +87,7 @@ function loginwithPKCE(to, from, next) {
           .performTokenRequest(cfg, req)
           .then(response => {
             // Redirect to the uri in session storage and then delete it from storage
-            store.dispatch("account/login", {
+            store.dispatch("auth/login", {
               token: response.accessToken,
               redirectUri: localStorage.getItem("redirect_uri")
             })
@@ -130,24 +128,45 @@ function loginwithPKCE(to, from, next) {
   })
 }
 
+function loginBasic(to, from, next) {
+  let token = localStorage.getItem("token")
+  // we already have a token tell vuex about it
+  if (token) {
+    store.commit("auth/SET_USER_LOGIN", token)
+    next()
+  }
+
+  // prevent redirect loop
+  if (to.path !== "/login") {
+    next("/login")
+  }
+
+  next()
+}
+
 // router guards
 router.beforeEach((to, from, next) => {
   store.dispatch("app/setLoading", true)
-  NProgress.start()
-  if (!store.state.account.status.loggedIn) {
+  if (!store.state.auth.status.loggedIn) {
     if (authProviderSlug === "dispatch-auth-provider-pkce") {
       loginwithPKCE(to, from, next)
+    } else if (authProviderSlug === "dispatch-auth-provider-basic") {
+      loginBasic(to, from, next)
     } else {
+      // if client auth is disabled
       next()
     }
   } else {
+    // get user info from the server if we don't already have it
+    if (!store.state.auth.userInfo) {
+      store.dispatch("auth/getUserInfo")
+    }
     next()
   }
 })
 
 router.afterEach(function() {
   store.dispatch("app/setLoading", false)
-  NProgress.done()
 })
 
 export default router

@@ -8,12 +8,14 @@ import logging
 
 import requests
 from fastapi import HTTPException
+from typing import List
 from fastapi.security.utils import get_authorization_scheme_param
 
 from jose import JWTError, jwt
 from starlette.status import HTTP_401_UNAUTHORIZED
 from starlette.requests import Request
 
+from dispatch.config import DISPATCH_UI_URL
 from dispatch.individual import service as individual_service
 from dispatch.plugins import dispatch_core as dispatch_plugin
 from dispatch.plugins.base import plugins
@@ -21,14 +23,39 @@ from dispatch.plugins.bases import (
     ParticipantPlugin,
     DocumentResolverPlugin,
     AuthenticationProviderPlugin,
+    TicketPlugin,
 )
 
 from dispatch.route import service as route_service
 from dispatch.route.models import RouteRequest
 
-from dispatch.config import DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS
+from dispatch.config import DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS, DISPATCH_JWT_SECRET
 
 log = logging.getLogger(__name__)
+
+
+class BasicAuthProviderPlugin(AuthenticationProviderPlugin):
+    title = "Dispatch Plugin - Basic Authentication Provider"
+    slug = "dispatch-auth-provider-basic"
+    description = "Generic basic authentication provider."
+    version = dispatch_plugin.__version__
+
+    author = "Netflix"
+    author_url = "https://github.com/netflix/dispatch.git"
+
+    def get_current_user(self, request: Request, **kwargs):
+        authorization: str = request.headers.get("Authorization")
+        scheme, param = get_authorization_scheme_param(authorization)
+        if not authorization or scheme.lower() != "bearer":
+            return
+
+        token = authorization.split()[1]
+
+        try:
+            data = jwt.decode(token, DISPATCH_JWT_SECRET)
+        except JWTError as e:
+            raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail=str(e))
+        return data["email"]
 
 
 class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
@@ -37,7 +64,7 @@ class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
     description = "Generic PCKE authentication provider."
     version = dispatch_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def get_current_user(self, request: Request, **kwargs):
@@ -61,13 +88,60 @@ class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
         return data["email"]
 
 
+class DispatchTicketPlugin(TicketPlugin):
+    title = "Dispatch Plugin - Ticket Management"
+    slug = "dispatch-ticket"
+    description = "Uses dispatch itself to create a ticket."
+    version = dispatch_plugin.__version__
+
+    author = "Netflix"
+    author_url = "https://github.com/netflix/dispatch.git"
+
+    def create(
+        self,
+        incident_id: int,
+        title: str,
+        incident_type: str,
+        incident_priority: str,
+        commander: str,
+        reporter: str,
+    ):
+        """Creates a dispatch ticket."""
+        resource_id = f"dispatch-{incident_id}"
+        return {
+            "resource_id": resource_id,
+            "weblink": f"{DISPATCH_UI_URL}/incidents/{resource_id}",
+            "resource_type": "dispatch-internal-ticket",
+        }
+
+    def update(
+        self,
+        ticket_id: str,
+        title: str = None,
+        description: str = None,
+        incident_type: str = None,
+        priority: str = None,
+        status: str = None,
+        commander_email: str = None,
+        reporter_email: str = None,
+        conversation_weblink: str = None,
+        conference_weblink: str = None,
+        document_weblink: str = None,
+        storage_weblink: str = None,
+        labels: List[str] = None,
+        cost: str = None,
+    ):
+        """Updates the incident."""
+        return
+
+
 class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
     title = "Dispatch Plugin - Document Resolver"
     slug = "dispatch-document-resolver"
     description = "Uses dispatch itself to resolve incident documents."
     version = dispatch_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def get(
@@ -94,7 +168,7 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
     description = "Uses dispatch itself to resolve incident participants."
     version = dispatch_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def get(

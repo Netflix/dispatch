@@ -31,6 +31,9 @@
                   <v-icon small>open_in_new</v-icon>
                 </a>
               </template>
+              <template v-slot:item.id="{ item }">
+                <v-btn x-small @click="joinIncident(item.id)">Join Incident</v-btn>
+              </template>
               <template v-slot:expanded-item="{ headers, item }">
                 <td :colspan="headers.length">
                   <v-container>
@@ -80,6 +83,7 @@
 </template>
 
 <script>
+import { mapActions } from "vuex"
 import IncidentApi from "@/incident/api"
 export default {
   name: "IncidentStatus",
@@ -96,6 +100,7 @@ export default {
         { text: "Priority", value: "incident_priority.name", sortable: false },
         { text: "Type", value: "incident_type.name", sortable: false },
         { text: "Commander", value: "commander" },
+        { text: "", value: "id" },
         { text: "", value: "data-table-expand" }
       ]
     }
@@ -103,6 +108,7 @@ export default {
 
   mounted() {
     this.getActive()
+    this.joinIncident()
   },
 
   methods: {
@@ -112,7 +118,8 @@ export default {
         this.items = response.data.items
         this.loading = false
       })
-    }
+    },
+    ...mapActions("incident", ["joinIncident"])
   }
 }
 </script>

@@ -13,17 +13,18 @@ import search from "@/search/store"
 import service from "@/service/store"
 import team from "@/team/store"
 import term from "@/term/store"
-import account from "@/auth/store"
+import auth from "@/auth/store"
 import document from "@/document/store"
 import tag from "@/tag/store"
 import task from "@/task/store"
+import plugin from "@/plugin/store"
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
   modules: {
     app,
-    account,
+    auth,
     task,
     tag,
     definition,
@@ -33,6 +34,7 @@ export default new Vuex.Store({
     incident_priority,
     individual,
     policy,
+    plugin,
     route,
     search,
     service,

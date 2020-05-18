@@ -48,7 +48,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { debounce } from "lodash"
 import { mapState, mapActions, mapMutations } from "vuex"
 import NewEditSheet from "@/policy/NewEditSheet.vue"
 import DeleteDialog from "@/policy/DeleteDialog.vue"
@@ -90,7 +90,7 @@ export default {
       this.$store.dispatch("policy/selectPolicy", policy)
       this.$store.dispatch("policy/showDeleteDialog", true)
     },
-    setFilterOptions: _.debounce(function(options) {
+    setFilterOptions: debounce(function(options) {
       this.$store.dispatch("policy/setFilterOptions", options)
     }, 200)
   }

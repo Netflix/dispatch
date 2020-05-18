@@ -1,4 +1,5 @@
 import re
+import logging
 from typing import Any, List
 from itertools import groupby
 
@@ -13,6 +14,8 @@ from starlette.requests import Request
 from dispatch.common.utils.composite_search import CompositeSearch
 
 from .config import SQLALCHEMY_DATABASE_URI
+
+log = logging.getLogger(__file__)
 
 engine = create_engine(str(SQLALCHEMY_DATABASE_URI))
 SessionLocal = sessionmaker(bind=engine)
@@ -98,7 +101,19 @@ def create_filter_spec(model, fields, ops, values):
     # group by field (or for same fields and for different fields)
     data = sorted(filters, key=lambda x: x["model"])
     for k, g in groupby(data, key=lambda x: x["model"]):
-        filter_spec.append({"or": list(g)})
+        # force 'and' for operations other than equality
+        filters = list(g)
+        force_and = False
+        for f in filters:
+            if ">" in f["op"] or "<" in f["op"]:
+                force_and = True
+
+        if force_and:
+            filter_spec.append({"and": filters})
+        else:
+            filter_spec.append({"or": filters})
+
+    log.debug(f"Filter Spec: {filter_spec}")
 
     if filter_spec:
         return {"and": filter_spec}
@@ -134,6 +149,22 @@ def get_all(*, db_session, model):
     return db_session.query(get_class_by_tablename(model))
 
 
+def join_required_attrs(query, model, join_attrs, fields):
+    """Determines which attrs (if any) require a join."""
+    if not fields:
+        return query
+
+    if not join_attrs:
+        return query
+
+    for field, attr in join_attrs:
+        for f in fields:
+            if field in f:
+                query = query.join(getattr(model, attr))
+
+    return query
+
+
 def search_filter_sort_paginate(
     db_session,
     model,
@@ -145,12 +176,16 @@ def search_filter_sort_paginate(
     fields: List[str] = None,
     ops: List[str] = None,
     values: List[str] = None,
+    join_attrs: List[str] = None,
 ):
     """Common functionality for searching, filtering and sorting"""
+    model_cls = get_class_by_tablename(model)
     if query_str:
         query = search(db_session=db_session, query_str=query_str, model=model)
     else:
-        query = get_all(db_session=db_session, model=model)
+        query = db_session.query(model_cls)
+
+    query = join_required_attrs(query, model_cls, join_attrs, fields)
 
     filter_spec = create_filter_spec(model, fields, ops, values)
     query = apply_filters(query, filter_spec)

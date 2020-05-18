@@ -101,6 +101,20 @@ const Menu = [
     name: "Incident Priorities",
     icon: "report",
     href: "/incidents/priorities"
+  },
+  {
+    title: "Plugins",
+    group: "Configuration",
+    name: "Plugins",
+    icon: "power",
+    href: "/plugins"
+  },
+  {
+    title: "Users",
+    group: "Configuration",
+    name: "Users",
+    icon: "account_box",
+    href: "/users"
   }
 ]
 // reorder menu

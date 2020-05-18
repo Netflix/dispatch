@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { countBy, forEach } from "lodash"
 
 import VueApexCharts from "vue-apexcharts"
 export default {
@@ -91,7 +91,7 @@ export default {
       }
     },
     priorityCount() {
-      return _.countBy(this.value, function(item) {
+      return countBy(this.value, function(item) {
         return item.incident_priority.name
       })
     },
@@ -100,7 +100,7 @@ export default {
       var sortedSeries = []
       var priorityCount = this.priorityCount
 
-      _.forEach(this.order, function(o) {
+      forEach(this.order, function(o) {
         if (priorityCount[o]) {
           sortedSeries.push(priorityCount[o])
         } else {

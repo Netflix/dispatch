@@ -46,9 +46,11 @@ def save_status_report(
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch Core App",
-        description=f"New status report created by {participant.individual.name}",
+        source="Incident Participant",
+        description=f"{participant.individual.name} created a new status report",
+        details={"conditions": conditions, "actions": actions, "needs": needs},
         incident_id=incident_id,
+        individual_id=participant.individual.id,
     )
 
 

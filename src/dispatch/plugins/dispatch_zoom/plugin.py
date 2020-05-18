@@ -10,6 +10,7 @@ import random
 from typing import List
 
 from dispatch.decorators import apply, counter, timer
+from dispatch.plugins import dispatch_zoom as zoom_plugin
 from dispatch.plugins.bases import ConferencePlugin
 
 from .config import ZOOM_API_USER_ID, ZOOM_API_KEY, ZOOM_API_SECRET
@@ -55,6 +56,10 @@ class ZoomConferencePlugin(ConferencePlugin):
     title = "Zoom Plugin - Conference Management"
     slug = "zoom-conference"
     description = "Uses Zoom to manage conference meetings."
+    version = zoom_plugin.__version__
+
+    author = "HashiCorp"
+    author_url = "https://github.com/netflix/dispatch.git"
 
     def create(
         self, name: str, description: str = None, title: str = None, participants: List[str] = []

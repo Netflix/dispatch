@@ -192,7 +192,7 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
     """Sends incident status notifications to conversations and distribution lists."""
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
-    message_template = INCIDENT_NOTIFICATION
+    message_template = INCIDENT_NOTIFICATION.copy()
 
     # we get the incident documents
     incident_document = get_document(
@@ -258,7 +258,7 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
             incident_id=incident.id,
         )
 
-    log.debug(f"Incident status notifications sent.")
+    log.debug("Incident status notifications sent.")
 
 
 def send_incident_notifications(incident: Incident, db_session: SessionLocal):
@@ -266,7 +266,7 @@ def send_incident_notifications(incident: Incident, db_session: SessionLocal):
     # we send the incident status notifications
     send_incident_status_notifications(incident, db_session)
 
-    log.debug(f"Incident notifications sent.")
+    log.debug("Incident notifications sent.")
 
 
 def send_incident_update_notifications(incident: Incident, previous_incident: IncidentRead):
@@ -290,7 +290,7 @@ def send_incident_update_notifications(incident: Incident, previous_incident: In
 
     if not change:
         # we don't need to notify
-        log.debug(f"Incident change notifications not sent.")
+        log.debug("Incident change notifications not sent.")
         return
 
     notification_template.append(INCIDENT_COMMANDER)
@@ -319,18 +319,18 @@ def send_incident_update_notifications(incident: Incident, previous_incident: In
     )
 
     if incident.visibility == Visibility.open:
-        notification_coversation_notification_template = notification_template.copy()
+        notification_conversation_notification_template = notification_template.copy()
         if incident.status != IncidentStatus.closed:
-            notification_coversation_notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
+            notification_conversation_notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
         else:
-            notification_coversation_notification_template.insert(0, INCIDENT_NAME)
+            notification_conversation_notification_template.insert(0, INCIDENT_NAME)
 
         # we send an update to the incident notification conversations
         for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
             convo_plugin.send(
                 conversation,
                 notification_text,
-                notification_coversation_notification_template,
+                notification_conversation_notification_template,
                 notification_type,
                 name=incident.name,
                 ticket_weblink=incident.ticket.weblink,
@@ -373,7 +373,7 @@ def send_incident_update_notifications(incident: Incident, previous_incident: In
                 incident_status_new=incident.status,
             )
 
-    log.debug(f"Incident update notifications sent.")
+    log.debug("Incident update notifications sent.")
 
 
 def send_incident_participant_announcement_message(
@@ -439,7 +439,7 @@ def send_incident_participant_announcement_message(
         blocks=blocks,
     )
 
-    log.debug(f"Incident participant announcement message sent.")
+    log.debug("Incident participant announcement message sent.")
 
 
 def send_incident_commander_readded_notification(incident_id: int, db_session: SessionLocal):
@@ -459,7 +459,7 @@ def send_incident_commander_readded_notification(incident_id: int, db_session: S
         commander_fullname=incident.commander.name,
     )
 
-    log.debug(f"Incident commander readded notification sent.")
+    log.debug("Incident commander readded notification sent.")
 
 
 def send_incident_participant_has_role_ephemeral_message(
@@ -484,7 +484,7 @@ def send_incident_participant_has_role_ephemeral_message(
         ],
     )
 
-    log.debug(f"Incident participant has role message sent.")
+    log.debug("Incident participant has role message sent.")
 
 
 def send_incident_participant_role_not_assigned_ephemeral_message(
@@ -509,7 +509,7 @@ def send_incident_participant_role_not_assigned_ephemeral_message(
         ],
     )
 
-    log.debug(f"Incident participant role not assigned message sent.")
+    log.debug("Incident participant role not assigned message sent.")
 
 
 def send_incident_new_role_assigned_notification(
@@ -532,7 +532,7 @@ def send_incident_new_role_assigned_notification(
         assignee_role=assignee_role,
     )
 
-    log.debug(f"Incident new role assigned message sent.")
+    log.debug("Incident new role assigned message sent.")
 
 
 def send_incident_review_document_notification(
@@ -551,7 +551,7 @@ def send_incident_review_document_notification(
         incident_review_document_weblink=incident_review_document_weblink,
     )
 
-    log.debug(f"Incident review document notification sent.")
+    log.debug("Incident review document notification sent.")
 
 
 def send_incident_resources_ephemeral_message_to_participant(

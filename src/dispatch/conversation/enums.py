@@ -12,6 +12,7 @@ class ConversationCommands(str, Enum):
     edit_incident = "edit-incident"
     engage_oncall = "engage-oncall"
     list_resources = "list-resources"
+    report_incident = "report-incident"
 
 
 class ConversationButtonActions(str, Enum):

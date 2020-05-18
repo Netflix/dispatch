@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { forEach, map } from "lodash"
 import differenceInHours from "date-fns/differenceInHours"
 import parseISO from "date-fns/parseISO"
 
@@ -83,7 +83,7 @@ export default {
     },
     series() {
       let series = { name: "Days Active", data: [] }
-      _.forEach(this.value, function(value) {
+      forEach(this.value, function(value) {
         var endTime = new Date().toISOString()
         if (value.stable_at) {
           endTime = value.stable_at
@@ -94,7 +94,7 @@ export default {
       return [series]
     },
     categoryData() {
-      return _.map(this.value, "name")
+      return map(this.value, "name")
     }
   }
 }

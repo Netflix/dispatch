@@ -1,8 +1,7 @@
 import IncidentApi from "@/incident/api"
 
 import { getField, updateField } from "vuex-map-fields"
-import { debounce } from "lodash"
-import _ from "lodash"
+import { debounce, forEach, each, has } from "lodash"
 
 const getDefaultSelectedState = () => {
   return {
@@ -52,7 +51,8 @@ const state = {
         commander: [],
         incident_type: [],
         incident_priority: [],
-        status: []
+        status: [],
+        tag: []
       },
       q: "",
       page: 1,
@@ -83,9 +83,9 @@ const actions = {
     tableOptions.ops = []
     tableOptions.values = []
 
-    _.forEach(state.table.options.filters, function(value, key) {
-      _.each(value, function(value) {
-        if (_.has(value, "id")) {
+    forEach(state.table.options.filters, function(value, key) {
+      each(value, function(value) {
+        if (has(value, "id")) {
           tableOptions.fields.push(key + ".id")
           tableOptions.values.push(value.id)
         } else {
@@ -95,10 +95,14 @@ const actions = {
         tableOptions.ops.push("==")
       })
     })
-    return IncidentApi.getAll(tableOptions).then(response => {
-      commit("SET_TABLE_LOADING", false)
-      commit("SET_TABLE_ROWS", response.data)
-    })
+    return IncidentApi.getAll(tableOptions)
+      .then(response => {
+        commit("SET_TABLE_LOADING", false)
+        commit("SET_TABLE_ROWS", response.data)
+      })
+      .catch(() => {
+        commit("SET_TABLE_LOADING", false)
+      })
   }, 200),
   get({ commit, state }) {
     return IncidentApi.get(state.selected.id).then(response => {
@@ -191,6 +195,15 @@ const actions = {
   },
   resetSelected({ commit }) {
     commit("RESET_SELECTED")
+  },
+  joinIncident({ commit }, incidentId) {
+    IncidentApi.join(incidentId, {}).then(() => {
+      commit(
+        "app/SET_SNACKBAR",
+        { text: "You have successfully joined the incident." },
+        { root: true }
+      )
+    })
   }
 }
 

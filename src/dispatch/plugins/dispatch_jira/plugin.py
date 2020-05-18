@@ -184,13 +184,19 @@ class JiraTicketPlugin(TicketPlugin):
     description = "Uses Jira to hepl manage external tickets."
     version = jira_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     _schema = None
 
     def create(
-        self, title: str, incident_type: str, incident_priority: str, commander: str, reporter: str
+        self,
+        incident_id: int,
+        title: str,
+        incident_type: str,
+        incident_priority: str,
+        commander: str,
+        reporter: str,
     ):
         """Creates a Jira ticket."""
         client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))

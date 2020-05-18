@@ -8,6 +8,7 @@ import logging
 from typing import List, Optional
 from jinja2 import Template
 
+from dispatch.incident.enums import IncidentSlackViewBlockId
 from dispatch.messaging import (
     INCIDENT_TASK_LIST_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
@@ -26,6 +27,7 @@ from .config import (
     SLACK_COMMAND_MARK_CLOSED_SLUG,
     SLACK_COMMAND_MARK_STABLE_SLUG,
     SLACK_COMMAND_STATUS_REPORT_SLUG,
+    SLACK_COMMAND_REPORT_INCIDENT_SLUG,
 )
 
 
@@ -76,6 +78,10 @@ INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
     SLACK_COMMAND_LIST_RESOURCES_SLUG: {
         "response_type": "ephemeral",
         "text": "Listing all incident resources...",
+    },
+    SLACK_COMMAND_REPORT_INCIDENT_SLUG: {
+        "response_type": "ephemeral",
+        "text": "Opening a dialog to report an incident...",
     },
 }
 
@@ -185,3 +191,124 @@ def slack_preview(message, block=None):
         print(f"https://api.slack.com/tools/block-kit-builder?blocks={message}")
     else:
         print(f"https://api.slack.com/docs/messages/builder?msg={message}")
+
+
+def create_block_option_from_template(text: str, value: str):
+    """Helper function which generates the option block for modals / views"""
+    return {"text": {"type": "plain_text", "text": str(text), "emoji": True}, "value": str(value)}
+
+
+def create_modal_content(
+    channel_id: str = None, incident_types: list = None, incident_priorities: list = None
+):
+    """Helper function which generates the slack modal / view message for (Create / start a new Incident) call"""
+    incident_type_options = []
+    incident_priority_options = []
+
+    # below fields for incident type and priority are the same
+    # (label and value) are set from the caller function create_incident_open_modal
+    # if the value needs to be changed in the future to ID (from name to id) then modify them in the caller function
+
+    for incident_type in incident_types:
+        incident_type_options.append(
+            create_block_option_from_template(
+                text=incident_type.get("label"), value=incident_type.get("value")
+            )
+        )
+
+    for incident_priority in incident_priorities:
+        incident_priority_options.append(
+            create_block_option_from_template(
+                text=incident_priority.get("label"), value=incident_priority.get("value")
+            )
+        )
+
+    modal_view_template = {
+        "type": "modal",
+        "title": {"type": "plain_text", "text": "Security Incident Report"},
+        "blocks": [
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": "If you suspect a security incident and require help from security, "
+                        "please fill out the following to the best of your abilities.",
+                    }
+                ],
+            },
+            {
+                "block_id": IncidentSlackViewBlockId.title,
+                "type": "input",
+                "label": {"type": "plain_text", "text": "Title"},
+                "element": {
+                    "type": "plain_text_input",
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "A brief explanatory title. You can change this later.",
+                    },
+                },
+            },
+            {
+                "block_id": IncidentSlackViewBlockId.description,
+                "type": "input",
+                "label": {"type": "plain_text", "text": "Description"},
+                "element": {
+                    "type": "plain_text_input",
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "A summary of what you know so far. It's all right if this is incomplete.",
+                    },
+                    "multiline": True,
+                },
+            },
+            {
+                "block_id": IncidentSlackViewBlockId.type,
+                "type": "input",
+                "label": {"type": "plain_text", "text": "Type"},
+                "element": {
+                    "type": "static_select",
+                    "placeholder": {"type": "plain_text", "text": "Select Incident Type"},
+                    "options": incident_type_options,
+                },
+            },
+            {
+                "block_id": IncidentSlackViewBlockId.priority,
+                "type": "input",
+                "label": {"type": "plain_text", "text": "Priority", "emoji": True},
+                "element": {
+                    "type": "static_select",
+                    "placeholder": {"type": "plain_text", "text": "Select Incident Priority"},
+                    "options": incident_priority_options,
+                },
+            },
+        ],
+        "close": {"type": "plain_text", "text": "Cancel"},
+        "submit": {"type": "plain_text", "text": "Submit"},
+        "private_metadata": channel_id,
+    }
+
+    return modal_view_template
+
+
+def create_incident_reported_confirmation_msg(
+    title: str, incident_type: str, incident_priority: str
+):
+    return [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "This is a confirmation that you have reported a security incident with the following information. You'll get invited to a Slack conversation soon.",
+            },
+        },
+        {"type": "section", "text": {"type": "mrkdwn", "text": f"*Incident Title*: {title}"}},
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"*Incident Type*: {incident_type}"},
+        },
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"*Incident Priority*: {incident_priority}"},
+        },
+    ]

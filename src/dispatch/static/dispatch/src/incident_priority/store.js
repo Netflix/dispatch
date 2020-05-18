@@ -46,10 +46,14 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", true)
-    return IncidentPriorityApi.getAll(state.table.options).then(response => {
-      commit("SET_TABLE_LOADING", false)
-      commit("SET_TABLE_ROWS", response.data)
-    })
+    return IncidentPriorityApi.getAll(state.table.options)
+      .then(response => {
+        commit("SET_TABLE_LOADING", false)
+        commit("SET_TABLE_ROWS", response.data)
+      })
+      .catch(() => {
+        commit("SET_TABLE_LOADING", false)
+      })
   }, 200),
   createEditShow({ commit }, incidentPriority) {
     commit("SET_DIALOG_CREATE_EDIT", true)
