@@ -15,7 +15,6 @@
                 single-line
                 hide-details
                 clearable
-                :loading="loading"
               />
             </v-card-title>
             <v-data-table
@@ -26,7 +25,8 @@
               :items-per-page.sync="itemsPerPage"
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
-              @click:row="editShow"
+              :loading="loading"
+              loading-text="Loading... Please wait"
             >
               <template v-slot:item.author="{ item }">
                 <a :href="item.author_url" target="_blank" style="text-decoration: none;">
@@ -42,6 +42,20 @@
               </template>
               <template v-slot:item.required="{ item }">
                 {{ item.required ? "Yes" : "No" }}
+              </template>
+              <template v-slot:item.data-table-actions="{ item }">
+                <v-menu bottom left>
+                  <template v-slot:activator="{ on }">
+                    <v-btn icon v-on="on">
+                      <v-icon>mdi-dots-vertical</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item @click="editShow(item)">
+                      <v-list-item-title>Edit</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
               </template>
             </v-data-table>
           </v-card>
@@ -71,7 +85,8 @@ export default {
         { text: "Status", value: "enabled", sortable: true },
         { text: "Required", value: "required", sortable: true },
         { text: "Multiple Allowed", value: "multiple", sortable: true },
-        { text: "Type", value: "type", sortable: true }
+        { text: "Type", value: "type", sortable: true },
+        { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
     }
   },
