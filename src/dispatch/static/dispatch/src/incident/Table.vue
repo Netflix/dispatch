@@ -119,11 +119,17 @@ export default {
     this.getAll()
 
     this.$watch(
+      vm => [vm.page],
+      () => {
+        this.getAll()
+      }
+    )
+
+    this.$watch(
       vm => [
         vm.q,
-        vm.page,
-        vm.itemsPerPage,
         vm.sortBy,
+        vm.itemsPerPage,
         vm.descending,
         vm.commander,
         vm.reporter,
@@ -133,6 +139,7 @@ export default {
         vm.tag
       ],
       () => {
+        this.page = 1
         this.getAll()
       }
     )

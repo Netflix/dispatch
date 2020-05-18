@@ -85,10 +85,17 @@ export default {
 
   mounted() {
     this.getAll({})
+    this.$watch(
+      vm => [vm.page],
+      () => {
+        this.getAll()
+      }
+    )
 
     this.$watch(
-      vm => [vm.q, vm.page, vm.itemsPerPage, vm.sortBy, vm.descending],
+      vm => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
       () => {
+        this.page = 1
         this.getAll()
       }
     )
