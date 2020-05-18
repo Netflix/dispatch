@@ -28,9 +28,9 @@
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
             >
-              <template v-slot:item.page_commander="{ item }">{{
-                item.page_commander | capitalize
-              }}</template>
+              <template v-slot:item.page_commander="{ item }">
+                <v-simple-checkbox v-model="item.page_commander" disabled></v-simple-checkbox>
+              </template>
               <template v-slot:item.actions="{ item }">
                 <v-icon small class="mr-2" @click="createEditShow(item)">edit</v-icon>
               </template>
