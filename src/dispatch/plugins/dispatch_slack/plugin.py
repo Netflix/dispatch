@@ -44,7 +44,6 @@ from .service import (
     get_user_avatar_url,
     get_user_email,
     get_user_info_by_id,
-    get_user_info_by_email,
     get_user_profile_by_email,
     get_user_username,
     list_conversation_messages,
