@@ -72,6 +72,18 @@ The `Slack` plugin relies on the [Events API](https://api.slack.com/events-api) 
 
 > List resources command as displayed in Slack.
 
+#### `SLACK_DEPARTMENT_PROFILE_ID`
+
+> Specifies the profile field ID where Department is mapped
+
+#### `SLACK_TEAM_PROFILE_ID`
+
+> Specifies the profile field ID where Team is mapped
+
+#### `SLACK_WEBLINK_PROFILE_ID`
+
+> Specifies the profile field ID where the weblink is mapped
+
 ## Event Subscriptions
 
 To enable Dispatch to process Slack events, ensure your bot is subscribed to the following events:
@@ -128,6 +140,7 @@ remote_files:read
 team:read
 users:read
 users:read.email
+users.profile:read
 users:write
 ```
 

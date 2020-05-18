@@ -99,7 +99,7 @@ def time_pagination(data_key):
 
 
 # NOTE I don't like this but slack client is annoying (kglisson)
-SLACK_GET_ENDPOINTS = ["users.lookupByEmail", "users.info", "conversations.history"]
+SLACK_GET_ENDPOINTS = ["users.lookupByEmail", "users.info", "conversations.history", "users.profile.get"]
 
 
 @retry(stop=stop_after_attempt(5), retry=retry_if_exception_type(TryAgain))
@@ -182,6 +182,15 @@ async def get_user_info_by_id_async(client: Any, user_id: str):
 def get_user_info_by_email(client: Any, email: str):
     """Gets profile information about a user by email."""
     return make_call(client, "users.lookupByEmail", email=email)["user"]
+
+
+@functools.lru_cache()
+def get_user_profile_by_email(client: Any, email: str):
+    """Gets extended profile information about a user by email."""
+    user = make_call(client, "users.lookupByEmail", email=email)["user"]
+    profile = make_call(client, "users.profile.get", user=user["id"])["profile"]
+    profile["tz"] = user["tz"]
+    return profile
 
 
 def get_user_email(client: Any, user_id: str):
