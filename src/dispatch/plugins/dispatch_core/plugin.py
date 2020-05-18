@@ -24,6 +24,7 @@ from dispatch.plugins.bases import (
     DocumentResolverPlugin,
     AuthenticationProviderPlugin,
     TicketPlugin,
+    ContactPlugin
 )
 
 from dispatch.route import service as route_service
@@ -160,6 +161,19 @@ class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
         route_in = RouteRequest(**route_in)
         recommendation = route_service.get(db_session=db_session, route_in=route_in)
         return recommendation.documents
+
+
+class DispatchContactPlugin(ContactPlugin):
+    title = "Dispatch Plugin - Contact plugin"
+    slug = "dispatch-contact"
+    description = "Uses dispatch itself to resolve incident participants."
+    version = dispatch_plugin.__version__
+
+    author = "Netflix"
+    author_url = "https://github.com/netflix/dispatch.git"
+
+    def get(self, email, db_session=None):
+        return individual_service.get_by_email(db_session=db_session, email=email).__dict__
 
 
 class DispatchParticipantResolverPlugin(ParticipantPlugin):

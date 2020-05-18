@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi.encoders import jsonable_encoder
+from dispatch.config import ONCALL_PLUGIN_SLUG
 
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
@@ -41,6 +42,7 @@ def create(*, db_session, service_in: ServiceCreate) -> Service:
         incident_types=incident_types,
         terms=terms,
     )
+    service.type = ONCALL_PLUGIN_SLUG
     db_session.add(service)
     db_session.commit()
     return service
