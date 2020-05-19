@@ -507,8 +507,6 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     incident_type_data = incident_type_service.get_by_name(
         db_session=db_session, name=incident.incident_type.name
     )
-    if not incident_type_data.plugin_metadata:
-        incident_type_data.plugin_metadata = {}
 
     ticket = create_incident_ticket(incident, incident_type_data.plugin_metadata, db_session)
     incident.ticket = ticket_service.create(db_session=db_session, ticket_in=TicketCreate(**ticket))
@@ -664,8 +662,6 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     incident_type_data = incident_type_service.get_by_name(
         db_session=db_session, name=incident.incident_type.name
     )
-    if not incident_type_data.plugin_metadata:
-        incident_type_data.plugin_metadata = {}
 
     update_incident_ticket(
         db_session,
@@ -744,8 +740,6 @@ def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_se
     incident_type_data = incident_type_service.get_by_name(
         db_session=db_session, name=incident.incident_type.name
     )
-    if not incident_type_data.plugin_metadata:
-        incident_type_data.plugin_metadata = {}
 
     update_incident_ticket(
         db_session,
@@ -775,8 +769,6 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     incident_type_data = incident_type_service.get_by_name(
         db_session=db_session, name=incident.incident_type.name
     )
-    if not incident_type_data.plugin_metadata:
-        incident_type_data.plugin_metadata = {}
 
     update_incident_ticket(
         db_session,
@@ -890,8 +882,6 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     incident_type_data = incident_type_service.get_by_name(
         db_session=db_session, name=incident.incident_type.name
     )
-    if not incident_type_data.plugin_metadata:
-        incident_type_data.plugin_metadata = {}
 
     update_incident_ticket(
         db_session,
@@ -998,8 +988,6 @@ def incident_update_flow(
     incident_type_data = incident_type_service.get_by_name(
         db_session=db_session, name=incident.incident_type.name
     )
-    if not incident_type_data.plugin_metadata:
-        incident_type_data.plugin_metadata = {}
 
     update_incident_ticket(
         db_session,
@@ -1119,8 +1107,6 @@ def incident_assign_role_flow(
         incident_type_data = incident_type_service.get_by_name(
             db_session=db_session, name=incident.incident_type.name
         )
-        if not incident_type_data.plugin_metadata:
-            incident_type_data.plugin_metadata = {}
 
         update_incident_ticket(
             db_session,
