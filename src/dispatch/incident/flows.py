@@ -510,10 +510,6 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     )
 
     # create the incident ticket
-    incident_type_data = incident_type_service.get_by_name(
-        db_session=db_session, name=incident.incident_type.name
-    )
-
     ticket = create_incident_ticket(incident, db_session)
     incident.ticket = ticket_service.create(db_session=db_session, ticket_in=TicketCreate(**ticket))
 
