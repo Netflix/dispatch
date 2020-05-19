@@ -1,4 +1,4 @@
-"""empty message
+"""Add JSON column to Incident Type table to allow for plugin metadata
 
 Revision ID: 9b4a5ff08170
 Revises: a32bfbb4bcaa
