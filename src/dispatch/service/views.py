@@ -4,10 +4,9 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from dispatch.database import get_db, search_filter_sort_paginate
-from dispatch.search.service import search
 
-from .models import Service, ServiceCreate, ServicePagination, ServiceRead, ServiceUpdate
-from .service import create, delete, get, get_all, get_by_external_id, update
+from .models import ServiceCreate, ServicePagination, ServiceRead, ServiceUpdate
+from .service import create, delete, get, get_by_external_id, update
 
 router = APIRouter()
 

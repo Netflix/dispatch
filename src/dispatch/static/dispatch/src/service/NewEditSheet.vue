@@ -45,22 +45,21 @@
                   />
                 </ValidationProvider>
               </v-flex>
-              <!--Disable type (default to pager duty) until we have a way to validate.
+              <!-- Disable type (default to pager duty) until we have a way to validate. -->
               <v-flex xs12>
-                <ValidationProvider name="Type"
-rules="required" immediate>
-                  <v-text-field
+                <ValidationProvider name="Type" rules="required" immediate>
+                  <v-select
                     v-model="type"
                     slot-scope="{ errors, valid }"
+                    :loading="loading"
+                    :items="oncall_plugins"
                     label="Type"
                     :error-messages="errors"
+                    hint="Oncall plugin to use"
                     :success="valid"
-                    hint="The type service."
-                    clearable
-                    required
-                  />
+                  ></v-select>
                 </ValidationProvider>
-              </v-flex>-->
+              </v-flex>
               <v-flex xs12>
                 <ValidationProvider name="External Id" rules="required" immediate>
                   <v-text-field
@@ -118,6 +117,7 @@ import { required } from "vee-validate/dist/rules"
 import IncidentPriorityMultiSelect from "@/incident_priority/IncidentPriorityMultiSelect.vue"
 import IncidentTypeMultiSelect from "@/incident_type/IncidentTypeMultiSelect.vue"
 import TermCombobox from "@/term/TermCombobox.vue"
+import PluginApi from "@/plugin/api"
 
 extend("required", {
   ...required,
@@ -153,6 +153,14 @@ export default {
 
   methods: {
     ...mapActions("service", ["save", "closeCreateEdit"])
+  },
+
+  mounted() {
+    this.loading = true
+    PluginApi.getByType("oncall").then(response => {
+      this.loading = false
+      this.oncall_plugins = response.data.items.map(p => p.slug)
+    })
   }
 }
 </script>

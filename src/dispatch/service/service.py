@@ -42,7 +42,6 @@ def create(*, db_session, service_in: ServiceCreate) -> Service:
         incident_types=incident_types,
         terms=terms,
     )
-    service.type = ONCALL_PLUGIN_SLUG
     db_session.add(service)
     db_session.commit()
     return service

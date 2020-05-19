@@ -12,6 +12,7 @@ from dispatch.participant import flows as participant_flows
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugins.base import plugins
+from dispatch.plugin import service as plugin_service
 from dispatch.tag import service as tag_service
 from dispatch.tag.models import TagUpdate
 from dispatch.term import service as term_service
@@ -39,7 +40,7 @@ def resolve_incident_commander_email(
         db_session=db_session, name=incident_type
     ).commander_service
 
-    p = plugins.get(commander_service.type)
+    p = plugin_service.get_active(db_session, "oncall")
 
     # page for high priority incidents
     # we could do this at the end but it seems pretty important...
