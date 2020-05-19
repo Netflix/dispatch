@@ -35,13 +35,13 @@
                 </a>
               </template>
               <template v-slot:item.enabled="{ item }">
-                {{ item.enabled ? "Enabled" : "Disabled" }}
+                <v-simple-checkbox v-model="item.enabled" disabled></v-simple-checkbox>
               </template>
               <template v-slot:item.multiple="{ item }">
-                {{ item.multiple ? "Yes" : "No" }}
+                <v-simple-checkbox v-model="item.multiple" disabled></v-simple-checkbox>
               </template>
               <template v-slot:item.required="{ item }">
-                {{ item.required ? "Yes" : "No" }}
+                <v-simple-checkbox v-model="item.required" disabled></v-simple-checkbox>
               </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
@@ -82,7 +82,7 @@ export default {
         { text: "Slug", value: "slug", sortable: true },
         { text: "Author", value: "author", sortable: true },
         { text: "Version", value: "version", sortable: true },
-        { text: "Status", value: "enabled", sortable: true },
+        { text: "Enabled", value: "enabled", sortable: true },
         { text: "Required", value: "required", sortable: true },
         { text: "Multiple Allowed", value: "multiple", sortable: true },
         { text: "Type", value: "type", sortable: true },
@@ -98,7 +98,7 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
-      "table.options.loading",
+      "table.loading",
       "table.rows.items",
       "table.rows.total"
     ])
