@@ -100,7 +100,7 @@ def get_or_create(
         individual_info = contact_plugin.get(individual_contact.email, db_session=db_session)
         location = individual_info.get("location", "unknown")
         team = individual_info.get("team", "unknown")
-        department = individual_info.get("departament", "unknown")
+        department = individual_info.get("department", "unknown")
         participant_in = ParticipantCreate(
             participant_roles=participant_roles, team=team, department=department, location=location
         )
