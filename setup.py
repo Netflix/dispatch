@@ -238,7 +238,6 @@ class BuildAssetsCommand(BaseBuildCommand):
         try:
             import dispatch
         except Exception as e:
-            print(e)
             version = None
             build = None
         else:
