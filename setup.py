@@ -237,7 +237,7 @@ class BuildAssetsCommand(BaseBuildCommand):
         sys.path.insert(0, pkg_path)
         try:
             import dispatch
-        except Exception as e:
+        except Exception:
             version = None
             build = None
         else:
