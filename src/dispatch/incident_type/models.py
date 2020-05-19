@@ -15,7 +15,7 @@ class IncidentType(Base):
     slug = Column(String)
     description = Column(String)
     visibility = Column(String, default=Visibility.open)
-    plugin_metadata = Column(JSON)
+    plugin_metadata = Column(JSON, nullable=False, default=dict, server_default="{}")
 
     template_document_id = Column(Integer, ForeignKey("document.id"))
     template_document = relationship("Document")
