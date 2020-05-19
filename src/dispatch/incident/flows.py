@@ -53,6 +53,7 @@ from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
 from dispatch.incident_priority.models import IncidentPriorityRead
 from dispatch.incident_type.models import IncidentTypeRead
+from dispatch.incident_type import service as incident_type_service
 from dispatch.individual import service as individual_service
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
@@ -120,6 +121,10 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     if incident.visibility == Visibility.restricted:
         title = incident.incident_type.name
 
+    incident_type_plugin_metadata = incident_type_service.get_by_name(
+        db_session=db_session, name=incident.incident_type.name
+    ).plugin_metadata
+
     ticket = plugin.instance.create(
         incident.id,
         title,
@@ -127,6 +132,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
         incident.incident_priority.name,
         incident.commander.email,
         incident.reporter.email,
+        incident_type_plugin_metadata.get(plugin.slug)
     )
     ticket.update({"resource_type": plugin.slug})
 
@@ -164,6 +170,10 @@ def update_incident_ticket(
     if visibility == Visibility.restricted:
         title = description = incident_type
 
+    incident_type_plugin_metadata = incident_type_service.get_by_name(
+        db_session=db_session, name=incident_type
+    ).plugin_metadata
+
     plugin.instance.update(
         ticket_id,
         title=title,
@@ -179,6 +189,7 @@ def update_incident_ticket(
         conference_weblink=conference_weblink,
         labels=labels,
         cost=cost,
+        incident_type_plugin_metadata=incident_type_plugin_metadata.get(plugin.slug),
     )
 
     log.debug("The external ticket has been updated.")
@@ -750,6 +761,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     update_incident_ticket(
         db_session,
         incident.ticket.resource_id,
+        incident_type=incident.incident_type.name,
         status=IncidentStatus.stable.lower(),
         cost=incident_cost,
     )
@@ -858,6 +870,7 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     update_incident_ticket(
         db_session,
         incident.ticket.resource_id,
+        incident_type=incident.incident_type.name,
         status=IncidentStatus.closed.lower(),
         cost=incident_cost,
     )
