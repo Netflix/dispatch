@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
@@ -15,6 +15,7 @@ class IncidentType(Base):
     slug = Column(String)
     description = Column(String)
     visibility = Column(String, default=Visibility.open)
+    plugin_metadata = Column(JSON)
 
     template_document_id = Column(Integer, ForeignKey("document.id"))
     template_document = relationship("Document")
@@ -65,6 +66,7 @@ class IncidentTypeRead(IncidentTypeBase):
     visibility: Optional[Visibility]
     template_document: Optional[Document]
     commander_service: Optional[Service]
+    plugin_metadata: Optional[dict]
 
 
 class IncidentTypeNested(IncidentTypeBase):
