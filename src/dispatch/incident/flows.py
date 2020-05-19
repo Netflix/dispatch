@@ -113,14 +113,17 @@ def get_incident_documents(
     return documents
 
 
-def create_incident_ticket(incident: Incident, incident_type_plugin_metadata: dict,
-                           db_session: SessionLocal):
+def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     """Create an external ticket for tracking."""
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="ticket")
 
     title = incident.title
     if incident.visibility == Visibility.restricted:
         title = incident.incident_type.name
+
+    incident_type_plugin_metadata = incident_type_service.get_by_name(
+        db_session=db_session, name=incident.incident_type.name
+    ).plugin_metadata
 
     ticket = plugin.instance.create(
         incident.id,
@@ -160,13 +163,16 @@ def update_incident_ticket(
     labels: List[str] = None,
     cost: int = None,
     visibility: str = None,
-    incident_type_plugin_metadata: dict = {}
 ):
     """Update external incident ticket."""
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="ticket")
 
     if visibility == Visibility.restricted:
         title = description = incident_type
+
+    incident_type_plugin_metadata = incident_type_service.get_by_name(
+        db_session=db_session, name=incident_type
+    ).plugin_metadata
 
     plugin.instance.update(
         ticket_id,
@@ -508,7 +514,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         db_session=db_session, name=incident.incident_type.name
     )
 
-    ticket = create_incident_ticket(incident, incident_type_data.plugin_metadata, db_session)
+    ticket = create_incident_ticket(incident, db_session)
     incident.ticket = ticket_service.create(db_session=db_session, ticket_in=TicketCreate(**ticket))
 
     event_service.log(
@@ -659,10 +665,6 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     set_conversation_topic(incident)
 
     # we update the incident ticket
-    incident_type_data = incident_type_service.get_by_name(
-        db_session=db_session, name=incident.incident_type.name
-    )
-
     update_incident_ticket(
         db_session,
         incident.ticket.resource_id,
@@ -678,7 +680,6 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         storage_weblink=incident.storage.weblink,
         conference_weblink=incident.conference.weblink,
         visibility=incident.visibility,
-        incident_type_plugin_metadata=incident_type_data.plugin_metadata,
     )
 
     # we update the investigation document
@@ -737,16 +738,11 @@ def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_se
     send_incident_status_report_reminder(incident)
 
     # we update the status of the external ticket
-    incident_type_data = incident_type_service.get_by_name(
-        db_session=db_session, name=incident.incident_type.name
-    )
-
     update_incident_ticket(
         db_session,
         incident.ticket.resource_id,
         incident_type=incident.incident_type.name,
         status=IncidentStatus.active.lower(),
-        incident_type_plugin_metadata=incident_type_data.plugin_metadata,
     )
 
 
@@ -766,16 +762,12 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     incident_cost = incident_service.calculate_cost(incident_id, db_session)
 
     # we update the external ticket
-    incident_type_data = incident_type_service.get_by_name(
-        db_session=db_session, name=incident.incident_type.name
-    )
-
     update_incident_ticket(
         db_session,
         incident.ticket.resource_id,
+        incident_type=incident.incident_type.name,
         status=IncidentStatus.stable.lower(),
         cost=incident_cost,
-        incident_type_plugin_metadata=incident_type_data.plugin_metadata,
     )
 
     incident_review_document = get_document(
@@ -879,16 +871,12 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     convo_plugin.archive(incident.conversation.channel_id)
 
     # we update the external ticket
-    incident_type_data = incident_type_service.get_by_name(
-        db_session=db_session, name=incident.incident_type.name
-    )
-
     update_incident_ticket(
         db_session,
         incident.ticket.resource_id,
+        incident_type=incident.incident_type.name,
         status=IncidentStatus.closed.lower(),
         cost=incident_cost,
-        incident_type_plugin_metadata=incident_type_data.plugin_metadata,
     )
 
     if incident.visibility == Visibility.open:
@@ -985,10 +973,6 @@ def incident_update_flow(
     )
 
     # we update the external ticket
-    incident_type_data = incident_type_service.get_by_name(
-        db_session=db_session, name=incident.incident_type.name
-    )
-
     update_incident_ticket(
         db_session,
         incident.ticket.resource_id,
@@ -1002,7 +986,6 @@ def incident_update_flow(
         document_weblink=incident_document.weblink,
         storage_weblink=incident.storage.weblink,
         visibility=incident.visibility,
-        incident_type_plugin_metadata=incident_type_data.plugin_metadata,
     )
 
     log.debug(f"Updated the external ticket {incident.ticket.resource_id}.")
@@ -1104,10 +1087,6 @@ def incident_assign_role_flow(
         )
 
         # we update the external ticket
-        incident_type_data = incident_type_service.get_by_name(
-            db_session=db_session, name=incident.incident_type.name
-        )
-
         update_incident_ticket(
             db_session,
             incident.ticket.resource_id,
@@ -1119,7 +1098,6 @@ def incident_assign_role_flow(
             storage_weblink=incident.storage.weblink,
             visibility=incident.visibility,
             conference_weblink=incident.conference.weblink,
-            incident_type_plugin_metadata=incident_type_data.plugin_metadata,
         )
 
 
