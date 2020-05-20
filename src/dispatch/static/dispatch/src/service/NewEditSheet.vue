@@ -155,6 +155,12 @@ export default {
     ...mapActions("service", ["save", "closeCreateEdit"])
   },
 
+  data() {
+    return {
+      oncall_plugins: null
+    }
+  },
+
   mounted() {
     this.loading = true
     PluginApi.getByType("oncall").then(response => {

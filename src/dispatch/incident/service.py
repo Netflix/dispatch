@@ -40,19 +40,19 @@ def resolve_incident_commander_email(
         db_session=db_session, name=incident_type
     ).commander_service
 
-    p = plugin_service.get_active(db_session, "oncall")
+    p = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
 
     # page for high priority incidents
     # we could do this at the end but it seems pretty important...
     if page_commander:
-        p.page(
+        p.instance.page(
             service_id=commander_service.external_id,
             incident_name=incident_name,
             incident_title=incident_title,
             incident_description=incident_description,
         )
 
-    return p.get(service_id=commander_service.external_id)
+    return p.instance.get(service_id=commander_service.external_id)
 
 
 def get(*, db_session, incident_id: str) -> Optional[Incident]:

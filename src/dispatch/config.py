@@ -200,7 +200,7 @@ INCIDENT_RESOURCE_FAQ_DOCUMENT = config(
 INCIDENT_RESOURCE_INCIDENT_TASK = config(
     "INCIDENT_RESOURCE_INCIDENT_TASK", default="google-docs-incident-task"
 )
-ONCALL_PLUGIN_SLUG = config("ONCALL_PLUGIN_SLUG", default="pagerduty-oncall")
+ONCALL_PLUGIN_SLUG = config("ONCALL_PLUGIN_SLUG", default="opsgenie-oncall")
 
 # Incident Cost Configuration
 ANNUAL_COST_EMPLOYEE = config("ANNUAL_COST_EMPLOYEE", cast=int, default="650000")

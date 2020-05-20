@@ -173,7 +173,11 @@ class DispatchContactPlugin(ContactPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def get(self, email, db_session=None):
-        return individual_service.get_by_email(db_session=db_session, email=email).__dict__
+        return getattr(
+            individual_service.get_by_email(db_session=db_session, email=email),
+            "__dict__",
+            {"email": email, "fullname": email}
+        )
 
 
 class DispatchParticipantResolverPlugin(ParticipantPlugin):
