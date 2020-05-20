@@ -3,6 +3,34 @@
     <v-layout row wrap>
       <!-- Widgets-->
       <v-flex lg3 sm6 xs12>
+        <v-menu
+          ref="menu"
+          v-model="menu"
+          :close-on-content-click="false"
+          :return-value.sync="dateRangeText"
+          transition="scale-transition"
+          offset-y
+          min-width="290px"
+        >
+          <template v-slot:activator="{ on }">
+            <v-text-field
+              v-model="dateRangeText"
+              label="Date Range"
+              prepend-icon="event"
+              readonly
+              v-on="on"
+            ></v-text-field>
+          </template>
+          <v-date-picker v-model="dates" type="month" range>
+            <v-spacer></v-spacer>
+            <v-btn text color="primary" @click="menu = false">Cancel</v-btn>
+            <v-btn text color="primary" @click="$refs.menu.save(date)">OK</v-btn>
+          </v-date-picker>
+        </v-menu>
+      </v-flex>
+      <v-flex lg2 sm3 xs12> </v-flex>
+      <v-flex lg2 sm3 xs12> </v-flex>
+      <v-flex lg3 sm6 xs12>
         <stat-widget icon="domain" :title="totalIncidents | toNumberString" supTitle="Incidents" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
@@ -59,11 +87,10 @@
 </template>
 
 <script>
-import { remove, groupBy, sortBy, sumBy } from "lodash"
-import parseISO from "date-fns/parseISO"
-import formatISO from "date-fns/formatISO"
+import { remove, groupBy, sortBy, sumBy, map } from "lodash"
 import subMonths from "date-fns/subMonths"
 import differenceInHours from "date-fns/differenceInHours"
+import { parseISO } from "date-fns"
 
 import IncidentApi from "@/incident/api"
 import StatWidget from "@/components/StatWidget.vue"
@@ -90,21 +117,21 @@ export default {
     return {
       tab: null,
       loading: false,
-      items: []
+      menu: false,
+      items: [],
+      dates: []
     }
   },
 
   methods: {
     fetchData() {
       this.loading = true
-      let start = formatISO(subMonths(new Date(), 6))
-      let end = formatISO(new Date())
       IncidentApi.getAll({
         itemsPerPage: -1,
         sortBy: ["reported_at"],
         fields: ["reported_at", "reported_at"],
-        ops: ["<=", ">="],
-        values: [end, start],
+        ops: [">=", "<="],
+        values: this.queryDates,
         descending: [true]
       }).then(response => {
         this.loading = false
@@ -117,7 +144,36 @@ export default {
     }
   },
 
+  mounted: function() {
+    this.dates = this.defaultDates
+  },
+
   computed: {
+    queryDates() {
+      // adjust for same month
+      if
+      return map(this.dates, function(item) {
+        return parseISO(item).toISOString()
+      })
+    },
+    defaultDates() {
+      return [this.defaultStart, this.defaultEnd]
+    },
+    today() {
+      let now = new Date()
+      return new Date(now.getFullYear(), now.getMonth(), 1)
+    },
+    defaultStart() {
+      return subMonths(this.today, 6)
+        .toISOString()
+        .substr(0, 10)
+    },
+    defaultEnd() {
+      return this.today.toISOString().substr(0, 10)
+    },
+    dateRangeText() {
+      return this.dates.join(" ~ ")
+    },
     incidentsByYear() {
       return groupBy(this.items, function(item) {
         return parseISO(item.reported_at).getYear()
@@ -157,7 +213,7 @@ export default {
   },
 
   watch: {
-    selectedRange: function() {
+    dates: function() {
       this.fetchData()
     }
   },
