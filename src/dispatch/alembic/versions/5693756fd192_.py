@@ -1,7 +1,7 @@
 """Migrates assignee and creator emails to participants.
 
 Revision ID: 5693756fd192
-Revises: d1e66a4ef671
+Revises: 9b4a5ff08170
 Create Date: 2020-05-05 14:34:23.108821
 
 """
@@ -14,7 +14,7 @@ from dispatch.task import service as task_service
 
 # revision identifiers, used by Alembic.
 revision = "5693756fd192"
-down_revision = "d1e66a4ef671"
+down_revision = "9b4a5ff08170"
 branch_labels = None
 depends_on = None
 
