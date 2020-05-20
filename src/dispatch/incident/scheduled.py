@@ -151,7 +151,7 @@ def daily_summary(db_session=None):
                                     f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
                                 ),
                             },
-                            "block_id": f"{ConversationButtonActions.invite_user}-{idx}",
+                            "block_id": f"{ConversationButtonActions.invite_user}-active-{idx}",
                             "accessory": {
                                 "type": "button",
                                 "text": {"type": "plain_text", "text": "Join Incident"},
@@ -208,7 +208,7 @@ def daily_summary(db_session=None):
                                     f"*Status*: {incident.status}"
                                 ),
                             },
-                            "block_id": f"{ConversationButtonActions.invite_user}-{idx}",
+                            "block_id": f"{ConversationButtonActions.invite_user}-stable-{idx}",
                             "accessory": {
                                 "type": "button",
                                 "text": {"type": "plain_text", "text": "Join Incident"},
