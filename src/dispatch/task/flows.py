@@ -83,7 +83,7 @@ def send_task_notification(conversation_id, message_template, assignees, descrip
 
 def create_or_update_task(db_session, incident, task: dict, notify: bool = False):
     """Creates a new task in the database or updates an existing one."""
-    # TODO we should standarize this interface (kglisson)
+    incident_task = task_service.get_by_resource_id(db_session=db_session, resource_id=task["id"])
 
     creator = incident_add_or_reactivate_participant_flow(
         task["owner"], incident_id=incident.id, db_session=db_session
@@ -102,25 +102,8 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
     resource_id = task["id"]
     weblink = task["web_link"]
 
-    incident_task = task_service.get_by_resource_id(db_session=db_session, resource_id=task["id"])
     if incident_task:
-        if incident_task.status == TaskStatus.resolved:
-            # we don't need to take any actions if the task has already been marked as resolved in the database
-            return
-        else:
-            # we mark the task as resolved in the database
-            incident_task.status = TaskStatus.resolved
-
-            if notify:
-                send_task_notification(
-                    incident.conversation.channel_id,
-                    INCIDENT_TASK_RESOLVED_NOTIFICATION,
-                    assignees,
-                    description,
-                    weblink,
-                )
-
-        # always sync assignees
+        incident_task.status = status
         incident_task.assignees = assignees
         db_session.add(incident_task)
         db_session.commit()
@@ -140,11 +123,11 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
         db_session.add(incident)
         db_session.commit()
 
-        if notify:
-            send_task_notification(
-                incident.conversation.channel_id,
-                INCIDENT_TASK_NEW_NOTIFICATION,
-                assignees,
-                description,
-                weblink,
-            )
+    if notify:
+        send_task_notification(
+            incident.conversation.channel_id,
+            INCIDENT_TASK_NEW_NOTIFICATION,
+            assignees,
+            description,
+            weblink,
+        )
