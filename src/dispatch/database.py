@@ -1,5 +1,6 @@
 import re
 import logging
+import json
 from typing import Any, List
 from itertools import groupby
 
@@ -112,11 +113,10 @@ def create_filter_spec(model, fields, ops, values):
         else:
             filter_spec.append({"or": filters})
 
-    log.debug(f"Filter Spec: {filter_spec}")
-
     if filter_spec:
-        return {"and": filter_spec}
+        filter_spec = {"and": filter_spec}
 
+    log.debug(f"Filter Spec: {json.dumps(filter_spec, indent=2)}")
     return filter_spec
 
 

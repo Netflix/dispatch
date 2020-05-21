@@ -1,7 +1,14 @@
 <template>
   <v-container fluid grid-list-xl>
     <v-layout row wrap>
-      <!-- Widgets-->
+      <v-flex lg3 sm6 xs12> </v-flex>
+      <v-flex lg3 sm6 xs12> </v-flex>
+      <v-flex lg3 sm6 xs12> </v-flex>
+      <v-flex class="d-flex justify-end" lg3 sm6 xs12>
+        <dialog-filter @update="update" />
+      </v-flex>
+    </v-layout>
+    <v-layout row wrap>
       <v-flex lg3 sm6 xs12>
         <stat-widget icon="domain" :title="totalIncidents | toNumberString" supTitle="Incidents" />
       </v-flex>
@@ -59,13 +66,11 @@
 </template>
 
 <script>
-import { remove, groupBy, sortBy, sumBy } from "lodash"
-import parseISO from "date-fns/parseISO"
-import formatISO from "date-fns/formatISO"
-import subMonths from "date-fns/subMonths"
+import { groupBy, sumBy } from "lodash"
 import differenceInHours from "date-fns/differenceInHours"
+import { parseISO } from "date-fns"
 
-import IncidentApi from "@/incident/api"
+import DialogFilter from "@/dashboard/DialogFilter.vue"
 import StatWidget from "@/components/StatWidget.vue"
 import IncidentTypeBarChartCard from "@/incident/IncidentTypeBarChartCard.vue"
 import IncidentActiveTimeCard from "@/incident/IncidentActiveTimeCard.vue"
@@ -77,6 +82,7 @@ export default {
   name: "IncidentDashboard",
 
   components: {
+    DialogFilter,
     StatWidget,
     IncidentTypeBarChartCard,
     IncidentResolveTimeCard,
@@ -95,25 +101,8 @@ export default {
   },
 
   methods: {
-    fetchData() {
-      this.loading = true
-      let start = formatISO(subMonths(new Date(), 6))
-      let end = formatISO(new Date())
-      IncidentApi.getAll({
-        itemsPerPage: -1,
-        sortBy: ["reported_at"],
-        fields: ["reported_at", "reported_at"],
-        ops: ["<=", ">="],
-        values: [end, start],
-        descending: [true]
-      }).then(response => {
-        this.loading = false
-
-        // ignore all simulated incidents
-        this.items = remove(sortBy(response.data.items, "reported_at"), function(item) {
-          return item.incident_type.name !== "Simulation"
-        })
-      })
+    update(data) {
+      this.items = data
     }
   },
 
@@ -154,17 +143,6 @@ export default {
         return differenceInHours(parseISO(endTime), parseISO(item.reported_at))
       })
     }
-  },
-
-  watch: {
-    selectedRange: function() {
-      this.fetchData()
-    }
-  },
-
-  created() {
-    this.fetchData()
-    //this.selectedMonth = this.months[0]
   }
 }
 </script>
