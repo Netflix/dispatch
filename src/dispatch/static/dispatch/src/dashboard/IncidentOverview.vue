@@ -1,35 +1,14 @@
 <template>
   <v-container fluid grid-list-xl>
     <v-layout row wrap>
-      <!-- Widgets-->
-      <v-flex lg3 sm6 xs12>
-        <v-menu
-          ref="menu"
-          v-model="menu"
-          :close-on-content-click="false"
-          :return-value.sync="dateRangeText"
-          transition="scale-transition"
-          offset-y
-          min-width="290px"
-        >
-          <template v-slot:activator="{ on }">
-            <v-text-field
-              v-model="dateRangeText"
-              label="Date Range"
-              prepend-icon="event"
-              readonly
-              v-on="on"
-            ></v-text-field>
-          </template>
-          <v-date-picker v-model="dates" type="month" range>
-            <v-spacer></v-spacer>
-            <v-btn text color="primary" @click="menu = false">Cancel</v-btn>
-            <v-btn text color="primary" @click="$refs.menu.save(date)">OK</v-btn>
-          </v-date-picker>
-        </v-menu>
+      <v-flex lg3 sm6 xs12> </v-flex>
+      <v-flex lg3 sm6 xs12> </v-flex>
+      <v-flex lg3 sm6 xs12> </v-flex>
+      <v-flex class="d-flex justify-end" lg3 sm6 xs12>
+        <dialog-filter @update="update" />
       </v-flex>
-      <v-flex lg2 sm3 xs12> </v-flex>
-      <v-flex lg2 sm3 xs12> </v-flex>
+    </v-layout>
+    <v-layout row wrap>
       <v-flex lg3 sm6 xs12>
         <stat-widget icon="domain" :title="totalIncidents | toNumberString" supTitle="Incidents" />
       </v-flex>
@@ -87,12 +66,11 @@
 </template>
 
 <script>
-import { remove, groupBy, sortBy, sumBy, map } from "lodash"
-import subMonths from "date-fns/subMonths"
+import { groupBy, sumBy } from "lodash"
 import differenceInHours from "date-fns/differenceInHours"
 import { parseISO } from "date-fns"
 
-import IncidentApi from "@/incident/api"
+import DialogFilter from "@/dashboard/DialogFilter.vue"
 import StatWidget from "@/components/StatWidget.vue"
 import IncidentTypeBarChartCard from "@/incident/IncidentTypeBarChartCard.vue"
 import IncidentActiveTimeCard from "@/incident/IncidentActiveTimeCard.vue"
@@ -104,6 +82,7 @@ export default {
   name: "IncidentDashboard",
 
   components: {
+    DialogFilter,
     StatWidget,
     IncidentTypeBarChartCard,
     IncidentResolveTimeCard,
@@ -117,63 +96,17 @@ export default {
     return {
       tab: null,
       loading: false,
-      menu: false,
-      items: [],
-      dates: []
+      items: []
     }
   },
 
   methods: {
-    fetchData() {
-      this.loading = true
-      IncidentApi.getAll({
-        itemsPerPage: -1,
-        sortBy: ["reported_at"],
-        fields: ["reported_at", "reported_at"],
-        ops: [">=", "<="],
-        values: this.queryDates,
-        descending: [true]
-      }).then(response => {
-        this.loading = false
-
-        // ignore all simulated incidents
-        this.items = remove(sortBy(response.data.items, "reported_at"), function(item) {
-          return item.incident_type.name !== "Simulation"
-        })
-      })
+    update(data) {
+      this.items = data
     }
   },
 
-  mounted: function() {
-    this.dates = this.defaultDates
-  },
-
   computed: {
-    queryDates() {
-      // adjust for same month
-      if
-      return map(this.dates, function(item) {
-        return parseISO(item).toISOString()
-      })
-    },
-    defaultDates() {
-      return [this.defaultStart, this.defaultEnd]
-    },
-    today() {
-      let now = new Date()
-      return new Date(now.getFullYear(), now.getMonth(), 1)
-    },
-    defaultStart() {
-      return subMonths(this.today, 6)
-        .toISOString()
-        .substr(0, 10)
-    },
-    defaultEnd() {
-      return this.today.toISOString().substr(0, 10)
-    },
-    dateRangeText() {
-      return this.dates.join(" ~ ")
-    },
     incidentsByYear() {
       return groupBy(this.items, function(item) {
         return parseISO(item.reported_at).getYear()
@@ -210,17 +143,6 @@ export default {
         return differenceInHours(parseISO(endTime), parseISO(item.reported_at))
       })
     }
-  },
-
-  watch: {
-    dates: function() {
-      this.fetchData()
-    }
-  },
-
-  created() {
-    this.fetchData()
-    //this.selectedMonth = this.months[0]
   }
 }
 </script>
