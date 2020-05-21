@@ -38,9 +38,10 @@ from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugins.base import plugins
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.report import flows as report_flows
+from dispatch.report import service as report_service
+from dispatch.report.enums import ReportTypes
 from dispatch.service import service as service_service
-from dispatch.status_report import flows as status_report_flows
-from dispatch.status_report import service as status_report_service
 from dispatch.task import service as task_service
 from dispatch.task.models import TaskStatus
 
@@ -48,15 +49,13 @@ from . import __version__
 from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
+    SLACK_COMMAND_INCIDENT_REPORT_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
     SLACK_COMMAND_LIST_TASKS_SLUG,
-    SLACK_COMMAND_MARK_ACTIVE_SLUG,
-    SLACK_COMMAND_MARK_CLOSED_SLUG,
-    SLACK_COMMAND_MARK_STABLE_SLUG,
+    SLACK_COMMAND_REPORT_INCIDENT_SLUG,
     SLACK_COMMAND_STATUS_REPORT_SLUG,
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
-    SLACK_COMMAND_REPORT_INCIDENT_SLUG,
     SLACK_SIGNING_SECRET,
     SLACK_TIMELINE_EVENT_REACTION,
 )
@@ -486,10 +485,10 @@ def create_engage_oncall_dialog(incident_id: int, command: dict = None, db_sessi
 
 @background_task
 def create_status_report_dialog(incident_id: int, command: dict = None, db_session=None):
-    """Fetches the last status report and creates a dialog."""
+    """Creates a dialog with the most recent status report data, if it exists."""
     # we load the most recent status report
-    status_report = status_report_service.get_most_recent_by_incident_id(
-        db_session=db_session, incident_id=incident_id
+    status_report = report_service.get_most_recent_by_incident_id_and_type(
+        db_session=db_session, incident_id=incident_id, report_type=ReportTypes.status_report
     )
 
     conditions = actions = needs = ""
@@ -506,6 +505,39 @@ def create_status_report_dialog(incident_id: int, command: dict = None, db_sessi
             {"type": "textarea", "label": "Conditions", "name": "conditions", "value": conditions},
             {"type": "textarea", "label": "Actions", "name": "actions", "value": actions},
             {"type": "textarea", "label": "Needs", "name": "needs", "value": needs},
+        ],
+    }
+
+    dispatch_slack_service.open_dialog_with_user(slack_client, command["trigger_id"], dialog)
+
+
+@background_task
+def create_incident_report_dialog(incident_id: int, command: dict = None, db_session=None):
+    """Creates a dialog with the most recent incident report data, if it exists."""
+    # we load the most recent incident report
+    incident_report = report_service.get_most_recent_by_incident_id_and_type(
+        db_session=db_session, incident_id=incident_id, report_type=ReportTypes.incident_report
+    )
+
+    current_status = overview = next_steps = ""
+    if incident_report:
+        current_status = incident_report.current_status
+        overview = incident_report.overview
+        next_steps = incident_report.next_steps
+
+    dialog = {
+        "callback_id": command["command"],
+        "title": "Incident Report",
+        "submit_label": "Submit",
+        "elements": [
+            {
+                "type": "textarea",
+                "label": "Current Status",
+                "name": "current_status",
+                "value": current_status,
+            },
+            {"type": "textarea", "label": "Overview", "name": "overview", "value": overview},
+            {"type": "textarea", "label": "Next Steps", "name": "next_steps", "value": next_steps},
         ],
     }
 
@@ -552,15 +584,13 @@ def command_functions(command: str):
     """Interprets the command and routes it the appropriate function."""
     command_mappings = {
         SLACK_COMMAND_ASSIGN_ROLE_SLUG: [create_assign_role_dialog],
-        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_dialog],
+        SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [create_engage_oncall_dialog],
+        SLACK_COMMAND_INCIDENT_REPORT_SLUG: [create_incident_report_dialog],
         SLACK_COMMAND_LIST_PARTICIPANTS_SLUG: [list_participants],
         SLACK_COMMAND_LIST_RESOURCES_SLUG: [incident_flows.incident_list_resources_flow],
         SLACK_COMMAND_LIST_TASKS_SLUG: [list_tasks],
-        SLACK_COMMAND_MARK_ACTIVE_SLUG: [],
-        SLACK_COMMAND_MARK_CLOSED_SLUG: [],
-        SLACK_COMMAND_MARK_STABLE_SLUG: [],
         SLACK_COMMAND_STATUS_REPORT_SLUG: [create_status_report_dialog],
-        SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [create_engage_oncall_dialog],
+        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_dialog],
     }
 
     return command_mappings.get(command, [])
@@ -598,12 +628,13 @@ def handle_assign_role_action(user_id, user_email, incident_id, action, db_sessi
 def action_functions(action: str):
     """Interprets the action and routes it the appropriate function."""
     action_mappings = {
-        SLACK_COMMAND_STATUS_REPORT_SLUG: [status_report_flows.new_status_report_flow],
-        SLACK_COMMAND_ASSIGN_ROLE_SLUG: [handle_assign_role_action],
-        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [handle_update_incident_action],
-        SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [incident_flows.incident_engage_oncall_flow],
         ConversationButtonActions.invite_user: [add_user_to_conversation],
         NewIncidentSubmission.form_slack_view: [report_incident_from_submitted_form],
+        SLACK_COMMAND_ASSIGN_ROLE_SLUG: [handle_assign_role_action],
+        SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [incident_flows.incident_engage_oncall_flow],
+        SLACK_COMMAND_INCIDENT_REPORT_SLUG: [report_flows.create_incident_report],
+        SLACK_COMMAND_STATUS_REPORT_SLUG: [report_flows.create_status_report],
+        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [handle_update_incident_action],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc

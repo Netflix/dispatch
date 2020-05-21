@@ -2,17 +2,15 @@ from enum import Enum
 
 
 class ConversationCommands(str, Enum):
-    mark_active = "mark-active"
-    mark_stable = "mark-stable"
-    mark_closed = "mark-closed"
-    status_report = "status-report"
-    list_tasks = "list-tasks"
-    list_participants = "list-participants"
     assign_role = "assign-role"
     edit_incident = "edit-incident"
     engage_oncall = "engage-oncall"
+    incident_report = "incident-report"
+    list_participants = "list-participants"
     list_resources = "list-resources"
+    list_tasks = "list-tasks"
     report_incident = "report-incident"
+    status_report = "status-report"
 
 
 class ConversationButtonActions(str, Enum):
