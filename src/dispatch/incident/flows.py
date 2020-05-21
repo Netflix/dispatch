@@ -132,7 +132,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
         incident.incident_priority.name,
         incident.commander.email,
         incident.reporter.email,
-        incident_type_plugin_metadata.get(plugin.slug)
+        incident_type_plugin_metadata.get(plugin.slug),
     )
     ticket.update({"resource_type": plugin.slug})
 

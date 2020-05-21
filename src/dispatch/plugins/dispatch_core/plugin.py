@@ -86,7 +86,7 @@ class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
         token = authorization.split()[1]
 
         # Parse out the Key information. Add padding just in case
-        key_info = json.loads(base64.b64decode(token.split('.')[0] + "=========").decode('utf-8'))
+        key_info = json.loads(base64.b64decode(token.split(".")[0] + "=========").decode("utf-8"))
 
         # Grab all possible keys to account for key rotation and find the right key
         keys = requests.get(DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS).json()["keys"]

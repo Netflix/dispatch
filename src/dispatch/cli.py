@@ -188,7 +188,9 @@ def drop_database(yes):
         drop_database(str(config.SQLALCHEMY_DATABASE_URI))
         click.secho("Success.", fg="green")
 
-    if click.confirm(f"Are you sure you want to drop: '{config.DATABASE_HOSTNAME}:{config.DATABASE_NAME}'?"):
+    if click.confirm(
+        f"Are you sure you want to drop: '{config.DATABASE_HOSTNAME}:{config.DATABASE_NAME}'?"
+    ):
         drop_database(str(config.SQLALCHEMY_DATABASE_URI))
         click.secho("Success.", fg="green")
 
