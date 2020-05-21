@@ -27,8 +27,7 @@ class Participant(Base):
     incident_id = Column(Integer, ForeignKey("incident.id"))
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
     participant_roles = relationship("ParticipantRole", backref="participant")
-    status_reports = relationship("StatusReport", backref="participant")
-    incident_updates = relationship("IncidentUpdate", backref="participant")
+    reports = relationship("Report", backref="participant")
 
     @staticmethod
     def _active_at(mapper, connection, target):

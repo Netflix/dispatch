@@ -12,15 +12,6 @@ SLACK_PROFILE_TEAM_FIELD_ID = config("SLACK_PROFILE_TEAM_FIELD_ID", default="")
 SLACK_PROFILE_WEBLINK_FIELD_ID = config("SLACK_PROFILE_WEBLINK_FIELD_ID", default="")
 
 # Slash commands
-SLACK_COMMAND_MARK_ACTIVE_SLUG = config(
-    "SLACK_COMMAND_MARK_ACTIVE_SLUG", default="/dispatch-mark-active"
-)
-SLACK_COMMAND_MARK_STABLE_SLUG = config(
-    "SLACK_COMMAND_MARK_STABLE_SLUG", default="/dispatch-mark-stable"
-)
-SLACK_COMMAND_MARK_CLOSED_SLUG = config(
-    "SLACK_COMMAND_MARK_CLOSED_SLUG", default="/dispatch-mark-closed"
-)
 SLACK_COMMAND_STATUS_REPORT_SLUG = config(
     "SLACK_COMMAND_STATUS_REPORT_SLUG", default="/dispatch-status-report"
 )
@@ -45,6 +36,6 @@ SLACK_COMMAND_LIST_RESOURCES_SLUG = config(
 SLACK_COMMAND_REPORT_INCIDENT_SLUG = config(
     "SLACK_COMMAND_REPORT_INCIDENT_SLUG", default="/dispatch-report-incident"
 )
-SLACK_COMMAND_INCIDENT_UPDATE_SLUG = config(
-    "SLACK_COMMAND_INCIDENT_UPDATE_SLUG", default="/dispatch-incident-update"
+SLACK_COMMAND_INCIDENT_REPORT_SLUG = config(
+    "SLACK_COMMAND_INCIDENT_REPORT_SLUG", default="/dispatch-incident-report"
 )

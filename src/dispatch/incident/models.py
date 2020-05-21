@@ -37,10 +37,12 @@ from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, 
 from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
 from dispatch.participant.models import ParticipantRead
 from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
+from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
 from dispatch.ticket.models import TicketRead
 
 from .enums import IncidentStatus
+
 
 assoc_incident_terms = Table(
     "assoc_incident_terms",
@@ -131,10 +133,17 @@ class Incident(Base, TimeStampMixin):
                 if d.resource_type == INCIDENT_RESOURCE_FAQ_DOCUMENT:
                     return d
 
+    # TODO(mvilanova): return a status report
     @hybrid_property
     def last_status_report(self):
-        if self.status_reports:
-            return sorted(self.status_reports, key=lambda r: r.created_at)[-1]
+        if self.reports:
+            return sorted(self.reports, key=lambda r: r.created_at)[-1]
+
+    # TODO(mvilanova): return an incident report
+    @hybrid_property
+    def last_incident_report(self):
+        if self.reports:
+            return sorted(self.reports, key=lambda r: r.created_at)[-1]
 
     # resources
     conference = relationship("Conference", uselist=False, backref="incident")
@@ -148,7 +157,7 @@ class Incident(Base, TimeStampMixin):
     incident_type_id = Column(Integer, ForeignKey("incident_type.id"))
     incident_updates = relationship("IncidentUpdate", backref="incident")
     participants = relationship("Participant", backref="incident")
-    status_reports = relationship("StatusReport", backref="incident")
+    reports = relationship("Report", backref="incident")
     storage = relationship("Storage", uselist=False, backref="incident")
     tags = relationship("Tag", secondary=assoc_incident_tags, backref="incidents")
     tasks = relationship("Task", backref="incident")
@@ -198,7 +207,8 @@ class IncidentRead(IncidentBase):
     name: str = None
     reporter: Optional[IndividualReadNested]
     commander: Optional[IndividualReadNested]
-    last_status_report: Optional[Any]
+    last_status_report: Optional[ReportRead]
+    last_incident_report: Optional[ReportRead]
     incident_priority: IncidentPriorityRead
     incident_type: IncidentTypeRead
     participants: Optional[List[ParticipantRead]] = []
