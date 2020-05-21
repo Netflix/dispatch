@@ -45,7 +45,7 @@ from .factories import (
     RecommendationAccuracyFactory,
     RecommendationFactory,
     ServiceFactory,
-    StatusReportFactory,
+    ReportFactory,
     StorageFactory,
     TagFactory,
     TaskFactory,
@@ -345,8 +345,8 @@ def services(session):
 
 
 @pytest.fixture
-def status_report(session):
-    return StatusReportFactory()
+def report(session):
+    return ReportFactory()
 
 
 @pytest.fixture

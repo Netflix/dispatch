@@ -9,7 +9,6 @@ from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime
 
 from dispatch.database import SessionLocal
 
-from dispatch.team.models import TeamContact
 from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
 from dispatch.definition.models import Definition
@@ -25,10 +24,11 @@ from dispatch.participant_role.models import ParticipantRole
 from dispatch.policy.models import Policy
 from dispatch.route.models import Recommendation, RecommendationAccuracy
 from dispatch.service.models import Service
-from dispatch.status_report.models import StatusReport
+from dispatch.report.models import Report
 from dispatch.storage.models import Storage
 from dispatch.tag.models import Tag
 from dispatch.task.models import Task
+from dispatch.team.models import TeamContact
 from dispatch.term.models import Term
 from dispatch.ticket.models import Ticket
 
@@ -485,18 +485,22 @@ class ServiceFactory(TimeStampBaseFactory):
                 self.terms.append(term)
 
 
-class StatusReportFactory(BaseFactory):
+class ReportFactory(BaseFactory):
     """Status Report Factory."""
 
     created_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
     conditions = FuzzyText()
     actions = FuzzyText()
     needs = FuzzyText()
+    overview = FuzzyText()
+    current_status = FuzzyText()
+    next_steps = FuzzyText()
+    report_type = FuzzyChoice(["Status Report", "Incident Report"])
 
     class Meta:
         """Factory Configuration."""
 
-        model = StatusReport
+        model = Report
 
     @post_generation
     def incident(self, create, extracted, **kwargs):
@@ -622,7 +626,7 @@ class TicketFactory(ResourceBaseFactory):
 class IncidentFactory(BaseFactory):
     """Incident Factory."""
 
-    id = Sequence(lambda n: f'1{n}')
+    id = Sequence(lambda n: f"1{n}")
     title = FuzzyText()
     description = FuzzyText()
     status = FuzzyChoice(["Active", "Stable", "Closed"])
