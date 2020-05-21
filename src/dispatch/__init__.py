@@ -2,6 +2,7 @@ import os
 import os.path
 from subprocess import check_output
 
+
 try:
     VERSION = __import__("pkg_resources").get_distribution("dispatch").version
 except Exception:

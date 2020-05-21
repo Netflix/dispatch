@@ -155,7 +155,6 @@ class Incident(Base, TimeStampMixin):
     incident_priority_id = Column(Integer, ForeignKey("incident_priority.id"))
     incident_type = relationship("IncidentType", backref="incident")
     incident_type_id = Column(Integer, ForeignKey("incident_type.id"))
-    incident_updates = relationship("IncidentUpdate", backref="incident")
     participants = relationship("Participant", backref="incident")
     reports = relationship("Report", backref="incident")
     storage = relationship("Storage", uselist=False, backref="incident")
