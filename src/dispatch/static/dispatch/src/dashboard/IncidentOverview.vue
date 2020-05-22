@@ -40,12 +40,15 @@
         ></incident-priority-bar-chart-card>
       </v-flex>
       <v-flex lg6 sm6 xs12>
+        <incident-heatmap-card v-model="groupedItems" :loading="loading"></incident-heatmap-card>
+      </v-flex>
+      <v-flex lg6 sm6 xs12>
         <incident-cost-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
         ></incident-cost-bar-chart-card>
       </v-flex>
-      <v-flex lg6 sm6 xs12>
+      <v-flex lg12 sm12 xs12>
         <incident-forecast-card></incident-forecast-card>
       </v-flex>
       <v-flex lg6 sm6 xs12>
@@ -78,12 +81,14 @@ import IncidentResolveTimeCard from "@/incident/IncidentResolveTimeCard.vue"
 import IncidentCostBarChartCard from "@/incident/IncidentCostBarChartCard.vue"
 import IncidentPriorityBarChartCard from "@/incident/IncidentPriorityBarChartCard.vue"
 import IncidentForecastCard from "@/incident/IncidentForecastCard.vue"
+import IncidentHeatmapCard from "@/incident/IncidentHeatmapCard.vue"
 export default {
   name: "IncidentDashboard",
 
   components: {
     DialogFilter,
     StatWidget,
+    IncidentHeatmapCard,
     IncidentTypeBarChartCard,
     IncidentResolveTimeCard,
     IncidentActiveTimeCard,
