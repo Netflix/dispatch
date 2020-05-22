@@ -97,7 +97,7 @@ def get_template(message_type: MessageType):
         MessageType.incident_notification: (default_notification, None),
         MessageType.incident_participant_welcome: (default_notification, None),
         MessageType.incident_resources_message: (default_notification, None),
-        MessageType.incident_report: (default_notification, None),
+        MessageType.incident_status_report: (default_notification, None),
         MessageType.incident_task_reminder: (
             default_notification,
             INCIDENT_TASK_REMINDER_DESCRIPTION,

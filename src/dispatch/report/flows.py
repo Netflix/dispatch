@@ -52,8 +52,8 @@ def create_status_report(
     )
 
     # we save the status report
-    participant.status_reports.append(status_report)
-    incident.status_reports.append(status_report)
+    participant.reports.append(status_report)
+    incident.reports.append(status_report)
 
     db_session.add(participant)
     db_session.add(incident)
@@ -96,7 +96,7 @@ def create_incident_report(
     previous_incident_reports = []
     for incident_report in incident_reports:
         previous_incident_reports.append(
-            f"{incident_report.document.name} ({incident_report.document.weblink})"
+            f"{incident_report.document.name} - {incident_report.document.weblink}\n"
         )
 
     # we create a new incident report
@@ -163,12 +163,11 @@ def create_incident_report(
         resource_type=incident_report_document["resource_type"],
         weblink=incident_report_document["weblink"],
     )
-    incident_report_document = document_service.create(
+    incident_report.document = document_service.create(
         db_session=db_session, document_in=document_in
     )
 
-    incident_report.document.append(incident_report_document)
-    incident.documents.append(incident_report_document)
+    incident.documents.append(incident_report.document)
 
     db_session.add(incident_report)
     db_session.add(incident)
@@ -191,7 +190,7 @@ def create_incident_report(
         current_status=current_status,
         overview=overview,
         next_steps=next_steps,
-        previous_updates="\n".join(previous_incident_reports),
+        previous_reports="\n".join(previous_incident_reports),
         commander_fullname=incident.commander.name,
         commander_mobile_phone=incident.commander.mobile_phone,
     )
