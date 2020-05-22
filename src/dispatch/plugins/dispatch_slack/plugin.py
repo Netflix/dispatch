@@ -200,7 +200,7 @@ class SlackContactPlugin(ContactPlugin):
     def __init__(self):
         self.client = slack.WebClient(token=SLACK_API_BOT_TOKEN)
 
-    def get(self, email: str):
+    def get(self, email: str, **kwargs):
         """Fetch user info by email."""
         profile = get_user_profile_by_email(self.client, email)
 

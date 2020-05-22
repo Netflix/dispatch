@@ -7,6 +7,7 @@ from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.plugins.base import plugins
 from dispatch.term import service as term_service
+from dispatch.plugin import service as plugin_service
 
 from .models import IndividualContact, IndividualContactCreate, IndividualContactUpdate
 
@@ -43,11 +44,11 @@ def get_or_create(*, db_session, email: str, **kwargs) -> IndividualContact:
     contact = get_by_email(db_session=db_session, email=email)
 
     if not contact:
-        contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
-        individual_info = contact_plugin.get(email)
-        kwargs["email"] = individual_info["email"]
-        kwargs["name"] = individual_info["fullname"]
-        kwargs["weblink"] = individual_info["weblink"]
+        contact_plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
+        individual_info = contact_plugin.get(email, db_session=db_session)
+        kwargs["email"] = individual_info.get("email", email)
+        kwargs["name"] = individual_info.get("fullname", "unknown")
+        kwargs["weblink"] = individual_info.get("weblink", "unknown")
         individual_contact_in = IndividualContactCreate(**kwargs)
         contact = create(db_session=db_session, individual_contact_in=individual_contact_in)
 

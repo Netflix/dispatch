@@ -97,10 +97,10 @@ def get_or_create(
         individual_contact = individual_service.get(
             db_session=db_session, individual_contact_id=individual_id
         )
-        individual_info = contact_plugin.get(individual_contact.email)
-        location = individual_info["location"]
-        team = individual_info["team"]
-        department = individual_info["department"]
+        individual_info = contact_plugin.get(individual_contact.email, db_session=db_session)
+        location = individual_info.get("location", "unknown")
+        team = individual_info.get("team", "unknown")
+        department = individual_info.get("department", "unknown")
         participant_in = ParticipantCreate(
             participant_roles=participant_roles, team=team, department=department, location=location
         )
