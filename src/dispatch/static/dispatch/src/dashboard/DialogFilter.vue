@@ -96,6 +96,7 @@ export default {
       // we always window
       filterOptions.itemsPerPage = -1
       filterOptions.sortBy = ["reported_at"]
+      filterOptions.descending = [false]
       filterOptions.fields = ["reported_at", "reported_at"]
       filterOptions.ops = [">=", "<="]
       filterOptions.values = localWindow
@@ -162,7 +163,7 @@ export default {
     },
     today() {
       let now = new Date()
-      return new Date(now.getFullYear(), now.getMonth(), 1)
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate())
     },
     defaultStart() {
       return subMonths(this.today, 6)
