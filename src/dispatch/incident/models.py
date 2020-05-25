@@ -1,4 +1,5 @@
 from datetime import datetime
+from collections import Counter
 from typing import List, Optional, Any
 
 from pydantic import validator
@@ -136,6 +137,18 @@ class Incident(Base, TimeStampMixin):
         if self.status_reports:
             return sorted(self.status_reports, key=lambda r: r.created_at)[-1]
 
+    @hybrid_property
+    def primary_team(self):
+        if self.participants:
+            teams = [p.team for p in self.participants]
+            return Counter(teams).most_common(1)[0][0]
+
+    @hybrid_property
+    def primary_location(self):
+        if self.participants:
+            locations = [p.location for p in self.participants]
+            return Counter(locations).most_common(1)[0][0]
+
     # resources
     conference = relationship("Conference", uselist=False, backref="incident")
     conversation = relationship("Conversation", uselist=False, backref="incident")
@@ -195,6 +208,8 @@ class IncidentRead(IncidentBase):
     id: int
     cost: float = None
     name: str = None
+    primary_team: Any
+    primary_location: Any
     reporter: Optional[IndividualReadNested]
     commander: Optional[IndividualReadNested]
     last_status_report: Optional[Any]
@@ -209,7 +224,6 @@ class IncidentRead(IncidentBase):
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
     events: Optional[List[EventRead]] = []
-
     created_at: Optional[datetime] = None
     reported_at: Optional[datetime] = None
     stable_at: Optional[datetime] = None
