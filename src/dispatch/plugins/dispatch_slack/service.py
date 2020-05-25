@@ -26,7 +26,7 @@ class NoConversationFoundException(Exception):
 
 def create_slack_client(run_async: bool = False):
     """Creates a Slack Web API client."""
-    return slack.WebClient(token=SLACK_API_BOT_TOKEN, run_async=run_async)
+    return slack.WebClient(token=str(SLACK_API_BOT_TOKEN), run_async=run_async)
 
 
 def contains_numbers(string):
