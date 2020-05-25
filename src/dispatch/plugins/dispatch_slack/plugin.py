@@ -87,7 +87,7 @@ class SlackConversationPlugin(ConversationPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
-        self.client = slack.WebClient(token=SLACK_API_BOT_TOKEN)
+        self.client = slack.WebClient(token=str(SLACK_API_BOT_TOKEN))
 
     def create(self, name: str, participants: List[dict], is_private: bool = True):
         """Creates a new slack conversation."""
@@ -198,7 +198,7 @@ class SlackContactPlugin(ContactPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
-        self.client = slack.WebClient(token=SLACK_API_BOT_TOKEN)
+        self.client = slack.WebClient(token=str(SLACK_API_BOT_TOKEN))
 
     def get(self, email: str, **kwargs):
         """Fetch user info by email."""
@@ -208,13 +208,14 @@ class SlackContactPlugin(ContactPlugin):
             "fullname": profile["real_name"],
             "email": profile["email"],
             "title": profile["title"],
-            "team": profile.get("fields", {}).get(
-                SLACK_PROFILE_TEAM_FIELD_ID, {}).get("value", ""),
-            "department": profile.get("fields", {}).get(
-                SLACK_PROFILE_DEPARTMENT_FIELD_ID, {}).get("value", ""),
+            "team": profile.get("fields", {}).get(SLACK_PROFILE_TEAM_FIELD_ID, {}).get("value", ""),
+            "department": profile.get("fields", {})
+            .get(SLACK_PROFILE_DEPARTMENT_FIELD_ID, {})
+            .get("value", ""),
             "location": profile["tz"],
-            "weblink": profile.get("fields", {}).get(
-                SLACK_PROFILE_WEBLINK_FIELD_ID, {}).get("value", ""),
+            "weblink": profile.get("fields", {})
+            .get(SLACK_PROFILE_WEBLINK_FIELD_ID, {})
+            .get("value", ""),
             "thumbnail": profile["image_512"],
         }
 
@@ -231,7 +232,7 @@ class SlackDocumentPlugin(DocumentPlugin):
     def __init__(self):
         self.cachedir = os.path.dirname(os.path.realpath(__file__))
         self.memory = Memory(cachedir=self.cachedir, verbose=0)
-        self.client = slack.WebClient(token=SLACK_API_BOT_TOKEN)
+        self.client = slack.WebClient(token=str(SLACK_API_BOT_TOKEN))
 
     def get(self, **kwargs) -> dict:
         """Queries slack for documents."""
