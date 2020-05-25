@@ -208,13 +208,14 @@ class SlackContactPlugin(ContactPlugin):
             "fullname": profile["real_name"],
             "email": profile["email"],
             "title": profile["title"],
-            "team": profile.get("fields", {}).get(
-                SLACK_PROFILE_TEAM_FIELD_ID, {}).get("value", ""),
-            "department": profile.get("fields", {}).get(
-                SLACK_PROFILE_DEPARTMENT_FIELD_ID, {}).get("value", ""),
+            "team": profile.get("fields", {}).get(SLACK_PROFILE_TEAM_FIELD_ID, {}).get("value", ""),
+            "department": profile.get("fields", {})
+            .get(SLACK_PROFILE_DEPARTMENT_FIELD_ID, {})
+            .get("value", ""),
             "location": profile["tz"],
-            "weblink": profile.get("fields", {}).get(
-                SLACK_PROFILE_WEBLINK_FIELD_ID, {}).get("value", ""),
+            "weblink": profile.get("fields", {})
+            .get(SLACK_PROFILE_WEBLINK_FIELD_ID, {})
+            .get("value", ""),
             "thumbnail": profile["image_512"],
         }
 

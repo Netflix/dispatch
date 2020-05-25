@@ -99,7 +99,12 @@ def time_pagination(data_key):
 
 
 # NOTE I don't like this but slack client is annoying (kglisson)
-SLACK_GET_ENDPOINTS = ["users.lookupByEmail", "users.info", "conversations.history", "users.profile.get"]
+SLACK_GET_ENDPOINTS = [
+    "users.lookupByEmail",
+    "users.info",
+    "conversations.history",
+    "users.profile.get",
+]
 
 
 @retry(stop=stop_after_attempt(5), retry=retry_if_exception_type(TryAgain))
