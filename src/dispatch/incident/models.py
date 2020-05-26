@@ -38,6 +38,7 @@ from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, 
 from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
 from dispatch.participant.models import ParticipantRead
 from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
+from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
 from dispatch.ticket.models import TicketRead
@@ -134,17 +135,21 @@ class Incident(Base, TimeStampMixin):
                 if d.resource_type == INCIDENT_RESOURCE_FAQ_DOCUMENT:
                     return d
 
-    # TODO(mvilanova): return a status report
     @hybrid_property
     def last_status_report(self):
         if self.reports:
-            return sorted(self.reports, key=lambda r: r.created_at)[-1]
+            status_reports = [
+                report for report in self.reports if report.type == ReportTypes.status_report
+            ]
+            return status_reports[-1]
 
-    # TODO(mvilanova): return an incident report
     @hybrid_property
     def last_incident_report(self):
         if self.reports:
-            return sorted(self.reports, key=lambda r: r.created_at)[-1]
+            incident_reports = [
+                report for report in self.reports if report.type == ReportTypes.incident_report
+            ]
+            return incident_reports[-1]
 
     @hybrid_property
     def primary_team(self):
