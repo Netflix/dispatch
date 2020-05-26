@@ -8,6 +8,8 @@ Create Date: 2020-05-21 15:33:15.592184
 from alembic import op
 import sqlalchemy as sa
 
+from dispatch.report.enums import ReportTypes
+
 # revision identifiers, used by Alembic.
 revision = "dd3df6a3af3c"
 down_revision = "5693756fd192"
@@ -23,7 +25,9 @@ def upgrade():
     op.add_column("report", sa.Column("next_steps", sa.String(), nullable=True))
     op.add_column(
         "report",
-        sa.Column("report_type", sa.String(), server_default="Status Report", nullable=False),
+        sa.Column(
+            "report_type", sa.String(), server_default=ReportTypes.status_report, nullable=False
+        ),
     )
     op.add_column("document", sa.Column("report_id", sa.Integer(), nullable=True))
     op.create_foreign_key(None, "document", "report", ["report_id"], ["id"])
