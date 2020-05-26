@@ -88,7 +88,6 @@ export default {
         })
       })
 
-      console.log(series)
       return series
     },
     categoryData() {
