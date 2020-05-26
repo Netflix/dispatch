@@ -141,7 +141,7 @@ class Incident(Base, TimeStampMixin):
             status_reports = [
                 report for report in self.reports if report.type == ReportTypes.status_report
             ]
-            return status_reports[-1]
+            return sorted(status_reports, key=lambda r: r.created_at)[-1]
 
     @hybrid_property
     def last_incident_report(self):
@@ -149,7 +149,7 @@ class Incident(Base, TimeStampMixin):
             incident_reports = [
                 report for report in self.reports if report.type == ReportTypes.incident_report
             ]
-            return incident_reports[-1]
+            return sorted(incident_reports, key=lambda r: r.created_at)[-1]
 
     @hybrid_property
     def primary_team(self):
