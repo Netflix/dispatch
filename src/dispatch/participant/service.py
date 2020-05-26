@@ -2,12 +2,11 @@ from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 
-from dispatch.config import INCIDENT_PLUGIN_CONTACT_SLUG
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContact
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
-from dispatch.plugins.base import plugins
+from dispatch.plugin import service as plugin_service
 
 
 from .models import Participant, ParticipantCreate, ParticipantUpdate
@@ -93,9 +92,7 @@ def get_or_create(
 
     if not participant:
         # We get information about the individual
-
         contact_plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
-        individual_info = contact_plugin.instance.get(email)
         individual_contact = individual_service.get(
             db_session=db_session, individual_contact_id=individual_id
         )
