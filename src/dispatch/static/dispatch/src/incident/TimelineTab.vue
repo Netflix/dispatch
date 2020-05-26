@@ -1,5 +1,8 @@
 <template>
   <v-container>
+    <v-row justify="end">
+      <v-switch v-model="showDetails" label="Show details"></v-switch>
+    </v-row>
     <v-timeline v-if="events.length" dense clipped>
       <v-timeline-item
         v-for="event in events"
