@@ -1,10 +1,13 @@
 <template>
   <v-layout>
-    <dialog-filter @update="update" />
     <v-tabs>
       <v-tab>Incidents</v-tab>
       <v-tab-item>
         <incident-overview></incident-overview>
+      </v-tab-item>
+      <v-tab>Tasks</v-tab>
+      <v-tab-item>
+        <task-overview></task-overview>
       </v-tab-item>
     </v-tabs>
   </v-layout>
@@ -12,12 +15,14 @@
 
 <script>
 import IncidentOverview from "@/dashboard/IncidentOverview.vue"
+import TaskOverview from "@/dashboard/TaskOverview.vue"
 
 export default {
   name: "DispatchDashboard",
 
   components: {
-    IncidentOverview
+    IncidentOverview,
+    TaskOverview
   },
 
   data() {

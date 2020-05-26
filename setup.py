@@ -408,6 +408,7 @@ setup(
             "dispatch_pkce_auth = dispatch.plugins.dispatch_core.plugin:PKCEAuthProviderPlugin",
             "dispatch_ticket = dispatch.plugins.dispatch_core.plugin:DispatchTicketPlugin",
             "dispatch_basic_auth = dispatch.plugins.dispatch_core.plugin:BasicAuthProviderPlugin",
+            "dispatch_contact = dispatch.plugins.dispatch_core.plugin:DispatchContactPlugin",
             "google_calendar_conference = dispatch.plugins.dispatch_google.calendar.plugin:GoogleCalendarConferencePlugin",
             "google_docs_document = dispatch.plugins.dispatch_google.docs.plugin:GoogleDocsDocumentPlugin",
             "google_drive_storage = dispatch.plugins.dispatch_google.drive.plugin:GoogleDriveStoragePlugin",
@@ -419,6 +420,7 @@ setup(
             "slack_contact = dispatch.plugins.dispatch_slack.plugin:SlackContactPlugin",
             "slack_conversation = dispatch.plugins.dispatch_slack.plugin:SlackConversationPlugin",
             "zoom_conference = dispatch.plugins.dispatch_zoom.plugin:ZoomConferencePlugin",
+            "opsgenie_oncall = dispatch.plugins.dispatch_opsgenie.plugin:OpsGenieOncallPlugin",
         ],
     },
 )

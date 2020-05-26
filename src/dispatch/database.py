@@ -140,6 +140,7 @@ def create_sort_spec(model, sort_by, descending):
                 )
             else:
                 sort_spec.append({"model": model, "field": field, "direction": direction})
+    log.debug(f"Sort Spec: {json.dumps(sort_spec, indent=2)}")
     return sort_spec
 
 

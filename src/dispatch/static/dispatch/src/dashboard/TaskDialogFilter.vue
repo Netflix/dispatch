@@ -32,7 +32,7 @@
               <v-date-picker v-model="window" type="month" range>
                 <v-spacer></v-spacer>
                 <v-btn text color="primary" @click="menu = false">Cancel</v-btn>
-                <v-btn text color="primary" @click="$refs.menu.save(date)">OK</v-btn>
+                <v-btn text color="primary" @click="$refs.menu.save(window)">OK</v-btn>
               </v-date-picker>
             </v-menu>
           </v-list-item-content>
@@ -60,7 +60,7 @@
 <script>
 import { map, sum, forEach, each, has } from "lodash"
 // import IndividualCombobox from "@/individual/IndividualCombobox.vue"
-import IncidentApi from "@/incident/api"
+import TaskApi from "@/task/api"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
@@ -68,7 +68,7 @@ import subMonths from "date-fns/subMonths"
 import { parseISO } from "date-fns"
 
 export default {
-  name: "IncidentOverviewFilterBar",
+  name: "TaskOverviewFilterDialog",
 
   props: {
     loading: {
@@ -95,9 +95,9 @@ export default {
 
       // we always window
       filterOptions.itemsPerPage = -1
-      filterOptions.sortBy = ["reported_at"]
+      filterOptions.sortBy = ["created_at"]
       filterOptions.descending = [false]
-      filterOptions.fields = ["reported_at", "reported_at"]
+      filterOptions.fields = ["created_at", "created_at"]
       filterOptions.ops = [">=", "<="]
       filterOptions.values = localWindow
 
@@ -114,7 +114,7 @@ export default {
         })
       })
 
-      IncidentApi.getAll(filterOptions).then(response => {
+      TaskApi.getAll(filterOptions).then(response => {
         this.$emit("update", response.data.items)
       })
     }
@@ -166,7 +166,7 @@ export default {
       return new Date(now.getFullYear(), now.getMonth(), now.getDate())
     },
     defaultStart() {
-      return subMonths(this.today, 6)
+      return subMonths(this.today, 1)
         .toISOString()
         .substr(0, 10)
     },
