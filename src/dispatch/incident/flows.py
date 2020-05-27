@@ -123,7 +123,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
 
     incident_type_plugin_metadata = incident_type_service.get_by_name(
         db_session=db_session, name=incident.incident_type.name
-    ).plugin_metadata
+    ).get_meta(plugin.slug)
 
     ticket = plugin.instance.create(
         incident.id,
@@ -132,7 +132,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
         incident.incident_priority.name,
         incident.commander.email,
         incident.reporter.email,
-        incident_type_plugin_metadata.get(plugin.slug)
+        incident_type_plugin_metadata
     )
     ticket.update({"resource_type": plugin.slug})
 
@@ -172,7 +172,7 @@ def update_incident_ticket(
 
     incident_type_plugin_metadata = incident_type_service.get_by_name(
         db_session=db_session, name=incident_type
-    ).plugin_metadata
+    ).get_meta(plugin.slug)
 
     plugin.instance.update(
         ticket_id,
@@ -189,7 +189,7 @@ def update_incident_ticket(
         conference_weblink=conference_weblink,
         labels=labels,
         cost=cost,
-        incident_type_plugin_metadata=incident_type_plugin_metadata.get(plugin.slug),
+        incident_type_plugin_metadata=incident_type_plugin_metadata,
     )
 
     log.debug("The external ticket has been updated.")
