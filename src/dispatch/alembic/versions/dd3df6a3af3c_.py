@@ -70,8 +70,12 @@ def downgrade():
     op.drop_column("report", "type")
     op.rename_table("report", "status_report")
     op.add_column(
-        "report", sa.Column("conditions", sa.VARCHAR(), autoincrement=False, nullable=True)
+        "status_report", sa.Column("conditions", sa.VARCHAR(), autoincrement=False, nullable=True)
     )
-    op.add_column("report", sa.Column("actions", sa.VARCHAR(), autoincrement=False, nullable=True))
-    op.add_column("report", sa.Column("needs", sa.VARCHAR(), autoincrement=False, nullable=True))
+    op.add_column(
+        "status_report", sa.Column("actions", sa.VARCHAR(), autoincrement=False, nullable=True)
+    )
+    op.add_column(
+        "status_report", sa.Column("needs", sa.VARCHAR(), autoincrement=False, nullable=True)
+    )
     # ### end Alembic commands ###
