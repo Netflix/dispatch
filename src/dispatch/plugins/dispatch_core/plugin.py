@@ -26,7 +26,7 @@ from dispatch.plugins.bases import (
     DocumentResolverPlugin,
     AuthenticationProviderPlugin,
     TicketPlugin,
-    ContactPlugin
+    ContactPlugin,
 )
 
 from dispatch.route import service as route_service
@@ -198,7 +198,7 @@ class DispatchContactPlugin(ContactPlugin):
         return getattr(
             individual_service.get_by_email(db_session=db_session, email=email),
             "__dict__",
-            {"email": email, "fullname": email}
+            {"email": email, "fullname": email},
         )
 
 
