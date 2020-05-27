@@ -19,12 +19,12 @@ from dispatch.messaging import (
 from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
-    SLACK_COMMAND_INCIDENT_REPORT_SLUG,
+    SLACK_COMMAND_EXECUTIVE_REPORT_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
     SLACK_COMMAND_LIST_TASKS_SLUG,
     SLACK_COMMAND_REPORT_INCIDENT_SLUG,
-    SLACK_COMMAND_STATUS_REPORT_SLUG,
+    SLACK_COMMAND_TACTICAL_REPORT_SLUG,
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
 )
 
@@ -32,14 +32,12 @@ from .config import (
 logger = logging.getLogger(__name__)
 
 
-INCIDENT_CONVERSATION_STATUS_REPORT_SUGGESTION = (
-    f"Consider providing a status report using the `{SLACK_COMMAND_STATUS_REPORT_SLUG}` command."
-)
+INCIDENT_CONVERSATION_TACTICAL_REPORT_SUGGESTION = f"Consider providing a tactical report using the `{SLACK_COMMAND_TACTICAL_REPORT_SLUG}` command."
 
 INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
-    SLACK_COMMAND_STATUS_REPORT_SLUG: {
+    SLACK_COMMAND_TACTICAL_REPORT_SLUG: {
         "response_type": "ephemeral",
-        "text": "Opening a dialog to write a status report...",
+        "text": "Opening a dialog to write a tactical report...",
     },
     SLACK_COMMAND_LIST_TASKS_SLUG: {
         "response_type": "ephemeral",
@@ -69,9 +67,9 @@ INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
         "response_type": "ephemeral",
         "text": "Opening a dialog to report an incident...",
     },
-    SLACK_COMMAND_INCIDENT_REPORT_SLUG: {
+    SLACK_COMMAND_EXECUTIVE_REPORT_SLUG: {
         "response_type": "ephemeral",
-        "text": "Opening a dialog to write an incident report...",
+        "text": "Opening a dialog to write an executive report...",
     },
 }
 
@@ -97,7 +95,7 @@ def get_template(message_type: MessageType):
         MessageType.incident_notification: (default_notification, None),
         MessageType.incident_participant_welcome: (default_notification, None),
         MessageType.incident_resources_message: (default_notification, None),
-        MessageType.incident_status_report: (default_notification, None),
+        MessageType.incident_tactical_report: (default_notification, None),
         MessageType.incident_task_reminder: (
             default_notification,
             INCIDENT_TASK_REMINDER_DESCRIPTION,

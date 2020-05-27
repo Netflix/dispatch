@@ -136,20 +136,20 @@ class Incident(Base, TimeStampMixin):
                     return d
 
     @hybrid_property
-    def last_status_report(self):
+    def last_tactical_report(self):
         if self.reports:
-            status_reports = [
-                report for report in self.reports if report.type == ReportTypes.status_report
+            tactical_reports = [
+                report for report in self.reports if report.type == ReportTypes.tactical_report
             ]
-            return sorted(status_reports, key=lambda r: r.created_at)[-1]
+            return sorted(tactical_reports, key=lambda r: r.created_at)[-1]
 
     @hybrid_property
-    def last_incident_report(self):
+    def last_executive_report(self):
         if self.reports:
-            incident_reports = [
-                report for report in self.reports if report.type == ReportTypes.incident_report
+            executive_reports = [
+                report for report in self.reports if report.type == ReportTypes.executive_report
             ]
-            return sorted(incident_reports, key=lambda r: r.created_at)[-1]
+            return sorted(executive_reports, key=lambda r: r.created_at)[-1]
 
     @hybrid_property
     def primary_team(self):
@@ -226,8 +226,8 @@ class IncidentRead(IncidentBase):
     primary_location: Any
     reporter: Optional[IndividualReadNested]
     commander: Optional[IndividualReadNested]
-    last_status_report: Optional[ReportRead]
-    last_incident_report: Optional[ReportRead]
+    last_tactical_report: Optional[ReportRead]
+    last_executive_report: Optional[ReportRead]
     incident_priority: IncidentPriorityRead
     incident_type: IncidentTypeRead
     participants: Optional[List[ParticipantRead]] = []

@@ -49,12 +49,12 @@ from . import __version__
 from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
-    SLACK_COMMAND_INCIDENT_REPORT_SLUG,
+    SLACK_COMMAND_EXECUTIVE_REPORT_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
     SLACK_COMMAND_LIST_TASKS_SLUG,
     SLACK_COMMAND_REPORT_INCIDENT_SLUG,
-    SLACK_COMMAND_STATUS_REPORT_SLUG,
+    SLACK_COMMAND_TACTICAL_REPORT_SLUG,
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_SIGNING_SECRET,
     SLACK_TIMELINE_EVENT_REACTION,
@@ -484,22 +484,22 @@ def create_engage_oncall_dialog(incident_id: int, command: dict = None, db_sessi
 
 
 @background_task
-def create_status_report_dialog(incident_id: int, command: dict = None, db_session=None):
-    """Creates a dialog with the most recent status report data, if it exists."""
-    # we load the most recent status report
-    status_report = report_service.get_most_recent_by_incident_id_and_type(
-        db_session=db_session, incident_id=incident_id, report_type=ReportTypes.status_report
+def create_tactical_report_dialog(incident_id: int, command: dict = None, db_session=None):
+    """Creates a dialog with the most recent tactical report data, if it exists."""
+    # we load the most recent tactical report
+    tactical_report = report_service.get_most_recent_by_incident_id_and_type(
+        db_session=db_session, incident_id=incident_id, report_type=ReportTypes.tactical_report
     )
 
     conditions = actions = needs = ""
-    if status_report:
-        conditions = status_report.conditions
-        actions = status_report.actions
-        needs = status_report.needs
+    if tactical_report:
+        conditions = tactical_report.details.get("conditions")
+        actions = tactical_report.details.get("actions")
+        needs = tactical_report.details.get("needs")
 
     dialog = {
         "callback_id": command["command"],
-        "title": "Status Report",
+        "title": "Tactical Report",
         "submit_label": "Submit",
         "elements": [
             {"type": "textarea", "label": "Conditions", "name": "conditions", "value": conditions},
@@ -512,22 +512,22 @@ def create_status_report_dialog(incident_id: int, command: dict = None, db_sessi
 
 
 @background_task
-def create_incident_report_dialog(incident_id: int, command: dict = None, db_session=None):
-    """Creates a dialog with the most recent incident report data, if it exists."""
-    # we load the most recent incident report
-    incident_report = report_service.get_most_recent_by_incident_id_and_type(
-        db_session=db_session, incident_id=incident_id, report_type=ReportTypes.incident_report
+def create_executive_report_dialog(incident_id: int, command: dict = None, db_session=None):
+    """Creates a dialog with the most recent executive report data, if it exists."""
+    # we load the most recent executive report
+    executive_report = report_service.get_most_recent_by_incident_id_and_type(
+        db_session=db_session, incident_id=incident_id, report_type=ReportTypes.executive_report
     )
 
     current_status = overview = next_steps = ""
-    if incident_report:
-        current_status = incident_report.current_status
-        overview = incident_report.overview
-        next_steps = incident_report.next_steps
+    if executive_report:
+        current_status = executive_report.details.get("current_status")
+        overview = executive_report.details.get("overview")
+        next_steps = executive_report.details.get("next_steps")
 
     dialog = {
         "callback_id": command["command"],
-        "title": "Incident Report",
+        "title": "Executive Report",
         "submit_label": "Submit",
         "elements": [
             {
@@ -585,11 +585,11 @@ def command_functions(command: str):
     command_mappings = {
         SLACK_COMMAND_ASSIGN_ROLE_SLUG: [create_assign_role_dialog],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [create_engage_oncall_dialog],
-        SLACK_COMMAND_INCIDENT_REPORT_SLUG: [create_incident_report_dialog],
+        SLACK_COMMAND_EXECUTIVE_REPORT_SLUG: [create_executive_report_dialog],
         SLACK_COMMAND_LIST_PARTICIPANTS_SLUG: [list_participants],
         SLACK_COMMAND_LIST_RESOURCES_SLUG: [incident_flows.incident_list_resources_flow],
         SLACK_COMMAND_LIST_TASKS_SLUG: [list_tasks],
-        SLACK_COMMAND_STATUS_REPORT_SLUG: [create_status_report_dialog],
+        SLACK_COMMAND_TACTICAL_REPORT_SLUG: [create_tactical_report_dialog],
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_dialog],
     }
 
@@ -632,8 +632,8 @@ def action_functions(action: str):
         NewIncidentSubmission.form_slack_view: [report_incident_from_submitted_form],
         SLACK_COMMAND_ASSIGN_ROLE_SLUG: [handle_assign_role_action],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [incident_flows.incident_engage_oncall_flow],
-        SLACK_COMMAND_INCIDENT_REPORT_SLUG: [report_flows.create_incident_report],
-        SLACK_COMMAND_STATUS_REPORT_SLUG: [report_flows.create_status_report],
+        SLACK_COMMAND_EXECUTIVE_REPORT_SLUG: [report_flows.create_executive_report],
+        SLACK_COMMAND_TACTICAL_REPORT_SLUG: [report_flows.create_tactical_report],
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [handle_update_incident_action],
     }
 
@@ -791,7 +791,7 @@ def report_incident_from_submitted_form(
     requested_form_incident_type = parsed_form_data.get(IncidentSlackViewBlockId.type)
     requested_form_incident_priority = parsed_form_data.get(IncidentSlackViewBlockId.priority)
 
-    # send an incident report confirmation to the user
+    # send a confirmation to the user
     msg_template = create_incident_reported_confirmation_msg(
         title=requested_form_title,
         incident_type=requested_form_incident_type.get("value"),

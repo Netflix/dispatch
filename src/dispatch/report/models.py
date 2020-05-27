@@ -18,7 +18,7 @@ class Report(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     details = Column(JSONType, nullable=True)
     details_raw = Column(String, nullable=True)
-    type = Column(String, nullable=False, server_default=ReportTypes.status_report)
+    type = Column(String, nullable=False, server_default=ReportTypes.tactical_report)
 
     # relationships
     incident_id = Column(Integer, ForeignKey("incident.id"))

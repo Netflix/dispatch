@@ -24,7 +24,7 @@ class MessageType(str, Enum):
     incident_notification = "incident-notification"
     incident_participant_welcome = "incident-participant-welcome"
     incident_resources_message = "incident-resources-message"
-    incident_status_report = "incident-status-report"
+    incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
 
@@ -188,7 +188,7 @@ The incident has been resolved and marked as closed.""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_STATUS_REPORT_DESCRIPTION = """
+INCIDENT_TACTICAL_REPORT_DESCRIPTION = """
 The following conditions, actions, and needs summarize the current status of the incident.""".replace(
     "\n", " "
 ).strip()
@@ -199,7 +199,7 @@ Please, contact {{assignee_firstname}} about any questions or concerns.""".repla
     "\n", " "
 ).strip()
 
-INCIDENT_STATUS_REPORT_REMINDER_DESCRIPTION = """You have not provided a status report for this incident recently.
+INCIDENT_TACTICAL_REPORT_REMINDER_DESCRIPTION = """You have not provided a tactical report for this incident recently.
 Consider providing one to inform participants of the current conditions, actions, and needs.
 You can use `{{command}}` in the conversation to assist you in writing one.""".replace(
     "\n", " "
@@ -346,18 +346,18 @@ INCIDENT_NOTIFICATION.extend(
     [INCIDENT_STATUS, INCIDENT_TYPE, INCIDENT_PRIORITY_FYI, INCIDENT_COMMANDER]
 )
 
-INCIDENT_STATUS_REPORT = [
-    {"title": "Incident Status Report", "text": INCIDENT_STATUS_REPORT_DESCRIPTION},
+INCIDENT_TACTICAL_REPORT = [
+    {"title": "Incident Tactical Report", "text": INCIDENT_TACTICAL_REPORT_DESCRIPTION},
     {"title": "Conditions", "text": "{{conditions}}"},
     {"title": "Actions", "text": "{{actions}}"},
     {"title": "Needs", "text": "{{needs}}"},
 ]
 
-INCIDENT_STATUS_REPORT_REMINDER = [
+INCIDENT_TACTICAL_REPORT_REMINDER = [
     {
-        "title": "{{name}} Incident - Status Report Reminder",
+        "title": "{{name}} Incident - Tactical Report Reminder",
         "title_link": "{{ticket_weblink}}",
-        "text": INCIDENT_STATUS_REPORT_REMINDER_DESCRIPTION,
+        "text": INCIDENT_TACTICAL_REPORT_REMINDER_DESCRIPTION,
     },
     INCIDENT_TITLE,
 ]
