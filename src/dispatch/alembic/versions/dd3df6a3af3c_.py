@@ -27,6 +27,7 @@ def upgrade():
 
     reports = bind.execute("select id, conditions, actions, needs from status_report")
 
+    op.rename_table("status_report", "report")
     op.add_column(
         "report", sa.Column("details", sqlalchemy_utils.types.json.JSONType(), nullable=True)
     )
@@ -52,7 +53,6 @@ def upgrade():
         session.add(report)
         session.commit()
 
-    op.rename_table("status_report", "report")
     op.drop_column("report", "conditions")
     op.drop_column("report", "actions")
     op.drop_column("report", "needs")
