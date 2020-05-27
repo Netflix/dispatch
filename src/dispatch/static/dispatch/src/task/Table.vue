@@ -35,6 +35,18 @@
                   {{ item.creator.individual.email }}
                 </v-chip>
               </template>
+              <template v-slot:item.tickets="{ item }">
+                <a
+                  v-for="ticket in item.tickets"
+                  :key="ticket.weblink"
+                  :href="ticket.weblink"
+                  target="_blank"
+                  style="text-decoration: none;"
+                >
+                  Ticket
+                  <v-icon small>open_in_new</v-icon>
+                </a>
+              </template>
               <template v-slot:item.assignees="{ item }">
                 <v-chip
                   v-for="assignee in item.assignees"
@@ -61,10 +73,6 @@
                   {{ item.source }}
                   <v-icon small>open_in_new</v-icon>
                 </a>
-              </template>
-              <template v-slot:item.actions="{ item }">
-                <v-icon small class="mr-2" @click="createEditShow(item)">edit</v-icon>
-                <v-icon small @click="removeShow(item)">delete</v-icon>
               </template>
             </v-data-table>
           </v-card>
@@ -99,6 +107,7 @@ export default {
         { text: "Assignees", value: "assignees", sortable: false },
         { text: "Description", value: "description", sortable: false },
         { text: "Source", value: "source", sortable: true },
+        { text: "Tickets", value: "tickets", sortable: false },
         { text: "Due By", value: "resolve_by" },
         { text: "Created At", value: "created_at", sortable: true },
         { text: "Resolved At", value: "resolved_at", sortable: true }

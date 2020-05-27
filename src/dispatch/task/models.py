@@ -20,6 +20,7 @@ from dispatch.database import Base
 from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin
 
 from dispatch.incident.models import IncidentRead
+from dispatch.ticket.models import TicketRead
 from dispatch.participant.models import ParticipantRead
 
 
@@ -108,6 +109,7 @@ class TaskBase(DispatchBase):
     status: Optional[str]
     priority: Optional[str]
     description: Optional[str]
+    tickets: Optional[List[TicketRead]]
     weblink: Optional[str]
     incident: Optional[IncidentRead]
 
