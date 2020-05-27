@@ -486,16 +486,12 @@ class ServiceFactory(TimeStampBaseFactory):
 
 
 class ReportFactory(BaseFactory):
-    """Status Report Factory."""
+    """Report Factory."""
 
     created_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
-    conditions = FuzzyText()
-    actions = FuzzyText()
-    needs = FuzzyText()
-    overview = FuzzyText()
-    current_status = FuzzyText()
-    next_steps = FuzzyText()
-    report_type = FuzzyChoice(["Status Report", "Incident Report"])
+    details = FuzzyText()
+    details_raw = FuzzyText()
+    type = FuzzyChoice(["Tactical Report", "Executive Report"])
 
     class Meta:
         """Factory Configuration."""
