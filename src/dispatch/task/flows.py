@@ -22,9 +22,9 @@ from dispatch.messaging import (
 )
 from dispatch.plugins.base import plugins
 from dispatch.incident.flows import incident_add_or_reactivate_participant_flow
-from dispatch.ticket import service as ticket_service
 from dispatch.task.models import TaskStatus
 from dispatch.task import service as task_service
+from dispatch.ticket import service as ticket_service
 
 
 log = logging.getLogger(__name__)
@@ -102,9 +102,12 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
     status = TaskStatus.open if not task["status"] else TaskStatus.resolved
     resource_id = task["id"]
     weblink = task["web_link"]
-    tickets = [ticket_service.get_or_create(t) for t in task["tickets"]]
 
-    print(f"Incident: {incident.name} Found tickets: {tickets}")
+    # TODO we can build this out as our scraping gets more advanced
+    tickets = [
+        ticket_service.get_or_create_by_weblink(db_session=db_session, weblink=t["web_link"])
+        for t in task["tickets"]
+    ]
 
     if incident_task:
         incident_task.status = status
