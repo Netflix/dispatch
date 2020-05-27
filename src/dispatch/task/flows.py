@@ -104,9 +104,12 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
     weblink = task["web_link"]
     tickets = [ticket_service.get_or_create(t) for t in task["tickets"]]
 
+    print(f"Incident: {incident.name} Found tickets: {tickets}")
+
     if incident_task:
         incident_task.status = status
         incident_task.assignees = assignees
+        incident_task.tickets = tickets
         db_session.add(incident_task)
         db_session.commit()
     else:
