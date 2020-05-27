@@ -45,7 +45,7 @@ def get_or_create(*, db_session, email: str, **kwargs) -> IndividualContact:
 
     if not contact:
         contact_plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
-        individual_info = contact_plugin.get(email, db_session=db_session)
+        individual_info = contact_plugin.instance.get(email, db_session=db_session)
         kwargs["email"] = individual_info.get("email", email)
         kwargs["name"] = individual_info.get("fullname", "unknown")
         kwargs["weblink"] = individual_info.get("weblink", "unknown")
