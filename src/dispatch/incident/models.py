@@ -141,7 +141,8 @@ class Incident(Base, TimeStampMixin):
             tactical_reports = [
                 report for report in self.reports if report.type == ReportTypes.tactical_report
             ]
-            return sorted(tactical_reports, key=lambda r: r.created_at)[-1]
+            if tactical_reports:
+                return sorted(tactical_reports, key=lambda r: r.created_at)[-1]
 
     @hybrid_property
     def last_executive_report(self):
@@ -149,7 +150,8 @@ class Incident(Base, TimeStampMixin):
             executive_reports = [
                 report for report in self.reports if report.type == ReportTypes.executive_report
             ]
-            return sorted(executive_reports, key=lambda r: r.created_at)[-1]
+            if executive_reports:
+                return sorted(executive_reports, key=lambda r: r.created_at)[-1]
 
     @hybrid_property
     def primary_team(self):

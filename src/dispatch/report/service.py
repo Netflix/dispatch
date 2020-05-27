@@ -22,7 +22,7 @@ def get_most_recent_by_incident_id_and_type(
     return (
         db_session.query(Report)
         .filter(Report.incident_id == incident_id)
-        .filter(Report.report_type == report_type)
+        .filter(Report.type == report_type)
         .order_by(Report.created_at.desc())
         .first()
     )
@@ -37,7 +37,7 @@ def get_all_by_incident_id_and_type(
     return (
         db_session.query(Report)
         .filter(Report.incident_id == incident_id)
-        .filter(Report.report_type == report_type)
+        .filter(Report.type == report_type)
     )
 
 
@@ -45,7 +45,7 @@ def get_all_by_type(*, db_session, report_type: ReportTypes) -> List[Optional[Re
     """
     Get all reports by type.
     """
-    return db_session.query(Report).filter(Report.report_type == report_type)
+    return db_session.query(Report).filter(Report.type == report_type)
 
 
 def get_all(*, db_session) -> List[Optional[Report]]:
