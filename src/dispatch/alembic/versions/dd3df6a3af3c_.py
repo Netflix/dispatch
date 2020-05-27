@@ -38,7 +38,7 @@ def upgrade():
     )
     op.add_column(
         "report",
-        sa.Column("type", sa.String(), server_default=ReportTypes.status_report, nullable=False),
+        sa.Column("type", sa.String(), server_default=ReportTypes.tactical_report, nullable=False),
     )
     op.add_column("document", sa.Column("report_id", sa.Integer(), nullable=True))
     op.create_foreign_key(None, "document", "report", ["report_id"], ["id"])
