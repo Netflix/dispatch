@@ -1,4 +1,4 @@
-"""empty message
+"""Migrates the incident metadata json
 
 Revision ID: cfd62f719c84
 Revises: 5693756fd192
@@ -7,7 +7,6 @@ Create Date: 2020-05-26 20:17:47.707953
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "cfd62f719c84"
