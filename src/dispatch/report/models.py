@@ -30,9 +30,7 @@ class Report(Base):
 
     @staticmethod
     def _details_raw(mapper, connection, target):
-        target.details_raw = "; ".join(
-            [f"{k.capitalize()}: {v}" for k, v in target.details.items()]
-        )
+        target.details_raw = " ".join(target.details.values())
 
     @classmethod
     def __declare_last__(cls):
