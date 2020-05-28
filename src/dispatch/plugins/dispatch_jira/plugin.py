@@ -197,6 +197,7 @@ class JiraTicketPlugin(TicketPlugin):
         incident_priority: str,
         commander: str,
         reporter: str,
+        incident_type_plugin_metadata: dict = {},
     ):
         """Creates a Jira ticket."""
         client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
@@ -222,6 +223,7 @@ class JiraTicketPlugin(TicketPlugin):
         storage_weblink: str = None,
         labels: List[str] = None,
         cost: int = None,
+        incident_type_plugin_metadata: dict = {},
     ):
         """Updates Jira ticket fields."""
         commander_username = get_user_name(commander_email) if commander_email else None

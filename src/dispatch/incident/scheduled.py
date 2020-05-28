@@ -33,7 +33,7 @@ from dispatch.tag.models import Tag
 from dispatch.conversation.enums import ConversationButtonActions
 from .enums import IncidentStatus
 from .service import calculate_cost, get_all, get_all_by_status, get_all_last_x_hours_by_status
-from .messaging import send_incident_status_report_reminder
+from .messaging import send_incident_tactical_report_reminder
 
 
 log = logging.getLogger(__name__)
@@ -82,18 +82,18 @@ def auto_tagger(db_session):
         )
 
 
-@scheduler.add(every(1).hours, name="incident-status-report-reminder")
+@scheduler.add(every(1).hours, name="incident-tactical-report-reminder")
 @background_task
-def status_report_reminder(db_session=None):
-    """Sends status report reminders to active incident commanders."""
+def tactical_report_reminder(db_session=None):
+    """Sends tactical report reminders to active incident commanders."""
     incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active)
 
     for incident in incidents:
         try:
             notification_hour = incident.incident_priority.status_reminder
 
-            if incident.last_status_report:
-                remind_after = incident.last_status_report.created_at
+            if incident.last_tactical_report:
+                remind_after = incident.last_tactical_report.created_at
             else:
                 remind_after = incident.created_at
 
@@ -104,7 +104,7 @@ def status_report_reminder(db_session=None):
 
             q, r = divmod(hours, notification_hour)
             if q >= 1 and r == 0:  # it's time to send the reminder
-                send_incident_status_report_reminder(incident)
+                send_incident_tactical_report_reminder(incident)
 
         except Exception as e:
             # we shouldn't fail to update all incidents when one fails
@@ -151,7 +151,7 @@ def daily_summary(db_session=None):
                                     f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
                                 ),
                             },
-                            "block_id": f"{ConversationButtonActions.invite_user}-{idx}",
+                            "block_id": f"{ConversationButtonActions.invite_user}-active-{idx}",
                             "accessory": {
                                 "type": "button",
                                 "text": {"type": "plain_text", "text": "Join Incident"},
@@ -208,7 +208,7 @@ def daily_summary(db_session=None):
                                     f"*Status*: {incident.status}"
                                 ),
                             },
-                            "block_id": f"{ConversationButtonActions.invite_user}-{idx}",
+                            "block_id": f"{ConversationButtonActions.invite_user}-stable-{idx}",
                             "accessory": {
                                 "type": "button",
                                 "text": {"type": "plain_text", "text": "Join Incident"},

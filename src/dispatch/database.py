@@ -1,5 +1,6 @@
 import re
 import logging
+import json
 from typing import Any, List
 from itertools import groupby
 
@@ -83,7 +84,6 @@ def create_filter_spec(model, fields, ops, values):
 
     if fields and ops and values:
         for field, op, value in zip(fields, ops, values):
-            # we have a complex field, we may need to join
             if "." in field:
                 complex_model, complex_field = field.split(".")
                 filters.append(
@@ -113,11 +113,10 @@ def create_filter_spec(model, fields, ops, values):
         else:
             filter_spec.append({"or": filters})
 
-    log.debug(f"Filter Spec: {filter_spec}")
-
     if filter_spec:
-        return {"and": filter_spec}
+        filter_spec = {"and": filter_spec}
 
+    log.debug(f"Filter Spec: {json.dumps(filter_spec, indent=2)}")
     return filter_spec
 
 
@@ -141,6 +140,7 @@ def create_sort_spec(model, sort_by, descending):
                 )
             else:
                 sort_spec.append({"model": model, "field": field, "direction": direction})
+    log.debug(f"Sort Spec: {json.dumps(sort_spec, indent=2)}")
     return sort_spec
 
 
@@ -197,7 +197,6 @@ def search_filter_sort_paginate(
         items_per_page = None
 
     query, pagination = apply_pagination(query, page_number=page, page_size=items_per_page)
-
     return {
         "items": query.all(),
         "itemsPerPage": pagination.page_size,

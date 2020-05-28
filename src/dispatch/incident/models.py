@@ -1,4 +1,5 @@
 from datetime import datetime
+from collections import Counter
 from typing import List, Optional, Any
 
 from pydantic import validator
@@ -37,10 +38,13 @@ from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, 
 from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
 from dispatch.participant.models import ParticipantRead
 from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
+from dispatch.report.enums import ReportTypes
+from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
 from dispatch.ticket.models import TicketRead
 
 from .enums import IncidentStatus
+
 
 assoc_incident_terms = Table(
     "assoc_incident_terms",
@@ -132,9 +136,42 @@ class Incident(Base, TimeStampMixin):
                     return d
 
     @hybrid_property
-    def last_status_report(self):
-        if self.status_reports:
-            return sorted(self.status_reports, key=lambda r: r.created_at)[-1]
+    def tactical_reports(self):
+        if self.reports:
+            tactical_reports = [
+                report for report in self.reports if report.type == ReportTypes.tactical_report
+            ]
+            return tactical_reports
+
+    @hybrid_property
+    def last_tactical_report(self):
+        if self.tactical_reports:
+            return sorted(self.tactical_reports, key=lambda r: r.created_at)[-1]
+
+    @hybrid_property
+    def executive_reports(self):
+        if self.reports:
+            executive_reports = [
+                report for report in self.reports if report.type == ReportTypes.executive_report
+            ]
+            return executive_reports
+
+    @hybrid_property
+    def last_executive_report(self):
+        if self.executive_reports:
+            return sorted(self.executive_reports, key=lambda r: r.created_at)[-1]
+
+    @hybrid_property
+    def primary_team(self):
+        if self.participants:
+            teams = [p.team for p in self.participants]
+            return Counter(teams).most_common(1)[0][0]
+
+    @hybrid_property
+    def primary_location(self):
+        if self.participants:
+            locations = [p.location for p in self.participants]
+            return Counter(locations).most_common(1)[0][0]
 
     # resources
     conference = relationship("Conference", uselist=False, backref="incident")
@@ -147,7 +184,7 @@ class Incident(Base, TimeStampMixin):
     incident_type = relationship("IncidentType", backref="incident")
     incident_type_id = Column(Integer, ForeignKey("incident_type.id"))
     participants = relationship("Participant", backref="incident")
-    status_reports = relationship("StatusReport", backref="incident")
+    reports = relationship("Report", backref="incident")
     storage = relationship("Storage", uselist=False, backref="incident")
     tags = relationship("Tag", secondary=assoc_incident_tags, backref="incidents")
     tasks = relationship("Task", backref="incident")
@@ -195,9 +232,12 @@ class IncidentRead(IncidentBase):
     id: int
     cost: float = None
     name: str = None
+    primary_team: Any
+    primary_location: Any
     reporter: Optional[IndividualReadNested]
     commander: Optional[IndividualReadNested]
-    last_status_report: Optional[Any]
+    last_tactical_report: Optional[ReportRead]
+    last_executive_report: Optional[ReportRead]
     incident_priority: IncidentPriorityRead
     incident_type: IncidentTypeRead
     participants: Optional[List[ParticipantRead]] = []
@@ -209,7 +249,6 @@ class IncidentRead(IncidentBase):
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
     events: Optional[List[EventRead]] = []
-
     created_at: Optional[datetime] = None
     reported_at: Optional[datetime] = None
     stable_at: Optional[datetime] = None

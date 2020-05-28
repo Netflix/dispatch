@@ -83,6 +83,14 @@ Today, basic authentication allows self registration without approval.
 
 > Used by the basic auth provider to mint JWT tokens and set their expiration.
 
+#### `DISPATCH_JWT_AUDIENCE`
+
+> Override what the `Audience` is expected to be in the PKCE JWT decode
+
+#### `DISPATCH_JWT_EMAIL_OVERRIDE`
+
+> Override where Dispatch should find the user email in the idtoken.
+
 #### `DISPATCH_AUTHENTICATION_DEFAULT_USER` \['default': dispatch@example.com\]
 
 > Used as the default anonymous user when authentication is disabled.

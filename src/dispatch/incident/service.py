@@ -12,6 +12,7 @@ from dispatch.participant import flows as participant_flows
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugins.base import plugins
+from dispatch.plugin import service as plugin_service
 from dispatch.tag import service as tag_service
 from dispatch.tag.models import TagUpdate
 from dispatch.term import service as term_service
@@ -39,22 +40,22 @@ def resolve_incident_commander_email(
         db_session=db_session, name=incident_type
     ).commander_service
 
-    p = plugins.get(commander_service.type)
+    p = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
 
     # page for high priority incidents
     # we could do this at the end but it seems pretty important...
     if page_commander:
-        p.page(
+        p.instance.page(
             service_id=commander_service.external_id,
             incident_name=incident_name,
             incident_title=incident_title,
             incident_description=incident_description,
         )
 
-    return p.get(service_id=commander_service.external_id)
+    return p.instance.get(service_id=commander_service.external_id)
 
 
-def get(*, db_session, incident_id: str) -> Optional[Incident]:
+def get(*, db_session, incident_id: int) -> Optional[Incident]:
     """Returns an incident based on the given id."""
     return db_session.query(Incident).filter(Incident.id == incident_id).first()
 
@@ -334,8 +335,8 @@ def calculate_cost(incident_id: int, db_session: SessionLocal, incident_review=T
     if incident_review:
         num_participants = len(incident.participants)
         incident_review_prep = (
-            1
-        )  # we make the assumption that it takes an hour to prepare the incident review
+            1  # we make the assumption that it takes an hour to prepare the incident review
+        )
         incident_review_meeting = (
             num_participants * 0.5 * 1
         )  # we make the assumption that only half of the incident participants will attend the 1-hour, incident review session

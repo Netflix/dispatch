@@ -1,6 +1,7 @@
 from typing import Optional
 
 from fastapi.encoders import jsonable_encoder
+from dispatch.config import ONCALL_PLUGIN_SLUG
 
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service

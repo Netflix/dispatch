@@ -21,8 +21,10 @@ from dispatch.messaging import (
     INCIDENT_TASK_RESOLVED_NOTIFICATION,
 )
 from dispatch.plugins.base import plugins
+from dispatch.incident.flows import incident_add_or_reactivate_participant_flow
 from dispatch.task.models import TaskStatus
 from dispatch.task import service as task_service
+from dispatch.ticket import service as ticket_service
 
 
 log = logging.getLogger(__name__)
@@ -44,7 +46,11 @@ def create_reminder(db_session, assignee, tasks):
 
     notification_type = "incident-task-reminder"
     email_plugin.send(
-        assignee, message_template, notification_type, name="Task Reminder", items=tasks
+        assignee.individual_contact.email,
+        message_template,
+        notification_type,
+        name="Task Reminder",
+        items=tasks,
     )
 
     # We currently think DM's might be too agressive
@@ -70,7 +76,7 @@ def send_task_notification(conversation_id, message_template, assignees, descrip
         notification_text,
         message_template,
         notification_type,
-        task_assignees=assignees,
+        task_assignees=[x.indiviual_contact.email for x in assignees],
         task_description=description,
         task_weblink=weblink,
     )
@@ -78,37 +84,37 @@ def send_task_notification(conversation_id, message_template, assignees, descrip
 
 def create_or_update_task(db_session, incident, task: dict, notify: bool = False):
     """Creates a new task in the database or updates an existing one."""
-    # TODO we should standarize this interface (kglisson)
-    creator = task["owner"]
-    assignees = ", ".join(task["assignees"])
+    incident_task = task_service.get_by_resource_id(db_session=db_session, resource_id=task["id"])
+
+    creator = incident_add_or_reactivate_participant_flow(
+        task["owner"], incident_id=incident.id, db_session=db_session
+    )
+
+    assignees = []
+    for a in task["assignees"]:
+        assignees.append(
+            incident_add_or_reactivate_participant_flow(
+                a, incident_id=incident.id, db_session=db_session
+            )
+        )
+
     description = task["description"][0]
     status = TaskStatus.open if not task["status"] else TaskStatus.resolved
     resource_id = task["id"]
     weblink = task["web_link"]
 
-    incident_task = task_service.get_by_resource_id(db_session=db_session, resource_id=task["id"])
-    if incident_task:
-        if status == TaskStatus.open:
-            # we don't need to take any actions if the status of the task in the collaboration doc is open
-            return
-        else:
-            if incident_task.status == TaskStatus.resolved:
-                # we don't need to take any actions if the task has already been marked as resolved in the database
-                return
-            else:
-                # we mark the task as resolved in the database
-                incident_task.status = TaskStatus.resolved
-                db_session.add(incident_task)
-                db_session.commit()
+    # TODO we can build this out as our scraping gets more advanced
+    tickets = [
+        ticket_service.get_or_create_by_weblink(db_session=db_session, weblink=t["web_link"])
+        for t in task["tickets"]
+    ]
 
-                if notify:
-                    send_task_notification(
-                        incident.conversation.channel_id,
-                        INCIDENT_TASK_RESOLVED_NOTIFICATION,
-                        assignees,
-                        description,
-                        weblink,
-                    )
+    if incident_task:
+        incident_task.status = status
+        incident_task.assignees = assignees
+        incident_task.tickets = tickets
+        db_session.add(incident_task)
+        db_session.commit()
     else:
         # we add the task to the incident
         task = task_service.create(
@@ -117,6 +123,7 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
             assignees=assignees,
             description=description,
             status=status,
+            tickets=tickets,
             resource_id=resource_id,
             resource_type=INCIDENT_RESOURCE_INCIDENT_TASK,
             weblink=weblink,
@@ -125,11 +132,11 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
         db_session.add(incident)
         db_session.commit()
 
-        if notify:
-            send_task_notification(
-                incident.conversation.channel_id,
-                INCIDENT_TASK_NEW_NOTIFICATION,
-                assignees,
-                description,
-                weblink,
-            )
+    if notify:
+        send_task_notification(
+            incident.conversation.channel_id,
+            INCIDENT_TASK_NEW_NOTIFICATION,
+            assignees,
+            description,
+            weblink,
+        )

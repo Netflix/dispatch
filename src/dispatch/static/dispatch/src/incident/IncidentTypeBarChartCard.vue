@@ -6,9 +6,10 @@
 </template>
 
 <script>
-import { countBy, isArray, mergeWith, forEach, map } from "lodash"
+import { countBy, isArray, mergeWith, forEach, map, find } from "lodash"
 
 import VueApexCharts from "vue-apexcharts"
+import IncidentTypeApi from "@/incident_type/api"
 export default {
   name: "IncidentBarChartCard",
 
@@ -32,7 +33,15 @@ export default {
   },
 
   data() {
-    return {}
+    return {
+      types: []
+    }
+  },
+
+  created: function() {
+    IncidentTypeApi.getAll({ itemsPerPage: -1 }).then(response => {
+      this.types = map(response.data.items, "name")
+    })
   },
 
   computed: {
@@ -71,8 +80,10 @@ export default {
     },
     series() {
       let series = []
+      let types = this.types
+      console.log(types)
       forEach(this.value, function(value) {
-        let typeCount = map(
+        let typeCounts = map(
           countBy(value, function(item) {
             return item.incident_type.name
           }),
@@ -81,13 +92,23 @@ export default {
           }
         )
 
-        series = mergeWith(series, typeCount, function(objValue, srcValue) {
+        forEach(types, function(type) {
+          let found = find(typeCounts, { name: type })
+          if (!found) {
+            typeCounts.push({ name: type, data: [0] })
+          }
+        })
+        series = mergeWith(series, typeCounts, function(objValue, srcValue) {
           if (isArray(objValue)) {
             return objValue.concat(srcValue)
           }
         })
       })
 
+      // sort
+      //series = sortBy(series, function(obj) {
+      //  return types.indexOf(obj.name)
+      //})
       return series
     },
     categoryData() {

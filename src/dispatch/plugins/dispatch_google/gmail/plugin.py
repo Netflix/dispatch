@@ -59,7 +59,7 @@ def get_template(message_type: MessageType):
     """Fetches the correct template based on the message type."""
     template_map = {
         MessageType.incident_notification: ("notification.html", None),
-        MessageType.incident_status_report: ("status_report.html", None),
+        MessageType.incident_tactical_report: ("tactical_report.html", None),
         MessageType.incident_participant_welcome: ("notification.html", None),
         MessageType.incident_task_reminder: (
             "task_notification.html",
