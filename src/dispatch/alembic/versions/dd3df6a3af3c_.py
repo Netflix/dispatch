@@ -1,7 +1,7 @@
 """Generalizes data model for incident reports (tactical, executive)
 
 Revision ID: dd3df6a3af3c
-Revises: 5693756fd192
+Revises: a57934336710
 Create Date: 2020-05-21 15:33:15.592184
 
 """
@@ -15,7 +15,7 @@ from dispatch.report import service as report_service
 
 # revision identifiers, used by Alembic.
 revision = "dd3df6a3af3c"
-down_revision = "5693756fd192"
+down_revision = "a57934336710"
 branch_labels = None
 depends_on = None
 
