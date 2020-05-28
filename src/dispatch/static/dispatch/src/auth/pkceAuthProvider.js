@@ -9,6 +9,8 @@ import { GRANT_TYPE_AUTHORIZATION_CODE, TokenRequest } from "@openid/appauth/bui
 
 import { FetchRequestor } from "@openid/appauth/built/xhr"
 
+import store from "@/store"
+
 const requestor = new FetchRequestor()
 
 export function login(to, from, next) {
