@@ -198,20 +198,23 @@ class SlackContactPlugin(ContactPlugin):
 
     def get(self, email: str, **kwargs):
         """Fetch user info by email."""
+        team = department = weblink = ""
+
         profile = get_user_profile_by_email(self.client, email)
+        profile_fields = profile.get("fields")
+        if profile_fields:
+            team = profile_fields.get(SLACK_PROFILE_TEAM_FIELD_ID, {}).get("value", "")
+            department = profile_fields.get(SLACK_PROFILE_DEPARTMENT_FIELD_ID, {}).get("value", "")
+            weblink = profile_fields.get(SLACK_PROFILE_WEBLINK_FIELD_ID, {}).get("value", "")
 
         return {
             "fullname": profile["real_name"],
             "email": profile["email"],
             "title": profile["title"],
-            "team": profile.get("fields", {}).get(SLACK_PROFILE_TEAM_FIELD_ID, {}).get("value", ""),
-            "department": profile.get("fields", {})
-            .get(SLACK_PROFILE_DEPARTMENT_FIELD_ID, {})
-            .get("value", ""),
+            "team": team,
+            "department": department,
             "location": profile["tz"],
-            "weblink": profile.get("fields", {})
-            .get(SLACK_PROFILE_WEBLINK_FIELD_ID, {})
-            .get("value", ""),
+            "weblink": weblink,
             "thumbnail": profile["image_512"],
         }
 
