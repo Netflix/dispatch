@@ -72,6 +72,12 @@
               <v-flex xs12>
                 <document-select v-model="template_document" />
               </v-flex>
+              <v-flex xs12>
+                <plugin-metadata-input
+                  @input="updatePluginMetadata({ data: $event })"
+                  v-model="plugin_metadata"
+                />
+              </v-flex>
             </v-layout>
           </v-container>
         </v-card-text>
@@ -87,6 +93,7 @@ import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 import ServiceSelect from "@/service/ServiceSelect.vue"
 import DocumentSelect from "@/document/DocumentSelect.vue"
+import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
 
 extend("required", {
   ...required,
@@ -99,6 +106,7 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
+    PluginMetadataInput,
     ServiceSelect,
     DocumentSelect
   },
@@ -119,12 +127,16 @@ export default {
       "selected.name",
       "selected.slug",
       "selected.template_document",
-      "selected.visibility"
+      "selected.visibility",
+      "selected.plugin_metadata"
     ])
   },
 
   methods: {
-    ...mapActions("incident_type", ["save", "closeCreateEdit"])
+    ...mapActions("incident_type", ["save", "closeCreateEdit"]),
+    updatePluginMetadata(event) {
+      this.plugin_metadata = event.data
+    }
   }
 }
 </script>

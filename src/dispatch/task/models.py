@@ -20,6 +20,7 @@ from dispatch.database import Base
 from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin
 
 from dispatch.incident.models import IncidentRead
+from dispatch.ticket.models import TicketRead
 from dispatch.participant.models import ParticipantRead
 
 
@@ -58,6 +59,14 @@ assoc_task_assignees = Table(
     PrimaryKeyConstraint("participant_id", "task_id"),
 )
 
+assoc_task_tickets = Table(
+    "task_tickets",
+    Base.metadata,
+    Column("ticket_id", Integer, ForeignKey("ticket.id")),
+    Column("task_id", Integer, ForeignKey("task.id")),
+    PrimaryKeyConstraint("ticket_id", "task_id"),
+)
+
 
 class Task(Base, ResourceMixin, TimeStampMixin):
     id = Column(Integer, primary_key=True)
@@ -76,6 +85,7 @@ class Task(Base, ResourceMixin, TimeStampMixin):
     reminders = Column(Boolean, default=True)
     incident_id = Column(Integer, ForeignKey("incident.id"))
     search_vector = Column(TSVectorType("description"))
+    tickets = relationship("Ticket", secondary=assoc_task_tickets, backref="tasks")
 
     @staticmethod
     def _resolved_at(mapper, connection, target):
@@ -99,6 +109,7 @@ class TaskBase(DispatchBase):
     status: Optional[str]
     priority: Optional[str]
     description: Optional[str]
+    tickets: Optional[List[TicketRead]]
     weblink: Optional[str]
     incident: Optional[IncidentRead]
 

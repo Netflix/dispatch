@@ -57,6 +57,7 @@ from dispatch.incident_type import service as incident_type_service
 from dispatch.individual import service as individual_service
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
+from dispatch.participant.models import Participant
 from dispatch.participant_role import flows as participant_role_flows
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugins.base import plugins
@@ -123,7 +124,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
 
     incident_type_plugin_metadata = incident_type_service.get_by_name(
         db_session=db_session, name=incident.incident_type.name
-    ).plugin_metadata
+    ).get_meta(plugin.slug)
 
     ticket = plugin.instance.create(
         incident.id,
@@ -132,7 +133,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
         incident.incident_priority.name,
         incident.commander.email,
         incident.reporter.email,
-        incident_type_plugin_metadata.get(plugin.slug),
+        incident_type_plugin_metadata,
     )
     ticket.update({"resource_type": plugin.slug})
 
@@ -172,7 +173,7 @@ def update_incident_ticket(
 
     incident_type_plugin_metadata = incident_type_service.get_by_name(
         db_session=db_session, name=incident_type
-    ).plugin_metadata
+    ).get_meta(plugin.slug)
 
     plugin.instance.update(
         ticket_id,
@@ -189,7 +190,7 @@ def update_incident_ticket(
         conference_weblink=conference_weblink,
         labels=labels,
         cost=cost,
-        incident_type_plugin_metadata=incident_type_plugin_metadata.get(plugin.slug),
+        incident_type_plugin_metadata=incident_type_plugin_metadata,
     )
 
     log.debug("The external ticket has been updated.")
@@ -1144,7 +1145,7 @@ def incident_add_or_reactivate_participant_flow(
     role: ParticipantRoleType = None,
     event: dict = None,
     db_session=None,
-):
+) -> Participant:
     """Runs the add or reactivate incident participant flow."""
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident_id, email=user_email
