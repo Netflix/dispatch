@@ -134,14 +134,14 @@ function loginBasic(to, from, next) {
   if (token) {
     store.commit("auth/SET_USER_LOGIN", token)
     next()
+  } else {
+    // prevent redirect loop
+    if (to.path !== "/login") {
+      next("/login")
+    } else {
+      next()
+    }
   }
-
-  // prevent redirect loop
-  if (to.path !== "/login") {
-    next("/login")
-  }
-
-  next()
 }
 
 // router guards
