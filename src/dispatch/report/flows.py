@@ -78,7 +78,7 @@ def create_executive_report(
     user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
 ):
     """Creates an executive report."""
-    current_date = (date.today()).strftime("%B %d, %Y")
+    current_date = date.today().strftime("%B %d, %Y")
 
     current_status = action["submission"]["current_status"]
     overview = action["submission"]["overview"]
