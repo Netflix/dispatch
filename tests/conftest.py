@@ -18,6 +18,7 @@ environ["INCIDENT_NOTIFICATION_CONVERSATIONS"] = "sirt-dev-test-notify"
 environ["INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS"] = "sirt-dev-test-notify@example.com"
 environ["INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID"] = "XXX"
 environ["INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID"] = "XXX"
+environ["INCIDENT_STORAGE_EXECUTIVE_REPORT_FILE_ID"] = "XXX"
 environ["JWKS_URL"] = "example.com"
 environ["ENV"] = "pytest"
 environ["DISPATCH_AUTHENTICATION_PROVIDER_SLUG"] = ""  # disable authentication for tests
@@ -44,7 +45,7 @@ from .factories import (
     RecommendationAccuracyFactory,
     RecommendationFactory,
     ServiceFactory,
-    StatusReportFactory,
+    ReportFactory,
     StorageFactory,
     TagFactory,
     TaskFactory,
@@ -344,8 +345,8 @@ def services(session):
 
 
 @pytest.fixture
-def status_report(session):
-    return StatusReportFactory()
+def report(session):
+    return ReportFactory()
 
 
 @pytest.fixture

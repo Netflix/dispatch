@@ -53,9 +53,11 @@ from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
 from dispatch.incident_priority.models import IncidentPriorityRead
 from dispatch.incident_type.models import IncidentTypeRead
+from dispatch.incident_type import service as incident_type_service
 from dispatch.individual import service as individual_service
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
+from dispatch.participant.models import Participant
 from dispatch.participant_role import flows as participant_role_flows
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugins.base import plugins
@@ -76,7 +78,7 @@ from .messaging import (
     send_incident_resources_ephemeral_message_to_participant,
     send_incident_review_document_notification,
     send_incident_welcome_participant_messages,
-    send_incident_status_report_reminder,
+    send_incident_tactical_report_reminder,
 )
 from .models import Incident, IncidentStatus
 
@@ -120,6 +122,10 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     if incident.visibility == Visibility.restricted:
         title = incident.incident_type.name
 
+    incident_type_plugin_metadata = incident_type_service.get_by_name(
+        db_session=db_session, name=incident.incident_type.name
+    ).get_meta(plugin.slug)
+
     ticket = plugin.instance.create(
         incident.id,
         title,
@@ -127,6 +133,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
         incident.incident_priority.name,
         incident.commander.email,
         incident.reporter.email,
+        incident_type_plugin_metadata,
     )
     ticket.update({"resource_type": plugin.slug})
 
@@ -164,6 +171,10 @@ def update_incident_ticket(
     if visibility == Visibility.restricted:
         title = description = incident_type
 
+    incident_type_plugin_metadata = incident_type_service.get_by_name(
+        db_session=db_session, name=incident_type
+    ).get_meta(plugin.slug)
+
     plugin.instance.update(
         ticket_id,
         title=title,
@@ -179,6 +190,7 @@ def update_incident_ticket(
         conference_weblink=conference_weblink,
         labels=labels,
         cost=cost,
+        incident_type_plugin_metadata=incident_type_plugin_metadata,
     )
 
     log.debug("The external ticket has been updated.")
@@ -719,8 +731,8 @@ def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_se
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    # we remind the incident commander to write a status report
-    send_incident_status_report_reminder(incident)
+    # we remind the incident commander to write a tactical report
+    send_incident_tactical_report_reminder(incident)
 
     # we update the status of the external ticket
     update_incident_ticket(
@@ -740,8 +752,8 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     # we set the stable time
     incident.stable_at = datetime.utcnow()
 
-    # we remind the incident commander to write a status report
-    send_incident_status_report_reminder(incident)
+    # we remind the incident commander to write a tactical report
+    send_incident_tactical_report_reminder(incident)
 
     # we update the incident cost
     incident_cost = incident_service.calculate_cost(incident_id, db_session)
@@ -750,6 +762,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     update_incident_ticket(
         db_session,
         incident.ticket.resource_id,
+        incident_type=incident.incident_type.name,
         status=IncidentStatus.stable.lower(),
         cost=incident_cost,
     )
@@ -858,6 +871,7 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     update_incident_ticket(
         db_session,
         incident.ticket.resource_id,
+        incident_type=incident.incident_type.name,
         status=IncidentStatus.closed.lower(),
         cost=incident_cost,
     )
@@ -1131,7 +1145,7 @@ def incident_add_or_reactivate_participant_flow(
     role: ParticipantRoleType = None,
     event: dict = None,
     db_session=None,
-):
+) -> Participant:
     """Runs the add or reactivate incident participant flow."""
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident_id, email=user_email
@@ -1161,18 +1175,19 @@ def incident_add_or_reactivate_participant_flow(
             user_email, incident_id, db_session, role=role
         )
 
-        if participant:
-            # we add the participant to the tactical group
-            add_participant_to_tactical_group(user_email, incident_id)
+        # we add the participant to the tactical group
+        add_participant_to_tactical_group(user_email, incident_id)
 
-            # we add the participant to the conversation
-            add_participant_to_conversation(user_email, incident_id, db_session)
+        # we add the participant to the conversation
+        add_participant_to_conversation(user_email, incident_id, db_session)
 
-            # we announce the participant in the conversation
-            send_incident_participant_announcement_message(user_email, incident_id, db_session)
+        # we announce the participant in the conversation
+        send_incident_participant_announcement_message(user_email, incident_id, db_session)
 
-            # we send the welcome messages to the participant
-            send_incident_welcome_participant_messages(user_email, incident_id, db_session)
+        # we send the welcome messages to the participant
+        send_incident_welcome_participant_messages(user_email, incident_id, db_session)
+
+    return participant
 
 
 @background_task

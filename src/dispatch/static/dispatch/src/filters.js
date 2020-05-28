@@ -55,6 +55,17 @@ Vue.filter("deslug", function(value) {
   }
 })
 
+Vue.filter("snakeToCamel", function(value) {
+  if (value) {
+    return value
+      .split("_")
+      .map(function(value) {
+        return value.charAt(0).toUpperCase() + value.substring(1)
+      })
+      .join(" ")
+  }
+})
+
 Vue.filter("commaString", function(value, key) {
   if (value) {
     return value

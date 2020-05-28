@@ -4,6 +4,8 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+import base64
+import json
 import logging
 
 import requests
@@ -24,12 +26,15 @@ from dispatch.plugins.bases import (
     DocumentResolverPlugin,
     AuthenticationProviderPlugin,
     TicketPlugin,
+    ContactPlugin,
 )
 
 from dispatch.route import service as route_service
 from dispatch.route.models import RouteRequest
 
 from dispatch.config import DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS, DISPATCH_JWT_SECRET
+
+from .config import DISPATCH_JWT_AUDIENCE, DISPATCH_JWT_EMAIL_OVERRIDE
 
 log = logging.getLogger(__name__)
 
@@ -72,20 +77,38 @@ class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
             status_code=HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"
         )
 
-        authorization: str = request.headers.get("Authorization")
+        authorization: str = request.headers.get(
+            "Authorization", request.headers.get("authorization")
+        )
         scheme, param = get_authorization_scheme_param(authorization)
         if not authorization or scheme.lower() != "bearer":
             raise credentials_exception
 
         token = authorization.split()[1]
-        key = requests.get(DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS).json()["keys"][0]
+
+        # Parse out the Key information. Add padding just in case
+        key_info = json.loads(base64.b64decode(token.split(".")[0] + "=========").decode("utf-8"))
+
+        # Grab all possible keys to account for key rotation and find the right key
+        keys = requests.get(DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS).json()["keys"]
+        for potential_key in keys:
+            if potential_key["kid"] == key_info["kid"]:
+                key = potential_key
 
         try:
-            data = jwt.decode(token, key)
+            # If DISPATCH_JWT_AUDIENCE is defined, the we must include audience in the decode
+            if DISPATCH_JWT_AUDIENCE:
+                data = jwt.decode(token, key, audience=DISPATCH_JWT_AUDIENCE)
+            else:
+                data = jwt.decode(token, key)
         except JWTError:
             raise credentials_exception
 
-        return data["email"]
+        # Support overriding where email is returned in the id token
+        if DISPATCH_JWT_EMAIL_OVERRIDE:
+            return data[DISPATCH_JWT_EMAIL_OVERRIDE]
+        else:
+            return data["email"]
 
 
 class DispatchTicketPlugin(TicketPlugin):
@@ -160,6 +183,23 @@ class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
         route_in = RouteRequest(**route_in)
         recommendation = route_service.get(db_session=db_session, route_in=route_in)
         return recommendation.documents
+
+
+class DispatchContactPlugin(ContactPlugin):
+    title = "Dispatch Plugin - Contact plugin"
+    slug = "dispatch-contact"
+    description = "Uses dispatch itself to resolve incident participants."
+    version = dispatch_plugin.__version__
+
+    author = "Netflix"
+    author_url = "https://github.com/netflix/dispatch.git"
+
+    def get(self, email, db_session=None):
+        return getattr(
+            individual_service.get_by_email(db_session=db_session, email=email),
+            "__dict__",
+            {"email": email, "fullname": email},
+        )
 
 
 class DispatchParticipantResolverPlugin(ParticipantPlugin):

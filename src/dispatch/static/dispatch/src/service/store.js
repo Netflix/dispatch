@@ -1,5 +1,4 @@
 import ServiceApi from "@/service/api"
-
 import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 

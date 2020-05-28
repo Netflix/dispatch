@@ -81,7 +81,7 @@
                     :error-messages="errors"
                     :success="valid"
                     type="number"
-                    hint="Number of hours to send a status report reminder to the incident commander."
+                    hint="Number of hours to send a tactical report reminder to the incident commander."
                     clearable
                     required
                   />

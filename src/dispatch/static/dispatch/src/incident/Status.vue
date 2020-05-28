@@ -49,17 +49,17 @@
                       <v-col cols="12">
                         <v-card outlined>
                           <v-card-text>
-                            <div class="title text--primary">Status</div>
-                            <div v-if="item.last_status_report">
-                              <p>As of {{ item.last_status_report.created_at | formatDate }}</p>
+                            <div class="title text--primary">Last Tactical Report</div>
+                            <div v-if="item.last_tactical_report">
+                              <p>As of {{ item.last_tactical_report.created_at | formatDate }}</p>
                               <p class="subtitle-1 text--primary">Conditions</p>
-                              <div>{{ item.last_status_report.conditions }}</div>
+                              <div>{{ item.last_tactical_report.details.conditions }}</div>
                               <p class="subtitle-1 text--primary">Actions</p>
-                              <div>{{ item.last_status_report.actions }}</div>
+                              <div>{{ item.last_tactical_report.details.actions }}</div>
                               <p class="subtitle-1 text--primary">Needs</p>
-                              <div>{{ item.last_status_report.needs }}</div>
+                              <div>{{ item.last_tactical_report.details.needs }}</div>
                             </div>
-                            <div v-else>No status report available.</div>
+                            <div v-else>No tactical report available.</div>
                           </v-card-text>
                         </v-card>
                       </v-col>
@@ -108,7 +108,6 @@ export default {
 
   mounted() {
     this.getActive()
-    this.joinIncident()
   },
 
   methods: {
