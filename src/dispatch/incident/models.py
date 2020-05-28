@@ -136,22 +136,30 @@ class Incident(Base, TimeStampMixin):
                     return d
 
     @hybrid_property
-    def last_tactical_report(self):
+    def tactical_reports(self):
         if self.reports:
             tactical_reports = [
                 report for report in self.reports if report.type == ReportTypes.tactical_report
             ]
-            if tactical_reports:
-                return sorted(tactical_reports, key=lambda r: r.created_at)[-1]
+            return tactical_reports
 
     @hybrid_property
-    def last_executive_report(self):
+    def last_tactical_report(self):
+        if self.tactical_reports:
+            return sorted(self.tactical_reports, key=lambda r: r.created_at)[-1]
+
+    @hybrid_property
+    def executive_reports(self):
         if self.reports:
             executive_reports = [
                 report for report in self.reports if report.type == ReportTypes.executive_report
             ]
-            if executive_reports:
-                return sorted(executive_reports, key=lambda r: r.created_at)[-1]
+            return executive_reports
+
+    @hybrid_property
+    def last_executive_report(self):
+        if self.executive_reports:
+            return sorted(self.executive_reports, key=lambda r: r.created_at)[-1]
 
     @hybrid_property
     def primary_team(self):
