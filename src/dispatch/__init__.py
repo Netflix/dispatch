@@ -2,11 +2,11 @@ import os
 import os.path
 from subprocess import check_output
 
+
 try:
     VERSION = __import__("pkg_resources").get_distribution("dispatch").version
 except Exception:
     VERSION = "unknown"
-
 
 # sometimes we pull version info before dispatch is totally installed
 try:
@@ -29,7 +29,7 @@ try:
         RecommendationAccuracy,  # noqa lgtm[py/unused-import]
     )
     from dispatch.service.models import Service  # noqa lgtm[py/unused-import]
-    from dispatch.status_report.models import StatusReport  # noqa lgtm[py/unused-import]
+    from dispatch.report.models import Report  # noqa lgtm[py/unused-import]
     from dispatch.storage.models import Storage  # noqa lgtm[py/unused-import]
     from dispatch.tag.models import Tag  # noqa lgtm[py/unused-import]
     from dispatch.task.models import Task  # noqa lgtm[py/unused-import]

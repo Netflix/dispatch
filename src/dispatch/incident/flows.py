@@ -78,7 +78,7 @@ from .messaging import (
     send_incident_resources_ephemeral_message_to_participant,
     send_incident_review_document_notification,
     send_incident_welcome_participant_messages,
-    send_incident_status_report_reminder,
+    send_incident_tactical_report_reminder,
 )
 from .models import Incident, IncidentStatus
 
@@ -133,7 +133,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
         incident.incident_priority.name,
         incident.commander.email,
         incident.reporter.email,
-        incident_type_plugin_metadata
+        incident_type_plugin_metadata,
     )
     ticket.update({"resource_type": plugin.slug})
 
@@ -731,8 +731,8 @@ def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_se
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    # we remind the incident commander to write a status report
-    send_incident_status_report_reminder(incident)
+    # we remind the incident commander to write a tactical report
+    send_incident_tactical_report_reminder(incident)
 
     # we update the status of the external ticket
     update_incident_ticket(
@@ -752,8 +752,8 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     # we set the stable time
     incident.stable_at = datetime.utcnow()
 
-    # we remind the incident commander to write a status report
-    send_incident_status_report_reminder(incident)
+    # we remind the incident commander to write a tactical report
+    send_incident_tactical_report_reminder(incident)
 
     # we update the incident cost
     incident_cost = incident_service.calculate_cost(incident_id, db_session)

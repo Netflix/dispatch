@@ -31,7 +31,7 @@ from dispatch.messaging import (
     INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
     INCIDENT_RESOURCES_MESSAGE,
     INCIDENT_REVIEW_DOCUMENT_NOTIFICATION,
-    INCIDENT_STATUS_REPORT_REMINDER,
+    INCIDENT_TACTICAL_REPORT_REMINDER,
     INCIDENT_COMMANDER,
     MessageType,
 )
@@ -49,25 +49,25 @@ from dispatch.plugins.base import plugins
 log = logging.getLogger(__name__)
 
 
-def send_incident_status_report_reminder(incident: Incident):
-    """Sends the incident commander a direct message indicating that they should complete a status report."""
+def send_incident_tactical_report_reminder(incident: Incident):
+    """Sends the incident commander a direct message indicating that they should complete a tactical report."""
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
-    status_report_command = convo_plugin.get_command_name(ConversationCommands.status_report)
+    tactical_report_command = convo_plugin.get_command_name(ConversationCommands.tactical_report)
 
     items = [
         {
             "name": incident.name,
             "ticket_weblink": incident.ticket.weblink,
             "title": incident.title,
-            "command": status_report_command,
+            "command": tactical_report_command,
         }
     ]
 
     convo_plugin.send_direct(
         incident.commander.email,
-        "Incident Status Report Reminder",
-        INCIDENT_STATUS_REPORT_REMINDER,
-        MessageType.incident_status_report,
+        "Incident Tactical Report Reminder",
+        INCIDENT_TACTICAL_REPORT_REMINDER,
+        MessageType.incident_tactical_report,
         items=items,
     )
 

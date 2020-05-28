@@ -17,7 +17,7 @@ class IncidentPriority(Base):
     # Lower orders will be shown first.
     view_order = Column(Integer, default=9999)
 
-    # number of hours after which a status report should be sent.
+    # number of hours after which a tactical report should be sent.
     status_reminder = Column(Integer, default=24)
     description = Column(String)
 

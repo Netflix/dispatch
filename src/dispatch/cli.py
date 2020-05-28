@@ -56,20 +56,21 @@ def list_plugins():
 def sync_triggers():
     from sqlalchemy_searchable import sync_trigger
 
-    sync_trigger(engine, "tag", "search_vector", ["name"])
     sync_trigger(engine, "definition", "search_vector", ["text"])
+    sync_trigger(engine, "document", "search_vector", ["name"])
     sync_trigger(engine, "incident", "search_vector", ["name", "title", "description"])
+    sync_trigger(engine, "incident_type", "search_vector", ["name", "description"])
     sync_trigger(
         engine, "individual_contact", "search_vector", ["name", "title", "company", "notes"]
     )
+    sync_trigger(engine, "plugin", "search_vector", ["title"])
+    sync_trigger(engine, "policy", "search_vector", ["name", "description"])
+    sync_trigger(engine, "report", "search_vector", ["details_raw"])
+    sync_trigger(engine, "service", "search_vector", ["name"])
+    sync_trigger(engine, "tag", "search_vector", ["name"])
+    sync_trigger(engine, "task", "search_vector", ["description"])
     sync_trigger(engine, "team_contact", "search_vector", ["name", "company", "notes"])
     sync_trigger(engine, "term", "search_vector", ["text"])
-    sync_trigger(engine, "document", "search_vector", ["name"])
-    sync_trigger(engine, "incident_type", "search_vector", ["name", "description"])
-    sync_trigger(engine, "policy", "search_vector", ["name", "description"])
-    sync_trigger(engine, "service", "search_vector", ["name"])
-    sync_trigger(engine, "task", "search_vector", ["description"])
-    sync_trigger(engine, "plugin", "search_vector", ["title"])
 
 
 @dispatch_cli.group("database")
@@ -188,7 +189,9 @@ def drop_database(yes):
         drop_database(str(config.SQLALCHEMY_DATABASE_URI))
         click.secho("Success.", fg="green")
 
-    if click.confirm(f"Are you sure you want to drop: '{config.DATABASE_HOSTNAME}:{config.DATABASE_NAME}'?"):
+    if click.confirm(
+        f"Are you sure you want to drop: '{config.DATABASE_HOSTNAME}:{config.DATABASE_NAME}'?"
+    ):
         drop_database(str(config.SQLALCHEMY_DATABASE_URI))
         click.secho("Success.", fg="green")
 
