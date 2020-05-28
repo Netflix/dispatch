@@ -42,6 +42,24 @@ def filter_comments(comments: List[Any]):
     return [c for c in comments if parse_comment(c["content"])["assignees"]]
 
 
+def find_urls(text: str) -> List[str]:
+    """Finds a url in a text blob."""
+    # findall() has been used
+    # with valid conditions for urls in string
+    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+    url = re.findall(regex, text)
+    return [x[0] for x in url]
+
+
+def get_tickets(replies: List[dict]):
+    """Fetches urls/tickets from task replies."""
+    tickets = []
+    for r in replies:
+        for url in find_urls(r["content"]):
+            tickets.append({"web_link": url})
+    return tickets
+
+
 # NOTE We have to use `displayName` instead of `emailAddress` because it's
 # not visible to us. We should ask rcerda about why that might be.
 def list_tasks(client: Any, file_id: str):
@@ -58,6 +76,7 @@ def list_tasks(client: Any, file_id: str):
         status = get_task_status(t)
         assignees = get_assignees(t["content"])
         description = (t.get("quotedFileContent", {}).get("value", ""),)
+        tickets = get_tickets(t["replies"])
 
         task_meta = {
             "task": {
@@ -67,6 +86,7 @@ def list_tasks(client: Any, file_id: str):
                 "owner": t["author"]["displayName"],
                 "created_at": t["createdTime"],
                 "assignees": assignees,
+                "tickets": tickets,
                 "web_link": f'https://docs.google.com/a/{GOOGLE_DOMAIN}/document/d/{file_id}/edit?disco={t["id"]}',
             }
         }

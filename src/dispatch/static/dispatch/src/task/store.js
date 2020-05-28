@@ -35,6 +35,7 @@ const state = {
       filters: {
         creator: [],
         assignee: [],
+        incident: [],
         incident_type: [],
         incident_priority: [],
         status: []
