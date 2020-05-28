@@ -37,7 +37,11 @@ def get_tasks(
         fields=fields,
         values=values,
         ops=ops,
-        join_attrs=[("incident_type", "incident"), ("incident_priority", "incident")],
+        join_attrs=[
+            ("incident", "incident"),
+            ("incident_type", "incident"),
+            ("incident_priority", "incident"),
+        ],
     )
 
 

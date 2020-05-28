@@ -125,6 +125,7 @@ export default {
       "table.options.descending",
       "table.options.filters.creator",
       "table.options.filters.assignee",
+      "table.options.filters.incident",
       "table.options.filters.incident_type",
       "table.options.filters.incident_priority",
       "table.options.filters.status",
@@ -152,6 +153,7 @@ export default {
         vm.descending,
         vm.creator,
         vm.assignee,
+        vm.incident,
         vm.incident_type,
         vm.incident_priority,
         vm.status
