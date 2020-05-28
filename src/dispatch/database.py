@@ -197,7 +197,6 @@ def search_filter_sort_paginate(
         items_per_page = None
 
     query, pagination = apply_pagination(query, page_number=page, page_size=items_per_page)
-
     return {
         "items": query.all(),
         "itemsPerPage": pagination.page_size,

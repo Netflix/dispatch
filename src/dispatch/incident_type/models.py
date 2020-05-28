@@ -1,12 +1,15 @@
 from typing import List, Optional
+from pydantic import validator
 
 from sqlalchemy import Column, ForeignKey, Integer, String, JSON
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
 from dispatch.enums import Visibility
 from dispatch.models import DispatchBase
+from dispatch.plugin.models import PluginMetadata
 
 
 class IncidentType(Base):
@@ -15,7 +18,7 @@ class IncidentType(Base):
     slug = Column(String)
     description = Column(String)
     visibility = Column(String, default=Visibility.open)
-    plugin_metadata = Column(JSON, nullable=False, default=dict, server_default="{}")
+    plugin_metadata = Column(JSON, default=[])
 
     template_document_id = Column(Integer, ForeignKey("document.id"))
     template_document = relationship("Document")
@@ -24,6 +27,12 @@ class IncidentType(Base):
     commander_service = relationship("Service")
 
     search_vector = Column(TSVectorType("name", "description"))
+
+    @hybrid_method
+    def get_meta(self, slug):
+        for m in self.plugin_metadata:
+            if m["slug"] == slug:
+                return m
 
 
 class Document(DispatchBase):
@@ -52,6 +61,7 @@ class IncidentTypeBase(DispatchBase):
 class IncidentTypeCreate(IncidentTypeBase):
     template_document: Optional[Document]
     commander_service: Optional[Service]
+    plugin_metadata: List[PluginMetadata] = []
 
 
 class IncidentTypeUpdate(IncidentTypeBase):
@@ -59,6 +69,7 @@ class IncidentTypeUpdate(IncidentTypeBase):
     visibility: Optional[Visibility]
     template_document: Optional[Document]
     commander_service: Optional[Service]
+    plugin_metadata: List[PluginMetadata] = []
 
 
 class IncidentTypeRead(IncidentTypeBase):
@@ -66,7 +77,11 @@ class IncidentTypeRead(IncidentTypeBase):
     visibility: Optional[Visibility]
     template_document: Optional[Document]
     commander_service: Optional[Service]
-    plugin_metadata: Optional[dict]
+    plugin_metadata: List[PluginMetadata] = []
+
+    @validator("plugin_metadata", pre=True)
+    def replace_none_with_empty_list(cls, value):
+        return [] if value is None else value
 
 
 class IncidentTypeNested(IncidentTypeBase):
