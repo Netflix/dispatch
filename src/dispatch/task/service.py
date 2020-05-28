@@ -4,6 +4,8 @@ from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import or_
 
+from dispatch.participant.models import Participant
+from dispatch.ticket.models import Ticket
 from .models import Task, TaskStatus, TaskUpdate
 
 
@@ -58,10 +60,11 @@ def get_overdue_tasks(*, db_session) -> List[Optional[Task]]:
 def create(
     *,
     db_session,
-    creator: str,
-    assignees: str,
+    creator: Participant,
+    assignees: List[Participant],
     description: str,
     status: TaskStatus,
+    tickets: List[Ticket],
     resource_id: str,
     resource_type: str,
     weblink: str,
@@ -72,6 +75,7 @@ def create(
         assignees=assignees,
         description=description,
         status=status,
+        tickets=tickets,
         resource_id=resource_id,
         resource_type=resource_type,
         weblink=weblink,
