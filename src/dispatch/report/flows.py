@@ -187,7 +187,7 @@ def create_executive_report(
         next_steps=next_steps,
         previous_reports="\n".join(previous_executive_reports),
         commander_fullname=incident.commander.name,
-        commander_mobile_phone=incident.commander.mobile_phone,
+        commander_weblink=incident.commander.weblink,
     )
 
     # we send the executive report to the distribution lists
