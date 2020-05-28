@@ -1,7 +1,7 @@
 """Adds task ticket association table
 
 Revision ID: a57934336710
-Revises: 5693756fd192
+Revises: cfd62f719c84
 Create Date: 2020-05-27 14:30:41.249023
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "a57934336710"
-down_revision = "5693756fd192"
+down_revision = "cfd62f719c84"
 branch_labels = None
 depends_on = None
 
