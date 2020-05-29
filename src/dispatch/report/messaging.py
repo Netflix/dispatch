@@ -46,7 +46,7 @@ def send_tactical_report_to_conversation(
 def send_executive_report_to_notification_group(
     incident_id: int, executive_report: Report, db_session: SessionLocal,
 ):
-    """Sends an executive report to a distribution list."""
+    """Sends an executive report to the notifications group."""
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 

@@ -192,7 +192,7 @@ def create_executive_report(
         commander_weblink=incident.commander.weblink,
     )
 
-    # we send the executive report to the notifications lists
+    # we send the executive report to the notifications group
     send_executive_report_to_notification_group(incident_id, executive_report, db_session)
 
     return executive_report

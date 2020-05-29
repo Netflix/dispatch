@@ -201,11 +201,6 @@ The following conditions, actions, and needs summarize the current status of the
     "\n", " "
 ).strip()
 
-INCIDENT_EXECUTIVE_REPORT_DESCRIPTION = """
-The following summarizes the status of the incident.""".replace(
-    "\n", " "
-).strip()
-
 INCIDENT_NEW_ROLE_DESCRIPTION = """
 {{assigner_fullname}} has assigned the role of {{assignee_role}} to {{assignee_fullname}}.
 Please, contact {{assignee_firstname}} about any questions or concerns.""".replace(
