@@ -22,6 +22,7 @@ from .config import (
 class MessageType(str, Enum):
     incident_daily_summary = "incident-daily-summary"
     incident_daily_summary_no_incidents = "incident-daily-summary-no-incidents"
+    incident_executive_report = "incident-executive-report"
     incident_notification = "incident-notification"
     incident_participant_welcome = "incident-participant-welcome"
     incident_resources_message = "incident-resources-message"
@@ -200,6 +201,11 @@ The following conditions, actions, and needs summarize the current status of the
     "\n", " "
 ).strip()
 
+INCIDENT_EXECUTIVE_REPORT_DESCRIPTION = """
+The following summarizes the status of the incident.""".replace(
+    "\n", " "
+).strip()
+
 INCIDENT_NEW_ROLE_DESCRIPTION = """
 {{assigner_fullname}} has assigned the role of {{assignee_role}} to {{assignee_fullname}}.
 Please, contact {{assignee_firstname}} about any questions or concerns.""".replace(
@@ -367,6 +373,13 @@ INCIDENT_TACTICAL_REPORT_REMINDER = [
         "text": INCIDENT_TACTICAL_REPORT_REMINDER_DESCRIPTION,
     },
     INCIDENT_TITLE,
+]
+
+INCIDENT_EXECUTIVE_REPORT = [
+    {"title": "Incident Title", "text": "{{title}}"},
+    {"title": "Current Status", "text": "{{current_status}}"},
+    {"title": "Overview", "text": "{{overview}}"},
+    {"title": "Next Steps", "text": "{{next_steps}}"},
 ]
 
 INCIDENT_TASK_REMINDER = [

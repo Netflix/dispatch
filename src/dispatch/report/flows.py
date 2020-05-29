@@ -3,7 +3,6 @@ import logging
 from datetime import date
 
 from dispatch.config import (
-    INCIDENT_PLUGIN_CONVERSATION_SLUG,
     INCIDENT_PLUGIN_DOCUMENT_SLUG,
     INCIDENT_PLUGIN_STORAGE_SLUG,
     INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT,
@@ -19,8 +18,11 @@ from dispatch.plugins.base import plugins
 from dispatch.document import service as document_service
 from dispatch.document.models import DocumentCreate
 
-
 from .enums import ReportTypes
+from .messaging import (
+    send_tactical_report_to_conversation,
+    send_executive_report_to_notification_group,
+)
 from .models import ReportCreate
 from .service import create, get_all_by_incident_id_and_type
 
@@ -190,27 +192,7 @@ def create_executive_report(
         commander_weblink=incident.commander.weblink,
     )
 
-    # we send the executive report to the distribution lists
-    # send_most_recent_executive_report_to_distribution_lists(incident_id, db_session)
+    # we send the executive report to the notifications lists
+    send_executive_report_to_notification_group(incident_id, executive_report, db_session)
 
     return executive_report
-
-
-def send_tactical_report_to_conversation(
-    incident_id: int, conditions: str, actions: str, needs: str, db_session: SessionLocal
-):
-    """Sends a tactical report to the conversation."""
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
-    convo_plugin.send(
-        incident.conversation.channel_id,
-        "Incident Tactical Report",
-        INCIDENT_TACTICAL_REPORT,
-        notification_type=MessageType.incident_tactical_report,
-        persist=True,
-        conditions=conditions,
-        actions=actions,
-        needs=needs,
-    )

@@ -58,9 +58,10 @@ def create_html_message(recipient: str, subject: str, body: str) -> Dict:
 def get_template(message_type: MessageType):
     """Fetches the correct template based on the message type."""
     template_map = {
+        MessageType.incident_executive_report: ("executive_report.html", None),
         MessageType.incident_notification: ("notification.html", None),
-        MessageType.incident_tactical_report: ("tactical_report.html", None),
         MessageType.incident_participant_welcome: ("notification.html", None),
+        MessageType.incident_tactical_report: ("tactical_report.html", None),
         MessageType.incident_task_reminder: (
             "task_notification.html",
             INCIDENT_TASK_REMINDER_DESCRIPTION,
@@ -164,6 +165,5 @@ class GoogleGmailConversationPlugin(ConversationPlugin):
                 message_template, notification_type, items, **kwargs
             )
 
-        # render_email("task-reminder.html", message_body)
         html_message = create_html_message(user, subject, message_body)
         return send_message(client, html_message)
