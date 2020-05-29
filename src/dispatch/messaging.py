@@ -29,6 +29,7 @@ class MessageType(str, Enum):
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
+    incident_participant_suggested_reading = "incident-participant-suggested-reading"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -166,6 +167,12 @@ incident Slack channel.""".replace(
 INCIDENT_WELCOME_CONVERSATION_COPY = """
 This is the incident conversation. Please pull in any
 individuals you feel may be able to help resolve this incident.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION = """
+Dispatch thinks the following documents are
+relevant to this incident.""".replace(
     "\n", " "
 ).strip()
 
@@ -316,6 +323,12 @@ INCIDENT_STATUS_CHANGE = {
 INCIDENT_PRIORITY_CHANGE = {
     "title": "Incident Priority Change",
     "text": INCIDENT_PRIORITY_CHANGE_DESCRIPTION,
+}
+
+INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM = {
+    "title": "{{name}}",
+    "title_link": "{{weblink}}",
+    "text": "{{description}}",
 }
 
 INCIDENT_PARTICIPANT_WELCOME = {

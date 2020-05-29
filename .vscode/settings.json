@@ -29,4 +29,5 @@
       "source.organizeImports": false
     }
   },
+  "python.pythonPath": "~/.pyenv/versions/dispatch/bin/python"
 }

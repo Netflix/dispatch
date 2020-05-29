@@ -100,8 +100,8 @@ class DocumentRead(DocumentBase):
         return v
 
 
-class DocumentNested(DocumentBase):
-    id: int
+class DocumentNested(DocumentRead):
+    pass
 
 
 class DocumentPagination(DispatchBase):
