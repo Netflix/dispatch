@@ -43,7 +43,7 @@ def send_tactical_report_to_conversation(
     log.debug("Tactical report sent to conversation {incident.conversation.channel_id}.")
 
 
-def send_executive_report_to_notification_group(
+def send_executive_report_to_notifications_group(
     incident_id: int, executive_report: Report, db_session: SessionLocal,
 ):
     """Sends an executive report to the notifications group."""
