@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "NODE_ENV=dev NODE_OPTIONS='--max-http-header-size=100000' && vue-cli-service serve",
+    "serve": "NODE_ENV=dev NODE_OPTIONS='--max-http-header-size=100000' vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },

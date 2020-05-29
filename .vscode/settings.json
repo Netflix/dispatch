@@ -11,6 +11,7 @@
     "*.egg-info": true,
     "src/dispatch/static/dispatch/dist/": true
   },
+  "editor.formatOnSave": true,
   "search.followSymlinks": false,
   "files.trimTrailingWhitespace": true,
   "files.trimFinalNewlines": true,
