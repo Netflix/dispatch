@@ -207,8 +207,7 @@ Please, contact {{assignee_firstname}} about any questions or concerns.""".repla
     "\n", " "
 ).strip()
 
-INCIDENT_TACTICAL_REPORT_REMINDER_DESCRIPTION = """You have not provided a tactical report for this incident recently.
-Consider providing one to inform participants of the current conditions, actions, and needs.
+INCIDENT_REPORT_REMINDER_DESCRIPTION = """You have not provided a {{report_type}} for this incident recently.
 You can use `{{command}}` in the conversation to assist you in writing one.""".replace(
     "\n", " "
 ).strip()
@@ -361,21 +360,22 @@ INCIDENT_TACTICAL_REPORT = [
     {"title": "Needs", "text": "{{needs}}"},
 ]
 
-INCIDENT_TACTICAL_REPORT_REMINDER = [
-    {
-        "title": "{{name}} Incident - Tactical Report Reminder",
-        "title_link": "{{ticket_weblink}}",
-        "text": INCIDENT_TACTICAL_REPORT_REMINDER_DESCRIPTION,
-    },
-    INCIDENT_TITLE,
-]
-
 INCIDENT_EXECUTIVE_REPORT = [
     {"title": "Incident Title", "text": "{{title}}"},
     {"title": "Current Status", "text": "{{current_status}}"},
     {"title": "Overview", "text": "{{overview}}"},
     {"title": "Next Steps", "text": "{{next_steps}}"},
 ]
+
+INCIDENT_REPORT_REMINDER = [
+    {
+        "title": "{{name}} Incident - {{report_type}} Reminder",
+        "title_link": "{{ticket_weblink}}",
+        "text": INCIDENT_REPORT_REMINDER_DESCRIPTION,
+    },
+    INCIDENT_TITLE,
+]
+
 
 INCIDENT_TASK_REMINDER = [
     {"title": "Incident - {{ name }}", "text": "{{ title }}"},

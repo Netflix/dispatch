@@ -8,11 +8,9 @@ from dispatch.config import (
     INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT,
     INCIDENT_STORAGE_EXECUTIVE_REPORT_FILE_ID,
 )
-from dispatch.database import SessionLocal
 from dispatch.decorators import background_task
 from dispatch.event import service as event_service
 from dispatch.incident import service as incident_service
-from dispatch.messaging import INCIDENT_TACTICAL_REPORT, MessageType
 from dispatch.participant import service as participant_service
 from dispatch.plugins.base import plugins
 from dispatch.document import service as document_service
