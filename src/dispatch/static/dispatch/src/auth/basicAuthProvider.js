@@ -1,5 +1,6 @@
 import store from "@/store"
-export function login(to, from, next) {
+
+function login(to, from, next) {
   let token = localStorage.getItem("token")
 
   if (token) {
@@ -15,6 +16,11 @@ export function login(to, from, next) {
   }
 }
 
-export function logout(next) {
+function logout(next) {
   next()
+}
+
+export default {
+  login,
+  logout
 }

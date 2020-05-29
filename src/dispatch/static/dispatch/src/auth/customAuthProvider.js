@@ -1,7 +1,12 @@
-export function login(to, from, next) {
+function login(to, from, next) {
   next()
 }
 
-export function logout(next) {
+function logout(next) {
   next()
+}
+
+export default {
+  login,
+  logout
 }
