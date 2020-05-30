@@ -64,6 +64,25 @@
                         </v-card>
                       </v-col>
                     </v-row>
+                    <v-row dense>
+                      <v-col cols="12">
+                        <v-card outlined>
+                          <v-card-text>
+                            <div class="title text--primary">Last Executive Report</div>
+                            <div v-if="item.last_executive_report">
+                              <p>As of {{ item.last_executive_report.created_at | formatDate }}</p>
+                              <p class="subtitle-1 text--primary">Current Status</p>
+                              <div>{{ item.last_executive_report.details.current_status }}</div>
+                              <p class="subtitle-1 text--primary">Overview</p>
+                              <div>{{ item.last_executive_report.details.overview }}</div>
+                              <p class="subtitle-1 text--primary">Next Steps</p>
+                              <div>{{ item.last_executive_report.details.next_steps }}</div>
+                            </div>
+                            <div v-else>No executive report available.</div>
+                          </v-card-text>
+                        </v-card>
+                      </v-col>
+                    </v-row>
                   </v-container>
                 </td>
               </template>
