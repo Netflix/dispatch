@@ -44,8 +44,6 @@ from dispatch.document.service import get_by_incident_id_and_resource_type as ge
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import Incident, IncidentRead
 
-# from dispatch.incident_type.models import IncidentTypeRead
-# from dispatch.incident_priority.models import IncidentPriorityRead
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.plugins.base import plugins
@@ -209,8 +207,6 @@ def send_incident_suggested_reading_messages(
     suggested_documents = get_suggested_documents(
         db_session, incident.incident_type, incident.incident_priority, incident.description
     )
-
-    print(suggested_documents)
 
     if suggested_documents:
         # we send the ephemeral message
