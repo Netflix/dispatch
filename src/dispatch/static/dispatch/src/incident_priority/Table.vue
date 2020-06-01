@@ -69,8 +69,10 @@ export default {
       headers: [
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
-        { text: "View Order", value: "view_order", sortable: true },
         { text: "Page Commander", value: "page_commander", sortable: true },
+        { text: "Tactical Report Reminder", value: "tactical_report_reminder", sortable: true },
+        { text: "Executive Report Reminder", value: "executive_report_reminder", sortable: true },
+        { text: "View Order", value: "view_order", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
     }

@@ -11,15 +11,16 @@ from dispatch.models import DispatchBase
 class IncidentPriority(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
+    description = Column(String)
     page_commander = Column(Boolean, default=False)
+
+    # number of hours after which reports should be sent.
+    tactical_report_reminder = Column(Integer, default=24)
+    executive_report_reminder = Column(Integer, default=24)
 
     # This column is used to control how priorities should be displayed.
     # Lower orders will be shown first.
     view_order = Column(Integer, default=9999)
-
-    # number of hours after which a tactical report should be sent.
-    status_reminder = Column(Integer, default=24)
-    description = Column(String)
 
     search_vector = Column(TSVectorType("name", "description"))
 
@@ -27,10 +28,11 @@ class IncidentPriority(Base):
 # Pydantic models...
 class IncidentPriorityBase(DispatchBase):
     name: str
-    page_commander: Optional[StrictBool]
-    view_order: Optional[int]
-    status_reminder: Optional[int]
     description: Optional[str]
+    page_commander: Optional[StrictBool]
+    tactical_report_reminder: Optional[int]
+    executive_report_reminder: Optional[int]
+    view_order: Optional[int]
 
 
 class IncidentPriorityCreate(IncidentPriorityBase):

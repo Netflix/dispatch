@@ -19,20 +19,19 @@ from dispatch.config import (
 from dispatch.database import SessionLocal
 from dispatch.enums import Visibility
 from dispatch.messaging import (
+    INCIDENT_COMMANDER,
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
+    INCIDENT_NAME,
+    INCIDENT_NAME_WITH_ENGAGEMENT,
     INCIDENT_NEW_ROLE_NOTIFICATION,
     INCIDENT_NOTIFICATION,
     INCIDENT_NOTIFICATION_COMMON,
-    INCIDENT_NAME,
-    INCIDENT_NAME_WITH_ENGAGEMENT,
-    INCIDENT_PRIORITY_CHANGE,
-    INCIDENT_STATUS_CHANGE,
-    INCIDENT_TYPE_CHANGE,
     INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
+    INCIDENT_PRIORITY_CHANGE,
     INCIDENT_RESOURCES_MESSAGE,
     INCIDENT_REVIEW_DOCUMENT_NOTIFICATION,
-    INCIDENT_TACTICAL_REPORT_REMINDER,
-    INCIDENT_COMMANDER,
+    INCIDENT_STATUS_CHANGE,
+    INCIDENT_TYPE_CHANGE,
     MessageType,
 )
 
@@ -47,29 +46,6 @@ from dispatch.plugins.base import plugins
 
 
 log = logging.getLogger(__name__)
-
-
-def send_incident_tactical_report_reminder(incident: Incident):
-    """Sends the incident commander a direct message indicating that they should complete a tactical report."""
-    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
-    tactical_report_command = convo_plugin.get_command_name(ConversationCommands.tactical_report)
-
-    items = [
-        {
-            "name": incident.name,
-            "ticket_weblink": incident.ticket.weblink,
-            "title": incident.title,
-            "command": tactical_report_command,
-        }
-    ]
-
-    convo_plugin.send_direct(
-        incident.commander.email,
-        "Incident Tactical Report Reminder",
-        INCIDENT_TACTICAL_REPORT_REMINDER,
-        MessageType.incident_tactical_report,
-        items=items,
-    )
 
 
 def send_welcome_ephemeral_message_to_participant(
