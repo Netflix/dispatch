@@ -37,7 +37,7 @@
                     :error-messages="errors"
                     :success="valid"
                     label="Name"
-                    hint="a name for your incident priority."
+                    hint="A name for your incident priority."
                     clearable
                     required
                   />
@@ -73,15 +73,30 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Status Reminder" rules="required" immediate>
+                <ValidationProvider name="Tactical Report Reminder" rules="required" immediate>
                   <v-text-field
-                    v-model="status_reminder"
+                    v-model="tactical_report_reminder"
                     slot-scope="{ errors, valid }"
-                    label="Status Reminder"
+                    label="Tactical Report Reminder"
                     :error-messages="errors"
                     :success="valid"
                     type="number"
                     hint="Number of hours to send a tactical report reminder to the incident commander."
+                    clearable
+                    required
+                  />
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="Executive Report Reminder" rules="required" immediate>
+                  <v-text-field
+                    v-model="executive_report_reminder"
+                    slot-scope="{ errors, valid }"
+                    label="Executive Report Reminder"
+                    :error-messages="errors"
+                    :success="valid"
+                    type="number"
+                    hint="Number of hours to send an executive report reminder to the incident commander."
                     clearable
                     required
                   />
@@ -134,7 +149,8 @@ export default {
       "selected.name",
       "selected.view_order",
       "selected.page_commander",
-      "selected.status_reminder"
+      "selected.tactical_report_reminder",
+      "selected.executive_report_reminder"
     ])
   },
 

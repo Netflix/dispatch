@@ -344,11 +344,12 @@ def revision_database(
 def dispatch_scheduler():
     """Container for all dispatch scheduler commands."""
     # we need scheduled tasks to be imported
+    from .document.scheduled import sync_document_terms  # noqa
     from .incident.scheduled import daily_summary, auto_tagger  # noqa
+    from .report.scheduled import incident_report_reminders  # noqa
+    from .tag.scheduled import sync_tags  # noqa
     from .task.scheduled import sync_tasks, create_task_reminders  # noqa
     from .term.scheduled import sync_terms  # noqa
-    from .document.scheduled import sync_document_terms  # noqa
-    from .tag.scheduled import sync_tags  # noqa
 
 
 @dispatch_scheduler.command("list")

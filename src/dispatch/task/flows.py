@@ -77,7 +77,7 @@ def send_task_notification(conversation_id, message_template, assignees, descrip
         notification_text,
         message_template,
         notification_type,
-        task_assignees=[x.indiviual.email for x in assignees],
+        task_assignees=[x.individual.email for x in assignees],
         task_description=description,
         task_weblink=weblink,
     )
@@ -87,16 +87,12 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
     """Creates a new task in the database or updates an existing one."""
     incident_task = task_service.get_by_resource_id(db_session=db_session, resource_id=task["id"])
 
-    creator = incident_add_or_reactivate_participant_flow(
-        task["owner"], incident_id=incident.id, db_session=db_session
-    )
-
     assignees = []
     for a in task["assignees"]:
         assignees.append(
-            incident_add_or_reactivate_participant_flow(
+            db_session.merge(incident_add_or_reactivate_participant_flow(
                 a, incident_id=incident.id, db_session=db_session
-            )
+            ))
         )
 
     description = task["description"][0]
@@ -114,10 +110,12 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
         incident_task.status = status
         incident_task.assignees = assignees
         incident_task.tickets = tickets
-        db_session.add(incident_task)
-        db_session.commit()
     else:
         # we add the task to the incident
+        creator = incident_add_or_reactivate_participant_flow(
+            task["owner"], incident_id=incident.id, db_session=db_session
+        )
+
         task = task_service.create(
             db_session=db_session,
             creator=creator,
@@ -130,8 +128,8 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
             weblink=weblink,
         )
         incident.tasks.append(task)
-        db_session.add(incident)
-        db_session.commit()
+
+    db_session.commit()
 
     if notify:
         send_task_notification(
