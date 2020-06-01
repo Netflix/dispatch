@@ -15,9 +15,9 @@ from .drive import get_file, list_comments
 
 def get_assignees(content: str) -> List[str]:
     """Gets assignees from comment."""
-    regex = r"(?<=\+).*?(?=\@)"
-    matches = re.finditer(regex, content, re.DOTALL)
-    return [f"{m.group()}@{GOOGLE_DOMAIN}" for m in matches]
+    regex = r"\+([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)"
+    matches = re.findall(regex, content)
+    return [m for m in matches]
 
 
 def parse_comment(content: str) -> Dict:
