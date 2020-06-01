@@ -95,7 +95,7 @@ def list_tasks(client: Any, file_id: str):
                 "id": t["id"],
                 "status": status,
                 "description": description,
-                "owner": t["author"]["displayName"],
+                "owner": owner_email,
                 "created_at": t["createdTime"],
                 "assignees": assignees,
                 "tickets": tickets,
