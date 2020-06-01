@@ -79,6 +79,17 @@ def list_tasks(client: Any, file_id: str):
         description = (t.get("quotedFileContent", {}).get("value", ""),)
         tickets = get_tickets(t["replies"])
 
+        # this is a dirty hack because google doesn't return emailAddresses for comments
+        # complete with conflicting docs
+        # https://developers.google.com/drive/api/v2/reference/comments#resource
+        from dispatch.individual.models import IndividualContact
+        db_session = SessionLocal()
+        owner = db_session.query(IndiviualContact).filter(name == t["author"]["displayName"]).first()
+
+        owner_email = f"dispatch@{GOOGLE_DOMAIN}"
+        if owner:
+            owner_email = owner.email
+
         task_meta = {
             "task": {
                 "id": t["id"],
