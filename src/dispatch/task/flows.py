@@ -45,13 +45,27 @@ def create_reminder(db_session, assignee_email, tasks):
     email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
     message_template = INCIDENT_TASK_REMINDER
 
+    items = []
+    for t in tasks:
+        items.append(
+            {
+                "name": t.incident.name,
+                "title": t.incident.title,
+                "creator": t.creator.individual.name,
+                "priority": t.priority,
+                "created_at": t.created_at,
+                "resolve_by": t.resolve_by,
+                "weblink": t.weblink,
+            }
+        )
+
     notification_type = "incident-task-reminder"
     email_plugin.send(
         assignee_email,
         message_template,
         notification_type,
         name="Task Reminder",
-        items=tasks,
+        items=items,  # plugin expect dicts
     )
 
     # We currently think DM's might be too agressive
@@ -90,9 +104,11 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
     assignees = []
     for a in task["assignees"]:
         assignees.append(
-            db_session.merge(incident_add_or_reactivate_participant_flow(
-                a, incident_id=incident.id, db_session=db_session
-            ))
+            db_session.merge(
+                incident_add_or_reactivate_participant_flow(
+                    a, incident_id=incident.id, db_session=db_session
+                )
+            )
         )
 
     description = task["description"][0]
@@ -107,9 +123,24 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
     ]
 
     if incident_task:
-        incident_task.status = status
+        # allways update tickets and assignees
         incident_task.assignees = assignees
         incident_task.tickets = tickets
+
+        # only notify if it's newly resolved
+        if status == TaskStatus.resolved:
+            if incident_task.status != TaskStatus.resolved:
+                incident_task.status = status
+
+                if notify:
+                    send_task_notification(
+                        incident.conversation.channel_id,
+                        INCIDENT_TASK_RESOLVED_NOTIFICATION,
+                        assignees,
+                        description,
+                        weblink,
+                    )
+
     else:
         # we add the task to the incident
         creator = incident_add_or_reactivate_participant_flow(
@@ -129,13 +160,13 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
         )
         incident.tasks.append(task)
 
-    db_session.commit()
+        if notify:
+            send_task_notification(
+                incident.conversation.channel_id,
+                INCIDENT_TASK_NEW_NOTIFICATION,
+                assignees,
+                description,
+                weblink,
+            )
 
-    if notify:
-        send_task_notification(
-            incident.conversation.channel_id,
-            INCIDENT_TASK_NEW_NOTIFICATION,
-            assignees,
-            description,
-            weblink,
-        )
+    db_session.commit()

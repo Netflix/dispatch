@@ -84,9 +84,7 @@ def create_multi_message_body(
 
     master_map = []
     for item in items:
-        data = item.__dict__
-        data.update({"name": item.incident.name, "title": item.incident.title})
-        master_map.append(render_message_template(message_template, **data))
+        master_map.append(render_message_template(message_template, **item))
 
     kwargs.update(
         {
