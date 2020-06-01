@@ -72,9 +72,13 @@ def sync_tasks(db_session, incidents, notify: bool = False):
                     try:
                         create_or_update_task(db_session, incident, task["task"], notify=notify)
                     except Exception as e:
+                        log.exception(e)
                         sentry_sdk.capture_exception(e)
+                        raise e
             except Exception as e:
+                log.exception(e)
                 sentry_sdk.capture_exception(e)
+                raise e
 
 
 @scheduler.add(every(1).day, name="incident-daily-task-sync")
