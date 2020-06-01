@@ -55,8 +55,9 @@ def get_tickets(replies: List[dict]):
     """Fetches urls/tickets from task replies."""
     tickets = []
     for r in replies:
-        for url in find_urls(r["content"]):
-            tickets.append({"web_link": url})
+        if r.get("content"):
+            for url in find_urls(r["content"]):
+                tickets.append({"web_link": url})
     return tickets
 
 
