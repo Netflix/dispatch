@@ -214,10 +214,10 @@ You can use `{{command}}` in the conversation to assist you in writing one.""".r
 ).strip()
 
 INCIDENT_TASK_NEW_DESCRIPTION = """
-The following incident task has been created in the incident document.\n\n*Description:* {{task_description}}\n\n*Assignees:* {{task_assignees}}"""
+The following incident task has been created in the incident document.\n\n*Description:* {{task_description}}\n\n*Assignees:* {{task_assignees|join(',')}}"""
 
 INCIDENT_TASK_RESOLVED_DESCRIPTION = """
-The following incident task has been resolved in the incident document.\n\n*Description:* {{task_description}}\n\n*Assignees:* {{task_assignees}}"""
+The following incident task has been resolved in the incident document.\n\n*Description:* {{task_description}}\n\n*Assignees:* {{task_assignees|join(',')}}"""
 
 INCIDENT_TYPE_CHANGE_DESCRIPTION = """
 The incident type has been changed from *{{ incident_type_old }}* to *{{ incident_type_new }}*."""

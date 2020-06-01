@@ -34,11 +34,12 @@ def group_tasks_by_assignee(tasks):
     """Groups tasks by assignee."""
     grouped = defaultdict(lambda: [])
     for task in tasks:
-        grouped[task.assignees].append(task)
+        for a in task.assignees:
+            grouped[a.individual.email].append(task)
     return grouped
 
 
-def create_reminder(db_session, assignee, tasks):
+def create_reminder(db_session, assignee_email, tasks):
     """Contains the logic for incident task reminders."""
     # send email
     email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
@@ -46,7 +47,7 @@ def create_reminder(db_session, assignee, tasks):
 
     notification_type = "incident-task-reminder"
     email_plugin.send(
-        assignee.individual_contact.email,
+        assignee_email,
         message_template,
         notification_type,
         name="Task Reminder",
@@ -76,7 +77,7 @@ def send_task_notification(conversation_id, message_template, assignees, descrip
         notification_text,
         message_template,
         notification_type,
-        task_assignees=[x.indiviual_contact.email for x in assignees],
+        task_assignees=[x.indiviual.email for x in assignees],
         task_description=description,
         task_weblink=weblink,
     )
