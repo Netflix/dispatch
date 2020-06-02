@@ -10,6 +10,8 @@ import sqlalchemy as sa
 
 from dispatch.participant.flows import add_participant
 from dispatch.task import service as task_service
+from dispatch.individual.models import IndividualContact
+from dispatch.plugins.dispatch_google.config import GOOGLE_DOMAIN
 
 
 # revision identifiers, used by Alembic.
@@ -51,7 +53,13 @@ def upgrade():
                 print(f"Issue with assignee: {e} Reason: {ex}")
 
         try:
-            creator_participant = add_participant(creator, incident_id, db_session=session)
+            # fetch creator email
+            creator = session.query(IndiviualContact).filter(name == creator).first()
+
+            creator_email = f"dispatch@{GOOGLE_DOMAIN}"
+            if creator:
+                creator_email = creator.email
+            creator_participant = add_participant(creator_email, incident_id, db_session=session)
         except Exception as ex:
             print(f"Issue with creator: {creator} Reason: {ex}")
 
