@@ -70,15 +70,6 @@ import { parseISO } from "date-fns"
 export default {
   name: "IncidentOverviewFilterBar",
 
-  props: {
-    loading: {
-      type: Boolean,
-      default: function() {
-        return false
-      }
-    }
-  },
-
   methods: {
     fetchData() {
       let filterOptions = {}
@@ -116,6 +107,7 @@ export default {
 
       IncidentApi.getAll(filterOptions).then(response => {
         this.$emit("update", response.data.items)
+        this.$emit("loading", false)
       })
     }
   },

@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card :loading="loading">
     <v-card-title>Heatmap</v-card-title>
     <apexchart type="heatmap" height="350" :options="chartOptions" :series="series"></apexchart>
   </v-card>
