@@ -1,7 +1,7 @@
 """Migrates assignee and creator emails to participants.
 
 Revision ID: 5693756fd192
-Revises: 9b4a5ff08170
+Revises: 9eaa2a392dae
 Create Date: 2020-05-05 14:34:23.108821
 
 """
@@ -10,11 +10,13 @@ import sqlalchemy as sa
 
 from dispatch.participant.flows import add_participant
 from dispatch.task import service as task_service
+from dispatch.individual.models import IndividualContact
+from dispatch.plugins.dispatch_google.config import GOOGLE_DOMAIN
 
 
 # revision identifiers, used by Alembic.
 revision = "5693756fd192"
-down_revision = "9b4a5ff08170"
+down_revision = "9eaa2a392dae"
 branch_labels = None
 depends_on = None
 
@@ -45,15 +47,15 @@ def upgrade():
         emails = [e.strip() for e in assignees.split(",")]
         assignee_participants = []
         for e in emails:
-            try:
-                assignee_participants.append(add_participant(e, incident_id, db_session=session))
-            except Exception as ex:
-                print(f"Issue with assignee: {e} Reason: {ex}")
+            assignee_participants.append(add_participant(e, incident_id, db_session=session))
 
-        try:
-            creator_participant = add_participant(creator, incident_id, db_session=session)
-        except Exception as ex:
-            print(f"Issue with creator: {creator} Reason: {ex}")
+        # fetch creator email
+        creator = session.query(IndividualContact).filter(IndividualContact.name == creator).first()
+
+        creator_email = f"dispatch@{GOOGLE_DOMAIN}"
+        if creator:
+            creator_email = creator.email
+        creator_participant = add_participant(creator_email, incident_id, db_session=session)
 
         task = task_service.get(db_session=session, task_id=id)
         task.creator = creator_participant
