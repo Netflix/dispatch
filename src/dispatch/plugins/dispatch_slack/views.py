@@ -240,6 +240,7 @@ def list_tasks(incident_id: int, command: dict = None, db_session=None):
         )
 
         for task in tasks:
+            assignees = [a.individual.email for a in task.assignees]
             blocks.append(
                 {
                     "type": "section",
@@ -247,7 +248,7 @@ def list_tasks(incident_id: int, command: dict = None, db_session=None):
                         "type": "mrkdwn",
                         "text": (
                             f"*Description:* <{task.weblink}|{task.description}>\n"
-                            f"*Assignees:* {task.assignees}"
+                            f"*Assignees:* {", ".join(assignees)}"
                         ),
                     },
                 }
