@@ -1,7 +1,7 @@
 """Migrates the incident metadata json
 
 Revision ID: cfd62f719c84
-Revises: 5693756fd192
+Revises: 9b4a5ff08170
 Create Date: 2020-05-26 20:17:47.707953
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "cfd62f719c84"
-down_revision = "5693756fd192"
+down_revision = "9b4a5ff08170"
 branch_labels = None
 depends_on = None
 
