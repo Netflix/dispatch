@@ -248,7 +248,7 @@ def list_tasks(incident_id: int, command: dict = None, db_session=None):
                         "type": "mrkdwn",
                         "text": (
                             f"*Description:* <{task.weblink}|{task.description}>\n"
-                            f"*Assignees:* {", ".join(assignees)}"
+                            f"*Assignees:* {', '.join(assignees)}"
                         ),
                     },
                 }
