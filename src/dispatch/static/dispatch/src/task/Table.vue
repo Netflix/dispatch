@@ -32,7 +32,7 @@
             >
               <template v-slot:item.creator="{ item }">
                 <v-chip class="ma-2" pill small :href="item.creator.individual.weblink">
-                  {{ item.creator.individual.email }}
+                  {{ item.creator.individual.name }}
                 </v-chip>
               </template>
               <template v-slot:item.tickets="{ item }">
