@@ -90,6 +90,7 @@ def list_tasks(client: Any, file_id: str):
         owner_email = f"dispatch@{GOOGLE_DOMAIN}"
         if owner:
             owner_email = owner.email
+        db_session.close()
 
         task_meta = {
             "task": {
