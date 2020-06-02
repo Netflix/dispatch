@@ -13,6 +13,7 @@ try:
     from dispatch.conference.models import Conference  # noqa lgtm[py/unused-import]
     from dispatch.team.models import TeamContact  # noqa lgtm[py/unused-import]
     from dispatch.conversation.models import Conversation  # noqa lgtm[py/unused-import]
+    from dispatch.cost.models import Cost  # noqa lgtm[py/unused-import]
     from dispatch.definition.models import Definition  # noqa lgtm[py/unused-import]
     from dispatch.document.models import Document  # noqa lgtm[py/unused-import]
     from dispatch.event.models import Event  # noqa lgtm[py/unused-import]

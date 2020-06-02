@@ -25,6 +25,7 @@ from dispatch.config import INCIDENT_RESOURCE_FAQ_DOCUMENT, INCIDENT_RESOURCE_IN
 from dispatch.auth.models import UserRoles
 from dispatch.conference.models import ConferenceRead
 from dispatch.conversation.models import ConversationRead
+from dispatch.cost.models import CostRead
 from dispatch.database import Base
 from dispatch.document.models import DocumentRead
 from dispatch.enums import Visibility
@@ -69,7 +70,6 @@ class Incident(Base, TimeStampMixin):
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
     status = Column(String, default=IncidentStatus.active)
-    cost = Column(Float, default=0)
     visibility = Column(String, default=Visibility.open)
 
     # auto generated
@@ -176,6 +176,7 @@ class Incident(Base, TimeStampMixin):
     # resources
     conference = relationship("Conference", uselist=False, backref="incident")
     conversation = relationship("Conversation", uselist=False, backref="incident")
+    cost = relationship("Cost", uselist=False, backref="incident")
     documents = relationship("Document", lazy="subquery", backref="incident")
     events = relationship("Event", backref="incident")
     groups = relationship("Group", lazy="subquery", backref="incident")
@@ -230,7 +231,6 @@ class IncidentUpdate(IncidentBase):
 
 class IncidentRead(IncidentBase):
     id: int
-    cost: float = None
     name: str = None
     primary_team: Any
     primary_location: Any
@@ -248,6 +248,7 @@ class IncidentRead(IncidentBase):
     terms: Optional[List[Any]] = []  # any until we figure out circular imports
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
+    cost: Optional[CostRead] = None
     events: Optional[List[EventRead]] = []
     created_at: Optional[datetime] = None
     reported_at: Optional[datetime] = None
