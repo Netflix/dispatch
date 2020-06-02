@@ -54,7 +54,7 @@ def upgrade():
 
         try:
             # fetch creator email
-            creator = session.query(IndiviualContact).filter(name == creator).first()
+            creator = session.query(IndiviualContact).filter(IndividualContact.name == creator).first()
 
             creator_email = f"dispatch@{GOOGLE_DOMAIN}"
             if creator:
