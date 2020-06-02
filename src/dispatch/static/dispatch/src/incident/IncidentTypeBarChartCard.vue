@@ -81,7 +81,6 @@ export default {
     series() {
       let series = []
       let types = this.types
-      console.log(types)
       forEach(this.value, function(value) {
         let typeCounts = map(
           countBy(value, function(item) {

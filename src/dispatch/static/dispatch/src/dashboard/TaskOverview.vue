@@ -5,7 +5,7 @@
       <v-flex lg3 sm6 xs12> </v-flex>
       <v-flex lg3 sm6 xs12> </v-flex>
       <v-flex class="d-flex justify-end" lg3 sm6 xs12>
-        <task-dialog-filter @update="update" />
+        <task-dialog-filter @update="update" @loading="setLoading" />
       </v-flex>
     </v-layout>
     <v-layout row wrap>
@@ -79,7 +79,7 @@ export default {
   data() {
     return {
       tab: null,
-      loading: false,
+      loading: true,
       items: []
     }
   },
@@ -87,6 +87,9 @@ export default {
   methods: {
     update(data) {
       this.items = data
+    },
+    setLoading(data) {
+      this.loading = data
     }
   },
 
