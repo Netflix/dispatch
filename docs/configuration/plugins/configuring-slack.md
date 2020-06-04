@@ -138,9 +138,10 @@ reactions:write
 reminders:write
 remote_files:read
 team:read
+users.profile.get
+users.profile:read
 users:read
 users:read.email
-users.profile:read
 users:write
 ```
 
