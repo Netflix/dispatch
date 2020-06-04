@@ -85,12 +85,13 @@ def send_executive_report_to_notifications_group(
         subject=subject,
         name=subject,
         title=incident.title,
-        commander_fullname=incident.commander.name,
         current_status=executive_report.details.get("current_status"),
         overview=executive_report.details.get("overview"),
         next_steps=executive_report.details.get("next_steps"),
         weblink=executive_report.document.weblink,
         notifications_group=notification_group.email,
+        contact_fullname=incident.commander.name,
+        contact_weblink=incident.commander.weblink,
     )
 
     log.debug(f"Executive report sent to notifications group {notification_group.email}.")

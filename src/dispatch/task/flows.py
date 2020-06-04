@@ -39,7 +39,7 @@ def group_tasks_by_assignee(tasks):
     return grouped
 
 
-def create_reminder(db_session, assignee_email, tasks):
+def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact_weblink):
     """Contains the logic for incident task reminders."""
     # send email
     email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
@@ -64,7 +64,9 @@ def create_reminder(db_session, assignee_email, tasks):
         assignee_email,
         message_template,
         notification_type,
-        name="Task Reminder",
+        name="Incident Task Reminder",
+        contact_fullname=contact_fullname,
+        contact_weblink=contact_weblink,
         items=items,  # plugin expect dicts
     )
 
@@ -143,9 +145,11 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
 
     else:
         # we add the task to the incident
-        creator = db_session.merge(incident_add_or_reactivate_participant_flow(
-            task["owner"], incident_id=incident.id, db_session=db_session
-        ))
+        creator = db_session.merge(
+            incident_add_or_reactivate_participant_flow(
+                task["owner"], incident_id=incident.id, db_session=db_session
+            )
+        )
 
         task = task_service.create(
             db_session=db_session,
