@@ -29,7 +29,7 @@ def upgrade():
         sa.ForeignKeyConstraint(["incident_id"], ["incident.id"],),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_table(
+    pci_disclosure_fines_judgements = op.create_table(
         "pci_disclosure_fines_judgements",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("num_disclosed_records", sa.Integer(), nullable=True),
@@ -38,7 +38,58 @@ def upgrade():
         sa.Column("most_likely", sa.Integer(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_table(
+    op.bulk_insert(
+        pci_disclosure_fines_judgements,
+        [
+            {"id": 1, "num_disclosed_records": 1, "min": 0, "max": 10200, "most_likely": 100},
+            {"id": 2, "num_disclosed_records": 10, "min": 0, "max": 196000, "most_likely": 1600},
+            {"id": 3, "num_disclosed_records": 100, "min": 0, "max": 947500, "most_likely": 11500},
+            {
+                "id": 4,
+                "num_disclosed_records": 1000,
+                "min": 0,
+                "max": 2428500,
+                "most_likely": 43600,
+            },
+            {
+                "id": 5,
+                "num_disclosed_records": 10000,
+                "min": 0,
+                "max": 3622000,
+                "most_likely": 115500,
+            },
+            {
+                "id": 6,
+                "num_disclosed_records": 100000,
+                "min": 0,
+                "max": 9663000,
+                "most_likely": 434300,
+            },
+            {
+                "id": 7,
+                "num_disclosed_records": 1000000,
+                "min": 0,
+                "max": 15000000,
+                "most_likely": 541000,
+            },
+            {
+                "id": 8,
+                "num_disclosed_records": 10000000,
+                "min": 0,
+                "max": 148495000,
+                "most_likely": 9367000,
+            },
+            {
+                "id": 9,
+                "num_disclosed_records": 100000000,
+                "min": 0,
+                "max": 181000000,
+                "most_likely": 27422000,
+            },
+        ],
+    )
+
+    pci_disclosure_response_costs = op.create_table(
         "pci_disclosure_response_costs",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("num_disclosed_records", sa.Integer(), nullable=True),
@@ -47,7 +98,58 @@ def upgrade():
         sa.Column("most_likely", sa.Integer(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_table(
+    op.bulk_insert(
+        pci_disclosure_response_costs,
+        [
+            {"id": 1, "num_disclosed_records": 1, "min": 0, "max": 0, "most_likely": 0},
+            {"id": 2, "num_disclosed_records": 10, "min": 0, "max": 300, "most_likely": 100},
+            {"id": 3, "num_disclosed_records": 100, "min": 100, "max": 3000, "most_likely": 600},
+            {
+                "id": 4,
+                "num_disclosed_records": 1000,
+                "min": 1000,
+                "max": 25000,
+                "most_likely": 6000,
+            },
+            {
+                "id": 5,
+                "num_disclosed_records": 10000,
+                "min": 8000,
+                "max": 255000,
+                "most_likely": 63000,
+            },
+            {
+                "id": 6,
+                "num_disclosed_records": 100000,
+                "min": 80000,
+                "max": 2600000,
+                "most_likely": 663000,
+            },
+            {
+                "id": 7,
+                "num_disclosed_records": 1000000,
+                "min": 845000,
+                "max": 25600000,
+                "most_likely": 6425000,
+            },
+            {
+                "id": 8,
+                "num_disclosed_records": 10000000,
+                "min": 6730000,
+                "max": 255100000,
+                "most_likely": 63350000,
+            },
+            {
+                "id": 9,
+                "num_disclosed_records": 100000000,
+                "min": 66350000,
+                "max": 597700000,
+                "most_likely": 173960000,
+            },
+        ],
+    )
+
+    pii_disclosure_fines_judgements = op.create_table(
         "pii_disclosure_fines_judgements",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("num_disclosed_records", sa.Integer(), nullable=True),
@@ -56,7 +158,58 @@ def upgrade():
         sa.Column("most_likely", sa.Integer(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_table(
+    op.bulk_insert(
+        pii_disclosure_fines_judgements,
+        [
+            {"id": 1, "num_disclosed_records": 1, "min": 0, "max": 218000, "most_likely": 3600},
+            {"id": 2, "num_disclosed_records": 10, "min": 0, "max": 750000, "most_likely": 20000},
+            {"id": 3, "num_disclosed_records": 100, "min": 0, "max": 2500000, "most_likely": 40000},
+            {
+                "id": 4,
+                "num_disclosed_records": 1000,
+                "min": 0,
+                "max": 2700000,
+                "most_likely": 47000,
+            },
+            {
+                "id": 5,
+                "num_disclosed_records": 10000,
+                "min": 0,
+                "max": 8000000,
+                "most_likely": 172700,
+            },
+            {
+                "id": 6,
+                "num_disclosed_records": 100000,
+                "min": 0,
+                "max": 13000000,
+                "most_likely": 580000,
+            },
+            {
+                "id": 7,
+                "num_disclosed_records": 1000000,
+                "min": 0,
+                "max": 25000000,
+                "most_likely": 788000,
+            },
+            {
+                "id": 8,
+                "num_disclosed_records": 10000000,
+                "min": 0,
+                "max": 148500000,
+                "most_likely": 13777000,
+            },
+            {
+                "id": 9,
+                "num_disclosed_records": 100000000,
+                "min": 0,
+                "max": 181000000,
+                "most_likely": 31585000,
+            },
+        ],
+    )
+
+    pii_disclosure_response_costs = op.create_table(
         "pii_disclosure_response_costs",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("num_disclosed_records", sa.Integer(), nullable=True),
@@ -65,6 +218,51 @@ def upgrade():
         sa.Column("most_likely", sa.Integer(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.bulk_insert(
+        pii_disclosure_response_costs,
+        [
+            {"id": 1, "num_disclosed_records": 1, "min": 1, "max": 23, "most_likely": 6},
+            {"id": 2, "num_disclosed_records": 10, "min": 7, "max": 252, "most_likely": 63},
+            {"id": 3, "num_disclosed_records": 100, "min": 70, "max": 2547, "most_likely": 633},
+            {"id": 4, "num_disclosed_records": 1000, "min": 800, "max": 25497, "most_likely": 6325},
+            {
+                "id": 5,
+                "num_disclosed_records": 10000,
+                "min": 8000,
+                "max": 254997,
+                "most_likely": 63250,
+            },
+            {
+                "id": 6,
+                "num_disclosed_records": 100000,
+                "min": 80000,
+                "max": 2599997,
+                "most_likely": 662500,
+            },
+            {
+                "id": 7,
+                "num_disclosed_records": 1000000,
+                "min": 845000,
+                "max": 25599997,
+                "most_likely": 6425000,
+            },
+            {
+                "id": 8,
+                "num_disclosed_records": 10000000,
+                "min": 6725000,
+                "max": 255099997,
+                "most_likely": 63350000,
+            },
+            {
+                "id": 9,
+                "num_disclosed_records": 100000000,
+                "min": 66350000,
+                "max": 597699998,
+                "most_likely": 173962500,
+            },
+        ],
+    )
+
     op.drop_column("incident", "cost")
     # ### end Alembic commands ###
 
