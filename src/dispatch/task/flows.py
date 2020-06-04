@@ -52,6 +52,7 @@ def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact
                 "name": t.incident.name,
                 "title": t.incident.title,
                 "creator": t.creator.individual.name,
+                "description": t.description,
                 "priority": t.priority,
                 "created_at": t.created_at,
                 "resolve_by": t.resolve_by,
@@ -60,11 +61,13 @@ def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact
         )
 
     notification_type = "incident-task-reminder"
+    name = subject = "Incident Task Reminder"
     email_plugin.send(
         assignee_email,
         message_template,
         notification_type,
-        name="Incident Task Reminder",
+        name=name,
+        subject=subject,
         contact_fullname=contact_fullname,
         contact_weblink=contact_weblink,
         items=items,  # plugin expect dicts
