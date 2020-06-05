@@ -19,7 +19,6 @@ from dispatch.config import (
     INCIDENT_PLUGIN_CONTACT_SLUG,
     INCIDENT_PLUGIN_CONVERSATION_SLUG,
     INCIDENT_PLUGIN_CONFERENCE_SLUG,
-    INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG,
     INCIDENT_PLUGIN_DOCUMENT_SLUG,
     INCIDENT_PLUGIN_GROUP_SLUG,
     INCIDENT_PLUGIN_PARTICIPANT_RESOLVER_SLUG,
@@ -51,6 +50,7 @@ from dispatch.group import service as group_service
 from dispatch.group.models import GroupCreate
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
+
 from dispatch.incident_priority.models import IncidentPriorityRead
 from dispatch.incident_type import service as incident_type_service
 from dispatch.incident_type.models import IncidentTypeRead
@@ -75,11 +75,11 @@ from .messaging import (
     send_incident_new_role_assigned_notification,
     send_incident_notifications,
     send_incident_participant_announcement_message,
-    send_incident_participant_has_role_ephemeral_message,
-    send_incident_participant_role_not_assigned_ephemeral_message,
     send_incident_resources_ephemeral_message_to_participant,
     send_incident_review_document_notification,
     send_incident_welcome_participant_messages,
+    send_incident_tactical_report_reminder,
+    send_incident_suggested_reading_messages,
 )
 from .models import Incident, IncidentStatus
 
@@ -104,15 +104,6 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
     )
 
     return individual_contacts, team_contacts
-
-
-def get_incident_documents(
-    db_session, incident_type: IncidentTypeRead, priority: IncidentPriorityRead, description: str
-):
-    """Get additional incident documents based on priority, type, and description."""
-    p = plugins.get(INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG)
-    documents = p.get(incident_type, priority, description, db_session=db_session)
-    return documents
 
 
 def create_incident_ticket(incident: Incident, db_session: SessionLocal):
@@ -570,14 +561,6 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     # we create the incident documents
     incident_document, incident_sheet = create_collaboration_documents(incident, db_session)
 
-    # TODO: we need to delineate between the investigation document and suggested documents
-    # # get any additional documentation based on priority or terms
-    # incident_documents = get_incident_documents(
-    #     db_session, incident.incident_type, incident.incident_priority, incident.description
-    # )
-    #
-    # incident.documents = incident_documents
-
     faq_document = {
         "name": "Incident FAQ",
         "resource_id": INCIDENT_FAQ_DOCUMENT_ID,
@@ -706,6 +689,10 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
         # we send the welcome messages to the participant
         send_incident_welcome_participant_messages(
+            participant.individual.email, incident.id, db_session
+        )
+
+        send_incident_suggested_reading_messages(
             participant.individual.email, incident.id, db_session
         )
 
@@ -1187,6 +1174,9 @@ def incident_add_or_reactivate_participant_flow(
 
         # we send the welcome messages to the participant
         send_incident_welcome_participant_messages(user_email, incident_id, db_session)
+
+        # we send a suggested reading message to the participant
+        send_incident_suggested_reading_messages(user_email, incident_id, db_session)
 
     return participant
 
