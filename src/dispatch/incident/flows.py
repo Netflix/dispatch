@@ -78,7 +78,6 @@ from .messaging import (
     send_incident_resources_ephemeral_message_to_participant,
     send_incident_review_document_notification,
     send_incident_welcome_participant_messages,
-    send_incident_tactical_report_reminder,
     send_incident_suggested_reading_messages,
 )
 from .models import Incident, IncidentStatus

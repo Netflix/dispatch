@@ -32,7 +32,6 @@ from dispatch.messaging import (
     INCIDENT_PRIORITY_CHANGE,
     INCIDENT_RESOURCES_MESSAGE,
     INCIDENT_REVIEW_DOCUMENT_NOTIFICATION,
-    INCIDENT_TACTICAL_REPORT_REMINDER,
     INCIDENT_STATUS_CHANGE,
     INCIDENT_TYPE_CHANGE,
     MessageType,
@@ -57,29 +56,6 @@ def get_suggested_documents(db_session, incident_type: str, priority: str, descr
     p = plugins.get(INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG)
     documents = p.get(incident_type, priority, description, db_session=db_session)
     return documents
-
-
-def send_incident_tactical_report_reminder(incident: Incident):
-    """Sends the incident commander a direct message indicating that they should complete a tactical report."""
-    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
-    tactical_report_command = convo_plugin.get_command_name(ConversationCommands.tactical_report)
-
-    items = [
-        {
-            "name": incident.name,
-            "ticket_weblink": incident.ticket.weblink,
-            "title": incident.title,
-            "command": tactical_report_command,
-        }
-    ]
-
-    convo_plugin.send_direct(
-        incident.commander.email,
-        "Incident Tactical Report Reminder",
-        INCIDENT_TACTICAL_REPORT_REMINDER,
-        MessageType.incident_tactical_report,
-        items=items,
-    )
 
 
 def send_welcome_ephemeral_message_to_participant(
