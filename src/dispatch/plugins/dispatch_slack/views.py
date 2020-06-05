@@ -43,7 +43,7 @@ from dispatch.report import service as report_service
 from dispatch.report.enums import ReportTypes
 from dispatch.service import service as service_service
 from dispatch.task import service as task_service
-from dispatch.task.models import TaskStatus
+from dispatch.task.models import TaskStatus, Task
 
 from . import __version__
 from .config import (
@@ -224,18 +224,18 @@ def after_hours(user_email: str, incident_id: int, event: dict = None, db_sessio
             db_session.commit()
 
 
-def filter_tasks_by_assignee_and_creator(tasks: List[Any], by_assignee: str, by_creator: str):
+def filter_tasks_by_assignee_and_creator(tasks: List[Task], by_assignee: str, by_creator: str):
     """Filters a list of tasks looking for a given creator or assignee."""
     filtered_tasks = []
     for t in tasks:
         if by_creator:
-            creator_email = task.creator.individual.email
+            creator_email = t.creator.individual.email
             if creator_email == by_creator:
                 filtered_tasks.append(t)
 
         if by_assignee:
-            assignee_emails = [a.individual.email in task.assignees]
-            if user_email in individual_emails:
+            assignee_emails = [a.individual.email for a in t.assignees]
+            if by_assignee in assignee_emails:
                 filtered_tasks.append(t)
 
     return filtered_tasks
