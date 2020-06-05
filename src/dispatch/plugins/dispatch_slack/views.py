@@ -561,6 +561,10 @@ def add_user_to_conversation(
         dispatch_slack_service.add_users_to_conversation(
             slack_client, incident.conversation.channel_id, [user_id]
         )
+        message = f"Success! We've added you {incident.name}. Please check your side bar for the new channel."
+        dispatch_slack_service.send_ephemeral_message(
+            slack_client, action["container"]["channel_id"], user_id, message
+        )
 
 
 def event_functions(event: EventEnvelope):
