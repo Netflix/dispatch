@@ -32,7 +32,7 @@ def get_report_reminder_settings(report_type: ReportTypes):
             MessageType.incident_tactical_report,
         ),
         ReportTypes.executive_report: (
-            ConversationCommands.tactical_report,
+            ConversationCommands.executive_report,
             MessageType.incident_executive_report,
         ),
     }
