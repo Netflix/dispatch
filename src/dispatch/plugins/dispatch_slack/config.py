@@ -18,6 +18,9 @@ SLACK_COMMAND_TACTICAL_REPORT_SLUG = config(
 SLACK_COMMAND_LIST_TASKS_SLUG = config(
     "SLACK_COMMAND_LIST_TASKS_SLUG", default="/dispatch-list-tasks"
 )
+SLACK_COMMAND_LIST_MY_TASKS = config = config(
+    "SLACK_COMMAND_LIST_MY_TASKS_SLUG", default="/dispatch-list-my-tasks"
+)
 SLACK_COMMAND_LIST_PARTICIPANTS_SLUG = config(
     "SLACK_COMMAND_LIST_PARTICIPANTS_SLUG", default="/dispatch-list-participants"
 )

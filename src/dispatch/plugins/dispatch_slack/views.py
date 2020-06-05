@@ -53,6 +53,7 @@ from .config import (
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
     SLACK_COMMAND_LIST_TASKS_SLUG,
+    SLACK_COMMAND_LIST_MY_TASKS_SLUG,
     SLACK_COMMAND_REPORT_INCIDENT_SLUG,
     SLACK_COMMAND_TACTICAL_REPORT_SLUG,
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
@@ -223,8 +224,32 @@ def after_hours(user_email: str, incident_id: int, event: dict = None, db_sessio
             db_session.commit()
 
 
+def filter_tasks_by_assignee_and_creator(tasks: List[Any], by_assignee: str, by_creator: str):
+    """Filters a list of tasks looking for a given creator or assignee."""
+    filtered_tasks = []
+    for t in tasks:
+        if by_creator:
+            creator_email = task.creator.individual.email
+            if creator_email == by_creator:
+                filtered_tasks.append(t)
+
+        if by_assignee:
+            assignee_emails = [a.individual.email in task.assignees]
+            if user_email in individual_emails:
+                filtered_tasks.append(t)
+
+    return filtered_tasks
+
+
 @background_task
-def list_tasks(incident_id: int, command: dict = None, db_session=None):
+def list_my_tasks(incident_id: int, command: dict = None, db_session=None):
+    """Returns the list of incident tasks to the user as an ephemeral message."""
+    user_email = dispatch_slack_service.get_user_email_async(slack_client, command['user_id'])
+    list_tasks(incident_id=incident_id, command=command, db_session=db_session, by_creator=user_email, by_assignee=user_email)
+
+
+@background_task
+def list_tasks(incident_id: int, command: dict = None, db_session=None, by_creator: str = None, by_assignee: str: None):
     """Returns the list of incident tasks to the user as an ephemeral message."""
     blocks = []
     for status in TaskStatus:
@@ -238,6 +263,9 @@ def list_tasks(incident_id: int, command: dict = None, db_session=None):
         tasks = task_service.get_all_by_incident_id_and_status(
             db_session=db_session, incident_id=incident_id, status=status.value
         )
+
+        if by_creator or by_assignee:
+            tasks = filter_tasks_by_assignee_and_creator(tasks, by_assignee, by_creator)
 
         for task in tasks:
             assignees = [a.individual.email for a in task.assignees]
@@ -590,6 +618,7 @@ def command_functions(command: str):
         SLACK_COMMAND_LIST_PARTICIPANTS_SLUG: [list_participants],
         SLACK_COMMAND_LIST_RESOURCES_SLUG: [incident_flows.incident_list_resources_flow],
         SLACK_COMMAND_LIST_TASKS_SLUG: [list_tasks],
+        SLACK_COMMAND_LIST_MY_TASKS_SLUG: [list_my_tasks],
         SLACK_COMMAND_TACTICAL_REPORT_SLUG: [create_tactical_report_dialog],
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_dialog],
     }
