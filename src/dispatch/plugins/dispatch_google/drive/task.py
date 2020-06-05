@@ -84,8 +84,13 @@ def list_tasks(client: Any, file_id: str):
         # https://developers.google.com/drive/api/v2/reference/comments#resource
         from dispatch.database import SessionLocal
         from dispatch.individual.models import IndividualContact
+
         db_session = SessionLocal()
-        owner = db_session.query(IndividualContact).filter(IndividualContact.name == t["author"]["displayName"]).first()
+        owner = (
+            db_session.query(IndividualContact)
+            .filter(IndividualContact.name == t["author"]["displayName"])
+            .first()
+        )
 
         owner_email = f"dispatch@{GOOGLE_DOMAIN}"
         if owner:

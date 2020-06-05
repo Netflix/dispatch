@@ -52,6 +52,10 @@ The `Slack` plugin relies on the [Events API](https://api.slack.com/events-api) 
 
 > List tasks command as displayed in Slack.
 
+#### `SLACK_COMMAND_LIST_MY_TASKS_SLUG` \[default: '/dispatch-list-my-tasks'\]
+
+> List tasks for the requesting user command as displayed in Slack.
+
 #### `SLACK_COMMAND_LIST_PARTICIPANTS_SLUG` \[default: '/dispatch-list-participants'\]
 
 > List participants command as displayed in Slack.
