@@ -215,6 +215,7 @@ class IncidentBase(DispatchBase):
 class IncidentCreate(IncidentBase):
     incident_priority: IncidentPriorityCreate
     incident_type: IncidentTypeCreate
+    tags: Optional[List[Any]] = []  # any until we figure out circular imports
 
 
 class IncidentUpdate(IncidentBase):
