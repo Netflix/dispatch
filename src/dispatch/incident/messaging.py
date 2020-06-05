@@ -15,6 +15,7 @@ from dispatch.config import (
     INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
     INCIDENT_RESOURCE_FAQ_DOCUMENT,
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
+    INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG,
 )
 from dispatch.database import SessionLocal
 from dispatch.enums import Visibility
@@ -27,9 +28,11 @@ from dispatch.messaging import (
     INCIDENT_NOTIFICATION,
     INCIDENT_NOTIFICATION_COMMON,
     INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
+    INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM,
     INCIDENT_PRIORITY_CHANGE,
     INCIDENT_RESOURCES_MESSAGE,
     INCIDENT_REVIEW_DOCUMENT_NOTIFICATION,
+    INCIDENT_TACTICAL_REPORT_REMINDER,
     INCIDENT_STATUS_CHANGE,
     INCIDENT_TYPE_CHANGE,
     MessageType,
@@ -40,12 +43,43 @@ from dispatch.conversation.enums import ConversationCommands
 from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import Incident, IncidentRead
+
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.plugins.base import plugins
 
 
 log = logging.getLogger(__name__)
+
+
+def get_suggested_documents(db_session, incident_type: str, priority: str, description: str):
+    """Get additional incident documents based on priority, type, and description."""
+    p = plugins.get(INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG)
+    documents = p.get(incident_type, priority, description, db_session=db_session)
+    return documents
+
+
+def send_incident_tactical_report_reminder(incident: Incident):
+    """Sends the incident commander a direct message indicating that they should complete a tactical report."""
+    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
+    tactical_report_command = convo_plugin.get_command_name(ConversationCommands.tactical_report)
+
+    items = [
+        {
+            "name": incident.name,
+            "ticket_weblink": incident.ticket.weblink,
+            "title": incident.title,
+            "command": tactical_report_command,
+        }
+    ]
+
+    convo_plugin.send_direct(
+        incident.commander.email,
+        "Incident Tactical Report Reminder",
+        INCIDENT_TACTICAL_REPORT_REMINDER,
+        MessageType.incident_tactical_report,
+        items=items,
+    )
 
 
 def send_welcome_ephemeral_message_to_participant(
@@ -164,6 +198,31 @@ def send_incident_welcome_participant_messages(
     send_welcome_email_to_participant(participant_email, incident_id, db_session)
 
     log.debug(f"Welcome participant messages sent {participant_email}.")
+
+
+def send_incident_suggested_reading_messages(
+    participant_email: str, incident_id: int, db_session: SessionLocal
+):
+    """Sends a suggested reading message to a participant."""
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    suggested_documents = get_suggested_documents(
+        db_session, incident.incident_type, incident.incident_priority, incident.description
+    )
+
+    if suggested_documents:
+        # we send the ephemeral message
+        convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
+        convo_plugin.send_ephemeral(
+            incident.conversation.channel_id,
+            participant_email,
+            "Suggested Reading",
+            [INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM],
+            MessageType.incident_participant_suggested_reading,
+            items=[i.__dict__ for i in suggested_documents],  # plugin deals with dicts
+        )
+
+        log.debug(f"Suggested reading ephemeral message sent to {participant_email}.")
 
 
 def send_incident_status_notifications(incident: Incident, db_session: SessionLocal):

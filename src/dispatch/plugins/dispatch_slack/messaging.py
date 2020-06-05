@@ -12,6 +12,7 @@ from dispatch.incident.enums import IncidentSlackViewBlockId
 from dispatch.messaging import (
     INCIDENT_TASK_LIST_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
+    INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
     MessageType,
     render_message_template,
 )
@@ -97,6 +98,10 @@ def get_template(message_type: MessageType):
         MessageType.incident_participant_welcome: (default_notification, None),
         MessageType.incident_resources_message: (default_notification, None),
         MessageType.incident_tactical_report: (default_notification, None),
+        MessageType.incident_participant_suggested_reading: (
+            default_notification,
+            INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
+        ),
         MessageType.incident_task_reminder: (
             default_notification,
             INCIDENT_TASK_REMINDER_DESCRIPTION,
