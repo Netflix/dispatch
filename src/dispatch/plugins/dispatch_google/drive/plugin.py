@@ -17,6 +17,7 @@ from .drive import (
     move_file,
     remove_permission,
     add_domain_permission,
+    add_reply,
 )
 from .task import list_tasks
 
@@ -124,9 +125,10 @@ class GoogleDriveTaskPlugin(TaskPlugin):
         """Creates a new task."""
         pass
 
-    def update(self, file_id: str, task_id):
+    def update(self, file_id: str, task_id: str, content: str, resolved: bool = False):
         """Updates an existing task."""
-        pass
+        client = get_service("drive", "v3", self.scopes)
+        return add_reply(client, file_id, task_id, content, resolved)
 
     def list(self, file_id: str, **kwargs):
         """Lists all available tasks."""

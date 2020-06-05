@@ -228,6 +228,21 @@ def list_comments(client: Any, file_id: str, **kwargs):
     return make_call(client.comments(), "list", fileId=file_id, fields="*", **kwargs)
 
 
+def add_reply(
+    client: Any, file_id: str, comment_id: str, content: str, resolved: bool = False, **kwargs
+):
+    """Adds a reply to a comment."""
+    if resolved:
+        verb = "resolve"
+        content = content if content else "Resolved by Dispatch"
+    else:
+        verb = "reopen"
+        content = content if content else "Reopened by Dispatch"
+
+    body = {"content": content, "verb": verb}
+    return make_call(client.replies(), "insert", fieldId=file_id, commentId=comment_id, body=body)
+
+
 def copy_file(client: Any, folder_id: str, file_id: str, new_file_name: str):
     """Copies a given file."""
     return make_call(
