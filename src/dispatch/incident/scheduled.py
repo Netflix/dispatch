@@ -6,7 +6,7 @@ from schedule import every
 
 from dispatch.config import (
     INCIDENT_PLUGIN_CONVERSATION_SLUG,
-    INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID,
+    INCIDENT_ONCALL_SERVICE_ID,
     INCIDENT_NOTIFICATION_CONVERSATIONS,
     INCIDENT_PLUGIN_TICKET_SLUG,
     INCIDENT_PLUGIN_STORAGE_SLUG,
@@ -221,14 +221,14 @@ def daily_summary(db_session=None):
             }
         )
 
-    # NOTE INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID is optional
-    if INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID:
+    # NOTE INCIDENT_ONCALL_SERVICE_ID is optional
+    if INCIDENT_ONCALL_SERVICE_ID:
         oncall_service = service_service.get_by_external_id(
-            db_session=db_session, external_id=INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID
+            db_session=db_session, external_id=INCIDENT_ONCALL_SERVICE_ID
         )
 
         oncall_plugin = plugins.get(oncall_service.type)
-        oncall_email = oncall_plugin.get(service_id=INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID)
+        oncall_email = oncall_plugin.get(service_id=INCIDENT_ONCALL_SERVICE_ID)
 
         oncall_individual = individual_service.resolve_user_by_email(oncall_email)
 
@@ -238,7 +238,7 @@ def daily_summary(db_session=None):
                 "elements": [
                     {
                         "type": "mrkdwn",
-                        "text": f"For questions about this notification, reach out to <{oncall_individual['weblink']}|{oncall_individual['fullname']}> (current on-call)",
+                        "text": f"For any questions about this notification, please reach out to <{oncall_individual['weblink']}|{oncall_individual['fullname']}> (current on-call)",
                     }
                 ],
             }

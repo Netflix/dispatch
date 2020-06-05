@@ -14,7 +14,6 @@ from typing import Dict, List, Optional
 
 from tenacity import retry, stop_after_attempt
 
-from dispatch.config import DISPATCH_HELP_EMAIL, DISPATCH_HELP_SLACK_CHANNEL
 from dispatch.decorators import apply, counter, timer
 from dispatch.messaging import (
     INCIDENT_TASK_REMINDER_DESCRIPTION,
@@ -86,26 +85,13 @@ def create_multi_message_body(
     for item in items:
         master_map.append(render_message_template(message_template, **item))
 
-    kwargs.update(
-        {
-            "items": master_map,
-            "description": description,
-            "dispatch_help_email": DISPATCH_HELP_EMAIL,
-            "dispatch_help_slack_channel": DISPATCH_HELP_SLACK_CHANNEL,
-        }
-    )
+    kwargs.update({"items": master_map, "description": description})
     return template.render(**kwargs)
 
 
 def create_message_body(message_template: dict, message_type: MessageType, **kwargs):
     """Creates the correct message body based on message type."""
     template, description = get_template(message_type)
-    kwargs.update(
-        {
-            "dispatch_help_email": DISPATCH_HELP_EMAIL,
-            "dispatch_help_slack_channel": DISPATCH_HELP_SLACK_CHANNEL,
-        }
-    )
     rendered = render_message_template(message_template, **kwargs)
     kwargs.update({"items": rendered, "description": description})
     return template.render(**kwargs)
