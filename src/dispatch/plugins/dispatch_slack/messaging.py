@@ -93,6 +93,7 @@ def render_non_incident_conversation_command_error_message(command: str):
 def get_template(message_type: MessageType):
     """Fetches the correct template based on message type."""
     template_map = {
+        MessageType.incident_executive_report: (default_notification, None),
         MessageType.incident_notification: (default_notification, None),
         MessageType.incident_participant_welcome: (default_notification, None),
         MessageType.incident_resources_message: (default_notification, None),

@@ -66,7 +66,7 @@ Enable the following APIs \(APIs and Services &gt; Library\):
 * Google Docs API
 * Google Calendar API
 * Gmail API
-* Admin SDK
+* Admin SDK (necessary to create and manage groups)
 
 Finally, map the `client_id` of the created service with the required OAuth2 scopes.
 

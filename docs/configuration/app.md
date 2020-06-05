@@ -62,7 +62,7 @@ In general, do not include any quotation marks when adding configuration values.
 > Used by Dispatch to determine which authentication provider to use, by default Dispatch ships with a PKCE authentication provider.
 
 {% hint style="info" %}
-If you wish to disable authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
+If you wish to disable authentication set `DISPATCH_AUTHENTICATION_PROVIDER=`
 {% endhint %}
 
 #### Configuration for `dispatch-auth-provider-basic`
@@ -213,9 +213,9 @@ Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispa
 
 > Comma separated list of email addresses to be notified of new incidents.
 
-#### `INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID` \[default: None\]
+#### `INCIDENT_ONCALL_SERVICE_ID` \[default: None\]
 
-> Specifies the oncall service id to use to resolve the oncall person that is included in the daily incidents summary.
+> Specifies the oncall service id to use to resolve the oncall person.
 
 #### `INCIDENT_RESOURCE_TASK` \[default: 'google-docs-incident-task'\]
 

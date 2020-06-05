@@ -50,15 +50,20 @@ from dispatch.group import service as group_service
 from dispatch.group.models import GroupCreate
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
+
+from dispatch.incident_priority.models import IncidentPriorityRead
 from dispatch.incident_type import service as incident_type_service
+from dispatch.incident_type.models import IncidentTypeRead
 from dispatch.individual import service as individual_service
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant
 from dispatch.participant_role import flows as participant_role_flows
 from dispatch.participant_role.models import ParticipantRoleType
-from dispatch.plugins.base import plugins
 from dispatch.plugin import service as plugin_service
+from dispatch.plugins.base import plugins
+from dispatch.report.enums import ReportTypes
+from dispatch.report.messaging import send_incident_report_reminder
 from dispatch.service import service as service_service
 from dispatch.storage import service as storage_service
 from dispatch.ticket import service as ticket_service
@@ -715,7 +720,7 @@ def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_se
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # we remind the incident commander to write a tactical report
-    send_incident_tactical_report_reminder(incident)
+    send_incident_report_reminder(incident, ReportTypes.tactical_report)
 
     # we update the status of the external ticket
     update_incident_ticket(
@@ -736,7 +741,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     incident.stable_at = datetime.utcnow()
 
     # we remind the incident commander to write a tactical report
-    send_incident_tactical_report_reminder(incident)
+    send_incident_report_reminder(incident, ReportTypes.tactical_report)
 
     # we update the incident cost
     incident_cost = incident_service.calculate_cost(incident_id, db_session)

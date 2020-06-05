@@ -30,6 +30,9 @@ class IncidentType(Base):
 
     @hybrid_method
     def get_meta(self, slug):
+        if not self.plugin_metadata:
+            return
+
         for m in self.plugin_metadata:
             if m["slug"] == slug:
                 return m

@@ -20,21 +20,20 @@ from dispatch.config import (
 from dispatch.database import SessionLocal
 from dispatch.enums import Visibility
 from dispatch.messaging import (
+    INCIDENT_COMMANDER,
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
+    INCIDENT_NAME,
+    INCIDENT_NAME_WITH_ENGAGEMENT,
     INCIDENT_NEW_ROLE_NOTIFICATION,
     INCIDENT_NOTIFICATION,
     INCIDENT_NOTIFICATION_COMMON,
-    INCIDENT_NAME,
-    INCIDENT_NAME_WITH_ENGAGEMENT,
-    INCIDENT_PRIORITY_CHANGE,
-    INCIDENT_STATUS_CHANGE,
-    INCIDENT_TYPE_CHANGE,
     INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
     INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM,
+    INCIDENT_PRIORITY_CHANGE,
     INCIDENT_RESOURCES_MESSAGE,
     INCIDENT_REVIEW_DOCUMENT_NOTIFICATION,
-    INCIDENT_TACTICAL_REPORT_REMINDER,
-    INCIDENT_COMMANDER,
+    INCIDENT_STATUS_CHANGE,
+    INCIDENT_TYPE_CHANGE,
     MessageType,
 )
 
@@ -180,6 +179,8 @@ def send_welcome_email_to_participant(
         conference_weblink=incident.conference.weblink,
         conference_challenge=incident.conference.conference_challenge,
         conversation_commands_reference_document_weblink=incident_conversation_commands_reference_document.weblink,
+        contact_fullname=incident.commander.name,
+        contact_weblink=incident.commander.weblink,
     )
 
     log.debug(f"Welcome email sent to {participant_email}.")
@@ -291,6 +292,8 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
             ticket_weblink=incident.ticket.weblink,
             faq_weblink=incident_faq.weblink,
             incident_id=incident.id,
+            contact_fullname=incident.commander.name,
+            contact_weblink=incident.commander.weblink,
         )
 
     log.debug("Incident status notifications sent.")
@@ -406,6 +409,8 @@ def send_incident_update_notifications(incident: Incident, previous_incident: In
                 incident_type_new=incident.incident_type.name,
                 incident_status_old=previous_incident.status.value,
                 incident_status_new=incident.status,
+                contact_fullname=incident.commander.name,
+                contact_weblink=incident.commander.weblink,
             )
 
     log.debug("Incident update notifications sent.")

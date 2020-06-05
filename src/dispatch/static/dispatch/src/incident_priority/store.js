@@ -9,7 +9,8 @@ const getDefaultSelectedState = () => {
     name: null,
     page_commander: null,
     view_order: null,
-    status_reminder: null,
+    tactical_report_reminder: null,
+    executive_report_reminder: null,
     description: null,
     loading: false
   }

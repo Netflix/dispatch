@@ -34,23 +34,43 @@ def group_tasks_by_assignee(tasks):
     """Groups tasks by assignee."""
     grouped = defaultdict(lambda: [])
     for task in tasks:
-        grouped[task.assignees].append(task)
+        for a in task.assignees:
+            grouped[a.individual.email].append(task)
     return grouped
 
 
-def create_reminder(db_session, assignee, tasks):
+def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact_weblink):
     """Contains the logic for incident task reminders."""
     # send email
     email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
     message_template = INCIDENT_TASK_REMINDER
 
+    items = []
+    for t in tasks:
+        items.append(
+            {
+                "name": t.incident.name,
+                "title": t.incident.title,
+                "creator": t.creator.individual.name,
+                "description": t.description,
+                "priority": t.priority,
+                "created_at": t.created_at,
+                "resolve_by": t.resolve_by,
+                "weblink": t.weblink,
+            }
+        )
+
     notification_type = "incident-task-reminder"
+    name = subject = "Incident Task Reminder"
     email_plugin.send(
-        assignee.individual_contact.email,
+        assignee_email,
         message_template,
         notification_type,
-        name="Task Reminder",
-        items=tasks,
+        name=name,
+        subject=subject,
+        contact_fullname=contact_fullname,
+        contact_weblink=contact_weblink,
+        items=items,  # plugin expect dicts
     )
 
     # We currently think DM's might be too agressive
@@ -76,7 +96,7 @@ def send_task_notification(conversation_id, message_template, assignees, descrip
         notification_text,
         message_template,
         notification_type,
-        task_assignees=[x.indiviual_contact.email for x in assignees],
+        task_assignees=[x.individual.email for x in assignees],
         task_description=description,
         task_weblink=weblink,
     )
@@ -86,15 +106,13 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
     """Creates a new task in the database or updates an existing one."""
     incident_task = task_service.get_by_resource_id(db_session=db_session, resource_id=task["id"])
 
-    creator = incident_add_or_reactivate_participant_flow(
-        task["owner"], incident_id=incident.id, db_session=db_session
-    )
-
     assignees = []
     for a in task["assignees"]:
         assignees.append(
-            incident_add_or_reactivate_participant_flow(
-                a, incident_id=incident.id, db_session=db_session
+            db_session.merge(
+                incident_add_or_reactivate_participant_flow(
+                    a, incident_id=incident.id, db_session=db_session
+                )
             )
         )
 
@@ -110,13 +128,32 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
     ]
 
     if incident_task:
-        incident_task.status = status
+        # allways update tickets and assignees
         incident_task.assignees = assignees
         incident_task.tickets = tickets
-        db_session.add(incident_task)
-        db_session.commit()
+
+        # only notify if it's newly resolved
+        if status == TaskStatus.resolved:
+            if incident_task.status != TaskStatus.resolved:
+                incident_task.status = status
+
+                if notify:
+                    send_task_notification(
+                        incident.conversation.channel_id,
+                        INCIDENT_TASK_RESOLVED_NOTIFICATION,
+                        assignees,
+                        description,
+                        weblink,
+                    )
+
     else:
         # we add the task to the incident
+        creator = db_session.merge(
+            incident_add_or_reactivate_participant_flow(
+                task["owner"], incident_id=incident.id, db_session=db_session
+            )
+        )
+
         task = task_service.create(
             db_session=db_session,
             creator=creator,
@@ -129,14 +166,14 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
             weblink=weblink,
         )
         incident.tasks.append(task)
-        db_session.add(incident)
-        db_session.commit()
 
-    if notify:
-        send_task_notification(
-            incident.conversation.channel_id,
-            INCIDENT_TASK_NEW_NOTIFICATION,
-            assignees,
-            description,
-            weblink,
-        )
+        if notify:
+            send_task_notification(
+                incident.conversation.channel_id,
+                INCIDENT_TASK_NEW_NOTIFICATION,
+                assignees,
+                description,
+                weblink,
+            )
+
+    db_session.commit()

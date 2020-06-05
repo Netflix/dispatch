@@ -236,6 +236,9 @@
                     <v-flex xs12>
                       <incident-priority-select v-model="incident_priority" />
                     </v-flex>
+                    <v-flex xs12>
+                      <tag-filter-combobox v-model="tags" label="Tags"></tag-filter-combobox>
+                    </v-flex>
                   </v-layout>
                   <v-btn
                     color="primary"
@@ -269,6 +272,7 @@ import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
+import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 
 extend("required", {
   ...required,
@@ -283,7 +287,8 @@ export default {
     ValidationProvider,
     ValidationObserver,
     IncidentTypeSelect,
-    IncidentPrioritySelect
+    IncidentPrioritySelect,
+    TagFilterCombobox
   },
   data() {
     return {
@@ -296,6 +301,7 @@ export default {
       "selected.incident_type",
       "selected.commander",
       "selected.title",
+      "selected.tags",
       "selected.description",
       "selected.conversation",
       "selected.conference",

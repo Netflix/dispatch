@@ -6,7 +6,7 @@ from schedule import every
 
 from dispatch.config import (
     INCIDENT_PLUGIN_CONVERSATION_SLUG,
-    INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID,
+    INCIDENT_ONCALL_SERVICE_ID,
     INCIDENT_NOTIFICATION_CONVERSATIONS,
     INCIDENT_PLUGIN_TICKET_SLUG,
     INCIDENT_PLUGIN_STORAGE_SLUG,
@@ -33,7 +33,6 @@ from dispatch.tag.models import Tag
 from dispatch.conversation.enums import ConversationButtonActions
 from .enums import IncidentStatus
 from .service import calculate_cost, get_all, get_all_by_status, get_all_last_x_hours_by_status
-from .messaging import send_incident_tactical_report_reminder
 
 
 log = logging.getLogger(__name__)
@@ -80,35 +79,6 @@ def auto_tagger(db_session):
         log.debug(
             f"Associating tags with incident. Incident: {incident.name}, Tags: {extracted_tags}"
         )
-
-
-@scheduler.add(every(1).hours, name="incident-tactical-report-reminder")
-@background_task
-def tactical_report_reminder(db_session=None):
-    """Sends tactical report reminders to active incident commanders."""
-    incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active)
-
-    for incident in incidents:
-        try:
-            notification_hour = incident.incident_priority.status_reminder
-
-            if incident.last_tactical_report:
-                remind_after = incident.last_tactical_report.created_at
-            else:
-                remind_after = incident.created_at
-
-            now = datetime.utcnow() - remind_after
-
-            # we calculate the number of hours and seconds since last CAN was sent
-            hours, seconds = divmod((now.days * 86400) + now.seconds, 3600)
-
-            q, r = divmod(hours, notification_hour)
-            if q >= 1 and r == 0:  # it's time to send the reminder
-                send_incident_tactical_report_reminder(incident)
-
-        except Exception as e:
-            # we shouldn't fail to update all incidents when one fails
-            sentry_sdk.capture_exception(e)
 
 
 @scheduler.add(every(1).day.at("18:00"), name="incident-daily-summary")
@@ -251,14 +221,14 @@ def daily_summary(db_session=None):
             }
         )
 
-    # NOTE INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID is optional
-    if INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID:
+    # NOTE INCIDENT_ONCALL_SERVICE_ID is optional
+    if INCIDENT_ONCALL_SERVICE_ID:
         oncall_service = service_service.get_by_external_id(
-            db_session=db_session, external_id=INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID
+            db_session=db_session, external_id=INCIDENT_ONCALL_SERVICE_ID
         )
 
         oncall_plugin = plugins.get(oncall_service.type)
-        oncall_email = oncall_plugin.get(service_id=INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID)
+        oncall_email = oncall_plugin.get(service_id=INCIDENT_ONCALL_SERVICE_ID)
 
         oncall_individual = individual_service.resolve_user_by_email(oncall_email)
 
@@ -268,7 +238,7 @@ def daily_summary(db_session=None):
                 "elements": [
                     {
                         "type": "mrkdwn",
-                        "text": f"For questions about this notification, reach out to <{oncall_individual['weblink']}|{oncall_individual['fullname']}> (current on-call)",
+                        "text": f"For any questions about this notification, please reach out to <{oncall_individual['weblink']}|{oncall_individual['fullname']}> (current on-call)",
                     }
                 ],
             }

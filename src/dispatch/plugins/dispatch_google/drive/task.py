@@ -15,9 +15,9 @@ from .drive import get_file, list_comments
 
 def get_assignees(content: str) -> List[str]:
     """Gets assignees from comment."""
-    regex = r"(?<=\+).*?(?=\@)"
-    matches = re.finditer(regex, content, re.DOTALL)
-    return [f"{m.group()}@{GOOGLE_DOMAIN}" for m in matches]
+    regex = r"\+([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)"
+    matches = re.findall(regex, content)
+    return [m for m in matches]
 
 
 def parse_comment(content: str) -> Dict:
@@ -55,8 +55,9 @@ def get_tickets(replies: List[dict]):
     """Fetches urls/tickets from task replies."""
     tickets = []
     for r in replies:
-        for url in find_urls(r["content"]):
-            tickets.append({"web_link": url})
+        if r.get("content"):
+            for url in find_urls(r["content"]):
+                tickets.append({"web_link": url})
     return tickets
 
 
@@ -78,12 +79,25 @@ def list_tasks(client: Any, file_id: str):
         description = (t.get("quotedFileContent", {}).get("value", ""),)
         tickets = get_tickets(t["replies"])
 
+        # this is a dirty hack because google doesn't return emailAddresses for comments
+        # complete with conflicting docs
+        # https://developers.google.com/drive/api/v2/reference/comments#resource
+        from dispatch.database import SessionLocal
+        from dispatch.individual.models import IndividualContact
+        db_session = SessionLocal()
+        owner = db_session.query(IndividualContact).filter(IndividualContact.name == t["author"]["displayName"]).first()
+
+        owner_email = f"dispatch@{GOOGLE_DOMAIN}"
+        if owner:
+            owner_email = owner.email
+        db_session.close()
+
         task_meta = {
             "task": {
                 "id": t["id"],
                 "status": status,
                 "description": description,
-                "owner": t["author"]["displayName"],
+                "owner": owner_email,
                 "created_at": t["createdTime"],
                 "assignees": assignees,
                 "tickets": tickets,
