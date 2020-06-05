@@ -167,7 +167,7 @@ def create(
         incident_type=incident_type,
         incident_priority=incident_priority,
         visibility=visibility,
-        tags=tag_objs
+        tags=tag_objs,
     )
     db_session.add(incident)
     db_session.commit()
