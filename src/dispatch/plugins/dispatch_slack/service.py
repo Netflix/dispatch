@@ -331,7 +331,12 @@ def send_message(
 
 
 def send_ephemeral_message(
-    client: Any, conversation_id: str, user_id: str, text: str, blocks: Optional[List] = None
+    client: Any,
+    conversation_id: str,
+    user_id: str,
+    text: str,
+    thread_ts: Optional[str] = None,
+    blocks: Optional[List] = None,
 ):
     """Sends an ephemeral message to a user in a channel."""
     response = make_call(
@@ -340,6 +345,7 @@ def send_ephemeral_message(
         channel=conversation_id,
         user=user_id,
         text=text,
+        thread_ts=thread_ts,
         blocks=blocks,
     )
 

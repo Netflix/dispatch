@@ -59,6 +59,7 @@ from .config import (
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_SIGNING_SECRET,
     SLACK_TIMELINE_EVENT_REACTION,
+    SLACK_BAN_THREADS,
 )
 from .messaging import (
     INCIDENT_CONVERSATION_COMMAND_MESSAGE,
@@ -95,6 +96,7 @@ class EventBody(BaseModel):
     channel_type: str = None
     deleted_ts: str = None
     event_ts: str = None
+    thread_ts: str = None
     file_id: str = None
     hidden: bool = None
     inviter: str = None
@@ -607,6 +609,29 @@ def add_user_to_conversation(
         )
 
 
+@background_task
+def ban_threads_warning(user_email: str, incident_id: int, event: dict = None, db_session=None):
+    """Sends the user an ephemeral message if they use threads."""
+    if not SLACK_BAN_THREADS:
+        return
+
+    if event.event.thread_ts:
+        # we should be able to look for `subtype == message_replied` once this bug is fixed
+        # https://api.slack.com/events/message/message_replied
+        # From Slack: Bug alert! This event is missing the subtype field when dispatched
+        # over the Events API. Until it is fixed, examine message events' thread_ts value.
+        # When present, it's a reply. To be doubly sure, compare a thread_ts to the top-level ts
+        # value, when they differ the latter is a reply to the former.
+        message = "Please refrain from using threads in incident related channels. Threads make it harder for incident participants to maintain context."
+        dispatch_slack_service.send_ephemeral_message(
+            slack_client,
+            event.event.channel,
+            event.event.user,
+            message,
+            thread_ts=event.event.thread_ts,
+        )
+
+
 def event_functions(event: EventEnvelope):
     """Interprets the events and routes it the appropriate function."""
     event_mappings = {
@@ -614,7 +639,7 @@ def event_functions(event: EventEnvelope):
         "file_shared": [add_evidence_to_storage],
         "link_shared": [],
         "member_joined_channel": [incident_flows.incident_add_or_reactivate_participant_flow],
-        "message": [],
+        "message": [ban_threads_warning],
         "member_left_channel": [incident_flows.incident_remove_participant_flow],
         "message.groups": [],
         "message.im": [],
@@ -885,18 +910,12 @@ async def handle_event(
     # We verify the signature
     verify_signature(raw_request_body, x_slack_request_timestamp, x_slack_signature)
 
+    print(raw_request_body)
     # Echo the URL verification challenge code back to Slack
     if event.challenge:
         return {"challenge": event.challenge}
 
     event_body = event.event
-
-    if (
-        event_body.type == "message" and event_body.subtype
-    ):  # We ignore messages that have a subtype
-        # Parse the Event payload and emit the event to the event listener
-        response.headers["X-Slack-Powered-By"] = create_ua_string()
-        return {"ok"}
 
     user_id = event_body.user
     channel_id = get_channel_id(event_body)
