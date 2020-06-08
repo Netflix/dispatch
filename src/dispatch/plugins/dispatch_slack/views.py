@@ -350,11 +350,18 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
                         f"*Incident Role(s)*: {(', ').join(participant_roles)}\n"
                     ),
                 },
-                "accessory": {"type": "image", "alt_text": participant_name},
             }
 
             if len(participants) < 20:
-                block["accessory"].update({"image_url": participant_avatar_url})
+                block.update(
+                    {
+                        "accessory": {
+                            "type": "image",
+                            "alt_text": participant_name,
+                            "image_url": participant_avatar_url,
+                        },
+                    }
+                )
 
             blocks.append(block)
             blocks.append({"type": "divider"})
