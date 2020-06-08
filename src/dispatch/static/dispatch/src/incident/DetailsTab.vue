@@ -109,7 +109,7 @@
         <term-combobox label="Terms" v-model="terms" />
       </v-flex>
       <v-flex xs12>
-        <tag-combobox label="Tags" v-model="tags" />
+        <tag-filter-combobox label="Tags" v-model="tags" />
       </v-flex>
     </v-layout>
   </v-container>
