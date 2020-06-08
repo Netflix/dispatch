@@ -926,7 +926,7 @@ async def handle_event(
         slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
 
         # We resolve the user's email
-        user_email = "kglisson@netflix.com"  # await dispatch_slack_service.get_user_email_async(slack_async_client, user_id)
+        user_email = await dispatch_slack_service.get_user_email_async(slack_async_client, user_id)
 
         # Dispatch event functions to be executed in the background
         for f in event_functions(event):
