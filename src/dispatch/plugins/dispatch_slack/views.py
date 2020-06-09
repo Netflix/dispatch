@@ -316,7 +316,7 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
 
     participants = participant_service.get_all_by_incident_id(
         db_session=db_session, incident_id=incident_id
-    )
+    ).all()
 
     contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
 
@@ -339,25 +339,31 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
             for role in participant_active_roles:
                 participant_roles.append(role.role)
 
-            blocks.append(
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": (
-                            f"*Name:* <{participant_weblink}|{participant_name}>\n"
-                            f"*Team*: {participant_team}, {participant_department}\n"
-                            f"*Location*: {participant_location}\n"
-                            f"*Incident Role(s)*: {(', ').join(participant_roles)}\n"
-                        ),
-                    },
-                    "accessory": {
-                        "type": "image",
-                        "image_url": participant_avatar_url,
-                        "alt_text": participant_name,
-                    },
-                }
-            )
+            block = {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": (
+                        f"*Name:* <{participant_weblink}|{participant_name}>\n"
+                        f"*Team*: {participant_team}, {participant_department}\n"
+                        f"*Location*: {participant_location}\n"
+                        f"*Incident Role(s)*: {(', ').join(participant_roles)}\n"
+                    ),
+                },
+            }
+
+            if len(participants) < 20:
+                block.update(
+                    {
+                        "accessory": {
+                            "type": "image",
+                            "alt_text": participant_name,
+                            "image_url": participant_avatar_url,
+                        },
+                    }
+                )
+
+            blocks.append(block)
             blocks.append({"type": "divider"})
 
     dispatch_slack_service.send_ephemeral_message(
@@ -910,7 +916,6 @@ async def handle_event(
     # We verify the signature
     verify_signature(raw_request_body, x_slack_request_timestamp, x_slack_signature)
 
-    print(raw_request_body)
     # Echo the URL verification challenge code back to Slack
     if event.challenge:
         return {"challenge": event.challenge}
