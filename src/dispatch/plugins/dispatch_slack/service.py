@@ -339,15 +339,25 @@ def send_ephemeral_message(
     blocks: Optional[List] = None,
 ):
     """Sends an ephemeral message to a user in a channel."""
-    response = make_call(
-        client,
-        "chat.postEphemeral",
-        channel=conversation_id,
-        user=user_id,
-        text=text,
-        thread_ts=thread_ts,
-        blocks=blocks,
-    )
+    if thread_ts:
+        response = make_call(
+            client,
+            "chat.postEphemeral",
+            channel=conversation_id,
+            user=user_id,
+            text=text,
+            thread_ts=thread_ts,
+            blocks=blocks,
+        )
+    else:
+        response = make_call(
+            client,
+            "chat.postEphemeral",
+            channel=conversation_id,
+            user=user_id,
+            text=text,
+            blocks=blocks,
+        )
 
     return {"id": response["channel"], "timestamp": response["ts"]}
 
