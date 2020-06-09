@@ -306,6 +306,12 @@ INCIDENT_INVESTIGATION_SHEET = {
     "text": INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
 }
 
+INCIDENT_REVIEW_DOCUMENT = {
+    "title": "Incident Review Document",
+    "title_link": "{{review_document_weblink}}",
+    "text": INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,
+}
+
 INCIDENT_FAQ_DOCUMENT = {
     "title": "Incident FAQ Document",
     "title_link": "{{faq_weblink}}",
@@ -353,6 +359,7 @@ INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
 INCIDENT_RESOURCES_MESSAGE = [
     INCIDENT_COMMANDER,
     INCIDENT_INVESTIGATION_DOCUMENT,
+    INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_STORAGE,
     INCIDENT_CONFERENCE,
     INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
@@ -398,14 +405,6 @@ INCIDENT_TASK_REMINDER = [
     {"title": "Created At", "text": "", "datetime": "{{ created_at}}"},
     {"title": "Resolve By", "text": "", "datetime": "{{ resolve_by }}"},
     {"title": "Link", "text": "{{ weblink }}"},
-]
-
-INCIDENT_REVIEW_DOCUMENT_NOTIFICATION = [
-    {
-        "title": "Incident Review Document",
-        "title_link": "{{incident_review_document_weblink}}",
-        "text": INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,
-    }
 ]
 
 INCIDENT_NEW_ROLE_NOTIFICATION = [
