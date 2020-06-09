@@ -882,14 +882,13 @@ def incident_update_flow(
     user_email: str, incident_id: int, previous_incident: IncidentRead, notify=True, db_session=None
 ):
     """Runs the incident update flow."""
-    conversation_topic_change = False
-
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # we load the individual
     individual = individual_service.get_by_email(db_session=db_session, email=user_email)
 
+    conversation_topic_change = False
     if previous_incident.title != incident.title:
         event_service.log(
             db_session=db_session,
@@ -943,8 +942,8 @@ def incident_update_flow(
         )
 
     if conversation_topic_change:
-        # we update the conversation topic
-        set_conversation_topic(incident)
+        if incident.status != IncidentStatus.closed:
+            set_conversation_topic(incident)
 
     if notify:
         send_incident_update_notifications(incident, previous_incident)

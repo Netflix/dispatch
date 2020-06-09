@@ -315,23 +315,25 @@ def send_incident_update_notifications(incident: Incident, previous_incident: In
     incident_conversation_notification_template = notification_template.copy()
     incident_conversation_notification_template.insert(0, INCIDENT_NAME)
 
-    convo_plugin.send(
-        incident.conversation.channel_id,
-        notification_text,
-        incident_conversation_notification_template,
-        notification_type,
-        name=incident.name,
-        ticket_weblink=incident.ticket.weblink,
-        title=incident.title,
-        incident_type_old=previous_incident.incident_type.name,
-        incident_type_new=incident.incident_type.name,
-        incident_priority_old=previous_incident.incident_priority.name,
-        incident_priority_new=incident.incident_priority.name,
-        incident_status_old=previous_incident.status.value,
-        incident_status_new=incident.status,
-        commander_fullname=incident.commander.name,
-        commander_weblink=incident.commander.weblink,
-    )
+    # we can't send messages to closed channels
+    if incident.status != IncidentStatus.closed:
+        convo_plugin.send(
+            incident.conversation.channel_id,
+            notification_text,
+            incident_conversation_notification_template,
+            notification_type,
+            name=incident.name,
+            ticket_weblink=incident.ticket.weblink,
+            title=incident.title,
+            incident_type_old=previous_incident.incident_type.name,
+            incident_type_new=incident.incident_type.name,
+            incident_priority_old=previous_incident.incident_priority.name,
+            incident_priority_new=incident.incident_priority.name,
+            incident_status_old=previous_incident.status.value,
+            incident_status_new=incident.status,
+            commander_fullname=incident.commander.name,
+            commander_weblink=incident.commander.weblink,
+        )
 
     if incident.visibility == Visibility.open:
         notification_conversation_notification_template = notification_template.copy()
