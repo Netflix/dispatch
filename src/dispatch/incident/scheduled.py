@@ -1,8 +1,8 @@
 import logging
-from datetime import datetime
-from sqlalchemy import func
 
+from datetime import datetime
 from schedule import every
+from sqlalchemy import func
 
 from dispatch.config import (
     INCIDENT_PLUGIN_CONVERSATION_SLUG,
@@ -11,6 +11,7 @@ from dispatch.config import (
     INCIDENT_PLUGIN_TICKET_SLUG,
     INCIDENT_PLUGIN_STORAGE_SLUG,
 )
+from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.decorators import background_task
 from dispatch.enums import Visibility
 from dispatch.extensions import sentry_sdk
@@ -22,7 +23,6 @@ from dispatch.messaging import (
     INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
     INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
 )
-
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.plugins.base import plugins
 from dispatch.scheduler import scheduler
@@ -30,8 +30,8 @@ from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
 from dispatch.tag.models import Tag
 
-from dispatch.conversation.enums import ConversationButtonActions
 from .enums import IncidentStatus
+from .flows import update_external_incident_ticket
 from .service import calculate_cost, get_all, get_all_by_status, get_all_last_x_hours_by_status
 
 
@@ -275,12 +275,7 @@ def calculate_incidents_cost(db_session=None):
 
             if incident.ticket.resource_id:
                 # we update the external ticket
-                ticket_plugin = plugins.get(INCIDENT_PLUGIN_TICKET_SLUG)
-                ticket_plugin.update(
-                    incident.ticket.resource_id,
-                    cost=incident_cost,
-                    incident_type=incident.incident_type.name,
-                )
+                update_external_incident_ticket(incident, db_session)
                 log.debug(f"Incident cost for {incident.name} updated in the ticket.")
             else:
                 log.debug(f"Ticket not found. Incident cost for {incident.name} not updated.")
