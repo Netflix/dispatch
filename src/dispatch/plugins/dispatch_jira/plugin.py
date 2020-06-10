@@ -6,7 +6,7 @@
 """
 from jinja2 import Template
 from jira import JIRA
-from typing import Any, List
+from typing import Any
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_jira as jira_plugin
@@ -71,7 +71,7 @@ def create_issue_fields(
     document_weblink: str,
     storage_weblink: str,
     conference_weblink: str,
-    cost: int,
+    cost: float,
 ):
     """Creates Jira issue fields."""
     issue_fields = {}
@@ -171,7 +171,7 @@ class JiraTicketPlugin(TicketPlugin):
         conference_weblink: str,
         document_weblink: str,
         storage_weblink: str,
-        cost: int,
+        cost: float,
         incident_type_plugin_metadata: dict = {},
     ):
         """Updates Jira ticket fields."""
