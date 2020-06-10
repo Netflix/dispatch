@@ -23,9 +23,7 @@ from .config import (
 
 
 ISSUE_SUMMARY_TEMPLATE = """
-{color:red}*Confidential Information - For Internal Use Only{color}*
-
-Commander: [~{{commander_username}}]
+{color:red}*Confidential Information - For Internal Use Only*{color}
 
 *Incident Details*
 Description: {{description}}
@@ -38,6 +36,8 @@ Cost: ${{cost}}
 [Investigation Document|{{document_weblink}}]
 [Storage|{{storage_weblink}}]
 [Conference|{{conference_weblink}}]
+
+Incident Commander: [~{{commander_username}}]
 """
 
 
