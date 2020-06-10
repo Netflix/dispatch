@@ -335,8 +335,8 @@ def send_ephemeral_message(
     conversation_id: str,
     user_id: str,
     text: str,
-    thread_ts: Optional[str] = None,
     blocks: Optional[List] = None,
+    thread_ts: Optional[str] = None,
 ):
     """Sends an ephemeral message to a user in a channel."""
     if thread_ts:
