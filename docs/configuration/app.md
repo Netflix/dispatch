@@ -62,7 +62,7 @@ In general, do not include any quotation marks when adding configuration values.
 > Used by Dispatch to determine which authentication provider to use, by default Dispatch ships with a PKCE authentication provider.
 
 {% hint style="info" %}
-If you wish to disable authentication set `DISPATCH_AUTHENTICATION_PROVIDER=`
+If you wish to disable authentication set `DISPATCH_AUTHENTICATION_PROVIDER_SLUG=`
 {% endhint %}
 
 #### Configuration for `dispatch-auth-provider-basic`
@@ -73,7 +73,7 @@ Today, basic authentication allows self registration without approval.
 
 #### `DISPATCH_JWT_SECRET`
 
-> Uses by the basic auth provider to mint JWT tokens.
+> Used by the basic auth provider to mint JWT tokens.
 
 #### `DISPATCH_JWT_ALG` ['default': 'HS256']
 
