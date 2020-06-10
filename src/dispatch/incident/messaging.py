@@ -19,6 +19,9 @@ from dispatch.config import (
 )
 from dispatch.database import SessionLocal
 from dispatch.enums import Visibility
+from dispatch.incident import service as incident_service
+from dispatch.incident.enums import IncidentStatus
+from dispatch.incident.models import Incident, IncidentRead
 from dispatch.messaging import (
     INCIDENT_COMMANDER,
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
@@ -27,22 +30,15 @@ from dispatch.messaging import (
     INCIDENT_NEW_ROLE_NOTIFICATION,
     INCIDENT_NOTIFICATION,
     INCIDENT_NOTIFICATION_COMMON,
-    INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
     INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM,
+    INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
     INCIDENT_PRIORITY_CHANGE,
     INCIDENT_RESOURCES_MESSAGE,
-    INCIDENT_REVIEW_DOCUMENT_NOTIFICATION,
+    INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_STATUS_CHANGE,
     INCIDENT_TYPE_CHANGE,
     MessageType,
 )
-
-from dispatch.incident.enums import IncidentStatus
-from dispatch.conversation.enums import ConversationCommands
-from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
-from dispatch.incident import service as incident_service
-from dispatch.incident.models import Incident, IncidentRead
-
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.plugins.base import plugins
@@ -65,23 +61,6 @@ def send_welcome_ephemeral_message_to_participant(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    # we get the incident documents
-    incident_document = get_document(
-        db_session=db_session,
-        incident_id=incident_id,
-        resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
-    )
-
-    incident_faq = get_document(
-        db_session=db_session, incident_id=incident_id, resource_type=INCIDENT_RESOURCE_FAQ_DOCUMENT
-    )
-
-    incident_conversation_commands_reference_document = get_document(
-        db_session=db_session,
-        incident_id=incident_id,
-        resource_type=INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
-    )
-
     # we send the ephemeral message
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
     convo_plugin.send_ephemeral(
@@ -99,13 +78,13 @@ def send_welcome_ephemeral_message_to_participant(
         priority_description=incident.incident_priority.description,
         commander_fullname=incident.commander.name,
         commander_weblink=incident.commander.weblink,
-        document_weblink=incident_document.weblink,
+        document_weblink=incident.incident_document.weblink,
         storage_weblink=incident.storage.weblink,
         ticket_weblink=incident.ticket.weblink,
-        faq_weblink=incident_faq.weblink,
+        faq_weblink=incident.incident_faq.weblink,
         conference_weblink=incident.conference.weblink,
         conference_challenge=incident.conference.conference_challenge,
-        conversation_commands_reference_document_weblink=incident_conversation_commands_reference_document.weblink,
+        conversation_commands_reference_document_weblink=incident.incident_conversation_commands_reference_document.weblink,
     )
 
     log.debug(f"Welcome ephemeral message sent to {participant_email}.")
@@ -117,23 +96,6 @@ def send_welcome_email_to_participant(
     """Sends a welcome email to the participant."""
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-    # we get the incident documents
-    incident_document = get_document(
-        db_session=db_session,
-        incident_id=incident_id,
-        resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
-    )
-
-    incident_faq = get_document(
-        db_session=db_session, incident_id=incident_id, resource_type=INCIDENT_RESOURCE_FAQ_DOCUMENT
-    )
-
-    incident_conversation_commands_reference_document = get_document(
-        db_session=db_session,
-        incident_id=incident_id,
-        resource_type=INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
-    )
 
     email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
     email_plugin.send(
@@ -149,13 +111,13 @@ def send_welcome_email_to_participant(
         priority_description=incident.incident_priority.description,
         commander_fullname=incident.commander.name,
         commander_weblink=incident.commander.weblink,
-        document_weblink=incident_document.weblink,
+        document_weblink=incident.incident_document.weblink,
         storage_weblink=incident.storage.weblink,
         ticket_weblink=incident.ticket.weblink,
-        faq_weblink=incident_faq.weblink,
+        faq_weblink=incident.incident_faq.weblink,
         conference_weblink=incident.conference.weblink,
         conference_challenge=incident.conference.conference_challenge,
-        conversation_commands_reference_document_weblink=incident_conversation_commands_reference_document.weblink,
+        conversation_commands_reference_document_weblink=incident.incident_conversation_commands_reference_document.weblink,
         contact_fullname=incident.commander.name,
         contact_weblink=incident.commander.weblink,
     )
@@ -207,17 +169,6 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
     notification_type = MessageType.incident_notification
     message_template = INCIDENT_NOTIFICATION.copy()
 
-    # we get the incident documents
-    incident_document = get_document(
-        db_session=db_session,
-        incident_id=incident.id,
-        resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
-    )
-
-    incident_faq = get_document(
-        db_session=db_session, incident_id=incident.id, resource_type=INCIDENT_RESOURCE_FAQ_DOCUMENT
-    )
-
     # we send status notifications to conversations
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
 
@@ -241,10 +192,10 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
             type_description=incident.incident_type.description,
             commander_fullname=incident.commander.name,
             commander_weblink=incident.commander.weblink,
-            document_weblink=incident_document.weblink,
+            document_weblink=incident.incident_document.weblink,
             storage_weblink=incident.storage.weblink,
             ticket_weblink=incident.ticket.weblink,
-            faq_weblink=incident_faq.weblink,
+            faq_weblink=incident.incident_faq.weblink,
             incident_id=incident.id,
         )
 
@@ -264,10 +215,10 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
             priority_description=incident.incident_priority.description,
             commander_fullname=incident.commander.name,
             commander_weblink=incident.commander.weblink,
-            document_weblink=incident_document.weblink,
+            document_weblink=incident.incident_document.weblink,
             storage_weblink=incident.storage.weblink,
             ticket_weblink=incident.ticket.weblink,
-            faq_weblink=incident_faq.weblink,
+            faq_weblink=incident.incident_faq.weblink,
             incident_id=incident.id,
             contact_fullname=incident.commander.name,
             contact_weblink=incident.commander.weblink,
@@ -554,9 +505,7 @@ def send_incident_new_role_assigned_notification(
     log.debug("Incident new role assigned message sent.")
 
 
-def send_incident_review_document_notification(
-    conversation_id: str, incident_review_document_weblink: str
-):
+def send_incident_review_document_notification(conversation_id: str, review_document_weblink: str):
     """Sends the review document notification."""
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
@@ -565,9 +514,9 @@ def send_incident_review_document_notification(
     convo_plugin.send(
         conversation_id,
         notification_text,
-        INCIDENT_REVIEW_DOCUMENT_NOTIFICATION,
+        [INCIDENT_REVIEW_DOCUMENT],
         notification_type,
-        incident_review_document_weblink=incident_review_document_weblink,
+        review_document_weblink=review_document_weblink,
     )
 
     log.debug("Incident review document notification sent.")
@@ -580,22 +529,9 @@ def send_incident_resources_ephemeral_message_to_participant(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    # we get the incident documents
-    incident_document = get_document(
-        db_session=db_session,
-        incident_id=incident_id,
-        resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
-    )
-
-    incident_faq = get_document(
-        db_session=db_session, incident_id=incident_id, resource_type=INCIDENT_RESOURCE_FAQ_DOCUMENT
-    )
-
-    incident_conversation_commands_reference_document = get_document(
-        db_session=db_session,
-        incident_id=incident_id,
-        resource_type=INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
-    )
+    review_document_weblink = ""
+    if incident.incident_review_document:
+        review_document_weblink = incident.incident_review_document.weblink
 
     # we send the ephemeral message
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
@@ -607,10 +543,11 @@ def send_incident_resources_ephemeral_message_to_participant(
         MessageType.incident_resources_message,
         commander_fullname=incident.commander.name,
         commander_weblink=incident.commander.weblink,
-        document_weblink=incident_document.weblink,
+        document_weblink=incident.incident_document.weblink,
+        review_document_weblink=review_document_weblink,
         storage_weblink=incident.storage.weblink,
-        faq_weblink=incident_faq.weblink,
-        conversation_commands_reference_document_weblink=incident_conversation_commands_reference_document.weblink,
+        faq_weblink=incident.incident_faq.weblink,
+        conversation_commands_reference_document_weblink=incident.incident_conversation_commands_reference_document.weblink,
         conference_weblink=incident.conference.weblink,
     )
 
