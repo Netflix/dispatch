@@ -1,10 +1,3 @@
-"""
-.. module: dispatch.plugins.google_drive.plugin
-    :platform: Unix
-    :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
-    :license: Apache, see LICENSE for more details.
-.. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
-"""
 from typing import List
 
 from dispatch.decorators import apply, counter, timer
@@ -27,6 +20,7 @@ from .drive import (
     move_file,
     remove_permission,
     restrict_team_drive,
+    unrestrict_team_drive,
 )
 from .task import list_tasks
 
@@ -130,6 +124,12 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         """Applies a set of restrictions and capabilities to the team drive."""
         client = get_service("drive", "v3", self.scopes)
         response = restrict_team_drive(client, team_drive_id)
+        return response
+
+    def unrestrict(self, team_drive_id: str):
+        """Removes a set of restrictions and capabilities from the team drive."""
+        client = get_service("drive", "v3", self.scopes)
+        response = unrestrict_team_drive(client, team_drive_id)
         return response
 
 
