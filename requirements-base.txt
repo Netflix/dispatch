@@ -26,6 +26,7 @@ python-jose
 python-multipart
 pytz
 requests
+rsa==4.0  # NOTE pinning for google-auth
 schedule
 sentry-asgi
 sentry_sdk
