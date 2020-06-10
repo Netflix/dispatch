@@ -94,7 +94,7 @@ class SlackConversationPlugin(ConversationPlugin):
         self,
         conversation_id: str,
         text: str,
-        message_template: dict,
+        message_template: List[dict],
         notification_type: str,
         items: Optional[List] = None,
         blocks: Optional[List] = None,
