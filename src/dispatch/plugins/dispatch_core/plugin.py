@@ -129,7 +129,7 @@ class DispatchTicketPlugin(TicketPlugin):
         commander: str,
         reporter: str,
     ):
-        """Creates a dispatch ticket."""
+        """Creates a Dispatch ticket."""
         resource_id = f"dispatch-{incident_id}"
         return {
             "resource_id": resource_id,
@@ -140,19 +140,19 @@ class DispatchTicketPlugin(TicketPlugin):
     def update(
         self,
         ticket_id: str,
-        title: str = None,
-        description: str = None,
-        incident_type: str = None,
-        priority: str = None,
-        status: str = None,
-        commander_email: str = None,
-        reporter_email: str = None,
-        conversation_weblink: str = None,
-        conference_weblink: str = None,
-        document_weblink: str = None,
-        storage_weblink: str = None,
-        labels: List[str] = None,
-        cost: str = None,
+        title: str,
+        description: str,
+        incident_type: str,
+        priority: str,
+        status: str,
+        commander_email: str,
+        reporter_email: str,
+        conversation_weblink: str,
+        conference_weblink: str,
+        document_weblink: str,
+        storage_weblink: str,
+        cost: float,
+        incident_type_plugin_metadata: dict = {},
     ):
         """Updates the incident."""
         return
