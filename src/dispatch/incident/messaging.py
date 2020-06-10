@@ -17,8 +17,12 @@ from dispatch.config import (
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
     INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG,
 )
+from dispatch.conversation.enums import ConversationCommands
 from dispatch.database import SessionLocal
 from dispatch.enums import Visibility
+from dispatch.incident import service as incident_service
+from dispatch.incident.enums import IncidentStatus
+from dispatch.incident.models import Incident, IncidentRead
 from dispatch.messaging import (
     INCIDENT_COMMANDER,
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
@@ -27,8 +31,8 @@ from dispatch.messaging import (
     INCIDENT_NEW_ROLE_NOTIFICATION,
     INCIDENT_NOTIFICATION,
     INCIDENT_NOTIFICATION_COMMON,
-    INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
     INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM,
+    INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
     INCIDENT_PRIORITY_CHANGE,
     INCIDENT_RESOURCES_MESSAGE,
     INCIDENT_REVIEW_DOCUMENT,
@@ -36,13 +40,6 @@ from dispatch.messaging import (
     INCIDENT_TYPE_CHANGE,
     MessageType,
 )
-
-from dispatch.incident.enums import IncidentStatus
-from dispatch.conversation.enums import ConversationCommands
-from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
-from dispatch.incident import service as incident_service
-from dispatch.incident.models import Incident, IncidentRead
-
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.plugins.base import plugins
