@@ -34,7 +34,6 @@ from dispatch.config import (
     INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID,
     INCIDENT_STORAGE_RESTRICTED,
 )
-
 from dispatch.conference import service as conference_service
 from dispatch.conference.models import ConferenceCreate
 from dispatch.conversation import service as conversation_service
@@ -43,14 +42,12 @@ from dispatch.database import SessionLocal
 from dispatch.decorators import background_task
 from dispatch.document import service as document_service
 from dispatch.document.models import DocumentCreate
-from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
 from dispatch.enums import Visibility
 from dispatch.event import service as event_service
 from dispatch.group import service as group_service
 from dispatch.group.models import GroupCreate
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
-
 from dispatch.incident_priority.models import IncidentPriorityRead
 from dispatch.incident_type import service as incident_type_service
 from dispatch.incident_type.models import IncidentTypeRead
@@ -81,6 +78,7 @@ from .messaging import (
     send_incident_suggested_reading_messages,
 )
 from .models import Incident, IncidentStatus
+
 
 log = logging.getLogger(__name__)
 
@@ -711,13 +709,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     # we update the external ticket
     update_external_incident_ticket(incident, db_session)
 
-    incident_review_document = get_document(
-        db_session=db_session,
-        incident_id=incident.id,
-        resource_type=INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
-    )
-
-    if not incident_review_document:
+    if not incident.incident_review_document:
         storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
 
         # we create a copy of the incident review document template and we move it to the incident storage
@@ -763,13 +755,6 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
             incident_id=incident.id,
         )
 
-        # we get the incident investigation and faq documents
-        incident_document = get_document(
-            db_session=db_session,
-            incident_id=incident_id,
-            resource_type=INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
-        )
-
         # we update the incident review document
         update_document(
             incident_review_document["id"],
@@ -781,7 +766,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
             incident.description,
             incident.commander.name,
             incident.conversation.weblink,
-            incident_document.weblink,
+            incident.incident_document.weblink,
             incident.storage.weblink,
             incident.ticket.weblink,
         )

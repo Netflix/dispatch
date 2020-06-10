@@ -506,9 +506,7 @@ def send_incident_new_role_assigned_notification(
     log.debug("Incident new role assigned message sent.")
 
 
-def send_incident_review_document_notification(
-    conversation_id: str, incident_review_document_weblink: str
-):
+def send_incident_review_document_notification(conversation_id: str, review_document_weblink: str):
     """Sends the review document notification."""
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
@@ -519,7 +517,7 @@ def send_incident_review_document_notification(
         notification_text,
         [INCIDENT_REVIEW_DOCUMENT],
         notification_type,
-        incident_review_document_weblink=incident_review_document_weblink,
+        review_document_weblink=review_document_weblink,
     )
 
     log.debug("Incident review document notification sent.")
