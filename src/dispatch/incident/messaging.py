@@ -17,7 +17,6 @@ from dispatch.config import (
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
     INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG,
 )
-from dispatch.conversation.enums import ConversationCommands
 from dispatch.database import SessionLocal
 from dispatch.enums import Visibility
 from dispatch.incident import service as incident_service
