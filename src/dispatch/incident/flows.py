@@ -320,6 +320,19 @@ def archive_incident_artifacts(incident: Incident, db_session: SessionLocal):
     )
 
 
+def unrestrict_incident_storage(incident: Incident, db_session: SessionLocal):
+    """Unrestricts the incident storage."""
+    p = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
+    p.unrestrict(incident.storage.resource_id)
+
+    event_service.log(
+        db_session=db_session,
+        source=p.title,
+        description="Incident storage unrestricted",
+        incident_id=incident.id,
+    )
+
+
 def create_collaboration_documents(incident: Incident, db_session: SessionLocal):
     """Create external collaboration document."""
     p = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
@@ -797,6 +810,10 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     update_external_incident_ticket(incident, db_session)
 
     if incident.visibility == Visibility.open:
+        if INCIDENT_STORAGE_RESTRICTED:
+            # we unrestrict the storage
+            unrestrict_incident_storage(incident, db_session)
+
         # we archive the artifacts in the storage
         archive_incident_artifacts(incident, db_session)
 
