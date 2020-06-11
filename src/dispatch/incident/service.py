@@ -14,7 +14,7 @@ from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugins.base import plugins
 from dispatch.plugin import service as plugin_service
 from dispatch.tag import service as tag_service
-from dispatch.tag.models import TagUpdate
+from dispatch.tag.models import TagUpdate, TagCreate
 from dispatch.term import service as term_service
 from dispatch.term.models import TermUpdate
 
@@ -138,6 +138,7 @@ def create(
     title: str,
     status: str,
     description: str,
+    tags: List[dict],
     visibility: str = None,
 ) -> Incident:
     """Creates a new incident."""
@@ -154,6 +155,10 @@ def create(
     if not visibility:
         visibility = incident_type.visibility
 
+    tag_objs = []
+    for t in tags:
+        tag_objs.append(tag_service.get_or_create(db_session=db_session, tag_in=TagCreate(**t)))
+
     # We create the incident
     incident = Incident(
         title=title,
@@ -162,6 +167,7 @@ def create(
         incident_type=incident_type,
         incident_priority=incident_priority,
         visibility=visibility,
+        tags=tag_objs,
     )
     db_session.add(incident)
     db_session.commit()

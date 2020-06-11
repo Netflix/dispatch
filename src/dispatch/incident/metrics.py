@@ -72,9 +72,16 @@ def make_forecast(
     idx = pd.date_range(dataframe.index[0], dataframe.index[-1], freq="M")
     dataframe = dataframe.reindex(idx, fill_value=0)
 
-    forecaster = ExponentialSmoothing(
-        dataframe, seasonal_periods=12, trend="add", seasonal="add"
-    ).fit(use_boxcox=True)
+    try:
+        forecaster = ExponentialSmoothing(
+            dataframe, seasonal_periods=12, trend="add", seasonal="add"
+        ).fit(use_boxcox=True)
+    except Exception as e:
+        log.error(f"Issue forecasting incidents: {e}")
+        return {
+            "categories": [],
+            "series": [{"name": "Predicted", "data": []}],
+        }
 
     forecast = forecaster.forecast(12)
     forecast_df = pd.DataFrame({"ds": forecast.index.astype("str"), "yhat": forecast.values})

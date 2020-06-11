@@ -109,7 +109,7 @@
         <term-combobox label="Terms" v-model="terms" />
       </v-flex>
       <v-flex xs12>
-        <tag-combobox label="Tags" v-model="tags" />
+        <tag-filter-combobox label="Tags" v-model="tags" />
       </v-flex>
     </v-layout>
   </v-container>
@@ -125,7 +125,7 @@ import IndividualSelect from "@/individual/IndividualSelect.vue"
 import DatePickerMenu from "@/components/DatePickerMenu.vue"
 import TimePickerMenu from "@/components/TimePickerMenu.vue"
 import TermCombobox from "@/term/TermCombobox.vue"
-import TagCombobox from "@/tag/TagCombobox.vue"
+import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 
 extend("required", {
   ...required,
@@ -141,7 +141,7 @@ export default {
     IncidentTypeSelect,
     IndividualSelect,
     TermCombobox,
-    TagCombobox,
+    TagFilterCombobox,
     TimePickerMenu,
     DatePickerMenu
   },

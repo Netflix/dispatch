@@ -58,11 +58,29 @@ def create(*, db_session, document_in: DocumentCreate) -> Document:
 def update(*, db_session, document: Document, document_in: DocumentUpdate) -> Document:
     """Updates a document."""
     document_data = jsonable_encoder(document)
-    update_data = document_in.dict(skip_defaults=True)
+    update_data = document_in.dict(
+        skip_defaults=True, exclude={"terms", "incident_priorities", "incident_types"}
+    )
+
+    terms = [
+        term_service.get_or_create(db_session=db_session, term_in=t) for t in document_in.terms
+    ]
+    incident_priorities = [
+        incident_priority_service.get_by_name(db_session=db_session, name=n.name)
+        for n in document_in.incident_priorities
+    ]
+    incident_types = [
+        incident_type_service.get_by_name(db_session=db_session, name=n.name)
+        for n in document_in.incident_types
+    ]
 
     for field in document_data:
         if field in update_data:
             setattr(document, field, update_data[field])
+
+    document.terms = terms
+    document.incident_priorities = incident_priorities
+    document.incident_types = incident_types
 
     db_session.add(document)
     db_session.commit()

@@ -29,6 +29,7 @@ class MessageType(str, Enum):
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
+    incident_participant_suggested_reading = "incident-participant-suggested-reading"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -169,6 +170,12 @@ individuals you feel may be able to help resolve this incident.""".replace(
     "\n", " "
 ).strip()
 
+INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION = """
+Dispatch thinks the following documents are
+relevant to this incident.""".replace(
+    "\n", " "
+).strip()
+
 INCIDENT_NOTIFICATION_PURPOSES_FYI = """
 This message is for notification purposes only.""".replace(
     "\n", " "
@@ -299,6 +306,12 @@ INCIDENT_INVESTIGATION_SHEET = {
     "text": INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
 }
 
+INCIDENT_REVIEW_DOCUMENT = {
+    "title": "Incident Review Document",
+    "title_link": "{{review_document_weblink}}",
+    "text": INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,
+}
+
 INCIDENT_FAQ_DOCUMENT = {
     "title": "Incident FAQ Document",
     "title_link": "{{faq_weblink}}",
@@ -315,6 +328,12 @@ INCIDENT_STATUS_CHANGE = {
 INCIDENT_PRIORITY_CHANGE = {
     "title": "Incident Priority Change",
     "text": INCIDENT_PRIORITY_CHANGE_DESCRIPTION,
+}
+
+INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM = {
+    "title": "{{name}}",
+    "title_link": "{{weblink}}",
+    "text": "{{description}}",
 }
 
 INCIDENT_PARTICIPANT_WELCOME = {
@@ -340,6 +359,7 @@ INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
 INCIDENT_RESOURCES_MESSAGE = [
     INCIDENT_COMMANDER,
     INCIDENT_INVESTIGATION_DOCUMENT,
+    INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_STORAGE,
     INCIDENT_CONFERENCE,
     INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
@@ -385,14 +405,6 @@ INCIDENT_TASK_REMINDER = [
     {"title": "Created At", "text": "", "datetime": "{{ created_at}}"},
     {"title": "Resolve By", "text": "", "datetime": "{{ resolve_by }}"},
     {"title": "Link", "text": "{{ weblink }}"},
-]
-
-INCIDENT_REVIEW_DOCUMENT_NOTIFICATION = [
-    {
-        "title": "Incident Review Document",
-        "title_link": "{{incident_review_document_weblink}}",
-        "text": INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,
-    }
 ]
 
 INCIDENT_NEW_ROLE_NOTIFICATION = [

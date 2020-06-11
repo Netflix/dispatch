@@ -32,6 +32,10 @@ The `Slack` plugin relies on the [Events API](https://api.slack.com/events-api) 
 
 > Used during development to funnel all messages to a particular user.
 
+#### `SLACK_BAN_THREADS` \[default: True]
+
+> Do not allow threaded messages in incident channels.
+
 #### `SLACK_COMMAND_MARK_ACTIVE_SLUG` \[default: '/dispatch-mark-active'\] \[DEPRECATED\]
 
 > Active command as displayed in Slack.
@@ -51,6 +55,10 @@ The `Slack` plugin relies on the [Events API](https://api.slack.com/events-api) 
 #### `SLACK_COMMAND_LIST_TASKS_SLUG` \[default: '/dispatch-list-tasks'\]
 
 > List tasks command as displayed in Slack.
+
+#### `SLACK_COMMAND_LIST_MY_TASKS_SLUG` \[default: '/dispatch-list-my-tasks'\]
+
+> List tasks for the requesting user command as displayed in Slack.
 
 #### `SLACK_COMMAND_LIST_PARTICIPANTS_SLUG` \[default: '/dispatch-list-participants'\]
 

@@ -43,7 +43,7 @@ from dispatch.report import service as report_service
 from dispatch.report.enums import ReportTypes
 from dispatch.service import service as service_service
 from dispatch.task import service as task_service
-from dispatch.task.models import TaskStatus
+from dispatch.task.models import TaskStatus, Task
 
 from . import __version__
 from .config import (
@@ -53,11 +53,13 @@ from .config import (
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
     SLACK_COMMAND_LIST_TASKS_SLUG,
+    SLACK_COMMAND_LIST_MY_TASKS_SLUG,
     SLACK_COMMAND_REPORT_INCIDENT_SLUG,
     SLACK_COMMAND_TACTICAL_REPORT_SLUG,
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_SIGNING_SECRET,
     SLACK_TIMELINE_EVENT_REACTION,
+    SLACK_BAN_THREADS,
 )
 from .messaging import (
     INCIDENT_CONVERSATION_COMMAND_MESSAGE,
@@ -94,6 +96,7 @@ class EventBody(BaseModel):
     channel_type: str = None
     deleted_ts: str = None
     event_ts: str = None
+    thread_ts: str = None
     file_id: str = None
     hidden: bool = None
     inviter: str = None
@@ -223,8 +226,44 @@ def after_hours(user_email: str, incident_id: int, event: dict = None, db_sessio
             db_session.commit()
 
 
+def filter_tasks_by_assignee_and_creator(tasks: List[Task], by_assignee: str, by_creator: str):
+    """Filters a list of tasks looking for a given creator or assignee."""
+    filtered_tasks = []
+    for t in tasks:
+        if by_creator:
+            creator_email = t.creator.individual.email
+            if creator_email == by_creator:
+                filtered_tasks.append(t)
+
+        if by_assignee:
+            assignee_emails = [a.individual.email for a in t.assignees]
+            if by_assignee in assignee_emails:
+                filtered_tasks.append(t)
+
+    return filtered_tasks
+
+
 @background_task
-def list_tasks(incident_id: int, command: dict = None, db_session=None):
+def list_my_tasks(incident_id: int, command: dict = None, db_session=None):
+    """Returns the list of incident tasks to the user as an ephemeral message."""
+    user_email = dispatch_slack_service.get_user_email_async(slack_client, command["user_id"])
+    list_tasks(
+        incident_id=incident_id,
+        command=command,
+        db_session=db_session,
+        by_creator=user_email,
+        by_assignee=user_email,
+    )
+
+
+@background_task
+def list_tasks(
+    incident_id: int,
+    command: dict = None,
+    db_session=None,
+    by_creator: str = None,
+    by_assignee: str = None,
+):
     """Returns the list of incident tasks to the user as an ephemeral message."""
     blocks = []
     for status in TaskStatus:
@@ -238,6 +277,9 @@ def list_tasks(incident_id: int, command: dict = None, db_session=None):
         tasks = task_service.get_all_by_incident_id_and_status(
             db_session=db_session, incident_id=incident_id, status=status.value
         )
+
+        if by_creator or by_assignee:
+            tasks = filter_tasks_by_assignee_and_creator(tasks, by_assignee, by_creator)
 
         for task in tasks:
             assignees = [a.individual.email for a in task.assignees]
@@ -274,7 +316,7 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
 
     participants = participant_service.get_all_by_incident_id(
         db_session=db_session, incident_id=incident_id
-    )
+    ).all()
 
     contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
 
@@ -297,25 +339,31 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
             for role in participant_active_roles:
                 participant_roles.append(role.role)
 
-            blocks.append(
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": (
-                            f"*Name:* <{participant_weblink}|{participant_name}>\n"
-                            f"*Team*: {participant_team}, {participant_department}\n"
-                            f"*Location*: {participant_location}\n"
-                            f"*Incident Role(s)*: {(', ').join(participant_roles)}\n"
-                        ),
-                    },
-                    "accessory": {
-                        "type": "image",
-                        "image_url": participant_avatar_url,
-                        "alt_text": participant_name,
-                    },
-                }
-            )
+            block = {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": (
+                        f"*Name:* <{participant_weblink}|{participant_name}>\n"
+                        f"*Team*: {participant_team}, {participant_department}\n"
+                        f"*Location*: {participant_location}\n"
+                        f"*Incident Role(s)*: {(', ').join(participant_roles)}\n"
+                    ),
+                },
+            }
+
+            if len(participants) < 20:
+                block.update(
+                    {
+                        "accessory": {
+                            "type": "image",
+                            "alt_text": participant_name,
+                            "image_url": participant_avatar_url,
+                        },
+                    }
+                )
+
+            blocks.append(block)
             blocks.append({"type": "divider"})
 
     dispatch_slack_service.send_ephemeral_message(
@@ -561,6 +609,33 @@ def add_user_to_conversation(
         dispatch_slack_service.add_users_to_conversation(
             slack_client, incident.conversation.channel_id, [user_id]
         )
+        message = f"Success! We've added you to incident {incident.name}. Please check your side bar for the new channel."
+        dispatch_slack_service.send_ephemeral_message(
+            slack_client, action["container"]["channel_id"], user_id, message
+        )
+
+
+@background_task
+def ban_threads_warning(user_email: str, incident_id: int, event: dict = None, db_session=None):
+    """Sends the user an ephemeral message if they use threads."""
+    if not SLACK_BAN_THREADS:
+        return
+
+    if event.event.thread_ts:
+        # we should be able to look for `subtype == message_replied` once this bug is fixed
+        # https://api.slack.com/events/message/message_replied
+        # From Slack: Bug alert! This event is missing the subtype field when dispatched
+        # over the Events API. Until it is fixed, examine message events' thread_ts value.
+        # When present, it's a reply. To be doubly sure, compare a thread_ts to the top-level ts
+        # value, when they differ the latter is a reply to the former.
+        message = "Please refrain from using threads in incident related channels. Threads make it harder for incident participants to maintain context."
+        dispatch_slack_service.send_ephemeral_message(
+            slack_client,
+            event.event.channel,
+            event.event.user,
+            message,
+            thread_ts=event.event.thread_ts,
+        )
 
 
 def event_functions(event: EventEnvelope):
@@ -570,7 +645,7 @@ def event_functions(event: EventEnvelope):
         "file_shared": [add_evidence_to_storage],
         "link_shared": [],
         "member_joined_channel": [incident_flows.incident_add_or_reactivate_participant_flow],
-        "message": [],
+        "message": [ban_threads_warning],
         "member_left_channel": [incident_flows.incident_remove_participant_flow],
         "message.groups": [],
         "message.im": [],
@@ -590,6 +665,7 @@ def command_functions(command: str):
         SLACK_COMMAND_LIST_PARTICIPANTS_SLUG: [list_participants],
         SLACK_COMMAND_LIST_RESOURCES_SLUG: [incident_flows.incident_list_resources_flow],
         SLACK_COMMAND_LIST_TASKS_SLUG: [list_tasks],
+        SLACK_COMMAND_LIST_MY_TASKS_SLUG: [list_my_tasks],
         SLACK_COMMAND_TACTICAL_REPORT_SLUG: [create_tactical_report_dialog],
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_dialog],
     }
@@ -845,13 +921,6 @@ async def handle_event(
         return {"challenge": event.challenge}
 
     event_body = event.event
-
-    if (
-        event_body.type == "message" and event_body.subtype
-    ):  # We ignore messages that have a subtype
-        # Parse the Event payload and emit the event to the event listener
-        response.headers["X-Slack-Powered-By"] = create_ua_string()
-        return {"ok"}
 
     user_id = event_body.user
     channel_id = get_channel_id(event_body)

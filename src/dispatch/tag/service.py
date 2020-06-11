@@ -24,7 +24,7 @@ def create(*, db_session, tag_in: TagCreate) -> Tag:
 
 
 def get_or_create(*, db_session, tag_in) -> Tag:
-    if tag_in.id:
+    if hasattr(tag_in, "id"):
         q = db_session.query(Tag).filter(Tag.id == tag_in.id)
     else:
         q = db_session.query(Tag).filter_by(**tag_in.dict())

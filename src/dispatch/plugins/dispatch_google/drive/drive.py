@@ -171,7 +171,7 @@ def download_google_document(client: Any, file_id: str, mime_type: str = "text/p
         while not response:
             _, response = downloader.next_chunk()
         return fp.getvalue().decode("utf-8")
-    except HttpError:
+    except (HttpError, OSError):
         # Do no retry. Log the error fail.
         raise Exception(f"Failed to export the file. Id: {file_id} MimeType: {mime_type}")
 
@@ -223,6 +223,42 @@ def restrict_team_drive(client: Any, team_drive_id: str):
             "copyRequiresWriterPermission": True,
             "domainUsersOnly": False,
             "driveMembersOnly": True,
+        },
+    }
+
+    return make_call(client.drives(), "update", driveId=team_drive_id, body=body)
+
+
+def unrestrict_team_drive(client: Any, team_drive_id: str):
+    """Removes a set of restrictions and capabilities from the shared drive."""
+
+    # NOTE: You can list the drive metadata using the API explorer at
+    # https://developers.google.com/drive/api/v2/reference/drives/get and setting the "fields" field to *
+
+    body = {
+        "capabilities": {
+            "canAddChildren": True,
+            "canChangeCopyRequiresWriterPermissionRestriction": False,
+            "canChangeDomainUsersOnlyRestriction": True,
+            "canChangeDriveMembersOnlyRestriction": True,
+            "canComment": True,
+            "canCopy": True,
+            "canDeleteChildren": False,
+            "canDeleteDrive": False,
+            "canDownload": True,
+            "canEdit": True,
+            "canListChildren": True,
+            "canManageMembers": False,
+            "canReadRevisions": True,
+            "canRename": True,
+            "canRenameDrive": False,
+            "canShare": True,
+            "canTrashChildren": True,
+        },
+        "restrictions": {
+            "copyRequiresWriterPermission": True,
+            "domainUsersOnly": False,
+            "driveMembersOnly": False,
         },
     }
 

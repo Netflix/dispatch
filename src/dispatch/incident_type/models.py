@@ -66,6 +66,10 @@ class IncidentTypeCreate(IncidentTypeBase):
     commander_service: Optional[Service]
     plugin_metadata: List[PluginMetadata] = []
 
+    @validator("plugin_metadata", pre=True)
+    def replace_none_with_empty_list(cls, value):
+        return [] if value is None else value
+
 
 class IncidentTypeUpdate(IncidentTypeBase):
     id: int
@@ -73,6 +77,10 @@ class IncidentTypeUpdate(IncidentTypeBase):
     template_document: Optional[Document]
     commander_service: Optional[Service]
     plugin_metadata: List[PluginMetadata] = []
+
+    @validator("plugin_metadata", pre=True)
+    def replace_none_with_empty_list(cls, value):
+        return [] if value is None else value
 
 
 class IncidentTypeRead(IncidentTypeBase):
