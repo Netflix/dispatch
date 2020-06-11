@@ -19,6 +19,8 @@ from .config import (
     JIRA_PASSWORD,
     JIRA_PROJECT_KEY,
     JIRA_ISSUE_TYPE_ID,
+    JIRA_REPORTER,
+    JIRA_ASSIGNEE
 )
 
 
@@ -58,8 +60,8 @@ def create_issue_fields(
     issue_fields = {}
 
     issue_fields.update({"summary": title})
-    issue_fields.update({"assignee": {"name": commander_username}})
-    issue_fields.update({"reporter": {"name": reporter_username}})
+    issue_fields.update({"assignee": {"id": JIRA_ASSIGNEE}})
+    issue_fields.update({"reporter": {"id": JIRA_REPORTER}})
 
     description = Template(ISSUE_SUMMARY_TEMPLATE).render(
         description=description,
@@ -133,15 +135,14 @@ class JiraTicketPlugin(TicketPlugin):
         """Creates a Jira issue."""
         client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
 
-        commander_username = get_user_name(commander)
-        reporter_username = get_user_name(reporter)
+
 
         issue_fields = {
             "project": {"key": JIRA_PROJECT_KEY},
             "issuetype": {"id": JIRA_ISSUE_TYPE_ID},
             "summary": title,
-            "assignee": {"name": commander_username},
-            "reporter": {"name": reporter_username},
+            "assignee": {"id": JIRA_ASSIGNEE},
+            "reporter": {"id": JIRA_REPORTER},
         }
 
         return create(client, issue_fields, type=JIRA_PROJECT_KEY)
@@ -166,8 +167,8 @@ class JiraTicketPlugin(TicketPlugin):
         """Updates Jira issue fields."""
         client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
 
-        commander_username = get_user_name(commander_email)
-        reporter_username = get_user_name(reporter_email)
+        commander_username = JIRA_ASSIGNEE
+        reporter_username = JIRA_REPORTER
 
         issue = client.issue(ticket_id)
         issue_fields = create_issue_fields(

@@ -32,3 +32,9 @@ By default Dispatch ships with Jira support. Each Jira installation is unique, s
 
 > Id for Jira issue type.
 
+## `JIRA_REPORTER`
+
+> Jira userID for reporter
+
+## `JIRA_ASSIGNEE`
+> Jira userID for assignee
