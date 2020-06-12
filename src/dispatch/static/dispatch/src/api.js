@@ -39,7 +39,7 @@ instance.interceptors.response.use(
         "app/SET_SNACKBAR",
         {
           text:
-            "Something has gone very wrong, please retry or let your admin know that you recieved this error.",
+            "Something has gone very wrong, please retry or let your admin know that you received this error.",
           color: "red"
         },
         { root: true }
