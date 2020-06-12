@@ -71,6 +71,10 @@ If you wish to disable authentication set `DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 Today, basic authentication allows self registration without approval.
 {% endhint %}
 
+{% hint style="warning" %}
+In order for this plugin to work, you need to set `DISPATCH_JWT_SECRET`.
+{% endhint %}
+
 #### `DISPATCH_JWT_SECRET`
 
 > Used by the basic auth provider to mint JWT tokens.
