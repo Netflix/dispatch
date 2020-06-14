@@ -231,9 +231,9 @@ def get_user_id_from_jira(email):
 @apply(counter, exclude=["__init__"])
 @apply(timer, exclude=["__init__"])
 class JiraCustomTicketPlugin(TicketPlugin):
-    title = "Jira Plugin - custom"
+    title = "Jira Cloud Plugin"
     slug = "jira-ticket-custom"
-    description = "Uses Jira to help manage external tickets."
+    description = "Uses Jira Cloud to help manage external tickets."
     version = jira_plugin.__version__
 
     author = "Varun Tomar"
