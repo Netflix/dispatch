@@ -40,5 +40,4 @@ tabulate
 tenacity
 uvicorn
 ruamel.yaml
-rsa==4.0
 google-auth

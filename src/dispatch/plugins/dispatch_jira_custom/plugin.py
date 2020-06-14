@@ -13,7 +13,7 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_jira as jira_plugin
 from dispatch.plugins.bases import TicketPlugin
 
-# TO BE MOVED OUT
+# TODO: TO BE MOVED OUT
 id_file_yaml = "/tmp/email_id.yaml"
 
 from .config import (
@@ -52,20 +52,15 @@ INCIDENT_PRIORITY_MAP = {
 def create_sec_issue(
     client: Any,
     title: str,
-    priority: str,
-    incident_type: str,
     commander_username: str,
     reporter_username: str,
 ):
     issue_fields = {
         "project": {"key": JIRA_PROJECT_KEY},
-        # "issuetype": {"id": JIRA_ISSUE_TYPE_ID},
         "issuetype": {"name": JIRA_ISSUE_TYPE_ID},
         "summary": title,
         "assignee": {"id": commander_username},
-        # "components": [{"name": incident_type}],
         "reporter": {"id": reporter_username},
-        # "customfield_10551": INCIDENT_PRIORITY_MAP[priority.lower()],
     }
 
     return create(client, issue_fields, type=JIRA_PROJECT_KEY)
@@ -74,9 +69,8 @@ def create_sec_issue(
 def create_issue_fields(
     title: str = None,
     description: str = None,
-    incident_type: str = None,
-    priority: str = None,
     commander_username: str = None,
+    commander_username_id: str = None,
     reporter_username: str = None,
     conversation_weblink: str = None,
     document_weblink: str = None,
@@ -109,23 +103,14 @@ def create_issue_fields(
         )
         issue_fields.update({"description": description})
 
-    if commander_username:
-        issue_fields.update({"assignee": {"id": commander_username}})
+    if commander_username_id:
+        issue_fields.update({"assignee": {"id": commander_username_id}})
 
     if reporter_username:
         issue_fields.update({"reporter": {"id": reporter_username}})
 
-    # if incident_type:
-    #     issue_fields.update({"components": [{"name": incident_type}]})
-
-    # if priority:
-    #     issue_fields.update({"customfield_10551": INCIDENT_PRIORITY_MAP[priority.lower()]})
-
     if labels:
         issue_fields.update({"labels": labels})
-
-    if cost:
-        issue_fields.update({"customfield_20250": str(cost)})
 
     return issue_fields
 
@@ -149,7 +134,6 @@ def update(client: Any, issue: Any, issue_fields: dict, transition: str = None) 
             if t["name"].lower() == transition.lower():
                 client.transition_issue(issue, t["id"])
                 break
-
     return data
 
 
@@ -175,9 +159,11 @@ def link_issues(client: Any, link_type: str, issue_id_a: str, issue_id_b: str):
 
 
 def get_id_from_email(email_address: str) -> str:
-    """Returns username if based on email
-    Returns accountId based on email
+    """
+    Returns jira account id based on email
     If no contact person does not exist set default assignee
+    This is to address:
+    https://community.atlassian.com/t5/Jira-questions/The-query-parameter-username-is-not-supported-in-GDPR-strict/qaq-p/1345106
     """
     with open(id_file_yaml, 'r') as stream_config:
         try:
@@ -198,10 +184,8 @@ def get_user_name(email):
     return email
 
 
-def get_user_name_new(email):
-    """Returns username part of email, if valid email is provided."""
-    # if "@" in email:
-    #     return email.split("@")[0]
+def get_user_id_from_jira(email):
+    """Returns jira account id, if valid email is provided."""
     return get_id_from_email(email)
 
 
@@ -210,11 +194,11 @@ def get_user_name_new(email):
 class JiraCustomTicketPlugin(TicketPlugin):
     title = "Jira Plugin - custom"
     slug = "jira-ticket-custom"
-    description = "Uses Jira to hepl manage external tickets."
+    description = "Uses Jira to help manage external tickets."
     version = jira_plugin.__version__
 
     author = "Varun Tomar"
-    author_url = "https://github.com/netflix/dispatch.git"
+    author_url = "https://github.com/tomarv2/dispatch.git"
 
     _schema = None
 
@@ -230,8 +214,8 @@ class JiraCustomTicketPlugin(TicketPlugin):
     ):
         """Creates a Jira ticket."""
         client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
-        commander_username = get_user_name_new(commander)
-        reporter_username = get_user_name_new(reporter)
+        commander_username = get_user_id_from_jira(commander)
+        reporter_username = get_user_id_from_jira(reporter)
         return create_sec_issue(
             client, title, incident_priority, incident_type, commander_username, reporter_username
         )
@@ -255,8 +239,9 @@ class JiraCustomTicketPlugin(TicketPlugin):
         incident_type_plugin_metadata: dict = {},
     ):
         """Updates Jira ticket fields."""
-        commander_username = get_user_name_new(commander_email) if commander_email else None
-        reporter_username = get_user_name_new(reporter_email) if reporter_email else None
+        commander_username = get_user_name(commander_email) if commander_email else None
+        commander_username_id = get_user_id_from_jira(commander_email) if commander_email else None
+        reporter_username = get_user_id_from_jira(reporter_email) if reporter_email else None
 
         client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
 
@@ -267,6 +252,7 @@ class JiraCustomTicketPlugin(TicketPlugin):
             incident_type=incident_type,
             priority=priority,
             commander_username=commander_username,
+            commander_username_id=commander_username_id,
             reporter_username=reporter_username,
             conversation_weblink=conversation_weblink,
             conference_weblink=conference_weblink,
