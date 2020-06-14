@@ -14,6 +14,7 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_jira as jira_plugin
 from dispatch.plugins.bases import TicketPlugin
 
+
 from .config import (
     JIRA_BROWSER_URL,
     JIRA_API_URL,
@@ -25,7 +26,6 @@ from .config import (
 )
 
 # TODO: TO BE MOVED OUT
-# download raw file from git or get from the file path from docker image
 id_file_yaml = JIRA_ID_MAPPING_FILE_PATH
 
 INCIDENT_TEMPLATE = """
@@ -55,15 +55,20 @@ INCIDENT_PRIORITY_MAP = {
 def create_sec_issue(
     client: Any,
     title: str,
+    priority: str,
+    incident_type: str,
     commander_username: str,
     reporter_username: str,
 ):
     issue_fields = {
         "project": {"key": JIRA_PROJECT_KEY},
+        # "issuetype": {"id": JIRA_ISSUE_TYPE_ID},
         "issuetype": {"name": JIRA_ISSUE_TYPE_ID},
         "summary": title,
         "assignee": {"id": commander_username},
+        # "components": [{"name": incident_type}],
         "reporter": {"id": reporter_username},
+        # "customfield_10551": INCIDENT_PRIORITY_MAP[priority.lower()],
     }
 
     return create(client, issue_fields, type=JIRA_PROJECT_KEY)
@@ -72,6 +77,8 @@ def create_sec_issue(
 def create_issue_fields(
     title: str = None,
     description: str = None,
+    incident_type: str = None,
+    priority: str = None,
     commander_username: str = None,
     commander_username_id: str = None,
     reporter_username: str = None,
@@ -80,6 +87,7 @@ def create_issue_fields(
     storage_weblink: str = None,
     conference_weblink: str = None,
     labels: List[str] = None,
+    cost: int = None,
 ):
     """Creates Jira issue fields."""
     issue_fields = {}
@@ -111,8 +119,17 @@ def create_issue_fields(
     if reporter_username:
         issue_fields.update({"reporter": {"id": reporter_username}})
 
+    # if incident_type:
+    #     issue_fields.update({"components": [{"name": incident_type}]})
+
+    # if priority:
+    #     issue_fields.update({"customfield_10551": INCIDENT_PRIORITY_MAP[priority.lower()]})
+
     if labels:
         issue_fields.update({"labels": labels})
+
+    if cost:
+        issue_fields.update({"customfield_20250": str(cost)})
 
     return issue_fields
 
@@ -136,6 +153,8 @@ def update(client: Any, issue: Any, issue_fields: dict, transition: str = None) 
             if t["name"].lower() == transition.lower():
                 client.transition_issue(issue, t["id"])
                 break
+
+    print("update data:", data)
     return data
 
 
@@ -160,6 +179,20 @@ def link_issues(client: Any, link_type: str, issue_id_a: str, issue_id_b: str):
     }
 
 
+def parse_yaml_file(filename: str, email_address: str) -> str:
+    """Parse yaml file to get jira id"""
+    with open(filename, 'r') as stream_config:
+        try:
+            out_config = yaml.load(stream_config, Loader=yaml.Loader)
+        except IOError:
+            raise Exception('yaml file: %s not found!', id_file_yaml)
+        user = [v for k, v in out_config['email'].items() if k == email_address]
+        if user:
+            return ''.join(user)
+        else:
+            return out_config['default_account_id']
+
+
 def get_id_from_email(email_address: str) -> str:
     """
     Returns jira account id based on email
@@ -167,26 +200,20 @@ def get_id_from_email(email_address: str) -> str:
     This is to address:
     https://community.atlassian.com/t5/Jira-questions/The-query-parameter-username-is-not-supported-in-GDPR-strict/qaq-p/1345106
     """
-
     """file from github will be the final file"""
+    file_to_download = 'id_file.yaml'
     if 'raw' in id_file_yaml:
+        print('downloading')
         try:
             r = requests.get(id_file_yaml)
-            open('id_file_yaml', 'wb').write(r.content)
+            open(file_to_download, 'wb').write(r.content)
         except IOError as err:
             print("error downloading file from git: {0}".format(id_file_yaml))
             pass
+        return parse_yaml_file(file_to_download, email_address)
+
     else:
-        with open(id_file_yaml, 'r') as stream_config:
-            try:
-                out_config = yaml.load(stream_config, Loader=yaml.Loader)
-            except IOError:
-                raise Exception('yaml file: %s not found!', id_file_yaml)
-            user = [v for k, v in out_config['email'].items() if k == email_address]
-            if user:
-                return ''.join(user)
-            else:
-                return out_config['default_account_id']
+        return parse_yaml_file(file_to_download, email_address)
 
 
 def get_user_name(email):
@@ -197,16 +224,16 @@ def get_user_name(email):
 
 
 def get_user_id_from_jira(email):
-    """Returns jira account id, if valid email is provided."""
+    """Returns username part of email, if valid email is provided."""
     return get_id_from_email(email)
 
 
 @apply(counter, exclude=["__init__"])
 @apply(timer, exclude=["__init__"])
 class JiraCustomTicketPlugin(TicketPlugin):
-    title = "Jira Cloud Plugin"
+    title = "Jira Plugin - custom"
     slug = "jira-ticket-custom"
-    description = "Uses Jira Cloud to help manage external tickets."
+    description = "Uses Jira to help manage external tickets."
     version = jira_plugin.__version__
 
     author = "Varun Tomar"
@@ -219,6 +246,7 @@ class JiraCustomTicketPlugin(TicketPlugin):
         incident_id: int,
         title: str,
         incident_type: str,
+        incident_priority: str,
         commander: str,
         reporter: str,
         incident_type_plugin_metadata: dict = {},
@@ -228,7 +256,7 @@ class JiraCustomTicketPlugin(TicketPlugin):
         commander_username = get_user_id_from_jira(commander)
         reporter_username = get_user_id_from_jira(reporter)
         return create_sec_issue(
-            client, title, incident_type, commander_username, reporter_username
+            client, title, incident_priority, incident_type, commander_username, reporter_username
         )
 
     def update(
@@ -237,6 +265,7 @@ class JiraCustomTicketPlugin(TicketPlugin):
         title: str = None,
         description: str = None,
         incident_type: str = None,
+        priority: str = None,
         status: str = None,
         commander_email: str = None,
         reporter_email: str = None,
@@ -245,6 +274,7 @@ class JiraCustomTicketPlugin(TicketPlugin):
         document_weblink: str = None,
         storage_weblink: str = None,
         labels: List[str] = None,
+        cost: int = None,
         incident_type_plugin_metadata: dict = {},
     ):
         """Updates Jira ticket fields."""
@@ -259,6 +289,7 @@ class JiraCustomTicketPlugin(TicketPlugin):
             title=title,
             description=description,
             incident_type=incident_type,
+            priority=priority,
             commander_username=commander_username,
             commander_username_id=commander_username_id,
             reporter_username=reporter_username,
@@ -267,5 +298,7 @@ class JiraCustomTicketPlugin(TicketPlugin):
             document_weblink=document_weblink,
             storage_weblink=storage_weblink,
             labels=labels,
+            cost=cost,
         )
+        print("update: ", update(client, issue, issue_fields, status))
         return update(client, issue, issue_fields, status)
