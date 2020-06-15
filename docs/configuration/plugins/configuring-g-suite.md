@@ -73,7 +73,7 @@ Finally, map the `client_id` of the created service with the required OAuth2 sco
 Navigate to admin [home](https://admin.google.com/AdminHome?chromeless=1#OGX:ManageOauthClients%20) \(Security &gt; Advanced Settings &gt; Manage API Client Access\), and add the following scopes:
 
 ```text
-https://www.googleapis.com/auth/document
+https://www.googleapis.com/auth/documents
 https://www.googleapis.com/auth/drive
 https://mail.google.com/
 https://www.googleapis.com/auth/admin.directory.group
@@ -86,6 +86,6 @@ https://www.googleapis.com/auth/calendar
 Then construct this link and click it:
 
 ```text
-https://admin.google.com/AdminHome?clientScopeToAdd=https://www.googleapis.com/auth/document,https://www.googleapis.com/auth/drive,https://mail.google.com/,https://www.googleapis.com/auth/admin.directory.group,https://www.googleapis.com/auth/apps.groups.settings,https://www.googleapis.com/auth/calendar
+https://admin.google.com/AdminHome?clientScopeToAdd=https://www.googleapis.com/auth/documents,https://www.googleapis.com/auth/drive,https://mail.google.com/,https://www.googleapis.com/auth/admin.directory.group,https://www.googleapis.com/auth/apps.groups.settings,https://www.googleapis.com/auth/calendar
 &clientNameToAdd=<INSERTCLIENTIDHERE>&chromeless=1#OGX:ManageOauthClients
 ```

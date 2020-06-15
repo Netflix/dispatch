@@ -76,7 +76,7 @@ The `Slack` plugin relies on the [Events API](https://api.slack.com/events-api) 
 
 > Engage oncall command as displayed in Slack.
 
-#### `SLACK_COMMAND_LIST_RESOURCES` \[default: \'/dispatch-list-resources'\]
+#### `SLACK_COMMAND_LIST_RESOURCES` \[default: '/dispatch-list-resources'\]
 
 > List resources command as displayed in Slack.
 
