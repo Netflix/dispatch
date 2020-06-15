@@ -62,7 +62,7 @@ def action_functions(action_id: str):
     return []
 
 
-def parse_submitted_incident_report_form(view_data: dict):
+def parse_submitted_form(view_data: dict):
     """Parse the submitted data and return important / required fields for Dispatch to create an incident."""
     parsed_data = {}
     state_elem = view_data.get("state")
@@ -95,7 +95,7 @@ def report_incident_from_submitted_form(
     # Fetch channel id from private metadata field
     channel_id = submitted_form.get("private_metadata")
 
-    parsed_form_data = parse_submitted_incident_report_form(submitted_form)
+    parsed_form_data = parse_submitted_form(submitted_form)
 
     requested_form_title = parsed_form_data.get(IncidentSlackViewBlockId.title)
     requested_form_description = parsed_form_data.get(IncidentSlackViewBlockId.description)
@@ -253,7 +253,7 @@ def update_participant_from_submitted_form(action: dict, db_session=None):
     # Fetch channel id from private metadata field
     submitted_form = action.get("view")
 
-    parsed_form_data = parse_submitted_incident_report_form(submitted_form)
+    parsed_form_data = parse_submitted_form(submitted_form)
 
     added_reason = parsed_form_data.get(UpdateParticipantBlockFields.reason_added)
     participant_id = int(parsed_form_data.get(UpdateParticipantBlockFields.participant)["value"])
