@@ -38,3 +38,15 @@ def test_incident_get(session, incident):
     test_incident = get(db_session=session, incident_id=incident.id)
 
     assert test_incident.id == incident.id
+
+
+def test_update_incident_ticket():
+    pass
+
+
+def test_set_conversation_topic():
+    pass
+
+
+def test_update_document():
+    pass
