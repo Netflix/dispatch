@@ -21,6 +21,7 @@ from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
     SLACK_COMMAND_EXECUTIVE_REPORT_SLUG,
+    SLACK_COMMAND_LIST_MY_TASKS_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
     SLACK_COMMAND_LIST_TASKS_SLUG,
@@ -43,6 +44,10 @@ INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
     SLACK_COMMAND_LIST_TASKS_SLUG: {
         "response_type": "ephemeral",
         "text": "Fetching the list of incident tasks...",
+    },
+    SLACK_COMMAND_LIST_MY_TASKS_SLUG: {
+        "response_type": "ephemeral",
+        "text": "Fetching your incident tasks...",
     },
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG: {
         "response_type": "ephemeral",
