@@ -180,16 +180,7 @@ def get_user_info_by_id(client: Any, user_id: str):
 @functools.lru_cache()
 async def get_user_info_by_id_async(client: Any, user_id: str):
     """Gets profile information about a user by id."""
-    print("=" * 50)
-    print("inside get_user_info_by_id_async")
-    print("user id: ", user_id)
-    print("=" * 50)
-    result = await get_user_info_by_id_async(client, user_id)
-    print("=" * 50)
-    print(result)
-    print("=" * 50)
-    return result["profile"]["email"]
-    #return (await make_call_async(client, "users.info", user=user_id))["user"]
+    return (await make_call_async(client, "users.info", user=user_id))["user"]
 
 
 @functools.lru_cache()
