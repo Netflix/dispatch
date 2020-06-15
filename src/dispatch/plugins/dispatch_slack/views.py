@@ -336,6 +336,13 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
             participant_avatar_url = dispatch_slack_service.get_user_avatar_url(
                 slack_client, participant_email
             )
+
+            participant_reason_added = participant.added_reason or "Unknown"
+            if participant.added_by:
+                participant_added_by = participant.added_by.individual.name
+            else:
+                participant_added_by = "Unknown"
+
             participant_active_roles = participant_role_service.get_all_active_roles(
                 db_session=db_session, participant_id=participant.id
             )
@@ -352,6 +359,8 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
                         f"*Team*: {participant_team}, {participant_department}\n"
                         f"*Location*: {participant_location}\n"
                         f"*Incident Role(s)*: {(', ').join(participant_roles)}\n"
+                        f"*Reason Added*: {participant_reason_added}\n"
+                        f"*Added By*: {participant_added_by}\n"
                     ),
                 },
             }
