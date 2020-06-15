@@ -39,5 +39,4 @@ statsmodels
 tabulate
 tenacity
 uvicorn
-ruamel.yaml
-google-auth
+
