@@ -28,7 +28,7 @@ from dispatch.enums import Visibility
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
-from dispatch.incident.enums import IncidentStatus, NewIncidentSubmission, IncidentSlackViewBlockId
+from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentUpdate, IncidentRead
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
@@ -57,18 +57,22 @@ from .config import (
     SLACK_COMMAND_REPORT_INCIDENT_SLUG,
     SLACK_COMMAND_TACTICAL_REPORT_SLUG,
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
+    SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG,
     SLACK_SIGNING_SECRET,
     SLACK_TIMELINE_EVENT_REACTION,
     SLACK_BAN_THREADS,
 )
 from .messaging import (
     INCIDENT_CONVERSATION_COMMAND_MESSAGE,
-    create_incident_reported_confirmation_msg,
-    create_modal_content,
     render_non_incident_conversation_command_error_message,
 )
 
 from .service import get_user_email
+from .modals import (
+    handle_modal_action,
+    create_update_participant_modal,
+    create_report_incident_modal,
+)
 
 
 router = APIRouter()
@@ -616,6 +620,26 @@ def add_user_to_conversation(
 
 
 @background_task
+def member_joined_channel(
+    user_email: str, incident_id: int, event: EventEnvelope, db_session=None,
+):
+    """Handles the member_joined_channel slack event."""
+    participant = incident_flows.incident_add_or_reactivate_participant_flow(
+        user_email=user_email, incident_id=incident_id, db_session=db_session
+    )
+
+    # update participant metadata
+    inviter_email = get_user_email(client=slack_client, user_id=event.event.inviter)
+    added_by_participant = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=incident_id, email=inviter_email
+    )
+    participant.added_by = added_by_participant
+    participant.added_reason = event.event.text
+
+    db_session.commit()
+
+
+@background_task
 def ban_threads_warning(user_email: str, incident_id: int, event: dict = None, db_session=None):
     """Sends the user an ephemeral message if they use threads."""
     if not SLACK_BAN_THREADS:
@@ -644,7 +668,7 @@ def event_functions(event: EventEnvelope):
         "file_created": [add_evidence_to_storage],
         "file_shared": [add_evidence_to_storage],
         "link_shared": [],
-        "member_joined_channel": [incident_flows.incident_add_or_reactivate_participant_flow],
+        "member_joined_channel": [member_joined_channel],
         "message": [ban_threads_warning],
         "member_left_channel": [incident_flows.incident_remove_participant_flow],
         "message.groups": [],
@@ -668,6 +692,8 @@ def command_functions(command: str):
         SLACK_COMMAND_LIST_MY_TASKS_SLUG: [list_my_tasks],
         SLACK_COMMAND_TACTICAL_REPORT_SLUG: [create_tactical_report_dialog],
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_dialog],
+        SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG: [create_update_participant_modal],
+        SLACK_COMMAND_REPORT_INCIDENT_SLUG: [create_report_incident_modal],
     }
 
     return command_mappings.get(command, [])
@@ -702,11 +728,9 @@ def handle_assign_role_action(user_id, user_email, incident_id, action, db_sessi
     incident_flows.incident_assign_role_flow(user_email, incident_id, assignee_email, assignee_role)
 
 
-def action_functions(action: str):
-    """Interprets the action and routes it the appropriate function."""
+def dialog_action_functions(action: str):
+    """Interprets the action and routes it to the appropriate function."""
     action_mappings = {
-        ConversationButtonActions.invite_user: [add_user_to_conversation],
-        NewIncidentSubmission.form_slack_view: [report_incident_from_submitted_form],
         SLACK_COMMAND_ASSIGN_ROLE_SLUG: [handle_assign_role_action],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [incident_flows.incident_engage_oncall_flow],
         SLACK_COMMAND_EXECUTIVE_REPORT_SLUG: [report_flows.create_executive_report],
@@ -721,34 +745,44 @@ def action_functions(action: str):
     return []
 
 
-def get_action_name_by_action_type(action: dict):
-    """Returns the action name based on the type."""
-    action_name = ""
-    if action["type"] == "dialog_submission":
-        action_name = action["callback_id"]
+def block_action_functions(action: str):
+    """Interprets the action and routes it to the appropriate function."""
+    action_mappings = {
+        ConversationButtonActions.invite_user: [add_user_to_conversation],
+    }
 
-    if action["type"] == "block_actions":
-        action_name = action["actions"][0]["block_id"]
-
-    # TODO: maybe use callback info in the future to differentiate action types
-    if action["type"] == "view_submission":
-        action_name = NewIncidentSubmission.form_slack_view
-
-    return action_name
+    # this allows for unique action blocks e.g. invite-user or invite-user-1, etc
+    for key in action_mappings.keys():
+        if key in action:
+            return action_mappings[key]
+    return []
 
 
-def get_incident_id_by_action_type(action: dict, db_session: SessionLocal):
-    """Returns the incident id based on the action type."""
-    incident_id = -1
-    if action["type"] == "dialog_submission":
-        channel_id = action["channel"]["id"]
-        conversation = get_by_channel_id(db_session=db_session, channel_id=channel_id)
-        incident_id = conversation.incident_id
+def handle_dialog_action(action: dict, background_tasks: BackgroundTasks, db_session: SessionLocal):
+    """Handles all dialog actions."""
+    channel_id = action["channel"]["id"]
+    conversation = get_by_channel_id(db_session=db_session, channel_id=channel_id)
+    incident_id = conversation.incident_id
 
-    if action["type"] == "block_actions":
-        incident_id = action["actions"][0]["value"]
+    user_id = action["user"]["id"]
+    user_email = action["user"]["email"]
 
-    return incident_id
+    action_id = action["callback_id"]
+
+    for f in dialog_action_functions(action_id):
+        background_tasks.add_task(f, user_id, user_email, incident_id, action)
+
+
+def handle_block_action(action: dict, background_tasks: BackgroundTasks):
+    """Handles a standalone block action."""
+
+    action_id = action["actions"][0]["block_id"]
+    incident_id = action["actions"][0]["value"]
+    user_id = action["user"]["id"]
+    user_email = action["user"]["email"]
+
+    for f in block_action_functions(action_id):
+        background_tasks.add_task(f, user_id, user_email, incident_id, action)
 
 
 def create_ua_string():
@@ -796,105 +830,6 @@ def get_channel_id(event_body: dict):
         return event_body.item.channel
 
     return channel_id
-
-
-@background_task
-def create_report_incident_modal(command: dict = None, db_session=None):
-    """
-    Prepare the Modal / View x
-    Ask slack to open a modal with the prepared Modal / View content
-    """
-    channel_id = command.get("channel_id")
-    trigger_id = command.get("trigger_id")
-
-    type_options = []
-    for t in incident_type_service.get_all(db_session=db_session):
-        type_options.append({"label": t.name, "value": t.name})
-
-    priority_options = []
-    for priority in incident_priority_service.get_all(db_session=db_session):
-        priority_options.append({"label": priority.name, "value": priority.name})
-
-    modal_view_template = create_modal_content(
-        channel_id=channel_id, incident_types=type_options, incident_priorities=priority_options
-    )
-
-    dispatch_slack_service.open_modal_with_user(
-        client=slack_client, trigger_id=trigger_id, modal=modal_view_template
-    )
-
-
-def parse_submitted_form(view_data: dict):
-    """Parse the submitted data and return important / required fields for Dispatch to create an incident."""
-    parsed_data = {}
-    state_elem = view_data.get("state")
-    state_values = state_elem.get("values")
-    for state in state_values:
-        state_key_value_pair = state_values[state]
-
-        for elem_key in state_key_value_pair:
-            elem_key_value_pair = state_values[state][elem_key]
-
-            if elem_key_value_pair.get("selected_option") and elem_key_value_pair.get(
-                "selected_option"
-            ).get("value"):
-                parsed_data[state] = {
-                    "name": elem_key_value_pair.get("selected_option").get("text").get("text"),
-                    "value": elem_key_value_pair.get("selected_option").get("value"),
-                }
-            else:
-                parsed_data[state] = elem_key_value_pair.get("value")
-
-    return parsed_data
-
-
-@background_task
-def report_incident_from_submitted_form(
-    user_id: str,
-    user_email: str,
-    incident_id: int,
-    action: dict,
-    db_session: Session = Depends(get_db),
-):
-    submitted_form = action.get("view")
-
-    # Fetch channel id from private metadata field
-    channel_id = submitted_form.get("private_metadata")
-
-    parsed_form_data = parse_submitted_form(submitted_form)
-
-    requested_form_title = parsed_form_data.get(IncidentSlackViewBlockId.title)
-    requested_form_description = parsed_form_data.get(IncidentSlackViewBlockId.description)
-    requested_form_incident_type = parsed_form_data.get(IncidentSlackViewBlockId.type)
-    requested_form_incident_priority = parsed_form_data.get(IncidentSlackViewBlockId.priority)
-
-    # send a confirmation to the user
-    msg_template = create_incident_reported_confirmation_msg(
-        title=requested_form_title,
-        incident_type=requested_form_incident_type.get("value"),
-        incident_priority=requested_form_incident_priority.get("value"),
-    )
-
-    dispatch_slack_service.send_ephemeral_message(
-        client=slack_client,
-        conversation_id=channel_id,
-        user_id=user_id,
-        text="",
-        blocks=msg_template,
-    )
-
-    # create the incident
-    incident = incident_service.create(
-        db_session=db_session,
-        title=requested_form_title,
-        status=IncidentStatus.active,
-        description=requested_form_description,
-        incident_type=requested_form_incident_type,
-        incident_priority=requested_form_incident_priority,
-        reporter_email=user_email,
-    )
-
-    incident_flows.incident_create_flow(incident_id=incident.id)
 
 
 @router.post("/slack/event")
@@ -965,30 +900,20 @@ async def handle_command(
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()
 
-    # If the incoming slash command is equal to reporting new incident slug
-    if command.get("command") == SLACK_COMMAND_REPORT_INCIDENT_SLUG:
-        background_tasks.add_task(
-            func=create_report_incident_modal, db_session=db_session, command=command
-        )
+    # Fetch conversation by channel id
+    channel_id = command.get("channel_id")
+    conversation = get_by_channel_id(db_session=db_session, channel_id=channel_id)
+
+    # Dispatch command functions to be executed in the background
+    if conversation:
+        for f in command_functions(command.get("command")):
+            background_tasks.add_task(f, conversation.incident_id, command=command)
 
         return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(
-            command.get("command"), f"Unable to find message. Command: {command.get('command')}"
+            command.get("command"), f"Running... Command: {command.get('command')}"
         )
     else:
-        # Fetch conversation by channel id
-        channel_id = command.get("channel_id")
-        conversation = get_by_channel_id(db_session=db_session, channel_id=channel_id)
-
-        # Dispatch command functions to be executed in the background
-        if conversation:
-            for f in command_functions(command.get("command")):
-                background_tasks.add_task(f, conversation.incident_id, command=command)
-
-            return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(
-                command.get("command"), f"Unable to find message. Command: {command.get('command')}"
-            )
-        else:
-            return render_non_incident_conversation_command_error_message(command.get("command"))
+        return render_non_incident_conversation_command_error_message(command.get("command"))
 
 
 @router.post("/slack/action")
@@ -1018,28 +943,23 @@ async def handle_action(
     user_id = action["user"]["id"]
     user_email = await dispatch_slack_service.get_user_email_async(slack_async_client, user_id)
 
-    # We resolve the action name based on the type
-    action_name = get_action_name_by_action_type(action)
-
-    # if the request was made as a form submission from slack then we skip getting the incident_id
-    # the incident will be created in in the next step
-    incident_id = 0
-    if action_name != NewIncidentSubmission.form_slack_view:
-        # we resolve the incident id based on the action type
-        incident_id = get_incident_id_by_action_type(action, db_session)
-
-    # Dispatch action functions to be executed in the background
-    for f in action_functions(action_name):
-        background_tasks.add_task(f, user_id, user_email, incident_id, action)
+    action["user"]["email"] = user_email
 
     # We add the user-agent string to the response headers
+    # NOTE: I don't think this header ever gets sent? (kglisson)
     response.headers["X-Slack-Powered-By"] = create_ua_string()
 
     # When there are no exceptions within the dialog submission, your app must respond with 200 OK with an empty body.
     response_body = {}
-    if action_name == NewIncidentSubmission.form_slack_view:
-        # For modals we set "response_action" to "clear" to close all views in the modal.
-        # An empty body is currently not working.
-        response_body = {"response_action": "clear"}
+    if action.get("view"):
+        handle_modal_action(action, background_tasks)
+        if action["type"] == "view_submission":
+            # For modals we set "response_action" to "clear" to close all views in the modal.
+            # An empty body is currently not working.
+            response_body = {"response_action": "clear"}
+    elif action["type"] == "dialog_submission":
+        handle_dialog_action(action, background_tasks, db_session=db_session)
+    elif action["type"] == "block_actions":
+        handle_block_action(action, background_tasks)
 
     return response_body

@@ -20,8 +20,9 @@ class Participant(Base):
     inactive_at = Column(DateTime)  # TODO(mvilanova): make it a hybrid property
     team = Column(String)
     department = Column(String)
-    invited_by = relationship("Participant", backref=backref("invited"), remote_side=[id])
-    invite_reason = Column(String)
+    added_by_id = Column(Integer, ForeignKey("participant.id"))
+    added_by = relationship("Participant", backref=backref("added_participant"), remote_side=[id])
+    added_reason = Column(String)
     location = Column(String)
     after_hours_notification = Column(Boolean, default=False)
 
@@ -51,6 +52,7 @@ class ParticipantBase(DispatchBase):
     location: Optional[str]
     team: Optional[str]
     department: Optional[str]
+    added_reason: Optional[str]
 
 
 class ParticipantCreate(ParticipantBase):
