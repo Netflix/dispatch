@@ -26,7 +26,7 @@ Each new participant receives a welcome message \(Email + Slack\) providing them
 
 ![Incident welcome email](https://lh3.googleusercontent.com/9AhkQ-y5h-sQN0F6KLrBEE_6cGA-XN4Qu1cj4NAGNj1OOfA7p4c4z0G7BYxydz3oOYCVkqTkl_EYAeO4SOsCWkVXme5hUByCnYNDkFPQhQTkNYulc--rOQNQGD856s4uPZPYHEwvlk0)
 
-![Incident welcome slack (ephemeral)](https://lh4.googleusercontent.com/EgiaPr7p7X-MsmhU7LCNn9BoM0qgqlj-yFBRsxHYGFY6GWSVmYkqNjDzFB-iTNpZBlaxjpVJ_R8HC5jO9gu12ehtIGfT3-7At7lQms-dppkxiFZTyOA8LUQyubCDqLAU23NYwcoQfrw)
+![Incident welcome slack \(ephemeral\)](https://lh4.googleusercontent.com/EgiaPr7p7X-MsmhU7LCNn9BoM0qgqlj-yFBRsxHYGFY6GWSVmYkqNjDzFB-iTNpZBlaxjpVJ_R8HC5jO9gu12ehtIGfT3-7At7lQms-dppkxiFZTyOA8LUQyubCDqLAU23NYwcoQfrw)
 
 From there use the resources as you normally would to run your investigation, Dispatch will be there managing permissions, providing reminders and helping track the incident as it progresses to resolution.
 
@@ -41,3 +41,4 @@ In addition to Dispatch pulling in individuals that will be directly responsible
 {% hint style="info" %}
 The incident notification message includes a "Join Incident" button, this allows individuals to add themselves to the incident \(and it's resources\) without involvement from the incident commander.
 {% endhint %}
+

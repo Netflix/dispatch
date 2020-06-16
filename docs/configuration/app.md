@@ -75,11 +75,11 @@ Today, basic authentication allows self registration without approval.
 
 > Uses by the basic auth provider to mint JWT tokens.
 
-#### `DISPATCH_JWT_ALG` ['default': 'HS256']
+#### `DISPATCH_JWT_ALG` \['default': 'HS256'\]
 
 > Used by the basic auth provider to mint JWT tokens.
 
-#### `DISPATCH_JWT_EXP` ['default': 86400 ]
+#### `DISPATCH_JWT_EXP` \['default': 86400 \]
 
 > Used by the basic auth provider to mint JWT tokens and set their expiration.
 
@@ -131,7 +131,7 @@ Today, basic authentication allows self registration without approval.
 
 ### Incident Cost
 
-Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/service.py#L279) the cost of an incident by adding up the time participants have spent on each incident role (e.g. Incident Commander) and applying an [engagement multiplier](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/service.py#L266) that's based on the incident role. It also includes time spent on incident review related activities. Dispatch calculates and published the cost for all incidents [every 5 minutes](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/scheduled.py#L257).
+Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/service.py#L279) the cost of an incident by adding up the time participants have spent on each incident role \(e.g. Incident Commander\) and applying an [engagement multiplier](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/service.py#L266) that's based on the incident role. It also includes time spent on incident review related activities. Dispatch calculates and published the cost for all incidents [every 5 minutes](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/scheduled.py#L257).
 
 #### `ANNUAL_COST_EMPLOYEE` \[default: '50000'\]
 
@@ -244,3 +244,4 @@ Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispa
 #### `INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT` \[default: 'google-docs-incident-review-document'\]
 
 > Controls the resource type to use for the incident review document.
+

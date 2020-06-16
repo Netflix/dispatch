@@ -4,7 +4,7 @@
 
 Dispatch allows you to define your own incident types. To create a new incident type navigate to: `Dispatch > Incident Types > New`
 
-![](../../.gitbook/assets/admin-ui-incident-types-1.png)
+![](https://github.com/Netflix/dispatch/tree/2571e82ab72a58c36a41f8070e62550bded4ced0/docs/.gitbook/assets/admin-ui-incident-types-1.png)
 
 Once there, you can create a name for you incident type \(this will be displayed on the report form, among other places\) and give it a short description.
 

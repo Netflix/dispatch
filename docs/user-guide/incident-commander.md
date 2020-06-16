@@ -18,7 +18,7 @@ During an incident, the IC is responsible for pushing the incident forward and k
 
 You're not always incident commander forever, sometimes a situation changes or you just need a break. The `dispatch-assign-role` command makes it easy and more importantly _clear_ to everyone involved in the incident who the current incident commander is.
 
-![](../.gitbook/assets/slack-conversation-assign-role%20%281%29.png)
+![](https://github.com/Netflix/dispatch/tree/2571e82ab72a58c36a41f8070e62550bded4ced0/docs/.gitbook/assets/slack-conversation-assign-role%20%281%29.png)
 
 ### Status
 
@@ -26,21 +26,21 @@ You're not always incident commander forever, sometimes a situation changes or y
 
 This command is most useful for determining which teams are already engaged and who the IC commander might want to task or ask questions of.
 
-![](../.gitbook/assets/slack-conversation-list-participants%20%281%29.png)
+![](https://github.com/Netflix/dispatch/tree/2571e82ab72a58c36a41f8070e62550bded4ced0/docs/.gitbook/assets/slack-conversation-list-participants%20%281%29.png)
 
 `/dispatch-edit-incident`
 
 This command allows the IC to modify several aspects of the incident without ever leaving the conversation interface.
 
-![](../.gitbook/assets/slack-conversation-edit-incident%20%281%29.png)
+![](https://github.com/Netflix/dispatch/tree/2571e82ab72a58c36a41f8070e62550bded4ced0/docs/.gitbook/assets/slack-conversation-edit-incident%20%281%29.png)
 
 `/dispatch-status-report`
 
 One of the most important aspects of an IC commanders job is notifying external stakeholders on the current state of the incident. These stakeholders should never be down in the weeds of incident management but do need a way to view concise and up-to-date incident information. The `status-report` command allows the IC to do so in a standardized way.
 
-![](../.gitbook/assets/slack-conversation-status-report-response.png)
+![](../.gitbook/assets/slack-conversation-status-report-response%20%281%29.png)
 
-![](../.gitbook/assets/slack-conversation-status-report%20%281%29.png)
+![](https://github.com/Netflix/dispatch/tree/2571e82ab72a58c36a41f8070e62550bded4ced0/docs/.gitbook/assets/slack-conversation-status-report%20%281%29.png)
 
 ### Tasks
 
@@ -48,7 +48,7 @@ During an incident you may want assign asks or ask questions. Dispatch provides 
 
 In the Incident Document:
 
-![](../.gitbook/assets/google-docs-task-comment%20%281%29.png)
+![](https://github.com/Netflix/dispatch/tree/2571e82ab72a58c36a41f8070e62550bded4ced0/docs/.gitbook/assets/google-docs-task-comment%20%281%29.png)
 
 ## After
 
