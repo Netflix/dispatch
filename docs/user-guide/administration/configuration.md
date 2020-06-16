@@ -4,7 +4,7 @@
 
 Dispatch allows you to define your own incident types. To create a new incident type navigate to: `Dispatch > Incident Types > New`
 
-![](../../.gitbook/assets/admin-ui-incident-types-1.png)
+![](../../.gitbook/assets/admin-ui-incident-types%20%281%29%20%281%29.png)
 
 Once there, you can create a name for you incident type \(this will be displayed on the report form, among other places\) and give it a short description.
 
