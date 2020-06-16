@@ -6,11 +6,14 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import re
+import logging
 from typing import Any, List, Dict
 
 from dispatch.plugins.dispatch_google.config import GOOGLE_DOMAIN
 
 from .drive import get_file, list_comments
+
+log = logging.getLogger(__name__)
 
 
 def get_assignees(content: str) -> List[str]:
@@ -92,9 +95,10 @@ def list_tasks(client: Any, file_id: str):
             .first()
         )
 
-        owner_email = f"dispatch@{GOOGLE_DOMAIN}"
-        if owner:
-            owner_email = owner.email
+        if not owner:
+            log.error(f"Unable to identify owner by displayName: {t['author']['displayName']}")
+            continue
+
         db_session.close()
 
         task_meta = {
@@ -102,7 +106,7 @@ def list_tasks(client: Any, file_id: str):
                 "id": t["id"],
                 "status": status,
                 "description": description,
-                "owner": owner_email,
+                "owner": owner.email,
                 "created_at": t["createdTime"],
                 "assignees": assignees,
                 "tickets": tickets,
