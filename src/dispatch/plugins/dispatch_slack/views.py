@@ -278,8 +278,6 @@ def list_tasks(
             db_session=db_session, incident_id=incident_id, status=status.value
         )
 
-        print(by_creator)
-        print(by_assignee)
         if by_creator or by_assignee:
             tasks = filter_tasks_by_assignee_and_creator(tasks, by_assignee, by_creator)
 
