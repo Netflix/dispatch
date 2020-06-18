@@ -924,18 +924,22 @@ async def handle_event(
 
     user_id = event_body.user
     channel_id = get_channel_id(event_body)
-    conversation = get_by_channel_id(db_session=db_session, channel_id=channel_id)
 
-    if conversation and dispatch_slack_service.is_user(user_id):
-        # We create an async Slack client
-        slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
+    if user_id and channel_id:
+        conversation = get_by_channel_id(db_session=db_session, channel_id=channel_id)
 
-        # We resolve the user's email
-        user_email = await dispatch_slack_service.get_user_email_async(slack_async_client, user_id)
+        if conversation and dispatch_slack_service.is_user(user_id):
+            # We create an async Slack client
+            slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
 
-        # Dispatch event functions to be executed in the background
-        for f in event_functions(event):
-            background_tasks.add_task(f, user_email, conversation.incident_id, event=event)
+            # We resolve the user's email
+            user_email = await dispatch_slack_service.get_user_email_async(
+                slack_async_client, user_id
+            )
+
+            # Dispatch event functions to be executed in the background
+            for f in event_functions(event):
+                background_tasks.add_task(f, user_email, conversation.incident_id, event=event)
 
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()
