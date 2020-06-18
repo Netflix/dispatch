@@ -246,7 +246,7 @@ def filter_tasks_by_assignee_and_creator(tasks: List[Task], by_assignee: str, by
 @background_task
 def list_my_tasks(incident_id: int, command: dict = None, db_session=None):
     """Returns the list of incident tasks to the user as an ephemeral message."""
-    user_email = dispatch_slack_service.get_user_email_async(slack_client, command["user_id"])
+    user_email = dispatch_slack_service.get_user_email(slack_client, command["user_id"])
     list_tasks(
         incident_id=incident_id,
         command=command,
