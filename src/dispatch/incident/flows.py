@@ -216,23 +216,9 @@ def create_participant_groups(
 
 def delete_participant_groups(incident: Incident, db_session: SessionLocal):
     """Deletes the external participant groups."""
-    # we get the tactical group
-    tactical_group = group_service.get_by_incident_id_and_resource_type(
-        db_session=db_session,
-        incident_id=incident.id,
-        resource_type=INCIDENT_RESOURCE_TACTICAL_GROUP,
-    )
-
-    # we get the notifications group
-    notifications_group = group_service.get_by_incident_id_and_resource_type(
-        db_session=db_session,
-        incident_id=incident.id,
-        resource_type=INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
-    )
-
     p = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
-    p.delete(email=tactical_group.email)
-    p.delete(email=notifications_group.email)
+    p.delete(email=incident.tactical_group.email)
+    p.delete(email=incident.notifications_group.email)
 
     event_service.log(
         db_session=db_session,
@@ -914,17 +900,11 @@ def incident_update_flow(
                 individual.email, incident.id, db_session=db_session
             )
 
-    # we get the notification group
-    notification_group = group_service.get_by_incident_id_and_resource_type(
-        db_session=db_session,
-        incident_id=incident.id,
-        resource_type=INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
-    )
     team_participant_emails = [x.email for x in team_participants]
 
     # we add the team distributions lists to the notifications group
     group_plugin = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
-    group_plugin.add(notification_group.email, team_participant_emails)
+    group_plugin.add(incident.notifications_group.email, team_participant_emails)
 
     if previous_incident.status.value != incident.status:
         if incident.status == IncidentStatus.active:

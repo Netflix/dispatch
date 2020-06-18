@@ -25,6 +25,8 @@ from dispatch.config import (
     INCIDENT_RESOURCE_FAQ_DOCUMENT,
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
+    INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
+    INCIDENT_RESOURCE_TACTICAL_GROUP,
 )
 from dispatch.auth.models import UserRoles
 from dispatch.conference.models import ConferenceRead
@@ -124,6 +126,20 @@ class Incident(Base, TimeStampMixin):
             .where(ParticipantRole.role == ParticipantRoleType.reporter)
             .where(ParticipantRole.renounce_at == None)  # noqa
         )
+
+    @hybrid_property
+    def tactical_group(self):
+        if self.groups:
+            for g in self.groups:
+                if g.resource_type == INCIDENT_RESOURCE_TACTICAL_GROUP:
+                    return g
+
+    @hybrid_property
+    def notifications_group(self):
+        if self.groups:
+            for g in self.groups:
+                if g.resource_type == INCIDENT_RESOURCE_NOTIFICATIONS_GROUP:
+                    return g
 
     @hybrid_property
     def incident_document(self):

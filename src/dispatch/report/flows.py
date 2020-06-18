@@ -3,18 +3,20 @@ import logging
 from datetime import date
 
 from dispatch.config import (
+    INCIDENT_PLUGIN_CONVERSATION_SLUG,
     INCIDENT_PLUGIN_DOCUMENT_SLUG,
     INCIDENT_PLUGIN_STORAGE_SLUG,
     INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT,
     INCIDENT_STORAGE_EXECUTIVE_REPORT_FILE_ID,
 )
+from dispatch.conversation.messaging import send_feedack_to_user
 from dispatch.decorators import background_task
+from dispatch.document import service as document_service
+from dispatch.document.models import DocumentCreate
 from dispatch.event import service as event_service
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.plugins.base import plugins
-from dispatch.document import service as document_service
-from dispatch.document.models import DocumentCreate
 
 from .enums import ReportTypes
 from .messaging import (
@@ -190,7 +192,21 @@ def create_executive_report(
         commander_weblink=incident.commander.weblink,
     )
 
+    # we let the user know that the report has been created
+    send_feedack_to_user(
+        incident.conversation.channel_id,
+        user_id,
+        f"The executive report document has been created and can be found in the incident storage here: {executive_report_document['weblink']}",
+    )
+
     # we send the executive report to the notifications group
     send_executive_report_to_notifications_group(incident_id, executive_report, db_session)
+
+    # we let the user know that the report has been sent to the notifications group
+    send_feedack_to_user(
+        incident.conversation.channel_id,
+        user_id,
+        f"The executive report has been emailed to the notifications distribution list ({incident.notifications_group.email}).",
+    )
 
     return executive_report

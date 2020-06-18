@@ -7,7 +7,6 @@ from dispatch.config import (
 )
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.database import SessionLocal
-from dispatch.group import service as group_service
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import Incident
 from dispatch.messaging import (
@@ -69,17 +68,11 @@ def send_executive_report_to_notifications_group(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    notification_group = group_service.get_by_incident_id_and_resource_type(
-        db_session=db_session,
-        incident_id=incident.id,
-        resource_type=INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
-    )
-
     subject = f"{incident.name.upper()} - Executive Report"
 
     email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
     email_plugin.send(
-        notification_group.email,
+        incident.notifications_group.email,
         INCIDENT_EXECUTIVE_REPORT,
         MessageType.incident_executive_report,
         subject=subject,
@@ -89,12 +82,12 @@ def send_executive_report_to_notifications_group(
         overview=executive_report.details.get("overview"),
         next_steps=executive_report.details.get("next_steps"),
         weblink=executive_report.document.weblink,
-        notifications_group=notification_group.email,
+        notifications_group=incident.notifications_group.email,
         contact_fullname=incident.commander.name,
         contact_weblink=incident.commander.weblink,
     )
 
-    log.debug(f"Executive report sent to notifications group {notification_group.email}.")
+    log.debug(f"Executive report sent to notifications group {incident.notifications_group.email}.")
 
 
 def send_incident_report_reminder(
