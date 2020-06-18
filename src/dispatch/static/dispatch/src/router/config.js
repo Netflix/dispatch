@@ -70,6 +70,9 @@ export const protectedRoute = [
         path: "tasks",
         name: "TaskOverview",
         meta: { hiddenInMenu: true },
+        props: route => ({
+          query: route.query
+        }),
         component: () =>
           import(/* webpackChunkName: "task-overview" */ "@/dashboard/TaskOverview.vue")
       }
