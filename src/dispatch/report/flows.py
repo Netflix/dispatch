@@ -202,7 +202,7 @@ def create_executive_report(
     # we send the executive report to the notifications group
     send_executive_report_to_notifications_group(incident_id, executive_report, db_session)
 
-    # we let the user know that the report has been created
+    # we let the user know that the report has been sent to the notifications group
     send_feedack_to_user(
         incident.conversation.channel_id,
         user_id,
