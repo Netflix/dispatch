@@ -7,7 +7,6 @@ from dispatch.config import (
 )
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.database import SessionLocal
-from dispatch.group import service as group_service
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import Incident
 from dispatch.messaging import (
