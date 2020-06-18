@@ -96,7 +96,7 @@ function login(to, from, next) {
         window.location.protocol + "//" + window.location.host + "/implicit/callback"
       localStorage.setItem(
         "redirect_uri",
-        window.location.protocol + "//" + window.location.host + to.path
+        window.location.protocol + "//" + window.location.host + to.fullPath
       )
       const request = new AuthorizationRequest({
         client_id: clientId,

@@ -1,11 +1,11 @@
 <template>
   <v-container fluid grid-list-xl>
     <v-layout row wrap>
-      <v-flex lg3 sm6 xs12> </v-flex>
-      <v-flex lg3 sm6 xs12> </v-flex>
-      <v-flex lg3 sm6 xs12> </v-flex>
-      <v-flex class="d-flex justify-end" lg3 sm6 xs12>
-        <dialog-filter @update="update" @loading="setLoading" />
+      <v-flex class="d-flex justify-start" lg6 sm6 xs12>
+        <v-btn color="primary" dark @click="copyView">Share View</v-btn>
+      </v-flex>
+      <v-flex class="d-flex justify-end" lg6 sm6 xs12>
+        <dialog-filter v-bind="query" @update="update" @loading="setLoading" />
       </v-flex>
     </v-layout>
     <v-layout row wrap>
@@ -99,6 +99,12 @@ import IncidentPrimaryTeamBarChartCard from "@/incident/IncidentPrimaryTeamBarCh
 export default {
   name: "IncidentDashboard",
 
+  props: {
+    query: {
+      type: Object
+    }
+  },
+
   components: {
     DialogFilter,
     StatWidget,
@@ -126,8 +132,31 @@ export default {
       this.items = data
     },
     setLoading(data) {
-      console.log(data)
       this.loading = data
+    },
+    copyView: function() {
+      let store = this.$store
+      this.$copyText(window.location).then(
+        function() {
+          store.commit(
+            "app/SET_SNACKBAR",
+            {
+              text: "View copied to clipboard."
+            },
+            { root: true }
+          )
+        },
+        function() {
+          store.commit(
+            "app/SET_SNACKBAR",
+            {
+              text: "Failed to copy view to clipboard.",
+              color: "red"
+            },
+            { root: true }
+          )
+        }
+      )
     }
   },
 

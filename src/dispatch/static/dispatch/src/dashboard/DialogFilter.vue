@@ -16,7 +16,6 @@
               ref="menu"
               v-model="menu"
               :close-on-content-click="false"
-              :return-value.sync="dateRangeText"
               transition="scale-transition"
               offset-y
               min-width="290px"
@@ -29,27 +28,23 @@
                   v-on="on"
                 ></v-text-field>
               </template>
-              <v-date-picker v-model="window" type="month" range>
-                <v-spacer></v-spacer>
-                <v-btn text color="primary" @click="menu = false">Cancel</v-btn>
-                <v-btn text color="primary" @click="$refs.menu.save(date)">OK</v-btn>
-              </v-date-picker>
+              <v-date-picker v-model="localWindow" type="month" range> </v-date-picker>
             </v-menu>
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <tag-filter-combobox v-model="filters.tag" label="Tags" />
+            <tag-filter-combobox v-model="localTag" label="Tags" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-type-combobox v-model="filters.incident_type" />
+            <incident-type-combobox v-model="localIncidentType" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-priority-combobox v-model="filters.incident_priority" />
+            <incident-priority-combobox v-model="localIncidentPriority" />
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -58,7 +53,7 @@
 </template>
 
 <script>
-import { map, sum, forEach, each, has } from "lodash"
+import { map, sum, forEach, each, has, assign } from "lodash"
 // import IndividualCombobox from "@/individual/IndividualCombobox.vue"
 import IncidentApi from "@/incident/api"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
@@ -70,11 +65,44 @@ import { parseISO } from "date-fns"
 export default {
   name: "IncidentOverviewFilterBar",
 
+  props: {
+    tag: {
+      type: Array,
+      default: function() {
+        return []
+      }
+    },
+    incident_type: {
+      type: Array,
+      default: function() {
+        return []
+      }
+    },
+    incident_priority: {
+      type: Array,
+      default: function() {
+        return []
+      }
+    },
+    window: {
+      type: Array,
+      default: function() {
+        let now = new Date()
+        let today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        let start = subMonths(today, 6)
+          .toISOString()
+          .substr(0, 10)
+        let end = today.toISOString().substr(0, 10)
+        return [start, end]
+      }
+    }
+  },
+
   methods: {
     fetchData() {
       let filterOptions = {}
 
-      let localWindow = this.window
+      let localWindow = this.localWindow
       // ensure we have a decent date string
       localWindow = map(localWindow, function(item) {
         return parseISO(item).toISOString()
@@ -94,7 +122,10 @@ export default {
 
       forEach(this.filters, function(value, key) {
         each(value, function(value) {
-          if (has(value, "id")) {
+          if (typeof value === "string") {
+            filterOptions.fields.push(key + ".name")
+            filterOptions.values.push(value)
+          } else if (has(value, "id")) {
             filterOptions.fields.push(key + ".id")
             filterOptions.values.push(value.id)
           } else {
@@ -109,6 +140,28 @@ export default {
         this.$emit("update", response.data.items)
         this.$emit("loading", false)
       })
+    },
+    serializeFilters() {
+      let flatFilters = {}
+      forEach(this.filters, function(value, key) {
+        each(value, function(item) {
+          if (has(flatFilters, key)) {
+            flatFilters[key].push(item.name)
+          } else {
+            flatFilters[key] = [item.name]
+          }
+        })
+      })
+      return flatFilters
+    },
+    serializeWindow() {
+      return { start: this.localWindow[0], end: this.localWindow[1] }
+    },
+    updateURL() {
+      let queryParams = {}
+      assign(queryParams, this.serializeFilters())
+      assign(queryParams, this.serializeWindow())
+      this.$router.replace({ query: queryParams })
     }
   },
 
@@ -123,62 +176,45 @@ export default {
     return {
       menu: false,
       display: false,
-      window: [],
-      filters: {
-        tag: [],
-        incident_type: [],
-        incident_priority: []
-      }
+      localWindow: this.window,
+      localTag: this.tag,
+      localIncidentPriority: this.incident_priority,
+      localIncidentType: this.incident_type
     }
   },
 
-  created: function() {
-    this.window = this.defaultDates
+  mounted() {
+    this.$watch(
+      vm => [vm.localWindow, vm.localTag, vm.localIncidentPriority, vm.localIncidentType],
+      () => {
+        this.updateURL()
+        this.fetchData()
+      }
+    )
+  },
+
+  created() {
+    this.fetchData()
   },
 
   computed: {
+    filters() {
+      return {
+        tag: this.localTag,
+        incident_priority: this.localIncidentPriority,
+        incident_type: this.localIncidentType
+      }
+    },
     numFilters: function() {
       return sum([
-        this.filters.incident_type.length,
-        this.filters.incident_priority.length,
-        this.filters.tag.length
+        this.localIncidentType.length,
+        this.localIncidentPriority.length,
+        this.localTag.length,
+        1
       ])
     },
-    queryDates() {
-      // adjust for same month
-      return map(this.dates, function(item) {
-        return parseISO(item).toISOString()
-      })
-    },
-    defaultDates() {
-      return [this.defaultStart, this.defaultEnd]
-    },
-    today() {
-      let now = new Date()
-      return new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    },
-    defaultStart() {
-      return subMonths(this.today, 6)
-        .toISOString()
-        .substr(0, 10)
-    },
-    defaultEnd() {
-      return this.today.toISOString().substr(0, 10)
-    },
     dateRangeText() {
-      return this.window.join(" ~ ")
-    }
-  },
-
-  watch: {
-    window: function() {
-      this.fetchData()
-    },
-    filters: {
-      deep: true,
-      handler() {
-        this.fetchData()
-      }
+      return this.localWindow.join(" ~ ")
     }
   }
 }

@@ -1,4 +1,4 @@
-import { DefaultLayout, AuthLayout } from "@/components/layouts"
+import { DefaultLayout, DashboardLayout, AuthLayout } from "@/components/layouts"
 
 export const publicRoute = [
   {
@@ -48,14 +48,30 @@ export const protectedRoute = [
   {
     path: "/",
     component: DefaultLayout,
-    meta: { title: "Dashboard", group: "incidents", icon: "" },
-    redirect: "/dashboard",
+    meta: { title: "Dispatch", group: "incidents", icon: "", requiresAuth: true },
+    redirect: "/dashboard/incidents"
+  },
+  {
+    path: "/dashboard",
+    component: DashboardLayout,
+    meta: { title: "Dashboard", group: "incidents", icon: "", requiresAuth: true },
     children: [
       {
-        path: "/403",
-        name: "Forbidden",
-        meta: { title: "Access Denied", hiddenInMenu: true },
-        component: () => import(/* webpackChunkName: "error-403" */ "@/views/error/Deny.vue")
+        path: "incidents",
+        name: "IncidentOverview",
+        meta: { hiddenInMenu: true },
+        props: route => ({
+          query: route.query
+        }),
+        component: () =>
+          import(/* webpackChunkName: "incident-overview" */ "@/dashboard/IncidentOverview.vue")
+      },
+      {
+        path: "tasks",
+        name: "TaskOverview",
+        meta: { hiddenInMenu: true },
+        component: () =>
+          import(/* webpackChunkName: "task-overview" */ "@/dashboard/TaskOverview.vue")
       }
     ]
   },
@@ -102,19 +118,6 @@ export const protectedRoute = [
         name: "IncidentPriorityTable",
         component: () =>
           import(/* webpackChunkName: "routing-table" */ "@/incident_priority/Table.vue")
-      }
-    ]
-  },
-  {
-    path: "/dashboard",
-    component: DefaultLayout,
-    meta: { title: "Dashboard", icon: "view_compact", group: "dashboard", requiresAuth: true },
-    children: [
-      {
-        path: "/dashboard",
-        name: "Dashboard",
-        component: () =>
-          import(/* webpackChunkName: "incident-dashboard" */ "@/dashboard/Dashboard.vue")
       }
     ]
   },

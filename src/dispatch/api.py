@@ -34,9 +34,9 @@ if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-basic":
     api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 # NOTE: All api routes should be authenticated by default
-authenticated_api_router.include_router(user_router, prefix="/user", tags=["user"])
+authenticated_api_router.include_router(user_router, prefix="/user", tags=["users"])
 authenticated_api_router.include_router(document_router, prefix="/documents", tags=["documents"])
-authenticated_api_router.include_router(tag_router, prefix="/tags", tags=["Tags"])
+authenticated_api_router.include_router(tag_router, prefix="/tags", tags=["tags"])
 authenticated_api_router.include_router(service_router, prefix="/services", tags=["services"])
 authenticated_api_router.include_router(team_contact_router, prefix="/teams", tags=["teams"])
 authenticated_api_router.include_router(
@@ -48,7 +48,7 @@ authenticated_api_router.include_router(
     definition_router, prefix="/definitions", tags=["definitions"]
 )
 authenticated_api_router.include_router(team_router, prefix="/terms", tags=["terms"])
-authenticated_api_router.include_router(task_router, prefix="/tasks", tags=["tags"])
+authenticated_api_router.include_router(task_router, prefix="/tasks", tags=["tasks"])
 authenticated_api_router.include_router(search_router, prefix="/search", tags=["search"])
 authenticated_api_router.include_router(incident_router, prefix="/incidents", tags=["incidents"])
 authenticated_api_router.include_router(
