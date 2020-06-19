@@ -2176,7 +2176,7 @@ COPY public.definition_terms (definition_id, term_id) FROM stdin;
 --
 
 COPY public.dispatch_user (id, email, password, role, created_at, updated_at) FROM stdin;
-2	kglisson@netflix.com	\\x24326224313224546973582e672f65665a5a4449322f646a41316151652f445138622f666d656c6878596f2e794f686d43434a336962662f446e4a53	Admin	2020-06-19 17:27:06.744685	2020-06-19 17:37:33.517574
+2	bob@example.com	\\x24326224313224546973582e672f65665a5a4449322f646a41316151652f445138622f666d656c6878596f2e794f686d43434a336962662f446e4a53	Admin	2020-06-19 17:27:06.744685	2020-06-19 17:37:33.517574
 1	joe@example.com	\\x243262243132246748625643734d7464706b73346e6e7638327a6d712e67686f75443636395a4c5134572f372f73363437636f574d544e6c352f4f32	Admin	2020-06-19 17:11:40.932754	2020-06-19 17:46:19.988558
 \.
 
@@ -2235,8 +2235,8 @@ COPY public.document_terms (term_id, document_id) FROM stdin;
 --
 
 COPY public.event (id, uuid, started_at, ended_at, source, description, details, individual_id, incident_id, search_vector, created_at, updated_at) FROM stdin;
-14	0601fbd3-016e-4a3a-987a-03c5b723ea3a	2020-06-19 17:32:32.400302	2020-06-19 17:32:32.400302	Dispatch Core App	Kevin Glisson added to incident with Reporter role	null	\N	5	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'report':10B 'role':11B	2020-06-19 17:32:32.400949	2020-06-19 17:32:32.415642
-15	5ff9f926-3e97-4e5c-8ff1-8c2e3bc33013	2020-06-19 17:32:35.68112	2020-06-19 17:32:35.68112	Dispatch Core App	Marc Vilanova added to incident with Incident Commander role	null	\N	5	'ad':6B 'app':3A 'command':11B 'core':2A 'dispatch':1A 'incid':8B,10B 'marc':4B 'role':12B 'vilanova':5B	2020-06-19 17:32:35.681948	2020-06-19 17:32:35.700853
+14	0601fbd3-016e-4a3a-987a-03c5b723ea3a	2020-06-19 17:32:32.400302	2020-06-19 17:32:32.400302	Dispatch Core App	Joe Fo Sho added to incident with Reporter role	null	\N	5	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'fo sho':5B 'incid':8B 'Joe':4B 'report':10B 'role':11B	2020-06-19 17:32:32.400949	2020-06-19 17:32:32.415642
+15	5ff9f926-3e97-4e5c-8ff1-8c2e3bc33013	2020-06-19 17:32:35.68112	2020-06-19 17:32:35.68112	Dispatch Core App	Bobby B added to incident with Incident Commander role	null	\N	5	'ad':6B 'app':3A 'command':11B 'core':2A 'dispatch':1A 'incid':8B,10B 'bobby':4B 'role':12B 'b':5B	2020-06-19 17:32:35.681948	2020-06-19 17:32:35.700853
 16	27f63ad0-5e2d-460d-bbe0-f668ac4d3e8e	2020-06-19 17:32:35.812153	2020-06-19 17:32:35.812153	Dispatch Plugin - Participant Resolver	Incident participants resolved	null	\N	5	'dispatch':1A 'incid':5B 'particip':3A,6B 'plugin':2A 'resolv':4A,7B	2020-06-19 17:32:35.812659	2020-06-19 17:32:35.826592
 17	5d8f4591-f2cc-42c4-9bcd-466b935ca28f	2020-06-19 17:32:35.833196	2020-06-19 17:32:35.833196	Dispatch Core App	Incident participants added to incident	null	\N	5	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'incid':4B,8B 'particip':5B	2020-06-19 17:32:35.834187	2020-06-19 17:32:35.849789
 18	4d7bc6da-f8bb-49de-8ebb-1f4442052046	2020-06-19 17:32:35.872808	2020-06-19 17:32:35.872808	Dispatch Plugin - Ticket Management	External ticket created	null	\N	5	'creat':7B 'dispatch':1A 'extern':5B 'manag':4A 'plugin':2A 'ticket':3A,6B	2020-06-19 17:32:35.873377	2020-06-19 17:32:35.892031
@@ -2255,8 +2255,8 @@ COPY public.event (id, uuid, started_at, ended_at, source, description, details,
 31	38e1f8b0-fb92-46c3-94d1-163381edc2bf	2020-06-19 17:33:29.183714	2020-06-19 17:33:29.183714	Dispatch Core App	Participants announced and welcome messages sent	null	\N	5	'announc':5B 'app':3A 'core':2A 'dispatch':1A 'messag':8B 'particip':4B 'sent':9B 'welcom':7B	2020-06-19 17:33:29.184626	2020-06-19 17:33:29.216327
 32	6450d8ea-ead3-4487-8a4f-0ef3bc01e5af	2020-06-19 17:33:30.793156	2020-06-19 17:33:30.793156	Dispatch Core App	Incident notifications sent	null	\N	5	'app':3A 'core':2A 'dispatch':1A 'incid':4B 'notif':5B 'sent':6B	2020-06-19 17:33:30.796207	2020-06-19 17:33:30.856319
 37	7d81c5e6-66ca-4ac0-b97e-61139285d4f2	2020-06-19 17:56:27.229627	2020-06-19 17:56:27.229627	Dispatch Core App	Incident created	null	\N	7	'app':3A 'core':2A 'creat':5B 'dispatch':1A 'incid':4B	2020-06-19 17:56:27.230232	2020-06-19 17:56:27.242236
-38	2f7528f5-97b7-4f5a-a6a4-e9b93dafb317	2020-06-19 17:56:28.487104	2020-06-19 17:56:28.487104	Dispatch Core App	Kevin Glisson added to incident with Reporter role	null	\N	7	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'glisson':5B 'incid':8B 'kevin':4B 'report':10B 'role':11B	2020-06-19 17:56:28.487741	2020-06-19 17:56:28.503163
-39	9f33153c-ca4a-4b5f-b49a-0dec0f1499b8	2020-06-19 17:56:31.752008	2020-06-19 17:56:31.752008	Dispatch Core App	Marc Vilanova added to incident with Incident Commander role	null	\N	7	'ad':6B 'app':3A 'command':11B 'core':2A 'dispatch':1A 'incid':8B,10B 'marc':4B 'role':12B 'vilanova':5B	2020-06-19 17:56:31.752707	2020-06-19 17:56:31.766401
+38	2f7528f5-97b7-4f5a-a6a4-e9b93dafb317	2020-06-19 17:56:28.487104	2020-06-19 17:56:28.487104	Dispatch Core App	Joe Fo Sho added to incident with Reporter role	null	\N	7	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'fo sho':5B 'incid':8B 'Joe':4B 'report':10B 'role':11B	2020-06-19 17:56:28.487741	2020-06-19 17:56:28.503163
+39	9f33153c-ca4a-4b5f-b49a-0dec0f1499b8	2020-06-19 17:56:31.752008	2020-06-19 17:56:31.752008	Dispatch Core App	Bobby B added to incident with Incident Commander role	null	\N	7	'ad':6B 'app':3A 'command':11B 'core':2A 'dispatch':1A 'incid':8B,10B 'bobby':4B 'role':12B 'b':5B	2020-06-19 17:56:31.752707	2020-06-19 17:56:31.766401
 40	96d61532-1eb7-4529-b515-831e4383e84e	2020-06-19 17:56:31.872595	2020-06-19 17:56:31.872595	Dispatch Plugin - Participant Resolver	Incident participants resolved	null	\N	7	'dispatch':1A 'incid':5B 'particip':3A,6B 'plugin':2A 'resolv':4A,7B	2020-06-19 17:56:31.873284	2020-06-19 17:56:31.889072
 41	632839f2-11c0-463c-8ada-721b15bad8d9	2020-06-19 17:56:31.895786	2020-06-19 17:56:31.895786	Dispatch Core App	Incident participants added to incident	null	\N	7	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'incid':4B,8B 'particip':5B	2020-06-19 17:56:31.896364	2020-06-19 17:56:31.912038
 42	80ca0d04-2fbd-41e9-8c5a-c88ea2b1a121	2020-06-19 17:56:31.939548	2020-06-19 17:56:31.939548	Dispatch Plugin - Ticket Management	External ticket created	null	\N	7	'creat':7B 'dispatch':1A 'extern':5B 'manag':4A 'plugin':2A 'ticket':3A,6B	2020-06-19 17:56:31.940323	2020-06-19 17:56:31.963657
@@ -2274,7 +2274,7 @@ COPY public.event (id, uuid, started_at, ended_at, source, description, details,
 54	d6ffd47b-e74e-48d8-be26-2b60d27cef09	2020-06-19 17:57:17.441706	2020-06-19 17:57:17.441706	Dispatch Core App	Conversation added to incident	null	\N	7	'ad':5B 'app':3A 'convers':4B 'core':2A 'dispatch':1A 'incid':7B	2020-06-19 17:57:17.444583	2020-06-19 17:57:17.466988
 55	cdac9c81-42e3-4051-9fc7-0d2e84f215cc	2020-06-19 17:57:27.988265	2020-06-19 17:57:27.988265	Dispatch Core App	Participants announced and welcome messages sent	null	\N	7	'announc':5B 'app':3A 'core':2A 'dispatch':1A 'messag':8B 'particip':4B 'sent':9B 'welcom':7B	2020-06-19 17:57:27.988741	2020-06-19 17:57:28.001609
 56	420e261f-3d5b-48cc-914d-d2c82bf39553	2020-06-19 17:57:30.154088	2020-06-19 17:57:30.154088	Dispatch Core App	Incident notifications sent	null	\N	7	'app':3A 'core':2A 'dispatch':1A 'incid':4B 'notif':5B 'sent':6B	2020-06-19 17:57:30.15459	2020-06-19 17:57:30.16715
-57	4cb080a8-1b9e-45de-b5db-5e99dcd0ead4	2020-06-19 17:58:24.318803	2020-06-19 17:58:24.318803	Incident Participant	Kevin Glisson created a new tactical report	{"conditions": "These are conditions", "actions": "These are actions", "needs": "These are needs"}	2	5	'creat':5B 'glisson':4B 'incid':1A 'kevin':3B 'new':7B 'particip':2A 'report':9B 'tactic':8B	2020-06-19 17:58:24.319411	2020-06-19 17:58:24.345586
+57	4cb080a8-1b9e-45de-b5db-5e99dcd0ead4	2020-06-19 17:58:24.318803	2020-06-19 17:58:24.318803	Incident Participant	Joe Fo Sho created a new tactical report	{"conditions": "These are conditions", "actions": "These are actions", "needs": "These are needs"}	2	5	'creat':5B 'fo sho':4B 'incid':1A 'Joe':3B 'new':7B 'particip':2A 'report':9B 'tactic':8B	2020-06-19 17:58:24.319411	2020-06-19 17:58:24.345586
 \.
 
 
@@ -2326,8 +2326,8 @@ COPY public.incident_type (id, name, slug, description, visibility, plugin_metad
 
 COPY public.individual_contact (is_active, is_external, contact_type, email, company, notes, owner, id, name, mobile_phone, office_phone, title, weblink, team_contact_id, search_vector, updated_at, created_at) FROM stdin;
 t	f	\N	foobar@example.com	Acme	\N	\N	1	Foo Bar	\N	\N	\N	\N	\N	'acm':3 'bar':2 'foo':1	2020-06-19 17:55:27.747414	2020-06-19 17:24:50.190388
-t	f	\N	mvilanova@netflix.com	\N	\N	\N	3	Marc Vilanova	\N	\N	\N	https://example.com/person/mvilanova@netflix.com	\N	'marc':1 'vilanova':2	2020-06-19 17:56:31.738245	2020-06-19 17:29:34.37569
-t	f	\N	kglisson@netflix.com	\N	\N	\N	2	Kevin Glisson	\N	\N	\N	https://example.com/person/kglisson@netflix.com	\N	'glisson':2 'kevin':1	2020-06-19 17:58:24.344542	2020-06-19 17:29:30.052197
+t	f	\N	joe@example.com	\N	\N	\N	3	Joe Fo Sho	\N	\N	\N	https://example.com/person/joe@example.com	\N	'bobby':1 'b':2	2020-06-19 17:56:31.738245	2020-06-19 17:29:34.37569
+t	f	\N	bob@example.com	\N	\N	\N	2	Bobby B	\N	\N	\N	https://example.com/person/bob@example.com	\N	'fo sho':2 'Joe':1	2020-06-19 17:58:24.344542	2020-06-19 17:29:30.052197
 \.
 
 
