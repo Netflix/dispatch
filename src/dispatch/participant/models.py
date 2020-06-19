@@ -2,7 +2,7 @@ from datetime import datetime
 
 from typing import Optional, List
 
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, Boolean, String, Integer, ForeignKey, DateTime, event
 
 from dispatch.database import Base
@@ -20,6 +20,9 @@ class Participant(Base):
     inactive_at = Column(DateTime)  # TODO(mvilanova): make it a hybrid property
     team = Column(String)
     department = Column(String)
+    added_by_id = Column(Integer, ForeignKey("participant.id"))
+    added_by = relationship("Participant", backref=backref("added_participant"), remote_side=[id])
+    added_reason = Column(String)
     location = Column(String)
     after_hours_notification = Column(Boolean, default=False)
 
@@ -49,6 +52,7 @@ class ParticipantBase(DispatchBase):
     location: Optional[str]
     team: Optional[str]
     department: Optional[str]
+    added_reason: Optional[str]
 
 
 class ParticipantCreate(ParticipantBase):
