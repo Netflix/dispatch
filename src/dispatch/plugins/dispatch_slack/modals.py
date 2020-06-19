@@ -37,7 +37,7 @@ class UpdateParticipantCallbacks(str, Enum):
 
 
 def handle_modal_action(action: dict, background_tasks: BackgroundTasks):
-    """Handels all modal actions."""
+    """Handles all modal actions."""
     view_data = action["view"]
     view_data["private_metadata"] = json.loads(view_data["private_metadata"])
 
