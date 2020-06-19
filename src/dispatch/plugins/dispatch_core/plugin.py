@@ -10,10 +10,10 @@ import logging
 
 import requests
 from fastapi import HTTPException
-from typing import List
 from fastapi.security.utils import get_authorization_scheme_param
 
 from jose import JWTError, jwt
+from jose.exceptions import JWKError
 from starlette.status import HTTP_401_UNAUTHORIZED
 from starlette.requests import Request
 
@@ -58,7 +58,7 @@ class BasicAuthProviderPlugin(AuthenticationProviderPlugin):
 
         try:
             data = jwt.decode(token, DISPATCH_JWT_SECRET)
-        except JWTError as e:
+        except (JWKError, JWTError) as e:
             raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail=str(e))
         return data["email"]
 
@@ -128,6 +128,7 @@ class DispatchTicketPlugin(TicketPlugin):
         incident_priority: str,
         commander: str,
         reporter: str,
+        plugin_metadata: dict,
     ):
         """Creates a Dispatch ticket."""
         resource_id = f"dispatch-{incident_id}"
