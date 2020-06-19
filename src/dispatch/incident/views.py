@@ -80,11 +80,19 @@ def get_incident(
 
     # we want to provide additional protections around restricted incidents
     if incident.visibility == Visibility.restricted:
-        if not incident.reporter == current_user:
-            if not current_user.role != UserRoles.admin:
-                raise HTTPException(
-                    status_code=401, detail="You do no have permission to view this incident."
-                )
+        # reject if the user isn't an admin, reporter or commander
+        if incident.reporter.email == current_user.email:
+            return incident
+
+        if incident.commander.email == current_user.email:
+            return incident
+
+        if current_user.role == UserRoles.admin:
+            return incident
+
+        raise HTTPException(
+            status_code=401, detail="You do no have permission to view this incident."
+        )
 
     return incident
 
