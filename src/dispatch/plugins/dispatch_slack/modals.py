@@ -226,7 +226,7 @@ def build_update_participant_blocks(incident: Incident, participant: Participant
     )
     modal_template["blocks"].append(select_block)
 
-    # we need to show the reason if we're updateing
+    # we need to show the reason if we're updating
     if participant:
         modal_template["blocks"].append(
             {
