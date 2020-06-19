@@ -41,6 +41,7 @@ def get_tasks(
             ("incident", "incident"),
             ("incident_type", "incident"),
             ("incident_priority", "incident"),
+            ("tag", "tags"),
         ],
     )
 

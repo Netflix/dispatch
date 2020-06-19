@@ -116,7 +116,15 @@ const actions = {
   loginRedirect({ state }, redirectUri) {
     let redirectUrl = new URL(redirectUri)
     void state
-    router.push({ path: redirectUrl.pathname })
+    let queryMap = {}
+    for (var pair of redirectUrl.searchParams.entries()) {
+      if (pair[0] in queryMap) {
+        queryMap[pair[0]].push(pair[1])
+      } else {
+        queryMap[pair[0]] = [pair[1]]
+      }
+    }
+    router.push({ path: redirectUrl.pathname, query: queryMap })
   },
   basicLogin({ commit }, payload) {
     UserApi.login(payload.email, payload.password)
