@@ -203,7 +203,7 @@ def build_incident_participants_select_block(incident: Incident, participant: Pa
 
 
 def build_update_participant_blocks(incident: Incident, participant: Participant = None):
-    """Builds all blocks required for update participant modal."""
+    """Builds all blocks required for updating the participant modal."""
     modal_template = {
         "type": "modal",
         "title": {"type": "plain_text", "text": "Edit Participant"},
