@@ -695,67 +695,70 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
         # we create a copy of the incident review document template and we move it to the incident storage
         incident_review_document_name = f"{incident.name} - Post Incident Review Document"
         template = document_service.get_incident_review_template(db_session=db_session)
-        incident_review_document = storage_plugin.copy_file(
-            team_drive_id=incident.storage.resource_id,
-            file_id=template.resource_id,
-            name=incident_review_document_name,
-        )
 
-        incident_review_document.update(
-            {
-                "name": incident_review_document_name,
-                "resource_type": INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
-            }
-        )
+        # incident review document is optional
+        if template:
+            incident_review_document = storage_plugin.copy_file(
+                team_drive_id=incident.storage.resource_id,
+                file_id=template.resource_id,
+                name=incident_review_document_name,
+            )
 
-        storage_plugin.move_file(
-            new_team_drive_id=incident.storage.resource_id, file_id=incident_review_document["id"]
-        )
+            incident_review_document.update(
+                {
+                    "name": incident_review_document_name,
+                    "resource_type": INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
+                }
+            )
 
-        event_service.log(
-            db_session=db_session,
-            source=storage_plugin.title,
-            description="Incident review document added to storage",
-            incident_id=incident.id,
-        )
+            storage_plugin.move_file(
+                new_team_drive_id=incident.storage.resource_id, file_id=incident_review_document["id"]
+            )
 
-        document_in = DocumentCreate(
-            name=incident_review_document["name"],
-            resource_id=incident_review_document["id"],
-            resource_type=incident_review_document["resource_type"],
-            weblink=incident_review_document["weblink"],
-        )
-        incident.documents.append(
-            document_service.create(db_session=db_session, document_in=document_in)
-        )
+            event_service.log(
+                db_session=db_session,
+                source=storage_plugin.title,
+                description="Incident review document added to storage",
+                incident_id=incident.id,
+            )
 
-        event_service.log(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description="Incident review document added to incident",
-            incident_id=incident.id,
-        )
+            document_in = DocumentCreate(
+                name=incident_review_document["name"],
+                resource_id=incident_review_document["id"],
+                resource_type=incident_review_document["resource_type"],
+                weblink=incident_review_document["weblink"],
+            )
+            incident.documents.append(
+                document_service.create(db_session=db_session, document_in=document_in)
+            )
 
-        # we update the incident review document
-        update_document(
-            incident_review_document["id"],
-            incident.name,
-            incident.incident_priority.name,
-            incident.status,
-            incident.incident_type.name,
-            incident.title,
-            incident.description,
-            incident.commander.name,
-            incident.conversation.weblink,
-            incident.incident_document.weblink,
-            incident.storage.weblink,
-            incident.ticket.weblink,
-        )
+            event_service.log(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description="Incident review document added to incident",
+                incident_id=incident.id,
+            )
 
-        # we send a notification about the incident review document to the conversation
-        send_incident_review_document_notification(
-            incident.conversation.channel_id, incident_review_document["weblink"]
-        )
+            # we update the incident review document
+            update_document(
+                incident_review_document["id"],
+                incident.name,
+                incident.incident_priority.name,
+                incident.status,
+                incident.incident_type.name,
+                incident.title,
+                incident.description,
+                incident.commander.name,
+                incident.conversation.weblink,
+                incident.incident_document.weblink,
+                incident.storage.weblink,
+                incident.ticket.weblink,
+            )
+
+            # we send a notification about the incident review document to the conversation
+            send_incident_review_document_notification(
+                incident.conversation.channel_id, incident_review_document["weblink"]
+            )
 
     db_session.add(incident)
     db_session.commit()
