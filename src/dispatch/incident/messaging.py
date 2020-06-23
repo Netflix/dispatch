@@ -81,16 +81,12 @@ def send_welcome_ephemeral_message_to_participant(
 
     faq_doc = document_service.get_incident_faq_document(db_session=db_session)
     if faq_doc:
-        message_kwargs.update({"faq_weblink": incident.incident_faq.weblink})
+        message_kwargs.update({"faq_weblink": faq_doc.weblink})
 
-    reference_doc = document_service.get_incident_conversation_reference_document(
-        db_session=db_session
-    )
+    reference_doc = document_service.get_conversation_reference_document(db_session=db_session)
     if reference_doc:
         message_kwargs.update(
-            {
-                "conversation_commands_reference_document_weblink": incident.incident_conversation_commands_reference_document.weblink
-            }
+            {"conversation_commands_reference_document_weblink": reference_doc.weblink}
         )
 
     convo_plugin.send_ephemeral(
@@ -131,16 +127,14 @@ def send_welcome_email_to_participant(
         "contact_weblink": incident.commander.weblink,
     }
 
-    faq_doc = document_service.get_incident_faq_document()
+    faq_doc = document_service.get_incident_faq_document(db_session=db_session)
     if faq_doc:
-        message_kwargs.update({"faq_weblink": incident.incident_faq.weblink})
+        message_kwargs.update({"faq_weblink": faq_doc.weblink})
 
-    reference_doc = document_service.get_incident_conversation_reference_document()
+    reference_doc = document_service.get_conversation_reference_document(db_session=db_session)
     if reference_doc:
         message_kwargs.update(
-            {
-                "conversation_commands_reference_document_weblink": incident.incident_conversation_commands_reference_document.weblink
-            }
+            {"conversation_commands_reference_document_weblink": reference_doc.weblink}
         )
 
     email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
@@ -225,9 +219,9 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
         "contact_weblink": incident.commander.weblink,
         "incident_id": incident.id,
     }
-
-    if incident.incident_faq:
-        message_kwargs.update({"faq_weblink": incident.incident_faq.weblink})
+    incident_faq = document_service.get_incident_faq_document(db_session=db_session)
+    if incident_faq:
+        message_kwargs.update({"faq_weblink": incident_faq.weblink})
 
     for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
         convo_plugin.send(
@@ -558,14 +552,16 @@ def send_incident_resources_ephemeral_message_to_participant(
             {"review_document_weblink": incident.incident_review_document.weblink}
         )
 
-    if incident.incident_faq:
-        message_kwargs.update({"faq_weblink": incident.incident_faq.weblink})
+    incident_faq = document_service.get_incident_faq_document(db_session=db_session)
+    if incident_faq:
+        message_kwargs.update({"faq_weblink": incident_faq.weblink})
 
-    if incident.incident_conversation_commands_reference_document:
+    conversation_reference = document_service.get_conversation_reference_document(
+        db_session=db_session
+    )
+    if conversation_reference:
         message_kwargs.update(
-            {
-                "conversation_commands_reference_document_weblink": incident.incident_conversation_commands_reference_document.weblink
-            }
+            {"conversation_commands_reference_document_weblink": conversation_reference.weblink}
         )
 
     # we send the ephemeral message

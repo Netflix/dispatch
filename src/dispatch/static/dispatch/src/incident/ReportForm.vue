@@ -249,7 +249,11 @@
                     @click="save()"
                     >Submit
                     <template v-slot:loader>
-                      <v-progress-linear indeterminate></v-progress-linear>
+                      <v-progress-linear
+                        indeterminate="primary"
+                        color="white"
+                        dark
+                      ></v-progress-linear>
                     </template>
                   </v-btn>
                 </v-container>

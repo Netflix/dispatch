@@ -104,7 +104,7 @@ and participants in the incident conversation.""".replace(
 ).strip()
 
 INCIDENT_CONFERENCE_DESCRIPTION = """
-Video conference and phone bridge to be used throughout the incident.  Password: {{conference_challenge}}
+Video conference and phone bridge to be used throughout the incident.  Password: {{conference_challenge if conference_challenge else 'N/A'}}
 """.replace(
     "\n", ""
 ).strip()
@@ -452,6 +452,9 @@ def render_message_template(message_template: List[dict], **kwargs):
 
         if d.get("title_link"):
             d["title_link"] = Template(d["title_link"]).render(**kwargs)
+            # skip blocks that do not have new links rendered, as no real value was provided
+            if not d["title_link"]:
+                continue
 
         if d.get("button_text"):
             d["button_text"] = Template(d["button_text"]).render(**kwargs)

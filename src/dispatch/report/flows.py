@@ -78,6 +78,11 @@ def create_executive_report(
     user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
 ):
     """Creates an executive report."""
+    report_template = document_service.get_executive_report_template(db_session=db_session)
+
+    if not report_template:
+        raise Exception("No executive report document template defined.")
+
     current_date = date.today().strftime("%B %d, %Y")
 
     current_status = action["submission"]["current_status"]
@@ -128,10 +133,9 @@ def create_executive_report(
     # we create a new document for the executive report
     storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
     executive_report_document_name = f"{incident.name} - Executive Report - {current_date}"
-    template = document_service.get_executive_report_template(db_session=db_session)
     executive_report_document = storage_plugin.copy_file(
         team_drive_id=incident.storage.resource_id,
-        file_id=template.resource_id,
+        file_id=report_template.resource_id,
         name=executive_report_document_name,
     )
 
