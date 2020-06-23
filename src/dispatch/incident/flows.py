@@ -13,9 +13,6 @@ from datetime import datetime
 from typing import Any, List, Optional
 
 from dispatch.config import (
-    INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_ID,
-    INCIDENT_DOCUMENT_INVESTIGATION_SHEET_ID,
-    INCIDENT_FAQ_DOCUMENT_ID,
     INCIDENT_PLUGIN_CONTACT_SLUG,
     INCIDENT_PLUGIN_CONVERSATION_SLUG,
     INCIDENT_PLUGIN_CONFERENCE_SLUG,
@@ -23,15 +20,12 @@ from dispatch.config import (
     INCIDENT_PLUGIN_GROUP_SLUG,
     INCIDENT_PLUGIN_PARTICIPANT_RESOLVER_SLUG,
     INCIDENT_PLUGIN_STORAGE_SLUG,
-    INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
-    INCIDENT_RESOURCE_FAQ_DOCUMENT,
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
     INCIDENT_RESOURCE_INVESTIGATION_SHEET,
     INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
     INCIDENT_RESOURCE_TACTICAL_GROUP,
     INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID,
-    INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID,
     INCIDENT_STORAGE_RESTRICTED,
 )
 from dispatch.conference import service as conference_service
@@ -323,6 +317,8 @@ def create_collaboration_documents(incident: Incident, db_session: SessionLocal)
     """Create external collaboration document."""
     p = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
 
+    collab_documents = []
+
     document_name = f"{incident.name} - Incident Document"
 
     # TODO can we make move and copy in one api call? (kglisson)
@@ -334,12 +330,21 @@ def create_collaboration_documents(incident: Incident, db_session: SessionLocal)
     p.move_file(incident.storage.resource_id, document["id"])
 
     # NOTE this should be optional
-    if INCIDENT_DOCUMENT_INVESTIGATION_SHEET_ID:
+    sheet = None
+    template = document_service.get_incident_investigation_sheet_template(db_session=db_session)
+    if template:
         sheet_name = f"{incident.name} - Incident Tracking Sheet"
-        sheet = p.copy_file(
-            incident.storage.resource_id, INCIDENT_DOCUMENT_INVESTIGATION_SHEET_ID, sheet_name
-        )
+        sheet = p.copy_file(incident.storage.resource_id, template.resource_id, sheet_name)
         p.move_file(incident.storage.resource_id, sheet["id"])
+
+        sheet.update(
+            {
+                "name": sheet_name,
+                "resource_type": INCIDENT_RESOURCE_INVESTIGATION_SHEET,
+                "resource_id": sheet["id"],
+            }
+        )
+        collab_documents.append(sheet)
 
     p.create_file(incident.storage.resource_id, "logs")
     p.create_file(incident.storage.resource_id, "screengrabs")
@@ -353,13 +358,8 @@ def create_collaboration_documents(incident: Incident, db_session: SessionLocal)
             "resource_id": document["id"],
         }
     )
-    sheet.update(
-        {
-            "name": sheet_name,
-            "resource_type": INCIDENT_RESOURCE_INVESTIGATION_SHEET,
-            "resource_id": sheet["id"],
-        }
-    )
+
+    collab_documents.append(document)
 
     event_service.log(
         db_session=db_session,
@@ -368,7 +368,7 @@ def create_collaboration_documents(incident: Incident, db_session: SessionLocal)
         incident_id=incident.id,
     )
 
-    return document, sheet
+    return collab_documents
 
 
 def create_conversation(incident: Incident, participants: List[str], db_session: SessionLocal):
@@ -541,28 +541,9 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     )
 
     # we create the incident documents
-    incident_document, incident_sheet = create_collaboration_documents(incident, db_session)
+    collab_documents = create_collaboration_documents(incident, db_session)
 
-    faq_document = {
-        "name": "Incident FAQ",
-        "resource_id": INCIDENT_FAQ_DOCUMENT_ID,
-        "weblink": f"https://docs.google.com/document/d/{INCIDENT_FAQ_DOCUMENT_ID}",
-        "resource_type": INCIDENT_RESOURCE_FAQ_DOCUMENT,
-    }
-
-    conversation_commands_reference_document = {
-        "name": "Incident Conversation Commands Reference Document",
-        "resource_id": INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_ID,
-        "weblink": f"https://docs.google.com/document/d/{INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_ID}",
-        "resource_type": INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
-    }
-
-    for d in [
-        incident_document,
-        incident_sheet,
-        faq_document,
-        conversation_commands_reference_document,
-    ]:
+    for d in collab_documents:
         document_in = DocumentCreate(
             name=d["name"],
             resource_id=d["resource_id"],
@@ -632,7 +613,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     # we update the investigation document
     update_document(
-        incident_document["id"],
+        incident.incident_document.resource_id,
         incident.name,
         incident.incident_priority.name,
         incident.status,
@@ -641,7 +622,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         incident.description,
         incident.commander.name,
         incident.conversation.weblink,
-        incident_document["weblink"],
+        incident.incident_document.weblink,
         incident.storage.weblink,
         incident.ticket.weblink,
         incident.conference.weblink,
@@ -713,9 +694,10 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
 
         # we create a copy of the incident review document template and we move it to the incident storage
         incident_review_document_name = f"{incident.name} - Post Incident Review Document"
+        template = document_service.get_incident_review_template(db_session=db_session)
         incident_review_document = storage_plugin.copy_file(
             team_drive_id=incident.storage.resource_id,
-            file_id=INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID,
+            file_id=template.resource_id,
             name=incident_review_document_name,
         )
 

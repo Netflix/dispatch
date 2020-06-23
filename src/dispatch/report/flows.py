@@ -3,11 +3,9 @@ import logging
 from datetime import date
 
 from dispatch.config import (
-    INCIDENT_PLUGIN_CONVERSATION_SLUG,
     INCIDENT_PLUGIN_DOCUMENT_SLUG,
     INCIDENT_PLUGIN_STORAGE_SLUG,
     INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT,
-    INCIDENT_STORAGE_EXECUTIVE_REPORT_FILE_ID,
 )
 from dispatch.conversation.messaging import send_feedack_to_user
 from dispatch.decorators import background_task
@@ -130,9 +128,10 @@ def create_executive_report(
     # we create a new document for the executive report
     storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
     executive_report_document_name = f"{incident.name} - Executive Report - {current_date}"
+    template = document_service.get_executive_report_template(db_session=db_session)
     executive_report_document = storage_plugin.copy_file(
         team_drive_id=incident.storage.resource_id,
-        file_id=INCIDENT_STORAGE_EXECUTIVE_REPORT_FILE_ID,
+        file_id=template.resource_id,
         name=executive_report_document_name,
     )
 
