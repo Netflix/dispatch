@@ -102,12 +102,19 @@
                   />
                 </ValidationProvider>
               </v-flex>
+              <v-flex xs12>
+                <v-checkbox
+                  v-model="default_incident_priority"
+                  label="Default Incident Type"
+                  hint="Check this if this incident type should be the default."
+                ></v-checkbox>
+              </v-flex>
               <v-flex>
-                <v-switch
+                <v-checkbox
                   v-model="page_commander"
                   label="Page Commander"
                   hint="Would you like Dispatch to page the incident commander on incident creation?"
-                ></v-switch>
+                ></v-checkbox>
               </v-flex>
             </v-layout>
           </v-container>
@@ -150,8 +157,12 @@ export default {
       "selected.view_order",
       "selected.page_commander",
       "selected.tactical_report_reminder",
-      "selected.executive_report_reminder"
-    ])
+      "selected.executive_report_reminder",
+      "selected.default"
+    ]),
+    ...mapFields("incident_priority", {
+      default_incident_priority: "selected.default"
+    })
   },
 
   methods: {

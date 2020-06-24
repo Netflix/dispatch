@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import { countBy, isArray, mergeWith, forEach, map, find } from "lodash"
+import { countBy, isArray, mergeWith, forEach, map, find, filter } from "lodash"
 
 import VueApexCharts from "vue-apexcharts"
 import IncidentTypeApi from "@/incident_type/api"
@@ -40,7 +40,12 @@ export default {
 
   created: function() {
     IncidentTypeApi.getAll({ itemsPerPage: -1 }).then(response => {
-      this.types = map(response.data.items, "name")
+      this.types = map(
+        filter(response.data.items, function(item) {
+          return !item.exclude_from_metrics
+        }),
+        "name"
+      )
     })
   },
 

@@ -81,7 +81,7 @@
 </template>
 
 <script>
-import { groupBy, sumBy } from "lodash"
+import { groupBy, sumBy, filter } from "lodash"
 import differenceInHours from "date-fns/differenceInHours"
 import { parseISO } from "date-fns"
 
@@ -129,7 +129,9 @@ export default {
 
   methods: {
     update(data) {
-      this.items = data
+      this.items = filter(data, function(item) {
+        return !item.incident_type.exclude_from_metrics
+      })
     },
     setLoading(data) {
       this.loading = data
