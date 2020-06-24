@@ -13,7 +13,8 @@ const getDefaultSelectedState = () => {
     commander_service: null,
     template_document: null,
     plugin_metadata: [],
-    loading: false
+    loading: false,
+    default: false
   }
 }
 

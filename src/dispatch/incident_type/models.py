@@ -1,8 +1,8 @@
 from typing import List, Optional
 from pydantic import validator
 
-from sqlalchemy import Column, ForeignKey, Integer, String, JSON
-from sqlalchemy.orm import relationship
+from sqlalchemy import event, Column, Boolean, ForeignKey, Integer, String, JSON
+from sqlalchemy.orm import relationship, object_session
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy_utils import TSVectorType
 
@@ -17,6 +17,8 @@ class IncidentType(Base):
     name = Column(String, unique=True)
     slug = Column(String)
     description = Column(String)
+    exclude_from_metrics = Column(Boolean, default=False)
+    default = Column(Boolean, default=False)
     visibility = Column(String, default=Visibility.open)
     plugin_metadata = Column(JSON, default=[])
 
@@ -36,6 +38,23 @@ class IncidentType(Base):
         for m in self.plugin_metadata:
             if m["slug"] == slug:
                 return m
+
+
+@event.listens_for(IncidentType.default, "set")
+def _revoke_other_default(target, value, oldvalue, initiator):
+    """Removes the previous default when a new one is set."""
+    session = object_session(target)
+    if session is None:
+        return
+
+    if value:
+        previous_default = (
+            session.query(IncidentType).filter(IncidentType.default == True).one_or_none()  # noqa
+        )
+
+        if previous_default:
+            previous_default.default = False
+            session.commit()
 
 
 class Document(DispatchBase):
@@ -65,6 +84,8 @@ class IncidentTypeCreate(IncidentTypeBase):
     template_document: Optional[Document]
     commander_service: Optional[Service]
     plugin_metadata: List[PluginMetadata] = []
+    exclude_from_metrics: Optional[bool] = False
+    default: Optional[bool] = False
 
     @validator("plugin_metadata", pre=True)
     def replace_none_with_empty_list(cls, value):
@@ -77,6 +98,8 @@ class IncidentTypeUpdate(IncidentTypeBase):
     template_document: Optional[Document]
     commander_service: Optional[Service]
     plugin_metadata: List[PluginMetadata] = []
+    exclude_from_metrics: Optional[bool] = False
+    default: Optional[bool] = False
 
     @validator("plugin_metadata", pre=True)
     def replace_none_with_empty_list(cls, value):
@@ -89,6 +112,8 @@ class IncidentTypeRead(IncidentTypeBase):
     template_document: Optional[Document]
     commander_service: Optional[Service]
     plugin_metadata: List[PluginMetadata] = []
+    exclude_from_metrics: Optional[bool] = False
+    default: Optional[bool] = False
 
     @validator("plugin_metadata", pre=True)
     def replace_none_with_empty_list(cls, value):

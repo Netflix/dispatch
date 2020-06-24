@@ -72,6 +72,20 @@
               <v-flex xs12>
                 <document-select v-model="template_document" />
               </v-flex>
+              <v-flex xs 12>
+                <v-checkbox
+                  v-model="exclude_from_metrics"
+                  label="Exclude From Metrics"
+                  hint="Check if this incident type should be excluded from all metrics."
+                ></v-checkbox>
+              </v-flex>
+              <v-flex xs12>
+                <v-checkbox
+                  v-model="default_incident_type"
+                  label="Default Incident Type"
+                  hint="Check this if this incident type should be the default."
+                ></v-checkbox>
+              </v-flex>
               <v-flex xs12>
                 <plugin-metadata-input
                   @input="updatePluginMetadata({ data: $event })"
@@ -128,8 +142,12 @@ export default {
       "selected.slug",
       "selected.template_document",
       "selected.visibility",
-      "selected.plugin_metadata"
-    ])
+      "selected.plugin_metadata",
+      "selected.exclude_from_metrics"
+    ]),
+    ...mapFields("incident_type", {
+      default_incident_type: "selected.default"
+    })
   },
 
   methods: {
