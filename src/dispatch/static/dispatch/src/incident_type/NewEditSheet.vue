@@ -76,7 +76,7 @@
                 <v-checkbox
                   v-model="exclude_from_metrics"
                   label="Exclude From Metrics"
-                  hint="Check if this this incident type should be excluded from all metrics."
+                  hint="Check if this incident type should be excluded from all metrics."
                 ></v-checkbox>
               </v-flex>
               <v-flex xs12>

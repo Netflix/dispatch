@@ -106,7 +106,7 @@
                 <v-checkbox
                   v-model="default_incident_priority"
                   label="Default Incident Type"
-                  hint="Check this if this incident type should be the default."
+                  hint="Check if this incident priority should be the default."
                 ></v-checkbox>
               </v-flex>
               <v-flex>
