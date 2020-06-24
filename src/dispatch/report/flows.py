@@ -80,9 +80,6 @@ def create_executive_report(
     """Creates an executive report."""
     report_template = document_service.get_executive_report_template(db_session=db_session)
 
-    if not report_template:
-        raise Exception("No executive report document template defined.")
-
     current_date = date.today().strftime("%B %d, %Y")
 
     current_status = action["submission"]["current_status"]
@@ -91,6 +88,12 @@ def create_executive_report(
 
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    if not report_template:
+        send_feedack_to_user(
+            incident.conversation.channel_id, user_id, "No executive report template defined."
+        )
+        return
 
     # we fetch all previous executive reports
     executive_reports = get_all_by_incident_id_and_type(
