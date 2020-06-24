@@ -231,6 +231,16 @@ def upgrade_database(tag, sql, revision):
     click.secho("Success.", fg="green")
 
 
+@dispatch_database.command("merge")
+@click.argument("revisions", nargs=-1)
+@click.option("--message")
+def merge_revisions(revisions, message):
+    """Combines two revisions."""
+    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
+    alembic_cfg = AlembicConfig(alembic_path)
+    alembic_command.merge(alembic_cfg, revisions, message=message)
+
+
 @dispatch_database.command("heads")
 def head_database():
     """Shows the heads of the database."""
