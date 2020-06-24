@@ -21,8 +21,6 @@ from sqlalchemy_utils import TSVectorType
 from fastapi_permissions import Allow
 
 from dispatch.config import (
-    INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
-    INCIDENT_RESOURCE_FAQ_DOCUMENT,
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
     INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
@@ -153,20 +151,6 @@ class Incident(Base, TimeStampMixin):
         if self.documents:
             for d in self.documents:
                 if d.resource_type == INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT:
-                    return d
-
-    @hybrid_property
-    def incident_faq(self):
-        if self.documents:
-            for d in self.documents:
-                if d.resource_type == INCIDENT_RESOURCE_FAQ_DOCUMENT:
-                    return d
-
-    @hybrid_property
-    def incident_conversation_commands_reference_document(self):
-        if self.documents:
-            for d in self.documents:
-                if d.resource_type == INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT:
                     return d
 
     @hybrid_property

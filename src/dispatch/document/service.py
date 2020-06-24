@@ -2,6 +2,13 @@ from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 
+from dispatch.config import (
+    INCIDENT_RESOURCE_CONVERSATION_REFERENCE_DOCUMENT,
+    INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT_TEMPLATE,
+    INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT_TEMPLATE,
+    INCIDENT_RESOURCE_INVESTIGATION_SHEET_TEMPLATE,
+    INCIDENT_RESOURCE_INCIDENT_FAQ_DOCUMENT,
+)
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.term import service as term_service
@@ -24,6 +31,51 @@ def get_by_incident_id_and_resource_type(
         .filter(Document.resource_type == resource_type)
         .one_or_none()
     )
+
+
+def get_conversation_reference_document(*, db_session):
+    """Fetches conversation reference document."""
+    return (
+        db_session.query(Document).filter(
+            Document.resource_type == INCIDENT_RESOURCE_CONVERSATION_REFERENCE_DOCUMENT
+        )
+    ).one_or_none()
+
+
+def get_executive_report_template(*, db_session):
+    """Fetches executive report template document."""
+    return (
+        db_session.query(Document).filter(
+            Document.resource_type == INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT_TEMPLATE
+        )
+    ).one_or_none()
+
+
+def get_incident_review_template(*, db_session):
+    """Fetches incident review template document."""
+    return (
+        db_session.query(Document).filter(
+            Document.resource_type == INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT_TEMPLATE
+        )
+    ).one_or_none()
+
+
+def get_incident_faq_document(*, db_session):
+    """Fetches incident faq docment."""
+    return (
+        db_session.query(Document).filter(
+            Document.resource_type == INCIDENT_RESOURCE_INCIDENT_FAQ_DOCUMENT
+        )
+    ).one_or_none()
+
+
+def get_incident_investigation_sheet_template(*, db_session):
+    """Fetches incident investigation template sheet."""
+    return (
+        db_session.query(Document).filter(
+            Document.resource_type == INCIDENT_RESOURCE_INVESTIGATION_SHEET_TEMPLATE
+        )
+    ).one_or_none()
 
 
 def get_all(*, db_session) -> List[Optional[Document]]:

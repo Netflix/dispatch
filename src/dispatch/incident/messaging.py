@@ -12,9 +12,6 @@ from dispatch.config import (
     INCIDENT_PLUGIN_CONTACT_SLUG,
     INCIDENT_PLUGIN_CONVERSATION_SLUG,
     INCIDENT_PLUGIN_EMAIL_SLUG,
-    INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
-    INCIDENT_RESOURCE_FAQ_DOCUMENT,
-    INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
     INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG,
 )
 from dispatch.database import SessionLocal
@@ -39,6 +36,7 @@ from dispatch.messaging import (
     INCIDENT_TYPE_CHANGE,
     MessageType,
 )
+from dispatch.document import service as document_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.plugins.base import plugins
@@ -63,28 +61,43 @@ def send_welcome_ephemeral_message_to_participant(
 
     # we send the ephemeral message
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
+
+    message_kwargs = {
+        "name": incident.name,
+        "title": incident.title,
+        "status": incident.status,
+        "type": incident.incident_type.name,
+        "type_description": incident.incident_type.description,
+        "priority": incident.incident_priority.name,
+        "priority_description": incident.incident_priority.description,
+        "commander_fullname": incident.commander.name,
+        "commander_weblink": incident.commander.weblink,
+        "document_weblink": incident.incident_document.weblink,
+        "storage_weblink": incident.storage.weblink,
+        "ticket_weblink": incident.ticket.weblink,
+        "conference_weblink": incident.conference.weblink,
+        "conference_challenge": incident.conference.conference_challenge,
+    }
+
+    faq_doc = document_service.get_incident_faq_document(db_session=db_session)
+    if faq_doc:
+        message_kwargs.update({"faq_weblink": faq_doc.weblink})
+
+    conversation_reference = document_service.get_conversation_reference_document(
+        db_session=db_session
+    )
+    if conversation_reference:
+        message_kwargs.update(
+            {"conversation_commands_reference_document_weblink": conversation_reference.weblink}
+        )
+
     convo_plugin.send_ephemeral(
         incident.conversation.channel_id,
         participant_email,
         "Incident Welcome Message",
         INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
         MessageType.incident_participant_welcome,
-        name=incident.name,
-        title=incident.title,
-        status=incident.status,
-        type=incident.incident_type.name,
-        type_description=incident.incident_type.description,
-        priority=incident.incident_priority.name,
-        priority_description=incident.incident_priority.description,
-        commander_fullname=incident.commander.name,
-        commander_weblink=incident.commander.weblink,
-        document_weblink=incident.incident_document.weblink,
-        storage_weblink=incident.storage.weblink,
-        ticket_weblink=incident.ticket.weblink,
-        faq_weblink=incident.incident_faq.weblink,
-        conference_weblink=incident.conference.weblink,
-        conference_challenge=incident.conference.conference_challenge,
-        conversation_commands_reference_document_weblink=incident.incident_conversation_commands_reference_document.weblink,
+        **message_kwargs,
     )
 
     log.debug(f"Welcome ephemeral message sent to {participant_email}.")
@@ -97,29 +110,43 @@ def send_welcome_email_to_participant(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
+    message_kwargs = {
+        "name": incident.name,
+        "title": incident.title,
+        "status": incident.status,
+        "type": incident.incident_type.name,
+        "type_description": incident.incident_type.description,
+        "priority": incident.incident_priority.name,
+        "priority_description": incident.incident_priority.description,
+        "commander_fullname": incident.commander.name,
+        "commander_weblink": incident.commander.weblink,
+        "document_weblink": incident.incident_document.weblink,
+        "storage_weblink": incident.storage.weblink,
+        "ticket_weblink": incident.ticket.weblink,
+        "conference_weblink": incident.conference.weblink,
+        "conference_challenge": incident.conference.conference_challenge,
+        "contact_fullname": incident.commander.name,
+        "contact_weblink": incident.commander.weblink,
+    }
+
+    faq_doc = document_service.get_incident_faq_document(db_session=db_session)
+    if faq_doc:
+        message_kwargs.update({"faq_weblink": faq_doc.weblink})
+
+    conversation_reference = document_service.get_conversation_reference_document(
+        db_session=db_session
+    )
+    if conversation_reference:
+        message_kwargs.update(
+            {"conversation_commands_reference_document_weblink": conversation_reference.weblink}
+        )
+
     email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
     email_plugin.send(
         participant_email,
         INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
         MessageType.incident_participant_welcome,
-        name=incident.name,
-        title=incident.title,
-        status=incident.status,
-        type=incident.incident_type.name,
-        type_description=incident.incident_type.description,
-        priority=incident.incident_priority.name,
-        priority_description=incident.incident_priority.description,
-        commander_fullname=incident.commander.name,
-        commander_weblink=incident.commander.weblink,
-        document_weblink=incident.incident_document.weblink,
-        storage_weblink=incident.storage.weblink,
-        ticket_weblink=incident.ticket.weblink,
-        faq_weblink=incident.incident_faq.weblink,
-        conference_weblink=incident.conference.weblink,
-        conference_challenge=incident.conference.conference_challenge,
-        conversation_commands_reference_document_weblink=incident.incident_conversation_commands_reference_document.weblink,
-        contact_fullname=incident.commander.name,
-        contact_weblink=incident.commander.weblink,
+        **message_kwargs,
     )
 
     log.debug(f"Welcome email sent to {participant_email}.")
@@ -177,52 +204,38 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
     else:
         message_template.insert(0, INCIDENT_NAME)
 
+    message_kwargs = {
+        "name": incident.name,
+        "title": incident.title,
+        "status": incident.status,
+        "type": incident.incident_type.name,
+        "type_description": incident.incident_type.description,
+        "priority": incident.incident_priority.name,
+        "priority_description": incident.incident_priority.description,
+        "commander_fullname": incident.commander.name,
+        "commander_weblink": incident.commander.weblink,
+        "document_weblink": incident.incident_document.weblink,
+        "storage_weblink": incident.storage.weblink,
+        "ticket_weblink": incident.ticket.weblink,
+        "conference_weblink": incident.conference.weblink,
+        "conference_challenge": incident.conference.conference_challenge,
+        "contact_fullname": incident.commander.name,
+        "contact_weblink": incident.commander.weblink,
+        "incident_id": incident.id,
+    }
+    faq_doc = document_service.get_incident_faq_document(db_session=db_session)
+    if faq_doc:
+        message_kwargs.update({"faq_weblink": faq_doc.weblink})
+
     for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
         convo_plugin.send(
-            conversation,
-            notification_text,
-            message_template,
-            notification_type,
-            name=incident.name,
-            title=incident.title,
-            status=incident.status,
-            priority=incident.incident_priority.name,
-            priority_description=incident.incident_priority.description,
-            type=incident.incident_type.name,
-            type_description=incident.incident_type.description,
-            commander_fullname=incident.commander.name,
-            commander_weblink=incident.commander.weblink,
-            document_weblink=incident.incident_document.weblink,
-            storage_weblink=incident.storage.weblink,
-            ticket_weblink=incident.ticket.weblink,
-            faq_weblink=incident.incident_faq.weblink,
-            incident_id=incident.id,
+            conversation, notification_text, message_template, notification_type, **message_kwargs
         )
 
     # we send status notifications to distribution lists
     email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
     for distro in INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS:
-        email_plugin.send(
-            distro,
-            message_template,
-            notification_type,
-            name=incident.name,
-            title=incident.title,
-            status=incident.status,
-            type=incident.incident_type.name,
-            type_description=incident.incident_type.description,
-            priority=incident.incident_priority.name,
-            priority_description=incident.incident_priority.description,
-            commander_fullname=incident.commander.name,
-            commander_weblink=incident.commander.weblink,
-            document_weblink=incident.incident_document.weblink,
-            storage_weblink=incident.storage.weblink,
-            ticket_weblink=incident.ticket.weblink,
-            faq_weblink=incident.incident_faq.weblink,
-            incident_id=incident.id,
-            contact_fullname=incident.commander.name,
-            contact_weblink=incident.commander.weblink,
-        )
+        email_plugin.send(distro, message_template, notification_type, **message_kwargs)
 
     log.debug("Incident status notifications sent.")
 
@@ -331,7 +344,6 @@ def send_incident_update_notifications(incident: Incident, previous_incident: In
                 document_weblink=incident.incident_document.weblink,
                 storage_weblink=incident.storage.weblink,
                 ticket_weblink=incident.ticket.weblink,
-                faq_weblink=incident.incident_faq.weblink,
                 incident_id=incident.id,
                 incident_priority_old=previous_incident.incident_priority.name,
                 incident_priority_new=incident.incident_priority.name,
@@ -529,9 +541,32 @@ def send_incident_resources_ephemeral_message_to_participant(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    review_document_weblink = ""
+    message_kwargs = {
+        "commander_fullname": incident.commander.name,
+        "commander_weblink": incident.commander.weblink,
+        "document_weblink": incident.incident_document.weblink,
+        "storage_weblink": incident.storage.weblink,
+        "ticket_weblink": incident.ticket.weblink,
+        "conference_weblink": incident.conference.weblink,
+        "conference_challenge": incident.conference.conference_challenge,
+    }
+
     if incident.incident_review_document:
-        review_document_weblink = incident.incident_review_document.weblink
+        message_kwargs.update(
+            {"review_document_weblink": incident.incident_review_document.weblink}
+        )
+
+    faq_doc = document_service.get_incident_faq_document(db_session=db_session)
+    if faq_doc:
+        message_kwargs.update({"faq_weblink": faq_doc.weblink})
+
+    conversation_reference = document_service.get_conversation_reference_document(
+        db_session=db_session
+    )
+    if conversation_reference:
+        message_kwargs.update(
+            {"conversation_commands_reference_document_weblink": conversation_reference.weblink}
+        )
 
     # we send the ephemeral message
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
@@ -541,14 +576,7 @@ def send_incident_resources_ephemeral_message_to_participant(
         "Incident Resources Message",
         INCIDENT_RESOURCES_MESSAGE,
         MessageType.incident_resources_message,
-        commander_fullname=incident.commander.name,
-        commander_weblink=incident.commander.weblink,
-        document_weblink=incident.incident_document.weblink,
-        review_document_weblink=review_document_weblink,
-        storage_weblink=incident.storage.weblink,
-        faq_weblink=incident.incident_faq.weblink,
-        conversation_commands_reference_document_weblink=incident.incident_conversation_commands_reference_document.weblink,
-        conference_weblink=incident.conference.weblink,
+        **message_kwargs,
     )
 
     log.debug(f"List of incident resources sent to {user_id} via ephemeral message.")

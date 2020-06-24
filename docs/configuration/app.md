@@ -193,14 +193,6 @@ Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispa
 
 ### Incident Resource Configuration
 
-#### `INCIDENT_FAQ_DOCUMENT_ID`
-
-> Controls which document id to use as the FAQ.
-
-#### `INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_ID`
-
-> Controls which document id to use for the conversation commands reference document.
-
 #### `INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID`
 
 > Controls the folder where to archive incident information.
@@ -248,4 +240,3 @@ Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispa
 #### `INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT` \[default: 'google-docs-incident-review-document'\]
 
 > Controls the resource type to use for the incident review document.
-
