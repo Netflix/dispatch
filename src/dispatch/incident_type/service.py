@@ -15,6 +15,11 @@ def get(*, db_session, incident_type_id: int) -> Optional[IncidentType]:
     return db_session.query(IncidentType).filter(IncidentType.id == incident_type_id).one_or_none()
 
 
+def get_default(*, db_session):
+    """Returns the default incident type."""
+    return db_session.query(IncidentType).filter(IncidentType.default == True).one_or_none()  # noqa
+
+
 def get_by_name(*, db_session, name: str) -> Optional[IncidentType]:
     """Returns an incident type based on the given type name."""
     return db_session.query(IncidentType).filter(IncidentType.name == name).one_or_none()

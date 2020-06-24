@@ -14,6 +14,13 @@ def get(*, db_session, incident_priority_id: int) -> Optional[IncidentPriority]:
     )
 
 
+def get_default(*, db_session):
+    """Returns the current default incident_priority."""
+    return (
+        db_session.query(IncidentPriority).filter(IncidentPriority.default == True).one_or_none()
+    )  # noqa
+
+
 def get_by_name(*, db_session, name: str) -> Optional[IncidentPriority]:
     """Returns an incident priority based on the given priority name."""
     return db_session.query(IncidentPriority).filter(IncidentPriority.name == name).one_or_none()
