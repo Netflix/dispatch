@@ -36,7 +36,7 @@ def _revoke_other_default(target, value, oldvalue, initiator):
 
     if value:
         previous_default = (
-            session.query(IncidentPriority).filter(IncidentPriority.default == True).one_or_none()
+            session.query(IncidentPriority).filter(IncidentPriority.default == True).one_or_none()  # noqa
         )
         if previous_default:
             previous_default.default = False
