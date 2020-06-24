@@ -25,7 +25,6 @@ from dispatch.config import (
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
     INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
     INCIDENT_RESOURCE_TACTICAL_GROUP,
-    INCIDENT_RESOURCE_INCIDENT_FAQ_DOCUMENT,
 )
 from dispatch.auth.models import UserRoles
 from dispatch.conference.models import ConferenceRead
