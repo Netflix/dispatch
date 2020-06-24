@@ -2,6 +2,7 @@ from typing import List, Optional
 from pydantic import StrictBool
 
 from sqlalchemy import event, Column, Integer, String, Boolean
+from sqlalchemy.sql.expression import true
 from sqlalchemy.orm import object_session
 from sqlalchemy_utils import TSVectorType
 
@@ -36,7 +37,7 @@ def _revoke_other_default(target, value, oldvalue, initiator):
 
     if value:
         previous_default = (
-            session.query(IncidentPriority).filter(IncidentPriority.default == True).one_or_none()  # noqa
+            session.query(IncidentPriority).filter(IncidentPriority.default == true()).one_or_none()
         )
         if previous_default:
             previous_default.default = False

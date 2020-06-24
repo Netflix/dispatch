@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy.sql.expression import true
 
 from dispatch.document import service as document_service
 from dispatch.document.models import Document
@@ -17,7 +18,9 @@ def get(*, db_session, incident_type_id: int) -> Optional[IncidentType]:
 
 def get_default(*, db_session):
     """Returns the default incident type."""
-    return db_session.query(IncidentType).filter(IncidentType.default == True).one_or_none()  # noqa
+    return (
+        db_session.query(IncidentType).filter(IncidentType.default == true()).one_or_none()
+    )  # noqa
 
 
 def get_by_name(*, db_session, name: str) -> Optional[IncidentType]:
