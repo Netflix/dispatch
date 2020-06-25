@@ -148,7 +148,6 @@ remote_files:read
 team:read
 users:read
 users:read.email
-users.profile:read
 users:write
 ```
 
@@ -158,5 +157,6 @@ users:write
 channels:read
 groups:history
 groups:read
+users.profile:read
 ```
 
