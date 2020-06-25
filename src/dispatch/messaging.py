@@ -10,9 +10,9 @@ from dispatch.incident.enums import IncidentStatus
 
 from .config import (
     DISPATCH_UI_URL,
-    INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
+    INCIDENT_RESOURCE_CONVERSATION_REFERENCE_DOCUMENT,
     INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT,
-    INCIDENT_RESOURCE_FAQ_DOCUMENT,
+    INCIDENT_RESOURCE_INCIDENT_FAQ_DOCUMENT,
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
     INCIDENT_RESOURCE_INVESTIGATION_SHEET,
@@ -97,14 +97,14 @@ Private conversation for real-time discussion. All incident participants get add
     "\n", " "
 ).strip()
 
-INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_DESCRIPTION = """
+INCIDENT_CONVERSATION_REFERENCE_DOCUMENT_DESCRIPTION = """
 Document containing the list of slash commands available to the Incident Commander (IC)
 and participants in the incident conversation.""".replace(
     "\n", " "
 ).strip()
 
 INCIDENT_CONFERENCE_DESCRIPTION = """
-Video conference and phone bridge to be used throughout the incident.  Password: {{conference_challenge}}
+Video conference and phone bridge to be used throughout the incident.  Password: {{conference_challenge if conference_challenge else 'N/A'}}
 """.replace(
     "\n", ""
 ).strip()
@@ -148,9 +148,9 @@ This is a document that contains an executive report about the incident.""".repl
 ).strip()
 
 INCIDENT_DOCUMENT_DESCRIPTIONS = {
-    INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT: INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_DESCRIPTION,
+    INCIDENT_RESOURCE_CONVERSATION_REFERENCE_DOCUMENT: INCIDENT_CONVERSATION_REFERENCE_DOCUMENT_DESCRIPTION,
     INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT: INCIDENT_EXECUTIVE_REPORT_DOCUMENT_DESCRIPTION,
-    INCIDENT_RESOURCE_FAQ_DOCUMENT: INCIDENT_FAQ_DOCUMENT_DESCRIPTION,
+    INCIDENT_RESOURCE_INCIDENT_FAQ_DOCUMENT: INCIDENT_FAQ_DOCUMENT_DESCRIPTION,
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT: INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT: INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,
     INCIDENT_RESOURCE_INVESTIGATION_SHEET: INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
@@ -291,7 +291,7 @@ INCIDENT_STORAGE = {
 INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT = {
     "title": "Incident Conversation Commands Reference Document",
     "title_link": "{{conversation_commands_reference_document_weblink}}",
-    "text": INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_DESCRIPTION,
+    "text": INCIDENT_CONVERSATION_REFERENCE_DOCUMENT_DESCRIPTION,
 }
 
 INCIDENT_INVESTIGATION_DOCUMENT = {
@@ -452,6 +452,9 @@ def render_message_template(message_template: List[dict], **kwargs):
 
         if d.get("title_link"):
             d["title_link"] = Template(d["title_link"]).render(**kwargs)
+            # skip blocks that do not have new links rendered, as no real value was provided
+            if not d["title_link"]:
+                continue
 
         if d.get("button_text"):
             d["button_text"] = Template(d["button_text"]).render(**kwargs)

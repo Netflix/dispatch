@@ -3,11 +3,9 @@ import logging
 from datetime import date
 
 from dispatch.config import (
-    INCIDENT_PLUGIN_CONVERSATION_SLUG,
     INCIDENT_PLUGIN_DOCUMENT_SLUG,
     INCIDENT_PLUGIN_STORAGE_SLUG,
     INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT,
-    INCIDENT_STORAGE_EXECUTIVE_REPORT_FILE_ID,
 )
 from dispatch.conversation.messaging import send_feedack_to_user
 from dispatch.decorators import background_task
@@ -80,6 +78,8 @@ def create_executive_report(
     user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
 ):
     """Creates an executive report."""
+    report_template = document_service.get_executive_report_template(db_session=db_session)
+
     current_date = date.today().strftime("%B %d, %Y")
 
     current_status = action["submission"]["current_status"]
@@ -88,6 +88,12 @@ def create_executive_report(
 
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    if not report_template:
+        send_feedack_to_user(
+            incident.conversation.channel_id, user_id, "No executive report template defined."
+        )
+        return
 
     # we fetch all previous executive reports
     executive_reports = get_all_by_incident_id_and_type(
@@ -132,7 +138,7 @@ def create_executive_report(
     executive_report_document_name = f"{incident.name} - Executive Report - {current_date}"
     executive_report_document = storage_plugin.copy_file(
         team_drive_id=incident.storage.resource_id,
-        file_id=INCIDENT_STORAGE_EXECUTIVE_REPORT_FILE_ID,
+        file_id=report_template.resource_id,
         name=executive_report_document_name,
     )
 

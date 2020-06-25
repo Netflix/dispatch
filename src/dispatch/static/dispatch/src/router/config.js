@@ -54,6 +54,7 @@ export const protectedRoute = [
   {
     path: "/dashboard",
     component: DashboardLayout,
+    redirect: "/dashboard/incidents",
     meta: { title: "Dashboard", group: "incidents", icon: "", requiresAuth: true },
     children: [
       {

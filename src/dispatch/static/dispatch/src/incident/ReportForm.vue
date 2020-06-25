@@ -66,7 +66,7 @@
               </v-list-group>
             </v-list>
             <v-list three-line>
-              <v-list-group>
+              <v-list-group :value="true">
                 <template v-slot:activator>
                   <v-list-item-title class="title">Incident Resources</v-list-item-title>
                 </template>
@@ -83,10 +83,8 @@
                 </v-list-item>
                 <v-list-item v-else>
                   <v-list-item-content>
-                    <v-list-item-title>Ticket</v-list-item-title>
-                    <v-list-item-subtitle>
-                      <v-progress-circular indeterminate color="primary" />
-                    </v-list-item-subtitle>
+                    <v-list-item-title>Creating incident ticket...</v-list-item-title>
+                    <v-progress-linear indeterminate color="primary"></v-progress-linear>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider />
@@ -103,10 +101,8 @@
                 </v-list-item>
                 <v-list-item v-else>
                   <v-list-item-content>
-                    <v-list-item-title>Video Conference</v-list-item-title>
-                    <v-list-item-subtitle>
-                      <v-progress-circular indeterminate color="primary" />
-                    </v-list-item-subtitle>
+                    <v-list-item-title>Creating incident video conference...</v-list-item-title>
+                    <v-progress-linear indeterminate color="primary"></v-progress-linear>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider />
@@ -123,10 +119,8 @@
                 </v-list-item>
                 <v-list-item v-else>
                   <v-list-item-content>
-                    <v-list-item-title>Conversation</v-list-item-title>
-                    <v-list-item-subtitle>
-                      <v-progress-circular indeterminate color="primary" />
-                    </v-list-item-subtitle>
+                    <v-list-item-title>Creating incident conversation...</v-list-item-title>
+                    <v-progress-linear indeterminate color="primary"></v-progress-linear>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider />
@@ -143,14 +137,12 @@
                 </v-list-item>
                 <v-list-item v-else>
                   <v-list-item-content>
-                    <v-list-item-title>Storage</v-list-item-title>
-                    <v-list-item-subtitle>
-                      <v-progress-circular indeterminate color="primary" />
-                    </v-list-item-subtitle>
+                    <v-list-item-title>Creating incident storage...</v-list-item-title>
+                    <v-progress-linear indeterminate color="primary"></v-progress-linear>
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider />
-                <div v-if="documents">
+                <span v-if="documents.length">
                   <span v-for="document in documents" :key="document.resource_id">
                     <v-list-item :href="document.weblink" target="_blank">
                       <v-list-item-content>
@@ -165,18 +157,27 @@
                     </v-list-item>
                     <v-divider />
                   </span>
-                </div>
+                </span>
                 <span v-else>
                   <v-list-item>
                     <v-list-item-content>
-                      <v-list-item-title>Documents</v-list-item-title>
-                      <v-list-item-subtitle>
-                        <v-progress-circular indeterminate color="primary" />
-                      </v-list-item-subtitle>
+                      <v-list-item-title>Creating incident documents... </v-list-item-title>
+                      <v-progress-linear indeterminate color="primary"></v-progress-linear>
                     </v-list-item-content>
                   </v-list-item>
-                  <v-divider />
                 </span>
+                <v-divider />
+                <v-list-item v-if="incident_faq" :href="incident_faq.weblink" target="_blank">
+                  <v-list-item-content>
+                    <v-list-item-title>Incident FAQ</v-list-item-title>
+                    <v-list-item-subtitle>{{ incident_faq.description }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                  <v-list-item-action>
+                    <v-list-item-icon>
+                      <v-icon>open_in_new</v-icon>
+                    </v-list-item-icon>
+                  </v-list-item-action>
+                </v-list-item>
               </v-list-group>
             </v-list>
             <v-container grid-list-md>
@@ -246,8 +247,15 @@
                     :loading="loading"
                     :disabled="invalid || !validated"
                     @click="save()"
-                    >Submit</v-btn
-                  >
+                    >Submit
+                    <template v-slot:loader>
+                      <v-progress-linear
+                        indeterminate="primary"
+                        color="white"
+                        dark
+                      ></v-progress-linear>
+                    </template>
+                  </v-btn>
                 </v-container>
               </v-form>
             </v-card-text>
@@ -273,6 +281,7 @@ import { required } from "vee-validate/dist/rules"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import DocumentApi from "@/document/api"
 
 extend("required", {
   ...required,
@@ -292,8 +301,20 @@ export default {
   },
   data() {
     return {
-      isSubmitted: false
+      isSubmitted: false,
+      incident_faq: null
     }
+  },
+  mounted() {
+    DocumentApi.getAll({
+      "field[]": "resource_type",
+      "op[]": "==",
+      "value[]": "dispatch-incident-faq"
+    }).then(response => {
+      if (response.data.items.length) {
+        this.incident_faq = response.data.items[0]
+      }
+    })
   },
   computed: {
     ...mapFields("incident", [

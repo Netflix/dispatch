@@ -143,14 +143,24 @@ def create(
 ) -> Incident:
     """Creates a new incident."""
     # We get the incident type by name
-    incident_type = incident_type_service.get_by_name(
-        db_session=db_session, name=incident_type["name"]
-    )
+    if not incident_type:
+        incident_type = incident_type_service.get_default(db_session=db_session)
+        if not incident_type:
+            raise Exception("No incident type specified and no default has been defined.")
+    else:
+        incident_type = incident_type_service.get_by_name(
+            db_session=db_session, name=incident_type["name"]
+        )
 
     # We get the incident priority by name
-    incident_priority = incident_priority_service.get_by_name(
-        db_session=db_session, name=incident_priority["name"]
-    )
+    if not incident_priority:
+        incident_priority = incident_priority_service.get_default(db_session=db_session)
+        if not incident_priority:
+            raise Exception("No incident priority specified and no default has been defined.")
+    else:
+        incident_priority = incident_priority_service.get_by_name(
+            db_session=db_session, name=incident_priority["name"]
+        )
 
     if not visibility:
         visibility = incident_type.visibility
