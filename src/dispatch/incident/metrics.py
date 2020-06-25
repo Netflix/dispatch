@@ -2,6 +2,7 @@ import math
 import logging
 from itertools import groupby
 
+from sqlalchemy.sql.expression import true
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
@@ -26,17 +27,37 @@ def month_grouper(item):
     return key
 
 
+def get_incident_counts(db_session, months=2):
+    """Counts the number of incident in the last n months."""
+    incidents = (
+        db_session.query(Incident)
+        .join(IncidentType)
+        .filter(IncidentType.exclude_from_metrics.isnot(True))
+        .filter(Incident.reported_at > date.today().replace(day=1) + relativedelta(months=-2))
+        .all()
+    )
+
+    counts = []
+    incidents_sorted = sorted(incidents, key=month_grouper)
+    for (key, items) in groupby(incidents_sorted, month_grouper):
+        items = list(items)
+        counts.append(len(items))
+    return counts
+
+
 def make_forecast(
     db_session, incident_type: str = None, periods: int = 24, grouping: str = "month"
 ):
     """Makes an incident forecast."""
     query = db_session.query(Incident).join(IncidentType)
 
-    # exclude simulations
-    query = query.filter(IncidentType.name != "Simulation")
+    # exclude incident types
+    query = query.filter(IncidentType.exclude_from_metrics.isnot(True))
 
-    # exclude current month
-    query = query.filter(Incident.reported_at < date.today().replace(day=1))
+    # exclude last two months
+    query = query.filter(
+        Incident.reported_at < date.today().replace(day=1) + relativedelta(months=-2)
+    )
 
     if incident_type != "all":
         if incident_type:
@@ -88,12 +109,18 @@ def make_forecast(
 
     forecast_data = forecast_df.to_dict("series")
 
+    # drop day data
+    categories = [d[:-3] for d in forecast_data["ds"]]
+
+    incident_counts = get_incident_counts(db_session=db_session)
+
     return {
-        "categories": list(forecast_data["ds"]),
+        "categories": categories,
         "series": [
             {
                 "name": "Predicted",
                 "data": [max(math.ceil(x), 0) for x in list(forecast_data["yhat"])],
-            }
+            },
+            {"name": "Actual", "data": incident_counts},
         ],
     }
