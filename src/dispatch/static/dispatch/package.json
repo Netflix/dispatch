@@ -15,7 +15,7 @@
     "axios": "^0.19.2",
     "date-fns": "^2.12.0",
     "font-awesome": "^4.7.0",
-    "good-env": "^5.1.2",
+    "good-env": "^5.1.4",
     "lodash.truncate": "^4.4.2",
     "moment": "^2.24.0",
     "quill": "^1.3.7",

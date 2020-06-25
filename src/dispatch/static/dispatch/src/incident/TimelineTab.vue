@@ -5,7 +5,7 @@
     </v-row>
     <v-timeline v-if="events.length" dense clipped>
       <v-timeline-item
-        v-for="event in events"
+        v-for="event in sortedEvents"
         v-bind:key="event.id"
         class="mb-4"
         color="blue"
@@ -47,7 +47,11 @@ export default {
   },
 
   computed: {
-    ...mapFields("incident", ["selected.events"])
+    ...mapFields("incident", ["selected.events"]),
+
+    sortedEvents: function() {
+      return this.events.slice().sort((a, b) => new Date(a.started_at) - new Date(b.started_at))
+    }
   }
 }
 </script>
