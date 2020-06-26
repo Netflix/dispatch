@@ -1,6 +1,5 @@
 import json
 import logging
-import numpy
 
 from enum import Enum
 from fastapi import BackgroundTasks
@@ -399,8 +398,8 @@ def update_notifications_group_from_submitted_form(action: dict, db_session=None
         .split(",")
     )
 
-    members_added = numpy.setdiff1d(updated_members, current_members)
-    members_removed = numpy.setdiff1d(current_members, updated_members)
+    members_added = list(set(updated_members) - set(current_members))
+    members_removed = list(set(current_members) - set(updated_members))
 
     incident_id = action["view"]["private_metadata"]["incident_id"]
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
