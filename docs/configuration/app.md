@@ -193,7 +193,7 @@ Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispa
 
 ### Incident Resource Configuration
 
-#### `INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID`
+#### `INCIDENT_STORAGE_FOLDER_ID`
 
 > Top level folder where all incident data is stored. Note: viewing actual incident data is still on a per-sub folder basis.
 

@@ -5,21 +5,18 @@ from dispatch.plugins.bases import StoragePlugin, TaskPlugin
 from dispatch.plugins.dispatch_google import drive as google_drive_plugin
 from dispatch.plugins.dispatch_google.common import get_service
 
+from dispatch.plugins.dispatch_google.config import GOOGLE_DOMAIN
 from .drive import (
     Roles,
     add_permission,
-    archive_folder,
     copy_file,
     create_file,
-    create_team_drive,
     delete_file,
-    delete_team_drive,
     download_google_document,
     list_files,
-    list_team_drives,
     move_file,
     remove_permission,
-    restrict_folder,
+    add_domain_permission,
 )
 from .task import list_tasks
 
@@ -45,23 +42,6 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         client = get_service("drive", "v3", self.scopes)
         return download_google_document(client, file_id, mime_type=mime_type)
 
-    def create(self, name: str, participants: List[str], role: str = Roles.file_organizer.value):
-        """Creates a new Google Drive."""
-        client = get_service("drive", "v3", self.scopes)
-        response = create_team_drive(client, name, participants, role)
-        response["weblink"] = f"https://drive.google.com/drive/folders/{response['id']}"
-        return response
-
-    def delete(self, team_drive_id: str, empty: bool = True):
-        """Deletes a Google Drive."""
-        client = get_service("drive", "v3", self.scopes)
-        return delete_team_drive(client, team_drive_id, empty)
-
-    def list(self, **kwargs):
-        """Lists all available team drives."""
-        client = get_service("drive", "v3", self.scopes)
-        return list_team_drives(client, **kwargs)
-
     def add_participant(
         self,
         team_drive_or_file_id: str,
@@ -74,11 +54,16 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         for p in participants:
             add_permission(client, p, team_drive_or_file_id, role, user_type)
 
-    def remove_participant(self, team_drive_id: str, participants: List[str]):
+    def remove_participant(self, folder_id: str, participants: List[str]):
         """Removes participants from existing Google Drive."""
         client = get_service("drive", "v3", self.scopes)
         for p in participants:
-            remove_permission(client, p, team_drive_id)
+            remove_permission(client, p, folder_id)
+
+    def open(self, folder_id: str):
+        """Adds the domain permission to the folder."""
+        client = get_service("drive", "v3", self.scopes)
+        add_domain_permission(client, folder_id, GOOGLE_DOMAIN)
 
     def create_file(
         self,
@@ -86,7 +71,7 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         name: str,
         participants: List[str] = [],
         role: str = Roles.writer.value,
-        file_type: str = "folder"
+        file_type: str = "folder",
     ):
         """Creates a new file in existing Google Drive."""
         client = get_service("drive", "v3", self.scopes)
@@ -94,49 +79,31 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         response["weblink"] = response["webViewLink"]
         return response
 
-    def delete_file(self, team_drive_id: str, file_id: str):
+    def delete_file(self, folder_id: str, file_id: str):
         """Removes a file from existing Google Drive."""
         client = get_service("drive", "v3", self.scopes)
-        response = delete_file(client, team_drive_id, file_id)
+        response = delete_file(client, folder_id, file_id)
         response["weblink"] = response["webViewLink"]
         return response
 
-    def copy_file(self, team_drive_id: str, file_id: str, name: str):
+    def copy_file(self, folder_id: str, file_id: str, name: str):
         """Creates a copy of the given file and places it in the specified team drive."""
         client = get_service("drive", "v3", self.scopes)
-        response = copy_file(client, team_drive_id, file_id, name)
+        response = copy_file(client, folder_id, file_id, name)
         response["weblink"] = response["webViewLink"]
         return response
 
-    def move_file(self, new_team_drive_id: str, file_id: str):
+    def move_file(self, new_folder_id: str, file_id: str):
         """Moves a file from one team drive to another."""
         client = get_service("drive", "v3", self.scopes)
-        response = move_file(client, new_team_drive_id, file_id)
+        response = move_file(client, new_folder_id, file_id)
         response["weblink"] = response["webViewLink"]
         return response
 
-    def archive(self, folder_id: str):
-        """Archives a shared team drive to a specific folder."""
-        client = get_service("drive", "v3", self.scopes)
-        response = archive_folder(client, folder_id)
-        return response
-
-    def list_files(self, team_drive_id: str, q: str = None):
+    def list_files(self, folder_id: str, q: str = None):
         """Lists all files in team drive."""
         client = get_service("drive", "v3", self.scopes)
-        return list_files(client, team_drive_id, q)
-
-    def restrict(self, team_drive_id: str):
-        """Applies a set of restrictions and capabilities to the team drive."""
-        client = get_service("drive", "v3", self.scopes)
-        response = restrict_folder(client, team_drive_id)
-        return response
-
-    def unrestrict(self, team_drive_id: str):
-        """Removes a set of restrictions and capabilities from the team drive."""
-        client = get_service("drive", "v3", self.scopes)
-        response = unrestrict_team_drive(client, team_drive_id)
-        return response
+        return list_files(client, folder_id, q)
 
 
 class GoogleDriveTaskPlugin(TaskPlugin):

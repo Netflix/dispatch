@@ -26,6 +26,7 @@ from dispatch.config import (
     INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
     INCIDENT_RESOURCE_TACTICAL_GROUP,
     INCIDENT_STORAGE_FOLDER_ID,
+    INCIDENT_STORAGE_OPEN_ON_CLOSE,
 )
 from dispatch.conference import service as conference_service
 from dispatch.conference.models import ConferenceCreate
@@ -41,9 +42,7 @@ from dispatch.group import service as group_service
 from dispatch.group.models import GroupCreate
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
-from dispatch.incident_priority.models import IncidentPriorityRead
 from dispatch.incident_type import service as incident_type_service
-from dispatch.incident_type.models import IncidentTypeRead
 from dispatch.individual import service as individual_service
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
@@ -652,7 +651,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
         # incident review document is optional
         if template:
             incident_review_document = storage_plugin.copy_file(
-                team_drive_id=incident.storage.resource_id,
+                folder_id=incident.storage.resource_id,
                 file_id=template.resource_id,
                 name=incident_review_document_name,
             )
@@ -665,7 +664,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
             )
 
             storage_plugin.move_file(
-                new_team_drive_id=incident.storage.resource_id, file_id=incident_review_document["id"]
+                new_folder_id=incident.storage.resource_id, file_id=incident_review_document["id"],
             )
 
             event_service.log(
@@ -733,9 +732,12 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     # we update the external ticket
     update_external_incident_ticket(incident, db_session)
 
-    if incident.visibility == Visibility.open:
-        # we archive the artifacts in the storage
-        archive_incident_artifacts(incident, db_session)
+    if INCIDENT_STORAGE_OPEN_ON_CLOSE:
+        # restricted incidents are never opened
+        if incident.visibility == Visibility.open:
+            # add organization wide permission
+            storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
+            storage_plugin.open(incident.storage.resource_id)
 
     # we delete the tactical and notification groups
     delete_participant_groups(incident, db_session)
