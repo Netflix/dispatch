@@ -166,7 +166,6 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
         """Lists members from an existing Google Group."""
         client = get_service("admin", "directory_v1", self.scopes)
         members = list_members(client, email)
-        print(members)
         return [m["email"] for m in members["members"]]
 
     def delete(self, email: str):
