@@ -151,18 +151,24 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
         return group
 
     def add(self, email: str, participants: List[str], role: str = "MEMBER"):
-        """Adds participants to existing Google Group."""
+        """Adds participants to an existing Google Group."""
         client = get_service("admin", "directory_v1", self.scopes)
         for p in participants:
             add_member(client, email, p, role)
 
     def remove(self, email: str, participants: List[str]):
-        """Removes participants from existing Google Group."""
+        """Removes participants from an existing Google Group."""
         client = get_service("admin", "directory_v1", self.scopes)
         for p in participants:
             remove_member(client, email, p)
 
+    def list(self, email: str):
+        """Lists members from an existing Google Group."""
+        client = get_service("admin", "directory_v1", self.scopes)
+        members = list_members(client, email)
+        return [m["email"] for m in members["members"]]
+
     def delete(self, email: str):
-        """Deletes an existing google group."""
+        """Deletes an existing Google group."""
         client = get_service("admin", "directory_v1", self.scopes)
         delete_group(client, email)

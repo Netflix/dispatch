@@ -15,19 +15,21 @@ from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
     SLACK_COMMAND_EXECUTIVE_REPORT_SLUG,
+    SLACK_COMMAND_LIST_MY_TASKS_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
     SLACK_COMMAND_LIST_TASKS_SLUG,
-    SLACK_COMMAND_LIST_MY_TASKS_SLUG,
     SLACK_COMMAND_REPORT_INCIDENT_SLUG,
     SLACK_COMMAND_TACTICAL_REPORT_SLUG,
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
+    SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG,
     SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG,
 )
 
 from .modals import (
-    create_update_participant_modal,
+    create_update_notifications_group_modal,
     create_report_incident_modal,
+    create_update_participant_modal,
 )
 
 from .dialogs import (
@@ -47,14 +49,15 @@ def command_functions(command: str):
         SLACK_COMMAND_ASSIGN_ROLE_SLUG: [create_assign_role_dialog],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [create_engage_oncall_dialog],
         SLACK_COMMAND_EXECUTIVE_REPORT_SLUG: [create_executive_report_dialog],
+        SLACK_COMMAND_LIST_MY_TASKS_SLUG: [list_my_tasks],
         SLACK_COMMAND_LIST_PARTICIPANTS_SLUG: [list_participants],
         SLACK_COMMAND_LIST_RESOURCES_SLUG: [incident_flows.incident_list_resources_flow],
         SLACK_COMMAND_LIST_TASKS_SLUG: [list_tasks],
-        SLACK_COMMAND_LIST_MY_TASKS_SLUG: [list_my_tasks],
+        SLACK_COMMAND_REPORT_INCIDENT_SLUG: [create_report_incident_modal],
         SLACK_COMMAND_TACTICAL_REPORT_SLUG: [create_tactical_report_dialog],
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_dialog],
+        SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG: [create_update_notifications_group_modal],
         SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG: [create_update_participant_modal],
-        SLACK_COMMAND_REPORT_INCIDENT_SLUG: [create_report_incident_modal],
     }
 
     return command_mappings.get(command, [])

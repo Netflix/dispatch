@@ -1,25 +1,26 @@
 from fastapi import BackgroundTasks
 
-from dispatch.incident.enums import IncidentStatus
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.conversation.service import get_by_channel_id
 from dispatch.database import SessionLocal
 from dispatch.decorators import background_task
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
+from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentUpdate, IncidentRead
-from dispatch.report import flows as report_flows
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.report import flows as report_flows
 
 from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
     SLACK_COMMAND_EXECUTIVE_REPORT_SLUG,
-    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_TACTICAL_REPORT_SLUG,
+    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
 )
 
 from .service import get_user_email
+
 
 slack_client = dispatch_slack_service.create_slack_client()
 
