@@ -11,6 +11,8 @@ import "font-awesome/css/font-awesome.css"
 import * as Sentry from "@sentry/browser"
 import * as Integrations from "@sentry/integrations"
 
+import VueClipboard from "vue-clipboard2"
+
 if (process.env.VUE_APP_SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.VUE_APP_SENTRY_DSN,
@@ -19,6 +21,8 @@ if (process.env.VUE_APP_SENTRY_DSN) {
 }
 
 Vue.config.productionTip = false
+
+Vue.use(VueClipboard)
 
 new Vue({
   vuetify,

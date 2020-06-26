@@ -12,8 +12,8 @@ from dispatch.models import (
     IndividualReadNested,
     ServiceReadNested,
     TeamReadNested,
-    DocumentRead,
 )
+from dispatch.document.models import DocumentRead
 from dispatch.term.models import TermRead
 
 recommendation_documents = Table(

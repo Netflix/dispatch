@@ -57,17 +57,47 @@ In general, do not include any quotation marks when adding configuration values.
 
 ### Authentication
 
-#### `DISPATCH_AUTHENTICATION_PROVIDER` \['default': dispatch-auth-provider-pkce\]
+#### `DISPATCH_AUTHENTICATION_PROVIDER_SLUG` \['default': dispatch-auth-provider-basic\]
 
 > Used by Dispatch to determine which authentication provider to use, by default Dispatch ships with a PKCE authentication provider.
 
 {% hint style="info" %}
-If you wish to disabled authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
+If you wish to disable authentication set `DISPATCH_AUTHENTICATION_PROVIDER_SLUG=`
 {% endhint %}
+
+#### Configuration for `dispatch-auth-provider-basic`
+
+{% hint style="warning" %}
+Today, basic authentication allows self registration without approval.
+{% endhint %}
+
+{% hint style="warning" %}
+In order for this plugin to work, you need to set `DISPATCH_JWT_SECRET`.
+{% endhint %}
+
+#### `DISPATCH_JWT_SECRET`
+
+> Used by the basic auth provider to mint JWT tokens.
+
+#### `DISPATCH_JWT_ALG` \['default': 'HS256'\]
+
+> Used by the basic auth provider to mint JWT tokens.
+
+#### `DISPATCH_JWT_EXP` \['default': 86400 \]
+
+> Used by the basic auth provider to mint JWT tokens and set their expiration.
+
+#### `DISPATCH_JWT_AUDIENCE`
+
+> Override what the `Audience` is expected to be in the PKCE JWT decode
+
+#### `DISPATCH_JWT_EMAIL_OVERRIDE`
+
+> Override where Dispatch should find the user email in the idtoken.
 
 #### `DISPATCH_AUTHENTICATION_DEFAULT_USER` \['default': dispatch@example.com\]
 
-> Used when authentication is disable as the default anonymous user.
+> Used as the default anonymous user when authentication is disabled.
 
 #### Configuration for `dispatch-auth-provider-pkce`
 
@@ -77,11 +107,11 @@ If you wish to disabled authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
 
 #### `VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT`
 
-> Used by the Dispatch Web UI send the user via Proof Key Code Exchange \(PKCE\) to a correct open id connect endpoint.
+> Used by the Dispatch Web UI send the user via Proof Key Code Exchange \(PKCE\) to a correct OpenID Connect endpoint.
 
 #### `VUE_APP_DISPATCH_AUTHENTICATOIN_PROVIDER_PKCE_CLIENT_ID`
 
-> The client id to send to the open id connect endpoint.
+> The client id to send to the OpenID Connect endpoint.
 
 ### Persistence
 
@@ -105,13 +135,15 @@ If you wish to disabled authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
 
 ### Incident Cost
 
+Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/service.py#L279) the cost of an incident by adding up the time participants have spent on each incident role \(e.g. Incident Commander\) and applying an [engagement multiplier](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/service.py#L266) that's based on the incident role. It also includes time spent on incident review related activities. Dispatch calculates and published the cost for all incidents [every 5 minutes](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/scheduled.py#L257).
+
 #### `ANNUAL_COST_EMPLOYEE` \[default: '50000'\]
 
-> Used for incident cost modeling, specifies the total `all-in` cost for an average employee working on incidents.
+> Used for incident cost modeling, specifies the total `all-in` average cost for an employee working on incidents.
 
 #### `BUSINESS_HOURS_YEAR` \[default: '2080'\]
 
-> Used for incident cost modeling, specifies the number of hours in an employee's work week.
+> Used for incident cost modeling, specifies the number of hours in an employee's work year.
 
 ### Incident Plugin Configuration
 
@@ -161,15 +193,7 @@ If you wish to disabled authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
 
 ### Incident Resource Configuration
 
-#### `INCIDENT_FAQ_DOCUMENT_ID`
-
-> Controls which document id to use as the FAQ.
-
-#### `INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_ID`
-
-> Controls which document id to use for the conversation commands reference document.
-
-#### `INCIDENT_STORAGE_FOLDER_ID`
+#### `INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID`
 
 > Top level folder where all incident data is stored. Note: viewing actual incident data is still on a per-sub folder basis.
 
@@ -185,9 +209,9 @@ If you wish to disabled authentication set `DISPATCH_AUTHENTICATION_PROVIDER=""`
 
 > Comma separated list of email addresses to be notified of new incidents.
 
-#### `INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID` \[default: None\]
+#### `INCIDENT_ONCALL_SERVICE_ID` \[default: None\]
 
-> Specifies the oncall service id to use to resolve the oncall person that is included in the daily incidents summary.
+> Specifies the oncall service id to use to resolve the oncall person.
 
 #### `INCIDENT_RESOURCE_TASK` \[default: 'google-docs-incident-task'\]
 

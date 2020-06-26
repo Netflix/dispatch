@@ -2,7 +2,7 @@ from dispatch.plugins.bases import ConversationPlugin
 
 
 class TestConversationPlugin(ConversationPlugin):
-    title = "Test Conversation"
+    title = "Dispatch Test Plugin - Conversation"
     slug = "test-conversation"
 
     def create(self, items, **kwargs):

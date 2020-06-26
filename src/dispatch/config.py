@@ -5,6 +5,8 @@ import base64
 from starlette.config import Config
 from starlette.datastructures import CommaSeparatedStrings
 
+log = logging.getLogger(__name__)
+
 # if we have metatron available to us, lets use it to decrypt our secrets in memory
 try:
     import metatron.decrypt
@@ -72,9 +74,17 @@ DISPATCH_HELP_SLACK_CHANNEL = config("DISPATCH_HELP_SLACK_CHANNEL")
 
 # authentication
 DISPATCH_AUTHENTICATION_PROVIDER_SLUG = config(
-    "DISPATCH_AUTHENTICATION_PROVIDER_SLUG", default="dispatch-auth-provider-pkce"
+    "DISPATCH_AUTHENTICATION_PROVIDER_SLUG", default="dispatch-auth-provider-basic"
 )
 VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG = DISPATCH_AUTHENTICATION_PROVIDER_SLUG
+
+DISPATCH_JWT_SECRET = config("DISPATCH_JWT_SECRET", default=None)
+DISPATCH_JWT_ALG = config("DISPATCH_JWT_ALG", default="HS256")
+DISPATCH_JWT_EXP = config("DISPATCH_JWT_EXP", default=86400)  # Seconds
+
+if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-basic":
+    if not DISPATCH_JWT_SECRET:
+        log.warn("No JWT secret specified, this is required if you are using basic authentication.")
 
 DISPATCH_AUTHENTICATION_DEFAULT_USER = config(
     "DISPATCH_AUTHENTICATION_DEFAULT_USER", default="dispatch@example.com"
@@ -83,6 +93,13 @@ DISPATCH_AUTHENTICATION_DEFAULT_USER = config(
 DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS = config(
     "DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS", default=None
 )
+
+if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-pkce":
+    if not DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS:
+        log.warn(
+            "No PKCE JWKS url provided, this is required if you are using PKCE authentication."
+        )
+
 VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL = config(
     "VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL", default=None
 )
@@ -110,7 +127,7 @@ DATABASE_PORT = config("DATABASE_PORT", default="5432")
 SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{DATABASE_CREDENTIALS}@{DATABASE_HOSTNAME}:{DATABASE_PORT}/{DATABASE_NAME}"
 
 # incident plugins
-INCIDENT_PLUGIN_CONTACT_SLUG = config("INCIDENT_PLUGIN_CONTACT_SLUG", default="slack-contact")
+INCIDENT_PLUGIN_CONTACT_SLUG = config("INCIDENT_PLUGIN_CONTACT_SLUG", default="dispatch-contact")
 INCIDENT_PLUGIN_CONVERSATION_SLUG = config(
     "INCIDENT_PLUGIN_CONVERSATION_SLUG", default="slack-conversation"
 )
@@ -126,8 +143,8 @@ INCIDENT_PLUGIN_EMAIL_SLUG = config(
 INCIDENT_PLUGIN_GROUP_SLUG = config(
     "INCIDENT_PLUGIN_GROUP_SLUG", default="google-group-participant-group"
 )
-INCIDENT_PLUGIN_PARTICIPANT_SLUG = config(
-    "INCIDENT_PLUGIN_PARTICIPANT_SLUG", default="dispatch-participants"
+INCIDENT_PLUGIN_PARTICIPANT_RESOLVER_SLUG = config(
+    "INCIDENT_PLUGIN_PARTICIPANT_RESOLVER_SLUG", default="dispatch-participant-resolver"
 )
 INCIDENT_PLUGIN_STORAGE_SLUG = config(
     "INCIDENT_PLUGIN_STORAGE_SLUG", default="google-drive-storage"
@@ -137,53 +154,70 @@ INCIDENT_PLUGIN_CONFERENCE_SLUG = config(
     "INCIDENT_PLUGIN_CONFERENCE_SLUG", default="google-calendar-conference"
 )
 INCIDENT_PLUGIN_TICKET_SLUG = config("INCIDENT_PLUGIN_TICKET_SLUG", default="jira-ticket")
+
 INCIDENT_PLUGIN_TASK_SLUG = config("INCIDENT_PLUGIN_TASK_SLUG", default="google-drive-task")
 
 # incident resources
-INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_ID = config(
-    "INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_ID"
-)
-INCIDENT_DOCUMENT_INVESTIGATION_SHEET_ID = config("INCIDENT_DOCUMENT_INVESTIGATION_SHEET_ID")
-INCIDENT_FAQ_DOCUMENT_ID = config("INCIDENT_FAQ_DOCUMENT_ID")
-INCIDENT_STORAGE_FOLDER_ID = config("INCIDENT_STORAGE_FOLDER_ID")
-INCIDENT_STORAGE_OPEN_ON_CLOSE = config("INCIDENT_STORAGE_OPEN_ON_CLOSE", cast=bool, default=True)
-INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID = config("INCIDENT_STORAGE_INCIDENT_REVIEW_FILE_ID")
+INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID = config("INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID")
+INCIDENT_STORAGE_RESTRICTED = config("INCIDENT_STORAGE_RESTRICTED", cast=bool, default=True)
+
 INCIDENT_NOTIFICATION_CONVERSATIONS = config(
     "INCIDENT_NOTIFICATION_CONVERSATIONS", cast=CommaSeparatedStrings, default=""
 )
 INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS = config(
     "INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS", cast=CommaSeparatedStrings, default=""
 )
-INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID = config(
-    "INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID", default=None
-)
+INCIDENT_ONCALL_SERVICE_ID = config("INCIDENT_ONCALL_SERVICE_ID", default=None)
+if not INCIDENT_ONCALL_SERVICE_ID:
+    INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID = config(
+        "INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID", default=None
+    )
+    if INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID:
+        log.warn(
+            "INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID has been deprecated. Please use INCIDENT_ONCALL_SERVICE_ID instead."
+        )
+        INCIDENT_ONCALL_SERVICE_ID = INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID
+
 INCIDENT_RESOURCE_TACTICAL_GROUP = config(
     "INCIDENT_RESOURCE_TACTICAL_GROUP", default="google-group-participant-tactical-group"
 )
 INCIDENT_RESOURCE_NOTIFICATIONS_GROUP = config(
     "INCIDENT_RESOURCE_NOTIFICATIONS_GROUP", default="google-group-participant-notifications-group"
 )
+INCIDENT_RESOURCE_INVESTIGATION_SHEET_TEMPLATE = config(
+    "INCIDENT_RESOURCE_INVESTIGATION_SHEET_TEMPLATE", default="dispatch-incident-sheet-template"
+)
+INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT_TEMPLATE = config(
+    "INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT_TEMPLATE",
+    default="dispatch-incident-review-document-template",
+)
+INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT_TEMPLATE = config(
+    "INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT_TEMPLATE",
+    default="dispatch-executive-report-document-template",
+)
 INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT = config(
-    "INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT", default="google-docs-investigation-document"
+    "INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT", default="dispatch-incident-document"
 )
 INCIDENT_RESOURCE_INVESTIGATION_SHEET = config(
-    "INCIDENT_RESOURCE_INVESTIGATION_SHEET", default="google-docs-investigation-sheet"
+    "INCIDENT_RESOURCE_INVESTIGATION_SHEET", default="dispatch-incident-sheet"
 )
 INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT = config(
-    "INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT", default="google-docs-incident-review-document"
+    "INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT", default="dispatch-incident-review-document"
 )
-INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT = config(
-    "INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT",
-    default="google-docs-conversation-commands-reference-document",
+INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT = config(
+    "INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT", default="dispatch-executive-report-document"
 )
-INCIDENT_RESOURCE_FAQ_DOCUMENT = config(
-    "INCIDENT_RESOURCE_FAQ_DOCUMENT", default="google-docs-faq-document"
+INCIDENT_RESOURCE_CONVERSATION_REFERENCE_DOCUMENT = config(
+    "INCIDENT_RESOURCE_CONVERSATION_REFERENCE_DOCUMENT",
+    default="dispatch-conversation-reference-document",
+)
+INCIDENT_RESOURCE_INCIDENT_FAQ_DOCUMENT = config(
+    "INCIDENT_RESOURCE_INCIDENT_FAQ_DOCUMENT", default="dispatch-incident-faq-document"
 )
 INCIDENT_RESOURCE_INCIDENT_TASK = config(
     "INCIDENT_RESOURCE_INCIDENT_TASK", default="google-docs-incident-task"
 )
-
-INCIDENT_METRIC_FORECAST_REGRESSIONS = config("INCIDENT_METRIC_FORECAST_REGRESSIONS", default=None)
+ONCALL_PLUGIN_SLUG = config("ONCALL_PLUGIN_SLUG", default="opsgenie-oncall")
 
 # Incident Cost Configuration
 ANNUAL_COST_EMPLOYEE = config("ANNUAL_COST_EMPLOYEE", cast=int, default="650000")

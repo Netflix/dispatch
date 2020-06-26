@@ -3,20 +3,15 @@ import sys
 import traceback
 import logging
 import pkg_resources
+from sqlalchemy.exc import SQLAlchemyError
 
 import click
+from dispatch.plugins.base import plugins, register
 
-from dispatch.plugins.base import plugins
 from .dynamic_click import params_factory
 
 
 logger = logging.getLogger(__name__)
-
-
-def chunk(l, n):
-    """Chunk a list to sublists."""
-    for i in range(0, len(l), n):
-        yield l[i : i + n]
 
 
 # Plugin endpoints should determine authentication # TODO allow them to specify (kglisson)
@@ -32,18 +27,24 @@ def install_plugins():
     Installs plugins associated with dispatch
     :return:
     """
-    from dispatch.plugins.base import register
 
     for ep in pkg_resources.iter_entry_points("dispatch.plugins"):
-        logger.debug(f"Loading plugin {ep.name}")
+        logger.debug(f"Attempting to load plugin: {ep.name}")
         try:
             plugin = ep.load()
+            register(plugin)
+            logger.debug(f"Successfully loaded plugin: {ep.name}")
         except KeyError as e:
-            logger.warning(f"Failed to load plugin {ep.name}. Reason: {e}")
+            logger.warning(f"Failed to load plugin: {ep.name} Reason: {e}")
+        except SQLAlchemyError:
+            logger.error(
+                "Something went wrong with creating plugin rows, is the database setup correctly?"
+            )
         except Exception:
             logger.error(f"Failed to load plugin {ep.name}:{traceback.format_exc()}")
         else:
-            register(plugin)
+            if not plugin.enabled:
+                continue
 
 
 def with_plugins(plugin_type: str):

@@ -14,7 +14,13 @@ Dispatch helps us effectively manage security incidents by deeply integrating wi
 
 This means you can let Dispatch focus on creating resources, assembling participants, sending out notifications, tracking tasks, and assisting with post-incident reviews; allowing you to focus on actually fixing the issue!
 
-![](https://github.com/Netflix/dispatch/raw/master/docs/images/screenshots/thumb-1.png) ![](https://github.com/Netflix/dispatch/raw/master/docs/images/screenshots/thumb-2.png) ![](https://github.com/Netflix/dispatch/raw/master/docs/images/screenshots/thumb-3.png) ![](https://github.com/Netflix/dispatch/raw/master/docs/images/screenshots/thumb-4.png)
+![Easy Reporting](.gitbook/assets/2020-06-16_09-10_1.png)
+
+![Incident Metrics](.gitbook/assets/2020-06-16_09-10.png)
+
+![Simple case management](.gitbook/assets/2020-06-16_09-11.png)
+
+ ![](https://github.com/Netflix/dispatch/raw/master/docs/images/screenshots/thumb-2.png) ![](https://github.com/Netflix/dispatch/raw/master/docs/images/screenshots/thumb-3.png) ![](https://github.com/Netflix/dispatch/raw/master/docs/images/screenshots/thumb-4.png)
 
 ## Project resources
 

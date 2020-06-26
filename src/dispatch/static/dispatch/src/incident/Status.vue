@@ -31,6 +31,9 @@
                   <v-icon small>open_in_new</v-icon>
                 </a>
               </template>
+              <template v-slot:item.id="{ item }">
+                <v-btn x-small @click="joinIncident(item.id)">Join Incident</v-btn>
+              </template>
               <template v-slot:expanded-item="{ headers, item }">
                 <td :colspan="headers.length">
                   <v-container>
@@ -46,17 +49,36 @@
                       <v-col cols="12">
                         <v-card outlined>
                           <v-card-text>
-                            <div class="title text--primary">Status</div>
-                            <div v-if="item.last_status_report">
-                              <p>As of {{ item.last_status_report.created_at | formatDate }}</p>
+                            <div class="title text--primary">Last Tactical Report</div>
+                            <div v-if="item.last_tactical_report">
+                              <p>As of {{ item.last_tactical_report.created_at | formatDate }}</p>
                               <p class="subtitle-1 text--primary">Conditions</p>
-                              <div>{{ item.last_status_report.conditions }}</div>
+                              <div>{{ item.last_tactical_report.details.conditions }}</div>
                               <p class="subtitle-1 text--primary">Actions</p>
-                              <div>{{ item.last_status_report.actions }}</div>
+                              <div>{{ item.last_tactical_report.details.actions }}</div>
                               <p class="subtitle-1 text--primary">Needs</p>
-                              <div>{{ item.last_status_report.needs }}</div>
+                              <div>{{ item.last_tactical_report.details.needs }}</div>
                             </div>
-                            <div v-else>No status report available.</div>
+                            <div v-else>No tactical report available.</div>
+                          </v-card-text>
+                        </v-card>
+                      </v-col>
+                    </v-row>
+                    <v-row dense>
+                      <v-col cols="12">
+                        <v-card outlined>
+                          <v-card-text>
+                            <div class="title text--primary">Last Executive Report</div>
+                            <div v-if="item.last_executive_report">
+                              <p>As of {{ item.last_executive_report.created_at | formatDate }}</p>
+                              <p class="subtitle-1 text--primary">Current Status</p>
+                              <div>{{ item.last_executive_report.details.current_status }}</div>
+                              <p class="subtitle-1 text--primary">Overview</p>
+                              <div>{{ item.last_executive_report.details.overview }}</div>
+                              <p class="subtitle-1 text--primary">Next Steps</p>
+                              <div>{{ item.last_executive_report.details.next_steps }}</div>
+                            </div>
+                            <div v-else>No executive report available.</div>
                           </v-card-text>
                         </v-card>
                       </v-col>
@@ -80,6 +102,7 @@
 </template>
 
 <script>
+import { mapActions } from "vuex"
 import IncidentApi from "@/incident/api"
 export default {
   name: "IncidentStatus",
@@ -96,6 +119,7 @@ export default {
         { text: "Priority", value: "incident_priority.name", sortable: false },
         { text: "Type", value: "incident_type.name", sortable: false },
         { text: "Commander", value: "commander" },
+        { text: "", value: "id" },
         { text: "", value: "data-table-expand" }
       ]
     }
@@ -112,7 +136,8 @@ export default {
         this.items = response.data.items
         this.loading = false
       })
-    }
+    },
+    ...mapActions("incident", ["joinIncident"])
   }
 }
 </script>

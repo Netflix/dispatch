@@ -9,6 +9,7 @@ from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime
 
 from dispatch.database import SessionLocal
 
+from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
 from dispatch.definition.models import Definition
 from dispatch.document.models import Document
@@ -23,7 +24,7 @@ from dispatch.participant_role.models import ParticipantRole
 from dispatch.policy.models import Policy
 from dispatch.route.models import Recommendation, RecommendationAccuracy
 from dispatch.service.models import Service
-from dispatch.status_report.models import StatusReport
+from dispatch.report.models import Report
 from dispatch.storage.models import Storage
 from dispatch.tag.models import Tag
 from dispatch.task.models import Task
@@ -254,8 +255,8 @@ class IndividualContactFactory(ContactBaseFactory):
 class ParticipantRoleFactory(BaseFactory):
     """Participant Factory."""
 
-    assume_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
-    renounce_at = None
+    assumed_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
+    renounced_at = None
     role = FuzzyChoice(["Incident Commander", "Reporter", "Scribe", "Liaison"])
 
     class Meta:
@@ -484,18 +485,18 @@ class ServiceFactory(TimeStampBaseFactory):
                 self.terms.append(term)
 
 
-class StatusReportFactory(BaseFactory):
-    """Status Report Factory."""
+class ReportFactory(BaseFactory):
+    """Report Factory."""
 
     created_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
-    conditions = FuzzyText()
-    actions = FuzzyText()
-    needs = FuzzyText()
+    details = FuzzyText()
+    details_raw = FuzzyText()
+    type = FuzzyChoice(["Tactical Report", "Executive Report"])
 
     class Meta:
         """Factory Configuration."""
 
-        model = StatusReport
+        model = Report
 
     @post_generation
     def incident(self, create, extracted, **kwargs):
@@ -621,6 +622,7 @@ class TicketFactory(ResourceBaseFactory):
 class IncidentFactory(BaseFactory):
     """Incident Factory."""
 
+    id = Sequence(lambda n: f"1{n}")
     title = FuzzyText()
     description = FuzzyText()
     status = FuzzyChoice(["Active", "Stable", "Closed"])
@@ -669,3 +671,14 @@ class EventFactory(BaseFactory):
 
         if extracted:
             self.individual_contact_id = extracted.id
+
+
+class ConferenceFactory(ResourceBaseFactory):
+    """Conference Factory."""
+
+    class Meta:
+        model = Conference
+
+    conference_id = Sequence(lambda n: f"conference{n}")
+    conference_challenge = FuzzyText()
+    incident = SubFactory(IncidentFactory)

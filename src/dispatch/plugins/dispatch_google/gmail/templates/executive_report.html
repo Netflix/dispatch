@@ -1,0 +1,31 @@
+{% extends 'templates/base.html' %} {% block description %}
+<p style="font-weight:small!important;font-style:italic;line-height:140%;margin-top:0">
+  You're receiving this executive report, because you're a member of this incident's
+  notifications Google group ({{ notifications_group }}).
+</p>
+<p style="font-weight:normal!important;line-height:140%;margin-top:0">
+  Please be aware that this report is a point in time update and
+  the details below are likely to change as the incident evolves.
+  No direct action from you is currently required.
+</p>
+{% endblock %} {% block items %}
+<ul style="list-style-type:none; padding-left: 0;">
+  <li><b>Incident Title</b></li>
+  <li>{{ title }}</li>
+</ul>
+<ul style="list-style-type:none; padding-left: 0;">
+  <li><b>Current Status</b></li>
+  <li>{{ current_status }}</li>
+</ul>
+<ul style="list-style-type:none; padding-left: 0;">
+  <li><b>Overview</b></li>
+  <li>{{ overview }}</li>
+</ul>
+<ul style="list-style-type:none; padding-left: 0;">
+  <li><b>Next Steps</b></li>
+  <li>{{ next_steps }}</li>
+</ul>
+<p style="font-weight:normal!important;line-height:140%;margin-top:0">
+  A document version of the report can be found <a href="{{ weblink }}">here</a>. Please, use the document for questions and feedback.
+</p>
+{% endblock %}

@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { forEach, sumBy } from "lodash"
 import differenceInHours from "date-fns/differenceInHours"
 import parseISO from "date-fns/parseISO"
 import VueApexCharts from "vue-apexcharts"
@@ -45,10 +45,10 @@ export default {
   computed: {
     series() {
       let series = { name: "Average Hours Active", data: [] }
-      _.forEach(this.value, function(value) {
+      forEach(this.value, function(value) {
         series.data.push(
           Math.round(
-            _.sumBy(value, function(item) {
+            sumBy(value, function(item) {
               let endTime = new Date().toISOString()
               if (item.stable_at) {
                 endTime = item.stable_at

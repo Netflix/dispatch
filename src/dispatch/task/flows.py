@@ -21,8 +21,10 @@ from dispatch.messaging import (
     INCIDENT_TASK_RESOLVED_NOTIFICATION,
 )
 from dispatch.plugins.base import plugins
+from dispatch.incident.flows import incident_add_or_reactivate_participant_flow
 from dispatch.task.models import TaskStatus
 from dispatch.task import service as task_service
+from dispatch.ticket import service as ticket_service
 
 
 log = logging.getLogger(__name__)
@@ -32,19 +34,43 @@ def group_tasks_by_assignee(tasks):
     """Groups tasks by assignee."""
     grouped = defaultdict(lambda: [])
     for task in tasks:
-        grouped[task.assignees].append(task)
+        for a in task.assignees:
+            grouped[a.individual.email].append(task)
     return grouped
 
 
-def create_reminder(db_session, assignee, tasks):
+def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact_weblink):
     """Contains the logic for incident task reminders."""
     # send email
     email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
     message_template = INCIDENT_TASK_REMINDER
 
+    items = []
+    for t in tasks:
+        items.append(
+            {
+                "name": t.incident.name,
+                "title": t.incident.title,
+                "creator": t.creator.individual.name,
+                "description": t.description,
+                "priority": t.priority,
+                "created_at": t.created_at,
+                "resolve_by": t.resolve_by,
+                "weblink": t.weblink,
+            }
+        )
+
     notification_type = "incident-task-reminder"
+    name = subject = "Incident Task Reminder"
     email_plugin.send(
-        assignee, message_template, notification_type, name="Task Reminder", items=tasks
+        assignee_email,
+        message_template,
+        notification_type,
+        name=name,
+        subject=subject,
+        contact_fullname=contact_fullname,
+        contact_weblink=contact_weblink,
+        items=items,  # plugin expect dicts
     )
 
     # We currently think DM's might be too agressive
@@ -70,7 +96,7 @@ def send_task_notification(conversation_id, message_template, assignees, descrip
         notification_text,
         message_template,
         notification_type,
-        task_assignees=assignees,
+        task_assignees=[x.individual.email for x in assignees],
         task_description=description,
         task_weblink=weblink,
     )
@@ -78,28 +104,38 @@ def send_task_notification(conversation_id, message_template, assignees, descrip
 
 def create_or_update_task(db_session, incident, task: dict, notify: bool = False):
     """Creates a new task in the database or updates an existing one."""
-    # TODO we should standarize this interface (kglisson)
-    creator = task["owner"]
-    assignees = ", ".join(task["assignees"])
+    incident_task = task_service.get_by_resource_id(db_session=db_session, resource_id=task["id"])
+
+    assignees = []
+    for a in task["assignees"]:
+        assignees.append(
+            db_session.merge(
+                incident_add_or_reactivate_participant_flow(
+                    a, incident_id=incident.id, db_session=db_session
+                )
+            )
+        )
+
     description = task["description"][0]
     status = TaskStatus.open if not task["status"] else TaskStatus.resolved
     resource_id = task["id"]
     weblink = task["web_link"]
 
-    incident_task = task_service.get_by_resource_id(db_session=db_session, resource_id=task["id"])
+    # TODO we can build this out as our scraping gets more advanced
+    tickets = [
+        ticket_service.get_or_create_by_weblink(db_session=db_session, weblink=t["web_link"])
+        for t in task["tickets"]
+    ]
+
     if incident_task:
-        if status == TaskStatus.open:
-            # we don't need to take any actions if the status of the task in the collaboration doc is open
-            return
-        else:
-            if incident_task.status == TaskStatus.resolved:
-                # we don't need to take any actions if the task has already been marked as resolved in the database
-                return
-            else:
-                # we mark the task as resolved in the database
-                incident_task.status = TaskStatus.resolved
-                db_session.add(incident_task)
-                db_session.commit()
+        # allways update tickets and assignees
+        incident_task.assignees = assignees
+        incident_task.tickets = tickets
+
+        # only notify if it's newly resolved
+        if status == TaskStatus.resolved:
+            if incident_task.status != TaskStatus.resolved:
+                incident_task.status = status
 
                 if notify:
                     send_task_notification(
@@ -109,21 +145,27 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
                         description,
                         weblink,
                     )
+
     else:
         # we add the task to the incident
+        creator = db_session.merge(
+            incident_add_or_reactivate_participant_flow(
+                task["owner"], incident_id=incident.id, db_session=db_session
+            )
+        )
+
         task = task_service.create(
             db_session=db_session,
             creator=creator,
             assignees=assignees,
             description=description,
             status=status,
+            tickets=tickets,
             resource_id=resource_id,
             resource_type=INCIDENT_RESOURCE_INCIDENT_TASK,
             weblink=weblink,
         )
         incident.tasks.append(task)
-        db_session.add(incident)
-        db_session.commit()
 
         if notify:
             send_task_notification(
@@ -133,3 +175,5 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
                 description,
                 weblink,
             )
+
+    db_session.commit()

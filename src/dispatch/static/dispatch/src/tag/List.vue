@@ -1,50 +1,50 @@
 <template>
-  <v-layout wrap>
-    <div class="headline">Tags</div>
-    <v-flex xs12>
-      <v-layout column>
-        <v-flex>
-          <v-list two-line class="elevation-2">
-            <v-list-group v-for="item in items" :key="item.id" no-action>
-              <template v-slot:activator>
-                <v-list-item>
-                  <v-layout justify-space-around>
-                    <v-flex xs3>
-                      <v-list-item>
-                        <v-list-item-action>
-                          <v-icon>fa-user-circle</v-icon>
-                        </v-list-item-action>
-                        <v-list-item-content>
-                          <v-list-item-title>{{ item.name }}</v-list-item-title>
-                          <v-list-item-subtitle>Name</v-list-item-subtitle>
-                        </v-list-item-content>
-                      </v-list-item>
-                    </v-flex>
-                  </v-layout>
-                </v-list-item>
-              </template>
-              <v-card-title primary-title>
-                <div>{{ item.description }}</div>
-              </v-card-title>
-            </v-list-group>
-          </v-list>
-        </v-flex>
-      </v-layout>
-    </v-flex>
-  </v-layout>
+  <div v-if="items.length">
+    <new-edit-sheet />
+    <v-divider></v-divider>
+    <v-list>
+      <v-list-group prepend-icon="label" no-action color="primary">
+        <template v-slot:activator>
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title>Tags ({{ items.length }})</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </template>
+        <v-list-item
+          v-for="item in items"
+          :key="item.content.id"
+          @click="createEditShow(item.content)"
+        >
+          <v-list-item-content>
+            <v-list-item-title v-text="item.content.name"></v-list-item-title>
+            <v-list-item-subtitle>Name</v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list-group>
+    </v-list>
+  </div>
 </template>
-
 <script>
+import { mapActions } from "vuex"
+
+import NewEditSheet from "@/tag/NewEditSheet.vue"
 export default {
   name: "TagList",
+
+  components: {
+    NewEditSheet
+  },
+
   props: {
     items: {
-      type: Array,
-      default: null
+      default: null,
+      type: Array
     }
   },
-  data() {
-    return {}
+
+  methods: {
+    ...mapActions("tag", ["createEditShow"])
   }
 }
 </script>

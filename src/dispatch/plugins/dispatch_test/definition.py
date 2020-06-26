@@ -2,7 +2,7 @@ from dispatch.plugins.bases import DefinitionPlugin
 
 
 class TestDefinitionPlugin(DefinitionPlugin):
-    title = "Test Definition"
+    title = "Dispatch Test Plugin - Definition"
     slug = "test-definition"
 
     def get(self, key, **kwargs):

@@ -2,18 +2,22 @@ SQLAlchemy-Searchable
 aiofiles
 alembic
 arrow
+bcrypt
 cachetools==3.1.1  # NOTE pinning for google-auth
 click
 email-validator
 emails
 fastapi
+fastapi_permissions
 google-api-python-client
 google-auth-oauthlib
 httpx
 jinja2
 jira
 joblib
+numpy
 oauth2client
+pandas
 psycopg2-binary
 pyparsing
 pypd  # pagerduty plugin
@@ -22,6 +26,7 @@ python-jose
 python-multipart
 pytz
 requests
+rsa==4.0  # NOTE pinning for google-auth
 schedule
 sentry-asgi
 sentry_sdk
@@ -30,6 +35,7 @@ slackclient
 spacy
 sqlalchemy
 sqlalchemy-filters
+statsmodels
 tabulate
 tenacity
 uvicorn

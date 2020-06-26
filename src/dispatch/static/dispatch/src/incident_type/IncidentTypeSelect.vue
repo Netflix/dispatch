@@ -7,12 +7,21 @@
     label="Type"
     return-object
     :loading="loading"
-  />
+  >
+    <template v-slot:item="data">
+      <template>
+        <v-list-item-content>
+          <v-list-item-title v-html="data.item.name"></v-list-item-title>
+          <v-list-item-subtitle v-html="data.item.description"></v-list-item-subtitle>
+        </v-list-item-content>
+      </template>
+    </template>
+  </v-select>
 </template>
 
 <script>
 import IncidentTypeApi from "@/incident_type/api"
-import _ from "lodash"
+import { cloneDeep } from "lodash"
 export default {
   name: "IncidentTypeSelect",
 
@@ -35,7 +44,7 @@ export default {
   computed: {
     incident_type: {
       get() {
-        return _.cloneDeep(this.value)
+        return cloneDeep(this.value)
       },
       set(value) {
         this.$emit("input", value)

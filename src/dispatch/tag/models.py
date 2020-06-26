@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 
 from sqlalchemy_utils import TSVectorType
 
@@ -15,6 +15,7 @@ class Tag(Base, TimeStampMixin):
     uri = Column(String)
     source = Column(String)
     type = Column(String)
+    discoverable = Column(Boolean, default=True)
     search_vector = Column(TSVectorType("name"))
 
 
@@ -24,6 +25,7 @@ class TagBase(DispatchBase):
     source: Optional[str] = "dispatch"
     type: Optional[str] = "generic"
     uri: Optional[str]
+    discoverable: Optional[bool] = True
     description: Optional[str] = "Generic user tag"
 
 

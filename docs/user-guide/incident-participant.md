@@ -39,6 +39,6 @@ After an incident has been marked stable Dispatch is still there to help creatin
 In addition to Dispatch pulling in individuals that will be directly responsible for managing the incident, it provides notifications for general awareness throughout the organization.
 
 {% hint style="info" %}
-The incident notification message includes a "Get Involved" button, this allows individuals to add themselves to the incident \(and it's resources\) without involvement from the incident commander.
+The incident notification message includes a "Join Incident" button, this allows individuals to add themselves to the incident \(and it's resources\) without involvement from the incident commander.
 {% endhint %}
 

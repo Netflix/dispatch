@@ -19,16 +19,24 @@ from dispatch.team.views import router as team_contact_router
 from dispatch.term.views import router as team_router
 from dispatch.document.views import router as document_router
 from dispatch.task.views import router as task_router
+from dispatch.plugin.views import router as plugin_router
+from dispatch.auth.views import user_router, auth_router
 
-from .common.utils.cli import install_plugins, install_plugin_events
+from .config import DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 
-api_router = APIRouter()  # WARNING: Don't use this unless you want unauthenticated routes
+api_router = APIRouter(
+    default_response_class=JSONResponse
+)  # WARNING: Don't use this unless you want unauthenticated routes
 authenticated_api_router = APIRouter()
 
+# NOTE we only advertise auth routes when basic auth is enabled
+if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-basic":
+    api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 # NOTE: All api routes should be authenticated by default
+authenticated_api_router.include_router(user_router, prefix="/user", tags=["users"])
 authenticated_api_router.include_router(document_router, prefix="/documents", tags=["documents"])
-authenticated_api_router.include_router(tag_router, prefix="/tags", tags=["Tags"])
+authenticated_api_router.include_router(tag_router, prefix="/tags", tags=["tags"])
 authenticated_api_router.include_router(service_router, prefix="/services", tags=["services"])
 authenticated_api_router.include_router(team_contact_router, prefix="/teams", tags=["teams"])
 authenticated_api_router.include_router(
@@ -40,7 +48,7 @@ authenticated_api_router.include_router(
     definition_router, prefix="/definitions", tags=["definitions"]
 )
 authenticated_api_router.include_router(team_router, prefix="/terms", tags=["terms"])
-authenticated_api_router.include_router(task_router, prefix="/tasks", tags=["tags"])
+authenticated_api_router.include_router(task_router, prefix="/tasks", tags=["tasks"])
 authenticated_api_router.include_router(search_router, prefix="/search", tags=["search"])
 authenticated_api_router.include_router(incident_router, prefix="/incidents", tags=["incidents"])
 authenticated_api_router.include_router(
@@ -49,29 +57,27 @@ authenticated_api_router.include_router(
 authenticated_api_router.include_router(
     incident_priority_router, prefix="/incident_priorities", tags=["incident_priorities"]
 )
+authenticated_api_router.include_router(plugin_router, prefix="/plugins", tags=["plugins"])
 
 doc_router = APIRouter()
 
 
-@doc_router.get("/openapi.json")
+@doc_router.get("/openapi.json", include_in_schema=False)
 async def get_open_api_endpoint():
     return JSONResponse(get_openapi(title="Dispatch Docs", version=1, routes=api_router.routes))
 
 
-@doc_router.get("/")
+@doc_router.get("/", include_in_schema=False)
 async def get_documentation():
     return get_redoc_html(openapi_url="/api/v1/docs/openapi.json", title="Dispatch Docs")
 
 
-authenticated_api_router.include_router(doc_router, prefix="/docs")
+api_router.include_router(doc_router, prefix="/docs")
 
 
-@api_router.get("/healthcheck")
+@api_router.get("/healthcheck", include_in_schema=False)
 def healthcheck():
     return {"status": "ok"}
 
-
-install_plugins()
-install_plugin_events(api_router)
 
 api_router.include_router(authenticated_api_router, dependencies=[Depends(get_current_user)])

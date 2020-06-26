@@ -50,6 +50,7 @@ class Document(Base, ResourceMixin, TimeStampMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
+    report_id = Column(Integer, ForeignKey("report.id"))
     incident_priorities = relationship(
         "IncidentPriority", secondary=assoc_document_incident_priorities, backref="documents"
     )
@@ -99,8 +100,8 @@ class DocumentRead(DocumentBase):
         return v
 
 
-class DocumentNested(DocumentBase):
-    id: int
+class DocumentNested(DocumentRead):
+    pass
 
 
 class DocumentPagination(DispatchBase):

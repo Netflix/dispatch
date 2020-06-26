@@ -12,8 +12,9 @@ from dispatch.participant import flows as participant_flows
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugins.base import plugins
+from dispatch.plugin import service as plugin_service
 from dispatch.tag import service as tag_service
-from dispatch.tag.models import TagUpdate
+from dispatch.tag.models import TagUpdate, TagCreate
 from dispatch.term import service as term_service
 from dispatch.term.models import TermUpdate
 
@@ -39,22 +40,22 @@ def resolve_incident_commander_email(
         db_session=db_session, name=incident_type
     ).commander_service
 
-    p = plugins.get(commander_service.type)
+    p = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
 
     # page for high priority incidents
     # we could do this at the end but it seems pretty important...
     if page_commander:
-        p.page(
+        p.instance.page(
             service_id=commander_service.external_id,
             incident_name=incident_name,
             incident_title=incident_title,
             incident_description=incident_description,
         )
 
-    return p.get(service_id=commander_service.external_id)
+    return p.instance.get(service_id=commander_service.external_id)
 
 
-def get(*, db_session, incident_id: str) -> Optional[Incident]:
+def get(*, db_session, incident_id: int) -> Optional[Incident]:
     """Returns an incident based on the given id."""
     return db_session.query(Incident).filter(Incident.id == incident_id).first()
 
@@ -137,21 +138,36 @@ def create(
     title: str,
     status: str,
     description: str,
+    tags: List[dict],
     visibility: str = None,
 ) -> Incident:
     """Creates a new incident."""
     # We get the incident type by name
-    incident_type = incident_type_service.get_by_name(
-        db_session=db_session, name=incident_type["name"]
-    )
+    if not incident_type:
+        incident_type = incident_type_service.get_default(db_session=db_session)
+        if not incident_type:
+            raise Exception("No incident type specified and no default has been defined.")
+    else:
+        incident_type = incident_type_service.get_by_name(
+            db_session=db_session, name=incident_type["name"]
+        )
 
     # We get the incident priority by name
-    incident_priority = incident_priority_service.get_by_name(
-        db_session=db_session, name=incident_priority["name"]
-    )
+    if not incident_priority:
+        incident_priority = incident_priority_service.get_default(db_session=db_session)
+        if not incident_priority:
+            raise Exception("No incident priority specified and no default has been defined.")
+    else:
+        incident_priority = incident_priority_service.get_by_name(
+            db_session=db_session, name=incident_priority["name"]
+        )
 
     if not visibility:
         visibility = incident_type.visibility
+
+    tag_objs = []
+    for t in tags:
+        tag_objs.append(tag_service.get_or_create(db_session=db_session, tag_in=TagCreate(**t)))
 
     # We create the incident
     incident = Incident(
@@ -161,13 +177,14 @@ def create(
         incident_type=incident_type,
         incident_priority=incident_priority,
         visibility=visibility,
+        tags=tag_objs,
     )
     db_session.add(incident)
     db_session.commit()
 
     event_service.log(
         db_session=db_session,
-        source="Dispatch App",
+        source="Dispatch Core App",
         description="Incident created",
         incident_id=incident.id,
     )
@@ -263,49 +280,91 @@ def delete(*, db_session, incident_id: int):
     db_session.commit()
 
 
-def calculate_cost(incident_id: int, db_session: SessionLocal, incident_review=False):
-    """Calculates the incident cost."""
-    # we ge the incident
+def get_engagement_multiplier(participant_role: str):
+    """Returns an engagement multiplier for a given incident role."""
+    engagement_mappings = {
+        ParticipantRoleType.incident_commander: 1,
+        ParticipantRoleType.scribe: 0.75,
+        ParticipantRoleType.liaison: 0.75,
+        ParticipantRoleType.participant: 0.5,
+        ParticipantRoleType.reporter: 0.5,
+    }
+
+    return engagement_mappings.get(participant_role)
+
+
+def calculate_cost(incident_id: int, db_session: SessionLocal, incident_review=True):
+    """Calculates the cost of a given incident."""
     incident = get(db_session=db_session, incident_id=incident_id)
 
-    participants_active_hours = 0
+    participants_total_response_time_seconds = 0
     for participant in incident.participants:
-        participant_active_at = participant.active_at
-        participant_inactive_at = (
-            participant.inactive_at if participant.inactive_at else datetime.utcnow()
-        )
 
-        participant_active_time = participant_inactive_at - participant_active_at
-        participant_active_hours = participant_active_time.total_seconds() / SECONDS_IN_HOUR
+        participant_total_roles_time_seconds = 0
+        for participant_role in participant.participant_roles:
+            # TODO(mvilanova): skip if we did not see activity from the participant in the incident conversation
 
-        # we assume that participants only spend ~10 hours/day working on the incident if the incident goes past 24hrs
-        if participant_active_hours > HOURS_IN_DAY:
-            days, hours = divmod(participant_active_hours, HOURS_IN_DAY)
-            participant_active_hours = math.ceil((days * HOURS_IN_DAY * 0.4) + hours)
+            participant_role_assumed_at = participant_role.assumed_at
 
-        participants_active_hours += participant_active_hours
+            if participant_role.renounced_at:
+                # the participant left the conversation or got assigned another role
+                # we use the renounced_at time
+                participant_role_renounced_at = participant_role.renounced_at
+            elif incident.status != IncidentStatus.active:
+                # the incident is stable or closed. we use the stable_at time
+                participant_role_renounced_at = incident.stable_at
+            else:
+                # the incident is still active. we use the current time
+                participant_role_renounced_at = datetime.utcnow()
 
-    num_participants = len(incident.participants)
+            # we calculate the time the participant has spent in the incident role
+            participant_role_time = participant_role_renounced_at - participant_role_assumed_at
 
-    # we calculate the number of hours spent responding per person using the 25/50/25 rule,
-    # where 25% of participants get a full share, 50% get a half share, and 25% get a quarter share
-    response_hours_full_share = num_participants * 0.25 * participants_active_hours
-    response_hours_half_share = num_participants * 0.5 * participants_active_hours * 0.5
-    response_hours_quarter_share = num_participants * 0.25 * participants_active_hours * 0.25
-    response_hours = (
-        response_hours_full_share + response_hours_half_share + response_hours_quarter_share
-    )
+            if participant_role_time.total_seconds() < 0:
+                # the participant was added after the incident was marked as stable
+                continue
 
-    # we calculate the number of hours spent in incident review related activities
+            # we calculate the number of hours the participant has spent in the incident role
+            participant_role_time_hours = participant_role_time.total_seconds() / SECONDS_IN_HOUR
+
+            # we make the assumption that participants only spend 8 hours a day working on the incident,
+            # if the incident goes past 24hrs
+            # TODO(mvilanova): adjust based on incident priority
+            if participant_role_time_hours > HOURS_IN_DAY:
+                days, hours = divmod(participant_role_time_hours, HOURS_IN_DAY)
+                participant_role_time_hours = math.ceil(((days * HOURS_IN_DAY) / 3) + hours)
+
+            # we make the assumption that participants spend more or less time based on their role
+            # and we adjust the time spent based on that
+            participant_role_time_seconds = int(
+                participant_role_time_hours
+                * SECONDS_IN_HOUR
+                * get_engagement_multiplier(participant_role.role)
+            )
+
+            participant_total_roles_time_seconds += participant_role_time_seconds
+
+        participants_total_response_time_seconds += participant_total_roles_time_seconds
+
+    # we calculate the time spent in incident review related activities
     incident_review_hours = 0
     if incident_review:
-        incident_review_prep = 1
-        incident_review_meeting = num_participants * 0.5 * 1
+        num_participants = len(incident.participants)
+        incident_review_prep = (
+            1  # we make the assumption that it takes an hour to prepare the incident review
+        )
+        incident_review_meeting = (
+            num_participants * 0.5 * 1
+        )  # we make the assumption that only half of the incident participants will attend the 1-hour, incident review session
         incident_review_hours = incident_review_prep + incident_review_meeting
 
     # we calculate and round up the hourly rate
     hourly_rate = math.ceil(ANNUAL_COST_EMPLOYEE / BUSINESS_HOURS_YEAR)
 
-    # we calculate, round up, and format the incident cost
-    incident_cost = f"{math.ceil((response_hours + incident_review_hours) * hourly_rate):.2f}"
+    # we calculate and round up the incident cost
+    incident_cost = math.ceil(
+        ((participants_total_response_time_seconds / SECONDS_IN_HOUR) + incident_review_hours)
+        * hourly_rate
+    )
+
     return incident_cost

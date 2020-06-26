@@ -21,7 +21,6 @@
                 single-line
                 hide-details
                 clearable
-                :loading="loading"
               />
             </v-card-title>
             <v-data-table
@@ -32,14 +31,25 @@
               :items-per-page="itemsPerPage"
               :sort-by="sortBy"
               :sort-desc="descending"
+              :loading="loading"
+              loading-text="Loading... Please wait"
             >
-              <template v-slot:item.actions="{ item }">
-                <v-icon small class="mr-2" @click="createEditShow(item)">
-                  edit
-                </v-icon>
-                <v-icon small @click="removeShow(item)">
-                  delete
-                </v-icon>
+              <template v-slot:item.data-table-actions="{ item }">
+                <v-menu bottom left>
+                  <template v-slot:activator="{ on }">
+                    <v-btn icon v-on="on">
+                      <v-icon>mdi-dots-vertical</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item @click="createEditShow(item)">
+                      <v-list-item-title>Edit</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="removeShow(item)">
+                      <v-list-item-title>Delete</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
               </template>
             </v-data-table>
           </v-card>
@@ -65,7 +75,7 @@ export default {
     return {
       headers: [
         { text: "Text", value: "text", sortable: false },
-        { text: "Actions", value: "actions", sortable: false }
+        { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
     }
   },
@@ -87,8 +97,16 @@ export default {
     this.getAll({})
 
     this.$watch(
-      vm => [vm.q, vm.page, vm.itemsPerPage, vm.sortBy, vm.descending],
+      vm => [vm.page],
       () => {
+        this.getAll()
+      }
+    )
+
+    this.$watch(
+      vm => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
+      () => {
+        this.page = 1
         this.getAll()
       }
     )

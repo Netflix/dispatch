@@ -14,7 +14,6 @@ from typing import Dict, List, Optional
 
 from tenacity import retry, stop_after_attempt
 
-from dispatch.config import DISPATCH_HELP_EMAIL, DISPATCH_HELP_SLACK_CHANNEL
 from dispatch.decorators import apply, counter, timer
 from dispatch.messaging import (
     INCIDENT_TASK_REMINDER_DESCRIPTION,
@@ -58,9 +57,10 @@ def create_html_message(recipient: str, subject: str, body: str) -> Dict:
 def get_template(message_type: MessageType):
     """Fetches the correct template based on the message type."""
     template_map = {
+        MessageType.incident_executive_report: ("executive_report.html", None),
         MessageType.incident_notification: ("notification.html", None),
-        MessageType.incident_status_report: ("status_report.html", None),
         MessageType.incident_participant_welcome: ("notification.html", None),
+        MessageType.incident_tactical_report: ("tactical_report.html", None),
         MessageType.incident_task_reminder: (
             "task_notification.html",
             INCIDENT_TASK_REMINDER_DESCRIPTION,
@@ -83,9 +83,7 @@ def create_multi_message_body(
 
     master_map = []
     for item in items:
-        data = item.__dict__
-        data.update({"name": item.incident.name, "title": item.incident.title})
-        master_map.append(render_message_template(message_template, **data))
+        master_map.append(render_message_template(message_template, **item))
 
     kwargs.update({"items": master_map, "description": description})
     return template.render(**kwargs)
@@ -94,12 +92,6 @@ def create_multi_message_body(
 def create_message_body(message_template: dict, message_type: MessageType, **kwargs):
     """Creates the correct message body based on message type."""
     template, description = get_template(message_type)
-    kwargs.update(
-        {
-            "dispatch_help_email": DISPATCH_HELP_EMAIL,
-            "dispatch_help_slack_channel": DISPATCH_HELP_SLACK_CHANNEL,
-        }
-    )
     rendered = render_message_template(message_template, **kwargs)
     kwargs.update({"items": rendered, "description": description})
     return template.render(**kwargs)
@@ -122,12 +114,12 @@ def render_email(name, message):
 @apply(timer, exclude=["__init__"])
 @apply(counter, exclude=["__init__"])
 class GoogleGmailConversationPlugin(ConversationPlugin):
-    title = "Google Gmail - Conversation"
+    title = "Google Gmail Plugin - Conversation Management"
     slug = "google-gmail-conversation"
     description = "Uses gmail to facilitate conversations."
     version = google_gmail_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
@@ -157,6 +149,5 @@ class GoogleGmailConversationPlugin(ConversationPlugin):
                 message_template, notification_type, items, **kwargs
             )
 
-        # render_email("task-reminder.html", message_body)
         html_message = create_html_message(user, subject, message_body)
         return send_message(client, html_message)

@@ -6,9 +6,10 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { countBy, isArray, mergeWith, forEach, map, find, sortBy } from "lodash"
 
 import VueApexCharts from "vue-apexcharts"
+import IncidentPriorityApi from "@/incident_priority/api"
 export default {
   name: "IncidentPriorityBarChartCard",
 
@@ -33,8 +34,14 @@ export default {
 
   data() {
     return {
-      order: ["High", "Medium", "Low", "Info"]
+      priorities: []
     }
+  },
+
+  created: function() {
+    IncidentPriorityApi.getAll().then(response => {
+      this.priorities = map(response.data.items, "name")
+    })
   },
 
   computed: {
@@ -57,7 +64,7 @@ export default {
             }
           }
         ],
-        colors: ["#FF4560", "#FEB019", "#00E396", "#008FFB"],
+        colors: ["#FF4560", "#FEB019", "#008FFB"],
         xaxis: {
           categories: this.categoryData || [],
           title: {
@@ -73,28 +80,34 @@ export default {
       }
     },
     series() {
-      let aggCount = {}
-      _.forEach(this.value, function(value, _) {
-        let count = _.countBy(value, function(item) {
-          return item.incident_priority.name
-        })
+      let series = []
+      let priorities = this.priorities
+      forEach(this.value, function(value) {
+        let priorityCounts = map(
+          countBy(value, function(item) {
+            return item.incident_priority.name
+          }),
+          function(value, key) {
+            return { name: key, data: [value] }
+          }
+        )
 
-        _.forEach(count, function(value, key) {
-          if (aggCount[key]) {
-            aggCount[key].push(value)
-          } else {
-            aggCount[key] = [value]
+        forEach(priorities, function(priority) {
+          let found = find(priorityCounts, { name: priority })
+          if (!found) {
+            priorityCounts.push({ name: priority, data: [0] })
+          }
+        })
+        series = mergeWith(series, priorityCounts, function(objValue, srcValue) {
+          if (isArray(objValue)) {
+            return objValue.concat(srcValue)
           }
         })
       })
 
-      let series = []
-      _.forEach(this.order, function(o) {
-        if (aggCount[o]) {
-          series.push({ name: o, data: aggCount[o] })
-        } else {
-          series.push({ name: o, data: [0] })
-        }
+      // sort
+      series = sortBy(series, function(obj) {
+        return priorities.indexOf(obj.name)
       })
       return series
     },

@@ -2,7 +2,7 @@ from dispatch.plugins.bases import ContactPlugin
 
 
 class TestContactPlugin(ContactPlugin):
-    title = "Test Contact"
+    title = "Dispatch Test Plugin - Contact"
     slug = "test-contact"
 
     def get(self, key, **kwargs):

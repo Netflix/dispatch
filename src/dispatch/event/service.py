@@ -115,6 +115,7 @@ def log(
     individual_id: int = None,
     started_at: datetime = None,
     ended_at: datetime = None,
+    details: dict = None,
 ) -> Event:
     """
     Logs an event
@@ -128,7 +129,12 @@ def log(
         ended_at = started_at
 
     event_in = EventCreate(
-        uuid=uuid, started_at=started_at, ended_at=ended_at, source=source, description=description
+        uuid=uuid,
+        started_at=started_at,
+        ended_at=ended_at,
+        source=source,
+        description=description,
+        details=details,
     )
     event = create(db_session=db_session, event_in=event_in)
 

@@ -38,7 +38,7 @@ This command allows the IC to modify several aspects of the incident without eve
 
 One of the most important aspects of an IC commanders job is notifying external stakeholders on the current state of the incident. These stakeholders should never be down in the weeds of incident management but do need a way to view concise and up-to-date incident information. The `status-report` command allows the IC to do so in a standardized way.
 
-![](../.gitbook/assets/slack-conversation-status-report-response.png)
+![](../.gitbook/assets/slack-conversation-status-report-response%20%281%29.png)
 
 ![](../.gitbook/assets/slack-conversation-status-report%20%281%29.png)
 

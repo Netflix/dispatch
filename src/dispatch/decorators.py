@@ -30,12 +30,12 @@ def background_task(func):
         db_session = SessionLocal()
         kwargs["db_session"] = db_session
         try:
-            metrics_provider.counter(f"function.call.counter", tags={"function": fullname(func)})
+            metrics_provider.counter("function.call.counter", tags={"function": fullname(func)})
             start = time.perf_counter()
             result = func(*args, **kwargs)
             elapsed_time = time.perf_counter() - start
             metrics_provider.timer(
-                f"function.elapsed.time", value=elapsed_time, tags={"function": fullname(func)}
+                "function.elapsed.time", value=elapsed_time, tags={"function": fullname(func)}
             )
             return result
         except Exception as e:
@@ -59,7 +59,7 @@ def timer(func: Any):
         result = func(*args, **kwargs)
         elapsed_time = time.perf_counter() - start
         metrics_provider.timer(
-            f"function.elapsed.time", value=elapsed_time, tags={"function": fullname(func)}
+            "function.elapsed.time", value=elapsed_time, tags={"function": fullname(func)}
         )
         return result
 
@@ -71,7 +71,7 @@ def counter(func: Any):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        metrics_provider.counter(f"function.call.counter", tags={"function": fullname(func)})
+        metrics_provider.counter("function.call.counter", tags={"function": fullname(func)})
         return func(*args, **kwargs)
 
     return wrapper

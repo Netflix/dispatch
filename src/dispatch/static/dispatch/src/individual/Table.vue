@@ -30,15 +30,28 @@
               :loading="loading"
               loading-text="Loading... Please wait"
             >
-              <template v-slot:item.is_active="{ item }">{{
-                item.is_active | capitalize
-              }}</template>
-              <template v-slot:item.is_external="{ item }">{{
-                item.is_external | capitalize
-              }}</template>
-              <template v-slot:item.actions="{ item }">
-                <v-icon small class="mr-2" @click="createEditShow(item)">edit</v-icon>
-                <v-icon small @click="removeShow(item)">delete</v-icon>
+              <template v-slot:item.is_active="{ item }">
+                <v-simple-checkbox v-model="item.is_active" disabled></v-simple-checkbox>
+              </template>
+              <template v-slot:item.is_external="{ item }">
+                <v-simple-checkbox v-model="item.is_external" disabled></v-simple-checkbox>
+              </template>
+              <template v-slot:item.data-table-actions="{ item }">
+                <v-menu bottom left>
+                  <template v-slot:activator="{ on }">
+                    <v-btn icon v-on="on">
+                      <v-icon>mdi-dots-vertical</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item @click="createEditShow(item)">
+                      <v-list-item-title>Edit</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="removeShow(item)">
+                      <v-list-item-title>Delete</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
               </template>
             </v-data-table>
           </v-card>
@@ -68,7 +81,7 @@ export default {
         { text: "Company", value: "company", sortable: true },
         { text: "Active", value: "is_active", sortable: true },
         { text: "External", value: "is_external", sortable: true },
-        { text: "Actions", value: "actions", sortable: false }
+        { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
     }
   },
@@ -90,8 +103,16 @@ export default {
     this.getAll({})
 
     this.$watch(
-      vm => [vm.q, vm.page, vm.itemsPerPage, vm.sortBy, vm.descending],
+      vm => [vm.page],
       () => {
+        this.getAll()
+      }
+    )
+
+    this.$watch(
+      vm => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
+      () => {
+        this.page = 1
         this.getAll()
       }
     )

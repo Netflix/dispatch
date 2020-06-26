@@ -1,7 +1,7 @@
 import IncidentApi from "@/incident/api"
 
 import { getField, updateField } from "vuex-map-fields"
-import { debounce } from "lodash"
+import { debounce, forEach, each, has } from "lodash"
 
 const getDefaultSelectedState = () => {
   return {
@@ -11,20 +11,22 @@ const getDefaultSelectedState = () => {
     created_at: null,
     description: null,
     documents: null,
+    events: null,
     id: null,
     incident_priority: null,
     incident_type: null,
     name: null,
+    participants: null,
     reported_at: null,
     reporter: null,
     stable_at: null,
     status: null,
     storage: null,
+    tags: [],
+    terms: [],
     ticket: null,
     title: null,
     visibility: null,
-    terms: [],
-    tags: [],
     loading: false
   }
 }
@@ -34,7 +36,8 @@ const state = {
     ...getDefaultSelectedState()
   },
   dialogs: {
-    showCreateEdit: false,
+    showEditSheet: false,
+    showNewSheet: false,
     showRemove: false
   },
   table: {
@@ -43,6 +46,14 @@ const state = {
       total: null
     },
     options: {
+      filters: {
+        reporter: [],
+        commander: [],
+        incident_type: [],
+        incident_priority: [],
+        status: [],
+        tag: []
+      },
       q: "",
       page: 1,
       itemsPerPage: 10,
@@ -54,35 +65,73 @@ const state = {
 }
 
 const getters = {
-  getField
+  getField,
+  tableOptions({ state }) {
+    // format our filters
+    return state.table.options
+  }
 }
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", true)
-    return IncidentApi.getAll(state.table.options).then(response => {
-      commit("SET_TABLE_LOADING", false)
-      commit("SET_TABLE_ROWS", response.data)
+
+    let tableOptions = Object.assign({}, state.table.options)
+    delete tableOptions.filters
+
+    tableOptions.fields = []
+    tableOptions.ops = []
+    tableOptions.values = []
+
+    forEach(state.table.options.filters, function(value, key) {
+      each(value, function(value) {
+        if (has(value, "id")) {
+          tableOptions.fields.push(key + ".id")
+          tableOptions.values.push(value.id)
+        } else {
+          tableOptions.fields.push(key)
+          tableOptions.values.push(value)
+        }
+        tableOptions.ops.push("==")
+      })
     })
+    return IncidentApi.getAll(tableOptions)
+      .then(response => {
+        commit("SET_TABLE_LOADING", false)
+        commit("SET_TABLE_ROWS", response.data)
+      })
+      .catch(() => {
+        commit("SET_TABLE_LOADING", false)
+      })
   }, 200),
   get({ commit, state }) {
     return IncidentApi.get(state.selected.id).then(response => {
       commit("SET_SELECTED", response.data)
     })
   },
-  createEditShow({ commit }, incident) {
-    commit("SET_DIALOG_CREATE_EDIT", true)
+  showNewSheet({ commit }, incident) {
+    commit("SET_DIALOG_SHOW_NEW_SHEET", true)
     if (incident) {
       commit("SET_SELECTED", incident)
     }
   },
+  closeNewSheet({ commit }) {
+    commit("SET_DIALOG_SHOW_NEW_SHEET", false)
+    commit("RESET_SELECTED")
+  },
+  showEditSheet({ commit }, incident) {
+    commit("SET_DIALOG_SHOW_EDIT_SHEET", true)
+    if (incident) {
+      commit("SET_SELECTED", incident)
+    }
+  },
+  closeEditSheet({ commit }) {
+    commit("SET_DIALOG_SHOW_EDIT_SHEET", false)
+    commit("RESET_SELECTED")
+  },
   removeShow({ commit }, incident) {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", incident)
-  },
-  closeCreateEdit({ commit }) {
-    commit("SET_DIALOG_CREATE_EDIT", false)
-    commit("RESET_SELECTED")
   },
   closeRemove({ commit }) {
     commit("SET_DIALOG_DELETE", false)
@@ -146,6 +195,15 @@ const actions = {
   },
   resetSelected({ commit }) {
     commit("RESET_SELECTED")
+  },
+  joinIncident({ commit }, incidentId) {
+    IncidentApi.join(incidentId, {}).then(() => {
+      commit(
+        "app/SET_SNACKBAR",
+        { text: "You have successfully joined the incident." },
+        { root: true }
+      )
+    })
   }
 }
 
@@ -160,8 +218,11 @@ const mutations = {
   SET_TABLE_ROWS(state, value) {
     state.table.rows = value
   },
-  SET_DIALOG_CREATE_EDIT(state, value) {
-    state.dialogs.showCreateEdit = value
+  SET_DIALOG_SHOW_EDIT_SHEET(state, value) {
+    state.dialogs.showEditSheet = value
+  },
+  SET_DIALOG_SHOW_NEW_SHEET(state, value) {
+    state.dialogs.showNewSheet = value
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showRemove = value

@@ -81,7 +81,7 @@ def assign_role_flow(
 
         event_service.log(
             db_session=db_session,
-            source="Dispatch App",
+            source="Dispatch Core App",
             description=f"{assignee_contact_info['fullname']} has been assigned the role of {assignee_role}",
             incident_id=incident_id,
         )

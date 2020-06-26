@@ -16,7 +16,6 @@
                 single-line
                 hide-details
                 clearable
-                :loading="loading"
               />
             </v-card-title>
             <v-data-table
@@ -27,12 +26,25 @@
               :items-per-page.sync="itemsPerPage"
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
+              :loading="loading"
+              loading-text="Loading... Please wait"
             >
-              <template v-slot:item.page_commander="{ item }">{{
-                item.page_commander | capitalize
-              }}</template>
-              <template v-slot:item.actions="{ item }">
-                <v-icon small class="mr-2" @click="createEditShow(item)">edit</v-icon>
+              <template v-slot:item.page_commander="{ item }">
+                <v-simple-checkbox v-model="item.page_commander" disabled></v-simple-checkbox>
+              </template>
+              <template v-slot:item.data-table-actions="{ item }">
+                <v-menu bottom left>
+                  <template v-slot:activator="{ on }">
+                    <v-btn icon v-on="on">
+                      <v-icon>mdi-dots-vertical</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item @click="createEditShow(item)">
+                      <v-list-item-title>Edit</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
               </template>
             </v-data-table>
           </v-card>
@@ -57,9 +69,11 @@ export default {
       headers: [
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
-        { text: "View Order", value: "view_order", sortable: true },
         { text: "Page Commander", value: "page_commander", sortable: true },
-        { text: "Actions", value: "actions", sortable: false }
+        { text: "Tactical Report Reminder", value: "tactical_report_reminder", sortable: true },
+        { text: "Executive Report Reminder", value: "executive_report_reminder", sortable: true },
+        { text: "View Order", value: "view_order", sortable: true },
+        { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
     }
   },
@@ -71,7 +85,7 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
-      "table.options.loading",
+      "table.loading",
       "table.rows.items",
       "table.rows.total"
     ])
@@ -81,8 +95,16 @@ export default {
     this.getAll({})
 
     this.$watch(
-      vm => [vm.q, vm.page, vm.itemsPerPage, vm.sortBy, vm.descending],
+      vm => [vm.page],
       () => {
+        this.getAll()
+      }
+    )
+
+    this.$watch(
+      vm => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
+      () => {
+        this.page = 1
         this.getAll()
       }
     )

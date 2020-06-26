@@ -14,7 +14,7 @@
 
 <script>
 import IncidentPriorityApi from "@/incident_priority/api"
-import _ from "lodash"
+import { cloneDeep } from "lodash"
 export default {
   name: "IncidentPriorityMultiSelect",
   props: {
@@ -36,7 +36,7 @@ export default {
   computed: {
     incident_priorities: {
       get() {
-        return _.cloneDeep(this.value)
+        return cloneDeep(this.value)
       },
       set(value) {
         this.$emit("input", value)

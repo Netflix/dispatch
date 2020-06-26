@@ -1,26 +1,14 @@
 from datetime import datetime
-from enum import Enum
 from uuid import UUID
 
 from typing import Optional
 
-from sqlalchemy import (
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    PrimaryKeyConstraint,
-    String,
-    Table,
-    event,
-)
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID as SQLAlchemyUUID
-from sqlalchemy.orm import relationship
-from sqlalchemy_utils import TSVectorType
+from sqlalchemy_utils import TSVectorType, JSONType
 
 from dispatch.database import Base
 from dispatch.models import DispatchBase, TimeStampMixin
-from dispatch.plugins.base import plugins
 
 
 # SQLAlchemy Model
@@ -32,6 +20,7 @@ class Event(Base, TimeStampMixin):
     ended_at = Column(DateTime, nullable=False)
     source = Column(String, nullable=False)
     description = Column(String, nullable=False)
+    details = Column(JSONType, nullable=True)
 
     # relationships
     individual_id = Column(Integer, ForeignKey("individual_contact.id"))
@@ -50,6 +39,7 @@ class EventBase(DispatchBase):
     ended_at: datetime
     source: str
     description: str
+    details: Optional[dict]
 
 
 class EventCreate(EventBase):

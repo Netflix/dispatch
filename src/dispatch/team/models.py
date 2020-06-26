@@ -44,7 +44,7 @@ assoc_team_contact_terms = Table(
 )
 
 
-class TeamContact(ContactMixin, Base):
+class TeamContact(Base, ContactMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     notes = Column(String)

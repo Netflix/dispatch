@@ -1,16 +1,28 @@
 <template>
-  <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
-    <template v-slot:prepend>
-      <v-list-item two-line>
-        <v-list-item-content>
-          <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
-          <v-list-item-title v-else class="title">New</v-list-item-title>
-          <v-list-item-subtitle>Task</v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
-    </template>
-    <ValidationObserver>
-      <v-card slot-scope="{ invalid, validated }" flat>
+  <ValidationObserver v-slot="{ invalid, validated }">
+    <v-navigation-drawer v-model="showCreateEdit" app clipped right width="500">
+      <template v-slot:prepend>
+        <v-list-item two-line>
+          <v-list-item-content>
+            <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
+            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-subtitle>Task</v-list-item-subtitle>
+          </v-list-item-content>
+          <v-btn
+            icon
+            color="primary"
+            :loading="loading"
+            :disabled="invalid || !validated"
+            @click="save()"
+          >
+            <v-icon>save</v-icon>
+          </v-btn>
+          <v-btn icon color="secondary" @click="closeCreateEdit()">
+            <v-icon>close</v-icon>
+          </v-btn>
+        </v-list-item>
+      </template>
+      <v-card flat>
         <v-card-text>
           <v-container grid-list-md>
             <v-layout wrap>
@@ -47,15 +59,22 @@
           >
         </v-card-actions>
       </v-card>
-    </ValidationObserver>
-  </v-navigation-drawer>
+    </v-navigation-drawer>
+  </ValidationObserver>
 </template>
 
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider } from "vee-validate"
+import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { required } from "vee-validate/dist/rules"
 import DefinitionCombobox from "@/definition/DefinitionCombobox.vue"
+
+extend("required", {
+  ...required,
+  message: "This field is required"
+})
+
 export default {
   name: "TaskNewEditSheet",
 

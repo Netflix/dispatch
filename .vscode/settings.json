@@ -11,10 +11,12 @@
     "*.egg-info": true,
     "src/dispatch/static/dispatch/dist/": true
   },
+  "editor.formatOnSave": true,
   "search.followSymlinks": false,
   "files.trimTrailingWhitespace": true,
   "files.trimFinalNewlines": true,
   "files.insertFinalNewline": true,
+  "vetur.format.enable": false,
   "python.formatting.provider": "black",
   "python.formatting.blackArgs": ["--line-length", "100"],
   "python.linting.enabled": true,

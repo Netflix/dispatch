@@ -345,7 +345,6 @@ def get_requirements(env):
 
 install_requires = get_requirements("base")
 dev_requires = get_requirements("dev")
-metrics_requires = get_requirements("metrics")
 
 
 class DispatchSDistCommand(SDistCommand):
@@ -397,27 +396,31 @@ setup(
     packages=find_packages("src"),
     python_requires=">=3.7",
     install_requires=install_requires,
-    extras_require={"dev": dev_requires, "metrics": metrics_requires},
+    extras_require={"dev": dev_requires},
     cmdclass=cmdclass,
-    zip_save=False,
+    zip_safe=False,
     include_package_data=True,
     entry_points={
         "console_scripts": ["dispatch = dispatch.cli:entrypoint"],
         "dispatch.plugins": [
-            "dispatch_participants = dispatch.plugins.dispatch_core.plugin:DispatchParticipantPlugin",
             "dispatch_document_resolver = dispatch.plugins.dispatch_core.plugin:DispatchDocumentResolverPlugin",
+            "dispatch_participant_resolver = dispatch.plugins.dispatch_core.plugin:DispatchParticipantResolverPlugin",
             "dispatch_pkce_auth = dispatch.plugins.dispatch_core.plugin:PKCEAuthProviderPlugin",
+            "dispatch_ticket = dispatch.plugins.dispatch_core.plugin:DispatchTicketPlugin",
+            "dispatch_basic_auth = dispatch.plugins.dispatch_core.plugin:BasicAuthProviderPlugin",
+            "dispatch_contact = dispatch.plugins.dispatch_core.plugin:DispatchContactPlugin",
+            "google_calendar_conference = dispatch.plugins.dispatch_google.calendar.plugin:GoogleCalendarConferencePlugin",
             "google_docs_document = dispatch.plugins.dispatch_google.docs.plugin:GoogleDocsDocumentPlugin",
             "google_drive_storage = dispatch.plugins.dispatch_google.drive.plugin:GoogleDriveStoragePlugin",
             "google_drive_task = dispatch.plugins.dispatch_google.drive.plugin:GoogleDriveTaskPlugin",
             "google_gmail_conversation = dispatch.plugins.dispatch_google.gmail.plugin:GoogleGmailConversationPlugin",
             "google_groups_participants = dispatch.plugins.dispatch_google.groups.plugin:GoogleGroupParticipantGroupPlugin",
-            "google_calendar_conference = dispatch.plugins.dispatch_google.calendar.plugin:GoogleCalendarConferencePlugin",
-            "zoom_conference = dispatch.plugins.dispatch_zoom.plugin:ZoomConferencePlugin",
             "jira_ticket = dispatch.plugins.dispatch_jira.plugin:JiraTicketPlugin",
             "pagerduty_oncall = dispatch.plugins.dispatch_pagerduty.plugin:PagerDutyOncallPlugin",
-            "slack_conversation = dispatch.plugins.dispatch_slack.plugin:SlackConversationPlugin",
             "slack_contact = dispatch.plugins.dispatch_slack.plugin:SlackContactPlugin",
+            "slack_conversation = dispatch.plugins.dispatch_slack.plugin:SlackConversationPlugin",
+            "zoom_conference = dispatch.plugins.dispatch_zoom.plugin:ZoomConferencePlugin",
+            "opsgenie_oncall = dispatch.plugins.dispatch_opsgenie.plugin:OpsGenieOncallPlugin",
         ],
     },
 )

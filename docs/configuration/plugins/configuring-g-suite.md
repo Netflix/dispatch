@@ -66,14 +66,14 @@ Enable the following APIs \(APIs and Services &gt; Library\):
 * Google Docs API
 * Google Calendar API
 * Gmail API
-* Admin SDK
+* Admin SDK \(necessary to create and manage groups\)
 
 Finally, map the `client_id` of the created service with the required OAuth2 scopes.
 
 Navigate to admin [home](https://admin.google.com/AdminHome?chromeless=1#OGX:ManageOauthClients%20) \(Security &gt; Advanced Settings &gt; Manage API Client Access\), and add the following scopes:
 
 ```text
-https://www.googleapis.com/auth/document
+https://www.googleapis.com/auth/documents
 https://www.googleapis.com/auth/drive
 https://mail.google.com/
 https://www.googleapis.com/auth/admin.directory.group
@@ -86,6 +86,7 @@ https://www.googleapis.com/auth/calendar
 Then construct this link and click it:
 
 ```text
-https://admin.google.com/AdminHome?clientScopeToAdd=https://www.googleapis.com/auth/document,https://www.googleapis.com/auth/drive,https://mail.google.com/,https://www.googleapis.com/auth/admin.directory.group,https://www.googleapis.com/auth/apps.groups.settings,https://www.googleapis.com/auth/calendar
+https://admin.google.com/AdminHome?clientScopeToAdd=https://www.googleapis.com/auth/documents,https://www.googleapis.com/auth/drive,https://mail.google.com/,https://www.googleapis.com/auth/admin.directory.group,https://www.googleapis.com/auth/apps.groups.settings,https://www.googleapis.com/auth/calendar
 &clientNameToAdd=<INSERTCLIENTIDHERE>&chromeless=1#OGX:ManageOauthClients
 ```
+

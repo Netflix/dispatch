@@ -2,12 +2,11 @@ from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 
-from dispatch.config import INCIDENT_PLUGIN_CONTACT_SLUG
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContact
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
-from dispatch.plugins.base import plugins
+from dispatch.plugin import service as plugin_service
 
 
 from .models import Participant, ParticipantCreate, ParticipantUpdate
@@ -43,7 +42,7 @@ def get_by_incident_id_and_role(
         db_session.query(Participant)
         .filter(Participant.incident_id == incident_id)
         .join(ParticipantRole)
-        .filter(ParticipantRole.renounce_at.is_(None))
+        .filter(ParticipantRole.renounced_at.is_(None))
         .filter(ParticipantRole.role == role)
         .one_or_none()
     )
@@ -93,16 +92,18 @@ def get_or_create(
 
     if not participant:
         # We get information about the individual
-        contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
+        contact_plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
         individual_contact = individual_service.get(
             db_session=db_session, individual_contact_id=individual_id
         )
-        individual_info = contact_plugin.get(individual_contact.email)
-        location = individual_info["location"]
-        team = individual_info["team"]
-        department = individual_info["department"]
+        individual_info = contact_plugin.instance.get(
+            individual_contact.email, db_session=db_session
+        )
+        location = individual_info.get("location", "Unknown")
+        team = individual_info.get("team", "Unknown")
+        department = individual_info.get("department", "Unknown")
         participant_in = ParticipantCreate(
-            participant_role=participant_roles, team=team, department=department, location=location
+            participant_roles=participant_roles, team=team, department=department, location=location
         )
         participant = create(db_session=db_session, participant_in=participant_in)
 
@@ -115,10 +116,10 @@ def create(*, db_session, participant_in: ParticipantCreate) -> Participant:
     """
     participant_roles = [
         participant_role_service.create(db_session=db_session, participant_role_in=participant_role)
-        for participant_role in participant_in.participant_role
+        for participant_role in participant_in.participant_roles
     ]
     participant = Participant(
-        **participant_in.dict(exclude={"participant_role"}), participant_role=participant_roles
+        **participant_in.dict(exclude={"participant_roles"}), participant_roles=participant_roles
     )
     db_session.add(participant)
     db_session.commit()

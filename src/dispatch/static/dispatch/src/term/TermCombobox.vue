@@ -4,7 +4,7 @@
     :items="items"
     :search-input.sync="search"
     hide-selected
-    label="Add terms"
+    :label="label"
     multiple
     chips
     :loading="loading"
@@ -26,7 +26,7 @@
 
 <script>
 import TermApi from "@/term/api"
-import _ from "lodash"
+import { cloneDeep, debounce } from "lodash"
 export default {
   name: "TermCombobox",
   props: {
@@ -35,6 +35,10 @@ export default {
       default: function() {
         return []
       }
+    },
+    label: {
+      type: String,
+      default: "Add Terms"
     }
   },
   data() {
@@ -48,7 +52,7 @@ export default {
   computed: {
     terms: {
       get() {
-        return _.cloneDeep(this.value)
+        return cloneDeep(this.value)
       },
       set(value) {
         this._terms = value.map(v => {
@@ -78,7 +82,7 @@ export default {
         this.loading = false
       })
     },
-    getFilteredData: _.debounce(function(options) {
+    getFilteredData: debounce(function(options) {
       this.fetchData(options)
     }, 500)
   }

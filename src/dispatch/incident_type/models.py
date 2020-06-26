@@ -1,11 +1,15 @@
 from typing import List, Optional
+from pydantic import validator
 
-from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import event, Column, Boolean, ForeignKey, Integer, String, JSON
+from sqlalchemy.orm import relationship, object_session
+from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy_utils import TSVectorType
 
+from dispatch.database import Base
 from dispatch.enums import Visibility
-from dispatch.models import Base, DispatchBase
+from dispatch.models import DispatchBase
+from dispatch.plugin.models import PluginMetadata
 
 
 class IncidentType(Base):
@@ -13,7 +17,10 @@ class IncidentType(Base):
     name = Column(String, unique=True)
     slug = Column(String)
     description = Column(String)
+    exclude_from_metrics = Column(Boolean, default=False)
+    default = Column(Boolean, default=False)
     visibility = Column(String, default=Visibility.open)
+    plugin_metadata = Column(JSON, default=[])
 
     template_document_id = Column(Integer, ForeignKey("document.id"))
     template_document = relationship("Document")
@@ -22,6 +29,32 @@ class IncidentType(Base):
     commander_service = relationship("Service")
 
     search_vector = Column(TSVectorType("name", "description"))
+
+    @hybrid_method
+    def get_meta(self, slug):
+        if not self.plugin_metadata:
+            return
+
+        for m in self.plugin_metadata:
+            if m["slug"] == slug:
+                return m
+
+
+@event.listens_for(IncidentType.default, "set")
+def _revoke_other_default(target, value, oldvalue, initiator):
+    """Removes the previous default when a new one is set."""
+    session = object_session(target)
+    if session is None:
+        return
+
+    if value:
+        previous_default = (
+            session.query(IncidentType).filter(IncidentType.default == True).one_or_none()  # noqa
+        )
+
+        if previous_default:
+            previous_default.default = False
+            session.commit()
 
 
 class Document(DispatchBase):
@@ -50,6 +83,13 @@ class IncidentTypeBase(DispatchBase):
 class IncidentTypeCreate(IncidentTypeBase):
     template_document: Optional[Document]
     commander_service: Optional[Service]
+    plugin_metadata: List[PluginMetadata] = []
+    exclude_from_metrics: Optional[bool] = False
+    default: Optional[bool] = False
+
+    @validator("plugin_metadata", pre=True)
+    def replace_none_with_empty_list(cls, value):
+        return [] if value is None else value
 
 
 class IncidentTypeUpdate(IncidentTypeBase):
@@ -57,6 +97,13 @@ class IncidentTypeUpdate(IncidentTypeBase):
     visibility: Optional[Visibility]
     template_document: Optional[Document]
     commander_service: Optional[Service]
+    plugin_metadata: List[PluginMetadata] = []
+    exclude_from_metrics: Optional[bool] = False
+    default: Optional[bool] = False
+
+    @validator("plugin_metadata", pre=True)
+    def replace_none_with_empty_list(cls, value):
+        return [] if value is None else value
 
 
 class IncidentTypeRead(IncidentTypeBase):
@@ -64,6 +111,13 @@ class IncidentTypeRead(IncidentTypeBase):
     visibility: Optional[Visibility]
     template_document: Optional[Document]
     commander_service: Optional[Service]
+    plugin_metadata: List[PluginMetadata] = []
+    exclude_from_metrics: Optional[bool] = False
+    default: Optional[bool] = False
+
+    @validator("plugin_metadata", pre=True)
+    def replace_none_with_empty_list(cls, value):
+        return [] if value is None else value
 
 
 class IncidentTypeNested(IncidentTypeBase):

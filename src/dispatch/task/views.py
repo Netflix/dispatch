@@ -19,9 +19,9 @@ def get_tasks(
     query_str: str = Query(None, alias="q"),
     sort_by: List[str] = Query(None, alias="sortBy[]"),
     descending: List[bool] = Query(None, alias="descending[]"),
-    fields: List[str] = Query(None, alias="field[]"),
-    ops: List[str] = Query(None, alias="op[]"),
-    values: List[str] = Query(None, alias="value[]"),
+    fields: List[str] = Query(None, alias="fields[]"),
+    ops: List[str] = Query(None, alias="ops[]"),
+    values: List[str] = Query(None, alias="values[]"),
 ):
     """
     Retrieve all tasks.
@@ -37,6 +37,12 @@ def get_tasks(
         fields=fields,
         values=values,
         ops=ops,
+        join_attrs=[
+            ("incident", "incident"),
+            ("incident_type", "incident"),
+            ("incident_priority", "incident"),
+            ("tag", "tags"),
+        ],
     )
 
 

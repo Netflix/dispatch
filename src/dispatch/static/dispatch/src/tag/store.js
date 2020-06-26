@@ -12,6 +12,7 @@ const getDefaultSelectedState = () => {
     id: null,
     description: null,
     created_at: null,
+    discoverable: null,
     updated_at: null,
     loading: false
   }
@@ -48,10 +49,14 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", true)
-    return TagApi.getAll(state.table.options).then(response => {
-      commit("SET_TABLE_LOADING", false)
-      commit("SET_TABLE_ROWS", response.data)
-    })
+    return TagApi.getAll(state.table.options)
+      .then(response => {
+        commit("SET_TABLE_LOADING", false)
+        commit("SET_TABLE_ROWS", response.data)
+      })
+      .catch(() => {
+        commit("SET_TABLE_LOADING", false)
+      })
   }, 200),
   createEditShow({ commit }, Tag) {
     commit("SET_DIALOG_CREATE_EDIT", true)

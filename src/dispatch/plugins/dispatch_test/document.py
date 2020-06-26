@@ -2,7 +2,7 @@ from dispatch.plugins.bases import DocumentPlugin
 
 
 class TestDocumentPlugin(DocumentPlugin):
-    title = "Test Document"
+    title = "Dispatch Test Plugin - Document"
     slug = "test-document"
 
     def get(self, key, **kwargs):

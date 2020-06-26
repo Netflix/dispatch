@@ -48,7 +48,7 @@
 </template>
 
 <script>
-import _ from "lodash"
+import { debounce } from "lodash"
 import { mapState, mapActions, mapMutations } from "vuex"
 export default {
   name: "IncidentMemberCombobox",
@@ -89,7 +89,7 @@ export default {
     removeMember(payload) {
       this.$emit("removeMember", payload)
     },
-    setFilterOptions: _.debounce(function() {}, 200)
+    setFilterOptions: debounce(function() {}, 200)
   }
 }
 </script>

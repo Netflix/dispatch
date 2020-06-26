@@ -10,8 +10,9 @@ from dispatch.incident.enums import IncidentStatus
 
 from .config import (
     DISPATCH_UI_URL,
-    INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
-    INCIDENT_RESOURCE_FAQ_DOCUMENT,
+    INCIDENT_RESOURCE_CONVERSATION_REFERENCE_DOCUMENT,
+    INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT,
+    INCIDENT_RESOURCE_INCIDENT_FAQ_DOCUMENT,
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
     INCIDENT_RESOURCE_INVESTIGATION_SHEET,
@@ -21,12 +22,14 @@ from .config import (
 class MessageType(str, Enum):
     incident_daily_summary = "incident-daily-summary"
     incident_daily_summary_no_incidents = "incident-daily-summary-no-incidents"
+    incident_executive_report = "incident-executive-report"
     incident_notification = "incident-notification"
     incident_participant_welcome = "incident-participant-welcome"
     incident_resources_message = "incident-resources-message"
-    incident_status_report = "incident-status-report"
+    incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
+    incident_participant_suggested_reading = "incident-participant-suggested-reading"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -37,8 +40,8 @@ INCIDENT_STATUS_DESCRIPTIONS = {
 
 INCIDENT_TASK_REMINDER_DESCRIPTION = """
 You are assigned to the following incident tasks.
-This is a reminder that these tasks have *passed* their due date.
-Please review and update as appropriate.""".replace(
+This is a reminder that these tasks have passed their due date.
+Please review and update them as appropriate. Resolving them will stop the reminders.""".replace(
     "\n", " "
 ).strip()
 
@@ -94,14 +97,14 @@ Private conversation for real-time discussion. All incident participants get add
     "\n", " "
 ).strip()
 
-INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_DESCRIPTION = """
+INCIDENT_CONVERSATION_REFERENCE_DOCUMENT_DESCRIPTION = """
 Document containing the list of slash commands available to the Incident Commander (IC)
 and participants in the incident conversation.""".replace(
     "\n", " "
 ).strip()
 
 INCIDENT_CONFERENCE_DESCRIPTION = """
-Video conference and phone bridge to be used throughout the incident.  Password: {{conference_challenge}}
+Video conference and phone bridge to be used throughout the incident.  Password: {{conference_challenge if conference_challenge else 'N/A'}}
 """.replace(
     "\n", ""
 ).strip()
@@ -139,12 +142,18 @@ This document will capture all lessons learned, questions, and action items rais
     "\n", " "
 ).strip()
 
+INCIDENT_EXECUTIVE_REPORT_DOCUMENT_DESCRIPTION = """
+This is a document that contains an executive report about the incident.""".replace(
+    "\n", " "
+).strip()
+
 INCIDENT_DOCUMENT_DESCRIPTIONS = {
-    INCIDENT_RESOURCE_FAQ_DOCUMENT: INCIDENT_FAQ_DOCUMENT_DESCRIPTION,
+    INCIDENT_RESOURCE_CONVERSATION_REFERENCE_DOCUMENT: INCIDENT_CONVERSATION_REFERENCE_DOCUMENT_DESCRIPTION,
+    INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT: INCIDENT_EXECUTIVE_REPORT_DOCUMENT_DESCRIPTION,
+    INCIDENT_RESOURCE_INCIDENT_FAQ_DOCUMENT: INCIDENT_FAQ_DOCUMENT_DESCRIPTION,
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT: INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT: INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,
     INCIDENT_RESOURCE_INVESTIGATION_SHEET: INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
-    INCIDENT_RESOURCE_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT: INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_DESCRIPTION,
 }
 
 INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION = """
@@ -161,13 +170,14 @@ individuals you feel may be able to help resolve this incident.""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_NOTIFICATION_PURPOSES_FYI = """
-This message is for notification purposes only.""".replace(
+INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION = """
+Dispatch thinks the following documents are
+relevant to this incident.""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_GET_INVOLVED_BUTTON_DESCRIPTION = """
-Click the button to be added to the incident conversation.""".replace(
+INCIDENT_NOTIFICATION_PURPOSES_FYI = """
+This message is for notification purposes only.""".replace(
     "\n", " "
 ).strip()
 
@@ -193,7 +203,7 @@ The incident has been resolved and marked as closed.""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_STATUS_REPORT_DESCRIPTION = """
+INCIDENT_TACTICAL_REPORT_DESCRIPTION = """
 The following conditions, actions, and needs summarize the current status of the incident.""".replace(
     "\n", " "
 ).strip()
@@ -204,17 +214,16 @@ Please, contact {{assignee_firstname}} about any questions or concerns.""".repla
     "\n", " "
 ).strip()
 
-INCIDENT_STATUS_REPORT_REMINDER_DESCRIPTION = """You have not provided a status report for this incident recently.
-Consider providing one to inform participants of the current conditions, actions, and needs.
+INCIDENT_REPORT_REMINDER_DESCRIPTION = """You have not provided a {{report_type}} for this incident recently.
 You can use `{{command}}` in the conversation to assist you in writing one.""".replace(
     "\n", " "
 ).strip()
 
 INCIDENT_TASK_NEW_DESCRIPTION = """
-The following incident task has been created in the incident document.\n\n*Description:* {{task_description}}\n\n*Assignees:* {{task_assignees}}"""
+The following incident task has been created in the incident document.\n\n*Description:* {{task_description}}\n\n*Assignees:* {{task_assignees|join(',')}}"""
 
 INCIDENT_TASK_RESOLVED_DESCRIPTION = """
-The following incident task has been resolved in the incident document.\n\n*Description:* {{task_description}}\n\n*Assignees:* {{task_assignees}}"""
+The following incident task has been resolved in the incident document.\n\n*Description:* {{task_description}}\n\n*Assignees:* {{task_assignees|join(',')}}"""
 
 INCIDENT_TYPE_CHANGE_DESCRIPTION = """
 The incident type has been changed from *{{ incident_type_old }}* to *{{ incident_type_new }}*."""
@@ -282,7 +291,7 @@ INCIDENT_STORAGE = {
 INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT = {
     "title": "Incident Conversation Commands Reference Document",
     "title_link": "{{conversation_commands_reference_document_weblink}}",
-    "text": INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT_DESCRIPTION,
+    "text": INCIDENT_CONVERSATION_REFERENCE_DOCUMENT_DESCRIPTION,
 }
 
 INCIDENT_INVESTIGATION_DOCUMENT = {
@@ -295,6 +304,12 @@ INCIDENT_INVESTIGATION_SHEET = {
     "title": "Incident Investigation Sheet",
     "title_link": "{{sheet_weblink}}",
     "text": INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
+}
+
+INCIDENT_REVIEW_DOCUMENT = {
+    "title": "Incident Review Document",
+    "title_link": "{{review_document_weblink}}",
+    "text": INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,
 }
 
 INCIDENT_FAQ_DOCUMENT = {
@@ -315,18 +330,16 @@ INCIDENT_PRIORITY_CHANGE = {
     "text": INCIDENT_PRIORITY_CHANGE_DESCRIPTION,
 }
 
+INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM = {
+    "title": "{{name}}",
+    "title_link": "{{weblink}}",
+    "text": "{{description}}",
+}
+
 INCIDENT_PARTICIPANT_WELCOME = {
     "title": "Welcome to {{name}}",
     "title_link": "{{ticket_weblink}}",
     "text": INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION,
-}
-
-INCIDENT_GET_INVOLVED_BUTTON = {
-    "title": "Get Involved",
-    "text": INCIDENT_GET_INVOLVED_BUTTON_DESCRIPTION,
-    "button_text": "Get Involved",
-    "button_value": "{{incident_id}}",
-    "button_action": ConversationButtonActions.invite_user,
 }
 
 INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
@@ -346,6 +359,7 @@ INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
 INCIDENT_RESOURCES_MESSAGE = [
     INCIDENT_COMMANDER,
     INCIDENT_INVESTIGATION_DOCUMENT,
+    INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_STORAGE,
     INCIDENT_CONFERENCE,
     INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT,
@@ -359,21 +373,29 @@ INCIDENT_NOTIFICATION.extend(
     [INCIDENT_STATUS, INCIDENT_TYPE, INCIDENT_PRIORITY_FYI, INCIDENT_COMMANDER]
 )
 
-INCIDENT_STATUS_REPORT = [
-    {"title": "Incident Status Report", "text": INCIDENT_STATUS_REPORT_DESCRIPTION},
+INCIDENT_TACTICAL_REPORT = [
+    {"title": "Incident Tactical Report", "text": INCIDENT_TACTICAL_REPORT_DESCRIPTION},
     {"title": "Conditions", "text": "{{conditions}}"},
     {"title": "Actions", "text": "{{actions}}"},
     {"title": "Needs", "text": "{{needs}}"},
 ]
 
-INCIDENT_STATUS_REPORT_REMINDER = [
+INCIDENT_EXECUTIVE_REPORT = [
+    {"title": "Incident Title", "text": "{{title}}"},
+    {"title": "Current Status", "text": "{{current_status}}"},
+    {"title": "Overview", "text": "{{overview}}"},
+    {"title": "Next Steps", "text": "{{next_steps}}"},
+]
+
+INCIDENT_REPORT_REMINDER = [
     {
-        "title": "{{name}} Incident - Status Report Reminder",
+        "title": "{{name}} Incident - {{report_type}} Reminder",
         "title_link": "{{ticket_weblink}}",
-        "text": INCIDENT_STATUS_REPORT_REMINDER_DESCRIPTION,
+        "text": INCIDENT_REPORT_REMINDER_DESCRIPTION,
     },
     INCIDENT_TITLE,
 ]
+
 
 INCIDENT_TASK_REMINDER = [
     {"title": "Incident - {{ name }}", "text": "{{ title }}"},
@@ -383,14 +405,6 @@ INCIDENT_TASK_REMINDER = [
     {"title": "Created At", "text": "", "datetime": "{{ created_at}}"},
     {"title": "Resolve By", "text": "", "datetime": "{{ resolve_by }}"},
     {"title": "Link", "text": "{{ weblink }}"},
-]
-
-INCIDENT_REVIEW_DOCUMENT_NOTIFICATION = [
-    {
-        "title": "Incident Review Document",
-        "title_link": "{{incident_review_document_weblink}}",
-        "text": INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,
-    }
 ]
 
 INCIDENT_NEW_ROLE_NOTIFICATION = [
@@ -438,6 +452,9 @@ def render_message_template(message_template: List[dict], **kwargs):
 
         if d.get("title_link"):
             d["title_link"] = Template(d["title_link"]).render(**kwargs)
+            # skip blocks that do not have new links rendered, as no real value was provided
+            if not d["title_link"]:
+                continue
 
         if d.get("button_text"):
             d["button_text"] = Template(d["button_text"]).render(**kwargs)

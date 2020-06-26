@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy.sql.expression import true
 
 from .models import IncidentPriority, IncidentPriorityCreate, IncidentPriorityUpdate
 
@@ -11,6 +12,13 @@ def get(*, db_session, incident_priority_id: int) -> Optional[IncidentPriority]:
         db_session.query(IncidentPriority)
         .filter(IncidentPriority.id == incident_priority_id)
         .one_or_none()
+    )
+
+
+def get_default(*, db_session):
+    """Returns the current default incident_priority."""
+    return (
+        db_session.query(IncidentPriority).filter(IncidentPriority.default == true()).one_or_none()
     )
 
 

@@ -1,10 +1,3 @@
-"""
-.. module: dispatch.plugins.google_drive.plugin
-    :platform: Unix
-    :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
-    :license: Apache, see LICENSE for more details.
-.. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
-"""
 from typing import List
 
 from dispatch.decorators import apply, counter, timer
@@ -34,12 +27,12 @@ from .task import list_tasks
 @apply(timer, exclude=["__init__"])
 @apply(counter, exclude=["__init__"])
 class GoogleDriveStoragePlugin(StoragePlugin):
-    title = "Google Drive - Storage"
+    title = "Google Drive Plugin - Storage Management"
     slug = "google-drive-storage"
     description = "Uses Google Drive to help manage incident storage."
     version = google_drive_plugin.__version__
 
-    author = "Kevin Glisson"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     _schema = None
@@ -139,14 +132,20 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         response = restrict_folder(client, team_drive_id)
         return response
 
+    def unrestrict(self, team_drive_id: str):
+        """Removes a set of restrictions and capabilities from the team drive."""
+        client = get_service("drive", "v3", self.scopes)
+        response = unrestrict_team_drive(client, team_drive_id)
+        return response
+
 
 class GoogleDriveTaskPlugin(TaskPlugin):
-    title = "Google Drive - Task"
+    title = "Google Drive Plugin - Task Management"
     slug = "google-drive-task"
     description = "Uses Google Drive to help manage incident tasks."
     version = google_drive_plugin.__version__
 
-    author = "Marc Vilanova"
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     _schema = None

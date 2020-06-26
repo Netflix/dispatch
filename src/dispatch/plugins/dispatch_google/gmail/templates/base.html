@@ -106,21 +106,13 @@
                                         <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;font-weight:normal!important">
                                           <tbody>
                                             <tr>
-                                                <td valign="top" style="font-weight:normal!important">
+                                              <td valign="top" style="font-weight:normal!important">
                                                 {% block description %}{% endblock %}
                                                 {% block items %}{% endblock %}
-                                                <p style="font-weight:normal!important;line-height:140%">For
-                                                    any questions about
-                                                    this message, you
-                                                    can
-                                                    always reach us at
-                                                    <a href="mailto:{{dispatch_help_email}}"
-                                                        target="_blank"><span
-                                                            class="lG">{{dispatch_help_email}}
-                                                    or Slack channel
-                                                    # {{dispatch_help_slack_channel}}.
+                                                <p style="font-weight:normal!important;line-height:140%">
+                                                  For any questions about this message, please reach out to <a href="{{contact_weblink}}" target="_blank" rel="noopener noreferrer"><span class="lG">{{contact_fullname}}</span></a>.
                                                 </p>
-                                                <td>
+                                              <td>
                                             </tr>
                                           </tbody>
                                         </table>
