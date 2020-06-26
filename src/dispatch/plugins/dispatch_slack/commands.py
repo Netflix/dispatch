@@ -68,6 +68,8 @@ def filter_tasks_by_assignee_and_creator(tasks: List[Task], by_assignee: str, by
             creator_email = t.creator.individual.email
             if creator_email == by_creator:
                 filtered_tasks.append(t)
+                # lets avoid duplication if creator is also assignee
+                continue
 
         if by_assignee:
             assignee_emails = [a.individual.email for a in t.assignees]
