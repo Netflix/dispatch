@@ -28,6 +28,7 @@ from .config import (
     SLACK_COMMAND_REPORT_INCIDENT_SLUG,
     SLACK_COMMAND_TACTICAL_REPORT_SLUG,
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
+    SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG,
     SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG,
 )
 
@@ -81,6 +82,10 @@ INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
     SLACK_COMMAND_EXECUTIVE_REPORT_SLUG: {
         "response_type": "ephemeral",
         "text": "Opening a dialog to write an executive report...",
+    },
+    SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG: {
+        "response_type": "ephemeral",
+        "text": "Opening a dialog to update the membership of the notifications group...",
     },
 }
 

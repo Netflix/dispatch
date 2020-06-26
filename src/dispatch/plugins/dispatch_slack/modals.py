@@ -1,26 +1,29 @@
-import logging
 import json
-from enum import Enum
+import logging
+import numpy
 
+from enum import Enum
+from fastapi import BackgroundTasks
 from sqlalchemy.orm import Session
 
-from fastapi import BackgroundTasks
-
+from dispatch.config import INCIDENT_PLUGIN_GROUP_SLUG
 from dispatch.decorators import background_task
-from dispatch.incident.enums import IncidentStatus, IncidentSlackViewBlockId, NewIncidentSubmission
-from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
-from dispatch.incident import service as incident_service
 from dispatch.incident import flows as incident_flows
+from dispatch.incident import service as incident_service
+from dispatch.incident.enums import IncidentStatus, IncidentSlackViewBlockId, NewIncidentSubmission
 from dispatch.incident.models import Incident
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant, ParticipantUpdate
+from dispatch.plugins.base import plugins
+from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from .messaging import (
     create_incident_reported_confirmation_msg,
     create_modal_content,
 )
+
 
 slack_client = dispatch_slack_service.create_slack_client()
 log = logging.getLogger(__name__)
@@ -34,6 +37,14 @@ class UpdateParticipantBlockFields(str, Enum):
 class UpdateParticipantCallbacks(str, Enum):
     submit_form = "update_participant_submit_form"
     update_view = "update_participant_update_view"
+
+
+class UpdateNotificationsGroupBlockFields(str, Enum):
+    update_members = "update_members_field"
+
+
+class UpdateNotificationsGroupCallbacks(str, Enum):
+    submit_form = "update_notifications_group_submit_form"
 
 
 def handle_modal_action(action: dict, background_tasks: BackgroundTasks):
@@ -53,6 +64,9 @@ def action_functions(action_id: str):
         NewIncidentSubmission.form_slack_view: [report_incident_from_submitted_form],
         UpdateParticipantCallbacks.submit_form: [update_participant_from_submitted_form],
         UpdateParticipantCallbacks.update_view: [update_update_participant_modal],
+        UpdateNotificationsGroupCallbacks.submit_form: [
+            update_notifications_group_from_submitted_form
+        ],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc
@@ -211,7 +225,10 @@ def build_update_participant_blocks(incident: Incident, participant: Participant
             {
                 "type": "context",
                 "elements": [
-                    {"type": "mrkdwn", "text": "Edit why a particpant was added to this incident."}
+                    {
+                        "type": "mrkdwn",
+                        "text": "Use this form to edit why a particpant was added to this incident.",
+                    }
                 ],
             },
         ],
@@ -250,7 +267,6 @@ def build_update_participant_blocks(incident: Incident, participant: Participant
 @background_task
 def update_participant_from_submitted_form(action: dict, db_session=None):
     """Saves form data."""
-    # Fetch channel id from private metadata field
     submitted_form = action.get("view")
 
     parsed_form_data = parse_submitted_form(submitted_form)
@@ -294,7 +310,7 @@ def update_update_participant_modal(action: dict, db_session=None):
 
 @background_task
 def create_update_participant_modal(incident_id: int, command: dict, db_session=None):
-    """Creates a modal for updateing a participant."""
+    """Creates a modal for updating a participant."""
     trigger_id = command["trigger_id"]
 
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
@@ -304,3 +320,91 @@ def create_update_participant_modal(incident_id: int, command: dict, db_session=
     dispatch_slack_service.open_modal_with_user(
         client=slack_client, trigger_id=trigger_id, modal=modal_create_template
     )
+
+
+def build_update_notifications_group_blocks(incident: Incident):
+    """Builds all blocks required to update the membership of the notifications group."""
+    modal_template = {
+        "type": "modal",
+        "title": {"type": "plain_text", "text": "Update Group Membership"},
+        "blocks": [
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "plain_text",
+                        "text": "Use this form to update the membership of the notifications group.",
+                    }
+                ],
+            },
+        ],
+        "close": {"type": "plain_text", "text": "Cancel"},
+        "submit": {"type": "plain_text", "text": "Update"},
+        "callback_id": UpdateNotificationsGroupCallbacks.submit_form,
+        "private_metadata": json.dumps({"incident_id": str(incident.id)}),
+    }
+
+    group_plugin = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
+    members = group_plugin.list(incident.notifications_group.email)
+
+    members_block = {
+        "type": "input",
+        "block_id": UpdateNotificationsGroupBlockFields.update_members,
+        "label": {"type": "plain_text", "text": "Members"},
+        "element": {
+            "type": "plain_text_input",
+            "action_id": UpdateNotificationsGroupBlockFields.update_members,
+            "multiline": True,
+            "initial_value": (", ").join(members),
+        },
+    }
+    modal_template["blocks"].append(members_block)
+
+    modal_template["blocks"].append(
+        {
+            "type": "context",
+            "elements": [{"type": "plain_text", "text": "Separate email addresses with commas."}],
+        },
+    )
+
+    return modal_template
+
+
+@background_task
+def create_update_notifications_group_modal(incident_id: int, command: dict, db_session=None):
+    """Creates a modal for editing members of the notifications group."""
+    trigger_id = command["trigger_id"]
+
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    modal_create_template = build_update_notifications_group_blocks(incident=incident)
+
+    dispatch_slack_service.open_modal_with_user(
+        client=slack_client, trigger_id=trigger_id, modal=modal_create_template
+    )
+
+
+@background_task
+def update_notifications_group_from_submitted_form(action: dict, db_session=None):
+    """Updates notifications group based on submitted form data."""
+    submitted_form = action.get("view")
+    parsed_form_data = parse_submitted_form(submitted_form)
+
+    current_members = (
+        submitted_form["blocks"][1]["element"]["initial_value"].replace(" ", "").split(",")
+    )
+    updated_members = (
+        parsed_form_data.get(UpdateNotificationsGroupBlockFields.update_members)
+        .replace(" ", "")
+        .split(",")
+    )
+
+    members_added = numpy.setdiff1d(updated_members, current_members)
+    members_removed = numpy.setdiff1d(current_members, updated_members)
+
+    incident_id = action["view"]["private_metadata"]["incident_id"]
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    group_plugin = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
+    group_plugin.add(incident.notifications_group.email, members_added)
+    group_plugin.remove(incident.notifications_group.email, members_removed)

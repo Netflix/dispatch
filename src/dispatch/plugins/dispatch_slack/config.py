@@ -44,5 +44,8 @@ SLACK_COMMAND_REPORT_INCIDENT_SLUG = config(
     "SLACK_COMMAND_REPORT_INCIDENT_SLUG", default="/dispatch-report-incident"
 )
 SLACK_COMMAND_EXECUTIVE_REPORT_SLUG = config(
-    "SLACK_COMMAND_INCIDENT_REPORT_SLUG", default="/dispatch-executive-report"
+    "SLACK_COMMAND_EXECUTIVE_REPORT_SLUG", default="/dispatch-executive-report"
+)
+SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG = config(
+    "SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG", default="/dispatch-notifications-group"
 )

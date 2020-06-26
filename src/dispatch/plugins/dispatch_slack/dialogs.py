@@ -12,6 +12,7 @@ from dispatch.report import service as report_service
 from dispatch.report.enums import ReportTypes
 from dispatch.service import service as service_service
 
+
 slack_client = dispatch_slack_service.create_slack_client()
 log = logging.getLogger(__name__)
 
