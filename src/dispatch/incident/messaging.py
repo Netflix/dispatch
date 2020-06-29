@@ -177,6 +177,15 @@ def send_incident_suggested_reading_messages(
 
     if suggested_documents:
         # we send the ephemeral message
+        items = []
+        for i in suggested_documents:
+            description = i.description
+            if not description:
+                if i.incident:
+                    description = i.incident.title
+
+            items.append({"name": i.name, "weblink": i.weblink, "description": description})
+
         convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
         convo_plugin.send_ephemeral(
             incident.conversation.channel_id,
@@ -184,7 +193,7 @@ def send_incident_suggested_reading_messages(
             "Suggested Reading",
             [INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM],
             MessageType.incident_participant_suggested_reading,
-            items=[i.__dict__ for i in suggested_documents],  # plugin deals with dicts
+            items=items,
         )
 
         log.debug(f"Suggested reading ephemeral message sent to {participant_email}.")
