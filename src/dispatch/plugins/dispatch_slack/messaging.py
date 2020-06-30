@@ -8,11 +8,10 @@ import logging
 from typing import List, Optional
 from jinja2 import Template
 
-from dispatch.incident.enums import IncidentSlackViewBlockId
 from dispatch.messaging import (
+    INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
     INCIDENT_TASK_LIST_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
-    INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
     MessageType,
     render_message_template,
 )
