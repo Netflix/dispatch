@@ -18,10 +18,7 @@ from dispatch.participant.models import Participant, ParticipantUpdate
 from dispatch.plugins.base import plugins
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
-from .messaging import (
-    create_incident_reported_confirmation_msg,
-    create_modal_content,
-)
+from .messaging import create_incident_reported_confirmation_msg
 
 
 slack_client = dispatch_slack_service.create_slack_client()
@@ -100,13 +97,8 @@ def parse_submitted_form(view_data: dict):
 
 
 @background_task
-def report_incident_from_submitted_form(
-    user_id: str, user_email: str, incident_id: int, action: dict, db_session: Session = None,
-):
+def report_incident_from_submitted_form(action: dict, db_session: Session = None):
     submitted_form = action.get("view")
-
-    # Fetch channel id from private metadata field
-    channel_id = submitted_form.get("private_metadata")
 
     parsed_form_data = parse_submitted_form(submitted_form)
 
@@ -115,13 +107,15 @@ def report_incident_from_submitted_form(
     requested_form_incident_type = parsed_form_data.get(IncidentSlackViewBlockId.type)
     requested_form_incident_priority = parsed_form_data.get(IncidentSlackViewBlockId.priority)
 
-    # send a confirmation to the user
+    # Send a confirmation to the user
     msg_template = create_incident_reported_confirmation_msg(
         title=requested_form_title,
         incident_type=requested_form_incident_type.get("value"),
         incident_priority=requested_form_incident_priority.get("value"),
     )
 
+    user_id = action["user"]["id"]
+    channel_id = submitted_form.get("private_metadata")["channel_id"]
     dispatch_slack_service.send_ephemeral_message(
         client=slack_client,
         conversation_id=channel_id,
@@ -130,7 +124,8 @@ def report_incident_from_submitted_form(
         blocks=msg_template,
     )
 
-    # create the incident
+    # Create the incident
+    user_email = action["user"]["email"]
     incident = incident_service.create(
         db_session=db_session,
         title=requested_form_title,
@@ -139,34 +134,114 @@ def report_incident_from_submitted_form(
         incident_type=requested_form_incident_type,
         incident_priority=requested_form_incident_priority,
         reporter_email=user_email,
+        tags=[],  # The modal does not currently support tags
     )
 
     incident_flows.incident_create_flow(incident_id=incident.id)
 
 
+def create_block_option_from_template(text: str, value: str):
+    """Helper function which generates the option block for modals / views"""
+    return {"text": {"type": "plain_text", "text": str(text), "emoji": True}, "value": str(value)}
+
+
+def build_report_incident_blocks(channel_id: str, db_session: Session):
+    """Builds all blocks required for the reporting incident modal."""
+    incident_type_options = []
+    for incident_type in incident_type_service.get_all(db_session=db_session):
+        incident_type_options.append(
+            create_block_option_from_template(text=incident_type.name, value=incident_type.name)
+        )
+
+    incident_priority_options = []
+    for incident_priority in incident_priority_service.get_all(db_session=db_session):
+        incident_priority_options.append(
+            create_block_option_from_template(
+                text=incident_priority.name, value=incident_priority.name
+            )
+        )
+
+    modal_template = {
+        "type": "modal",
+        "title": {"type": "plain_text", "text": "Security Incident Report"},
+        "blocks": [
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": "If you suspect a security incident and require help from security, "
+                        "please fill out the following to the best of your abilities.",
+                    }
+                ],
+            },
+            {
+                "block_id": IncidentSlackViewBlockId.title,
+                "type": "input",
+                "label": {"type": "plain_text", "text": "Title"},
+                "element": {
+                    "type": "plain_text_input",
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "A brief explanatory title. You can change this later.",
+                    },
+                },
+            },
+            {
+                "block_id": IncidentSlackViewBlockId.description,
+                "type": "input",
+                "label": {"type": "plain_text", "text": "Description"},
+                "element": {
+                    "type": "plain_text_input",
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "A summary of what you know so far. It's all right if this is incomplete.",
+                    },
+                    "multiline": True,
+                },
+            },
+            {
+                "block_id": IncidentSlackViewBlockId.type,
+                "type": "input",
+                "label": {"type": "plain_text", "text": "Type"},
+                "element": {
+                    "type": "static_select",
+                    "placeholder": {"type": "plain_text", "text": "Select Incident Type"},
+                    "options": incident_type_options,
+                },
+            },
+            {
+                "block_id": IncidentSlackViewBlockId.priority,
+                "type": "input",
+                "label": {"type": "plain_text", "text": "Priority", "emoji": True},
+                "element": {
+                    "type": "static_select",
+                    "placeholder": {"type": "plain_text", "text": "Select Incident Priority"},
+                    "options": incident_priority_options,
+                },
+            },
+        ],
+        "close": {"type": "plain_text", "text": "Cancel"},
+        "submit": {"type": "plain_text", "text": "Submit"},
+        "callback_id": NewIncidentSubmission.form_slack_view,
+        "private_metadata": json.dumps({"channel_id": str(channel_id)}),
+    }
+
+    return modal_template
+
+
 @background_task
-def create_report_incident_modal(command: dict = None, db_session=None):
-    """
-    Prepare the Modal / View x
-    Ask slack to open a modal with the prepared Modal / View content
-    """
+def create_report_incident_modal(incident_id: int, command: dict = None, db_session=None):
+    """Creates a modal for reporting an incident."""
     channel_id = command.get("channel_id")
     trigger_id = command.get("trigger_id")
 
-    type_options = []
-    for t in incident_type_service.get_all(db_session=db_session):
-        type_options.append({"label": t.name, "value": t.name})
-
-    priority_options = []
-    for priority in incident_priority_service.get_all(db_session=db_session):
-        priority_options.append({"label": priority.name, "value": priority.name})
-
-    modal_view_template = create_modal_content(
-        channel_id=channel_id, incident_types=type_options, incident_priorities=priority_options
+    modal_create_template = build_report_incident_blocks(
+        channel_id=channel_id, db_session=db_session
     )
 
     dispatch_slack_service.open_modal_with_user(
-        client=slack_client, trigger_id=trigger_id, modal=modal_view_template
+        client=slack_client, trigger_id=trigger_id, modal=modal_create_template
     )
 
 
