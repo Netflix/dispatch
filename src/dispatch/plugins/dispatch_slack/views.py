@@ -19,16 +19,15 @@ from dispatch.conversation.service import get_by_channel_id
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from . import __version__
-from .config import SLACK_SIGNING_SECRET
+from .config import SLACK_SIGNING_SECRET, SLACK_COMMAND_REPORT_INCIDENT_SLUG
+from .actions import handle_block_action, handle_dialog_action
+from .commands import command_functions
+from .events import event_functions, get_channel_id_from_event, EventEnvelope
 from .messaging import (
     INCIDENT_CONVERSATION_COMMAND_MESSAGE,
     render_non_incident_conversation_command_error_message,
 )
-
 from .modals import handle_modal_action
-from .commands import command_functions
-from .events import event_functions, get_channel_id_from_event, EventEnvelope
-from .actions import handle_block_action, handle_dialog_action
 
 
 router = APIRouter()
@@ -150,16 +149,19 @@ async def handle_command(
     channel_id = command.get("channel_id")
     conversation = get_by_channel_id(db_session=db_session, channel_id=channel_id)
 
-    # Dispatch command functions to be executed in the background
+    incident_id = 0
     if conversation:
-        for f in command_functions(command.get("command")):
-            background_tasks.add_task(f, conversation.incident_id, command=command)
-
-        return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(
-            command.get("command"), f"Running... Command: {command.get('command')}"
-        )
+        incident_id = conversation.incident_id
     else:
-        return render_non_incident_conversation_command_error_message(command.get("command"))
+        if command.get("command") != SLACK_COMMAND_REPORT_INCIDENT_SLUG:
+            return render_non_incident_conversation_command_error_message(command.get("command"))
+
+    for f in command_functions(command.get("command")):
+        background_tasks.add_task(f, incident_id, command=command)
+
+    return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(
+        command.get("command"), f"Running... Command: {command.get('command')}"
+    )
 
 
 @router.post("/slack/action")
