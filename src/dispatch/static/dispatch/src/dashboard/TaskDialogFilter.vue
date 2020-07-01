@@ -178,9 +178,13 @@ export default {
       menu: false,
       display: false,
       localWindow: this.window,
-      localTag: this.tag,
-      localIncidentPriority: this.incident_priority,
-      localIncidentType: this.incident_type
+      localTag: typeof this.tag === "string" ? [this.tag] : this.tag,
+      localIncidentPriority:
+        typeof this.incident_priority === "string"
+          ? [this.incident_priority]
+          : this.incident_priority,
+      localIncidentType:
+        typeof this.incident_type === "string" ? [this.incident_type] : this.incident_type
     }
   },
 
