@@ -137,7 +137,7 @@ def create_executive_report(
     storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
     executive_report_document_name = f"{incident.name} - Executive Report - {current_date}"
     executive_report_document = storage_plugin.copy_file(
-        team_drive_id=incident.storage.resource_id,
+        folder_id=incident.storage.resource_id,
         file_id=report_template.resource_id,
         name=executive_report_document_name,
     )
@@ -150,7 +150,7 @@ def create_executive_report(
     )
 
     storage_plugin.move_file(
-        new_team_drive_id=incident.storage.resource_id, file_id=executive_report_document["id"]
+        new_folder_id=incident.storage.resource_id, file_id=executive_report_document["id"]
     )
 
     event_service.log(

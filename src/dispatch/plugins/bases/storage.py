@@ -34,6 +34,9 @@ class StoragePlugin(Plugin):
     def remove_participant(self, items, **kwargs):
         raise NotImplementedError
 
+    def open(self, **kwargs):
+        raise NotImplementedError
+
     def add_file(self, **kwargs):
         raise NotImplementedError
 
