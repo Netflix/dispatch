@@ -242,9 +242,9 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
         )
 
     # we send status notifications to distribution lists
-    # email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
-    # for distro in INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS:
-    #   email_plugin.send(distro, message_template, notification_type, **message_kwargs)
+    email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
+    for distro in INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS:
+        email_plugin.send(distro, message_template, notification_type, **message_kwargs)
 
     log.debug("Incident status notifications sent.")
 
