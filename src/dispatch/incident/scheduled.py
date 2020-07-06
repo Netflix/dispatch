@@ -261,10 +261,8 @@ def calculate_incidents_cost(db_session=None):
     """Calculates the cost of all incidents."""
 
     # we want to update all incidents, all the time
-    # incidents = get_all(db_session=db_session)
-    incidents = [get_by_name(db_session=db_session, incident_name="SEC-1757")]
+    incidents = get_all(db_session=db_session)
     for incident in incidents:
-        print(incident.name)
         try:
             # we calculate the cost
             incident_cost = calculate_cost(incident.id, db_session)
