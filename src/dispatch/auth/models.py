@@ -9,6 +9,7 @@ from jose import jwt
 from typing import Optional
 from pydantic import validator
 from sqlalchemy import Column, String, Binary, Integer
+from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
 from dispatch.models import TimeStampMixin, DispatchBase
@@ -52,6 +53,8 @@ class DispatchUser(Base, TimeStampMixin):
     email = Column(String, unique=True)
     password = Column(Binary, nullable=False)
     role = Column(String, nullable=False, default=UserRoles.user)
+
+    search_vector = Column(TSVectorType("email", weights={"email": "A"}))
 
     def check_password(self, password):
         return bcrypt.checkpw(password.encode("utf-8"), self.password)
