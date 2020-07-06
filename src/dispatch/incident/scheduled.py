@@ -32,7 +32,13 @@ from dispatch.tag.models import Tag
 
 from .enums import IncidentStatus
 from .flows import update_external_incident_ticket
-from .service import calculate_cost, get_all, get_all_by_status, get_all_last_x_hours_by_status
+from .service import (
+    calculate_cost,
+    get_all,
+    get_all_by_status,
+    get_all_last_x_hours_by_status,
+    get_by_name,
+)
 
 
 log = logging.getLogger(__name__)
@@ -256,7 +262,6 @@ def calculate_incidents_cost(db_session=None):
 
     # we want to update all incidents, all the time
     incidents = get_all(db_session=db_session)
-
     for incident in incidents:
         try:
             # we calculate the cost
@@ -282,4 +287,5 @@ def calculate_incidents_cost(db_session=None):
 
         except Exception as e:
             # we shouldn't fail to update all incidents when one fails
+            log.error(e)
             sentry_sdk.capture_exception(e)
