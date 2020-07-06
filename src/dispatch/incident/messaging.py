@@ -178,7 +178,9 @@ def send_incident_suggested_reading_messages(
     if suggested_documents:
         # we send the ephemeral message
         items = []
-        for i in suggested_documents:
+        # lets grab the first 5 documents
+        # TODO add more intelligent ranking
+        for i in suggested_documents[:5]:
             description = i.description
             if not description:
                 if i.incident:
