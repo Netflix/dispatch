@@ -54,7 +54,7 @@ class DispatchUser(Base, TimeStampMixin):
     password = Column(Binary, nullable=False)
     role = Column(String, nullable=False, default=UserRoles.user)
 
-    search_vector = Column(TSVectorType("email", weights={"name": "A"}))
+    search_vector = Column(TSVectorType("email", weights={"email": "A"}))
 
     def check_password(self, password):
         return bcrypt.checkpw(password.encode("utf-8"), self.password)
