@@ -71,6 +71,7 @@ def sync_triggers():
     sync_trigger(engine, "task", "search_vector", ["description"])
     sync_trigger(engine, "team_contact", "search_vector", ["name", "company", "notes"])
     sync_trigger(engine, "term", "search_vector", ["text"])
+    sync_trigger(engine, "dispatch_user", "search_vectory", ["email"])
 
 
 @dispatch_cli.group("database")
