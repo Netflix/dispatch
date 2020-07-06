@@ -28,6 +28,8 @@ from dispatch.config import (
     INCIDENT_STORAGE_FOLDER_ID,
     INCIDENT_STORAGE_OPEN_ON_CLOSE,
 )
+from dispatch.extensions import sentry_sdk
+
 from dispatch.conference import service as conference_service
 from dispatch.conference.models import ConferenceCreate
 from dispatch.conversation import service as conversation_service
@@ -581,28 +583,6 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         incident.conference.conference_challenge,
     )
 
-    for participant in incident.participants:
-        # we announce the participant in the conversation
-        send_incident_participant_announcement_message(
-            participant.individual.email, incident.id, db_session
-        )
-
-        # we send the welcome messages to the participant
-        send_incident_welcome_participant_messages(
-            participant.individual.email, incident.id, db_session
-        )
-
-        send_incident_suggested_reading_messages(
-            participant.individual.email, incident.id, db_session
-        )
-
-    event_service.log(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description="Participants announced and welcome messages sent",
-        incident_id=incident.id,
-    )
-
     if incident.visibility == Visibility.open:
         send_incident_notifications(incident, db_session)
         event_service.log(
@@ -611,6 +591,33 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             description="Incident notifications sent",
             incident_id=incident.id,
         )
+
+    for participant in incident.participants:
+        # we announce the participant in the conversation
+        # should protect ourselves from failures of any one participant
+        try:
+            send_incident_participant_announcement_message(
+                participant.individual.email, incident.id, db_session
+            )
+
+            # we send the welcome messages to the participant
+            send_incident_welcome_participant_messages(
+                participant.individual.email, incident.id, db_session
+            )
+
+            send_incident_suggested_reading_messages(
+                participant.individual.email, incident.id, db_session
+            )
+        except Exception as e:
+            log.exception(e)
+            sentry_sdk.capture_exception(e)
+
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Participants announced and welcome messages sent",
+        incident_id=incident.id,
+    )
 
 
 @background_task
