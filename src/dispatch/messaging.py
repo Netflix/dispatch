@@ -171,7 +171,7 @@ individuals you feel may be able to help resolve this incident.""".replace(
 ).strip()
 
 INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION = """
-Dispatch thinks the following documents are
+Dispatch thinks the following documents might be
 relevant to this incident.""".replace(
     "\n", " "
 ).strip()
