@@ -120,7 +120,7 @@ METRIC_PROVIDERS = config("METRIC_PROVIDERS", cast=CommaSeparatedStrings, defaul
 SENTRY_DSN = config("SENTRY_DSN", cast=Secret, default=None)
 
 # database
-DATABASE_HOST = config("DATABASE_HOSTNAME")
+DATABASE_HOST = config("DATABASE_HOST")
 DATABASE_CREDENTIALS = config("DATABASE_CREDENTIALS", cast=Secret)
 DATABASE_NAME = config("DATABASE_NAME", default="dispatch")
 SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{DATABASE_CREDENTIALS}@{DATABASE_HOST}/{DATABASE_NAME}"
