@@ -24,11 +24,13 @@ from .config import (
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG,
     SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG,
+    SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG,
 )
 
 from .modals import (
-    create_update_notifications_group_modal,
+    create_add_timeline_event_modal,
     create_report_incident_modal,
+    create_update_notifications_group_modal,
     create_update_participant_modal,
 )
 
@@ -46,6 +48,7 @@ slack_client = dispatch_slack_service.create_slack_client()
 def command_functions(command: str):
     """Interprets the command and routes it the appropriate function."""
     command_mappings = {
+        SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG: [create_add_timeline_event_modal],
         SLACK_COMMAND_ASSIGN_ROLE_SLUG: [create_assign_role_dialog],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [create_engage_oncall_dialog],
         SLACK_COMMAND_EXECUTIVE_REPORT_SLUG: [create_executive_report_dialog],
