@@ -290,7 +290,7 @@ def calculate_incidents_cost(db_session=None):
             sentry_sdk.capture_exception(e)
 
 
-@scheduler.add(every(1).day.at("18:00"), name="incident-stable-reminder")
+@scheduler.add(every(1).day.at("18:00"), name="incident-status-reminder")
 @background_task
 def close_incident_reminder(db_session=None):
     """Sends a reminder to the IC to close out their incident."""

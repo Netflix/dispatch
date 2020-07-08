@@ -601,7 +601,7 @@ def send_incident_close_reminder(incident: Incident):
     message_template = INCIDENT_STATUS_REMINDER
 
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
-    update_command = convo_plugin.get_command_name(ConversationCommands.edit_incident)
+    update_command = convo_plugin.get_command_name(ConversationCommands.update_incident)
 
     items = [
         {
