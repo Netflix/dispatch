@@ -596,7 +596,7 @@ def send_incident_resources_ephemeral_message_to_participant(
 
 
 def send_incident_close_reminder(incident: Incident):
-    """Sends a direct message to the incident reminding them to close the incident if possible."""
+    """Sends a direct message to the incident commander reminding them to close the incident if possible."""
     message_text = "Incident Status Reminder"
     message_template = INCIDENT_STATUS_REMINDER
 
