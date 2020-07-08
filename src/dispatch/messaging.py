@@ -29,6 +29,7 @@ class MessageType(str, Enum):
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
+    incident_status_reminder = "incident-status-reminder"
     incident_participant_suggested_reading = "incident-participant-suggested-reading"
 
 
@@ -219,6 +220,11 @@ You can use `{{command}}` in the conversation to assist you in writing one.""".r
     "\n", " "
 ).strip()
 
+INCIDENT_STATUS_REMINDER_DESCRIPTION = """You have not updated the status for this incident recently. If the incident has been resolved,
+you can use `{{command}}` in the conversation to assist you in closing your incident.""".replace(
+    "\n", " "
+).strip()
+
 INCIDENT_TASK_NEW_DESCRIPTION = """
 The following incident task has been created in the incident document.\n\n*Description:* {{task_description}}\n\n*Assignees:* {{task_assignees|join(',')}}"""
 
@@ -394,6 +400,17 @@ INCIDENT_REPORT_REMINDER = [
         "text": INCIDENT_REPORT_REMINDER_DESCRIPTION,
     },
     INCIDENT_TITLE,
+]
+
+
+INCIDENT_STATUS_REMINDER = [
+    {
+        "title": "{{name}} Incident - Status Reminder",
+        "title_link": "{{ticket_weblink}}",
+        "text": INCIDENT_STATUS_REMINDER_DESCRIPTION,
+    },
+    INCIDENT_TITLE,
+    INCIDENT_STATUS,
 ]
 
 
