@@ -68,14 +68,14 @@ def update_task_status(
 
     # avoid external calls if we are already in the desired state
     if resolve and task.status == TaskStatus.resolved:
-        message = f"Task is already resolved."
+        message = "Task is already resolved."
         dispatch_slack_service.send_ephemeral_message(
             slack_client, action["container"]["channel_id"], user_id, message
         )
         return
 
     if not resolve and task.status == TaskStatus.open:
-        message = f"Task is already open."
+        message = "Task is already open."
         dispatch_slack_service.send_ephemeral_message(
             slack_client, action["container"]["channel_id"], user_id, message
         )
