@@ -597,7 +597,7 @@ def send_incident_resources_ephemeral_message_to_participant(
 
 def send_incident_close_reminder(incident: Incident):
     """Sends a direct message to the incident reminding them to close the incident if possible."""
-    message_text = f"Incident Status Reminder"
+    message_text = "Incident Status Reminder"
     message_template = INCIDENT_STATUS_REMINDER
 
     convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
