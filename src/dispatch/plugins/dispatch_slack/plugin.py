@@ -60,7 +60,7 @@ logger = logging.getLogger(__name__)
 
 command_mappings = {
     ConversationCommands.assign_role: SLACK_COMMAND_ASSIGN_ROLE_SLUG,
-    ConversationCommands.edit_incident: SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
+    ConversationCommands.update_incident: SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     ConversationCommands.engage_oncall: SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
     ConversationCommands.executive_report: SLACK_COMMAND_EXECUTIVE_REPORT_SLUG,
     ConversationCommands.list_participants: SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,

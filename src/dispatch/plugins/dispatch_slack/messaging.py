@@ -10,6 +10,7 @@ from jinja2 import Template
 
 from dispatch.messaging import (
     INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
+    INCIDENT_STATUS_REMINDER_DESCRIPTION,
     INCIDENT_TASK_LIST_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
     MessageType,
@@ -120,6 +121,7 @@ def get_template(message_type: MessageType):
             default_notification,
             INCIDENT_TASK_REMINDER_DESCRIPTION,
         ),
+        MessageType.incident_status_reminder: (default_notification, None,),
         MessageType.incident_task_list: (default_notification, INCIDENT_TASK_LIST_DESCRIPTION),
     }
 

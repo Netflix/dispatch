@@ -14,6 +14,7 @@ from dispatch.config import (
     INCIDENT_PLUGIN_EMAIL_SLUG,
     INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG,
 )
+from dispatch.conversation.enums import ConversationCommands
 from dispatch.database import SessionLocal
 from dispatch.enums import Visibility
 from dispatch.incident import service as incident_service
@@ -34,6 +35,7 @@ from dispatch.messaging import (
     INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_STATUS_CHANGE,
     INCIDENT_TYPE_CHANGE,
+    INCIDENT_STATUS_REMINDER,
     MessageType,
 )
 from dispatch.document import service as document_service
@@ -591,3 +593,32 @@ def send_incident_resources_ephemeral_message_to_participant(
     )
 
     log.debug(f"List of incident resources sent to {user_id} via ephemeral message.")
+
+
+def send_incident_close_reminder(incident: Incident):
+    """Sends a direct message to the incident commander reminding them to close the incident if possible."""
+    message_text = "Incident Status Reminder"
+    message_template = INCIDENT_STATUS_REMINDER
+
+    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
+    update_command = convo_plugin.get_command_name(ConversationCommands.update_incident)
+
+    items = [
+        {
+            "command": update_command,
+            "name": incident.name,
+            "ticket_weblink": incident.ticket.weblink,
+            "title": incident.title,
+            "status": incident.status,
+        }
+    ]
+
+    convo_plugin.send_direct(
+        incident.commander.email,
+        message_text,
+        message_template,
+        MessageType.incident_status_reminder,
+        items=items,
+    )
+
+    log.debug(f"Incident close reminder sent to {incident.commander.email}.")
