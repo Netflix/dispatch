@@ -129,6 +129,7 @@ def list_tasks(
                         "type": "mrkdwn",
                         "text": (
                             f"*Description:* <{task.weblink}|{task.description}>\n"
+                            f"*Creator:* <{task.creator.individual.email}>\n"
                             f"*Assignees:* {', '.join(assignees)}"
                         ),
                     },
