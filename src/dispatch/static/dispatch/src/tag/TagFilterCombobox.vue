@@ -68,6 +68,7 @@ export default {
         return cloneDeep(this.value)
       },
       set(value) {
+        this.search = null
         this._tags = value.map(v => {
           if (typeof v === "string") {
             v = {
@@ -77,7 +78,6 @@ export default {
           }
           return v
         })
-        this.search = null
         this.$emit("input", this._tags)
       }
     }

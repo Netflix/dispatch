@@ -65,6 +65,7 @@ export default {
         return cloneDeep(this.value)
       },
       set(value) {
+        this.search = null
         if (typeof value === "string") {
           let v = {
             slug: value
