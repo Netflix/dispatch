@@ -125,7 +125,7 @@ class GoogleDriveTaskPlugin(TaskPlugin):
         """Creates a new task."""
         pass
 
-    def update(self, file_id: str, task_id: str, content: str, resolved: bool = False):
+    def update(self, file_id: str, task_id: str, content: str = None, resolved: bool = False):
         """Updates an existing task."""
         client = get_service("drive", "v3", self.scopes)
         return add_reply(client, file_id, task_id, content, resolved)
