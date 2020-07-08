@@ -85,12 +85,12 @@ def update_task_status(
     # lets try in both the incident doc and PIR doc
     drive_task_plugin = plugins.get(INCIDENT_PLUGIN_TASK_SLUG)
 
-    # try:
-    file_id = task.incident.incident_document.resource_id
-    drive_task_plugin.update(file_id, external_task_id, resolved=resolve)
-    # except Exception as e:
-    #    file_id = task.incident.incident_review_document.resource_id
-    #    drive_task_plugin.update(file_id, external_task_id, resolved=resolve)
+    try:
+        file_id = task.incident.incident_document.resource_id
+        drive_task_plugin.update(file_id, external_task_id, resolved=resolve)
+    except Exception:
+        file_id = task.incident.incident_review_document.resource_id
+        drive_task_plugin.update(file_id, external_task_id, resolved=resolve)
 
     status = "resolved" if task.status == TaskStatus.open else "re-opened"
     message = f"Task successfully {status}."
