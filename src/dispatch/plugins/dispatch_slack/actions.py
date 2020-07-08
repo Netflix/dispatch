@@ -8,6 +8,7 @@ from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentUpdate, IncidentRead
+from dispatch.task.models import TaskStatus
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.report import flows as report_flows
 
@@ -45,6 +46,19 @@ def add_user_to_conversation(
         dispatch_slack_service.send_ephemeral_message(
             slack_client, action["container"]["channel_id"], user_id, message
         )
+
+
+@background_task
+def update_task_status(
+    user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
+):
+    """Updates a task based on user input."""
+    task = ""
+    status = "resolved" if task.status == TaskStatus.open else "re-opened"
+    message = f"Task has been successfully {status}."
+    dispatch_slack_service.send_ephemeral_message(
+        slack_client, action["container"]["channel_id"], user_id, message
+    )
 
 
 @background_task
@@ -97,6 +111,7 @@ def block_action_functions(action: str):
     """Interprets the action and routes it to the appropriate function."""
     action_mappings = {
         ConversationButtonActions.invite_user: [add_user_to_conversation],
+        ConversationButtonActions.update_task_status: [update_task_status],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc

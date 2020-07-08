@@ -10,6 +10,7 @@ from dispatch.plugins.base import plugins
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.task import service as task_service
 from dispatch.task.models import TaskStatus, Task
+from dispatch.conversation.enums import ConversationButtonActions
 
 from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
@@ -105,6 +106,7 @@ def list_tasks(
 ):
     """Returns the list of incident tasks to the user as an ephemeral message."""
     blocks = []
+
     for status in TaskStatus:
         blocks.append(
             {
@@ -112,6 +114,7 @@ def list_tasks(
                 "text": {"type": "mrkdwn", "text": f"*{status.value} Incident Tasks*"},
             }
         )
+        button_text = "Resolve" if status.value == TaskStatus.open else "Re-open"
 
         tasks = task_service.get_all_by_incident_id_and_status(
             db_session=db_session, incident_id=incident_id, status=status.value
@@ -122,6 +125,7 @@ def list_tasks(
 
         for task in tasks:
             assignees = [a.individual.email for a in task.assignees]
+
             blocks.append(
                 {
                     "type": "section",
@@ -132,6 +136,9 @@ def list_tasks(
                             f"*Creator:* <{task.creator.individual.email}>\n"
                             f"*Assignees:* {', '.join(assignees)}"
                         ),
+                        "button_text": button_text,
+                        "button_value": f"{task.resource_id}",
+                        "button_action": ConversationButtonActions.update_task_status,
                     },
                 }
             )
