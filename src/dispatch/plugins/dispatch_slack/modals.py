@@ -43,6 +43,10 @@ class UpdateNotificationsGroupCallbacks(str, Enum):
     submit_form = "update_notifications_group_submit_form"
 
 
+class AddTimelineEventCallbacks(str, Enum):
+    submit_form = "add_timeline_event_submit_form"
+
+
 def handle_modal_action(action: dict, background_tasks: BackgroundTasks):
     """Handles all modal actions."""
     view_data = action["view"]
@@ -482,3 +486,44 @@ def update_notifications_group_from_submitted_form(action: dict, db_session=None
     group_plugin = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
     group_plugin.add(incident.notifications_group.email, members_added)
     group_plugin.remove(incident.notifications_group.email, members_removed)
+
+
+def build_add_timeline_event_blocks(incident: Incident):
+    """Builds all blocks required to add an event to the incident timeline."""
+    modal_template = {
+        "type": "modal",
+        "title": {"type": "plain_text", "text": "Add Timeline Event"},
+        "blocks": [
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "plain_text",
+                        "text": "Use this form to add events to the incident timeline.",
+                    }
+                ],
+            },
+        ],
+        "close": {"type": "plain_text", "text": "Cancel"},
+        "submit": {"type": "plain_text", "text": "Add"},
+        "callback_id": AddTimelineEventCallbacks.submit_form,
+        "private_metadata": json.dumps({"incident_id": str(incident.id)}),
+    }
+
+    # TODO(mvilanova): add datepicker, timepicker, and description blocks
+
+    return modal_template
+
+
+@background_task
+def create_add_timeline_event_modal(incident_id: int, command: dict, db_session=None):
+    """Creates a modal for adding events to the incident timeline."""
+    trigger_id = command["trigger_id"]
+
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    modal_create_template = build_add_timeline_event_blocks(incident=incident)
+
+    dispatch_slack_service.open_modal_with_user(
+        client=slack_client, trigger_id=trigger_id, modal=modal_create_template
+    )
