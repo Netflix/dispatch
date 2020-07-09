@@ -75,6 +75,18 @@
           :loading="loading"
         ></incident-primary-team-bar-chart-card>
       </v-flex>
+      <v-flex lg6 sm6 xs12>
+        <incident-top-tags-donut-card
+          v-model="items"
+          :loading="loading"
+        ></incident-top-tags-donut-card>
+      </v-flex>
+      <v-flex lg6 sm6 xs12>
+        <incident-top-terms-donut-card
+          v-model="items"
+          :loading="loading"
+        ></incident-top-terms-donut-card>
+      </v-flex>
       <!-- Statistics Ends -->
     </v-layout>
   </v-container>
@@ -96,6 +108,8 @@ import IncidentForecastCard from "@/incident/IncidentForecastCard.vue"
 import IncidentHeatmapCard from "@/incident/IncidentHeatmapCard.vue"
 import IncidentPrimaryLocationBarChartCard from "@/incident/IncidentPrimaryLocationBarChartCard.vue"
 import IncidentPrimaryTeamBarChartCard from "@/incident/IncidentPrimaryTeamBarChartCard.vue"
+import IncidentTopTermsDonutCard from "@/incident/IncidentTopTermsDonut.vue"
+import IncidentTopTagsDonutCard from "@/incident/IncidentTopTagsDonut.vue"
 export default {
   name: "IncidentDashboard",
 
@@ -116,7 +130,9 @@ export default {
     IncidentPriorityBarChartCard,
     IncidentForecastCard,
     IncidentPrimaryLocationBarChartCard,
-    IncidentPrimaryTeamBarChartCard
+    IncidentPrimaryTeamBarChartCard,
+    IncidentTopTagsDonutCard,
+    IncidentTopTermsDonutCard
   },
 
   data() {
