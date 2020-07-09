@@ -34,6 +34,9 @@
               :loading="loading"
               loading-text="Loading... Please wait"
             >
+              <template v-slot:item.discoverable="{ item }">
+                <v-simple-checkbox v-model="item.discoverable" disabled></v-simple-checkbox>
+              </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
                   <template v-slot:activator="{ on }">
@@ -75,6 +78,7 @@ export default {
     return {
       headers: [
         { text: "Text", value: "text", sortable: true },
+        { text: "Discoverable", value: "discoverable", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
     }

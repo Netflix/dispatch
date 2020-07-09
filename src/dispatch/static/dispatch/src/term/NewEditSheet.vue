@@ -45,6 +45,13 @@
                 <definition-combobox v-model="definitions" />
               </v-flex>
             </v-layout>
+            <v-flex>
+              <v-checkbox
+                v-model="discoverable"
+                label="Discoverable"
+                hint="Is this term a common word or is it eligible for auto-detection?"
+              ></v-checkbox>
+            </v-flex>
           </v-container>
         </v-card-text>
       </v-card>
@@ -76,6 +83,7 @@ export default {
     ...mapFields("term", [
       "selected.text",
       "selected.definitions",
+      "selected.discoverable",
       "selected.id",
       "selected.loading",
       "dialogs.showCreateEdit"

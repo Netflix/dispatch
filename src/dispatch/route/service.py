@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 
 def get_terms(db_session, text: str) -> List[str]:
     """Get terms from request."""
-    all_terms = db_session.query(Term).all()
+    all_terms = db_session.query(Term).filter(Term.discoverable == True).all()  # noqa
     phrases = build_term_vocab([t.text for t in all_terms])
     matcher = build_phrase_matcher("dispatch-terms", phrases)
     extracted_terms = extract_terms_from_text(text, matcher)

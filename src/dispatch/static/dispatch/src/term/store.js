@@ -7,6 +7,7 @@ const getDefaultSelectedState = () => {
   return {
     definitions: [],
     text: null,
+    discoverable: true,
     id: null,
     loading: false
   }
