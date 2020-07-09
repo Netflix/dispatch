@@ -100,11 +100,11 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex>
-                <v-switch
+                <v-checkbox
                   v-model="discoverable"
                   label="Discoverable"
                   hint="Is this tag a common word or is it eligible for auto-detection?"
-                ></v-switch>
+                ></v-checkbox>
               </v-flex>
             </v-layout>
           </v-container>

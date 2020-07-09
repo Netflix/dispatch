@@ -1,5 +1,7 @@
 from typing import Optional
 
+from fastapi.encoders import jsonable_encoder
+
 from dispatch.definition import service as definition_service
 
 from .models import Term, TermCreate, TermUpdate
@@ -22,18 +24,26 @@ def create(*, db_session, term_in: TermCreate) -> Term:
         definition_service.upsert(db_session=db_session, definition_in=d)
         for d in term_in.definitions
     ]
-    term = Term(text=term_in.text, definitions=definitions)
+    term = Term(**term_in.dict(exclude={"definitions"}), definitions=definitions)
     db_session.add(term)
     db_session.commit()
     return term
 
 
 def update(*, db_session, term: Term, term_in: TermUpdate) -> Term:
+    term_data = jsonable_encoder(term)
     # we only allow updates to definition associations
     definitions = [
         definition_service.upsert(db_session=db_session, definition_in=d)
         for d in term_in.definitions
     ]
+
+    update_data = term_in.dict(skip_defaults=True, exclude={"definitions"})
+
+    for field in term_data:
+        if field in update_data:
+            setattr(term, field, update_data[field])
+
     term.definitions = definitions
 
     db_session.add(term)
