@@ -1,12 +1,15 @@
 import json
 import logging
 
+from datetime import datetime
 from enum import Enum
 from fastapi import BackgroundTasks
+from pytz import timezone
 from sqlalchemy.orm import Session
 
 from dispatch.config import INCIDENT_PLUGIN_GROUP_SLUG
 from dispatch.decorators import background_task
+from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus, IncidentSlackViewBlockId, NewIncidentSubmission
@@ -43,6 +46,13 @@ class UpdateNotificationsGroupCallbacks(str, Enum):
     submit_form = "update_notifications_group_submit_form"
 
 
+class AddTimelineEventBlockFields(str, Enum):
+    date = "date_field"
+    hour = "hour_field"
+    minute = "minute_field"
+    description = "description_field"
+
+
 class AddTimelineEventCallbacks(str, Enum):
     submit_form = "add_timeline_event_submit_form"
 
@@ -61,6 +71,7 @@ def handle_modal_action(action: dict, background_tasks: BackgroundTasks):
 def action_functions(action_id: str):
     """Determines which function needs to be run."""
     action_mappings = {
+        AddTimelineEventCallbacks.submit_form: [add_timeline_event_from_submitted_form],
         NewIncidentSubmission.form_slack_view: [report_incident_from_submitted_form],
         UpdateParticipantCallbacks.submit_form: [update_participant_from_submitted_form],
         UpdateParticipantCallbacks.update_view: [update_update_participant_modal],
@@ -94,6 +105,8 @@ def parse_submitted_form(view_data: dict):
                     "name": elem_key_value_pair.get("selected_option").get("text").get("text"),
                     "value": elem_key_value_pair.get("selected_option").get("value"),
                 }
+            elif elem_key_value_pair.get("selected_date"):
+                parsed_data[state] = elem_key_value_pair.get("selected_date")
             else:
                 parsed_data[state] = elem_key_value_pair.get("value")
 
@@ -103,7 +116,6 @@ def parse_submitted_form(view_data: dict):
 @background_task
 def report_incident_from_submitted_form(action: dict, db_session: Session = None):
     submitted_form = action.get("view")
-
     parsed_form_data = parse_submitted_form(submitted_form)
 
     requested_form_title = parsed_form_data.get(IncidentSlackViewBlockId.title)
@@ -499,7 +511,7 @@ def build_add_timeline_event_blocks(incident: Incident):
                 "elements": [
                     {
                         "type": "plain_text",
-                        "text": "Use this form to add events to the incident timeline.",
+                        "text": "Use this form to add an event to the incident timeline.",
                     }
                 ],
             },
@@ -510,7 +522,60 @@ def build_add_timeline_event_blocks(incident: Incident):
         "private_metadata": json.dumps({"incident_id": str(incident.id)}),
     }
 
-    # TODO(mvilanova): add datepicker, timepicker, and description blocks
+    date_picker_block = {
+        "type": "input",
+        "block_id": AddTimelineEventBlockFields.date,
+        "label": {"type": "plain_text", "text": "Date"},
+        "element": {"type": "datepicker"},
+    }
+    modal_template["blocks"].append(date_picker_block)
+
+    hour_picker_options = []
+    for h in range(0, 24):
+        hour_picker_options.append(create_block_option_from_template(text=h, value=str(h).zfill(2)))
+
+    hour_picker_block = {
+        "type": "input",
+        "block_id": AddTimelineEventBlockFields.hour,
+        "label": {"type": "plain_text", "text": "Hour"},
+        "element": {
+            "type": "static_select",
+            "placeholder": {"type": "plain_text", "text": "Select an hour"},
+            "options": hour_picker_options,
+        },
+    }
+    modal_template["blocks"].append(hour_picker_block)
+
+    minute_picker_options = []
+    for m in range(0, 60):
+        minute_picker_options.append(
+            create_block_option_from_template(text=m, value=str(m).zfill(2))
+        )
+
+    minute_picker_block = {
+        "type": "input",
+        "block_id": AddTimelineEventBlockFields.minute,
+        "label": {"type": "plain_text", "text": "Minute"},
+        "element": {
+            "type": "static_select",
+            "placeholder": {"type": "plain_text", "text": "Select a minute"},
+            "options": minute_picker_options,
+        },
+    }
+    modal_template["blocks"].append(minute_picker_block)
+
+    description_block = {
+        "type": "input",
+        "block_id": AddTimelineEventBlockFields.description,
+        "label": {"type": "plain_text", "text": "Description"},
+        "element": {
+            "type": "plain_text_input",
+            "action_id": AddTimelineEventBlockFields.description,
+            "placeholder": {"type": "plain_text", "text": "A description of the event."},
+            "multiline": True,
+        },
+    }
+    modal_template["blocks"].append(description_block)
 
     return modal_template
 
@@ -526,4 +591,39 @@ def create_add_timeline_event_modal(incident_id: int, command: dict, db_session=
 
     dispatch_slack_service.open_modal_with_user(
         client=slack_client, trigger_id=trigger_id, modal=modal_create_template
+    )
+
+
+@background_task
+def add_timeline_event_from_submitted_form(action: dict, db_session=None):
+    """Adds event to incident timeline based on submitted form data."""
+    user_email = action["user"]["email"]
+
+    submitted_form = action.get("view")
+    parsed_form_data = parse_submitted_form(submitted_form)
+
+    event_date = parsed_form_data.get(AddTimelineEventBlockFields.date)
+    event_hour = parsed_form_data.get(AddTimelineEventBlockFields.hour)["value"]
+    event_minute = parsed_form_data.get(AddTimelineEventBlockFields.minute)["value"]
+    event_description = parsed_form_data.get(AddTimelineEventBlockFields.description)
+
+    incident_id = action["view"]["private_metadata"]["incident_id"]
+
+    participant = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=incident_id, email=user_email
+    )
+
+    event_datetime = f"{event_date} {event_hour}:{event_minute}"
+    event_datetime_obj = datetime.strptime(event_datetime, "%Y-%m-%d %H:%M")
+    event_datetime_obj_utc = (
+        timezone("America/Los_Angeles").localize(event_datetime_obj).astimezone(timezone("Etc/UTC"))
+    )
+
+    event_service.log(
+        db_session=db_session,
+        source="Slack Plugin - Conversation Management",
+        started_at=event_datetime_obj_utc,
+        description=f'"{event_description}," said {participant.individual.name}',
+        incident_id=incident_id,
+        individual_id=participant.individual.id,
     )
