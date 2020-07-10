@@ -5,7 +5,6 @@ import pytz
 from datetime import datetime
 from enum import Enum
 from fastapi import BackgroundTasks
-from pytz import timezone
 from sqlalchemy.orm import Session
 
 from dispatch.config import INCIDENT_PLUGIN_GROUP_SLUG
@@ -52,6 +51,7 @@ class AddTimelineEventBlockFields(str, Enum):
     date = "date_field"
     hour = "hour_field"
     minute = "minute_field"
+    timezone = "timezone_field"
     description = "description_field"
 
 
@@ -570,6 +570,30 @@ def build_add_timeline_event_blocks(incident: Incident):
     }
     modal_template["blocks"].append(minute_picker_block)
 
+    timezone_block = {
+        "type": "input",
+        "block_id": AddTimelineEventBlockFields.timezone,
+        "label": {"type": "plain_text", "text": "Time Zone"},
+        "element": {
+            "type": "radio_buttons",
+            "initial_option": {
+                "value": "profile",
+                "text": {"type": "plain_text", "text": "Local time from Slack profile"},
+            },
+            "options": [
+                {
+                    "text": {"type": "plain_text", "text": "Local time from Slack profile"},
+                    "value": "profile",
+                },
+                {
+                    "text": {"type": "plain_text", "text": "Coordinated Universal Time (UTC)"},
+                    "value": "UTC",
+                },
+            ],
+        },
+    }
+    modal_template["blocks"].append(timezone_block)
+
     description_block = {
         "type": "input",
         "block_id": AddTimelineEventBlockFields.description,
@@ -577,8 +601,7 @@ def build_add_timeline_event_blocks(incident: Incident):
         "element": {
             "type": "plain_text_input",
             "action_id": AddTimelineEventBlockFields.description,
-            "placeholder": {"type": "plain_text", "text": "A description of the event."},
-            "multiline": True,
+            "placeholder": {"type": "plain_text", "text": "A description of the event"},
         },
         "optional": False,
     }
@@ -612,6 +635,7 @@ def add_timeline_event_from_submitted_form(action: dict, db_session=None):
     event_date = parsed_form_data.get(AddTimelineEventBlockFields.date)
     event_hour = parsed_form_data.get(AddTimelineEventBlockFields.hour)["value"]
     event_minute = parsed_form_data.get(AddTimelineEventBlockFields.minute)["value"]
+    event_timezone_selection = parsed_form_data.get(AddTimelineEventBlockFields.timezone)["value"]
     event_description = parsed_form_data.get(AddTimelineEventBlockFields.description)
 
     incident_id = action["view"]["private_metadata"]["incident_id"]
@@ -620,13 +644,14 @@ def add_timeline_event_from_submitted_form(action: dict, db_session=None):
         db_session=db_session, incident_id=incident_id, email=user_email
     )
 
-    participant_tz = "America/Los_Angeles"  # Default timezone in case we don't find it in the participant's Slack profile
-    participant_profile = get_user_profile_by_email(slack_client, user_email)
-    if participant_profile.get("tz"):
-        participant_tz = participant_profile.get("tz")
+    event_timezone = event_timezone_selection
+    if event_timezone_selection == "profile":
+        participant_profile = get_user_profile_by_email(slack_client, user_email)
+        if participant_profile.get("tz"):
+            event_timezone = participant_profile.get("tz")
 
     event_dt = datetime.fromisoformat(f"{event_date}T{event_hour}:{event_minute}")
-    event_dt_utc = timezone(participant_tz).localize(event_dt).astimezone(pytz.utc)
+    event_dt_utc = pytz.timezone(event_timezone).localize(event_dt).astimezone(pytz.utc)
 
     event_service.log(
         db_session=db_session,
