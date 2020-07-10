@@ -15,3 +15,4 @@ class ConversationCommands(str, Enum):
 
 class ConversationButtonActions(str, Enum):
     invite_user = "invite-user"
+    update_task_status = "update-task-status"

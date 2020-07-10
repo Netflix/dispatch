@@ -1,14 +1,19 @@
 from fastapi import BackgroundTasks
 
+from dispatch.config import INCIDENT_PLUGIN_TASK_SLUG
+
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.conversation.service import get_by_channel_id
 from dispatch.database import SessionLocal
 from dispatch.decorators import background_task
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
+from dispatch.task import service as task_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentUpdate, IncidentRead
+from dispatch.task.models import TaskStatus
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.plugins.base import plugins
 from dispatch.report import flows as report_flows
 
 from .config import (
@@ -45,6 +50,53 @@ def add_user_to_conversation(
         dispatch_slack_service.send_ephemeral_message(
             slack_client, action["container"]["channel_id"], user_id, message
         )
+
+
+@background_task
+def update_task_status(
+    user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
+):
+    """Updates a task based on user input."""
+    action_type, external_task_id = action["actions"][0]["value"].split("-")
+
+    resolve = True
+    if action_type == "reopen":
+        resolve = False
+
+    # we only update the external task allowing syncing to care of propagation to dispatch
+    task = task_service.get_by_resource_id(db_session=db_session, resource_id=external_task_id)
+
+    # avoid external calls if we are already in the desired state
+    if resolve and task.status == TaskStatus.resolved:
+        message = "Task is already resolved."
+        dispatch_slack_service.send_ephemeral_message(
+            slack_client, action["container"]["channel_id"], user_id, message
+        )
+        return
+
+    if not resolve and task.status == TaskStatus.open:
+        message = "Task is already open."
+        dispatch_slack_service.send_ephemeral_message(
+            slack_client, action["container"]["channel_id"], user_id, message
+        )
+        return
+
+    # we don't currently have a good way to get the correct file_id (we don't store a task <-> relationship)
+    # lets try in both the incident doc and PIR doc
+    drive_task_plugin = plugins.get(INCIDENT_PLUGIN_TASK_SLUG)
+
+    try:
+        file_id = task.incident.incident_document.resource_id
+        drive_task_plugin.update(file_id, external_task_id, resolved=resolve)
+    except Exception:
+        file_id = task.incident.incident_review_document.resource_id
+        drive_task_plugin.update(file_id, external_task_id, resolved=resolve)
+
+    status = "resolved" if task.status == TaskStatus.open else "re-opened"
+    message = f"Task successfully {status}."
+    dispatch_slack_service.send_ephemeral_message(
+        slack_client, action["container"]["channel_id"], user_id, message
+    )
 
 
 @background_task
@@ -97,6 +149,7 @@ def block_action_functions(action: str):
     """Interprets the action and routes it to the appropriate function."""
     action_mappings = {
         ConversationButtonActions.invite_user: [add_user_to_conversation],
+        ConversationButtonActions.update_task_status: [update_task_status],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc

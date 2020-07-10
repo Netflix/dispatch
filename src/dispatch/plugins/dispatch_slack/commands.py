@@ -10,6 +10,7 @@ from dispatch.plugins.base import plugins
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.task import service as task_service
 from dispatch.task.models import TaskStatus, Task
+from dispatch.conversation.enums import ConversationButtonActions
 
 from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
@@ -105,6 +106,7 @@ def list_tasks(
 ):
     """Returns the list of incident tasks to the user as an ephemeral message."""
     blocks = []
+
     for status in TaskStatus:
         blocks.append(
             {
@@ -112,6 +114,8 @@ def list_tasks(
                 "text": {"type": "mrkdwn", "text": f"*{status.value} Incident Tasks*"},
             }
         )
+        button_text = "Resolve" if status.value == TaskStatus.open else "Re-open"
+        action_type = "resolve" if status.value == TaskStatus.open else "reopen"
 
         tasks = task_service.get_all_by_incident_id_and_status(
             db_session=db_session, incident_id=incident_id, status=status.value
@@ -120,8 +124,9 @@ def list_tasks(
         if by_creator or by_assignee:
             tasks = filter_tasks_by_assignee_and_creator(tasks, by_assignee, by_creator)
 
-        for task in tasks:
-            assignees = [a.individual.email for a in task.assignees]
+        for idx, task in enumerate(tasks):
+            assignees = [f"<{a.individual.weblink}|{a.individual.name}>" for a in task.assignees]
+
             blocks.append(
                 {
                     "type": "section",
@@ -129,9 +134,15 @@ def list_tasks(
                         "type": "mrkdwn",
                         "text": (
                             f"*Description:* <{task.weblink}|{task.description}>\n"
-                            f"*Creator:* <{task.creator.individual.email}>\n"
+                            f"*Creator:* <{task.creator.individual.weblink}|{task.creator.individual.name}>\n"
                             f"*Assignees:* {', '.join(assignees)}"
                         ),
+                    },
+                    "block_id": f"{ConversationButtonActions.update_task_status}-{task.status}-{idx}",
+                    "accessory": {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": button_text},
+                        "value": f"{action_type}-{task.resource_id}",
                     },
                 }
             )
