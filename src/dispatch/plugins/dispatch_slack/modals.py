@@ -1,5 +1,6 @@
 import json
 import logging
+import pytz
 
 from datetime import datetime
 from enum import Enum
@@ -22,6 +23,7 @@ from dispatch.plugins.base import plugins
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from .messaging import create_incident_reported_confirmation_msg
+from .service import get_user_profile_by_email
 
 
 slack_client = dispatch_slack_service.create_slack_client()
@@ -527,12 +529,14 @@ def build_add_timeline_event_blocks(incident: Incident):
         "block_id": AddTimelineEventBlockFields.date,
         "label": {"type": "plain_text", "text": "Date"},
         "element": {"type": "datepicker"},
+        "optional": False,
     }
     modal_template["blocks"].append(date_picker_block)
 
     hour_picker_options = []
     for h in range(0, 24):
-        hour_picker_options.append(create_block_option_from_template(text=h, value=str(h).zfill(2)))
+        h = str(h).zfill(2)
+        hour_picker_options.append(create_block_option_from_template(text=f"{h}:00", value=h))
 
     hour_picker_block = {
         "type": "input",
@@ -543,6 +547,7 @@ def build_add_timeline_event_blocks(incident: Incident):
             "placeholder": {"type": "plain_text", "text": "Select an hour"},
             "options": hour_picker_options,
         },
+        "optional": False,
     }
     modal_template["blocks"].append(hour_picker_block)
 
@@ -561,6 +566,7 @@ def build_add_timeline_event_blocks(incident: Incident):
             "placeholder": {"type": "plain_text", "text": "Select a minute"},
             "options": minute_picker_options,
         },
+        "optional": False,
     }
     modal_template["blocks"].append(minute_picker_block)
 
@@ -574,6 +580,7 @@ def build_add_timeline_event_blocks(incident: Incident):
             "placeholder": {"type": "plain_text", "text": "A description of the event."},
             "multiline": True,
         },
+        "optional": False,
     }
     modal_template["blocks"].append(description_block)
 
@@ -613,16 +620,18 @@ def add_timeline_event_from_submitted_form(action: dict, db_session=None):
         db_session=db_session, incident_id=incident_id, email=user_email
     )
 
-    event_datetime = f"{event_date} {event_hour}:{event_minute}"
-    event_datetime_obj = datetime.strptime(event_datetime, "%Y-%m-%d %H:%M")
-    event_datetime_obj_utc = (
-        timezone("America/Los_Angeles").localize(event_datetime_obj).astimezone(timezone("Etc/UTC"))
-    )
+    participant_tz = "America/Los_Angeles"  # Default timezone in case we don't find it in the participant's Slack profile
+    participant_profile = get_user_profile_by_email(slack_client, user_email)
+    if participant_profile.get("tz"):
+        participant_tz = participant_profile.get("tz")
+
+    event_dt = datetime.fromisoformat(f"{event_date}T{event_hour}:{event_minute}")
+    event_dt_utc = timezone(participant_tz).localize(event_dt).astimezone(pytz.utc)
 
     event_service.log(
         db_session=db_session,
         source="Slack Plugin - Conversation Management",
-        started_at=event_datetime_obj_utc,
+        started_at=event_dt_utc,
         description=f'"{event_description}," said {participant.individual.name}',
         incident_id=incident_id,
         individual_id=participant.individual.id,
