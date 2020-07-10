@@ -36,50 +36,6 @@ The `Slack` plugin relies on the [Events API](https://api.slack.com/events-api) 
 
 > Do not allow threaded messages in incident channels.
 
-#### `SLACK_COMMAND_MARK_ACTIVE_SLUG` \[default: '/dispatch-mark-active'\] \[DEPRECATED\]
-
-> Active command as displayed in Slack.
-
-#### `SLACK_COMMAND_MARK_STABLE_SLUG` \[default: '/dispatch-mark-stable'\] \[DEPRECATED\]
-
-> Stable command as displayed in Slack.
-
-#### `SLACK_COMMAND_MARK_CLOSED_SLUG` \[default: '/dispatch-mark-closed'\] \[DEPRECATED\]
-
-> Close command as displayed in Slack.
-
-#### `SLACK_COMMAND_STATUS_REPORT_SLUG` \[default: '/dispatch-status-report'\]
-
-> Status report command as displayed in Slack.
-
-#### `SLACK_COMMAND_LIST_TASKS_SLUG` \[default: '/dispatch-list-tasks'\]
-
-> List tasks command as displayed in Slack.
-
-#### `SLACK_COMMAND_LIST_MY_TASKS_SLUG` \[default: '/dispatch-list-my-tasks'\]
-
-> List tasks for the requesting user command as displayed in Slack.
-
-#### `SLACK_COMMAND_LIST_PARTICIPANTS_SLUG` \[default: '/dispatch-list-participants'\]
-
-> List participants command as displayed in Slack.
-
-#### `SLACK_COMMAND_ASSIGN_ROLE` \[default: '/dispatch-assign-role'\]
-
-> Assign role command as displayed in Slack.
-
-#### `SLACK_COMMAND_UPDATE_INCIDENT` \[default: '/dispatch-update-incident'\]
-
-> Update incident command as displayed in Slack.
-
-#### `SLACK_COMMAND_ENGAGE_ONCALL` \[default: '/dispatch-engage-oncall'\]
-
-> Engage oncall command as displayed in Slack.
-
-#### `SLACK_COMMAND_LIST_RESOURCES` \[default: '/dispatch-list-resources'\]
-
-> List resources command as displayed in Slack.
-
 #### `SLACK_PROFILE_DEPARTMENT_FIELD_ID`
 
 > Specifies the profile field ID where Department is mapped
@@ -91,6 +47,60 @@ The `Slack` plugin relies on the [Events API](https://api.slack.com/events-api) 
 #### `SLACK_PROFILE_WEBLINK_FIELD_ID`
 
 > Specifies the profile field ID where the weblink is mapped
+
+### Commands
+
+#### `SLACK_COMMAND_TACTICAL_REPORT_SLUG` \[default: '/dispatch-tactical-report'\]
+
+> Opens a dialog to write a tactical report.
+
+#### `SLACK_COMMAND_EXECUTIVE_REPORT_SLUG` \[default: '/dispatch-executive-report'\]
+
+> Opens a dialog to write an executive report.
+
+#### `SLACK_COMMAND_LIST_TASKS_SLUG` \[default: '/dispatch-list-tasks'\]
+
+> Sends an ephemeral message with the list of open and resolved incident tasks.
+
+#### `SLACK_COMMAND_LIST_MY_TASKS_SLUG` \[default: '/dispatch-list-my-tasks'\]
+
+> Sends an ephemeral message with the list of your open and resolved incident tasks.
+
+#### `SLACK_COMMAND_LIST_PARTICIPANTS_SLUG` \[default: '/dispatch-list-participants'\]
+
+> Sends an ephemeral message with the list of incident participants.
+
+#### `SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG` \[default: '/dispatch-update-participant'\]
+
+> Opens a dialog to update participant metadata.
+
+#### `SLACK_COMMAND_ASSIGN_ROLE` \[default: '/dispatch-assign-role'\]
+
+> Opens a dialog for assigning a role to a participant.
+
+#### `SLACK_COMMAND_UPDATE_INCIDENT` \[default: '/dispatch-update-incident'\]
+
+> Opens a dialog to update the incident.
+
+#### `SLACK_COMMAND_ENGAGE_ONCALL` \[default: '/dispatch-engage-oncall'\]
+
+> Opens a dialog to engage an oncall person.
+
+#### `SLACK_COMMAND_LIST_RESOURCES` \[default: '/dispatch-list-resources'\]
+
+> Sends an ephemeral message with the list of all incident resources.
+
+#### `SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG` \[default: '/dispatch-notifications-group'\]
+
+> Opens a dialog to edit the notifications group.
+
+#### `SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG` \[default: '/dispatch-add-timeline-event'\]
+
+> Opens a dialog to add an event to the incident timeline.
+
+#### `SLACK_COMMAND_REPORT_INCIDENT_SLUG` \[default: '/dispatch-report-incident'\]
+
+> Opens a dialog to report an incident. This command can be run from non-incident channels where the Dispatch bot is a member of.
 
 ## Event Subscriptions
 

@@ -18,6 +18,7 @@ from dispatch.messaging import (
 )
 
 from .config import (
+    SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG,
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
     SLACK_COMMAND_EXECUTIVE_REPORT_SLUG,
@@ -86,6 +87,10 @@ INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
     SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG: {
         "response_type": "ephemeral",
         "text": "Opening a dialog to update the membership of the notifications group...",
+    },
+    SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG: {
+        "response_type": "ephemeral",
+        "text": "Opening a dialog to add an event to the incident timeline...",
     },
 }
 
