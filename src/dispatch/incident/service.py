@@ -241,6 +241,10 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
     for t in incident_in.terms:
         terms.append(term_service.get_or_create(db_session=db_session, term_in=TermUpdate(**t)))
 
+    duplicates = []
+    for d in incident_in.duplicates:
+        duplicates.append(get(db_session=db_session, incident_id=d.id))
+
     update_data = incident_in.dict(
         skip_defaults=True,
         exclude={
@@ -252,6 +256,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
             "visibility",
             "tags",
             "terms",
+            "duplicates",
         },
     )
 
@@ -260,6 +265,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
 
     incident.terms = terms
     incident.tags = tags
+    incident.duplicates = duplicates
 
     incident.status = incident_in.status
     incident.visibility = incident_in.visibility

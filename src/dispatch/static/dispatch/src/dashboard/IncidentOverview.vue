@@ -146,7 +146,7 @@ export default {
   methods: {
     update(data) {
       this.items = filter(data, function(item) {
-        return !item.incident_type.exclude_from_metrics
+        return !item.incident_type.exclude_from_metrics && !item.duplicates.length
       })
     },
     setLoading(data) {
