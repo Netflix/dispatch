@@ -70,6 +70,7 @@ from .messaging import (
     send_incident_review_document_notification,
     send_incident_welcome_participant_messages,
     send_incident_suggested_reading_messages,
+    get_suggested_document_items,
 )
 from .models import Incident, IncidentStatus
 
@@ -592,6 +593,8 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             incident_id=incident.id,
         )
 
+    suggested_document_items = get_suggested_document_items(incident, db_session)
+
     for participant in incident.participants:
         # we announce the participant in the conversation
         # should protect ourselves from failures of any one participant
@@ -606,8 +609,9 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             )
 
             send_incident_suggested_reading_messages(
-                participant.individual.email, incident.id, db_session
+                incident, suggested_document_items, participant.email
             )
+
         except Exception as e:
             log.exception(e)
             sentry_sdk.capture_exception(e)
