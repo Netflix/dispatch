@@ -58,7 +58,8 @@ export default {
     },
     label: {
       type: String,
-      defualt: "Add Incidents"
+      default: "Add Incidents"
+
     }
   },
   data() {
