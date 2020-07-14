@@ -626,6 +626,18 @@ class IncidentFactory(BaseFactory):
     title = FuzzyText()
     description = FuzzyText()
     status = FuzzyChoice(["Active", "Stable", "Closed"])
+    cost = Sequence(lambda n: f"10000{n}")
+
+    incident_type = SubFactory(IncidentTypeFactory)
+    incident_priority = SubFactory(IncidentPriorityFactory)
+    # commander = SubFactory(ContactBaseFactory)
+    # reporter = SubFactory(ContactBaseFactory)
+    conversation = SubFactory(ConversationFactory)
+    # incident_document = SubFactory(DocumentFactory)
+    storage = SubFactory(StorageFactory)
+    # Note circular usage between Conference and Incident. Use an absolute import.
+    # https://factoryboy.readthedocs.io/en/latest/reference.html#circular-imports
+    conference = SubFactory('tests.factories.ConferenceFactory')
 
     class Meta:
         """Factory Configuration."""
@@ -681,4 +693,5 @@ class ConferenceFactory(ResourceBaseFactory):
 
     conference_id = Sequence(lambda n: f"conference{n}")
     conference_challenge = FuzzyText()
-    incident = SubFactory(IncidentFactory)
+    # Setting 'conference' to None handles our circular usage carefully.
+    incident = SubFactory(IncidentFactory, conference=None)
