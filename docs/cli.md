@@ -205,6 +205,12 @@ The `upgrade` and `downgrade` commands manage how `alembic` database migrations 
 > dispatch database upgrade
 ```
 
+### Restore/Dump
+
+The `restore` and `dump` commands allow you to quickly backup and restore the Dispatch database. They can also be used to load our [example](https://github.com/Netflix/dispatch/blob/develop/data/dispatch-sample-data.dump) data set into your Dispatch installation.
+
+Today, the `.dump` file must be located in `$CWD` and must be named `dispatch-backup.dump`
+
 ## Plugins
 
 The `plugin` command contains all of the logic for dealing with Dispatch's plugins.

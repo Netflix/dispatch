@@ -31,3 +31,4 @@ By default Dispatch ships with Jira support. Each Jira installation is unique, s
 ## `JIRA_ISSUE_TYPE_ID` \[Required\]
 
 > Id for Jira issue type.
+

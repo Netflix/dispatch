@@ -13,3 +13,4 @@ By default, Dispatch ships with support for Opsgenie. Below, is how to configure
 ## `OPSGENIE_TEAM_ID` \[Required\]
 
 > Id for the Opsgenie team.
+

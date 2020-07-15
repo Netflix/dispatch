@@ -25,3 +25,4 @@ By default Dispatch ships with Zoom conference support. The Zoom plugin creates 
 To create the API Keys required for the Zoom plugin, navigate to the Zoom Marketplace and [create an App](https://marketplace.zoom.us/develop/create). Make sure you are logged in as the user that you wish to tie the API credentials to.
 
 Create a `JWT` application to generate the JWT API Key and Secret. Make sure to set the `Intent to publish: No`.
+

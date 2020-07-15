@@ -240,3 +240,4 @@ Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispa
 #### `INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT` \[default: 'google-docs-incident-review-document'\]
 
 > Controls the resource type to use for the incident review document.
+
