@@ -78,7 +78,7 @@ groups:read
 
 ## Dispatch Configuration
 
-#### `SLACK_WORKSPACE_NAME \[Required. Secret: True\]`
+#### `SLACK_WORKSPACE_NAME` \[Required. Secret: True\]
 
 > Specifies the name of the workspace the Slack app is installed in. This is typically the subdomain provided by Slack. For example, if your Slack workspace is accessible at `example.slack.com`, you would set your workspace name to `example`.
 
@@ -102,7 +102,7 @@ groups:read
 
 > Do not allow threaded messages in incident channels.
 
-#### `SLACK_TIMELINE_EVENT_REACTION` \[Optional. Default: stopwatch\]
+#### `SLACK_TIMELINE_EVENT_REACTION` \[Optional. Default: 'stopwatch'\]
 
 > Specifies the reaction used for adding Slack messages posted the incident channel to the incident timeline.
 
