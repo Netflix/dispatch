@@ -6,4 +6,5 @@ factory-boy
 faker
 flake8
 pytest
+pytest-mock
 vulture
