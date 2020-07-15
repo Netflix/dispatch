@@ -8,7 +8,7 @@ By default Dispatch ships with support for resolving oncall schedules via the Pa
 
 ## `PAGERDUTY_API_KEY` \[Required. Secret: True\]
 
-> PagerDuty API Key.
+> PagerDuty API key.
 
 ## `PAGERDUTY_API_FROM_EMAIL` \[Required\]
 
