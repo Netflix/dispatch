@@ -4,10 +4,11 @@ description: Configuration options for the Slack plugin.
 
 # Configuring Slack
 
-By default, Dispatch ships with support for Slack. Below, is how to configure the Slack plugin to work with `Dispatch`.
 
 {% hint style="info" %}
-The `Slack` plugin relies on the [Events API](https://api.slack.com/events-api) to receive events for the event types the app is subscribed to. `Dispatch` receives these events at the `/api/v1/events/slack/event` API endpoint. Slack will also send Web requests to the `/api/v1/events/slack/command` and `/api/v1/events/slack/action` API endpoints for slash \(`/`\) commands and interactive components like dialogs and modals. These endpoints must be publicly available in order for the `Dispatch` Slack app to work correctly.
+Dispatch ships with support for Slack. Below, is how to configure the Slack plugin to work with `Dispatch`. This plugin is required for core functionality.
+
+The plugin relies on the [Events API](https://api.slack.com/events-api) to receive events for the event types the app is subscribed to. `Dispatch` receives these events at the `/api/v1/events/slack/event` API endpoint. Slack will also send Web requests to the `/api/v1/events/slack/command` and `/api/v1/events/slack/action` API endpoints for slash \(`/`\) commands and interactive components like dialogs and modals. These endpoints must be publicly available in order for the `Dispatch` Slack app to work correctly.
 {% endhint %}
 
 ## Slack Configuration
