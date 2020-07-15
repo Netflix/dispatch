@@ -10,15 +10,15 @@ By default Dispatch ships with Zoom conference support. The Zoom plugin creates 
 
 ## `ZOOM_API_USER_ID`
 
-> Email / User ID attached to the JWT credentials
+> Email / User ID attached to the JWT credentials.
 
 ## `ZOOM_API_KEY`
 
-> JWT API Key
+> JWT API Key.
 
 ## `ZOOM_API_SECRET` \[secret: True\]
 
-> JWT API Secret
+> JWT API Secret.
 
 ## Create the Zoom Application for your API Keys
 
