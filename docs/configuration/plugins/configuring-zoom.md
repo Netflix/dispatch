@@ -5,7 +5,7 @@ description: Configuration options for the Zoom plugin.
 # Configuring Zoom
 
 {% hint style="info" %}
-By default Dispatch ships with Zoom conference support. The Zoom plugin creates a conference call with a valid time of 6 weeks and generates a password to protect the call. The Web URL returned by the plugin to the messaging is created such that you just need to click it and not worry about entering the password.
+Dispatch ships with Zoom conference support. The Zoom plugin creates a conference call with a valid time of 6 weeks and generates a password to protect the call. The Web URL returned by the plugin to the messaging is created such that you just need to click it and not worry about entering the password. This plugin is not required for core functionality, however a plugin of type `conference` must always be enabled.
 {% endhint %}
 
 ## `ZOOM_API_USER_ID` \[Required. Secret: True\]
