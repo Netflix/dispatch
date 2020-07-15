@@ -10,6 +10,6 @@ By default, Dispatch ships with support for Opsgenie. Below, is how to configure
 
 > Opsgenie API key.
 
-## ``OPSGENIE_TEAM_ID \[Required\]
+## `OPSGENIE_TEAM_ID` \[Required\]
 
 > Id for the Opsgenie team.
