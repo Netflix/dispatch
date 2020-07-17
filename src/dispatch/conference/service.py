@@ -3,21 +3,6 @@ from typing import Optional, List
 from .models import Conference, ConferenceCreate
 
 
-def get_default_conference(*, db_session) -> Conference:
-    """Fetch a placeholder conference object."""
-    default = (
-        db_session.query(Conference).filter(Conference.default == True)  # noqa
-    ).one_or_none()
-
-    if not default:
-        default = Conference(default=True)
-        db_session.add(default)
-        db_session.commit()
-        db_session.flush(default)
-
-    return default
-
-
 def get(*, db_session, conference_id: int) -> Optional[Conference]:
     """Fetch a conference by it's `conference_id`."""
     return db_session.query(Conference).filter(Conference.id == conference_id).one()

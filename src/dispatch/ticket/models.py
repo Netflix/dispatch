@@ -16,7 +16,6 @@ class Ticket(Base, ResourceMixin):
 # Pydantic models...
 class TicketBase(DispatchBase):
     resource_id: Optional[str]
-    default: bool
     resource_type: Optional[str]
     weblink: Optional[str]
 

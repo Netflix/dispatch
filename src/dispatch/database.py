@@ -3,6 +3,7 @@ import logging
 import json
 from typing import Any, List
 from itertools import groupby
+import functools
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
@@ -26,6 +27,19 @@ def resolve_table_name(name):
     """Resolves table names to their mapped names."""
     names = re.split("(?=[A-Z])", name)  # noqa
     return "_".join([x.lower() for x in names if x])
+
+
+raise_attribute_error = object()
+
+
+def resolve_attr(obj, attr, default=raise_attribute_error):
+    """Attempts to access attr via dotted notation, returns none if attr does not exist."""
+    try:
+        return functools.reduce(getattr, attr.split("."), obj)
+    except AttributeError:
+        if default != raise_attribute_error:
+            return default
+        raise
 
 
 class CustomBase:

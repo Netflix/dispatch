@@ -27,7 +27,7 @@ from dispatch.conference import service as conference_service
 from dispatch.conference.models import ConferenceCreate
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.models import ConversationCreate
-from dispatch.database import SessionLocal
+from dispatch.database import SessionLocal, resolve_attr
 from dispatch.decorators import background_task
 from dispatch.document import service as document_service
 from dispatch.document.models import DocumentCreate
@@ -73,7 +73,7 @@ log = logging.getLogger(__name__)
 
 def get_incident_participants(incident: Incident, db_session: SessionLocal):
     """Get additional incident participants based on priority, type, and description."""
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="document-resolver")
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant")
     individual_contacts, team_contacts = plugin.instance.get(
         incident.incident_type,
         incident.incident_priority,
@@ -148,10 +148,10 @@ def update_external_incident_ticket(
         incident.status.lower(),
         incident.commander.email,
         incident.reporter.email,
-        incident.conversation.weblink,
-        incident.incident_document.weblink,
-        incident.storage.weblink,
-        incident.conference.weblink,
+        resolve_attr(incident, "conversation.weblink", None),
+        resolve_attr(incident, "incident_document.weblink", None),
+        resolve_attr(incident, "storage.weblink", None),
+        resolve_attr(incident, "conference.weblink", None),
         incident.cost,
         incident_type_plugin_metadata=incident_type_plugin_metadata,
     )
@@ -349,43 +349,6 @@ def set_conversation_topic(incident: Incident, db_session: SessionLocal):
     plugin.instance.set_topic(incident.conversation.channel_id, conversation_topic)
 
 
-def update_document(
-    document_id: str,
-    name: str,
-    priority: str,
-    status: str,
-    type: str,
-    title: str,
-    description: str,
-    commander_fullname: str,
-    conversation_weblink: str,
-    document_weblink: str,
-    storage_weblink: str,
-    ticket_weblink: str,
-    db_session: SessionLocal,
-    conference_weblink: str = None,
-    conference_challenge: str = None,
-):
-    """Update external collaboration document."""
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="document")
-    plugin.instance.update(
-        document_id,
-        name=name,
-        priority=priority,
-        status=status,
-        type=type,
-        title=title,
-        description=description,
-        commander_fullname=commander_fullname,
-        conversation_weblink=conversation_weblink,
-        document_weblink=document_weblink,
-        storage_weblink=storage_weblink,
-        ticket_weblink=ticket_weblink,
-        conference_weblink=conference_weblink,
-        conference_challenge=conference_challenge,
-    )
-
-
 def add_participant_to_conversation(
     participant_email: str, incident_id: int, db_session: SessionLocal
 ):
@@ -452,44 +415,57 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     # we create the participant groups (tactical and notification)
     individual_participants = [x.individual for x in incident.participants]
-    tactical_group, notification_group = create_participant_groups(
-        incident, individual_participants, team_participants, db_session
-    )
+    participant_emails = [x.individual.email for x in incident.participants]
 
-    for g in [tactical_group, notification_group]:
-        group_in = GroupCreate(
-            name=g["name"],
-            email=g["email"],
-            resource_type=g["resource_type"],
-            resource_id=g["resource_id"],
-            weblink=g["weblink"],
+    group_plugin = plugin_service.get_active(db_session=db_session, plugin_type="group")
+    tactical_group = None
+    notification_group = None
+    if group_plugin:
+        tactical_group, notification_group = create_participant_groups(
+            incident, individual_participants, team_participants, db_session
         )
-        incident.groups.append(group_service.create(db_session=db_session, group_in=group_in))
 
-    event_service.log(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description="Tactical and notification groups added to incident",
-        incident_id=incident.id,
-    )
+        for g in [tactical_group, notification_group]:
+            group_in = GroupCreate(
+                name=g["name"],
+                email=g["email"],
+                resource_type=g["resource_type"],
+                resource_id=g["resource_id"],
+                weblink=g["weblink"],
+            )
+            incident.groups.append(group_service.create(db_session=db_session, group_in=group_in))
 
-    # we create storage resource
-    storage = create_incident_storage(
-        incident, [tactical_group["email"], notification_group["email"]], db_session
-    )
-    incident.storage = storage_service.create(
-        db_session=db_session,
-        resource_id=storage["resource_id"],
-        resource_type=storage["resource_type"],
-        weblink=storage["weblink"],
-    )
+        event_service.log(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description="Tactical and notification groups added to incident",
+            incident_id=incident.id,
+        )
 
-    event_service.log(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description="Storage added to incident",
-        incident_id=incident.id,
-    )
+    storage_plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
+    if storage_plugin:
+        # we create storage resource
+        if group_plugin:
+            storage = create_incident_storage(
+                incident, [tactical_group["email"], notification_group["email"]], db_session
+            )
+        else:
+            # we don't have a group so add participants directly
+            storage = create_incident_storage(incident, participant_emails, db_session)
+
+        incident.storage = storage_service.create(
+            db_session=db_session,
+            resource_id=storage["resource_id"],
+            resource_type=storage["resource_type"],
+            weblink=storage["weblink"],
+        )
+
+        event_service.log(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description="Storage added to incident",
+            incident_id=incident.id,
+        )
 
     # we create the incident documents
     collab_documents = create_collaboration_documents(incident, db_session)
@@ -512,73 +488,85 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         incident_id=incident.id,
     )
 
-    conference = create_conference(incident, [tactical_group["email"]], db_session)
+    conference_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conference")
+    if conference_plugin:
+        if group_plugin:
+            conference = create_conference(incident, [tactical_group["email"]], db_session)
+        else:
+            # we don't have a group to manage this resource
+            conference = create_conference(incident, participant_emails, db_session)
 
-    conference_in = ConferenceCreate(
-        resource_id=conference["resource_id"],
-        resource_type=conference["resource_type"],
-        weblink=conference["weblink"],
-        conference_id=conference["id"],
-        conference_challenge=conference["challenge"],
-    )
-    incident.conference = conference_service.create(
-        db_session=db_session, conference_in=conference_in
-    )
+        conference_in = ConferenceCreate(
+            resource_id=conference["resource_id"],
+            resource_type=conference["resource_type"],
+            weblink=conference["weblink"],
+            conference_id=conference["id"],
+            conference_challenge=conference["challenge"],
+        )
+        incident.conference = conference_service.create(
+            db_session=db_session, conference_in=conference_in
+        )
 
-    event_service.log(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description="Conference added to incident",
-        incident_id=incident.id,
-    )
+        event_service.log(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description="Conference added to incident",
+            incident_id=incident.id,
+        )
 
     # we create the conversation for real-time communications
-    participant_emails = [x.individual.email for x in incident.participants]
-    conversation = create_conversation(incident, participant_emails, db_session)
 
-    conversation_in = ConversationCreate(
-        resource_id=conversation["resource_id"],
-        resource_type=conversation["resource_type"],
-        weblink=conversation["weblink"],
-        channel_id=conversation["id"],
+    conversation_plugin = plugin_service.get_active(
+        db_session=db_session, plugin_type="conversation"
     )
-    incident.conversation = conversation_service.create(
-        db_session=db_session, conversation_in=conversation_in
-    )
+    if conversation_plugin:
+        conversation = create_conversation(incident, participant_emails, db_session)
 
-    event_service.log(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description="Conversation added to incident",
-        incident_id=incident.id,
-    )
+        conversation_in = ConversationCreate(
+            resource_id=conversation["resource_id"],
+            resource_type=conversation["resource_type"],
+            weblink=conversation["weblink"],
+            channel_id=conversation["id"],
+        )
+        incident.conversation = conversation_service.create(
+            db_session=db_session, conversation_in=conversation_in
+        )
+
+        event_service.log(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description="Conversation added to incident",
+            incident_id=incident.id,
+        )
+
+        # we set the conversation topic
+        set_conversation_topic(incident, db_session)
 
     db_session.add(incident)
     db_session.commit()
-
-    # we set the conversation topic
-    set_conversation_topic(incident, db_session)
 
     # we update the incident ticket
     update_external_incident_ticket(incident, db_session)
 
     # we update the investigation document
-    update_document(
-        incident.incident_document.resource_id,
-        incident.name,
-        incident.incident_priority.name,
-        incident.status,
-        incident.incident_type.name,
-        incident.title,
-        incident.description,
-        incident.commander.name,
-        incident.conversation.weblink,
-        incident.incident_document.weblink,
-        incident.storage.weblink,
-        incident.ticket.weblink,
-        incident.conference.weblink,
-        incident.conference.conference_challenge,
-    )
+    document_plugin = plugin_service.get_active(db_session=db_session, plugin_type="document")
+    if document_plugin:
+        document_plugin.instance.update(
+            incident.incident_document.resource_id,
+            name=incident.name,
+            priority=incident.priority,
+            status=incident.status,
+            type=incident.incident_type.type,
+            title=incident.title,
+            description=incident.description,
+            commander_fullname=incident.commander.name,
+            conversation_weblink=resolve_attr(incident, "conversation.weblink", None),
+            document_weblink=incident.incident_document.weblink,
+            storage_weblink=resolve_attr(incident, "storage.weblink", None),
+            ticket_weblink=incident.ticket,
+            conference_weblink=resolve_attr(incident, "conference.weblink", None),
+            conference_challenge=resolve_attr(incident, "conference.challendge", None),
+        )
 
     if incident.visibility == Visibility.open:
         send_incident_notifications(incident, db_session)

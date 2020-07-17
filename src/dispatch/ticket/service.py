@@ -3,19 +3,6 @@ from typing import Optional
 from .models import Ticket, TicketCreate
 
 
-def get_default_ticket(*, db_session) -> Ticket:
-    """Fetch the a placeholder ticket object."""
-    default = (db_session.query(Ticket).filter(Ticket.default == True)).one_or_none()  # noqa
-
-    if not default:
-        default = Ticket(default=True)
-        db_session.add(default)
-        db_session.commit()
-        db_session.flush(default)
-
-    return default
-
-
 def get(*, db_session, ticket_id: int) -> Optional[Ticket]:
     """Fetch a ticket by it's `ticket_id`."""
     return db_session.query(Ticket).filter(Ticket.id == ticket_id).one()

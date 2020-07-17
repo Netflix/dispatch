@@ -16,7 +16,6 @@ class Storage(Base, ResourceMixin):
 # Pydantic models...
 class StorageBase(DispatchBase):
     resource_id: Optional[str]
-    default: bool
     resource_type: Optional[str]
     weblink: Optional[str]
 

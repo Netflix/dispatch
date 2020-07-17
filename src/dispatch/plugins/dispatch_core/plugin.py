@@ -20,7 +20,7 @@ from starlette.requests import Request
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.individual import service as individual_service
 from dispatch.plugins import dispatch_core as dispatch_plugin
-from dispatch.plugins.base import plugins
+from dispatch.plugin import service as plugin_service
 from dispatch.plugins.bases import (
     ParticipantPlugin,
     DocumentResolverPlugin,
@@ -231,14 +231,20 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
         log.debug(f"Recommendation: {recommendation}")
         # we need to resolve our service contacts to individuals
         for s in recommendation.service_contacts:
-            p = plugins.get(s.type)
-            log.debug(f"Resolving service contact. ServiceContact: {s}")
-            individual_email = p.get(s.external_id)
+            plugin = plugin_service.get_active(db_session=db_session, plugin_type=s.type)
 
-            individual = individual_service.get_or_create(
-                db_session=db_session, email=individual_email
-            )
-            recommendation.individual_contacts.append(individual)
+            if plugin:
+                log.debug(f"Resolving service contact. ServiceContact: {s}")
+                individual_email = plugin.instance.get(s.external_id)
+
+                individual = individual_service.get_or_create(
+                    db_session=db_session, email=individual_email
+                )
+                recommendation.individual_contacts.append(individual)
+            else:
+                log.warning(
+                    f"Skipping service contact. Service: {s.name} Reason: Associated service plugin not enabled."
+                )
 
         db_session.commit()
         return list(recommendation.individual_contacts), list(recommendation.team_contacts)

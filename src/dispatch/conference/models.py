@@ -21,7 +21,6 @@ class ConferenceBase(DispatchBase):
     resource_type: Optional[str]
     weblink: Optional[str]
     conference_challenge: Optional[str]
-    default: bool
 
 
 class ConferenceCreate(ConferenceBase):

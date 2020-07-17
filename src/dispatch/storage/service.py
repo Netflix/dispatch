@@ -3,19 +3,6 @@ from typing import Optional
 from .models import Storage
 
 
-def get_default_storage(*, db_session) -> Storage:
-    """Fetch the placeholder storage object."""
-    default = (db_session.query(Storage).filter(Storage.default == True)).one_or_none()  # noqa
-
-    if not default:
-        default = Storage(default=True)
-        db_session.add(default)
-        db_session.commit()
-        db_session.flush(default)
-
-    return default
-
-
 def get(*, db_session, storage_id: int) -> Optional[Storage]:
     """Fetch a storage by it's `storage_id`."""
     return db_session.query(Storage).filter(Storage.id == storage_id).one()
