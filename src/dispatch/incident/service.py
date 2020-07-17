@@ -175,10 +175,10 @@ def create(
     # we associate "default" or empty resources which will then
     # be filled in by other flows when appropriate this enables
     # resources to be optional
-    conversation = conversation_service.get_default_conversation()
-    conference = conference_service.get_default_conference()
-    storage = storage_service.get_default_storage()
-    ticket = ticket_service.get_default_ticket()
+    conversation = conversation_service.get_default_conversation(db_session=db_session)
+    conference = conference_service.get_default_conference(db_session=db_session)
+    storage = storage_service.get_default_storage(db_session=db_session)
+    ticket = ticket_service.get_default_ticket(db_session=db_session)
 
     # We create the incident
     incident = Incident(
@@ -210,15 +210,20 @@ def create(
     )
 
     # We resolve the incident commander email
-    incident_commander_email = resolve_incident_commander_email(
-        db_session,
-        reporter_email,
-        incident_type.name,
-        "",
-        title,
-        description,
-        incident_priority.page_commander,
-    )
+    # default to reporter if we don't have an oncall plugin enabled
+    oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
+    if oncall_plugin:
+        incident_commander_email = resolve_incident_commander_email(
+            db_session,
+            reporter_email,
+            incident_type.name,
+            "",
+            title,
+            description,
+            incident_priority.page_commander,
+        )
+    else:
+        incident_commander_email = reporter_email
 
     if reporter_email == incident_commander_email:
         # We add the role of incident commander the reporter
