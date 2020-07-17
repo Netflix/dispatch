@@ -41,6 +41,7 @@ class ResourceMixin(TimeStampMixin):
 
     resource_type = Column(String)
     resource_id = Column(String)
+    default = Column(Boolean)
     weblink = Column(String)
 
     @declared_attr

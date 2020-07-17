@@ -10,17 +10,14 @@ import logging
 from collections import defaultdict
 from datetime import datetime
 
-from dispatch.config import (
-    INCIDENT_PLUGIN_EMAIL_SLUG,
-    INCIDENT_PLUGIN_CONVERSATION_SLUG,
-    INCIDENT_RESOURCE_INCIDENT_TASK,
-)
+from dispatch.config import INCIDENT_RESOURCE_INCIDENT_TASK
+from dispatch.database import SessionLocal
 from dispatch.messaging import (
     INCIDENT_TASK_REMINDER,
     INCIDENT_TASK_NEW_NOTIFICATION,
     INCIDENT_TASK_RESOLVED_NOTIFICATION,
 )
-from dispatch.plugins.base import plugins
+from dispatch.plugin import service as plugin_service
 from dispatch.incident.flows import incident_add_or_reactivate_participant_flow
 from dispatch.task.models import TaskStatus
 from dispatch.task import service as task_service
@@ -42,7 +39,7 @@ def group_tasks_by_assignee(tasks):
 def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact_weblink):
     """Contains the logic for incident task reminders."""
     # send email
-    email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
     message_template = INCIDENT_TASK_REMINDER
 
     items = []
@@ -62,7 +59,7 @@ def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact
 
     notification_type = "incident-task-reminder"
     name = subject = "Incident Task Reminder"
-    email_plugin.send(
+    plugin.instance.send(
         assignee_email,
         message_template,
         notification_type,
@@ -73,25 +70,20 @@ def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact
         items=items,  # plugin expect dicts
     )
 
-    # We currently think DM's might be too agressive
-    # send slack
-    # convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
-    # convo_plugin.send_direct(
-    #    assignee, notification_text, message_template, notification_type, items=tasks
-    # )
-
     for task in tasks:
         task.last_reminder_at = datetime.utcnow()
         db_session.commit()
 
 
-def send_task_notification(conversation_id, message_template, assignees, description, weblink):
+def send_task_notification(
+    conversation_id, message_template, assignees, description, weblink, db_session: SessionLocal
+):
     """Sends a task notification."""
     # we send a notification to the incident conversation
     notification_text = "Incident Notification"
     notification_type = "incident-notification"
-    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
-    convo_plugin.send(
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    plugin.instance.send(
         conversation_id,
         notification_text,
         message_template,

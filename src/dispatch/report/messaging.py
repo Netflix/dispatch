@@ -1,10 +1,5 @@
 import logging
 
-from dispatch.config import (
-    INCIDENT_PLUGIN_CONVERSATION_SLUG,
-    INCIDENT_PLUGIN_EMAIL_SLUG,
-    INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
-)
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.database import SessionLocal
 from dispatch.incident import service as incident_service
@@ -15,7 +10,7 @@ from dispatch.messaging import (
     INCIDENT_TACTICAL_REPORT,
     MessageType,
 )
-from dispatch.plugins.base import plugins
+from dispatch.plugin import service as plugin_service
 
 from .enums import ReportTypes
 from .models import Report
@@ -46,8 +41,9 @@ def send_tactical_report_to_conversation(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
-    convo_plugin.send(
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+
+    plugin.instance.send(
         incident.conversation.channel_id,
         "Incident Tactical Report",
         INCIDENT_TACTICAL_REPORT,
@@ -69,9 +65,9 @@ def send_executive_report_to_notifications_group(
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     subject = f"{incident.name.upper()} - Executive Report"
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
 
-    email_plugin = plugins.get(INCIDENT_PLUGIN_EMAIL_SLUG)
-    email_plugin.send(
+    plugin.instance.send(
         incident.notifications_group.email,
         INCIDENT_EXECUTIVE_REPORT,
         MessageType.incident_executive_report,
@@ -91,15 +87,15 @@ def send_executive_report_to_notifications_group(
 
 
 def send_incident_report_reminder(
-    incident: Incident, report_type: ReportTypes,
+    incident: Incident, report_type: ReportTypes, db_session: SessionLocal
 ):
     """Sends a direct message to the incident commander indicating that they should complete a report."""
     message_text = f"Incident {report_type.value} Reminder"
     message_template = INCIDENT_REPORT_REMINDER
     command_name, message_type = get_report_reminder_settings(report_type)
 
-    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
-    report_command = convo_plugin.get_command_name(command_name)
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    report_command = plugin.instance.get_command_name(command_name)
 
     items = [
         {
@@ -111,7 +107,7 @@ def send_incident_report_reminder(
         }
     ]
 
-    convo_plugin.send_direct(
+    plugin.instance.send_direct(
         incident.commander.email, message_text, message_template, message_type, items=items,
     )
 

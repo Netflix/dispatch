@@ -1,21 +1,20 @@
 from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
+from dispatch.database import SessionLocal
 
-from dispatch.config import INCIDENT_PLUGIN_CONTACT_SLUG
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
-from dispatch.plugins.base import plugins
 from dispatch.term import service as term_service
 from dispatch.plugin import service as plugin_service
 
 from .models import IndividualContact, IndividualContactCreate, IndividualContactUpdate
 
 
-def resolve_user_by_email(email):
+def resolve_user_by_email(email, db_session: SessionLocal):
     """Resolves a user's details given their email."""
-    p = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
-    return p.get(email)
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
+    return plugin.instance.get(email)
 
 
 def get(*, db_session, individual_contact_id: int) -> Optional[IndividualContact]:

@@ -3,28 +3,41 @@ from typing import Optional
 from .models import Ticket, TicketCreate
 
 
+def get_default_ticket(*, db_session) -> Ticket:
+    """Fetch the a placeholder ticket object."""
+    default = (db_session.query(Ticket).filter(Ticket.default == True)).one_or_none()  # noqa
+
+    if not default:
+        default = Ticket(default=True)
+        db_session.add(default)
+        db_session.commit()
+        db_session.flush(default)
+
+    return default
+
+
 def get(*, db_session, ticket_id: int) -> Optional[Ticket]:
-    """Returns a ticket based on a given id."""
+    """Fetch a ticket by it's `ticket_id`."""
     return db_session.query(Ticket).filter(Ticket.id == ticket_id).one()
 
 
 def get_by_resource_id(*, db_session, resource_id: str) -> Optional[Ticket]:
-    """Returns a ticket based on the given resource id."""
+    """Fetch a ticket by it's `resource_id`."""
     return db_session.query(Ticket).filter(Ticket.resource_id == resource_id).one()
 
 
 def get_by_weblink(*, db_session, weblink: str) -> Optional[Ticket]:
-    """Returns a ticket based on the given weblink."""
+    """Fetch a ticket by it's `weblink`."""
     return db_session.query(Ticket).filter(Ticket.weblink == weblink).one_or_none()
 
 
 def get_by_resource_type(*, db_session, resource_type: str) -> Optional[Ticket]:
-    """Returns a ticket based on the given resource type."""
+    """Fetch a ticket based on it's `resource_type`."""
     return db_session.query(Ticket).filter(Ticket.resource_type == resource_type).one()
 
 
 def get_or_create_by_weblink(*, db_session, weblink: str) -> Ticket:
-    """Returns a ticket getting existing or creating a new one."""
+    """Fetch a ticket or creating a new one."""
     ticket = get_by_weblink(db_session=db_session, weblink=weblink)
     if not ticket:
         ticket = Ticket(weblink=weblink)
@@ -34,7 +47,7 @@ def get_or_create_by_weblink(*, db_session, weblink: str) -> Ticket:
 
 
 def get_all(*, db_session):
-    """Returns all tickets."""
+    """Fetches all tickets."""
     return db_session.query(Ticket)
 
 
