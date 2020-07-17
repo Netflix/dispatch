@@ -2,11 +2,7 @@ import logging
 
 from datetime import date
 
-from dispatch.config import (
-    INCIDENT_PLUGIN_DOCUMENT_SLUG,
-    INCIDENT_PLUGIN_STORAGE_SLUG,
-    INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT,
-)
+from dispatch.config import INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT
 from dispatch.conversation.messaging import send_feedack_to_user
 from dispatch.decorators import background_task
 from dispatch.document import service as document_service
@@ -14,7 +10,7 @@ from dispatch.document.models import DocumentCreate
 from dispatch.event import service as event_service
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
-from dispatch.plugins.base import plugins
+from dispatch.plugin import service as plugin_service
 
 from .enums import ReportTypes
 from .messaging import (
@@ -134,9 +130,9 @@ def create_executive_report(
     )
 
     # we create a new document for the executive report
-    storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
+    storage_plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
     executive_report_document_name = f"{incident.name} - Executive Report - {current_date}"
-    executive_report_document = storage_plugin.copy_file(
+    executive_report_document = storage_plugin.instance.copy_file(
         folder_id=incident.storage.resource_id,
         file_id=report_template.resource_id,
         name=executive_report_document_name,
@@ -149,7 +145,7 @@ def create_executive_report(
         }
     )
 
-    storage_plugin.move_file(
+    storage_plugin.instance.move_file(
         new_folder_id=incident.storage.resource_id, file_id=executive_report_document["id"]
     )
 
@@ -184,8 +180,8 @@ def create_executive_report(
     )
 
     # we update the incident update document
-    document_plugin = plugins.get(INCIDENT_PLUGIN_DOCUMENT_SLUG)
-    document_plugin.update(
+    document_plugin = plugin_service.get_active(db_session=db_session, plugin_type="document")
+    document_plugin.instance.update(
         executive_report_document["id"],
         name=incident.name,
         title=incident.title,
