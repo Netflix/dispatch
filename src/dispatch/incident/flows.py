@@ -204,6 +204,20 @@ def create_participant_groups(
     return tactical_group, notification_group
 
 
+def delete_participant_groups(incident: Incident, db_session: SessionLocal):
+    """Deletes the external participant groups."""
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="group")
+    plugin.instance.delete(email=incident.tactical_group.email)
+    plugin.instance.delete(email=incident.notifications_group.email)
+
+    event_service.log(
+        db_session=db_session,
+        source=plugin.title,
+        description="Tactical and notification groups deleted",
+        incident_id=incident.id,
+    )
+
+
 def create_conference(incident: Incident, participants: List[str], db_session: SessionLocal):
     """Create external conference room."""
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="conference")
@@ -731,6 +745,9 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
             # add organization wide permission
             storage_plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
             storage_plugin.instance.open(incident.storage.resource_id)
+
+    # we delete the tactical and notification groups
+    delete_participant_groups(incident, db_session)
 
     # we delete the conference
     delete_conference(incident, db_session)
