@@ -59,7 +59,6 @@ export default {
     label: {
       type: String,
       default: "Add Incidents"
-
     }
   },
   data() {
