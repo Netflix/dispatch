@@ -145,52 +145,6 @@ Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispa
 
 > Used for incident cost modeling, specifies the number of hours in an employee's work year.
 
-### Incident Plugin Configuration
-
-#### `INCIDENT_PLUGIN_CONTACT_SLUG` \[default: 'slack-contact'\]
-
-> Controls which plugin will be used to resolve incident participant email addresses. The plugin will also be used to gather additional participant information such as name, team, location, etc.
-
-#### `INCIDENT_PLUGIN_CONVERSATION_SLUG` \[default: 'slack-conversation'\]
-
-> Controls which plugin will be used for incident conversations.
-
-#### `INCIDENT_PLUGIN_DOCUMENT_SLUG` \[default: 'google-docs-document'\]
-
-> Controls which plugin will be used for incident document creation.
-
-#### `INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG` \[default: 'dispatch-document-resolver'\]
-
-> Controls which plugin will be used to recommend documents to be automatically included for a given incident.
-
-#### `INCIDENT_PLUGIN_CONFERENCE_PLUGIN` \[default: 'google-calendar-conference'\]
-
-> Controls which plugin will be used to create a conference.
-
-#### `INCIDENT_PLUGIN_EMAIL_SLUG` \[default: 'google-gmail-conversation'\]
-
-> Controls which plugin will be used to send incident email notifications.
-
-#### `INCIDENT_PLUGIN_GROUP_SLUG` \[default: 'google-group-participant-group'\]
-
-> Controls which plugin will be used to create incident participant groups \(DLs\).
-
-#### `INCIDENT_PLUGIN_PARTICIPANT_SLUG` \[default: 'dispatch-participants'\]
-
-> Controls which plugin will be used to determine which participants should be automatically included for a given incident.
-
-#### `INCIDENT_PLUGIN_STORAGE_SLUG` \[default: 'google-drive-storage'\]
-
-> Controls which plugin will be used for incident storage.
-
-#### `INCIDENT_PLUGIN_TICKET_SLUG` \[default: 'jira-ticket'\]
-
-> Controls the plugin to use for creating external tickets. The ticket number is used as incident name.
-
-#### `INCIDENT_PLUGIN_TASK_SLUG` \[default: 'google-drive-task'\]
-
-> Controls the plugin to use for creation of incident tasks.
-
 ### Incident Resource Configuration
 
 #### `INCIDENT_STORAGE_FOLDER_ID`
@@ -240,4 +194,3 @@ Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispa
 #### `INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT` \[default: 'google-docs-incident-review-document'\]
 
 > Controls the resource type to use for the incident review document.
-
