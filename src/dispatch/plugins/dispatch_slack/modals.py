@@ -469,7 +469,9 @@ def create_update_notifications_group_modal(incident_id: int, command: dict, db_
 
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    modal_create_template = build_update_notifications_group_blocks(incident=incident)
+    modal_create_template = build_update_notifications_group_blocks(
+        incident=incident, db_session=db_session
+    )
 
     dispatch_slack_service.open_modal_with_user(
         client=slack_client, trigger_id=trigger_id, modal=modal_create_template

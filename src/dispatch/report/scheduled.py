@@ -39,7 +39,7 @@ def incident_report_reminders(db_session=None):
 
                 q, r = divmod(hours, notification_hour)
                 if q >= 1 and r == 0:  # it's time to send the reminder
-                    send_incident_report_reminder(incident, report_type)
+                    send_incident_report_reminder(incident, report_type, db_session)
 
             except Exception as e:
                 # we shouldn't fail to send all reminders when one fails

@@ -543,7 +543,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     db_session.commit()
 
     # we set the conversation topic
-    set_conversation_topic(incident)
+    set_conversation_topic(incident, db_session)
 
     # we update the incident ticket
     update_external_incident_ticket(incident, db_session)
@@ -591,7 +591,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             )
 
             send_incident_suggested_reading_messages(
-                incident, suggested_document_items, participant.email
+                incident, suggested_document_items, participant.email, db_session
             )
 
         except Exception as e:
@@ -613,7 +613,7 @@ def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_se
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # we remind the incident commander to write a tactical report
-    send_incident_report_reminder(incident, ReportTypes.tactical_report)
+    send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
 
     # we update the status of the external ticket
     update_external_incident_ticket(incident, db_session)
@@ -629,7 +629,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     incident.stable_at = datetime.utcnow()
 
     # we remind the incident commander to write a tactical report
-    send_incident_report_reminder(incident, ReportTypes.tactical_report)
+    send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
 
     # we update the external ticket
     update_external_incident_ticket(incident, db_session)
@@ -805,10 +805,10 @@ def incident_update_flow(
 
     if conversation_topic_change:
         if incident.status != IncidentStatus.closed:
-            set_conversation_topic(incident)
+            set_conversation_topic(incident, db_session)
 
     if notify:
-        send_incident_update_notifications(incident, previous_incident)
+        send_incident_update_notifications(incident, previous_incident, db_session)
 
     # we update the external ticket
     update_external_incident_ticket(incident, db_session)
@@ -892,12 +892,12 @@ def incident_assign_role_flow(
     if assignee_role != ParticipantRoleType.participant:
         # we send a notification to the incident conversation
         send_incident_new_role_assigned_notification(
-            assigner_contact_info, assignee_contact_info, assignee_role, incident
+            assigner_contact_info, assignee_contact_info, assignee_role, incident, db_session
         )
 
     if assignee_role == ParticipantRoleType.incident_commander:
         # we update the conversation topic
-        set_conversation_topic(incident)
+        set_conversation_topic(incident, db_session)
 
         # we update the external ticket
         update_external_incident_ticket(incident, db_session)
