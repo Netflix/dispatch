@@ -944,10 +944,13 @@ def incident_engage_oncall_flow(
     # we add the oncall to the incident
     incident_add_or_reactivate_participant_flow(oncall_email, incident.id, db_session=db_session)
 
+    # we load the individual
+    individual = individual_service.get_by_email(db_session=db_session, email=user_email)
+
     event_service.log(
         db_session=db_session,
         source=oncall_plugin.title,
-        description=f"{user_email} engages oncall service {oncall_service.name}",
+        description=f"{individual.name} engages oncall service {oncall_service.name}",
         incident_id=incident.id,
     )
 
