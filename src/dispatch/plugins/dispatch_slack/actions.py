@@ -19,8 +19,8 @@ from dispatch.report import flows as report_flows
 from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
-    SLACK_COMMAND_EXECUTIVE_REPORT_SLUG,
-    SLACK_COMMAND_TACTICAL_REPORT_SLUG,
+    SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
+    SLACK_COMMAND_REPORT_TACTICAL_SLUG,
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
 )
 
@@ -133,8 +133,8 @@ def dialog_action_functions(action: str):
     action_mappings = {
         SLACK_COMMAND_ASSIGN_ROLE_SLUG: [handle_assign_role_action],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [incident_flows.incident_engage_oncall_flow],
-        SLACK_COMMAND_EXECUTIVE_REPORT_SLUG: [report_flows.create_executive_report],
-        SLACK_COMMAND_TACTICAL_REPORT_SLUG: [report_flows.create_tactical_report],
+        SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [report_flows.create_executive_report],
+        SLACK_COMMAND_REPORT_TACTICAL_SLUG: [report_flows.create_tactical_report],
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [handle_update_incident_action],
     }
 
