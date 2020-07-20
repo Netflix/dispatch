@@ -288,6 +288,7 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
+import { forEach, find } from "lodash"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
@@ -333,14 +334,19 @@ export default {
         this.incident_faq = response.data.items[0]
       }
     })
-    // TODO filter only for active plugins
     PluginApi.getAll({
       itemsPerPage: -1,
       "field[]": "enabled",
       "op[]": "==",
       "value[]": "true"
     }).then(response => {
-      console.log(response.data.items)
+      let data = response.data.items
+      let activeResourcePlugins = this.activeResourcePlugins
+      forEach(Object.keys(activeResourcePlugins), function(value) {
+        activeResourcePlugins[value] = find(data, function(o) {
+          return o.type === value
+        })
+      })
     })
   },
   computed: {

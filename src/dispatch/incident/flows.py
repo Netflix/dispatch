@@ -639,7 +639,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     if not incident.incident_review_document:
         storage_plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
-        if not storage:
+        if not storage_plugin:
             log.warning("Incident review document not created, no storage plugin enabled.")
             db_session.add(incident)
             db_session.commit()
