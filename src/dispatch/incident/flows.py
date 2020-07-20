@@ -209,20 +209,6 @@ def create_participant_groups(
     return tactical_group, notification_group
 
 
-def delete_participant_groups(incident: Incident, db_session: SessionLocal):
-    """Deletes the external participant groups."""
-    p = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
-    p.delete(email=incident.tactical_group.email)
-    p.delete(email=incident.notifications_group.email)
-
-    event_service.log(
-        db_session=db_session,
-        source=p.title,
-        description="Tactical and notification groups deleted",
-        incident_id=incident.id,
-    )
-
-
 def create_conference(incident: Incident, participants: List[str], db_session: SessionLocal):
     """Create external conference room."""
     p = plugins.get(INCIDENT_PLUGIN_CONFERENCE_SLUG)
@@ -744,14 +730,11 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     update_external_incident_ticket(incident, db_session)
 
     if INCIDENT_STORAGE_OPEN_ON_CLOSE:
-        # restricted incidents are never opened
+        # incidents with restricted visibility are never opened
         if incident.visibility == Visibility.open:
-            # add organization wide permission
+            # we add organization wide permission
             storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
             storage_plugin.open(incident.storage.resource_id)
-
-    # we delete the tactical and notification groups
-    delete_participant_groups(incident, db_session)
 
     # we delete the conference
     delete_conference(incident, db_session)
