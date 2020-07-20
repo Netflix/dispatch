@@ -20,6 +20,7 @@ class ConferenceBase(DispatchBase):
     resource_id: Optional[str]
     resource_type: Optional[str]
     weblink: Optional[str]
+    conference_id: Optional[str]
     conference_challenge: Optional[str]
 
 
