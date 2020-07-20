@@ -130,7 +130,11 @@ def upload_file(client: Any, path: str, name: str, mimetype: str):
 def get_file(client: Any, file_id: str):
     """Gets a file's metadata."""
     return make_call(
-        client.files(), "get", fileId=file_id, fields="id, name, parents, webViewLink",
+        client.files(),
+        "get",
+        fileId=file_id,
+        fields="id, name, parents, webViewLink",
+        supportsAllDrives=True,
     )
 
 
@@ -184,7 +188,11 @@ def create_file(
     file_metadata = {"name": name, "mimeType": mimetype, "parents": [parent_id]}
 
     file_data = make_call(
-        client.files(), "create", body=file_metadata, fields="id, name, parents, webViewLink",
+        client.files(),
+        "create",
+        body=file_metadata,
+        fields="id, name, parents, webViewLink",
+        supportsAllDrives=True,
     )
 
     for member in members:
@@ -201,6 +209,7 @@ def list_files(client: any, team_drive_id: str, q: str = None, **kwargs):
         "list",
         corpora="drive",
         driveId=team_drive_id,
+        supportsAllDrives=True,
         includeItemsFromAllDrives=True,
         q=q,
         **kwargs,
@@ -244,12 +253,13 @@ def copy_file(client: Any, folder_id: str, file_id: str, new_file_name: str):
         body={"name": new_file_name, "driveId": folder_id},
         fileId=file_id,
         fields="id, name, parents, webViewLink",
+        supportsAllDrives=True,
     )
 
 
 def delete_file(client: Any, folder_id: str, file_id: str):
     """Deletes a file from a teamdrive."""
-    return make_call(client.files(), "delete", fileId=file_id)
+    return make_call(client.files(), "delete", fileId=file_id, supportsAllDrives=True)
 
 
 def add_domain_permission(
@@ -268,6 +278,7 @@ def add_domain_permission(
         body=permission,
         sendNotificationEmail=False,
         fields="id",
+        supportsAllDrives=True,
     )
 
 
@@ -287,25 +298,34 @@ def add_permission(
         body=permission,
         sendNotificationEmail=False,
         fields="id",
+        supportsAllDrives=True,
     )
 
 
 def remove_permission(client: Any, email: str, folder_id: str):
     """Removes permission from team drive or file."""
     permissions = make_call(
-        client.permissions(), "list", fileId=folder_id, fields="permissions(id, emailAddress)",
+        client.permissions(),
+        "list",
+        fileId=folder_id,
+        fields="permissions(id, emailAddress)",
+        supportsAllDrives=True,
     )
 
     for p in permissions["permissions"]:
         if p["emailAddress"] == email:
             make_call(
-                client.permissions(), "delete", fileId=folder_id, permissionId=p["id"],
+                client.permissions(),
+                "delete",
+                fileId=folder_id,
+                permissionId=p["id"],
+                supportsAllDrives=True,
             )
 
 
 def move_file(client: Any, folder_id: str, file_id: str):
     """Moves a file from one team drive to another"""
-    f = make_call(client.files(), "get", fileId=file_id, fields="parents")
+    f = make_call(client.files(), "get", fileId=file_id, fields="parents", supportsAllDrives=True)
 
     previous_parents = ",".join(f.get("parents"))
 
@@ -316,6 +336,7 @@ def move_file(client: Any, folder_id: str, file_id: str):
         addParents=folder_id,
         removeParents=previous_parents,
         fields="id, name, parents, webViewLink",
+        supportsAllDrives=True,
     )
 
 
