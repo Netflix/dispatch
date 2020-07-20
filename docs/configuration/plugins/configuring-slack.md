@@ -121,11 +121,11 @@ groups:read
 
 ### Commands
 
-#### `SLACK_COMMAND_TACTICAL_REPORT_SLUG` \[Optional. Default: '/dispatch-tactical-report'\]
+#### `SLACK_COMMAND_REPORT_TACTICAL_SLUG` \[Optional. Default: '/dispatch-report-tactical'\]
 
 > Opens a dialog to write a tactical report.
 
-#### `SLACK_COMMAND_EXECUTIVE_REPORT_SLUG` \[Optional. Default: '/dispatch-executive-report'\]
+#### `SLACK_COMMAND_REPORT_EXECUTIVE_SLUG` \[Optional. Default: '/dispatch-report-executive'\]
 
 > Opens a dialog to write an executive report.
 
