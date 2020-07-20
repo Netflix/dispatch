@@ -21,13 +21,13 @@ from .config import (
     SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG,
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
-    SLACK_COMMAND_EXECUTIVE_REPORT_SLUG,
+    SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
     SLACK_COMMAND_LIST_MY_TASKS_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
     SLACK_COMMAND_LIST_TASKS_SLUG,
     SLACK_COMMAND_REPORT_INCIDENT_SLUG,
-    SLACK_COMMAND_TACTICAL_REPORT_SLUG,
+    SLACK_COMMAND_REPORT_TACTICAL_SLUG,
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG,
     SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG,
@@ -37,10 +37,10 @@ from .config import (
 logger = logging.getLogger(__name__)
 
 
-INCIDENT_CONVERSATION_TACTICAL_REPORT_SUGGESTION = f"Consider providing a tactical report using the `{SLACK_COMMAND_TACTICAL_REPORT_SLUG}` command."
+INCIDENT_CONVERSATION_TACTICAL_REPORT_SUGGESTION = f"Consider providing a tactical report using the `{SLACK_COMMAND_REPORT_TACTICAL_SLUG}` command."
 
 INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
-    SLACK_COMMAND_TACTICAL_REPORT_SLUG: {
+    SLACK_COMMAND_REPORT_TACTICAL_SLUG: {
         "response_type": "ephemeral",
         "text": "Opening a dialog to write a tactical report...",
     },
@@ -80,7 +80,7 @@ INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
         "response_type": "ephemeral",
         "text": "Opening a dialog to report an incident...",
     },
-    SLACK_COMMAND_EXECUTIVE_REPORT_SLUG: {
+    SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: {
         "response_type": "ephemeral",
         "text": "Opening a dialog to write an executive report...",
     },

@@ -13,9 +13,6 @@ SLACK_USER_ID_OVERRIDE = config("SLACK_USER_ID_OVERRIDE", default=None)
 SLACK_WORKSPACE_NAME = config("SLACK_WORKSPACE_NAME")
 
 # Slash commands
-SLACK_COMMAND_TACTICAL_REPORT_SLUG = config(
-    "SLACK_COMMAND_TACTICAL_REPORT_SLUG", default="/dispatch-tactical-report"
-)
 SLACK_COMMAND_LIST_TASKS_SLUG = config(
     "SLACK_COMMAND_LIST_TASKS_SLUG", default="/dispatch-list-tasks"
 )
@@ -43,8 +40,11 @@ SLACK_COMMAND_LIST_RESOURCES_SLUG = config(
 SLACK_COMMAND_REPORT_INCIDENT_SLUG = config(
     "SLACK_COMMAND_REPORT_INCIDENT_SLUG", default="/dispatch-report-incident"
 )
-SLACK_COMMAND_EXECUTIVE_REPORT_SLUG = config(
-    "SLACK_COMMAND_EXECUTIVE_REPORT_SLUG", default="/dispatch-executive-report"
+SLACK_COMMAND_REPORT_TACTICAL_SLUG = config(
+    "SLACK_COMMAND_REPORT_TACTICAL_SLUG", default="/dispatch-report-tactical"
+)
+SLACK_COMMAND_REPORT_EXECUTIVE_SLUG = config(
+    "SLACK_COMMAND_REPORT_EXECUTIVE_SLUG", default="/dispatch-report-executive"
 )
 SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG = config(
     "SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG", default="/dispatch-notifications-group"
