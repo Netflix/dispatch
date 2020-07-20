@@ -154,10 +154,10 @@ def update_external_incident_ticket(
         incident.status.lower(),
         incident.commander.email,
         incident.reporter.email,
-        resolve_attr(incident, "conversation.weblink", None),
-        resolve_attr(incident, "incident_document.weblink", None),
-        resolve_attr(incident, "storage.weblink", None),
-        resolve_attr(incident, "conference.weblink", None),
+        resolve_attr(incident, "conversation.weblink"),
+        resolve_attr(incident, "incident_document.weblink"),
+        resolve_attr(incident, "storage.weblink"),
+        resolve_attr(incident, "conference.weblink"),
         incident.cost,
         incident_type_plugin_metadata=incident_type_plugin_metadata,
     )
@@ -561,12 +561,12 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             title=incident.title,
             description=incident.description,
             commander_fullname=incident.commander.name,
-            conversation_weblink=resolve_attr(incident, "conversation.weblink", None),
-            document_weblink=incident.incident_document.weblink,
-            storage_weblink=resolve_attr(incident, "storage.weblink", None),
+            conversation_weblink=resolve_attr(incident, "conversation.weblink"),
+            document_weblink=resolve_attr(incident, "incident_document.weblink"),
+            storage_weblink=resolve_attr(incident, "storage.weblink"),
             ticket_weblink=incident.ticket,
-            conference_weblink=resolve_attr(incident, "conference.weblink", None),
-            conference_challenge=resolve_attr(incident, "conference.challendge", None),
+            conference_weblink=resolve_attr(incident, "conference.weblink"),
+            conference_challenge=resolve_attr(incident, "conference.challendge"),
         )
 
     if incident.visibility == Visibility.open:
@@ -706,12 +706,12 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
                     title=incident.title,
                     description=incident.description,
                     commander_fullname=incident.commander.name,
-                    conversation_weblink=resolve_attr(incident, "conversation.weblink", None),
-                    document_weblink=incident.incident_document.weblink,
-                    storage_weblink=resolve_attr(incident, "storage.weblink", None),
+                    conversation_weblink=resolve_attr(incident, "conversation.weblink"),
+                    document_weblink=resolve_attr(incident, "incident_document.weblink"),
+                    storage_weblink=resolve_attr(incident, "storage.weblink"),
                     ticket_weblink=incident.ticket,
-                    conference_weblink=resolve_attr(incident, "conference.weblink", None),
-                    conference_challenge=resolve_attr(incident, "conference.challendge", None),
+                    conference_weblink=resolve_attr(incident, "conference.weblink"),
+                    conference_challenge=resolve_attr(incident, "conference.challendge"),
                 )
 
             # we send a notification about the incident review document to the conversation

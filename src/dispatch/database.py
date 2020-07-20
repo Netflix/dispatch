@@ -32,14 +32,12 @@ def resolve_table_name(name):
 raise_attribute_error = object()
 
 
-def resolve_attr(obj, attr, default=raise_attribute_error):
+def resolve_attr(obj, attr, default=None):
     """Attempts to access attr via dotted notation, returns none if attr does not exist."""
     try:
         return functools.reduce(getattr, attr.split("."), obj)
     except AttributeError:
-        if default != raise_attribute_error:
-            return default
-        raise
+        return default
 
 
 class CustomBase:

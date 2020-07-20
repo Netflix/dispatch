@@ -110,7 +110,7 @@
                   </v-list-item>
                   <v-divider />
                 </span>
-                <span v-if="activeResourcePlugins.coversation">
+                <span v-if="activeResourcePlugins.conversation">
                   <v-list-item v-if="conversation" :href="conversation.weblink" target="_blank">
                     <v-list-item-content>
                       <v-list-item-title>Conversation</v-list-item-title>
@@ -259,11 +259,7 @@
                     @click="save()"
                     >Submit
                     <template v-slot:loader>
-                      <v-progress-linear
-                        indeterminate="primary"
-                        color="white"
-                        dark
-                      ></v-progress-linear>
+                      <v-progress-linear indeterminate color="white" dark></v-progress-linear>
                     </template>
                   </v-btn>
                 </v-container>
