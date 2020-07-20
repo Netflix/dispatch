@@ -79,7 +79,7 @@ def paginated(data_key):
     wait=wait_exponential(multiplier=1, min=2, max=5),
 )
 def make_call(client: Any, func: Any, propagate_errors: bool = False, **kwargs):
-    """Make an google client api call."""
+    """Make an Google client api call."""
     try:
         return getattr(client, func)(**kwargs).execute()
     except HttpError as e:
@@ -130,11 +130,7 @@ def upload_file(client: Any, path: str, name: str, mimetype: str):
 def get_file(client: Any, file_id: str):
     """Gets a file's metadata."""
     return make_call(
-        client.files(),
-        "get",
-        fileId=file_id,
-        supportsTeamDrives=True,
-        fields="id, name, parents, webViewLink",
+        client.files(), "get", fileId=file_id, fields="id, name, parents, webViewLink",
     )
 
 
@@ -156,7 +152,7 @@ def download_file(client: Any, file_id: str):
 
 
 def download_google_document(client: Any, file_id: str, mime_type: str = "text/plain"):
-    """Downloads a google document."""
+    """Downloads a Google document."""
     request = client.files().export_media(fileId=file_id, mimeType=mime_type)
 
     fp = io.BytesIO()
@@ -188,11 +184,7 @@ def create_file(
     file_metadata = {"name": name, "mimeType": mimetype, "parents": [parent_id]}
 
     file_data = make_call(
-        client.files(),
-        "create",
-        body=file_metadata,
-        supportsTeamDrives=True,
-        fields="id, name, parents, webViewLink",
+        client.files(), "create", body=file_metadata, fields="id, name, parents, webViewLink",
     )
 
     for member in members:
@@ -209,7 +201,6 @@ def list_files(client: any, team_drive_id: str, q: str = None, **kwargs):
         "list",
         corpora="drive",
         driveId=team_drive_id,
-        supportsAllDrives=True,
         includeItemsFromAllDrives=True,
         q=q,
         **kwargs,
@@ -250,16 +241,15 @@ def copy_file(client: Any, folder_id: str, file_id: str, new_file_name: str):
     return make_call(
         client.files(),
         "copy",
-        body={"name": new_file_name, "teamDriveId": folder_id},
+        body={"name": new_file_name, "driveId": folder_id},
         fileId=file_id,
         fields="id, name, parents, webViewLink",
-        supportsTeamDrives=True,
     )
 
 
 def delete_file(client: Any, folder_id: str, file_id: str):
     """Deletes a file from a teamdrive."""
-    return make_call(client.files(), "delete", fileId=file_id, supportsTeamDrives=True)
+    return make_call(client.files(), "delete", fileId=file_id)
 
 
 def add_domain_permission(
@@ -278,7 +268,6 @@ def add_domain_permission(
         body=permission,
         sendNotificationEmail=False,
         fields="id",
-        supportsTeamDrives=True,
     )
 
 
@@ -298,34 +287,25 @@ def add_permission(
         body=permission,
         sendNotificationEmail=False,
         fields="id",
-        supportsTeamDrives=True,
     )
 
 
 def remove_permission(client: Any, email: str, folder_id: str):
     """Removes permission from team drive or file."""
     permissions = make_call(
-        client.permissions(),
-        "list",
-        fileId=folder_id,
-        supportsTeamDrives=True,
-        fields="permissions(id, emailAddress)",
+        client.permissions(), "list", fileId=folder_id, fields="permissions(id, emailAddress)",
     )
 
     for p in permissions["permissions"]:
         if p["emailAddress"] == email:
             make_call(
-                client.permissions(),
-                "delete",
-                fileId=folder_id,
-                permissionId=p["id"],
-                supportsTeamDrives=True,
+                client.permissions(), "delete", fileId=folder_id, permissionId=p["id"],
             )
 
 
 def move_file(client: Any, folder_id: str, file_id: str):
     """Moves a file from one team drive to another"""
-    f = make_call(client.files(), "get", fileId=file_id, fields="parents", supportsTeamDrives=True)
+    f = make_call(client.files(), "get", fileId=file_id, fields="parents")
 
     previous_parents = ",".join(f.get("parents"))
 
@@ -335,7 +315,6 @@ def move_file(client: Any, folder_id: str, file_id: str):
         fileId=file_id,
         addParents=folder_id,
         removeParents=previous_parents,
-        supportsTeamDrives=True,
         fields="id, name, parents, webViewLink",
     )
 
