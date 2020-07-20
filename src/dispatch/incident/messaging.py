@@ -11,7 +11,7 @@ from dispatch.config import (
     INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS,
 )
 from dispatch.conversation.enums import ConversationCommands
-from dispatch.database import SessionLocal
+from dispatch.database import SessionLocal, resolve_attr
 from dispatch.enums import Visibility
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
@@ -118,11 +118,11 @@ def send_welcome_email_to_participant(
         "priority_description": incident.incident_priority.description,
         "commander_fullname": incident.commander.name,
         "commander_weblink": incident.commander.weblink,
-        "document_weblink": incident.incident_document.weblink,
-        "storage_weblink": incident.storage.weblink,
-        "ticket_weblink": incident.ticket.weblink,
-        "conference_weblink": incident.conference.weblink,
-        "conference_challenge": incident.conference.conference_challenge,
+        "document_weblink": resolve_attr(incident, "incident_document.weblink", None),
+        "storage_weblink": resolve_attr(incident, "storage.weblink", None),
+        "ticket_weblink": resolve_attr(incident, "ticket.weblink", None),
+        "conference_weblink": resolve_attr(incident, "conference.weblink", None),
+        "conference_challenge": resolve_attr(incident, "conference.conference_challenge", None),
         "contact_fullname": incident.commander.name,
         "contact_weblink": incident.commander.weblink,
     }
@@ -210,8 +210,6 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
     message_template = INCIDENT_NOTIFICATION.copy()
 
     # we send status notifications to conversations
-    convo_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
-
     if incident.status != IncidentStatus.closed:
         message_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
     else:
@@ -227,11 +225,11 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
         "priority_description": incident.incident_priority.description,
         "commander_fullname": incident.commander.name,
         "commander_weblink": incident.commander.weblink,
-        "document_weblink": incident.incident_document.weblink,
-        "storage_weblink": incident.storage.weblink,
-        "ticket_weblink": incident.ticket.weblink,
-        "conference_weblink": incident.conference.weblink,
-        "conference_challenge": incident.conference.conference_challenge,
+        "document_weblink": resolve_attr(incident, "incident_document.weblink", None),
+        "storage_weblink": resolve_attr(incident, "storage.weblink", None),
+        "ticket_weblink": resolve_attr(incident, "ticket.weblink", None),
+        "conference_weblink": resolve_attr(incident, "conference.weblink", None),
+        "conference_challenge": resolve_attr(incident, "conference.conference_challenge", None),
         "contact_fullname": incident.commander.name,
         "contact_weblink": incident.commander.weblink,
         "incident_id": incident.id,
@@ -240,16 +238,30 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
     if faq_doc:
         message_kwargs.update({"faq_weblink": faq_doc.weblink})
 
-    for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
-        convo_plugin.instance.send(
-            conversation, notification_text, message_template, notification_type, **message_kwargs
+    convo_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    if convo_plugin:
+        for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
+            convo_plugin.instance.send(
+                conversation,
+                notification_text,
+                message_template,
+                notification_type,
+                **message_kwargs,
+            )
+    else:
+        log.warning(
+            "No incident conversation notifications sent. No conversation plugin is active."
         )
 
     # we send status notifications to distribution lists
     email_plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
-
-    for distro in INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS:
-        email_plugin.instance.send(distro, message_template, notification_type, **message_kwargs)
+    if email_plugin:
+        for distro in INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS:
+            email_plugin.instance.send(
+                distro, message_template, notification_type, **message_kwargs
+            )
+    else:
+        log.warning("No incident email notifications sent. No email plugin is active.")
 
     log.debug("Incident status notifications sent.")
 

@@ -88,85 +88,93 @@
                   </v-list-item-content>
                 </v-list-item>
                 <v-divider />
-                <v-list-item v-if="conference" :href="conference.weblink" target="_blank">
-                  <v-list-item-content>
-                    <v-list-item-title>Video Conference</v-list-item-title>
-                    <v-list-item-subtitle>{{ conference.description }}</v-list-item-subtitle>
-                  </v-list-item-content>
-                  <v-list-item-action>
-                    <v-list-item-icon>
-                      <v-icon>open_in_new</v-icon>
-                    </v-list-item-icon>
-                  </v-list-item-action>
-                </v-list-item>
-                <v-list-item v-else>
-                  <v-list-item-content>
-                    <v-list-item-title>Creating incident video conference...</v-list-item-title>
-                    <v-progress-linear indeterminate color="primary"></v-progress-linear>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-divider />
-                <v-list-item v-if="conversation" :href="conversation.weblink" target="_blank">
-                  <v-list-item-content>
-                    <v-list-item-title>Conversation</v-list-item-title>
-                    <v-list-item-subtitle>{{ conversation.description }}</v-list-item-subtitle>
-                  </v-list-item-content>
-                  <v-list-item-action>
-                    <v-list-item-icon>
-                      <v-icon>open_in_new</v-icon>
-                    </v-list-item-icon>
-                  </v-list-item-action>
-                </v-list-item>
-                <v-list-item v-else>
-                  <v-list-item-content>
-                    <v-list-item-title>Creating incident conversation...</v-list-item-title>
-                    <v-progress-linear indeterminate color="primary"></v-progress-linear>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-divider />
-                <v-list-item v-if="storage" :href="storage.weblink" target="_blank">
-                  <v-list-item-content>
-                    <v-list-item-title>Storage</v-list-item-title>
-                    <v-list-item-subtitle>{{ storage.description }}</v-list-item-subtitle>
-                  </v-list-item-content>
-                  <v-list-item-action>
-                    <v-list-item-icon>
-                      <v-icon>open_in_new</v-icon>
-                    </v-list-item-icon>
-                  </v-list-item-action>
-                </v-list-item>
-                <v-list-item v-else>
-                  <v-list-item-content>
-                    <v-list-item-title>Creating incident storage...</v-list-item-title>
-                    <v-progress-linear indeterminate color="primary"></v-progress-linear>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-divider />
-                <span v-if="documents.length">
-                  <span v-for="document in documents" :key="document.resource_id">
-                    <v-list-item :href="document.weblink" target="_blank">
-                      <v-list-item-content>
-                        <v-list-item-title>{{ document.resource_type | deslug }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
-                      </v-list-item-content>
-                      <v-list-item-action>
-                        <v-list-item-icon>
-                          <v-icon>open_in_new</v-icon>
-                        </v-list-item-icon>
-                      </v-list-item-action>
-                    </v-list-item>
-                    <v-divider />
-                  </span>
-                </span>
-                <span v-else>
-                  <v-list-item>
+                <span v-if="activeResourcePlugins.conference">
+                  <v-list-item v-if="conference" :href="conference.weblink" target="_blank">
                     <v-list-item-content>
-                      <v-list-item-title>Creating incident documents... </v-list-item-title>
+                      <v-list-item-title>Video Conference</v-list-item-title>
+                      <v-list-item-subtitle>{{ conference.description }}</v-list-item-subtitle>
+                    </v-list-item-content>
+                    <v-list-item-action>
+                      <v-list-item-icon>
+                        <v-icon>open_in_new</v-icon>
+                      </v-list-item-icon>
+                    </v-list-item-action>
+                  </v-list-item>
+                  <v-list-item v-else>
+                    <v-list-item-content>
+                      <v-list-item-title>Creating incident video conference...</v-list-item-title>
                       <v-progress-linear indeterminate color="primary"></v-progress-linear>
                     </v-list-item-content>
                   </v-list-item>
+                  <v-divider />
                 </span>
-                <v-divider />
+                <span v-if="activeResourcePlugins.coversation">
+                  <v-list-item v-if="conversation" :href="conversation.weblink" target="_blank">
+                    <v-list-item-content>
+                      <v-list-item-title>Conversation</v-list-item-title>
+                      <v-list-item-subtitle>{{ conversation.description }}</v-list-item-subtitle>
+                    </v-list-item-content>
+                    <v-list-item-action>
+                      <v-list-item-icon>
+                        <v-icon>open_in_new</v-icon>
+                      </v-list-item-icon>
+                    </v-list-item-action>
+                  </v-list-item>
+                  <v-list-item v-else>
+                    <v-list-item-content>
+                      <v-list-item-title>Creating incident conversation...</v-list-item-title>
+                      <v-progress-linear indeterminate color="primary"></v-progress-linear>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-divider />
+                </span>
+                <span v-if="activeResourcePlugins.storage">
+                  <v-list-item v-if="storage" :href="storage.weblink" target="_blank">
+                    <v-list-item-content>
+                      <v-list-item-title>Storage</v-list-item-title>
+                      <v-list-item-subtitle>{{ storage.description }}</v-list-item-subtitle>
+                    </v-list-item-content>
+                    <v-list-item-action>
+                      <v-list-item-icon>
+                        <v-icon>open_in_new</v-icon>
+                      </v-list-item-icon>
+                    </v-list-item-action>
+                  </v-list-item>
+                  <v-list-item v-else>
+                    <v-list-item-content>
+                      <v-list-item-title>Creating incident storage...</v-list-item-title>
+                      <v-progress-linear indeterminate color="primary"></v-progress-linear>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-divider />
+                  <span v-if="documents.length">
+                    <span v-for="document in documents" :key="document.resource_id">
+                      <v-list-item :href="document.weblink" target="_blank">
+                        <v-list-item-content>
+                          <v-list-item-title>{{
+                            document.resource_type | deslug
+                          }}</v-list-item-title>
+                          <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
+                        </v-list-item-content>
+                        <v-list-item-action>
+                          <v-list-item-icon>
+                            <v-icon>open_in_new</v-icon>
+                          </v-list-item-icon>
+                        </v-list-item-action>
+                      </v-list-item>
+                      <v-divider />
+                    </span>
+                  </span>
+                  <span v-else>
+                    <v-list-item>
+                      <v-list-item-content>
+                        <v-list-item-title>Creating incident documents... </v-list-item-title>
+                        <v-progress-linear indeterminate color="primary"></v-progress-linear>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </span>
+                  <v-divider />
+                </span>
                 <v-list-item v-if="incident_faq" :href="incident_faq.weblink" target="_blank">
                   <v-list-item-content>
                     <v-list-item-title>Incident FAQ</v-list-item-title>
@@ -282,6 +290,7 @@ import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import DocumentApi from "@/document/api"
+import PluginApi from "@/plugin/api"
 
 extend("required", {
   ...required,
@@ -302,7 +311,14 @@ export default {
   data() {
     return {
       isSubmitted: false,
-      incident_faq: null
+      incident_faq: null,
+      activeResourcePlugins: {
+        document: null,
+        ticket: null,
+        storage: null,
+        conversation: null,
+        conference: null
+      }
     }
   },
   mounted() {
@@ -314,6 +330,15 @@ export default {
       if (response.data.items.length) {
         this.incident_faq = response.data.items[0]
       }
+    })
+    // TODO filter only for active plugins
+    PluginApi.getAll({
+      itemsPerPage: -1,
+      "field[]": "enabled",
+      "op[]": "==",
+      "value[]": "true"
+    }).then(response => {
+      console.log(response.data.items)
     })
   },
   computed: {

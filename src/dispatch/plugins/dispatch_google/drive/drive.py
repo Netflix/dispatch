@@ -182,6 +182,7 @@ def create_file(
     file_type: str = "folder",
 ):
     """Creates a new folder with the specified parents."""
+    mimetype = "application/vnd.google-apps.document"
     if file_type == "folder":
         mimetype = "application/vnd.google-apps.folder"
 

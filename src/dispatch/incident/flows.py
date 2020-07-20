@@ -467,26 +467,26 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             incident_id=incident.id,
         )
 
-    # we create the incident documents
-    collab_documents = create_collaboration_documents(incident, db_session)
+        # we create the incident documents
+        collab_documents = create_collaboration_documents(incident, db_session)
 
-    for d in collab_documents:
-        document_in = DocumentCreate(
-            name=d["name"],
-            resource_id=d["resource_id"],
-            resource_type=d["resource_type"],
-            weblink=d["weblink"],
-        )
-        incident.documents.append(
-            document_service.create(db_session=db_session, document_in=document_in)
-        )
+        for d in collab_documents:
+            document_in = DocumentCreate(
+                name=d["name"],
+                resource_id=d["resource_id"],
+                resource_type=d["resource_type"],
+                weblink=d["weblink"],
+            )
+            incident.documents.append(
+                document_service.create(db_session=db_session, document_in=document_in)
+            )
 
-    event_service.log(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description="Documents added to incident",
-        incident_id=incident.id,
-    )
+        event_service.log(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description="Documents added to incident",
+            incident_id=incident.id,
+        )
 
     conference_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conference")
     if conference_plugin:
@@ -687,20 +687,26 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
             )
 
             # we update the incident review document
-            update_document(
-                incident_review_document["id"],
-                incident.name,
-                incident.incident_priority.name,
-                incident.status,
-                incident.incident_type.name,
-                incident.title,
-                incident.description,
-                incident.commander.name,
-                incident.conversation.weblink,
-                incident.incident_document.weblink,
-                incident.storage.weblink,
-                incident.ticket.weblink,
+            document_plugin = plugin_service.get_active(
+                db_session=db_session, plugin_type="document"
             )
+            if document_plugin:
+                document_plugin.instance.update(
+                    incident.incident_review.resource_id,
+                    name=incident.name,
+                    priority=incident.priority,
+                    status=incident.status,
+                    type=incident.incident_type.type,
+                    title=incident.title,
+                    description=incident.description,
+                    commander_fullname=incident.commander.name,
+                    conversation_weblink=resolve_attr(incident, "conversation.weblink", None),
+                    document_weblink=incident.incident_document.weblink,
+                    storage_weblink=resolve_attr(incident, "storage.weblink", None),
+                    ticket_weblink=incident.ticket,
+                    conference_weblink=resolve_attr(incident, "conference.weblink", None),
+                    conference_challenge=resolve_attr(incident, "conference.challendge", None),
+                )
 
             # we send a notification about the incident review document to the conversation
             send_incident_review_document_notification(
