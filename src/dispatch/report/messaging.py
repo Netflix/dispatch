@@ -95,6 +95,10 @@ def send_incident_report_reminder(
     command_name, message_type = get_report_reminder_settings(report_type)
 
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    if not plugin:
+        log.warning("Incident report reminder not sent, no conversation plugin enabled.")
+        return
+
     report_command = plugin.instance.get_command_name(command_name)
 
     items = [

@@ -43,10 +43,14 @@ from dispatch.plugin import service as plugin_service
 log = logging.getLogger(__name__)
 
 
-def get_suggested_documents(db_session, incident_type: str, priority: str, description: str):
+def get_suggested_documents(
+    db_session, incident_type: str, priority: str, description: str
+) -> list:
     """Get additional incident documents based on priority, type, and description."""
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="document-resolver")
-    documents = plugin.instance.get(incident_type, priority, description, db_session=db_session)
+    documents = []
+    if plugin:
+        documents = plugin.instance.get(incident_type, priority, description, db_session=db_session)
     return documents
 
 
@@ -55,6 +59,11 @@ def send_welcome_ephemeral_message_to_participant(
 ):
     """Sends an ephemeral message to the participant."""
     # we load the incident instance
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    if not plugin:
+        log.warning("Incident welcome message not sent, not conversation plugin enabled.")
+        return
+
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # we send the ephemeral message
@@ -69,10 +78,10 @@ def send_welcome_ephemeral_message_to_participant(
         "commander_fullname": incident.commander.name,
         "commander_weblink": incident.commander.weblink,
         "document_weblink": incident.incident_document.weblink,
-        "storage_weblink": incident.storage.weblink,
-        "ticket_weblink": incident.ticket.weblink,
-        "conference_weblink": incident.conference.weblink,
-        "conference_challenge": incident.conference.conference_challenge,
+        "storage_weblink": resolve_attr(incident, "storage.weblink"),
+        "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
+        "conference_weblink": resolve_attr(incident, "conference.weblink"),
+        "conference_challenge": resolve_attr(incident, "conference.conference_challenge"),
     }
 
     faq_doc = document_service.get_incident_faq_document(db_session=db_session)
@@ -86,8 +95,6 @@ def send_welcome_ephemeral_message_to_participant(
         message_kwargs.update(
             {"conversation_commands_reference_document_weblink": conversation_reference.weblink}
         )
-
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
 
     plugin.instance.send_ephemeral(
         incident.conversation.channel_id,
@@ -106,6 +113,11 @@ def send_welcome_email_to_participant(
 ):
     """Sends a welcome email to the participant."""
     # we load the incident instance
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
+    if not plugin:
+        log.warning("Participant welcome email not sent, not email plugin configured.")
+        return
+
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     message_kwargs = {
@@ -139,7 +151,6 @@ def send_welcome_email_to_participant(
             {"conversation_commands_reference_document_weblink": conversation_reference.weblink}
         )
 
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
     plugin.instance.send(
         participant_email,
         INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
@@ -190,17 +201,19 @@ def send_incident_suggested_reading_messages(
     """Sends a suggested reading message to a participant."""
     if items:
         plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+        if plugin:
+            plugin.instance.send_ephemeral(
+                incident.conversation.channel_id,
+                participant_email,
+                "Suggested Reading",
+                [INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM],
+                MessageType.incident_participant_suggested_reading,
+                items=items,
+            )
 
-        plugin.instance.send_ephemeral(
-            incident.conversation.channel_id,
-            participant_email,
-            "Suggested Reading",
-            [INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM],
-            MessageType.incident_participant_suggested_reading,
-            items=items,
-        )
-
-        log.debug(f"Suggested reading ephemeral message sent to {participant_email}.")
+            log.debug(f"Suggested reading ephemeral message sent to {participant_email}.")
+        else:
+            log.warning("Suggested reading message not sent, no conversation plugin enabled.")
 
 
 def send_incident_status_notifications(incident: Incident, db_session: SessionLocal):
@@ -390,6 +403,11 @@ def send_incident_participant_announcement_message(
     participant_email: str, incident_id: int, db_session=SessionLocal
 ):
     """Announces a participant in the conversation."""
+    convo_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    if not convo_plugin:
+        log.warning("Incident participant annoucement not sent, no conversation plugin enabled.")
+        return
+
     notification_text = "New Incident Participant"
     notification_type = MessageType.incident_notification
     notification_template = []
@@ -401,18 +419,16 @@ def send_incident_participant_announcement_message(
         db_session=db_session, incident_id=incident_id, email=participant_email
     )
 
+    participant_info = {}
     contact_plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
-    participant_info = contact_plugin.instance.get(participant_email)
+    if contact_plugin:
+        participant_info = contact_plugin.instance.get(participant_email)
 
-    participant_name = participant_info["fullname"]
-    participant_team = participant_info["team"]
-    participant_department = participant_info["department"]
-    participant_location = participant_info["location"]
-    participant_weblink = participant_info["weblink"]
-
-    convo_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
-
-    participant_avatar_url = convo_plugin.instance.get_participant_avatar_url(participant_email)
+    participant_name = participant_info.get("fullname", "Unknown")
+    participant_team = participant_info.get("team", "Unknown")
+    participant_department = participant_info.get("department", "Unknown")
+    participant_location = participant_info.get("location", "Unknown")
+    participant_weblink = participant_info.get("weblink")
 
     participant_active_roles = participant_role_service.get_all_active_roles(
         db_session=db_session, participant_id=participant.id
@@ -421,6 +437,9 @@ def send_incident_participant_announcement_message(
     for role in participant_active_roles:
         participant_roles.append(role.role)
 
+    participant_avatar_url = convo_plugin.instance.get_participant_avatar_url(participant_email)
+
+    # TODO these shouldn't be raw blocks (kglisson)
     blocks = [
         {"type": "section", "text": {"type": "mrkdwn", "text": f"*{notification_text}*"}},
         {

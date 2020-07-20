@@ -74,19 +74,22 @@ log = logging.getLogger(__name__)
 def get_incident_participants(incident: Incident, db_session: SessionLocal):
     """Get additional incident participants based on priority, type, and description."""
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant")
-    individual_contacts, team_contacts = plugin.instance.get(
-        incident.incident_type,
-        incident.incident_priority,
-        incident.description,
-        db_session=db_session,
-    )
+    individual_contacts = []
+    team_contacts = []
+    if plugin:
+        individual_contacts, team_contacts = plugin.instance.get(
+            incident.incident_type,
+            incident.incident_priority,
+            incident.description,
+            db_session=db_session,
+        )
 
-    event_service.log(
-        db_session=db_session,
-        source=plugin.title,
-        description="Incident participants resolved",
-        incident_id=incident.id,
-    )
+        event_service.log(
+            db_session=db_session,
+            source=plugin.title,
+            description="Incident participants resolved",
+            incident_id=incident.id,
+        )
 
     return individual_contacts, team_contacts
 
@@ -94,46 +97,49 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
 def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     """Create an external ticket for tracking."""
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="ticket")
+    if plugin:
+        title = incident.title
+        if incident.visibility == Visibility.restricted:
+            title = incident.incident_type.name
 
-    title = incident.title
-    if incident.visibility == Visibility.restricted:
-        title = incident.incident_type.name
+        incident_type_plugin_metadata = incident_type_service.get_by_name(
+            db_session=db_session, name=incident.incident_type.name
+        ).get_meta(plugin.slug)
 
-    incident_type_plugin_metadata = incident_type_service.get_by_name(
-        db_session=db_session, name=incident.incident_type.name
-    ).get_meta(plugin.slug)
+        ticket = plugin.instance.create(
+            incident.id,
+            title,
+            incident.incident_type.name,
+            incident.incident_priority.name,
+            incident.commander.email,
+            incident.reporter.email,
+            incident_type_plugin_metadata,
+        )
+        ticket.update({"resource_type": plugin.slug})
 
-    ticket = plugin.instance.create(
-        incident.id,
-        title,
-        incident.incident_type.name,
-        incident.incident_priority.name,
-        incident.commander.email,
-        incident.reporter.email,
-        incident_type_plugin_metadata,
-    )
-    ticket.update({"resource_type": plugin.slug})
+        event_service.log(
+            db_session=db_session,
+            source=plugin.title,
+            description="Ticket created",
+            incident_id=incident.id,
+        )
 
-    event_service.log(
-        db_session=db_session,
-        source=plugin.title,
-        description="External ticket created",
-        incident_id=incident.id,
-    )
-
-    return ticket
+        return ticket
 
 
 def update_external_incident_ticket(
     incident: Incident, db_session: SessionLocal,
 ):
     """Update external incident ticket."""
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="ticket")
+    if not plugin:
+        log.warning("External ticket not updated, no ticket plugin enabled.")
+        return
+
     title = incident.title
     description = incident.description
     if incident.visibility == Visibility.restricted:
         title = description = incident.incident_type.name
-
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="ticket")
 
     incident_type_plugin_metadata = incident_type_service.get_by_name(
         db_session=db_session, name=incident.incident_type.name
@@ -400,18 +406,13 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     # create the incident ticket
     ticket = create_incident_ticket(incident, db_session)
-    incident.ticket = ticket_service.create(db_session=db_session, ticket_in=TicketCreate(**ticket))
+    if ticket:
+        incident.ticket = ticket_service.create(
+            db_session=db_session, ticket_in=TicketCreate(**ticket)
+        )
 
-    event_service.log(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description="External ticket added to incident",
-        incident_id=incident.id,
-    )
-
-    # we set the incident name
-    name = ticket["resource_id"]
-    incident.name = name
+        # we set the incident name
+        incident.name = ticket["resource_id"]
 
     # we create the participant groups (tactical and notification)
     individual_participants = [x.individual for x in incident.participants]
@@ -593,7 +594,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             )
 
             send_incident_suggested_reading_messages(
-                incident, suggested_document_items, participant.email, db_session
+                incident, suggested_document_items, participant.individual.email, db_session
             )
 
         except Exception as e:
@@ -638,6 +639,11 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     if not incident.incident_review_document:
         storage_plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
+        if not storage:
+            log.warning("Incident review document not created, no storage plugin enabled.")
+            db_session.add(incident)
+            db_session.commit()
+            return
 
         # we create a copy of the incident review document template and we move it to the incident storage
         incident_review_document_name = f"{incident.name} - Post Incident Review Document"
@@ -728,7 +734,8 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
 
     # we archive the conversation
     convo_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
-    convo_plugin.instance.archive(incident.conversation.channel_id)
+    if convo_plugin:
+        convo_plugin.instance.archive(incident.conversation.channel_id)
 
     # we update the external ticket
     update_external_incident_ticket(incident, db_session)
@@ -738,7 +745,8 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
         if incident.visibility == Visibility.open:
             # add organization wide permission
             storage_plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
-            storage_plugin.instance.open(incident.storage.resource_id)
+            if storage_plugin:
+                storage_plugin.instance.open(incident.storage.resource_id)
 
     # we delete the tactical and notification groups
     delete_participant_groups(incident, db_session)
@@ -841,7 +849,8 @@ def incident_update_flow(
 
     # we add the team distributions lists to the notifications group
     group_plugin = plugin_service.get_active(db_session=db_session, plugin_type="group")
-    group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
+    if group_plugin:
+        group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
 
     if previous_incident.status.value != incident.status:
         if incident.status == IncidentStatus.active:

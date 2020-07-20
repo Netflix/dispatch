@@ -70,24 +70,26 @@
                 <template v-slot:activator>
                   <v-list-item-title class="title">Incident Resources</v-list-item-title>
                 </template>
-                <v-list-item v-if="ticket" :href="ticket.weblink" target="_blank">
-                  <v-list-item-content>
-                    <v-list-item-title>Ticket</v-list-item-title>
-                    <v-list-item-subtitle>{{ ticket.description }}</v-list-item-subtitle>
-                  </v-list-item-content>
-                  <v-list-item-action>
-                    <v-list-item-icon>
-                      <v-icon>open_in_new</v-icon>
-                    </v-list-item-icon>
-                  </v-list-item-action>
-                </v-list-item>
-                <v-list-item v-else>
-                  <v-list-item-content>
-                    <v-list-item-title>Creating incident ticket...</v-list-item-title>
-                    <v-progress-linear indeterminate color="primary"></v-progress-linear>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-divider />
+                <span v-if="activeResourcePlugins.ticket">
+                  <v-list-item v-if="ticket" :href="ticket.weblink" target="_blank">
+                    <v-list-item-content>
+                      <v-list-item-title>Ticket</v-list-item-title>
+                      <v-list-item-subtitle>{{ ticket.description }}</v-list-item-subtitle>
+                    </v-list-item-content>
+                    <v-list-item-action>
+                      <v-list-item-icon>
+                        <v-icon>open_in_new</v-icon>
+                      </v-list-item-icon>
+                    </v-list-item-action>
+                  </v-list-item>
+                  <v-list-item v-else>
+                    <v-list-item-content>
+                      <v-list-item-title>Creating incident ticket...</v-list-item-title>
+                      <v-progress-linear indeterminate color="primary"></v-progress-linear>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-divider />
+                </span>
                 <span v-if="activeResourcePlugins.conference">
                   <v-list-item v-if="conference" :href="conference.weblink" target="_blank">
                     <v-list-item-content>
