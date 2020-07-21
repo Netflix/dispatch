@@ -151,12 +151,10 @@ def default_notification(items: list):
     blocks = []
     blocks.append({"type": "divider"})
     for item in items:
-        log.error(item.get("title_link"))
         if isinstance(item, list):  # handle case where we are passing multiple grouped items
             blocks += default_notification(item)
 
         if item.get("title_link") == "None":  # avoid adding blocks with no data
-            log.error(item)
             continue
 
         block = {"type": "section", "text": {"type": "mrkdwn", "text": format_default_text(item)}}

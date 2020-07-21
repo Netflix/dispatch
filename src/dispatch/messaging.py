@@ -469,6 +469,10 @@ def render_message_template(message_template: List[dict], **kwargs):
 
         if d.get("title_link"):
             d["title_link"] = Template(d["title_link"]).render(**kwargs)
+
+            if d["title_link"] == "None":  # skip blocks with no content
+                continue
+
             # skip blocks that do not have new links rendered, as no real value was provided
             if not d["title_link"]:
                 continue
@@ -480,4 +484,6 @@ def render_message_template(message_template: List[dict], **kwargs):
             d["button_value"] = Template(d["button_value"]).render(**kwargs)
 
         data.append(d)
+    print(kwargs)
+    print(data)
     return data

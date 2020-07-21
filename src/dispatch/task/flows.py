@@ -40,6 +40,10 @@ def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact
     """Contains the logic for incident task reminders."""
     # send email
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
+    if not plugin:
+        log.warning("Task reminder not sent, no email plugin enabled.")
+        return
+
     message_template = INCIDENT_TASK_REMINDER
 
     items = []

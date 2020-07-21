@@ -38,10 +38,14 @@ def send_tactical_report_to_conversation(
     incident_id: int, conditions: str, actions: str, needs: str, db_session: SessionLocal
 ):
     """Sends a tactical report to the conversation."""
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+
+    if not plugin:
+        log.warning("Tactical report not sent, no conversation plugin enabled.")
+        return
+
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
 
     plugin.instance.send(
         incident.conversation.channel_id,
@@ -61,12 +65,16 @@ def send_executive_report_to_notifications_group(
     incident_id: int, executive_report: Report, db_session: SessionLocal,
 ):
     """Sends an executive report to the notifications group."""
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
+
+    if not plugin:
+        log.warning("Executive report notification not sent, no email plugin enabled.")
+        return
+
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     subject = f"{incident.name.upper()} - Executive Report"
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
-
     plugin.instance.send(
         incident.notifications_group.email,
         INCIDENT_EXECUTIVE_REPORT,
