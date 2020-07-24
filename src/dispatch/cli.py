@@ -156,9 +156,13 @@ def init_database():
 
 
 @dispatch_database.command("restore")
-@click.option("--dump-file", default="dispatch-backup.dump", help="Path to a PostgreSQL dump file.")
+@click.option(
+    "--dump-file",
+    default="dispatch-backup.dump",
+    help="Path to a PostgreSQL text format dump file.",
+)
 def restore_database(dump_file):
-    """Restores the database via pg_restore."""
+    """Restores the database via psql."""
     import sh
     from sh import psql, createdb
     from dispatch.config import (
