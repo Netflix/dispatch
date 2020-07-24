@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 11.3 (Debian 11.3-1.pgdg90+1)
--- Dumped by pg_dump version 12.2 (Ubuntu 12.2-4)
+-- Dumped from database version 12.2 (Debian 12.2-2.pgdg100+1)
+-- Dumped by pg_dump version 12.2
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -84,6 +84,22 @@ CREATE FUNCTION public.definition_search_vector_update() RETURNS trigger
 ALTER FUNCTION public.definition_search_vector_update() OWNER TO dispatch;
 
 --
+-- Name: dispatch_user_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.dispatch_user_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                NEW.search_vector = to_tsvector('pg_catalog.english', coalesce(NEW.email, ''));
+                RETURN NEW;
+            END
+            $$;
+
+
+ALTER FUNCTION public.dispatch_user_search_vector_update() OWNER TO dispatch;
+
+--
 -- Name: document_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
 --
 
@@ -98,22 +114,6 @@ CREATE FUNCTION public.document_search_vector_update() RETURNS trigger
 
 
 ALTER FUNCTION public.document_search_vector_update() OWNER TO dispatch;
-
---
--- Name: event_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
---
-
-CREATE FUNCTION public.event_search_vector_update() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-            BEGIN
-                NEW.search_vector = setweight(to_tsvector('pg_catalog.english', coalesce(NEW.source, '')), 'A') || setweight(to_tsvector('pg_catalog.english', coalesce(NEW.description, '')), 'B');
-                RETURN NEW;
-            END
-            $$;
-
-
-ALTER FUNCTION public.event_search_vector_update() OWNER TO dispatch;
 
 --
 -- Name: incident_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
@@ -529,6 +529,8 @@ ALTER FUNCTION public.tsq_tokenize_character(state public.tsq_state) OWNER TO di
 
 SET default_tablespace = '';
 
+SET default_table_access_method = heap;
+
 --
 -- Name: alembic_version; Type: TABLE; Schema: public; Owner: dispatch
 --
@@ -612,8 +614,8 @@ CREATE TABLE public.conference (
     conference_id character varying,
     conference_challenge character varying DEFAULT 'N/A'::character varying NOT NULL,
     incident_id integer,
-    created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    created_at timestamp without time zone
 );
 
 
@@ -652,8 +654,8 @@ CREATE TABLE public.conversation (
     id integer NOT NULL,
     channel_id character varying,
     incident_id integer,
-    updated_at timestamp without time zone,
-    created_at timestamp without time zone
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
 );
 
 
@@ -750,8 +752,9 @@ CREATE TABLE public.dispatch_user (
     email character varying,
     password bytea NOT NULL,
     role character varying NOT NULL,
-    created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    search_vector tsvector,
+    updated_at timestamp without time zone,
+    created_at timestamp without time zone
 );
 
 
@@ -926,8 +929,8 @@ CREATE TABLE public."group" (
     name character varying,
     email character varying,
     incident_id integer,
-    created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    created_at timestamp without time zone
 );
 
 
@@ -973,8 +976,9 @@ CREATE TABLE public.incident (
     search_vector tsvector,
     incident_priority_id integer,
     incident_type_id integer,
-    created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    duplicate_id integer,
+    updated_at timestamp without time zone,
+    created_at timestamp without time zone
 );
 
 
@@ -1013,9 +1017,9 @@ CREATE TABLE public.incident_priority (
     page_commander boolean,
     tactical_report_reminder integer DEFAULT 24,
     executive_report_reminder integer DEFAULT 24,
+    "default" boolean,
     view_order integer,
-    search_vector tsvector,
-    "default" boolean
+    search_vector tsvector
 );
 
 
@@ -1052,13 +1056,13 @@ CREATE TABLE public.incident_type (
     name character varying,
     slug character varying,
     description character varying,
+    exclude_from_metrics boolean,
+    "default" boolean,
     visibility character varying,
     plugin_metadata json,
     template_document_id integer,
     commander_service_id integer,
-    search_vector tsvector,
-    "default" boolean,
-    exclude_from_metrics boolean
+    search_vector tsvector
 );
 
 
@@ -1106,8 +1110,8 @@ CREATE TABLE public.individual_contact (
     weblink character varying,
     team_contact_id integer,
     search_vector tsvector,
-    updated_at timestamp without time zone,
-    created_at timestamp without time zone
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
 );
 
 
@@ -1146,12 +1150,12 @@ CREATE TABLE public.participant (
     inactive_at timestamp without time zone,
     team character varying,
     department character varying,
+    added_by_id integer,
+    added_reason character varying,
     location character varying,
     after_hours_notification boolean,
     incident_id integer,
-    individual_contact_id integer,
-    added_by_id integer,
-    added_reason character varying
+    individual_contact_id integer
 );
 
 
@@ -1505,8 +1509,8 @@ CREATE TABLE public.service (
     description character varying,
     external_id character varying,
     search_vector tsvector,
-    created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    created_at timestamp without time zone
 );
 
 
@@ -1751,8 +1755,8 @@ CREATE TABLE public.team_contact (
     name character varying,
     notes character varying,
     search_vector tsvector,
-    updated_at timestamp without time zone,
-    created_at timestamp without time zone
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
 );
 
 
@@ -1835,6 +1839,7 @@ ALTER TABLE public.team_contact_terms OWNER TO dispatch;
 CREATE TABLE public.term (
     id integer NOT NULL,
     text character varying,
+    discoverable boolean,
     search_vector tsvector
 );
 
@@ -1873,8 +1878,8 @@ CREATE TABLE public.ticket (
     weblink character varying,
     id integer NOT NULL,
     incident_id integer,
-    created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    created_at timestamp without time zone
 );
 
 
@@ -2082,7 +2087,7 @@ ALTER TABLE ONLY public.ticket ALTER COLUMN id SET DEFAULT nextval('public.ticke
 --
 
 COPY public.alembic_version (version_num) FROM stdin;
-e2bdb8fb6dfe
+69ac7f6dc0da
 \.
 
 
@@ -2091,7 +2096,6 @@ e2bdb8fb6dfe
 --
 
 COPY public.assoc_incident_tags (incident_id, tag_id) FROM stdin;
-5	1
 \.
 
 
@@ -2108,7 +2112,6 @@ COPY public.assoc_incident_terms (incident_id, term_id) FROM stdin;
 --
 
 COPY public.assoc_individual_contact_incident_priority (incident_priority_id, individual_contact_id) FROM stdin;
-2	2
 \.
 
 
@@ -2117,7 +2120,6 @@ COPY public.assoc_individual_contact_incident_priority (incident_priority_id, in
 --
 
 COPY public.assoc_individual_contact_incident_type (incident_type_id, individual_contact_id) FROM stdin;
-1	2
 \.
 
 
@@ -2126,7 +2128,6 @@ COPY public.assoc_individual_contact_incident_type (incident_type_id, individual
 --
 
 COPY public.assoc_individual_contact_terms (term_id, individual_contact_id) FROM stdin;
-1	1
 \.
 
 
@@ -2134,9 +2135,8 @@ COPY public.assoc_individual_contact_terms (term_id, individual_contact_id) FROM
 -- Data for Name: conference; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public.conference (resource_type, resource_id, weblink, id, conference_id, conference_challenge, incident_id, created_at, updated_at) FROM stdin;
-google-calendar-conference	assdafds	https://meet.google.com/	1	sadfs		5	2020-06-19 17:33:17.342823	2020-06-19 17:33:17.350031
-google-calendar-conference	sdfdsfds	https://meet.google.com/	2	asdfd		7	2020-06-19 17:57:14.954389	2020-06-19 17:57:14.967798
+COPY public.conference (resource_type, resource_id, weblink, id, conference_id, conference_challenge, incident_id, updated_at, created_at) FROM stdin;
+google-calendar-conference	9ak1c5r6jqnsjg838bitpnmcpc	https://meet.google.com/kdt-mqyq-vio	1	9ak1c5r6jqnsjg838bitpnmcpc		1	2020-07-24 18:03:14.384785	2020-07-24 18:03:14.364559
 \.
 
 
@@ -2144,9 +2144,8 @@ google-calendar-conference	sdfdsfds	https://meet.google.com/	2	asdfd		7	2020-06-
 -- Data for Name: conversation; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public.conversation (resource_type, resource_id, weblink, id, channel_id, incident_id, updated_at, created_at) FROM stdin;
-slack-conversation	dispatch-5	https://slack.com/app_redirect?channel=asdfsdf	1	asdfsd	5	2020-06-19 17:33:19.898746	2020-06-19 17:33:19.884411
-slack-conversation	dispatch-7	https://slack.com/app_redirect?channel=asdfdsf	2	asdfd	7	2020-06-19 17:57:17.445791	2020-06-19 17:57:17.433304
+COPY public.conversation (resource_type, resource_id, weblink, id, channel_id, incident_id, created_at, updated_at) FROM stdin;
+slack-conversation	dispatch-1	https://slack.com/app_redirect?channel=G017915SK2T	1	G017915SK2T	1	2020-07-24 18:03:15.668378	2020-07-24 18:03:15.686849
 \.
 
 
@@ -2155,7 +2154,6 @@ slack-conversation	dispatch-7	https://slack.com/app_redirect?channel=asdfdsf	2	a
 --
 
 COPY public.definition (id, text, source, search_vector) FROM stdin;
-1	This is a business term that all participants might not be aware of. 	dispatch	'awar':12 'busi':4 'might':9 'particip':8 'term':5
 \.
 
 
@@ -2172,7 +2170,6 @@ COPY public.definition_teams (definition_id, team_contact_id) FROM stdin;
 --
 
 COPY public.definition_terms (definition_id, term_id) FROM stdin;
-1	1
 \.
 
 
@@ -2180,9 +2177,8 @@ COPY public.definition_terms (definition_id, term_id) FROM stdin;
 -- Data for Name: dispatch_user; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public.dispatch_user (id, email, password, role, created_at, updated_at) FROM stdin;
-2	bob@example.com	\\x24326224313224546973582e672f65665a5a4449322f646a41316151652f445138622f666d656c6878596f2e794f686d43434a336962662f446e4a53	Admin	2020-06-19 17:27:06.744685	2020-06-19 17:37:33.517574
-1	joe@example.com	\\x243262243132246748625643734d7464706b73346e6e7638327a6d712e67686f75443636395a4c5134572f372f73363437636f574d544e6c352f4f32	Admin	2020-06-19 17:11:40.932754	2020-06-19 17:46:19.988558
+COPY public.dispatch_user (id, email, password, role, search_vector, updated_at, created_at) FROM stdin;
+1	dispatch@example.com	\\x24326224313224497544303865553955444153726d47417763663834654771354b7a58396170577774447a5754635a586454473753396d333564774b	User	'dispatch@example.com':1	2020-07-24 17:20:08.75133	2020-07-24 17:20:08.751345
 \.
 
 
@@ -2191,15 +2187,12 @@ COPY public.dispatch_user (id, email, password, role, created_at, updated_at) FR
 --
 
 COPY public.document (resource_type, resource_id, weblink, id, name, description, report_id, search_vector, incident_id, created_at, updated_at) FROM stdin;
-google-docs-faq-document	saasdd	https://docs.google.com/document/d/	4	Incident FAQ	\N	\N	'faq':2 'incid':1	5	2020-06-19 17:33:14.818214	2020-06-19 17:33:14.828242
-google-docs-conversation-commands-reference-document	saasdd	https://docs.google.com/document/d/	5	Incident Conversation Commands Reference Document	\N	\N	'command':3 'convers':2 'document':5 'incid':1 'refer':4	5	2020-06-19 17:33:14.834333	2020-06-19 17:33:14.843742
-google-docs-faq-document	saasdd	https://docs.google.com/document/d/	8	Incident FAQ	\N	\N	'faq':2 'incid':1	7	2020-06-19 17:57:12.733268	2020-06-19 17:57:12.741176
-google-docs-conversation-commands-reference-document	saasdd	https://docs.google.com/document/d/	9	Incident Conversation Commands Reference Document	\N	\N	'command':3 'convers':2 'document':5 'incid':1 'refer':4	7	2020-06-19 17:57:12.746172	2020-06-19 17:57:12.754328
-dispatch-incident-sheet	saasdd	https://docs.google.com/document/d/	3	dispatch-5 - Incident Tracking Sheet	\N	\N	'-5':2 'dispatch':1 'incid':3 'sheet':5 'track':4	5	2020-06-19 17:33:14.799584	2020-07-01 21:59:12.941781
-dispatch-incident-sheet	saasdd	https://docs.google.com/document/d/	7	dispatch-7 - Incident Tracking Sheet	\N	\N	'-7':2 'dispatch':1 'incid':3 'sheet':5 'track':4	7	2020-06-19 17:57:12.721033	2020-07-01 21:59:12.9418
-dispatch-incident-document	saasdd	https://docs.google.com/document/d/	1	Default Investigation Document	This document is used for all incident types.	\N	'default':1 'document':3 'investig':2	\N	2020-06-19 17:16:17.557296	2020-07-01 21:59:12.947907
-dispatch-incident-document	saasdd	https://docs.google.com/document/d/	2	dispatch-5 - Incident Document	\N	\N	'-5':2 'dispatch':1 'document':4 'incid':3	5	2020-06-19 17:33:14.784373	2020-07-01 21:59:12.947926
-dispatch-incident-document	saasdd	https://docs.google.com/document/d/	6	dispatch-7 - Incident Document	\N	\N	'-7':2 'dispatch':1 'document':4 'incid':3	7	2020-06-19 17:57:12.704706	2020-07-01 21:59:12.947934
+dispatch-generic-incident-document	1uSKfArHafY2aN2kHi5Muv6LM8d5t83uVEMRkW0swfjA	https://docs.google.com/document/d/1uSKfArHafY2aN2kHi5Muv6LM8d5t83uVEMRkW0swfjA	1	Incident Document Template	This is a document for all incident facts and context. All incident participants are expected to contribute to this document. It is shared with all incident participants.	\N	'document':2 'incid':1 'templat':3	\N	2020-07-24 17:26:35.824567	2020-07-24 17:26:35.824582
+dispatch-executive-report-document-template	1cdwlyhNEdVP9mMbaDVa1Hr-_rj9y4umxIucBntmwP-g	https://docs.google.com/document/d/1cdwlyhNEdVP9mMbaDVa1Hr-_rj9y4umxIucBntmwP-g/	2	Executive Report Document Template	This is a document template for executive reports.	\N	'document':3 'execut':1 'report':2 'templat':4	\N	2020-07-24 17:33:15.201277	2020-07-24 17:33:15.201306
+dispatch-incident-sheet-template	1a6j9SmzsFnk8RwxNgzieX8nhCvRpH2GybtvgI7PvGLg	https://docs.google.com/spreadsheets/d/1a6j9SmzsFnk8RwxNgzieX8nhCvRpH2GybtvgI7PvGLg/	3	Incident Tracking Sheet Template	This is a sheet for tracking impacted assets. All incident participants are expected to contribute to this sheet. It is shared with all incident participants.	\N	'incid':1 'sheet':3 'templat':4 'track':2	\N	2020-07-24 17:34:06.474813	2020-07-24 17:34:06.474819
+dispatch-incident-review-document-template	1IKz1FHOfI7iSWx0t5vwvgi5k1AQACo3GIYSpvnvQaco	https://docs.google.com/document/d/1IKz1FHOfI7iSWx0t5vwvgi5k1AQACo3GIYSpvnvQaco/	4	Post Incident Review Template	Post incident review template review document.	\N	'incid':2 'post':1 'review':3 'templat':4	\N	2020-07-24 17:34:51.201291	2020-07-24 17:34:51.201305
+dispatch-incident-sheet	1PZp5SWRIZGgwggUANZFWEPJUDJvH4HHSBmkknUhSx48	https://docs.google.com/spreadsheets/d/1PZp5SWRIZGgwggUANZFWEPJUDJvH4HHSBmkknUhSx48/edit?usp=drivesdk	5	dispatch-1 - Incident Tracking Sheet	\N	\N	'-1':2 'dispatch':1 'incid':3 'sheet':5 'track':4	1	2020-07-24 18:03:12.561807	2020-07-24 18:03:12.58184
+dispatch-incident-document	1D7mD9mUa0mMN3dRbXpO6AaolIQsEQ-jehvVJfaU5vRA	https://docs.google.com/document/d/1D7mD9mUa0mMN3dRbXpO6AaolIQsEQ-jehvVJfaU5vRA/edit?usp=drivesdk	6	dispatch-1 - Incident Document	\N	\N	'-1':2 'dispatch':1 'document':4 'incid':3	1	2020-07-24 18:03:12.593469	2020-07-24 18:03:12.606821
 \.
 
 
@@ -2240,46 +2233,27 @@ COPY public.document_terms (term_id, document_id) FROM stdin;
 --
 
 COPY public.event (id, uuid, started_at, ended_at, source, description, details, individual_id, incident_id, search_vector, created_at, updated_at) FROM stdin;
-14	0601fbd3-016e-4a3a-987a-03c5b723ea3a	2020-06-19 17:32:32.400302	2020-06-19 17:32:32.400302	Dispatch Core App	Joe Fo Sho added to incident with Reporter role	null	\N	5	'Joe':4B 'ad':6B 'app':3A 'core':2A 'dispatch':1A 'fo sho':5B 'incid':8B 'report':10B 'role':11B	2020-06-19 17:32:32.400949	2020-06-19 17:32:32.415642
-15	5ff9f926-3e97-4e5c-8ff1-8c2e3bc33013	2020-06-19 17:32:35.68112	2020-06-19 17:32:35.68112	Dispatch Core App	Bobby B added to incident with Incident Commander role	null	\N	5	'ad':6B 'app':3A 'b':5B 'bobby':4B 'command':11B 'core':2A 'dispatch':1A 'incid':8B,10B 'role':12B	2020-06-19 17:32:35.681948	2020-06-19 17:32:35.700853
-16	27f63ad0-5e2d-460d-bbe0-f668ac4d3e8e	2020-06-19 17:32:35.812153	2020-06-19 17:32:35.812153	Dispatch Plugin - Participant Resolver	Incident participants resolved	null	\N	5	'dispatch':1A 'incid':5B 'particip':3A,6B 'plugin':2A 'resolv':4A,7B	2020-06-19 17:32:35.812659	2020-06-19 17:32:35.826592
-17	5d8f4591-f2cc-42c4-9bcd-466b935ca28f	2020-06-19 17:32:35.833196	2020-06-19 17:32:35.833196	Dispatch Core App	Incident participants added to incident	null	\N	5	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'incid':4B,8B 'particip':5B	2020-06-19 17:32:35.834187	2020-06-19 17:32:35.849789
-18	4d7bc6da-f8bb-49de-8ebb-1f4442052046	2020-06-19 17:32:35.872808	2020-06-19 17:32:35.872808	Dispatch Plugin - Ticket Management	External ticket created	null	\N	5	'creat':7B 'dispatch':1A 'extern':5B 'manag':4A 'plugin':2A 'ticket':3A,6B	2020-06-19 17:32:35.873377	2020-06-19 17:32:35.892031
-19	0815cdc8-eec9-4c83-b890-f63d5ca441a9	2020-06-19 17:32:35.90468	2020-06-19 17:32:35.90468	Dispatch Core App	External ticket added to incident	null	\N	5	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'extern':4B 'incid':8B 'ticket':5B	2020-06-19 17:32:35.91113	2020-06-19 17:32:35.929231
-20	e4f2f05c-a53b-44e6-84be-7520677d9dd6	2020-06-19 17:32:49.217188	2020-06-19 17:32:49.217188	Google Group Plugin - Participant Group Management	Tactical and notification groups created	null	\N	5	'creat':11B 'googl':1A 'group':2A,5A,10B 'manag':6A 'notif':9B 'particip':4A 'plugin':3A 'tactic':7B	2020-06-19 17:32:49.217731	2020-06-19 17:32:49.239967
-21	f4c6daa6-845b-4af8-a642-53da9e9d689f	2020-06-19 17:32:49.263861	2020-06-19 17:32:49.263861	Dispatch Core App	Tactical and notification groups added to incident	null	\N	5	'ad':8B 'app':3A 'core':2A 'dispatch':1A 'group':7B 'incid':10B 'notif':6B 'tactic':4B	2020-06-19 17:32:49.269189	2020-06-19 17:32:49.291362
-22	15b456ff-ed01-40a0-936c-5072f6e566a0	2020-06-19 17:32:54.291721	2020-06-19 17:32:54.291721	Google Drive Plugin - Storage Management	Incident storage created	null	\N	5	'creat':8B 'drive':2A 'googl':1A 'incid':6B 'manag':5A 'plugin':3A 'storag':4A,7B	2020-06-19 17:32:54.292322	2020-06-19 17:32:54.308031
-23	e8d4869c-1f23-4a04-8a40-5a8bf2f82fde	2020-06-19 17:32:55.608925	2020-06-19 17:32:55.608925	Google Drive Plugin - Storage Management	Incident storage restricted	null	\N	5	'drive':2A 'googl':1A 'incid':6B 'manag':5A 'plugin':3A 'restrict':8B 'storag':4A,7B	2020-06-19 17:32:55.609739	2020-06-19 17:32:55.637543
-24	bd4274bd-9ab2-4554-b257-7b741bf16dda	2020-06-19 17:32:55.648928	2020-06-19 17:32:55.648928	Dispatch Core App	Storage added to incident	null	\N	5	'ad':5B 'app':3A 'core':2A 'dispatch':1A 'incid':7B 'storag':4B	2020-06-19 17:32:55.6519	2020-06-19 17:32:55.671757
-25	e38d7cca-0c4f-4f12-b424-7684eeffdb00	2020-06-19 17:33:14.749616	2020-06-19 17:33:14.749616	Google Drive Plugin - Storage Management	Incident investigation document and sheet created	null	\N	5	'creat':11B 'document':8B 'drive':2A 'googl':1A 'incid':6B 'investig':7B 'manag':5A 'plugin':3A 'sheet':10B 'storag':4A	2020-06-19 17:33:14.750295	2020-06-19 17:33:14.769779
-26	fca5b351-75ac-4b5a-9525-ec63a639ab28	2020-06-19 17:33:14.839494	2020-06-19 17:33:14.839494	Dispatch Core App	Documents added to incident	null	\N	5	'ad':5B 'app':3A 'core':2A 'dispatch':1A 'document':4B 'incid':7B	2020-06-19 17:33:14.842644	2020-06-19 17:33:14.862602
-27	5d98d39d-080f-4e00-8724-255c9398e377	2020-06-19 17:33:17.313901	2020-06-19 17:33:17.313901	Google Calendar Plugin - Conference Management	Incident conference created	null	\N	5	'calendar':2A 'confer':4A,7B 'creat':8B 'googl':1A 'incid':6B 'manag':5A 'plugin':3A	2020-06-19 17:33:17.314775	2020-06-19 17:33:17.335327
-28	4b0a6b50-fbec-46a1-9200-d671915b62a9	2020-06-19 17:33:17.348338	2020-06-19 17:33:17.348338	Dispatch Core App	Conference added to incident	null	\N	5	'ad':5B 'app':3A 'confer':4B 'core':2A 'dispatch':1A 'incid':7B	2020-06-19 17:33:17.351963	2020-06-19 17:33:17.369869
-29	6b86e46f-f4fb-4d1f-a183-9fb5ee949617	2020-06-19 17:33:19.819381	2020-06-19 17:33:19.819381	Slack Plugin - Conversation Management	Incident conversation created	null	\N	5	'convers':3A,6B 'creat':7B 'incid':5B 'manag':4A 'plugin':2A 'slack':1A	2020-06-19 17:33:19.82222	2020-06-19 17:33:19.874522
-30	6c3bf103-1c8c-41c9-ba19-b6220ce17fa9	2020-06-19 17:33:19.896402	2020-06-19 17:33:19.896402	Dispatch Core App	Conversation added to incident	null	\N	5	'ad':5B 'app':3A 'convers':4B 'core':2A 'dispatch':1A 'incid':7B	2020-06-19 17:33:19.901759	2020-06-19 17:33:19.918329
-31	38e1f8b0-fb92-46c3-94d1-163381edc2bf	2020-06-19 17:33:29.183714	2020-06-19 17:33:29.183714	Dispatch Core App	Participants announced and welcome messages sent	null	\N	5	'announc':5B 'app':3A 'core':2A 'dispatch':1A 'messag':8B 'particip':4B 'sent':9B 'welcom':7B	2020-06-19 17:33:29.184626	2020-06-19 17:33:29.216327
-32	6450d8ea-ead3-4487-8a4f-0ef3bc01e5af	2020-06-19 17:33:30.793156	2020-06-19 17:33:30.793156	Dispatch Core App	Incident notifications sent	null	\N	5	'app':3A 'core':2A 'dispatch':1A 'incid':4B 'notif':5B 'sent':6B	2020-06-19 17:33:30.796207	2020-06-19 17:33:30.856319
-37	7d81c5e6-66ca-4ac0-b97e-61139285d4f2	2020-06-19 17:56:27.229627	2020-06-19 17:56:27.229627	Dispatch Core App	Incident created	null	\N	7	'app':3A 'core':2A 'creat':5B 'dispatch':1A 'incid':4B	2020-06-19 17:56:27.230232	2020-06-19 17:56:27.242236
-38	2f7528f5-97b7-4f5a-a6a4-e9b93dafb317	2020-06-19 17:56:28.487104	2020-06-19 17:56:28.487104	Dispatch Core App	Joe Fo Sho added to incident with Reporter role	null	\N	7	'Joe':4B 'ad':6B 'app':3A 'core':2A 'dispatch':1A 'fo sho':5B 'incid':8B 'report':10B 'role':11B	2020-06-19 17:56:28.487741	2020-06-19 17:56:28.503163
-39	9f33153c-ca4a-4b5f-b49a-0dec0f1499b8	2020-06-19 17:56:31.752008	2020-06-19 17:56:31.752008	Dispatch Core App	Bobby B added to incident with Incident Commander role	null	\N	7	'ad':6B 'app':3A 'b':5B 'bobby':4B 'command':11B 'core':2A 'dispatch':1A 'incid':8B,10B 'role':12B	2020-06-19 17:56:31.752707	2020-06-19 17:56:31.766401
-40	96d61532-1eb7-4529-b515-831e4383e84e	2020-06-19 17:56:31.872595	2020-06-19 17:56:31.872595	Dispatch Plugin - Participant Resolver	Incident participants resolved	null	\N	7	'dispatch':1A 'incid':5B 'particip':3A,6B 'plugin':2A 'resolv':4A,7B	2020-06-19 17:56:31.873284	2020-06-19 17:56:31.889072
-41	632839f2-11c0-463c-8ada-721b15bad8d9	2020-06-19 17:56:31.895786	2020-06-19 17:56:31.895786	Dispatch Core App	Incident participants added to incident	null	\N	7	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'incid':4B,8B 'particip':5B	2020-06-19 17:56:31.896364	2020-06-19 17:56:31.912038
-42	80ca0d04-2fbd-41e9-8c5a-c88ea2b1a121	2020-06-19 17:56:31.939548	2020-06-19 17:56:31.939548	Dispatch Plugin - Ticket Management	External ticket created	null	\N	7	'creat':7B 'dispatch':1A 'extern':5B 'manag':4A 'plugin':2A 'ticket':3A,6B	2020-06-19 17:56:31.940323	2020-06-19 17:56:31.963657
-43	62358e86-ae30-4b85-bd48-6b50ca92fd76	2020-06-19 17:56:31.977475	2020-06-19 17:56:31.977475	Dispatch Core App	External ticket added to incident	null	\N	7	'ad':6B 'app':3A 'core':2A 'dispatch':1A 'extern':4B 'incid':8B 'ticket':5B	2020-06-19 17:56:31.982921	2020-06-19 17:56:31.999087
-44	aa09b100-7df4-4c85-8004-786e204db356	2020-06-19 17:56:46.864671	2020-06-19 17:56:46.864671	Google Group Plugin - Participant Group Management	Tactical and notification groups created	null	\N	7	'creat':11B 'googl':1A 'group':2A,5A,10B 'manag':6A 'notif':9B 'particip':4A 'plugin':3A 'tactic':7B	2020-06-19 17:56:46.865973	2020-06-19 17:56:46.904065
-45	3af9df32-3b0b-4fe7-8327-5fafdd667ffc	2020-06-19 17:56:46.933958	2020-06-19 17:56:46.933958	Dispatch Core App	Tactical and notification groups added to incident	null	\N	7	'ad':8B 'app':3A 'core':2A 'dispatch':1A 'group':7B 'incid':10B 'notif':6B 'tactic':4B	2020-06-19 17:56:46.936278	2020-06-19 17:56:46.957842
-46	4fcd240f-2214-4232-85b5-5f222dda4303	2020-06-19 17:56:53.416821	2020-06-19 17:56:53.416821	Google Drive Plugin - Storage Management	Incident storage created	null	\N	7	'creat':8B 'drive':2A 'googl':1A 'incid':6B 'manag':5A 'plugin':3A 'storag':4A,7B	2020-06-19 17:56:53.417751	2020-06-19 17:56:53.436476
-47	490ad943-d9ee-4253-8340-738d126eec61	2020-06-19 17:56:55.023686	2020-06-19 17:56:55.023686	Google Drive Plugin - Storage Management	Incident storage restricted	null	\N	7	'drive':2A 'googl':1A 'incid':6B 'manag':5A 'plugin':3A 'restrict':8B 'storag':4A,7B	2020-06-19 17:56:55.024261	2020-06-19 17:56:55.04695
-48	044f0595-6d25-4323-9ced-3dcebdd68b03	2020-06-19 17:56:55.06376	2020-06-19 17:56:55.06376	Dispatch Core App	Storage added to incident	null	\N	7	'ad':5B 'app':3A 'core':2A 'dispatch':1A 'incid':7B 'storag':4B	2020-06-19 17:56:55.070357	2020-06-19 17:56:55.106883
-49	a87e3f61-4205-4f79-8840-6b6d10868cb8	2020-06-19 17:57:12.671067	2020-06-19 17:57:12.671067	Google Drive Plugin - Storage Management	Incident investigation document and sheet created	null	\N	7	'creat':11B 'document':8B 'drive':2A 'googl':1A 'incid':6B 'investig':7B 'manag':5A 'plugin':3A 'sheet':10B 'storag':4A	2020-06-19 17:57:12.672095	2020-06-19 17:57:12.691599
-50	04055688-479d-4e8d-9639-fa8b7bfbf2ef	2020-06-19 17:57:12.751517	2020-06-19 17:57:12.751517	Dispatch Core App	Documents added to incident	null	\N	7	'ad':5B 'app':3A 'core':2A 'dispatch':1A 'document':4B 'incid':7B	2020-06-19 17:57:12.758581	2020-06-19 17:57:12.775337
-51	ed53df0a-5304-4464-af4e-fd829f7b42a8	2020-06-19 17:57:14.898227	2020-06-19 17:57:14.898227	Google Calendar Plugin - Conference Management	Incident conference created	null	\N	7	'calendar':2A 'confer':4A,7B 'creat':8B 'googl':1A 'incid':6B 'manag':5A 'plugin':3A	2020-06-19 17:57:14.899451	2020-06-19 17:57:14.945191
-52	d1e934d2-98b8-45f0-b815-ae65c2455021	2020-06-19 17:57:14.963182	2020-06-19 17:57:14.963182	Dispatch Core App	Conference added to incident	null	\N	7	'ad':5B 'app':3A 'confer':4B 'core':2A 'dispatch':1A 'incid':7B	2020-06-19 17:57:14.966822	2020-06-19 17:57:14.988192
-53	8042cdd6-8efa-40a6-9d1e-1d8e4aa48051	2020-06-19 17:57:17.386557	2020-06-19 17:57:17.386557	Slack Plugin - Conversation Management	Incident conversation created	null	\N	7	'convers':3A,6B 'creat':7B 'incid':5B 'manag':4A 'plugin':2A 'slack':1A	2020-06-19 17:57:17.387697	2020-06-19 17:57:17.425646
-54	d6ffd47b-e74e-48d8-be26-2b60d27cef09	2020-06-19 17:57:17.441706	2020-06-19 17:57:17.441706	Dispatch Core App	Conversation added to incident	null	\N	7	'ad':5B 'app':3A 'convers':4B 'core':2A 'dispatch':1A 'incid':7B	2020-06-19 17:57:17.444583	2020-06-19 17:57:17.466988
-55	cdac9c81-42e3-4051-9fc7-0d2e84f215cc	2020-06-19 17:57:27.988265	2020-06-19 17:57:27.988265	Dispatch Core App	Participants announced and welcome messages sent	null	\N	7	'announc':5B 'app':3A 'core':2A 'dispatch':1A 'messag':8B 'particip':4B 'sent':9B 'welcom':7B	2020-06-19 17:57:27.988741	2020-06-19 17:57:28.001609
-56	420e261f-3d5b-48cc-914d-d2c82bf39553	2020-06-19 17:57:30.154088	2020-06-19 17:57:30.154088	Dispatch Core App	Incident notifications sent	null	\N	7	'app':3A 'core':2A 'dispatch':1A 'incid':4B 'notif':5B 'sent':6B	2020-06-19 17:57:30.15459	2020-06-19 17:57:30.16715
-57	4cb080a8-1b9e-45de-b5db-5e99dcd0ead4	2020-06-19 17:58:24.318803	2020-06-19 17:58:24.318803	Incident Participant	Joe Fo Sho created a new tactical report	{"conditions": "These are conditions", "actions": "These are actions", "needs": "These are needs"}	2	5	'Joe':3B 'creat':5B 'fo sho':4B 'incid':1A 'new':7B 'particip':2A 'report':9B 'tactic':8B	2020-06-19 17:58:24.319411	2020-06-19 17:58:24.345586
+1	651b295a-991d-4a67-991b-c6de0e4b7611	2020-07-24 18:02:38.251956	2020-07-24 18:02:38.251956	Dispatch Core App	Incident created	null	\N	1	\N	2020-07-24 18:02:38.254379	2020-07-24 18:02:38.338948
+4	128f3466-9521-4c89-a3c1-db638328eb57	2020-07-24 18:02:41.168375	2020-07-24 18:02:41.168375	Dispatch Plugin - Participant Resolver	Incident participants resolved	null	\N	1	\N	2020-07-24 18:02:41.168882	2020-07-24 18:02:41.203844
+5	c52ea18f-d198-43ab-8533-15dc2d1dddcf	2020-07-24 18:02:41.220688	2020-07-24 18:02:41.220688	Dispatch Core App	Incident participants added to incident	null	\N	1	\N	2020-07-24 18:02:41.221122	2020-07-24 18:02:41.247507
+6	8cd9ecd5-a564-41fa-a8eb-cd80706307f1	2020-07-24 18:02:41.294686	2020-07-24 18:02:41.294686	Dispatch Plugin - Ticket Management	External ticket created	null	\N	1	\N	2020-07-24 18:02:41.2951	2020-07-24 18:02:41.319984
+7	db9874ef-d192-42db-a549-4534cacc17c2	2020-07-24 18:02:41.350764	2020-07-24 18:02:41.350764	Dispatch Core App	External ticket added to incident	null	\N	1	\N	2020-07-24 18:02:41.3629	2020-07-24 18:02:41.388231
+8	7a57ab3f-a4aa-43c2-8c87-7692e16fd9fc	2020-07-24 18:02:52.450317	2020-07-24 18:02:52.450317	Google Group Plugin - Participant Group Management	Tactical and notification groups created	null	\N	1	\N	2020-07-24 18:02:52.451042	2020-07-24 18:02:52.481715
+9	86f47430-cb16-42df-8e3b-370e28b1c821	2020-07-24 18:02:52.569473	2020-07-24 18:02:52.569473	Dispatch Core App	Tactical and notification groups added to incident	null	\N	1	\N	2020-07-24 18:02:52.58889	2020-07-24 18:02:52.631047
+10	b07f2642-9ff0-4485-b1ae-afad0929630e	2020-07-24 18:02:57.334859	2020-07-24 18:02:57.334859	Dispatch Core App	Storage added to incident	null	\N	1	\N	2020-07-24 18:02:57.343367	2020-07-24 18:02:57.381868
+11	bd92b20d-687b-46ea-b60b-bef59beb02fe	2020-07-24 18:03:12.512639	2020-07-24 18:03:12.512639	Google Drive Plugin - Storage Management	Incident investigation document and sheet created	null	\N	1	\N	2020-07-24 18:03:12.513311	2020-07-24 18:03:12.542486
+12	2e07c681-7717-4e30-82ca-86256e58d757	2020-07-24 18:03:12.603263	2020-07-24 18:03:12.603263	Dispatch Core App	Documents added to incident	null	\N	1	\N	2020-07-24 18:03:12.612236	2020-07-24 18:03:12.636687
+13	4f573dec-e656-4f71-9a06-ac051fff4534	2020-07-24 18:03:14.329539	2020-07-24 18:03:14.329539	Google Calendar Plugin - Conference Management	Incident conference created	null	\N	1	\N	2020-07-24 18:03:14.330012	2020-07-24 18:03:14.355007
+14	410d4b98-212a-4e6c-b96a-6f19e52ab154	2020-07-24 18:03:14.37857	2020-07-24 18:03:14.37857	Dispatch Core App	Conference added to incident	null	\N	1	\N	2020-07-24 18:03:14.382644	2020-07-24 18:03:14.417888
+15	42c79c7f-6ccc-43e1-b126-b91f08040512	2020-07-24 18:03:15.599083	2020-07-24 18:03:15.599083	Slack Plugin - Conversation Management	Incident conversation created	null	\N	1	\N	2020-07-24 18:03:15.600071	2020-07-24 18:03:15.65274
+16	e4056bb2-5adc-48a5-a35a-eb597ed7f7a8	2020-07-24 18:03:15.683537	2020-07-24 18:03:15.683537	Dispatch Core App	Conversation added to incident	null	\N	1	\N	2020-07-24 18:03:15.695182	2020-07-24 18:03:15.731365
+17	5e769ad5-d162-42a9-918f-437317ed6a18	2020-07-24 18:03:20.294338	2020-07-24 18:03:20.294338	Dispatch Core App	Incident notifications sent	null	\N	1	\N	2020-07-24 18:03:20.295182	2020-07-24 18:03:20.322527
+18	6cc06d03-9749-4143-971d-ce11eb1827db	2020-07-24 18:03:20.5327	2020-07-24 18:03:20.5327	Dispatch Core App	Participants announced and welcome messages sent	null	\N	1	\N	2020-07-24 18:03:20.534064	2020-07-24 18:03:20.565531
+2	1c916947-a9cc-4e63-b423-d63e09401653	2020-07-24 18:02:38.78052	2020-07-24 18:02:38.78052	Dispatch Core App	dispatch@example.com added to incident with Reporter role	null	\N	1	\N	2020-07-24 18:02:38.781971	2020-07-24 18:02:39.193046
+3	ea043ea7-9f6e-4adb-8305-f2cbd2b7a3a6	2020-07-24 18:02:40.716362	2020-07-24 18:02:40.716362	Dispatch Core App	dispatch@example.com added to incident with Incident Commander role	null	\N	1	\N	2020-07-24 18:02:40.716998	2020-07-24 18:02:40.745702
+19	89612d6e-e8c7-43dc-a7c9-7d35170c9ff9	2020-07-24 18:09:16.74069	2020-07-24 18:09:16.74069	Dispatch Core App	dispatch@example.com added to incident with Participant role	null	\N	1	\N	2020-07-24 18:09:16.741116	2020-07-24 18:09:16.766514
+21	54cbc6db-e433-4406-8b61-574173995a2a	2020-07-24 18:14:00	2020-07-24 18:14:00	Slack Plugin - Conversation Management	"This is a test event from Slack," said dispatch@example.com	null	1	1	\N	2020-07-24 18:14:24.892976	2020-07-24 18:14:24.93177
+20	13c86150-c8d6-4953-aa2e-24889af517b0	2020-07-24 18:11:55.29751	2020-07-24 18:11:55.29751	Incident Participant	dispatch@example.com created a new tactical report	{"conditions": "List of conditions", "actions": "List of actions", "needs": "List of needs"}	1	1	\N	2020-07-24 18:11:55.29797	2020-07-24 18:11:55.345595
 \.
 
 
@@ -2287,11 +2261,9 @@ COPY public.event (id, uuid, started_at, ended_at, source, description, details,
 -- Data for Name: group; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public."group" (resource_type, resource_id, weblink, id, name, email, incident_id, created_at, updated_at) FROM stdin;
-google-group-participant-tactical-group	assdafd	https://groups.google.com/a	1	dispatch-5	dispatch-5@example.com	5	2020-06-19 17:32:49.249635	2020-06-19 17:32:49.255214
-google-group-participant-notifications-group	assdafd	https://groups.google.com/a	2	dispatch-5-notifications	dispatch-5-notifications@example.com	5	2020-06-19 17:32:49.259731	2020-06-19 17:32:49.265917
-google-group-participant-tactical-group	assdafd	https://groups.google.com/a	3	dispatch-7	dispatch-7@example.com	7	2020-06-19 17:56:46.91619	2020-06-19 17:56:46.924716
-google-group-participant-notifications-group	assdafd	https://groups.google.com/a	4	dispatch-7-notifications	dispatch-7-notifications@example.com	7	2020-06-19 17:56:46.929848	2020-06-19 17:56:46.937935
+COPY public."group" (resource_type, resource_id, weblink, id, name, email, incident_id, updated_at, created_at) FROM stdin;
+google-group-participant-tactical-group	01y810tw0m3fgry	https://groups.google.com/a/example.com/forum/#!forum/dispatch-1	1	dispatch-1	dispatch-1@example.com	1	2020-07-24 18:02:52.532217	2020-07-24 18:02:52.506384
+google-group-participant-notifications-group	02250f4o1gns9xu	https://groups.google.com/a/example.com/forum/#!forum/dispatch-1-notifications	2	dispatch-1-notifications	dispatch-1-notifications@example.com	1	2020-07-24 18:02:52.575776	2020-07-24 18:02:52.542604
 \.
 
 
@@ -2299,9 +2271,8 @@ google-group-participant-notifications-group	assdafd	https://groups.google.com/a
 -- Data for Name: incident; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public.incident (id, name, title, description, status, cost, visibility, reported_at, stable_at, closed_at, search_vector, incident_priority_id, incident_type_id, created_at, updated_at) FROM stdin;
-7	dispatch-7	This is another incident	Lets chat about this one	Active	0	Open	2020-06-19 17:56:27.225606	\N	\N	'-7':2 'anoth':5 'chat':8 'dispatch':1 'incid':6 'let':7 'one':11	3	1	2020-06-19 17:56:27.225614	2020-06-19 17:57:30.166144
-5	dispatch-5	A bad thing	We need help running this incident.	Active	0	Open	2020-06-19 17:32:31.310437	\N	\N	'-5':2 'bad':4 'dispatch':1 'help':8 'incid':11 'need':7 'run':9 'thing':5	1	1	2020-06-19 17:32:31.310446	2020-06-19 17:58:24.334611
+COPY public.incident (id, name, title, description, status, cost, visibility, reported_at, stable_at, closed_at, search_vector, incident_priority_id, incident_type_id, duplicate_id, updated_at, created_at) FROM stdin;
+1	dispatch-1	Test incident	This is a test incident	Active	0	Open	2020-07-24 18:02:38.193482	\N	\N	'-1':2 'dispatch':1 'incid':4,9 'test':3,8	2	1	\N	2020-07-24 18:14:24.914404	2020-07-24 18:02:38.193491
 \.
 
 
@@ -2309,10 +2280,10 @@ COPY public.incident (id, name, title, description, status, cost, visibility, re
 -- Data for Name: incident_priority; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public.incident_priority (id, name, description, page_commander, tactical_report_reminder, executive_report_reminder, view_order, search_vector, "default") FROM stdin;
-1	High	Incidents of this priority need to be remediated immediately	f	2	5	1	'high':1 'immedi':10 'incid':2 'need':6 'prioriti':5 'remedi':9	\N
-2	Medium	Incidents of this type are important but not high.	f	2	5	2	'high':10 'import':7 'incid':2 'medium':1 'type':5	\N
-3	Low	Incidents of this priority are important but can be addressed during normal business hours.	f	5	10	3	'address':11 'busi':14 'hour':15 'import':7 'incid':2 'low':1 'normal':13 'prioriti':5	\N
+COPY public.incident_priority (id, name, description, page_commander, tactical_report_reminder, executive_report_reminder, "default", view_order, search_vector) FROM stdin;
+1	Low	Low priority incident.	f	12	9999	f	3	\N
+2	Medium	Medium priority incident.	f	6	12	f	2	\N
+3	High	High priority incident.	t	2	6	f	1	\N
 \.
 
 
@@ -2320,8 +2291,8 @@ COPY public.incident_priority (id, name, description, page_commander, tactical_r
 -- Data for Name: incident_type; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public.incident_type (id, name, slug, description, visibility, plugin_metadata, template_document_id, commander_service_id, search_vector, "default", exclude_from_metrics) FROM stdin;
-1	System Compromise	\N	Used in case of a system compromise	Open	[]	1	1	'case':5 'compromis':2,9 'system':1,8 'use':3	\N	\N
+COPY public.incident_type (id, name, slug, description, exclude_from_metrics, "default", visibility, plugin_metadata, template_document_id, commander_service_id, search_vector) FROM stdin;
+1	Vulnerability	\N	This is an incident involving a misconfiguration or vulnerability.	f	f	Open	[]	1	1	'incid':5 'involv':6 'misconfigur':8 'vulner':1,10
 \.
 
 
@@ -2329,10 +2300,8 @@ COPY public.incident_type (id, name, slug, description, visibility, plugin_metad
 -- Data for Name: individual_contact; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public.individual_contact (is_active, is_external, contact_type, email, company, notes, owner, id, name, mobile_phone, office_phone, title, weblink, team_contact_id, search_vector, updated_at, created_at) FROM stdin;
-t	f	\N	foobar@example.com	Acme	\N	\N	1	Foo Bar	\N	\N	\N	\N	\N	'acm':3 'bar':2 'foo':1	2020-06-19 17:55:27.747414	2020-06-19 17:24:50.190388
-t	f	\N	joe@example.com	\N	\N	\N	3	Joe Fo Sho	\N	\N	\N	https://example.com/person/joe@example.com	\N	'fo':2 'joe':1 'sho':3	2020-06-19 17:56:31.738245	2020-06-19 17:29:34.37569
-t	f	\N	bob@example.com	\N	\N	\N	2	Bobby B	\N	\N	\N	https://example.com/person/bob@example.com	\N	'b':2 'bobbi':1	2020-06-19 17:58:24.344542	2020-06-19 17:29:30.052197
+COPY public.individual_contact (is_active, is_external, contact_type, email, company, notes, owner, id, name, mobile_phone, office_phone, title, weblink, team_contact_id, search_vector, created_at, updated_at) FROM stdin;
+t	f	\N	dispatch@example.com	\N	\N	\N	1	dispatch@example.com	\N	\N	\N	Unknown	\N	'dispatch@example.com':1	2020-07-24 18:02:38.463871	2020-07-24 18:02:38.667258
 \.
 
 
@@ -2340,11 +2309,8 @@ t	f	\N	bob@example.com	\N	\N	\N	2	Bobby B	\N	\N	\N	https://example.com/person/bo
 -- Data for Name: participant; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public.participant (id, is_active, active_at, inactive_at, team, department, location, after_hours_notification, incident_id, individual_contact_id, added_by_id, added_reason) FROM stdin;
-5	t	2020-06-19 17:32:32.375441	\N	Detection and Response 	Information Security	Los Gatos	f	5	2	\N	\N
-6	t	2020-06-19 17:32:35.652326	\N	Detection and Response 	Information Security	Los Gatos	f	5	3	\N	\N
-9	t	2020-06-19 17:56:28.446334	\N	Detection and Response 	Information Security	Los Gatos	f	7	2	\N	\N
-10	t	2020-06-19 17:56:31.726091	\N	Detection and Response 	Information Security	Los Gatos	f	7	3	\N	\N
+COPY public.participant (id, is_active, active_at, inactive_at, team, department, added_by_id, added_reason, location, after_hours_notification, incident_id, individual_contact_id) FROM stdin;
+1	t	2020-07-24 18:02:38.614157	\N	Unknown	Unknown	\N	\N	Unknown	f	1	1
 \.
 
 
@@ -2353,15 +2319,8 @@ COPY public.participant (id, is_active, active_at, inactive_at, team, department
 --
 
 COPY public.participant_role (id, assumed_at, renounced_at, role, participant_id) FROM stdin;
-10	2020-06-19 17:32:32.363096	\N	Reporter	5
-12	2020-06-19 17:32:35.636624	\N	Incident Commander	6
-13	2020-06-19 17:52:01.278835	\N	Reporter	\N
-15	2020-06-19 17:52:04.500868	\N	Incident Commander	\N
-17	2020-06-19 17:52:05.679362	\N	Participant	\N
-18	2020-06-19 17:56:27.261814	\N	Reporter	\N
-19	2020-06-19 17:56:28.434224	\N	Reporter	9
-20	2020-06-19 17:56:30.674521	\N	Incident Commander	\N
-21	2020-06-19 17:56:31.723097	\N	Incident Commander	10
+2	2020-07-24 18:02:38.590034	\N	Reporter	1
+4	2020-07-24 18:02:40.638236	\N	Incident Commander	1
 \.
 
 
@@ -2370,26 +2329,22 @@ COPY public.participant_role (id, assumed_at, renounced_at, role, participant_id
 --
 
 COPY public.plugin (id, title, slug, description, version, author, author_url, type, enabled, required, multiple, configuration, search_vector) FROM stdin;
-6	Dispatch Plugin - Basic Authentication Provider	dispatch-auth-provider-basic	Generic basic authentication provider.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	auth-provider	t	t	f	null	'authent':4 'basic':3 'dispatch':1 'plugin':2 'provid':5
-7	Dispatch Plugin - Document Resolver	dispatch-document-resolver	Uses dispatch itself to resolve incident documents.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	document-resolver	t	t	f	null	'dispatch':1 'document':3 'plugin':2 'resolv':4
-8	Dispatch Plugin - Participant Resolver	dispatch-participant-resolver	Uses dispatch itself to resolve incident participants.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	participant	t	t	f	null	'dispatch':1 'particip':3 'plugin':2 'resolv':4
-10	Dispatch Plugin - Ticket Management	dispatch-ticket	Uses dispatch itself to create a ticket.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	ticket	t	t	f	null	'dispatch':1 'manag':4 'plugin':2 'ticket':3
-9	Dispatch Plugin - PKCE Authentication Provider	dispatch-auth-provider-pkce	Generic PCKE authentication provider.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	auth-provider	f	t	f	null	'authent':4 'dispatch':1 'pkce':3 'plugin':2 'provid':5
-11	Google Calendar Plugin - Conference Management	google-calendar-conference	Uses Google calendar to manage conference rooms/meets.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	conference	t	t	f	null	'calendar':2 'confer':4 'googl':1 'manag':5 'plugin':3
-12	Google Docs Plugin - Document Management	google-docs-document	Uses Google docs to manage document contents.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	document	t	t	f	null	'doc':2 'document':4 'googl':1 'manag':5 'plugin':3
-13	Google Drive Plugin - Storage Management	google-drive-storage	Uses Google Drive to help manage incident storage.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	storage	t	t	f	null	'drive':2 'googl':1 'manag':5 'plugin':3 'storag':4
-14	Google Drive Plugin - Task Management	google-drive-task	Uses Google Drive to help manage incident tasks.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	task	t	t	f	null	'drive':2 'googl':1 'manag':5 'plugin':3 'task':4
-15	Google Gmail Plugin - Conversation Management	google-gmail-conversation	Uses gmail to facilitate conversations.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	conversation	t	t	f	null	'convers':4 'gmail':2 'googl':1 'manag':5 'plugin':3
-16	Google Group Plugin - Participant Group Management	google-group-participant-group	Uses Google Groups to help manage participant membership.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	participant_group	t	t	f	null	'googl':1 'group':2,5 'manag':6 'particip':4 'plugin':3
-18	PagerDuty Plugin - Oncall Management	pagerduty-oncall	Uses PagerDuty to resolve and page oncall teams.	0.1.0	Netflix	https://github.com/Netflix/dispatch	oncall	t	t	f	null	'manag':4 'oncal':3 'pagerduti':1 'plugin':2
-20	Slack Plugin - Conversation Management	slack-conversation	Uses Slack to facilitate conversations.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	conversation	t	t	f	null	'convers':3 'manag':4 'plugin':2 'slack':1
-17	Jira Plugin - Ticket Management	jira-ticket	Uses Jira to help manage external tickets.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	ticket	f	t	f	null	'jira':1 'manag':4 'plugin':2 'ticket':3
-19	Slack Plugin - Contact Information Resolver	slack-contact	Uses Slack to resolve contact information details.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	contact	f	t	f	null	'contact':3 'inform':4 'plugin':2 'resolv':5 'slack':1
-21	WallE Authentication Provider	dispatch-auth-provider-walle	Uses headers defined by wall-e to identify the current user.	0.1.0.dev0	Kevin Glisson	https://github.com/netflix/dispatch.git	auth-provider	t	t	f	null	'authent':2 'provid':3 'wall':1
-22	IDK	idk-term	Uses idk as a source of term data.	0.1.0.dev0	Kevin Glisson	https://github.com/netflix/dispatch.git	term	t	t	f	null	'idk':1
-23	Pandora - Contact	pandora-contact	Uses pandora to resolve user details.	0.1.0	Kevin Glisson	https://github.com/netflix/dispatch.git	contact	t	t	f	null	'contact':2 'pandora':1
-24	Spectator	spectator-metric	Adds support for sending key metrics via spectator	0.1.0	Kevin Glisson	https://github.com/netflix/dispatch	metric	t	t	f	null	'spectat':1
-25	Spinnaker	spinnaker-tag	Uses spinnaker as a source of application data.	0.1.0.dev0	Kevin Glisson	https://github.com/netflix/dispatch.git	tag	t	t	f	null	'spinnak':1
+1	Dispatch Plugin - Basic Authentication Provider	dispatch-auth-provider-basic	Generic basic authentication provider.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	auth-provider	t	t	f	null	'authent':4 'basic':3 'dispatch':1 'plugin':2 'provid':5
+3	Dispatch Plugin - Document Resolver	dispatch-document-resolver	Uses dispatch itself to resolve incident documents.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	document-resolver	t	t	f	null	'dispatch':1 'document':3 'plugin':2 'resolv':4
+5	Dispatch Plugin - Participant Resolver	dispatch-participant-resolver	Uses dispatch itself to resolve incident participants.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	participant	t	t	f	null	'dispatch':1 'particip':3 'plugin':2 'resolv':4
+7	Google Calendar Plugin - Conference Management	google-calendar-conference	Uses Google calendar to manage conference rooms/meets.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	conference	t	t	f	null	'calendar':2 'confer':4 'googl':1 'manag':5 'plugin':3
+8	Google Docs Plugin - Document Management	google-docs-document	Uses Google docs to manage document contents.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	document	t	t	f	null	'doc':2 'document':4 'googl':1 'manag':5 'plugin':3
+9	Google Drive Plugin - Storage Management	google-drive-storage	Uses Google Drive to help manage incident storage.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	storage	t	t	f	null	'drive':2 'googl':1 'manag':5 'plugin':3 'storag':4
+10	Google Drive Plugin - Task Management	google-drive-task	Uses Google Drive to help manage incident tasks.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	task	t	t	f	null	'drive':2 'googl':1 'manag':5 'plugin':3 'task':4
+11	Google Gmail Plugin - Conversation Management	google-gmail-conversation	Uses gmail to facilitate conversations.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	conversation	t	t	f	null	'convers':4 'gmail':2 'googl':1 'manag':5 'plugin':3
+12	Google Group Plugin - Participant Group Management	google-group-participant-group	Uses Google Groups to help manage participant membership.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	participant_group	t	t	f	null	'googl':1 'group':2,5 'manag':6 'particip':4 'plugin':3
+14	PagerDuty Plugin - Oncall Management	pagerduty-oncall	Uses PagerDuty to resolve and page oncall teams.	0.1.0	Netflix	https://github.com/Netflix/dispatch	oncall	t	t	f	null	'manag':4 'oncal':3 'pagerduti':1 'plugin':2
+16	Slack Plugin - Conversation Management	slack-conversation	Uses Slack to facilitate conversations.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	conversation	t	t	f	null	'convers':3 'manag':4 'plugin':2 'slack':1
+4	Dispatch Plugin - PKCE Authentication Provider	dispatch-auth-provider-pkce	Generic PCKE authentication provider.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	auth-provider	f	t	f	null	'authent':4 'dispatch':1 'pkce':3 'plugin':2 'provid':5
+2	Dispatch Plugin - Contact plugin	dispatch-contact	Uses dispatch itself to resolve incident participants.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	contact	t	t	f	null	'contact':3 'dispatch':1 'plugin':2,4
+15	Slack Plugin - Contact Information Resolver	slack-contact	Uses Slack to resolve contact information details.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	contact	f	t	f	null	'contact':3 'inform':4 'plugin':2 'resolv':5 'slack':1
+6	Dispatch Plugin - Ticket Management	dispatch-ticket	Uses dispatch itself to create a ticket.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	ticket	t	t	f	null	'dispatch':1 'manag':4 'plugin':2 'ticket':3
+13	Jira Plugin - Ticket Management	jira-ticket	Uses Jira to help manage external tickets.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	ticket	f	t	f	null	'jira':1 'manag':4 'plugin':2 'ticket':3
 \.
 
 
@@ -2406,15 +2361,8 @@ COPY public.policy (id, name, description, expression, search_vector) FROM stdin
 --
 
 COPY public.recommendation (id, text) FROM stdin;
-1	A bad thing happened we need security's help.
-2	We need help running this incident
-3	We need help running this incident.
-4	We need help running this incident.
-5	We need help running this incident.
-6	We want the security team to be aware of this issue.
-7	Lets chat about this one
-8	Lets chat about this one
-9	Lets chat about this one
+1	This is a test incident
+2	This is a test incident
 \.
 
 
@@ -2423,16 +2371,6 @@ COPY public.recommendation (id, text) FROM stdin;
 --
 
 COPY public.recommendation_accuracy (id, recommendation_id, correct, resource_id, resource_type) FROM stdin;
-1	1	\N	1	TeamContact
-2	2	\N	1	TeamContact
-3	3	\N	1	TeamContact
-4	4	\N	1	TeamContact
-5	5	\N	1	TeamContact
-6	6	\N	1	TeamContact
-7	6	\N	1	IndividualContact
-8	7	\N	1	TeamContact
-9	8	\N	1	TeamContact
-10	9	\N	1	TeamContact
 \.
 
 
@@ -2451,13 +2389,6 @@ COPY public.recommendation_documents (document_id, recommendation_id) FROM stdin
 COPY public.recommendation_incident_priorities (incident_priority_id, recommendation_id) FROM stdin;
 2	1
 2	2
-1	3
-1	4
-1	5
-3	6
-3	7
-3	8
-3	9
 \.
 
 
@@ -2468,13 +2399,6 @@ COPY public.recommendation_incident_priorities (incident_priority_id, recommenda
 COPY public.recommendation_incident_types (incident_type_id, recommendation_id) FROM stdin;
 1	1
 1	2
-1	3
-1	4
-1	5
-1	6
-1	7
-1	8
-1	9
 \.
 
 
@@ -2483,7 +2407,6 @@ COPY public.recommendation_incident_types (incident_type_id, recommendation_id) 
 --
 
 COPY public.recommendation_individual_contacts (individual_contact_id, recommendation_id) FROM stdin;
-1	6
 \.
 
 
@@ -2500,15 +2423,6 @@ COPY public.recommendation_services (service_id, recommendation_id) FROM stdin;
 --
 
 COPY public.recommendation_team_contacts (team_contact_id, recommendation_id) FROM stdin;
-1	1
-1	2
-1	3
-1	4
-1	5
-1	6
-1	7
-1	8
-1	9
 \.
 
 
@@ -2525,7 +2439,7 @@ COPY public.recommendation_terms (term_id, recommendation_id) FROM stdin;
 --
 
 COPY public.report (id, created_at, details, details_raw, type, incident_id, participant_id, search_vector) FROM stdin;
-1	2020-06-19 17:58:24.283536	{"conditions": "These are conditions", "actions": "These are actions", "needs": "These are needs"}	These are conditions These are actions These are needs	Tactical Report	5	5	'action':6 'condit':3 'need':9
+1	2020-07-24 18:11:55.229674	{"conditions": "List of conditions", "actions": "List of actions", "needs": "List of needs"}	List of conditions List of actions List of needs	Tactical Report	1	1	'action':6 'condit':3 'list':1,4,7 'need':9
 \.
 
 
@@ -2533,8 +2447,8 @@ COPY public.report (id, created_at, details, details_raw, type, incident_id, par
 -- Data for Name: service; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public.service (id, is_active, name, type, description, external_id, search_vector, created_at, updated_at) FROM stdin;
-1	t	Test Service	pagerduty-oncall	This is the external paging service to resolve participants and incident commanders	asdsadas	'servic':2 'test':1	2020-06-19 17:17:10.463054	2020-06-19 17:20:45.509653
+COPY public.service (id, is_active, name, type, description, external_id, search_vector, updated_at, created_at) FROM stdin;
+1	t	PagerDuty Oncall Service	pagerduty-oncall	Oncall service for handling incidents.	P8H4RFG	'oncal':2 'pagerduti':1 'servic':3	2020-07-24 17:25:36.696743	2020-07-24 17:25:36.696737
 \.
 
 
@@ -2575,8 +2489,7 @@ COPY public.service_terms (term_id, service_id) FROM stdin;
 --
 
 COPY public.storage (resource_type, resource_id, weblink, id, incident_id, created_at, updated_at) FROM stdin;
-google-drive-storage	sdafds	https://drive.google.com/drive/folders	1	5	2020-06-19 17:32:55.641946	2020-06-19 17:32:55.6528
-google-drive-storage	asdsa	https://drive.google.com/drive/folders	2	7	2020-06-19 17:56:55.05523	2020-06-19 17:56:55.066055
+google-drive-storage	1MAj7cmmpVsKS6M4DQ64x8uJv0p703VTg	https://drive.google.com/drive/folders/1MAj7cmmpVsKS6M4DQ64x8uJv0p703VTg	1	1	2020-07-24 18:02:57.32136	2020-07-24 18:02:57.337322
 \.
 
 
@@ -2585,7 +2498,6 @@ google-drive-storage	asdsa	https://drive.google.com/drive/folders	2	7	2020-06-19
 --
 
 COPY public.tag (id, name, description, uri, source, type, discoverable, search_vector, updated_at, created_at) FROM stdin;
-1	App1	The application holds sensitive information.	https://app1.example.com	mysource	appname	t	'app1':1	2020-06-19 17:32:31.308533	2020-06-19 17:23:40.625763
 \.
 
 
@@ -2594,7 +2506,6 @@ COPY public.tag (id, name, description, uri, source, type, discoverable, search_
 --
 
 COPY public.task (resource_type, resource_id, weblink, id, resolved_at, resolve_by, last_reminder_at, creator_id, description, source, priority, status, reminders, incident_id, search_vector, created_at, updated_at) FROM stdin;
-google-docs-incident-task	asdfdsf	https://docs.google.com/a	1	\N	2020-06-20 17:50:58.16061	\N	5	How did this happen?	Incident	Low	Open	t	5	'happen':4	2020-06-19 17:50:58.160635	2020-06-19 17:50:58.16064
 \.
 
 
@@ -2603,7 +2514,6 @@ google-docs-incident-task	asdfdsf	https://docs.google.com/a	1	\N	2020-06-20 17:5
 --
 
 COPY public.task_assignees (participant_id, task_id) FROM stdin;
-5	1
 \.
 
 
@@ -2619,8 +2529,7 @@ COPY public.task_tickets (ticket_id, task_id) FROM stdin;
 -- Data for Name: team_contact; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public.team_contact (is_active, is_external, contact_type, email, company, owner, id, name, notes, search_vector, updated_at, created_at) FROM stdin;
-t	f	\N	secteam@example.com	Acme	\N	1	Security Team	\N	'acm':3 'secur':1 'team':2	2020-06-19 17:57:27.9749	2020-06-19 17:24:14.552956
+COPY public.team_contact (is_active, is_external, contact_type, email, company, owner, id, name, notes, search_vector, created_at, updated_at) FROM stdin;
 \.
 
 
@@ -2637,9 +2546,6 @@ COPY public.team_contact_incident (incident_id, team_contact_id) FROM stdin;
 --
 
 COPY public.team_contact_incident_priority (incident_priority_id, team_contact_id) FROM stdin;
-1	1
-2	1
-3	1
 \.
 
 
@@ -2648,7 +2554,6 @@ COPY public.team_contact_incident_priority (incident_priority_id, team_contact_i
 --
 
 COPY public.team_contact_incident_type (incident_type_id, team_contact_id) FROM stdin;
-1	1
 \.
 
 
@@ -2657,7 +2562,6 @@ COPY public.team_contact_incident_type (incident_type_id, team_contact_id) FROM 
 --
 
 COPY public.team_contact_terms (term_id, team_contact_id) FROM stdin;
-1	1
 \.
 
 
@@ -2665,8 +2569,7 @@ COPY public.team_contact_terms (term_id, team_contact_id) FROM stdin;
 -- Data for Name: term; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public.term (id, text, search_vector) FROM stdin;
-1	FOOBAR	'foobar':1
+COPY public.term (id, text, discoverable, search_vector) FROM stdin;
 \.
 
 
@@ -2674,9 +2577,8 @@ COPY public.term (id, text, search_vector) FROM stdin;
 -- Data for Name: ticket; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public.ticket (resource_type, resource_id, weblink, id, incident_id, created_at, updated_at) FROM stdin;
-dispatch-ticket	dispatch-5	http://localhost:8080/incidents/dispatch-5	1	5	2020-06-19 17:32:35.897666	2020-06-19 17:32:35.907831
-dispatch-ticket	dispatch-7	http://localhost:8080/incidents/dispatch-7	2	7	2020-06-19 17:56:31.971398	2020-06-19 17:56:31.979388
+COPY public.ticket (resource_type, resource_id, weblink, id, incident_id, updated_at, created_at) FROM stdin;
+dispatch-ticket	dispatch-1	http://localhost:8080/incidents/dispatch-1	1	1	2020-07-24 18:02:41.355332	2020-07-24 18:02:41.334229
 \.
 
 
@@ -2684,56 +2586,56 @@ dispatch-ticket	dispatch-7	http://localhost:8080/incidents/dispatch-7	2	7	2020-0
 -- Name: conference_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.conference_id_seq', 2, true);
+SELECT pg_catalog.setval('public.conference_id_seq', 1, true);
 
 
 --
 -- Name: conversation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.conversation_id_seq', 2, true);
+SELECT pg_catalog.setval('public.conversation_id_seq', 1, true);
 
 
 --
 -- Name: definition_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.definition_id_seq', 1, true);
+SELECT pg_catalog.setval('public.definition_id_seq', 1, false);
 
 
 --
 -- Name: dispatch_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.dispatch_user_id_seq', 2, true);
+SELECT pg_catalog.setval('public.dispatch_user_id_seq', 3, true);
 
 
 --
 -- Name: document_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.document_id_seq', 9, true);
+SELECT pg_catalog.setval('public.document_id_seq', 6, true);
 
 
 --
 -- Name: event_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.event_id_seq', 57, true);
+SELECT pg_catalog.setval('public.event_id_seq', 21, true);
 
 
 --
 -- Name: group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.group_id_seq', 4, true);
+SELECT pg_catalog.setval('public.group_id_seq', 2, true);
 
 
 --
 -- Name: incident_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.incident_id_seq', 7, true);
+SELECT pg_catalog.setval('public.incident_id_seq', 1, true);
 
 
 --
@@ -2761,21 +2663,21 @@ SELECT pg_catalog.setval('public.individual_contact_id_seq', 3, true);
 -- Name: participant_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.participant_id_seq', 10, true);
+SELECT pg_catalog.setval('public.participant_id_seq', 3, true);
 
 
 --
 -- Name: participant_role_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.participant_role_id_seq', 21, true);
+SELECT pg_catalog.setval('public.participant_role_id_seq', 6, true);
 
 
 --
 -- Name: plugin_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.plugin_id_seq', 25, true);
+SELECT pg_catalog.setval('public.plugin_id_seq', 16, true);
 
 
 --
@@ -2789,14 +2691,14 @@ SELECT pg_catalog.setval('public.policy_id_seq', 1, false);
 -- Name: recommendation_accuracy_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.recommendation_accuracy_id_seq', 10, true);
+SELECT pg_catalog.setval('public.recommendation_accuracy_id_seq', 1, false);
 
 
 --
 -- Name: recommendation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.recommendation_id_seq', 9, true);
+SELECT pg_catalog.setval('public.recommendation_id_seq', 2, true);
 
 
 --
@@ -2817,42 +2719,42 @@ SELECT pg_catalog.setval('public.service_id_seq', 1, true);
 -- Name: storage_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.storage_id_seq', 2, true);
+SELECT pg_catalog.setval('public.storage_id_seq', 1, true);
 
 
 --
 -- Name: tag_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.tag_id_seq', 1, true);
+SELECT pg_catalog.setval('public.tag_id_seq', 1, false);
 
 
 --
 -- Name: task_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.task_id_seq', 1, true);
+SELECT pg_catalog.setval('public.task_id_seq', 1, false);
 
 
 --
 -- Name: team_contact_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.team_contact_id_seq', 1, true);
+SELECT pg_catalog.setval('public.team_contact_id_seq', 1, false);
 
 
 --
 -- Name: term_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.term_id_seq', 1, true);
+SELECT pg_catalog.setval('public.term_id_seq', 1, false);
 
 
 --
 -- Name: ticket_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('public.ticket_id_seq', 2, true);
+SELECT pg_catalog.setval('public.ticket_id_seq', 1, true);
 
 
 --
@@ -3383,6 +3285,13 @@ CREATE INDEX ix_definition_search_vector ON public.definition USING gin (search_
 
 
 --
+-- Name: ix_dispatch_user_search_vector; Type: INDEX; Schema: public; Owner: dispatch
+--
+
+CREATE INDEX ix_dispatch_user_search_vector ON public.dispatch_user USING gin (search_vector);
+
+
+--
 -- Name: ix_document_search_vector; Type: INDEX; Schema: public; Owner: dispatch
 --
 
@@ -3484,105 +3393,98 @@ CREATE INDEX ix_term_search_vector ON public.term USING gin (search_vector);
 -- Name: definition definition_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
 --
 
-CREATE TRIGGER definition_search_vector_trigger BEFORE INSERT OR UPDATE ON public.definition FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'text');
+CREATE TRIGGER definition_search_vector_trigger BEFORE INSERT OR UPDATE ON public.definition FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'text');
+
+
+--
+-- Name: dispatch_user dispatch_user_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
+--
+
+CREATE TRIGGER dispatch_user_search_vector_trigger BEFORE INSERT OR UPDATE ON public.dispatch_user FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'email');
 
 
 --
 -- Name: document document_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
 --
 
-CREATE TRIGGER document_search_vector_trigger BEFORE INSERT OR UPDATE ON public.document FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name');
-
-
---
--- Name: event event_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
---
-
-CREATE TRIGGER event_search_vector_trigger BEFORE INSERT OR UPDATE ON public.event FOR EACH ROW EXECUTE PROCEDURE public.event_search_vector_update();
-
-
---
--- Name: incident_priority incident_priority_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
---
-
-CREATE TRIGGER incident_priority_search_vector_trigger BEFORE INSERT OR UPDATE ON public.incident_priority FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'description');
+CREATE TRIGGER document_search_vector_trigger BEFORE INSERT OR UPDATE ON public.document FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name');
 
 
 --
 -- Name: incident incident_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
 --
 
-CREATE TRIGGER incident_search_vector_trigger BEFORE INSERT OR UPDATE ON public.incident FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'title', 'description');
+CREATE TRIGGER incident_search_vector_trigger BEFORE INSERT OR UPDATE ON public.incident FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'title', 'description');
 
 
 --
 -- Name: incident_type incident_type_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
 --
 
-CREATE TRIGGER incident_type_search_vector_trigger BEFORE INSERT OR UPDATE ON public.incident_type FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'description');
+CREATE TRIGGER incident_type_search_vector_trigger BEFORE INSERT OR UPDATE ON public.incident_type FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'description');
 
 
 --
 -- Name: individual_contact individual_contact_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
 --
 
-CREATE TRIGGER individual_contact_search_vector_trigger BEFORE INSERT OR UPDATE ON public.individual_contact FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'title', 'company', 'notes');
+CREATE TRIGGER individual_contact_search_vector_trigger BEFORE INSERT OR UPDATE ON public.individual_contact FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'title', 'company', 'notes');
 
 
 --
 -- Name: plugin plugin_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
 --
 
-CREATE TRIGGER plugin_search_vector_trigger BEFORE INSERT OR UPDATE ON public.plugin FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'title');
+CREATE TRIGGER plugin_search_vector_trigger BEFORE INSERT OR UPDATE ON public.plugin FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'title');
 
 
 --
 -- Name: policy policy_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
 --
 
-CREATE TRIGGER policy_search_vector_trigger BEFORE INSERT OR UPDATE ON public.policy FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'description');
+CREATE TRIGGER policy_search_vector_trigger BEFORE INSERT OR UPDATE ON public.policy FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'description');
 
 
 --
 -- Name: report report_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
 --
 
-CREATE TRIGGER report_search_vector_trigger BEFORE INSERT OR UPDATE ON public.report FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'details_raw');
+CREATE TRIGGER report_search_vector_trigger BEFORE INSERT OR UPDATE ON public.report FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'details_raw');
 
 
 --
 -- Name: service service_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
 --
 
-CREATE TRIGGER service_search_vector_trigger BEFORE INSERT OR UPDATE ON public.service FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name');
+CREATE TRIGGER service_search_vector_trigger BEFORE INSERT OR UPDATE ON public.service FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name');
 
 
 --
 -- Name: tag tag_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
 --
 
-CREATE TRIGGER tag_search_vector_trigger BEFORE INSERT OR UPDATE ON public.tag FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name');
+CREATE TRIGGER tag_search_vector_trigger BEFORE INSERT OR UPDATE ON public.tag FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name');
 
 
 --
 -- Name: task task_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
 --
 
-CREATE TRIGGER task_search_vector_trigger BEFORE INSERT OR UPDATE ON public.task FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'description');
+CREATE TRIGGER task_search_vector_trigger BEFORE INSERT OR UPDATE ON public.task FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'description');
 
 
 --
 -- Name: team_contact team_contact_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
 --
 
-CREATE TRIGGER team_contact_search_vector_trigger BEFORE INSERT OR UPDATE ON public.team_contact FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'company', 'notes');
+CREATE TRIGGER team_contact_search_vector_trigger BEFORE INSERT OR UPDATE ON public.team_contact FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'company', 'notes');
 
 
 --
 -- Name: term term_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
 --
 
-CREATE TRIGGER term_search_vector_trigger BEFORE INSERT OR UPDATE ON public.term FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger('search_vector', 'pg_catalog.english', 'text');
+CREATE TRIGGER term_search_vector_trigger BEFORE INSERT OR UPDATE ON public.term FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'text');
 
 
 --
@@ -3815,6 +3717,14 @@ ALTER TABLE ONLY public.event
 
 ALTER TABLE ONLY public."group"
     ADD CONSTRAINT group_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- Name: incident incident_duplicate_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.incident
+    ADD CONSTRAINT incident_duplicate_id_fkey FOREIGN KEY (duplicate_id) REFERENCES public.incident(id);
 
 
 --
