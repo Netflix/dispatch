@@ -202,5 +202,6 @@ tags
 
 # exclude docker env files
 docker/.env
+
+# exclude data dump files
 *.dump
-!data/dispatch-sample-data.dump
