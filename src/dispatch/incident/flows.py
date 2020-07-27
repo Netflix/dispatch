@@ -25,8 +25,8 @@ from dispatch.config import (
     INCIDENT_RESOURCE_INVESTIGATION_SHEET,
     INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
     INCIDENT_RESOURCE_TACTICAL_GROUP,
-    INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID,
-    INCIDENT_STORAGE_RESTRICTED,
+    INCIDENT_STORAGE_FOLDER_ID,
+    INCIDENT_STORAGE_OPEN_ON_CLOSE,
 )
 from dispatch.extensions import sentry_sdk
 
@@ -44,9 +44,7 @@ from dispatch.group import service as group_service
 from dispatch.group.models import GroupCreate
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
-from dispatch.incident_priority.models import IncidentPriorityRead
 from dispatch.incident_type import service as incident_type_service
-from dispatch.incident_type.models import IncidentTypeRead
 from dispatch.individual import service as individual_service
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
@@ -72,6 +70,7 @@ from .messaging import (
     send_incident_review_document_notification,
     send_incident_welcome_participant_messages,
     send_incident_suggested_reading_messages,
+    get_suggested_document_items,
 )
 from .models import Incident, IncidentStatus
 
@@ -210,20 +209,6 @@ def create_participant_groups(
     return tactical_group, notification_group
 
 
-def delete_participant_groups(incident: Incident, db_session: SessionLocal):
-    """Deletes the external participant groups."""
-    p = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
-    p.delete(email=incident.tactical_group.email)
-    p.delete(email=incident.notifications_group.email)
-
-    event_service.log(
-        db_session=db_session,
-        source=p.title,
-        description="Tactical and notification groups deleted",
-        incident_id=incident.id,
-    )
-
-
 def create_conference(incident: Incident, participants: List[str], db_session: SessionLocal):
     """Create external conference room."""
     p = plugins.get(INCIDENT_PLUGIN_CONFERENCE_SLUG)
@@ -264,55 +249,9 @@ def create_incident_storage(
 ):
     """Create an external file store for incident storage."""
     p = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
-    storage = p.create(incident.name, participant_group_emails)
+    storage = p.create_file(INCIDENT_STORAGE_FOLDER_ID, incident.name, participant_group_emails)
     storage.update({"resource_type": INCIDENT_PLUGIN_STORAGE_SLUG, "resource_id": storage["id"]})
-
-    event_service.log(
-        db_session=db_session,
-        source=p.title,
-        description="Incident storage created",
-        incident_id=incident.id,
-    )
-
-    if INCIDENT_STORAGE_RESTRICTED:
-        p.restrict(storage["resource_id"])
-        event_service.log(
-            db_session=db_session,
-            source=p.title,
-            description="Incident storage restricted",
-            incident_id=incident.id,
-        )
-
     return storage
-
-
-def archive_incident_artifacts(incident: Incident, db_session: SessionLocal):
-    """Archives artifacts in the incident storage."""
-    p = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
-    p.archive(
-        source_team_drive_id=incident.storage.resource_id,
-        dest_team_drive_id=INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID,
-        folder_name=incident.name,
-    )
-    event_service.log(
-        db_session=db_session,
-        source=p.title,
-        description="Incident artifacts archived",
-        incident_id=incident.id,
-    )
-
-
-def unrestrict_incident_storage(incident: Incident, db_session: SessionLocal):
-    """Unrestricts the incident storage."""
-    p = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
-    p.unrestrict(incident.storage.resource_id)
-
-    event_service.log(
-        db_session=db_session,
-        source=p.title,
-        description="Incident storage unrestricted",
-        incident_id=incident.id,
-    )
 
 
 def create_collaboration_documents(incident: Incident, db_session: SessionLocal):
@@ -640,6 +579,8 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             incident_id=incident.id,
         )
 
+    suggested_document_items = get_suggested_document_items(incident, db_session)
+
     for participant in incident.participants:
         # we announce the participant in the conversation
         # should protect ourselves from failures of any one participant
@@ -654,8 +595,9 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             )
 
             send_incident_suggested_reading_messages(
-                participant.individual.email, incident.id, db_session
+                incident, suggested_document_items, participant.email
             )
+
         except Exception as e:
             log.exception(e)
             sentry_sdk.capture_exception(e)
@@ -706,7 +648,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
         # incident review document is optional
         if template:
             incident_review_document = storage_plugin.copy_file(
-                team_drive_id=incident.storage.resource_id,
+                folder_id=incident.storage.resource_id,
                 file_id=template.resource_id,
                 name=incident_review_document_name,
             )
@@ -719,7 +661,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
             )
 
             storage_plugin.move_file(
-                new_team_drive_id=incident.storage.resource_id, file_id=incident_review_document["id"]
+                new_folder_id=incident.storage.resource_id, file_id=incident_review_document["id"],
             )
 
             event_service.log(
@@ -787,16 +729,12 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
     # we update the external ticket
     update_external_incident_ticket(incident, db_session)
 
-    if incident.visibility == Visibility.open:
-        if INCIDENT_STORAGE_RESTRICTED:
-            # we unrestrict the storage
-            unrestrict_incident_storage(incident, db_session)
-
-        # we archive the artifacts in the storage
-        archive_incident_artifacts(incident, db_session)
-
-        # we delete the tactical and notification groups
-        delete_participant_groups(incident, db_session)
+    if INCIDENT_STORAGE_OPEN_ON_CLOSE:
+        # incidents with restricted visibility are never opened
+        if incident.visibility == Visibility.open:
+            # we add organization wide permission
+            storage_plugin = plugins.get(INCIDENT_PLUGIN_STORAGE_SLUG)
+            storage_plugin.open(incident.storage.resource_id)
 
     # we delete the conference
     delete_conference(incident, db_session)
@@ -989,10 +927,13 @@ def incident_engage_oncall_flow(
     # we add the oncall to the incident
     incident_add_or_reactivate_participant_flow(oncall_email, incident.id, db_session=db_session)
 
+    # we load the individual
+    individual = individual_service.get_by_email(db_session=db_session, email=user_email)
+
     event_service.log(
         db_session=db_session,
         source=oncall_plugin.title,
-        description=f"{user_email} engages oncall service {oncall_service.name}",
+        description=f"{individual.name} engages oncall service {oncall_service.name}",
         incident_id=incident.id,
     )
 

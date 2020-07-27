@@ -193,13 +193,13 @@ Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispa
 
 ### Incident Resource Configuration
 
-#### `INCIDENT_STORAGE_ARCHIVAL_FOLDER_ID`
+#### `INCIDENT_STORAGE_FOLDER_ID`
 
-> Controls the folder where to archive incident information.
+> Top level folder where all incident data is stored. Note: viewing actual incident data is still on a per-sub folder basis.
 
-#### `INCIDENT_STORAGE_RESTRICTED` \[default: 'True'\]
+#### `INCIDENT_STORAGE_OPEN_ON_CLOSE` \[default: 'true'\]
 
-> Controls whether a set of restrictions and capabilities to prevent content sharing need to be applied.
+> After an incident is closed, Netflix as an organization, tries to be transparent and allow others within the organization to view incident data. This is may not desirable in all organizations. This controls whether to open up incident data on incident close.
 
 #### `INCIDENT_NOTIFICATION_CONVERSATIONS` \[default: ''\]
 
@@ -240,3 +240,4 @@ Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispa
 #### `INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT` \[default: 'google-docs-incident-review-document'\]
 
 > Controls the resource type to use for the incident review document.
+

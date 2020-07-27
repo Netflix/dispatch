@@ -62,6 +62,7 @@ export default {
         return cloneDeep(this.value)
       },
       set(value) {
+        this.search = null
         this._incidentTypes = value.map(v => {
           if (typeof v === "string") {
             v = {

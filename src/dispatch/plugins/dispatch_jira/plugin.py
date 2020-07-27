@@ -157,9 +157,9 @@ class JiraTicketPlugin(TicketPlugin):
         commander_email: str,
         reporter_email: str,
         conversation_weblink: str,
-        conference_weblink: str,
         document_weblink: str,
         storage_weblink: str,
+        conference_weblink: str,
         cost: float,
         incident_type_plugin_metadata: dict = {},
     ):
@@ -178,9 +178,9 @@ class JiraTicketPlugin(TicketPlugin):
             commander_username=commander_username,
             reporter_username=reporter_username,
             conversation_weblink=conversation_weblink,
-            conference_weblink=conference_weblink,
             document_weblink=document_weblink,
             storage_weblink=storage_weblink,
+            conference_weblink=conference_weblink,
             cost=cost,
         )
 

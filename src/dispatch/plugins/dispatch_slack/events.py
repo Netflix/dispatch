@@ -10,6 +10,7 @@ from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.participant import service as participant_service
+from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from .config import (
@@ -185,7 +186,7 @@ def after_hours(user_email: str, incident_id: int, event: dict = None, db_sessio
         ]
 
         participant = participant_service.get_by_incident_id_and_email(
-            incident_id=incident_id, email=user_email
+            db_session=db_session, incident_id=incident_id, email=user_email
         )
         if not participant.after_hours_notification:
             user_id = dispatch_slack_service.resolve_user(slack_client, user_email)["id"]
@@ -211,8 +212,19 @@ def member_joined_channel(
     added_by_participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident_id, email=inviter_email
     )
-    participant.added_by = added_by_participant
-    participant.added_reason = event.event.text
+
+    # default to IC when we don't know how the user was added
+    if not added_by_participant:
+        participant.added_by = participant_service.get_by_incident_id_and_role(
+            db_session=db_session,
+            incident_id=incident_id,
+            role=ParticipantRoleType.incident_commander,
+        )
+        participant.added_reason = "User was automatically added by Dispatch."
+
+    else:
+        participant.added_by = added_by_participant
+        participant.added_reason = event.event.text
 
     db_session.commit()
 

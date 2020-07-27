@@ -135,7 +135,7 @@ def reactivate_participant(user_email: str, incident_id: int, db_session: Sessio
     participant_role = participant_role_service.create(
         db_session=db_session, participant_role_in=participant_role_in
     )
-    participant.participant_role.append(participant_role)
+    participant.participant_roles.append(participant_role)
 
     # We add and commit the changes
     db_session.add(participant)

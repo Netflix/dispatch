@@ -44,13 +44,64 @@ def plugins_group():
 @plugins_group.command("list")
 def list_plugins():
     """Shows all available plugins"""
+    from dispatch.database import SessionLocal
+    from dispatch.plugin import service as plugin_service
+
+    db_session = SessionLocal()
     table = []
     for p in plugins.all():
-        table.append([p.title, p.slug, p.version, p.type, p.author, p.description])
+        record = plugin_service.get_by_slug(db_session=db_session, slug=p.slug)
+
+        installed = True
+        if not record:
+            installed = False
+
+        table.append([p.title, p.slug, p.version, installed, p.type, p.author, p.description])
+
     click.secho(
-        tabulate(table, headers=["Title", "Slug", "Version", "Type", "Author", "Description"]),
+        tabulate(
+            table,
+            headers=["Title", "Slug", "Version", "Installed", "Type", "Author", "Description"],
+        ),
         fg="blue",
     )
+
+
+@plugins_group.command("install")
+def install_plugins():
+    """Installs all plugins, or only one."""
+    from dispatch.database import SessionLocal
+    from dispatch.plugin import service as plugin_service
+    from dispatch.plugin.models import Plugin
+
+    db_session = SessionLocal()
+    for p in plugins.all():
+        click.secho(f"Installing plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
+        record = plugin_service.get_by_slug(db_session=db_session, slug=p.slug)
+        if not record:
+            plugin = Plugin(
+                title=p.title,
+                slug=p.slug,
+                type=p.type,
+                version=p.version,
+                author=p.author,
+                author_url=p.author_url,
+                required=p.required,
+                multiple=p.multiple,
+                description=p.description,
+                enabled=p.enabled,
+            )
+            db_session.add(plugin)
+        else:
+            # we only update values that should change
+            record.tile = p.title
+            record.version = p.version
+            record.author = p.author
+            record.author_url = p.author_url
+            record.description = p.description
+            db_session.add(record)
+
+        db_session.commit()
 
 
 def sync_triggers():
@@ -71,6 +122,7 @@ def sync_triggers():
     sync_trigger(engine, "task", "search_vector", ["description"])
     sync_trigger(engine, "team_contact", "search_vector", ["name", "company", "notes"])
     sync_trigger(engine, "term", "search_vector", ["text"])
+    sync_trigger(engine, "dispatch_user", "search_vector", ["email"])
 
 
 @dispatch_cli.group("database")
@@ -104,9 +156,13 @@ def init_database():
 
 
 @dispatch_database.command("restore")
-@click.option("--dump-file", default="dispatch-backup.dump", help="Path to a PostgreSQL dump file.")
+@click.option(
+    "--dump-file",
+    default="dispatch-backup.dump",
+    help="Path to a PostgreSQL text format dump file.",
+)
 def restore_database(dump_file):
-    """Restores the database via pg_restore."""
+    """Restores the database via psql."""
     import sh
     from sh import psql, createdb
     from dispatch.config import (

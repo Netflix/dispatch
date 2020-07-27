@@ -25,6 +25,7 @@ const getDefaultSelectedState = () => {
     tags: [],
     terms: [],
     ticket: null,
+    duplicates: [],
     title: null,
     visibility: null,
     loading: false
@@ -159,7 +160,7 @@ const actions = {
     } else {
       return IncidentApi.update(state.selected.id, state.selected)
         .then(() => {
-          dispatch("closeCreateEdit")
+          dispatch("closeEditSheet")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "Incident updated successfully." }, { root: true })
         })

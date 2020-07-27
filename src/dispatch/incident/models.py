@@ -209,6 +209,10 @@ class Incident(Base, TimeStampMixin):
     terms = relationship("Term", secondary=assoc_incident_terms, backref="incidents")
     ticket = relationship("Ticket", uselist=False, backref="incident")
 
+    # allow incidents to be marked as duplicate
+    duplicate_id = Column(Integer, ForeignKey("incident.id"))
+    duplicates = relationship("Incident", remote_side=[id], uselist=True)
+
 
 # Pydantic models...
 class IncidentBase(DispatchBase):
@@ -230,6 +234,20 @@ class IncidentBase(DispatchBase):
         return v
 
 
+class IncidentReadNested(IncidentBase):
+    id: int
+    cost: float = None
+    name: str = None
+    reporter: Optional[IndividualReadNested]
+    commander: Optional[IndividualReadNested]
+    incident_priority: IncidentPriorityRead
+    incident_type: IncidentTypeRead
+    created_at: Optional[datetime] = None
+    reported_at: Optional[datetime] = None
+    stable_at: Optional[datetime] = None
+    closed_at: Optional[datetime] = None
+
+
 class IncidentCreate(IncidentBase):
     incident_priority: Optional[IncidentPriorityCreate]
     incident_type: Optional[IncidentTypeCreate]
@@ -243,6 +261,7 @@ class IncidentUpdate(IncidentBase):
     stable_at: Optional[datetime] = None
     commander: Optional[IndividualReadNested]
     reporter: Optional[IndividualReadNested]
+    duplicates: Optional[List[IncidentReadNested]] = []
     tags: Optional[List[Any]] = []  # any until we figure out circular imports
     terms: Optional[List[Any]] = []  # any until we figure out circular imports
 
@@ -270,6 +289,7 @@ class IncidentRead(IncidentBase):
     events: Optional[List[EventRead]] = []
     created_at: Optional[datetime] = None
     reported_at: Optional[datetime] = None
+    duplicates: Optional[List[IncidentReadNested]] = []
     stable_at: Optional[datetime] = None
     closed_at: Optional[datetime] = None
 

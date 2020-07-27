@@ -14,6 +14,7 @@ from dispatch.config import (
     INCIDENT_PLUGIN_EMAIL_SLUG,
     INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG,
 )
+from dispatch.conversation.enums import ConversationCommands
 from dispatch.database import SessionLocal
 from dispatch.enums import Visibility
 from dispatch.incident import service as incident_service
@@ -34,6 +35,7 @@ from dispatch.messaging import (
     INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_STATUS_CHANGE,
     INCIDENT_TYPE_CHANGE,
+    INCIDENT_STATUS_REMINDER,
     MessageType,
 )
 from dispatch.document import service as document_service
@@ -165,27 +167,32 @@ def send_incident_welcome_participant_messages(
     log.debug(f"Welcome participant messages sent {participant_email}.")
 
 
-def send_incident_suggested_reading_messages(
-    participant_email: str, incident_id: int, db_session: SessionLocal
-):
-    """Sends a suggested reading message to a participant."""
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
+def get_suggested_document_items(incident: Incident, db_session: SessionLocal):
+    """Create the suggested document item message."""
     suggested_documents = get_suggested_documents(
         db_session, incident.incident_type, incident.incident_priority, incident.description
     )
 
+    items = []
     if suggested_documents:
         # we send the ephemeral message
-        items = []
-        for i in suggested_documents:
+        # lets grab the first 5 documents
+        # TODO add more intelligent ranking
+        for i in suggested_documents[:5]:
             description = i.description
             if not description:
                 if i.incident:
                     description = i.incident.title
 
             items.append({"name": i.name, "weblink": i.weblink, "description": description})
+    return items
 
+
+def send_incident_suggested_reading_messages(
+    incident: Incident, items: list, participant_email: str
+):
+    """Sends a suggested reading message to a participant."""
+    if items:
         convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
         convo_plugin.send_ephemeral(
             incident.conversation.channel_id,
@@ -589,3 +596,32 @@ def send_incident_resources_ephemeral_message_to_participant(
     )
 
     log.debug(f"List of incident resources sent to {user_id} via ephemeral message.")
+
+
+def send_incident_close_reminder(incident: Incident):
+    """Sends a direct message to the incident commander reminding them to close the incident if possible."""
+    message_text = "Incident Status Reminder"
+    message_template = INCIDENT_STATUS_REMINDER
+
+    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
+    update_command = convo_plugin.get_command_name(ConversationCommands.update_incident)
+
+    items = [
+        {
+            "command": update_command,
+            "name": incident.name,
+            "ticket_weblink": incident.ticket.weblink,
+            "title": incident.title,
+            "status": incident.status,
+        }
+    ]
+
+    convo_plugin.send_direct(
+        incident.commander.email,
+        message_text,
+        message_template,
+        MessageType.incident_status_reminder,
+        items=items,
+    )
+
+    log.debug(f"Incident close reminder sent to {incident.commander.email}.")

@@ -55,6 +55,7 @@ export default {
         return cloneDeep(this.value)
       },
       set(value) {
+        this.search = null
         this._terms = value.map(v => {
           if (typeof v === "string") {
             v = {

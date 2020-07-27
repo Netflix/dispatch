@@ -1,6 +1,6 @@
 import logging
 
-from datetime import datetime
+from datetime import datetime, date
 from schedule import every
 from sqlalchemy import func
 
@@ -8,7 +8,6 @@ from dispatch.config import (
     INCIDENT_PLUGIN_CONVERSATION_SLUG,
     INCIDENT_ONCALL_SERVICE_ID,
     INCIDENT_NOTIFICATION_CONVERSATIONS,
-    INCIDENT_PLUGIN_TICKET_SLUG,
     INCIDENT_PLUGIN_STORAGE_SLUG,
 )
 from dispatch.conversation.enums import ConversationButtonActions
@@ -32,7 +31,13 @@ from dispatch.tag.models import Tag
 
 from .enums import IncidentStatus
 from .flows import update_external_incident_ticket
-from .service import calculate_cost, get_all, get_all_by_status, get_all_last_x_hours_by_status
+from .service import (
+    calculate_cost,
+    get_all,
+    get_all_by_status,
+    get_all_last_x_hours_by_status,
+)
+from .messaging import send_incident_close_reminder
 
 
 log = logging.getLogger(__name__)
@@ -256,7 +261,6 @@ def calculate_incidents_cost(db_session=None):
 
     # we want to update all incidents, all the time
     incidents = get_all(db_session=db_session)
-
     for incident in incidents:
         try:
             # we calculate the cost
@@ -282,4 +286,19 @@ def calculate_incidents_cost(db_session=None):
 
         except Exception as e:
             # we shouldn't fail to update all incidents when one fails
+            log.error(e)
             sentry_sdk.capture_exception(e)
+
+
+@scheduler.add(every(1).day.at("18:00"), name="incident-status-reminder")
+@background_task
+def close_incident_reminder(db_session=None):
+    """Sends a reminder to the IC to close out their incident."""
+    incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.stable)
+
+    for incident in incidents:
+        span = datetime.utcnow() - incident.stable_at
+        q, r = divmod(span.days, 7)  # only for incidents that have been stable longer than a week
+        if q >= 1 and r == 0:
+            if date.today().isoweekday() == 1:  # lets only send on mondays
+                send_incident_close_reminder(incident)

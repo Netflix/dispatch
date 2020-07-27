@@ -10,8 +10,6 @@ import io
 import json
 import logging
 import tempfile
-import time
-import uuid
 from enum import Enum
 from typing import Any, List
 
@@ -19,7 +17,6 @@ from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
-from dispatch.plugins.dispatch_google.config import GOOGLE_DOMAIN
 
 log = logging.getLogger(__name__)
 
@@ -82,7 +79,7 @@ def paginated(data_key):
     wait=wait_exponential(multiplier=1, min=2, max=5),
 )
 def make_call(client: Any, func: Any, propagate_errors: bool = False, **kwargs):
-    """Make an google client api call."""
+    """Make an Google client api call."""
     try:
         return getattr(client, func)(**kwargs).execute()
     except HttpError as e:
@@ -136,8 +133,8 @@ def get_file(client: Any, file_id: str):
         client.files(),
         "get",
         fileId=file_id,
-        supportsTeamDrives=True,
         fields="id, name, parents, webViewLink",
+        supportsAllDrives=True,
     )
 
 
@@ -159,7 +156,7 @@ def download_file(client: Any, file_id: str):
 
 
 def download_google_document(client: Any, file_id: str, mime_type: str = "text/plain"):
-    """Downloads a google document."""
+    """Downloads a Google document."""
     request = client.files().export_media(fileId=file_id, mimeType=mime_type)
 
     fp = io.BytesIO()
@@ -176,140 +173,32 @@ def download_google_document(client: Any, file_id: str, mime_type: str = "text/p
         raise Exception(f"Failed to export the file. Id: {file_id} MimeType: {mime_type}")
 
 
-@retry(stop=stop_after_attempt(5), retry=retry_if_exception_type(TryAgain))
-def create_team_drive(client: Any, name: str, members: List[str], role: Roles):
-    """Creates a new team drive."""
-    request_id = str(uuid.uuid4())
-    meta = {"name": name}
-    try:
-        drive_data = make_call(client.drives(), "create", body=meta, requestId=request_id)
-    except HttpError as e:
-        if e.resp.status in [409]:
-            raise TryAgain
-
-    for member in members:
-        add_permission(client, member, drive_data["id"], role, "user")
-
-    return drive_data
-
-
-def restrict_team_drive(client: Any, team_drive_id: str):
-    """Applies a set of restrictions and capabilities to the shared drive."""
-
-    # NOTE: You can list the drive metadata using the API explorer at
-    # https://developers.google.com/drive/api/v2/reference/drives/get and setting the "fields" field to *
-
-    body = {
-        "capabilities": {
-            "canAddChildren": True,
-            "canChangeCopyRequiresWriterPermissionRestriction": False,
-            "canChangeDomainUsersOnlyRestriction": False,
-            "canChangeDriveMembersOnlyRestriction": False,
-            "canComment": True,
-            "canCopy": True,
-            "canDeleteChildren": False,
-            "canDeleteDrive": False,
-            "canDownload": True,
-            "canEdit": True,
-            "canListChildren": True,
-            "canManageMembers": False,
-            "canReadRevisions": True,
-            "canRename": True,
-            "canRenameDrive": False,
-            "canShare": True,
-            "canTrashChildren": True,
-        },
-        "restrictions": {
-            "copyRequiresWriterPermission": True,
-            "domainUsersOnly": False,
-            "driveMembersOnly": True,
-        },
-    }
-
-    return make_call(client.drives(), "update", driveId=team_drive_id, body=body)
-
-
-def unrestrict_team_drive(client: Any, team_drive_id: str):
-    """Removes a set of restrictions and capabilities from the shared drive."""
-
-    # NOTE: You can list the drive metadata using the API explorer at
-    # https://developers.google.com/drive/api/v2/reference/drives/get and setting the "fields" field to *
-
-    body = {
-        "capabilities": {
-            "canAddChildren": True,
-            "canChangeCopyRequiresWriterPermissionRestriction": False,
-            "canChangeDomainUsersOnlyRestriction": True,
-            "canChangeDriveMembersOnlyRestriction": True,
-            "canComment": True,
-            "canCopy": True,
-            "canDeleteChildren": False,
-            "canDeleteDrive": False,
-            "canDownload": True,
-            "canEdit": True,
-            "canListChildren": True,
-            "canManageMembers": False,
-            "canReadRevisions": True,
-            "canRename": True,
-            "canRenameDrive": False,
-            "canShare": True,
-            "canTrashChildren": True,
-        },
-        "restrictions": {
-            "copyRequiresWriterPermission": True,
-            "domainUsersOnly": False,
-            "driveMembersOnly": False,
-        },
-    }
-
-    return make_call(client.drives(), "update", driveId=team_drive_id, body=body)
-
-
-def create_file(client: Any, parent_id: str, name: str, file_type: str = "folder"):
+def create_file(
+    client: Any,
+    parent_id: str,
+    name: str,
+    members: List[str],
+    role: Roles = Roles.writer.value,
+    file_type: str = "folder",
+):
     """Creates a new folder with the specified parents."""
     if file_type == "folder":
         mimetype = "application/vnd.google-apps.folder"
 
     file_metadata = {"name": name, "mimeType": mimetype, "parents": [parent_id]}
 
-    return make_call(
+    file_data = make_call(
         client.files(),
         "create",
         body=file_metadata,
-        supportsTeamDrives=True,
         fields="id, name, parents, webViewLink",
+        supportsAllDrives=True,
     )
 
+    for member in members:
+        add_permission(client, member, file_data["id"], role, "user")
 
-def delete_team_drive(client: Any, team_drive_id: str, empty: bool = True):
-    """Deletes a team drive"""
-    if empty:
-        files = list_files(client, team_drive_id)
-
-        time.sleep(5)
-        for f in files:
-            delete_file(client, team_drive_id, f["id"])
-
-    return make_call(client.teamdrives(), "delete", teamDriveId=team_drive_id)
-
-
-def archive_team_drive(
-    client: Any, source_team_drive_id: str, dest_team_drive_id: str, folder_name: str
-):
-    """Archives a google team drive to a specified folder."""
-    folder = create_file(client, parent_id=dest_team_drive_id, name=folder_name)
-
-    files = list_files(
-        client,
-        team_drive_id=source_team_drive_id,
-        q="mimeType != 'application/vnd.google-apps.folder'",
-    )
-
-    for f in files:
-        add_domain_permission(client, f["id"], domain=GOOGLE_DOMAIN)
-        move_file(client, folder["id"], f["id"])
-
-    delete_team_drive(client, source_team_drive_id)
+    return file_data
 
 
 @paginated("files")
@@ -339,21 +228,38 @@ def list_comments(client: Any, file_id: str, **kwargs):
     return make_call(client.comments(), "list", fileId=file_id, fields="*", **kwargs)
 
 
-def copy_file(client: Any, team_drive_id: str, file_id: str, new_file_name: str):
+def add_reply(
+    client: Any, file_id: str, comment_id: str, content: str, resolved: bool = False, **kwargs
+):
+    """Adds a reply to a comment."""
+    if resolved:
+        action = "resolve"
+        content = content if content else "Resolved by Dispatch"
+    else:
+        action = "reopen"
+        content = content if content else "Reopened by Dispatch"
+
+    body = {"content": content, "action": action}
+    return make_call(
+        client.replies(), "create", fileId=file_id, commentId=comment_id, fields="id", body=body
+    )
+
+
+def copy_file(client: Any, folder_id: str, file_id: str, new_file_name: str):
     """Copies a given file."""
     return make_call(
         client.files(),
         "copy",
-        body={"name": new_file_name, "teamDriveId": team_drive_id},
+        body={"name": new_file_name, "driveId": folder_id},
         fileId=file_id,
         fields="id, name, parents, webViewLink",
-        supportsTeamDrives=True,
+        supportsAllDrives=True,
     )
 
 
-def delete_file(client: Any, team_drive_id: str, file_id: str):
+def delete_file(client: Any, folder_id: str, file_id: str):
     """Deletes a file from a teamdrive."""
-    return make_call(client.files(), "delete", fileId=file_id, supportsTeamDrives=True)
+    return make_call(client.files(), "delete", fileId=file_id, supportsAllDrives=True)
 
 
 def add_domain_permission(
@@ -372,7 +278,7 @@ def add_domain_permission(
         body=permission,
         sendNotificationEmail=False,
         fields="id",
-        supportsTeamDrives=True,
+        supportsAllDrives=True,
     )
 
 
@@ -392,18 +298,18 @@ def add_permission(
         body=permission,
         sendNotificationEmail=False,
         fields="id",
-        supportsTeamDrives=True,
+        supportsAllDrives=True,
     )
 
 
-def remove_permission(client: Any, email: str, team_drive_id: str):
+def remove_permission(client: Any, email: str, folder_id: str):
     """Removes permission from team drive or file."""
     permissions = make_call(
         client.permissions(),
         "list",
-        fileId=team_drive_id,
-        supportsTeamDrives=True,
+        fileId=folder_id,
         fields="permissions(id, emailAddress)",
+        supportsAllDrives=True,
     )
 
     for p in permissions["permissions"]:
@@ -411,15 +317,15 @@ def remove_permission(client: Any, email: str, team_drive_id: str):
             make_call(
                 client.permissions(),
                 "delete",
-                fileId=team_drive_id,
+                fileId=folder_id,
                 permissionId=p["id"],
-                supportsTeamDrives=True,
+                supportsAllDrives=True,
             )
 
 
-def move_file(client: Any, team_drive_id: str, file_id: str):
+def move_file(client: Any, folder_id: str, file_id: str):
     """Moves a file from one team drive to another"""
-    f = make_call(client.files(), "get", fileId=file_id, fields="parents", supportsTeamDrives=True)
+    f = make_call(client.files(), "get", fileId=file_id, fields="parents", supportsAllDrives=True)
 
     previous_parents = ",".join(f.get("parents"))
 
@@ -427,10 +333,10 @@ def move_file(client: Any, team_drive_id: str, file_id: str):
         client.files(),
         "update",
         fileId=file_id,
-        addParents=team_drive_id,
+        addParents=folder_id,
         removeParents=previous_parents,
-        supportsTeamDrives=True,
         fields="id, name, parents, webViewLink",
+        supportsAllDrives=True,
     )
 
 

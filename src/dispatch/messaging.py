@@ -29,6 +29,7 @@ class MessageType(str, Enum):
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
+    incident_status_reminder = "incident-status-reminder"
     incident_participant_suggested_reading = "incident-participant-suggested-reading"
 
 
@@ -171,7 +172,7 @@ individuals you feel may be able to help resolve this incident.""".replace(
 ).strip()
 
 INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION = """
-Dispatch thinks the following documents are
+Dispatch thinks the following documents might be
 relevant to this incident.""".replace(
     "\n", " "
 ).strip()
@@ -216,6 +217,11 @@ Please, contact {{assignee_firstname}} about any questions or concerns.""".repla
 
 INCIDENT_REPORT_REMINDER_DESCRIPTION = """You have not provided a {{report_type}} for this incident recently.
 You can use `{{command}}` in the conversation to assist you in writing one.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_STATUS_REMINDER_DESCRIPTION = """You have not updated the status for this incident recently. If the incident has been resolved,
+you can use `{{command}}` in the conversation to assist you in closing your incident.""".replace(
     "\n", " "
 ).strip()
 
@@ -394,6 +400,17 @@ INCIDENT_REPORT_REMINDER = [
         "text": INCIDENT_REPORT_REMINDER_DESCRIPTION,
     },
     INCIDENT_TITLE,
+]
+
+
+INCIDENT_STATUS_REMINDER = [
+    {
+        "title": "{{name}} Incident - Status Reminder",
+        "title_link": "{{ticket_weblink}}",
+        "text": INCIDENT_STATUS_REMINDER_DESCRIPTION,
+    },
+    INCIDENT_TITLE,
+    INCIDENT_STATUS,
 ]
 
 

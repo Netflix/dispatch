@@ -10,25 +10,28 @@ from dispatch.plugins.base import plugins
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.task import service as task_service
 from dispatch.task.models import TaskStatus, Task
+from dispatch.conversation.enums import ConversationButtonActions
 
 from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
-    SLACK_COMMAND_EXECUTIVE_REPORT_SLUG,
+    SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
     SLACK_COMMAND_LIST_MY_TASKS_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
     SLACK_COMMAND_LIST_TASKS_SLUG,
     SLACK_COMMAND_REPORT_INCIDENT_SLUG,
-    SLACK_COMMAND_TACTICAL_REPORT_SLUG,
+    SLACK_COMMAND_REPORT_TACTICAL_SLUG,
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG,
     SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG,
+    SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG,
 )
 
 from .modals import (
-    create_update_notifications_group_modal,
+    create_add_timeline_event_modal,
     create_report_incident_modal,
+    create_update_notifications_group_modal,
     create_update_participant_modal,
 )
 
@@ -46,15 +49,16 @@ slack_client = dispatch_slack_service.create_slack_client()
 def command_functions(command: str):
     """Interprets the command and routes it the appropriate function."""
     command_mappings = {
+        SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG: [create_add_timeline_event_modal],
         SLACK_COMMAND_ASSIGN_ROLE_SLUG: [create_assign_role_dialog],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [create_engage_oncall_dialog],
-        SLACK_COMMAND_EXECUTIVE_REPORT_SLUG: [create_executive_report_dialog],
+        SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [create_executive_report_dialog],
         SLACK_COMMAND_LIST_MY_TASKS_SLUG: [list_my_tasks],
         SLACK_COMMAND_LIST_PARTICIPANTS_SLUG: [list_participants],
         SLACK_COMMAND_LIST_RESOURCES_SLUG: [incident_flows.incident_list_resources_flow],
         SLACK_COMMAND_LIST_TASKS_SLUG: [list_tasks],
         SLACK_COMMAND_REPORT_INCIDENT_SLUG: [create_report_incident_modal],
-        SLACK_COMMAND_TACTICAL_REPORT_SLUG: [create_tactical_report_dialog],
+        SLACK_COMMAND_REPORT_TACTICAL_SLUG: [create_tactical_report_dialog],
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_dialog],
         SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG: [create_update_notifications_group_modal],
         SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG: [create_update_participant_modal],
@@ -105,6 +109,7 @@ def list_tasks(
 ):
     """Returns the list of incident tasks to the user as an ephemeral message."""
     blocks = []
+
     for status in TaskStatus:
         blocks.append(
             {
@@ -112,6 +117,8 @@ def list_tasks(
                 "text": {"type": "mrkdwn", "text": f"*{status.value} Incident Tasks*"},
             }
         )
+        button_text = "Resolve" if status.value == TaskStatus.open else "Re-open"
+        action_type = "resolve" if status.value == TaskStatus.open else "reopen"
 
         tasks = task_service.get_all_by_incident_id_and_status(
             db_session=db_session, incident_id=incident_id, status=status.value
@@ -120,8 +127,9 @@ def list_tasks(
         if by_creator or by_assignee:
             tasks = filter_tasks_by_assignee_and_creator(tasks, by_assignee, by_creator)
 
-        for task in tasks:
-            assignees = [a.individual.email for a in task.assignees]
+        for idx, task in enumerate(tasks):
+            assignees = [f"<{a.individual.weblink}|{a.individual.name}>" for a in task.assignees]
+
             blocks.append(
                 {
                     "type": "section",
@@ -129,8 +137,15 @@ def list_tasks(
                         "type": "mrkdwn",
                         "text": (
                             f"*Description:* <{task.weblink}|{task.description}>\n"
+                            f"*Creator:* <{task.creator.individual.weblink}|{task.creator.individual.name}>\n"
                             f"*Assignees:* {', '.join(assignees)}"
                         ),
+                    },
+                    "block_id": f"{ConversationButtonActions.update_task_status}-{task.status}-{idx}",
+                    "accessory": {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": button_text},
+                        "value": f"{action_type}-{task.resource_id}",
                     },
                 }
             )
