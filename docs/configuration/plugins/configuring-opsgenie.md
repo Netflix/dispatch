@@ -15,3 +15,4 @@ Dispatch ships with support for resolving oncall schedules via the Opsgenie API.
 ## `OPSGENIE_TEAM_ID` \[Required\]
 
 > Id for the Opsgenie team.
+

@@ -70,6 +70,15 @@ Enable the following APIs \(APIs and Services &gt; Library\):
 * Gmail API
 * Admin SDK \(necessary to create and manage groups\)
 
+{% hint style="info" %}
+If you are planning on using Google Drive storage you must enable the folder sharing beta.
+
+[https://support.google.com/a/answer/9890318?hl=en\#:~:text=Help%20CenterCommunity-,Folder%20sharing%20in%20shared%20drives%20\(beta\),folders%20within%20a%20shared%20drive](https://support.google.com/a/answer/9890318?hl=en#:~:text=Help%20CenterCommunity-,Folder%20sharing%20in%20shared%20drives%20%28beta%29,folders%20within%20a%20shared%20drive)
+
+To signup:  
+[https://docs.google.com/forms/d/e/1FAIpQLSfrILe0\_bPkkI7pxfr-4rHk0qcajrUOHTcmrWPOVLo0SKNF7A/viewform](https://docs.google.com/forms/d/e/1FAIpQLSfrILe0_bPkkI7pxfr-4rHk0qcajrUOHTcmrWPOVLo0SKNF7A/viewform)
+{% endhint %}
+
 Finally, map the `client_id` of the created service with the required OAuth2 scopes.
 
 Navigate to admin [home](https://admin.google.com/AdminHome?chromeless=1#OGX:ManageOauthClients%20) \(Security &gt; Advanced Settings &gt; Manage API Client Access\), and add the following scopes:
@@ -91,3 +100,4 @@ Then construct this link and click it:
 https://admin.google.com/AdminHome?clientScopeToAdd=https://www.googleapis.com/auth/documents,https://www.googleapis.com/auth/drive,https://mail.google.com/,https://www.googleapis.com/auth/admin.directory.group,https://www.googleapis.com/auth/apps.groups.settings,https://www.googleapis.com/auth/calendar
 &clientNameToAdd=<INSERTCLIENTIDHERE>&chromeless=1#OGX:ManageOauthClients
 ```
+

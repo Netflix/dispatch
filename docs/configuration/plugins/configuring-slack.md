@@ -4,7 +4,6 @@ description: Configuration options for the Slack plugin.
 
 # Configuring Slack
 
-
 {% hint style="info" %}
 Dispatch ships with support for Slack. Below, is how to configure the Slack plugin to work with `Dispatch`. This plugin is required for core functionality.
 
@@ -17,21 +16,21 @@ The plugin relies on the [Events API](https://api.slack.com/events-api) to recei
 
 To enable Dispatch to process Slack events, ensure your bot is subscribed to the following events:
 
-![](../../.gitbook/assets/slack-setup-events%20%281%29%20%281%29.png)
+![](../../.gitbook/assets/slack-setup-events%20%281%29%20%281%29%20%281%29.png)
 
 ### Interactivity
 
 To enable Dispatch to generate interactive components such as dialogs and modals, ensure that the `Request URL` is pointing to the events action API endpoint of the Dispatch server at `/api/v1/events/slack/action`.
 
-![](../../.gitbook/assets/slack-setup-dialogs%20%281%29%20%281%29.png)
+![](../../.gitbook/assets/slack-setup-dialogs%20%281%29%20%281%29%20%281%29.png)
 
 ### Slash Commands
 
 To enable Dispatch's slash commands you must add them to the Slack app first. Ensure that the `Command` field matches the configuration variables in the XXX section \(e.g. `/dispatch-update-incident`\) and that the `Request URL` points to the events command API endpoint of the Dispatch server at `/api/v1/events/slack/command`.
 
-![](../../.gitbook/assets/slack-setup-commands-0%20%281%29%20%281%29.png)
+![](../../.gitbook/assets/slack-setup-commands-0%20%281%29%20%281%29%20%281%29.png)
 
-![](../../.gitbook/assets/slack-setup-commands-1%20%281%29%20%281%29.png)
+![](../../.gitbook/assets/slack-setup-commands-1%20%281%29%20%281%29%20%281%29.png)
 
 ### OAuth & Permissions
 
