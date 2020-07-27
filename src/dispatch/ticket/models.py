@@ -15,9 +15,9 @@ class Ticket(Base, ResourceMixin):
 
 # Pydantic models...
 class TicketBase(DispatchBase):
-    resource_id: Optional[str] = "Unknown"
-    resource_type: Optional[str] = "Unknown"
-    weblink: str
+    resource_id: Optional[str]
+    resource_type: Optional[str]
+    weblink: Optional[str]
 
 
 class TicketCreate(TicketBase):
@@ -29,7 +29,6 @@ class TicketUpdate(TicketBase):
 
 
 class TicketRead(TicketBase):
-    weblink: str
     description: Optional[str]
 
     @validator("description", pre=True, always=True)

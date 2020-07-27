@@ -54,7 +54,7 @@ def create_task_reminders(db_session=None):
             )
             oncall_plugin = plugins.get(oncall_service.type)
             oncall_email = oncall_plugin.get(service_id=INCIDENT_ONCALL_SERVICE_ID)
-            oncall_individual = individual_service.resolve_user_by_email(oncall_email)
+            oncall_individual = individual_service.resolve_user_by_email(oncall_email, db_session)
             contact_fullname = oncall_individual["fullname"]
             contact_weblink = oncall_individual["weblink"]
 

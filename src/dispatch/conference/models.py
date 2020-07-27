@@ -17,11 +17,11 @@ class Conference(Base, ResourceMixin):
 
 # Pydantic models...
 class ConferenceBase(DispatchBase):
-    resource_id: str
-    resource_type: str
-    weblink: str
-    conference_id: str
-    conference_challenge: str
+    resource_id: Optional[str]
+    resource_type: Optional[str]
+    weblink: Optional[str]
+    conference_id: Optional[str]
+    conference_challenge: Optional[str]
 
 
 class ConferenceCreate(ConferenceBase):
@@ -33,8 +33,6 @@ class ConferenceUpdate(ConferenceBase):
 
 
 class ConferenceRead(ConferenceBase):
-    weblink: str
-    conference_challenge: str
     description: Optional[str]
 
     @validator("description", pre=True, always=True)

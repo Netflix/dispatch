@@ -6,8 +6,8 @@ from datetime import datetime
 from enum import Enum
 from fastapi import BackgroundTasks
 from sqlalchemy.orm import Session
+from dispatch.database import SessionLocal
 
-from dispatch.config import INCIDENT_PLUGIN_GROUP_SLUG
 from dispatch.decorators import background_task
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
@@ -18,7 +18,7 @@ from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant, ParticipantUpdate
-from dispatch.plugins.base import plugins
+from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from .messaging import create_incident_reported_confirmation_msg
@@ -414,7 +414,7 @@ def create_update_participant_modal(incident_id: int, command: dict, db_session=
     )
 
 
-def build_update_notifications_group_blocks(incident: Incident):
+def build_update_notifications_group_blocks(incident: Incident, db_session: SessionLocal):
     """Builds all blocks required to update the membership of the notifications group."""
     modal_template = {
         "type": "modal",
@@ -436,7 +436,7 @@ def build_update_notifications_group_blocks(incident: Incident):
         "private_metadata": json.dumps({"incident_id": str(incident.id)}),
     }
 
-    group_plugin = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
+    group_plugin = plugin_service.get_active(db_session=db_session, plugin_type="grouop")
     members = group_plugin.list(incident.notifications_group.email)
 
     members_block = {
@@ -469,7 +469,9 @@ def create_update_notifications_group_modal(incident_id: int, command: dict, db_
 
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    modal_create_template = build_update_notifications_group_blocks(incident=incident)
+    modal_create_template = build_update_notifications_group_blocks(
+        incident=incident, db_session=db_session
+    )
 
     dispatch_slack_service.open_modal_with_user(
         client=slack_client, trigger_id=trigger_id, modal=modal_create_template
@@ -497,9 +499,10 @@ def update_notifications_group_from_submitted_form(action: dict, db_session=None
     incident_id = action["view"]["private_metadata"]["incident_id"]
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    group_plugin = plugins.get(INCIDENT_PLUGIN_GROUP_SLUG)
-    group_plugin.add(incident.notifications_group.email, members_added)
-    group_plugin.remove(incident.notifications_group.email, members_removed)
+    group_plugin = plugin_service.get_active(db_session=db_session, plugin_type="group")
+
+    group_plugin.instance.add(incident.notifications_group.email, members_added)
+    group_plugin.instance.remove(incident.notifications_group.email, members_removed)
 
 
 def build_add_timeline_event_blocks(incident: Incident):

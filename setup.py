@@ -413,7 +413,7 @@ setup(
             "google_docs_document = dispatch.plugins.dispatch_google.docs.plugin:GoogleDocsDocumentPlugin",
             "google_drive_storage = dispatch.plugins.dispatch_google.drive.plugin:GoogleDriveStoragePlugin",
             "google_drive_task = dispatch.plugins.dispatch_google.drive.plugin:GoogleDriveTaskPlugin",
-            "google_gmail_conversation = dispatch.plugins.dispatch_google.gmail.plugin:GoogleGmailConversationPlugin",
+            "google_gmail_email = dispatch.plugins.dispatch_google.gmail.plugin:GoogleGmailEmailPlugin",
             "google_groups_participants = dispatch.plugins.dispatch_google.groups.plugin:GoogleGroupParticipantGroupPlugin",
             "jira_ticket = dispatch.plugins.dispatch_jira.plugin:JiraTicketPlugin",
             "pagerduty_oncall = dispatch.plugins.dispatch_pagerduty.plugin:PagerDutyOncallPlugin",

@@ -92,13 +92,17 @@ def get_or_create(
 
     if not participant:
         # We get information about the individual
-        contact_plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
         individual_contact = individual_service.get(
             db_session=db_session, individual_contact_id=individual_id
         )
-        individual_info = contact_plugin.instance.get(
-            individual_contact.email, db_session=db_session
-        )
+
+        individual_info = {}
+        contact_plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
+        if contact_plugin:
+            individual_info = contact_plugin.instance.get(
+                individual_contact.email, db_session=db_session
+            )
+
         location = individual_info.get("location", "Unknown")
         team = individual_info.get("team", "Unknown")
         department = individual_info.get("department", "Unknown")

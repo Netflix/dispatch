@@ -1,13 +1,12 @@
 import logging
 
-from dispatch.config import INCIDENT_PLUGIN_CONTACT_SLUG
 from dispatch.database import SessionLocal
 from dispatch.event import service as event_service
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType, ParticipantRoleCreate
-from dispatch.plugins.base import plugins
+from dispatch.plugin import service as plugin_service
 
 from .service import get_or_create, get_by_incident_id_and_email
 
@@ -63,8 +62,8 @@ def remove_participant(user_email: str, incident_id: int, db_session: SessionLoc
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # We get information about the individual
-    contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
-    individual_info = contact_plugin.get(user_email)
+    contact_plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
+    individual_info = contact_plugin.instance.get(user_email)
     individual_fullname = individual_info["fullname"]
 
     log.debug(f"Removing {individual_fullname} from incident {incident.name}...")
@@ -111,8 +110,8 @@ def reactivate_participant(user_email: str, incident_id: int, db_session: Sessio
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # We get information about the individual
-    contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
-    individual_info = contact_plugin.get(user_email)
+    contact_plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
+    individual_info = contact_plugin.instance.get(user_email)
     individual_fullname = individual_info["fullname"]
 
     log.debug(f"Reactivating {individual_fullname} on incident {incident.name}...")

@@ -1,12 +1,11 @@
 from typing import List
 
-from dispatch.config import INCIDENT_PLUGIN_CONTACT_SLUG
 
 from dispatch.decorators import background_task
 from dispatch.incident import flows as incident_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
-from dispatch.plugins.base import plugins
+from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.task import service as task_service
 from dispatch.task.models import TaskStatus, Task
@@ -172,12 +171,12 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
         db_session=db_session, incident_id=incident_id
     ).all()
 
-    contact_plugin = plugins.get(INCIDENT_PLUGIN_CONTACT_SLUG)
+    contact_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
 
     for participant in participants:
         if participant.is_active:
             participant_email = participant.individual.email
-            participant_info = contact_plugin.get(participant_email)
+            participant_info = contact_plugin.instance.get(participant_email)
             participant_name = participant_info["fullname"]
             participant_team = participant_info["team"]
             participant_department = participant_info["department"]

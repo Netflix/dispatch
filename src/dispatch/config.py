@@ -126,37 +126,6 @@ DATABASE_NAME = config("DATABASE_NAME", default="dispatch")
 DATABASE_PORT = config("DATABASE_PORT", default="5432")
 SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{DATABASE_CREDENTIALS}@{DATABASE_HOSTNAME}:{DATABASE_PORT}/{DATABASE_NAME}"
 
-# incident plugins
-INCIDENT_PLUGIN_CONTACT_SLUG = config("INCIDENT_PLUGIN_CONTACT_SLUG", default="dispatch-contact")
-INCIDENT_PLUGIN_CONVERSATION_SLUG = config(
-    "INCIDENT_PLUGIN_CONVERSATION_SLUG", default="slack-conversation"
-)
-INCIDENT_PLUGIN_DOCUMENT_SLUG = config(
-    "INCIDENT_PLUGIN_DOCUMENT_SLUG", default="google-docs-document"
-)
-INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG = config(
-    "INCIDENT_PLUGIN_DOCUMENT_RESOLVER_SLUG", default="dispatch-document-resolver"
-)
-INCIDENT_PLUGIN_EMAIL_SLUG = config(
-    "INCIDENT_PLUGIN_EMAIL_SLUG", default="google-gmail-conversation"
-)
-INCIDENT_PLUGIN_GROUP_SLUG = config(
-    "INCIDENT_PLUGIN_GROUP_SLUG", default="google-group-participant-group"
-)
-INCIDENT_PLUGIN_PARTICIPANT_RESOLVER_SLUG = config(
-    "INCIDENT_PLUGIN_PARTICIPANT_RESOLVER_SLUG", default="dispatch-participant-resolver"
-)
-INCIDENT_PLUGIN_STORAGE_SLUG = config(
-    "INCIDENT_PLUGIN_STORAGE_SLUG", default="google-drive-storage"
-)
-
-INCIDENT_PLUGIN_CONFERENCE_SLUG = config(
-    "INCIDENT_PLUGIN_CONFERENCE_SLUG", default="google-calendar-conference"
-)
-INCIDENT_PLUGIN_TICKET_SLUG = config("INCIDENT_PLUGIN_TICKET_SLUG", default="jira-ticket")
-
-INCIDENT_PLUGIN_TASK_SLUG = config("INCIDENT_PLUGIN_TASK_SLUG", default="google-drive-task")
-
 # incident resources
 INCIDENT_STORAGE_FOLDER_ID = config("INCIDENT_STORAGE_FOLDER_ID")
 

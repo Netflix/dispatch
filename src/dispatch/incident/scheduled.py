@@ -5,10 +5,8 @@ from schedule import every
 from sqlalchemy import func
 
 from dispatch.config import (
-    INCIDENT_PLUGIN_CONVERSATION_SLUG,
     INCIDENT_ONCALL_SERVICE_ID,
     INCIDENT_NOTIFICATION_CONVERSATIONS,
-    INCIDENT_PLUGIN_STORAGE_SLUG,
 )
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.decorators import background_task
@@ -26,6 +24,7 @@ from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_f
 from dispatch.plugins.base import plugins
 from dispatch.scheduler import scheduler
 from dispatch.service import service as service_service
+from dispatch.plugin import service as plugin_service
 from dispatch.tag import service as tag_service
 from dispatch.tag.models import Tag
 
@@ -54,9 +53,7 @@ def auto_tagger(db_session):
     phrases = build_term_vocab(tag_strings)
     matcher = build_phrase_matcher("dispatch-tag", phrases)
 
-    p = plugins.get(
-        INCIDENT_PLUGIN_STORAGE_SLUG
-    )  # this may need to be refactored if we support multiple document types
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
 
     for incident in get_all(db_session=db_session).all():
         log.debug(f"Processing incident. Name: {incident.name}")
@@ -64,7 +61,7 @@ def auto_tagger(db_session):
         doc = incident.incident_document
         try:
             mime_type = "text/plain"
-            text = p.get(doc.resource_id, mime_type)
+            text = plugin.instance.get(doc.resource_id, mime_type)
         except Exception as e:
             log.debug(f"Failed to get document. Reason: {e}")
             sentry_sdk.capture_exception(e)
@@ -249,9 +246,10 @@ def daily_summary(db_session=None):
             }
         )
 
-    convo_plugin = plugins.get(INCIDENT_PLUGIN_CONVERSATION_SLUG)
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+
     for c in INCIDENT_NOTIFICATION_CONVERSATIONS:
-        convo_plugin.send(c, "Incident Daily Summary", {}, "", blocks=blocks)
+        plugin.instance.send(c, "Incident Daily Summary", {}, "", blocks=blocks)
 
 
 @scheduler.add(every(5).minutes, name="calculate-incidents-cost")

@@ -1,7 +1,5 @@
 from fastapi import BackgroundTasks
 
-from dispatch.config import INCIDENT_PLUGIN_TASK_SLUG
-
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.conversation.service import get_by_channel_id
 from dispatch.database import SessionLocal
@@ -13,7 +11,7 @@ from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentUpdate, IncidentRead
 from dispatch.task.models import TaskStatus
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
-from dispatch.plugins.base import plugins
+from dispatch.plugin import service as plugin_service
 from dispatch.report import flows as report_flows
 
 from .config import (
@@ -83,14 +81,14 @@ def update_task_status(
 
     # we don't currently have a good way to get the correct file_id (we don't store a task <-> relationship)
     # lets try in both the incident doc and PIR doc
-    drive_task_plugin = plugins.get(INCIDENT_PLUGIN_TASK_SLUG)
+    drive_task_plugin = plugin_service.get_active(db_session=db_session, plugin_type="task")
 
     try:
         file_id = task.incident.incident_document.resource_id
-        drive_task_plugin.update(file_id, external_task_id, resolved=resolve)
+        drive_task_plugin.instance.update(file_id, external_task_id, resolved=resolve)
     except Exception:
         file_id = task.incident.incident_review_document.resource_id
-        drive_task_plugin.update(file_id, external_task_id, resolved=resolve)
+        drive_task_plugin.instance.update(file_id, external_task_id, resolved=resolve)
 
     status = "resolved" if task.status == TaskStatus.open else "re-opened"
     message = f"Task successfully {status}."

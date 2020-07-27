@@ -15,7 +15,9 @@ class Storage(Base, ResourceMixin):
 
 # Pydantic models...
 class StorageBase(DispatchBase):
-    pass
+    resource_id: Optional[str]
+    resource_type: Optional[str]
+    weblink: Optional[str]
 
 
 class StorageCreate(StorageBase):
@@ -27,7 +29,6 @@ class StorageUpdate(StorageBase):
 
 
 class StorageRead(StorageBase):
-    weblink: str
     description: Optional[str]
 
     @validator("description", pre=True, always=True)

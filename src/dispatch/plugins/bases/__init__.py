@@ -1,3 +1,4 @@
+from .email import EmailPlugin  # noqa
 from .conference import ConferencePlugin  # noqa
 from .contact import ContactPlugin  # noqa
 from .conversation import ConversationPlugin  # noqa

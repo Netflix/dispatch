@@ -39,10 +39,10 @@
               />
             </v-flex>
             <v-flex xs12>
-              <v-switch
+              <v-checkbox
                 v-model="enabled"
                 hint="Each plugin type can only ever have one enabled plugin. Existing enabled plugins will be de-activated."
-                :label="enabled ? 'Enabled' : 'Disabled'"
+                label="Enabled"
               />
             </v-flex>
           </v-layout>

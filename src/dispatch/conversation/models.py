@@ -16,10 +16,10 @@ class Conversation(Base, ResourceMixin):
 
 # Pydantic models...
 class ConversationBase(DispatchBase):
-    resource_id: str
-    resource_type: str
-    weblink: str
-    channel_id: str
+    resource_id: Optional[str]
+    resource_type: Optional[str]
+    weblink: Optional[str]
+    channel_id: Optional[str]
 
 
 class ConversationCreate(ConversationBase):

@@ -10,7 +10,6 @@ from jinja2 import Template
 
 from dispatch.messaging import (
     INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
-    INCIDENT_STATUS_REMINDER_DESCRIPTION,
     INCIDENT_TASK_LIST_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
     MessageType,
@@ -34,7 +33,7 @@ from .config import (
 )
 
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
 INCIDENT_CONVERSATION_TACTICAL_REPORT_SUGGESTION = f"Consider providing a tactical report using the `{SLACK_COMMAND_REPORT_TACTICAL_SLUG}` command."
@@ -154,6 +153,9 @@ def default_notification(items: list):
     for item in items:
         if isinstance(item, list):  # handle case where we are passing multiple grouped items
             blocks += default_notification(item)
+
+        if item.get("title_link") == "None":  # avoid adding blocks with no data
+            continue
 
         block = {"type": "section", "text": {"type": "mrkdwn", "text": format_default_text(item)}}
 

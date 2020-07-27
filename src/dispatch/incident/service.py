@@ -11,7 +11,6 @@ from dispatch.incident_type import service as incident_type_service
 from dispatch.participant import flows as participant_flows
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType
-from dispatch.plugins.base import plugins
 from dispatch.plugin import service as plugin_service
 from dispatch.tag import service as tag_service
 from dispatch.tag.models import TagUpdate, TagCreate
@@ -195,15 +194,20 @@ def create(
     )
 
     # We resolve the incident commander email
-    incident_commander_email = resolve_incident_commander_email(
-        db_session,
-        reporter_email,
-        incident_type.name,
-        "",
-        title,
-        description,
-        incident_priority.page_commander,
-    )
+    # default to reporter if we don't have an oncall plugin enabled
+    oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
+    if oncall_plugin:
+        incident_commander_email = resolve_incident_commander_email(
+            db_session,
+            reporter_email,
+            incident_type.name,
+            "",
+            title,
+            description,
+            incident_priority.page_commander,
+        )
+    else:
+        incident_commander_email = reporter_email
 
     if reporter_email == incident_commander_email:
         # We add the role of incident commander the reporter
