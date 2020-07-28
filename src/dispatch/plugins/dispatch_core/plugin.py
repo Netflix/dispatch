@@ -98,10 +98,11 @@ class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
         try:
             # If DISPATCH_JWT_AUDIENCE is defined, the we must include audience in the decode
             if DISPATCH_JWT_AUDIENCE:
-                data = jwt.decode(token, key, audience=DISPATCH_JWT_AUDIENCE)
+                data = jwt.decode(token, key, audience=DISPATCH_JWT_AUDIENCE, options={'verify_at_hash': False})
             else:
                 data = jwt.decode(token, key)
-        except JWTError:
+        except JWTError as err:
+            log.debug('JWT Decode error: {}'.format(err))
             raise credentials_exception
 
         # Support overriding where email is returned in the id token
