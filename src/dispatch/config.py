@@ -108,6 +108,15 @@ VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_SECRET = config(
     "VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_SECRET", default=None
 )
 
+# Incident plugin storage
+INCIDENT_PLUGIN_STORAGE_SLUG = config(
+    "INCIDENT_PLUGIN_STORAGE_SLUG", default=None
+)
+
+INCIDENT_PLUGIN_TASK_SLUG = config(
+    "INCIDENT_PLUGIN_TASK_SLUG", default=None
+)
+
 # static files
 DEFAULT_STATIC_DIR = os.path.join(
     os.path.abspath(os.path.dirname(__file__)), "static/dispatch/dist"
