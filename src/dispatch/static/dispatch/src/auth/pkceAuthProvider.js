@@ -15,6 +15,7 @@ const requestor = new FetchRequestor()
 
 function login(to, from, next) {
   const clientId = process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID
+  const clientSecret = process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_SECRET
   const openIdConnectUrl =
     process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL
   const scope = "openid profile email"
@@ -62,6 +63,7 @@ function login(to, from, next) {
     if (response) {
       let req = new TokenRequest({
         client_id: clientId,
+	client_secret: clientSecret,
         redirect_uri: request.redirectUri,
         grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
         code: response.code,
