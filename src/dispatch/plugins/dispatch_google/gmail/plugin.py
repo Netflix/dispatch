@@ -117,7 +117,7 @@ def render_email(name, message):
 class GoogleGmailEmailPlugin(EmailPlugin):
     title = "Google Gmail Plugin - Email Management"
     slug = "google-gmail-email"
-    description = "Uses gmail to facilitate conversations."
+    description = "Uses gmail to facilitate emails."
     version = google_gmail_plugin.__version__
 
     author = "Netflix"
