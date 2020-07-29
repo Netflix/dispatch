@@ -13,7 +13,6 @@ from schedule import every
 from dispatch.config import (
     DISPATCH_HELP_EMAIL,
     INCIDENT_ONCALL_SERVICE_ID,
-    INCIDENT_PLUGIN_TASK_SLUG,
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
 )
@@ -24,6 +23,7 @@ from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.individual import service as individual_service
 from dispatch.plugins.base import plugins
+from dispatch.plugin import service as plugin_service
 from dispatch.scheduler import scheduler
 from dispatch.service import service as service_service
 from dispatch.task import service as task_service
@@ -52,11 +52,19 @@ def create_task_reminders(db_session=None):
             oncall_service = service_service.get_by_external_id(
                 db_session=db_session, external_id=INCIDENT_ONCALL_SERVICE_ID
             )
-            oncall_plugin = plugins.get(oncall_service.type)
-            oncall_email = oncall_plugin.get(service_id=INCIDENT_ONCALL_SERVICE_ID)
-            oncall_individual = individual_service.resolve_user_by_email(oncall_email, db_session)
-            contact_fullname = oncall_individual["fullname"]
-            contact_weblink = oncall_individual["weblink"]
+            oncall_plugin = plugin_service.get_by_slug(
+                db_session=db_session, slug=oncall_service.type
+            )
+            if oncall_plugin.enabled:
+                log.warning(
+                    f"Unable to resolve oncall, INCIDENT_ONCALL_SERVICE_ID configured but associated plugin ({oncall_plugin.name}) is not enabled."
+                )
+                oncall_email = oncall_plugin.instance.get(service_id=INCIDENT_ONCALL_SERVICE_ID)
+                oncall_individual = individual_service.resolve_user_by_email(
+                    oncall_email, db_session
+                )
+                contact_fullname = oncall_individual["fullname"]
+                contact_weblink = oncall_individual["weblink"]
 
         grouped_tasks = group_tasks_by_assignee(tasks)
         for assignee, tasks in grouped_tasks.items():
@@ -65,7 +73,7 @@ def create_task_reminders(db_session=None):
 
 def sync_tasks(db_session, incidents, notify: bool = False):
     """Syncs tasks and sends update notifications to incident channels."""
-    drive_task_plugin = plugins.get(INCIDENT_PLUGIN_TASK_SLUG)
+    drive_task_plugin = plugin_service.get_active(db_session=db_session, plugin_type="task")
     for incident in incidents:
         for doc_type in [
             INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
@@ -82,7 +90,7 @@ def sync_tasks(db_session, incidents, notify: bool = False):
                     break
 
                 # we get the list of tasks in the document
-                tasks = drive_task_plugin.list(file_id=document.resource_id)
+                tasks = drive_task_plugin.instance.list(file_id=document.resource_id)
 
                 for task in tasks:
                     # we get the task information
