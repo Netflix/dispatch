@@ -21,7 +21,7 @@ from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin
 
 from dispatch.incident.models import IncidentRead
 from dispatch.ticket.models import TicketRead
-from dispatch.participant.models import ParticipantRead
+from dispatch.participant.models import Participant, ParticipantRead
 
 
 # SQLAlchemy models
@@ -75,6 +75,8 @@ class Task(Base, ResourceMixin, TimeStampMixin):
     last_reminder_at = Column(DateTime)
     creator = relationship("Participant", backref="created_tasks")
     creator_id = Column(Integer, ForeignKey("participant.id"))
+    owner = relationship("Participant", backref="owned_tasks")
+    owner_id = Column(Integer, ForeignKey("participant.id"))
     assignees = relationship(
         "Participant", secondary=assoc_task_assignees, backref="assigned_tasks"
     )
@@ -100,6 +102,7 @@ class Task(Base, ResourceMixin, TimeStampMixin):
 # Pydantic models
 class TaskBase(DispatchBase):
     creator: Optional[ParticipantRead]
+    owner: Optional[ParticipantRead]
     created_at: Optional[datetime]
     resolved_at: Optional[datetime]
     resolve_by: Optional[datetime]

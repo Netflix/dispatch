@@ -150,9 +150,13 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
             )
         )
 
+        # default to incident commander
+        owner = incident.commander
+
         task = task_service.create(
             db_session=db_session,
             creator=creator,
+            owner=owner,
             assignees=assignees,
             description=description,
             status=status,
