@@ -31,7 +31,7 @@ def sync_document_terms(db_session=None):
             else:
                 mime_type = "text/plain"
 
-            doc_text = p.get(doc.resource_id, mime_type)
+            doc_text = p.instance.get(doc.resource_id, mime_type)
             extracted_terms = route_service.get_terms(db_session=db_session, text=doc_text)
 
             matched_terms = (
