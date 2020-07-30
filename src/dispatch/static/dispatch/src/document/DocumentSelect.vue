@@ -69,11 +69,6 @@ export default {
   },
 
   methods: {
-    reset() {
-      this.$nextTick(() => {
-        this.search = null
-      })
-    },
     querySelections(v) {
       this.loading = true
       // Simulated ajax query
