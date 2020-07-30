@@ -14,7 +14,6 @@ const getDefaultSelectedState = () => {
     template_document: null,
     plugin_metadata: [],
     exclude_from_metrics: null,
-    loading: false,
     default: false
   }
 }
