@@ -74,6 +74,20 @@
                   <v-icon small>open_in_new</v-icon>
                 </a>
               </template>
+              <template v-slot:item.data-table-actions="{ item }">
+                <v-menu bottom left>
+                  <template v-slot:activator="{ on }">
+                    <v-btn icon v-on="on">
+                      <v-icon>mdi-dots-vertical</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item @click="createEditShow(item)">
+                      <v-list-item-title>Edit</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </template>
             </v-data-table>
           </v-card>
         </v-flex>
