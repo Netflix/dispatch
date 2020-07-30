@@ -35,11 +35,9 @@ def test_create(session, document):
 
     name = "XXX"
 
-    incident_type_in = IncidentTypeCreate(name=name)
+    incident_type_in = IncidentTypeCreate(name=name, template_document=document)
 
-    incident_type = create(
-        db_session=session, incident_type_in=incident_type_in, template_document=document
-    )
+    incident_type = create(db_session=session, incident_type_in=incident_type_in)
     assert incident_type
 
 
