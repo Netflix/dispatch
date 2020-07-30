@@ -81,7 +81,7 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
-      "table.options.loading",
+      "table.loading",
       "table.rows.items",
       "table.rows.total"
     ])
