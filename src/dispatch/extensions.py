@@ -1,11 +1,9 @@
 import logging
 
 import sentry_sdk
-from sentry_sdk.integrations.logging import (
-    LoggingIntegration,
-    AioHttpIntegration,
-    SqlalchemyIntegration,
-)
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+from sentry_sdk.integrations.aiohttp import AioHttpIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 from .config import SENTRY_DSN, ENV
 
