@@ -8,6 +8,7 @@ const getDefaultSelectedState = () => {
     resolved_at: null,
     resolve_by: null,
     creator: null,
+    owner: null,
     assignees: [],
     description: null,
     status: null,
@@ -34,6 +35,7 @@ const state = {
     options: {
       filters: {
         creator: [],
+        owner: [],
         assignee: [],
         incident: [],
         incident_type: [],
@@ -81,7 +83,7 @@ const actions = {
       commit("SET_TABLE_ROWS", response.data)
     })
   }, 200),
-  showNewEditSheet({ commit }, task) {
+  createEditShow({ commit }, task) {
     commit("SET_DIALOG_CREATE_EDIT", true)
     if (task) {
       commit("SET_SELECTED", task)
@@ -91,7 +93,7 @@ const actions = {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", task)
   },
-  closeNewEdit({ commit }) {
+  closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
     commit("RESET_SELECTED")
   },

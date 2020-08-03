@@ -27,22 +27,66 @@
           <v-container grid-list-md>
             <v-layout wrap>
               <v-flex xs12>
-                <ValidationProvider name="Text" rules="required" immediate>
-                  <v-text-field
-                    v-model="text"
+                <v-select
+                  v-model="status"
+                  label="Status"
+                  :items="statuses"
+                  hint="The incident's current status"
+                />
+              </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="owner" rules="required" immediate>
+                  <individual-select
+                    v-model="owner"
                     slot-scope="{ errors, valid }"
+                    label="Owner"
                     :error-messages="errors"
                     :success="valid"
-                    label="Text"
-                    hint="A word or phrase."
+                    hint="The tasks current owner"
                     clearable
-                    auto-grow
                     required
-                  />
+                  ></individual-select>
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <definition-combobox v-model="definitions" />
+                <ValidationProvider name="assignees" rules="required" immediate>
+                  <assignee-combobox
+                    v-model="assignees"
+                    slot-scope="{ errors, valid }"
+                    label="Assignees"
+                    :error-messages="errors"
+                    :success="valid"
+                    hint="The tasks current assignees"
+                    clearable
+                    required
+                  ></assignee-combobox>
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <span class="subtitle-2">Resolved At</span>
+              </v-flex>
+              <v-flex xs12>
+                <v-row>
+                  <v-col cols="6">
+                    <date-picker-menu v-model="resolved_at"></date-picker-menu>
+                  </v-col>
+                  <v-col cols="6">
+                    <time-picker-menu v-model="resolved_at"></time-picker-menu>
+                  </v-col>
+                </v-row>
+              </v-flex>
+              <v-flex xs12>
+                <span class="subtitle-2">Resolve By</span>
+              </v-flex>
+              <v-flex xs12>
+                <v-row>
+                  <v-col cols="6">
+                    <date-picker-menu v-model="resolve_by"></date-picker-menu>
+                  </v-col>
+                  <v-col cols="6">
+                    <time-picker-menu v-model="resolve_by"></time-picker-menu>
+                  </v-col>
+                </v-row>
               </v-flex>
             </v-layout>
           </v-container>
@@ -67,8 +111,11 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import IndividualSelect from "@/individual/IndividualSelect.vue"
+import AssigneeCombobox from "@/task/AssigneeCombobox.vue"
+import DatePickerMenu from "@/components/DatePickerMenu.vue"
+import TimePickerMenu from "@/components/TimePickerMenu.vue"
 import { required } from "vee-validate/dist/rules"
-import DefinitionCombobox from "@/definition/DefinitionCombobox.vue"
 
 extend("required", {
   ...required,
@@ -81,12 +128,26 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    DefinitionCombobox
+    IndividualSelect,
+    AssigneeCombobox,
+    TimePickerMenu,
+    DatePickerMenu
   },
+
+  data() {
+    return {
+      statuses: ["Open", "Resolved"]
+    }
+  },
+
   computed: {
     ...mapFields("task", [
-      "selected.text",
-      "selected.definitions",
+      "selected.status",
+      "selected.owner",
+      "selected.assignees",
+      "selected.creator",
+      "selected.resolved_at",
+      "selected.resolve_by",
       "selected.id",
       "selected.loading",
       "dialogs.showCreateEdit"

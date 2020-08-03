@@ -14,6 +14,7 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
 )
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.relationships import foreign
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
@@ -21,7 +22,7 @@ from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin
 
 from dispatch.incident.models import IncidentRead
 from dispatch.ticket.models import TicketRead
-from dispatch.participant.models import Participant, ParticipantRead
+from dispatch.participant.models import ParticipantRead
 
 
 # SQLAlchemy models
@@ -73,10 +74,10 @@ class Task(Base, ResourceMixin, TimeStampMixin):
     resolved_at = Column(DateTime)
     resolve_by = Column(DateTime, default=default_resolution_time)
     last_reminder_at = Column(DateTime)
-    creator = relationship("Participant", backref="created_tasks")
     creator_id = Column(Integer, ForeignKey("participant.id"))
-    owner = relationship("Participant", backref="owned_tasks")
+    creator = relationship("Participant", backref="created_tasks", foreign_keys=[creator_id])
     owner_id = Column(Integer, ForeignKey("participant.id"))
+    owner = relationship("Participant", backref="owned_tasks", foreign_keys=[owner_id])
     assignees = relationship(
         "Participant", secondary=assoc_task_assignees, backref="assigned_tasks"
     )

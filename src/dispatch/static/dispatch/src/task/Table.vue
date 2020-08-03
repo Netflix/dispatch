@@ -35,6 +35,20 @@
                   {{ item.creator.individual.name }}
                 </v-chip>
               </template>
+              <template v-slot:item.owner="{ item }">
+                <v-chip
+                  v-if="item.owner"
+                  class="ma-2"
+                  pill
+                  small
+                  :href="item.owner.individual.weblink"
+                >
+                  {{ item.owner.individual.name }}
+                </v-chip>
+                <v-chip v-else class="ma-2" pill small>
+                  Unknown
+                </v-chip>
+              </template>
               <template v-slot:item.tickets="{ item }">
                 <a
                   v-for="ticket in item.tickets"
@@ -118,14 +132,15 @@ export default {
         { text: "Incident Type", value: "incident.incident_type.name", sortable: false },
         { text: "Status", value: "status", sortable: true },
         { text: "Creator", value: "creator", sortable: true },
+        { text: "Owner", value: "owner", sortable: true },
         { text: "Assignees", value: "assignees", sortable: false },
         { text: "Description", value: "description", sortable: false },
         { text: "Source", value: "source", sortable: true },
         { text: "Tickets", value: "tickets", sortable: false },
         { text: "Due By", value: "resolve_by" },
         { text: "Created At", value: "created_at", sortable: true },
-        { text: "Resolved At", value: "resolved_at", sortable: true }
-        //{ text: "Actions", value: "actions", sortable: false }
+        { text: "Resolved At", value: "resolved_at", sortable: true },
+        { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
     }
   },
