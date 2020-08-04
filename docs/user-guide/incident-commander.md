@@ -10,7 +10,13 @@ Within Dispatch Incident Commander's \(ICs\) are also participants and will rece
 
 ## During
 
-During an incident, the IC is responsible for pushing the incident forward and keeping the group going in the right direction. To help them with this, Dispatch provides a few useful commands:
+During an incident, the IC is responsible for pushing the incident forward and keeping the group going in the right direction. To help with this, Dispatch provides a number of useful commands.
+
+`/dispatch-add-timeline-event`
+
+Maintaining an accurate timeline of an incident is important. Use `/dispatch-add-timeline-event` to add specific events to your incident timeline.
+
+![](../.gitbook/assets/slack-conversation-add-timeline-event.png)
 
 ### Roles
 
@@ -20,7 +26,20 @@ You're not always incident commander forever, sometimes a situation changes or y
 
 ![](../.gitbook/assets/slack-conversation-assign-role%20%281%29.png)
 
-### Status
+
+`/dispatch-engage-oncall`
+
+You'll need the help of various teams to resolve an incident. To quickly page an on-call team member, use `/dispatch-engage-oncall` to resolve their identity, and optionally page them using PagerDuty.
+
+![](../.gitbook/assets/slack-conversation-engage-oncall.png)
+
+
+`/dispatch-list-my-tasks`
+
+Tasks may be assigned to any participant. `/dispatch-list-my-tasks` displays a list of only that participant's assigned tasks.
+
+![]()
+
 
 `/dispatch-list-participants`
 
