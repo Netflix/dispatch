@@ -1,26 +1,34 @@
 <template>
   <v-autocomplete
-    v-model="assignee"
+    v-model="incident"
     :items="items"
+    item-text="name"
     :search-input.sync="search"
     :menu-props="{ maxHeight: '400' }"
     hide-selected
     :label="label"
-    item-text="name"
-    multiple
     close
-    chips
     clearable
-    return-object
-    placeholder="Start typing to Search"
-    cache-items
     :loading="loading"
+    return-object
+    cache-items
   >
+    <template v-slot:selection="{ attr, on, item, selected }">
+      <v-chip v-bind="attr" :input-value="selected" v-on="on">
+        <span v-text="item.name"></span>
+      </v-chip>
+    </template>
+    <template v-slot:item="{ item }">
+      <v-list-item-content>
+        <v-list-item-title v-text="item.name"></v-list-item-title>
+        <v-list-item-subtitle v-text="item.title"></v-list-item-subtitle>
+      </v-list-item-content>
+    </template>
     <template v-slot:no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No individuals matching "
+            No incidents matching "
             <strong>{{ search }}</strong
             >".
           </v-list-item-title>
@@ -31,10 +39,10 @@
 </template>
 
 <script>
-import IndividualApi from "@/individual/api"
-import { map } from "lodash"
+import IncidentApi from "@/incident/api"
+import { cloneDeep } from "lodash"
 export default {
-  name: "AssigneeComboBox",
+  name: "IncidentComboBox",
   props: {
     value: {
       type: Array,
@@ -45,7 +53,7 @@ export default {
     label: {
       type: String,
       default: function() {
-        return "Assignee"
+        return "Incident"
       }
     }
   },
@@ -54,26 +62,17 @@ export default {
     return {
       loading: false,
       items: [],
-      select: null,
       search: null
     }
   },
 
   computed: {
-    assignee: {
+    incident: {
       get() {
-        return map(this.value, function(item) {
-          return item["individual"]
-        })
+        return cloneDeep(this.value)
       },
       set(value) {
-        let wrapped = map(value, function(item) {
-          if (!("individual" in item)) {
-            return { individual: item }
-          }
-          return item
-        })
-        this.$emit("input", wrapped)
+        this.$emit("input", value)
       }
     }
   },
@@ -84,12 +83,7 @@ export default {
     },
     value(val) {
       if (!val) return
-      this.items.push.apply(
-        this.items,
-        map(val, function(item) {
-          return item["individual"]
-        })
-      )
+      this.items.push(val)
     }
   },
 
@@ -97,7 +91,7 @@ export default {
     querySelections(v) {
       this.loading = true
       // Simulated ajax query
-      IndividualApi.getAll({ q: v }).then(response => {
+      IncidentApi.getAll({ q: v }).then(response => {
         this.items = response.data.items
         this.loading = false
       })
@@ -107,7 +101,7 @@ export default {
   mounted() {
     this.error = null
     this.loading = true
-    IndividualApi.getAll().then(response => {
+    IncidentApi.getAll().then(response => {
       this.items = response.data.items
       this.loading = false
     })

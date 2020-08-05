@@ -14,15 +14,15 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
 )
 from sqlalchemy.orm import relationship
-from sqlalchemy.orm.relationships import foreign
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
+from dispatch.config import INCIDENT_RESOURCE_INCIDENT_TASK
 from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin
 
-from dispatch.incident.models import IncidentRead
+from dispatch.incident.models import IncidentReadNested
 from dispatch.ticket.models import TicketRead
-from dispatch.participant.models import ParticipantRead
+from dispatch.participant.models import ParticipantRead, ParticipantUpdate
 
 
 # SQLAlchemy models
@@ -79,7 +79,7 @@ class Task(Base, ResourceMixin, TimeStampMixin):
     owner_id = Column(Integer, ForeignKey("participant.id"))
     owner = relationship("Participant", backref="owned_tasks", foreign_keys=[owner_id])
     assignees = relationship(
-        "Participant", secondary=assoc_task_assignees, backref="assigned_tasks"
+        "Participant", secondary=assoc_task_assignees, backref="assigned_tasks", lazy="subquery"
     )
     description = Column(String)
     source = Column(String, default=TaskSource.incident)
@@ -108,22 +108,26 @@ class TaskBase(DispatchBase):
     resolved_at: Optional[datetime]
     resolve_by: Optional[datetime]
     updated_at: Optional[datetime]
-    assignees: List[Optional[ParticipantRead]]
+    status: TaskStatus = TaskStatus.open
+    assignees: List[Optional[ParticipantRead]] = []
     source: Optional[str]
-    status: Optional[str]
     priority: Optional[str]
     description: Optional[str]
-    tickets: Optional[List[TicketRead]]
+    tickets: Optional[List[TicketRead]] = []
     weblink: Optional[str]
-    incident: Optional[IncidentRead]
+    incident: Optional[IncidentReadNested]
 
 
 class TaskCreate(TaskBase):
     status: TaskStatus = TaskStatus.open
+    assignees: List[Optional[ParticipantUpdate]] = []
+    owner: Optional[ParticipantUpdate]
+    resource_type: Optional[str] = INCIDENT_RESOURCE_INCIDENT_TASK
 
 
 class TaskUpdate(TaskBase):
-    pass
+    assignees: List[Optional[ParticipantUpdate]]
+    owner: Optional[ParticipantUpdate]
 
 
 class TaskRead(TaskBase):

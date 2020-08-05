@@ -1,26 +1,20 @@
 <template>
   <v-autocomplete
-    v-model="assignee"
+    v-model="owner"
     :items="items"
+    item-text="name"
     :search-input.sync="search"
     :menu-props="{ maxHeight: '400' }"
-    hide-selected
     :label="label"
-    item-text="name"
-    multiple
-    close
-    chips
-    clearable
-    return-object
-    placeholder="Start typing to Search"
-    cache-items
     :loading="loading"
+    cache-items
+    return-object
   >
     <template v-slot:no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No individuals matching "
+            No Indivduals matching "
             <strong>{{ search }}</strong
             >".
           </v-list-item-title>
@@ -34,18 +28,18 @@
 import IndividualApi from "@/individual/api"
 import { map } from "lodash"
 export default {
-  name: "AssigneeComboBox",
+  name: "OwnerSelect",
   props: {
     value: {
-      type: Array,
+      type: Object,
       default: function() {
-        return []
+        return {}
       }
     },
     label: {
       type: String,
       default: function() {
-        return "Assignee"
+        return "Owner"
       }
     }
   },
@@ -54,26 +48,23 @@ export default {
     return {
       loading: false,
       items: [],
-      select: null,
       search: null
     }
   },
 
   computed: {
-    assignee: {
+    owner: {
       get() {
-        return map(this.value, function(item) {
-          return item["individual"]
-        })
+        if (!this.value) return
+        return this.value["individual"]
       },
       set(value) {
-        let wrapped = map(value, function(item) {
-          if (!("individual" in item)) {
-            return { individual: item }
-          }
-          return item
-        })
+        let wrapped = value
+        if (!("individual" in wrapped)) {
+          wrapped = { individual: wrapped }
+        }
         this.$emit("input", wrapped)
+        this.search = null
       }
     }
   },

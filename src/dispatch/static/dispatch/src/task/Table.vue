@@ -5,7 +5,7 @@
     <div class="headline">Tasks</div>
     <v-spacer />
     <table-filter-dialog />
-    <!--<v-btn color="primary" dark class="mb-2" @click="createEditShow()">New</v-btn>-->
+    <v-btn color="primary" dark class="ml-2" @click="createEditShow()">New</v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -31,8 +31,17 @@
               :sort-desc.sync="descending"
             >
               <template v-slot:item.creator="{ item }">
-                <v-chip class="ma-2" pill small :href="item.creator.individual.weblink">
+                <v-chip
+                  v-if="item.creator"
+                  class="ma-2"
+                  pill
+                  small
+                  :href="item.creator.individual.weblink"
+                >
                   {{ item.creator.individual.name }}
+                </v-chip>
+                <v-chip v-else class="ma-2" pill small>
+                  Unknown
                 </v-chip>
               </template>
               <template v-slot:item.owner="{ item }">
@@ -79,9 +88,9 @@
               <template v-slot:item.created_at="{ item }">{{
                 item.created_at | formatDate
               }}</template>
-              <template v-slot:item.resolved_at="{ item }">{{
-                item.resolved_at | formatDate
-              }}</template>
+              <template v-slot:item.resolved_at="{ item }"
+                >{{ item.resolved_at | formatDate }}
+              </template>
               <template v-slot:item.source="{ item }">
                 <a :href="item.weblink" target="_blank" style="text-decoration: none;">
                   {{ item.source }}

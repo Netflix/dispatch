@@ -57,7 +57,7 @@ class IndividualContact(ContactMixin, Base):
         secondary=assoc_individual_contact_incident_priorities,
         backref="individuals",
     )
-    participant = relationship("Participant", lazy="subquery", backref="individual")
+    # participant = relationship("Participant", lazy="subquery", backref="individual")
     team_contact_id = Column(Integer, ForeignKey("team_contact.id"))
     team_contact = relationship("TeamContact", backref="individuals")
     terms = relationship("Term", secondary=assoc_individual_contact_terms, backref="individuals")

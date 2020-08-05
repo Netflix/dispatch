@@ -27,8 +27,11 @@ def background_task(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        db_session = SessionLocal()
-        kwargs["db_session"] = db_session
+        background = False
+        if not kwargs.get("db_session"):
+            db_session = SessionLocal()
+            background = True
+            kwargs["db_session"] = db_session
         try:
             metrics_provider.counter("function.call.counter", tags={"function": fullname(func)})
             start = time.perf_counter()
@@ -45,7 +48,8 @@ def background_task(func):
             print(traceback.format_exc())
             sentry_sdk.capture_exception(e)
         finally:
-            db_session.close()
+            if background:
+                kwargs["db_session"].close()
 
     return wrapper
 

@@ -11,6 +11,7 @@ const getDefaultSelectedState = () => {
     owner: null,
     assignees: [],
     description: null,
+    incident: null,
     status: null,
     priority: null,
     source: null,

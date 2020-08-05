@@ -28,8 +28,9 @@ class Participant(Base):
 
     # relationships
     incident_id = Column(Integer, ForeignKey("incident.id"))
+    individual = relationship("IndividualContact", lazy="subquery", backref="participant")
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
-    participant_roles = relationship("ParticipantRole", backref="participant")
+    participant_roles = relationship("ParticipantRole", backref="participant", lazy="subquery")
     reports = relationship("Report", backref="participant")
 
     @staticmethod
@@ -63,7 +64,7 @@ class ParticipantCreate(ParticipantBase):
 
 
 class ParticipantUpdate(ParticipantBase):
-    pass
+    individual: Optional[IndividualReadNested]
 
 
 class ParticipantRead(ParticipantBase):

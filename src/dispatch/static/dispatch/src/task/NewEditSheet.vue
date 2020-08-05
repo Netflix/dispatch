@@ -27,6 +27,20 @@
           <v-container grid-list-md>
             <v-layout wrap>
               <v-flex xs12>
+                <ValidationProvider name="description" immediate>
+                  <v-textarea
+                    v-model="description"
+                    slot-scope="{ errors, valid }"
+                    label="Description"
+                    :error-messages="errors"
+                    :success="valid"
+                    hint="The task's description."
+                    clearable
+                    required
+                  />
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
                 <v-select
                   v-model="status"
                   label="Status"
@@ -35,8 +49,22 @@
                 />
               </v-flex>
               <v-flex xs12>
+                <ValidationProvider name="incident" rules="required" immediate>
+                  <incident-select
+                    v-model="incident"
+                    slot-scope="{ errors, valid }"
+                    label="Incident"
+                    :error-messages="errors"
+                    :success="valid"
+                    hint="The tasks associated incident"
+                    clearable
+                    required
+                  ></incident-select>
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
                 <ValidationProvider name="owner" rules="required" immediate>
-                  <individual-select
+                  <owner-select
                     v-model="owner"
                     slot-scope="{ errors, valid }"
                     label="Owner"
@@ -45,7 +73,7 @@
                     hint="The tasks current owner"
                     clearable
                     required
-                  ></individual-select>
+                  ></owner-select>
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
@@ -91,17 +119,6 @@
             </v-layout>
           </v-container>
         </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn color="secondary" @click="closeCreateEdit()">Cancel</v-btn>
-          <v-btn
-            color="primary"
-            :disabled="invalid || !validated"
-            :loading="loading"
-            @click="save()"
-            >Save</v-btn
-          >
-        </v-card-actions>
       </v-card>
     </v-navigation-drawer>
   </ValidationObserver>
@@ -111,7 +128,8 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import IndividualSelect from "@/individual/IndividualSelect.vue"
+import OwnerSelect from "@/task/OwnerSelect.vue"
+import IncidentSelect from "@/incident/IncidentSelect.vue"
 import AssigneeCombobox from "@/task/AssigneeCombobox.vue"
 import DatePickerMenu from "@/components/DatePickerMenu.vue"
 import TimePickerMenu from "@/components/TimePickerMenu.vue"
@@ -128,7 +146,8 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    IndividualSelect,
+    OwnerSelect,
+    IncidentSelect,
     AssigneeCombobox,
     TimePickerMenu,
     DatePickerMenu
@@ -145,9 +164,11 @@ export default {
       "selected.status",
       "selected.owner",
       "selected.assignees",
+      "selected.description",
       "selected.creator",
       "selected.resolved_at",
       "selected.resolve_by",
+      "selected.incident",
       "selected.id",
       "selected.loading",
       "dialogs.showCreateEdit"
