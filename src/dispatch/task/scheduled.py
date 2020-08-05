@@ -22,7 +22,6 @@ from dispatch.extensions import sentry_sdk
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.individual import service as individual_service
-from dispatch.plugins.base import plugins
 from dispatch.plugin import service as plugin_service
 from dispatch.scheduler import scheduler
 from dispatch.service import service as service_service
@@ -95,6 +94,7 @@ def sync_tasks(db_session, incidents, notify: bool = False):
                 for task in tasks:
                     # we get the task information
                     try:
+                        print(task)
                         create_or_update_task(db_session, incident, task["task"], notify=notify)
                     except Exception as e:
                         log.exception(e)

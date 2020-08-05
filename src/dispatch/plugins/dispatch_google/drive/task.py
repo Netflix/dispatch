@@ -9,6 +9,7 @@ import re
 import logging
 from typing import Any, List, Dict
 
+from dispatch.task.models import TaskStatus
 from dispatch.plugins.dispatch_google.config import GOOGLE_DOMAIN
 
 from .drive import get_file, list_comments
@@ -31,13 +32,14 @@ def parse_comment(content: str) -> Dict:
 
 def get_task_status(task: dict):
     """Gets the current status from task."""
-    status = {"resolved": False, "resolved_at": "", "resolved_by": ""}
+    status = {"status": TaskStatus.open, "resolved_at": None, "resolved_by": None}
     if task.get("resolved"):
         for r in task["replies"]:
             if r.get("action") == "resolve":
                 status["resolved_by"] = r["author"]["displayName"]
                 status["resolved_at"] = r["createdTime"]
-                return status
+                status["status"] = TaskStatus.resolved
+    return status
 
 
 def filter_comments(comments: List[Any]):
@@ -78,8 +80,8 @@ def list_tasks(client: Any, file_id: str):
     tasks = []
     for t in task_comments:
         status = get_task_status(t)
-        assignees = get_assignees(t["content"])
-        description = (t.get("quotedFileContent", {}).get("value", ""),)
+        assignees = [{"individual": {"email": x}} for x in get_assignees(t["content"])]
+        description = t.get("quotedFileContent", {}).get("value", "")
         tickets = get_tickets(t["replies"])
 
         # this is a dirty hack because google doesn't return emailAddresses for comments
@@ -103,16 +105,17 @@ def list_tasks(client: Any, file_id: str):
 
         task_meta = {
             "task": {
-                "id": t["id"],
-                "status": status,
+                "resource_id": t["id"],
                 "description": description,
-                "owner": owner.email,
+                "owner": {"individual": {"email": owner.email}},
                 "created_at": t["createdTime"],
                 "assignees": assignees,
                 "tickets": tickets,
-                "web_link": f'https://docs.google.com/a/{GOOGLE_DOMAIN}/document/d/{file_id}/edit?disco={t["id"]}',
+                "weblink": f'https://docs.google.com/a/{GOOGLE_DOMAIN}/document/d/{file_id}/edit?disco={t["id"]}',
             }
         }
+
+        task_meta["task"].update(status)
 
         tasks.append({**document_meta, **task_meta})
 

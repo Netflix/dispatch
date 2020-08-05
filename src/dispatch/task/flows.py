@@ -97,12 +97,16 @@ def send_task_notification(
 
 def create_or_update_task(db_session, incident, task: dict, notify: bool = False):
     """Creates a new task in the database or updates an existing one."""
-    incident_task = task_service.get_by_resource_id(db_session=db_session, resource_id=task["id"])
+    incident_task = task_service.get_by_resource_id(
+        db_session=db_session, resource_id=task["resource_id"]
+    )
 
     if incident_task:
         # only notify if it's newly resolved
         prev_status = incident_task.status
-        task = task_service.update(db_session=db_session, task_in=TaskUpdate(**task))
+        task = task_service.update(
+            db_session=db_session, task=incident_task, task_in=TaskUpdate(**task)
+        )
         if prev_status == TaskStatus.resolved:
             if incident_task.status != TaskStatus.resolved:
                 incident_task.status = prev_status
