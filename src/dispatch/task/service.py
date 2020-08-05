@@ -90,8 +90,6 @@ def create(*, db_session, task_in: TaskCreate, creator_email: str) -> Task:
     else:
         owner = incident.commander
 
-    print(owner)
-    print(owner.individual.name)
     task = Task(
         **task_in.dict(exclude={"assignees", "owner", "incident", "creator", "tickets"}),
         creator=creator,
