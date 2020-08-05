@@ -94,7 +94,6 @@ def sync_tasks(db_session, incidents, notify: bool = False):
                 for task in tasks:
                     # we get the task information
                     try:
-                        print(task)
                         create_or_update_task(db_session, incident, task["task"], notify=notify)
                     except Exception as e:
                         log.exception(e)
