@@ -31,7 +31,7 @@ def parse_comment(content: str) -> Dict:
 
 
 def get_task_status(task: dict):
-    """Gets the current status from task."""
+    """Gets the current status from a task."""
     status = {"status": TaskStatus.open, "resolved_at": None, "resolved_by": None}
     if task.get("resolved"):
         for r in task["replies"]:
