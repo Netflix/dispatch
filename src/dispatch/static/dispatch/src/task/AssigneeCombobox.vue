@@ -12,7 +12,7 @@
     chips
     clearable
     return-object
-    placeholder="Start typing to Search"
+    placeholder="Start typing to search"
     cache-items
     :loading="loading"
   >
