@@ -5,7 +5,7 @@
     <div class="headline">Tasks</div>
     <v-spacer />
     <table-filter-dialog />
-    <!--<v-btn color="primary" dark class="mb-2" @click="createEditShow()">New</v-btn>-->
+    <v-btn color="primary" dark class="ml-2" @click="createEditShow()">New</v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -31,8 +31,31 @@
               :sort-desc.sync="descending"
             >
               <template v-slot:item.creator="{ item }">
-                <v-chip class="ma-2" pill small :href="item.creator.individual.weblink">
+                <v-chip
+                  v-if="item.creator"
+                  class="ma-2"
+                  pill
+                  small
+                  :href="item.creator.individual.weblink"
+                >
                   {{ item.creator.individual.name }}
+                </v-chip>
+                <v-chip v-else class="ma-2" pill small>
+                  Unknown
+                </v-chip>
+              </template>
+              <template v-slot:item.owner="{ item }">
+                <v-chip
+                  v-if="item.owner"
+                  class="ma-2"
+                  pill
+                  small
+                  :href="item.owner.individual.weblink"
+                >
+                  {{ item.owner.individual.name }}
+                </v-chip>
+                <v-chip v-else class="ma-2" pill small>
+                  Unknown
                 </v-chip>
               </template>
               <template v-slot:item.tickets="{ item }">
@@ -65,14 +88,28 @@
               <template v-slot:item.created_at="{ item }">{{
                 item.created_at | formatDate
               }}</template>
-              <template v-slot:item.resolved_at="{ item }">{{
-                item.resolved_at | formatDate
-              }}</template>
+              <template v-slot:item.resolved_at="{ item }"
+                >{{ item.resolved_at | formatDate }}
+              </template>
               <template v-slot:item.source="{ item }">
                 <a :href="item.weblink" target="_blank" style="text-decoration: none;">
                   {{ item.source }}
                   <v-icon small>open_in_new</v-icon>
                 </a>
+              </template>
+              <template v-slot:item.data-table-actions="{ item }">
+                <v-menu bottom left>
+                  <template v-slot:activator="{ on }">
+                    <v-btn icon v-on="on">
+                      <v-icon>mdi-dots-vertical</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item @click="createEditShow(item)">
+                      <v-list-item-title>Edit</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
               </template>
             </v-data-table>
           </v-card>
@@ -104,14 +141,15 @@ export default {
         { text: "Incident Type", value: "incident.incident_type.name", sortable: false },
         { text: "Status", value: "status", sortable: true },
         { text: "Creator", value: "creator", sortable: true },
+        { text: "Owner", value: "owner", sortable: true },
         { text: "Assignees", value: "assignees", sortable: false },
         { text: "Description", value: "description", sortable: false },
         { text: "Source", value: "source", sortable: true },
         { text: "Tickets", value: "tickets", sortable: false },
         { text: "Due By", value: "resolve_by" },
         { text: "Created At", value: "created_at", sortable: true },
-        { text: "Resolved At", value: "resolved_at", sortable: true }
-        //{ text: "Actions", value: "actions", sortable: false }
+        { text: "Resolved At", value: "resolved_at", sortable: true },
+        { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
     }
   },

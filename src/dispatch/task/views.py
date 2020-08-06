@@ -2,6 +2,8 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from sqlalchemy.orm import Session
+from dispatch.auth.models import DispatchUser
+from dispatch.auth.service import get_current_user
 
 from dispatch.database import get_db, search_filter_sort_paginate
 
@@ -47,11 +49,16 @@ def get_tasks(
 
 
 @router.post("/", response_model=TaskRead, tags=["tasks"])
-def create_task(*, db_session: Session = Depends(get_db), task_in: TaskCreate):
+def create_task(
+    *,
+    db_session: Session = Depends(get_db),
+    task_in: TaskCreate,
+    current_user: DispatchUser = Depends(get_current_user),
+):
     """
     Creates a new task.
     """
-    task = create(db_session=db_session, task_in=task_in)
+    task = create(db_session=db_session, task_in=task_in, creator_email=current_user.email)
     return task
 
 

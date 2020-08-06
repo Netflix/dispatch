@@ -10,7 +10,6 @@ import logging
 from collections import defaultdict
 from datetime import datetime
 
-from dispatch.config import INCIDENT_RESOURCE_INCIDENT_TASK
 from dispatch.database import SessionLocal
 from dispatch.messaging import (
     INCIDENT_TASK_REMINDER,
@@ -18,10 +17,8 @@ from dispatch.messaging import (
     INCIDENT_TASK_RESOLVED_NOTIFICATION,
 )
 from dispatch.plugin import service as plugin_service
-from dispatch.incident.flows import incident_add_or_reactivate_participant_flow
-from dispatch.task.models import TaskStatus
+from dispatch.task.models import TaskStatus, TaskCreate, TaskUpdate
 from dispatch.task import service as task_service
-from dispatch.ticket import service as ticket_service
 
 
 log = logging.getLogger(__name__)
@@ -100,76 +97,39 @@ def send_task_notification(
 
 def create_or_update_task(db_session, incident, task: dict, notify: bool = False):
     """Creates a new task in the database or updates an existing one."""
-    incident_task = task_service.get_by_resource_id(db_session=db_session, resource_id=task["id"])
+    existing_task = task_service.get_by_resource_id(
+        db_session=db_session, resource_id=task["resource_id"]
+    )
 
-    assignees = []
-    for a in task["assignees"]:
-        assignees.append(
-            db_session.merge(
-                incident_add_or_reactivate_participant_flow(
-                    a, incident_id=incident.id, db_session=db_session
-                )
-            )
+    if existing_task:
+        task = task_service.update(
+            db_session=db_session, task=existing_task, task_in=TaskUpdate(**task)
         )
 
-    description = task["description"][0]
-    status = TaskStatus.open if not task["status"] else TaskStatus.resolved
-    resource_id = task["id"]
-    weblink = task["web_link"]
-
-    # TODO we can build this out as our scraping gets more advanced
-    tickets = [
-        ticket_service.get_or_create_by_weblink(db_session=db_session, weblink=t["web_link"])
-        for t in task["tickets"]
-    ]
-
-    if incident_task:
-        # allways update tickets and assignees
-        incident_task.assignees = assignees
-        incident_task.tickets = tickets
-
-        # only notify if it's newly resolved
-        if status == TaskStatus.resolved:
-            if incident_task.status != TaskStatus.resolved:
-                incident_task.status = status
-
-                if notify:
+        if notify:
+            # determine if task was previously resolved
+            if existing_task.status != TaskStatus.resolved:
+                # determine if we have a newly resolved task (since last sync)
+                if task.status == TaskStatus.resolved:
                     send_task_notification(
                         incident.conversation.channel_id,
                         INCIDENT_TASK_RESOLVED_NOTIFICATION,
-                        assignees,
-                        description,
-                        weblink,
+                        task.assignees,
+                        task.description,
+                        task.weblink,
                     )
-
     else:
-        # we add the task to the incident
-        creator = db_session.merge(
-            incident_add_or_reactivate_participant_flow(
-                task["owner"], incident_id=incident.id, db_session=db_session
-            )
-        )
-
         task = task_service.create(
-            db_session=db_session,
-            creator=creator,
-            assignees=assignees,
-            description=description,
-            status=status,
-            tickets=tickets,
-            resource_id=resource_id,
-            resource_type=INCIDENT_RESOURCE_INCIDENT_TASK,
-            weblink=weblink,
+            db_session=db_session, task_in=TaskCreate(**task), creator_email=task["creator"],
         )
-        incident.tasks.append(task)
 
         if notify:
             send_task_notification(
                 incident.conversation.channel_id,
                 INCIDENT_TASK_NEW_NOTIFICATION,
-                assignees,
-                description,
-                weblink,
+                task.assignees,
+                task.description,
+                task.weblink,
             )
 
     db_session.commit()

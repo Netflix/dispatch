@@ -22,7 +22,6 @@ from dispatch.extensions import sentry_sdk
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.individual import service as individual_service
-from dispatch.plugins.base import plugins
 from dispatch.plugin import service as plugin_service
 from dispatch.scheduler import scheduler
 from dispatch.service import service as service_service

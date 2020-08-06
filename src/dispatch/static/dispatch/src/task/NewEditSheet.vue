@@ -27,37 +27,98 @@
           <v-container grid-list-md>
             <v-layout wrap>
               <v-flex xs12>
-                <ValidationProvider name="Text" rules="required" immediate>
-                  <v-text-field
-                    v-model="text"
+                <ValidationProvider name="description" immediate>
+                  <v-textarea
+                    v-model="description"
                     slot-scope="{ errors, valid }"
+                    label="Description"
                     :error-messages="errors"
                     :success="valid"
-                    label="Text"
-                    hint="A word or phrase."
+                    hint="The task's description."
                     clearable
-                    auto-grow
                     required
                   />
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <definition-combobox v-model="definitions" />
+                <v-select
+                  v-model="status"
+                  label="Status"
+                  :items="statuses"
+                  hint="The incident's current status"
+                />
+              </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="incident" rules="required" immediate>
+                  <incident-select
+                    v-model="incident"
+                    slot-scope="{ errors, valid }"
+                    label="Incident"
+                    :error-messages="errors"
+                    :success="valid"
+                    hint="The tasks associated incident"
+                    clearable
+                    required
+                  ></incident-select>
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="owner" rules="required" immediate>
+                  <owner-select
+                    v-model="owner"
+                    slot-scope="{ errors, valid }"
+                    label="Owner"
+                    :error-messages="errors"
+                    :success="valid"
+                    hint="The tasks current owner"
+                    clearable
+                    required
+                  ></owner-select>
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="assignees" rules="required" immediate>
+                  <assignee-combobox
+                    v-model="assignees"
+                    slot-scope="{ errors, valid }"
+                    label="Assignees"
+                    :error-messages="errors"
+                    :success="valid"
+                    hint="The tasks current assignees"
+                    clearable
+                    required
+                  ></assignee-combobox>
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <span class="subtitle-2">Resolved At</span>
+              </v-flex>
+              <v-flex xs12>
+                <v-row>
+                  <v-col cols="6">
+                    <date-picker-menu v-model="resolved_at"></date-picker-menu>
+                  </v-col>
+                  <v-col cols="6">
+                    <time-picker-menu v-model="resolved_at"></time-picker-menu>
+                  </v-col>
+                </v-row>
+              </v-flex>
+              <v-flex xs12>
+                <span class="subtitle-2">Resolve By</span>
+              </v-flex>
+              <v-flex xs12>
+                <v-row>
+                  <v-col cols="6">
+                    <date-picker-menu v-model="resolve_by"></date-picker-menu>
+                  </v-col>
+                  <v-col cols="6">
+                    <time-picker-menu v-model="resolve_by"></time-picker-menu>
+                  </v-col>
+                </v-row>
               </v-flex>
             </v-layout>
           </v-container>
         </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn color="secondary" @click="closeCreateEdit()">Cancel</v-btn>
-          <v-btn
-            color="primary"
-            :disabled="invalid || !validated"
-            :loading="loading"
-            @click="save()"
-            >Save</v-btn
-          >
-        </v-card-actions>
       </v-card>
     </v-navigation-drawer>
   </ValidationObserver>
@@ -67,8 +128,12 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import OwnerSelect from "@/task/OwnerSelect.vue"
+import IncidentSelect from "@/incident/IncidentSelect.vue"
+import AssigneeCombobox from "@/task/AssigneeCombobox.vue"
+import DatePickerMenu from "@/components/DatePickerMenu.vue"
+import TimePickerMenu from "@/components/TimePickerMenu.vue"
 import { required } from "vee-validate/dist/rules"
-import DefinitionCombobox from "@/definition/DefinitionCombobox.vue"
 
 extend("required", {
   ...required,
@@ -81,12 +146,29 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    DefinitionCombobox
+    OwnerSelect,
+    IncidentSelect,
+    AssigneeCombobox,
+    TimePickerMenu,
+    DatePickerMenu
   },
+
+  data() {
+    return {
+      statuses: ["Open", "Resolved"]
+    }
+  },
+
   computed: {
     ...mapFields("task", [
-      "selected.text",
-      "selected.definitions",
+      "selected.status",
+      "selected.owner",
+      "selected.assignees",
+      "selected.description",
+      "selected.creator",
+      "selected.resolved_at",
+      "selected.resolve_by",
+      "selected.incident",
       "selected.id",
       "selected.loading",
       "dialogs.showCreateEdit"

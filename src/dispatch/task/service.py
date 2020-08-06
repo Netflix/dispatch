@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy import or_
 
-from dispatch.participant.models import Participant
-from dispatch.ticket.models import Ticket
-from .models import Task, TaskStatus, TaskUpdate
+from dispatch.event import service as event_service
+from dispatch.incident import flows as incident_flows
+from dispatch.incident import service as incident_service
+from dispatch.ticket import service as ticket_service
+from .models import Task, TaskStatus, TaskUpdate, TaskCreate
 
 
 def get(*, db_session, task_id: int) -> Optional[Task]:
@@ -57,29 +58,55 @@ def get_overdue_tasks(*, db_session) -> List[Optional[Task]]:
     )
 
 
-def create(
-    *,
-    db_session,
-    creator: Participant,
-    assignees: List[Participant],
-    description: str,
-    status: TaskStatus,
-    tickets: List[Ticket],
-    resource_id: str,
-    resource_type: str,
-    weblink: str,
-) -> Task:
+def create(*, db_session, task_in: TaskCreate, creator_email: str) -> Task:
     """Create a new task."""
-    task = Task(
-        creator=creator,
-        assignees=assignees,
-        description=description,
-        status=status,
-        tickets=tickets,
-        resource_id=resource_id,
-        resource_type=resource_type,
-        weblink=weblink,
+    incident = incident_service.get(db_session=db_session, incident_id=task_in.incident.id)
+
+    tickets = [
+        ticket_service.get_or_create_by_weblink(db_session=db_session, weblink=t.weblink)
+        for t in task_in.tickets
+    ]
+
+    assignees = []
+    for i in task_in.assignees:
+        assignees.append(
+            incident_flows.incident_add_or_reactivate_participant_flow(
+                db_session=db_session, incident_id=incident.id, user_email=i.individual.email,
+            )
+        )
+
+    # add creator as a participant if they are not one already
+    creator = incident_flows.incident_add_or_reactivate_participant_flow(
+        db_session=db_session, incident_id=incident.id, user_email=creator_email,
     )
+
+    # we add owner as a participant if they are not one already
+    if task_in.owner:
+        owner = incident_flows.incident_add_or_reactivate_participant_flow(
+            db_session=db_session,
+            incident_id=incident.id,
+            user_email=task_in.owner.individual.email,
+        )
+    else:
+        owner = incident.commander
+
+    task = Task(
+        **task_in.dict(exclude={"assignees", "owner", "incident", "creator", "tickets"}),
+        creator=creator,
+        owner=owner,
+        assignees=assignees,
+        incident=incident,
+        tickets=tickets,
+    )
+
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="New incident task created",
+        details={"weblink": task.weblink},
+        incident_id=incident.id,
+    )
+
     db_session.add(task)
     db_session.commit()
     return task
@@ -87,12 +114,31 @@ def create(
 
 def update(*, db_session, task: Task, task_in: TaskUpdate) -> Task:
     """Update an existing task."""
-    task_data = jsonable_encoder(task)
-    update_data = task_in.dict(skip_defaults=True)
+    # ensure we add assignee as participant if they are not one already
+    assignees = []
+    for i in task_in.assignees:
+        assignees.append(
+            incident_flows.incident_add_or_reactivate_participant_flow(
+                db_session=db_session, incident_id=task.incident.id, user_email=i.individual.email,
+            )
+        )
 
-    for field in task_data:
-        if field in update_data:
-            setattr(task, field, update_data[field])
+    task.assignees = assignees
+
+    # we add owner as a participant if they are not one already
+    if task_in.owner:
+        task.owner = incident_flows.incident_add_or_reactivate_participant_flow(
+            db_session=db_session,
+            incident_id=task.incident.id,
+            user_email=task_in.owner.individual.email,
+        )
+
+    update_data = task_in.dict(
+        skip_defaults=True, exclude={"assignees", "owner", "creator", "incident", "tickets"}
+    )
+
+    for field in update_data.keys():
+        setattr(task, field, update_data[field])
 
     db_session.add(task)
     db_session.commit()
