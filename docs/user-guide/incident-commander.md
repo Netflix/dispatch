@@ -6,7 +6,7 @@ description: What to expect as an incident commander.
 
 ## Reporting
 
-Within Dispatch, Incident Commanders \(ICs\) are also participants, and will receive all of the participant messaging as well. When resolved as the Incident Commander, you are assigned that role by Dispatch, and your identity is propagated via various messaging. For `High` priority incidents, the Incident Commander is automatically paged \(via PagerDuty\).
+Within Dispatch, Incident Commanders \(ICs\) are also participants, and will receive all of the participant messaging as well. When resolved as the Incident Commander, you are assigned that role by Dispatch, and your identity is propagated via various messaging.
 
 All Slack commands are listed below, or you may view _groups_ of commands relating to [People](#people), [Communications](#communications), [Tasks](#tasks), and [Incident Resources & Metadata](#incident-resources-and-metadata).
 
