@@ -56,7 +56,7 @@ Participants in an incident, or the Incident Commander, may want to know a parti
 These commands help manage incident communications.
 
 ### /dispatch-notifications-group
-An incident notifications group consists of individuals, or a distribution list. Manage this group by using `/dispatch-notifications-group`.
+An incident notifications group consists of individuals or distribution lists. Manage this group by using `/dispatch-notifications-group`.
 
 ![](../.gitbook/assets/slack-conversation-notifications-group.png)
 
