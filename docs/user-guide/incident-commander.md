@@ -91,7 +91,7 @@ It looks like this, in the Incident Document:
 The following commands help manage these tasks associated with an incident.
 
 ### /dispatch-list-my-tasks
-Any individual who issues the `/dispatch-list-my-tasks` command will see a list of only their assigned tasks.
+Any individual who issues the `/dispatch-list-my-tasks` command will see a list of tasks created by or assigned to them.
 
 ![](../.gitbook/assets/slack-conversation-list-my-tasks.png)
 
