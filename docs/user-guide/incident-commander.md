@@ -107,3 +107,8 @@ These commands help manage incident resources and metadata (data about the incid
 This command allows the IC to modify several aspects of the incident without ever leaving the conversation interface.
 
 ![](../.gitbook/assets/slack-conversation-edit-incident.png)
+
+### /dispatch-add-timeline-event
+This command helps you add an event to the incident timeline. You may use local time (derived from your Slack profile), or Coordinated Universal Time (UTC).
+
+![](../.gitbook/assets/slack-conversation-add-timeline-event.png)
