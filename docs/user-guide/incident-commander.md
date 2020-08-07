@@ -36,7 +36,7 @@ It's especially important to use this command when handing off responsibility fo
 ![](../.gitbook/assets/slack-conversation-assign-role.png)
 
 ### /dispatch-engage-oncall
-You'll need the help of various teams to resolve an incident. To quickly page an on-call member of another team, use `/dispatch-engage-oncall` to resolve their identity, and optionally page them using PagerDuty.
+You'll need the help of various teams to resolve an incident. To quickly engage an on-call member of another team, use `/dispatch-engage-oncall` to resolve their identity, and optionally page them.
 
 ![](../.gitbook/assets/slack-conversation-engage-oncall.png)
 
