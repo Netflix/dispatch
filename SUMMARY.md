@@ -19,5 +19,5 @@
   * [Installation](docs/installation.md)
   * [License](docs/license.md)
   * [Plugins](docs/plugins.md)
-  * [Contributing](docs/development.md)
+  * [Contributing](docs/contributing/)
 
