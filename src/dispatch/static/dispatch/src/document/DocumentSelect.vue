@@ -12,7 +12,6 @@
       item-text="name"
       label="Document"
       placeholder="Start typing to search"
-
       return-object
       :loading="loading"
     />
