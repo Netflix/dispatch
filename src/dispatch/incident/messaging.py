@@ -349,7 +349,7 @@ def send_incident_update_notifications(
 
         # we send an update to the incident notification conversations
         for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
-            convo_plugin.send(
+            convo_plugin.instance.send(
                 conversation,
                 notification_text,
                 notification_conversation_notification_template,
