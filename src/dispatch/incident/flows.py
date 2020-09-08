@@ -555,9 +555,9 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         document_plugin.instance.update(
             incident.incident_document.resource_id,
             name=incident.name,
-            priority=incident.priority,
+            priority=incident.incident_priority.name,
             status=incident.status,
-            type=incident.incident_type.type,
+            type=incident.incident_type.name,
             title=incident.title,
             description=incident.description,
             commander_fullname=incident.commander.name,
@@ -700,9 +700,9 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
                 document_plugin.instance.update(
                     incident.incident_review.resource_id,
                     name=incident.name,
-                    priority=incident.priority,
+                    priority=incident.incident_priority.name,
                     status=incident.status,
-                    type=incident.incident_type.type,
+                    type=incident.incident_type.name,
                     title=incident.title,
                     description=incident.description,
                     commander_fullname=incident.commander.name,
