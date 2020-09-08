@@ -100,6 +100,7 @@ def install_plugins():
             record.author_url = p.author_url
             record.description = p.description
             record.required = p.required
+            record.type = p.type
             db_session.add(record)
 
         db_session.commit()
