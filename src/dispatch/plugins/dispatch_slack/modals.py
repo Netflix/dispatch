@@ -437,7 +437,7 @@ def build_update_notifications_group_blocks(incident: Incident, db_session: Sess
     }
 
     group_plugin = plugin_service.get_active(db_session=db_session, plugin_type="group")
-    members = group_plugin.list(incident.notifications_group.email)
+    members = group_plugin.instance.list(incident.notifications_group.email)
 
     members_block = {
         "type": "input",
