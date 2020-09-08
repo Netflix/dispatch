@@ -564,7 +564,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             conversation_weblink=resolve_attr(incident, "conversation.weblink"),
             document_weblink=resolve_attr(incident, "incident_document.weblink"),
             storage_weblink=resolve_attr(incident, "storage.weblink"),
-            ticket_weblink=incident.ticket,
+            ticket_weblink=resolve_attr(incident, "ticket.weblink"),
             conference_weblink=resolve_attr(incident, "conference.weblink"),
             conference_challenge=resolve_attr(incident, "conference.challendge"),
         )
@@ -709,7 +709,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
                     conversation_weblink=resolve_attr(incident, "conversation.weblink"),
                     document_weblink=resolve_attr(incident, "incident_document.weblink"),
                     storage_weblink=resolve_attr(incident, "storage.weblink"),
-                    ticket_weblink=incident.ticket,
+                    ticket_weblink=resolve_attr(incident, "ticket.weblink"),
                     conference_weblink=resolve_attr(incident, "conference.weblink"),
                     conference_challenge=resolve_attr(incident, "conference.challendge"),
                 )
