@@ -871,7 +871,7 @@ def incident_assign_role_flow(
     # we resolve the assigner and assignee's contact information
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
 
-    assigner_contact_info = plugin.instnace.get(assigner_email)
+    assigner_contact_info = plugin.instance.get(assigner_email)
     assignee_contact_info = plugin.instance.get(assignee_email)
 
     # we load the incident instance
