@@ -698,7 +698,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
             )
             if document_plugin:
                 document_plugin.instance.update(
-                    incident.incident_review.resource_id,
+                    incident.incident_review_document.resource_id,
                     name=incident.name,
                     priority=incident.incident_priority.name,
                     status=incident.status,
@@ -716,7 +716,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
 
             # we send a notification about the incident review document to the conversation
             send_incident_review_document_notification(
-                incident.conversation.channel_id, incident_review_document["weblink"]
+                incident.conversation.channel_id, incident_review_document.weblink
             )
 
     db_session.add(incident)

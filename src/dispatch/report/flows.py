@@ -199,6 +199,7 @@ def create_executive_report(
         incident.conversation.channel_id,
         user_id,
         f"The executive report document has been created and can be found in the incident storage here: {executive_report_document['weblink']}",
+        db_session
     )
 
     # we send the executive report to the notifications group
@@ -209,6 +210,7 @@ def create_executive_report(
         incident.conversation.channel_id,
         user_id,
         f"The executive report has been emailed to the notifications distribution list ({incident.notifications_group.email}).",
+        db_session
     )
 
     return executive_report
