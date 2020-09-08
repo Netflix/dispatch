@@ -172,7 +172,7 @@ def create_participant_groups(
     db_session: SessionLocal,
 ):
     """Create external participant groups."""
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="group")
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant-group")
 
     group_name = f"{incident.name}"
     notification_group_name = f"{group_name}-notifications"
@@ -212,7 +212,7 @@ def create_participant_groups(
 
 def delete_participant_groups(incident: Incident, db_session: SessionLocal):
     """Deletes the external participant groups."""
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="group")
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant-group")
     plugin.instance.delete(email=incident.tactical_group.email)
     plugin.instance.delete(email=incident.notifications_group.email)
 
@@ -418,7 +418,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     individual_participants = [x.individual for x in incident.participants]
     participant_emails = [x.individual.email for x in incident.participants]
 
-    group_plugin = plugin_service.get_active(db_session=db_session, plugin_type="group")
+    group_plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant-group")
     tactical_group = None
     notification_group = None
     if group_plugin:
@@ -848,7 +848,7 @@ def incident_update_flow(
     team_participant_emails = [x.email for x in team_participants]
 
     # we add the team distributions lists to the notifications group
-    group_plugin = plugin_service.get_active(db_session=db_session, plugin_type="group")
+    group_plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant-group")
     if group_plugin:
         group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
 
