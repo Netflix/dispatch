@@ -22,5 +22,8 @@ class ParticipantGroupPlugin(Plugin):
     def remove(self, participant, **kwargs):
         raise NotImplementedError
 
-    def list(self, participant, **kwargs):
+    def delete(self, group, **kwargs):
+        raise NotImplementedError
+
+    def list(self, group, **kwargs):
         raise NotImplementedError

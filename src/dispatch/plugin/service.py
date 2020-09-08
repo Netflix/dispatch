@@ -16,12 +16,19 @@ def get(*, db_session, plugin_id: int) -> Optional[Plugin]:
 
 def get_active(*, db_session, plugin_type: str) -> Optional[Plugin]:
     """Fetches the current active plugin for the given type."""
-    return (
+    plugin = (
         db_session.query(Plugin)
         .filter(Plugin.type == plugin_type)
         .filter(Plugin.enabled == True)  # noqa
         .one_or_none()
     )
+
+    if not plugin:
+        log.warning(
+            f"Attempted to fetch active plugin, but none were found. PluginType: {plugin_type}"
+        )
+
+    return plugin
 
 
 def get_by_type(*, db_session, plugin_type: str) -> List[Optional[Plugin]]:
