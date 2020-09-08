@@ -18,6 +18,8 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 from starlette.requests import Request
 
 from dispatch.config import DISPATCH_UI_URL
+from dispatch.incident_priority.models import IncidentPriority
+from dispatch.incident_type.models import IncidentType
 from dispatch.individual import service as individual_service
 from dispatch.plugins import dispatch_core as dispatch_plugin
 from dispatch.plugin import service as plugin_service
@@ -213,14 +215,18 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def get(
-        self, incident_type: str, incident_priority: str, incident_description: str, db_session=None
+        self,
+        incident_type: IncidentType,
+        incident_priority: IncidentPriority,
+        incident_description: str,
+        db_session=None,
     ):
         """Fetches participants from Dispatch."""
         route_in = {
             "text": incident_description,
             "context": {
-                "incident_priorities": [incident_priority.__dict__],
-                "incident_types": [incident_type.__dict__],
+                "incident_priorities": [incident_priority],
+                "incident_types": [incident_type],
                 "terms": [],
             },
         }
@@ -231,19 +237,24 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
         log.debug(f"Recommendation: {recommendation}")
         # we need to resolve our service contacts to individuals
         for s in recommendation.service_contacts:
-            plugin = plugin_service.get_active(db_session=db_session, plugin_type=s.type)
+            plugin = plugin_service.get_by_slug(db_session=db_session, slug=s.type)
 
             if plugin:
-                log.debug(f"Resolving service contact. ServiceContact: {s}")
-                individual_email = plugin.instance.get(s.external_id)
+                if plugin.enabled:
+                    log.debug(f"Resolving service contact. ServiceContact: {s}")
+                    individual_email = plugin.instance.get(s.external_id)
 
-                individual = individual_service.get_or_create(
-                    db_session=db_session, email=individual_email
-                )
-                recommendation.individual_contacts.append(individual)
+                    individual = individual_service.get_or_create(
+                        db_session=db_session, email=individual_email
+                    )
+                    recommendation.individual_contacts.append(individual)
+                else:
+                    log.warning(
+                        f"Skipping service contact. Service: {s.name} Reason: Associated service plugin not enabled."
+                    )
             else:
                 log.warning(
-                    f"Skipping service contact. Service: {s.name} Reason: Associated service plugin not enabled."
+                    f"Skipping service contact. Service: {s.name} Reason: Associated service plugin not found."
                 )
 
         db_session.commit()

@@ -105,7 +105,7 @@ def update(
 
     for field in individual_contact_data:
         if field in update_data:
-            setattr(individual_contact_in, field, update_data[field])
+            setattr(individual_contact, field, update_data[field])
 
     individual_contact.terms = terms
     individual_contact.incident_types = incident_types
