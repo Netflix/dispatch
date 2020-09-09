@@ -136,7 +136,7 @@ STATIC_DIR = config("STATIC_DIR", default=DEFAULT_STATIC_DIR)
 METRIC_PROVIDERS = config("METRIC_PROVIDERS", cast=CommaSeparatedStrings, default="")
 
 # sentry middleware
-SENTRY_DSN = config("SENTRY_DSN", cast=Secret, default=None)
+SENTRY_DSN = config("SENTRY_DSN", default=None)
 
 # database
 DATABASE_HOSTNAME = config("DATABASE_HOSTNAME")

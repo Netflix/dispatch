@@ -1,6 +1,7 @@
 import logging
 
 import sentry_sdk
+from sentry_sdk import configure_scope
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
@@ -10,7 +11,7 @@ from sentry_sdk.integrations.dedupe import DedupeIntegration
 from sentry_sdk.integrations.atexit import AtexitIntegration
 from sentry_sdk.integrations.modules import ModulesIntegration
 
-from .config import SENTRY_DSN, ENV
+from .config import ENV_TAGS, SENTRY_DSN, ENV
 
 
 log = logging.getLogger(__file__)
@@ -38,3 +39,6 @@ def configure_extensions():
             ],
             environment=ENV,
         )
+        with configure_scope() as scope:
+            for k, v in ENV_TAGS.items():
+                scope.set_tag(k, v)
