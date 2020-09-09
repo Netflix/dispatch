@@ -40,5 +40,6 @@ def configure_extensions():
             environment=ENV,
         )
         with configure_scope() as scope:
+            log.debug(f"Using the following tags... ENV_TAGS: {ENV_TAGS}")
             for k, v in ENV_TAGS.items():
                 scope.set_tag(k, v)
