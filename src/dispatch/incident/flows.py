@@ -128,7 +128,8 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
 
 
 def update_external_incident_ticket(
-    incident: Incident, db_session: SessionLocal,
+    incident: Incident,
+    db_session: SessionLocal,
 ):
     """Update external incident ticket."""
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="ticket")
@@ -370,7 +371,7 @@ def add_participant_to_tactical_group(user_email: str, incident_id: int, db_sess
         incident_id=incident_id,
         resource_type=INCIDENT_RESOURCE_TACTICAL_GROUP,
     )
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant-group")
     plugin.instance.add(tactical_group.email, [user_email])
 
 
@@ -660,7 +661,8 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
             )
 
             storage_plugin.instance.move_file(
-                new_folder_id=incident.storage.resource_id, file_id=incident_review_document["id"],
+                new_folder_id=incident.storage.resource_id,
+                file_id=incident_review_document["id"],
             )
 
             event_service.log(
@@ -711,7 +713,9 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
 
             # we send a notification about the incident review document to the conversation
             send_incident_review_document_notification(
-                incident.conversation.channel_id, incident_review_document.weblink
+                incident.conversation.channel_id,
+                incident.incident_review_document.weblink,
+                db_session,
             )
 
     db_session.add(incident)

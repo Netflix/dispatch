@@ -62,7 +62,9 @@ def send_tactical_report_to_conversation(
 
 
 def send_executive_report_to_notifications_group(
-    incident_id: int, executive_report: Report, db_session: SessionLocal,
+    incident_id: int,
+    executive_report: Report,
+    db_session: SessionLocal,
 ):
     """Sends an executive report to the notifications group."""
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
@@ -120,7 +122,11 @@ def send_incident_report_reminder(
     ]
 
     plugin.instance.send_direct(
-        incident.commander.email, message_text, message_template, message_type, items=items,
+        incident.commander.email,
+        message_text,
+        message_template,
+        message_type,
+        items=items,
     )
 
     log.debug(f"Incident report reminder sent to {incident.commander.email}.")

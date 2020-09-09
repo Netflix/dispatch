@@ -32,8 +32,14 @@ def upgrade():
         "task_assignees",
         sa.Column("participant_id", sa.Integer(), nullable=False),
         sa.Column("task_id", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(["participant_id"], ["participant.id"],),
-        sa.ForeignKeyConstraint(["task_id"], ["task.id"],),
+        sa.ForeignKeyConstraint(
+            ["participant_id"],
+            ["participant.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["task_id"],
+            ["task.id"],
+        ),
         sa.PrimaryKeyConstraint("participant_id", "task_id"),
     )
     op.add_column("task", sa.Column("creator_id", sa.Integer(), nullable=True))

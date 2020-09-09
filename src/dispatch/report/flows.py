@@ -104,7 +104,10 @@ def create_executive_report(
 
     # we create a new executive report
     details = {"current_status": current_status, "overview": overview, "next_steps": next_steps}
-    executive_report_in = ReportCreate(details=details, type=ReportTypes.executive_report,)
+    executive_report_in = ReportCreate(
+        details=details,
+        type=ReportTypes.executive_report,
+    )
     executive_report = create(db_session=db_session, report_in=executive_report_in)
 
     # we load the participant
@@ -199,7 +202,7 @@ def create_executive_report(
         incident.conversation.channel_id,
         user_id,
         f"The executive report document has been created and can be found in the incident storage here: {executive_report_document['weblink']}",
-        db_session
+        db_session,
     )
 
     # we send the executive report to the notifications group
@@ -210,7 +213,7 @@ def create_executive_report(
         incident.conversation.channel_id,
         user_id,
         f"The executive report has been emailed to the notifications distribution list ({incident.notifications_group.email}).",
-        db_session
+        db_session,
     )
 
     return executive_report

@@ -71,13 +71,17 @@ def create(*, db_session, task_in: TaskCreate, creator_email: str) -> Task:
     for i in task_in.assignees:
         assignees.append(
             incident_flows.incident_add_or_reactivate_participant_flow(
-                db_session=db_session, incident_id=incident.id, user_email=i.individual.email,
+                db_session=db_session,
+                incident_id=incident.id,
+                user_email=i.individual.email,
             )
         )
 
     # add creator as a participant if they are not one already
     creator = incident_flows.incident_add_or_reactivate_participant_flow(
-        db_session=db_session, incident_id=incident.id, user_email=creator_email,
+        db_session=db_session,
+        incident_id=incident.id,
+        user_email=creator_email,
     )
 
     # we add owner as a participant if they are not one already
@@ -119,7 +123,9 @@ def update(*, db_session, task: Task, task_in: TaskUpdate) -> Task:
     for i in task_in.assignees:
         assignees.append(
             incident_flows.incident_add_or_reactivate_participant_flow(
-                db_session=db_session, incident_id=task.incident.id, user_email=i.individual.email,
+                db_session=db_session,
+                incident_id=task.incident.id,
+                user_email=i.individual.email,
             )
         )
 
