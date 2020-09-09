@@ -174,8 +174,11 @@ def send_incident_welcome_participant_messages(
     log.debug(f"Welcome participant messages sent {participant_email}.")
 
 
-def get_suggested_document_items(incident: Incident, db_session: SessionLocal):
+def get_suggested_document_items(incident_id: int, db_session: SessionLocal):
     """Create the suggested document item message."""
+    # we load the incident instance
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
     suggested_documents = get_suggested_documents(
         db_session, incident.incident_type, incident.incident_priority, incident.description
     )
@@ -196,10 +199,13 @@ def get_suggested_document_items(incident: Incident, db_session: SessionLocal):
 
 
 def send_incident_suggested_reading_messages(
-    incident: Incident, items: list, participant_email: str, db_session: SessionLocal
+    incident_id: int, items: list, participant_email: str, db_session: SessionLocal
 ):
     """Sends a suggested reading message to a participant."""
     if items:
+        # we load the incident instance
+        incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
         plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
         if not plugin:
             log.warning("Suggested reading message not sent, no conversation plugin enabled.")

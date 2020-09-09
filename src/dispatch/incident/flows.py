@@ -331,11 +331,8 @@ def create_collaboration_documents(incident: Incident, db_session: SessionLocal)
 
 def create_conversation(incident: Incident, participants: List[str], db_session: SessionLocal):
     """Create external communication conversation."""
-    # we create the conversation
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
-
     conversation = plugin.instance.create(incident.name, participants)
-
     conversation.update({"resource_type": plugin.slug, "resource_id": conversation["name"]})
 
     event_service.log(
@@ -365,8 +362,7 @@ def add_participant_to_conversation(
     plugin.instance.add(incident.conversation.channel_id, [participant_email])
 
 
-@background_task
-def add_participant_to_tactical_group(user_email: str, incident_id: int, db_session=None):
+def add_participant_to_tactical_group(user_email: str, incident_id: int, db_session: SessionLocal):
     """Adds participant to the tactical group."""
     # we get the tactical group
     tactical_group = group_service.get_by_incident_id_and_resource_type(
@@ -374,7 +370,6 @@ def add_participant_to_tactical_group(user_email: str, incident_id: int, db_sess
         incident_id=incident_id,
         resource_type=INCIDENT_RESOURCE_TACTICAL_GROUP,
     )
-
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
     plugin.instance.add(tactical_group.email, [user_email])
 
@@ -578,7 +573,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             incident_id=incident.id,
         )
 
-    suggested_document_items = get_suggested_document_items(incident, db_session)
+    suggested_document_items = get_suggested_document_items(incident.id, db_session)
 
     for participant in incident.participants:
         # we announce the participant in the conversation
@@ -594,7 +589,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             )
 
             send_incident_suggested_reading_messages(
-                incident, suggested_document_items, participant.individual.email, db_session
+                incident.id, suggested_document_items, participant.individual.email, db_session
             )
 
         except Exception as e:
@@ -1004,7 +999,7 @@ def incident_add_or_reactivate_participant_flow(
         )
 
         # we add the participant to the tactical group
-        add_participant_to_tactical_group(user_email, incident_id)
+        add_participant_to_tactical_group(user_email, incident_id, db_session)
 
         # we add the participant to the conversation
         add_participant_to_conversation(user_email, incident_id, db_session)
@@ -1016,7 +1011,10 @@ def incident_add_or_reactivate_participant_flow(
         send_incident_welcome_participant_messages(user_email, incident_id, db_session)
 
         # we send a suggested reading message to the participant
-        send_incident_suggested_reading_messages(user_email, incident_id, db_session)
+        suggested_document_items = get_suggested_document_items(incident_id, db_session)
+        send_incident_suggested_reading_messages(
+            incident_id, suggested_document_items, user_email, db_session
+        )
 
     return participant
 
