@@ -161,7 +161,7 @@ def handle_dialog_action(action: dict, background_tasks: BackgroundTasks, db_ses
     """Handles all dialog actions."""
     channel_id = action["channel"]["id"]
     conversation = get_by_channel_id(db_session=db_session, channel_id=channel_id)
-    incident_id = conversation.incident_id
+    incident_id = conversation.incident.id
 
     user_id = action["user"]["id"]
     user_email = action["user"]["email"]
