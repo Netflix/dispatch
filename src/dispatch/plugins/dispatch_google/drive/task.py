@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 
 def get_assignees(content: str) -> List[str]:
     """Gets assignees from comment."""
-    regex = r"\+([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)"
+    regex = r"\@([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)"
     matches = re.findall(regex, content)
     return [m for m in matches]
 
