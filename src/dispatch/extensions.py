@@ -4,6 +4,11 @@ import sentry_sdk
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.stdlib import StdlibIntegration
+from sentry_sdk.integrations.excepthook import ExcepthookIntegration
+from sentry_sdk.integrations.dedupe import DedupeIntegration
+from sentry_sdk.integrations.atexit import AtexitIntegration
+from sentry_sdk.integrations.modules import ModulesIntegration
 
 from .config import SENTRY_DSN, ENV
 
@@ -21,6 +26,15 @@ def configure_extensions():
     if SENTRY_DSN:
         sentry_sdk.init(
             dsn=str(SENTRY_DSN),
-            integrations=[sentry_logging, AioHttpIntegration(), SqlalchemyIntegration()],
+            integrations=[
+                sentry_logging,
+                AioHttpIntegration(),
+                SqlalchemyIntegration(),
+                StdlibIntegration(),
+                ExcepthookIntegration(),
+                DedupeIntegration(),
+                AtexitIntegration(),
+                ModulesIntegration(),
+            ],
             environment=ENV,
         )
