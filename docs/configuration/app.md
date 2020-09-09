@@ -37,7 +37,7 @@ In general, do not include any quotation marks when adding configuration values.
 
 #### `ENV_TAGS` \[defaut: ""\]
 
-> A comma seperated list of tags that Dispatch will attempt to pull from the environment. As an example the string `foo:bar,baz:blah` will create two tags, `foo` with the environment value for `bar` and `baz with the environments values for `blah`.
+> A comma separated list of tags that Dispatch will attempt to pull from the environment. As an example the string `foo:bar,baz:blah` will create two tags: `foo` with the environment value for `bar` and `baz` with the environment value for `blah`.
 
 #### `SENTRY_DSN` \[default: none\]
 
