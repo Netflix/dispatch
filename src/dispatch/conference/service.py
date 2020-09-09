@@ -15,7 +15,7 @@ def get_by_resource_id(*, db_session, resource_id: str) -> Optional[Conference]:
 
 def get_by_resource_type(*, db_session, resource_type: str) -> List[Optional[Conference]]:
     """Fetch a list of all conferences matching a given resource type.
-       May return an empty list if no conferences are available."""
+    May return an empty list if no conferences are available."""
     return db_session.query(Conference).filter(Conference.resource_type == resource_type).all()
 
 

@@ -125,7 +125,10 @@ def get_template(message_type: MessageType):
             default_notification,
             INCIDENT_TASK_REMINDER_DESCRIPTION,
         ),
-        MessageType.incident_status_reminder: (default_notification, None,),
+        MessageType.incident_status_reminder: (
+            default_notification,
+            None,
+        ),
         MessageType.incident_task_list: (default_notification, INCIDENT_TASK_LIST_DESCRIPTION),
     }
 

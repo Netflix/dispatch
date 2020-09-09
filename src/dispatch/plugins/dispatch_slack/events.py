@@ -200,7 +200,10 @@ def after_hours(user_email: str, incident_id: int, event: dict = None, db_sessio
 
 @background_task
 def member_joined_channel(
-    user_email: str, incident_id: int, event: EventEnvelope, db_session=None,
+    user_email: str,
+    incident_id: int,
+    event: EventEnvelope,
+    db_session=None,
 ):
     """Handles the member_joined_channel slack event."""
     participant = incident_flows.incident_add_or_reactivate_participant_flow(

@@ -40,8 +40,14 @@ def upgrade():
         "tags_incidents",
         sa.Column("incident_id", sa.Integer(), nullable=False),
         sa.Column("tag_id", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(["incident_id"], ["incident.id"],),
-        sa.ForeignKeyConstraint(["tag_id"], ["tag.id"],),
+        sa.ForeignKeyConstraint(
+            ["incident_id"],
+            ["incident.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["tag_id"],
+            ["tag.id"],
+        ),
         sa.PrimaryKeyConstraint("incident_id", "tag_id"),
     )
     op.drop_table("applications_incidents")

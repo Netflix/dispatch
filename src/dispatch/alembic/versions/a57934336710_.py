@@ -21,8 +21,14 @@ def upgrade():
         "task_tickets",
         sa.Column("ticket_id", sa.Integer(), nullable=False),
         sa.Column("task_id", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(["task_id"], ["task.id"],),
-        sa.ForeignKeyConstraint(["ticket_id"], ["ticket.id"],),
+        sa.ForeignKeyConstraint(
+            ["task_id"],
+            ["task.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["ticket_id"],
+            ["ticket.id"],
+        ),
         sa.PrimaryKeyConstraint("ticket_id", "task_id"),
     )
     # ### end Alembic commands ###

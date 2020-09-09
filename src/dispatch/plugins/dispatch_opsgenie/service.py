@@ -10,7 +10,10 @@ def get_auth():
 
 def get_oncall() -> str:
     schedule_api = "https://api.opsgenie.com/v2/schedules"
-    response = requests.get(f"{schedule_api}/{OPSGENIE_TEAM_ID}/on-calls", headers=get_auth(),)
+    response = requests.get(
+        f"{schedule_api}/{OPSGENIE_TEAM_ID}/on-calls",
+        headers=get_auth(),
+    )
 
     if response.status_code != 200:
         raise DispatchPluginException(response.text)
