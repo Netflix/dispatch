@@ -115,7 +115,7 @@ async def handle_event(
 
             # Dispatch event functions to be executed in the background
             for f in event_functions(event):
-                background_tasks.add_task(f, user_email, conversation.incident_id, event=event)
+                background_tasks.add_task(f, user_email, conversation.incident.id, event=event)
 
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()
@@ -151,7 +151,7 @@ async def handle_command(
 
     incident_id = 0
     if conversation:
-        incident_id = conversation.incident_id
+        incident_id = conversation.incident.id
     else:
         if command.get("command") != SLACK_COMMAND_REPORT_INCIDENT_SLUG:
             return render_non_incident_conversation_command_error_message(command.get("command"))
