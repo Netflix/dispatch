@@ -5,7 +5,7 @@ from sqlalchemy import or_
 
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
-from dispatch.incident import service as incident_service
+from dispatch.incident.models import Incident
 from dispatch.ticket import service as ticket_service
 from .models import Task, TaskStatus, TaskUpdate, TaskCreate
 
@@ -58,10 +58,8 @@ def get_overdue_tasks(*, db_session) -> List[Optional[Task]]:
     )
 
 
-def create(*, db_session, task_in: TaskCreate) -> Task:
+def create(*, db_session, incident: Incident, task_in: TaskCreate) -> Task:
     """Create a new task."""
-    incident = incident_service.get(db_session=db_session, incident_id=task_in.incident.id)
-
     tickets = [
         ticket_service.get_or_create_by_weblink(db_session=db_session, weblink=t.weblink)
         for t in task_in.tickets

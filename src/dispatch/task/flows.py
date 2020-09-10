@@ -119,7 +119,9 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
                         task.weblink,
                     )
     else:
-        task = task_service.create(db_session=db_session, task_in=TaskCreate(**task),)
+        task = task_service.create(
+            db_session=db_session, incident=incident, task_in=TaskCreate(**task),
+        )
 
         if notify:
             send_task_notification(
