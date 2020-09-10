@@ -19,7 +19,9 @@ def search(
     skip: int = 0,
     limit: int = 10,
     q: str = None,
-    type: List[SearchTypes] = SearchTypes,
+    type: List[str] = [
+        v.value for v in SearchTypes
+    ],  # hack for pydantic enum json generation see: https://github.com/samuelcolvin/pydantic/pull/1749
 ):
     """
     Perform a search.
