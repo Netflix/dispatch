@@ -1,14 +1,16 @@
+import logging
 from datetime import datetime
 from schedule import every
 
 from dispatch.decorators import background_task
-from dispatch.extensions import sentry_sdk
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.scheduler import scheduler
 
 from .messaging import send_incident_report_reminder
 from .models import ReportTypes
+
+log = logging.getLogger(__name__)
 
 
 @scheduler.add(every(1).hours, name="incident-report-reminders")
@@ -43,4 +45,4 @@ def incident_report_reminders(db_session=None):
 
             except Exception as e:
                 # we shouldn't fail to send all reminders when one fails
-                sentry_sdk.capture_exception(e)
+                log.exception(e)

@@ -11,7 +11,6 @@ from dispatch.config import (
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.decorators import background_task
 from dispatch.enums import Visibility
-from dispatch.extensions import sentry_sdk
 from dispatch.individual import service as individual_service
 from dispatch.messaging import (
     INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION,
@@ -64,7 +63,7 @@ def auto_tagger(db_session):
             text = plugin.instance.get(doc.resource_id, mime_type)
         except Exception as e:
             log.debug(f"Failed to get document. Reason: {e}")
-            sentry_sdk.capture_exception(e)
+            log.exception(e)
             continue
 
         extracted_tags = list(set(extract_terms_from_text(text, matcher)))
@@ -132,7 +131,7 @@ def daily_summary(db_session=None):
                         }
                     )
                 except Exception as e:
-                    sentry_sdk.capture_exception(e)
+                    log.exception(e)
     else:
         blocks.append(
             {
@@ -189,7 +188,7 @@ def daily_summary(db_session=None):
                         }
                     )
                 except Exception as e:
-                    sentry_sdk.capture_exception(e)
+                    log.exception(e)
 
         for incident in closed_incidents:
             if incident.visibility == Visibility.open:
@@ -211,7 +210,7 @@ def daily_summary(db_session=None):
                         }
                     )
                 except Exception as e:
-                    sentry_sdk.capture_exception(e)
+                    log.exception(e)
     else:
         blocks.append(
             {
@@ -284,8 +283,7 @@ def calculate_incidents_cost(db_session=None):
 
         except Exception as e:
             # we shouldn't fail to update all incidents when one fails
-            log.error(e)
-            sentry_sdk.capture_exception(e)
+            log.exception(e)
 
 
 @scheduler.add(every(1).day.at("18:00"), name="incident-status-reminder")

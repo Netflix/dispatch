@@ -48,5 +48,4 @@ def sync_document_terms(db_session=None):
 
         except Exception as e:
             # even if one document fails we don't want them to all fail
-            sentry_sdk.capture_exception(e)
             log.exception(e)

@@ -42,11 +42,7 @@ def background_task(func):
             )
             return result
         except Exception as e:
-            import traceback
-
-            configure_extensions()
-            print(traceback.format_exc())
-            sentry_sdk.capture_exception(e)
+            log.exception(e)
         finally:
             if background:
                 kwargs["db_session"].close()
