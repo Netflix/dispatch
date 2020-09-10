@@ -1,11 +1,27 @@
 import logging
 import os
 import base64
+from typing import List
 
 from starlette.config import Config
 from starlette.datastructures import CommaSeparatedStrings
 
 log = logging.getLogger(__name__)
+
+
+def get_env_tags(tag_list: List[str]) -> dict:
+    """Create dictionary of available env tags."""
+    tags = {}
+    for t in tag_list:
+        tag_key, env_key = t.split(":")
+
+        env_value = os.environ.get(env_key)
+
+        if env_value:
+            tags.update({tag_key: env_value})
+
+    return tags
+
 
 # if we have metatron available to us, lets use it to decrypt our secrets in memory
 try:
@@ -68,6 +84,9 @@ config = Config(".env")
 LOG_LEVEL = config("LOG_LEVEL", default=logging.WARNING)
 ENV = config("ENV", default="local")
 
+ENV_TAG_LIST = config("ENV_TAGS", cast=CommaSeparatedStrings, default="")
+ENV_TAGS = get_env_tags(ENV_TAG_LIST)
+
 DISPATCH_UI_URL = config("DISPATCH_UI_URL")
 DISPATCH_HELP_EMAIL = config("DISPATCH_HELP_EMAIL")
 DISPATCH_HELP_SLACK_CHANNEL = config("DISPATCH_HELP_SLACK_CHANNEL")
@@ -117,7 +136,7 @@ STATIC_DIR = config("STATIC_DIR", default=DEFAULT_STATIC_DIR)
 METRIC_PROVIDERS = config("METRIC_PROVIDERS", cast=CommaSeparatedStrings, default="")
 
 # sentry middleware
-SENTRY_DSN = config("SENTRY_DSN", cast=Secret, default=None)
+SENTRY_DSN = config("SENTRY_DSN", default=None)
 
 # database
 DATABASE_HOSTNAME = config("DATABASE_HOSTNAME")

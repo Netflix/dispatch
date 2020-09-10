@@ -35,7 +35,11 @@ In general, do not include any quotation marks when adding configuration values.
 
 > A comma separated list of metric providers Dispatch will send key system metrics to.
 
-#### `SENTRY_DSN` \[default: none\] \[secret: True\]
+#### `ENV_TAGS` \[defaut: ""\]
+
+> A comma separated list of tags that Dispatch will attempt to pull from the environment. As an example the string `foo:bar,baz:blah` will create two tags: `foo` with the environment value for `bar` and `baz` with the environment value for `blah`.
+
+#### `SENTRY_DSN` \[default: none\]
 
 > Optional configuration for using Sentry to report Dispatch errors.
 
