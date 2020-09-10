@@ -117,6 +117,7 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
                         task.assignees,
                         task.description,
                         task.weblink,
+                        db_session,
                     )
     else:
         task = task_service.create(
@@ -130,6 +131,7 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
                 task.assignees,
                 task.description,
                 task.weblink,
+                db_session,
             )
 
     db_session.commit()

@@ -18,7 +18,6 @@ from dispatch.config import (
 )
 from dispatch.decorators import background_task
 from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
-from dispatch.extensions import sentry_sdk
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.individual import service as individual_service
@@ -97,10 +96,8 @@ def sync_tasks(db_session, incidents, notify: bool = False):
                         create_or_update_task(db_session, incident, task["task"], notify=notify)
                     except Exception as e:
                         log.exception(e)
-                        sentry_sdk.capture_exception(e)
             except Exception as e:
                 log.exception(e)
-                sentry_sdk.capture_exception(e)
 
 
 @scheduler.add(every(1).day, name="incident-daily-task-sync")

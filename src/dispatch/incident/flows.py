@@ -595,7 +595,6 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
         except Exception as e:
             log.exception(e)
-            sentry_sdk.capture_exception(e)
 
     event_service.log(
         db_session=db_session,
