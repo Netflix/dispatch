@@ -116,6 +116,7 @@ class TaskBase(DispatchBase):
     tickets: Optional[List[TicketRead]] = []
     weblink: Optional[str]
     incident: Optional[IncidentReadNested]
+    resource_id: str
 
 
 class TaskCreate(TaskBase):
