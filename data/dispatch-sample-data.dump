@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 12.2 (Debian 12.2-2.pgdg100+1)
--- Dumped by pg_dump version 12.2
+-- Dumped from database version 12.3 (Debian 12.3-1.pgdg100+1)
+-- Dumped by pg_dump version 12.2 (Ubuntu 12.2-4)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1688,7 +1688,8 @@ CREATE TABLE public.task (
     incident_id integer,
     search_vector tsvector,
     created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    owner_id integer
 );
 
 
@@ -2087,7 +2088,7 @@ ALTER TABLE ONLY public.ticket ALTER COLUMN id SET DEFAULT nextval('public.ticke
 --
 
 COPY public.alembic_version (version_num) FROM stdin;
-69ac7f6dc0da
+ecdb4e7566f2
 \.
 
 
@@ -2329,22 +2330,22 @@ COPY public.participant_role (id, assumed_at, renounced_at, role, participant_id
 --
 
 COPY public.plugin (id, title, slug, description, version, author, author_url, type, enabled, required, multiple, configuration, search_vector) FROM stdin;
-1	Dispatch Plugin - Basic Authentication Provider	dispatch-auth-provider-basic	Generic basic authentication provider.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	auth-provider	t	t	f	null	'authent':4 'basic':3 'dispatch':1 'plugin':2 'provid':5
-3	Dispatch Plugin - Document Resolver	dispatch-document-resolver	Uses dispatch itself to resolve incident documents.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	document-resolver	t	t	f	null	'dispatch':1 'document':3 'plugin':2 'resolv':4
-5	Dispatch Plugin - Participant Resolver	dispatch-participant-resolver	Uses dispatch itself to resolve incident participants.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	participant	t	t	f	null	'dispatch':1 'particip':3 'plugin':2 'resolv':4
-7	Google Calendar Plugin - Conference Management	google-calendar-conference	Uses Google calendar to manage conference rooms/meets.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	conference	t	t	f	null	'calendar':2 'confer':4 'googl':1 'manag':5 'plugin':3
-8	Google Docs Plugin - Document Management	google-docs-document	Uses Google docs to manage document contents.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	document	t	t	f	null	'doc':2 'document':4 'googl':1 'manag':5 'plugin':3
-9	Google Drive Plugin - Storage Management	google-drive-storage	Uses Google Drive to help manage incident storage.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	storage	t	t	f	null	'drive':2 'googl':1 'manag':5 'plugin':3 'storag':4
-10	Google Drive Plugin - Task Management	google-drive-task	Uses Google Drive to help manage incident tasks.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	task	t	t	f	null	'drive':2 'googl':1 'manag':5 'plugin':3 'task':4
-11	Google Gmail Plugin - Conversation Management	google-gmail-conversation	Uses gmail to facilitate conversations.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	conversation	t	t	f	null	'convers':4 'gmail':2 'googl':1 'manag':5 'plugin':3
-12	Google Group Plugin - Participant Group Management	google-group-participant-group	Uses Google Groups to help manage participant membership.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	participant_group	t	t	f	null	'googl':1 'group':2,5 'manag':6 'particip':4 'plugin':3
-14	PagerDuty Plugin - Oncall Management	pagerduty-oncall	Uses PagerDuty to resolve and page oncall teams.	0.1.0	Netflix	https://github.com/Netflix/dispatch	oncall	t	t	f	null	'manag':4 'oncal':3 'pagerduti':1 'plugin':2
-16	Slack Plugin - Conversation Management	slack-conversation	Uses Slack to facilitate conversations.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	conversation	t	t	f	null	'convers':3 'manag':4 'plugin':2 'slack':1
-4	Dispatch Plugin - PKCE Authentication Provider	dispatch-auth-provider-pkce	Generic PCKE authentication provider.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	auth-provider	f	t	f	null	'authent':4 'dispatch':1 'pkce':3 'plugin':2 'provid':5
-2	Dispatch Plugin - Contact plugin	dispatch-contact	Uses dispatch itself to resolve incident participants.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	contact	t	t	f	null	'contact':3 'dispatch':1 'plugin':2,4
-15	Slack Plugin - Contact Information Resolver	slack-contact	Uses Slack to resolve contact information details.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	contact	f	t	f	null	'contact':3 'inform':4 'plugin':2 'resolv':5 'slack':1
-6	Dispatch Plugin - Ticket Management	dispatch-ticket	Uses dispatch itself to create a ticket.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	ticket	t	t	f	null	'dispatch':1 'manag':4 'plugin':2 'ticket':3
-13	Jira Plugin - Ticket Management	jira-ticket	Uses Jira to help manage external tickets.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	ticket	f	t	f	null	'jira':1 'manag':4 'plugin':2 'ticket':3
+1	Dispatch Plugin - Basic Authentication Provider	dispatch-auth-provider-basic	Generic basic authentication provider.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	auth-provider	t	f	f	null	'authent':4 'basic':3 'dispatch':1 'plugin':2 'provid':5
+3	Dispatch Plugin - Document Resolver	dispatch-document-resolver	Uses dispatch itself to resolve incident documents.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	document-resolver	t	f	f	null	'dispatch':1 'document':3 'plugin':2 'resolv':4
+4	Dispatch Plugin - PKCE Authentication Provider	dispatch-auth-provider-pkce	Generic PCKE authentication provider.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	auth-provider	f	f	f	null	'authent':4 'dispatch':1 'pkce':3 'plugin':2 'provid':5
+5	Dispatch Plugin - Participant Resolver	dispatch-participant-resolver	Uses dispatch itself to resolve incident participants.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	participant	t	f	f	null	'dispatch':1 'particip':3 'plugin':2 'resolv':4
+7	Google Calendar Plugin - Conference Management	google-calendar-conference	Uses Google calendar to manage conference rooms/meets.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	conference	t	f	f	null	'calendar':2 'confer':4 'googl':1 'manag':5 'plugin':3
+8	Google Docs Plugin - Document Management	google-docs-document	Uses Google docs to manage document contents.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	document	t	f	f	null	'doc':2 'document':4 'googl':1 'manag':5 'plugin':3
+9	Google Drive Plugin - Storage Management	google-drive-storage	Uses Google Drive to help manage incident storage.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	storage	t	f	f	null	'drive':2 'googl':1 'manag':5 'plugin':3 'storag':4
+10	Google Drive Plugin - Task Management	google-drive-task	Uses Google Drive to help manage incident tasks.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	task	t	f	f	null	'drive':2 'googl':1 'manag':5 'plugin':3 'task':4
+12	Google Group Plugin - Participant Group Management	google-group-participant-group	Uses Google Groups to help manage participant membership.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	participant-group	t	f	f	null	'googl':1 'group':2,5 'manag':6 'particip':4 'plugin':3
+14	PagerDuty Plugin - Oncall Management	pagerduty-oncall	Uses PagerDuty to resolve and page oncall teams.	0.1.0	Netflix	https://github.com/Netflix/dispatch	oncall	t	f	f	null	'manag':4 'oncal':3 'pagerduti':1 'plugin':2
+16	Slack Plugin - Conversation Management	slack-conversation	Uses Slack to facilitate conversations.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	conversation	t	f	f	null	'convers':3 'manag':4 'plugin':2 'slack':1
+2	Dispatch Plugin - Contact plugin	dispatch-contact	Uses dispatch itself to resolve incident participants.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	contact	t	f	f	null	'contact':3 'dispatch':1 'plugin':2,4
+6	Dispatch Plugin - Ticket Management	dispatch-ticket	Uses dispatch itself to create a ticket.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	ticket	t	f	f	null	'dispatch':1 'manag':4 'plugin':2 'ticket':3
+11	Google Gmail Plugin - Email Management	google-gmail-email	Uses gmail to facilitate emails.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	email	t	f	f	null	'email':4 'gmail':2 'googl':1 'manag':5 'plugin':3
+13	Jira Plugin - Ticket Management	jira-ticket	Uses Jira to help manage external tickets.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	ticket	f	f	f	null	'jira':1 'manag':4 'plugin':2 'ticket':3
+15	Slack Plugin - Contact Information Resolver	slack-contact	Uses Slack to resolve contact information details.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	contact	f	f	f	null	'contact':3 'inform':4 'plugin':2 'resolv':5 'slack':1
 \.
 
 
@@ -2505,7 +2506,7 @@ COPY public.tag (id, name, description, uri, source, type, discoverable, search_
 -- Data for Name: task; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public.task (resource_type, resource_id, weblink, id, resolved_at, resolve_by, last_reminder_at, creator_id, description, source, priority, status, reminders, incident_id, search_vector, created_at, updated_at) FROM stdin;
+COPY public.task (resource_type, resource_id, weblink, id, resolved_at, resolve_by, last_reminder_at, creator_id, description, source, priority, status, reminders, incident_id, search_vector, created_at, updated_at, owner_id) FROM stdin;
 \.
 
 
@@ -4040,6 +4041,14 @@ ALTER TABLE ONLY public.task
 
 
 --
+-- Name: task task_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.task
+    ADD CONSTRAINT task_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.participant(id);
+
+
+--
 -- Name: task_tickets task_tickets_task_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
 --
 
@@ -4130,4 +4139,3 @@ ALTER TABLE ONLY public.ticket
 --
 -- PostgreSQL database dump complete
 --
-
