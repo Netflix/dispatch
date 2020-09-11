@@ -85,16 +85,12 @@ def get_channel_id_from_event(event_body: dict):
 def event_functions(event: EventEnvelope):
     """Interprets the events and routes it the appropriate function."""
     event_mappings = {
-        "file_created": [add_evidence_to_storage],
-        "file_shared": [add_evidence_to_storage],
-        "link_shared": [],
         "member_joined_channel": [member_joined_channel],
-        "message": [ban_threads_warning],
         "member_left_channel": [incident_flows.incident_remove_participant_flow],
+        "message": [ban_threads_warning],
         "message.groups": [],
         "message.im": [],
         "reaction_added": [handle_reaction_added_event],
-        "reaction_removed": [handle_reaction_removed_event],
     }
 
     return event_mappings.get(event.event.type, [])
@@ -134,20 +130,6 @@ def handle_reaction_added_event(
             individual_id=individual.id,
             started_at=message_ts_utc,
         )
-
-
-@background_task
-def handle_reaction_removed_event(
-    user_email: str, incident_id: int, event: dict = None, db_session=None
-):
-    """Handles an event where a reaction is removed from a message."""
-    pass
-
-
-@background_task
-def add_evidence_to_storage(user_email: str, incident_id: int, event: dict = None, db_session=None):
-    """Adds evidence (e.g. files) added/shared in the conversation to storage."""
-    pass
 
 
 def is_business_hours(commander_tz: str):
@@ -200,10 +182,7 @@ def after_hours(user_email: str, incident_id: int, event: dict = None, db_sessio
 
 @background_task
 def member_joined_channel(
-    user_email: str,
-    incident_id: int,
-    event: EventEnvelope,
-    db_session=None,
+    user_email: str, incident_id: int, event: EventEnvelope, db_session=None,
 ):
     """Handles the member_joined_channel slack event."""
     participant = incident_flows.incident_add_or_reactivate_participant_flow(
