@@ -87,7 +87,7 @@ def event_functions(event: EventEnvelope):
     event_mappings = {
         "member_joined_channel": [member_joined_channel],
         "member_left_channel": [incident_flows.incident_remove_participant_flow],
-        "message": [ban_threads_warning],
+        "message": [after_hours, ban_threads_warning],
         "message.groups": [],
         "message.im": [],
         "reaction_added": [handle_reaction_added_event],
