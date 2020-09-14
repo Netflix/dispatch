@@ -2,6 +2,8 @@ from typing import Optional
 
 from fastapi.encoders import jsonable_encoder
 
+from dispatch.event import service as event_service
+
 from .models import Conversation, ConversationCreate, ConversationUpdate
 
 
@@ -32,6 +34,13 @@ def get_by_channel_id_ignoring_channel_type(db_session, channel_id: str) -> Opti
             conversation_in = ConversationUpdate(channel_id=channel_id)
             update(
                 db_session=db_session, conversation=conversation, conversation_in=conversation_in,
+            )
+
+            event_service.log(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Slack conversation type has changed ({channel_id[0]} -> {conversation.channel_id[0]})",
+                incident_id=conversation.incident_id,
             )
 
     return conversation
