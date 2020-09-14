@@ -14,8 +14,8 @@ from sqlalchemy.orm import Session
 from starlette.requests import Request
 from starlette.responses import Response
 
+from dispatch.conversation import service as conversation_service
 from dispatch.database import get_db
-from dispatch.conversation.service import get_by_channel_id
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from . import __version__
@@ -102,7 +102,9 @@ async def handle_event(
     channel_id = get_channel_id_from_event(event_body)
 
     if user_id and channel_id:
-        conversation = get_by_channel_id(db_session=db_session, channel_id=channel_id)
+        conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
+            db_session=db_session, channel_id=channel_id
+        )
 
         if conversation and dispatch_slack_service.is_user(user_id):
             # We create an async Slack client
@@ -147,7 +149,9 @@ async def handle_command(
 
     # Fetch conversation by channel id
     channel_id = command.get("channel_id")
-    conversation = get_by_channel_id(db_session=db_session, channel_id=channel_id)
+    conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
+        db_session=db_session, channel_id=channel_id
+    )
 
     incident_id = 0
     if conversation:
