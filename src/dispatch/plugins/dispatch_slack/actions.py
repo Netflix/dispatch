@@ -1,20 +1,20 @@
 from fastapi import BackgroundTasks
 
 from dispatch.config import INCIDENT_PLUGIN_TASK_SLUG
-
+from dispatch.conversation import service as conversation_service
 from dispatch.conversation.enums import ConversationButtonActions
-from dispatch.conversation.service import get_by_channel_id
 from dispatch.database import SessionLocal
 from dispatch.decorators import background_task
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
-from dispatch.task import service as task_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentUpdate, IncidentRead
-from dispatch.task.models import TaskStatus
-from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.plugin import service as plugin_service
 from dispatch.plugins.base import plugins
+from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.report import flows as report_flows
+from dispatch.task import service as task_service
+from dispatch.task.models import TaskStatus
 
 from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
@@ -162,7 +162,9 @@ def block_action_functions(action: str):
 def handle_dialog_action(action: dict, background_tasks: BackgroundTasks, db_session: SessionLocal):
     """Handles all dialog actions."""
     channel_id = action["channel"]["id"]
-    conversation = get_by_channel_id(db_session=db_session, channel_id=channel_id)
+    conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
+        db_session=db_session, channel_id=channel_id
+    )
     incident_id = conversation.incident_id
 
     user_id = action["user"]["id"]
