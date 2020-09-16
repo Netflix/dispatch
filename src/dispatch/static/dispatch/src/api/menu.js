@@ -21,7 +21,7 @@ const Menu = [
     icon: "playlist_add_check",
     href: "/tasks"
   },
-  { header: "Routing" },
+  /*{ header: "Routing" },
   {
     title: "Route",
     group: "routing",
@@ -35,7 +35,7 @@ const Menu = [
     component: "Policies",
     icon: "clear_all",
     href: "/policies"
-  },
+  },*/
   { header: "Contacts" },
   {
     title: "Individual",
