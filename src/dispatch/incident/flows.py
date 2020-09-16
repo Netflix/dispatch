@@ -21,7 +21,6 @@ from dispatch.config import (
     INCIDENT_STORAGE_FOLDER_ID,
     INCIDENT_STORAGE_OPEN_ON_CLOSE,
 )
-from dispatch.extensions import sentry_sdk
 
 from dispatch.conference import service as conference_service
 from dispatch.conference.models import ConferenceCreate
@@ -128,8 +127,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
 
 
 def update_external_incident_ticket(
-    incident: Incident,
-    db_session: SessionLocal,
+    incident: Incident, db_session: SessionLocal,
 ):
     """Update external incident ticket."""
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="ticket")
@@ -660,8 +658,7 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
             )
 
             storage_plugin.instance.move_file(
-                new_folder_id=incident.storage.resource_id,
-                file_id=incident_review_document["id"],
+                new_folder_id=incident.storage.resource_id, file_id=incident_review_document["id"],
             )
 
             event_service.log(

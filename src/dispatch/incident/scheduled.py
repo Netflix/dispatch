@@ -9,6 +9,7 @@ from dispatch.config import (
     INCIDENT_NOTIFICATION_CONVERSATIONS,
 )
 from dispatch.conversation.enums import ConversationButtonActions
+from dispatch.database import resolve_attr
 from dispatch.decorators import background_task
 from dispatch.enums import Visibility
 from dispatch.individual import service as individual_service
@@ -109,6 +110,7 @@ def daily_summary(db_session=None):
             }
         )
         for idx, incident in enumerate(active_incidents):
+            ticket_weblink = resolve_attr(incident, "ticket.weblink")
             if incident.visibility == Visibility.open:
                 try:
                     blocks.append(
@@ -117,7 +119,7 @@ def daily_summary(db_session=None):
                             "text": {
                                 "type": "mrkdwn",
                                 "text": (
-                                    f"*<{incident.ticket.weblink}|{incident.name}>*\n"
+                                    f"*<{ticket_weblink}|{incident.name}>*\n"
                                     f"*Title*: {incident.title}\n"
                                     f"*Type*: {incident.incident_type.name}\n"
                                     f"*Priority*: {incident.incident_priority.name}\n"
@@ -165,6 +167,8 @@ def daily_summary(db_session=None):
     )
     if stable_incidents or closed_incidents:
         for idx, incident in enumerate(stable_incidents):
+            ticket_weblink = resolve_attr(incident, "ticket.weblink")
+
             if incident.visibility == Visibility.open:
                 try:
                     blocks.append(
@@ -173,7 +177,7 @@ def daily_summary(db_session=None):
                             "text": {
                                 "type": "mrkdwn",
                                 "text": (
-                                    f"*<{incident.ticket.weblink}|{incident.name}>*\n"
+                                    f"*<{ticket_weblink}|{incident.name}>*\n"
                                     f"*Title*: {incident.title}\n"
                                     f"*Type*: {incident.incident_type.name}\n"
                                     f"*Priority*: {incident.incident_priority.name}\n"
@@ -193,6 +197,8 @@ def daily_summary(db_session=None):
                     log.exception(e)
 
         for incident in closed_incidents:
+            ticket_weblink = resolve_attr(incident, "ticket.weblink")
+
             if incident.visibility == Visibility.open:
                 try:
                     blocks.append(
@@ -201,7 +207,7 @@ def daily_summary(db_session=None):
                             "text": {
                                 "type": "mrkdwn",
                                 "text": (
-                                    f"*<{incident.ticket.weblink}|{incident.name}>*\n"
+                                    f"*<{ticket_weblink}|{incident.name}>*\n"
                                     f"*Title*: {incident.title}\n"
                                     f"*Type*: {incident.incident_type.name}\n"
                                     f"*Priority*: {incident.incident_priority.name}\n"
