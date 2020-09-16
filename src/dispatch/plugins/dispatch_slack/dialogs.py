@@ -1,9 +1,11 @@
 import logging
+from dispatch import plugins
 
 from dispatch.decorators import background_task
 from dispatch.enums import Visibility
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
+from dispatch.incident.service import plugin_service
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.participant_role.models import ParticipantRoleType
@@ -17,6 +19,47 @@ from .config import SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG
 
 slack_client = dispatch_slack_service.create_slack_client()
 log = logging.getLogger(__name__)
+
+
+@background_task
+def create_run_external_flow_dialog(incident_id: int, command: dict = None, db_session=None):
+    """Creates a dialog for running external flows."""
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="external-flow")
+
+    if plugin:
+        flows = plugin.instance.list()
+
+        flow_options = []
+        for f in flows:
+            flow_options.append({"label": f.name, "value": f.name})
+
+        dialog = {
+            "callback_id": command["command"],
+            "title": "Run External Flow",
+            "submit_label": "Run",
+            "elements": [
+                {"label": "Flow", "type": "select", "name": "flow", "options": flow_options},
+            ],
+        }
+
+        dispatch_slack_service.open_dialog_with_user(slack_client, command["trigger_id"], dialog)
+    else:
+        blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "No external flow plugins enabled. You can enabled one in the Dispatch UI at /plugins",
+                },
+            }
+        ]
+        dispatch_slack_service.send_ephemeral_message(
+            slack_client,
+            command["channel_id"],
+            command["user_id"],
+            "No external flow plugins enabled",
+            blocks=blocks,
+        )
 
 
 def create_assign_role_dialog(incident_id: int, command: dict = None):

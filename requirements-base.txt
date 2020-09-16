@@ -39,3 +39,4 @@ statsmodels
 tabulate
 tenacity
 uvicorn
+metaflow
