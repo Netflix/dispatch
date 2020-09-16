@@ -1,7 +1,7 @@
 import logging
 
 from dispatch.conversation.enums import ConversationCommands
-from dispatch.database import SessionLocal
+from dispatch.database import SessionLocal, resolve_attr
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import Incident
 from dispatch.messaging import (
@@ -62,9 +62,7 @@ def send_tactical_report_to_conversation(
 
 
 def send_executive_report_to_notifications_group(
-    incident_id: int,
-    executive_report: Report,
-    db_session: SessionLocal,
+    incident_id: int, executive_report: Report, db_session: SessionLocal,
 ):
     """Sends an executive report to the notifications group."""
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
@@ -110,23 +108,20 @@ def send_incident_report_reminder(
         return
 
     report_command = plugin.instance.get_command_name(command_name)
+    ticket_weblink = resolve_attr(incident, "ticket.weblink")
 
     items = [
         {
             "command": report_command,
             "name": incident.name,
             "report_type": report_type.value,
-            "ticket_weblink": incident.ticket.weblink,
+            "ticket_weblink": ticket_weblink,
             "title": incident.title,
         }
     ]
 
     plugin.instance.send_direct(
-        incident.commander.email,
-        message_text,
-        message_template,
-        message_type,
-        items=items,
+        incident.commander.email, message_text, message_template, message_type, items=items,
     )
 
     log.debug(f"Incident report reminder sent to {incident.commander.email}.")
