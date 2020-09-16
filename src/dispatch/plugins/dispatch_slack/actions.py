@@ -20,6 +20,7 @@ from .config import (
     SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
     SLACK_COMMAND_REPORT_TACTICAL_SLUG,
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
+    SLACK_COMMAND_RUN_EXTERNAL_FLOW_SLUG,
 )
 
 from .service import get_user_email
@@ -99,7 +100,7 @@ def update_task_status(
 
 @background_task
 def handle_update_incident_action(user_id, user_email, incident_id, action, db_session=None):
-    """Messages slack dialog data into something that Dispatch can use."""
+    """Massages slack dialog data into something that Dispatch can use."""
     submission = action["submission"]
     notify = True if submission["notify"] == "Yes" else False
     incident_in = IncidentUpdate(
@@ -119,11 +120,17 @@ def handle_update_incident_action(user_id, user_email, incident_id, action, db_s
 
 @background_task
 def handle_assign_role_action(user_id, user_email, incident_id, action, db_session=None):
-    """Messages slack dialog data into some thing that Dispatch can use."""
+    """Massages slack dialog data into something that Dispatch can use."""
     assignee_user_id = action["submission"]["participant"]
     assignee_role = action["submission"]["role"]
     assignee_email = get_user_email(client=slack_client, user_id=assignee_user_id)
     incident_flows.incident_assign_role_flow(user_email, incident_id, assignee_email, assignee_role)
+
+
+@background_task
+def handle_run_external_flow_action(user_id, user_email, incident_id, action, db_session=None):
+    """Massages slack dialog data into something that Dispatch can use."""
+    pass
 
 
 def dialog_action_functions(action: str):
@@ -134,6 +141,7 @@ def dialog_action_functions(action: str):
         SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [report_flows.create_executive_report],
         SLACK_COMMAND_REPORT_TACTICAL_SLUG: [report_flows.create_tactical_report],
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [handle_update_incident_action],
+        SLACK_COMMAND_RUN_EXTERNAL_FLOW_SLUG: [handle_run_external_flow_action],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc
