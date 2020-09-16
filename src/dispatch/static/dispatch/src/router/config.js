@@ -265,18 +265,18 @@ export const protectedRoute = [
       }
     ]
   },
-  {
-    path: "/route",
-    component: DefaultLayout,
-    meta: { title: "Route", icon: "view_compact", group: "routing", requiresAuth: true },
-    children: [
-      {
-        path: "/route",
-        name: "RouteTable",
-        component: () => import(/* webpackChunkName: "routing-table" */ "@/route/Table.vue")
-      }
-    ]
-  },
+  //{
+  //  path: "/route",
+  //  component: DefaultLayout,
+  //  meta: { title: "Route", icon: "view_compact", group: "routing", requiresAuth: true },
+  //  children: [
+  //    {
+  //      path: "/route",
+  //      name: "RouteTable",
+  //      component: () => import(/* webpackChunkName: "routing-table" */ "@/route/Table.vue")
+  //    }
+  //  ]
+  //},
   {
     path: "/plugins",
     component: DefaultLayout,

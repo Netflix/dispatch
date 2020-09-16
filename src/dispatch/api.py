@@ -42,7 +42,7 @@ authenticated_api_router.include_router(team_contact_router, prefix="/teams", ta
 authenticated_api_router.include_router(
     individual_contact_router, prefix="/individuals", tags=["individuals"]
 )
-authenticated_api_router.include_router(route_router, prefix="/route", tags=["route"])
+# authenticated_api_router.include_router(route_router, prefix="/route", tags=["route"])
 authenticated_api_router.include_router(policy_router, prefix="/policies", tags=["policies"])
 authenticated_api_router.include_router(
     definition_router, prefix="/definitions", tags=["definitions"]
