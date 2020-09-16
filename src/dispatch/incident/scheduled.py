@@ -58,28 +58,30 @@ def auto_tagger(db_session):
         log.debug(f"Processing incident. Name: {incident.name}")
 
         doc = incident.incident_document
-        try:
-            mime_type = "text/plain"
-            text = plugin.instance.get(doc.resource_id, mime_type)
-        except Exception as e:
-            log.debug(f"Failed to get document. Reason: {e}")
-            log.exception(e)
-            continue
 
-        extracted_tags = list(set(extract_terms_from_text(text, matcher)))
+        if doc:
+            try:
+                mime_type = "text/plain"
+                text = plugin.instance.get(doc.resource_id, mime_type)
+            except Exception as e:
+                log.debug(f"Failed to get document. Reason: {e}")
+                log.exception(e)
+                continue
 
-        matched_tags = (
-            db_session.query(Tag)
-            .filter(func.upper(Tag.name).in_([func.upper(t) for t in extracted_tags]))
-            .all()
-        )
+            extracted_tags = list(set(extract_terms_from_text(text, matcher)))
 
-        incident.tags.extend(matched_tags)
-        db_session.commit()
+            matched_tags = (
+                db_session.query(Tag)
+                .filter(func.upper(Tag.name).in_([func.upper(t) for t in extracted_tags]))
+                .all()
+            )
 
-        log.debug(
-            f"Associating tags with incident. Incident: {incident.name}, Tags: {extracted_tags}"
-        )
+            incident.tags.extend(matched_tags)
+            db_session.commit()
+
+            log.debug(
+                f"Associating tags with incident. Incident: {incident.name}, Tags: {extracted_tags}"
+            )
 
 
 @scheduler.add(every(1).day.at("18:00"), name="incident-daily-summary")
