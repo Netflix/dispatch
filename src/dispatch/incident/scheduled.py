@@ -282,7 +282,7 @@ def calculate_incidents_cost(db_session=None):
 
             log.debug(f"Incident cost for {incident.name} updated in the database.")
 
-            if incident.ticket.resource_id:
+            if incident.ticket:
                 # we update the external ticket
                 update_external_incident_ticket(incident, db_session)
                 log.debug(f"Incident cost for {incident.name} updated in the ticket.")
