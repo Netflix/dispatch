@@ -67,16 +67,23 @@ def create(*, db_session, incident: Incident, task_in: TaskCreate) -> Task:
 
     assignees = []
     for i in task_in.assignees:
-        assignees.append(
-            incident_flows.incident_add_or_reactivate_participant_flow(
-                db_session=db_session, incident_id=incident.id, user_email=i.individual.email,
-            )
+        assignee = incident_flows.incident_add_or_reactivate_participant_flow(
+            db_session=db_session, incident_id=incident.id, user_email=i.individual.email,
         )
+
+        # due to the freeform nature of task assignment, we can sometimes pick up other emails
+        # e.g. a google group that we cannont resolve to an individual assignee
+        if assignee:
+            assignees.append(assignee)
 
     # add creator as a participant if they are not one already
     creator = incident_flows.incident_add_or_reactivate_participant_flow(
         db_session=db_session, incident_id=incident.id, user_email=task_in.owner.individual.email,
     )
+
+    # if we cannot find any assignees, the creator becomes the default assignee
+    if not assignees:
+        assignees.append(creator)
 
     # we add owner as a participant if they are not one already
     if task_in.owner:
