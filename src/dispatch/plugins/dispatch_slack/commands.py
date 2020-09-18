@@ -30,6 +30,16 @@ from .config import (
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG,
     SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG,
+    SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG,
+    SLACK_COMMAND_RUN_EXTERNAL_WORKFLOW_SLUG,
+)
+
+from .modals import (
+    create_add_timeline_event_modal,
+    create_report_incident_modal,
+    create_update_notifications_group_modal,
+    create_update_participant_modal,
+    create_run_external_workflow_modal,
 )
 
 from .dialogs import (
@@ -38,13 +48,6 @@ from .dialogs import (
     create_executive_report_dialog,
     create_tactical_report_dialog,
     create_update_incident_dialog,
-)
-
-from .modals import (
-    create_add_timeline_event_modal,
-    create_report_incident_modal,
-    create_update_notifications_group_modal,
-    create_update_participant_modal,
 )
 
 
@@ -69,6 +72,7 @@ def command_functions(command: str):
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_dialog],
         SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG: [create_update_notifications_group_modal],
         SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG: [create_update_participant_modal],
+        SLACK_COMMAND_RUN_EXTERNAL_WORKFLOW_SLUG: [create_run_external_workflow_modal],
     }
 
     return command_mappings.get(command, [])
@@ -296,5 +300,9 @@ def list_incidents(incident_id: int, command: dict = None, db_session=None):
                     log.exception(e)
 
     dispatch_slack_service.send_ephemeral_message(
-        slack_client, command["channel_id"], command["user_id"], "Incident List", blocks=blocks,
+        slack_client,
+        command["channel_id"],
+        command["user_id"],
+        "Incident List",
+        blocks=blocks,
     )

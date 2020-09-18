@@ -1,5 +1,5 @@
 """
-.. module: dispatch.plugins.bases.external_flow
+.. module: dispatch.plugins.bases.external_workflow
     :platform: Unix
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
@@ -9,8 +9,8 @@ from dispatch.plugins.base import Plugin
 from dispatch.models import PluginOptionModel
 
 
-class ExternalFlowPlugin(Plugin):
-    type = "external-flow"
+class ExternalWorkflowPlugin(Plugin):
+    type = "external-workflow"
     _schema = PluginOptionModel
 
     def list(self, **kwargs):

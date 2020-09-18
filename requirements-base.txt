@@ -39,4 +39,4 @@ statsmodels
 tabulate
 tenacity
 uvicorn
-metaflow
+nflx_metaflow

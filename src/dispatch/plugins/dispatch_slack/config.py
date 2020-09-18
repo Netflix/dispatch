@@ -55,6 +55,6 @@ SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG = config(
 SLACK_COMMAND_LIST_INCIDENTS_SLUG = config(
     "SLACK_COMMAND_LIST_INCIDENTS_SLUG", default="/dispatch-list-incidents"
 )
-SLACK_COMMAND_RUN_EXTERNAL_FLOW_SLUG = config(
-    "SLACK_RUN_EXTERNAL_COMMAND_FLOW_SLUG", default="/dispatch-run-external-flow"
+SLACK_COMMAND_RUN_EXTERNAL_WORKFLOW_SLUG = config(
+    "SLACK_RUN_EXTERNAL_COMMAND_WORKFLOW_SLUG", default="/dispatch-run-external-workflow"
 )
