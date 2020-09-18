@@ -14,4 +14,4 @@ from .tag import TagPlugin  # noqa
 from .task import TaskPlugin  # noqa
 from .term import TermPlugin  # noqa
 from .ticket import TicketPlugin  # noqa
-from .external_flow import ExternalFlowPlugin  # noqa
+from .external_workflow import ExternalWorkflowPlugin  # noqa

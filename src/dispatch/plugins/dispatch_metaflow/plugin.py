@@ -6,30 +6,48 @@
 """
 import logging
 
-from dispatch.plugins.bases import ExternalFlowPlugin
-from dispatch.plugins.dispatch_metaflow import plugin as metaflow_plugin
-from metaflow import Metaflow, Meson, MesonDuplicateSignal, namespace
+from dispatch.plugins.bases import ExternalWorkflowPlugin
+from dispatch.plugins import dispatch_metaflow as metaflow_plugin
+from metaflow import Metaflow, Meson, MesonDuplicateSignal, namespace, current
 
 from .config import METAFLOW_NAMESPACE
 
 log = logging.getLogger(__name__)
 
 
-class MetaflowExternalFlowPlugin(ExternalFlowPlugin):
-    title = "Metaflow - External flows"
-    slug = "metaflow-external-flow"
-    description = "Metaflow external flow runner."
+class MetaflowExternalWorkflowPlugin(ExternalWorkflowPlugin):
+    title = "Metaflow - External Workflows"
+    slug = "metaflow-external-workflow"
+    description = "Metaflow external workflow runner."
     version = metaflow_plugin.__version__
 
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def list(self, **kwargs):
-        namespace(METAFLOW_NAMESPACE)
-        return Metaflow().flows
+        # this is currently too slow to be useable, we hard code for now, it's on the Metaflow roadmap.
+        # namespace(METAFLOW_NAMESPACE)
+        # flows = []
+        # for flow in list(Metaflow()):
+        #    flows.append({"id": flow.id, "params": flow.latest_run["start"].task.data.keys()})
 
-    def run(self, name, **kwargs):
+        return [
+            {
+                "id": "sirtresponse.user.kglisson.ApplicationMetadataFlow",
+                "name": "sirtresponse.user.kglisson.ApplicationMetadataFlow",
+                "params": [{"name": "app", "type": "string"}],
+            }
+        ]
+
+    def get(self, workflow_id: str, **kwargs):
+        for w in self.list():
+            if w["id"] == workflow_id:
+                return w
+
+    def run(self, workflow_id: str, params: dict, **kwargs):
         try:
-            Meson.send_signal(name, kwargs)
+            Meson.send_signal(workflow_id, params)
         except MesonDuplicateSignal:
-            log.debug(f"Triggering signal already exists. Name: {name} Kwargs: {kwargs}")
+            log.debug(
+                f"Triggering signal already exists. WorkflowId: {workflow_id} Params: {params} Kwargs: {kwargs}"
+            )

@@ -25,6 +25,7 @@ from .config import (
     SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG,
     SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG,
     SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG,
+    SLACK_COMMAND_RUN_EXTERNAL_WORKFLOW_SLUG,
 )
 
 from .modals import (
@@ -32,6 +33,7 @@ from .modals import (
     create_report_incident_modal,
     create_update_notifications_group_modal,
     create_update_participant_modal,
+    create_run_external_workflow_modal,
 )
 
 from .dialogs import (
@@ -61,6 +63,7 @@ def command_functions(command: str):
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_dialog],
         SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG: [create_update_notifications_group_modal],
         SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG: [create_update_participant_modal],
+        SLACK_COMMAND_RUN_EXTERNAL_WORKFLOW_SLUG: [create_run_external_workflow_modal],
     }
 
     return command_mappings.get(command, [])
