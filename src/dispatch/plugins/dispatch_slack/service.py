@@ -1,16 +1,8 @@
-"""
-.. module: dispatch.plugins.dispatch_slack.service
-    :platform: Unix
-    :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
-    :license: Apache, see LICENSE for more details.
-.. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
-"""
 from datetime import datetime, timezone
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
 from typing import Any, Dict, List, Optional
 import functools
 import logging
-import re
 import slack
 import time
 

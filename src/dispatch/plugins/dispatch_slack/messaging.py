@@ -101,7 +101,7 @@ Incident-specifc commands can only be run in incident conversations.""".replace(
 
 INCIDENT_CONVERSATION_COMMAND_RUN_IN_CONVERSATION_WHERE_BOT_NOT_PRESENT = """
 Looks like you tried to run `{{command}}` in a conversation where the Dispatch bot is not present.
-Try again in one of the following conversations: {{conversations}}""".replace(
+Add the bot to your conversation or run the command in one of the following conversations: {{conversations}}""".replace(
     "\n", " "
 ).strip()
 
