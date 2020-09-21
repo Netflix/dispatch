@@ -35,6 +35,10 @@ In general, do not include any quotation marks when adding configuration values.
 
 > A comma separated list of metric providers Dispatch will send key system metrics to.
 
+#### `SECRET_PROVIDER` \[default: None\]
+
+> Defines the provider to use for configuration secret decryption. Available options are: `kms-secret` and `metatron-secret`
+
 #### `ENV_TAGS` \[defaut: ""\]
 
 > A comma separated list of tags that Dispatch will attempt to pull from the environment. As an example the string `foo:bar,baz:blah` will create two tags: `foo` with the environment value for `bar` and `baz` with the environment value for `blah`.

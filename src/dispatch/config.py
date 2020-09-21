@@ -23,8 +23,10 @@ def get_env_tags(tag_list: List[str]) -> dict:
     return tags
 
 
-# if we have metatron available to us, lets use it to decrypt our secrets in memory
-try:
+config = Config(".env")
+
+SECRET_PROVIDER = config("SECRET_PROVIDER", default=None)
+if SECRET_PROVIDER == "metatron-secret":
     import metatron.decrypt
 
     class Secret:
@@ -49,8 +51,7 @@ try:
             return self._decrypted_value
 
 
-except Exception:
-    # Let's see if we have boto3 for KMS available to us, let's use it to decrypt our secrets in memory
+elif SECRET_PROVIDER == "kms-secret":
     try:
         import boto3
 
@@ -77,9 +78,6 @@ except Exception:
 
     except Exception:
         from starlette.datastructures import Secret
-
-
-config = Config(".env")
 
 LOG_LEVEL = config("LOG_LEVEL", default=logging.WARNING)
 ENV = config("ENV", default="local")
