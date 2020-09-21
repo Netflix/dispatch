@@ -846,6 +846,7 @@ def run_external_workflow_submitted_form(action: dict, db_session=None):
 
     workflow_id = parsed_form_data.get(RunExternalWorkflowBlockFields.workflow_select)["value"]
     incident_id = action["view"]["private_metadata"]["incident_id"]
-    params.update({"incident_id": incident_id})
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    params.update({"incident_id": incident.id, "incident_name": incident.name})
     plugin = plugin_service.get_active(plugin_type="external-workflow", db_session=db_session)
     plugin.instance.run(workflow_id, params)

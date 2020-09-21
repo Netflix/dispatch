@@ -33,9 +33,9 @@ class MetaflowExternalWorkflowPlugin(ExternalWorkflowPlugin):
 
         return [
             {
-                "id": "sirtresponse.user.kglisson.ApplicationMetadataFlow",
-                "name": "sirtresponse.user.kglisson.ApplicationMetadataFlow",
-                "params": [{"name": "app", "type": "string"}],
+                "id": "sirtresponse.user.kglisson.ApplicationMetadataFlowTrigger",
+                "name": "sirtresponse.user.kglisson.ApplicationMetadataFlowTrigger",
+                "params": [{"name": "apps", "type": "string"}],
             }
         ]
 
