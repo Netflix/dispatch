@@ -52,32 +52,33 @@ if SECRET_PROVIDER == "metatron-secret":
 
 
 elif SECRET_PROVIDER == "kms-secret":
-    try:
-        import boto3
+    import boto3
 
-        class Secret:
-            """
-            Holds a string value that should not be revealed in tracebacks etc.
-            You should cast the value to `str` at the point it is required.
-            """
+    class Secret:
+        """
+        Holds a string value that should not be revealed in tracebacks etc.
+        You should cast the value to `str` at the point it is required.
+        """
 
-            def __init__(self, value: str):
-                self._value = value
-                self._decrypted_value = (
-                    boto3.client("kms")
-                    .decrypt(CiphertextBlob=base64.b64decode(value))["Plaintext"]
-                    .decode("utf-8")
-                )
+        def __init__(self, value: str):
+            self._value = value
+            self._decrypted_value = (
+                boto3.client("kms")
+                .decrypt(CiphertextBlob=base64.b64decode(value))["Plaintext"]
+                .decode("utf-8")
+            )
 
-            def __repr__(self) -> str:
-                class_name = self.__class__.__name__
-                return f"{class_name}('**********')"
+        def __repr__(self) -> str:
+            class_name = self.__class__.__name__
+            return f"{class_name}('**********')"
 
-            def __str__(self) -> str:
-                return self._decrypted_value
+        def __str__(self) -> str:
+            return self._decrypted_value
 
-    except Exception:
-        from starlette.datastructures import Secret
+
+else:
+    from starlette.datastructures import Secret
+
 
 LOG_LEVEL = config("LOG_LEVEL", default=logging.WARNING)
 ENV = config("ENV", default="local")
