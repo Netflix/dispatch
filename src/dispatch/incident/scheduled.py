@@ -301,4 +301,4 @@ def close_incident_reminder(db_session=None):
         q, r = divmod(span.days, 7)  # only for incidents that have been stable longer than a week
         if q >= 1 and r == 0:
             if date.today().isoweekday() == 1:  # lets only send on mondays
-                send_incident_close_reminder(incident)
+                send_incident_close_reminder(incident, db_session)
