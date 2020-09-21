@@ -19,13 +19,14 @@ from dispatch.database import get_db
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from . import __version__
-from .config import SLACK_SIGNING_SECRET, SLACK_COMMAND_REPORT_INCIDENT_SLUG
+from .config import SLACK_SIGNING_SECRET, SLACK_COMMAND_REPORT_INCIDENT_SLUG, SLACK_APP_USER_SLUG
 from .actions import handle_block_action, handle_dialog_action
 from .commands import command_functions
 from .events import event_functions, get_channel_id_from_event, EventEnvelope
 from .messaging import (
     INCIDENT_CONVERSATION_COMMAND_MESSAGE,
-    render_non_incident_conversation_command_error_message,
+    create_command_run_in_conversation_where_bot_not_present_message,
+    create_command_run_in_nonincident_conversation_message,
 )
 from .modals import handle_modal_action
 
@@ -160,8 +161,27 @@ async def handle_command(
     if conversation:
         incident_id = conversation.incident_id
     else:
-        if command != SLACK_COMMAND_REPORT_INCIDENT_SLUG:
-            return render_non_incident_conversation_command_error_message(command)
+        if command == SLACK_COMMAND_REPORT_INCIDENT_SLUG:
+            # We create an async Slack client
+            slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
+
+            # We get the list of conversations the Slack bot is a member of
+            conversations = await dispatch_slack_service.get_conversations_by_user_id_async(
+                slack_async_client, SLACK_APP_USER_SLUG
+            )
+
+            # We get the name of conversation where the command was run
+            conversation_name = command_details.get("channel_name")
+
+            if conversation_name not in conversations:
+                # We let the user know in which conversations they can run the command
+                return create_command_run_in_conversation_where_bot_not_present_message(
+                    command, conversations
+                )
+        else:
+            # We let the user know that incident-specific commands
+            # can only be run in incident conversations
+            return create_command_run_in_nonincident_conversation_message(command)
 
     for f in command_functions(command):
         background_tasks.add_task(f, incident_id, command=command_details)
