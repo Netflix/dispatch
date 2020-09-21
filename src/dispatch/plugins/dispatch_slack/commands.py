@@ -154,7 +154,7 @@ def list_tasks(
         slack_client,
         command["channel_id"],
         command["user_id"],
-        "Incident List Tasks",
+        "Incident Task List",
         blocks=blocks,
     )
 
@@ -232,6 +232,6 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
         slack_client,
         command["channel_id"],
         command["user_id"],
-        "Incident List Participants",
+        "Incident Participant List",
         blocks=blocks,
     )

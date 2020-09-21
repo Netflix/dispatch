@@ -19,13 +19,14 @@ from dispatch.database import get_db
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from . import __version__
-from .config import SLACK_SIGNING_SECRET, SLACK_COMMAND_REPORT_INCIDENT_SLUG
+from .config import SLACK_SIGNING_SECRET, SLACK_COMMAND_REPORT_INCIDENT_SLUG, SLACK_APP_USER_SLUG
 from .actions import handle_block_action, handle_dialog_action
 from .commands import command_functions
 from .events import event_functions, get_channel_id_from_event, EventEnvelope
 from .messaging import (
     INCIDENT_CONVERSATION_COMMAND_MESSAGE,
-    render_non_incident_conversation_command_error_message,
+    create_command_run_in_conversation_where_bot_not_present_message,
+    create_command_run_in_nonincident_conversation_message,
 )
 from .modals import handle_modal_action
 
@@ -136,7 +137,7 @@ async def handle_command(
     """Handle all incomming Slack commands."""
     raw_request_body = bytes.decode(await request.body())
     request_body_form = await request.form()
-    command = request_body_form._dict
+    command_details = request_body_form._dict
 
     # We verify the timestamp
     verify_timestamp(x_slack_request_timestamp)
@@ -147,25 +148,45 @@ async def handle_command(
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()
 
-    # Fetch conversation by channel id
-    channel_id = command.get("channel_id")
+    # We fetch conversation by channel id
+    channel_id = command_details.get("channel_id")
     conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
         db_session=db_session, channel_id=channel_id
     )
+
+    # We get the name of command that was run
+    command = command_details.get("command")
 
     incident_id = 0
     if conversation:
         incident_id = conversation.incident_id
     else:
-        if command.get("command") != SLACK_COMMAND_REPORT_INCIDENT_SLUG:
-            return render_non_incident_conversation_command_error_message(command.get("command"))
+        if command == SLACK_COMMAND_REPORT_INCIDENT_SLUG:
+            # We create an async Slack client
+            slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
 
-    for f in command_functions(command.get("command")):
-        background_tasks.add_task(f, incident_id, command=command)
+            # We get the list of conversations the Slack bot is a member of
+            conversations = await dispatch_slack_service.get_conversations_by_user_id_async(
+                slack_async_client, SLACK_APP_USER_SLUG
+            )
 
-    return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(
-        command.get("command"), f"Running... Command: {command.get('command')}"
-    )
+            # We get the name of conversation where the command was run
+            conversation_name = command_details.get("channel_name")
+
+            if conversation_name not in conversations:
+                # We let the user know in which conversations they can run the command
+                return create_command_run_in_conversation_where_bot_not_present_message(
+                    command, conversations
+                )
+        else:
+            # We let the user know that incident-specific commands
+            # can only be run in incident conversations
+            return create_command_run_in_nonincident_conversation_message(command)
+
+    for f in command_functions(command):
+        background_tasks.add_task(f, incident_id, command=command_details)
+
+    return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(command, f"Running... Command: {command}")
 
 
 @router.post("/slack/action")
