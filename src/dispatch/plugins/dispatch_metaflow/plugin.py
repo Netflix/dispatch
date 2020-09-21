@@ -8,9 +8,9 @@ import logging
 
 from dispatch.plugins.bases import ExternalWorkflowPlugin
 from dispatch.plugins import dispatch_metaflow as metaflow_plugin
-from metaflow import Metaflow, Meson, MesonDuplicateSignal, namespace, current
+from metaflow import Meson, MesonDuplicateSignal  # Metaflow, namespace, current
 
-from .config import METAFLOW_NAMESPACE
+# from .config import METAFLOW_NAMESPACE
 
 log = logging.getLogger(__name__)
 
