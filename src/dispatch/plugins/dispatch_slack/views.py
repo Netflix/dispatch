@@ -136,7 +136,7 @@ async def handle_command(
     """Handle all incomming Slack commands."""
     raw_request_body = bytes.decode(await request.body())
     request_body_form = await request.form()
-    command = request_body_form._dict
+    command_details = request_body_form._dict
 
     # We verify the timestamp
     verify_timestamp(x_slack_request_timestamp)
@@ -147,25 +147,26 @@ async def handle_command(
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()
 
-    # Fetch conversation by channel id
-    channel_id = command.get("channel_id")
+    # We fetch conversation by channel id
+    channel_id = command_details.get("channel_id")
     conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
         db_session=db_session, channel_id=channel_id
     )
+
+    # We get the name of command that was run
+    command = command_details.get("command")
 
     incident_id = 0
     if conversation:
         incident_id = conversation.incident_id
     else:
-        if command.get("command") != SLACK_COMMAND_REPORT_INCIDENT_SLUG:
-            return render_non_incident_conversation_command_error_message(command.get("command"))
+        if command != SLACK_COMMAND_REPORT_INCIDENT_SLUG:
+            return render_non_incident_conversation_command_error_message(command)
 
-    for f in command_functions(command.get("command")):
-        background_tasks.add_task(f, incident_id, command=command)
+    for f in command_functions(command):
+        background_tasks.add_task(f, incident_id, command=command_details)
 
-    return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(
-        command.get("command"), f"Running... Command: {command.get('command')}"
-    )
+    return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(command, f"Running... Command: {command}")
 
 
 @router.post("/slack/action")
