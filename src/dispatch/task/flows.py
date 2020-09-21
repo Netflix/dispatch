@@ -102,15 +102,16 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
     )
 
     if existing_task:
+        # save the status before we attempt to update the record
+        existing_status = existing_task.status
         task = task_service.update(
             db_session=db_session, task=existing_task, task_in=TaskUpdate(**task)
         )
 
         if notify:
             # determine if task was previously resolved
-            if existing_task.status != TaskStatus.resolved:
-                # determine if we have a newly resolved task (since last sync)
-                if task.status == TaskStatus.resolved:
+            if task.status == TaskStatus.resolved.value:
+                if existing_status != TaskStatus.resolved.value:
                     send_task_notification(
                         incident.conversation.channel_id,
                         INCIDENT_TASK_RESOLVED_NOTIFICATION,
@@ -121,7 +122,9 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
                     )
     else:
         task = task_service.create(
-            db_session=db_session, incident=incident, task_in=TaskCreate(**task),
+            db_session=db_session,
+            incident=incident,
+            task_in=TaskCreate(**task),
         )
 
         if notify:
