@@ -1,16 +1,8 @@
-"""
-.. module: dispatch.plugins.dispatch_slack.service
-    :platform: Unix
-    :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
-    :license: Apache, see LICENSE for more details.
-.. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
-"""
 from datetime import datetime, timezone
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
 from typing import Any, Dict, List, Optional
 import functools
 import logging
-import re
 import slack
 import time
 
@@ -27,10 +19,6 @@ class NoConversationFoundException(Exception):
 def create_slack_client(run_async: bool = False):
     """Creates a Slack Web API client."""
     return slack.WebClient(token=str(SLACK_API_BOT_TOKEN), run_async=run_async)
-
-
-def contains_numbers(string):
-    return any(char.isdigit() for char in string)
 
 
 def resolve_user(client: Any, user_id: str):
@@ -218,9 +206,14 @@ def get_user_avatar_url(client: Any, email: str):
     return get_user_info_by_email(client, email)["profile"]["image_512"]
 
 
-def get_escaped_user_from_command(command_text: str):
-    """Gets escaped user sent to Slack command."""
-    return re.match(r"<@(?P<user_id>\w+)\|(?P<user_name>\w+)>", command_text).group("user_id")
+@functools.lru_cache()
+async def get_conversations_by_user_id_async(client: Any, user_id: str):
+    """Gets the list of conversations a user is a member of."""
+    result = await make_call_async(
+        client, "users.conversations", user=user_id, types="public_channel", exclude_archived=True
+    )
+    conversations = [c["name"] for c in result["channels"]]
+    return conversations
 
 
 # note this will get slower over time, we might exclude archived to make it sane
@@ -229,24 +222,6 @@ def get_conversation_by_name(client: Any, name: str):
     for c in list_conversations(client):
         if c["name"] == name:
             return c
-
-
-def get_conversation_messages_by_reaction(client: Any, conversation_id: str, reaction: str):
-    """Fetches messages from a conversation by reaction type."""
-    messages = []
-    for m in list_conversation_messages(client, conversation_id):
-        if "reactions" in m and m["reactions"][0]["name"] == reaction and m["text"].strip():
-            messages.insert(
-                0,
-                {
-                    "datetime": datetime.fromtimestamp(float(m["ts"]))
-                    .astimezone(timezone("America/Los_Angeles"))
-                    .strftime("%Y-%m-%d %H:%M:%S"),
-                    "message": m["text"],
-                    "user": get_user_info_by_id(client, m["user"])["user"]["real_name"],
-                },
-            )
-    return messages
 
 
 def set_conversation_topic(client: Any, conversation_id: str, topic: str):
@@ -295,25 +270,6 @@ def add_users_to_conversation(client: Any, conversation_id: str, user_ids: List[
     # NOTE this will trigger a member_joined_channel event, which we will capture and run the incident.incident_add_or_reactivate_participant_flow() as a result
     for c in chunks(user_ids, 30):  # NOTE api only allows 30 at a time.
         make_call(client, "conversations.invite", users=c, channel=conversation_id)
-
-
-@paginated("members")
-def get_conversation_members(
-    client: Any, conversation_id: str, include_bots: bool = False, **kwargs
-):
-    response = make_call(client, "conversations.members", channel=conversation_id, **kwargs)
-
-    details = []
-    for m in response["members"]:
-        details.append(make_call(client, "users.info", user=m)["user"])
-
-    response["members"] = details
-    return response
-
-
-def get_conversation_details(client: Any, conversation_id):
-    """Get conversation details."""
-    return make_call(client, "conversations.info", channel=conversation_id)
 
 
 def send_message(

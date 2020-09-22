@@ -93,20 +93,64 @@ INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
     },
 }
 
-INCIDENT_CONVERSATION_NON_INCIDENT_CONVERSATION_COMMAND_ERROR = """
-Looks like you tried to run `{{command}}` in an non-incident conversation. You can only run Dispatch commands in incident conversations.""".replace(
+INCIDENT_CONVERSATION_COMMAND_RUN_IN_NONINCIDENT_CONVERSATION = """
+Looks like you tried to run `{{command}}` in an nonincident conversation.
+Incident-specifc commands can only be run in incident conversations.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_CONVERSATION_COMMAND_RUN_IN_CONVERSATION_WHERE_BOT_NOT_PRESENT = """
+Looks like you tried to run `{{command}}` in a conversation where the Dispatch bot is not present.
+Add the bot to your conversation or run the command in one of the following conversations: {{conversations}}""".replace(
     "\n", " "
 ).strip()
 
 
-def render_non_incident_conversation_command_error_message(command: str):
-    """Renders a non-incident conversation command error ephemeral message."""
+def create_command_run_in_nonincident_conversation_message(command: str):
+    """Creates a message for when an incident specific command is run in an nonincident conversation."""
     return {
         "response_type": "ephemeral",
-        "text": Template(INCIDENT_CONVERSATION_NON_INCIDENT_CONVERSATION_COMMAND_ERROR).render(
+        "text": Template(INCIDENT_CONVERSATION_COMMAND_RUN_IN_NONINCIDENT_CONVERSATION).render(
             command=command
         ),
     }
+
+
+def create_command_run_in_conversation_where_bot_not_present_message(
+    command: str, conversations: []
+):
+    """Creates a message for when a nonincident specific command is run in a conversation where the Dispatch bot is not present."""
+    conversations = (", ").join([f"#{conversation}" for conversation in conversations])
+    return {
+        "response_type": "ephemeral",
+        "text": Template(
+            INCIDENT_CONVERSATION_COMMAND_RUN_IN_CONVERSATION_WHERE_BOT_NOT_PRESENT
+        ).render(command=command, conversations=conversations),
+    }
+
+
+def create_incident_reported_confirmation_message(
+    title: str, incident_type: str, incident_priority: str
+):
+    """Creates an incident reported confirmation message."""
+    return [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "This is a confirmation that you have reported a security incident with the following information. You'll get invited to a Slack conversation soon.",
+            },
+        },
+        {"type": "section", "text": {"type": "mrkdwn", "text": f"*Incident Title*: {title}"}},
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"*Incident Type*: {incident_type}"},
+        },
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"*Incident Priority*: {incident_priority}"},
+        },
+    ]
 
 
 def get_template(message_type: MessageType):
@@ -125,10 +169,7 @@ def get_template(message_type: MessageType):
             default_notification,
             INCIDENT_TASK_REMINDER_DESCRIPTION,
         ),
-        MessageType.incident_status_reminder: (
-            default_notification,
-            None,
-        ),
+        MessageType.incident_status_reminder: (default_notification, None,),
         MessageType.incident_task_list: (default_notification, INCIDENT_TASK_LIST_DESCRIPTION),
     }
 
@@ -211,26 +252,3 @@ def slack_preview(message, block=None):
         print(f"https://api.slack.com/tools/block-kit-builder?blocks={message}")
     else:
         print(f"https://api.slack.com/docs/messages/builder?msg={message}")
-
-
-def create_incident_reported_confirmation_msg(
-    title: str, incident_type: str, incident_priority: str
-):
-    return [
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "This is a confirmation that you have reported a security incident with the following information. You'll get invited to a Slack conversation soon.",
-            },
-        },
-        {"type": "section", "text": {"type": "mrkdwn", "text": f"*Incident Title*: {title}"}},
-        {
-            "type": "section",
-            "text": {"type": "mrkdwn", "text": f"*Incident Type*: {incident_type}"},
-        },
-        {
-            "type": "section",
-            "text": {"type": "mrkdwn", "text": f"*Incident Priority*: {incident_priority}"},
-        },
-    ]

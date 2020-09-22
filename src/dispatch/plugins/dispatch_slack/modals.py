@@ -22,7 +22,7 @@ from dispatch.participant.models import Participant, ParticipantUpdate
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
-from .messaging import create_incident_reported_confirmation_msg
+from .messaging import create_incident_reported_confirmation_message
 from .service import get_user_profile_by_email
 
 
@@ -139,7 +139,7 @@ def report_incident_from_submitted_form(action: dict, db_session: Session = None
     requested_form_incident_priority = parsed_form_data.get(IncidentSlackViewBlockId.priority)
 
     # Send a confirmation to the user
-    msg_template = create_incident_reported_confirmation_msg(
+    blocks = create_incident_reported_confirmation_message(
         title=requested_form_title,
         incident_type=requested_form_incident_type.get("value"),
         incident_priority=requested_form_incident_priority.get("value"),
@@ -148,11 +148,7 @@ def report_incident_from_submitted_form(action: dict, db_session: Session = None
     user_id = action["user"]["id"]
     channel_id = submitted_form.get("private_metadata")["channel_id"]
     dispatch_slack_service.send_ephemeral_message(
-        client=slack_client,
-        conversation_id=channel_id,
-        user_id=user_id,
-        text="",
-        blocks=msg_template,
+        client=slack_client, conversation_id=channel_id, user_id=user_id, text="", blocks=blocks,
     )
 
     # Create the incident
