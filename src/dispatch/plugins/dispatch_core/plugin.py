@@ -34,9 +34,12 @@ from dispatch.plugins.bases import (
 from dispatch.route import service as route_service
 from dispatch.route.models import RouteRequest
 
-from dispatch.config import DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS, DISPATCH_JWT_SECRET
-
-from .config import DISPATCH_JWT_AUDIENCE, DISPATCH_JWT_EMAIL_OVERRIDE
+from dispatch.config import (
+    DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS,
+    DISPATCH_JWT_SECRET,
+    DISPATCH_JWT_AUDIENCE,
+    DISPATCH_JWT_EMAIL_OVERRIDE,
+)
 
 log = logging.getLogger(__name__)
 
