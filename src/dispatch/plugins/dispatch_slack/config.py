@@ -52,3 +52,6 @@ SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG = config(
 SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG = config(
     "SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG", default="/dispatch-add-timeline-event"
 )
+SLACK_COMMAND_LIST_INCIDENTS_SLUG = config(
+    "SLACK_COMMAND_LIST_INCIDENTS_SLUG", default="/dispatch-list-incidents"
+)
