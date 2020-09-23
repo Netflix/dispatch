@@ -19,9 +19,14 @@ from dispatch.database import get_db
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from . import __version__
-from .config import SLACK_SIGNING_SECRET, SLACK_COMMAND_REPORT_INCIDENT_SLUG, SLACK_APP_USER_SLUG
 from .actions import handle_block_action, handle_dialog_action
 from .commands import command_functions
+from .config import (
+    SLACK_APP_USER_SLUG,
+    SLACK_COMMAND_LIST_INCIDENTS_SLUG,
+    SLACK_COMMAND_REPORT_INCIDENT_SLUG,
+    SLACK_SIGNING_SECRET,
+)
 from .events import event_functions, get_channel_id_from_event, EventEnvelope
 from .messaging import (
     INCIDENT_CONVERSATION_COMMAND_MESSAGE,
@@ -161,7 +166,7 @@ async def handle_command(
     if conversation:
         incident_id = conversation.incident_id
     else:
-        if command == SLACK_COMMAND_REPORT_INCIDENT_SLUG:
+        if command in [SLACK_COMMAND_REPORT_INCIDENT_SLUG, SLACK_COMMAND_LIST_INCIDENTS_SLUG]:
             # We create an async Slack client
             slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
 
