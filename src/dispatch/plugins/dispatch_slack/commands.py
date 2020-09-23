@@ -292,7 +292,6 @@ def list_incidents(incident_id: int, command: dict = None, db_session=None):
                             },
                         }
                     )
-                    # blocks.append({"type": "divider"})
                 except Exception as e:
                     log.exception(e)
 
