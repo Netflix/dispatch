@@ -24,11 +24,11 @@ def install_plugins():
     """
 
     for ep in pkg_resources.iter_entry_points("dispatch.plugins"):
-        logger.debug(f"Attempting to load plugin: {ep.name}")
+        logger.info(f"Attempting to load plugin: {ep.name}")
         try:
             plugin = ep.load()
             register(plugin)
-            logger.error(f"Successfully loaded plugin: {ep.name}")
+            logger.info(f"Successfully loaded plugin: {ep.name}")
         except SQLAlchemyError:
             logger.error(
                 "Something went wrong with creating plugin rows, is the database setup correctly?"
