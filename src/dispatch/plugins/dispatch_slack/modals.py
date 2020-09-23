@@ -148,7 +148,11 @@ def report_incident_from_submitted_form(action: dict, db_session: Session = None
     user_id = action["user"]["id"]
     channel_id = submitted_form.get("private_metadata")["channel_id"]
     dispatch_slack_service.send_ephemeral_message(
-        client=slack_client, conversation_id=channel_id, user_id=user_id, text="", blocks=blocks,
+        client=slack_client,
+        conversation_id=channel_id,
+        user_id=user_id,
+        text="",
+        blocks=blocks,
     )
 
     # Create the incident
@@ -849,4 +853,23 @@ def run_external_workflow_submitted_form(action: dict, db_session=None):
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     params.update({"incident_id": incident.id, "incident_name": incident.name})
     plugin = plugin_service.get_active(plugin_type="external-workflow", db_session=db_session)
-    plugin.instance.run(workflow_id, params)
+
+    workflow_resource = plugin.instance.run(workflow_id, params)
+
+    blocks = [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "Workflow has been started.",
+            },
+        }
+    ]
+
+    dispatch_slack_service.send_ephemeral_message(
+        slack_client,
+        incident.conversation.channel_id,
+        command["user_id"],
+        "No external workflow plugin.",
+        blocks=blocks,
+    )

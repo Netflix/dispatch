@@ -31,6 +31,7 @@ from .config import (
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG,
     SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG,
+    SLACK_COMMAND_RUN_EXTERNAL_WORKFLOW_SLUG,
 )
 
 
@@ -40,6 +41,10 @@ log = logging.getLogger(__name__)
 INCIDENT_CONVERSATION_TACTICAL_REPORT_SUGGESTION = f"Consider providing a tactical report using the `{SLACK_COMMAND_REPORT_TACTICAL_SLUG}` command."
 
 INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
+    SLACK_COMMAND_RUN_EXTERNAL_WORKFLOW_SLUG: {
+        "response_type": "ephemeral",
+        "text": "Opening a modal to run an external workflow...",
+    },
     SLACK_COMMAND_REPORT_TACTICAL_SLUG: {
         "response_type": "ephemeral",
         "text": "Opening a dialog to write a tactical report...",
@@ -174,7 +179,10 @@ def get_template(message_type: MessageType):
             default_notification,
             INCIDENT_TASK_REMINDER_DESCRIPTION,
         ),
-        MessageType.incident_status_reminder: (default_notification, None,),
+        MessageType.incident_status_reminder: (
+            default_notification,
+            None,
+        ),
         MessageType.incident_task_list: (default_notification, INCIDENT_TASK_LIST_DESCRIPTION),
     }
 
