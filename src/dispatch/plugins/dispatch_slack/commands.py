@@ -1,37 +1,35 @@
+import logging
 from typing import List
 
-
+from dispatch.conversation.enums import ConversationButtonActions
+from dispatch.database import resolve_attr
 from dispatch.decorators import background_task
+from dispatch.enums import Visibility
 from dispatch.incident import flows as incident_flows
+from dispatch.incident import service as incident_service
+from dispatch.incident.enums import IncidentStatus
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.task import service as task_service
 from dispatch.task.models import TaskStatus, Task
-from dispatch.conversation.enums import ConversationButtonActions
 
 from .config import (
+    SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG,
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
-    SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
+    SLACK_COMMAND_LIST_INCIDENTS_SLUG,
     SLACK_COMMAND_LIST_MY_TASKS_SLUG,
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
     SLACK_COMMAND_LIST_TASKS_SLUG,
+    SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
     SLACK_COMMAND_REPORT_INCIDENT_SLUG,
     SLACK_COMMAND_REPORT_TACTICAL_SLUG,
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG,
     SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG,
-    SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG,
-)
-
-from .modals import (
-    create_add_timeline_event_modal,
-    create_report_incident_modal,
-    create_update_notifications_group_modal,
-    create_update_participant_modal,
 )
 
 from .dialogs import (
@@ -42,6 +40,15 @@ from .dialogs import (
     create_update_incident_dialog,
 )
 
+from .modals import (
+    create_add_timeline_event_modal,
+    create_report_incident_modal,
+    create_update_notifications_group_modal,
+    create_update_participant_modal,
+)
+
+
+log = logging.getLogger(__name__)
 slack_client = dispatch_slack_service.create_slack_client()
 
 
@@ -51,11 +58,12 @@ def command_functions(command: str):
         SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG: [create_add_timeline_event_modal],
         SLACK_COMMAND_ASSIGN_ROLE_SLUG: [create_assign_role_dialog],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [create_engage_oncall_dialog],
-        SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [create_executive_report_dialog],
+        SLACK_COMMAND_LIST_INCIDENTS_SLUG: [list_incidents],
         SLACK_COMMAND_LIST_MY_TASKS_SLUG: [list_my_tasks],
         SLACK_COMMAND_LIST_PARTICIPANTS_SLUG: [list_participants],
         SLACK_COMMAND_LIST_RESOURCES_SLUG: [incident_flows.incident_list_resources_flow],
         SLACK_COMMAND_LIST_TASKS_SLUG: [list_tasks],
+        SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [create_executive_report_dialog],
         SLACK_COMMAND_REPORT_INCIDENT_SLUG: [create_report_incident_modal],
         SLACK_COMMAND_REPORT_TACTICAL_SLUG: [create_tactical_report_dialog],
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_dialog],
@@ -234,4 +242,59 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
         command["user_id"],
         "Incident Participant List",
         blocks=blocks,
+    )
+
+
+@background_task
+def list_incidents(incident_id: int, command: dict = None, db_session=None):
+    """Returns the list of current active and stable incidents,
+    and closed incidents in the last 24 hours."""
+    incidents = []
+
+    # We fetch active incidents
+    incidents = incident_service.get_all_by_status(
+        db_session=db_session, status=IncidentStatus.active.value
+    )
+    # We fetch stable incidents
+    incidents.extend(
+        incident_service.get_all_by_status(
+            db_session=db_session, status=IncidentStatus.stable.value
+        )
+    )
+    # We fetch closed incidents in the last 24 hours
+    incidents.extend(
+        incident_service.get_all_last_x_hours_by_status(
+            db_session=db_session, status=IncidentStatus.closed.value, hours=24
+        )
+    )
+
+    blocks = []
+    blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": "*List of Incidents*"}})
+
+    if incidents:
+        for incident in incidents:
+            if incident.visibility == Visibility.open:
+                ticket_weblink = resolve_attr(incident, "ticket.weblink")
+                try:
+                    blocks.append(
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": (
+                                    f"*<{ticket_weblink}|{incident.name}>*\n"
+                                    f"*Title*: {incident.title}\n"
+                                    f"*Type*: {incident.incident_type.name}\n"
+                                    f"*Priority*: {incident.incident_priority.name}\n"
+                                    f"*Status*: {incident.status}\n"
+                                    f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
+                                ),
+                            },
+                        }
+                    )
+                except Exception as e:
+                    log.exception(e)
+
+    dispatch_slack_service.send_ephemeral_message(
+        slack_client, command["channel_id"], command["user_id"], "Incident List", blocks=blocks,
     )

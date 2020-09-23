@@ -172,3 +172,6 @@ groups:read
 
 > Opens a dialog to report an incident. This command can be run from non-incident channels where the Dispatch bot is a member of.
 
+#### `SLACK_COMMAND_LIST_INCIDENTS_SLUG` \[Optional. Default: '/dispatch-list-incidents'\]
+
+> Lists current active and stable incidents, and closed incidents in the last 24 hours.
