@@ -273,8 +273,8 @@ def list_incidents(incident_id: int, command: dict = None, db_session=None):
 
     if incidents:
         for incident in incidents:
-            ticket_weblink = resolve_attr(incident, "ticket.weblink")
             if incident.visibility == Visibility.open:
+                ticket_weblink = resolve_attr(incident, "ticket.weblink")
                 try:
                     blocks.append(
                         {
