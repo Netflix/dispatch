@@ -7,7 +7,7 @@ export default {
     return API.get(`${resource}/`, { params: { ...options } })
   },
 
-  get(taskId) {
+  get(workflowId) {
     return API.get(`${resource}/${workflowId}`)
   },
 

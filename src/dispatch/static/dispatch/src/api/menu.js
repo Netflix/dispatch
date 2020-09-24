@@ -21,13 +21,6 @@ const Menu = [
     icon: "playlist_add_check",
     href: "/tasks"
   },
-  {
-    title: "Workflows",
-    group: "workflows",
-    component: "Workflows",
-    icon: "work",
-    href: "/workflows"
-  },
   /*{ header: "Routing" },
   {
     title: "Route",
@@ -115,6 +108,13 @@ const Menu = [
     name: "Plugins",
     icon: "power",
     href: "/plugins"
+  },
+  {
+    title: "Workflows",
+    group: "workflows",
+    component: "Workflows",
+    icon: "work",
+    href: "/workflows"
   },
   {
     title: "Users",

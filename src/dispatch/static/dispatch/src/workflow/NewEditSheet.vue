@@ -27,6 +27,35 @@
           <v-container grid-list-md>
             <v-layout wrap>
               <v-flex xs12>
+                <span class="subtitle-2">Details</span>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="name" immediate>
+                  <v-text-field
+                    v-model="name"
+                    slot-scope="{ errors, valid }"
+                    label="Name"
+                    :error-messages="errors"
+                    :success="valid"
+                    hint="A name for your workflow."
+                    required
+                  />
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="resourceId" immediate>
+                  <v-text-field
+                    v-model="resource_id"
+                    slot-scope="{ errors, valid }"
+                    label="Resource Id"
+                    :error-messages="errors"
+                    :success="valid"
+                    required
+                    hint="External resource id that refers to this workflow."
+                  />
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
                 <ValidationProvider name="description" immediate>
                   <v-textarea
                     v-model="description"
@@ -34,11 +63,21 @@
                     label="Description"
                     :error-messages="errors"
                     :success="valid"
-                    hint="The task's description."
+                    hint="The workflow's description."
                     clearable
                     required
                   />
                 </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <plugin-combobox v-model="plugin" type="workflow" label="Plugin" />
+              </v-flex>
+              <v-flex xs12>
+                <v-checkbox
+                  v-model="enabled"
+                  hint="Disabled workflows will not be made available for selection during incidents."
+                  label="Enabled"
+                />
               </v-flex>
             </v-layout>
           </v-container>
@@ -54,6 +93,8 @@ import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
+import PluginCombobox from "@/plugin/PluginCombobox"
+
 extend("required", {
   ...required,
   message: "This field is required"
@@ -64,7 +105,8 @@ export default {
 
   components: {
     ValidationObserver,
-    ValidationProvider
+    ValidationProvider,
+    PluginCombobox
   },
 
   data() {
@@ -72,10 +114,13 @@ export default {
   },
 
   computed: {
-    ...mapFields("task", [
+    ...mapFields("workflow", [
       "selected.name",
       "selected.description",
+      "selected.enabled",
+      "selected.resource_id",
       "selected.id",
+      "selected.plugin",
       "selected.loading",
       "dialogs.showCreateEdit"
     ])

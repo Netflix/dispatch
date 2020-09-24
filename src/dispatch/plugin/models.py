@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy_utils import TSVectorType, JSONType
 
@@ -21,6 +22,7 @@ class Plugin(Base):
     required = Column(Boolean)
     multiple = Column(Boolean)
     configuration = Column(JSONType)
+    workflows = relationship("Workflow", backref="plugin")
 
     @property
     def instance(self):

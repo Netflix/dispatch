@@ -11,6 +11,7 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
 from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin
+from dispatch.plugin.models import PluginRead
 
 
 class WorkflowInstanceStatus(str, Enum):
@@ -33,12 +34,13 @@ class Workflow(Base, TimeStampMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
-    is_active = Column(Boolean, default=True)
+    enabled = Column(Boolean, default=True)
     parameters = Column(JSON)
     resource_id = Column(String)
-    plugin_slug = Column(String, default="default-workflow")
-    search_vector = Column(TSVectorType("name", "description"))
+    plugin_id = Column(Integer, ForeignKey("plugin.id"))
     instances = relationship("WorkflowInstance")
+
+    search_vector = Column(TSVectorType("name", "description"))
 
 
 class WorkflowInstance(Base, ResourceMixin, TimeStampMixin):
@@ -83,11 +85,11 @@ class WorkflowInstancePagination(DispatchBase):
 
 
 class WorkflowBase(DispatchBase):
-    resource_type: Optional[str]
-    resource_id: Optional[str]
-    description: Optional[str]
-    weblink: str
     name: str
+    resource_id: str
+    plugin: Optional[PluginRead]
+    enabled: Optional[bool]
+    description: Optional[str]
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -97,7 +99,7 @@ class WorkflowCreate(WorkflowBase):
 
 
 class WorkflowUpdate(WorkflowBase):
-    pass
+    id: int
 
 
 class WorkflowRead(WorkflowBase):

@@ -6,6 +6,8 @@ import { debounce, forEach, each, has } from "lodash"
 const getDefaultSelectedState = () => {
   return {
     description: null,
+    enabled: null,
+    resource_id: null,
     name: null,
     id: null,
     loading: false

@@ -1,6 +1,8 @@
 from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 
+from dispatch.plugin import service as plugin_service
+
 from .models import Workflow, WorkflowCreate, WorkflowUpdate
 
 
@@ -17,8 +19,11 @@ def get_all(*, db_session) -> List[Optional[Workflow]]:
 def create(*, db_session, workflow_in: WorkflowCreate) -> Workflow:
     """Creates a new workflow."""
     workflow = Workflow(
-        **workflow_in.dict(exclude={}),
+        **workflow_in.dict(exclude={"plugin"}),
     )
+    plugin = plugin_service.get(db_session=db_session, plugin_id=workflow_in.plugin.id)
+    workflow.plugin = plugin
+
     db_session.add(workflow)
     db_session.commit()
     return workflow
@@ -27,14 +32,18 @@ def create(*, db_session, workflow_in: WorkflowCreate) -> Workflow:
 def update(*, db_session, workflow: Workflow, workflow_in: WorkflowUpdate) -> Workflow:
     """Updates a workflow."""
     workflow_data = jsonable_encoder(workflow)
-    update_data = workflow_in.dict(skip_defaults=True, exclude={})
+    update_data = workflow_in.dict(skip_defaults=True, exclude={"plugin"})
 
     for field in workflow_data:
         if field in update_data:
             setattr(workflow, field, update_data[field])
 
+    plugin = plugin_service.get(db_session=db_session, plugin_id=workflow_in.plugin.id)
+    workflow.plugin = plugin
+
     db_session.add(workflow)
     db_session.commit()
+
     return workflow
 
 
