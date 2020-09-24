@@ -141,6 +141,10 @@ def is_business_hours(commander_tz: str):
 @background_task
 def after_hours(user_email: str, incident_id: int, event: dict = None, db_session=None):
     """Notifies the user that this incident is current in after hours mode."""
+    # we want to ignore user joined messages
+    if event.event.subtype == "group_join":
+        return
+
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # get their timezone from slack
@@ -182,7 +186,10 @@ def after_hours(user_email: str, incident_id: int, event: dict = None, db_sessio
 
 @background_task
 def member_joined_channel(
-    user_email: str, incident_id: int, event: EventEnvelope, db_session=None,
+    user_email: str,
+    incident_id: int,
+    event: EventEnvelope,
+    db_session=None,
 ):
     """Handles the member_joined_channel slack event."""
     participant = incident_flows.incident_add_or_reactivate_participant_flow(
