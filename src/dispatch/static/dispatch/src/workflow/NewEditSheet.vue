@@ -70,13 +70,24 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <plugin-combobox v-model="plugin" type="workflow" label="Plugin" />
+                <plugin-combobox
+                  @input="setPlugin({ plugin: $event })"
+                  :value="plugin"
+                  type="workflow"
+                  label="Plugin"
+                />
               </v-flex>
               <v-flex xs12>
                 <v-checkbox
                   v-model="enabled"
                   hint="Disabled workflows will not be made available for selection during incidents."
                   label="Enabled"
+                />
+              </v-flex>
+              <v-flex xs12>
+                <workflow-parameters-input
+                  @input="setParameters({ parameters: $event })"
+                  :value="parameters"
                 />
               </v-flex>
             </v-layout>
@@ -94,6 +105,7 @@ import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
 import PluginCombobox from "@/plugin/PluginCombobox"
+import WorkflowParametersInput from "@/workflow/WorkflowParametersInput"
 
 extend("required", {
   ...required,
@@ -106,7 +118,8 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    PluginCombobox
+    PluginCombobox,
+    WorkflowParametersInput
   },
 
   data() {
@@ -119,6 +132,7 @@ export default {
       "selected.description",
       "selected.enabled",
       "selected.resource_id",
+      "selected.parameters",
       "selected.id",
       "selected.plugin",
       "selected.loading",
@@ -127,7 +141,14 @@ export default {
   },
 
   methods: {
-    ...mapActions("workflow", ["save", "closeCreateEdit"])
+    ...mapActions("workflow", ["save", "closeCreateEdit"]),
+    setPlugin(event) {
+      this.plugin = event.plugin
+    },
+    setParameters(event) {
+      console.log(event)
+      this.parameters = event.parameters
+    }
   }
 }
 </script>

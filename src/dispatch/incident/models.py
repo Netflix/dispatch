@@ -208,6 +208,7 @@ class Incident(Base, TimeStampMixin):
     tasks = relationship("Task", backref="incident")
     terms = relationship("Term", secondary=assoc_incident_terms, backref="incidents")
     ticket = relationship("Ticket", uselist=False, backref="incident")
+    workflow_instances = relationship("WorkflowInstance", backref="incident")
 
     # allow incidents to be marked as duplicate
     duplicate_id = Column(Integer, ForeignKey("incident.id"))

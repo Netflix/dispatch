@@ -1,9 +1,20 @@
 from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 
-from dispatch.plugin import service as plugin_service
+from sqlalchemy.sql.expression import true
 
-from .models import Workflow, WorkflowCreate, WorkflowUpdate
+from dispatch.plugin import service as plugin_service
+from dispatch.workflow import service as workflow_service
+from dispatch.incident import service as incident_service
+
+from .models import (
+    Workflow,
+    WorkflowInstance,
+    WorkflowCreate,
+    WorkflowUpdate,
+    WorkflowInstanceCreate,
+    WorkflowInstanceUpdate,
+)
 
 
 def get(*, db_session, workflow_id: int) -> Optional[Workflow]:
@@ -14,6 +25,11 @@ def get(*, db_session, workflow_id: int) -> Optional[Workflow]:
 def get_all(*, db_session) -> List[Optional[Workflow]]:
     """Returns all workflows."""
     return db_session.query(Workflow)
+
+
+def get_enabled(*, db_session) -> List[Optional[Workflow]]:
+    """Fetches all enabled workflows."""
+    return db_session.query(Workflow).filter(Workflow.enabled == true()).all()
 
 
 def create(*, db_session, workflow_in: WorkflowCreate) -> Workflow:
@@ -51,3 +67,47 @@ def delete(*, db_session, workflow_id: int):
     """Deletes a workflow."""
     db_session.query(Workflow).filter(Workflow.id == workflow_id).delete()
     db_session.commit()
+
+
+def get_instance(*, db_session, instance_id: int) -> WorkflowInstance:
+    """Fetches a workflow instance by it's ID."""
+    return (
+        db_session.query(WorkflowInstance).filter(WorkflowInstance.id == instance_id).one_or_none()
+    )
+
+
+def create_instance(*, db_session, instance_in: WorkflowInstanceCreate) -> WorkflowInstance:
+    """Creates a new workflow instance."""
+    instance = WorkflowInstance(**instance_in.dict(exclude={"incident", "workflow"}))
+
+    incident = incident_service.get(db_session=db_session, incident_id=instance_in.incident["id"])
+    instance.incident = incident
+
+    workflow = workflow_service.get(db_session=db_session, workflow_id=instance_in.workflow["id"])
+    instance.workflow = workflow
+
+    db_session.add(instance)
+    db_session.commit()
+
+    return instance
+
+
+def update_instance(*, db_session, instance: WorkflowInstance, instance_in: WorkflowInstanceUpdate):
+    """Updates an existing workflow instance."""
+    instance_data = jsonable_encoder(instance)
+    update_data = instance_in.dict(skip_defaults=True, exclude={"incident", "workflow"})
+
+    for field in instance_data:
+        if field in update_data:
+            setattr(instance, field, update_data[field])
+
+    incident = incident_service.get(db_session=db_session, incident_id=instance_in.incident["id"])
+    instance.incident = incident
+
+    workflow = workflow_service.get(db_session=db_session, workflow_id=instance_in.workflow["id"])
+    instance.workflow = workflow
+
+    db_session.add(instance)
+    db_session.commit()
+
+    return instance

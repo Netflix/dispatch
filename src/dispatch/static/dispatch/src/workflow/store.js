@@ -8,6 +8,7 @@ const getDefaultSelectedState = () => {
     description: null,
     enabled: null,
     resource_id: null,
+    parameters: [],
     name: null,
     id: null,
     loading: false

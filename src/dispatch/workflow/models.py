@@ -15,6 +15,7 @@ from dispatch.plugin.models import PluginRead
 
 
 class WorkflowInstanceStatus(str, Enum):
+    submitted = "Submitted"
     created = "Created"
     running = "Running"
     completed = "Completed"
@@ -35,10 +36,10 @@ class Workflow(Base, TimeStampMixin):
     name = Column(String)
     description = Column(String)
     enabled = Column(Boolean, default=True)
-    parameters = Column(JSON)
+    parameters = Column(JSON, default=[])
     resource_id = Column(String)
     plugin_id = Column(Integer, ForeignKey("plugin.id"))
-    instances = relationship("WorkflowInstance")
+    instances = relationship("WorkflowInstance", backref="workflow")
 
     search_vector = Column(TSVectorType("name", "description"))
 
@@ -46,48 +47,24 @@ class Workflow(Base, TimeStampMixin):
 class WorkflowInstance(Base, ResourceMixin, TimeStampMixin):
     id = Column(Integer, primary_key=True)
     workflow_id = Column(Integer, ForeignKey("workflow.id"))
+    incident_id = Column(Integer, ForeignKey("incident.id"))
+    parameters = Column(JSON, default=[])
     creator_id = Column(Integer, ForeignKey("participant.id"))
     creator = relationship(
         "Participant", backref="created_workflow_instances", foreign_keys=[creator_id]
     )
-    status = Column(String, default=WorkflowInstanceStatus.created)
+    status = Column(String, default=WorkflowInstanceStatus.submitted)
     artifacts = relationship(
         "Document", secondary=assoc_workflow_instances_artifacts, backref="workflow_instance"
     )
 
 
 # Pydantic models...
-class WorkflowInstanceBase(DispatchBase):
-    resource_type: Optional[str]
-    resource_id: Optional[str]
-    description: Optional[str]
-    weblink: str
-    name: str
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
-
-class WorkflowInstanceCreate(WorkflowInstanceBase):
-    pass
-
-
-class WorkflowInstanceUpdate(WorkflowInstanceBase):
-    pass
-
-
-class WorkflowInstanceRead(WorkflowInstanceBase):
-    pass
-
-
-class WorkflowInstancePagination(DispatchBase):
-    total: int
-    items: List[WorkflowInstanceRead] = []
-
-
 class WorkflowBase(DispatchBase):
     name: str
     resource_id: str
     plugin: Optional[PluginRead]
+    parameters: Optional[List[dict]] = []
     enabled: Optional[bool]
     description: Optional[str]
     created_at: Optional[datetime] = None
@@ -120,3 +97,30 @@ class WorkflowNested(WorkflowRead):
 class WorkflowPagination(DispatchBase):
     total: int
     items: List[WorkflowRead] = []
+
+
+class WorkflowInstanceBase(DispatchBase):
+    resource_type: Optional[str]
+    resource_id: Optional[str]
+    weblink: Optional[str]
+    parameters: Optional[List[dict]] = []
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+
+class WorkflowInstanceCreate(WorkflowInstanceBase):
+    workflow: dict  # TODO define a required ID
+    incident: dict  # TODO define a required ID
+
+
+class WorkflowInstanceUpdate(WorkflowInstanceBase):
+    pass
+
+
+class WorkflowInstanceRead(WorkflowInstanceBase):
+    pass
+
+
+class WorkflowInstancePagination(DispatchBase):
+    total: int
+    items: List[WorkflowInstanceRead] = []

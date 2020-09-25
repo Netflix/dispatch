@@ -20,6 +20,8 @@ from dispatch.incident_type import service as incident_type_service
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant, ParticipantUpdate
 from dispatch.plugin import service as plugin_service
+from dispatch.workflow import service as workflow_service
+from dispatch.workflow.models import Workflow, WorkflowInstanceCreate
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from .messaging import create_incident_reported_confirmation_message
@@ -60,14 +62,14 @@ class AddTimelineEventCallbacks(str, Enum):
     submit_form = "add_timeline_event_submit_form"
 
 
-class RunExternalWorkflowBlockFields(str, Enum):
-    workflow_select = "run_external_workflow_select"
-    param = "run_external_workflow_param"
+class RunWorkflowBlockFields(str, Enum):
+    workflow_select = "run_workflow_select"
+    param = "run_workflow_param"
 
 
-class RunExternalWorkflowCallbacks(str, Enum):
-    submit_form = "run_external_workflow_submit_form"
-    update_view = "run_external_workflow_update_view"
+class RunWorkflowCallbacks(str, Enum):
+    submit_form = "run_workflow_submit_form"
+    update_view = "run_workflow_update_view"
 
 
 def handle_modal_action(action: dict, background_tasks: BackgroundTasks):
@@ -91,8 +93,8 @@ def action_functions(action_id: str):
         UpdateNotificationsGroupCallbacks.submit_form: [
             update_notifications_group_from_submitted_form
         ],
-        RunExternalWorkflowCallbacks.update_view: [update_external_workflow_modal],
-        RunExternalWorkflowCallbacks.submit_form: [run_external_workflow_submitted_form],
+        RunWorkflowCallbacks.update_view: [update_workflow_modal],
+        RunWorkflowCallbacks.submit_form: [run_workflow_submitted_form],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc
@@ -680,27 +682,27 @@ def add_timeline_event_from_submitted_form(action: dict, db_session=None):
     )
 
 
-def build_external_workflow_blocks(
-    incident: Incident, workflows: List[dict], selected_workflow: dict = None
+def build_workflow_blocks(
+    incident: Incident, workflows: List[Workflow], selected_workflow: Workflow = None
 ):
-    """Builds all blocks required to run an external workflow."""
+    """Builds all blocks required to run a workflow."""
     modal_template = {
         "type": "modal",
-        "title": {"type": "plain_text", "text": "Run external workflow"},
+        "title": {"type": "plain_text", "text": "Run workflow"},
         "blocks": [
             {
                 "type": "context",
                 "elements": [
                     {
                         "type": "plain_text",
-                        "text": "Use this form to run an external workflow.",
+                        "text": "Use this form to run a workflow.",
                     }
                 ],
             },
         ],
         "close": {"type": "plain_text", "text": "Cancel"},
         "submit": {"type": "plain_text", "text": "Run"},
-        "callback_id": RunExternalWorkflowCallbacks.update_view,
+        "callback_id": RunWorkflowCallbacks.update_view,
         "private_metadata": json.dumps({"incident_id": str(incident.id)}),
     }
 
@@ -710,20 +712,20 @@ def build_external_workflow_blocks(
         current_option = {
             "text": {
                 "type": "plain_text",
-                "text": w["name"],
+                "text": w.name,
             },
-            "value": w["id"],
+            "value": str(w.id),
         }
 
         workflow_options.append(current_option)
 
         if selected_workflow:
-            if w["id"] == selected_workflow["id"]:
+            if w.id == selected_workflow.id:
                 selected_option = current_option
 
     if selected_workflow:
         select_block = {
-            "block_id": RunExternalWorkflowBlockFields.workflow_select,
+            "block_id": RunWorkflowBlockFields.workflow_select,
             "type": "input",
             "element": {
                 "type": "static_select",
@@ -733,13 +735,13 @@ def build_external_workflow_blocks(
                 },
                 "initial_option": selected_option,
                 "options": workflow_options,
-                "action_id": RunExternalWorkflowBlockFields.workflow_select,
+                "action_id": RunWorkflowBlockFields.workflow_select,
             },
             "label": {"type": "plain_text", "text": "Workflow"},
         }
     else:
         select_block = {
-            "block_id": RunExternalWorkflowBlockFields.workflow_select,
+            "block_id": RunWorkflowBlockFields.workflow_select,
             "type": "actions",
             "elements": [
                 {
@@ -759,17 +761,15 @@ def build_external_workflow_blocks(
 
 
 @background_task
-def create_run_external_workflow_modal(incident_id: int, command: dict = None, db_session=None):
-    """Creates a modal for running an external workflow."""
+def create_run_workflow_modal(incident_id: int, command: dict = None, db_session=None):
+    """Creates a modal for running a workflow."""
     trigger_id = command.get("trigger_id")
 
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    workflows = workflow_service.get_enabled(db_session=db_session)
 
-    plugin = plugin_service.get_active(plugin_type="external-workflow", db_session=db_session)
-    if plugin:
-        modal_create_template = build_external_workflow_blocks(
-            incident=incident, workflows=plugin.instance.list()
-        )
+    if workflows:
+        modal_create_template = build_workflow_blocks(incident=incident, workflows=workflows)
 
         dispatch_slack_service.open_modal_with_user(
             client=slack_client, trigger_id=trigger_id, modal=modal_create_template
@@ -780,7 +780,7 @@ def create_run_external_workflow_modal(incident_id: int, command: dict = None, d
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "No external workflow plugin is enabled. You can enable one in the Dispatch UI at /plugins.",
+                    "text": "No workflows are enabled. You can enable one in the Dispatch UI at /workflows.",
                 },
             }
         ]
@@ -794,38 +794,47 @@ def create_run_external_workflow_modal(incident_id: int, command: dict = None, d
 
 
 @background_task
-def update_external_workflow_modal(action: dict, db_session=None):
+def update_workflow_modal(action: dict, db_session=None):
     """Pushes an updated view to the run workflow modal."""
     trigger_id = action["trigger_id"]
     incident_id = action["view"]["private_metadata"]["incident_id"]
     workflow_id = action["actions"][0]["selected_option"]["value"]
 
-    plugin = plugin_service.get_active(plugin_type="external-workflow", db_session=db_session)
-    selected_workflow = plugin.instance.get(workflow_id)
+    selected_workflow = workflow_service.get(db_session=db_session, workflow_id=workflow_id)
+    workflows = workflow_service.get_enabled(db_session=db_session)
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    modal_template = build_external_workflow_blocks(
-        incident=incident, workflows=plugin.instance.list(), selected_workflow=selected_workflow
+    modal_template = build_workflow_blocks(
+        incident=incident, workflows=workflows, selected_workflow=selected_workflow
     )
 
     modal_template["blocks"].append(
         {"type": "section", "text": {"type": "mrkdwn", "text": "*Workflow Parameters*"}}
     )
 
-    for p in selected_workflow["params"]:
+    if selected_workflow.parameters:
+        for p in selected_workflow.parameters:
+            modal_template["blocks"].append(
+                {
+                    "block_id": f"{RunWorkflowBlockFields.param}-{p['key']}",
+                    "type": "input",
+                    "element": {
+                        "type": "plain_text_input",
+                        "placeholder": {"type": "plain_text", "text": "Value"},
+                    },
+                    "label": {"type": "plain_text", "text": p["key"]},
+                }
+            )
+
+    else:
         modal_template["blocks"].append(
             {
-                "block_id": f"{RunExternalWorkflowBlockFields.param}-{p['name']}",
-                "type": "input",
-                "element": {
-                    "type": "plain_text_input",
-                    "placeholder": {"type": "plain_text", "text": "Value"},
-                },
-                "label": {"type": "plain_text", "text": p["name"]},
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": "This workflow has no parameters."},
             }
         )
 
-    modal_template["callback_id"] = RunExternalWorkflowCallbacks.submit_form
+    modal_template["callback_id"] = RunWorkflowCallbacks.submit_form
 
     dispatch_slack_service.update_modal_with_user(
         client=slack_client,
@@ -836,32 +845,43 @@ def update_external_workflow_modal(action: dict, db_session=None):
 
 
 @background_task
-def run_external_workflow_submitted_form(action: dict, db_session=None):
+def run_workflow_submitted_form(action: dict, db_session=None):
     """Runs an external flow."""
     submitted_form = action.get("view")
     parsed_form_data = parse_submitted_form(submitted_form)
 
     params = {}
+    named_params = []
     for i in parsed_form_data.keys():
-        if i.startswith(RunExternalWorkflowBlockFields.param):
+        if i.startswith(RunWorkflowBlockFields.param):
             key = i.split("-")[1]
             value = parsed_form_data[i]
             params.update({key: value})
+            named_params.append({"key": key, "value": value})
 
-    workflow_id = parsed_form_data.get(RunExternalWorkflowBlockFields.workflow_select)["value"]
+    workflow_id = parsed_form_data.get(RunWorkflowBlockFields.workflow_select)["value"]
     incident_id = action["view"]["private_metadata"]["incident_id"]
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-    params.update({"incident_id": incident.id, "incident_name": incident.name})
-    plugin = plugin_service.get_active(plugin_type="external-workflow", db_session=db_session)
+    workflow = workflow_service.get(db_session=db_session, workflow_id=workflow_id)
 
-    workflow_resource = plugin.instance.run(workflow_id, params)
+    instance = workflow_service.create_instance(
+        db_session=db_session,
+        instance_in=WorkflowInstanceCreate(
+            workflow={"id": workflow.id}, incident={"id": incident.id}, parameters=named_params
+        ),
+    )
+    params.update(
+        {"incident_id": incident.id, "incident_name": incident.name, "instance_id": instance.id}
+    )
+
+    workflow.plugin.instance.run(workflow.resource_id, params)
 
     blocks = [
         {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "Workflow has been started.",
+                "text": "Workflow sucessfully submitted... please wait a moment while we gather details.",
             },
         }
     ]
@@ -869,7 +889,7 @@ def run_external_workflow_submitted_form(action: dict, db_session=None):
     dispatch_slack_service.send_ephemeral_message(
         slack_client,
         incident.conversation.channel_id,
-        command["user_id"],
-        "No external workflow plugin.",
+        action["user"]["id"],
+        ".",
         blocks=blocks,
     )

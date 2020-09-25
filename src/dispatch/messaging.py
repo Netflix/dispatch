@@ -231,6 +231,9 @@ The following incident task has been created in the incident document.\n\n*Descr
 INCIDENT_TASK_RESOLVED_DESCRIPTION = """
 The following incident task has been resolved in the incident document.\n\n*Description:* {{task_description}}\n\n*Assignees:* {{task_assignees|join(',')}}"""
 
+INCIDENT_WORKFLOW_UPDATE_DESCRIPTION = """
+The following workflow has changed from *{{ instance_status_old }}* to *{{ instance_status_new }}*."""
+
 INCIDENT_TYPE_CHANGE_DESCRIPTION = """
 The incident type has been changed from *{{ incident_type_old }}* to *{{ incident_type_new }}*."""
 
@@ -445,6 +448,14 @@ INCIDENT_TASK_RESOLVED_NOTIFICATION = [
         "title": "Resolved Incident Task",
         "title_link": "{{task_weblink}}",
         "text": INCIDENT_TASK_RESOLVED_DESCRIPTION,
+    }
+]
+
+INCIDENT_WORKFLOW_UPDATE_NOTIFICATION = [
+    {
+        "title": "Workflow Status Update",
+        "title_link": "{{workflow_weblink}}",
+        "text": INCIDENT_WORKFLOW_UPDATE_DESCRIPTION,
     }
 ]
 

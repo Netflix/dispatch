@@ -419,6 +419,7 @@ def dispatch_scheduler():
     from .tag.scheduled import sync_tags  # noqa
     from .task.scheduled import sync_tasks, create_task_reminders  # noqa
     from .term.scheduled import sync_terms  # noqa
+    from .workflow.scheduled import sync_workflows, sync_active_stable_workflows  # noqa
 
 
 @dispatch_scheduler.command("list")

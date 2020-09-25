@@ -3,11 +3,15 @@ import logging
 from schedule import every
 
 from dispatch.decorators import background_task
+from dispatch.messaging import INCIDENT_WORKFLOW_UPDATE_NOTIFICATION
+
 from dispatch.plugin import service as plugin_service
+from dispatch.plugins.dispatch_slack.modals import workflow_service
 from dispatch.scheduler import scheduler
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
-from .models import WorkflowInstanceStatus
+from .models import WorkflowInstanceUpdate
+from .flows import send_workflow_notification
 
 log = logging.getLogger(__name__)
 
@@ -18,13 +22,52 @@ def sync_workflows(db_session, incidents, notify: bool = False):
     """Performs workflow sync."""
     p = plugin_service.get_active(db_session=db_session, plugin_type="workflow")
     for incident in incidents:
-        for workflow in incident.workflows:
-            log.debug(f"Processing workflow. Name: {workflow.id}")
-            for instance in workflow.instances:
-                if instance.status != WorkflowInstanceStatus.completed.value:
-                    log.debug(f"Updating workflow instance. InstanceId: {instance.resource_id}")
-                    data = p.get_instance(workflow.resource_id, instance.resource_id)
-                    log.debug(f"Instance Data: {data}")
+        for instance in incident.workflow_instances:
+
+            log.debug(
+                f"Processing workflow instance. Instance: {instance.parameters} Workflow: {instance.workflow.name}"
+            )
+            instances = p.instance.get_workflow_instances(workflow_id=instance.workflow.resource_id)
+
+            # create or update known instances
+            for instance_data in instances:
+                if not instance_data["instance_id"]:
+                    log.warning(
+                        f"Could not locate a Dispatch instance for a given workflow instance. InstanceData: {instance_data}"
+                    )
+                    continue
+
+                current_instance = workflow_service.get_instance(
+                    db_session=db_session, instance_id=int(instance_data["instance_id"])
+                )
+
+                if not current_instance:
+                    log.warning(
+                        f"Could not locate a Dispatch instance for a given workflow instance. InstanceData: {instance_data}"
+                    )
+                    continue
+
+                current_status = current_instance.status
+
+                updated_instance = workflow_service.update_instance(
+                    db_session=db_session,
+                    instance=instance,
+                    instance_in=WorkflowInstanceUpdate(**instance_data),
+                )
+
+                updated_status = updated_instance.status
+
+                if notify:
+                    if current_status != updated_status:
+                        send_workflow_notification(
+                            incident.conversation.channel_id,
+                            INCIDENT_WORKFLOW_UPDATE_NOTIFICATION,
+                            current_status,
+                            updated_status,
+                            updated_instance.workflow.description,
+                            updated_instance.workflow.weblink,
+                            db_session,
+                        )
 
 
 @scheduler.add(every(WORKFLOW_SYNC_INTERVAL).seconds, name="incident-workflow-sync")
