@@ -135,10 +135,7 @@ app.mount("/", app=frontend)
 # we print all the registered API routes to the console
 table = []
 for r in api_router.routes:
-    auth = False
-    for d in r.dependencies:
-        if d.dependency.__name__ == "get_current_user":  # TODO this is fragile
-            auth = True
+    auth = any(d.dependency.__name__ == "get_current_user" for d in r.dependencies)  # TODO this is fragile
     table.append([r.path, auth, ",".join(r.methods)])
 
 log.debug("Available Endpoints \n" + tabulate(table, headers=["Path", "Authenticated", "Methods"]))
