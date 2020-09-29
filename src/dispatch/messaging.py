@@ -232,7 +232,10 @@ INCIDENT_TASK_RESOLVED_DESCRIPTION = """
 The following incident task has been resolved in the incident document.\n\n*Description:* {{task_description}}\n\n*Assignees:* {{task_assignees|join(',')}}"""
 
 INCIDENT_WORKFLOW_UPDATE_DESCRIPTION = """
-The following workflow has changed from *{{ instance_status_old }}* to *{{ instance_status_new }}*."""
+The following workflow has changed from *{{ instance_status_old }}* to *{{ instance_status_new }}*.\n\n*Workflow Description*: {{workflow_description}}\n\n *Creator:* {{instance_creator_name}}"""
+
+INCIDENT_WORKFLOW_COMPLETE_DESCRIPTION = """
+The following workflow has been completed. View the workflow artifacts:\n\n  {% for i in artifacts %}- <{{artifact.weblink}}|{{artifact.name}}> {% endfor %} """
 
 INCIDENT_TYPE_CHANGE_DESCRIPTION = """
 The incident type has been changed from *{{ incident_type_old }}* to *{{ incident_type_new }}*."""
@@ -453,9 +456,17 @@ INCIDENT_TASK_RESOLVED_NOTIFICATION = [
 
 INCIDENT_WORKFLOW_UPDATE_NOTIFICATION = [
     {
-        "title": "Workflow Status Update",
-        "title_link": "{{workflow_weblink}}",
+        "title": "Workflow Status Update - {{workflow_name}}",
+        "title_link": "{{instance_weblink}}",
         "text": INCIDENT_WORKFLOW_UPDATE_DESCRIPTION,
+    }
+]
+
+INCIDENT_WORKFLOW_COMPLETE_NOTIFICATION = [
+    {
+        "title": "Workflow Status Update - {{workflow_name}}",
+        "title_link": "{{instance_weblink}}",
+        "text": INCIDENT_WORKFLOW_COMPLETE_DESCRIPTION,
     }
 ]
 
@@ -495,6 +506,4 @@ def render_message_template(message_template: List[dict], **kwargs):
             d["button_value"] = Template(d["button_value"]).render(**kwargs)
 
         data.append(d)
-    print(kwargs)
-    print(data)
     return data

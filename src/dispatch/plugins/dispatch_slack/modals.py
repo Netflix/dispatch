@@ -25,7 +25,7 @@ from dispatch.workflow.models import Workflow, WorkflowInstanceCreate
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from .messaging import create_incident_reported_confirmation_message
-from .service import get_user_profile_by_email
+from .service import get_user_profile_by_email, get_user_email
 
 
 slack_client = dispatch_slack_service.create_slack_client()
@@ -864,10 +864,15 @@ def run_workflow_submitted_form(action: dict, db_session=None):
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     workflow = workflow_service.get(db_session=db_session, workflow_id=workflow_id)
 
+    creator_email = get_user_email(action["user"]["id"])
+
     instance = workflow_service.create_instance(
         db_session=db_session,
         instance_in=WorkflowInstanceCreate(
-            workflow={"id": workflow.id}, incident={"id": incident.id}, parameters=named_params
+            workflow={"id": workflow.id},
+            incident={"id": incident.id},
+            creator={"email": creator_email},
+            parameters=named_params,
         ),
     )
     params.update(

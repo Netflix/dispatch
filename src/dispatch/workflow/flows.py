@@ -6,8 +6,10 @@ def send_workflow_notification(
     message_template,
     instance_status_old,
     instance_status_new,
-    description,
-    weblink,
+    instance_weblink,
+    instance_creator_name,
+    workflow_name,
+    workflow_description,
     db_session,
 ):
     """Sends a workflow notification."""
@@ -20,8 +22,14 @@ def send_workflow_notification(
         notification_text,
         message_template,
         notification_type,
-        instance_status_old=instance_status_old,
-        instance_status_new=instance_status_new,
-        workflow_description=description,
-        workflow_weblink=weblink,
+        items=[
+            {
+                "instance_status_old": instance_status_old,
+                "instance_status_new": instance_status_new,
+                "instance_weblink": instance_weblink,
+                "instance_creator_name": instance_creator_name,
+                "workflow_name": workflow_name,
+                "workflow_description": workflow_description,
+            }
+        ],
     )

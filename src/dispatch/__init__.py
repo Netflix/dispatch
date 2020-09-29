@@ -35,7 +35,7 @@ try:
     from dispatch.term.models import Term  # noqa lgtm[py/unused-import]
     from dispatch.ticket.models import Ticket  # noqa lgtm[py/unused-import]
     from dispatch.plugin.models import Plugin  # noqa lgtm[py/unused-import]
-    from dispatch.workflow.models import Workflow, WorkflowInstance  # noqa lgtm[py/unused-import]
+    from dispatch.workflow.models import Workflow  # noqa lgtm[py/unused-import]
 except Exception:
     pass
 

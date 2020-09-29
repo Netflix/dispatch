@@ -3,7 +3,7 @@ from enum import Enum
 from typing import List, Optional
 
 from pydantic import validator
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, ForeignKey, Integer, String, JSON, Table
 from sqlalchemy.sql.schema import PrimaryKeyConstraint
 from sqlalchemy.sql.sqltypes import Boolean
@@ -22,12 +22,37 @@ class WorkflowInstanceStatus(str, Enum):
     failed = "Failed"
 
 
+# Association tables for many to many relationships
 assoc_workflow_instances_artifacts = Table(
-    "workflow_instance_artifacts",
+    "workflow_instance_artifact",
     Base.metadata,
     Column("document_id", Integer, ForeignKey("document.id")),
     Column("workflow_instance_id", Integer, ForeignKey("workflow_instance.id")),
     PrimaryKeyConstraint("document_id", "workflow_instance_id"),
+)
+
+assoc_workflow_incident_priorities = Table(
+    "workflow_incident_priority",
+    Base.metadata,
+    Column("incident_priority_id", Integer, ForeignKey("incident_priority.id")),
+    Column("workflow_id", Integer, ForeignKey("workflow.id")),
+    PrimaryKeyConstraint("incident_priority_id", "workflow_id"),
+)
+
+assoc_workflow_incident_types = Table(
+    "workflow_incident_type",
+    Base.metadata,
+    Column("incident_type_id", Integer, ForeignKey("incident_type.id")),
+    Column("workflow_id", Integer, ForeignKey("workflow.id")),
+    PrimaryKeyConstraint("incident_type_id", "workflow_id"),
+)
+
+assoc_workflow_terms = Table(
+    "workflow_term",
+    Base.metadata,
+    Column("term_id", Integer, ForeignKey("term.id")),
+    Column("workflow_id", Integer, ForeignKey("workflow.id")),
+    PrimaryKeyConstraint("term_id", "workflow_id"),
 )
 
 
@@ -40,6 +65,15 @@ class Workflow(Base, TimeStampMixin):
     resource_id = Column(String)
     plugin_id = Column(Integer, ForeignKey("plugin.id"))
     instances = relationship("WorkflowInstance", backref="workflow")
+    incident_priorities = relationship(
+        "IncidentPriority", secondary=assoc_workflow_incident_priorities, backref="workflows"
+    )
+    incident_types = relationship(
+        "IncidentType", secondary=assoc_workflow_incident_types, backref="workflows"
+    )
+    terms = relationship(
+        "Term", secondary=assoc_workflow_terms, backref=backref("workflows", cascade="all")
+    )
 
     search_vector = Column(TSVectorType("name", "description"))
 
@@ -111,6 +145,8 @@ class WorkflowInstanceBase(DispatchBase):
 class WorkflowInstanceCreate(WorkflowInstanceBase):
     workflow: dict  # TODO define a required ID
     incident: dict  # TODO define a required ID
+    creator: dict  # TODO define a required email
+    artifacts: List[dict]
 
 
 class WorkflowInstanceUpdate(WorkflowInstanceBase):

@@ -6,6 +6,10 @@ from sqlalchemy.sql.expression import true
 from dispatch.plugin import service as plugin_service
 from dispatch.workflow import service as workflow_service
 from dispatch.incident import service as incident_service
+from dispatch.participant import service as participant_service
+from dispatch.document import service as document_service
+
+from dispatch.document.models import DocumentCreate
 
 from .models import (
     Workflow,
@@ -78,13 +82,26 @@ def get_instance(*, db_session, instance_id: int) -> WorkflowInstance:
 
 def create_instance(*, db_session, instance_in: WorkflowInstanceCreate) -> WorkflowInstance:
     """Creates a new workflow instance."""
-    instance = WorkflowInstance(**instance_in.dict(exclude={"incident", "workflow"}))
+    instance = WorkflowInstance(
+        **instance_in.dict(exclude={"incident", "workflow", "creator", "artifacts"})
+    )
 
     incident = incident_service.get(db_session=db_session, incident_id=instance_in.incident["id"])
     instance.incident = incident
 
     workflow = workflow_service.get(db_session=db_session, workflow_id=instance_in.workflow["id"])
     instance.workflow = workflow
+
+    creator = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=incident.id, email=instance_in.creator.email
+    )
+    instance.creator = creator
+
+    for a in instance_in.artifacts:
+        artifact_document = document_service.create(
+            db_session=db_session, document_in=DocumentCreate(**a)
+        )
+        instance.artifacts.append(artifact_document)
 
     db_session.add(instance)
     db_session.commit()
@@ -100,12 +117,6 @@ def update_instance(*, db_session, instance: WorkflowInstance, instance_in: Work
     for field in instance_data:
         if field in update_data:
             setattr(instance, field, update_data[field])
-
-    incident = incident_service.get(db_session=db_session, incident_id=instance_in.incident["id"])
-    instance.incident = incident
-
-    workflow = workflow_service.get(db_session=db_session, workflow_id=instance_in.workflow["id"])
-    instance.workflow = workflow
 
     db_session.add(instance)
     db_session.commit()
