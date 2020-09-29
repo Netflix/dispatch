@@ -15,11 +15,11 @@ from dispatch.plugin.models import PluginRead
 
 
 class WorkflowInstanceStatus(str, Enum):
-    submitted = "Submitted"
-    created = "Created"
-    running = "Running"
-    completed = "Completed"
-    failed = "Failed"
+    submitted = "submitted"
+    created = "created"
+    running = "running"
+    completed = "completed"
+    failed = "failed"
 
 
 # Association tables for many to many relationships
@@ -137,6 +137,7 @@ class WorkflowInstanceBase(DispatchBase):
     resource_type: Optional[str]
     resource_id: Optional[str]
     weblink: Optional[str]
+    status: Optional[WorkflowInstanceStatus]
     parameters: Optional[List[dict]] = []
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
@@ -146,7 +147,7 @@ class WorkflowInstanceCreate(WorkflowInstanceBase):
     workflow: dict  # TODO define a required ID
     incident: dict  # TODO define a required ID
     creator: dict  # TODO define a required email
-    artifacts: List[dict]
+    artifacts: Optional[List[dict]] = []
 
 
 class WorkflowInstanceUpdate(WorkflowInstanceBase):

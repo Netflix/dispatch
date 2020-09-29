@@ -1,4 +1,4 @@
-"""empty message
+"""Adds instance parameters.
 
 Revision ID: 9f927a8e4679
 Revises: 995a59897e01

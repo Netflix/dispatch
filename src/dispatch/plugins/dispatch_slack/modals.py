@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from dispatch.database import SessionLocal
 
 from dispatch.decorators import background_task
+from dispatch.messaging import INCIDENT_WORKFLOW_CREATED_NOTIFICATION
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
@@ -21,6 +22,7 @@ from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant, ParticipantUpdate
 from dispatch.plugin import service as plugin_service
 from dispatch.workflow import service as workflow_service
+from dispatch.workflow.flows import send_workflow_notification
 from dispatch.workflow.models import Workflow, WorkflowInstanceCreate
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
@@ -864,7 +866,7 @@ def run_workflow_submitted_form(action: dict, db_session=None):
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     workflow = workflow_service.get(db_session=db_session, workflow_id=workflow_id)
 
-    creator_email = get_user_email(action["user"]["id"])
+    creator_email = get_user_email(slack_client, action["user"]["id"])
 
     instance = workflow_service.create_instance(
         db_session=db_session,
@@ -881,20 +883,11 @@ def run_workflow_submitted_form(action: dict, db_session=None):
 
     workflow.plugin.instance.run(workflow.resource_id, params)
 
-    blocks = [
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "Workflow sucessfully submitted... please wait a moment while we gather details.",
-            },
-        }
-    ]
-
-    dispatch_slack_service.send_ephemeral_message(
-        slack_client,
+    send_workflow_notification(
         incident.conversation.channel_id,
-        action["user"]["id"],
-        ".",
-        blocks=blocks,
+        INCIDENT_WORKFLOW_CREATED_NOTIFICATION,
+        db_session,
+        instance_creator_name=instance.creator.individual.name,
+        workflow_name=instance.workflow.name,
+        workflow_description=instance.workflow.description,
     )

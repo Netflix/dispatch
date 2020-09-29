@@ -34,6 +34,7 @@ def sync_workflows(db_session, incidents, notify: bool = False):
 
             # create or update known instances
             for instance_data in instances:
+                log.debug(f"Retrieved instance data from plugin. Data: {instance_data}")
                 if not instance_data["instance_id"]:
                     log.warning(
                         f"Could not locate a Dispatch instance for a given workflow instance. InstanceData: {instance_data}"
@@ -66,19 +67,26 @@ def sync_workflows(db_session, incidents, notify: bool = False):
                             send_workflow_notification(
                                 incident.conversation.channel_id,
                                 INCIDENT_WORKFLOW_COMPLETE_NOTIFICATION,
-                                instance.artifacts,
+                                db_session,
+                                instance_status_old=instance_status_old,
+                                instance_status_new=instance_status_new,
+                                instance_weblink=instance.weblink,
+                                instance_creator_name=instance.creator.individual.name,
+                                instance_artifacts=instance.artifacts,
+                                workflow_name=instance.workflow.name,
+                                workflow_description=instance.workflow.description,
                             )
                         else:
                             send_workflow_notification(
                                 incident.conversation.channel_id,
                                 INCIDENT_WORKFLOW_UPDATE_NOTIFICATION,
-                                instance_status_old,
-                                instance_status_new,
-                                instance.weblink,
-                                instance.creator.individual.name,
-                                instance.workflow.name,
-                                instance.workflow.description,
                                 db_session,
+                                instance_status_old=instance_status_old,
+                                instance_status_new=instance_status_new,
+                                instance_weblink=instance.weblink,
+                                instance_creator_name=instance.creator.individual.name,
+                                workflow_name=instance.workflow.name,
+                                workflow_description=instance.workflow.description,
                             )
 
 

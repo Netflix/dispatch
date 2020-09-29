@@ -1,4 +1,4 @@
-"""empty message
+"""Adds workflow plugins.
 
 Revision ID: 72c7fa0ce0a3
 Revises: 466823f3046e

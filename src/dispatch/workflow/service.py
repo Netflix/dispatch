@@ -4,7 +4,6 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql.expression import true
 
 from dispatch.plugin import service as plugin_service
-from dispatch.workflow import service as workflow_service
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.document import service as document_service
@@ -89,11 +88,11 @@ def create_instance(*, db_session, instance_in: WorkflowInstanceCreate) -> Workf
     incident = incident_service.get(db_session=db_session, incident_id=instance_in.incident["id"])
     instance.incident = incident
 
-    workflow = workflow_service.get(db_session=db_session, workflow_id=instance_in.workflow["id"])
+    workflow = get(db_session=db_session, workflow_id=instance_in.workflow["id"])
     instance.workflow = workflow
 
     creator = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=incident.id, email=instance_in.creator.email
+        db_session=db_session, incident_id=incident.id, email=instance_in.creator["email"]
     )
     instance.creator = creator
 

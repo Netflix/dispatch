@@ -41,14 +41,14 @@ def get_workflows(
 
 
 @router.get("/{workflow_id}", response_model=WorkflowRead)
-def get_workflow(*, db_session: Session = Depends(get_db), document_id: int):
+def get_workflow(*, db_session: Session = Depends(get_db), workflow_id: int):
     """
     Get a workflow.
     """
-    document = get(db_session=db_session, document_id=document_id)
-    if not document:
-        raise HTTPException(status_code=404, detail="The document with this id does not exist.")
-    return document
+    workflow = get(db_session=db_session, workflow_id=workflow_id)
+    if not workflow:
+        raise HTTPException(status_code=404, detail="The workflow with this id does not exist.")
+    return workflow
 
 
 @router.post("/", response_model=WorkflowCreate)
