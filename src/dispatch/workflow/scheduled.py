@@ -30,64 +30,55 @@ def sync_workflows(db_session, incidents, notify: bool = False):
             log.debug(
                 f"Processing workflow instance. Instance: {instance.parameters} Workflow: {instance.workflow.name}"
             )
-            instances = p.instance.get_workflow_instances(workflow_id=instance.workflow.resource_id)
+            instance_data = p.instance.get_workflow_instance(
+                workflow_id=instance.workflow.resource_id,
+                workflow_instance_id=instance.id,
+                incident_name=incident.name,
+                incident_id=incident.id,
+            )
 
-            # create or update known instances
-            for instance_data in instances:
-                log.debug(f"Retrieved instance data from plugin. Data: {instance_data}")
-                if not instance_data["instance_id"]:
-                    log.warning(
-                        f"Could not locate a Dispatch instance for a given workflow instance. InstanceData: {instance_data}"
-                    )
-                    continue
-
-                current_instance = workflow_service.get_instance(
-                    db_session=db_session, instance_id=int(instance_data["instance_id"])
+            log.debug(f"Retrieved instance data from plugin. Data: {instance_data}")
+            if not instance_data:
+                log.warning(
+                    f"Could not locate a Dispatch instance for a given workflow instance. WorkflowId: {instance.workflow.resource_id} WorkflowInstanceId: {instance.id} IncidentName: {incident.name}"
                 )
+                continue
 
-                if not current_instance:
-                    log.warning(
-                        f"Could not locate a Dispatch instance for a given workflow instance. InstanceData: {instance_data}"
-                    )
-                    continue
+            instance_status_old = instance.status
 
-                instance_status_old = current_instance.status
+            instance = workflow_service.update_instance(
+                db_session=db_session,
+                instance=instance,
+                instance_in=WorkflowInstanceUpdate(**instance_data),
+            )
 
-                updated_instance = workflow_service.update_instance(
-                    db_session=db_session,
-                    instance=instance,
-                    instance_in=WorkflowInstanceUpdate(**instance_data),
-                )
-
-                instance_status_new = updated_instance.status
-
-                if notify:
-                    if instance_status_old != instance_status_new:
-                        if instance_status_new == WorkflowInstanceStatus.completed.value:
-                            send_workflow_notification(
-                                incident.conversation.channel_id,
-                                INCIDENT_WORKFLOW_COMPLETE_NOTIFICATION,
-                                db_session,
-                                instance_status_old=instance_status_old,
-                                instance_status_new=instance_status_new,
-                                instance_weblink=instance.weblink,
-                                instance_creator_name=instance.creator.individual.name,
-                                instance_artifacts=instance.artifacts,
-                                workflow_name=instance.workflow.name,
-                                workflow_description=instance.workflow.description,
-                            )
-                        else:
-                            send_workflow_notification(
-                                incident.conversation.channel_id,
-                                INCIDENT_WORKFLOW_UPDATE_NOTIFICATION,
-                                db_session,
-                                instance_status_old=instance_status_old,
-                                instance_status_new=instance_status_new,
-                                instance_weblink=instance.weblink,
-                                instance_creator_name=instance.creator.individual.name,
-                                workflow_name=instance.workflow.name,
-                                workflow_description=instance.workflow.description,
-                            )
+            if notify:
+                if instance_status_old != instance.status:
+                    if instance.status == WorkflowInstanceStatus.completed.value:
+                        send_workflow_notification(
+                            incident.conversation.channel_id,
+                            INCIDENT_WORKFLOW_COMPLETE_NOTIFICATION,
+                            db_session,
+                            instance_status_old=instance_status_old,
+                            instance_status_new=instance.status,
+                            instance_weblink=instance.weblink,
+                            instance_creator_name=instance.creator.individual.name,
+                            instance_artifacts=instance.artifacts,
+                            workflow_name=instance.workflow.name,
+                            workflow_description=instance.workflow.description,
+                        )
+                    else:
+                        send_workflow_notification(
+                            incident.conversation.channel_id,
+                            INCIDENT_WORKFLOW_UPDATE_NOTIFICATION,
+                            db_session,
+                            instance_status_old=instance_status_old,
+                            instance_status_new=instance.status,
+                            instance_weblink=instance.weblink,
+                            instance_creator_name=instance.creator.individual.name,
+                            workflow_name=instance.workflow.name,
+                            workflow_description=instance.workflow.description,
+                        )
 
 
 @scheduler.add(every(WORKFLOW_SYNC_INTERVAL).seconds, name="incident-workflow-sync")

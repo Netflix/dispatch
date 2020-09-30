@@ -10,6 +10,7 @@ from sqlalchemy.sql.sqltypes import Boolean
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
+from dispatch.document.models import DocumentCreate
 from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin
 from dispatch.plugin.models import PluginRead
 
@@ -147,11 +148,11 @@ class WorkflowInstanceCreate(WorkflowInstanceBase):
     workflow: dict  # TODO define a required ID
     incident: dict  # TODO define a required ID
     creator: dict  # TODO define a required email
-    artifacts: Optional[List[dict]] = []
+    artifacts: Optional[List[DocumentCreate]] = []
 
 
 class WorkflowInstanceUpdate(WorkflowInstanceBase):
-    pass
+    artifacts: Optional[List[DocumentCreate]] = []
 
 
 class WorkflowInstanceRead(WorkflowInstanceBase):

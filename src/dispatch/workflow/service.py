@@ -111,7 +111,13 @@ def create_instance(*, db_session, instance_in: WorkflowInstanceCreate) -> Workf
 def update_instance(*, db_session, instance: WorkflowInstance, instance_in: WorkflowInstanceUpdate):
     """Updates an existing workflow instance."""
     instance_data = jsonable_encoder(instance)
-    update_data = instance_in.dict(skip_defaults=True, exclude={"incident", "workflow"})
+    update_data = instance_in.dict(
+        skip_defaults=True, exclude={"incident", "workflow", "creator", "artifacts"}
+    )
+
+    for a in instance_in.artifacts:
+        artifact_document = document_service.create(db_session=db_session, document_in=a)
+        instance.artifacts.append(artifact_document)
 
     for field in instance_data:
         if field in update_data:
