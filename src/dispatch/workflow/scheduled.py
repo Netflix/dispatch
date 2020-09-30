@@ -26,6 +26,9 @@ def sync_workflows(db_session, incidents, notify: bool = False):
     p = plugin_service.get_active(db_session=db_session, plugin_type="workflow")
     for incident in incidents:
         for instance in incident.workflow_instances:
+            # once an instance is complete we don't update it any more
+            if instance.status == WorkflowInstanceStatus.completed.value:
+                continue
 
             log.debug(
                 f"Processing workflow instance. Instance: {instance.parameters} Workflow: {instance.workflow.name}"

@@ -248,7 +248,7 @@ This workflow's status has changed from *{{ instance_status_old }}* to *{{ insta
 \n\n *Creator:* {{instance_creator_name}}
 {% if instance_artifacts %}
 \n\n *Workflow Artifacts:*
-\n\n {% for i in instance_artifacts %}- <{{artifact.weblink}}|{{artifact.name}}> {% endfor %}
+\n\n {% for a in instance_artifacts %}- <{{a.weblink}}|{{a.name}}> \n\n{% endfor %}
 {% endif %}
 """
 
