@@ -116,7 +116,7 @@ def update_instance(*, db_session, instance: WorkflowInstance, instance_in: Work
     )
 
     for a in instance_in.artifacts:
-        artifact_document = document_service.create(db_session=db_session, document_in=a)
+        artifact_document = document_service.get_or_create(db_session=db_session, document_in=a)
         instance.artifacts.append(artifact_document)
 
     for field in instance_data:
