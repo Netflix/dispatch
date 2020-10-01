@@ -12,6 +12,7 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database import Base
 from dispatch.document.models import DocumentCreate
 from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin
+from dispatch.participant.models import Participant, ParticipantRead
 from dispatch.plugin.models import PluginRead
 
 
@@ -84,6 +85,7 @@ class WorkflowInstance(Base, ResourceMixin, TimeStampMixin):
     workflow_id = Column(Integer, ForeignKey("workflow.id"))
     incident_id = Column(Integer, ForeignKey("incident.id"))
     parameters = Column(JSON, default=[])
+    run_reason = Column(String)
     creator_id = Column(Integer, ForeignKey("participant.id"))
     creator = relationship(
         "Participant", backref="created_workflow_instances", foreign_keys=[creator_id]
@@ -142,21 +144,24 @@ class WorkflowInstanceBase(DispatchBase):
     parameters: Optional[List[dict]] = []
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    run_reason: Optional[str]
+    artifacts: Optional[List[DocumentCreate]] = []
 
 
 class WorkflowInstanceCreate(WorkflowInstanceBase):
     workflow: dict  # TODO define a required ID
     incident: dict  # TODO define a required ID
     creator: dict  # TODO define a required email
-    artifacts: Optional[List[DocumentCreate]] = []
 
 
 class WorkflowInstanceUpdate(WorkflowInstanceBase):
-    artifacts: Optional[List[DocumentCreate]] = []
+    pass
 
 
 class WorkflowInstanceRead(WorkflowInstanceBase):
-    pass
+    id: int
+    workflow: WorkflowRead
+    creator: ParticipantRead
 
 
 class WorkflowInstancePagination(DispatchBase):

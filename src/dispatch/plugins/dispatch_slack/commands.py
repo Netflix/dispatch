@@ -191,7 +191,8 @@ def list_workflows(incident_id: int, command: dict = None, db_session=None):
                     "type": "mrkdwn",
                     "text": (
                         f"*Name:* <{w.weblink}|{w.workflow.name}>\n"
-                        f"*Workflow Description*: {w.workflow.description}\n"
+                        f"*Workflow Description:* {w.workflow.description}\n"
+                        f"*Run Reason:* {w.run_reason}\n"
                         f"*Creator:* {w.creator.individual.name}\n"
                         f"*Status:* {w.status}\n"
                         f"*Artifacts:* \n {artifact_links}"

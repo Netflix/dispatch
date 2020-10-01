@@ -46,6 +46,7 @@ from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
 from dispatch.ticket.models import TicketRead
+from dispatch.workflow.models import WorkflowInstanceRead
 
 from .enums import IncidentStatus
 
@@ -280,6 +281,7 @@ class IncidentRead(IncidentBase):
     incident_priority: IncidentPriorityRead
     incident_type: IncidentTypeRead
     participants: Optional[List[ParticipantRead]] = []
+    workflow_instances: Optional[List[WorkflowInstanceRead]] = []
     storage: Optional[StorageRead] = None
     ticket: Optional[TicketRead] = None
     documents: Optional[List[DocumentRead]] = []

@@ -66,6 +66,7 @@ class AddTimelineEventCallbacks(str, Enum):
 
 class RunWorkflowBlockFields(str, Enum):
     workflow_select = "run_workflow_select"
+    run_reason = "run_workflow_run_reason"
     param = "run_workflow_param"
 
 
@@ -811,7 +812,27 @@ def update_workflow_modal(action: dict, db_session=None):
     )
 
     modal_template["blocks"].append(
-        {"type": "section", "text": {"type": "mrkdwn", "text": "*Workflow Parameters*"}}
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"*Description* \n {selected_workflow.description}"},
+        },
+    )
+
+    modal_template["blocks"].append(
+        {
+            "block_id": RunWorkflowBlockFields.run_reason,
+            "type": "input",
+            "element": {
+                "type": "plain_text_input",
+                "multiline": True,
+                "action_id": RunWorkflowBlockFields.run_reason,
+            },
+            "label": {"type": "plain_text", "text": "Run Reason"},
+        },
+    )
+
+    modal_template["blocks"].append(
+        {"type": "section", "text": {"type": "mrkdwn", "text": "*Parameters*"}}
     )
 
     if selected_workflow.parameters:
@@ -863,6 +884,7 @@ def run_workflow_submitted_form(action: dict, db_session=None):
 
     workflow_id = parsed_form_data.get(RunWorkflowBlockFields.workflow_select)["value"]
     incident_id = action["view"]["private_metadata"]["incident_id"]
+    run_reason = parsed_form_data.get(RunWorkflowBlockFields.run_reason)
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     workflow = workflow_service.get(db_session=db_session, workflow_id=workflow_id)
 
@@ -874,6 +896,7 @@ def run_workflow_submitted_form(action: dict, db_session=None):
             workflow={"id": workflow.id},
             incident={"id": incident.id},
             creator={"email": creator_email},
+            run_reason=run_reason,
             parameters=named_params,
         ),
     )

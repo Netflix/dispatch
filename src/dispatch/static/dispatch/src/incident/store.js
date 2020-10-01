@@ -26,6 +26,7 @@ const getDefaultSelectedState = () => {
     terms: [],
     ticket: null,
     duplicates: [],
+    workflow_instances: null,
     title: null,
     visibility: null,
     loading: false
