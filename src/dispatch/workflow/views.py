@@ -47,7 +47,7 @@ def get_workflow(*, db_session: Session = Depends(get_db), workflow_id: int):
     """
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:
-        raise HTTPException(status_code=404, detail="The workflow with this id does not exist.")
+        raise HTTPException(status_code=404, detail="A workflow with this id does not exist.")
     return workflow
 
 
