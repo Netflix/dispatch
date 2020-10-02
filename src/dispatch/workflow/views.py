@@ -24,7 +24,7 @@ def get_workflows(
     values: List[str] = Query(None, alias="value[]"),
 ):
     """
-    Get all documents.
+    Get all workflows.
     """
     return search_filter_sort_paginate(
         db_session=db_session,
