@@ -73,7 +73,7 @@ def delete(*, db_session, workflow_id: int):
 
 
 def get_instance(*, db_session, instance_id: int) -> WorkflowInstance:
-    """Fetches a workflow instance by it's ID."""
+    """Fetches a workflow instance by its id."""
     return (
         db_session.query(WorkflowInstance).filter(WorkflowInstance.id == instance_id).one_or_none()
     )
