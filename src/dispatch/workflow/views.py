@@ -69,7 +69,7 @@ def update_workflow(
     """
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:
-        raise HTTPException(status_code=404, detail="The workflow with this id does not exist.")
+        raise HTTPException(status_code=404, detail="A workflow with this id does not exist.")
     workflow = update(db_session=db_session, workflow=workflow, workflow_in=workflow_in)
     return workflow
 
