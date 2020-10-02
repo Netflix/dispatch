@@ -23,11 +23,8 @@ def create(*, db_session, tag_in: TagCreate) -> Tag:
     return tag
 
 
-def get_or_create(*, db_session, tag_in) -> Tag:
-    if hasattr(tag_in, "id"):
-        q = db_session.query(Tag).filter(Tag.id == tag_in.id)
-    else:
-        q = db_session.query(Tag).filter_by(**tag_in.dict())
+def get_or_create(*, db_session, tag_in: TagCreate) -> Tag:
+    q = db_session.query(Tag).filter_by(**tag_in.dict())
 
     instance = q.first()
     if instance:
