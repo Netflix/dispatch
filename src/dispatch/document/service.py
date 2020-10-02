@@ -108,6 +108,7 @@ def create(*, db_session, document_in: DocumentCreate) -> Document:
 
 
 def get_or_create(*, db_session, document_in) -> Document:
+    """Gets a document by it's resource_id or creates a new document."""
     if hasattr(document_in, "resource_id"):
         q = db_session.query(Document).filter(Document.resource_id == document_in.resource_id)
     else:

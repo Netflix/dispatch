@@ -32,6 +32,7 @@ from .config import (
     SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG,
     SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG,
     SLACK_COMMAND_RUN_WORKFLOW_SLUG,
+    SLACK_COMMAND_LIST_WORKFLOWS_SLUG,
 )
 
 
@@ -100,6 +101,10 @@ INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
     SLACK_COMMAND_LIST_INCIDENTS_SLUG: {
         "response_type": "ephemeral",
         "text": "Fetching the list of incidents...",
+    },
+    SLACK_COMMAND_LIST_WORKFLOWS_SLUG: {
+        "response_type": "ephemeral",
+        "text": "Fetching the list of workflows...",
     },
 }
 
