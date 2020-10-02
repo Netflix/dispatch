@@ -791,7 +791,7 @@ def create_run_workflow_modal(incident_id: int, command: dict = None, db_session
             slack_client,
             command["channel_id"],
             command["user_id"],
-            "No external workflow plugin.",
+            "No workflows enabled.",
             blocks=blocks,
         )
 

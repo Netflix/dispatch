@@ -24,7 +24,7 @@ def get_workflows(
     values: List[str] = Query(None, alias="value[]"),
 ):
     """
-    Get all documents.
+    Get all workflows.
     """
     return search_filter_sort_paginate(
         db_session=db_session,
@@ -47,7 +47,7 @@ def get_workflow(*, db_session: Session = Depends(get_db), workflow_id: int):
     """
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:
-        raise HTTPException(status_code=404, detail="The workflow with this id does not exist.")
+        raise HTTPException(status_code=404, detail="A workflow with this id does not exist.")
     return workflow
 
 
@@ -69,7 +69,7 @@ def update_workflow(
     """
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:
-        raise HTTPException(status_code=404, detail="The workflow with this id does not exist.")
+        raise HTTPException(status_code=404, detail="A workflow with this id does not exist.")
     workflow = update(db_session=db_session, workflow=workflow, workflow_in=workflow_in)
     return workflow
 
@@ -81,5 +81,5 @@ def delete_workflow(*, db_session: Session = Depends(get_db), workflow_id: int):
     """
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:
-        raise HTTPException(status_code=404, detail="The workflow with this id does not exist.")
+        raise HTTPException(status_code=404, detail="A workflow with this id does not exist.")
     delete(db_session=db_session, workflow_id=workflow_id)
