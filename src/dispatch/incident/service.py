@@ -239,7 +239,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
 
     tags = []
     for t in incident_in.tags:
-        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=TagUpdate(**t)))
+        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=TagCreate(**t)))
 
     terms = []
     for t in incident_in.terms:
