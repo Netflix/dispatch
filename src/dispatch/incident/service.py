@@ -13,7 +13,7 @@ from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.tag import service as tag_service
-from dispatch.tag.models import TagUpdate, TagCreate
+from dispatch.tag.models import TagCreate
 from dispatch.term import service as term_service
 from dispatch.term.models import TermUpdate
 
