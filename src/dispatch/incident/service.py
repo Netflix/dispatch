@@ -13,7 +13,7 @@ from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.tag import service as tag_service
-from dispatch.tag.models import TagUpdate, TagCreate
+from dispatch.tag.models import TagCreate
 from dispatch.term import service as term_service
 from dispatch.term.models import TermUpdate
 
@@ -239,7 +239,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
 
     tags = []
     for t in incident_in.tags:
-        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=TagUpdate(**t)))
+        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=TagCreate(**t)))
 
     terms = []
     for t in incident_in.terms:
