@@ -21,6 +21,7 @@ from dispatch.document.views import router as document_router
 from dispatch.task.views import router as task_router
 from dispatch.plugin.views import router as plugin_router
 from dispatch.auth.views import user_router, auth_router
+from dispatch.workflow.views import router as workflow_router
 
 from .config import DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 
@@ -57,6 +58,7 @@ authenticated_api_router.include_router(
 authenticated_api_router.include_router(
     incident_priority_router, prefix="/incident_priorities", tags=["incident_priorities"]
 )
+authenticated_api_router.include_router(workflow_router, prefix="/workflows", tags=["workflows"])
 authenticated_api_router.include_router(plugin_router, prefix="/plugins", tags=["plugins"])
 
 doc_router = APIRouter()

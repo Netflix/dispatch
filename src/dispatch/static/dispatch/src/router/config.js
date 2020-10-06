@@ -210,9 +210,21 @@ export const protectedRoute = [
     meta: { title: "Documents", icon: "view_compact", group: "knowledge", requiresAuth: true },
     children: [
       {
-        path: "/Documents",
+        path: "/documents",
         name: "DocumentTable",
         component: () => import(/* webpackChunkName: "definition-table" */ "@/document/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/workflows",
+    component: DefaultLayout,
+    meta: { title: "Workflows", icon: "view_compac", group: "knowledge", requiresAuth: true },
+    children: [
+      {
+        path: "/workflows",
+        name: "WorkflowTable",
+        component: () => import(/* webpackChunkName: "definition-table" */ "@/workflow/Table.vue")
       }
     ]
   },

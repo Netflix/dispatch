@@ -110,6 +110,13 @@ const Menu = [
     href: "/plugins"
   },
   {
+    title: "Workflows",
+    group: "workflows",
+    component: "Workflows",
+    icon: "work",
+    href: "/workflows"
+  },
+  {
     title: "Users",
     group: "Configuration",
     name: "Users",

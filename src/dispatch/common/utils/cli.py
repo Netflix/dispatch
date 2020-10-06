@@ -37,6 +37,8 @@ def install_plugins():
             logger.error(
                 "Something went wrong with creating plugin rows, is the database setup correctly?"
             )
+        except KeyError as e:
+            logger.warning(f"failed to load plugin {ep.name}. Reason: {e}")
         except Exception:
             logger.error(f"Failed to load plugin {ep.name}:{traceback.format_exc()}")
         else:

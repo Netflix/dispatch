@@ -107,6 +107,20 @@ def create(*, db_session, document_in: DocumentCreate) -> Document:
     return document
 
 
+def get_or_create(*, db_session, document_in) -> Document:
+    """Gets a document by it's resource_id or creates a new document."""
+    if hasattr(document_in, "resource_id"):
+        q = db_session.query(Document).filter(Document.resource_id == document_in.resource_id)
+    else:
+        q = db_session.query(Document).filter_by(**document_in.dict())
+
+    instance = q.first()
+    if instance:
+        return instance
+
+    return create(db_session=db_session, document_in=document_in)
+
+
 def update(*, db_session, document: Document, document_in: DocumentUpdate) -> Document:
     """Updates a document."""
     document_data = jsonable_encoder(document)

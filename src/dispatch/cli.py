@@ -125,6 +125,7 @@ def sync_triggers():
     sync_trigger(engine, "team_contact", "search_vector", ["name", "company", "notes"])
     sync_trigger(engine, "term", "search_vector", ["text"])
     sync_trigger(engine, "dispatch_user", "search_vector", ["email"])
+    sync_trigger(engine, "workflow", "search_vector", ["name", "description"])
 
 
 @dispatch_cli.group("database")
@@ -418,6 +419,7 @@ def dispatch_scheduler():
     from .tag.scheduled import sync_tags  # noqa
     from .task.scheduled import sync_tasks, create_task_reminders  # noqa
     from .term.scheduled import sync_terms  # noqa
+    from .workflow.scheduled import sync_workflows, sync_active_stable_workflows  # noqa
 
 
 @dispatch_scheduler.command("list")
