@@ -7,7 +7,6 @@ import uvicorn
 from alembic import command as alembic_command
 from alembic.config import Config as AlembicConfig
 from tabulate import tabulate
-from uvicorn import main as uvicorn_main
 
 from dispatch import __version__, config
 
@@ -88,7 +87,12 @@ def list_plugins():
 
 
 @plugins_group.command("install")
-@click.option("-f", "--force", is_flag=True, help="Force a plugin to update all details about itself, this will overwrite the current database entry.")
+@click.option(
+    "-f",
+    "--force",
+    is_flag=True,
+    help="Force a plugin to update all details about itself, this will overwrite the current database entry.",
+)
 def install_plugins(force):
     """Installs all plugins, or only one."""
     from dispatch.database import SessionLocal
@@ -189,8 +193,7 @@ def init_database():
 )
 def restore_database(dump_file):
     """Restores the database via psql."""
-    import sh
-    from sh import psql, createdb
+    from sh import psql, createdb, ErrorReturnCode_1
     from dispatch.config import (
         DATABASE_HOSTNAME,
         DATABASE_NAME,
@@ -213,7 +216,7 @@ def restore_database(dump_file):
                 _env={"PGPASSWORD": password},
             )
         )
-    except sh.ErrorReturnCode_1:
+    except ErrorReturnCode_1:
         print("Database already exists.")
 
     print(
@@ -542,7 +545,7 @@ def run_server(log_level):
     uvicorn.run("dispatch.main:app", debug=True, log_level=log_level)
 
 
-dispatch_server.add_command(uvicorn_main, name="start")
+dispatch_server.add_command(uvicorn.main, name="start")
 
 
 @dispatch_server.command("shell")

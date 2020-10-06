@@ -123,6 +123,7 @@ class TaskCreate(TaskBase):
     status: TaskStatus = TaskStatus.open
     assignees: List[Optional[ParticipantUpdate]] = []
     owner: Optional[ParticipantUpdate]
+    creator: Optional[ParticipantUpdate]
     resource_type: Optional[str] = INCIDENT_RESOURCE_INCIDENT_TASK
 
 
