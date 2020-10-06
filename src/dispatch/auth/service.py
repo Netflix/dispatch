@@ -81,7 +81,7 @@ def get_current_user(*, db_session: Session = Depends(get_db), request: Request)
 
     if not user_email:
         log.exception(
-            f"Unable to determine user email based on configured auth provider. Provider: {DISPATCH_AUTHENTICATION_PROVIDER_SLUG}"
+            f"Unable to determine user email based on configured auth provider or no default auth user email defined. Provider: {DISPATCH_AUTHENTICATION_PROVIDER_SLUG}"
         )
 
     return get_or_create(db_session=db_session, user_in=UserRegister(email=user_email))
