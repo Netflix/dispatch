@@ -57,6 +57,9 @@ class BasicAuthProviderPlugin(AuthenticationProviderPlugin):
         authorization: str = request.headers.get("Authorization")
         scheme, param = get_authorization_scheme_param(authorization)
         if not authorization or scheme.lower() != "bearer":
+            log.exception(
+                f"Malformed authorization header. Scheme: {scheme} Param: {param} Authorization: {authorization}"
+            )
             return
 
         token = authorization.split()[1]

@@ -52,23 +52,44 @@ def list_plugins():
     for p in plugins.all():
         record = plugin_service.get_by_slug(db_session=db_session, slug=p.slug)
 
-        installed = True
         if not record:
-            installed = False
+            log.warning(
+                f"{p.name} Plugin available, but not installed. Run `dispatch plugins install` to install it."
+            )
+            continue
 
-        table.append([p.title, p.slug, p.version, installed, p.type, p.author, p.description])
+        table.append(
+            [
+                record.title,
+                record.slug,
+                record.version,
+                record.enabled,
+                record.type,
+                record.author,
+                record.description,
+            ]
+        )
 
     click.secho(
         tabulate(
             table,
-            headers=["Title", "Slug", "Version", "Installed", "Type", "Author", "Description"],
+            headers=[
+                "Title",
+                "Slug",
+                "Version",
+                "Enabled",
+                "Type",
+                "Author",
+                "Description",
+            ],
         ),
         fg="blue",
     )
 
 
 @plugins_group.command("install")
-def install_plugins():
+@click.option("-f", "--force", is_flag=True, help="Force a plugin to update all details about itself, this will overwrite the current database entry.")
+def install_plugins(force):
     """Installs all plugins, or only one."""
     from dispatch.database import SessionLocal
     from dispatch.plugin import service as plugin_service
@@ -76,10 +97,10 @@ def install_plugins():
 
     db_session = SessionLocal()
     for p in plugins.all():
-        click.secho(f"Installing plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
         record = plugin_service.get_by_slug(db_session=db_session, slug=p.slug)
         if not record:
-            plugin = Plugin(
+            click.secho(f"Installing plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
+            record = Plugin(
                 title=p.title,
                 slug=p.slug,
                 type=p.type,
@@ -91,8 +112,10 @@ def install_plugins():
                 description=p.description,
                 enabled=p.enabled,
             )
-            db_session.add(plugin)
-        else:
+            db_session.add(record)
+
+        if force:
+            click.secho(f"Updating plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
             # we only update values that should change
             record.tile = p.title
             record.version = p.version

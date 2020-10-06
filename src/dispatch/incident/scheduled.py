@@ -236,6 +236,12 @@ def daily_summary(db_session=None):
             db_session=db_session, external_id=INCIDENT_ONCALL_SERVICE_ID
         )
 
+        if not oncall_service:
+            log.warning(
+                "Oncall service ID specified, but not found in the database. Did you create it?"
+            )
+            return
+
         oncall_plugin = plugins.get(oncall_service.type)
         oncall_email = oncall_plugin.get(service_id=INCIDENT_ONCALL_SERVICE_ID)
 
