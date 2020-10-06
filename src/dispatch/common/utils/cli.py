@@ -30,9 +30,7 @@ def install_plugins():
             register(plugin)
             logger.info(f"Successfully loaded plugin: {ep.name}")
         except KeyError as e:
-            logger.warning(
-                f"Failed to load plugin {ep.name} due to missing configuration items. {e}"
-            )
+            logger.info(f"Failed to load plugin {ep.name} due to missing configuration items. {e}")
         except SQLAlchemyError:
             logger.error(
                 "Something went wrong with creating plugin rows, is the database setup correctly?"
@@ -41,9 +39,6 @@ def install_plugins():
             logger.warning(f"failed to load plugin {ep.name}. Reason: {e}")
         except Exception:
             logger.error(f"Failed to load plugin {ep.name}:{traceback.format_exc()}")
-        else:
-            if not plugin.enabled:
-                continue
 
 
 def get_plugin_properties(json_schema):

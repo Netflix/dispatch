@@ -36,14 +36,14 @@ RUN for key in \
     A48C2BEE680E841632CD4E44F07496B3EB3C1762 \
     B9E2F5981AA6E0CD28160D9FF13993A75599653C \
     ; do \
-        # Let's try several servers to ensure we get all the keys
-        for server in \
-            keys.openpgp.org \
-            keyserver.ubuntu.com \
-            hkps.pool.sks-keyservers.net \
-        ; do \
-	        gpg2 --batch --keyserver "$server" --recv-keys "$key"; \
-        done \
+    # Let's try several servers to ensure we get all the keys
+    for server in \
+    keys.openpgp.org \
+    keyserver.ubuntu.com \
+    hkps.pool.sks-keyservers.net \
+    ; do \
+    gpg2 --batch --keyserver "$server" --recv-keys "$key"; \
+    done \
     done
 
 # grab gosu for easy step-down from root
@@ -124,7 +124,7 @@ RUN set -x \
     && apt-get update \
     && apt-get install -y --no-install-recommends $buildDeps \
     # remove internal index when internal plugins are seperated
-    && pip install /tmp/dist/*.whl \
+    && pip install -U /tmp/dist/*.whl \
     && apt-get purge -y --auto-remove $buildDeps \
     # We install run-time dependencies strictly after
     # build dependencies to prevent accidental collusion.
