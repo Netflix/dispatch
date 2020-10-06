@@ -53,7 +53,7 @@ def list_plugins():
 
         if not record:
             log.warning(
-                f"Plugin {p.name} available, but not installed. Run `dispatch plugins install` to install it."
+                f"Plugin {p.slug} available, but not installed. Run `dispatch plugins install` to install it."
             )
             continue
 
