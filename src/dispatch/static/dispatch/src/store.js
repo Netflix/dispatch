@@ -18,6 +18,7 @@ import document from "@/document/store"
 import tag from "@/tag/store"
 import task from "@/task/store"
 import plugin from "@/plugin/store"
+import workflow from "@/workflow/store"
 
 Vue.use(Vuex)
 
@@ -39,7 +40,8 @@ export default new Vuex.Store({
     search,
     service,
     team,
-    term
+    term,
+    workflow
   },
   strict: process.env.NODE_ENV !== "production"
 })

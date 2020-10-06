@@ -44,6 +44,9 @@ export default {
         return {}
       }
     },
+    type: {
+      type: String
+    },
     label: {
       type: String,
       defualt: "Plugins"
@@ -84,11 +87,24 @@ export default {
   methods: {
     loadMore() {
       this.numItems = this.numItems + 5
-      this.getFilteredData({ q: this.search, itemsPerPage: this.numItems })
+      this.getFilteredData({
+        q: this.search,
+        itemsPerPage: this.numItems
+      })
     },
     fetchData(filterOptions) {
       this.error = null
       this.loading = true
+
+      if (this.type) {
+        // Add type filtering
+        Object.assign(filterOptions, {
+          "field[]": "type",
+          "op[]": "==",
+          "value[]": this.type
+        })
+      }
+
       PluginApi.getAll(filterOptions).then(response => {
         this.items = response.data.items
         this.total = response.data.total

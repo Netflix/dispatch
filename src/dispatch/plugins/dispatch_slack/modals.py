@@ -1,6 +1,7 @@
 import json
 import logging
 import pytz
+from typing import List
 
 from datetime import datetime
 from enum import Enum
@@ -9,6 +10,7 @@ from sqlalchemy.orm import Session
 from dispatch.database import SessionLocal
 
 from dispatch.decorators import background_task
+from dispatch.messaging import INCIDENT_WORKFLOW_CREATED_NOTIFICATION
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
@@ -19,10 +21,13 @@ from dispatch.incident_type import service as incident_type_service
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant, ParticipantUpdate
 from dispatch.plugin import service as plugin_service
+from dispatch.workflow import service as workflow_service
+from dispatch.workflow.flows import send_workflow_notification
+from dispatch.workflow.models import Workflow, WorkflowInstanceCreate
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from .messaging import create_incident_reported_confirmation_message
-from .service import get_user_profile_by_email
+from .service import get_user_profile_by_email, get_user_email
 
 
 slack_client = dispatch_slack_service.create_slack_client()
@@ -59,6 +64,17 @@ class AddTimelineEventCallbacks(str, Enum):
     submit_form = "add_timeline_event_submit_form"
 
 
+class RunWorkflowBlockFields(str, Enum):
+    workflow_select = "run_workflow_select"
+    run_reason = "run_workflow_run_reason"
+    param = "run_workflow_param"
+
+
+class RunWorkflowCallbacks(str, Enum):
+    submit_form = "run_workflow_submit_form"
+    update_view = "run_workflow_update_view"
+
+
 def handle_modal_action(action: dict, background_tasks: BackgroundTasks):
     """Handles all modal actions."""
     view_data = action["view"]
@@ -80,6 +96,8 @@ def action_functions(action_id: str):
         UpdateNotificationsGroupCallbacks.submit_form: [
             update_notifications_group_from_submitted_form
         ],
+        RunWorkflowCallbacks.update_view: [update_workflow_modal],
+        RunWorkflowCallbacks.submit_form: [run_workflow_submitted_form],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc
@@ -135,7 +153,11 @@ def report_incident_from_submitted_form(action: dict, db_session: Session = None
     user_id = action["user"]["id"]
     channel_id = submitted_form.get("private_metadata")["channel_id"]
     dispatch_slack_service.send_ephemeral_message(
-        client=slack_client, conversation_id=channel_id, user_id=user_id, text="", blocks=blocks,
+        client=slack_client,
+        conversation_id=channel_id,
+        user_id=user_id,
+        text="",
+        blocks=blocks,
     )
 
     # Create the incident
@@ -261,6 +283,7 @@ def create_report_incident_modal(incident_id: int, command: dict = None, db_sess
 
 def build_incident_participants_select_block(incident: Incident, participant: Participant = None):
     """Builds a static select with all current participants."""
+    selected_option = None
     participant_options = []
     for p in incident.participants:
         current_option = {
@@ -659,4 +682,235 @@ def add_timeline_event_from_submitted_form(action: dict, db_session=None):
         description=f'"{event_description}," said {participant.individual.name}',
         incident_id=incident_id,
         individual_id=participant.individual.id,
+    )
+
+
+def build_workflow_blocks(
+    incident: Incident, workflows: List[Workflow], selected_workflow: Workflow = None
+):
+    """Builds all blocks required to run a workflow."""
+    modal_template = {
+        "type": "modal",
+        "title": {"type": "plain_text", "text": "Run workflow"},
+        "blocks": [
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "plain_text",
+                        "text": "Use this form to run a workflow.",
+                    }
+                ],
+            },
+        ],
+        "close": {"type": "plain_text", "text": "Cancel"},
+        "submit": {"type": "plain_text", "text": "Run"},
+        "callback_id": RunWorkflowCallbacks.update_view,
+        "private_metadata": json.dumps({"incident_id": str(incident.id)}),
+    }
+
+    selected_option = None
+    workflow_options = []
+    for w in workflows:
+        current_option = {
+            "text": {
+                "type": "plain_text",
+                "text": w.name,
+            },
+            "value": str(w.id),
+        }
+
+        workflow_options.append(current_option)
+
+        if selected_workflow:
+            if w.id == selected_workflow.id:
+                selected_option = current_option
+
+    if selected_workflow:
+        select_block = {
+            "block_id": RunWorkflowBlockFields.workflow_select,
+            "type": "input",
+            "element": {
+                "type": "static_select",
+                "placeholder": {
+                    "type": "plain_text",
+                    "text": "Select Workflow",
+                },
+                "initial_option": selected_option,
+                "options": workflow_options,
+                "action_id": RunWorkflowBlockFields.workflow_select,
+            },
+            "label": {"type": "plain_text", "text": "Workflow"},
+        }
+    else:
+        select_block = {
+            "block_id": RunWorkflowBlockFields.workflow_select,
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "static_select",
+                    "placeholder": {
+                        "type": "plain_text",
+                        "text": "Select Workflow",
+                    },
+                    "options": workflow_options,
+                }
+            ],
+        }
+
+    modal_template["blocks"].append(select_block)
+
+    return modal_template
+
+
+@background_task
+def create_run_workflow_modal(incident_id: int, command: dict = None, db_session=None):
+    """Creates a modal for running a workflow."""
+    trigger_id = command.get("trigger_id")
+
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    workflows = workflow_service.get_enabled(db_session=db_session)
+
+    if workflows:
+        modal_create_template = build_workflow_blocks(incident=incident, workflows=workflows)
+
+        dispatch_slack_service.open_modal_with_user(
+            client=slack_client, trigger_id=trigger_id, modal=modal_create_template
+        )
+    else:
+        blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "No workflows are enabled. You can enable one in the Dispatch UI at /workflows.",
+                },
+            }
+        ]
+        dispatch_slack_service.send_ephemeral_message(
+            slack_client,
+            command["channel_id"],
+            command["user_id"],
+            "No workflows enabled.",
+            blocks=blocks,
+        )
+
+
+@background_task
+def update_workflow_modal(action: dict, db_session=None):
+    """Pushes an updated view to the run workflow modal."""
+    trigger_id = action["trigger_id"]
+    incident_id = action["view"]["private_metadata"]["incident_id"]
+    workflow_id = action["actions"][0]["selected_option"]["value"]
+
+    selected_workflow = workflow_service.get(db_session=db_session, workflow_id=workflow_id)
+    workflows = workflow_service.get_enabled(db_session=db_session)
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    modal_template = build_workflow_blocks(
+        incident=incident, workflows=workflows, selected_workflow=selected_workflow
+    )
+
+    modal_template["blocks"].append(
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"*Description* \n {selected_workflow.description}"},
+        },
+    )
+
+    modal_template["blocks"].append(
+        {
+            "block_id": RunWorkflowBlockFields.run_reason,
+            "type": "input",
+            "element": {
+                "type": "plain_text_input",
+                "multiline": True,
+                "action_id": RunWorkflowBlockFields.run_reason,
+            },
+            "label": {"type": "plain_text", "text": "Run Reason"},
+        },
+    )
+
+    modal_template["blocks"].append(
+        {"type": "section", "text": {"type": "mrkdwn", "text": "*Parameters*"}}
+    )
+
+    if selected_workflow.parameters:
+        for p in selected_workflow.parameters:
+            modal_template["blocks"].append(
+                {
+                    "block_id": f"{RunWorkflowBlockFields.param}-{p['key']}",
+                    "type": "input",
+                    "element": {
+                        "type": "plain_text_input",
+                        "placeholder": {"type": "plain_text", "text": "Value"},
+                    },
+                    "label": {"type": "plain_text", "text": p["key"]},
+                }
+            )
+
+    else:
+        modal_template["blocks"].append(
+            {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": "This workflow has no parameters."},
+            }
+        )
+
+    modal_template["callback_id"] = RunWorkflowCallbacks.submit_form
+
+    dispatch_slack_service.update_modal_with_user(
+        client=slack_client,
+        trigger_id=trigger_id,
+        view_id=action["view"]["id"],
+        modal=modal_template,
+    )
+
+
+@background_task
+def run_workflow_submitted_form(action: dict, db_session=None):
+    """Runs an external flow."""
+    submitted_form = action.get("view")
+    parsed_form_data = parse_submitted_form(submitted_form)
+
+    params = {}
+    named_params = []
+    for i in parsed_form_data.keys():
+        if i.startswith(RunWorkflowBlockFields.param):
+            key = i.split("-")[1]
+            value = parsed_form_data[i]
+            params.update({key: value})
+            named_params.append({"key": key, "value": value})
+
+    workflow_id = parsed_form_data.get(RunWorkflowBlockFields.workflow_select)["value"]
+    incident_id = action["view"]["private_metadata"]["incident_id"]
+    run_reason = parsed_form_data.get(RunWorkflowBlockFields.run_reason)
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    workflow = workflow_service.get(db_session=db_session, workflow_id=workflow_id)
+
+    creator_email = get_user_email(slack_client, action["user"]["id"])
+
+    instance = workflow_service.create_instance(
+        db_session=db_session,
+        instance_in=WorkflowInstanceCreate(
+            workflow={"id": workflow.id},
+            incident={"id": incident.id},
+            creator={"email": creator_email},
+            run_reason=run_reason,
+            parameters=named_params,
+        ),
+    )
+    params.update(
+        {"incident_id": incident.id, "incident_name": incident.name, "instance_id": instance.id}
+    )
+
+    workflow.plugin.instance.run(workflow.resource_id, params)
+
+    send_workflow_notification(
+        incident.conversation.channel_id,
+        INCIDENT_WORKFLOW_CREATED_NOTIFICATION,
+        db_session,
+        instance_creator_name=instance.creator.individual.name,
+        workflow_name=instance.workflow.name,
+        workflow_description=instance.workflow.description,
     )

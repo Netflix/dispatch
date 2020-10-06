@@ -26,6 +26,7 @@
         <v-tab key="resources">Resources</v-tab>
         <v-tab key="participants">Participants</v-tab>
         <v-tab key="timeline">Timeline</v-tab>
+        <v-tab key="workflows">Workflows</v-tab>
       </v-tabs>
       <v-tabs-items v-model="tab">
         <v-tab-item key="details">
@@ -39,6 +40,9 @@
         </v-tab-item>
         <v-tab-item key="timeline">
           <incident-timeline-tab />
+        </v-tab-item>
+        <v-tab-item key="workflow_instances">
+          <incident-workflow-instance-tab />
         </v-tab-item>
       </v-tabs-items>
     </v-navigation-drawer>
@@ -54,6 +58,7 @@ import IncidentDetailsTab from "@/incident/DetailsTab.vue"
 import IncidentResourcesTab from "@/incident/ResourcesTab.vue"
 import IncidentParticipantsTab from "@/incident/ParticipantsTab.vue"
 import IncidentTimelineTab from "@/incident/TimelineTab.vue"
+import IncidentWorkflowInstanceTab from "@/incident/WorkflowInstanceTab.vue"
 
 export default {
   name: "IncidentEditSheet",
@@ -63,7 +68,8 @@ export default {
     IncidentDetailsTab,
     IncidentResourcesTab,
     IncidentParticipantsTab,
-    IncidentTimelineTab
+    IncidentTimelineTab,
+    IncidentWorkflowInstanceTab
   },
 
   data() {
