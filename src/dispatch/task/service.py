@@ -6,7 +6,6 @@ from sqlalchemy import or_
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident.flows import incident_service
-from dispatch.incident.models import Incident
 from dispatch.ticket import service as ticket_service
 from .models import Task, TaskStatus, TaskUpdate, TaskCreate
 
