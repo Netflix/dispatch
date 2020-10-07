@@ -4,11 +4,11 @@ description: Configure Dispatch
 
 # Configuration
 
-Make Dispatch yours! Below you will find documentation surrounding the available configuration options available to you, and what they mean for the incident process.
+Make Dispatch yours! Below you will find documentation surrounding the available configuration options available to you and what they mean for the incident process.
 
 ## Incident Types
 
-Dispatch allows you to define your own incident types. These are used to bucket or categorize your incidents and map various (e.g. services and individuals) other Dispatch resources to these types.
+Dispatch allows you to define your own incident types. These are used to bucket or categorize your incidents and map various other Dispatch resources(e.g. services and individuals) to these types.
 
 To create a new incident type navigate to: `Dispatch > Incident Types > New`
 
@@ -20,17 +20,17 @@ To create a new incident type navigate to: `Dispatch > Incident Types > New`
 
 **Visibility:** Determines whether to send notification messages about this incident (creation and updates). Defaults to 'Open'.
 
-**Service:** Defines the oncall service to use, in order to resolve an incident commander, Defaults to the `reporter` if not set.
+**Service:** Defines the oncall service to use, in order to resolve an incident commander. Incident commander defaults to the `reporter` no service is set.
 
 **Document:** Allows you to specify a incident document template to be created and filled for this incident type. This is useful if you like to use different document templates depending on the type of incident.
 
-**Exclude From Metrics:** If for some reason you would like to exclude all incidents of this type from metrics (e.g. "Simulation" or "Test" incidents.)
+**Exclude From Metrics:** If for some reason you would like to exclude all incidents of this type from metrics (e.g. "Simulation" or "Test" incidents).
 
-**Default Incident Type:** Check this if you would like for this incident be be the default type if the reporter does not specify.
+**Default Incident Type:** Check this if you would like for this incident to be the default type if the reporter does not specify.
 
 ## Incident Priorities
 
-In addition to Incident Types, Dispatch allows you to specify the _priority_.
+In addition to Incident Types, Dispatch allows you to specify the incident's _priority_.
 
 To create a new incident priority navigate to: `Dispatch > Incident Priorities > New`
 
@@ -40,15 +40,15 @@ To create a new incident priority navigate to: `Dispatch > Incident Priorities >
 
 **Description:** The incident priority description presented to the user.
 
-**View Order:** The ranked order which the priority should be listed on dropdowns.
+**View Order:** The ranked order which the priority should be listed in menus and dropdowns.
 
-**Tactical Report Reminder:** The number of hours after which Dispatch will send a reminder to the incident commander reminding them to send a tactical report.
+**Tactical Report Reminder:** Number of hours between reminders.
 
-**Executive Report Reminder:** The number of hours after which Dispatch will send a reminder to the incident command reminding them to send an executive report.
+**Executive Report Reminder:** Number of hours between reminders.
 
 **Default Incident Priority:** Marks this priority as the default if the reporter does not specify.
 
-**Page Commander:** Ensures that the incident commander is paged for all incidents with this priority (if paging service and plugin allows)
+**Page Commander:** Ensures that the incident commander is paged for all incidents with this priority (if configured paging service and plugin allows)
 
 ## Plugins
 
@@ -60,7 +60,7 @@ Looking to add your own functionality to Dispatch via plugins? See the [contribu
 
 ## Workflows
 
-Workflows allows you to extend Dispatch in your response automation. Dispatch does not currently include the ability to author workflows directly. Instead the workflow functionality allows for exisiting workflows to be dispatched from Dispatch. Meaning, that it relies on external workflow orchastration tools to execute those workflows, with Dispatch keeping track of resulting artifacts and workflow status.
+Workflows allows you to extend Dispatch, invoking you're own response automation. Dispatch does not currently include the ability to author workflows directly. Instead, the workflow functionality allows for exisiting workflows to be invoked from Dispatch. We rely on external workflow orchastration tools to execute those workflows, with Dispatch keeping track of resulting artifacts and workflow status.
 
 To create a new incident workflow navigate to: `Dispatch > Workflows > New`
 
@@ -80,11 +80,13 @@ To create a new incident workflow navigate to: `Dispatch > Workflows > New`
 
 ## Users
 
-Users are actual users of the Dispatch UI and are different from individual contacts or incident participants. These user accounts are used to control access to the Dispatch UI only. We do not currently support creating and remove of users via the Dispatch UI, except for self registration.
+Users represent users of the Dispatch UI and are different from individual contacts or incident participants. These user accounts are used to control access to the Dispatch UI only. We do not currently support creation or removal of users via the Dispatch UI, except in the case of self registration.
 
 ![](../../.gitbook/assets/admin-ui-incident-users.png)
 
-**Role:** Dispatch uses role based access control (RBAC) for it's UI. Currently, this is just used to protect sensitive (Visibility: Closed) incidents. We do not currently have any controls surrounding Dispatch configuration and settings. There are three roles defined by Dispatch:
+**Role:** Dispatch uses role based access control (RBAC) for it's UI. Currently, this is only used to protect sensitive (Visibility: Closed) incidents. We do not currently have any controls surrounding Dispatch configuration and settings.
+
+There are three roles defined by Dispatch:
 
 - Admin - allows full access to the Dispatch UI.
 - Poweruser - currently the same as Admin

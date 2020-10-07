@@ -6,9 +6,9 @@ description: Configuring Dispatch's contact repository
 
 ## Individual
 
-In Dispatch, Individuals are either internal or external people identifiers. Typically, an organization will have a robust internal whitepages/phone-book. Dispatch does not expect to replace those data stores, instead it keeps a lightweight notion of identities to associate with incidents.
+In Dispatch, Individuals are either internal or external people identifiers. Typically, an organization will have a robust internal whitepages/phone-book. Dispatch does not expect to replace those data stores. Instead, it keeps a lightweight notion of identities to associate with incidents for filtering and metrics.
 
-Everyone has a spreadsheet somewhere of who to contact for a given incident. Dispatch allows these folks to be pulled directly into an incident. By assigning individuals terms, incident types or incident priorities dispatch is able to directly add those the folks \(if internal\) or suggest reaching out \(if external\).
+Everyone has a spreadsheet somewhere of who to contact for a given incident. With individual contacts Dispatch allows for that data to useful by pulling those individuals directly into incident. By assigning individuals terms, incident types or incident priorities dispatch is able to directly add those the folks \(if internal\) or suggest reaching out \(if external\).
 
 To create a new individual contact navigate to: `Dispatch > Individuals > New`
 
@@ -26,7 +26,7 @@ In addition to fields about the individual, Dispatch allows you to associate the
 
 ## Team
 
-Like `Individuals`, there are often groups of individuals (teams) that need to be engaged and/or notified during an incident. With teams, Dispatch manages those groups \(typically, team distribution lists\), allowing Dispatch to handle keeping those folks up-to-date.
+Like `Individuals`, there are often groups of individuals (teams) that need to be engaged and/or notified during an incident. With teams, Dispatch manages those groups \(typically, team distribution lists\) providing a centralized datastore for that contact data.
 
 To create a new team contact navigate to: `Dispatch > Teams > New`
 
@@ -44,7 +44,7 @@ In addition to fields about the team, Dispatch allows you to associate a team wi
 
 ## Service
 
-Similar to `Teams` there are often groups of individuals (teams) responsible for a an application or service which need to be involved in an incident. However, in these circumstances you don't want to engage the _whole_ team. We only want to engage the individual that is on call for the service. Services allow Dispatch to resolve these individuals via third-party schedules (e.g. PagerDuty).
+Similar to `Teams` there are often groups of individuals (teams) responsible for an application or service which need to be involved in an incident. However, in these circumstances we don't want to engage the _whole_ team. We only want to engage the individual that is oncall for the service. `Services` allow Dispatch to resolve these individuals via third-party schedules (e.g. PagerDuty).
 
 To create a new team contact navigate to: `Dispatch > Services > New`
 
