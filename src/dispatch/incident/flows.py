@@ -127,7 +127,8 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
 
 
 def update_external_incident_ticket(
-    incident: Incident, db_session: SessionLocal,
+    incident: Incident,
+    db_session: SessionLocal,
 ):
     """Update external incident ticket."""
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="ticket")
@@ -273,57 +274,64 @@ def create_collaboration_documents(incident: Incident, db_session: SessionLocal)
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
 
     collab_documents = []
-
     document_name = f"{incident.name} - Incident Document"
 
-    # TODO can we make move and copy in one api call? (kglisson)
-    document = plugin.instance.copy_file(
-        incident.storage.resource_id,
-        incident.incident_type.template_document.resource_id,
-        document_name,
-    )
-    plugin.instance.move_file(incident.storage.resource_id, document["id"])
+    if plugin:
+        # TODO can we make move and copy in one api call? (kglisson)
+        # NOTE: make template documents optional
+        if incident.incident_type.template_document:
+            document = plugin.instance.copy_file(
+                incident.storage.resource_id,
+                incident.incident_type.template_document.resource_id,
+                document_name,
+            )
+            plugin.instance.move_file(incident.storage.resource_id, document["id"])
 
-    # NOTE this should be optional
-    sheet = None
-    template = document_service.get_incident_investigation_sheet_template(db_session=db_session)
-    if template:
-        sheet_name = f"{incident.name} - Incident Tracking Sheet"
-        sheet = plugin.instance.copy_file(
-            incident.storage.resource_id, template.resource_id, sheet_name
-        )
-        plugin.instance.move_file(incident.storage.resource_id, sheet["id"])
+            # TODO this logic should probably be pushed down into the plugins i.e. making them return
+            # the fields we expect instead of re-mapping. (kglisson)
+            document.update(
+                {
+                    "name": document_name,
+                    "resource_type": INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
+                    "resource_id": document["id"],
+                }
+            )
 
-        sheet.update(
-            {
-                "name": sheet_name,
-                "resource_type": INCIDENT_RESOURCE_INVESTIGATION_SHEET,
-                "resource_id": sheet["id"],
-            }
-        )
-        collab_documents.append(sheet)
+            collab_documents.append(document)
 
-    plugin.instance.create_file(incident.storage.resource_id, "logs")
-    plugin.instance.create_file(incident.storage.resource_id, "screengrabs")
+            event_service.log(
+                db_session=db_session,
+                source=plugin.title,
+                description="Incident investigation document created",
+                incident_id=incident.id,
+            )
 
-    # TODO this logic should probably be pushed down into the plugins i.e. making them return
-    # the fields we expect instead of re-mapping. (kglisson)
-    document.update(
-        {
-            "name": document_name,
-            "resource_type": INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
-            "resource_id": document["id"],
-        }
-    )
+        sheet = None
+        template = document_service.get_incident_investigation_sheet_template(db_session=db_session)
+        if template:
+            sheet_name = f"{incident.name} - Incident Tracking Sheet"
+            sheet = plugin.instance.copy_file(
+                incident.storage.resource_id, template.resource_id, sheet_name
+            )
+            plugin.instance.move_file(incident.storage.resource_id, sheet["id"])
 
-    collab_documents.append(document)
+            sheet.update(
+                {
+                    "name": sheet_name,
+                    "resource_type": INCIDENT_RESOURCE_INVESTIGATION_SHEET,
+                    "resource_id": sheet["id"],
+                }
+            )
+            collab_documents.append(sheet)
+            event_service.log(
+                db_session=db_session,
+                source=plugin.title,
+                description="Incident investigation sheet created",
+                incident_id=incident.id,
+            )
 
-    event_service.log(
-        db_session=db_session,
-        source=plugin.title,
-        description="Incident investigation document and sheet created",
-        incident_id=incident.id,
-    )
+        plugin.instance.create_file(incident.storage.resource_id, "logs")
+        plugin.instance.create_file(incident.storage.resource_id, "screengrabs")
 
     return collab_documents
 
@@ -658,7 +666,8 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
             )
 
             storage_plugin.instance.move_file(
-                new_folder_id=incident.storage.resource_id, file_id=incident_review_document["id"],
+                new_folder_id=incident.storage.resource_id,
+                file_id=incident_review_document["id"],
             )
 
             event_service.log(

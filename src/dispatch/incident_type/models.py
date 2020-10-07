@@ -81,7 +81,7 @@ class IncidentTypeBase(DispatchBase):
 
 
 class IncidentTypeCreate(IncidentTypeBase):
-    template_document: Document
+    template_document: Optional[Document]
     commander_service: Optional[Service]
     plugin_metadata: List[PluginMetadata] = []
     exclude_from_metrics: Optional[bool] = False
@@ -95,7 +95,7 @@ class IncidentTypeCreate(IncidentTypeBase):
 class IncidentTypeUpdate(IncidentTypeBase):
     id: int
     visibility: Optional[Visibility]
-    template_document: Document
+    template_document: Optional[Document]
     commander_service: Optional[Service]
     plugin_metadata: List[PluginMetadata] = []
     exclude_from_metrics: Optional[bool] = False
