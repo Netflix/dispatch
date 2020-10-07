@@ -1,12 +1,16 @@
 ---
-description: Configure Dispatch's incident knowledge base
+description: Learning about Dispatch's knowledge base.
 ---
 
 # Knowledge
 
-## Applications
+Along with incident orchstration Dispatch is adept at building a knowledge base of incident data. Below we outline the primatives at your disposal and how you can manually add the incident knowledge base.
 
-Applications like Terms only have meaning in particular contexts, within Dispatch application names are important enough to be separated from other terms, and given additional metadata surrounding them.
+## Tags
+
+To create a new incident type navigate to: `Dispatch > Incident Types > New`
+
+![](../../.gitbook/assets/admin-ui-incident-types.png)
 
 ## Documents
 
@@ -27,4 +31,3 @@ Any defined term and be associated to Teams, Services, or Individuals for incide
 Definitions are used to collect and manage term definitions from various sources, this enabled incident participants to quickly understand the language and terms being used through an incident.
 
 A definition can be associated with one or more terms \(in case of term overload\).
-
