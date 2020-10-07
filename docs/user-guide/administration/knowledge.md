@@ -8,15 +8,73 @@ Along with incident orchstration Dispatch is adept at building a knowledge base 
 
 ## Tags
 
-To create a new incident type navigate to: `Dispatch > Incident Types > New`
+Within Dispatch tags are a flexible piece of metadata than be manually attached to incidents or automatically discovered based on incident data.
 
-![](../../.gitbook/assets/admin-ui-incident-types.png)
+To create a new tag navigate to: `Dispatch > Tags > New`
+
+![](../../.gitbook/assets/admin-ui-knowledge-tags.png)
+
+**Name:** The tag string itself, or what you would expect to be found in incident data.
+
+**Description:** A short description of the tag (if applicable).
+
+**Type:** The _type_ of the tag. This is useful to disambiguate tags. These are defined either by a plugin syncing tags from external sources (e.g. application names) or are user defineable.
+
+**Source:** Where the tag originated, for tags created via the UI, dispatch is the default source.
+
+**URI:** The external tag locator (if available).
+
+**Discoverable:** Dispatch has the ability to do some automatic tag discovery. Meaning given a set of predefined tags, it will crawl all incident data available to it and using NLP associate this data to incidents (current incident and retroactively). If for some reason a tag is general enough (e.g. "the") that you do not want to make it disoverable, this flag can disable that functionality on an individual tag basis.
 
 ## Documents
 
-Documents are links to external sources \(Web Pages, Google Documents, etc.,\). These documents can be associated with Terms allowing these documents to be recommended reading for incident participants.
+To create a new tag navigate to: `Dispatch > Documents > New`
 
-The best use case for documents is tracking, managing and recommending, incident run books.
+![](../../.gitbook/assets/admin-ui-knowledge-documents.png)
+
+Documents are links to external sources \(Web Pages, Google Documents, etc.,\). These documents can be associated with (terms, incident types, and incident priorities) allowing these documents to be recommended reading for incident participants.
+
+**Name:** Name of the document.
+
+**Description:** Short discription of the document.
+
+**Weblink:** A link representing the document.
+
+**ID:** An external ID used to fetch the document.
+
+**Type:** A user-defined document type.
+
+#### Engagement
+
+In addition to fields about the document itself, Dispatch allows you to associate the document with other Dispatch primatives. For instance if you would like a give document to be recommended for all incidents of a given priority, associate that priority with the document.
+
+### Incident Templates
+
+Documents can also be used as templates during incident creation that Dispatch will attempt to fill when copied.
+
+If you are using the google drive plugin, we provide a set of templates to get you started, these should be copied into your google drive and then created as documents in the Dispatch UI.
+
+- [Incident Document](https://docs.google.com/document/d/1fv--CrGpWJJ4nyPR0N0hq4JchHJPuqsXN4azE9CGQiE)
+
+- [Incident Review Document](https://docs.google.com/document/d/1-VwcEpVVdymoojdUg9e5XP8QGam0-B5Djxh-guuPpEc)
+
+- [Executive Report](https://docs.google.com/document/d/1dab6k14p5ageo5B_d1YlB_zS9hMGHDMXy9RUbIZous4)
+
+- [Incident Tracking Sheet](https://docs.google.com/spreadsheets/d/1Odk4KlL7uMF_yd7OvTOCaPWmtTA_WzFBIA4lMeU5cGY)
+
+### Template variables
+
+The following is a list of available variables that Dispatch will attempt to resolve on document creation (we do not currently attempt to re-resolve these).
+
+NOTE: All variables must be enclosed in a `{{}}`.
+
+- `name` - The name of the incident
+- `description` - The incidents description
+- `title` - The incidents title
+- `commander_fullname` - The current commanders name
+- `type` - The incident type name
+- `prioritiy` - The incident priority name
+- `status` - The incidents status
 
 ## Terms
 
