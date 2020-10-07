@@ -58,7 +58,8 @@ def create_task(
     """
     Creates a new task.
     """
-    task = create(db_session=db_session, task_in=task_in, creator_email=current_user.email)
+    task_in.creator = {"individual": {"email": current_user.email}}
+    task = create(db_session=db_session, task_in=task_in)
     return task
 
 

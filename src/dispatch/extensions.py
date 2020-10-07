@@ -1,7 +1,6 @@
 import logging
 
 import sentry_sdk
-from sentry_sdk import configure_scope
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
@@ -39,7 +38,7 @@ def configure_extensions():
             ],
             environment=ENV,
         )
-        with configure_scope() as scope:
+        with sentry_sdk.configure_scope() as scope:
             log.debug(f"Using the following tags... ENV_TAGS: {ENV_TAGS}")
             for k, v in ENV_TAGS.items():
                 scope.set_tag(k, v)
