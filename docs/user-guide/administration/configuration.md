@@ -22,7 +22,7 @@ To create a new incident type navigate to: `Dispatch > Incident Types > New`
 
 **Service:** Defines the oncall service to use to resolve an incident commander. The incident commander defaults to the `reporter` if no oncall service is defined.
 
-**Document:** Allows you to specify a incident document template to be created and filled for this incident type. This is useful if you like to use different document templates depending on the type of incident.
+**Document:** Allows you to specify an incident document template to be created and filled for this incident type. This is useful if you like to use different document templates depending on the type of incident.
 
 **Exclude From Metrics:** If for some reason you would like to exclude all incidents of this type from metrics (e.g. "Simulation" or "Test" incidents).
 
