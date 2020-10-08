@@ -88,6 +88,6 @@ Users represent users of the Dispatch UI and are different from individual conta
 
 There are three roles defined by Dispatch:
 
-- Admin - allows full access to the Dispatch UI.
+- Admin - allows full access to the Dispatch UI and all incidents whether their visibility is open or restricted.
 - Poweruser - currently the same as Admin
 - User - restricts access to sensitive incident (unless they are a direct participant).
