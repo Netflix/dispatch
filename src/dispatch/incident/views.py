@@ -7,11 +7,13 @@ from dispatch.enums import Visibility
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.database import get_db, search_filter_sort_paginate
+from dispatch.incident.enums import IncidentStatus
 
 from dispatch.participant_role.models import ParticipantRoleType
 
 from dispatch.auth.models import UserRoles
 from .flows import (
+    incident_create_closed_flow,
     incident_create_flow,
     incident_update_flow,
     incident_assign_role_flow,
@@ -112,7 +114,10 @@ def create_incident(
         db_session=db_session, reporter_email=current_user.email, **incident_in.dict()
     )
 
-    background_tasks.add_task(incident_create_flow, incident_id=incident.id)
+    if incident.status == IncidentStatus.closed:
+        background_tasks.add_task(incident_create_closed_flow, incident_id=incident.id)
+    else:
+        background_tasks.add_task(incident_create_flow, incident_id=incident.id)
 
     return incident
 
