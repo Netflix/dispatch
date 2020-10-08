@@ -27,5 +27,12 @@ class OpsGenieOncallPlugin(OncallPlugin):
     def get(self, service_id: str, **kwargs):
         return get_oncall()
 
-    def page(self, incident_name: str, incident_title: str, incident_description: str, **kwargs):
+    def page(
+        self,
+        service_id: str,
+        incident_name: str,
+        incident_title: str,
+        incident_description: str,
+        **kwargs,
+    ):
         return page_oncall(incident_name, incident_title, incident_description)
