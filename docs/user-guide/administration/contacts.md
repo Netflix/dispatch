@@ -56,7 +56,7 @@ To create a new oncall service navigate to: `Dispatch > Services > New`
 
 **Plugin:** The associated service plugin that Dispatch will use to resolve the oncall person.
 
-**External Id:** The external ID that will be used by Dispatch and the defined plugin to resolve an individual.
+**External Id:** The external ID that will be used by Dispatch and the defined plugin to resolve the oncall person.
 
 **Enabled:** Flag that determines if this particular service is active.
 
