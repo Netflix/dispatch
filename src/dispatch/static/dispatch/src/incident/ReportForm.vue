@@ -256,7 +256,7 @@
                     depressed
                     :loading="loading"
                     :disabled="invalid || !validated"
-                    @click="save()"
+                    @click="report()"
                     >Submit
                     <template v-slot:loader>
                       <v-progress-linear indeterminate color="white" dark></v-progress-linear>
@@ -364,7 +364,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident", ["save", "get", "resetSelected"])
+    ...mapActions("incident", ["report", "get", "resetSelected"])
   }
 }
 </script>
