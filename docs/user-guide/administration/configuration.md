@@ -8,7 +8,7 @@ Make Dispatch yours! Below you will find documentation surrounding the configura
 
 ## Incident Types
 
-Dispatch allows you to define your own incident types. These are used to bucket or categorize your incidents and map various other Dispatch resources(e.g. services and individuals) to these types.
+Dispatch allows you to define your own incident types. These are used to bucket or categorize your incidents and map various other Dispatch resources (e.g. services and individuals) to these types.
 
 To create a new incident type navigate to: `Dispatch > Incident Types > New`
 
