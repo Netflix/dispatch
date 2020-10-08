@@ -32,7 +32,7 @@ To create a new document navigate to: `Dispatch > Documents > New`
 
 ![](../../.gitbook/assets/admin-ui-knowledge-documents.png)
 
-Documents are links to external sources \(Web Pages, Google Documents, etc.,\). These documents can be associated with (terms, incident types, and incident priorities) allowing these documents to be recommended reading for incident participants.
+Documents are links to external sources \(Web Pages, Google Documents, etc.,\). These documents can be associated with terms, incident types, and incident priorities, allowing these documents to be recommended reading for incident participants.
 
 **Name:** Name of the document.
 
