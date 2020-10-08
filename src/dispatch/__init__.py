@@ -31,6 +31,7 @@ try:
     from dispatch.report.models import Report  # noqa lgtm[py/unused-import]
     from dispatch.storage.models import Storage  # noqa lgtm[py/unused-import]
     from dispatch.tag.models import Tag  # noqa lgtm[py/unused-import]
+    from dispatch.tag_type.models import TagType  # noqa lgtm[py/unused-import]
     from dispatch.task.models import Task  # noqa lgtm[py/unused-import]
     from dispatch.term.models import Term  # noqa lgtm[py/unused-import]
     from dispatch.ticket.models import Ticket  # noqa lgtm[py/unused-import]
