@@ -20,6 +20,7 @@ All Slack commands are listed below, or you may view _groups_ of commands relati
 - [`/dispatch-list-resources`](#%2Fdispatch-list-resources)
 - [`/dispatch-list-tasks`](#%2Fdispatch-list-tasks)
 - [`/dispatch-list-workflows`](#%2Fdispatch-list-workflows)
+- [`/dispatch-list-incidents`](#%2Fdispatch-list-incidents)
 - [`/dispatch-notifications-group`](#%2Fdispatch-notifications-group)
 - [`/dispatch-report-executive`](#%2Fdispatch-report-executive)
 - [`/dispatch-report-incident`](#%2Fdispatch-report-incident)
