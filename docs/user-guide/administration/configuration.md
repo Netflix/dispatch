@@ -48,7 +48,7 @@ To create a new incident priority navigate to: `Dispatch > Incident Priorities >
 
 **Default Incident Priority:** Marks this priority as the default if the reporter does not specify.
 
-**Page Commander:** Ensures that the incident commander is paged for all incidents with this priority (if configured paging service and plugin allows)
+**Page Commander:** Ensures that the incident commander is paged for all incidents with this priority (if configured paging service and plugin allows).
 
 ## Plugins
 
