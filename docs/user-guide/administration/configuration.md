@@ -84,7 +84,7 @@ Users represent users of the Dispatch UI and are different from individual conta
 
 ![](../../.gitbook/assets/admin-ui-incident-users.png)
 
-**Role:** Dispatch uses role based access control (RBAC) for it's UI. Currently, this is only used to protect sensitive (Visibility: Closed) incidents. We do not currently have any controls surrounding Dispatch configuration and settings.
+**Role:** Dispatch uses role based access control (RBAC) for its UI. Currently, this is only used to protect sensitive (Visibility: Restricted) incidents. We do not currently have any controls surrounding Dispatch configuration and settings.
 
 There are three roles defined by Dispatch:
 
