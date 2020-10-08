@@ -4,7 +4,7 @@ description: Configure Dispatch
 
 # Configuration
 
-Make Dispatch yours! Below you will find documentation surrounding the available configuration options available to you and what they mean for the incident process.
+Make Dispatch yours! Below you will find documentation surrounding the configuration options available to you and what they mean for the incident process.
 
 ## Incident Types
 
