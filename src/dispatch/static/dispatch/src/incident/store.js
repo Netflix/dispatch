@@ -139,31 +139,34 @@ const actions = {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
   },
-  save({ commit, dispatch }) {
-    if (!state.selected.id) {
-      commit("SET_SELECTED_LOADING", true)
-      return IncidentApi.create(state.selected)
-        .then(response => {
-          commit("SET_SELECTED", response.data)
-          commit("SET_SELECTED_LOADING", false)
-          this.interval = setInterval(function() {
-            if (state.selected.id) {
-              dispatch("get")
-            }
+  report({ commit, dispatch }) {
+    commit("SET_SELECTED_LOADING", true)
+    return IncidentApi.create(state.selected)
+      .then(response => {
+        commit("SET_SELECTED", response.data)
+        commit("SET_SELECTED_LOADING", false)
+        this.interval = setInterval(function() {
+          if (state.selected.id) {
+            dispatch("get")
+          }
 
-            // TODO this is fragile but we don't set anything as "created"
-            if (state.selected.conversation) {
-              clearInterval(this.interval)
-            }
-          }, 5000)
-        })
-        .catch(() => {})
-    } else {
-      return IncidentApi.update(state.selected.id, state.selected)
+          // TODO this is fragile but we don't set anything as "created"
+          if (state.selected.conversation) {
+            clearInterval(this.interval)
+          }
+        }, 5000)
+      })
+      .catch(() => {})
+  },
+  save({ commit, dispatch }) {
+    commit("SET_SELECTED_LOADING", true)
+    if (!state.selected.id) {
+      return IncidentApi.create(state.selected)
         .then(() => {
-          dispatch("closeEditSheet")
+          dispatch("closeNewSheet")
           dispatch("getAll")
           commit("app/SET_SNACKBAR", { text: "Incident updated successfully." }, { root: true })
+          commit("SET_SELECTED_LOADING", false)
         })
         .catch(err => {
           commit(
@@ -174,6 +177,26 @@ const actions = {
             },
             { root: true }
           )
+          commit("SET_SELECTED_LOADING", false)
+        })
+    } else {
+      return IncidentApi.update(state.selected.id, state.selected)
+        .then(() => {
+          dispatch("closeEditSheet")
+          dispatch("getAll")
+          commit("app/SET_SNACKBAR", { text: "Incident updated successfully." }, { root: true })
+          commit("SET_SELECTED_LOADING", false)
+        })
+        .catch(err => {
+          commit(
+            "app/SET_SNACKBAR",
+            {
+              text: "Incident not updated. Reason: " + err.response.data.detail,
+              color: "red"
+            },
+            { root: true }
+          )
+          commit("SET_SELECTED_LOADING", false)
         })
     }
   },

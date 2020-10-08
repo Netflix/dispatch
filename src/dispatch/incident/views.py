@@ -7,6 +7,7 @@ from dispatch.enums import Visibility
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.database import get_db, search_filter_sort_paginate
+from dispatch.incident.enums import IncidentStatus
 
 from dispatch.participant_role.models import ParticipantRoleType
 
