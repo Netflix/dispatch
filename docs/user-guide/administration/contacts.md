@@ -16,7 +16,7 @@ To create a new individual contact navigate to: `Dispatch > Individuals > New`
 
 **Name:** Name of the individual.
 
-**Email:** Email addresses associated with the individual.
+**Email:** Email address associated with the individual.
 
 **Company:** Company that is associated with the individual.
 
