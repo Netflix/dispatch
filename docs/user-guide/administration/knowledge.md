@@ -75,6 +75,11 @@ NOTE: All variables must be enclosed in a `{{}}`.
 - `type` - The incident type name
 - `prioritity` - The incident priority name
 - `status` - The incidents status
+- `conversation_weblink` - Link to the conversation resource (if any)
+- `conference_weblink` - Link to the conference resource (if any)
+- `storage_weblink` - Link to the storage resource (if any)
+- `document_weblink` - Link the incident document (if any)
+- `ticket_weblink` - Link the incident ticket (if any)
 
 ## Terms
 
