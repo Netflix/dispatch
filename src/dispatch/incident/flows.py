@@ -404,6 +404,9 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     if incident.status == IncidentStatus.closed:
         db_session.add(incident)
         db_session.commit()
+
+        # we update the incident ticket
+        update_external_incident_ticket(incident, db_session)
         return
 
     # get the incident participants based on incident type and priority
