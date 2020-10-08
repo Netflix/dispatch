@@ -36,7 +36,7 @@ Documents are links to external sources \(Web Pages, Google Documents, etc.,\). 
 
 **Name:** Name of the document.
 
-**Description:** Short discription of the document.
+**Description:** Short description of the document.
 
 **Weblink:** A link representing the document.
 
