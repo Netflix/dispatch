@@ -46,7 +46,7 @@ In addition to fields about the team, Dispatch allows you to associate a team wi
 
 Similar to `Teams` there are often groups of individuals (teams) responsible for an application or service which need to be involved in an incident. However, in these circumstances we don't want to engage the _whole_ team. We only want to engage the individual that is oncall for the service. `Services` allow Dispatch to resolve these individuals via third-party oncall services (e.g. PagerDuty, OpsGenie).
 
-To create a new team contact navigate to: `Dispatch > Services > New`
+To create a new oncall service navigate to: `Dispatch > Services > New`
 
 ![](../../.gitbook/assets/admin-ui-contacts-services.png)
 
