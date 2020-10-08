@@ -165,7 +165,7 @@ const actions = {
         .then(() => {
           dispatch("closeNewSheet")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Incident updated successfully." }, { root: true })
+          commit("app/SET_SNACKBAR", { text: "Incident created successfully." }, { root: true })
           commit("SET_SELECTED_LOADING", false)
         })
         .catch(err => {

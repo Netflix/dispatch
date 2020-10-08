@@ -381,6 +381,25 @@ def add_participant_to_tactical_group(user_email: str, incident_id: int, db_sess
     plugin.instance.add(tactical_group.email, [user_email])
 
 
+@background_task
+def incident_create_closed_flow(*, incident_id: int, checkpoint: str = None, db_session=None):
+    """Creates all resources necessary when an incident is created as 'closed'."""
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    ticket = create_incident_ticket(incident, db_session)
+    if ticket:
+        incident.ticket = ticket_service.create(
+            db_session=db_session, ticket_in=TicketCreate(**ticket)
+        )
+
+        incident.name = ticket["resource_id"]
+        update_external_incident_ticket(incident, db_session)
+
+    db_session.add(incident)
+    db_session.commit()
+    return
+
+
 # TODO create some ability to checkpoint
 # We could use the model itself as the checkpoint, commiting resources as we go
 # Then checking for the existence of those resources before creating them for
@@ -399,15 +418,6 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
         # we set the incident name
         incident.name = ticket["resource_id"]
-
-    # if the incident is already closed don't attempt to run the rest of the flow
-    if incident.status == IncidentStatus.closed:
-        db_session.add(incident)
-        db_session.commit()
-
-        # we update the incident ticket
-        update_external_incident_ticket(incident, db_session)
-        return
 
     # get the incident participants based on incident type and priority
     individual_participants, team_participants = get_incident_participants(incident, db_session)
