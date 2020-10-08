@@ -27,13 +27,18 @@ class PagerDutyOncallPlugin(OncallPlugin):
     description = "Uses PagerDuty to resolve and page oncall teams."
     version = pagerduty_oncall_plugin.__version__
 
-    def get(self, service_id: str = None, service_name: str = None):
+    def get(self, service_id: str = None, **kwargs):
         """Gets the oncall person."""
         client = APISession(PAGERDUTY_API_KEY)
-        return get_oncall(client=client, service_id=service_id, service_name=service_name)
+        return get_oncall(client=client, service_id=service_id)
 
     def page(
-        self, service_id: str, incident_name: str, incident_title: str, incident_description: str
+        self,
+        service_id: str,
+        incident_name: str,
+        incident_title: str,
+        incident_description: str,
+        **kwargs,
     ):
         """Pages the oncall person."""
         client = APISession(PAGERDUTY_API_KEY)
