@@ -28,7 +28,7 @@ To create a new tag navigate to: `Dispatch > Tags > New`
 
 ## Documents
 
-To create a new tag navigate to: `Dispatch > Documents > New`
+To create a new document navigate to: `Dispatch > Documents > New`
 
 ![](../../.gitbook/assets/admin-ui-knowledge-documents.png)
 
