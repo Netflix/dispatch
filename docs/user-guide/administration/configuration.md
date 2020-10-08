@@ -60,7 +60,7 @@ Looking to add your own functionality to Dispatch via plugins? See the [contribu
 
 ## Workflows
 
-Workflows allows you to extend Dispatch, invoking you're own response automation. Dispatch does not currently include the ability to author workflows directly. Instead, the workflow functionality allows for exisiting workflows to be invoked from Dispatch. We rely on external workflow orchastration tools to execute those workflows, with Dispatch keeping track of resulting artifacts and workflow status.
+Workflows allows you to extend Dispatch, invoking your own response automation. Dispatch does not currently include the ability to author workflows directly. Instead, the workflow functionality allows for existing workflows to be invoked from Dispatch. We rely on external workflow orchestration tools to execute those workflows, with Dispatch keeping track of resulting artifacts and workflow status.
 
 To create a new incident workflow navigate to: `Dispatch > Workflows > New`
 
