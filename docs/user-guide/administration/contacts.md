@@ -34,7 +34,7 @@ To create a new team contact navigate to: `Dispatch > Teams > New`
 
 **Name:** Name of the team.
 
-**Email:** Email addresses associated with the team.
+**Email:** Email address associated with the team.
 
 **Company:** Company that is associated with the team.
 
