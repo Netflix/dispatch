@@ -6,7 +6,7 @@ description: Configuring Dispatch's contact repository
 
 ## Individual
 
-In Dispatch, Individuals are either internal or external people identifiers. Typically, an organization will have a robust internal whitepages/phone-book. Dispatch does not expect to replace those data stores. Instead, it keeps a lightweight notion of identities to associate with incidents for filtering and metrics.
+In Dispatch, Individuals are either internal or external people identifiers. Typically, an organization will maintain a robust internal directory for user identities. Dispatch does not expect to replace those data stores. Instead, it keeps a lightweight notion of identities to associate with incidents for filtering and metrics.
 
 Everyone has a spreadsheet somewhere of who to contact for a given incident. With individual contacts Dispatch allows for that data to useful by pulling those individuals directly into incident. By assigning terms, incident types or incident priorities to individuals, Dispatch is able to directly add them to the incident \(if internal\) or suggest reaching out to them \(if external\).
 
