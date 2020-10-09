@@ -102,6 +102,9 @@ instance/
 # Scrapy stuff:
 .scrapy
 
+# PyCharm
+.idea
+
 # Sphinx documentation
 docs/_build/
 
