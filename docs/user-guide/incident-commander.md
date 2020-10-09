@@ -139,6 +139,6 @@ This command will list all workflows associated with the current incident.
 
 ### /dispatch-run-workflow
 
-This command will run a pre-configured workflow and associate it's artifacts with the current incident.
+This command will run a pre-configured workflow and associate its artifacts with the current incident.
 
 ![](../.gitbook/assets/slack-conversation-run-workflow.png)
