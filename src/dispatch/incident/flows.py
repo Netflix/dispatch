@@ -378,7 +378,8 @@ def add_participant_to_tactical_group(user_email: str, incident_id: int, db_sess
         resource_type=INCIDENT_RESOURCE_TACTICAL_GROUP,
     )
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant-group")
-    plugin.instance.add(tactical_group.email, [user_email])
+    if plugin:
+        plugin.instance.add(tactical_group.email, [user_email])
 
 
 @background_task
