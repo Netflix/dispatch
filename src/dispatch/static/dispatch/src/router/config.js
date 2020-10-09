@@ -180,6 +180,23 @@ export const protectedRoute = [
     ]
   },
   {
+    path: "/tags/types",
+    component: DefaultLayout,
+    meta: {
+      title: "Tag Types",
+      icon: "view_compact",
+      group: "configuration",
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: "/tags/types",
+        name: "TagTypeTable",
+        component: () => import(/* webpackChunkName: "routing-table" */ "@/tag_type/Table.vue")
+      }
+    ]
+  },
+  {
     path: "/tags",
     component: DefaultLayout,
     meta: { title: "Tags", icon: "view_compact", group: "contacts", requiresAuth: true },
