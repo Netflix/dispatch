@@ -32,7 +32,7 @@ To create a new incident type navigate to: `Dispatch > Incident Types > New`
 
 In addition to incident types, Dispatch allows you to specify the incident's _priority_.
 
-To create a new incident priority navigate to: `Dispatch > Incident Priorities > New`
+To create a new incident priority, navigate to: `Dispatch > Incident Priorities > New`
 
 ![](../../.gitbook/assets/admin-ui-incident-priorities.png)
 
