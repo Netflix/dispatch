@@ -7,7 +7,7 @@ const getDefaultSelectedState = () => {
   return {
     name: null,
     source: null,
-    type: null,
+    tag_types: [],
     uri: null,
     id: null,
     description: null,
