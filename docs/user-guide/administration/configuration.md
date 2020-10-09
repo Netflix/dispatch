@@ -77,7 +77,7 @@ To create a new incident workflow navigate to: `Dispatch > Workflows > New`
 
 **Enabled:** By default, users can't invoke workflows. Activate the "Enabled" setting to allow use of the workflow.
 
-**Workflow Parameters:** Allows for custom parameters (strings only) to be presented to the user that will then be passed to the underlying workflow.
+**Workflow Parameters:** Allows for custom parameters (strings only) to be presented to and set by the user. These will then be passed to the underlying workflow.
 
 ## Users
 
