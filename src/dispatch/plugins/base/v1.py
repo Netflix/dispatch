@@ -59,7 +59,7 @@ class IPlugin(local):
     events: Any = None
 
     # Global enabled state
-    enabled: bool = True
+    enabled: bool = False
     can_disable: bool = True
     multiple: bool = False
     required: bool = False

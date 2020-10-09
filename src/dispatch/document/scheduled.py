@@ -7,7 +7,6 @@ from dispatch.decorators import background_task
 from dispatch.plugin import service as plugin_service
 from dispatch.route import service as route_service
 from dispatch.scheduler import scheduler
-from dispatch.extensions import sentry_sdk
 from dispatch.term.models import Term
 
 from .service import get_all

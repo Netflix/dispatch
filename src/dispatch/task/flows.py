@@ -123,8 +123,7 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
     else:
         task = task_service.create(
             db_session=db_session,
-            incident=incident,
-            task_in=TaskCreate(**task),
+            task_in=TaskCreate(**task, incident=incident),
         )
 
         if notify:

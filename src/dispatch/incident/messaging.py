@@ -7,6 +7,7 @@
 import logging
 
 from dispatch.config import (
+    DISPATCH_UI_URL,
     INCIDENT_NOTIFICATION_CONVERSATIONS,
     INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS,
 )
@@ -434,7 +435,7 @@ def send_incident_participant_announcement_message(
     participant_team = participant_info.get("team", "Unknown")
     participant_department = participant_info.get("department", "Unknown")
     participant_location = participant_info.get("location", "Unknown")
-    participant_weblink = participant_info.get("weblink")
+    participant_weblink = participant_info.get("weblink", DISPATCH_UI_URL)
 
     participant_active_roles = participant_role_service.get_all_active_roles(
         db_session=db_session, participant_id=participant.id

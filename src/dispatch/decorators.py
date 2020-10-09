@@ -5,7 +5,6 @@ from functools import wraps
 from typing import Any, List
 
 from dispatch.metrics import provider as metrics_provider
-from .extensions import sentry_sdk, configure_extensions
 from .database import SessionLocal
 
 

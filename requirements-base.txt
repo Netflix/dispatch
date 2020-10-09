@@ -26,7 +26,8 @@ python-jose
 python-multipart
 pytz
 requests
-uvicorn==0.11.8 # NOTE pinning due to a reliance on h11 (See #588)
+uvicorn
+h11==0.9.0 # NOTE pinning due to uvicorn
 rsa==4.0  # NOTE pinning for google-auth
 schedule
 sentry-asgi

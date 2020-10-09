@@ -231,6 +231,27 @@ The following incident task has been created in the incident document.\n\n*Descr
 INCIDENT_TASK_RESOLVED_DESCRIPTION = """
 The following incident task has been resolved in the incident document.\n\n*Description:* {{task_description}}\n\n*Assignees:* {{task_assignees|join(',')}}"""
 
+INCIDENT_WORKFLOW_CREATED_DESCRIPTION = """
+A new workflow instance has been created.
+\n\n *Creator:* {{instance_creator_name}}
+"""
+
+INCIDENT_WORKFLOW_UPDATE_DESCRIPTION = """
+This workflow's status has changed from *{{ instance_status_old }}* to *{{ instance_status_new }}*.
+\n\n*Workflow Description*: {{workflow_description}}
+\n\n *Creator:* {{instance_creator_name}}
+"""
+
+INCIDENT_WORKFLOW_COMPLETE_DESCRIPTION = """
+This workflow's status has changed from *{{ instance_status_old }}* to *{{ instance_status_new }}*.
+\n\n *Workflow Description:* {{workflow_description}}
+\n\n *Creator:* {{instance_creator_name}}
+{% if instance_artifacts %}
+\n\n *Workflow Artifacts:*
+\n\n {% for a in instance_artifacts %}- <{{a.weblink}}|{{a.name}}> \n\n{% endfor %}
+{% endif %}
+"""
+
 INCIDENT_TYPE_CHANGE_DESCRIPTION = """
 The incident type has been changed from *{{ incident_type_old }}* to *{{ incident_type_new }}*."""
 
@@ -448,6 +469,29 @@ INCIDENT_TASK_RESOLVED_NOTIFICATION = [
     }
 ]
 
+INCIDENT_WORKFLOW_CREATED_NOTIFICATION = [
+    {
+        "title": "Workflow Created - {{workflow_name}}",
+        "text": INCIDENT_WORKFLOW_CREATED_DESCRIPTION,
+    }
+]
+
+INCIDENT_WORKFLOW_UPDATE_NOTIFICATION = [
+    {
+        "title": "Workflow Status Change - {{workflow_name}}",
+        "title_link": "{{instance_weblink}}",
+        "text": INCIDENT_WORKFLOW_UPDATE_DESCRIPTION,
+    }
+]
+
+INCIDENT_WORKFLOW_COMPLETE_NOTIFICATION = [
+    {
+        "title": "Workflow Completed - {{workflow_name}}",
+        "title_link": "{{instance_weblink}}",
+        "text": INCIDENT_WORKFLOW_COMPLETE_DESCRIPTION,
+    }
+]
+
 INCIDENT_COMMANDER_READDED_NOTIFICATION = [
     {"title": "Incident Commander Re-Added", "text": INCIDENT_COMMANDER_READDED_DESCRIPTION}
 ]
@@ -484,6 +528,4 @@ def render_message_template(message_template: List[dict], **kwargs):
             d["button_value"] = Template(d["button_value"]).render(**kwargs)
 
         data.append(d)
-    print(kwargs)
-    print(data)
     return data

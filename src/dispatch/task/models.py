@@ -116,13 +116,14 @@ class TaskBase(DispatchBase):
     tickets: Optional[List[TicketRead]] = []
     weblink: Optional[str]
     incident: Optional[IncidentReadNested]
-    resource_id: str
+    resource_id: Optional[str]
 
 
 class TaskCreate(TaskBase):
     status: TaskStatus = TaskStatus.open
     assignees: List[Optional[ParticipantUpdate]] = []
     owner: Optional[ParticipantUpdate]
+    creator: Optional[ParticipantUpdate]
     resource_type: Optional[str] = INCIDENT_RESOURCE_INCIDENT_TASK
 
 

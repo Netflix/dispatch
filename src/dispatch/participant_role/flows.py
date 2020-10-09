@@ -2,11 +2,10 @@ import logging
 
 from dispatch.database import SessionLocal
 from dispatch.event import service as event_service
-from dispatch.incident.models import Incident
 from dispatch.participant import service as participant_service
 
-from .models import ParticipantRoleType, ParticipantRoleCreate
-from .service import create, get_all_active_roles, add_role, renounce_role
+from .models import ParticipantRoleType
+from .service import get_all_active_roles, add_role, renounce_role
 
 log = logging.getLogger(__name__)
 
