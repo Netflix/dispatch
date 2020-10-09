@@ -46,7 +46,8 @@ To create a new incident priority, navigate to: `Dispatch > Incident Priorities 
 
 **Executive Report Reminder:** Number of hours between reminders.
 
-**Default Incident Priority:** Marks this priority as the default if the reporter does not specify.
+**Default Incident Priority:** If the reporter of an incident does not provide an incident priority, a default will be used. Enable the setting to make this incident priority the default.
+
 
 **Page Commander:** Ensures that the incident commander is paged for all incidents with this priority (if configured paging service and plugin allows).
 
