@@ -24,18 +24,6 @@ def get_terms(db_session, text: str) -> List[str]:
     return extracted_terms
 
 
-# TODO is there a better way to deduplicate across sqlalchemy models?
-def deduplicate_resources(resources: List[dict]) -> Dict:
-    """Creates a new dict adding new resources if they are not yet seen."""
-    contact_set = {}
-    for c in resources:
-        key = f"{type(c).__name__}-{c.id}"
-        if key not in contact_set.keys():
-            contact_set[key] = c
-
-    return list(contact_set.values())
-
-
 def resource_union(resources: List[dict], inputs: int) -> Dict:
     """Ensures the an item occurs in the resources list at least n times."""
     resource_set = {}
@@ -202,7 +190,7 @@ def get(*, db_session, route_in: RouteRequest) -> Dict[Any, Any]:
         route_in.context.terms.extend(resource_matched_terms)
         resources.extend(term_resources)
 
-    resources = deduplicate_resources(resources)
+    resources = list(set(resources))
 
     # create a recommandation entry we can use to data mine at a later time
     recommendation = create_recommendation(
