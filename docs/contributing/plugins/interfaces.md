@@ -389,7 +389,7 @@ def update(
 ## Workflow
 
 {% hint style="info" %}
-This interface is not stable and will need to be refactor and/or generalized. Please file an issue for guidance if you are trying to extend workflow creation.
+This interface is not stable and will need to be refactored and/or generalized. Please file an issue for guidance if you are trying to extend workflow creation.
 {% endhint %}
 
 ```python
