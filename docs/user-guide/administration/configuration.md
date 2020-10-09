@@ -24,7 +24,7 @@ To create a new incident type navigate to: `Dispatch > Incident Types > New`
 
 **Document:** Allows you to specify an incident document template to be created and filled for this incident type. This is useful if you like to use different document templates depending on the type of incident.
 
-**Exclude From Metrics:** If for some reason you would like to exclude all incidents of this type from metrics (e.g. "Simulation" or "Test" incidents).
+**Exclude From Metrics:** Enable this setting to exclude all incidents of this type from metrics (e.g. "Simulation" or "Test" incidents).
 
 **Default Incident Type:** Check this if you would like for this incident to be the default type if the reporter does not specify.
 
