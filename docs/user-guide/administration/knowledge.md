@@ -8,7 +8,7 @@ Along with incident orchstration Dispatch is adept at building a knowledge base 
 
 ## Tags
 
-Within Dispatch tags are a flexible piece of metadata than be manually attached to incidents or automatically discovered based on incident data.
+Within Dispatch, tags are a flexible piece of metadata. They can be manually attached to incidents, or automatically discovered based on incident data.
 
 To create a new tag navigate to: `Dispatch > Tags > New`
 
