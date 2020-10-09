@@ -38,7 +38,7 @@ To create a new incident priority navigate to: `Dispatch > Incident Priorities >
 
 **Name:** The name of the incident priority presented to the user.
 
-**Description:** The incident priority description presented to the user.
+**Description:** The incident priority description presented to the user when reporting.
 
 **View Order:** The ranked order which the priority should be listed in menus and dropdowns.
 
