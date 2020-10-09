@@ -46,7 +46,7 @@ Documents are links to external sources \(Web Pages, Google Documents, etc.,\). 
 
 #### Engagement
 
-In addition to fields about the document itself, Dispatch allows you to associate the document with other Dispatch primatives. For instance if you would like a give document to be recommended for all incidents of a given priority, associate that priority with the document.
+In addition to fields about the document itself, Dispatch allows you to associate the document with other Dispatch primitives. For instance if you would like a given document to be recommended for all incidents of a given priority, associate that priority with the document.
 
 ### Incident Templates
 
