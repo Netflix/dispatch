@@ -18,7 +18,7 @@ To create a new incident type navigate to: `Dispatch > Incident Types > New`
 
 **Description:** The description of the incident type presented to the user.
 
-**Visibility:** Determines whether to send notification messages about this incident (creation and updates) and to add organization wide permission to incident resources on incident close. Defaults to 'Open'.
+**Visibility:** Determines whether to send notification messages about this incident on creation and update. On incident close, this setting will add an organization-wide permission to incident resources. Defaults to 'Open'.
 
 **Service:** Defines the oncall service to use to resolve an incident commander. The incident commander defaults to the `reporter` if no oncall service is defined.
 
