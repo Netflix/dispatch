@@ -26,7 +26,7 @@ To create a new incident type navigate to: `Dispatch > Incident Types > New`
 
 **Exclude From Metrics:** Enable this setting to exclude all incidents of this type from metrics (e.g. "Simulation" or "Test" incidents).
 
-**Default Incident Type:** Check this if you would like for this incident to be the default type if the reporter does not specify.
+**Default Incident Type:** If the reporter of an incident does not provide an incident type, a default incident type will be used. Enable this setting to make this incident type the default.
 
 ## Incident Priorities
 
