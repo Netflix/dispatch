@@ -210,8 +210,8 @@ The following conditions, actions, and needs summarize the current status of the
 ).strip()
 
 INCIDENT_NEW_ROLE_DESCRIPTION = """
-{{assigner_fullname}} has assigned the role of {{assignee_role}} to {{assignee_fullname}}.
-Please, contact {{assignee_firstname}} about any questions or concerns.""".replace(
+{{assigner_fullname if assigner_fullname else assigner_email}} has assigned the role of {{assignee_role}} to {{assignee_fullname if assignee_fullname else assignee_email}}.
+Please, contact {{assignee_fullname if assignee_fullname else assignee_email}} about any questions or concerns.""".replace(
     "\n", " "
 ).strip()
 
@@ -447,7 +447,7 @@ INCIDENT_TASK_REMINDER = [
 
 INCIDENT_NEW_ROLE_NOTIFICATION = [
     {
-        "title": "New {{assignee_role}} - {{assignee_fullname}}",
+        "title": "New {{assignee_role}} - {{assignee_fullname if assignee_fullname else assignee_email}}",
         "title_link": "{{assignee_weblink}}",
         "text": INCIDENT_NEW_ROLE_DESCRIPTION,
     }

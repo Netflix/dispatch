@@ -892,12 +892,6 @@ def incident_assign_role_flow(
     assigner_email: str, incident_id: int, assignee_email: str, assignee_role: str, db_session=None
 ):
     """Runs the incident participant role assignment flow."""
-    # we resolve the assigner and assignee's contact information
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
-
-    assigner_contact_info = plugin.instance.get(assigner_email)
-    assignee_contact_info = plugin.instance.get(assignee_email)
-
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
@@ -914,7 +908,7 @@ def incident_assign_role_flow(
 
     # we run the participant assign role flow
     result = participant_role_flows.assign_role_flow(
-        incident.id, assignee_contact_info, assignee_role, db_session
+        incident.id, assignee_email, assignee_role, db_session
     )
 
     if result == "assignee_has_role":
@@ -934,6 +928,24 @@ def incident_assign_role_flow(
         return
 
     if assignee_role != ParticipantRoleType.participant:
+        # we resolve the assigner and assignee's contact information
+        plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
+
+        if plugin:
+            assigner_contact_info = plugin.instance.get(assigner_email, db_session=db_session)
+            assignee_contact_info = plugin.instance.get(assignee_email, db_session=db_session)
+        else:
+            assigner_contact_info = {
+                "email": assigner_email,
+                "fullname": "Unknown",
+                "weblink": None,
+            }
+            assignee_contact_info = {
+                "email": assignee_email,
+                "fullname": "Unknown",
+                "weblink": None,
+            }
+
         # we send a notification to the incident conversation
         send_incident_new_role_assigned_notification(
             assigner_contact_info, assignee_contact_info, assignee_role, incident, db_session
