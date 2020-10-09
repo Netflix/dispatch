@@ -40,7 +40,7 @@ To create a new team contact navigate to: `Dispatch > Teams > New`
 
 #### Engagement
 
-In addition to fields about the team, Dispatch allows you to associate a team with other Dispatch primatives. For instance, if you would like to involve an entire team for all incidents of a given priority, associate that priority with the team.
+In addition to fields about the team, Dispatch allows you to associate a team with other Dispatch primitives. For instance, if you would like to involve an entire team for all incidents of a given priority, associate that priority with the team.
 
 ## Service
 
