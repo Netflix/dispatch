@@ -5,9 +5,9 @@ from sqlalchemy import func
 
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.incident_priority import service as incident_priority_service
-from dispatch.incident_priority.models import IncidentPriority
+from dispatch.incident_priority.models import IncidentPriority, IncidentPriorityBase
 from dispatch.incident_type import service as incident_type_service
-from dispatch.incident_type.models import IncidentType
+from dispatch.incident_type.models import IncidentType, IncidentTypeBase
 from dispatch.term.models import Term
 
 from .models import Recommendation, RecommendationAccuracy, RouteRequest, ContextBase
@@ -43,11 +43,11 @@ def resource_union(resources: List[dict], inputs: int) -> Dict:
     return unions
 
 
-def get_resources_from_incident_types(db_session, incident_types: List[str]) -> list:
+def get_resources_from_incident_types(db_session, incident_types: List[IncidentTypeBase]) -> list:
     """Get all resources related to a specific incident type."""
-    incident_types = [i.name for i in incident_types]
+    incident_type_names = [i.name for i in incident_types]
     incident_type_models = (
-        db_session.query(IncidentType).filter(IncidentType.name.in_(incident_types)).all()
+        db_session.query(IncidentType).filter(IncidentType.name.in_(incident_type_names)).all()
     )
 
     resources = []
@@ -60,12 +60,12 @@ def get_resources_from_incident_types(db_session, incident_types: List[str]) -> 
     return resources
 
 
-def get_resources_from_priorities(db_session, incident_priorities: List[str]) -> list:
+def get_resources_from_priorities(db_session, incident_priorities: List[IncidentPriorityBase]) -> list:
     """Get all resources related to a specific priority."""
-    incident_priorities = [i.name for i in incident_priorities]
+    incident_priority_names = [i.name for i in incident_priorities]
     incident_priority_models = (
         db_session.query(IncidentPriority)
-        .filter(IncidentPriority.name.in_(incident_priorities))
+        .filter(IncidentPriority.name.in_(incident_priority_names))
         .all()
     )
 
