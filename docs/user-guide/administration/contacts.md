@@ -62,4 +62,4 @@ To create a new oncall service navigate to: `Dispatch > Services > New`
 
 #### Engagement
 
-In addition to fields about the service, Dispatch allows you to associate the service with other Dispatch primatives. For instance, if you would like to involve a service for all incidents of a given priority, associate that priority with the service.
+In addition to fields about the service, Dispatch allows you to associate the service with other Dispatch primitives. For instance, if you would like to involve a service for all incidents of a given priority, associate that priority with the service.
