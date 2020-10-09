@@ -75,7 +75,7 @@ To create a new incident workflow navigate to: `Dispatch > Workflows > New`
 
 **Plugin:** The plugin to use to resolve and execute this workflow. NOTE: This plugin must be enabled and installed before being associated with workflow.
 
-**Enabled:** When disabled the workflow will not be selectabled by users.
+**Enabled:** By default, users can't invoke workflows. Activate the "Enabled" setting to allow use of the workflow.
 
 **Workflow Parameters:** Allows for custom parameters (strings only) to be presented to the user that will then be passed to the underlying workflow.
 
