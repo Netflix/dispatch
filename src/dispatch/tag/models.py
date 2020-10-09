@@ -28,10 +28,10 @@ class Tag(Base, TimeStampMixin):
 # Pydantic models
 class TagBase(DispatchBase):
     name: str
-    source: Optional[str] = "dispatch"
+    source: Optional[str]
     uri: Optional[str]
     discoverable: Optional[bool] = True
-    description: Optional[str] = "Generic user tag"
+    description: Optional[str]
 
 
 class TagCreate(TagBase):

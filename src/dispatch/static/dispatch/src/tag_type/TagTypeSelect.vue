@@ -42,7 +42,7 @@ export default {
   },
 
   computed: {
-    incident_type: {
+    tag_type: {
       get() {
         return cloneDeep(this.value)
       },

@@ -44,7 +44,7 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <tag-type-select v-model="tag_types" />
+                <tag-type-select v-model="tag_type" />
               </v-flex>
               <v-flex xs12>
                 <ValidationProvider name="source" immediate>
@@ -128,7 +128,7 @@ export default {
     ...mapFields("tag", [
       "selected.name",
       "selected.id",
-      "selected.tag_types",
+      "selected.tag_type",
       "selected.uri",
       "selected.description",
       "selected.source",
