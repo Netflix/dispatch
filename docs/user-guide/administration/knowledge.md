@@ -85,7 +85,7 @@ NOTE: All variables must be enclosed in a `{{}}`.
 
 Terms are words or phrases that may not have any meaning to an outside observer but have deep organizational meaning, things like acronyms or phrases.
 
-Terms are also used for explicit association of incidents. For instance take the term "PCI" this has a deep organizational meaning, and thus is a term that should be tracked. More over, it's important enough the Teams, and Individuals may want to be pulled into any incident that contains this key term.
+Terms are also used for explicit association of incidents. For instance take the term "PCI," usually referring to the Payment Card Industry security standard, or efforts to comply with this standard. The term has a deep organizational meaning, and thus is a term that should be tracked. Moreover, it's important enough that certain Teams, and Individuals, may want to be pulled into any incident that contains this key term.
 
 Any defined term and be associated to Teams, Services, or Individuals for incident inclusion.
 
