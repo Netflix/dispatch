@@ -12,8 +12,15 @@ class TestOncallPlugin(OncallPlugin):
     slug = "test-oncall"
     description = "Oncall plugin for testing purposes"
 
-    def get(self, **kwargs):
+    def get(self, service_id: str, **kwargs):
         return "johnsmith@example.com"
 
-    def page(self, **kwargs):
+    def page(
+        self,
+        service_id: str,
+        incident_name: str,
+        incident_title: str,
+        incident_description: str,
+        **kwargs,
+    ):
         return
