@@ -53,7 +53,7 @@ To create a new incident priority, navigate to: `Dispatch > Incident Priorities 
 
 ## Plugins
 
-Much of Dispatch's functionality comes from its plugins. The plugin's configuration UI is limited to enabling and disabling plugins. By default, no plugins are _required_ in order to create an incident. As you enable plugins, they will be additive to the incident process (e.g. creating slack channels, google docs etc.)
+Much of Dispatch's functionality comes from its plugins. The configuration UI is limited to enabling and disabling plugins. By default, no plugins are _required_ in order to create an incident. As you enable plugins, they will be additive to the incident process (e.g. creating slack channels, google docs etc.)
 
 ![](../../.gitbook/assets/admin-ui-incident-plugins.png)
 
