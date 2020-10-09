@@ -18,7 +18,7 @@ To create a new tag navigate to: `Dispatch > Tags > New`
 
 **Description:** A short description of the tag (if applicable).
 
-**Type:** The _type_ of the tag. This is useful to disambiguate tags. These are defined either by a plugin syncing tags from external sources (e.g. application names) or are user defineable.
+**Type:** The _type_ of the tag. This is useful to disambiguate tags. These are defined either by a plugin syncing tags from external sources (e.g. application names) or are user definable.
 
 **Source:** Where the tag originated, for tags created via the UI, dispatch is the default source.
 
