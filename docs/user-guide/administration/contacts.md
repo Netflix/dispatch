@@ -22,7 +22,7 @@ To create a new individual contact navigate to: `Dispatch > Individuals > New`
 
 #### Engagement
 
-In addition to fields about the individual, Dispatch allows you to associate the individual with other Dispatch primatives. For instance, if you would like to involve an individual for all incidents of a given priority, associate that priority with the individual.
+In addition to fields about the individual, Dispatch allows you to associate the individual with other Dispatch primitives. For instance, if you would like to involve an individual for all incidents of a given priority, associate that priority with the individual.
 
 ## Team
 
