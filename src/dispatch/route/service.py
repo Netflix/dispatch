@@ -24,43 +24,21 @@ def get_terms(db_session, text: str) -> List[str]:
     return extracted_terms
 
 
-def resource_union(resources: List[dict], inputs: int) -> Dict:
-    """Ensures the an item occurs in the resources list at least n times."""
-    resource_set = {}
-    for c in resources:
-        key = f"{type(c).__name__}-{c.id}"
-        if key not in resource_set.keys():
-            resource_set[key] = (1, c)
-        else:
-            count, obj = resource_set[key]
-            resource_set[key] = (count + 1, obj)
-
-    unions = []
-    for key, value in resource_set.items():
-        count, obj = value
-        if count >= inputs:
-            unions.append(obj)
-    return unions
-
-
-def get_resources_from_incident_types(db_session, incident_types: List[IncidentTypeBase]) -> list:
+def get_resources_from_incident_types(db_session, incident_types: List[IncidentTypeBase]) -> set:
     """Get all resources related to a specific incident type."""
     incident_type_names = [i.name for i in incident_types]
     incident_type_models = (
         db_session.query(IncidentType).filter(IncidentType.name.in_(incident_type_names)).all()
     )
 
-    resources = []
-    for i in incident_type_models:
-        resources += i.teams
-        resources += i.individuals
-        resources += i.services
-        resources += i.documents
-
-    return resources
+    return {
+        resource
+        for i in incident_type_models
+        for resource in i.teams + i.individuals + i.services + i.documents
+    }
 
 
-def get_resources_from_priorities(db_session, incident_priorities: List[IncidentPriorityBase]) -> list:
+def get_resources_from_priorities(db_session, incident_priorities: List[IncidentPriorityBase]) -> set:
     """Get all resources related to a specific priority."""
     incident_priority_names = [i.name for i in incident_priorities]
     incident_priority_models = (
@@ -69,43 +47,28 @@ def get_resources_from_priorities(db_session, incident_priorities: List[Incident
         .all()
     )
 
-    resources = []
-    for i in incident_priority_models:
-        resources += i.teams
-        resources += i.individuals
-        resources += i.services
-        resources += i.documents
-
-    return resources
+    return {
+        resource
+        for i in incident_priority_models
+        for resource in i.teams + i.individuals + i.services + i.documents
+    }
 
 
-def get_resources_from_context(db_session, context: ContextBase):
+def get_resources_from_context(db_session, context: ContextBase) -> set:
     """Fetch relevent resources based on context only."""
-    resources = []
-    if context.incident_types:
-        resources += get_resources_from_incident_types(
-            db_session, incident_types=context.incident_types
-        )
+    incident_types_resources = (
+        get_resources_from_incident_types(db_session, incident_types=context.incident_types)
+        if context.incident_types else set()
+    )
 
-    if context.incident_priorities:
-        resources += get_resources_from_priorities(
-            db_session, incident_priorities=context.incident_priorities
-        )
+    priorities_resources = (
+        get_resources_from_priorities(db_session, incident_priorities=context.incident_priorities)
+        if context.incident_priorities else set()
+    )
 
-    inputs = 0
-    if context.incident_priorities:
-        inputs += 1
+    _, term_resources = get_resources_from_terms(db_session, terms=context.terms) if context.terms else (None, set())
 
-    if context.incident_types:
-        inputs += 1
-
-    resources = resource_union(resources, inputs)
-
-    if context.terms:
-        _, term_resources = get_resources_from_terms(db_session, terms=context.terms)
-        resources += term_resources
-
-    return resources
+    return (incident_types_resources & priorities_resources) | term_resources
 
 
 def get_resources_from_terms(db_session, terms: List[str]):
@@ -118,12 +81,11 @@ def get_resources_from_terms(db_session, terms: List[str]):
     )
 
     # find resources associated with those terms
-    resources = []
-    for t in matched_terms:
-        resources += t.teams
-        resources += t.individuals
-        resources += t.services
-        resources += t.documents
+    resources = {
+        resource
+        for t in matched_terms
+        for resource in t.teams + t.individuals + t.services + t.documents
+    }
 
     return matched_terms, resources
 
