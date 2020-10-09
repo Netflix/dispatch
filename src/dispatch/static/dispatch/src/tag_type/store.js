@@ -93,11 +93,7 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit(
-            "app/SET_SNACKBAR",
-            { text: "Tag type updated successfully." },
-            { root: true }
-          )
+          commit("app/SET_SNACKBAR", { text: "Tag type updated successfully." }, { root: true })
         })
         .catch(err => {
           commit(
