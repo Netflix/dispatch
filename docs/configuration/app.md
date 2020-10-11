@@ -14,7 +14,7 @@ Dispatch uses the same configuration system as [Starlette](https://www.starlette
 By default, the config will be read from environment variables and/or `.env` files.
 
 {% hint style="info" %}
-All config items prefixed with `VUE_APP` are envvars for the Vue frontend. These variables are used only during the building of the javascript bundle. See [here](https://cli.vuejs.org/guide/mode-and-env.html) for details.
+All config items prefixed with `VUE_APP` are envvars for the Vue frontend. These variables are used only during the building of the javascript bundle. See [here](https://cli.vuejs.org/guide/mode-and-env.html) for details. You will want to include these variables in `src/dispatch/static/dispatch/.env` during build time.
 {% endhint %}
 
 {% hint style="info" %}
@@ -109,15 +109,27 @@ In order for this plugin to work, you need to set `DISPATCH_JWT_SECRET`.
 
 #### Configuration for `dispatch-auth-provider-pkce`
 
+{% hint style="warning" %}
+In order for this plugin to work with your OIDC setup, you may need to set 
+`DISPATCH_JWT_AUDIENCE` and `DISPATCH_PKCE_DONT_VERIFY_AT_HASH`. 
+{% endhint %}
+
 #### `DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWK` \['default': true\]
 
-> Used by Dispatch's authentication backend to pull the JSON Web Key Set \(JWKS\) public key from the specified provider.
+> Used by Dispatch's authentication backend to pull the JSON Web Key Set \(JWKS\) public key from the specified provider. 
+> This will likely be the `jwks_uri` URL from your OIDC provider.
 
-#### `VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT`
+#### `DISPATCH_PKCE_DONT_VERIFY_AT_HASH` \['default': false\]
 
-> Used by the Dispatch Web UI send the user via Proof Key Code Exchange \(PKCE\) to a correct OpenID Connect endpoint.
+> Depending on what values your OIDC provider sends, you may need to set this to `true` for the Dispatch backend
+> to be able to decode the JWT token.
 
-#### `VUE_APP_DISPATCH_AUTHENTICATOIN_PROVIDER_PKCE_CLIENT_ID`
+#### `VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL`
+
+> The well-known configuration URL for your OIDC provider, without a trailing slash. Used by the Dispatch 
+> Web UI to authenticate a user via Proof Key Code Exchange \(PKCE\).
+
+#### `VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID`
 
 > The client id to send to the OpenID Connect endpoint.
 
