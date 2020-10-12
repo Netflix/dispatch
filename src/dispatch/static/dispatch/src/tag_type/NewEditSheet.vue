@@ -6,7 +6,7 @@
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
             <v-list-item-title v-else class="title">New</v-list-item-title>
-            <v-list-item-subtitle>Tag</v-list-item-subtitle>
+            <v-list-item-subtitle>Tag Type</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
             icon
@@ -30,70 +30,32 @@
                 <span class="subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="name" rules="required" immediate>
+                <ValidationProvider name="Name" rules="required" immediate>
                   <v-text-field
                     v-model="name"
                     slot-scope="{ errors, valid }"
                     :error-messages="errors"
                     :success="valid"
                     label="Name"
-                    hint="A name for your tag."
+                    hint="A name for your tag type."
                     clearable
                     required
                   />
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <tag-type-select v-model="tag_type" />
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="source" immediate>
-                  <v-text-field
-                    v-model="source"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Source"
-                    hint="Tag's source."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="uri" immediate>
-                  <v-text-field
-                    v-model="uri"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="URI"
-                    hint="Tag's URI."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="description" immediate>
+                <ValidationProvider name="Description" rules="required" immediate>
                   <v-textarea
                     v-model="description"
                     slot-scope="{ errors, valid }"
                     label="Description"
                     :error-messages="errors"
                     :success="valid"
-                    hint="The tag's description."
+                    hint="A description for your tag type."
                     clearable
                     required
                   />
                 </ValidationProvider>
-              </v-flex>
-              <v-flex>
-                <v-checkbox
-                  v-model="discoverable"
-                  label="Discoverable"
-                  hint="Is this tag a common word or is it eligible for auto-detection?"
-                ></v-checkbox>
               </v-flex>
             </v-layout>
           </v-container>
@@ -108,38 +70,35 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
-import TagTypeSelect from "@/tag_type/TagTypeSelect.vue"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required."
 })
 
 export default {
-  name: "TagNewEditSheet",
+  name: "TagTypeNewEditSheet",
 
   components: {
     ValidationObserver,
-    ValidationProvider,
-    TagTypeSelect
+    ValidationProvider
   },
 
   computed: {
-    ...mapFields("tag", [
-      "selected.name",
+    ...mapFields("tag_type", [
+      "dialogs.showCreateEdit",
       "selected.id",
-      "selected.tag_type",
-      "selected.uri",
+      "selected.name",
       "selected.description",
-      "selected.source",
-      "selected.discoverable",
-      "selected.loading",
-      "dialogs.showCreateEdit"
-    ])
+      "selected.loading"
+    ]),
+    ...mapFields("tag_type", {
+      default_tag_type: "selected.default"
+    })
   },
 
   methods: {
-    ...mapActions("tag", ["save", "closeCreateEdit"])
+    ...mapActions("tag_type", ["save", "closeCreateEdit"])
   }
 }
 </script>

@@ -1,8 +1,7 @@
 <template>
   <v-layout wrap>
     <new-edit-sheet />
-    <delete-dialog />
-    <div class="headline">Tags</div>
+    <div class="headline">Tag Types</div>
     <v-spacer />
     <v-btn color="primary" dark class="mb-2" @click="createEditShow()">New</v-btn>
     <v-flex xs12>
@@ -30,12 +29,6 @@
               :loading="loading"
               loading-text="Loading... Please wait"
             >
-              <template v-slot:item.discoverable="{ item }">
-                <v-simple-checkbox v-model="item.discoverable" disabled></v-simple-checkbox>
-              </template>
-              <template v-slot:item.tag_type="{ item }">
-                {{ item.tag_type.name }}
-              </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
                   <template v-slot:activator="{ on }">
@@ -46,9 +39,6 @@
                   <v-list>
                     <v-list-item @click="createEditShow(item)">
                       <v-list-item-title>Edit</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="removeShow(item)">
-                      <v-list-item-title>Delete</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>
@@ -64,30 +54,25 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import DeleteDialog from "@/tag/DeleteDialog.vue"
-import NewEditSheet from "@/tag/NewEditSheet.vue"
+import NewEditSheet from "@/tag_type/NewEditSheet.vue"
 export default {
-  name: "TagTable",
+  name: "TagTypeTable",
 
   components: {
-    DeleteDialog,
     NewEditSheet
   },
   data() {
     return {
       headers: [
         { text: "Name", value: "name", sortable: true },
-        { text: "Description", value: "description", sortable: true },
-        { text: "Type", value: "tag_type", sortable: true },
-        { text: "Source", value: "source", sortable: true },
-        { text: "Discoverable", value: "discoverable", sortable: true },
+        { text: "Description", value: "description", sortable: false },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
     }
   },
 
   computed: {
-    ...mapFields("tag", [
+    ...mapFields("tag_type", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
@@ -119,7 +104,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("tag", ["getAll", "createEditShow", "removeShow"])
+    ...mapActions("tag_type", ["getAll", "createEditShow", "removeShow"])
   }
 }
 </script>

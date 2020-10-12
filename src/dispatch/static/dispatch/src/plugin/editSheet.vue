@@ -28,7 +28,12 @@
               <v-text-field v-model="slug" disabled label="Slug" hint="A slug for your plugin." />
             </v-flex>
             <v-flex xs12>
-              <v-text-field v-model="type" disabled label="Type" hint="Type for your plugin." />
+              <v-text-field
+                v-model="type"
+                disabled
+                label="Plugin"
+                hint="Plugin that will help with resolution."
+              />
             </v-flex>
             <v-flex xs12>
               <v-textarea

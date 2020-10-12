@@ -356,7 +356,7 @@ def get(self, **kwargs):
 ## Ticket
 
 {% hint style="info" %}
-This interface is not stable and will need to be refactor and/or generalized. Please file an issue for guidance if you are trying to extent ticket creation.
+This interface is not stable and will need to be refactored and/or generalized. Please file an issue for guidance if you are trying to extend ticket creation.
 {% endhint %}
 
 ```python
@@ -386,3 +386,23 @@ def update(
     return
 ```
 
+## Workflow
+
+{% hint style="info" %}
+This interface is not stable and will need to be refactored and/or generalized. Please file an issue for guidance if you are trying to extend workflow creation.
+{% endhint %}
+
+```python
+def get_instance(
+        self, workflow_id: str, instance_id: str, **kwargs)
+    ):
+    """Fetches an individual workflow instance."""
+    return
+
+def run(
+    self,
+    workflow_id: str, params: dict, **kwargs):
+):
+    """Runs the given workflow"""
+    return
+```

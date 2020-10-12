@@ -38,23 +38,23 @@ const Menu = [
   },*/
   { header: "Contacts" },
   {
-    title: "Individual",
+    title: "Individuals",
     group: "contacts",
+    name: "Individuals",
     icon: "person",
-    href: "/individuals",
-    name: "Individual"
+    href: "/individuals"
   },
   {
-    title: "Team",
+    title: "Teams",
     group: "contacts",
-    name: "Team",
+    name: "Teams",
     icon: "people",
     href: "/teams"
   },
   {
-    title: "Service",
+    title: "Services",
     group: "contacts",
-    name: "Service",
+    name: "Services",
     icon: "room_service",
     href: "/services"
   },
@@ -64,7 +64,7 @@ const Menu = [
     group: "contacts",
     name: "Tags",
     icon: "label",
-    href: "/Tags"
+    href: "/tags"
   },
   {
     title: "Documents",
@@ -89,18 +89,18 @@ const Menu = [
   },
   { header: "Configuration" },
   {
-    title: "Incident Types",
-    group: "Configuration",
-    name: "Incident Types",
-    icon: "settings",
-    href: "/incidents/types"
-  },
-  {
     title: "Incident Priorities",
     group: "Configuration",
     name: "Incident Priorities",
     icon: "report",
     href: "/incidents/priorities"
+  },
+  {
+    title: "Incident Types",
+    group: "Configuration",
+    name: "Incident Types",
+    icon: "settings",
+    href: "/incidents/types"
   },
   {
     title: "Plugins",
@@ -110,11 +110,11 @@ const Menu = [
     href: "/plugins"
   },
   {
-    title: "Workflows",
-    group: "workflows",
-    component: "Workflows",
-    icon: "work",
-    href: "/workflows"
+    title: "Tag Types",
+    group: "Configuration",
+    name: "Tag Types",
+    icon: "label",
+    href: "/tags/types"
   },
   {
     title: "Users",
@@ -122,6 +122,13 @@ const Menu = [
     name: "Users",
     icon: "account_box",
     href: "/users"
+  },
+  {
+    title: "Workflows",
+    group: "workflows",
+    component: "Workflows",
+    icon: "work",
+    href: "/workflows"
   }
 ]
 // reorder menu
