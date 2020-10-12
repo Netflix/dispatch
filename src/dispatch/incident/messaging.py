@@ -598,8 +598,9 @@ def send_incident_new_role_assigned_notification(
         INCIDENT_NEW_ROLE_NOTIFICATION,
         notification_type,
         assigner_fullname=assigner_contact_info["fullname"],
+        assigner_email=assigner_contact_info["email"],
         assignee_fullname=assignee_contact_info["fullname"],
-        assignee_firstname=assignee_contact_info["fullname"].split(" ")[0],
+        assignee_email=assignee_contact_info["email"],
         assignee_weblink=assignee_contact_info["weblink"],
         assignee_role=assignee_role,
     )

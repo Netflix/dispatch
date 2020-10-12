@@ -20,7 +20,7 @@ oauth2client
 pandas
 psycopg2-binary
 pyparsing
-pypd  # pagerduty plugin
+pdpyras
 python-dateutil
 python-jose
 python-multipart
