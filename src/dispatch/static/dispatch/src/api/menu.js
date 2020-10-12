@@ -38,23 +38,23 @@ const Menu = [
   },*/
   { header: "Contacts" },
   {
-    title: "Individual",
+    title: "Individuals",
     group: "contacts",
-    name: "Individual",
+    name: "Individuals",
     icon: "person",
     href: "/individuals"
   },
   {
-    title: "Team",
+    title: "Teams",
     group: "contacts",
-    name: "Team",
+    name: "Teams",
     icon: "people",
     href: "/teams"
   },
   {
-    title: "Service",
+    title: "Services",
     group: "contacts",
-    name: "Service",
+    name: "Services",
     icon: "room_service",
     href: "/services"
   },

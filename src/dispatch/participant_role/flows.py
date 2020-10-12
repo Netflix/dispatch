@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 
 def assign_role_flow(
-    incident_id: int, assignee_contact_info: dict, assignee_role: str, db_session: SessionLocal
+    incident_id: int, assignee_email: str, assignee_role: str, db_session: SessionLocal
 ):
     """Attempts to assign a role to a participant.
 
@@ -29,7 +29,7 @@ def assign_role_flow(
 
     # we get the participant for the assignee
     assignee_participant = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=incident_id, email=assignee_contact_info["email"]
+        db_session=db_session, incident_id=incident_id, email=assignee_email
     )
 
     if participant_with_assignee_role is assignee_participant:
@@ -81,14 +81,12 @@ def assign_role_flow(
         event_service.log(
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"{assignee_contact_info['fullname']} has been assigned the role of {assignee_role}",
+            description=f"{assignee_email} has been assigned the role of {assignee_role}",
             incident_id=incident_id,
         )
 
         return "role_assigned"
 
-    log.debug(
-        f"We were not able to assign the {assignee_role} role to {assignee_contact_info['fullname']}."
-    )
+    log.debug(f"We were not able to assign the {assignee_role} role to {assignee_email}.")
 
     return "role_not_assigned"
