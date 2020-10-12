@@ -1,20 +1,14 @@
-import TagApi from "@/tag/api"
+import TagTypeApi from "@/tag_type/api"
 
 import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 
 const getDefaultSelectedState = () => {
   return {
-    name: null,
-    source: "dispatch",
-    tag_type: null,
-    uri: null,
     id: null,
-    description: "Generic tag",
-    created_at: null,
-    discoverable: null,
-    updated_at: null,
-    loading: false
+    name: null,
+    description: null,
+    default: false
   }
 }
 
@@ -36,7 +30,7 @@ const state = {
       page: 1,
       itemsPerPage: 10,
       sortBy: ["name"],
-      descending: [false]
+      descending: [true]
     },
     loading: false
   }
@@ -49,7 +43,7 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", true)
-    return TagApi.getAll(state.table.options)
+    return TagTypeApi.getAll(state.table.options)
       .then(response => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
@@ -58,15 +52,15 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 200),
-  createEditShow({ commit }, Tag) {
+  createEditShow({ commit }, tagType) {
     commit("SET_DIALOG_CREATE_EDIT", true)
-    if (Tag) {
-      commit("SET_SELECTED", Tag)
+    if (tagType) {
+      commit("SET_SELECTED", tagType)
     }
   },
-  removeShow({ commit }, Tag) {
+  removeShow({ commit }, tagType) {
     commit("SET_DIALOG_DELETE", true)
-    commit("SET_SELECTED", Tag)
+    commit("SET_SELECTED", tagType)
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
@@ -76,36 +70,36 @@ const actions = {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
   },
-  save({ commit, dispatch }) {
+  save({ commit, state, dispatch }) {
     if (!state.selected.id) {
-      return TagApi.create(state.selected)
+      return TagTypeApi.create(state.selected)
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Tag created successfully." }, { root: true })
+          commit("app/SET_SNACKBAR", { text: "Tag type created successfully." }, { root: true })
         })
         .catch(err => {
           commit(
             "app/SET_SNACKBAR",
             {
-              text: "Tag not created. Reason: " + err.response.data.detail,
+              text: "Tag type not created. Reason: " + err.response.data.detail,
               color: "red"
             },
             { root: true }
           )
         })
     } else {
-      return TagApi.update(state.selected.id, state.selected)
+      return TagTypeApi.update(state.selected.id, state.selected)
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Tag updated successfully." }, { root: true })
+          commit("app/SET_SNACKBAR", { text: "Tag type updated successfully." }, { root: true })
         })
         .catch(err => {
           commit(
             "app/SET_SNACKBAR",
             {
-              text: "Tag not updated. Reason: " + err.response.data.detail,
+              text: "Tag type not updated. Reason: " + err.response.data.detail,
               color: "red"
             },
             { root: true }
@@ -114,17 +108,17 @@ const actions = {
     }
   },
   remove({ commit, dispatch }) {
-    return TagApi.delete(state.selected.id)
+    return TagTypeApi.delete(state.selected.id)
       .then(function() {
         dispatch("closeRemove")
         dispatch("getAll")
-        commit("app/SET_SNACKBAR", { text: "Tag deleted successfully." }, { root: true })
+        commit("app/SET_SNACKBAR", { text: "Tag type deleted successfully." }, { root: true })
       })
       .catch(err => {
         commit(
           "app/SET_SNACKBAR",
           {
-            text: "Tag not deleted. Reason: " + err.response.data.detail,
+            text: "Tag type not deleted. Reason: " + err.response.data.detail,
             color: "red"
           },
           { root: true }
