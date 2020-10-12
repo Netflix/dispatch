@@ -35,7 +35,7 @@ class TagBase(DispatchBase):
 
 
 class TagCreate(TagBase):
-    tag_type: TagTypeCreate
+    tag_type: Optional[TagTypeCreate]
 
 
 class TagUpdate(TagBase):
