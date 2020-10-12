@@ -113,7 +113,7 @@ const Menu = [
     title: "Tag Types",
     group: "Configuration",
     name: "Tag Types",
-    icon: "settings",
+    icon: "label",
     href: "/tags/types"
   },
   {
