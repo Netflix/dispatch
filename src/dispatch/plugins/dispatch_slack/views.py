@@ -183,7 +183,10 @@ async def handle_command(
         )
 
         # We get the name of conversation where the command was run
-        conversation_name = command_details.get("channel_name")
+        conversation_id = command_details.get("channel_id")
+        conversation_name = await dispatch_slack_service.get_conversation_name_by_id_async(
+            slack_async_client, conversation_id
+        )
 
         if conversation_name not in public_conversations + private_conversations:
             # We let the user know in which public conversations they can run the command
