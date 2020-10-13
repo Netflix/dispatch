@@ -88,9 +88,11 @@ def time_pagination(data_key):
 
 # NOTE I don't like this but slack client is annoying (kglisson)
 SLACK_GET_ENDPOINTS = [
-    "users.lookupByEmail",
-    "users.info",
     "conversations.history",
+    "conversations.info",
+    "users.conversations",
+    "users.info",
+    "users.lookupByEmail",
     "users.profile.get",
 ]
 
@@ -210,12 +212,20 @@ def get_user_avatar_url(client: Any, email: str):
 async def get_conversations_by_user_id_async(client: Any, user_id: str):
     """Gets the list of public and private conversations a user is a member of."""
     result = await make_call_async(
-        client, "users.conversations", user=user_id, types="public_channel", exclude_archived=True,
+        client,
+        "users.conversations",
+        user=user_id,
+        types="public_channel",
+        exclude_archived="true",
     )
     public_conversations = [c["name"] for c in result["channels"]]
 
     result = await make_call_async(
-        client, "users.conversations", user=user_id, types="private_channel", exclude_archived=True,
+        client,
+        "users.conversations",
+        user=user_id,
+        types="private_channel",
+        exclude_archived="true",
     )
     private_conversations = [c["name"] for c in result["channels"]]
 
@@ -228,6 +238,13 @@ def get_conversation_by_name(client: Any, name: str):
     for c in list_conversations(client):
         if c["name"] == name:
             return c
+
+
+async def get_conversation_name_by_id_async(client: Any, conversation_id: str):
+    """Fetches a conversation by id and returns its name."""
+    return (await make_call_async(client, "conversations.info", channel=conversation_id))[
+        "channel"
+    ]["name"]
 
 
 def set_conversation_topic(client: Any, conversation_id: str, topic: str):
