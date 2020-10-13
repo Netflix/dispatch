@@ -2,11 +2,14 @@
 description: Configuration page for all G Suite plugins.
 ---
 
-# Configuring G Suite
+# Configuring G Suite Integration
 
 {% hint style="info" %}
-Dispatch ships with several G Suite plugins \(Docs, Groups, Drive, etc.,\). This page documents the available configuration for these plugins and the permissions required to enable them. These plugins are required for core functionality.
+Dispatch ships with several G Suite plugins \(Docs, Groups, Drive, etc.,\). This page documents the available configuration
+for these plugins and the permissions required to enable them. These plugins are required for core functionality.
 {% endhint %}
+
+## Dispatch Configuration Variables
 
 ### `GOOGLE_DOMAIN` \[Required\]
 
@@ -18,49 +21,55 @@ Dispatch ships with several G Suite plugins \(Docs, Groups, Drive, etc.,\). This
 
 ### `GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL` \[Required\]
 
-> Client email for the Google Cloud Platform \(GCP\) service account.
+> The `client_email` value from your Google Cloud Platform \(GCP\) service account configuration file.
 
 ### `GOOGLE_SERVICE_ACCOUNT_CLIENT_ID` \[Required\]
 
-> Client ID for the Google Cloud Platform \(GCP\) service account.
+> The `client_id` value from your Google Cloud Platform \(GCP\) service account configuration file.
 
 ### `GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT` \[Required\]
 
 > Account to delegate to from the Google Cloud Platform \(GCP\) service account.
+> Outgoing emails and other artifacts will appear to be from this account.
 
 ### `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` \[Required. Secret: True\]
 
-> Private key \(PEM format\) for the Google Cloud Platform \(GCP\) service account.
+> The `private_key` value from your Google Cloud Platform \(GCP\) service account configuration file.
 
 ### `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID` \[Required\]
 
-> Private key ID for the Google Cloud Platform \(GCP\) service account.
+> The `private_key_id` value from your Google Cloud Platform \(GCP\) service account configuration file.
 
 ### `GOOGLE_SERVICE_ACCOUNT_PROJECT_ID` \[Required\]
 
-> Project ID for the Google Cloud Platform \(GCP\) service account.
+> The `project_id` value from your Google Cloud Platform \(GCP\) service account configuration file.
 
 ### `GOOGLE_USER_OVERRIDE` \[Optional. Default: None\]
 
 > Used for development to funnel all emails to a specific user.
 
-## Enable Required APIs
+## G Suite Setup
 
-This is meant to provide guidance on enabling Dispatch's G Suite plugins, your organization may differ slightly.
+To set up G Suite integration, you'll need to create some resources in Google Cloud Platform, and then link them to your
+G Suite organization.
 
-Navigate to the Google Cloud Platform \(GCP\) [console](https://console.cloud.google.com/).
+## Enable Required APIs in Google Cloud Platform
 
-Create a new service account \(APIs & Services &gt; Credentials &gt; Create Credentials &gt; Service Account\).
+Navigate to the Google Cloud Platform \(GCP\) [console](https://console.cloud.google.com/). You will want to
+create a new GCP Project for Dispatch's integration.
 
-Once created, download the JSON based key and use it's values to populate the above configuration values:
+Create a new service account within the GCP project \(APIs & Services &gt; Credentials &gt; Create Credentials &gt; Service Account\). 
+You do not need to assign any Google Cloud permissions to this service account when prompted.
+
+Once created, download the JSON based key. You'll use these values to configure Dispatch:
 
 * `project_id` -&gt; `GOOGLE_SERVICE_ACCOUNT_PROJECT_ID`
-* `private_key_id` -&gt; `GOOGLE_SERVICE_PRIVATE_KEY_ID`
-* `private_key` -&gt; `GOOGLE_SERVICE_PRIVATE_KEY`
+* `private_key_id` -&gt; `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID`
+* `private_key` -&gt; `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`
 * `client_email` -&gt; `GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL`
 * `client_id` -&gt; `GOOGLE_SERVICE_ACCOUNT_CLIENT_ID`
 
-Create a Developer API key \(APIs & Services &gt; Credentials &gt; Create Credentials &gt; API Key\), and set the value of `GOOGLE_DEVELOPER_KEY`.
+Then, create a Developer API key \(APIs & Services &gt; Credentials &gt; Create Credentials &gt; API Key\), and set it to the value for `GOOGLE_DEVELOPER_KEY`.
 
 Enable the following APIs \(APIs and Services &gt; Library\):
 
@@ -70,18 +79,8 @@ Enable the following APIs \(APIs and Services &gt; Library\):
 * Gmail API
 * Admin SDK \(necessary to create and manage groups\)
 
-{% hint style="info" %}
-If you are planning on using Google Drive storage you must enable the folder sharing beta.
-
-[https://support.google.com/a/answer/9890318?hl=en\#:~:text=Help%20CenterCommunity-,Folder%20sharing%20in%20shared%20drives%20\(beta\),folders%20within%20a%20shared%20drive](https://support.google.com/a/answer/9890318?hl=en#:~:text=Help%20CenterCommunity-,Folder%20sharing%20in%20shared%20drives%20%28beta%29,folders%20within%20a%20shared%20drive)
-
-To signup:  
-[https://docs.google.com/forms/d/e/1FAIpQLSfrILe0\_bPkkI7pxfr-4rHk0qcajrUOHTcmrWPOVLo0SKNF7A/viewform](https://docs.google.com/forms/d/e/1FAIpQLSfrILe0_bPkkI7pxfr-4rHk0qcajrUOHTcmrWPOVLo0SKNF7A/viewform)
-{% endhint %}
-
-Finally, map the `client_id` of the created service with the required OAuth2 scopes.
-
-Navigate to admin [home](https://admin.google.com/AdminHome?chromeless=1#OGX:ManageOauthClients%20) \(Security &gt; Advanced Settings &gt; Manage API Client Access\), and add the following scopes:
+Finally, create your OAuth application which is how G Suite will authorize the service account and API key \(APIs & Services &gt; OAuth Consent Screen\).
+Specify the following scopes:
 
 ```text
 https://www.googleapis.com/auth/documents
@@ -94,10 +93,9 @@ https://www.googleapis.com/auth/calendar
 
 **Note:** If you will not use Google Meet for your conference then you do not need the `https://www.googleapis.com/auth/calendar` scope.
 
-Then construct this link and click it:
+## Connecting Dispatch to G Suite
 
-```text
-https://admin.google.com/AdminHome?clientScopeToAdd=https://www.googleapis.com/auth/documents,https://www.googleapis.com/auth/drive,https://mail.google.com/,https://www.googleapis.com/auth/admin.directory.group,https://www.googleapis.com/auth/apps.groups.settings,https://www.googleapis.com/auth/calendar
-&clientNameToAdd=<INSERTCLIENTIDHERE>&chromeless=1#OGX:ManageOauthClients
-```
+Navigate to the G Suite Admin [Domain-wide Delegation](https://admin.google.com/ac/owl/domainwidedelegation) page 
+\(Security &gt; API Controls &gt; Domain-wide Delegation\) and add a new API client. 
 
+Enter the Client ID you used for `GOOGLE_SERVICE_ACCOUNT_CLIENT_ID`, and then paste in a comma-separated list of the OAuth scopes above.

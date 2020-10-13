@@ -157,7 +157,8 @@ Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispa
 
 #### `INCIDENT_STORAGE_FOLDER_ID`
 
-> Top level folder where all incident data is stored. Note: viewing actual incident data is still on a per-sub folder basis.
+> Top level folder where all incident data is stored. Note: viewing actual incident data is still on a per-sub folder basis. For Google Drive,
+> you can get the folder ID from viewing a folder in the Google Drive UI, and copying the last part of the URL (`/drive/u/0/folders/<this value>`)
 
 #### `INCIDENT_STORAGE_OPEN_ON_CLOSE` \[default: 'true'\]
 
