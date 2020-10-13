@@ -712,6 +712,10 @@ def build_workflow_blocks(
     selected_option = None
     workflow_options = []
     for w in workflows:
+        # don't show disable workflows or workflows with disabled plugins
+        if not w.plugin.enabled or not w.enabled:
+            continue
+
         current_option = {
             "text": {
                 "type": "plain_text",

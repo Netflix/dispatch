@@ -29,7 +29,7 @@ def create(*, db_session, tag_in: TagCreate) -> Tag:
 
 
 def get_or_create(*, db_session, tag_in: TagCreate) -> Tag:
-    q = db_session.query(Tag).filter_by(**tag_in.dict())
+    q = db_session.query(Tag).filter_by(name=tag_in.name)
 
     instance = q.first()
     if instance:

@@ -208,12 +208,18 @@ def get_user_avatar_url(client: Any, email: str):
 
 @functools.lru_cache()
 async def get_conversations_by_user_id_async(client: Any, user_id: str):
-    """Gets the list of conversations a user is a member of."""
+    """Gets the list of public and private conversations a user is a member of."""
     result = await make_call_async(
-        client, "users.conversations", user=user_id, types="public_channel", exclude_archived=True
+        client, "users.conversations", user=user_id, types="public_channel", exclude_archived=True,
     )
-    conversations = [c["name"] for c in result["channels"]]
-    return conversations
+    public_conversations = [c["name"] for c in result["channels"]]
+
+    result = await make_call_async(
+        client, "users.conversations", user=user_id, types="private_channel", exclude_archived=True,
+    )
+    private_conversations = [c["name"] for c in result["channels"]]
+
+    return public_conversations, private_conversations
 
 
 # note this will get slower over time, we might exclude archived to make it sane

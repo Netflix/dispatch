@@ -45,6 +45,7 @@ from dispatch.participant_role.models import ParticipantRole, ParticipantRoleTyp
 from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
+from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
 from dispatch.workflow.models import WorkflowInstanceRead
 
@@ -285,7 +286,7 @@ class IncidentRead(IncidentBase):
     storage: Optional[StorageRead] = None
     ticket: Optional[TicketRead] = None
     documents: Optional[List[DocumentRead]] = []
-    tags: Optional[List[Any]] = []  # any until we figure out circular imports
+    tags: Optional[List[TagRead]] = []
     terms: Optional[List[Any]] = []  # any until we figure out circular imports
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
