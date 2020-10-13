@@ -24,7 +24,7 @@ To create a new tag navigate to: `Dispatch > Tags > New`
 
 **URI:** The external tag locator (if available).
 
-**Discoverable:** Dispatch has the ability to do some automatic tag discovery. Meaning given a set of predefined tags, it will crawl all incident data available to it and using NLP associate this data to incidents (current incident and retroactively). If for some reason a tag is general enough (e.g. "the") that you do not want to make it disoverable, this flag can disable that functionality on an individual tag basis.
+**Discoverable:** Dispatch has the ability to do some automatic tag discovery. Meaning given a set of predefined tags, it will crawl all incident data available to it and using NLP associate this data to incidents (current incident and retroactively). If for some reason a tag is general enough (e.g. "the") that you do not want to make it discoverable, this flag can disable that functionality on an individual tag basis.
 
 ## Documents
 
@@ -33,6 +33,8 @@ To create a new document navigate to: `Dispatch > Documents > New`
 ![](../../.gitbook/assets/admin-ui-knowledge-documents.png)
 
 Documents are links to external sources \(Web Pages, Google Documents, etc.,\). These documents can be associated with terms, incident types, and incident priorities, allowing these documents to be recommended reading for incident participants.
+
+If you use the Google Drive plugin, Dispatch will copy a Google document associated with an incident type into a folder. Make sure you specify the correct Google Docs ID for the `ID` field.
 
 **Name:** Name of the document.
 
@@ -52,7 +54,7 @@ In addition to fields about the document itself, Dispatch allows you to associat
 
 Documents can also be used as templates during incident creation that Dispatch will attempt to fill when copied.
 
-If you are using the google drive plugin, we provide a set of templates to get you started, these should be copied into your google drive and then created as documents in the Dispatch UI.
+If you are using the Google Drive plugin, we provide a set of templates to get you started, these should be copied into your Google Drive and then created as documents in the Dispatch UI.
 
 - [Incident Document](https://docs.google.com/document/d/1fv--CrGpWJJ4nyPR0N0hq4JchHJPuqsXN4azE9CGQiE)
 
