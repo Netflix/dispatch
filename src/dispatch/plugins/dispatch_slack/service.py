@@ -294,6 +294,11 @@ def archive_conversation(client: Any, conversation_id: str):
     return make_call(client, "conversations.archive", channel=conversation_id)
 
 
+def unarchive_conversation(client: Any, conversation_id: str):
+    """Unarchives an existing conversation."""
+    return make_call(client, "conversations.unarchive", channel=conversation_id)
+
+
 def add_users_to_conversation(client: Any, conversation_id: str, user_ids: List[str]):
     """Add users to conversation."""
     # NOTE this will trigger a member_joined_channel event, which we will capture and run the incident.incident_add_or_reactivate_participant_flow() as a result

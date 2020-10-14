@@ -630,25 +630,22 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     )
 
 
-@background_task
-def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_session=None):
+def incident_active_status_flow(incident: Incident, db_session=None):
     """Runs the incident active flow."""
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    # we un-archive the conversation
+    convo_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    if convo_plugin:
+        convo_plugin.instance.unarchive(incident.conversation.channel_id)
 
-    # we remind the incident commander to write a tactical report
-    send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
-
-    # we update the status of the external ticket
+    # we update the external ticket
     update_external_incident_ticket(incident, db_session)
 
+    db_session.add(incident)
+    db_session.commit()
 
-@background_task
-def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_session=None):
+
+def incident_stable_status_flow(incident: Incident, db_session=None):
     """Runs the incident stable flow."""
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
     # we set the stable time
     incident.stable_at = datetime.utcnow()
 
@@ -747,12 +744,8 @@ def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_se
     db_session.commit()
 
 
-@background_task
-def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_session=None):
+def incident_closed_status_flow(incident: Incident, db_session=None):
     """Runs the incident closed flow."""
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
     # we set the closed time
     incident.closed_at = datetime.utcnow()
 
@@ -772,14 +765,42 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
             if storage_plugin:
                 storage_plugin.instance.open(incident.storage.resource_id)
 
-    # we delete the tactical and notification groups
-    delete_participant_groups(incident, db_session)
-
-    # we delete the conference
-    delete_conference(incident, db_session)
-
     db_session.add(incident)
     db_session.commit()
+
+
+def status_flow_dispatcher(
+    incident: Incident,
+    current_status: IncidentStatus,
+    previous_status: IncidentStatus,
+    db_session=SessionLocal,
+):
+    """Runs the correct flows depending on a incident's current and previous status."""
+
+    # we have a currently active incident
+    if current_status == IncidentStatus.active:
+        # re-activate incident
+        if previous_status == IncidentStatus.closed:
+            incident_active_status_flow(incident=incident, db_session=db_session)
+        elif previous_status == IncidentStatus.stable:
+            incident_active_status_flow(incident=incident, db_session=db_session)
+
+    # we currently have a stable incident
+    elif current_status == IncidentStatus.stable:
+        if previous_status == IncidentStatus.active:
+            incident_stable_status_flow(incident=incident, db_session=db_session)
+        elif previous_status == IncidentStatus.closed:
+            incident_active_status_flow(incident=incident, db_session=db_session)
+            incident_stable_status_flow(incident=incident, db_session=db_session)
+
+    # we currently have a closed incident
+    elif current_status == IncidentStatus.closed:
+        if previous_status == IncidentStatus.active:
+            incident_stable_status_flow(incident=incident, db_session=db_session)
+            incident_closed_status_flow(incident=incident, db_session=db_session)
+
+        if previous_status == IncidentStatus.stable:
+            incident_closed_status_flow(incident=incident, db_session=db_session)
 
 
 @background_task
@@ -876,15 +897,8 @@ def incident_update_flow(
     if group_plugin:
         group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
 
-    if previous_incident.status.value != incident.status:
-        if incident.status == IncidentStatus.active:
-            incident_active_flow(incident_id=incident.id, db_session=db_session)
-        elif incident.status == IncidentStatus.stable:
-            incident_stable_flow(incident_id=incident.id, db_session=db_session)
-        elif incident.status == IncidentStatus.closed:
-            if previous_incident.status.value == IncidentStatus.active:
-                incident_stable_flow(incident_id=incident.id, db_session=db_session)
-            incident_closed_flow(incident_id=incident.id, db_session=db_session)
+    # run whatever flows we need
+    status_flow_dispatcher(incident, incident.status, previous_incident.status.value)
 
 
 @background_task
