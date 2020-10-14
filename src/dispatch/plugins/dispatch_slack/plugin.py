@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+from tests.conftest import conversation
 from joblib import Memory
 from typing import List, Optional
 import logging
@@ -37,6 +38,7 @@ from .messaging import create_message_blocks
 from .service import (
     add_users_to_conversation,
     archive_conversation,
+    unarchive_conversation,
     create_conversation,
     get_conversation_by_name,
     get_user_avatar_url,
@@ -156,6 +158,10 @@ class SlackConversationPlugin(ConversationPlugin):
     def archive(self, conversation_id: str):
         """Archives conversation."""
         return archive_conversation(self.client, conversation_id)
+
+    def unarchive_conversation(self, conversation_id: str):
+        """Unarchives conversation."""
+        return unarchive_conversation(self.client, conversation_id)
 
     def get_participant_username(self, participant_id: str):
         """Gets the participant's username."""
