@@ -5,7 +5,6 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from tests.conftest import conversation
 from joblib import Memory
 from typing import List, Optional
 import logging
