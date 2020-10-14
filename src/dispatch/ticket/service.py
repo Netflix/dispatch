@@ -23,11 +23,11 @@ def get_by_resource_type(*, db_session, resource_type: str) -> Optional[Ticket]:
     return db_session.query(Ticket).filter(Ticket.resource_type == resource_type).one()
 
 
-def get_or_create_by_weblink(*, db_session, weblink: str) -> Ticket:
+def get_or_create_by_weblink(*, db_session, weblink: str, resource_type) -> Ticket:
     """Fetch a ticket or creating a new one."""
     ticket = get_by_weblink(db_session=db_session, weblink=weblink)
     if not ticket:
-        ticket = Ticket(weblink=weblink)
+        ticket = Ticket(weblink=weblink, resource_type=resource_type)
         db_session.add(ticket)
         db_session.commit()
     return ticket
