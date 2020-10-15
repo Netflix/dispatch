@@ -37,6 +37,7 @@ def configure_extensions():
                 ModulesIntegration(),
             ],
             environment=ENV,
+            auto_enabling_integrations=False,
         )
         with sentry_sdk.configure_scope() as scope:
             log.debug(f"Using the following tags... ENV_TAGS: {ENV_TAGS}")
