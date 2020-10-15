@@ -62,7 +62,9 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
     """Create a new task."""
     incident = incident_service.get(db_session=db_session, incident_id=task_in.incident.id)
     tickets = [
-        ticket_service.get_or_create_by_weblink(db_session=db_session, weblink=t.weblink)
+        ticket_service.get_or_create_by_weblink(
+            db_session=db_session, weblink=t.weblink, resource_type="task-ticket"
+        )
         for t in task_in.tickets
     ]
 
