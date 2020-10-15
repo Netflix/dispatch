@@ -188,7 +188,10 @@ async def handle_command(
             slack_async_client, conversation_id
         )
 
-        if conversation_name not in public_conversations + private_conversations:
+        if (
+            not conversation_name
+            or conversation_name not in public_conversations + private_conversations
+        ):
             # We let the user know in which public conversations they can run the command
             return create_command_run_in_conversation_where_bot_not_present_message(
                 command, public_conversations
