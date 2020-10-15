@@ -38,6 +38,7 @@ from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
 from dispatch.incident_type import service as incident_type_service
 from dispatch.individual import service as individual_service
+from dispatch.individual.models import IndividualContact
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant
@@ -162,7 +163,7 @@ def update_external_incident_ticket(
         incident_type_plugin_metadata=incident_type_plugin_metadata,
     )
 
-    log.debug("The external ticket has been updated.")
+    log.debug(f"Updated the external ticket {incident.ticket.resource_id}.")
 
 
 def create_participant_groups(
@@ -705,9 +706,7 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
         )
 
         # we update the incident review document
-        document_plugin = plugin_service.get_active(
-            db_session=db_session, plugin_type="document"
-        )
+        document_plugin = plugin_service.get_active(db_session=db_session, plugin_type="document")
         if document_plugin:
             document_plugin.instance.update(
                 incident.incident_review_document.resource_id,
@@ -762,52 +761,13 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
                 storage_plugin.instance.open(incident.storage.resource_id)
 
 
-def status_flow_dispatcher(
+def conversation_topic_dispatcher(
     incident: Incident,
-    current_status: IncidentStatus,
-    previous_status: IncidentStatus,
-    db_session=SessionLocal,
+    previous_incident: dict,
+    individual: IndividualContact,
+    db_session: SessionLocal,
 ):
-    """Runs the correct flows depending on a incident's current and previous status."""
-    # we have a currently active incident
-    if current_status == IncidentStatus.active:
-        # re-activate incident
-        incident_active_status_flow(incident=incident, db_session=db_session)
-        send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
-
-    # we currently have a stable incident
-    elif current_status == IncidentStatus.stable:
-        if previous_status == IncidentStatus.active:
-            incident_stable_status_flow(incident=incident, db_session=db_session)
-        elif previous_status == IncidentStatus.closed:
-            incident_active_status_flow(incident=incident, db_session=db_session)
-            incident_stable_status_flow(incident=incident, db_session=db_session)
-        send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
-
-    # we currently have a closed incident
-    elif current_status == IncidentStatus.closed:
-        if previous_status == IncidentStatus.active:
-            incident_stable_status_flow(incident=incident, db_session=db_session)
-            incident_closed_status_flow(incident=incident, db_session=db_session)
-
-        elif previous_status == IncidentStatus.stable:
-            incident_closed_status_flow(incident=incident, db_session=db_session)
-
-    # we update the external on any status change
-    update_external_incident_ticket(incident, db_session)
-
-
-@background_task
-def incident_update_flow(
-    user_email: str, incident_id: int, previous_incident: IncidentRead, notify=True, db_session=None
-):
-    """Runs the incident update flow."""
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-    # we load the individual
-    individual = individual_service.get_by_email(db_session=db_session, email=user_email)
-
+    """Determines if the conversation topic needs to be updated."""
     conversation_topic_change = False
     if previous_incident.title != incident.title:
         event_service.log(
@@ -865,36 +825,88 @@ def incident_update_flow(
         if incident.status != IncidentStatus.closed:
             set_conversation_topic(incident, db_session)
 
-    if notify:
-        send_incident_update_notifications(incident, previous_incident, db_session)
 
-    # we update the external ticket
-    update_external_incident_ticket(incident, db_session)
+def status_flow_dispatcher(
+    incident: Incident,
+    current_status: IncidentStatus,
+    previous_status: IncidentStatus,
+    db_session=SessionLocal,
+):
+    """Runs the correct flows depending on a incident's current and previous status."""
+    # we have a currently active incident
+    if current_status == IncidentStatus.active:
+        # re-activate incident
+        incident_active_status_flow(incident=incident, db_session=db_session)
+        send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
 
-    log.debug(f"Updated the external ticket {incident.ticket.resource_id}.")
+    # we currently have a stable incident
+    elif current_status == IncidentStatus.stable:
+        if previous_status == IncidentStatus.active:
+            incident_stable_status_flow(incident=incident, db_session=db_session)
+        elif previous_status == IncidentStatus.closed:
+            incident_active_status_flow(incident=incident, db_session=db_session)
+            incident_stable_status_flow(incident=incident, db_session=db_session)
+        send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
 
-    # get the incident participants based on incident type and priority
-    individual_participants, team_participants = get_incident_participants(incident, db_session)
+    # we currently have a closed incident
+    elif current_status == IncidentStatus.closed:
+        if previous_status == IncidentStatus.active:
+            incident_stable_status_flow(incident=incident, db_session=db_session)
+            incident_closed_status_flow(incident=incident, db_session=db_session)
 
-    # lets not attempt to add new participants for non-active incidents (it's confusing)
+        elif previous_status == IncidentStatus.stable:
+            incident_closed_status_flow(incident=incident, db_session=db_session)
+
+
+def resolve_incident_participants(incident: Incident, db_session: SessionLocal):
+    """Controls how and when participants are resolved and associated with an incident."""
+    # only add resolve new partcipants in some situations
     if incident.status == IncidentStatus.active:
-        # we add the individuals as incident participants
-        for individual in individual_participants:
-            incident_add_or_reactivate_participant_flow(
-                individual.email, incident.id, db_session=db_session
-            )
+        # get the incident participants based on incident type and priority
+        individual_participants, team_participants = get_incident_participants(incident, db_session)
 
-    team_participant_emails = [x.email for x in team_participants]
+        # lets not attempt to add new participants for non-active incidents (it's confusing)
+        if incident.status == IncidentStatus.active:
+            # we add the individuals as incident participants
+            for individual in individual_participants:
+                incident_add_or_reactivate_participant_flow(
+                    individual.email, incident.id, db_session=db_session
+                )
 
-    # we add the team distributions lists to the notifications group
-    group_plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant-group")
-    if group_plugin:
-        group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
+        team_participant_emails = [x.email for x in team_participants]
+
+        # we add the team distributions lists to the notifications group
+        group_plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant-group")
+        if group_plugin:
+            group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
+
+
+@background_task
+def incident_update_flow(
+    user_email: str, incident_id: int, previous_incident: IncidentRead, notify=True, db_session=None
+):
+    """Runs the incident update flow."""
+    # we load the incident instance
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    # we load the individual
+    individual = individual_service.get_by_email(db_session=db_session, email=user_email)
 
     # run whatever flows we need
     status_flow_dispatcher(
         incident, incident.status, previous_incident.status.value, db_session=db_session
     )
+
+    conversation_topic_dispatcher(incident, previous_incident, individual, db_session=db_session)
+
+    # we update the external ticket
+    update_external_incident_ticket(incident, db_session)
+
+    # add new folks to the incident if appropriate
+    resolve_incident_participants(incident)
+
+    if notify:
+        send_incident_update_notifications(incident, previous_incident, db_session)
 
 
 @background_task
