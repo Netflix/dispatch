@@ -158,7 +158,7 @@ class SlackConversationPlugin(ConversationPlugin):
         """Archives conversation."""
         return archive_conversation(self.client, conversation_id)
 
-    def unarchive_conversation(self, conversation_id: str):
+    def unarchive(self, conversation_id: str):
         """Unarchives conversation."""
         return unarchive_conversation(self.client, conversation_id)
 
