@@ -290,7 +290,12 @@ def archive_conversation(client: Any, conversation_id: str):
 
 def unarchive_conversation(client: Any, conversation_id: str):
     """Unarchives an existing conversation."""
-    return make_call(client, "conversations.unarchive", channel=conversation_id)
+    try:
+        return make_call(client, "conversations.unarchive", channel=conversation_id)
+    except slack.errors.SlackApiError as e:
+        # if the channel isn't achived thats okay
+        if e.response["error"] != "not_archived":
+            raise e
 
 
 def add_users_to_conversation(client: Any, conversation_id: str, user_ids: List[str]):
