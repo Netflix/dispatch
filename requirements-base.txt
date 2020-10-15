@@ -3,6 +3,7 @@ aiofiles
 alembic
 arrow
 bcrypt
+blinker
 cachetools==3.1.1  # NOTE pinning for google-auth
 click
 email-validator
@@ -30,7 +31,7 @@ requests
 rsa==4.0  # NOTE pinning for google-auth
 schedule
 sentry-asgi
-sentry-sdk[flask]
+sentry-sdk
 sh
 slackclient
 spacy
