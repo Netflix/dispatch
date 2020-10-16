@@ -34,7 +34,13 @@
             >
               <template v-slot:item.cost="{ item }">{{ item.cost | toUSD }}</template>
               <template v-slot:item.commander="{ item }">
-                <v-chip class="ma-2" pill small :href="item.commander.weblink">
+                <v-chip
+                  v-if="item.commander"
+                  class="ma-2"
+                  pill
+                  small
+                  :href="item.commander.weblink"
+                >
                   <div v-if="item.commander">
                     <div v-if="item.commander.name">{{ item.commander.name }}</div>
                     <div v-else>{{ item.commander.email }}</div>
@@ -42,7 +48,7 @@
                 </v-chip>
               </template>
               <template v-slot:item.reporter="{ item }">
-                <v-chip class="ma-2" pill small :href="item.reporter.weblink">
+                <v-chip v-if="item.reporter" class="ma-2" pill small :href="item.reporter.weblink">
                   <div v-if="item.reporter">
                     <div v-if="item.reporter.name">{{ item.reporter.name }}</div>
                     <div v-else>{{ item.reporter.email }}</div>
