@@ -5,6 +5,7 @@ from schedule import every
 from sqlalchemy import func
 
 from dispatch.config import (
+    DISPATCH_UI_URL,
     INCIDENT_ONCALL_SERVICE_ID,
     INCIDENT_NOTIFICATION_CONVERSATIONS,
 )
@@ -93,8 +94,11 @@ def daily_summary(db_session=None):
     blocks = []
     blocks.append(
         {
-            "type": "section",
-            "text": {"type": "mrkdwn", "text": f"*{INCIDENT_DAILY_SUMMARY_DESCRIPTION}*"},
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": f":rotating_light: {INCIDENT_DAILY_SUMMARY_DESCRIPTION} :rotating_light:",
+            },
         }
     )
 
@@ -136,6 +140,18 @@ def daily_summary(db_session=None):
                     )
                 except Exception as e:
                     log.exception(e)
+
+        blocks.append(
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": f"For more information about active incidents, please visit the active incidents status <{DISPATCH_UI_URL}/incidents/status|page>.",
+                    }
+                ],
+            }
+        )
     else:
         blocks.append(
             {

@@ -9,7 +9,6 @@ from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.incident.enums import IncidentStatus
 
 from .config import (
-    DISPATCH_UI_URL,
     INCIDENT_RESOURCE_CONVERSATION_REFERENCE_DOCUMENT,
     INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT,
     INCIDENT_RESOURCE_INCIDENT_FAQ_DOCUMENT,
@@ -53,8 +52,8 @@ Daily Incidents Summary""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION = f"""
-Active Incidents (<{DISPATCH_UI_URL}/incidents/status|Details>)""".replace(
+INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION = """
+Active Incidents""".replace(
     "\n", " "
 ).strip()
 
