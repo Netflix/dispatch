@@ -48,11 +48,11 @@ from .service import (
     list_conversations,
     message_filter,
     open_dialog_with_user,
+    open_modal_with_user,
     resolve_user,
     send_ephemeral_message,
     send_message,
     set_conversation_topic,
-    open_modal_with_user,
 )
 
 

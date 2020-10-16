@@ -20,17 +20,18 @@ from .config import (
 
 
 class MessageType(str, Enum):
+    incident_closed_information_review_reminder = "incident-closed-information-review-reminder"
     incident_daily_summary = "incident-daily-summary"
     incident_daily_summary_no_incidents = "incident-daily-summary-no-incidents"
     incident_executive_report = "incident-executive-report"
     incident_notification = "incident-notification"
+    incident_participant_suggested_reading = "incident-participant-suggested-reading"
     incident_participant_welcome = "incident-participant-welcome"
     incident_resources_message = "incident-resources-message"
+    incident_status_reminder = "incident-status-reminder"
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
-    incident_status_reminder = "incident-status-reminder"
-    incident_participant_suggested_reading = "incident-participant-suggested-reading"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -251,6 +252,9 @@ This workflow's status has changed from *{{ instance_status_old }}* to *{{ insta
 \n\n {% for a in instance_artifacts %}- <{{a.weblink}}|{{a.name}}> \n\n{% endfor %}
 {% endif %}
 """
+
+INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_DESCRIPTION = """
+Thanks for closing incident {{name}}. Is the following incident information up to date? If not, please edit the incident in the <{{dispatch_ui_url}}|Dispatch Web UI>. Also, consider tagging the incident using the Web UI if appropiate.\n\n*Title:* {{title}}\n*Description:* {{description}}\n*Incident Type:* {{type}}\n*Incident Priority:* {{priority}}"""
 
 INCIDENT_TYPE_CHANGE_DESCRIPTION = """
 The incident type has been changed from *{{ incident_type_old }}* to *{{ incident_type_new }}*."""
@@ -494,6 +498,14 @@ INCIDENT_WORKFLOW_COMPLETE_NOTIFICATION = [
 
 INCIDENT_COMMANDER_READDED_NOTIFICATION = [
     {"title": "Incident Commander Re-Added", "text": INCIDENT_COMMANDER_READDED_DESCRIPTION}
+]
+
+INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION = [
+    {
+        "title": "{{name}} Incident - Information Review Reminder",
+        "title_link": "{{ticket_weblink}}",
+        "text": INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_DESCRIPTION,
+    }
 ]
 
 
