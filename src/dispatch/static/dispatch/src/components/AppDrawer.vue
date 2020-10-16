@@ -48,6 +48,7 @@
                 :disabled="subItem.disabled"
                 :target="subItem.target"
                 ripple="ripple"
+                exact
               >
                 <v-list-item-content>
                   <v-list-item-title>
@@ -75,6 +76,7 @@
             :disabled="item.disabled"
             :target="item.target"
             rel="noopener"
+            exact
           >
             <v-list-item-action v-if="item.icon">
               <v-icon>{{ item.icon }}</v-icon>

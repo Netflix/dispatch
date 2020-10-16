@@ -53,10 +53,13 @@ def create_task_reminders(db_session=None):
             oncall_plugin = plugin_service.get_by_slug(
                 db_session=db_session, slug=oncall_service.type
             )
-            if oncall_plugin.enabled:
+            if not oncall_plugin.enabled:
                 log.warning(
-                    f"Unable to resolve oncall, INCIDENT_ONCALL_SERVICE_ID configured but associated plugin ({oncall_plugin.name}) is not enabled."
+                    f"Unable to resolve oncall, INCIDENT_ONCALL_SERVICE_ID configured but associated plugin ({oncall_plugin.slug}) is not enabled."
                 )
+                contact_fullname = "Unknown"
+                contact_weblink = None
+            else:
                 oncall_email = oncall_plugin.instance.get(service_id=INCIDENT_ONCALL_SERVICE_ID)
                 oncall_individual = individual_service.resolve_user_by_email(
                     oncall_email, db_session

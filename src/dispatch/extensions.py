@@ -27,16 +27,17 @@ def configure_extensions():
         sentry_sdk.init(
             dsn=str(SENTRY_DSN),
             integrations=[
-                sentry_logging,
                 AioHttpIntegration(),
+                AtexitIntegration(),
+                DedupeIntegration(),
+                ExcepthookIntegration(),
+                ModulesIntegration(),
                 SqlalchemyIntegration(),
                 StdlibIntegration(),
-                ExcepthookIntegration(),
-                DedupeIntegration(),
-                AtexitIntegration(),
-                ModulesIntegration(),
+                sentry_logging,
             ],
             environment=ENV,
+            auto_enabling_integrations=False,
         )
         with sentry_sdk.configure_scope() as scope:
             log.debug(f"Using the following tags... ENV_TAGS: {ENV_TAGS}")

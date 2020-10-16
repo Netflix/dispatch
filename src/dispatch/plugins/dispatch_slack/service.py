@@ -242,9 +242,15 @@ def get_conversation_by_name(client: Any, name: str):
 
 async def get_conversation_name_by_id_async(client: Any, conversation_id: str):
     """Fetches a conversation by id and returns its name."""
-    return (await make_call_async(client, "conversations.info", channel=conversation_id))[
-        "channel"
-    ]["name"]
+    try:
+        return (await make_call_async(client, "conversations.info", channel=conversation_id))[
+            "channel"
+        ]["name"]
+    except slack.errors.SlackApiError as e:
+        if e.response["error"] == "channel_not_found":
+            return None
+        else:
+            raise e
 
 
 def set_conversation_topic(client: Any, conversation_id: str, topic: str):
