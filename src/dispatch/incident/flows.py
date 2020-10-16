@@ -903,7 +903,7 @@ def incident_update_flow(
     update_external_incident_ticket(incident, db_session)
 
     # add new folks to the incident if appropriate
-    resolve_incident_participants(incident)
+    resolve_incident_participants(incident, db_session)
 
     if notify:
         send_incident_update_notifications(incident, previous_incident, db_session)
