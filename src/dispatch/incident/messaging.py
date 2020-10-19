@@ -739,7 +739,6 @@ def send_incident_closed_information_review_reminder(incident: Incident, db_sess
             "description": incident.description,
             "type": incident.incident_type.name,
             "priority": incident.incident_priority.name,
-            "ticket_weblink": incident.ticket.weblink,
             "dispatch_ui_url": DISPATCH_UI_URL,
         }
     ]
