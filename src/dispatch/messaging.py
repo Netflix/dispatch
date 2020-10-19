@@ -503,7 +503,7 @@ INCIDENT_COMMANDER_READDED_NOTIFICATION = [
 INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION = [
     {
         "title": "{{name}} Incident - Information Review Reminder",
-        "title_link": "{{ticket_weblink}}",
+        "title_link": "{{dispatch_ui_url}}",
         "text": INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_DESCRIPTION,
     }
 ]
