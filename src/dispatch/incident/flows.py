@@ -662,77 +662,80 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
     template = document_service.get_incident_review_template(db_session=db_session)
 
     # incident review document is optional
-    if template:
-        incident_review_document = storage_plugin.instance.copy_file(
-            folder_id=incident.storage.resource_id,
-            file_id=template.resource_id,
-            name=incident_review_document_name,
-        )
+    if not template:
+        log.warning("No incident review template specificed.")
+        return
 
-        incident_review_document.update(
-            {
-                "name": incident_review_document_name,
-                "resource_type": INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
-            }
-        )
+    incident_review_document = storage_plugin.instance.copy_file(
+        folder_id=incident.storage.resource_id,
+        file_id=template.resource_id,
+        name=incident_review_document_name,
+    )
 
-        storage_plugin.instance.move_file(
-            new_folder_id=incident.storage.resource_id,
-            file_id=incident_review_document["id"],
-        )
+    incident_review_document.update(
+        {
+            "name": incident_review_document_name,
+            "resource_type": INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
+        }
+    )
 
-        event_service.log(
-            db_session=db_session,
-            source=storage_plugin.title,
-            description="Incident review document added to storage",
-            incident_id=incident.id,
-        )
+    storage_plugin.instance.move_file(
+        new_folder_id=incident.storage.resource_id,
+        file_id=incident_review_document["id"],
+    )
 
-        document_in = DocumentCreate(
-            name=incident_review_document["name"],
-            resource_id=incident_review_document["id"],
-            resource_type=incident_review_document["resource_type"],
-            weblink=incident_review_document["weblink"],
-        )
-        incident.documents.append(
-            document_service.create(db_session=db_session, document_in=document_in)
-        )
+    event_service.log(
+        db_session=db_session,
+        source=storage_plugin.title,
+        description="Incident review document added to storage",
+        incident_id=incident.id,
+    )
 
-        event_service.log(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description="Incident review document added to incident",
-            incident_id=incident.id,
-        )
+    document_in = DocumentCreate(
+        name=incident_review_document["name"],
+        resource_id=incident_review_document["id"],
+        resource_type=incident_review_document["resource_type"],
+        weblink=incident_review_document["weblink"],
+    )
+    incident.documents.append(
+        document_service.create(db_session=db_session, document_in=document_in)
+    )
 
-        # we update the incident review document
-        document_plugin = plugin_service.get_active(db_session=db_session, plugin_type="document")
-        if document_plugin:
-            document_plugin.instance.update(
-                incident.incident_review_document.resource_id,
-                name=incident.name,
-                priority=incident.incident_priority.name,
-                status=incident.status,
-                type=incident.incident_type.name,
-                title=incident.title,
-                description=incident.description,
-                commander_fullname=incident.commander.name,
-                conversation_weblink=resolve_attr(incident, "conversation.weblink"),
-                document_weblink=resolve_attr(incident, "incident_document.weblink"),
-                storage_weblink=resolve_attr(incident, "storage.weblink"),
-                ticket_weblink=resolve_attr(incident, "ticket.weblink"),
-                conference_weblink=resolve_attr(incident, "conference.weblink"),
-                conference_challenge=resolve_attr(incident, "conference.challendge"),
-            )
-        else:
-            log.warning("No document plugin enabled, could not update template.")
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Incident review document added to incident",
+        incident_id=incident.id,
+    )
 
-        # we send a notification about the incident review document to the conversation
-        send_incident_review_document_notification(
-            incident.conversation.channel_id,
-            incident.incident_review_document.weblink,
-            db_session,
+    # we update the incident review document
+    document_plugin = plugin_service.get_active(db_session=db_session, plugin_type="document")
+    if document_plugin:
+        document_plugin.instance.update(
+            incident.incident_review_document.resource_id,
+            name=incident.name,
+            priority=incident.incident_priority.name,
+            status=incident.status,
+            type=incident.incident_type.name,
+            title=incident.title,
+            description=incident.description,
+            commander_fullname=incident.commander.name,
+            conversation_weblink=resolve_attr(incident, "conversation.weblink"),
+            document_weblink=resolve_attr(incident, "incident_document.weblink"),
+            storage_weblink=resolve_attr(incident, "storage.weblink"),
+            ticket_weblink=resolve_attr(incident, "ticket.weblink"),
+            conference_weblink=resolve_attr(incident, "conference.weblink"),
+            conference_challenge=resolve_attr(incident, "conference.challendge"),
         )
+    else:
+        log.warning("No document plugin enabled, could not update template.")
+
+    # we send a notification about the incident review document to the conversation
+    send_incident_review_document_notification(
+        incident.conversation.channel_id,
+        incident.incident_review_document.weblink,
+        db_session,
+    )
 
     db_session.add(incident)
     db_session.commit()
@@ -832,7 +835,7 @@ def status_flow_dispatcher(
     previous_status: IncidentStatus,
     db_session=SessionLocal,
 ):
-    """Runs the correct flows depending on a incident's current and previous status."""
+    """Runs the correct flows depending on the incident's current and previous status."""
     # we have a currently active incident
     if current_status == IncidentStatus.active:
         # re-activate incident
@@ -876,7 +879,9 @@ def resolve_incident_participants(incident: Incident, db_session: SessionLocal):
         team_participant_emails = [x.email for x in team_participants]
 
         # we add the team distributions lists to the notifications group
-        group_plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant-group")
+        group_plugin = plugin_service.get_active(
+            db_session=db_session, plugin_type="participant-group"
+        )
         if group_plugin:
             group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
 
