@@ -254,7 +254,7 @@ This workflow's status has changed from *{{ instance_status_old }}* to *{{ insta
 """
 
 INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_DESCRIPTION = """
-Thanks for closing incident {{name}}. Is the following incident information up to date? If not, please edit the incident in the <{{dispatch_ui_url}}|Dispatch Web UI>. Also, consider tagging the incident using the Web UI if appropiate.\n\n*Title:* {{title}}\n*Description:* {{description}}\n*Incident Type:* {{type}}\n*Incident Priority:* {{priority}}"""
+Thanks for closing incident {{name}}. Is the following incident information up to date? If not, please edit the incident in the <{{dispatch_ui_url}}|Dispatch Web UI>. If it's appropriate, consider adding relevant tags to the incident using the Web UI. This will help us solve similar incidents faster.\n\n*Title:* {{title}}\n*Description:* {{description}}\n*Incident Type:* {{type}}\n*Incident Priority:* {{priority}}"""
 
 INCIDENT_TYPE_CHANGE_DESCRIPTION = """
 The incident type has been changed from *{{ incident_type_old }}* to *{{ incident_type_new }}*."""
