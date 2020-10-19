@@ -97,7 +97,7 @@ def daily_summary(db_session=None):
             "type": "header",
             "text": {
                 "type": "plain_text",
-                "text": f":rotating_light: {INCIDENT_DAILY_SUMMARY_DESCRIPTION} :rotating_light:",
+                "text": f"{INCIDENT_DAILY_SUMMARY_DESCRIPTION}",
             },
         }
     )
