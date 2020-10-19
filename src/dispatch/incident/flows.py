@@ -54,16 +54,17 @@ from dispatch.ticket import service as ticket_service
 from dispatch.ticket.models import TicketCreate
 
 from .messaging import (
-    send_incident_update_notifications,
+    get_suggested_document_items,
+    send_incident_closed_information_review_reminder,
     send_incident_commander_readded_notification,
     send_incident_new_role_assigned_notification,
     send_incident_notifications,
     send_incident_participant_announcement_message,
     send_incident_resources_ephemeral_message_to_participant,
     send_incident_review_document_notification,
-    send_incident_welcome_participant_messages,
     send_incident_suggested_reading_messages,
-    get_suggested_document_items,
+    send_incident_update_notifications,
+    send_incident_welcome_participant_messages,
 )
 from .models import Incident, IncidentStatus
 
@@ -762,7 +763,6 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
             storage_plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
             if storage_plugin:
                 storage_plugin.instance.open(incident.storage.resource_id)
-
 
 def conversation_topic_dispatcher(
     incident: Incident,

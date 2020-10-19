@@ -313,7 +313,7 @@ def list_incidents(incident_id: int, command: dict = None, db_session=None):
     )
 
     blocks = []
-    blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": "*List of Incidents*"}})
+    blocks.append({"type": "header", "text": {"type": "plain_text", "text": "List of Incidents"}})
 
     if incidents:
         for incident in incidents:
