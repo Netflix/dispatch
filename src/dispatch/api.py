@@ -3,24 +3,24 @@ from fastapi.openapi.docs import get_redoc_html
 from fastapi.openapi.utils import get_openapi
 from starlette.responses import JSONResponse
 
-from dispatch.tag.views import router as tag_router
 from dispatch.auth.service import get_current_user
+from dispatch.auth.views import user_router, auth_router
 from dispatch.definition.views import router as definition_router
+from dispatch.document.views import router as document_router
 from dispatch.incident.views import router as incident_router
 from dispatch.incident_priority.views import router as incident_priority_router
 from dispatch.incident_type.views import router as incident_type_router
 from dispatch.individual.views import router as individual_contact_router
-
+from dispatch.plugin.views import router as plugin_router
 from dispatch.policy.views import router as policy_router
 from dispatch.route.views import router as route_router
 from dispatch.search.views import router as search_router
 from dispatch.service.views import router as service_router
+from dispatch.tag.views import router as tag_router
+from dispatch.tag_type.views import router as tag_type_router
+from dispatch.task.views import router as task_router
 from dispatch.team.views import router as team_contact_router
 from dispatch.term.views import router as team_router
-from dispatch.document.views import router as document_router
-from dispatch.task.views import router as task_router
-from dispatch.plugin.views import router as plugin_router
-from dispatch.auth.views import user_router, auth_router
 from dispatch.workflow.views import router as workflow_router
 
 from .config import DISPATCH_AUTHENTICATION_PROVIDER_SLUG
@@ -38,6 +38,7 @@ if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-basic":
 authenticated_api_router.include_router(user_router, prefix="/user", tags=["users"])
 authenticated_api_router.include_router(document_router, prefix="/documents", tags=["documents"])
 authenticated_api_router.include_router(tag_router, prefix="/tags", tags=["tags"])
+authenticated_api_router.include_router(tag_type_router, prefix="/tag_types", tags=["tag_types"])
 authenticated_api_router.include_router(service_router, prefix="/services", tags=["services"])
 authenticated_api_router.include_router(team_contact_router, prefix="/teams", tags=["teams"])
 authenticated_api_router.include_router(

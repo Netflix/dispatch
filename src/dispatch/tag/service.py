@@ -1,6 +1,8 @@
 from typing import Optional
 from fastapi.encoders import jsonable_encoder
 
+from dispatch.tag_type import service as tag_type_service
+
 from .models import Tag, TagCreate, TagUpdate
 
 
@@ -17,14 +19,17 @@ def get_all(*, db_session):
 
 
 def create(*, db_session, tag_in: TagCreate) -> Tag:
-    tag = Tag(**tag_in.dict())
+    tag_type = tag_type_service.get_by_name(
+        db_session=db_session, tag_type_name=tag_in.tag_type.name
+    )
+    tag = Tag(**tag_in.dict(exclude={"tag_type"}), tag_type=tag_type)
     db_session.add(tag)
     db_session.commit()
     return tag
 
 
 def get_or_create(*, db_session, tag_in: TagCreate) -> Tag:
-    q = db_session.query(Tag).filter_by(**tag_in.dict())
+    q = db_session.query(Tag).filter_by(name=tag_in.name)
 
     instance = q.first()
     if instance:

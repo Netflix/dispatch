@@ -166,27 +166,36 @@ async def handle_command(
     if conversation:
         incident_id = conversation.incident_id
     else:
-        if command in [SLACK_COMMAND_REPORT_INCIDENT_SLUG, SLACK_COMMAND_LIST_INCIDENTS_SLUG]:
-            # We create an async Slack client
-            slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
-
-            # We get the list of conversations the Slack bot is a member of
-            conversations = await dispatch_slack_service.get_conversations_by_user_id_async(
-                slack_async_client, SLACK_APP_USER_SLUG
-            )
-
-            # We get the name of conversation where the command was run
-            conversation_name = command_details.get("channel_name")
-
-            if conversation_name not in conversations:
-                # We let the user know in which conversations they can run the command
-                return create_command_run_in_conversation_where_bot_not_present_message(
-                    command, conversations
-                )
-        else:
+        if command not in [SLACK_COMMAND_REPORT_INCIDENT_SLUG, SLACK_COMMAND_LIST_INCIDENTS_SLUG]:
             # We let the user know that incident-specific commands
             # can only be run in incident conversations
             return create_command_run_in_nonincident_conversation_message(command)
+
+        # We create an async Slack client
+        slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
+
+        # We get the list of public and private conversations the Slack bot is a member of
+        (
+            public_conversations,
+            private_conversations,
+        ) = await dispatch_slack_service.get_conversations_by_user_id_async(
+            slack_async_client, SLACK_APP_USER_SLUG
+        )
+
+        # We get the name of conversation where the command was run
+        conversation_id = command_details.get("channel_id")
+        conversation_name = await dispatch_slack_service.get_conversation_name_by_id_async(
+            slack_async_client, conversation_id
+        )
+
+        if (
+            not conversation_name
+            or conversation_name not in public_conversations + private_conversations
+        ):
+            # We let the user know in which public conversations they can run the command
+            return create_command_run_in_conversation_where_bot_not_present_message(
+                command, public_conversations
+            )
 
     for f in command_functions(command):
         background_tasks.add_task(f, incident_id, command=command_details)

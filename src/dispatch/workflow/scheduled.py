@@ -24,6 +24,10 @@ WORKFLOW_SYNC_INTERVAL = 30  # seconds
 def sync_workflows(db_session, incidents, notify: bool = False):
     """Performs workflow sync."""
     p = plugin_service.get_active(db_session=db_session, plugin_type="workflow")
+    if not p:
+        log.warning("No workflow plugin is enabled.")
+        return
+
     for incident in incidents:
         for instance in incident.workflow_instances:
             # once an instance is complete we don't update it any more

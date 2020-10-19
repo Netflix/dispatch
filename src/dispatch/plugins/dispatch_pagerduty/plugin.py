@@ -29,7 +29,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
 
     def get(self, service_id: str = None, **kwargs):
         """Gets the oncall person."""
-        client = APISession(PAGERDUTY_API_KEY)
+        client = APISession(str(PAGERDUTY_API_KEY))
         return get_oncall(client=client, service_id=service_id)
 
     def page(
@@ -41,7 +41,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
         **kwargs,
     ):
         """Pages the oncall person."""
-        client = APISession(PAGERDUTY_API_KEY)
+        client = APISession(str(PAGERDUTY_API_KEY))
         return page_oncall(
             client=client,
             service_id=service_id,

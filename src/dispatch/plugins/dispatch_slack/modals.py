@@ -146,6 +146,7 @@ def report_incident_from_submitted_form(action: dict, db_session: Session = None
     # Send a confirmation to the user
     blocks = create_incident_reported_confirmation_message(
         title=requested_form_title,
+        description=requested_form_description,
         incident_type=requested_form_incident_type.get("value"),
         incident_priority=requested_form_incident_priority.get("value"),
     )
@@ -712,6 +713,10 @@ def build_workflow_blocks(
     selected_option = None
     workflow_options = []
     for w in workflows:
+        # don't show disable workflows or workflows with disabled plugins
+        if not w.plugin.enabled or not w.enabled:
+            continue
+
         current_option = {
             "text": {
                 "type": "plain_text",

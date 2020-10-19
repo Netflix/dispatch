@@ -35,10 +35,10 @@ def make_call(client: Any, func: Any, delay: int = None, propagate_errors: bool 
 
         return data
     except HttpError as e:
-        if e.resp.status in [409]:
+        if propagate_errors:
+            raise e
+        else:
             log.error(e.content.decode())
-            if propagate_errors:
-                raise e
 
         raise TryAgain
 
@@ -78,6 +78,9 @@ def add_member(client: Any, group_key: str, email: str, role: str):
         except HttpError as e:
             #  we are okay with duplication errors upon insert
             if e.resp.status in [409]:
+                log.debug(
+                    f"Member already exists in google group. GroupKey={group_key} Body={body}"
+                )
                 continue
 
             log.debug(f"Error adding group member. GroupKey={group_key} Body={body} ")

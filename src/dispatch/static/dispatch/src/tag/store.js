@@ -6,11 +6,11 @@ import { debounce } from "lodash"
 const getDefaultSelectedState = () => {
   return {
     name: null,
-    source: null,
-    type: null,
+    source: "dispatch",
+    tag_type: null,
     uri: null,
     id: null,
-    description: null,
+    description: "Generic tag",
     created_at: null,
     discoverable: null,
     updated_at: null,
