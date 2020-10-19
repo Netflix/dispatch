@@ -832,7 +832,7 @@ def status_flow_dispatcher(
     previous_status: IncidentStatus,
     db_session=SessionLocal,
 ):
-    """Runs the correct flows depending on a incident's current and previous status."""
+    """Runs the correct flows depending on the incident's current and previous status."""
     # we have a currently active incident
     if current_status == IncidentStatus.active:
         # re-activate incident
