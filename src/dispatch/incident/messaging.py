@@ -20,6 +20,7 @@ from dispatch.feedback.enums import FeedbackRating
 from dispatch.incident.models import Incident, IncidentRead
 from dispatch.messaging import (
     INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION,
+    INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION,
     INCIDENT_COMMANDER,
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
     INCIDENT_NAME,
@@ -761,7 +762,7 @@ def send_incident_rating_feedback_message(incident: Incident, db_session: Sessio
     them to rate and provide feedback about the incident.
     """
     notification_text = "Incident Rating and Feedback"
-    notification_template = []
+    notification_template = INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION
 
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
     if not plugin:
@@ -772,8 +773,9 @@ def send_incident_rating_feedback_message(incident: Incident, db_session: Sessio
 
     items = [
         {
-            "id": incident.id,
+            "incident_id": incident.id,
             "name": incident.name,
+            "ticket_weblink": incident.ticket.weblink,
         }
     ]
 

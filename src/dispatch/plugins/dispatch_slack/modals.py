@@ -10,21 +10,24 @@ from sqlalchemy.orm import Session
 from dispatch.database import SessionLocal
 
 from dispatch.decorators import background_task
-from dispatch.messaging import INCIDENT_WORKFLOW_CREATED_NOTIFICATION
 from dispatch.event import service as event_service
+from dispatch.feedback import service as feedback_service
+from dispatch.feedback.enums import FeedbackRating
+from dispatch.feedback.models import FeedbackCreate
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus, IncidentSlackViewBlockId, NewIncidentSubmission
 from dispatch.incident.models import Incident
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
+from dispatch.messaging import INCIDENT_WORKFLOW_CREATED_NOTIFICATION
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant, ParticipantUpdate
 from dispatch.plugin import service as plugin_service
+from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.workflow import service as workflow_service
 from dispatch.workflow.flows import send_workflow_notification
 from dispatch.workflow.models import Workflow, WorkflowInstanceCreate
-from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from .messaging import create_incident_reported_confirmation_message
 from .service import get_user_profile_by_email, get_user_email
@@ -75,6 +78,15 @@ class RunWorkflowCallbacks(str, Enum):
     update_view = "run_workflow_update_view"
 
 
+class IncidentRatingFeedbackeBlockFields(str, Enum):
+    feedback = "feedback_field"
+    rating = "rating_field"
+
+
+class IncidentRatingFeedbackCallbacks(str, Enum):
+    submit_form = "rating_feedback_submit_form"
+
+
 def handle_modal_action(action: dict, background_tasks: BackgroundTasks):
     """Handles all modal actions."""
     view_data = action["view"]
@@ -98,6 +110,7 @@ def action_functions(action_id: str):
         ],
         RunWorkflowCallbacks.update_view: [update_workflow_modal],
         RunWorkflowCallbacks.submit_form: [run_workflow_submitted_form],
+        IncidentRatingFeedbackCallbacks.submit_form: [rating_feedback_from_submitted_form],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc
@@ -919,3 +932,109 @@ def run_workflow_submitted_form(action: dict, db_session=None):
         workflow_name=instance.workflow.name,
         workflow_description=instance.workflow.description,
     )
+
+
+def build_rating_feedback_blocks(incident: Incident):
+    """Builds all blocks required to rate and provide feedback about an incident."""
+    modal_template = {
+        "type": "modal",
+        "title": {"type": "plain_text", "text": "Incident Feedback"},
+        "blocks": [
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "plain_text",
+                        "text": "Use this form to rate and provide feedback about the incident.",
+                    }
+                ],
+            },
+        ],
+        "close": {"type": "plain_text", "text": "Cancel"},
+        "submit": {"type": "plain_text", "text": "Submit"},
+        "callback_id": IncidentRatingFeedbackCallbacks.submit_form,
+        "private_metadata": json.dumps({"incident_id": str(incident.id)}),
+    }
+
+    rating_picker_options = []
+    for rating in FeedbackRating:
+        rating_picker_options.append(
+            {"text": {"type": "plain_text", "text": rating.value}, "value": rating.value}
+        )
+
+    rating_picker_block = {
+        "type": "input",
+        "block_id": IncidentRatingFeedbackeBlockFields.rating,
+        "label": {"type": "plain_text", "text": "Rating"},
+        "element": {
+            "type": "static_select",
+            "placeholder": {"type": "plain_text", "text": "Select a rating"},
+            "options": rating_picker_options,
+        },
+        "optional": False,
+    }
+    modal_template["blocks"].append(rating_picker_block)
+
+    feedback_block = {
+        "type": "input",
+        "block_id": IncidentRatingFeedbackeBlockFields.feedback,
+        "label": {"type": "plain_text", "text": "Feedback"},
+        "element": {
+            "type": "plain_text_input",
+            "action_id": IncidentRatingFeedbackeBlockFields.feedback,
+            "placeholder": {
+                "type": "plain_text",
+                "text": "How would you describe your experience?",
+            },
+            "multiline": True,
+        },
+        "optional": True,
+    }
+    modal_template["blocks"].append(feedback_block)
+
+    return modal_template
+
+
+@background_task
+def create_rating_feedback_modal(
+    user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
+):
+    """Creates a modal for rating and providing feedback about an incident."""
+    trigger_id = action["trigger_id"]
+
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    modal_create_template = build_rating_feedback_blocks(incident=incident)
+
+    dispatch_slack_service.open_modal_with_user(
+        client=slack_client, trigger_id=trigger_id, modal=modal_create_template
+    )
+
+
+@background_task
+def rating_feedback_from_submitted_form(action: dict, db_session=None):
+    """Adds rating and feeback to incident based on submitted form data."""
+    user_email = action["user"]["email"]
+
+    submitted_form = action.get("view")
+    parsed_form_data = parse_submitted_form(submitted_form)
+
+    rating = parsed_form_data.get(IncidentRatingFeedbackeBlockFields.rating)["value"]
+    feedback = parsed_form_data.get(IncidentRatingFeedbackeBlockFields.feedback)
+
+    incident_id = action["view"]["private_metadata"]["incident_id"]
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    participant = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=incident_id, email=user_email
+    )
+
+    feedback_in = FeedbackCreate(rating=rating, feedback=feedback)
+    feedback = feedback_service.create(db_session=db_session, feedback_in=feedback_in)
+
+    participant.feedbacks.append(feedback)
+    incident.feedbacks.append(feedback)
+
+    db_session.add(participant)
+    db_session.add(incident)
+    db_session.commit()
