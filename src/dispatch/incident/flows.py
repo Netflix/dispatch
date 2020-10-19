@@ -38,6 +38,7 @@ from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
 from dispatch.incident_type import service as incident_type_service
 from dispatch.individual import service as individual_service
+from dispatch.individual.models import IndividualContact
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant
@@ -163,7 +164,7 @@ def update_external_incident_ticket(
         incident_type_plugin_metadata=incident_type_plugin_metadata,
     )
 
-    log.debug("The external ticket has been updated.")
+    log.debug(f"Updated the external ticket {incident.ticket.resource_id}.")
 
 
 def create_participant_groups(
@@ -631,139 +632,129 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     )
 
 
-@background_task
-def incident_active_flow(incident_id: int, command: Optional[dict] = None, db_session=None):
+def incident_active_status_flow(incident: Incident, db_session=None):
     """Runs the incident active flow."""
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-    # we remind the incident commander to write a tactical report
-    send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
-
-    # we update the status of the external ticket
-    update_external_incident_ticket(incident, db_session)
+    # we un-archive the conversation
+    convo_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    if convo_plugin:
+        convo_plugin.instance.unarchive(incident.conversation.channel_id)
 
 
-@background_task
-def incident_stable_flow(incident_id: int, command: Optional[dict] = None, db_session=None):
+def incident_stable_status_flow(incident: Incident, db_session=None):
     """Runs the incident stable flow."""
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
     # we set the stable time
     incident.stable_at = datetime.utcnow()
 
-    # we remind the incident commander to write a tactical report
-    send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
+    # set time immediately
+    db_session.add(incident)
+    db_session.commit()
 
-    # we update the external ticket
-    update_external_incident_ticket(incident, db_session)
+    if incident.incident_review_document:
+        log.debug("Incident review document already created... skipping creation.")
+        return
 
-    if not incident.incident_review_document:
-        storage_plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
-        if not storage_plugin:
-            log.warning("Incident review document not created, no storage plugin enabled.")
-            db_session.add(incident)
-            db_session.commit()
-            return
+    storage_plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
+    if not storage_plugin:
+        log.warning("Incident review document not created, no storage plugin enabled.")
+        return
 
-        # we create a copy of the incident review document template and we move it to the incident storage
-        incident_review_document_name = f"{incident.name} - Post Incident Review Document"
-        template = document_service.get_incident_review_template(db_session=db_session)
+    # we create a copy of the incident review document template and we move it to the incident storage
+    incident_review_document_name = f"{incident.name} - Post Incident Review Document"
+    template = document_service.get_incident_review_template(db_session=db_session)
 
-        # incident review document is optional
-        if template:
-            incident_review_document = storage_plugin.instance.copy_file(
-                folder_id=incident.storage.resource_id,
-                file_id=template.resource_id,
-                name=incident_review_document_name,
-            )
+    # incident review document is optional
+    if not template:
+        log.warning("No incident review template specificed.")
+        return
 
-            incident_review_document.update(
-                {
-                    "name": incident_review_document_name,
-                    "resource_type": INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
-                }
-            )
+    incident_review_document = storage_plugin.instance.copy_file(
+        folder_id=incident.storage.resource_id,
+        file_id=template.resource_id,
+        name=incident_review_document_name,
+    )
 
-            storage_plugin.instance.move_file(
-                new_folder_id=incident.storage.resource_id,
-                file_id=incident_review_document["id"],
-            )
+    incident_review_document.update(
+        {
+            "name": incident_review_document_name,
+            "resource_type": INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
+        }
+    )
 
-            event_service.log(
-                db_session=db_session,
-                source=storage_plugin.title,
-                description="Incident review document added to storage",
-                incident_id=incident.id,
-            )
+    storage_plugin.instance.move_file(
+        new_folder_id=incident.storage.resource_id,
+        file_id=incident_review_document["id"],
+    )
 
-            document_in = DocumentCreate(
-                name=incident_review_document["name"],
-                resource_id=incident_review_document["id"],
-                resource_type=incident_review_document["resource_type"],
-                weblink=incident_review_document["weblink"],
-            )
-            incident.documents.append(
-                document_service.create(db_session=db_session, document_in=document_in)
-            )
+    event_service.log(
+        db_session=db_session,
+        source=storage_plugin.title,
+        description="Incident review document added to storage",
+        incident_id=incident.id,
+    )
 
-            event_service.log(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description="Incident review document added to incident",
-                incident_id=incident.id,
-            )
+    document_in = DocumentCreate(
+        name=incident_review_document["name"],
+        resource_id=incident_review_document["id"],
+        resource_type=incident_review_document["resource_type"],
+        weblink=incident_review_document["weblink"],
+    )
+    incident.documents.append(
+        document_service.create(db_session=db_session, document_in=document_in)
+    )
 
-            # we update the incident review document
-            document_plugin = plugin_service.get_active(
-                db_session=db_session, plugin_type="document"
-            )
-            if document_plugin:
-                document_plugin.instance.update(
-                    incident.incident_review_document.resource_id,
-                    name=incident.name,
-                    priority=incident.incident_priority.name,
-                    status=incident.status,
-                    type=incident.incident_type.name,
-                    title=incident.title,
-                    description=incident.description,
-                    commander_fullname=incident.commander.name,
-                    conversation_weblink=resolve_attr(incident, "conversation.weblink"),
-                    document_weblink=resolve_attr(incident, "incident_document.weblink"),
-                    storage_weblink=resolve_attr(incident, "storage.weblink"),
-                    ticket_weblink=resolve_attr(incident, "ticket.weblink"),
-                    conference_weblink=resolve_attr(incident, "conference.weblink"),
-                    conference_challenge=resolve_attr(incident, "conference.challendge"),
-                )
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Incident review document added to incident",
+        incident_id=incident.id,
+    )
 
-            # we send a notification about the incident review document to the conversation
-            send_incident_review_document_notification(
-                incident.conversation.channel_id,
-                incident.incident_review_document.weblink,
-                db_session,
-            )
+    # we update the incident review document
+    document_plugin = plugin_service.get_active(db_session=db_session, plugin_type="document")
+    if document_plugin:
+        document_plugin.instance.update(
+            incident.incident_review_document.resource_id,
+            name=incident.name,
+            priority=incident.incident_priority.name,
+            status=incident.status,
+            type=incident.incident_type.name,
+            title=incident.title,
+            description=incident.description,
+            commander_fullname=incident.commander.name,
+            conversation_weblink=resolve_attr(incident, "conversation.weblink"),
+            document_weblink=resolve_attr(incident, "incident_document.weblink"),
+            storage_weblink=resolve_attr(incident, "storage.weblink"),
+            ticket_weblink=resolve_attr(incident, "ticket.weblink"),
+            conference_weblink=resolve_attr(incident, "conference.weblink"),
+            conference_challenge=resolve_attr(incident, "conference.challendge"),
+        )
+    else:
+        log.warning("No document plugin enabled, could not update template.")
+
+    # we send a notification about the incident review document to the conversation
+    send_incident_review_document_notification(
+        incident.conversation.channel_id,
+        incident.incident_review_document.weblink,
+        db_session,
+    )
 
     db_session.add(incident)
     db_session.commit()
 
 
-@background_task
-def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_session=None):
+def incident_closed_status_flow(incident: Incident, db_session=None):
     """Runs the incident closed flow."""
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
     # we set the closed time
     incident.closed_at = datetime.utcnow()
+
+    # set time immediately
+    db_session.add(incident)
+    db_session.commit()
 
     # we archive the conversation
     convo_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
     if convo_plugin:
         convo_plugin.instance.archive(incident.conversation.channel_id)
-
-    # we update the external ticket
-    update_external_incident_ticket(incident, db_session)
 
     if INCIDENT_STORAGE_OPEN_ON_CLOSE:
         # incidents with restricted visibility are never opened
@@ -773,31 +764,13 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
             if storage_plugin:
                 storage_plugin.instance.open(incident.storage.resource_id)
 
-    # we send a direct message to the incident commander asking to review
-    # the incident's information and to tag the incident if appropiate
-    send_incident_closed_information_review_reminder(incident, db_session)
-
-    # we delete the tactical and notification groups
-    delete_participant_groups(incident, db_session)
-
-    # we delete the conference
-    delete_conference(incident, db_session)
-
-    db_session.add(incident)
-    db_session.commit()
-
-
-@background_task
-def incident_update_flow(
-    user_email: str, incident_id: int, previous_incident: IncidentRead, notify=True, db_session=None
+def conversation_topic_dispatcher(
+    incident: Incident,
+    previous_incident: dict,
+    individual: IndividualContact,
+    db_session: SessionLocal,
 ):
-    """Runs the incident update flow."""
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-    # we load the individual
-    individual = individual_service.get_by_email(db_session=db_session, email=user_email)
-
+    """Determines if the conversation topic needs to be updated."""
     conversation_topic_change = False
     if previous_incident.title != incident.title:
         event_service.log(
@@ -855,41 +828,90 @@ def incident_update_flow(
         if incident.status != IncidentStatus.closed:
             set_conversation_topic(incident, db_session)
 
-    if notify:
-        send_incident_update_notifications(incident, previous_incident, db_session)
+
+def status_flow_dispatcher(
+    incident: Incident,
+    current_status: IncidentStatus,
+    previous_status: IncidentStatus,
+    db_session=SessionLocal,
+):
+    """Runs the correct flows depending on the incident's current and previous status."""
+    # we have a currently active incident
+    if current_status == IncidentStatus.active:
+        # re-activate incident
+        incident_active_status_flow(incident=incident, db_session=db_session)
+        send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
+
+    # we currently have a stable incident
+    elif current_status == IncidentStatus.stable:
+        if previous_status == IncidentStatus.active:
+            incident_stable_status_flow(incident=incident, db_session=db_session)
+        elif previous_status == IncidentStatus.closed:
+            incident_active_status_flow(incident=incident, db_session=db_session)
+            incident_stable_status_flow(incident=incident, db_session=db_session)
+        send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
+
+    # we currently have a closed incident
+    elif current_status == IncidentStatus.closed:
+        if previous_status == IncidentStatus.active:
+            incident_stable_status_flow(incident=incident, db_session=db_session)
+            incident_closed_status_flow(incident=incident, db_session=db_session)
+
+        elif previous_status == IncidentStatus.stable:
+            incident_closed_status_flow(incident=incident, db_session=db_session)
+
+
+def resolve_incident_participants(incident: Incident, db_session: SessionLocal):
+    """Controls how and when participants are resolved and associated with an incident."""
+    # only add resolve new partcipants in some situations
+    if incident.status == IncidentStatus.active:
+        # get the incident participants based on incident type and priority
+        individual_participants, team_participants = get_incident_participants(incident, db_session)
+
+        # lets not attempt to add new participants for non-active incidents (it's confusing)
+        if incident.status == IncidentStatus.active:
+            # we add the individuals as incident participants
+            for individual in individual_participants:
+                incident_add_or_reactivate_participant_flow(
+                    individual.email, incident.id, db_session=db_session
+                )
+
+        team_participant_emails = [x.email for x in team_participants]
+
+        # we add the team distributions lists to the notifications group
+        group_plugin = plugin_service.get_active(
+            db_session=db_session, plugin_type="participant-group"
+        )
+        if group_plugin:
+            group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
+
+
+@background_task
+def incident_update_flow(
+    user_email: str, incident_id: int, previous_incident: IncidentRead, notify=True, db_session=None
+):
+    """Runs the incident update flow."""
+    # we load the incident instance
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    # we load the individual
+    individual = individual_service.get_by_email(db_session=db_session, email=user_email)
+
+    # run whatever flows we need
+    status_flow_dispatcher(
+        incident, incident.status, previous_incident.status.value, db_session=db_session
+    )
+
+    conversation_topic_dispatcher(incident, previous_incident, individual, db_session=db_session)
 
     # we update the external ticket
     update_external_incident_ticket(incident, db_session)
 
-    log.debug(f"Updated the external ticket {incident.ticket.resource_id}.")
+    # add new folks to the incident if appropriate
+    resolve_incident_participants(incident, db_session)
 
-    # get the incident participants based on incident type and priority
-    individual_participants, team_participants = get_incident_participants(incident, db_session)
-
-    # lets not attempt to add new participants for non-active incidents (it's confusing)
-    if incident.status == IncidentStatus.active:
-        # we add the individuals as incident participants
-        for individual in individual_participants:
-            incident_add_or_reactivate_participant_flow(
-                individual.email, incident.id, db_session=db_session
-            )
-
-    team_participant_emails = [x.email for x in team_participants]
-
-    # we add the team distributions lists to the notifications group
-    group_plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant-group")
-    if group_plugin:
-        group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
-
-    if previous_incident.status.value != incident.status:
-        if incident.status == IncidentStatus.active:
-            incident_active_flow(incident_id=incident.id, db_session=db_session)
-        elif incident.status == IncidentStatus.stable:
-            incident_stable_flow(incident_id=incident.id, db_session=db_session)
-        elif incident.status == IncidentStatus.closed:
-            if previous_incident.status.value == IncidentStatus.active:
-                incident_stable_flow(incident_id=incident.id, db_session=db_session)
-            incident_closed_flow(incident_id=incident.id, db_session=db_session)
+    if notify:
+        send_incident_update_notifications(incident, previous_incident, db_session)
 
 
 @background_task
