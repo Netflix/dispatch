@@ -20,7 +20,6 @@ from dispatch.feedback.enums import FeedbackRating
 from dispatch.incident.models import Incident, IncidentRead
 from dispatch.messaging import (
     INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION,
-    INCIDENT_CLOSED_RATING_FEEDBACK_MESSAGE,
     INCIDENT_COMMANDER,
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
     INCIDENT_NAME,
@@ -762,7 +761,7 @@ def send_incident_rating_feedback_message(incident: Incident, db_session: Sessio
     them to rate and provide feedback about the incident.
     """
     notification_text = "Incident Rating and Feedback"
-    notification_template = INCIDENT_CLOSED_RATING_FEEDBACK_MESSAGE
+    notification_template = []
 
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
     if not plugin:
@@ -771,36 +770,20 @@ def send_incident_rating_feedback_message(incident: Incident, db_session: Sessio
         )
         return
 
-    # rating_options = []
-    # for rating in FeedbackRating:
-    #     rating_options.append({"label": rating.name, "value": rating.value})
-    #
-    # blocks = [
-    #     {
-    #         "type": "header",
-    #         "text": {"type": "plain_text", "text": f"{incident.name} {notification_text}"},
-    #     },
-    #     {
-    #         "type": "section",
-    #         "text": {
-    #             "type": "mrkdwn",
-    #             "text": f"Thanks for participating in the {incident.name} incident. We would appreciate if you could rate your experience and provide feedback.",
-    #         },
-    #         "accessory": {
-    #             "type": "image",
-    #             "image_url": participant_avatar_url,
-    #             "alt_text": participant_name,
-    #         },
-    #     },
-    # ]
-    #
-    # for participant in incident.participants:
-    #     plugin.instance.send_direct(
-    #         participant.individual.email,
-    #         notification_text,
-    #         notification_template,
-    #         MessageType.incident_rating_feedback_message,
-    #         blocks=blocks,
-    #     )
+    items = [
+        {
+            "id": incident.id,
+            "name": incident.name,
+        }
+    ]
+
+    for participant in incident.participants:
+        plugin.instance.send_direct(
+            participant.individual.email,
+            notification_text,
+            notification_template,
+            MessageType.incident_rating_feedback,
+            items=items,
+        )
 
     log.debug("Incident rating and feedback message sent to all participants.")
