@@ -24,13 +24,14 @@ class MessageType(str, Enum):
     incident_daily_summary_no_incidents = "incident-daily-summary-no-incidents"
     incident_executive_report = "incident-executive-report"
     incident_notification = "incident-notification"
+    incident_participant_suggested_reading = "incident-participant-suggested-reading"
     incident_participant_welcome = "incident-participant-welcome"
+    incident_rating_feedback_message = "incident-rating-feedback-message"
     incident_resources_message = "incident-resources-message"
+    incident_status_reminder = "incident-status-reminder"
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
-    incident_status_reminder = "incident-status-reminder"
-    incident_participant_suggested_reading = "incident-participant-suggested-reading"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {

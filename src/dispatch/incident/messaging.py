@@ -16,8 +16,10 @@ from dispatch.database import SessionLocal, resolve_attr
 from dispatch.enums import Visibility
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
+from dispatch.feedback.enums import FeedbackRating
 from dispatch.incident.models import Incident, IncidentRead
 from dispatch.messaging import (
+    INCIDENT_CLOSED_RATING_FEEDBACK_MESSAGE,
     INCIDENT_COMMANDER,
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
     INCIDENT_NAME,
@@ -31,8 +33,8 @@ from dispatch.messaging import (
     INCIDENT_RESOURCES_MESSAGE,
     INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_STATUS_CHANGE,
-    INCIDENT_TYPE_CHANGE,
     INCIDENT_STATUS_REMINDER,
+    INCIDENT_TYPE_CHANGE,
     MessageType,
 )
 from dispatch.document import service as document_service
@@ -616,7 +618,7 @@ def send_incident_review_document_notification(
 
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
     if not plugin:
-        log.warning("Incident review document not sent, no conversationenabled.")
+        log.warning("Incident review document not sent, no conversation enabled.")
         return
 
     plugin.instance.send(
@@ -713,3 +715,53 @@ def send_incident_close_reminder(incident: Incident, db_session: SessionLocal):
     )
 
     log.debug(f"Incident close reminder sent to {incident.commander.email}.")
+
+
+def send_incident_rating_feedback_message(incident: Incident, db_session: SessionLocal):
+    """
+    Sends a direct message to all incident participants asking
+    them to rate and provide feedback about the incident.
+    """
+    notification_text = "Incident Rating and Feedback"
+    notification_template = INCIDENT_CLOSED_RATING_FEEDBACK_MESSAGE
+
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    if not plugin:
+        log.warning(
+            "Incident rating and feedback message not sent, no conversation plugin enabled."
+        )
+        return
+
+    # rating_options = []
+    # for rating in FeedbackRating:
+    #     rating_options.append({"label": rating.name, "value": rating.value})
+    #
+    # blocks = [
+    #     {
+    #         "type": "header",
+    #         "text": {"type": "plain_text", "text": f"{incident.name} {notification_text}"},
+    #     },
+    #     {
+    #         "type": "section",
+    #         "text": {
+    #             "type": "mrkdwn",
+    #             "text": f"Thanks for participating in the {incident.name} incident. We would appreciate if you could rate your experience and provide feedback.",
+    #         },
+    #         "accessory": {
+    #             "type": "image",
+    #             "image_url": participant_avatar_url,
+    #             "alt_text": participant_name,
+    #         },
+    #     },
+    # ]
+    #
+    # for participant in incident.participants:
+    #     plugin.instance.send_direct(
+    #         participant.individual.email,
+    #         notification_text,
+    #         notification_template,
+    #         MessageType.incident_rating_feedback_message,
+    #         blocks=blocks,
+    #     )
+
+    log.debug("Incident rating and feedback message sent to all participants.")
