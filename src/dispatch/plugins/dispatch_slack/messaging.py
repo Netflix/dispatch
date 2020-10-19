@@ -200,6 +200,10 @@ def get_template(message_type: MessageType):
             None,
         ),
         MessageType.incident_task_list: (default_notification, INCIDENT_TASK_LIST_DESCRIPTION),
+        MessageType.incident_closed_information_review_reminder: (
+            default_notification,
+            None,
+        ),
     }
 
     template_func, description = template_map.get(message_type, (None, None))
