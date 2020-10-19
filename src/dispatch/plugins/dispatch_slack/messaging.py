@@ -145,10 +145,17 @@ def create_command_run_in_conversation_where_bot_not_present_message(
 
 
 def create_incident_reported_confirmation_message(
-    title: str, incident_type: str, incident_priority: str
+    title: str, description: str, incident_type: str, incident_priority: str
 ):
     """Creates an incident reported confirmation message."""
     return [
+        {
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": "Security Incident Reported",
+            },
+        },
         {
             "type": "section",
             "text": {
@@ -157,6 +164,10 @@ def create_incident_reported_confirmation_message(
             },
         },
         {"type": "section", "text": {"type": "mrkdwn", "text": f"*Incident Title*: {title}"}},
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"*Incident Description*: {description}"},
+        },
         {
             "type": "section",
             "text": {"type": "mrkdwn", "text": f"*Incident Type*: {incident_type}"},
@@ -189,6 +200,10 @@ def get_template(message_type: MessageType):
             None,
         ),
         MessageType.incident_task_list: (default_notification, INCIDENT_TASK_LIST_DESCRIPTION),
+        MessageType.incident_closed_information_review_reminder: (
+            default_notification,
+            None,
+        ),
     }
 
     template_func, description = template_map.get(message_type, (None, None))
@@ -204,7 +219,7 @@ def format_default_text(item: dict):
     if item.get("title_link"):
         return f"*<{item['title_link']}|{item['title']}>*\n{item['text']}"
     if item.get("datetime"):
-        return f"*{item['title']}* \n <!date^{int(item['datetime'].timestamp())}^ {{date}} | {item['datetime']}"
+        return f"*{item['title']}*\n <!date^{int(item['datetime'].timestamp())}^ {{date}} | {item['datetime']}"
     return f"*{item['title']}*\n{item['text']}"
 
 
@@ -219,7 +234,10 @@ def default_notification(items: list):
         if item.get("title_link") == "None":  # avoid adding blocks with no data
             continue
 
-        block = {"type": "section", "text": {"type": "mrkdwn", "text": format_default_text(item)}}
+        block = {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": format_default_text(item)},
+        }
 
         if item.get("button_text") and item.get("button_value"):
             block.update(

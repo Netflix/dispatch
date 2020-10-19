@@ -19,6 +19,7 @@ from dispatch.incident.enums import IncidentStatus
 from dispatch.feedback.enums import FeedbackRating
 from dispatch.incident.models import Incident, IncidentRead
 from dispatch.messaging import (
+    INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION,
     INCIDENT_CLOSED_RATING_FEEDBACK_MESSAGE,
     INCIDENT_COMMANDER,
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
@@ -691,7 +692,7 @@ def send_incident_close_reminder(incident: Incident, db_session: SessionLocal):
 
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
     if not plugin:
-        log.warning("Incident close reminder message not set, no conversation plugin enabled.")
+        log.warning("Incident close reminder message not sent, no conversation plugin enabled.")
         return
 
     update_command = plugin.instance.get_command_name(ConversationCommands.update_incident)
@@ -715,6 +716,44 @@ def send_incident_close_reminder(incident: Incident, db_session: SessionLocal):
     )
 
     log.debug(f"Incident close reminder sent to {incident.commander.email}.")
+
+
+def send_incident_closed_information_review_reminder(incident: Incident, db_session: SessionLocal):
+    """
+    Sends a direct message to the incident commander
+    asking them to review the incident's information
+    and to tag the incident if appropriate.
+    """
+    message_text = "Incident Closed Information Review Reminder"
+    message_template = INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION
+
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    if not plugin:
+        log.warning(
+            "Incident closed information review reminder message not sent, no conversation plugin enabled."
+        )
+        return
+
+    items = [
+        {
+            "name": incident.name,
+            "title": incident.title,
+            "description": incident.description,
+            "type": incident.incident_type.name,
+            "priority": incident.incident_priority.name,
+            "dispatch_ui_url": DISPATCH_UI_URL,
+        }
+    ]
+
+    plugin.instance.send_direct(
+        incident.commander.email,
+        message_text,
+        message_template,
+        MessageType.incident_closed_information_review_reminder,
+        items=items,
+    )
+
+    log.debug(f"Incident closed information review reminder sent to {incident.commander.email}.")
 
 
 def send_incident_rating_feedback_message(incident: Incident, db_session: SessionLocal):

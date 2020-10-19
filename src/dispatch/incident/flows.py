@@ -54,6 +54,7 @@ from dispatch.ticket.models import TicketCreate
 
 from .messaging import (
     get_suggested_document_items,
+    send_incident_closed_information_review_reminder,
     send_incident_commander_readded_notification,
     send_incident_new_role_assigned_notification,
     send_incident_notifications,
@@ -772,6 +773,10 @@ def incident_closed_flow(incident_id: int, command: Optional[dict] = None, db_se
             storage_plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
             if storage_plugin:
                 storage_plugin.instance.open(incident.storage.resource_id)
+
+    # we send a direct message to the incident commander asking to review
+    # the incident's information and to tag the incident if appropiate
+    send_incident_closed_information_review_reminder(incident, db_session)
 
     # we send a direct message to all participants asking them
     # to rate and provide feedback about the incident
