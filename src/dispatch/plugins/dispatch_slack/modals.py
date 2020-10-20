@@ -78,7 +78,8 @@ class RunWorkflowCallbacks(str, Enum):
     update_view = "run_workflow_update_view"
 
 
-class IncidentRatingFeedbackeBlockFields(str, Enum):
+class IncidentRatingFeedbackBlockFields(str, Enum):
+    anonymous = "anonymous_field"
     feedback = "feedback_field"
     rating = "rating_field"
 
@@ -137,6 +138,18 @@ def parse_submitted_form(view_data: dict):
                 parsed_data[state] = {
                     "name": elem_key_value_pair.get("selected_option").get("text").get("text"),
                     "value": elem_key_value_pair.get("selected_option").get("value"),
+                }
+            elif "selected_options" in elem_key_value_pair.keys():
+                name = "No option selected"
+                value = ""
+
+                if elem_key_value_pair.get("selected_options"):
+                    name = elem_key_value_pair.get("selected_options")[0].get("text").get("text")
+                    value = elem_key_value_pair.get("selected_options")[0].get("value")
+
+                parsed_data[state] = {
+                    "name": name,
+                    "value": value,
                 }
             elif elem_key_value_pair.get("selected_date"):
                 parsed_data[state] = elem_key_value_pair.get("selected_date")
@@ -945,7 +958,7 @@ def build_rating_feedback_blocks(incident: Incident):
                 "elements": [
                     {
                         "type": "plain_text",
-                        "text": "Use this form to rate and provide feedback about the incident.",
+                        "text": "Use this form to rate your experience and provide feedback about the incident.",
                     }
                 ],
             },
@@ -964,8 +977,8 @@ def build_rating_feedback_blocks(incident: Incident):
 
     rating_picker_block = {
         "type": "input",
-        "block_id": IncidentRatingFeedbackeBlockFields.rating,
-        "label": {"type": "plain_text", "text": "Rating"},
+        "block_id": IncidentRatingFeedbackBlockFields.rating,
+        "label": {"type": "plain_text", "text": "Rate your experience"},
         "element": {
             "type": "static_select",
             "placeholder": {"type": "plain_text", "text": "Select a rating"},
@@ -977,11 +990,11 @@ def build_rating_feedback_blocks(incident: Incident):
 
     feedback_block = {
         "type": "input",
-        "block_id": IncidentRatingFeedbackeBlockFields.feedback,
-        "label": {"type": "plain_text", "text": "Feedback"},
+        "block_id": IncidentRatingFeedbackBlockFields.feedback,
+        "label": {"type": "plain_text", "text": "Give us feedback"},
         "element": {
             "type": "plain_text_input",
-            "action_id": IncidentRatingFeedbackeBlockFields.feedback,
+            "action_id": IncidentRatingFeedbackBlockFields.feedback,
             "placeholder": {
                 "type": "plain_text",
                 "text": "How would you describe your experience?",
@@ -991,6 +1004,27 @@ def build_rating_feedback_blocks(incident: Incident):
         "optional": True,
     }
     modal_template["blocks"].append(feedback_block)
+
+    anonymous_checkbox_block = {
+        "type": "input",
+        "block_id": IncidentRatingFeedbackBlockFields.anonymous,
+        "label": {
+            "type": "plain_text",
+            "text": "Check the box if you wish to provide your feedback anonymously",
+        },
+        "element": {
+            "type": "checkboxes",
+            "action_id": IncidentRatingFeedbackBlockFields.anonymous,
+            "options": [
+                {
+                    "value": "anonymous",
+                    "text": {"type": "plain_text", "text": "Anonymize my feedback"},
+                },
+            ],
+        },
+        "optional": True,
+    }
+    modal_template["blocks"].append(anonymous_checkbox_block)
 
     return modal_template
 
@@ -1014,27 +1048,29 @@ def create_rating_feedback_modal(
 @background_task
 def rating_feedback_from_submitted_form(action: dict, db_session=None):
     """Adds rating and feeback to incident based on submitted form data."""
-    user_email = action["user"]["email"]
-
-    submitted_form = action.get("view")
-    parsed_form_data = parse_submitted_form(submitted_form)
-
-    rating = parsed_form_data.get(IncidentRatingFeedbackeBlockFields.rating)["value"]
-    feedback = parsed_form_data.get(IncidentRatingFeedbackeBlockFields.feedback)
-
     incident_id = action["view"]["private_metadata"]["incident_id"]
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
+    user_email = action["user"]["email"]
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident_id, email=user_email
     )
 
+    submitted_form = action.get("view")
+    parsed_form_data = parse_submitted_form(submitted_form)
+
+    feedback = parsed_form_data.get(IncidentRatingFeedbackBlockFields.feedback)
+    rating = parsed_form_data.get(IncidentRatingFeedbackBlockFields.rating)["value"]
+    anonymous = parsed_form_data.get(IncidentRatingFeedbackBlockFields.anonymous)["value"]
+
     feedback_in = FeedbackCreate(rating=rating, feedback=feedback)
     feedback = feedback_service.create(db_session=db_session, feedback_in=feedback_in)
 
-    participant.feedbacks.append(feedback)
     incident.feedbacks.append(feedback)
 
-    db_session.add(participant)
+    if anonymous == "":
+        participant.feedbacks.append(feedback)
+        db_session.add(participant)
+
     db_session.add(incident)
     db_session.commit()
