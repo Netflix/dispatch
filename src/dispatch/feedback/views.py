@@ -18,7 +18,7 @@ router = APIRouter()
 
 
 @router.get("/", response_model=FeedbackPagination)
-def get_feedbacks(
+def get_feedback_entries(
     db_session: Session = Depends(get_db),
     page: int = 1,
     items_per_page: int = Query(5, alias="itemsPerPage"),
@@ -30,7 +30,7 @@ def get_feedbacks(
     values: List[str] = Query(None, alias="value[]"),
 ):
     """
-    Get all pieces of feedback, or only those matching a given search term.
+    Get all feedback entries, or only those matching a given search term.
     """
     return search_filter_sort_paginate(
         db_session=db_session,
@@ -49,20 +49,18 @@ def get_feedbacks(
 @router.get("/{feedback_id}", response_model=FeedbackRead)
 def get_feedback(*, db_session: Session = Depends(get_db), feedback_id: int):
     """
-    Get a piece of feedback by its id.
+    Get a feedback entry by its id.
     """
     feedback = get(db_session=db_session, feedback_id=feedback_id)
     if not feedback:
-        raise HTTPException(
-            status_code=404, detail="A piece of feedback with this id does not exist."
-        )
+        raise HTTPException(status_code=404, detail="A feedback entry with this id does not exist.")
     return feedback
 
 
 @router.post("/", response_model=FeedbackRead)
 def create_feedback(*, db_session: Session = Depends(get_db), feedback_in: FeedbackCreate):
     """
-    Create a new feedback.
+    Create a new feedback entry.
     """
     feedback = create(db_session=db_session, feedback_in=feedback_in)
     return feedback
@@ -73,13 +71,11 @@ def update_feedback(
     *, db_session: Session = Depends(get_db), feedback_id: int, feedback_in: FeedbackUpdate
 ):
     """
-    Updates a piece of feeback by its id.
+    Updates a feeback entry by its id.
     """
     feedback = get(db_session=db_session, feedback_id=feedback_id)
     if not feedback:
-        raise HTTPException(
-            status_code=404, detail="A piece of feedback with this id does not exist."
-        )
+        raise HTTPException(status_code=404, detail="A feedback entry with this id does not exist.")
     feedback = update(db_session=db_session, feedback=feedback, feedback_in=feedback_in)
     return feedback
 
@@ -87,11 +83,9 @@ def update_feedback(
 @router.delete("/{feedback_id}")
 def delete_feedback(*, db_session: Session = Depends(get_db), feedback_id: int):
     """
-    Delete a piece of feedback, returning only an HTTP 200 OK if successful.
+    Delete a feedback entry, returning only an HTTP 200 OK if successful.
     """
     feedback = get(db_session=db_session, feedback_id=feedback_id)
     if not feedback:
-        raise HTTPException(
-            status_code=404, detail="A piece of feedback with this id does not exist."
-        )
+        raise HTTPException(status_code=404, detail="A feedback entry with this id does not exist.")
     delete(db_session=db_session, feedback_id=feedback_id)

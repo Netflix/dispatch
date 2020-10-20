@@ -62,7 +62,7 @@ authenticated_api_router.include_router(
 )
 authenticated_api_router.include_router(workflow_router, prefix="/workflows", tags=["workflows"])
 authenticated_api_router.include_router(plugin_router, prefix="/plugins", tags=["plugins"])
-authenticated_api_router.include_router(feedback_router, prefix="/feedbacks", tags=["feedbacks"])
+authenticated_api_router.include_router(feedback_router, prefix="/feedback", tags=["feedback"])
 
 doc_router = APIRouter()
 

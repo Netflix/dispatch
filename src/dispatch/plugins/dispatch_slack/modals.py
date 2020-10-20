@@ -1066,10 +1066,10 @@ def rating_feedback_from_submitted_form(action: dict, db_session=None):
     feedback_in = FeedbackCreate(rating=rating, feedback=feedback)
     feedback = feedback_service.create(db_session=db_session, feedback_in=feedback_in)
 
-    incident.feedbacks.append(feedback)
+    incident.feedback.append(feedback)
 
     if anonymous == "":
-        participant.feedbacks.append(feedback)
+        participant.feedback.append(feedback)
         db_session.add(participant)
 
     db_session.add(incident)
