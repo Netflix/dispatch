@@ -16,7 +16,6 @@ from dispatch.database import SessionLocal, resolve_attr
 from dispatch.enums import Visibility
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
-from dispatch.feedback.enums import FeedbackRating
 from dispatch.incident.models import Incident, IncidentRead
 from dispatch.messaging import (
     INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION,
