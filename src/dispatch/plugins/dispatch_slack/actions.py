@@ -23,6 +23,7 @@ from .config import (
     SLACK_COMMAND_RUN_WORKFLOW_SLUG,
 )
 
+from .modals import create_rating_feedback_modal
 from .service import get_user_email
 
 
@@ -149,6 +150,7 @@ def block_action_functions(action: str):
     action_mappings = {
         ConversationButtonActions.invite_user: [add_user_to_conversation],
         ConversationButtonActions.update_task_status: [update_task_status],
+        ConversationButtonActions.provide_feedback: [create_rating_feedback_modal],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc

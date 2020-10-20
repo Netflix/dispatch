@@ -198,6 +198,7 @@ class Incident(Base, TimeStampMixin):
     conversation = relationship("Conversation", uselist=False, backref="incident")
     documents = relationship("Document", lazy="subquery", backref="incident")
     events = relationship("Event", backref="incident")
+    feedback = relationship("Feedback", backref="incident")
     groups = relationship("Group", lazy="subquery", backref="incident")
     incident_priority = relationship("IncidentPriority", backref="incident")
     incident_priority_id = Column(Integer, ForeignKey("incident_priority.id"))

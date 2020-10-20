@@ -27,6 +27,7 @@ class Participant(Base):
     after_hours_notification = Column(Boolean, default=False)
 
     # relationships
+    feedback = relationship("Feedback", backref="participant")
     incident_id = Column(Integer, ForeignKey("incident.id"))
     individual = relationship("IndividualContact", lazy="subquery", backref="participant")
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))

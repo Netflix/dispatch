@@ -60,6 +60,7 @@ from .messaging import (
     send_incident_new_role_assigned_notification,
     send_incident_notifications,
     send_incident_participant_announcement_message,
+    send_incident_rating_feedback_message,
     send_incident_resources_ephemeral_message_to_participant,
     send_incident_review_document_notification,
     send_incident_suggested_reading_messages,
@@ -763,6 +764,15 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
             storage_plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
             if storage_plugin:
                 storage_plugin.instance.open(incident.storage.resource_id)
+
+    # we send a direct message to the incident commander asking to review
+    # the incident's information and to tag the incident if appropiate
+    send_incident_closed_information_review_reminder(incident, db_session)
+
+    # we send a direct message to all participants asking them
+    # to rate and provide feedback about the incident
+    send_incident_rating_feedback_message(incident, db_session)
+
 
 def conversation_topic_dispatcher(
     incident: Incident,

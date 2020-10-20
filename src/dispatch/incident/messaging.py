@@ -16,9 +16,11 @@ from dispatch.database import SessionLocal, resolve_attr
 from dispatch.enums import Visibility
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
+from dispatch.feedback.enums import FeedbackRating
 from dispatch.incident.models import Incident, IncidentRead
 from dispatch.messaging import (
     INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION,
+    INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION,
     INCIDENT_COMMANDER,
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
     INCIDENT_NAME,
@@ -617,7 +619,7 @@ def send_incident_review_document_notification(
 
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
     if not plugin:
-        log.warning("Incident review document not sent, no conversationenabled.")
+        log.warning("Incident review document not sent, no conversation enabled.")
         return
 
     plugin.instance.send(
@@ -752,3 +754,38 @@ def send_incident_closed_information_review_reminder(incident: Incident, db_sess
     )
 
     log.debug(f"Incident closed information review reminder sent to {incident.commander.email}.")
+
+
+def send_incident_rating_feedback_message(incident: Incident, db_session: SessionLocal):
+    """
+    Sends a direct message to all incident participants asking
+    them to rate and provide feedback about the incident.
+    """
+    notification_text = "Incident Rating and Feedback"
+    notification_template = INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION
+
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    if not plugin:
+        log.warning(
+            "Incident rating and feedback message not sent, no conversation plugin enabled."
+        )
+        return
+
+    items = [
+        {
+            "incident_id": incident.id,
+            "name": incident.name,
+            "ticket_weblink": incident.ticket.weblink,
+        }
+    ]
+
+    for participant in incident.participants:
+        plugin.instance.send_direct(
+            participant.individual.email,
+            notification_text,
+            notification_template,
+            MessageType.incident_rating_feedback,
+            items=items,
+        )
+
+    log.debug("Incident rating and feedback message sent to all participants.")
