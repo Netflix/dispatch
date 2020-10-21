@@ -11,7 +11,7 @@ const Menu = [
     title: "Incidents",
     group: "incidents",
     component: "Incidents",
-    icon: "star",
+    icon: "notification_important",
     href: "/incidents"
   },
   {
@@ -20,6 +20,13 @@ const Menu = [
     component: "Tasks",
     icon: "playlist_add_check",
     href: "/tasks"
+  },
+  {
+    title: "Feedback",
+    group: "feedback",
+    component: "Feedback",
+    icon: "feedback",
+    href: "/feedback"
   },
   /*{ header: "Routing" },
   {
