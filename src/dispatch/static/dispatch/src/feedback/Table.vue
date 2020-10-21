@@ -1,7 +1,7 @@
 <template>
   <v-layout wrap>
-    <new-edit-sheet />
-    <delete-dialog />
+    <!-- <new&#45;edit&#45;sheet /> -->
+    <!-- <delete&#45;dialog /> -->
     <div class="headline">Feedback</div>
     <v-spacer />
     <table-filter-dialog />

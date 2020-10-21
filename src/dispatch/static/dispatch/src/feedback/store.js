@@ -32,12 +32,12 @@ const state = {
         incident: [],
         rating: [],
         feedback: [],
-        participant: [],
+        participant: []
       },
       q: "",
       page: 1,
       itemsPerPage: 10,
-      sortBy: ["incident"],
+      sortBy: ["rating"],
       descending: [false]
     },
     loading: false
