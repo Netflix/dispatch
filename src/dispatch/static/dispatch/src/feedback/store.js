@@ -31,6 +31,7 @@ const state = {
       filters: {
         incident: [],
         rating: [],
+        feedback: [],
         participant: [],
       },
       q: "",

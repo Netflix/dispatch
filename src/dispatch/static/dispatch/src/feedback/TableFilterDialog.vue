@@ -45,8 +45,10 @@ export default {
   },
   computed: {
     ...mapFields("feedback", [
+      "table.options.filters.incident",
+      "table.options.filters.rating",
+      "table.options.filters.feedback"
       // "table.options.filters.participant",
-      "table.options.filters.incident"
     ]),
     numFilters: function() {
       return sum([

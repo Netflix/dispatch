@@ -105,6 +105,7 @@ export default {
       "table.options.descending",
       "table.options.filters.incident",
       "table.options.filters.rating",
+      "table.options.filters.feedback",
       "table.options.filters.participant",
       "table.loading",
       "table.rows.items",
