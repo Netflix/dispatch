@@ -27,11 +27,10 @@ instance.interceptors.response.use(
     return res
   },
   function(err) {
-    // TODO account for other auth providers
-
     if (err.response.status == 401) {
       if (authProviderSlug === "dispatch-auth-provider-basic") {
         router.push({ path: "/login" })
+        store.dispatch("auth/logout")
       }
     }
     if (err.response.status == 500) {
