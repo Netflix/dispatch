@@ -26,6 +26,7 @@ class MessageType(str, Enum):
     incident_notification = "incident-notification"
     incident_participant_suggested_reading = "incident-participant-suggested-reading"
     incident_participant_welcome = "incident-participant-welcome"
+    incident_rating_feedback = "incident-rating-feedback"
     incident_resources_message = "incident-resources-message"
     incident_status_reminder = "incident-status-reminder"
     incident_tactical_report = "incident-tactical-report"
@@ -254,6 +255,9 @@ This workflow's status has changed from *{{ instance_status_old }}* to *{{ insta
 
 INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_DESCRIPTION = """
 Thanks for closing incident {{name}}. Is the following incident information up to date? If not, please edit the incident in the <{{dispatch_ui_url}}|Dispatch Web UI>. If it's appropriate, consider adding relevant tags to the incident using the Web UI. This will help us correlate incidents and generate metrics.\n\n*Title:* {{title}}\n*Description:* {{description}}\n*Incident Type:* {{type}}\n*Incident Priority:* {{priority}}"""
+
+INCIDENT_CLOSED_RATING_FEEDBACK_DESCRIPTION = """
+Thanks for participating in the {{name}} incident. We would appreciate if you could rate your experience and provide feedback."""
 
 INCIDENT_TYPE_CHANGE_DESCRIPTION = """
 The incident type has been changed from *{{ incident_type_old }}* to *{{ incident_type_new }}*."""
@@ -504,6 +508,17 @@ INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION = [
         "title": "{{name}} Incident - Information Review Reminder",
         "title_link": "{{dispatch_ui_url}}",
         "text": INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_DESCRIPTION,
+    }
+]
+
+INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION = [
+    {
+        "title": "{{name}} Incident - Rating and Feedback",
+        "title_link": "{{ticket_weblink}}",
+        "text": INCIDENT_CLOSED_RATING_FEEDBACK_DESCRIPTION,
+        "button_text": "Provide Feeback",
+        "button_value": "{{incident_id}}",
+        "button_action": ConversationButtonActions.provide_feedback,
     }
 ]
 

@@ -27,7 +27,7 @@ def search(
     Perform a search.
     """
     if q:
-        models = [get_class_by_tablename(t.name) for t in type]
+        models = [get_class_by_tablename(t) for t in type]
         results = composite_search(db_session=db_session, query_str=q, models=models)
     else:
         results = []

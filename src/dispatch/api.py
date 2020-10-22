@@ -7,6 +7,7 @@ from dispatch.auth.service import get_current_user
 from dispatch.auth.views import user_router, auth_router
 from dispatch.definition.views import router as definition_router
 from dispatch.document.views import router as document_router
+from dispatch.feedback.views import router as feedback_router
 from dispatch.incident.views import router as incident_router
 from dispatch.incident_priority.views import router as incident_priority_router
 from dispatch.incident_type.views import router as incident_type_router
@@ -61,6 +62,7 @@ authenticated_api_router.include_router(
 )
 authenticated_api_router.include_router(workflow_router, prefix="/workflows", tags=["workflows"])
 authenticated_api_router.include_router(plugin_router, prefix="/plugins", tags=["plugins"])
+authenticated_api_router.include_router(feedback_router, prefix="/feedback", tags=["feedback"])
 
 doc_router = APIRouter()
 

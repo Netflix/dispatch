@@ -204,6 +204,10 @@ def get_template(message_type: MessageType):
             default_notification,
             None,
         ),
+        MessageType.incident_rating_feedback: (
+            default_notification,
+            None,
+        ),
     }
 
     template_func, description = template_map.get(message_type, (None, None))
