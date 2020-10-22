@@ -64,8 +64,9 @@ def get_class_by_tablename(table_fullname: str) -> Any:
     """Return class reference mapped to table."""
     mapped_name = resolve_table_name(table_fullname)
     for c in Base._decl_class_registry.values():
-        if hasattr(c, "__table__") and c.__table__.fullname == mapped_name:
-            return c
+        if hasattr(c, "__table__"):
+            if c.__table__.fullname.lower() == mapped_name.lower():
+                return c
     raise Exception(f"Incorrect tablename '{mapped_name}'. Check the name of your model.")
 
 
