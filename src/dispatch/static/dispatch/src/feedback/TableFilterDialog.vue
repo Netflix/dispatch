@@ -9,14 +9,7 @@
       <v-card-title>
         <span class="headline">Column Filters</span>
       </v-card-title>
-      <v-list dense
-        ><!--
-        <v-list-item>
-          <v-list-item-content>
-            <individual-combobox v-model="participant" label="Participant"></individual-combobox>
-          </v-list-item-content>
-        </v-list-item>
-        -->
+      <v-list dense>
         <v-list-item>
           <v-list-item-content>
             <incident-combobox v-model="incident" />
@@ -30,12 +23,10 @@
 <script>
 import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
-//import IndividualCombobox from "@/individual/IndividualCombobox.vue"
 import IncidentCombobox from "@/incident/IncidentCombobox.vue"
 export default {
   name: "FeedbackTableFilterDialog",
   components: {
-    //IndividualCombobox,
     IncidentCombobox
   },
   data() {
@@ -44,17 +35,9 @@ export default {
     }
   },
   computed: {
-    ...mapFields("feedback", [
-      "table.options.filters.incident",
-      "table.options.filters.rating",
-      "table.options.filters.feedback"
-      // "table.options.filters.participant",
-    ]),
+    ...mapFields("feedback", ["table.options.filters.incident"]),
     numFilters: function() {
-      return sum([
-        // this.participant.length,
-        this.incident.length
-      ])
+      return sum([this.incident.length])
     }
   }
 }

@@ -1,11 +1,11 @@
 <template>
   <v-layout wrap>
     <!-- <new&#45;edit&#45;sheet /> -->
-    <!-- <delete&#45;dialog /> -->
+    <delete-dialog />
     <div class="headline">Feedback</div>
     <v-spacer />
     <table-filter-dialog />
-    <v-btn color="primary" dark class="ml-2" @click="createEditShow()">New</v-btn>
+    <!-- <v&#45;btn color="primary" dark class="ml&#45;2" @click="createEditShow()">New</v&#45;btn> -->
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -55,8 +55,11 @@
                     </v-btn>
                   </template>
                   <v-list>
-                    <v-list-item @click="createEditShow(item)">
-                      <v-list-item-title>Edit</v-list-item-title>
+                    <!-- <v&#45;list&#45;item @click="createEditShow(item)"> -->
+                    <!--   <v&#45;list&#45;item&#45;title>Edit</v&#45;list&#45;item&#45;title> -->
+                    <!-- </v&#45;list&#45;item> -->
+                    <v-list-item @click="removeShow(item)">
+                      <v-list-item-title>Delete</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>
@@ -72,21 +75,21 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-// import DeleteDialog from "@/feedback/DeleteDialog.vue"
+import DeleteDialog from "@/feedback/DeleteDialog.vue"
 // import NewEditSheet from "@/feedback/NewEditSheet.vue"
 import TableFilterDialog from "@/feedback/TableFilterDialog.vue"
 export default {
   name: "FeedbackTable",
 
   components: {
-    TableFilterDialog
-    // DeleteDialog,
+    TableFilterDialog,
+    DeleteDialog
     // NewEditSheet
   },
   data() {
     return {
       headers: [
-        { text: "Incident Name", value: "incident.name", sortable: false },
+        { text: "Incident", value: "incident.name", sortable: false },
         { text: "Rating", value: "rating", sortable: true },
         { text: "Feedback", value: "feedback", sortable: true },
         { text: "Participant", value: "participant", sortable: true },
@@ -142,7 +145,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("feedback", ["getAll"])
+    ...mapActions("feedback", ["getAll", "removeShow"])
     // ...mapActions("feedback", ["getAll", "createEditShow", "removeShow"])
   }
 }

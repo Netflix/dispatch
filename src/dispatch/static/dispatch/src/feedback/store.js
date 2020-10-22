@@ -37,7 +37,7 @@ const state = {
       q: "",
       page: 1,
       itemsPerPage: 10,
-      sortBy: ["rating"],
+      sortBy: ["created_at"],
       descending: [false]
     },
     loading: false
