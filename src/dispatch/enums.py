@@ -9,8 +9,8 @@ class Visibility(str, Enum):
 class SearchTypes(str, Enum):
     term = "Term"
     definition = "Definition"
-    individual_contact = "Individual"
-    team_contact = "Team"
+    individual_contact = "IndividualContact"
+    team_contact = "TeamContact"
     service = "Service"
     policy = "Policy"
     tag = "Tag"
