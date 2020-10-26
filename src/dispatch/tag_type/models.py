@@ -1,6 +1,6 @@
 from typing import List
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Optional
 
 from sqlalchemy_utils import TSVectorType
 
@@ -18,7 +18,7 @@ class TagType(Base, TimeStampMixin):
 # Pydantic models
 class TagTypeBase(DispatchBase):
     name: str
-    description: str
+    description: Optional[str]
 
 
 class TagTypeCreate(TagTypeBase):

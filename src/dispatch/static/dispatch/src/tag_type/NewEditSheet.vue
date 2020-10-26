@@ -44,7 +44,7 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Description" rules="required" immediate>
+                <ValidationProvider name="Description" immediate>
                   <v-textarea
                     v-model="description"
                     slot-scope="{ errors, valid }"
