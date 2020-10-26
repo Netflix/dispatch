@@ -8,9 +8,11 @@ from .models import (
     UserRegister,
     UserRead,
     UserUpdate,
+    UserRoles,
     UserPagination,
     UserLoginResponse,
     UserRegisterResponse,
+    DispatchUser,
 )
 from .service import (
     get,
@@ -65,17 +67,26 @@ def get_user(*, db_session: Session = Depends(get_db), user_id: int):
 
 
 @user_router.put("/{user_id}", response_model=UserUpdate)
-def update_user(*, db_session: Session = Depends(get_db), user_id: int, user_in: UserUpdate):
+def update_user(
+    *,
+    db_session: Session = Depends(get_db),
+    user_id: int,
+    user_in: UserUpdate,
+    current_user: DispatchUser = Depends(get_current_user),
+):
     """
     Update a user.
     """
-    user = get(db_session=db_session, user_id=user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="The user with this id does not exist.")
+    if current_user.role == UserRoles.admin:
+        user = get(db_session=db_session, user_id=user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="The user with this id does not exist.")
 
-    user = update(db_session=db_session, user=user, user_in=user_in)
+        user = update(db_session=db_session, user=user, user_in=user_in)
 
-    return user
+        return user
+
+    raise HTTPException(status_code=401, detail="You do no have permission to view this incident.")
 
 
 @auth_router.post("/login", response_model=UserLoginResponse)
