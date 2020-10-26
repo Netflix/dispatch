@@ -35,23 +35,30 @@ def resolve_incident_commander_email(
     page_commander: bool,
 ):
     """Resolves the correct incident commander email based on given parameters."""
-    commander_service = incident_type_service.get_by_name(
-        db_session=db_session, name=incident_type
-    ).commander_service
+    # We resolve the incident commander email
+    # default to reporter if we don't have an oncall plugin enabled
+    oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
+    if not oncall_plugin:
+        return reporter_email
 
-    p = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
+    incident_type = incident_type_service.get_by_name(db_session=db_session, name=incident_type)
+
+    if not incident_type.commander_service:
+        return reporter_email
+
+    commander_service = incident_type.commander_service
 
     # page for high priority incidents
     # we could do this at the end but it seems pretty important...
     if page_commander:
-        p.instance.page(
+        oncall_plugin.instance.page(
             service_id=commander_service.external_id,
             incident_name=incident_name,
             incident_title=incident_title,
             incident_description=incident_description,
         )
 
-    return p.instance.get(service_id=commander_service.external_id)
+    return oncall_plugin.instance.get(service_id=commander_service.external_id)
 
 
 def get(*, db_session, incident_id: int) -> Optional[Incident]:
@@ -193,21 +200,15 @@ def create(
         reporter_email, incident.id, db_session, ParticipantRoleType.reporter
     )
 
-    # We resolve the incident commander email
-    # default to reporter if we don't have an oncall plugin enabled
-    oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
-    if oncall_plugin:
-        incident_commander_email = resolve_incident_commander_email(
-            db_session,
-            reporter_email,
-            incident_type.name,
-            "",
-            title,
-            description,
-            incident_priority.page_commander,
-        )
-    else:
-        incident_commander_email = reporter_email
+    incident_commander_email = resolve_incident_commander_email(
+        db_session,
+        reporter_email,
+        incident_type.name,
+        "",
+        title,
+        description,
+        incident_priority.page_commander,
+    )
 
     if reporter_email == incident_commander_email:
         # We add the role of incident commander the reporter
