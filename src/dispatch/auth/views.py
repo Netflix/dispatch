@@ -86,7 +86,7 @@ def update_user(
 
         return user
 
-    raise HTTPException(status_code=401, detail="You do no have permission to view this incident.")
+    raise HTTPException(status_code=401, detail="You do no have permission to modify users.")
 
 
 @auth_router.post("/login", response_model=UserLoginResponse)
