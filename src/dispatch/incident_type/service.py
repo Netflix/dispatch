@@ -4,9 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql.expression import true
 
 from dispatch.document import service as document_service
-from dispatch.document.models import Document
 from dispatch.service import service as service_service
-from dispatch.service.models import Service
 
 from .models import IncidentType, IncidentTypeCreate, IncidentTypeUpdate
 
