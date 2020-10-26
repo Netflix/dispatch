@@ -142,11 +142,9 @@ def update_incident(
     if incident.visibility == Visibility.restricted:
         # reject if the user isn't an admin or commander
         if current_user.email != incident.commander.email or current_user.role != UserRoles.admin:
-            return incident
-
-        raise HTTPException(
-            status_code=401, detail="You do no have permission to update this incident."
-        )
+            raise HTTPException(
+                status_code=401, detail="You do no have permission to update this incident."
+            )
 
     previous_incident = IncidentRead.from_orm(incident)
 
