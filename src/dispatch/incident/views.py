@@ -141,10 +141,7 @@ def update_incident(
     # we want to provide additional protections around restricted incidents
     if incident.visibility == Visibility.restricted:
         # reject if the user isn't an admin or commander
-        if incident.commander.email == current_user.email:
-            return incident
-
-        if current_user.role == UserRoles.admin:
+        if current_user.email != incident.commander.email or current_user.role != UserRoles.admin:
             return incident
 
         raise HTTPException(
