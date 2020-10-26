@@ -1,6 +1,6 @@
-from typing import List
+from typing import List, Optional
 
-from sqlalchemy import Column, Integer, String, Optional
+from sqlalchemy import Column, Integer, String
 
 from sqlalchemy_utils import TSVectorType
 
