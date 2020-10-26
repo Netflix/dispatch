@@ -269,7 +269,18 @@ export const protectedRoute = [
       }
     ]
   },
-
+  {
+    path: "/feedback",
+    component: DefaultLayout,
+    meta: { title: "Feedback", icon: "view_compact", group: "incident", requiresAuth: true },
+    children: [
+      {
+        path: "/feedback",
+        name: "FeedbackTable",
+        component: () => import(/* webpackChunkName: "knowledge-table" */ "@/feedback/Table.vue")
+      }
+    ]
+  },
   {
     path: "/terms",
     component: DefaultLayout,

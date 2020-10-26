@@ -5,6 +5,7 @@ import app from "@/app/store"
 import auth from "@/auth/store"
 import definition from "@/definition/store"
 import document from "@/document/store"
+import feedback from "@/feedback/store"
 import incident from "@/incident/store"
 import incident_priority from "@/incident_priority/store"
 import incident_type from "@/incident_type/store"
@@ -29,6 +30,7 @@ export default new Vuex.Store({
     auth,
     definition,
     document,
+    feedback,
     incident,
     incident_priority,
     incident_type,

@@ -23,7 +23,7 @@ export default [
     name: "APP_AUTH_FAILED",
     callback: () => {
       this.$router.push("/login")
-      this.$message.error("Token has expired")
+      this.$message.error("Token has expired.")
     }
   },
   {
