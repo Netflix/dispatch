@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import Column, Integer, String
 
@@ -18,7 +18,7 @@ class TagType(Base, TimeStampMixin):
 # Pydantic models
 class TagTypeBase(DispatchBase):
     name: str
-    description: str
+    description: Optional[str]
 
 
 class TagTypeCreate(TagTypeBase):
