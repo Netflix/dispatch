@@ -138,6 +138,19 @@ def update_incident(
     if not incident:
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
 
+    # we want to provide additional protections around restricted incidents
+    if incident.visibility == Visibility.restricted:
+        # reject if the user isn't an admin or commander
+        if incident.commander.email == current_user.email:
+            return incident
+
+        if current_user.role == UserRoles.admin:
+            return incident
+
+        raise HTTPException(
+            status_code=401, detail="You do no have permission to update this incident."
+        )
+
     previous_incident = IncidentRead.from_orm(incident)
 
     # NOTE: Order matters we have to get the previous state for change detection
