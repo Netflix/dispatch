@@ -107,6 +107,8 @@ def register_user(
 ):
     user = get_by_email(db_session=db_session, email=user_in.email)
     if not user:
+        # we only allow registering as regular user
+        user_in.role = UserRoles.user
         user = create(db_session=db_session, user_in=user_in)
     else:
         raise HTTPException(status_code=400, detail="User with that email address exists.")
