@@ -197,7 +197,7 @@ def join_incident(
     # we want to provide additional protections around restricted incidents
     if incident.visibility == Visibility.restricted:
         # reject if the user isn't an admin
-        if current_user.role != UserRoles.admin:
+        if current_user.role != UserRoles.admin.value:
             raise HTTPException(
                 status_code=401, detail="You do no have permission to join this incident."
             )
