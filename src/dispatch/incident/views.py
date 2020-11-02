@@ -138,6 +138,14 @@ def update_incident(
     if not incident:
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
 
+    # we want to provide additional protections around restricted incidents
+    if incident.visibility == Visibility.restricted:
+        # reject if the user isn't an admin or commander
+        if current_user.email != incident.commander.email or current_user.role != UserRoles.admin:
+            raise HTTPException(
+                status_code=401, detail="You do no have permission to update this incident."
+            )
+
     previous_incident = IncidentRead.from_orm(incident)
 
     # NOTE: Order matters we have to get the previous state for change detection
@@ -185,6 +193,14 @@ def join_incident(
     incident = get(db_session=db_session, incident_id=incident_id)
     if not incident:
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
+
+    # we want to provide additional protections around restricted incidents
+    if incident.visibility == Visibility.restricted:
+        # reject if the user isn't an admin
+        if current_user.role != UserRoles.admin.value:
+            raise HTTPException(
+                status_code=401, detail="You do no have permission to join this incident."
+            )
 
     background_tasks.add_task(
         incident_add_or_reactivate_participant_flow, current_user.email, incident_id=incident.id

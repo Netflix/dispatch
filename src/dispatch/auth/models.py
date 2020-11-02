@@ -92,7 +92,6 @@ class UserLogin(UserBase):
 
 class UserRegister(UserLogin):
     password: Optional[str]
-    role: UserRoles = UserRoles.user
 
     @validator("password", pre=True, always=True)
     def password_required(cls, v):
