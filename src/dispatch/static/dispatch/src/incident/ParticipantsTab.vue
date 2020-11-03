@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="participants">
+    <div v-if="participants.length">
       <span v-for="participant in participants" :key="participant.id">
         <v-list-item :href="participant.individual.weblink" target="_blank">
           <v-list-item-content>
@@ -23,7 +23,9 @@
       </span>
     </div>
     <div v-else>
-      No participant data available.
+      <p class="text-center">
+        No participant data available.
+      </p>
     </div>
   </div>
 </template>

@@ -29,7 +29,9 @@
       </v-timeline-item>
     </v-timeline>
     <div v-else>
-      No timeline data available.
+      <p class="text-center">
+        No timeline data available.
+      </p>
     </div>
   </v-container>
 </template>
