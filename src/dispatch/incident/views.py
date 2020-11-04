@@ -3,25 +3,26 @@ from typing import List
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from dispatch.enums import Visibility
 from dispatch.auth.models import DispatchUser
+from dispatch.auth.models import UserRoles
 from dispatch.auth.service import get_current_user
 from dispatch.database import get_db, search_filter_sort_paginate
+from dispatch.enums import Visibility
 from dispatch.incident.enums import IncidentStatus
-
 from dispatch.participant_role.models import ParticipantRoleType
 
-from dispatch.auth.models import UserRoles
 from .flows import (
+    incident_add_or_reactivate_participant_flow,
+    incident_assign_role_flow,
     incident_create_closed_flow,
     incident_create_flow,
+    incident_create_stable_flow,
     incident_update_flow,
-    incident_assign_role_flow,
-    incident_add_or_reactivate_participant_flow,
 )
+from .metrics import make_forecast
 from .models import IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
 from .service import create, delete, get, update
-from .metrics import make_forecast
+
 
 router = APIRouter()
 
@@ -114,7 +115,9 @@ def create_incident(
         db_session=db_session, reporter_email=current_user.email, **incident_in.dict()
     )
 
-    if incident.status == IncidentStatus.closed:
+    if incident.status == IncidentStatus.stable:
+        background_tasks.add_task(incident_create_stable_flow, incident_id=incident.id)
+    elif incident.status == IncidentStatus.closed:
         background_tasks.add_task(incident_create_closed_flow, incident_id=incident.id)
     else:
         background_tasks.add_task(incident_create_flow, incident_id=incident.id)
