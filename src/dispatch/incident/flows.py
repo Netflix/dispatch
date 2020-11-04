@@ -390,6 +390,9 @@ def incident_create_closed_flow(*, incident_id: int, checkpoint: str = None, db_
     """Creates all resources necessary when an incident is created as 'closed'."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
+    # we set the stable and close times to the reported time
+    incident.stable_at = incident.closed_at = incident.reported_at
+
     ticket = create_incident_ticket(incident, db_session)
     if ticket:
         incident.ticket = ticket_service.create(
