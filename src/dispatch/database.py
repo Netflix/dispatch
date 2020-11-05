@@ -142,7 +142,7 @@ def create_sort_spec(model, sort_by, descending):
 
             # we have a complex field, we may need to join
             if "." in field:
-                complex_model, complex_field = field.split(".")
+                complex_model, complex_field = field.split(".")[-2:]
 
                 sort_spec.append(
                     {
@@ -162,19 +162,18 @@ def get_all(*, db_session, model):
     return db_session.query(get_class_by_tablename(model))
 
 
-def join_required_attrs(query, model, join_attrs, fields):
+def join_required_attrs(query, model, join_attrs, fields, sort_by):
     """Determines which attrs (if any) require a join."""
-    if not fields:
-        return query
+    all_fields = list(set(fields + sort_by))
 
     if not join_attrs:
         return query
 
     for field, attr in join_attrs:
-        for f in fields:
+        # sometimes fields have attributes e.g. "incident_type.id"
+        for f in all_fields:
             if field in f:
                 query = query.join(getattr(model, attr))
-
     return query
 
 
@@ -198,7 +197,7 @@ def search_filter_sort_paginate(
     else:
         query = db_session.query(model_cls)
 
-    query = join_required_attrs(query, model_cls, join_attrs, fields)
+    query = join_required_attrs(query, model_cls, join_attrs, fields, sort_by)
 
     filter_spec = create_filter_spec(model, fields, ops, values)
     query = apply_filters(query, filter_spec)
