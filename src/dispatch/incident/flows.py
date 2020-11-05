@@ -390,7 +390,6 @@ def incident_create_stable_flow(*, incident_id: int, checkpoint: str = None, db_
     """Creates all resources necessary when an incident is created as 'stable'."""
     incident = incident_create_flow(incident_id=incident_id, db_session=db_session)
     incident_stable_status_flow(incident=incident, db_session=db_session)
-    return
 
 
 @background_task
@@ -409,7 +408,6 @@ def incident_create_closed_flow(*, incident_id: int, checkpoint: str = None, db_
 
     db_session.add(incident)
     db_session.commit()
-    return
 
 
 # TODO create some ability to checkpoint
