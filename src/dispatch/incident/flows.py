@@ -386,6 +386,13 @@ def add_participant_to_tactical_group(user_email: str, incident_id: int, db_sess
 
 
 @background_task
+def incident_create_stable_flow(*, incident_id: int, checkpoint: str = None, db_session=None):
+    """Creates all resources necessary when an incident is created as 'stable'."""
+    incident = incident_create_flow(incident_id=incident_id, db_session=db_session)
+    incident_stable_status_flow(incident=incident, db_session=db_session)
+
+
+@background_task
 def incident_create_closed_flow(*, incident_id: int, checkpoint: str = None, db_session=None):
     """Creates all resources necessary when an incident is created as 'closed'."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
@@ -404,7 +411,6 @@ def incident_create_closed_flow(*, incident_id: int, checkpoint: str = None, db_
 
     db_session.add(incident)
     db_session.commit()
-    return
 
 
 # TODO create some ability to checkpoint
@@ -412,7 +418,7 @@ def incident_create_closed_flow(*, incident_id: int, checkpoint: str = None, db_
 # Then checking for the existence of those resources before creating them for
 # this incident.
 @background_task
-def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session=None):
+def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session=None) -> Incident:
     """Creates all resources required for new incidents."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
@@ -634,6 +640,8 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         description="Participants announced and welcome messages sent",
         incident_id=incident.id,
     )
+
+    return incident
 
 
 def incident_active_status_flow(incident: Incident, db_session=None):
