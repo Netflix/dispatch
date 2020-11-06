@@ -386,9 +386,20 @@ def add_participant_to_tactical_group(user_email: str, incident_id: int, db_sess
 
 
 @background_task
+def incident_create_stable_flow(*, incident_id: int, checkpoint: str = None, db_session=None):
+    """Creates all resources necessary when an incident is created as 'stable'."""
+    incident_create_flow(incident_id=incident_id, db_session=db_session)
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    incident_stable_status_flow(incident=incident, db_session=db_session)
+
+
+@background_task
 def incident_create_closed_flow(*, incident_id: int, checkpoint: str = None, db_session=None):
     """Creates all resources necessary when an incident is created as 'closed'."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    # we set the stable and close times to the reported time
+    incident.stable_at = incident.closed_at = incident.reported_at
 
     ticket = create_incident_ticket(incident, db_session)
     if ticket:
@@ -401,7 +412,6 @@ def incident_create_closed_flow(*, incident_id: int, checkpoint: str = None, db_
 
     db_session.add(incident)
     db_session.commit()
-    return
 
 
 # TODO create some ability to checkpoint
