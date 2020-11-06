@@ -1,7 +1,6 @@
 import string
 import secrets
 from typing import List
-from enum import Enum
 from datetime import datetime, timedelta
 
 import bcrypt
