@@ -57,9 +57,9 @@ By default these strings are in plain text, but Dispatch does provide hooks that
 
 ### Authentication
 
-To get going quickly, Dispatch provides a "Basic Authentication" provider that controls access via a username and password combination. While this is useful, by default it allows for open registration. Meaning that anyone will be able to create a Dispatch account if they have network access to your server.
+To get going quickly, Dispatch provides a "Basic Authentication" provider that controls access via a username and password combination. By default, this provider allows for **open registration**. Meaning that anyone will be able to create a Dispatch account if they have network access to your server.
 
-For a more robust authentication Dispatch provides a PKCE authentication method that can be used to integrate with existing and more robust SSO solutions. See the [Authentication Provider](configuration/app.md#authentication)
+For a more robust authentication, Dispatch provides a PKCE authentication method that can be used to integrate with existing and more robust SSO solutions. See the [Authentication Provider](configuration/app.md#authentication)
 
 ### TLS/SSL
 
