@@ -20,3 +20,9 @@ class SearchTypes(str, Enum):
     incident_priority = "IncidentPriority"
     incident_type = "IncidentType"
     incident = "Incident"
+
+
+class UserRoles(str, Enum):
+    user = "User"
+    poweruser = "Poweruser"
+    admin = "Admin"

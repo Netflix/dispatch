@@ -4,10 +4,9 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
-from dispatch.auth.models import UserRoles
 from dispatch.auth.service import get_current_user
 from dispatch.database import get_db, search_filter_sort_paginate
-from dispatch.enums import Visibility
+from dispatch.enums import Visibility, UserRoles
 from dispatch.incident.enums import IncidentStatus
 from dispatch.participant_role.models import ParticipantRoleType
 
@@ -43,15 +42,6 @@ def get_incidents(
     """
     Retrieve a list of all incidents.
     """
-    # we want to provide additional protections around restricted incidents
-    # Because we want to proactively filter (instead of when the item is returned
-    # we don't use fastapi_permissions acls.
-    if current_user.role != UserRoles.admin:
-        # add a filter for restricted incidents
-        fields.append("visibility")
-        values.append(Visibility.restricted)
-        ops.append("!=")
-
     return search_filter_sort_paginate(
         db_session=db_session,
         model="Incident",
@@ -66,6 +56,7 @@ def get_incidents(
         join_attrs=[
             ("tag", "tags"),
         ],
+        user_role=current_user.role,
     )
 
 
