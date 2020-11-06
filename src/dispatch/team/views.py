@@ -22,11 +22,11 @@ def get_teams(
     page: int = 1,
     items_per_page: int = Query(5, alias="itemsPerPage"),
     query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query(None, alias="sortBy[]"),
-    descending: List[bool] = Query(None, alias="descending[]"),
-    fields: List[str] = Query(None, alias="field[]"),
-    ops: List[str] = Query(None, alias="op[]"),
-    values: List[str] = Query(None, alias="value[]"),
+    sort_by: List[str] = Query([], alias="sortBy[]"),
+    descending: List[bool] = Query([], alias="descending[]"),
+    fields: List[str] = Query([], alias="field[]"),
+    ops: List[str] = Query([], alias="op[]"),
+    values: List[str] = Query([], alias="value[]"),
 ):
     """
     Get all team contacts.

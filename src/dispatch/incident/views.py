@@ -33,8 +33,8 @@ def get_incidents(
     page: int = 1,
     items_per_page: int = Query(5, alias="itemsPerPage"),
     query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query(None, alias="sortBy[]"),
-    descending: List[bool] = Query(None, alias="descending[]"),
+    sort_by: List[str] = Query([], alias="sortBy[]"),
+    descending: List[bool] = Query([], alias="descending[]"),
     fields: List[str] = Query([], alias="fields[]"),
     ops: List[str] = Query([], alias="ops[]"),
     values: List[str] = Query([], alias="values[]"),
@@ -63,7 +63,9 @@ def get_incidents(
         fields=fields,
         values=values,
         ops=ops,
-        join_attrs=[("tag", "tags")],
+        join_attrs=[
+            ("tag", "tags"),
+        ],
     )
 
 
