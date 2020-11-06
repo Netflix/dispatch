@@ -774,6 +774,7 @@ def send_incident_rating_feedback_message(incident: Incident, db_session: Sessio
         {
             "incident_id": incident.id,
             "name": incident.name,
+            "title": incident.title,
             "ticket_weblink": incident.ticket.weblink,
         }
     ]
