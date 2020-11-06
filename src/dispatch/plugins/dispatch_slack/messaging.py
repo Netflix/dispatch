@@ -12,6 +12,7 @@ from dispatch.messaging import (
     INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
     INCIDENT_TASK_LIST_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
+    DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
     MessageType,
     render_message_template,
 )
@@ -194,6 +195,10 @@ def get_template(message_type: MessageType):
         MessageType.incident_task_reminder: (
             default_notification,
             INCIDENT_TASK_REMINDER_DESCRIPTION,
+        ),
+        MessageType.document_evergreen_reminder: (
+            default_notification,
+            DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
         ),
         MessageType.incident_status_reminder: (
             default_notification,

@@ -2,7 +2,20 @@ from datetime import datetime
 from typing import List, Optional
 
 from pydantic import validator
-from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
+from sqlalchemy import (
+    Column,
+    ForeignKey,
+    Integer,
+    PrimaryKeyConstraint,
+    String,
+    Table,
+    Boolean,
+    DateTime,
+    event,
+    func,
+    extract,
+)
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy_utils import TSVectorType
 
@@ -60,7 +73,32 @@ class Document(Base, ResourceMixin, TimeStampMixin):
     terms = relationship(
         "Term", secondary=assoc_document_terms, backref=backref("documents", cascade="all")
     )
+
+    evergreen = Column(Boolean)
+    evergreen_owner = Column(String)
+    evergreen_reminder_interval = Column(Integer, default=90, server_default=90)  # number of days
+    evergreen_last_reminder_at = Column(DateTime)
+
+    @hybrid_property
+    def evergreen_is_overdue(self):
+        """Determines if we are eligible for a evergreen notification."""
+        seconds_since_notified = func.trunc(
+            (
+                extract("epoch", datetime.utcnow()),
+                extract("epoch", self.evergreen_last_reminder_at),
+            )
+        )
+        days_since_notified = seconds_since_notified / 3600 / 24
+        return days_since_notified >= self.evergreen_reminder_interval
+
     search_vector = Column(TSVectorType("name"))
+
+
+@event.listens_for(Document.evergreen, "set")
+def _reset_last_notified(target, value, oldvalue, initiator):
+    """Ensures that the last notified is reset if we "enable" the reminder from a disabled state"""
+    if value:
+        target.evergreen_last_reminder_at = datetime.datetime.utcnow()
 
 
 # Pydantic models...
@@ -70,6 +108,10 @@ class DocumentBase(DispatchBase):
     description: Optional[str]
     weblink: str
     name: str
+    evergreen: Optional[bool] = False
+    evergreen_reminder_interval: Optional[int] = 90
+    evergreen_last_reminder_at: Optional[datetime] = None
+    evergreen_owner: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

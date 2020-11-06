@@ -32,6 +32,7 @@ class MessageType(str, Enum):
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
+    document_evergreen_reminder = "document-evergreen-reminder"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -48,6 +49,13 @@ Please review and update them as appropriate. Resolving them will stop the remin
 ).strip()
 
 INCIDENT_TASK_LIST_DESCRIPTION = """The following are open incident tasks."""
+
+DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION = """
+You are the owner of the following incident documents.
+This is a reminder that these documents should be kept up to date in order to effectively
+response to incdients. Please review them and update or deprecate as appropriate.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_DAILY_SUMMARY_DESCRIPTION = """
 Daily Incidents Summary""".replace(
@@ -441,7 +449,6 @@ INCIDENT_STATUS_REMINDER = [
     INCIDENT_STATUS,
 ]
 
-
 INCIDENT_TASK_REMINDER = [
     {"title": "Incident - {{ name }}", "text": "{{ title }}"},
     {"title": "Creator", "text": "{{ creator }}"},
@@ -449,6 +456,12 @@ INCIDENT_TASK_REMINDER = [
     {"title": "Priority", "text": "{{ priority }}"},
     {"title": "Created At", "text": "", "datetime": "{{ created_at}}"},
     {"title": "Resolve By", "text": "", "datetime": "{{ resolve_by }}"},
+    {"title": "Link", "text": "{{ weblink }}"},
+]
+
+DOCUMENT_EVERGREEN_REMINDER = [
+    {"title": "Document - {{ name }}"},
+    {"title": "Description", "text": "{{ description }}"},
     {"title": "Link", "text": "{{ weblink }}"},
 ]
 

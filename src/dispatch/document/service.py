@@ -78,6 +78,15 @@ def get_incident_investigation_sheet_template(*, db_session):
     ).one_or_none()
 
 
+def get_overdue_evergreen_documents(*, db_session) -> List[Optional[Document]]:
+    """Returns all documents that have need had a recent evergreen notification."""
+    return (
+        db_session.query(Document)
+        .filter(Document.evergreen == True)  # noqa
+        .filter(Document.evergreen_is_overdue == True)  # noqa
+    )
+
+
 def get_all(*, db_session) -> List[Optional[Document]]:
     """Returns all documents."""
     return db_session.query(Document)
