@@ -14,6 +14,9 @@ const getDefaultSelectedState = () => {
     incident_priorities: [],
     incident_types: [],
     id: null,
+    evergreen: null,
+    evergreen_owner: null,
+    evergreen_reminder_interval: null,
     created_at: null,
     updated_at: null,
     loading: false

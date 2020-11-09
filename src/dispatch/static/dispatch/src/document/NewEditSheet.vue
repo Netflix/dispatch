@@ -109,6 +109,45 @@
               <v-flex>
                 <incident-type-multi-select v-model="incident_types" />
               </v-flex>
+              <v-flex xs12>
+                <span class="subtitle-2">Evergreen</span>
+              </v-flex>
+              <v-flex xs12>
+                <v-checkbox
+                  v-model="evergreen"
+                  hint="Enabling evergreen will send periodic reminders to the owner to update this document."
+                  label="Enabled"
+                />
+              </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="Owner" immediate>
+                  <v-text-field
+                    v-model="evergreen_owner"
+                    slot-scope="{ errors, valid }"
+                    label="Owner"
+                    :error-messages="errors"
+                    :success="valid"
+                    hint="Owner of this document."
+                    clearable
+                  />
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="Reminder Interval" immediate>
+                  <v-text-field
+                    v-model="evergreen_reminder_interval"
+                    slot-scope="{ errors, valid }"
+                    label="Reminder Interval"
+                    :error-messages="errors"
+                    :success="valid"
+                    type="number"
+                    hint="Number of days to send a evergreen reminder to the document owner."
+                    placeholder="90"
+                    clearable
+                    min="1"
+                  />
+                </ValidationProvider>
+              </v-flex>
             </v-layout>
           </v-container>
         </v-card-text>
@@ -152,6 +191,9 @@ export default {
       "selected.resource_id",
       "selected.incident_priorities",
       "selected.incident_types",
+      "selected.evergreen_owner",
+      "selected.evergreen",
+      "selected.evergreen_reminder_interval",
       "selected.id",
       "selected.loading",
       "dialogs.showCreateEdit"

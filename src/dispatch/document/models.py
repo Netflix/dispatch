@@ -76,7 +76,7 @@ class Document(Base, ResourceMixin, TimeStampMixin):
 
     evergreen = Column(Boolean)
     evergreen_owner = Column(String)
-    evergreen_reminder_interval = Column(Integer, default=90, server_default=90)  # number of days
+    evergreen_reminder_interval = Column(Integer, default=90)  # number of days
     evergreen_last_reminder_at = Column(DateTime)
 
     @hybrid_property
@@ -98,7 +98,7 @@ class Document(Base, ResourceMixin, TimeStampMixin):
 def _reset_last_notified(target, value, oldvalue, initiator):
     """Ensures that the last notified is reset if we "enable" the reminder from a disabled state"""
     if value:
-        target.evergreen_last_reminder_at = datetime.datetime.utcnow()
+        target.evergreen_last_reminder_at = datetime.utcnow()
 
 
 # Pydantic models...
