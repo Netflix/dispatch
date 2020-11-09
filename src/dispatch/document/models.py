@@ -12,10 +12,7 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     event,
-    func,
-    extract,
 )
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy_utils import TSVectorType
 
@@ -79,26 +76,7 @@ class Document(Base, ResourceMixin, TimeStampMixin):
     evergreen_reminder_interval = Column(Integer, default=90)  # number of days
     evergreen_last_reminder_at = Column(DateTime)
 
-    @hybrid_property
-    def evergreen_is_overdue(self):
-        """Determines if we are eligible for a evergreen notification."""
-        seconds_since_notified = func.trunc(
-            (
-                extract("epoch", datetime.utcnow()),
-                extract("epoch", self.evergreen_last_reminder_at),
-            )
-        )
-        days_since_notified = seconds_since_notified / 3600 / 24
-        return days_since_notified >= self.evergreen_reminder_interval
-
     search_vector = Column(TSVectorType("name"))
-
-
-@event.listens_for(Document.evergreen, "set")
-def _reset_last_notified(target, value, oldvalue, initiator):
-    """Ensures that the last notified is reset if we "enable" the reminder from a disabled state"""
-    if value:
-        target.evergreen_last_reminder_at = datetime.utcnow()
 
 
 # Pydantic models...

@@ -53,7 +53,7 @@ INCIDENT_TASK_LIST_DESCRIPTION = """The following are open incident tasks."""
 DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION = """
 You are the owner of the following incident documents.
 This is a reminder that these documents should be kept up to date in order to effectively
-response to incdients. Please review them and update or deprecate as appropriate.""".replace(
+respond to incdients. Please review them and update or deprecate the documents as appropriate.""".replace(
     "\n", " "
 ).strip()
 
@@ -460,7 +460,7 @@ INCIDENT_TASK_REMINDER = [
 ]
 
 DOCUMENT_EVERGREEN_REMINDER = [
-    {"title": "Document - {{ name }}"},
+    {"title": "Document", "text": "{{ name }}"},
     {"title": "Description", "text": "{{ description }}"},
     {"title": "Link", "text": "{{ weblink }}"},
 ]

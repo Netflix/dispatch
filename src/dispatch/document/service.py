@@ -1,4 +1,5 @@
 from typing import List, Optional
+from datetime import datetime, timedelta
 
 from fastapi.encoders import jsonable_encoder
 
@@ -78,13 +79,19 @@ def get_incident_investigation_sheet_template(*, db_session):
     ).one_or_none()
 
 
+# TODO this could also be done with an sql query if we end up with lots of docs
 def get_overdue_evergreen_documents(*, db_session) -> List[Optional[Document]]:
     """Returns all documents that have need had a recent evergreen notification."""
-    return (
-        db_session.query(Document)
-        .filter(Document.evergreen == True)  # noqa
-        .filter(Document.evergreen_is_overdue == True)  # noqa
-    )
+    documents = (db_session.query(Document).filter(Document.evergreen == True)).all()  # noqa
+    overdue_documents = []
+    now = datetime.utcnow()
+
+    for d in documents:
+        next_reminder = d.evergreen_last_reminder_at + timedelta(days=d.evergreen_reminder_interval)
+        if now > next_reminder:
+            overdue_documents.append(d)
+
+    return overdue_documents
 
 
 def get_all(*, db_session) -> List[Optional[Document]]:
@@ -105,12 +112,18 @@ def create(*, db_session, document_in: DocumentCreate) -> Document:
         incident_type_service.get_by_name(db_session=db_session, name=n.name)
         for n in document_in.incident_types
     ]
+
+    # set the last reminder to now
+    if document_in.evergreen:
+        document_in.evergreen_last_reminder_at = datetime.utcnow()
+
     document = Document(
         **document_in.dict(exclude={"terms", "incident_priorities", "incident_types"}),
         incident_priorities=incident_priorities,
         incident_types=incident_types,
         terms=terms,
     )
+
     db_session.add(document)
     db_session.commit()
     return document
@@ -132,6 +145,14 @@ def get_or_create(*, db_session, document_in) -> Document:
 
 def update(*, db_session, document: Document, document_in: DocumentUpdate) -> Document:
     """Updates a document."""
+    # reset the last reminder to now
+    print("---")
+    print(document_in.evergreen, document.evergreen)
+    print("--")
+    if document_in.evergreen:
+        if not document.evergreen:
+            document_in.evergreen_last_reminder_at = datetime.utcnow()
+
     document_data = jsonable_encoder(document)
     update_data = document_in.dict(
         skip_defaults=True, exclude={"terms", "incident_priorities", "incident_types"}

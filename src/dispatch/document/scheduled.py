@@ -77,7 +77,6 @@ def create_reminder(db_session, owner_email, documents, contact_fullname, contac
                 "weblink": doc.weblink,
             }
         )
-
     notification_type = "document-evergreen-reminder"
     name = subject = "Document Evergreen Reminder"
     plugin.instance.send(
@@ -92,8 +91,10 @@ def create_reminder(db_session, owner_email, documents, contact_fullname, contac
     )
 
     for doc in documents:
-        doc.last_evergreen_reminder_at = datetime.utcnow()
-        db_session.commit()
+        doc.evergreen_last_reminder_at = datetime.utcnow()
+        db_session.add(doc)
+
+    db_session.commit()
 
 
 def group_documents_by_owner(documents):
@@ -104,7 +105,7 @@ def group_documents_by_owner(documents):
     return grouped
 
 
-@scheduler.add(every(1).day, name="document-evergreen-reminder")
+@scheduler.add(every(1).day.at("18:00"), name="document-evergreen-reminder")
 @background_task
 def create_evergreen_reminders(db_session=None):
     """Sends evergreen reminders for documents that have then enabled."""
