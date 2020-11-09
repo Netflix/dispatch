@@ -2,13 +2,13 @@ from typing import List
 from fastapi import APIRouter, Depends, Request, HTTPException, Query
 from sqlalchemy.orm import Session
 from dispatch.database import get_db, search_filter_sort_paginate
+from dispatch.enums import UserRoles
 
 from .models import (
     UserLogin,
     UserRegister,
     UserRead,
     UserUpdate,
-    UserRoles,
     UserPagination,
     UserLoginResponse,
     UserRegisterResponse,
