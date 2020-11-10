@@ -11,7 +11,6 @@ from sqlalchemy import (
     Table,
     Boolean,
     DateTime,
-    event,
 )
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy_utils import TSVectorType
