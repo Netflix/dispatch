@@ -3,11 +3,11 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from dispatch.auth.models import DispatchUser, UserRoles
+from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 
 from dispatch.database import get_class_by_tablename, get_db
-from dispatch.enums import SearchTypes
+from dispatch.enums import SearchTypes, UserRoles
 
 from dispatch.enums import Visibility
 

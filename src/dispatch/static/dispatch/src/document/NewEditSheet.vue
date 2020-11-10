@@ -141,7 +141,7 @@
                     :error-messages="errors"
                     :success="valid"
                     type="number"
-                    hint="Number of days to send a evergreen reminder to the document owner."
+                    hint="Number of days that should elapse between reminders sent to the document owner."
                     placeholder="90"
                     clearable
                     min="1"
