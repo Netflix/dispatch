@@ -54,6 +54,12 @@ def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
         )
         incident_type.commander_service = commander_service
 
+    if incident_type_in.liason_service:
+        liason_service = service_service.get(
+            db_session=db_session, service_id=incident_type_in.commander_service.id
+        )
+        incident_type.liason_service = liason_service
+
     db_session.add(incident_type)
     db_session.commit()
     return incident_type
@@ -75,10 +81,16 @@ def update(
         )
         incident_type.commander_service = commander_service
 
+    if incident_type_in.liason_service:
+        liason_service = service_service.get(
+            db_session=db_session, service_id=incident_type_in.commander_service.id
+        )
+        incident_type.liason_service = liason_service
+
     incident_type_data = jsonable_encoder(incident_type)
 
     update_data = incident_type_in.dict(
-        skip_defaults=True, exclude={"commander_service", "template_document"}
+        skip_defaults=True, exclude={"commander_service", "liason_service", "template_document"}
     )
 
     for field in incident_type_data:
