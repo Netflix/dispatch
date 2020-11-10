@@ -45,9 +45,9 @@ def assign_incident_role(
             assignee_email = reporter_email
         service = incident.incident_type.commander_service
     else:
-        if not incident.incident_type.liason_service:
+        if not incident.incident_type.liaison_service:
             return
-        service = incident.incident_type.liason_service
+        service = incident.incident_type.liaison_service
 
     if not assignee_email:
         assignee_email = oncall_plugin.instance.get(service_id=service.external_id)
@@ -60,9 +60,9 @@ def assign_incident_role(
         role,
     )
 
-    # NOTE this will page both the commander and the liason (if defined)
+    # NOTE this will page both the commander and the liaison (if defined)
     # we can either break these into two seperate flags or assume that if
-    # the commander gets paged the liason should as well.
+    # the commander gets paged the liaison should as well.
     if incident.incident_priority.page_commander:
         oncall_plugin.instance.page(
             service_id=service.external_id,
@@ -211,7 +211,7 @@ def create(
         reporter_email, incident.id, db_session, ParticipantRoleType.reporter
     )
 
-    # Add other incident roles (e.g. commander and liason)
+    # Add other incident roles (e.g. commander and liaison)
     assign_incident_role(
         db_session, incident, reporter_email, ParticipantRoleType.incident_commander
     )

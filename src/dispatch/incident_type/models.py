@@ -28,8 +28,8 @@ class IncidentType(Base):
     commander_service_id = Column(Integer, ForeignKey("service.id"))
     commander_service = relationship("Service", foreign_keys=[commander_service_id])
 
-    liason_service_id = Column(Integer, ForeignKey("service.id"))
-    liason_service = relationship("Service", foreign_keys=[liason_service_id])
+    liaison_service_id = Column(Integer, ForeignKey("service.id"))
+    liaison_service = relationship("Service", foreign_keys=[liaison_service_id])
 
     search_vector = Column(TSVectorType("name", "description"))
 
@@ -86,7 +86,7 @@ class IncidentTypeBase(DispatchBase):
 class IncidentTypeCreate(IncidentTypeBase):
     template_document: Optional[Document]
     commander_service: Optional[Service]
-    liason_service: Optional[Service]
+    liaison_service: Optional[Service]
     plugin_metadata: List[PluginMetadata] = []
     exclude_from_metrics: Optional[bool] = False
     default: Optional[bool] = False
@@ -101,7 +101,7 @@ class IncidentTypeUpdate(IncidentTypeBase):
     visibility: Optional[Visibility]
     template_document: Optional[Document]
     commander_service: Optional[Service]
-    liason_service: Optional[Service]
+    liaison_service: Optional[Service]
     plugin_metadata: List[PluginMetadata] = []
     exclude_from_metrics: Optional[bool] = False
     default: Optional[bool] = False
@@ -116,7 +116,7 @@ class IncidentTypeRead(IncidentTypeBase):
     visibility: Optional[Visibility]
     template_document: Optional[Document]
     commander_service: Optional[Service]
-    liason_service: Optional[Service]
+    liaison_service: Optional[Service]
     plugin_metadata: List[PluginMetadata] = []
     exclude_from_metrics: Optional[bool] = False
     default: Optional[bool] = False
