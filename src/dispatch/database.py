@@ -14,6 +14,8 @@ from sqlalchemy_searchable import search as search_db
 from starlette.requests import Request
 
 from dispatch.common.utils.composite_search import CompositeSearch
+from dispatch.enums import Visibility, UserRoles
+
 
 from .config import SQLALCHEMY_DATABASE_URI
 
@@ -91,7 +93,7 @@ def search(*, db_session, query_str: str, model: str):
     return search_db(q, query_str, sort=True)
 
 
-def create_filter_spec(model, fields, ops, values):
+def create_filter_spec(model, fields, ops, values, user_role):
     """Creates a filter spec."""
     filters = []
 
@@ -125,6 +127,19 @@ def create_filter_spec(model, fields, ops, values):
             filter_spec.append({"and": filters})
         else:
             filter_spec.append({"or": filters})
+
+    # add admin only filter
+    if user_role != UserRoles.admin:
+        # add support for filtering restricted incidents
+        if model.lower() == "incident":
+            filter_spec.append(
+                {
+                    "model": model,
+                    "field": "visibility",
+                    "op": "!=",
+                    "value": Visibility.restricted,
+                }
+            )
 
     if filter_spec:
         filter_spec = {"and": filter_spec}
@@ -189,6 +204,7 @@ def search_filter_sort_paginate(
     ops: List[str] = None,
     values: List[str] = None,
     join_attrs: List[str] = None,
+    user_role: UserRoles = UserRoles.user,
 ):
     """Common functionality for searching, filtering and sorting"""
     model_cls = get_class_by_tablename(model)
@@ -199,7 +215,7 @@ def search_filter_sort_paginate(
 
     query = join_required_attrs(query, model_cls, join_attrs, fields, sort_by)
 
-    filter_spec = create_filter_spec(model, fields, ops, values)
+    filter_spec = create_filter_spec(model, fields, ops, values, user_role)
     query = apply_filters(query, filter_spec)
 
     sort_spec = create_sort_spec(model, sort_by, descending)
