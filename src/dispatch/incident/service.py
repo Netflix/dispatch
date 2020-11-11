@@ -39,17 +39,34 @@ def assign_incident_role(
     if not oncall_plugin:
         assignee_email = reporter_email
 
+        # Add a new participant (duplicate participants with different roles will be updated)
+        participant_flows.add_participant(
+            assignee_email,
+            incident.id,
+            db_session,
+            role,
+        )
+        return
+
     if role == ParticipantRoleType.incident_commander:
         # default to reporter
         if not incident.incident_type.commander_service:
             assignee_email = reporter_email
-        service = incident.incident_type.commander_service
+        else:
+            service = incident.incident_type.commander_service
+            assignee_email = oncall_plugin.instance.get(service_id=service.external_id)
+            if incident.incident_priority.page_commander:
+                oncall_plugin.instance.page(
+                    service_id=service.external_id,
+                    incident_name=incident.name,
+                    incident_title=incident.title,
+                    incident_description=incident.description,
+                )
     else:
         if not incident.incident_type.liaison_service:
-            return
-        service = incident.incident_type.liaison_service
+            assignee_email = reporter_email
 
-    if not assignee_email:
+        service = incident.incident_type.liaison_service
         assignee_email = oncall_plugin.instance.get(service_id=service.external_id)
 
     # Add a new participant (duplicate participants with different roles will be updated)
@@ -59,17 +76,6 @@ def assign_incident_role(
         db_session,
         role,
     )
-
-    # NOTE this will page both the commander and the liaison (if defined)
-    # we can either break these into two seperate flags or assume that if
-    # the commander gets paged the liaison should as well.
-    if incident.incident_priority.page_commander:
-        oncall_plugin.instance.page(
-            service_id=service.external_id,
-            incident_name=incident.name,
-            incident_title=incident.title,
-            incident_description=incident.description,
-        )
 
 
 def get(*, db_session, incident_id: int) -> Optional[Incident]:

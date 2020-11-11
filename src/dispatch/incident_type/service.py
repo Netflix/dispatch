@@ -56,7 +56,7 @@ def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
 
     if incident_type_in.liaison_service:
         liaison_service = service_service.get(
-            db_session=db_session, service_id=incident_type_in.commander_service.id
+            db_session=db_session, service_id=incident_type_in.liaison_service.id
         )
         incident_type.liaison_service = liaison_service
 
@@ -83,7 +83,7 @@ def update(
 
     if incident_type_in.liaison_service:
         liaison_service = service_service.get(
-            db_session=db_session, service_id=incident_type_in.commander_service.id
+            db_session=db_session, service_id=incident_type_in.liaison_service.id
         )
         incident_type.liaison_service = liaison_service
 
