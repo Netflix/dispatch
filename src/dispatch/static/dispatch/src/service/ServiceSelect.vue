@@ -6,9 +6,10 @@
     :menu-props="{ maxHeight: '400' }"
     cache-items
     item-text="name"
-    label="Service"
+    :label="label"
     placeholder="Start typing to Search"
     return-object
+    :hint="hint"
     :loading="loading"
   />
 </template>
@@ -24,6 +25,18 @@ export default {
       type: Object,
       default: function() {
         return {}
+      }
+    },
+    label: {
+      type: String,
+      default: function() {
+        return "Service"
+      }
+    },
+    hint: {
+      type: String,
+      default: function() {
+        return "Service to associate"
       }
     }
   },
