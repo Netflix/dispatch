@@ -33,7 +33,7 @@ def assign_incident_role(
     """Assigns incident roles."""
     # We resolve the incident role email
     # default to reporter if we don't have an oncall plugin enabled
-    assignee_email = None
+    assignee_email = reporter_email
 
     oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
     if not oncall_plugin:
@@ -50,9 +50,7 @@ def assign_incident_role(
 
     if role == ParticipantRoleType.incident_commander:
         # default to reporter
-        if not incident.incident_type.commander_service:
-            assignee_email = reporter_email
-        else:
+        if incident.incident_type.commander_service:
             service = incident.incident_type.commander_service
             assignee_email = oncall_plugin.instance.get(service_id=service.external_id)
             if incident.incident_priority.page_commander:
@@ -63,11 +61,9 @@ def assign_incident_role(
                     incident_description=incident.description,
                 )
     else:
-        if not incident.incident_type.liaison_service:
-            assignee_email = reporter_email
-
-        service = incident.incident_type.liaison_service
-        assignee_email = oncall_plugin.instance.get(service_id=service.external_id)
+        if incident.incident_type.liaison_service:
+            service = incident.incident_type.liaison_service
+            assignee_email = oncall_plugin.instance.get(service_id=service.external_id)
 
     # Add a new participant (duplicate participants with different roles will be updated)
     participant_flows.add_participant(
