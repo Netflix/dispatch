@@ -84,6 +84,7 @@
                     hint="Number of hours to send a tactical report reminder to the incident commander."
                     clearable
                     required
+                    min="1"
                   />
                 </ValidationProvider>
               </v-flex>
@@ -99,6 +100,7 @@
                     hint="Number of hours to send an executive report reminder to the incident commander."
                     clearable
                     required
+                    min="1"
                   />
                 </ValidationProvider>
               </v-flex>
