@@ -547,11 +547,13 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     conference_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conference")
     if conference_plugin:
         try:
+            participants = participant_emails
+            
             if group_plugin:
-                conference = create_conference(incident, [tactical_group["email"]], db_session)
-            else:
-                # we don't have a group to manage this resource
-                conference = create_conference(incident, participant_emails, db_session)
+                # we use the tactical group email if the group plugin is enabled
+                participants = [tactical_group["email"]]
+                
+            conference = create_conference(incident, participants, db_session)
 
             conference_in = ConferenceCreate(
                 resource_id=conference["resource_id"],
