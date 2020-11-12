@@ -108,7 +108,7 @@ def group_documents_by_owner(documents):
 @scheduler.add(every(1).day.at("18:00"), name="document-evergreen-reminder")
 @background_task
 def create_evergreen_reminders(db_session=None):
-    """Sends evergreen reminders for documents that have then enabled."""
+    """Sends reminders for documents that have evergreen enabled."""
     documents = get_overdue_evergreen_documents(db_session=db_session)
     log.debug(f"Documents that need reminders. NumDocuments: {len(documents)}")
 
