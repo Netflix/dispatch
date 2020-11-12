@@ -457,26 +457,37 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     tactical_group = None
     notification_group = None
     if group_plugin:
-        tactical_group, notification_group = create_participant_groups(
-            incident, individual_participants, team_participants, db_session
-        )
-
-        for g in [tactical_group, notification_group]:
-            group_in = GroupCreate(
-                name=g["name"],
-                email=g["email"],
-                resource_type=g["resource_type"],
-                resource_id=g["resource_id"],
-                weblink=g["weblink"],
+        try:
+            tactical_group, notification_group = create_participant_groups(
+                incident, individual_participants, team_participants, db_session
             )
-            incident.groups.append(group_service.create(db_session=db_session, group_in=group_in))
 
-        event_service.log(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description="Tactical and notification groups added to incident",
-            incident_id=incident.id,
-        )
+            for g in [tactical_group, notification_group]:
+                group_in = GroupCreate(
+                    name=g["name"],
+                    email=g["email"],
+                    resource_type=g["resource_type"],
+                    resource_id=g["resource_id"],
+                    weblink=g["weblink"],
+                )
+                incident.groups.append(
+                    group_service.create(db_session=db_session, group_in=group_in)
+                )
+
+            event_service.log(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description="Tactical and notification groups added to incident",
+                incident_id=incident.id,
+            )
+        except Exception as e:
+            event_service.log(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Creation of tactical and notification groups failed. Reason: {e}",
+                incident_id=incident.id,
+            )
+            log.exception(e)
 
     storage_plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
     if storage_plugin:
@@ -503,52 +514,72 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             incident_id=incident.id,
         )
 
-        # we create the incident documents
-        collab_documents = create_collaboration_documents(incident, db_session)
+        # we create collaboration documents, don't fail the whole flow if this fails
+        try:
+            collab_documents = create_collaboration_documents(incident, db_session)
 
-        for d in collab_documents:
-            document_in = DocumentCreate(
-                name=d["name"],
-                resource_id=d["resource_id"],
-                resource_type=d["resource_type"],
-                weblink=d["weblink"],
-            )
-            incident.documents.append(
-                document_service.create(db_session=db_session, document_in=document_in)
-            )
+            for d in collab_documents:
+                document_in = DocumentCreate(
+                    name=d["name"],
+                    resource_id=d["resource_id"],
+                    resource_type=d["resource_type"],
+                    weblink=d["weblink"],
+                )
+                incident.documents.append(
+                    document_service.create(db_session=db_session, document_in=document_in)
+                )
 
-        event_service.log(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description="Documents added to incident",
-            incident_id=incident.id,
-        )
+            event_service.log(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description="Documents added to incident",
+                incident_id=incident.id,
+            )
+        except Exception as e:
+            event_service.log(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Creation of incident documents failed. Reason: {e}",
+                incident_id=incident.id,
+            )
+            log.exception(e)
 
     conference_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conference")
     if conference_plugin:
-        if group_plugin:
-            conference = create_conference(incident, [tactical_group["email"]], db_session)
-        else:
-            # we don't have a group to manage this resource
-            conference = create_conference(incident, participant_emails, db_session)
+        try:
+            participants = participant_emails
+            
+            if group_plugin:
+                # we use the tactical group email if the group plugin is enabled
+                participants = [tactical_group["email"]]
+                
+            conference = create_conference(incident, participants, db_session)
 
-        conference_in = ConferenceCreate(
-            resource_id=conference["resource_id"],
-            resource_type=conference["resource_type"],
-            weblink=conference["weblink"],
-            conference_id=conference["id"],
-            conference_challenge=conference["challenge"],
-        )
-        incident.conference = conference_service.create(
-            db_session=db_session, conference_in=conference_in
-        )
+            conference_in = ConferenceCreate(
+                resource_id=conference["resource_id"],
+                resource_type=conference["resource_type"],
+                weblink=conference["weblink"],
+                conference_id=conference["id"],
+                conference_challenge=conference["challenge"],
+            )
+            incident.conference = conference_service.create(
+                db_session=db_session, conference_in=conference_in
+            )
 
-        event_service.log(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description="Conference added to incident",
-            incident_id=incident.id,
-        )
+            event_service.log(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description="Conference added to incident",
+                incident_id=incident.id,
+            )
+        except Exception as e:
+            event_service.log(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Creation of incident conference failed. Reason: {e}",
+                incident_id=incident.id,
+            )
+            log.exception(e)
 
     # we create the conversation for real-time communications
 
@@ -556,27 +587,36 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         db_session=db_session, plugin_type="conversation"
     )
     if conversation_plugin:
-        conversation = create_conversation(incident, participant_emails, db_session)
+        try:
+            conversation = create_conversation(incident, participant_emails, db_session)
 
-        conversation_in = ConversationCreate(
-            resource_id=conversation["resource_id"],
-            resource_type=conversation["resource_type"],
-            weblink=conversation["weblink"],
-            channel_id=conversation["id"],
-        )
-        incident.conversation = conversation_service.create(
-            db_session=db_session, conversation_in=conversation_in
-        )
+            conversation_in = ConversationCreate(
+                resource_id=conversation["resource_id"],
+                resource_type=conversation["resource_type"],
+                weblink=conversation["weblink"],
+                channel_id=conversation["id"],
+            )
+            incident.conversation = conversation_service.create(
+                db_session=db_session, conversation_in=conversation_in
+            )
 
-        event_service.log(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description="Conversation added to incident",
-            incident_id=incident.id,
-        )
+            event_service.log(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description="Conversation added to incident",
+                incident_id=incident.id,
+            )
 
-        # we set the conversation topic
-        set_conversation_topic(incident, db_session)
+            # we set the conversation topic
+            set_conversation_topic(incident, db_session)
+        except Exception as e:
+            event_service.log(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Creation of incident conversation failed. Reason: {e}",
+                incident_id=incident.id,
+            )
+            log.exception(e)
 
     db_session.add(incident)
     db_session.commit()
@@ -587,22 +627,32 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     # we update the investigation document
     document_plugin = plugin_service.get_active(db_session=db_session, plugin_type="document")
     if document_plugin:
-        document_plugin.instance.update(
-            incident.incident_document.resource_id,
-            name=incident.name,
-            priority=incident.incident_priority.name,
-            status=incident.status,
-            type=incident.incident_type.name,
-            title=incident.title,
-            description=incident.description,
-            commander_fullname=incident.commander.name,
-            conversation_weblink=resolve_attr(incident, "conversation.weblink"),
-            document_weblink=resolve_attr(incident, "incident_document.weblink"),
-            storage_weblink=resolve_attr(incident, "storage.weblink"),
-            ticket_weblink=resolve_attr(incident, "ticket.weblink"),
-            conference_weblink=resolve_attr(incident, "conference.weblink"),
-            conference_challenge=resolve_attr(incident, "conference.challendge"),
-        )
+        if incident.incident_document:
+            try:
+                document_plugin.instance.update(
+                    incident.incident_document.resource_id,
+                    name=incident.name,
+                    priority=incident.incident_priority.name,
+                    status=incident.status,
+                    type=incident.incident_type.name,
+                    title=incident.title,
+                    description=incident.description,
+                    commander_fullname=incident.commander.name,
+                    conversation_weblink=resolve_attr(incident, "conversation.weblink"),
+                    document_weblink=resolve_attr(incident, "incident_document.weblink"),
+                    storage_weblink=resolve_attr(incident, "storage.weblink"),
+                    ticket_weblink=resolve_attr(incident, "ticket.weblink"),
+                    conference_weblink=resolve_attr(incident, "conference.weblink"),
+                    conference_challenge=resolve_attr(incident, "conference.challendge"),
+                )
+            except Exception as e:
+                event_service.log(
+                    db_session=db_session,
+                    source="Dispatch Core App",
+                    description=f"Incident documents rendering failed. Reason: {e}",
+                    incident_id=incident.id,
+                )
+                log.exception(e)
 
     if incident.visibility == Visibility.open:
         send_incident_notifications(incident, db_session)
