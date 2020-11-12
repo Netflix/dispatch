@@ -12,8 +12,6 @@ import logging
 from datetime import datetime
 from typing import Any, List, Optional
 
-from sqlalchemy.sql.base import Executable
-
 from dispatch.config import (
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
