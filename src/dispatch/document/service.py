@@ -146,9 +146,6 @@ def get_or_create(*, db_session, document_in) -> Document:
 def update(*, db_session, document: Document, document_in: DocumentUpdate) -> Document:
     """Updates a document."""
     # reset the last reminder to now
-    print("---")
-    print(document_in.evergreen, document.evergreen)
-    print("--")
     if document_in.evergreen:
         if not document.evergreen:
             document_in.evergreen_last_reminder_at = datetime.utcnow()

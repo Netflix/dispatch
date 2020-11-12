@@ -1,10 +1,12 @@
 import logging
+from typing import List
 from datetime import datetime
 from collections import defaultdict
 
 from schedule import every
 from sqlalchemy import func
 
+from dispatch.database import SessionLocal
 from dispatch.config import DISPATCH_HELP_EMAIL
 from dispatch.messaging import DOCUMENT_EVERGREEN_REMINDER
 from dispatch.decorators import background_task
@@ -14,6 +16,7 @@ from dispatch.scheduler import scheduler
 from dispatch.term.models import Term
 
 from .service import get_all, get_overdue_evergreen_documents
+from .models import Document
 
 log = logging.getLogger(__name__)
 
@@ -58,9 +61,10 @@ def sync_document_terms(db_session=None):
             log.exception(e)
 
 
-def create_reminder(db_session, owner_email, documents, contact_fullname, contact_weblink):
+def create_reminder(db_session: SessionLocal, owner_email: str, documents: List[Document]):
     """Contains the logic for document evergreen reminders."""
     # send email
+    contact_fullname = contact_weblink = DISPATCH_HELP_EMAIL
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
     if not plugin:
         log.warning("Document reminder not sent, no email plugin enabled.")
@@ -113,7 +117,6 @@ def create_evergreen_reminders(db_session=None):
     log.debug(f"Documents that need reminders. NumDocuments: {len(documents)}")
 
     if documents:
-        contact_fullname = contact_weblink = DISPATCH_HELP_EMAIL
         grouped_documents = group_documents_by_owner(documents)
         for owner, documents in grouped_documents.items():
-            create_reminder(db_session, owner, documents, contact_fullname, contact_weblink)
+            create_reminder(db_session, owner, documents)
