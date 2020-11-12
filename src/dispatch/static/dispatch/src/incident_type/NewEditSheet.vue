@@ -67,7 +67,10 @@
                 />
               </v-flex>
               <v-flex xs12>
-                <service-select v-model="commander_service" />
+                <service-select label="Commander Service" v-model="commander_service" />
+              </v-flex>
+              <v-flex xs12>
+                <service-select label="Liaison Service" v-model="liaison_service" />
               </v-flex>
               <v-flex xs12>
                 <document-select v-model="template_document" />
@@ -135,6 +138,7 @@ export default {
     ...mapFields("incident_type", [
       "dialogs.showCreateEdit",
       "selected.commander_service",
+      "selected.liaison_service",
       "selected.description",
       "selected.id",
       "selected.loading",
