@@ -1,0 +1,24 @@
+{% extends 'templates/base.html' %}{% block description %}
+<p style="font-weight:normal!important;line-height:140%;margin-top:0">
+    {{ description }}
+</p>
+{% endblock %} {% block items %} {% for item in items %}
+
+<ul style="list-style-type:none; padding-left: 0;">
+{% for row in item %}
+<li>
+<ul style="list-style-type:none; padding-left: 0;">
+  {% if row.title_link %}
+  <li><a href="{{ row.title_link }}" target="_blank">{{ row.title }}</a></li>
+  {% elif row.datetime %}
+  <li><b>{{ row.title }}</b></li
+  <li>{{ row.datetime | datetime }}</li>
+  {% else %}
+  <li><b>{{ row.title }}</b></li
+  <li>{{ row.text }}</li>
+  {% endif %}
+</ul>
+{% endfor %}
+</li>
+</ul>
+{% endfor %} {% endblock %}
