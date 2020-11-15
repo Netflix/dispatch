@@ -17,10 +17,11 @@ const getDefaultSelectedState = () => {
 const state = {
   status: { loggedIn: false },
   userInfo: { email: "" },
-  accessToken: null,
+  accessToken: localStorage.getItem("token") || null,
   selected: {
     ...getDefaultSelectedState()
   },
+  loading: false,
   dialogs: {
     showEdit: false
   },
@@ -127,6 +128,7 @@ const actions = {
     router.push({ path: redirectUrl.pathname, query: queryMap })
   },
   basicLogin({ commit }, payload) {
+    commit("SET_BASIC_LOGIN_LOADING", true)
     UserApi.login(payload.email, payload.password)
       .then(function(res) {
         commit("SET_USER_LOGIN", res.data.token)
@@ -135,6 +137,7 @@ const actions = {
       .catch(err => {
         commit("app/SET_SNACKBAR", { text: err.response.data.detail, color: "red" }, { root: true })
       })
+    commit("SET_BASIC_LOGIN_LOADING", false)
   },
   register({ dispatch, commit }, payload) {
     UserApi.register(payload.email, payload.password)
@@ -193,6 +196,9 @@ const mutations = {
   },
   SET_USER_INFO(state, info) {
     state.userInfo = info
+  },
+  SET_BASIC_LOGIN_LOADING(state, value) {
+    state.loading = value
   },
   SET_USER_LOGIN(state, accessToken) {
     state.accessToken = accessToken

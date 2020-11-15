@@ -33,6 +33,9 @@
               <template v-slot:item.discoverable="{ item }">
                 <v-simple-checkbox v-model="item.discoverable" disabled></v-simple-checkbox>
               </template>
+              <template v-slot:item.tag_type.name="{ item }">
+                {{ item.tag_type.name }}
+              </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
                   <template v-slot:activator="{ on }">
@@ -74,7 +77,8 @@ export default {
     return {
       headers: [
         { text: "Name", value: "name", sortable: true },
-        { text: "Type", value: "type", sortable: true },
+        { text: "Description", value: "description", sortable: false },
+        { text: "Type", value: "tag_type.name", sortable: true },
         { text: "Source", value: "source", sortable: true },
         { text: "Discoverable", value: "discoverable", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }

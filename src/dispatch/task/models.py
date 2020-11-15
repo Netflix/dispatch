@@ -75,9 +75,7 @@ class Task(Base, ResourceMixin, TimeStampMixin):
     resolve_by = Column(DateTime, default=default_resolution_time)
     last_reminder_at = Column(DateTime)
     creator_id = Column(Integer, ForeignKey("participant.id"))
-    creator = relationship("Participant", backref="created_tasks", foreign_keys=[creator_id])
     owner_id = Column(Integer, ForeignKey("participant.id"))
-    owner = relationship("Participant", backref="owned_tasks", foreign_keys=[owner_id])
     assignees = relationship(
         "Participant", secondary=assoc_task_assignees, backref="assigned_tasks", lazy="subquery"
     )
@@ -116,13 +114,14 @@ class TaskBase(DispatchBase):
     tickets: Optional[List[TicketRead]] = []
     weblink: Optional[str]
     incident: Optional[IncidentReadNested]
-    resource_id: str
+    resource_id: Optional[str]
 
 
 class TaskCreate(TaskBase):
     status: TaskStatus = TaskStatus.open
     assignees: List[Optional[ParticipantUpdate]] = []
     owner: Optional[ParticipantUpdate]
+    creator: Optional[ParticipantUpdate]
     resource_type: Optional[str] = INCIDENT_RESOURCE_INCIDENT_TASK
 
 

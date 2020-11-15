@@ -9,7 +9,6 @@ from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.incident.enums import IncidentStatus
 
 from .config import (
-    DISPATCH_UI_URL,
     INCIDENT_RESOURCE_CONVERSATION_REFERENCE_DOCUMENT,
     INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT,
     INCIDENT_RESOURCE_INCIDENT_FAQ_DOCUMENT,
@@ -20,17 +19,20 @@ from .config import (
 
 
 class MessageType(str, Enum):
+    incident_closed_information_review_reminder = "incident-closed-information-review-reminder"
     incident_daily_summary = "incident-daily-summary"
     incident_daily_summary_no_incidents = "incident-daily-summary-no-incidents"
     incident_executive_report = "incident-executive-report"
     incident_notification = "incident-notification"
+    incident_participant_suggested_reading = "incident-participant-suggested-reading"
     incident_participant_welcome = "incident-participant-welcome"
+    incident_rating_feedback = "incident-rating-feedback"
     incident_resources_message = "incident-resources-message"
+    incident_status_reminder = "incident-status-reminder"
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
-    incident_status_reminder = "incident-status-reminder"
-    incident_participant_suggested_reading = "incident-participant-suggested-reading"
+    document_evergreen_reminder = "document-evergreen-reminder"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -48,13 +50,20 @@ Please review and update them as appropriate. Resolving them will stop the remin
 
 INCIDENT_TASK_LIST_DESCRIPTION = """The following are open incident tasks."""
 
+DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION = """
+You are the owner of the following incident documents.
+This is a reminder that these documents should be kept up to date in order to effectively
+respond to incidents. Please review them and update, or clearly mark the documents as deprecated.""".replace(
+    "\n", " "
+).strip()
+
 INCIDENT_DAILY_SUMMARY_DESCRIPTION = """
 Daily Incidents Summary""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION = f"""
-Active Incidents (<{DISPATCH_UI_URL}/incidents/status|Details>)""".replace(
+INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION = """
+Active Incidents""".replace(
     "\n", " "
 ).strip()
 
@@ -210,8 +219,8 @@ The following conditions, actions, and needs summarize the current status of the
 ).strip()
 
 INCIDENT_NEW_ROLE_DESCRIPTION = """
-{{assigner_fullname}} has assigned the role of {{assignee_role}} to {{assignee_fullname}}.
-Please, contact {{assignee_firstname}} about any questions or concerns.""".replace(
+{{assigner_fullname if assigner_fullname else assigner_email}} has assigned the role of {{assignee_role}} to {{assignee_fullname if assignee_fullname else assignee_email}}.
+Please, contact {{assignee_fullname if assignee_fullname else assignee_email}} about any questions or concerns.""".replace(
     "\n", " "
 ).strip()
 
@@ -230,6 +239,33 @@ The following incident task has been created in the incident document.\n\n*Descr
 
 INCIDENT_TASK_RESOLVED_DESCRIPTION = """
 The following incident task has been resolved in the incident document.\n\n*Description:* {{task_description}}\n\n*Assignees:* {{task_assignees|join(',')}}"""
+
+INCIDENT_WORKFLOW_CREATED_DESCRIPTION = """
+A new workflow instance has been created.
+\n\n *Creator:* {{instance_creator_name}}
+"""
+
+INCIDENT_WORKFLOW_UPDATE_DESCRIPTION = """
+This workflow's status has changed from *{{ instance_status_old }}* to *{{ instance_status_new }}*.
+\n\n*Workflow Description*: {{workflow_description}}
+\n\n *Creator:* {{instance_creator_name}}
+"""
+
+INCIDENT_WORKFLOW_COMPLETE_DESCRIPTION = """
+This workflow's status has changed from *{{ instance_status_old }}* to *{{ instance_status_new }}*.
+\n\n *Workflow Description:* {{workflow_description}}
+\n\n *Creator:* {{instance_creator_name}}
+{% if instance_artifacts %}
+\n\n *Workflow Artifacts:*
+\n\n {% for a in instance_artifacts %}- <{{a.weblink}}|{{a.name}}> \n\n{% endfor %}
+{% endif %}
+"""
+
+INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_DESCRIPTION = """
+Thanks for closing incident {{name}}. Is the following incident information up to date? If not, please edit the incident in the <{{dispatch_ui_url}}|Dispatch Web UI>. If it's appropriate, consider adding relevant tags to the incident using the Web UI. This will help us correlate incidents and generate metrics.\n\n*Title:* {{title}}\n*Description:* {{description}}\n*Incident Type:* {{type}}\n*Incident Priority:* {{priority}}"""
+
+INCIDENT_CLOSED_RATING_FEEDBACK_DESCRIPTION = """
+Thanks for participating in the {{name}} ("{{title}}") incident. We would appreciate if you could rate your experience and provide feedback."""
 
 INCIDENT_TYPE_CHANGE_DESCRIPTION = """
 The incident type has been changed from *{{ incident_type_old }}* to *{{ incident_type_new }}*."""
@@ -413,7 +449,6 @@ INCIDENT_STATUS_REMINDER = [
     INCIDENT_STATUS,
 ]
 
-
 INCIDENT_TASK_REMINDER = [
     {"title": "Incident - {{ name }}", "text": "{{ title }}"},
     {"title": "Creator", "text": "{{ creator }}"},
@@ -424,9 +459,15 @@ INCIDENT_TASK_REMINDER = [
     {"title": "Link", "text": "{{ weblink }}"},
 ]
 
+DOCUMENT_EVERGREEN_REMINDER = [
+    {"title": "Document", "text": "{{ name }}"},
+    {"title": "Description", "text": "{{ description }}"},
+    {"title": "Link", "text": "{{ weblink }}"},
+]
+
 INCIDENT_NEW_ROLE_NOTIFICATION = [
     {
-        "title": "New {{assignee_role}} - {{assignee_fullname}}",
+        "title": "New {{assignee_role}} - {{assignee_fullname if assignee_fullname else assignee_email}}",
         "title_link": "{{assignee_weblink}}",
         "text": INCIDENT_NEW_ROLE_DESCRIPTION,
     }
@@ -448,8 +489,50 @@ INCIDENT_TASK_RESOLVED_NOTIFICATION = [
     }
 ]
 
+INCIDENT_WORKFLOW_CREATED_NOTIFICATION = [
+    {
+        "title": "Workflow Created - {{workflow_name}}",
+        "text": INCIDENT_WORKFLOW_CREATED_DESCRIPTION,
+    }
+]
+
+INCIDENT_WORKFLOW_UPDATE_NOTIFICATION = [
+    {
+        "title": "Workflow Status Change - {{workflow_name}}",
+        "title_link": "{{instance_weblink}}",
+        "text": INCIDENT_WORKFLOW_UPDATE_DESCRIPTION,
+    }
+]
+
+INCIDENT_WORKFLOW_COMPLETE_NOTIFICATION = [
+    {
+        "title": "Workflow Completed - {{workflow_name}}",
+        "title_link": "{{instance_weblink}}",
+        "text": INCIDENT_WORKFLOW_COMPLETE_DESCRIPTION,
+    }
+]
+
 INCIDENT_COMMANDER_READDED_NOTIFICATION = [
     {"title": "Incident Commander Re-Added", "text": INCIDENT_COMMANDER_READDED_DESCRIPTION}
+]
+
+INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION = [
+    {
+        "title": "{{name}} Incident - Information Review Reminder",
+        "title_link": "{{dispatch_ui_url}}",
+        "text": INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_DESCRIPTION,
+    }
+]
+
+INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION = [
+    {
+        "title": "{{name}} Incident - Rating and Feedback",
+        "title_link": "{{ticket_weblink}}",
+        "text": INCIDENT_CLOSED_RATING_FEEDBACK_DESCRIPTION,
+        "button_text": "Provide Feeback",
+        "button_value": "{{incident_id}}",
+        "button_action": ConversationButtonActions.provide_feedback,
+    }
 ]
 
 
@@ -484,6 +567,4 @@ def render_message_template(message_template: List[dict], **kwargs):
             d["button_value"] = Template(d["button_value"]).render(**kwargs)
 
         data.append(d)
-    print(kwargs)
-    print(data)
     return data

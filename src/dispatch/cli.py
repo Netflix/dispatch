@@ -7,7 +7,6 @@ import uvicorn
 from alembic import command as alembic_command
 from alembic.config import Config as AlembicConfig
 from tabulate import tabulate
-from uvicorn import main as uvicorn_main
 
 from dispatch import __version__, config
 
@@ -52,23 +51,49 @@ def list_plugins():
     for p in plugins.all():
         record = plugin_service.get_by_slug(db_session=db_session, slug=p.slug)
 
-        installed = True
         if not record:
-            installed = False
+            log.warning(
+                f"Plugin {p.slug} available, but not installed. Run `dispatch plugins install` to install it."
+            )
+            continue
 
-        table.append([p.title, p.slug, p.version, installed, p.type, p.author, p.description])
+        table.append(
+            [
+                record.title,
+                record.slug,
+                record.version,
+                record.enabled,
+                record.type,
+                record.author,
+                record.description,
+            ]
+        )
 
     click.secho(
         tabulate(
             table,
-            headers=["Title", "Slug", "Version", "Installed", "Type", "Author", "Description"],
+            headers=[
+                "Title",
+                "Slug",
+                "Version",
+                "Enabled",
+                "Type",
+                "Author",
+                "Description",
+            ],
         ),
         fg="blue",
     )
 
 
 @plugins_group.command("install")
-def install_plugins():
+@click.option(
+    "-f",
+    "--force",
+    is_flag=True,
+    help="Force a plugin to update all details about itself, this will overwrite the current database entry.",
+)
+def install_plugins(force):
     """Installs all plugins, or only one."""
     from dispatch.database import SessionLocal
     from dispatch.plugin import service as plugin_service
@@ -76,10 +101,10 @@ def install_plugins():
 
     db_session = SessionLocal()
     for p in plugins.all():
-        click.secho(f"Installing plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
         record = plugin_service.get_by_slug(db_session=db_session, slug=p.slug)
         if not record:
-            plugin = Plugin(
+            click.secho(f"Installing plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
+            record = Plugin(
                 title=p.title,
                 slug=p.slug,
                 type=p.type,
@@ -91,8 +116,10 @@ def install_plugins():
                 description=p.description,
                 enabled=p.enabled,
             )
-            db_session.add(plugin)
-        else:
+            db_session.add(record)
+
+        if force:
+            click.secho(f"Updating plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
             # we only update values that should change
             record.tile = p.title
             record.version = p.version
@@ -125,6 +152,7 @@ def sync_triggers():
     sync_trigger(engine, "team_contact", "search_vector", ["name", "company", "notes"])
     sync_trigger(engine, "term", "search_vector", ["text"])
     sync_trigger(engine, "dispatch_user", "search_vector", ["email"])
+    sync_trigger(engine, "workflow", "search_vector", ["name", "description"])
 
 
 @dispatch_cli.group("database")
@@ -165,8 +193,7 @@ def init_database():
 )
 def restore_database(dump_file):
     """Restores the database via psql."""
-    import sh
-    from sh import psql, createdb
+    from sh import psql, createdb, ErrorReturnCode_1
     from dispatch.config import (
         DATABASE_HOSTNAME,
         DATABASE_NAME,
@@ -189,7 +216,7 @@ def restore_database(dump_file):
                 _env={"PGPASSWORD": password},
             )
         )
-    except sh.ErrorReturnCode_1:
+    except ErrorReturnCode_1:
         print("Database already exists.")
 
     print(
@@ -418,6 +445,7 @@ def dispatch_scheduler():
     from .tag.scheduled import sync_tags  # noqa
     from .task.scheduled import sync_tasks, create_task_reminders  # noqa
     from .term.scheduled import sync_terms  # noqa
+    from .workflow.scheduled import sync_workflows, sync_active_stable_workflows  # noqa
 
 
 @dispatch_scheduler.command("list")
@@ -517,7 +545,7 @@ def run_server(log_level):
     uvicorn.run("dispatch.main:app", debug=True, log_level=log_level)
 
 
-dispatch_server.add_command(uvicorn_main, name="start")
+dispatch_server.add_command(uvicorn.main, name="start")
 
 
 @dispatch_server.command("shell")

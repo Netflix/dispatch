@@ -4,9 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql.expression import true
 
 from dispatch.document import service as document_service
-from dispatch.document.models import Document
 from dispatch.service import service as service_service
-from dispatch.service.models import Service
 
 from .models import IncidentType, IncidentTypeCreate, IncidentTypeUpdate
 
@@ -40,23 +38,28 @@ def get_all(*, db_session) -> List[Optional[IncidentType]]:
 
 def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
     """Creates an incident type."""
-    template_document = Document()
+    incident_type = IncidentType(
+        **incident_type_in.dict(exclude={"commander_service", "template_document"}),
+    )
+
     if incident_type_in.template_document:
         template_document = document_service.get(
             db_session=db_session, document_id=incident_type_in.template_document.id
         )
+        incident_type.template_document = template_document
 
-    commander_service = Service()
     if incident_type_in.commander_service:
         commander_service = service_service.get(
             db_session=db_session, service_id=incident_type_in.commander_service.id
         )
+        incident_type.commander_service = commander_service
 
-    incident_type = IncidentType(
-        **incident_type_in.dict(exclude={"commander_service", "template_document"}),
-        commander_service=commander_service,
-        template_document=template_document,
-    )
+    if incident_type_in.liaison_service:
+        liaison_service = service_service.get(
+            db_session=db_session, service_id=incident_type_in.liaison_service.id
+        )
+        incident_type.liaison_service = liaison_service
+
     db_session.add(incident_type)
     db_session.commit()
     return incident_type
@@ -78,10 +81,16 @@ def update(
         )
         incident_type.commander_service = commander_service
 
+    if incident_type_in.liaison_service:
+        liaison_service = service_service.get(
+            db_session=db_session, service_id=incident_type_in.liaison_service.id
+        )
+        incident_type.liaison_service = liaison_service
+
     incident_type_data = jsonable_encoder(incident_type)
 
     update_data = incident_type_in.dict(
-        skip_defaults=True, exclude={"commander_service", "template_document"}
+        skip_defaults=True, exclude={"commander_service", "liaison_service", "template_document"}
     )
 
     for field in incident_type_data:

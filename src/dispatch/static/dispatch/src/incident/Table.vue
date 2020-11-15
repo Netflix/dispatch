@@ -34,7 +34,13 @@
             >
               <template v-slot:item.cost="{ item }">{{ item.cost | toUSD }}</template>
               <template v-slot:item.commander="{ item }">
-                <v-chip class="ma-2" pill small :href="item.commander.weblink">
+                <v-chip
+                  v-if="item.commander"
+                  class="ma-2"
+                  pill
+                  small
+                  :href="item.commander.weblink"
+                >
                   <div v-if="item.commander">
                     <div v-if="item.commander.name">{{ item.commander.name }}</div>
                     <div v-else>{{ item.commander.email }}</div>
@@ -42,7 +48,7 @@
                 </v-chip>
               </template>
               <template v-slot:item.reporter="{ item }">
-                <v-chip class="ma-2" pill small :href="item.reporter.weblink">
+                <v-chip v-if="item.reporter" class="ma-2" pill small :href="item.reporter.weblink">
                   <div v-if="item.reporter">
                     <div v-if="item.reporter.name">{{ item.reporter.name }}</div>
                     <div v-else>{{ item.reporter.email }}</div>
@@ -102,8 +108,8 @@ export default {
         { text: "Type", value: "incident_type.name" },
         { text: "Priority", value: "incident_priority.name", width: "10%" },
         { text: "Cost", value: "cost" },
-        { text: "Commander", value: "commander" },
-        { text: "Reporter", value: "reporter" },
+        { text: "Commander", value: "commander", sortable: false },
+        { text: "Reporter", value: "reporter", sortable: false },
         { text: "Reported At", value: "reported_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]

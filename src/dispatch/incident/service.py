@@ -9,11 +9,10 @@ from dispatch.event import service as event_service
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.participant import flows as participant_flows
-from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.tag import service as tag_service
-from dispatch.tag.models import TagUpdate, TagCreate
+from dispatch.tag.models import TagCreate
 from dispatch.term import service as term_service
 from dispatch.term.models import TermUpdate
 
@@ -25,33 +24,54 @@ HOURS_IN_DAY = 24
 SECONDS_IN_HOUR = 3600
 
 
-def resolve_incident_commander_email(
+def assign_incident_role(
     db_session: SessionLocal,
+    incident: Incident,
     reporter_email: str,
-    incident_type: str,
-    incident_name: str,
-    incident_title: str,
-    incident_description: str,
-    page_commander: bool,
+    role: ParticipantRoleType,
 ):
-    """Resolves the correct incident commander email based on given parameters."""
-    commander_service = incident_type_service.get_by_name(
-        db_session=db_session, name=incident_type
-    ).commander_service
+    """Assigns incident roles."""
+    # We resolve the incident role email
+    # default to reporter if we don't have an oncall plugin enabled
+    assignee_email = reporter_email
 
-    p = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
+    oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
+    if not oncall_plugin:
+        assignee_email = reporter_email
 
-    # page for high priority incidents
-    # we could do this at the end but it seems pretty important...
-    if page_commander:
-        p.instance.page(
-            service_id=commander_service.external_id,
-            incident_name=incident_name,
-            incident_title=incident_title,
-            incident_description=incident_description,
+        # Add a new participant (duplicate participants with different roles will be updated)
+        participant_flows.add_participant(
+            assignee_email,
+            incident.id,
+            db_session,
+            role,
         )
+        return
 
-    return p.instance.get(service_id=commander_service.external_id)
+    if role == ParticipantRoleType.incident_commander:
+        # default to reporter
+        if incident.incident_type.commander_service:
+            service = incident.incident_type.commander_service
+            assignee_email = oncall_plugin.instance.get(service_id=service.external_id)
+            if incident.incident_priority.page_commander:
+                oncall_plugin.instance.page(
+                    service_id=service.external_id,
+                    incident_name=incident.name,
+                    incident_title=incident.title,
+                    incident_description=incident.description,
+                )
+    else:
+        if incident.incident_type.liaison_service:
+            service = incident.incident_type.liaison_service
+            assignee_email = oncall_plugin.instance.get(service_id=service.external_id)
+
+    # Add a new participant (duplicate participants with different roles will be updated)
+    participant_flows.add_participant(
+        assignee_email,
+        incident.id,
+        db_session,
+        role,
+    )
 
 
 def get(*, db_session, incident_id: int) -> Optional[Incident]:
@@ -189,41 +209,15 @@ def create(
     )
 
     # We add the reporter to the incident
-    reporter_participant = participant_flows.add_participant(
+    participant_flows.add_participant(
         reporter_email, incident.id, db_session, ParticipantRoleType.reporter
     )
 
-    # We resolve the incident commander email
-    # default to reporter if we don't have an oncall plugin enabled
-    oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
-    if oncall_plugin:
-        incident_commander_email = resolve_incident_commander_email(
-            db_session,
-            reporter_email,
-            incident_type.name,
-            "",
-            title,
-            description,
-            incident_priority.page_commander,
-        )
-    else:
-        incident_commander_email = reporter_email
-
-    if reporter_email == incident_commander_email:
-        # We add the role of incident commander the reporter
-        participant_role_service.add_role(
-            participant_id=reporter_participant.id,
-            participant_role=ParticipantRoleType.incident_commander,
-            db_session=db_session,
-        )
-    else:
-        # We create a new participant for the incident commander and we add it to the incident
-        participant_flows.add_participant(
-            incident_commander_email,
-            incident.id,
-            db_session,
-            ParticipantRoleType.incident_commander,
-        )
+    # Add other incident roles (e.g. commander and liaison)
+    assign_incident_role(
+        db_session, incident, reporter_email, ParticipantRoleType.incident_commander
+    )
+    assign_incident_role(db_session, incident, reporter_email, ParticipantRoleType.liaison)
 
     return incident
 
@@ -239,7 +233,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
 
     tags = []
     for t in incident_in.tags:
-        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=TagUpdate(**t)))
+        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=TagCreate(**t)))
 
     terms = []
     for t in incident_in.terms:
@@ -316,16 +310,17 @@ def calculate_cost(incident_id: int, db_session: SessionLocal, incident_review=T
 
             participant_role_assumed_at = participant_role.assumed_at
 
+            if incident.status == IncidentStatus.active.value:
+                # the incident is still active. we use the current time
+                participant_role_renounced_at = datetime.utcnow()
+            else:
+                # the incident is stable or closed. we use the stable_at time
+                participant_role_renounced_at = incident.stable_at
+
             if participant_role.renounced_at:
                 # the participant left the conversation or got assigned another role
                 # we use the renounced_at time
                 participant_role_renounced_at = participant_role.renounced_at
-            elif incident.status != IncidentStatus.active:
-                # the incident is stable or closed. we use the stable_at time
-                participant_role_renounced_at = incident.stable_at
-            else:
-                # the incident is still active. we use the current time
-                participant_role_renounced_at = datetime.utcnow()
 
             # we calculate the time the participant has spent in the incident role
             participant_role_time = participant_role_renounced_at - participant_role_assumed_at

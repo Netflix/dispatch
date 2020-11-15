@@ -6,7 +6,7 @@
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
             <v-list-item-title v-else class="title">New</v-list-item-title>
-            <v-list-item-subtitle>Service</v-list-item-subtitle>
+            <v-list-item-subtitle>Team</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
             icon

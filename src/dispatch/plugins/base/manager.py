@@ -24,8 +24,6 @@ class PluginManager(InstanceManager):
         for plugin in sorted(super(PluginManager, self).all(), key=lambda x: x.get_title()):
             if not plugin.type == plugin_type and plugin_type:
                 continue
-            if not plugin.is_enabled():
-                continue
             if version is not None and plugin.__version__ != version:
                 continue
             yield plugin

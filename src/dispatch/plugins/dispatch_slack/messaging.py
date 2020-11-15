@@ -12,6 +12,7 @@ from dispatch.messaging import (
     INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
     INCIDENT_TASK_LIST_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
+    DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
     MessageType,
     render_message_template,
 )
@@ -31,6 +32,8 @@ from .config import (
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG,
     SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG,
+    SLACK_COMMAND_RUN_WORKFLOW_SLUG,
+    SLACK_COMMAND_LIST_WORKFLOWS_SLUG,
 )
 
 
@@ -40,6 +43,10 @@ log = logging.getLogger(__name__)
 INCIDENT_CONVERSATION_TACTICAL_REPORT_SUGGESTION = f"Consider providing a tactical report using the `{SLACK_COMMAND_REPORT_TACTICAL_SLUG}` command."
 
 INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
+    SLACK_COMMAND_RUN_WORKFLOW_SLUG: {
+        "response_type": "ephemeral",
+        "text": "Opening a modal to run a workflow...",
+    },
     SLACK_COMMAND_REPORT_TACTICAL_SLUG: {
         "response_type": "ephemeral",
         "text": "Opening a dialog to write a tactical report...",
@@ -96,6 +103,10 @@ INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
         "response_type": "ephemeral",
         "text": "Fetching the list of incidents...",
     },
+    SLACK_COMMAND_LIST_WORKFLOWS_SLUG: {
+        "response_type": "ephemeral",
+        "text": "Fetching the list of workflows...",
+    },
 }
 
 INCIDENT_CONVERSATION_COMMAND_RUN_IN_NONINCIDENT_CONVERSATION = """
@@ -135,10 +146,17 @@ def create_command_run_in_conversation_where_bot_not_present_message(
 
 
 def create_incident_reported_confirmation_message(
-    title: str, incident_type: str, incident_priority: str
+    title: str, description: str, incident_type: str, incident_priority: str
 ):
     """Creates an incident reported confirmation message."""
     return [
+        {
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": "Security Incident Reported",
+            },
+        },
         {
             "type": "section",
             "text": {
@@ -147,6 +165,10 @@ def create_incident_reported_confirmation_message(
             },
         },
         {"type": "section", "text": {"type": "mrkdwn", "text": f"*Incident Title*: {title}"}},
+        {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": f"*Incident Description*: {description}"},
+        },
         {
             "type": "section",
             "text": {"type": "mrkdwn", "text": f"*Incident Type*: {incident_type}"},
@@ -174,8 +196,23 @@ def get_template(message_type: MessageType):
             default_notification,
             INCIDENT_TASK_REMINDER_DESCRIPTION,
         ),
-        MessageType.incident_status_reminder: (default_notification, None,),
+        MessageType.document_evergreen_reminder: (
+            default_notification,
+            DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
+        ),
+        MessageType.incident_status_reminder: (
+            default_notification,
+            None,
+        ),
         MessageType.incident_task_list: (default_notification, INCIDENT_TASK_LIST_DESCRIPTION),
+        MessageType.incident_closed_information_review_reminder: (
+            default_notification,
+            None,
+        ),
+        MessageType.incident_rating_feedback: (
+            default_notification,
+            None,
+        ),
     }
 
     template_func, description = template_map.get(message_type, (None, None))
@@ -191,7 +228,7 @@ def format_default_text(item: dict):
     if item.get("title_link"):
         return f"*<{item['title_link']}|{item['title']}>*\n{item['text']}"
     if item.get("datetime"):
-        return f"*{item['title']}* \n <!date^{int(item['datetime'].timestamp())}^ {{date}} | {item['datetime']}"
+        return f"*{item['title']}*\n <!date^{int(item['datetime'].timestamp())}^ {{date}} | {item['datetime']}"
     return f"*{item['title']}*\n{item['text']}"
 
 
@@ -206,7 +243,10 @@ def default_notification(items: list):
         if item.get("title_link") == "None":  # avoid adding blocks with no data
             continue
 
-        block = {"type": "section", "text": {"type": "mrkdwn", "text": format_default_text(item)}}
+        block = {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": format_default_text(item)},
+        }
 
         if item.get("button_text") and item.get("button_value"):
             block.update(

@@ -1,5 +1,5 @@
 <template>
-  <ValidationProvider name="document" rules="required" immediate>
+  <ValidationProvider name="document" immediate>
     <v-autocomplete
       v-model="document"
       :items="items"

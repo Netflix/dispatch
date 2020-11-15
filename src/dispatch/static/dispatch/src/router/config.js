@@ -180,6 +180,23 @@ export const protectedRoute = [
     ]
   },
   {
+    path: "/tags/types",
+    component: DefaultLayout,
+    meta: {
+      title: "Tag Types",
+      icon: "view_compact",
+      group: "configuration",
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: "/tags/types",
+        name: "TagTypeTable",
+        component: () => import(/* webpackChunkName: "routing-table" */ "@/tag_type/Table.vue")
+      }
+    ]
+  },
+  {
     path: "/tags",
     component: DefaultLayout,
     meta: { title: "Tags", icon: "view_compact", group: "contacts", requiresAuth: true },
@@ -210,9 +227,21 @@ export const protectedRoute = [
     meta: { title: "Documents", icon: "view_compact", group: "knowledge", requiresAuth: true },
     children: [
       {
-        path: "/Documents",
+        path: "/documents",
         name: "DocumentTable",
         component: () => import(/* webpackChunkName: "definition-table" */ "@/document/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/workflows",
+    component: DefaultLayout,
+    meta: { title: "Workflows", icon: "view_compac", group: "knowledge", requiresAuth: true },
+    children: [
+      {
+        path: "/workflows",
+        name: "WorkflowTable",
+        component: () => import(/* webpackChunkName: "definition-table" */ "@/workflow/Table.vue")
       }
     ]
   },
@@ -240,7 +269,18 @@ export const protectedRoute = [
       }
     ]
   },
-
+  {
+    path: "/feedback",
+    component: DefaultLayout,
+    meta: { title: "Feedback", icon: "view_compact", group: "incident", requiresAuth: true },
+    children: [
+      {
+        path: "/feedback",
+        name: "FeedbackTable",
+        component: () => import(/* webpackChunkName: "knowledge-table" */ "@/feedback/Table.vue")
+      }
+    ]
+  },
   {
     path: "/terms",
     component: DefaultLayout,

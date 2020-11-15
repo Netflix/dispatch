@@ -24,8 +24,15 @@ class OpsGenieOncallPlugin(OncallPlugin):
     description = "Uses Opsgenie to resolve and page oncall teams."
     version = __version__
 
-    def get(self, *args, **kwargs):
+    def get(self, service_id: str, **kwargs):
         return get_oncall()
 
-    def page(self, incident_name: str, incident_title: str, incident_description: str):
+    def page(
+        self,
+        service_id: str,
+        incident_name: str,
+        incident_title: str,
+        incident_description: str,
+        **kwargs,
+    ):
         return page_oncall(incident_name, incident_title, incident_description)

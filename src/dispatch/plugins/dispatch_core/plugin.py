@@ -36,6 +36,7 @@ from dispatch.route.models import RouteRequest
 
 from dispatch.config import (
     DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS,
+    DISPATCH_PKCE_DONT_VERIFY_AT_HASH,
     DISPATCH_JWT_SECRET,
     DISPATCH_JWT_AUDIENCE,
     DISPATCH_JWT_EMAIL_OVERRIDE,
@@ -57,6 +58,9 @@ class BasicAuthProviderPlugin(AuthenticationProviderPlugin):
         authorization: str = request.headers.get("Authorization")
         scheme, param = get_authorization_scheme_param(authorization)
         if not authorization or scheme.lower() != "bearer":
+            log.exception(
+                f"Malformed authorization header. Scheme: {scheme} Param: {param} Authorization: {authorization}"
+            )
             return
 
         token = authorization.split()[1]
@@ -101,12 +105,16 @@ class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
                 key = potential_key
 
         try:
+            jwt_opts = {}
+            if DISPATCH_PKCE_DONT_VERIFY_AT_HASH:
+                jwt_opts = {'verify_at_hash': False}
             # If DISPATCH_JWT_AUDIENCE is defined, the we must include audience in the decode
             if DISPATCH_JWT_AUDIENCE:
-                data = jwt.decode(token, key, audience=DISPATCH_JWT_AUDIENCE)
+                data = jwt.decode(token, key, audience=DISPATCH_JWT_AUDIENCE, options=jwt_opts)
             else:
-                data = jwt.decode(token, key)
-        except JWTError:
+                data = jwt.decode(token, key, options=jwt_opts)
+        except JWTError as err:
+            log.debug('JWT Decode error: {}'.format(err))
             raise credentials_exception
 
         # Support overriding where email is returned in the id token

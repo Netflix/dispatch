@@ -19,11 +19,11 @@ def get_tasks(
     page: int = 1,
     items_per_page: int = Query(5, alias="itemsPerPage"),
     query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query(None, alias="sortBy[]"),
-    descending: List[bool] = Query(None, alias="descending[]"),
-    fields: List[str] = Query(None, alias="fields[]"),
-    ops: List[str] = Query(None, alias="ops[]"),
-    values: List[str] = Query(None, alias="values[]"),
+    sort_by: List[str] = Query([], alias="sortBy[]"),
+    descending: List[bool] = Query([], alias="descending[]"),
+    fields: List[str] = Query([], alias="fields[]"),
+    ops: List[str] = Query([], alias="ops[]"),
+    values: List[str] = Query([], alias="values[]"),
 ):
     """
     Retrieve all tasks.
@@ -43,7 +43,9 @@ def get_tasks(
             ("incident", "incident"),
             ("incident_type", "incident"),
             ("incident_priority", "incident"),
-            ("tag", "tags"),
+            ("tags", "tag"),
+            ("creator", "creator"),
+            ("owner", "owner"),
         ],
     )
 
@@ -58,7 +60,8 @@ def create_task(
     """
     Creates a new task.
     """
-    task = create(db_session=db_session, task_in=task_in, creator_email=current_user.email)
+    task_in.creator = {"individual": {"email": current_user.email}}
+    task = create(db_session=db_session, task_in=task_in)
     return task
 
 

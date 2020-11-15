@@ -27,11 +27,16 @@ class Participant(Base):
     after_hours_notification = Column(Boolean, default=False)
 
     # relationships
+    feedback = relationship("Feedback", backref="participant")
     incident_id = Column(Integer, ForeignKey("incident.id"))
     individual = relationship("IndividualContact", lazy="subquery", backref="participant")
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
     participant_roles = relationship("ParticipantRole", backref="participant", lazy="subquery")
     reports = relationship("Report", backref="participant")
+    created_tasks = relationship(
+        "Task", backref="creator", primaryjoin="Participant.id==Task.creator_id"
+    )
+    owned_tasks = relationship("Task", backref="owner", primaryjoin="Participant.id==Task.owner_id")
 
     @staticmethod
     def _active_at(mapper, connection, target):

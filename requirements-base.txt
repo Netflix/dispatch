@@ -11,6 +11,7 @@ fastapi
 fastapi_permissions
 google-api-python-client
 google-auth-oauthlib
+h11==0.9.0 # NOTE pinning due to uvicorn
 httpx
 jinja2
 jira
@@ -18,19 +19,18 @@ joblib
 numpy
 oauth2client
 pandas
+pdpyras
 psycopg2-binary
 pyparsing
-pypd  # pagerduty plugin
 python-dateutil
 python-jose
 python-multipart
 pytz
 requests
-uvicorn==0.11.8 # NOTE pinning due to a reliance on h11 (See #588)
 rsa==4.0  # NOTE pinning for google-auth
 schedule
 sentry-asgi
-sentry_sdk
+sentry-sdk
 sh
 slackclient
 spacy

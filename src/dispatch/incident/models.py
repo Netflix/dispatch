@@ -13,6 +13,7 @@ from sqlalchemy import (
     String,
     Table,
     select,
+    join,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -26,7 +27,7 @@ from dispatch.config import (
     INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
     INCIDENT_RESOURCE_TACTICAL_GROUP,
 )
-from dispatch.auth.models import UserRoles
+from dispatch.enums import UserRoles
 from dispatch.conference.models import ConferenceRead
 from dispatch.conversation.models import ConversationRead
 from dispatch.database import Base
@@ -39,13 +40,16 @@ from dispatch.incident_priority.models import (
     IncidentPriorityRead,
 )
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
+from dispatch.individual.models import IndividualContact
 from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
-from dispatch.participant.models import ParticipantRead
+from dispatch.participant.models import Participant, ParticipantRead
 from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
 from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
+from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
+from dispatch.workflow.models import WorkflowInstanceRead
 
 from .enums import IncidentStatus
 
@@ -102,10 +106,10 @@ class Incident(Base, TimeStampMixin):
     @commander.expression
     def commander(cls):
         return (
-            select(ParticipantRole.individual)
-            .where(ParticipantRole.incident_id == cls.id)
+            select([IndividualContact])
+            .where(Participant.incident_id == cls.id)
             .where(ParticipantRole.role == ParticipantRoleType.incident_commander)
-            .where(ParticipantRole.renounce_at == None)  # noqa
+            .where(ParticipantRole.renounced_at == None)  # noqa
         )
 
     @hybrid_property
@@ -119,10 +123,10 @@ class Incident(Base, TimeStampMixin):
     @reporter.expression
     def reporter(cls):
         return (
-            select(ParticipantRole.individual)
-            .where(ParticipantRole.incident_id == cls.id)
+            select([IndividualContact])
+            .where(Participant.incident_id == cls.id)
             .where(ParticipantRole.role == ParticipantRoleType.reporter)
-            .where(ParticipantRole.renounce_at == None)  # noqa
+            .where(ParticipantRole.renounced_at == None)  # noqa
         )
 
     @hybrid_property
@@ -196,6 +200,7 @@ class Incident(Base, TimeStampMixin):
     conversation = relationship("Conversation", uselist=False, backref="incident")
     documents = relationship("Document", lazy="subquery", backref="incident")
     events = relationship("Event", backref="incident")
+    feedback = relationship("Feedback", backref="incident")
     groups = relationship("Group", lazy="subquery", backref="incident")
     incident_priority = relationship("IncidentPriority", backref="incident")
     incident_priority_id = Column(Integer, ForeignKey("incident_priority.id"))
@@ -208,6 +213,7 @@ class Incident(Base, TimeStampMixin):
     tasks = relationship("Task", backref="incident")
     terms = relationship("Term", secondary=assoc_incident_terms, backref="incidents")
     ticket = relationship("Ticket", uselist=False, backref="incident")
+    workflow_instances = relationship("WorkflowInstance", backref="incident")
 
     # allow incidents to be marked as duplicate
     duplicate_id = Column(Integer, ForeignKey("incident.id"))
@@ -279,10 +285,11 @@ class IncidentRead(IncidentBase):
     incident_priority: IncidentPriorityRead
     incident_type: IncidentTypeRead
     participants: Optional[List[ParticipantRead]] = []
+    workflow_instances: Optional[List[WorkflowInstanceRead]] = []
     storage: Optional[StorageRead] = None
     ticket: Optional[TicketRead] = None
     documents: Optional[List[DocumentRead]] = []
-    tags: Optional[List[Any]] = []  # any until we figure out circular imports
+    tags: Optional[List[TagRead]] = []
     terms: Optional[List[Any]] = []  # any until we figure out circular imports
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None

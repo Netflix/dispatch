@@ -110,6 +110,8 @@ def get_or_create(
             participant_roles=participant_roles, team=team, department=department, location=location
         )
         participant = create(db_session=db_session, participant_in=participant_in)
+    else:
+        participant.roles += participant_roles
 
     return participant
 

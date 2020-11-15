@@ -4,10 +4,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from dispatch.database import get_db, search_filter_sort_paginate
-from dispatch.search.service import search
 
-from .models import Document, DocumentCreate, DocumentPagination, DocumentRead, DocumentUpdate
-from .service import create, delete, get, get_all, update
+from .models import DocumentCreate, DocumentPagination, DocumentRead, DocumentUpdate
+from .service import create, delete, get, update
 
 router = APIRouter()
 
@@ -18,11 +17,11 @@ def get_documents(
     page: int = 1,
     items_per_page: int = Query(5, alias="itemsPerPage"),
     query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query(None, alias="sortBy[]"),
-    descending: List[bool] = Query(None, alias="descending[]"),
-    fields: List[str] = Query(None, alias="field[]"),
-    ops: List[str] = Query(None, alias="op[]"),
-    values: List[str] = Query(None, alias="value[]"),
+    sort_by: List[str] = Query([], alias="sortBy[]"),
+    descending: List[bool] = Query([], alias="descending[]"),
+    fields: List[str] = Query([], alias="field[]"),
+    ops: List[str] = Query([], alias="op[]"),
+    values: List[str] = Query([], alias="value[]"),
 ):
     """
     Get all documents.

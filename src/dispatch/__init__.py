@@ -2,7 +2,6 @@ import os
 import os.path
 from subprocess import check_output
 
-
 try:
     VERSION = __import__("pkg_resources").get_distribution("dispatch").version
 except Exception:
@@ -16,6 +15,7 @@ try:
     from dispatch.definition.models import Definition  # noqa lgtm[py/unused-import]
     from dispatch.document.models import Document  # noqa lgtm[py/unused-import]
     from dispatch.event.models import Event  # noqa lgtm[py/unused-import]
+    from dispatch.feedback.models import Feedback  # noqa lgtm[py/unused-import]
     from dispatch.group.models import Group  # noqa lgtm[py/unused-import]
     from dispatch.incident.models import Incident  # noqa lgtm[py/unused-import]
     from dispatch.incident_priority.models import IncidentPriority  # noqa lgtm[py/unused-import]
@@ -32,10 +32,12 @@ try:
     from dispatch.report.models import Report  # noqa lgtm[py/unused-import]
     from dispatch.storage.models import Storage  # noqa lgtm[py/unused-import]
     from dispatch.tag.models import Tag  # noqa lgtm[py/unused-import]
+    from dispatch.tag_type.models import TagType  # noqa lgtm[py/unused-import]
     from dispatch.task.models import Task  # noqa lgtm[py/unused-import]
     from dispatch.term.models import Term  # noqa lgtm[py/unused-import]
     from dispatch.ticket.models import Ticket  # noqa lgtm[py/unused-import]
     from dispatch.plugin.models import Plugin  # noqa lgtm[py/unused-import]
+    from dispatch.workflow.models import Workflow  # noqa lgtm[py/unused-import]
 except Exception:
     pass
 

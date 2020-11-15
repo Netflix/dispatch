@@ -87,7 +87,10 @@ def create_executive_report(
 
     if not report_template:
         send_feedack_to_user(
-            incident.conversation.channel_id, user_id, "No executive report template defined."
+            incident.conversation.channel_id,
+            user_id,
+            "No executive report template defined.",
+            db_session,
         )
         return
 

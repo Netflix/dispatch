@@ -23,12 +23,6 @@ def sync_tags(db_session=None):
     """Syncs tags from external sources."""
     for p in plugins.all(plugin_type="tag"):
         log.debug(f"Getting tags via: {p.slug}")
-        for app in p.get():
-            log.debug(f"Adding Tag. Tag: {app}")
-            tag_in = TagCreate(**app)
-            tag = tag_service.get_by_name(db_session=db_session, name=tag_in.name)
-
-            if tag:
-                tag_service.update(db_session=db_session, tag=tag, tag_in=tag_in)
-            else:
-                tag_service.create(db_session=db_session, tag_in=tag_in)
+        for t in p.get():
+            log.debug(f"Adding Tag. Tag: {t}")
+            tag_service.get_or_create(db_session=db_session, tag_in=TagCreate(**t))

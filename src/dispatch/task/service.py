@@ -3,9 +3,10 @@ from typing import List, Optional
 
 from sqlalchemy import or_
 
+from dispatch.plugin import service as plugin_service
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
-from dispatch.incident.models import Incident
+from dispatch.incident.flows import incident_service
 from dispatch.ticket import service as ticket_service
 from .models import Task, TaskStatus, TaskUpdate, TaskCreate
 
@@ -58,17 +59,22 @@ def get_overdue_tasks(*, db_session) -> List[Optional[Task]]:
     )
 
 
-def create(*, db_session, incident: Incident, task_in: TaskCreate) -> Task:
+def create(*, db_session, task_in: TaskCreate) -> Task:
     """Create a new task."""
+    incident = incident_service.get(db_session=db_session, incident_id=task_in.incident.id)
     tickets = [
-        ticket_service.get_or_create_by_weblink(db_session=db_session, weblink=t.weblink)
+        ticket_service.get_or_create_by_weblink(
+            db_session=db_session, weblink=t.weblink, resource_type="task-ticket"
+        )
         for t in task_in.tickets
     ]
 
     assignees = []
     for i in task_in.assignees:
         assignee = incident_flows.incident_add_or_reactivate_participant_flow(
-            db_session=db_session, incident_id=incident.id, user_email=i.individual.email,
+            db_session=db_session,
+            incident_id=incident.id,
+            user_email=i.individual.email,
         )
 
         # due to the freeform nature of task assignment, we can sometimes pick up other emails
@@ -76,9 +82,17 @@ def create(*, db_session, incident: Incident, task_in: TaskCreate) -> Task:
         if assignee:
             assignees.append(assignee)
 
+    creator_email = None
+    if not task_in.creator:
+        creator_email = task_in.owner.individual.email
+    else:
+        creator_email = task_in.creator.individual.email
+
     # add creator as a participant if they are not one already
     creator = incident_flows.incident_add_or_reactivate_participant_flow(
-        db_session=db_session, incident_id=incident.id, user_email=task_in.owner.individual.email,
+        db_session=db_session,
+        incident_id=incident.id,
+        user_email=creator_email,
     )
 
     # if we cannot find any assignees, the creator becomes the default assignee
@@ -124,7 +138,9 @@ def update(*, db_session, task: Task, task_in: TaskUpdate) -> Task:
     for i in task_in.assignees:
         assignees.append(
             incident_flows.incident_add_or_reactivate_participant_flow(
-                db_session=db_session, incident_id=task.incident.id, user_email=i.individual.email,
+                db_session=db_session,
+                incident_id=task.incident.id,
+                user_email=i.individual.email,
             )
         )
 
@@ -144,6 +160,19 @@ def update(*, db_session, task: Task, task_in: TaskUpdate) -> Task:
 
     for field in update_data.keys():
         setattr(task, field, update_data[field])
+
+    # if we have an external task plugin enabled, attempt to update the external resource as well
+    # we don't currently have a good way to get the correct file_id (we don't store a task <-> relationship)
+    # lets try in both the incident doc and PIR doc
+    drive_task_plugin = plugin_service.get_active(db_session=db_session, plugin_type="task")
+
+    if drive_task_plugin:
+        try:
+            file_id = task.incident.incident_document.resource_id
+            drive_task_plugin.instance.update(file_id, task.external_task_id, resolved=task.status)
+        except Exception:
+            file_id = task.incident.incident_review_document.resource_id
+            drive_task_plugin.instance.update(file_id, task.external_task_id, resolved=task.status)
 
     db_session.add(task)
     db_session.commit()

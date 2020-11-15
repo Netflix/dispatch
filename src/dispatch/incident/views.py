@@ -3,23 +3,25 @@ from typing import List
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from dispatch.enums import Visibility
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.database import get_db, search_filter_sort_paginate
-
+from dispatch.enums import Visibility, UserRoles
+from dispatch.incident.enums import IncidentStatus
 from dispatch.participant_role.models import ParticipantRoleType
 
-from dispatch.auth.models import UserRoles
 from .flows import (
-    incident_create_flow,
-    incident_update_flow,
-    incident_assign_role_flow,
     incident_add_or_reactivate_participant_flow,
+    incident_assign_role_flow,
+    incident_create_closed_flow,
+    incident_create_flow,
+    incident_create_stable_flow,
+    incident_update_flow,
 )
+from .metrics import make_forecast
 from .models import IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
 from .service import create, delete, get, update
-from .metrics import make_forecast
+
 
 router = APIRouter()
 
@@ -30,8 +32,8 @@ def get_incidents(
     page: int = 1,
     items_per_page: int = Query(5, alias="itemsPerPage"),
     query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query(None, alias="sortBy[]"),
-    descending: List[bool] = Query(None, alias="descending[]"),
+    sort_by: List[str] = Query([], alias="sortBy[]"),
+    descending: List[bool] = Query([], alias="descending[]"),
     fields: List[str] = Query([], alias="fields[]"),
     ops: List[str] = Query([], alias="ops[]"),
     values: List[str] = Query([], alias="values[]"),
@@ -40,15 +42,6 @@ def get_incidents(
     """
     Retrieve a list of all incidents.
     """
-    # we want to provide additional protections around restricted incidents
-    # Because we want to proactively filter (instead of when the item is returned
-    # we don't use fastapi_permissions acls.
-    if current_user.role != UserRoles.admin:
-        # add a filter for restricted incidents
-        fields.append("visibility")
-        values.append(Visibility.restricted)
-        ops.append("!=")
-
     return search_filter_sort_paginate(
         db_session=db_session,
         model="Incident",
@@ -60,7 +53,10 @@ def get_incidents(
         fields=fields,
         values=values,
         ops=ops,
-        join_attrs=[("tag", "tags")],
+        join_attrs=[
+            ("tag", "tags"),
+        ],
+        user_role=current_user.role,
     )
 
 
@@ -112,7 +108,12 @@ def create_incident(
         db_session=db_session, reporter_email=current_user.email, **incident_in.dict()
     )
 
-    background_tasks.add_task(incident_create_flow, incident_id=incident.id)
+    if incident.status == IncidentStatus.stable:
+        background_tasks.add_task(incident_create_stable_flow, incident_id=incident.id)
+    elif incident.status == IncidentStatus.closed:
+        background_tasks.add_task(incident_create_closed_flow, incident_id=incident.id)
+    else:
+        background_tasks.add_task(incident_create_flow, incident_id=incident.id)
 
     return incident
 
@@ -132,6 +133,14 @@ def update_incident(
     incident = get(db_session=db_session, incident_id=incident_id)
     if not incident:
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
+
+    # we want to provide additional protections around restricted incidents
+    if incident.visibility == Visibility.restricted:
+        # reject if the user isn't an admin or commander
+        if current_user.email != incident.commander.email or current_user.role != UserRoles.admin:
+            raise HTTPException(
+                status_code=401, detail="You do no have permission to update this incident."
+            )
 
     previous_incident = IncidentRead.from_orm(incident)
 
@@ -180,6 +189,14 @@ def join_incident(
     incident = get(db_session=db_session, incident_id=incident_id)
     if not incident:
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
+
+    # we want to provide additional protections around restricted incidents
+    if incident.visibility == Visibility.restricted:
+        # reject if the user isn't an admin
+        if current_user.role != UserRoles.admin.value:
+            raise HTTPException(
+                status_code=401, detail="You do no have permission to join this incident."
+            )
 
     background_tasks.add_task(
         incident_add_or_reactivate_participant_flow, current_user.email, incident_id=incident.id

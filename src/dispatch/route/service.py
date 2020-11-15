@@ -5,9 +5,9 @@ from sqlalchemy import func
 
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.incident_priority import service as incident_priority_service
-from dispatch.incident_priority.models import IncidentPriority
+from dispatch.incident_priority.models import IncidentPriority, IncidentPriorityBase
 from dispatch.incident_type import service as incident_type_service
-from dispatch.incident_type.models import IncidentType
+from dispatch.incident_type.models import IncidentType, IncidentTypeBase
 from dispatch.term.models import Term
 
 from .models import Recommendation, RecommendationAccuracy, RouteRequest, ContextBase
@@ -24,100 +24,51 @@ def get_terms(db_session, text: str) -> List[str]:
     return extracted_terms
 
 
-# TODO is there a better way to deduplicate across sqlalchemy models?
-def deduplicate_resources(resources: List[dict]) -> Dict:
-    """Creates a new dict adding new resources if they are not yet seen."""
-    contact_set = {}
-    for c in resources:
-        key = f"{type(c).__name__}-{c.id}"
-        if key not in contact_set.keys():
-            contact_set[key] = c
-
-    return list(contact_set.values())
-
-
-def resource_union(resources: List[dict], inputs: int) -> Dict:
-    """Ensures the an item occurs in the resources list at least n times."""
-    resource_set = {}
-    for c in resources:
-        key = f"{type(c).__name__}-{c.id}"
-        if key not in resource_set.keys():
-            resource_set[key] = (1, c)
-        else:
-            count, obj = resource_set[key]
-            resource_set[key] = (count + 1, obj)
-
-    unions = []
-    for key, value in resource_set.items():
-        count, obj = value
-        if count >= inputs:
-            unions.append(obj)
-    return unions
-
-
-def get_resources_from_incident_types(db_session, incident_types: List[str]) -> list:
+def get_resources_from_incident_types(db_session, incident_types: List[IncidentTypeBase]) -> set:
     """Get all resources related to a specific incident type."""
-    incident_types = [i.name for i in incident_types]
+    incident_type_names = [i.name for i in incident_types]
     incident_type_models = (
-        db_session.query(IncidentType).filter(IncidentType.name.in_(incident_types)).all()
+        db_session.query(IncidentType).filter(IncidentType.name.in_(incident_type_names)).all()
     )
 
-    resources = []
-    for i in incident_type_models:
-        resources += i.teams
-        resources += i.individuals
-        resources += i.services
-        resources += i.documents
-
-    return resources
+    return {
+        resource
+        for i in incident_type_models
+        for resource in i.teams + i.individuals + i.services + i.documents
+    }
 
 
-def get_resources_from_priorities(db_session, incident_priorities: List[str]) -> list:
+def get_resources_from_priorities(db_session, incident_priorities: List[IncidentPriorityBase]) -> set:
     """Get all resources related to a specific priority."""
-    incident_priorities = [i.name for i in incident_priorities]
+    incident_priority_names = [i.name for i in incident_priorities]
     incident_priority_models = (
         db_session.query(IncidentPriority)
-        .filter(IncidentPriority.name.in_(incident_priorities))
+        .filter(IncidentPriority.name.in_(incident_priority_names))
         .all()
     )
 
-    resources = []
-    for i in incident_priority_models:
-        resources += i.teams
-        resources += i.individuals
-        resources += i.services
-        resources += i.documents
-
-    return resources
+    return {
+        resource
+        for i in incident_priority_models
+        for resource in i.teams + i.individuals + i.services + i.documents
+    }
 
 
-def get_resources_from_context(db_session, context: ContextBase):
+def get_resources_from_context(db_session, context: ContextBase) -> set:
     """Fetch relevent resources based on context only."""
-    resources = []
-    if context.incident_types:
-        resources += get_resources_from_incident_types(
-            db_session, incident_types=context.incident_types
-        )
+    incident_types_resources = (
+        get_resources_from_incident_types(db_session, incident_types=context.incident_types)
+        if context.incident_types else set()
+    )
 
-    if context.incident_priorities:
-        resources += get_resources_from_priorities(
-            db_session, incident_priorities=context.incident_priorities
-        )
+    priorities_resources = (
+        get_resources_from_priorities(db_session, incident_priorities=context.incident_priorities)
+        if context.incident_priorities else set()
+    )
 
-    inputs = 0
-    if context.incident_priorities:
-        inputs += 1
+    _, term_resources = get_resources_from_terms(db_session, terms=context.terms) if context.terms else (None, set())
 
-    if context.incident_types:
-        inputs += 1
-
-    resources = resource_union(resources, inputs)
-
-    if context.terms:
-        _, term_resources = get_resources_from_terms(db_session, terms=context.terms)
-        resources += term_resources
-
-    return resources
+    return (incident_types_resources & priorities_resources) | term_resources
 
 
 def get_resources_from_terms(db_session, terms: List[str]):
@@ -130,12 +81,11 @@ def get_resources_from_terms(db_session, terms: List[str]):
     )
 
     # find resources associated with those terms
-    resources = []
-    for t in matched_terms:
-        resources += t.teams
-        resources += t.individuals
-        resources += t.services
-        resources += t.documents
+    resources = {
+        resource
+        for t in matched_terms
+        for resource in t.teams + t.individuals + t.services + t.documents
+    }
 
     return matched_terms, resources
 
@@ -202,7 +152,7 @@ def get(*, db_session, route_in: RouteRequest) -> Dict[Any, Any]:
         route_in.context.terms.extend(resource_matched_terms)
         resources.extend(term_resources)
 
-    resources = deduplicate_resources(resources)
+    resources = list(set(resources))
 
     # create a recommandation entry we can use to data mine at a later time
     recommendation = create_recommendation(

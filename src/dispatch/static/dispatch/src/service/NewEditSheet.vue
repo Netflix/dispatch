@@ -87,7 +87,7 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <v-switch v-model="is_active" :label="is_active ? 'Active' : 'Inactive'" />
+                <v-checkbox v-model="is_active" label="Enabled" />
               </v-flex>
               <v-flex xs12>
                 <span class="subtitle-2">Engagement</span>

@@ -14,6 +14,8 @@ from sqlalchemy_searchable import search as search_db
 from starlette.requests import Request
 
 from dispatch.common.utils.composite_search import CompositeSearch
+from dispatch.enums import Visibility, UserRoles
+
 
 from .config import SQLALCHEMY_DATABASE_URI
 
@@ -64,8 +66,9 @@ def get_class_by_tablename(table_fullname: str) -> Any:
     """Return class reference mapped to table."""
     mapped_name = resolve_table_name(table_fullname)
     for c in Base._decl_class_registry.values():
-        if hasattr(c, "__table__") and c.__table__.fullname == mapped_name:
-            return c
+        if hasattr(c, "__table__"):
+            if c.__table__.fullname.lower() == mapped_name.lower():
+                return c
     raise Exception(f"Incorrect tablename '{mapped_name}'. Check the name of your model.")
 
 
@@ -90,7 +93,7 @@ def search(*, db_session, query_str: str, model: str):
     return search_db(q, query_str, sort=True)
 
 
-def create_filter_spec(model, fields, ops, values):
+def create_filter_spec(model, fields, ops, values, user_role):
     """Creates a filter spec."""
     filters = []
 
@@ -125,6 +128,19 @@ def create_filter_spec(model, fields, ops, values):
         else:
             filter_spec.append({"or": filters})
 
+    # add admin only filter
+    if user_role != UserRoles.admin:
+        # add support for filtering restricted incidents
+        if model.lower() == "incident":
+            filter_spec.append(
+                {
+                    "model": model,
+                    "field": "visibility",
+                    "op": "!=",
+                    "value": Visibility.restricted,
+                }
+            )
+
     if filter_spec:
         filter_spec = {"and": filter_spec}
 
@@ -141,7 +157,7 @@ def create_sort_spec(model, sort_by, descending):
 
             # we have a complex field, we may need to join
             if "." in field:
-                complex_model, complex_field = field.split(".")
+                complex_model, complex_field = field.split(".")[-2:]
 
                 sort_spec.append(
                     {
@@ -161,19 +177,18 @@ def get_all(*, db_session, model):
     return db_session.query(get_class_by_tablename(model))
 
 
-def join_required_attrs(query, model, join_attrs, fields):
+def join_required_attrs(query, model, join_attrs, fields, sort_by):
     """Determines which attrs (if any) require a join."""
-    if not fields:
-        return query
+    all_fields = list(set(fields + sort_by))
 
     if not join_attrs:
         return query
 
     for field, attr in join_attrs:
-        for f in fields:
+        # sometimes fields have attributes e.g. "incident_type.id"
+        for f in all_fields:
             if field in f:
                 query = query.join(getattr(model, attr))
-
     return query
 
 
@@ -189,6 +204,7 @@ def search_filter_sort_paginate(
     ops: List[str] = None,
     values: List[str] = None,
     join_attrs: List[str] = None,
+    user_role: UserRoles = UserRoles.user,
 ):
     """Common functionality for searching, filtering and sorting"""
     model_cls = get_class_by_tablename(model)
@@ -197,9 +213,9 @@ def search_filter_sort_paginate(
     else:
         query = db_session.query(model_cls)
 
-    query = join_required_attrs(query, model_cls, join_attrs, fields)
+    query = join_required_attrs(query, model_cls, join_attrs, fields, sort_by)
 
-    filter_spec = create_filter_spec(model, fields, ops, values)
+    filter_spec = create_filter_spec(model, fields, ops, values, user_role)
     query = apply_filters(query, filter_spec)
 
     sort_spec = create_sort_spec(model, sort_by, descending)

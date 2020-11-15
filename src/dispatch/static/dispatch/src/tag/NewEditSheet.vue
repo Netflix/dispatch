@@ -44,18 +44,7 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="type" rules="required" immediate>
-                  <v-text-field
-                    v-model="type"
-                    slot-scope="{ errors, valid }"
-                    :error-messages="errors"
-                    :success="valid"
-                    label="Type"
-                    hint="This tags type."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <tag-type-select v-model="tag_type" />
               </v-flex>
               <v-flex xs12>
                 <ValidationProvider name="source" immediate>
@@ -119,6 +108,7 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
+import TagTypeSelect from "@/tag_type/TagTypeSelect.vue"
 
 extend("required", {
   ...required,
@@ -130,14 +120,15 @@ export default {
 
   components: {
     ValidationObserver,
-    ValidationProvider
+    ValidationProvider,
+    TagTypeSelect
   },
 
   computed: {
     ...mapFields("tag", [
       "selected.name",
       "selected.id",
-      "selected.type",
+      "selected.tag_type",
       "selected.uri",
       "selected.description",
       "selected.source",

@@ -2,6 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, Request, HTTPException, Query
 from sqlalchemy.orm import Session
 from dispatch.database import get_db, search_filter_sort_paginate
+from dispatch.enums import UserRoles
 
 from .models import (
     UserLogin,
@@ -11,6 +12,7 @@ from .models import (
     UserPagination,
     UserLoginResponse,
     UserRegisterResponse,
+    DispatchUser,
 )
 from .service import (
     get,
@@ -30,11 +32,11 @@ def get_users(
     page: int = 1,
     items_per_page: int = Query(5, alias="itemsPerPage"),
     query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query(None, alias="sortBy[]"),
-    descending: List[bool] = Query(None, alias="descending[]"),
-    fields: List[str] = Query(None, alias="field[]"),
-    ops: List[str] = Query(None, alias="op[]"),
-    values: List[str] = Query(None, alias="value[]"),
+    sort_by: List[str] = Query([], alias="sortBy[]"),
+    descending: List[bool] = Query([], alias="descending[]"),
+    fields: List[str] = Query([], alias="field[]"),
+    ops: List[str] = Query([], alias="op[]"),
+    values: List[str] = Query([], alias="value[]"),
 ):
     """
     Get all users.
@@ -65,17 +67,26 @@ def get_user(*, db_session: Session = Depends(get_db), user_id: int):
 
 
 @user_router.put("/{user_id}", response_model=UserUpdate)
-def update_user(*, db_session: Session = Depends(get_db), user_id: int, user_in: UserUpdate):
+def update_user(
+    *,
+    db_session: Session = Depends(get_db),
+    user_id: int,
+    user_in: UserUpdate,
+    current_user: DispatchUser = Depends(get_current_user),
+):
     """
     Update a user.
     """
-    user = get(db_session=db_session, user_id=user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="The user with this id does not exist.")
+    if current_user.role == UserRoles.admin:
+        user = get(db_session=db_session, user_id=user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="The user with this id does not exist.")
 
-    user = update(db_session=db_session, user=user, user_in=user_in)
+        user = update(db_session=db_session, user=user, user_in=user_in)
 
-    return user
+        return user
+
+    raise HTTPException(status_code=401, detail="You do no have permission to modify users.")
 
 
 @auth_router.post("/login", response_model=UserLoginResponse)

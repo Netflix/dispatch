@@ -30,6 +30,16 @@ from .config import (
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG,
     SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG,
+    SLACK_COMMAND_RUN_WORKFLOW_SLUG,
+    SLACK_COMMAND_LIST_WORKFLOWS_SLUG,
+)
+
+from .modals import (
+    create_add_timeline_event_modal,
+    create_report_incident_modal,
+    create_update_notifications_group_modal,
+    create_update_participant_modal,
+    create_run_workflow_modal,
 )
 
 from .dialogs import (
@@ -38,13 +48,6 @@ from .dialogs import (
     create_executive_report_dialog,
     create_tactical_report_dialog,
     create_update_incident_dialog,
-)
-
-from .modals import (
-    create_add_timeline_event_modal,
-    create_report_incident_modal,
-    create_update_notifications_group_modal,
-    create_update_participant_modal,
 )
 
 
@@ -69,6 +72,8 @@ def command_functions(command: str):
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_dialog],
         SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG: [create_update_notifications_group_modal],
         SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG: [create_update_participant_modal],
+        SLACK_COMMAND_RUN_WORKFLOW_SLUG: [create_run_workflow_modal],
+        SLACK_COMMAND_LIST_WORKFLOWS_SLUG: [list_workflows],
     }
 
     return command_mappings.get(command, [])
@@ -163,6 +168,45 @@ def list_tasks(
         command["channel_id"],
         command["user_id"],
         "Incident Task List",
+        blocks=blocks,
+    )
+
+
+@background_task
+def list_workflows(incident_id: int, command: dict = None, db_session=None):
+    """Returns the list of incident workflows to the user as an ephemeral message."""
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    blocks = []
+    blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": "*Incident Workflows*"}})
+    for w in incident.workflow_instances:
+        artifact_links = ""
+        for a in w.artifacts:
+            artifact_links += f"- <{a.weblink}|{a.name}> \n"
+
+        blocks.append(
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": (
+                        f"*Name:* <{w.weblink}|{w.workflow.name}>\n"
+                        f"*Workflow Description:* {w.workflow.description}\n"
+                        f"*Run Reason:* {w.run_reason}\n"
+                        f"*Creator:* {w.creator.individual.name}\n"
+                        f"*Status:* {w.status}\n"
+                        f"*Artifacts:* \n {artifact_links}"
+                    ),
+                },
+            }
+        )
+        blocks.append({"type": "divider"})
+
+    dispatch_slack_service.send_ephemeral_message(
+        slack_client,
+        command["channel_id"],
+        command["user_id"],
+        "Incident Workflow List",
         blocks=blocks,
     )
 
@@ -269,7 +313,7 @@ def list_incidents(incident_id: int, command: dict = None, db_session=None):
     )
 
     blocks = []
-    blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": "*List of Incidents*"}})
+    blocks.append({"type": "header", "text": {"type": "plain_text", "text": "List of Incidents"}})
 
     if incidents:
         for incident in incidents:
@@ -296,5 +340,9 @@ def list_incidents(incident_id: int, command: dict = None, db_session=None):
                     log.exception(e)
 
     dispatch_slack_service.send_ephemeral_message(
-        slack_client, command["channel_id"], command["user_id"], "Incident List", blocks=blocks,
+        slack_client,
+        command["channel_id"],
+        command["user_id"],
+        "Incident List",
+        blocks=blocks,
     )
