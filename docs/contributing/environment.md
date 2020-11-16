@@ -105,6 +105,6 @@ Install required node modules with `npm` :
 Test the development server:
 
 ```bash
-> npm run server
+> npm run serve
 ```
 
