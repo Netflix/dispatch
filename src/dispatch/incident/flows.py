@@ -548,11 +548,11 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     if conference_plugin:
         try:
             participants = participant_emails
-            
+
             if group_plugin:
                 # we use the tactical group email if the group plugin is enabled
                 participants = [tactical_group["email"]]
-                
+
             conference = create_conference(incident, participants, db_session)
 
             conference_in = ConferenceCreate(
@@ -643,7 +643,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
                     storage_weblink=resolve_attr(incident, "storage.weblink"),
                     ticket_weblink=resolve_attr(incident, "ticket.weblink"),
                     conference_weblink=resolve_attr(incident, "conference.weblink"),
-                    conference_challenge=resolve_attr(incident, "conference.challendge"),
+                    conference_challenge=resolve_attr(incident, "conference.challenge"),
                 )
             except Exception as e:
                 event_service.log(
@@ -787,7 +787,7 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
             storage_weblink=resolve_attr(incident, "storage.weblink"),
             ticket_weblink=resolve_attr(incident, "ticket.weblink"),
             conference_weblink=resolve_attr(incident, "conference.weblink"),
-            conference_challenge=resolve_attr(incident, "conference.challendge"),
+            conference_challenge=resolve_attr(incident, "conference.challenge"),
         )
     else:
         log.warning("No document plugin enabled, could not update template.")
