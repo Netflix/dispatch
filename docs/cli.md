@@ -194,7 +194,7 @@ The `revision` command is an `alembic` command that creates a new database schem
 It's most often used with the `--autogenerate` flag:
 
 ```bash
-> dispatch database revision --autoge
+> dispatch database revision --autogenerate
 ```
 
 ### Upgrade/Downgrade
