@@ -33,6 +33,10 @@ class Participant(Base):
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
     participant_roles = relationship("ParticipantRole", backref="participant", lazy="subquery")
     reports = relationship("Report", backref="participant")
+    created_tasks = relationship(
+        "Task", backref="creator", primaryjoin="Participant.id==Task.creator_id"
+    )
+    owned_tasks = relationship("Task", backref="owner", primaryjoin="Participant.id==Task.owner_id")
 
     @staticmethod
     def _active_at(mapper, connection, target):

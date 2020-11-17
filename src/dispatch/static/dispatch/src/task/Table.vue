@@ -30,7 +30,7 @@
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
             >
-              <template v-slot:item.creator="{ item }">
+              <template v-slot:item.creator.individual_contact.name="{ item }">
                 <v-chip
                   v-if="item.creator"
                   class="ma-2"
@@ -44,7 +44,7 @@
                   Unknown
                 </v-chip>
               </template>
-              <template v-slot:item.owner="{ item }">
+              <template v-slot:item.owner.individual_contact.name="{ item }">
                 <v-chip
                   v-if="item.owner"
                   class="ma-2"
@@ -57,6 +57,12 @@
                 <v-chip v-else class="ma-2" pill small>
                   Unknown
                 </v-chip>
+              </template>
+              <template v-slot:item.incident_priority.name="{ item }">
+                {{ item.incident.incident_priority.name }}
+              </template>
+              <template v-slot:item.incident_type.name="{ item }">
+                {{ item.incident.incident_type.name }}
               </template>
               <template v-slot:item.tickets="{ item }">
                 <a
@@ -136,17 +142,17 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Incident Name", value: "incident.name", sortable: false },
-        { text: "Incident Priority", value: "incident.incident_priority.name", sortable: false },
-        { text: "Incident Type", value: "incident.incident_type.name", sortable: false },
+        { text: "Incident Name", value: "incident.name", sortable: true },
+        { text: "Incident Priority", value: "incident_priority.name", sortable: true },
+        { text: "Incident Type", value: "incident_type.name", sortable: true },
         { text: "Status", value: "status", sortable: true },
-        { text: "Creator", value: "creator", sortable: true },
-        { text: "Owner", value: "owner", sortable: true },
+        { text: "Creator", value: "creator.individual_contact.name", sortable: true },
+        { text: "Owner", value: "owner.individual_contact.name", sortable: true },
         { text: "Assignees", value: "assignees", sortable: false },
         { text: "Description", value: "description", sortable: false },
         { text: "Source", value: "source", sortable: true },
         { text: "Tickets", value: "tickets", sortable: false },
-        { text: "Due By", value: "resolve_by" },
+        { text: "Due By", value: "resolve_by", sortable: true },
         { text: "Created At", value: "created_at", sortable: true },
         { text: "Resolved At", value: "resolved_at", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }

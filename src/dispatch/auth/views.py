@@ -2,13 +2,13 @@ from typing import List
 from fastapi import APIRouter, Depends, Request, HTTPException, Query
 from sqlalchemy.orm import Session
 from dispatch.database import get_db, search_filter_sort_paginate
+from dispatch.enums import UserRoles
 
 from .models import (
     UserLogin,
     UserRegister,
     UserRead,
     UserUpdate,
-    UserRoles,
     UserPagination,
     UserLoginResponse,
     UserRegisterResponse,
@@ -32,11 +32,11 @@ def get_users(
     page: int = 1,
     items_per_page: int = Query(5, alias="itemsPerPage"),
     query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query(None, alias="sortBy[]"),
-    descending: List[bool] = Query(None, alias="descending[]"),
-    fields: List[str] = Query(None, alias="field[]"),
-    ops: List[str] = Query(None, alias="op[]"),
-    values: List[str] = Query(None, alias="value[]"),
+    sort_by: List[str] = Query([], alias="sortBy[]"),
+    descending: List[bool] = Query([], alias="descending[]"),
+    fields: List[str] = Query([], alias="field[]"),
+    ops: List[str] = Query([], alias="op[]"),
+    values: List[str] = Query([], alias="value[]"),
 ):
     """
     Get all users.
@@ -119,4 +119,4 @@ def get_me(
     req: Request,
     db_session: Session = Depends(get_db),
 ):
-    return get_current_user(request=req)
+    return get_current_user(db_session=db_session, request=req)

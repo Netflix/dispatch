@@ -32,6 +32,7 @@ class MessageType(str, Enum):
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
+    document_evergreen_reminder = "document-evergreen-reminder"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -48,6 +49,13 @@ Please review and update them as appropriate. Resolving them will stop the remin
 ).strip()
 
 INCIDENT_TASK_LIST_DESCRIPTION = """The following are open incident tasks."""
+
+DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION = """
+You are the owner of the following incident documents.
+This is a reminder that these documents should be kept up to date in order to effectively
+respond to incidents. Please review them and update, or clearly mark the documents as deprecated.""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_DAILY_SUMMARY_DESCRIPTION = """
 Daily Incidents Summary""".replace(
@@ -254,10 +262,21 @@ This workflow's status has changed from *{{ instance_status_old }}* to *{{ insta
 """
 
 INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_DESCRIPTION = """
-Thanks for closing incident {{name}}. Is the following incident information up to date? If not, please edit the incident in the <{{dispatch_ui_url}}|Dispatch Web UI>. If it's appropriate, consider adding relevant tags to the incident using the Web UI. This will help us correlate incidents and generate metrics.\n\n*Title:* {{title}}\n*Description:* {{description}}\n*Incident Type:* {{type}}\n*Incident Priority:* {{priority}}"""
+Thanks for closing incident {{name}}. Please take a minute to review the following incident data:
+\n - *Title:* {{title}}
+\n - *Description:* {{description}}
+\n - *Incident Type:* {{type}}
+\n - *Incident Priority:* {{priority}}
+\n\n
+Is the information up to date? If not, please edit the incident in the <{{dispatch_ui_url}}|Dispatch Web UI>.
+\n\n
+Also please be sure to take the following actions:
+\n - Update or add any relevant incident tags using the <{{dispatch_ui_url}}|Dispatch Web UI>.
+\n - Review and close any incident tasks that are no longer relevant/required.
+"""
 
 INCIDENT_CLOSED_RATING_FEEDBACK_DESCRIPTION = """
-Thanks for participating in the {{name}} incident. We would appreciate if you could rate your experience and provide feedback."""
+Thanks for participating in the {{name}} ("{{title}}") incident. We would appreciate if you could rate your experience and provide feedback."""
 
 INCIDENT_TYPE_CHANGE_DESCRIPTION = """
 The incident type has been changed from *{{ incident_type_old }}* to *{{ incident_type_new }}*."""
@@ -441,7 +460,6 @@ INCIDENT_STATUS_REMINDER = [
     INCIDENT_STATUS,
 ]
 
-
 INCIDENT_TASK_REMINDER = [
     {"title": "Incident - {{ name }}", "text": "{{ title }}"},
     {"title": "Creator", "text": "{{ creator }}"},
@@ -449,6 +467,12 @@ INCIDENT_TASK_REMINDER = [
     {"title": "Priority", "text": "{{ priority }}"},
     {"title": "Created At", "text": "", "datetime": "{{ created_at}}"},
     {"title": "Resolve By", "text": "", "datetime": "{{ resolve_by }}"},
+    {"title": "Link", "text": "{{ weblink }}"},
+]
+
+DOCUMENT_EVERGREEN_REMINDER = [
+    {"title": "Document", "text": "{{ name }}"},
+    {"title": "Description", "text": "{{ description }}"},
     {"title": "Link", "text": "{{ weblink }}"},
 ]
 

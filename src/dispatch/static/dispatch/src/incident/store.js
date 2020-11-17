@@ -156,7 +156,19 @@ const actions = {
           }
         }, 5000)
       })
-      .catch(() => {})
+      .catch(err => {
+        commit(
+          "app/SET_SNACKBAR",
+          {
+            text:
+              "Incident could not be reported. Please try again. Reason: " +
+              err.response.data.detail,
+            color: "red"
+          },
+          { root: true }
+        )
+        commit("SET_SELECTED_LOADING", false)
+      })
   },
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="workflow_instances">
+    <div v-if="workflow_instances.length">
       <span v-for="instance in workflow_instances" :key="instance.id">
         <v-card>
           <div>
@@ -57,7 +57,9 @@
       </span>
     </div>
     <div v-else>
-      No workflow data available.
+      <p class="text-center">
+        No workflow data available.
+      </p>
     </div>
   </div>
 </template>

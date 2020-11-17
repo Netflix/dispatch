@@ -16,6 +16,7 @@ from tenacity import retry, stop_after_attempt
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.messaging import (
+    DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
     MessageType,
     render_message_template,
@@ -64,6 +65,10 @@ def get_template(message_type: MessageType):
         MessageType.incident_task_reminder: (
             "task_notification.html",
             INCIDENT_TASK_REMINDER_DESCRIPTION,
+        ),
+        MessageType.document_evergreen_reminder: (
+            "document_evergreen_reminder.html",
+            DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
         ),
     }
 

@@ -13,6 +13,7 @@ from sqlalchemy import (
     String,
     Table,
     select,
+    join,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -26,7 +27,7 @@ from dispatch.config import (
     INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
     INCIDENT_RESOURCE_TACTICAL_GROUP,
 )
-from dispatch.auth.models import UserRoles
+from dispatch.enums import UserRoles
 from dispatch.conference.models import ConferenceRead
 from dispatch.conversation.models import ConversationRead
 from dispatch.database import Base
@@ -39,8 +40,9 @@ from dispatch.incident_priority.models import (
     IncidentPriorityRead,
 )
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
+from dispatch.individual.models import IndividualContact
 from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
-from dispatch.participant.models import ParticipantRead
+from dispatch.participant.models import Participant, ParticipantRead
 from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
 from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
@@ -104,10 +106,10 @@ class Incident(Base, TimeStampMixin):
     @commander.expression
     def commander(cls):
         return (
-            select(ParticipantRole.individual)
-            .where(ParticipantRole.incident_id == cls.id)
+            select([IndividualContact])
+            .where(Participant.incident_id == cls.id)
             .where(ParticipantRole.role == ParticipantRoleType.incident_commander)
-            .where(ParticipantRole.renounce_at == None)  # noqa
+            .where(ParticipantRole.renounced_at == None)  # noqa
         )
 
     @hybrid_property
@@ -121,10 +123,10 @@ class Incident(Base, TimeStampMixin):
     @reporter.expression
     def reporter(cls):
         return (
-            select(ParticipantRole.individual)
-            .where(ParticipantRole.incident_id == cls.id)
+            select([IndividualContact])
+            .where(Participant.incident_id == cls.id)
             .where(ParticipantRole.role == ParticipantRoleType.reporter)
-            .where(ParticipantRole.renounce_at == None)  # noqa
+            .where(ParticipantRole.renounced_at == None)  # noqa
         )
 
     @hybrid_property

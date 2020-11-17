@@ -1,7 +1,6 @@
 import string
 import secrets
 from typing import List
-from enum import Enum
 from datetime import datetime, timedelta
 
 import bcrypt
@@ -13,6 +12,7 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
 from dispatch.models import TimeStampMixin, DispatchBase
+from dispatch.enums import UserRoles
 
 from dispatch.config import (
     DISPATCH_JWT_SECRET,
@@ -40,12 +40,6 @@ def hash_password(password: str):
     pw = bytes(password, "utf-8")
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(pw, salt)
-
-
-class UserRoles(str, Enum):
-    user = "User"
-    poweruser = "Poweruser"
-    admin = "Admin"
 
 
 class DispatchUser(Base, TimeStampMixin):

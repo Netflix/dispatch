@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from sqlalchemy import or_
 
+from dispatch.plugin import service as plugin_service
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident.flows import incident_service
@@ -159,6 +160,19 @@ def update(*, db_session, task: Task, task_in: TaskUpdate) -> Task:
 
     for field in update_data.keys():
         setattr(task, field, update_data[field])
+
+    # if we have an external task plugin enabled, attempt to update the external resource as well
+    # we don't currently have a good way to get the correct file_id (we don't store a task <-> relationship)
+    # lets try in both the incident doc and PIR doc
+    drive_task_plugin = plugin_service.get_active(db_session=db_session, plugin_type="task")
+
+    if drive_task_plugin:
+        try:
+            file_id = task.incident.incident_document.resource_id
+            drive_task_plugin.instance.update(file_id, task.external_task_id, resolved=task.status)
+        except Exception:
+            file_id = task.incident.incident_review_document.resource_id
+            drive_task_plugin.instance.update(file_id, task.external_task_id, resolved=task.status)
 
     db_session.add(task)
     db_session.commit()

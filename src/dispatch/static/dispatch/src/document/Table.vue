@@ -30,6 +30,9 @@
               :loading="loading"
               loading-text="Loading... Please wait"
             >
+              <template v-slot:item.evergreen="{ item }">
+                <v-simple-checkbox v-model="item.evergreen" disabled></v-simple-checkbox>
+              </template>
               <template v-slot:item.name="{ item }">
                 <a :href="item.weblink" target="_blank" style="text-decoration: none;">
                   {{ item.name }}
@@ -78,6 +81,9 @@ export default {
       headers: [
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
+        { text: "Evergreen Enabled", value: "evergreen", sortable: true },
+        { text: "Evergreen Interval (days)", value: "evergreen_reminder_interval", sortable: true },
+        { text: "Evergreen Owner", value: "evergreen_owner", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
     }

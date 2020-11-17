@@ -108,8 +108,8 @@ export default {
         { text: "Type", value: "incident_type.name" },
         { text: "Priority", value: "incident_priority.name", width: "10%" },
         { text: "Cost", value: "cost" },
-        { text: "Commander", value: "commander" },
-        { text: "Reporter", value: "reporter" },
+        { text: "Commander", value: "commander", sortable: false },
+        { text: "Reporter", value: "reporter", sortable: false },
         { text: "Reported At", value: "reported_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
