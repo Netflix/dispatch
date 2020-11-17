@@ -262,7 +262,18 @@ This workflow's status has changed from *{{ instance_status_old }}* to *{{ insta
 """
 
 INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_DESCRIPTION = """
-Thanks for closing incident {{name}}. Is the following incident information up to date? If not, please edit the incident in the <{{dispatch_ui_url}}|Dispatch Web UI>. If it's appropriate, consider adding relevant tags to the incident using the Web UI. This will help us correlate incidents and generate metrics.\n\n*Title:* {{title}}\n*Description:* {{description}}\n*Incident Type:* {{type}}\n*Incident Priority:* {{priority}}"""
+Thanks for closing incident {{name}}. Please take a minute to review the following incident data:
+\n - *Title:* {{title}}
+\n - *Description:* {{description}}
+\n - *Incident Type:* {{type}}
+\n - *Incident Priority:* {{priority}}
+\n\n
+Is the information up to date? If not, please edit the incident in the <{{dispatch_ui_url}}|Dispatch Web UI>.
+\n\n
+Also please be sure to take the following actions:
+\n - Update or add any relevant incident tags using the <{{dispatch_ui_url}}|Dispatch Web UI>.
+\n - Review and close any incident tasks that are no longer relevant/required.
+"""
 
 INCIDENT_CLOSED_RATING_FEEDBACK_DESCRIPTION = """
 Thanks for participating in the {{name}} ("{{title}}") incident. We would appreciate if you could rate your experience and provide feedback."""
