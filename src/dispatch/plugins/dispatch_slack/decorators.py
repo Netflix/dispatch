@@ -29,14 +29,13 @@ def slack_background_task(func):
     def wrapper(*args, **kwargs):
         background = False
 
-        slack_client = dispatch_slack_service.create_slack_client()
-
         if not kwargs.get("db_session"):
             db_session = SessionLocal()
             background = True
             kwargs["db_session"] = db_session
 
         if not kwargs.get("slack_client"):
+            slack_client = dispatch_slack_service.create_slack_client()
             kwargs["slack_client"] = slack_client
 
         try:
@@ -60,7 +59,7 @@ def slack_background_task(func):
             # notify the user the interaction failed
             message = f"Sorry, we've run into an unexpected error. For help, please reach out to the incident commander and provide them the following token: {slack_interaction_guid}"
             dispatch_slack_service.send_ephemeral_message(
-                slack_client, kwargs["channel_id"], kwargs["user_id"], message
+                kwargs["slack_client"], kwargs["channel_id"], kwargs["user_id"], message
             )
 
         finally:
