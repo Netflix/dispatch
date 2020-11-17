@@ -62,6 +62,13 @@
                       <v-list-item-subtitle>{{ incident_priority.name }}</v-list-item-subtitle>
                     </v-list-item-content>
                   </v-list-item>
+                  <v-divider />
+                  <v-list-item disabled>
+                    <v-list-item-content>
+                      <v-list-item-title>Visibility</v-list-item-title>
+                      <v-list-item-subtitle>{{ visibility }}</v-list-item-subtitle>
+                    </v-list-item-content>
+                  </v-list-item>
                 </v-list-item-group>
               </v-list-group>
             </v-list>
