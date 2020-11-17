@@ -271,7 +271,7 @@ Thanks for closing incident {{name}}. Please take a minute to review the followi
 Is the information up to date? If not, please edit the incident in the <{{dispatch_ui_url}}|Dispatch Web UI>.
 \n\n
 Also please be sure to take the following actions:
-\n - Update or add any relevant incident tags using the <{{dispatch_ui_url}}|Dispatch Web UI>
+\n - Update or add any relevant incident tags using the <{{dispatch_ui_url}}|Dispatch Web UI>.
 \n - Review and close any incident tasks that are no longer relevant/required.
 """
 
