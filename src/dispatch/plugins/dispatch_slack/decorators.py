@@ -7,7 +7,6 @@ from functools import wraps
 from dispatch.metrics import provider as metrics_provider
 from dispatch.database import SessionLocal
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
-from .actions import slack_client
 
 
 log = logging.getLogger(__name__)
@@ -29,10 +28,16 @@ def slack_background_task(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         background = False
+
         if not kwargs.get("db_session"):
             db_session = SessionLocal()
             background = True
             kwargs["db_session"] = db_session
+
+        if not kwargs.get("slack_client"):
+            slack_client = dispatch_slack_service.create_slack_client()
+            kwargs["slack_client"] = slack_client
+
         try:
             metrics_provider.counter(
                 "function.call.counter", tags={"function": fullname(func), "slack": True}
@@ -54,7 +59,7 @@ def slack_background_task(func):
             # notify the user the interaction failed
             message = f"Sorry, we've run into an unexpected error. For help, please reach out to the incident commander and provide them the following token: {slack_interaction_guid}"
             dispatch_slack_service.send_ephemeral_message(
-                slack_client, kwargs["channel_id"], kwargs["user_id"], message
+                kwargs["slack_client"], kwargs["channel_id"], kwargs["user_id"], message
             )
 
         finally:
