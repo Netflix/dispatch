@@ -26,12 +26,15 @@ from .service import get_user_email
 from .decorators import slack_background_task
 
 
-slack_client = dispatch_slack_service.create_slack_client()
-
-
 @slack_background_task
 def add_user_to_conversation(
-    user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    action: dict,
+    db_session=None,
+    slack_client=None,
 ):
     """Adds a user to a conversation."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
@@ -49,7 +52,13 @@ def add_user_to_conversation(
 
 @slack_background_task
 def update_task_status(
-    user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    action: dict,
+    db_session=None,
+    slack_client=None,
 ):
     """Updates a task based on user input."""
     action_type, external_task_id = action["actions"][0]["value"].split("-")
@@ -90,7 +99,13 @@ def update_task_status(
 
 @slack_background_task
 def handle_update_incident_action(
-    user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    action: dict,
+    db_session=None,
+    slack_client=None,
 ):
     """Massages slack dialog data into something that Dispatch can use."""
     submission = action["submission"]
@@ -112,7 +127,13 @@ def handle_update_incident_action(
 
 @slack_background_task
 def handle_assign_role_action(
-    user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    action: dict,
+    db_session=None,
+    slack_client=None,
 ):
     """Massages slack dialog data into something that Dispatch can use."""
     assignee_user_id = action["submission"]["participant"]
