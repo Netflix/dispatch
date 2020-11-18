@@ -38,7 +38,7 @@ const state = {
       page: 1,
       itemsPerPage: 10,
       sortBy: ["created_at"],
-      descending: [false]
+      descending: [true]
     },
     loading: false
   }
