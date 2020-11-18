@@ -238,7 +238,12 @@ def restore_database(dump_file):
 
 
 @dispatch_database.command("dump")
-def dump_database():
+@click.option(
+    "--dump-file",
+    default="dispatch-backup.dump",
+    help="Path to a PostgreSQL text format dump file.",
+)
+def dump_database(dump_file):
     """Dumps the database via pg_dump."""
     from sh import pg_dump
     from dispatch.config import (
@@ -252,7 +257,7 @@ def dump_database():
 
     pg_dump(
         "-f",
-        "dispatch-backup.dump",
+        dump_file,
         "-h",
         DATABASE_HOSTNAME,
         "-p",
