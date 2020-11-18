@@ -90,6 +90,7 @@ export default {
     return {
       headers: [
         { text: "Incident", value: "incident.name", sortable: false },
+        { text: "Title", value: "incident.title", sortable: false },
         { text: "Rating", value: "rating", sortable: true },
         { text: "Feedback", value: "feedback", sortable: true },
         { text: "Participant", value: "participant", sortable: true },
