@@ -11,7 +11,11 @@ import sqlalchemy as sa
 from dispatch.participant.flows import add_participant
 from dispatch.task import service as task_service
 from dispatch.individual.models import IndividualContact
-from dispatch.plugins.dispatch_google.config import GOOGLE_DOMAIN
+
+try:
+    from dispatch.plugins.dispatch_google.config import GOOGLE_DOMAIN
+except Exception:
+    GOOGLE_DOMAIN = "example.com"
 
 
 # revision identifiers, used by Alembic.
