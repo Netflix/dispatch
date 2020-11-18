@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 echo "Dropping existing database..."
 dispatch database drop
 echo "Restoring current dump file..."
