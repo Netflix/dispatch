@@ -1031,7 +1031,7 @@ def build_rating_feedback_blocks(incident: Incident):
 
 @background_task
 def create_rating_feedback_modal(
-    user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
+    user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
 ):
     """Creates a modal for rating and providing feedback about an incident."""
     trigger_id = action["trigger_id"]
