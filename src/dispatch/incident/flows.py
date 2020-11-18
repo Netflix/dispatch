@@ -492,27 +492,36 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     storage_plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
     if storage_plugin:
         # we create storage resource
-        if group_plugin:
-            storage = create_incident_storage(
-                incident, [tactical_group["email"], notification_group["email"]], db_session
+        try:
+            if group_plugin:
+                storage = create_incident_storage(
+                    incident, [tactical_group["email"], notification_group["email"]], db_session
+                )
+            else:
+                # we don't have a group so add participants directly
+                storage = create_incident_storage(incident, participant_emails, db_session)
+
+            incident.storage = storage_service.create(
+                db_session=db_session,
+                resource_id=storage["resource_id"],
+                resource_type=storage["resource_type"],
+                weblink=storage["weblink"],
             )
-        else:
-            # we don't have a group so add participants directly
-            storage = create_incident_storage(incident, participant_emails, db_session)
 
-        incident.storage = storage_service.create(
-            db_session=db_session,
-            resource_id=storage["resource_id"],
-            resource_type=storage["resource_type"],
-            weblink=storage["weblink"],
-        )
-
-        event_service.log(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description="Storage added to incident",
-            incident_id=incident.id,
-        )
+            event_service.log(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description="Storage added to incident",
+                incident_id=incident.id,
+            )
+        except Exception as e:
+            event_service.log(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Creation of incident storage failed. Reason: {e}",
+                incident_id=incident.id,
+            )
+            log.exception(e)
 
         # we create collaboration documents, don't fail the whole flow if this fails
         try:
