@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 12.3 (Debian 12.3-1.pgdg100+1)
--- Dumped by pg_dump version 12.2 (Ubuntu 12.2-4)
+-- Dumped from database version 13.0 (Debian 13.0-1.pgdg100+1)
+-- Dumped by pg_dump version 13.1 (Ubuntu 13.1-1.pgdg20.10+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -527,6 +527,22 @@ $$;
 
 ALTER FUNCTION public.tsq_tokenize_character(state public.tsq_state) OWNER TO dispatch;
 
+--
+-- Name: workflow_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.workflow_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                NEW.search_vector = to_tsvector('pg_catalog.english', coalesce(NEW.name, '')) || to_tsvector('pg_catalog.english', coalesce(NEW.description, ''));
+                RETURN NEW;
+            END
+            $$;
+
+
+ALTER FUNCTION public.workflow_search_vector_update() OWNER TO dispatch;
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -797,7 +813,11 @@ CREATE TABLE public.document (
     search_vector tsvector,
     incident_id integer,
     created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    evergreen boolean,
+    evergreen_last_reminder_at timestamp without time zone,
+    evergreen_owner character varying,
+    evergreen_reminder_interval integer
 );
 
 
@@ -915,6 +935,45 @@ ALTER TABLE public.event_id_seq OWNER TO dispatch;
 --
 
 ALTER SEQUENCE public.event_id_seq OWNED BY public.event.id;
+
+
+--
+-- Name: feedback; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.feedback (
+    id integer NOT NULL,
+    rating character varying,
+    feedback character varying,
+    incident_id integer,
+    participant_id integer,
+    updated_at timestamp without time zone,
+    created_at timestamp without time zone
+);
+
+
+ALTER TABLE public.feedback OWNER TO dispatch;
+
+--
+-- Name: feedback_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.feedback_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.feedback_id_seq OWNER TO dispatch;
+
+--
+-- Name: feedback_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.feedback_id_seq OWNED BY public.feedback.id;
 
 
 --
@@ -1062,7 +1121,8 @@ CREATE TABLE public.incident_type (
     plugin_metadata json,
     template_document_id integer,
     commander_service_id integer,
-    search_vector tsvector
+    search_vector tsvector,
+    liaison_service_id integer
 );
 
 
@@ -1635,11 +1695,11 @@ CREATE TABLE public.tag (
     description character varying,
     uri character varying,
     source character varying,
-    type character varying,
     discoverable boolean,
     search_vector tsvector,
     updated_at timestamp without time zone,
-    created_at timestamp without time zone
+    created_at timestamp without time zone,
+    tag_type_id integer
 );
 
 
@@ -1665,6 +1725,44 @@ ALTER TABLE public.tag_id_seq OWNER TO dispatch;
 --
 
 ALTER SEQUENCE public.tag_id_seq OWNED BY public.tag.id;
+
+
+--
+-- Name: tag_type; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.tag_type (
+    id integer NOT NULL,
+    name character varying,
+    description character varying,
+    search_vector tsvector,
+    updated_at timestamp without time zone,
+    created_at timestamp without time zone
+);
+
+
+ALTER TABLE public.tag_type OWNER TO dispatch;
+
+--
+-- Name: tag_type_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.tag_type_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.tag_type_id_seq OWNER TO dispatch;
+
+--
+-- Name: tag_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.tag_type_id_seq OWNED BY public.tag_type.id;
 
 
 --
@@ -1909,6 +2007,140 @@ ALTER SEQUENCE public.ticket_id_seq OWNED BY public.ticket.id;
 
 
 --
+-- Name: workflow; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.workflow (
+    id integer NOT NULL,
+    name character varying,
+    description character varying,
+    parameters json,
+    resource_id character varying,
+    search_vector tsvector,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    plugin_id integer,
+    enabled boolean
+);
+
+
+ALTER TABLE public.workflow OWNER TO dispatch;
+
+--
+-- Name: workflow_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.workflow_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.workflow_id_seq OWNER TO dispatch;
+
+--
+-- Name: workflow_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.workflow_id_seq OWNED BY public.workflow.id;
+
+
+--
+-- Name: workflow_incident_priority; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.workflow_incident_priority (
+    incident_priority_id integer NOT NULL,
+    workflow_id integer NOT NULL
+);
+
+
+ALTER TABLE public.workflow_incident_priority OWNER TO dispatch;
+
+--
+-- Name: workflow_incident_type; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.workflow_incident_type (
+    incident_type_id integer NOT NULL,
+    workflow_id integer NOT NULL
+);
+
+
+ALTER TABLE public.workflow_incident_type OWNER TO dispatch;
+
+--
+-- Name: workflow_instance; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.workflow_instance (
+    resource_type character varying,
+    resource_id character varying,
+    weblink character varying,
+    id integer NOT NULL,
+    workflow_id integer,
+    creator_id integer,
+    status character varying,
+    incident_id integer,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    parameters json,
+    run_reason character varying
+);
+
+
+ALTER TABLE public.workflow_instance OWNER TO dispatch;
+
+--
+-- Name: workflow_instance_artifact; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.workflow_instance_artifact (
+    document_id integer NOT NULL,
+    workflow_instance_id integer NOT NULL
+);
+
+
+ALTER TABLE public.workflow_instance_artifact OWNER TO dispatch;
+
+--
+-- Name: workflow_instance_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.workflow_instance_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.workflow_instance_id_seq OWNER TO dispatch;
+
+--
+-- Name: workflow_instance_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.workflow_instance_id_seq OWNED BY public.workflow_instance.id;
+
+
+--
+-- Name: workflow_term; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.workflow_term (
+    term_id integer NOT NULL,
+    workflow_id integer NOT NULL
+);
+
+
+ALTER TABLE public.workflow_term OWNER TO dispatch;
+
+--
 -- Name: conference id; Type: DEFAULT; Schema: public; Owner: dispatch
 --
 
@@ -1948,6 +2180,13 @@ ALTER TABLE ONLY public.document ALTER COLUMN id SET DEFAULT nextval('public.doc
 --
 
 ALTER TABLE ONLY public.event ALTER COLUMN id SET DEFAULT nextval('public.event_id_seq'::regclass);
+
+
+--
+-- Name: feedback id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.feedback ALTER COLUMN id SET DEFAULT nextval('public.feedback_id_seq'::regclass);
 
 
 --
@@ -2056,6 +2295,13 @@ ALTER TABLE ONLY public.tag ALTER COLUMN id SET DEFAULT nextval('public.tag_id_s
 
 
 --
+-- Name: tag_type id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.tag_type ALTER COLUMN id SET DEFAULT nextval('public.tag_type_id_seq'::regclass);
+
+
+--
 -- Name: task id; Type: DEFAULT; Schema: public; Owner: dispatch
 --
 
@@ -2084,11 +2330,25 @@ ALTER TABLE ONLY public.ticket ALTER COLUMN id SET DEFAULT nextval('public.ticke
 
 
 --
+-- Name: workflow id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow ALTER COLUMN id SET DEFAULT nextval('public.workflow_id_seq'::regclass);
+
+
+--
+-- Name: workflow_instance id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_instance ALTER COLUMN id SET DEFAULT nextval('public.workflow_instance_id_seq'::regclass);
+
+
+--
 -- Data for Name: alembic_version; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
 COPY public.alembic_version (version_num) FROM stdin;
-ecdb4e7566f2
+1c3f808aa00c
 \.
 
 
@@ -2187,13 +2447,13 @@ COPY public.dispatch_user (id, email, password, role, search_vector, updated_at,
 -- Data for Name: document; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public.document (resource_type, resource_id, weblink, id, name, description, report_id, search_vector, incident_id, created_at, updated_at) FROM stdin;
-dispatch-generic-incident-document	1uSKfArHafY2aN2kHi5Muv6LM8d5t83uVEMRkW0swfjA	https://docs.google.com/document/d/1uSKfArHafY2aN2kHi5Muv6LM8d5t83uVEMRkW0swfjA	1	Incident Document Template	This is a document for all incident facts and context. All incident participants are expected to contribute to this document. It is shared with all incident participants.	\N	'document':2 'incid':1 'templat':3	\N	2020-07-24 17:26:35.824567	2020-07-24 17:26:35.824582
-dispatch-executive-report-document-template	1cdwlyhNEdVP9mMbaDVa1Hr-_rj9y4umxIucBntmwP-g	https://docs.google.com/document/d/1cdwlyhNEdVP9mMbaDVa1Hr-_rj9y4umxIucBntmwP-g/	2	Executive Report Document Template	This is a document template for executive reports.	\N	'document':3 'execut':1 'report':2 'templat':4	\N	2020-07-24 17:33:15.201277	2020-07-24 17:33:15.201306
-dispatch-incident-sheet-template	1a6j9SmzsFnk8RwxNgzieX8nhCvRpH2GybtvgI7PvGLg	https://docs.google.com/spreadsheets/d/1a6j9SmzsFnk8RwxNgzieX8nhCvRpH2GybtvgI7PvGLg/	3	Incident Tracking Sheet Template	This is a sheet for tracking impacted assets. All incident participants are expected to contribute to this sheet. It is shared with all incident participants.	\N	'incid':1 'sheet':3 'templat':4 'track':2	\N	2020-07-24 17:34:06.474813	2020-07-24 17:34:06.474819
-dispatch-incident-review-document-template	1IKz1FHOfI7iSWx0t5vwvgi5k1AQACo3GIYSpvnvQaco	https://docs.google.com/document/d/1IKz1FHOfI7iSWx0t5vwvgi5k1AQACo3GIYSpvnvQaco/	4	Post Incident Review Template	Post incident review template review document.	\N	'incid':2 'post':1 'review':3 'templat':4	\N	2020-07-24 17:34:51.201291	2020-07-24 17:34:51.201305
-dispatch-incident-sheet	1PZp5SWRIZGgwggUANZFWEPJUDJvH4HHSBmkknUhSx48	https://docs.google.com/spreadsheets/d/1PZp5SWRIZGgwggUANZFWEPJUDJvH4HHSBmkknUhSx48/edit?usp=drivesdk	5	dispatch-1 - Incident Tracking Sheet	\N	\N	'-1':2 'dispatch':1 'incid':3 'sheet':5 'track':4	1	2020-07-24 18:03:12.561807	2020-07-24 18:03:12.58184
-dispatch-incident-document	1D7mD9mUa0mMN3dRbXpO6AaolIQsEQ-jehvVJfaU5vRA	https://docs.google.com/document/d/1D7mD9mUa0mMN3dRbXpO6AaolIQsEQ-jehvVJfaU5vRA/edit?usp=drivesdk	6	dispatch-1 - Incident Document	\N	\N	'-1':2 'dispatch':1 'document':4 'incid':3	1	2020-07-24 18:03:12.593469	2020-07-24 18:03:12.606821
+COPY public.document (resource_type, resource_id, weblink, id, name, description, report_id, search_vector, incident_id, created_at, updated_at, evergreen, evergreen_last_reminder_at, evergreen_owner, evergreen_reminder_interval) FROM stdin;
+dispatch-generic-incident-document	1uSKfArHafY2aN2kHi5Muv6LM8d5t83uVEMRkW0swfjA	https://docs.google.com/document/d/1uSKfArHafY2aN2kHi5Muv6LM8d5t83uVEMRkW0swfjA	1	Incident Document Template	This is a document for all incident facts and context. All incident participants are expected to contribute to this document. It is shared with all incident participants.	\N	'document':2 'incid':1 'templat':3	\N	2020-07-24 17:26:35.824567	2020-07-24 17:26:35.824582	\N	\N	\N	\N
+dispatch-executive-report-document-template	1cdwlyhNEdVP9mMbaDVa1Hr-_rj9y4umxIucBntmwP-g	https://docs.google.com/document/d/1cdwlyhNEdVP9mMbaDVa1Hr-_rj9y4umxIucBntmwP-g/	2	Executive Report Document Template	This is a document template for executive reports.	\N	'document':3 'execut':1 'report':2 'templat':4	\N	2020-07-24 17:33:15.201277	2020-07-24 17:33:15.201306	\N	\N	\N	\N
+dispatch-incident-sheet-template	1a6j9SmzsFnk8RwxNgzieX8nhCvRpH2GybtvgI7PvGLg	https://docs.google.com/spreadsheets/d/1a6j9SmzsFnk8RwxNgzieX8nhCvRpH2GybtvgI7PvGLg/	3	Incident Tracking Sheet Template	This is a sheet for tracking impacted assets. All incident participants are expected to contribute to this sheet. It is shared with all incident participants.	\N	'incid':1 'sheet':3 'templat':4 'track':2	\N	2020-07-24 17:34:06.474813	2020-07-24 17:34:06.474819	\N	\N	\N	\N
+dispatch-incident-review-document-template	1IKz1FHOfI7iSWx0t5vwvgi5k1AQACo3GIYSpvnvQaco	https://docs.google.com/document/d/1IKz1FHOfI7iSWx0t5vwvgi5k1AQACo3GIYSpvnvQaco/	4	Post Incident Review Template	Post incident review template review document.	\N	'incid':2 'post':1 'review':3 'templat':4	\N	2020-07-24 17:34:51.201291	2020-07-24 17:34:51.201305	\N	\N	\N	\N
+dispatch-incident-sheet	1PZp5SWRIZGgwggUANZFWEPJUDJvH4HHSBmkknUhSx48	https://docs.google.com/spreadsheets/d/1PZp5SWRIZGgwggUANZFWEPJUDJvH4HHSBmkknUhSx48/edit?usp=drivesdk	5	dispatch-1 - Incident Tracking Sheet	\N	\N	'-1':2 'dispatch':1 'incid':3 'sheet':5 'track':4	1	2020-07-24 18:03:12.561807	2020-07-24 18:03:12.58184	\N	\N	\N	\N
+dispatch-incident-document	1D7mD9mUa0mMN3dRbXpO6AaolIQsEQ-jehvVJfaU5vRA	https://docs.google.com/document/d/1D7mD9mUa0mMN3dRbXpO6AaolIQsEQ-jehvVJfaU5vRA/edit?usp=drivesdk	6	dispatch-1 - Incident Document	\N	\N	'-1':2 'dispatch':1 'document':4 'incid':3	1	2020-07-24 18:03:12.593469	2020-07-24 18:03:12.606821	\N	\N	\N	\N
 \.
 
 
@@ -2259,6 +2519,14 @@ COPY public.event (id, uuid, started_at, ended_at, source, description, details,
 
 
 --
+-- Data for Name: feedback; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.feedback (id, rating, feedback, incident_id, participant_id, updated_at, created_at) FROM stdin;
+\.
+
+
+--
 -- Data for Name: group; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
@@ -2292,8 +2560,8 @@ COPY public.incident_priority (id, name, description, page_commander, tactical_r
 -- Data for Name: incident_type; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public.incident_type (id, name, slug, description, exclude_from_metrics, "default", visibility, plugin_metadata, template_document_id, commander_service_id, search_vector) FROM stdin;
-1	Vulnerability	\N	This is an incident involving a misconfiguration or vulnerability.	f	f	Open	[]	1	1	'incid':5 'involv':6 'misconfigur':8 'vulner':1,10
+COPY public.incident_type (id, name, slug, description, exclude_from_metrics, "default", visibility, plugin_metadata, template_document_id, commander_service_id, search_vector, liaison_service_id) FROM stdin;
+1	Vulnerability	\N	This is an incident involving a misconfiguration or vulnerability.	f	f	Open	[]	1	1	'incid':5 'involv':6 'misconfigur':8 'vulner':1,10	\N
 \.
 
 
@@ -2498,7 +2766,15 @@ google-drive-storage	1MAj7cmmpVsKS6M4DQ64x8uJv0p703VTg	https://drive.google.com/
 -- Data for Name: tag; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
-COPY public.tag (id, name, description, uri, source, type, discoverable, search_vector, updated_at, created_at) FROM stdin;
+COPY public.tag (id, name, description, uri, source, discoverable, search_vector, updated_at, created_at, tag_type_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: tag_type; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.tag_type (id, name, description, search_vector, updated_at, created_at) FROM stdin;
 \.
 
 
@@ -2584,6 +2860,54 @@ dispatch-ticket	dispatch-1	http://localhost:8080/incidents/dispatch-1	1	1	2020-0
 
 
 --
+-- Data for Name: workflow; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.workflow (id, name, description, parameters, resource_id, search_vector, created_at, updated_at, plugin_id, enabled) FROM stdin;
+\.
+
+
+--
+-- Data for Name: workflow_incident_priority; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.workflow_incident_priority (incident_priority_id, workflow_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: workflow_incident_type; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.workflow_incident_type (incident_type_id, workflow_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: workflow_instance; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.workflow_instance (resource_type, resource_id, weblink, id, workflow_id, creator_id, status, incident_id, created_at, updated_at, parameters, run_reason) FROM stdin;
+\.
+
+
+--
+-- Data for Name: workflow_instance_artifact; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.workflow_instance_artifact (document_id, workflow_instance_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: workflow_term; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.workflow_term (term_id, workflow_id) FROM stdin;
+\.
+
+
+--
 -- Name: conference_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
@@ -2623,6 +2947,13 @@ SELECT pg_catalog.setval('public.document_id_seq', 6, true);
 --
 
 SELECT pg_catalog.setval('public.event_id_seq', 21, true);
+
+
+--
+-- Name: feedback_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.feedback_id_seq', 1, false);
 
 
 --
@@ -2731,6 +3062,13 @@ SELECT pg_catalog.setval('public.tag_id_seq', 1, false);
 
 
 --
+-- Name: tag_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.tag_type_id_seq', 1, false);
+
+
+--
 -- Name: task_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
@@ -2756,6 +3094,20 @@ SELECT pg_catalog.setval('public.term_id_seq', 1, false);
 --
 
 SELECT pg_catalog.setval('public.ticket_id_seq', 1, true);
+
+
+--
+-- Name: workflow_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.workflow_id_seq', 1, false);
+
+
+--
+-- Name: workflow_instance_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.workflow_instance_id_seq', 1, false);
 
 
 --
@@ -2924,6 +3276,14 @@ ALTER TABLE ONLY public.event
 
 ALTER TABLE ONLY public.event
     ADD CONSTRAINT event_uuid_key UNIQUE (uuid);
+
+
+--
+-- Name: feedback feedback_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.feedback
+    ADD CONSTRAINT feedback_pkey PRIMARY KEY (id);
 
 
 --
@@ -3183,6 +3543,22 @@ ALTER TABLE ONLY public.tag
 
 
 --
+-- Name: tag_type tag_type_name_key; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.tag_type
+    ADD CONSTRAINT tag_type_name_key UNIQUE (name);
+
+
+--
+-- Name: tag_type tag_type_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.tag_type
+    ADD CONSTRAINT tag_type_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: task_assignees task_assignees_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
 --
 
@@ -3279,6 +3655,54 @@ ALTER TABLE ONLY public.ticket
 
 
 --
+-- Name: workflow_incident_priority workflow_incident_priority_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_incident_priority
+    ADD CONSTRAINT workflow_incident_priority_pkey PRIMARY KEY (incident_priority_id, workflow_id);
+
+
+--
+-- Name: workflow_incident_type workflow_incident_type_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_incident_type
+    ADD CONSTRAINT workflow_incident_type_pkey PRIMARY KEY (incident_type_id, workflow_id);
+
+
+--
+-- Name: workflow_instance_artifact workflow_instance_artifact_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_instance_artifact
+    ADD CONSTRAINT workflow_instance_artifact_pkey PRIMARY KEY (document_id, workflow_instance_id);
+
+
+--
+-- Name: workflow_instance workflow_instance_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_instance
+    ADD CONSTRAINT workflow_instance_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: workflow workflow_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow
+    ADD CONSTRAINT workflow_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: workflow_term workflow_term_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_term
+    ADD CONSTRAINT workflow_term_pkey PRIMARY KEY (term_id, workflow_id);
+
+
+--
 -- Name: ix_definition_search_vector; Type: INDEX; Schema: public; Owner: dispatch
 --
 
@@ -3370,6 +3794,13 @@ CREATE INDEX ix_tag_search_vector ON public.tag USING gin (search_vector);
 
 
 --
+-- Name: ix_tag_type_search_vector; Type: INDEX; Schema: public; Owner: dispatch
+--
+
+CREATE INDEX ix_tag_type_search_vector ON public.tag_type USING gin (search_vector);
+
+
+--
 -- Name: ix_task_search_vector; Type: INDEX; Schema: public; Owner: dispatch
 --
 
@@ -3388,6 +3819,13 @@ CREATE INDEX ix_team_contact_search_vector ON public.team_contact USING gin (sea
 --
 
 CREATE INDEX ix_term_search_vector ON public.term USING gin (search_vector);
+
+
+--
+-- Name: ix_workflow_search_vector; Type: INDEX; Schema: public; Owner: dispatch
+--
+
+CREATE INDEX ix_workflow_search_vector ON public.workflow USING gin (search_vector);
 
 
 --
@@ -3486,6 +3924,13 @@ CREATE TRIGGER team_contact_search_vector_trigger BEFORE INSERT OR UPDATE ON pub
 --
 
 CREATE TRIGGER term_search_vector_trigger BEFORE INSERT OR UPDATE ON public.term FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'text');
+
+
+--
+-- Name: workflow workflow_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
+--
+
+CREATE TRIGGER workflow_search_vector_trigger BEFORE INSERT OR UPDATE ON public.workflow FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'description');
 
 
 --
@@ -3713,6 +4158,22 @@ ALTER TABLE ONLY public.event
 
 
 --
+-- Name: feedback feedback_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.feedback
+    ADD CONSTRAINT feedback_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- Name: feedback feedback_participant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.feedback
+    ADD CONSTRAINT feedback_participant_id_fkey FOREIGN KEY (participant_id) REFERENCES public.participant(id);
+
+
+--
 -- Name: group group_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
 --
 
@@ -3750,6 +4211,14 @@ ALTER TABLE ONLY public.incident
 
 ALTER TABLE ONLY public.incident_type
     ADD CONSTRAINT incident_type_commander_service_id_fkey FOREIGN KEY (commander_service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: incident_type incident_type_liaison_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.incident_type
+    ADD CONSTRAINT incident_type_liaison_service_id_fkey FOREIGN KEY (liaison_service_id) REFERENCES public.service(id);
 
 
 --
@@ -4009,6 +4478,14 @@ ALTER TABLE ONLY public.storage
 
 
 --
+-- Name: tag tag_tag_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.tag
+    ADD CONSTRAINT tag_tag_type_id_fkey FOREIGN KEY (tag_type_id) REFERENCES public.tag_type(id);
+
+
+--
 -- Name: task_assignees task_assignees_participant_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
 --
 
@@ -4137,5 +4614,102 @@ ALTER TABLE ONLY public.ticket
 
 
 --
+-- Name: workflow_incident_priority workflow_incident_priority_incident_priority_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_incident_priority
+    ADD CONSTRAINT workflow_incident_priority_incident_priority_id_fkey FOREIGN KEY (incident_priority_id) REFERENCES public.incident_priority(id);
+
+
+--
+-- Name: workflow_incident_priority workflow_incident_priority_workflow_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_incident_priority
+    ADD CONSTRAINT workflow_incident_priority_workflow_id_fkey FOREIGN KEY (workflow_id) REFERENCES public.workflow(id);
+
+
+--
+-- Name: workflow_incident_type workflow_incident_type_incident_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_incident_type
+    ADD CONSTRAINT workflow_incident_type_incident_type_id_fkey FOREIGN KEY (incident_type_id) REFERENCES public.incident_type(id);
+
+
+--
+-- Name: workflow_incident_type workflow_incident_type_workflow_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_incident_type
+    ADD CONSTRAINT workflow_incident_type_workflow_id_fkey FOREIGN KEY (workflow_id) REFERENCES public.workflow(id);
+
+
+--
+-- Name: workflow_instance_artifact workflow_instance_artifact_document_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_instance_artifact
+    ADD CONSTRAINT workflow_instance_artifact_document_id_fkey FOREIGN KEY (document_id) REFERENCES public.document(id);
+
+
+--
+-- Name: workflow_instance_artifact workflow_instance_artifact_workflow_instance_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_instance_artifact
+    ADD CONSTRAINT workflow_instance_artifact_workflow_instance_id_fkey FOREIGN KEY (workflow_instance_id) REFERENCES public.workflow_instance(id);
+
+
+--
+-- Name: workflow_instance workflow_instance_creator_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_instance
+    ADD CONSTRAINT workflow_instance_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.participant(id);
+
+
+--
+-- Name: workflow_instance workflow_instance_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_instance
+    ADD CONSTRAINT workflow_instance_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+
+
+--
+-- Name: workflow_instance workflow_instance_workflow_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_instance
+    ADD CONSTRAINT workflow_instance_workflow_id_fkey FOREIGN KEY (workflow_id) REFERENCES public.workflow(id);
+
+
+--
+-- Name: workflow workflow_plugin_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow
+    ADD CONSTRAINT workflow_plugin_id_fkey FOREIGN KEY (plugin_id) REFERENCES public.plugin(id);
+
+
+--
+-- Name: workflow_term workflow_term_term_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_term
+    ADD CONSTRAINT workflow_term_term_id_fkey FOREIGN KEY (term_id) REFERENCES public.term(id);
+
+
+--
+-- Name: workflow_term workflow_term_workflow_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.workflow_term
+    ADD CONSTRAINT workflow_term_workflow_id_fkey FOREIGN KEY (workflow_id) REFERENCES public.workflow(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
+
