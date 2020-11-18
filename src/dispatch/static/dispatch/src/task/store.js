@@ -49,7 +49,8 @@ const state = {
       sortBy: ["status"],
       descending: [false]
     },
-    loading: false
+    loading: false,
+    bulkEdit: true
   }
 }
 
