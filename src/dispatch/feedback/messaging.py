@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from dispatch.config import DISPATCH_HELP_EMAIL
 from dispatch.database import SessionLocal
@@ -8,12 +9,14 @@ from dispatch.messaging import (
 )
 from dispatch.plugin import service as plugin_service
 
+from .models import Feedback
+
 
 log = logging.getLogger(__name__)
 
 
 def send_incident_feedback_daily_digest(
-    commander_email: str, feedback: dict, db_session: SessionLocal
+    commander_email: str, feedback: List[Feedback], db_session: SessionLocal
 ):
     """
     Sends an incident feedback daily digest to all incident commanders
