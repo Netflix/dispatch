@@ -39,7 +39,7 @@ If the database schema changes we will need to update the sample data accordingl
 
 ### Update 'latest' tag
 
-We rely on the latest tag to indentify the most current stable version to update this tag:
+We rely on the latest tag to identify the most current stable version. Follow the steps below to update this tag:
 
 Delete the pervious tag:
 
