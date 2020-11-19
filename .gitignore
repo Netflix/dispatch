@@ -134,6 +134,7 @@ ipython_config.py
 
 # Environments
 .env
+!data/.env
 .venv
 env/
 venv/

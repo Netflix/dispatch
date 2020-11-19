@@ -111,7 +111,7 @@ def get_or_create(
         )
         participant = create(db_session=db_session, participant_in=participant_in)
     else:
-        participant.roles += participant_roles
+        participant.participant_roles += participant_roles
 
     return participant
 

@@ -362,6 +362,7 @@ export default {
       "selected.description",
       "selected.conversation",
       "selected.conference",
+      "selected.visibility",
       "selected.storage",
       "selected.documents",
       "selected.loading",

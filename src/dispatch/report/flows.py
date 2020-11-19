@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 
 @background_task
 def create_tactical_report(
-    user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
+    user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
 ):
     """Creates and sends a new tactical report to a conversation."""
     conditions = action["submission"]["conditions"]
@@ -71,7 +71,7 @@ def create_tactical_report(
 
 @background_task
 def create_executive_report(
-    user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
+    user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
 ):
     """Creates an executive report."""
     report_template = document_service.get_executive_report_template(db_session=db_session)
