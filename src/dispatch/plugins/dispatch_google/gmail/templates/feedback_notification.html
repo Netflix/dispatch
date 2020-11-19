@@ -1,0 +1,32 @@
+{% extends 'templates/base.html' %} {% block description %}
+<p style="font-weight:normal!important;line-height:140%;margin-top:0">
+  This is a daily digest of feedback about incidents that you handled.
+</p>
+{% endblock %} {% block items %} {% for item in items %}
+{% for row in item %}
+<ul style="list-style-type:none; padding-left: 0;">
+  <li><b>Incident</b></li>
+  <li>{{ row.name }}</li>
+</ul>
+<ul style="list-style-type:none; padding-left: 0;">
+  <li><b>Incident Title</b></li>
+  <li>{{ row.title }}</li>
+</ul>
+<ul style="list-style-type:none; padding-left: 0;">
+  <li><b>Rating</b></li>
+  <li>{{ row.rating }}</li>
+</ul>
+<ul style="list-style-type:none; padding-left: 0;">
+  <li><b>Feedback</b></li>
+  <li>{{ row.feedback }}</li>
+</ul>
+<ul style="list-style-type:none; padding-left: 0;">
+  <li><b>Participant</b></li>
+  <li>{{ row.participant }}</li>
+</ul>
+<ul style="list-style-type:none; padding-left: 0;">
+  <li><b>Provided At</b></li>
+  <li>{{ row.created_at | datetime }}</li>
+</ul>
+{% endfor %}
+{% endfor %} {% endblock %}
