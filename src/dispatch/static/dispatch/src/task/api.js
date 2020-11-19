@@ -19,6 +19,10 @@ export default {
     return API.put(`${resource}/${taskId}`, payload)
   },
 
+  bulkUpdate(tasks) {
+
+  }
+
   delete(taskId) {
     return API.delete(`${resource}/${taskId}`)
   }

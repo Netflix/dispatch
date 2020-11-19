@@ -29,6 +29,7 @@
               :items-per-page.sync="itemsPerPage"
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
+              v-model="selected"
               show-select
             >
               <template v-slot:item.creator.individual_contact.name="{ item }">
@@ -123,32 +124,27 @@
         </v-flex>
       </v-layout>
     </v-flex>
-    <v-bottom-sheet v-model="bulkEdit" hide-overlay persistent inset>
-      <v-card tile>
+    <v-bottom-sheet v-model="showBulkEdit" hide-overlay persistent>
+      <v-card :loading="bulkEditLoading" tile>
         <v-list>
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title>Items Selected</v-list-item-title>
-              <v-list-item-subtitle>7</v-list-item-subtitle>
+              <v-list-item-subtitle>{{ selected.length }} selected</v-list-item-subtitle>
             </v-list-item-content>
 
             <v-spacer></v-spacer>
 
             <v-list-item-icon>
-              <v-btn icon>
-                <v-icon>mdi-rewind</v-icon>
+              <v-btn text>
+                <v-icon>mdi-check</v-icon>
+                Mark Resolved
               </v-btn>
             </v-list-item-icon>
 
-            <v-list-item-icon :class="{ 'mx-5': $vuetify.breakpoint.mdAndUp }">
-              <v-btn icon>
-                <v-icon>mdi-pause</v-icon>
-              </v-btn>
-            </v-list-item-icon>
-
-            <v-list-item-icon class="ml-0" :class="{ 'mr-3': $vuetify.breakpoint.mdAndUp }">
-              <v-btn icon>
-                <v-icon>mdi-fast-forward</v-icon>
+            <v-list-item-icon>
+              <v-btn text>
+                <v-icon>mdi-close</v-icon>
+                Mark Open
               </v-btn>
             </v-list-item-icon>
           </v-list-item>
@@ -209,8 +205,13 @@ export default {
       "table.loading",
       "table.rows.items",
       "table.rows.total",
-      "table.bulkEdit"
-    ])
+      "table.rows.selected",
+      "table.bulkEditLoading"
+    ]),
+
+    showBulkEdit: function() {
+      return this.selected.length ? true : false
+    }
   },
 
   mounted() {
@@ -244,7 +245,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("task", ["getAll", "createEditShow", "removeShow"])
+    ...mapActions("task", ["getAll", "createEditShow", "removeShow", "bulkEditSave"])
   }
 }
 </script>

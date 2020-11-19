@@ -31,7 +31,8 @@ const state = {
   table: {
     rows: {
       items: [],
-      total: null
+      total: null,
+      selected: []
     },
     options: {
       filters: {
@@ -50,7 +51,7 @@ const state = {
       descending: [false]
     },
     loading: false,
-    bulkEdit: true
+    bulkEditLoading: false
   }
 }
 
@@ -140,6 +141,23 @@ const actions = {
         })
     }
   },
+  saveBulk({ commit, dispatch }) {
+    return TaskApi.buildUpdate(state.rows.selected)
+      .then(() => {
+        dispatch("getAll")
+        commit("app/SET_SNACKBAR", { text: "Task(s) updated successfully." }, { root: true })
+      })
+      .catch(err => {
+        commit(
+          "app/SET_SNACKBAR",
+          {
+            text: "Task(s) not updated. Reason: " + err.response.data.detail,
+            color: "red"
+          },
+          { root: true }
+        )
+      })
+  },
   remove({ commit, dispatch }) {
     return TaskApi.delete(state.selected.id)
       .then(function() {
@@ -169,6 +187,8 @@ const mutations = {
     state.table.loading = value
   },
   SET_TABLE_ROWS(state, value) {
+    // reset selected on table load
+    value["selected"] = []
     state.table.rows = value
   },
   SET_DIALOG_CREATE_EDIT(state, value) {
