@@ -18,7 +18,7 @@ Creating a release of Dispatch requires the following steps.
 
 If the database schema changes we will need to update the sample data accordingly.
 
-- Run the command `update-example-data.sh` in the `data` directory.
+- Run the Bash script `update-example-data.sh` in the `data` directory.
 - Create a commit with any changes
 - Create a pull request with the change
 - Merge change
