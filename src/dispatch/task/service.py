@@ -168,11 +168,17 @@ def update(*, db_session, task: Task, task_in: TaskUpdate) -> Task:
 
     if drive_task_plugin:
         try:
-            file_id = task.incident.incident_document.resource_id
-            drive_task_plugin.instance.update(file_id, task.external_task_id, resolved=task.status)
+            if task.incident.incident_document:
+                file_id = task.incident.incident_document.resource_id
+                drive_task_plugin.instance.update(
+                    file_id, task.external_task_id, resolved=task.status
+                )
         except Exception:
-            file_id = task.incident.incident_review_document.resource_id
-            drive_task_plugin.instance.update(file_id, task.external_task_id, resolved=task.status)
+            if task.incident.incident_review_document:
+                file_id = task.incident.incident_review_document.resource_id
+                drive_task_plugin.instance.update(
+                    file_id, task.external_task_id, resolved=task.status
+                )
 
     db_session.add(task)
     db_session.commit()

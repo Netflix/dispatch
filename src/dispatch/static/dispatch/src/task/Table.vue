@@ -124,33 +124,7 @@
         </v-flex>
       </v-layout>
     </v-flex>
-    <v-bottom-sheet v-model="showBulkEdit" hide-overlay persistent>
-      <v-card :loading="bulkEditLoading" tile>
-        <v-list>
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-subtitle>{{ selected.length }} selected</v-list-item-subtitle>
-            </v-list-item-content>
-
-            <v-spacer></v-spacer>
-
-            <v-list-item-icon>
-              <v-btn text>
-                <v-icon>mdi-check</v-icon>
-                Mark Resolved
-              </v-btn>
-            </v-list-item-icon>
-
-            <v-list-item-icon>
-              <v-btn text>
-                <v-icon>mdi-close</v-icon>
-                Mark Open
-              </v-btn>
-            </v-list-item-icon>
-          </v-list-item>
-        </v-list>
-      </v-card>
-    </v-bottom-sheet>
+    <bulk-edit-sheet></bulk-edit-sheet>
   </v-layout>
 </template>
 
@@ -160,13 +134,16 @@ import { mapActions } from "vuex"
 import DeleteDialog from "@/task/DeleteDialog.vue"
 import NewEditSheet from "@/task/NewEditSheet.vue"
 import TableFilterDialog from "@/task/TableFilterDialog.vue"
+import BulkEditSheet from "@/task/BulkEditSheet.vue"
+
 export default {
   name: "TaskTable",
 
   components: {
     TableFilterDialog,
     DeleteDialog,
-    NewEditSheet
+    NewEditSheet,
+    BulkEditSheet
   },
   data() {
     return {
@@ -205,13 +182,8 @@ export default {
       "table.loading",
       "table.rows.items",
       "table.rows.total",
-      "table.rows.selected",
-      "table.bulkEditLoading"
-    ]),
-
-    showBulkEdit: function() {
-      return this.selected.length ? true : false
-    }
+      "table.rows.selected"
+    ])
   },
 
   mounted() {
@@ -245,7 +217,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("task", ["getAll", "createEditShow", "removeShow", "bulkEditSave"])
+    ...mapActions("task", ["getAll", "createEditShow", "removeShow"])
   }
 }
 </script>

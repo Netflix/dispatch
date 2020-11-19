@@ -141,13 +141,16 @@ const actions = {
         })
     }
   },
-  saveBulk({ commit, dispatch }) {
-    return TaskApi.buildUpdate(state.rows.selected)
+  saveBulk({ commit, dispatch }, payload) {
+    commit("SET_BULK_EDIT_LOADING", true)
+    return TaskApi.bulkUpdate(state.table.rows.selected, payload)
       .then(() => {
         dispatch("getAll")
         commit("app/SET_SNACKBAR", { text: "Task(s) updated successfully." }, { root: true })
+        commit("SET_BULK_EDIT_LOADING", false)
       })
       .catch(err => {
+        console.log(err)
         commit(
           "app/SET_SNACKBAR",
           {
@@ -156,6 +159,7 @@ const actions = {
           },
           { root: true }
         )
+        commit("SET_BULK_EDIT_LOADING", false)
       })
   },
   remove({ commit, dispatch }) {
@@ -196,6 +200,9 @@ const mutations = {
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showRemove = value
+  },
+  SET_BULK_EDIT_LOADING(state, value) {
+    state.table.bulkEditLoading = value
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())

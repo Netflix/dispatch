@@ -146,7 +146,6 @@ export default {
       this.plugin = event.plugin
     },
     setParameters(event) {
-      console.log(event)
       this.parameters = event.parameters
     }
   }
