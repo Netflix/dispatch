@@ -89,8 +89,10 @@ def auto_tagger(db_session):
 @scheduler.add(every(1).day.at("18:00"), name="incident-daily-summary")
 @background_task
 def daily_summary(db_session=None):
-    """Fetches all open incidents and provides a daily summary."""
-
+    """
+    Fetches all active, and stable and closed incidents in the last 24 hours
+    and sends a daily summary to all incident notification conversations.
+    """
     blocks = []
     blocks.append(
         {

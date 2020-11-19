@@ -1,4 +1,5 @@
-from typing import Optional
+from typing import List, Optional
+from datetime import datetime, timedelta
 from fastapi.encoders import jsonable_encoder
 
 from .models import Feedback, FeedbackCreate, FeedbackUpdate
@@ -12,6 +13,19 @@ def get(*, db_session, feedback_id: int) -> Optional[Feedback]:
 def get_all(*, db_session):
     """Gets all pieces of feedback."""
     return db_session.query(Feedback)
+
+
+def get_all_last_x_hours(
+    *, db_session, hours: int = 24, skip=0, limit=100
+) -> List[Optional[Feedback]]:
+    """Returns all feedback provided in the last x hours."""
+    return (
+        db_session.query(Feedback)
+        .filter(Feedback.created_at >= datetime.utcnow() - timedelta(hours=hours))
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
 
 def create(*, db_session, feedback_in: FeedbackCreate) -> Feedback:
