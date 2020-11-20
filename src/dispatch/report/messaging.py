@@ -1,5 +1,7 @@
 import logging
 
+from datetime import datetime, timedelta
+
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.database import SessionLocal, resolve_attr
 from dispatch.incident import service as incident_service
@@ -62,7 +64,9 @@ def send_tactical_report_to_conversation(
 
 
 def send_executive_report_to_notifications_group(
-    incident_id: int, executive_report: Report, db_session: SessionLocal,
+    incident_id: int,
+    executive_report: Report,
+    db_session: SessionLocal,
 ):
     """Sends an executive report to the notifications group."""
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
@@ -102,6 +106,13 @@ def send_incident_report_reminder(
     message_template = INCIDENT_REPORT_REMINDER
     command_name, message_type = get_report_reminder_settings(report_type)
 
+    # check to see if there wasn't a recent report
+    now = datetime.utcnow()
+    last_reported_at = incident.last_tactical_report.created_at
+
+    if now - last_reported_at < timedelta(hour=1):
+        return
+
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
     if not plugin:
         log.warning("Incident report reminder not sent, no conversation plugin enabled.")
@@ -121,7 +132,11 @@ def send_incident_report_reminder(
     ]
 
     plugin.instance.send_direct(
-        incident.commander.email, message_text, message_template, message_type, items=items,
+        incident.commander.email,
+        message_text,
+        message_template,
+        message_type,
+        items=items,
     )
 
     log.debug(f"Incident report reminder sent to {incident.commander.email}.")
