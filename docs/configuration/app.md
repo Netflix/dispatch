@@ -184,6 +184,10 @@ Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispa
 
 > Comma separated list of email addresses to be notified of new incidents.
 
+#### `INCIDENT_RESPONSE_TEAM_EMAIL` \[default: ''\]
+
+> Specifies the email address of the incident response team. Used for cc'ing the team in certain email communications (e.g. incident feedback daily digest).
+
 #### `INCIDENT_ONCALL_SERVICE_ID` \[default: None\]
 
 > Specifies the oncall service id to use to resolve the oncall person.
