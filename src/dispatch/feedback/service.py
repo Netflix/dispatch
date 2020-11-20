@@ -15,15 +15,11 @@ def get_all(*, db_session):
     return db_session.query(Feedback)
 
 
-def get_all_last_x_hours(
-    *, db_session, hours: int = 24, skip=0, limit=100
-) -> List[Optional[Feedback]]:
-    """Returns all feedback provided in the last x hours."""
+def get_all_last_x_hours(*, db_session, hours: int = 24) -> List[Optional[Feedback]]:
+    """Returns all feedback provided in the last x hours. Defaults to 24 hours."""
     return (
         db_session.query(Feedback)
         .filter(Feedback.created_at >= datetime.utcnow() - timedelta(hours=hours))
-        .offset(skip)
-        .limit(limit)
         .all()
     )
 
