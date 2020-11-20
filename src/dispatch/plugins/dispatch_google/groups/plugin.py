@@ -4,8 +4,9 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
-import logging
 import time
+import logging
+from enum import Enum
 from typing import Any, List
 
 from googleapiclient.errors import HttpError
@@ -15,9 +16,19 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import ParticipantGroupPlugin
 from dispatch.plugins.dispatch_google import groups as google_group_plugin
 from dispatch.plugins.dispatch_google.common import get_service
-from dispatch.plugins.dispatch_google.config import GOOGLE_USER_OVERRIDE, GOOGLE_DOMAIN
+from dispatch.plugins.dispatch_google.config import (
+    GOOGLE_USER_OVERRIDE,
+    GOOGLE_DOMAIN,
+    # GOOGLE_CUSTOMER_ID,
+)
 
 log = logging.getLogger(__name__)
+
+
+class GroupLabels(str, Enum):
+    google_group = "cloudidentity.googleapis.com/groups.discussion_forum"
+    dynamic_groups = "cloudidentity.googleapis.com/groups.dynamic"
+    security_groups = "loudidentity.googleapis.com/groups.security"
 
 
 @retry(
@@ -66,14 +77,18 @@ def add_member(client: Any, group_key: str, email: str, role: str):
         members = expand_group(client, group_key)
 
     for m in members:
-        body = {"email": m, "role": role}
+        body = {"memberKey": m, "roles": {"name": role}}
         if GOOGLE_USER_OVERRIDE:
             log.warning("GOOGLE_USER_OVERIDE set. Using override.")
-            body["email"] = GOOGLE_USER_OVERRIDE
+            body["memberKey"] = GOOGLE_USER_OVERRIDE
 
         try:
             make_call(
-                client.members(), "insert", groupKey=group_key, body=body, propagate_errors=True
+                client.groups().memberships(),
+                "create",
+                parent=group_key,
+                body=body,
+                propagate_errors=True,
             )
         except HttpError as e:
             #  we are okay with duplication errors upon insert
@@ -88,18 +103,23 @@ def add_member(client: Any, group_key: str, email: str, role: str):
 
 def remove_member(client: Any, group_key: str, email: str):
     """Removes member from google group."""
-    return make_call(client.members(), "delete", groupKey=group_key, memberKey=email)
+    return make_call(client.groups().memberships(), "delete", parent=group_key, memberKey=email)
 
 
 def list_members(client: Any, group_key: str, **kwargs):
     """Lists all members of google group."""
-    return make_call(client.members(), "list", groupKey=group_key, **kwargs)
+    return make_call(client.groups().memberships(), "list", parent=group_key)
 
 
 def create_group(client: Any, name: str, email: str, description: str):
     """Creates a new google group."""
-    body = {"email": email, "name": name, "adminCreated": False, "description": description}
-    return make_call(client.groups(), "insert", body=body, delay=3)
+    body = {
+        "groupKey": {"id": email},
+        "displayName": name,
+        "description": description,
+        "labels": {GroupLabels.google_group: ""},
+    }
+    return make_call(client.groups(), "create", body=body, delay=3)
 
 
 def delete_group(client: Any, group_key: str, **kwargs):
@@ -127,15 +147,14 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
 
     def __init__(self):
         self.scopes = [
-            "https://www.googleapis.com/auth/admin.directory.group",
-            "https://www.googleapis.com/auth/apps.groups.settings",
+            "https://www.googleapis.com/auth/cloud-identity.groups",
         ]
 
     def create(
         self, name: str, participants: List[str], description: str = None, role: str = "MEMBER"
     ):
         """Creates a new Google Group."""
-        client = get_service("admin", "directory_v1", self.scopes)
+        client = get_service("cloudidentity", "v1", self.scopes)
         group_key = f"{name.lower()}@{GOOGLE_DOMAIN}"
 
         if not description:
@@ -155,23 +174,23 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
 
     def add(self, email: str, participants: List[str], role: str = "MEMBER"):
         """Adds participants to an existing Google Group."""
-        client = get_service("admin", "directory_v1", self.scopes)
+        client = get_service("cloudidentity", "v1", self.scopes)
         for p in participants:
             add_member(client, email, p, role)
 
     def remove(self, email: str, participants: List[str]):
         """Removes participants from an existing Google Group."""
-        client = get_service("admin", "directory_v1", self.scopes)
+        client = get_service("cloudidentity", "v1", self.scopes)
         for p in participants:
             remove_member(client, email, p)
 
     def list(self, email: str):
         """Lists members from an existing Google Group."""
-        client = get_service("admin", "directory_v1", self.scopes)
+        client = get_service("cloudidentity", "v1", self.scopes)
         members = list_members(client, email)
         return [m["email"] for m in members["members"]]
 
     def delete(self, email: str):
         """Deletes an existing Google group."""
-        client = get_service("admin", "directory_v1", self.scopes)
+        client = get_service("cloudidentity", "v1", self.scopes)
         delete_group(client, email)
