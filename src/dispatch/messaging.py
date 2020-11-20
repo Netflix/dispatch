@@ -33,6 +33,7 @@ class MessageType(str, Enum):
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
     document_evergreen_reminder = "document-evergreen-reminder"
+    incident_feedback_daily_digest = "incident-feedback-daily-digest"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -54,6 +55,11 @@ DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION = """
 You are the owner of the following incident documents.
 This is a reminder that these documents should be kept up to date in order to effectively
 respond to incidents. Please review them and update, or clearly mark the documents as deprecated.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_FEEDBACK_DAILY_DIGEST_DESCRIPTION = """
+This is a daily digest of feedback about incidents handled by you.""".replace(
     "\n", " "
 ).strip()
 
@@ -544,6 +550,15 @@ INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION = [
         "button_value": "{{incident_id}}",
         "button_action": ConversationButtonActions.provide_feedback,
     }
+]
+
+INCIDENT_FEEDBACK_DAILY_DIGEST = [
+    {"title": "Incident", "text": "{{ name }}"},
+    {"title": "Incident Title", "text": "{{ title }}"},
+    {"title": "Rating", "text": "{{ rating }}"},
+    {"title": "Feedback", "text": "{{ feedback }}"},
+    {"title": "Participant", "text": "{{ participant }}"},
+    {"title": "Created At", "text": "", "datetime": "{{ created_at}}"},
 ]
 
 
