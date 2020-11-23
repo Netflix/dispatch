@@ -29,6 +29,8 @@
               :items-per-page.sync="itemsPerPage"
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
+              v-model="selected"
+              show-select
             >
               <template v-slot:item.creator.individual_contact.name="{ item }">
                 <v-chip
@@ -122,6 +124,7 @@
         </v-flex>
       </v-layout>
     </v-flex>
+    <bulk-edit-sheet></bulk-edit-sheet>
   </v-layout>
 </template>
 
@@ -131,13 +134,16 @@ import { mapActions } from "vuex"
 import DeleteDialog from "@/task/DeleteDialog.vue"
 import NewEditSheet from "@/task/NewEditSheet.vue"
 import TableFilterDialog from "@/task/TableFilterDialog.vue"
+import BulkEditSheet from "@/task/BulkEditSheet.vue"
+
 export default {
   name: "TaskTable",
 
   components: {
     TableFilterDialog,
     DeleteDialog,
-    NewEditSheet
+    NewEditSheet,
+    BulkEditSheet
   },
   data() {
     return {
@@ -175,7 +181,8 @@ export default {
       "table.options.filters.status",
       "table.loading",
       "table.rows.items",
-      "table.rows.total"
+      "table.rows.total",
+      "table.rows.selected"
     ])
   },
 

@@ -31,7 +31,8 @@ const state = {
   table: {
     rows: {
       items: [],
-      total: null
+      total: null,
+      selected: []
     },
     options: {
       filters: {
@@ -49,7 +50,8 @@ const state = {
       sortBy: ["status"],
       descending: [false]
     },
-    loading: false
+    loading: false,
+    bulkEditLoading: false
   }
 }
 
@@ -139,6 +141,27 @@ const actions = {
         })
     }
   },
+  saveBulk({ commit, dispatch }, payload) {
+    commit("SET_BULK_EDIT_LOADING", true)
+    return TaskApi.bulkUpdate(state.table.rows.selected, payload)
+      .then(() => {
+        dispatch("getAll")
+        commit("app/SET_SNACKBAR", { text: "Task(s) updated successfully." }, { root: true })
+        commit("SET_BULK_EDIT_LOADING", false)
+      })
+      .catch(err => {
+        console.log(err)
+        commit(
+          "app/SET_SNACKBAR",
+          {
+            text: "Task(s) not updated. Reason: " + err.response.data.detail,
+            color: "red"
+          },
+          { root: true }
+        )
+        commit("SET_BULK_EDIT_LOADING", false)
+      })
+  },
   remove({ commit, dispatch }) {
     return TaskApi.delete(state.selected.id)
       .then(function() {
@@ -168,6 +191,8 @@ const mutations = {
     state.table.loading = value
   },
   SET_TABLE_ROWS(state, value) {
+    // reset selected on table load
+    value["selected"] = []
     state.table.rows = value
   },
   SET_DIALOG_CREATE_EDIT(state, value) {
@@ -175,6 +200,9 @@ const mutations = {
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showRemove = value
+  },
+  SET_BULK_EDIT_LOADING(state, value) {
+    state.table.bulkEditLoading = value
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
