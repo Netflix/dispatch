@@ -10,9 +10,9 @@
           <v-spacer></v-spacer>
 
           <v-list-item-icon>
-            <v-btn text @click="saveBulk({ status: 'Open' })">
+            <v-btn text @click="saveBulk({ status: 'Active' })">
               <v-icon>mdi-check</v-icon>
-              Mark Open
+              Mark Active
             </v-btn>
           </v-list-item-icon>
           <v-list-item-icon>
