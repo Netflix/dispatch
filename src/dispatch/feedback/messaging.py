@@ -1,7 +1,7 @@
 import logging
 from typing import List
 
-from dispatch.config import DISPATCH_HELP_EMAIL
+from dispatch.config import DISPATCH_HELP_EMAIL, INCIDENT_RESPONSE_TEAM_EMAIL
 from dispatch.database import SessionLocal
 from dispatch.messaging import (
     INCIDENT_FEEDBACK_DAILY_DIGEST,
@@ -28,8 +28,6 @@ def send_incident_feedback_daily_digest(
         log.warning("Incident feedback daily digest not sent. Email plugin is not enabled.")
         return
 
-    contact_fullname = contact_weblink = DISPATCH_HELP_EMAIL
-
     items = []
     for piece in feedback:
         participant = piece.participant.individual.name if piece.participant else "Anonymous"
@@ -45,12 +43,14 @@ def send_incident_feedback_daily_digest(
         )
 
     name = subject = "Incident Feedback Daily Digest"
+    contact_fullname = contact_weblink = DISPATCH_HELP_EMAIL
     plugin.instance.send(
         commander_email,
         INCIDENT_FEEDBACK_DAILY_DIGEST,
         MessageType.incident_feedback_daily_digest,
         name=name,
         subject=subject,
+        cc=INCIDENT_RESPONSE_TEAM_EMAIL,
         contact_fullname=contact_fullname,
         contact_weblink=contact_weblink,
         items=items,
