@@ -22,7 +22,7 @@ export default {
   bulkUpdate(tasks, payload) {
     return Promise.all(
       tasks.map(task => {
-        return this.update(task.id, { ...task, payload })
+        return this.update(task.id, { ...task, ...payload })
       })
     )
   },
