@@ -17,6 +17,7 @@ from tenacity import retry, stop_after_attempt
 from dispatch.decorators import apply, counter, timer
 from dispatch.messaging import (
     DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
+    INCIDENT_FEEDBACK_DAILY_DIGEST_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
     MessageType,
     render_message_template,
@@ -70,6 +71,10 @@ def get_template(message_type: MessageType):
             "document_evergreen_reminder.html",
             DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
         ),
+        MessageType.incident_feedback_daily_digest: (
+            "feedback_notification.html",
+            INCIDENT_FEEDBACK_DAILY_DIGEST_DESCRIPTION,
+        ),
     }
 
     template_path, description = template_map.get(message_type, (None, None))
@@ -88,7 +93,6 @@ def create_multi_message_body(
 
     master_map = []
     for item in items:
-        print(f"WARNING: {item}")
         master_map.append(render_message_template(message_template, **item))
 
     kwargs.update({"items": master_map, "description": description})
