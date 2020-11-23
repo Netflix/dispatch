@@ -49,12 +49,12 @@ export const protectedRoute = [
     path: "/",
     component: DefaultLayout,
     meta: { title: "Dispatch", group: "incidents", icon: "", requiresAuth: true },
-    redirect: "/dashboard/incidents"
+    redirect: "/incidents/dashboard"
   },
   {
-    path: "/dashboard",
+    path: "/incidents/dashboard",
     component: DashboardLayout,
-    redirect: "/dashboard/incidents",
+    redirect: "/incidents/dashboard",
     meta: { title: "Dashboard", group: "incidents", icon: "", requiresAuth: true },
     children: [
       {
@@ -79,6 +79,7 @@ export const protectedRoute = [
       }
     ]
   },
+
   {
     path: "/incidents/status",
     meta: { title: "Status", icon: "", requiresAuth: true },
