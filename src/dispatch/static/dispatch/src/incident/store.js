@@ -45,7 +45,8 @@ const state = {
   table: {
     rows: {
       items: [],
-      total: null
+      total: null,
+      selected: []
     },
     options: {
       filters: {
@@ -62,7 +63,8 @@ const state = {
       sortBy: ["reported_at"],
       descending: [true]
     },
-    loading: false
+    loading: false,
+    bulkEditLoading: false
   }
 }
 
@@ -212,6 +214,26 @@ const actions = {
         })
     }
   },
+  saveBulk({ commit, dispatch }, payload) {
+    commit("SET_BULK_EDIT_LOADING", true)
+    return IncidentApi.bulkUpdate(state.table.rows.selected, payload)
+      .then(() => {
+        dispatch("getAll")
+        commit("app/SET_SNACKBAR", { text: "Incident(s) updated successfully." }, { root: true })
+        commit("SET_BULK_EDIT_LOADING", false)
+      })
+      .catch(err => {
+        commit(
+          "app/SET_SNACKBAR",
+          {
+            text: "Incident(s) not updated. Reason: " + err.response.data.detail,
+            color: "red"
+          },
+          { root: true }
+        )
+        commit("SET_BULK_EDIT_LOADING", false)
+      })
+  },
   remove({ commit, dispatch }) {
     return IncidentApi.delete(state.selected.id)
       .then(function() {
@@ -253,6 +275,8 @@ const mutations = {
     state.table.loading = value
   },
   SET_TABLE_ROWS(state, value) {
+    // reset selected on table load
+    value["selected"] = []
     state.table.rows = value
   },
   SET_DIALOG_SHOW_EDIT_SHEET(state, value) {
@@ -266,6 +290,9 @@ const mutations = {
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
+  },
+  SET_BULK_EDIT_LOADING(state, value) {
+    state.table.bulkEditLoading = value
   },
   SET_SELECTED_LOADING(state, value) {
     state.selected.loading = value
