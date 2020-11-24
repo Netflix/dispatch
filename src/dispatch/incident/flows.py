@@ -1081,6 +1081,7 @@ def incident_engage_oncall_flow(
     )
 
     if not oncall_plugin:
+        log.warning("Unable to engage the oncall. Oncall plugin not enabled."
         return
 
     oncall_email = oncall_plugin.instance.get(service_id=oncall_service_id)
