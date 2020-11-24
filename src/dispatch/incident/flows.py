@@ -45,7 +45,6 @@ from dispatch.participant.models import Participant
 from dispatch.participant_role import flows as participant_role_flows
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
-from dispatch.plugins.base import plugins
 from dispatch.report.enums import ReportTypes
 from dispatch.report.messaging import send_incident_report_reminder
 from dispatch.service import service as service_service
@@ -1067,12 +1066,9 @@ def incident_assign_role_flow(
 
 @background_task
 def incident_engage_oncall_flow(
-    user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
+    user_email: str, incident_id: int, oncall_service_id: str, page=None, db_session=None
 ):
     """Runs the incident engage oncall flow."""
-    oncall_service_id = action["submission"]["oncall_service_id"]
-    page = action["submission"]["page"]
-
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
@@ -1080,8 +1076,15 @@ def incident_engage_oncall_flow(
     oncall_service = service_service.get_by_external_id(
         db_session=db_session, external_id=oncall_service_id
     )
-    oncall_plugin = plugins.get(oncall_service.type)
-    oncall_email = oncall_plugin.get(service_id=oncall_service_id)
+    oncall_plugin = plugin_service.get_active(
+        db_session=db_session, plugin_type=oncall_service.type
+    )
+
+    if not oncall_plugin:
+        log.warning("Unable to engage the oncall. Oncall plugin not enabled.")
+        return None, None
+
+    oncall_email = oncall_plugin.instance.get(service_id=oncall_service_id)
 
     # we add the oncall to the incident
     incident_add_or_reactivate_participant_flow(oncall_email, incident.id, db_session=db_session)
@@ -1098,7 +1101,9 @@ def incident_engage_oncall_flow(
 
     if page == "Yes":
         # we page the oncall
-        oncall_plugin.page(oncall_service_id, incident.name, incident.title, incident.description)
+        oncall_plugin.instance.page(
+            oncall_service_id, incident.name, incident.title, incident.description
+        )
 
         event_service.log(
             db_session=db_session,
@@ -1106,6 +1111,8 @@ def incident_engage_oncall_flow(
             description=f"{oncall_service.name} on-call paged",
             incident_id=incident.id,
         )
+
+    return individual, oncall_service
 
 
 @background_task

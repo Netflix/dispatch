@@ -23,6 +23,14 @@ export default {
     return API.put(`${resource}/${incidentId}`, payload)
   },
 
+  bulkUpdate(incidents, payload) {
+    return Promise.all(
+      incidents.map(incident => {
+        return this.update(incident.id, { ...incident, ...payload })
+      })
+    )
+  },
+
   join(incidentId, payload) {
     return API.post(`${resource}/${incidentId}/join`, payload)
   },
