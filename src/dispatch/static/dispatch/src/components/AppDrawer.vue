@@ -1,7 +1,13 @@
 <template>
   <v-navigation-drawer app :value="toggleDrawer" clipped>
     <vue-perfect-scrollbar class="drawer-menu--scroll" :settings="scrollSettings">
-      <v-list dense>
+      <v-list shaped>
+        <v-list-item class="px-2">
+          <v-btn color="error" rounded to="/incidents/report">
+            <v-icon left>error_outline</v-icon>
+            Report Incident
+          </v-btn>
+        </v-list-item>
         <v-list-group
           v-for="item in items"
           :key="item.title"
@@ -15,7 +21,7 @@
             </v-list-item-content>
           </template>
 
-          <v-list-item v-for="child in item.items" :key="child.title" :to="child.route">
+          <v-list-item v-for="child in item.items" :key="child.title" :to="child.route" exact>
             <v-list-item-content>
               <v-list-item-title v-text="child.title"></v-list-item-title>
             </v-list-item-content>
@@ -47,24 +53,21 @@ export default {
   data: () => ({
     items: [
       {
-        action: "notification_important",
+        action: "dashboard",
         items: [
-          { title: "Dashboard", route: "/incidents/dashboard" },
-          { title: "View", route: "/incidents" },
-          { title: "Tasks", route: "/tasks" },
+          { title: "Incidents", route: "/dashboard/incidents" },
+          { title: "Tasks", route: "/dashboard/tasks" }
+        ],
+        title: "Dashboard"
+      },
+      {
+        action: "error_outline",
+        items: [
+          { title: "List", route: "/incidents/list" },
+          { title: "Tasks", route: "/incidents/tasks" },
           { title: "Feedback", route: "/incidents/feedback" }
         ],
         title: "Incident"
-      },
-      {
-        action: "notification_important",
-        items: [
-          { title: "Dashboard", route: "/incidents/dashboard" },
-          { title: "View", route: "/incidents" },
-          { title: "Tasks", route: "/tasks" },
-          { title: "Feedback", route: "/incidents/feedback" }
-        ],
-        title: "Task"
       },
       {
         action: "people",

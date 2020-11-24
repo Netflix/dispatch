@@ -29,7 +29,7 @@ instance.interceptors.response.use(
   function(err) {
     if (err.response.status == 401) {
       if (authProviderSlug === "dispatch-auth-provider-basic") {
-        router.push({ path: "/login" })
+        router.push({ path: "/auth/login" })
         store.dispatch("auth/logout")
       }
     }

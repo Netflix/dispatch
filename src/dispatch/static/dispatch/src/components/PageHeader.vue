@@ -1,11 +1,6 @@
 <template>
   <v-layout class="align-center layout px-4 pt-4 app--page-header">
-    <div class="page-header-left">
-      <h3 class="pr-3">
-        {{ $route.meta.title || "" }}
-      </h3>
-    </div>
-    <v-breadcrumbs divider="/" :items="breadcrumbs">
+    <v-breadcrumbs divider=">" :items="breadcrumbs">
       <template v-slot:item="props">
         <router-link :to="props.item.href" :class="[props.item.disabled && 'disabled']">
           {{ props.item.text }}
@@ -55,7 +50,7 @@ export default {
       appends = this.$route.matched.map(item => {
         return {
           text: item.meta.title || "",
-          href: item.path || "/",
+          href: item.path || ">",
           disabled: item.path === this.$route.path
         }
       })

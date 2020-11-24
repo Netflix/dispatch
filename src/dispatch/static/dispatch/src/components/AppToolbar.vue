@@ -17,14 +17,6 @@
     <v-toolbar-items>
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn icon v-on="on" to="/incidents/report">
-            <v-icon>error_outline</v-icon>
-          </v-btn>
-        </template>
-        <span>Report Incident</span>
-      </v-tooltip>
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
           <v-btn icon v-on="on" @click="handleFullScreen()">
             <v-icon>fullscreen</v-icon>
           </v-btn>
