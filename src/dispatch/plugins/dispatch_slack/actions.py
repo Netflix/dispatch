@@ -139,11 +139,13 @@ def handle_engage_oncall_action(
     oncall_service_id = action["submission"]["oncall_service_id"]
     page = action["submission"]["page"]
 
-    oncall_email = incident_flows.incident_engage_oncall_flow(
+    oncall_individual, oncall_service = incident_flows.incident_engage_oncall_flow(
         user_email, incident_id, oncall_service_id, page=page, db_session=db_session
     )
 
-    message = f"You have successfully engaged: {oncall_email}."
+    message = (
+        f"You have successfully engaged {oncall_individual.name} from team {oncall_service.name}."
+    )
     dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
 
 
