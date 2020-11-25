@@ -1,6 +1,7 @@
 import re
 import logging
 import json
+from enum import Enum
 from typing import Any, List
 from itertools import groupby
 import functools

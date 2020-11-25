@@ -1,12 +1,15 @@
 from typing import List
 
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.database import get_db, search_filter_sort_paginate
 from dispatch.enums import Visibility, UserRoles
+from dispatch.export import ExportTypes, export_items
 from dispatch.incident.enums import IncidentStatus
 from dispatch.participant_role.models import ParticipantRoleType
 
@@ -58,6 +61,47 @@ def get_incidents(
         ],
         user_role=current_user.role,
     )
+
+
+@router.get("/export", summary="Export incidents in the specified format.")
+def export_incidents(
+    db_session: Session = Depends(get_db),
+    page: int = 1,
+    items_per_page: int = Query(5, alias="itemsPerPage"),
+    query_str: str = Query(None, alias="q"),
+    sort_by: List[str] = Query([], alias="sortBy[]"),
+    descending: List[bool] = Query([], alias="descending[]"),
+    fields: List[str] = Query([], alias="fields[]"),
+    ops: List[str] = Query([], alias="ops[]"),
+    values: List[str] = Query([], alias="values[]"),
+    export_type: str = Query("csv", alias="exportType"),
+    export_fields: List[str] = Query(None, alias="exportFields[]"),
+    current_user: DispatchUser = Depends(get_current_user),
+):
+    """Export all incidents matching the given parameters."""
+
+    incidents = search_filter_sort_paginate(
+        db_session=db_session,
+        model="Incident",
+        query_str=query_str,
+        page=page,
+        items_per_page=items_per_page,
+        sort_by=sort_by,
+        descending=descending,
+        fields=fields,
+        values=values,
+        ops=ops,
+        join_attrs=[
+            ("tag", "tags"),
+        ],
+        user_role=current_user.role,
+    )
+    # fetch in scope incidents
+    if export_type == ExportTypes.csv:
+        f = export_items(incidents, export_type, export_fields)
+        return FileResponse(f.path, media_type="application/octet-stream", filename=f.name)
+    else:
+        return
 
 
 @router.get("/{incident_id}", response_model=IncidentRead, summary="Retrieve a single incident.")

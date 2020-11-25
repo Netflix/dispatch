@@ -6,6 +6,7 @@
     <div class="headline">Incidents</div>
     <v-spacer />
     <table-filter-dialog />
+    <table-export-dialog />
     <v-btn color="primary" dark class="ml-2" @click="showNewSheet()">New</v-btn>
     <v-flex xs12>
       <v-layout column>
@@ -87,6 +88,7 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import TableFilterDialog from "@/incident/TableFilterDialog.vue"
+import TableExportDialog from "@/incident/TableExportDialog.vue"
 import EditSheet from "@/incident/EditSheet.vue"
 import NewSheet from "@/incident/NewSheet.vue"
 import BulkEditSheet from "@/incident/BulkEditSheet.vue"
@@ -98,6 +100,7 @@ export default {
     EditSheet,
     NewSheet,
     TableFilterDialog,
+    TableExportDialog,
     BulkEditSheet
   },
 

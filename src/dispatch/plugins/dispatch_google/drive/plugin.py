@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import StoragePlugin, TaskPlugin
@@ -18,6 +18,7 @@ from .drive import (
     remove_permission,
     add_domain_permission,
     add_reply,
+    create_google_sheet
 )
 from .task import list_tasks
 
@@ -105,6 +106,11 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         """Lists all files in team drive."""
         client = get_service("drive", "v3", self.scopes)
         return list_files(client, folder_id, q)
+
+    def export(self, folder_id: str, name: str, data: Any):
+        """Creates a google sheet with the given data."""
+        client = get_service("drive", "v3", self.scopes)
+        return create_google_sheet(client, folder_id, name, data)
 
 
 class GoogleDriveTaskPlugin(TaskPlugin):
