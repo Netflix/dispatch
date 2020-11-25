@@ -99,14 +99,18 @@ def create_recommendation(
         RecommendationAccuracy(resource_id=r.id, resource_type=type(r).__name__) for r in resources
     ]
 
-    incident_priorities = [
-        incident_priority_service.get_by_name(db_session=db_session, name=n.name)
-        for n in context.incident_priorities
-    ]
-    incident_types = [
-        incident_type_service.get_by_name(db_session=db_session, name=n.name)
-        for n in context.incident_types
-    ]
+    incident_priorities = []
+    incident_types = []
+
+    if context:
+        incident_priorities = [
+            incident_priority_service.get_by_name(db_session=db_session, name=n.name)
+            for n in context.incident_priorities
+        ]
+        incident_types = [
+            incident_type_service.get_by_name(db_session=db_session, name=n.name)
+            for n in context.incident_types
+        ]
 
     service_contacts = [x for x in resources if type(x).__name__ == "Service"]
     individual_contacts = [x for x in resources if type(x).__name__ == "IndividualContact"]
@@ -149,7 +153,10 @@ def get(*, db_session, route_in: RouteRequest) -> Dict[Any, Any]:
         resource_matched_terms, term_resources = get_resources_from_terms(
             db_session=db_session, terms=text_terms
         )
-        route_in.context.terms.extend(resource_matched_terms)
+
+        if route_in.context:
+            route_in.context.terms.extend(resource_matched_terms)
+
         resources.extend(term_resources)
 
     resources = list(set(resources))
