@@ -26,7 +26,7 @@ Each new participant receives a welcome message \(Email + Slack\) providing them
 
 ![Incident welcome email](https://lh3.googleusercontent.com/9AhkQ-y5h-sQN0F6KLrBEE_6cGA-XN4Qu1cj4NAGNj1OOfA7p4c4z0G7BYxydz3oOYCVkqTkl_EYAeO4SOsCWkVXme5hUByCnYNDkFPQhQTkNYulc--rOQNQGD856s4uPZPYHEwvlk0)
 
-![Incident welcome slack \(ephemeral\)](https://lh4.googleusercontent.com/EgiaPr7p7X-MsmhU7LCNn9BoM0qgqlj-yFBRsxHYGFY6GWSVmYkqNjDzFB-iTNpZBlaxjpVJ_R8HC5jO9gu12ehtIGfT3-7At7lQms-dppkxiFZTyOA8LUQyubCDqLAU23NYwcoQfrw)
+![Incident welcome slack (ephemeral)](https://lh4.googleusercontent.com/EgiaPr7p7X-MsmhU7LCNn9BoM0qgqlj-yFBRsxHYGFY6GWSVmYkqNjDzFB-iTNpZBlaxjpVJ_R8HC5jO9gu12ehtIGfT3-7At7lQms-dppkxiFZTyOA8LUQyubCDqLAU23NYwcoQfrw)
 
 From there use the resources as you normally would to run your investigation, Dispatch will be there managing permissions, providing reminders and helping track the incident as it progresses to resolution.
 
@@ -42,3 +42,24 @@ In addition to Dispatch pulling in individuals that will be directly responsible
 The incident notification message includes a "Join Incident" button, this allows individuals to add themselves to the incident \(and it's resources\) without involvement from the incident commander.
 {% endhint %}
 
+## Self-service engagement
+
+Often participants will want to "self-subscribe" to incidents given a set of parameters. Dispatch allows individuals to be automatically be pulled into an incident given these parameters.
+
+To setup an individual's engagement navigate to Individual and either edit an existing individual or create a new one.
+
+Then under `Engagement` select or add a term or phrase which, when found in an incident you would like to be engaged.
+
+Additionally you can also specify if you would like to be enaged for every incident type or priority.
+
+For more documentation of incident engagement see [here](administration/contacts.md).
+
+### How it works
+
+For any given set of parameters (incident type, incident priority, title, description, etc.) Dispatch will attempt to engage any individual that has associated with those parameters. Current this is an "OR" association between terms. Meaning, that if any term is matched the individual will be pulled into the incident.
+
+As the incident evolves new information is uncovered. Dispatch will re-evaluate these associations any time those parameters change adding additional individuals.
+
+As an example, take an incident that is reported as a "Credential Leak". Dispatch will engage any individual that has associated the terms, "Credential", "Leak" and "Credential Leak" (case and punctuation is ignored).
+
+Now if we find out during investigation that the incident is really a "System Compromise" and we change the description and title appropriately, Dispatch will then pull in individuals associated with the terms "System", "Compromise" and "System Compromise".
