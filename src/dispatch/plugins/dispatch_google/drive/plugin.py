@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import StoragePlugin, TaskPlugin
@@ -18,7 +18,6 @@ from .drive import (
     remove_permission,
     add_domain_permission,
     add_reply,
-    create_google_sheet,
 )
 from .task import list_tasks
 
