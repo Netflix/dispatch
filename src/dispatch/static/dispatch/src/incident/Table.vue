@@ -30,7 +30,9 @@
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
               :loading="loading"
+              v-model="selected"
               loading-text="Loading... Please wait"
+              show-select
             >
               <template v-slot:item.cost="{ item }">{{ item.cost | toUSD }}</template>
               <template v-slot:item.commander="{ item }">
@@ -77,6 +79,7 @@
         </v-flex>
       </v-layout>
     </v-flex>
+    <bulk-edit-sheet></bulk-edit-sheet>
   </v-layout>
 </template>
 
@@ -86,6 +89,7 @@ import { mapActions } from "vuex"
 import TableFilterDialog from "@/incident/TableFilterDialog.vue"
 import EditSheet from "@/incident/EditSheet.vue"
 import NewSheet from "@/incident/NewSheet.vue"
+import BulkEditSheet from "@/incident/BulkEditSheet.vue"
 
 export default {
   name: "IncidentTable",
@@ -93,7 +97,8 @@ export default {
   components: {
     EditSheet,
     NewSheet,
-    TableFilterDialog
+    TableFilterDialog,
+    BulkEditSheet
   },
 
   props: ["name"],
@@ -131,7 +136,8 @@ export default {
       "table.options.descending",
       "table.loading",
       "table.rows.items",
-      "table.rows.total"
+      "table.rows.total",
+      "table.rows.selected"
     ])
   },
 
