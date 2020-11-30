@@ -344,8 +344,3 @@ def move_file(client: Any, folder_id: str, file_id: str):
 def list_permissions(client: Any, **kwargs):
     """List all permissions for file."""
     return make_call(client.files(), "list", **kwargs)
-
-
-def create_google_sheet(client: Any, folder_id: str, file_name: str, data: Any):
-    """Exports data to a google sheet."""
-    pass
