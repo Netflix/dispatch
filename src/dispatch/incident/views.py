@@ -1,5 +1,6 @@
 from typing import List
 
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
@@ -26,7 +27,7 @@ from .service import create, delete, get, update
 router = APIRouter()
 
 
-@router.get("/", response_model=IncidentPagination, summary="Retrieve a list of all incidents.")
+@router.get("/", summary="Retrieve a list of all incidents.")
 def get_incidents(
     db_session: Session = Depends(get_db),
     page: int = 1,
@@ -38,11 +39,12 @@ def get_incidents(
     ops: List[str] = Query([], alias="ops[]"),
     values: List[str] = Query([], alias="values[]"),
     current_user: DispatchUser = Depends(get_current_user),
+    include: List[str] = Query([], alias="include[]"),
 ):
     """
     Retrieve a list of all incidents.
     """
-    return search_filter_sort_paginate(
+    pagination = search_filter_sort_paginate(
         db_session=db_session,
         model="Incident",
         query_str=query_str,
@@ -58,6 +60,16 @@ def get_incidents(
         ],
         user_role=current_user.role,
     )
+
+    if include:
+        include_fields = {
+            "items": {"__all__": set(include)},
+            "itemsPerPage": ...,
+            "page": ...,
+            "total": ...,
+        }
+        return IncidentPagination(**pagination).dict(include=include_fields)
+    return IncidentPagination(**pagination).dict()
 
 
 @router.get("/{incident_id}", response_model=IncidentRead, summary="Retrieve a single incident.")

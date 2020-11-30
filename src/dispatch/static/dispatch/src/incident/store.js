@@ -40,7 +40,8 @@ const state = {
   dialogs: {
     showEditSheet: false,
     showNewSheet: false,
-    showRemove: false
+    showRemove: false,
+    showExport: false
   },
   table: {
     rows: {
@@ -140,6 +141,12 @@ const actions = {
   closeRemove({ commit }) {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
+  },
+  showExport({ commit }) {
+    commit("SET_DIALOG_SHOW_EXPORT", true)
+  },
+  closeExport({ commit }) {
+    commit("SET_DIALOG_SHOW_EXPORT", false)
   },
   report({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
@@ -284,6 +291,9 @@ const mutations = {
   },
   SET_DIALOG_SHOW_NEW_SHEET(state, value) {
     state.dialogs.showNewSheet = value
+  },
+  SET_DIALOG_SHOW_EXPORT(state, value) {
+    state.dialogs.showExport = value
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showRemove = value

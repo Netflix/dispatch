@@ -13,7 +13,6 @@ from sqlalchemy import (
     String,
     Table,
     select,
-    join,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -314,4 +313,6 @@ class IncidentRead(IncidentBase):
 
 class IncidentPagination(DispatchBase):
     total: int
+    itemsPerPage: int
+    page: int
     items: List[IncidentRead] = []
