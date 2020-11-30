@@ -260,8 +260,10 @@ def daily_summary(db_session=None):
             )
             return
 
-        oncall_plugin = plugins.get(oncall_service.type)
-        oncall_email = oncall_plugin.get(service_id=INCIDENT_ONCALL_SERVICE_ID)
+        oncall_plugin = plugin_service.get_active(
+            db_session=db_session, plugin_type=oncall_service.type
+        )
+        oncall_email = oncall_plugin.instance.get(service_id=INCIDENT_ONCALL_SERVICE_ID)
 
         oncall_individual = individual_service.resolve_user_by_email(oncall_email, db_session)
 
