@@ -117,7 +117,9 @@ export default {
       selectedFields: [
         { text: "Name", value: "name", sortable: false },
         { text: "Title", value: "title", sortable: false },
-        { text: "Status", value: "status", sortable: false }
+        { text: "Status", value: "status", sortable: false },
+        { text: "Incident Type", value: "incident_type.name", sortable: false },
+        { text: "Incident Priority", value: "incident_priority.name", sortable: false }
       ],
       allFields: [
         { text: "Name", value: "name", sortable: false },
