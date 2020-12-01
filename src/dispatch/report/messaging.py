@@ -110,7 +110,7 @@ def send_incident_report_reminder(
     now = datetime.utcnow()
     last_reported_at = incident.last_tactical_report.created_at
 
-    if now - last_reported_at < timedelta(hour=1):
+    if now - last_reported_at < timedelta(hours=1):
         return
 
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
