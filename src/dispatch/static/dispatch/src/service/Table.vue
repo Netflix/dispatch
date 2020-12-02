@@ -71,6 +71,7 @@ export default {
     return {
       headers: [
         { text: "Name", value: "name", sortable: true },
+        { text: "Description", value: "description", sortable: false },
         { text: "Type", value: "type", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]

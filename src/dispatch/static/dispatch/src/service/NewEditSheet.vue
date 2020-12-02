@@ -67,7 +67,7 @@
                     :items="oncall_plugins"
                     label="Type"
                     :error-messages="errors"
-                    hint="Oncall plugin to use"
+                    hint="Oncall plugin to use."
                     :success="valid"
                   ></v-select>
                 </ValidationProvider>
@@ -80,7 +80,7 @@
                     label="External Id"
                     :error-messages="errors"
                     :success="valid"
-                    hint="An external identififer for service."
+                    hint="An external identifier for service."
                     clearable
                     required
                   />
