@@ -57,7 +57,6 @@
                   />
                 </ValidationProvider>
               </v-flex>
-              <!-- Disable type (default to pager duty) until we have a way to validate. -->
               <v-flex xs12>
                 <ValidationProvider name="Type" rules="required" immediate>
                   <v-select
