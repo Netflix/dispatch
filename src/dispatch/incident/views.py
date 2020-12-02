@@ -1,3 +1,4 @@
+from re import A
 from typing import List
 
 
@@ -25,6 +26,21 @@ from .service import create, delete, get, update
 
 
 router = APIRouter()
+
+
+def create_pydantic_include(include):
+    """Creates a pydantic sets based on dotted notation."""
+    include_sets = {}
+    for i in include:
+        keyset = None
+        for key in reversed(i.split(".")):
+            if keyset:
+                keyset = {key: keyset}
+            else:
+                keyset = {key: ...}
+        include_sets.update(keyset)
+
+    return include_sets
 
 
 @router.get("/", summary="Retrieve a list of all incidents.")
@@ -62,8 +78,11 @@ def get_incidents(
     )
 
     if include:
+        # only allow two levels for now
+        include_sets = create_pydantic_include(include)
+
         include_fields = {
-            "items": {"__all__": set(include)},
+            "items": {"__all__": include_sets},
             "itemsPerPage": ...,
             "page": ...,
             "total": ...,

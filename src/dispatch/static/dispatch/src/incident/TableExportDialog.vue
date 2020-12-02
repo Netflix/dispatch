@@ -208,29 +208,42 @@ export default {
       tableOptions["itemsPerPage"] = -1
       tableOptions["include"] = this.selectedFields.map(item => item.value)
       this.exportLoading = true
-      return IncidentApi.getAll(tableOptions).then(response => {
-        let items = response.data.items
+      return IncidentApi.getAll(tableOptions)
+        .then(response => {
+          let items = response.data.items
 
-        let csvContent = "data:text/csv;charset=utf-8,"
-        csvContent += [
-          Object.keys(items[0]).join(","),
-          ...items.map(item => Object.values(item).join(","))
-        ]
-          .join("\n")
-          .replace(/(^\[)|(\]$)/gm, "")
+          let csvContent = "data:text/csv;charset=utf-8,"
+          csvContent += [
+            Object.keys(items[0]).join(","),
+            ...items.map(item => {
+              return Object.values(item)
+                .map(value => {
+                  if (typeof value === "object") {
+                    return value[Object.keys(value)[0]]
+                  }
+                  return value
+                })
+                .join(",")
+            })
+          ]
+            .join("\n")
+            .replace(/(^\[)|(\]$)/gm, "")
 
-        const data = encodeURI(csvContent)
-        const link = document.createElement("a")
-        link.setAttribute("href", data)
-        link.setAttribute("download", "incidentExport.csv")
-        link.click()
-        this.exportLoading = false
-      })
+          const data = encodeURI(csvContent)
+          const link = document.createElement("a")
+          link.setAttribute("href", data)
+          link.setAttribute("download", "incidentExport.csv")
+          link.click()
+          this.exportLoading = false
+          this.closeExport()
+        })
+        .catch(() => {
+          this.exportLoading = false
+          this.closeExport()
+        })
     }
   },
   mounted() {
-    this.getPreviewData()
-
     this.$watch(
       vm => [
         vm.filters.incident_type,
