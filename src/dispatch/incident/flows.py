@@ -1076,12 +1076,18 @@ def incident_engage_oncall_flow(
     oncall_service = service_service.get_by_external_id(
         db_session=db_session, external_id=oncall_service_id
     )
-    oncall_plugin = plugin_service.get_active(
-        db_session=db_session, plugin_type=oncall_service.type
-    )
 
-    if not oncall_plugin:
-        log.warning("Unable to engage the oncall. Oncall plugin not enabled.")
+    # we get the active oncall plugin
+    oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
+
+    if oncall_plugin:
+        if oncall_plugin.slug != oncall_service.type:
+            log.warning(
+                f"Unable to engage the oncall. Oncall plugin enabled not of type {oncall_plugin.slug}."
+            )
+            return None, None
+    else:
+        log.warning("Unable to engage the oncall. No oncall plugins enabled.")
         return None, None
 
     oncall_email = oncall_plugin.instance.get(service_id=oncall_service_id)
