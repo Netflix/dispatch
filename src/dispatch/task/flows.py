@@ -95,7 +95,9 @@ def send_task_notification(
     )
 
 
-def create_or_update_task(db_session, incident, task: dict, notify: bool = False):
+def create_or_update_task(
+    db_session, incident, task: dict, notify: bool = False, sync_external: bool = True
+):
     """Creates a new task in the database or updates an existing one."""
     existing_task = task_service.get_by_resource_id(
         db_session=db_session, resource_id=task["resource_id"]
@@ -105,7 +107,10 @@ def create_or_update_task(db_session, incident, task: dict, notify: bool = False
         # save the status before we attempt to update the record
         existing_status = existing_task.status
         task = task_service.update(
-            db_session=db_session, task=existing_task, task_in=TaskUpdate(**task)
+            db_session=db_session,
+            task=existing_task,
+            task_in=TaskUpdate(**task),
+            sync_external=sync_external,
         )
 
         if notify:

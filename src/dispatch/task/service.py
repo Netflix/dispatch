@@ -131,7 +131,7 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
     return task
 
 
-def update(*, db_session, task: Task, task_in: TaskUpdate) -> Task:
+def update(*, db_session, task: Task, task_in: TaskUpdate, sync_external: bool = True) -> Task:
     """Update an existing task."""
     # ensure we add assignee as participant if they are not one already
     assignees = []
@@ -167,18 +167,19 @@ def update(*, db_session, task: Task, task_in: TaskUpdate) -> Task:
     drive_task_plugin = plugin_service.get_active(db_session=db_session, plugin_type="task")
 
     if drive_task_plugin:
-        try:
-            if task.incident.incident_document:
-                file_id = task.incident.incident_document.resource_id
-                drive_task_plugin.instance.update(
-                    file_id, task.external_task_id, resolved=task.status
-                )
-        except Exception:
-            if task.incident.incident_review_document:
-                file_id = task.incident.incident_review_document.resource_id
-                drive_task_plugin.instance.update(
-                    file_id, task.external_task_id, resolved=task.status
-                )
+        if sync_external:
+            try:
+                if task.incident.incident_document:
+                    file_id = task.incident.incident_document.resource_id
+                    drive_task_plugin.instance.update(
+                        file_id, task.resource_id, resolved=task.status
+                    )
+            except Exception:
+                if task.incident.incident_review_document:
+                    file_id = task.incident.incident_review_document.resource_id
+                    drive_task_plugin.instance.update(
+                        file_id, task.resource_id, resolved=task.status
+                    )
 
     db_session.add(task)
     db_session.commit()
