@@ -14,9 +14,9 @@
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No Terms matching "
+            No terms matching "
             <strong>{{ search }}</strong
-            >". Press <kbd>enter</kbd> to create a new one
+            >". Press <kbd>enter</kbd> to create a new one.
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
