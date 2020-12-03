@@ -17,7 +17,7 @@
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No Incidents matching "
+            No incidents matching "
             <strong>{{ search }}</strong
             >"
           </v-list-item-title>

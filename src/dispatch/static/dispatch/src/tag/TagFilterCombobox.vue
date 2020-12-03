@@ -16,12 +16,20 @@
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No Tags matching "
+            No tags matching "
             <strong>{{ search }}</strong
             >"
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
+    </template>
+    <template v-slot:item="data">
+      <template>
+        <v-list-item-content>
+          <v-list-item-title v-text="data.item.name"></v-list-item-title>
+          <v-list-item-subtitle v-text="data.item.tag_type.name"></v-list-item-subtitle>
+        </v-list-item-content>
+      </template>
     </template>
     <template v-slot:append-item>
       <v-list-item v-if="more" @click="loadMore()">
