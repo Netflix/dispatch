@@ -146,7 +146,7 @@ def handle_engage_oncall_action(
     if not oncall_service or not oncall_individual:
         message = "Could not engage oncall. Oncall service plugin not enabled."
     else:
-        message = f"You have successfully engaged {oncall_individual.name} from team {oncall_service.name}."
+        message = f"You have successfully engaged {oncall_individual.name} from oncall rotation {oncall_service.name}."
     dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
 
 
