@@ -1096,7 +1096,7 @@ def incident_engage_oncall_flow(
     incident_add_or_reactivate_participant_flow(oncall_email, incident.id, db_session=db_session)
 
     # we load the individual
-    individual = individual_service.get_by_email(db_session=db_session, email=user_email)
+    individual = individual_service.get_by_email(db_session=db_session, email=oncall_email)
 
     event_service.log(
         db_session=db_session,
