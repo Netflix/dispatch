@@ -215,6 +215,7 @@ def member_joined_channel(
             participant.added_by = added_by_participant
             participant.added_reason = event.event.text
 
+        db_session.add(participant)
         db_session.commit()
 
 
