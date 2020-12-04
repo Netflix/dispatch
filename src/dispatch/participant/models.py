@@ -21,7 +21,9 @@ class Participant(Base):
     team = Column(String)
     department = Column(String)
     added_by_id = Column(Integer, ForeignKey("participant.id"))
-    added_by = relationship("Participant", backref=backref("added_participant"), remote_side=[id])
+    added_by = relationship(
+        "Participant", backref=backref("added_participant"), remote_side=[id], post_update=True
+    )
     added_reason = Column(String)
     location = Column(String)
     after_hours_notification = Column(Boolean, default=False)
