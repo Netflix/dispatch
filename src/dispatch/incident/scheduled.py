@@ -256,15 +256,24 @@ def daily_summary(db_session=None):
 
         if not oncall_service:
             log.warning(
-                "Oncall service ID specified, but not found in the database. Did you create it?"
+                "INCIDENT_ONCALL_SERVICE_ID configured in the .env file, but not found in the database. Did you create the oncall service in the UI?"
             )
             return
 
-        oncall_plugin = plugin_service.get_active(
-            db_session=db_session, plugin_type=oncall_service.type
-        )
-        oncall_email = oncall_plugin.instance.get(service_id=INCIDENT_ONCALL_SERVICE_ID)
+        oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
+        if not oncall_plugin:
+            log.warning(
+                f"Unable to resolve the oncall, INCIDENT_ONCALL_SERVICE_ID configured, but associated plugin ({oncall_plugin.slug}) is not enabled."
+            )
+            return
 
+        if oncall_plugin.slug != oncall_service.type:
+            log.warning(
+                f"Unable to resolve the oncall. Oncall plugin enabled not of type {oncall_plugin.slug}."
+            )
+            return
+
+        oncall_email = oncall_plugin.instance.get(service_id=INCIDENT_ONCALL_SERVICE_ID)
         oncall_individual = individual_service.resolve_user_by_email(oncall_email, db_session)
 
         blocks.append(
