@@ -2,7 +2,7 @@
   <v-app>
     <v-content>
       <v-card flat>
-        <v-toolbar color="primary" extended flat height="150" />
+        <v-toolbar color="info" extended flat height="150" />
         <v-card class="mx-auto" max-width="1000" style="margin-top: -64px;">
           <v-card-text>
             <div>Dispatch</div>
@@ -20,9 +20,7 @@
                 <v-toolbar flat>
                   <v-toolbar-title>Active Security Incidents</v-toolbar-title>
                   <v-spacer></v-spacer>
-                  <v-btn color="primary" dark class="mb-2" to="/incidents/report"
-                    >Report an Incident</v-btn
-                  >
+                  <v-btn color="info" class="mb-2" to="/incidents/report">Report an Incident</v-btn>
                 </v-toolbar>
               </template>
               <template v-slot:item.commander="{ item }">

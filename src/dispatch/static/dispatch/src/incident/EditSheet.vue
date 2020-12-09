@@ -9,7 +9,7 @@
           </v-list-item-content>
           <v-btn
             icon
-            color="primary"
+            color="info"
             :loading="loading"
             :disabled="invalid || !validated"
             @click="save()"

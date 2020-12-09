@@ -4,7 +4,7 @@
     <delete-dialog />
     <div class="headline">Teams</div>
     <v-spacer />
-    <v-btn color="primary" dark class="mb-2" @click="createEditShow()">New</v-btn>
+    <v-btn color="info" class="mb-2" @click="createEditShow()">New</v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>

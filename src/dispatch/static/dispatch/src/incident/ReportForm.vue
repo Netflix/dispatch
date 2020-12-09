@@ -2,7 +2,7 @@
   <v-app>
     <v-content>
       <v-card flat>
-        <v-toolbar color="red darken-2" dark extended flat height="150" />
+        <v-toolbar color="red en-2" extended flat height="150" />
 
         <v-card class="mx-auto" max-width="600" style="margin-top: -64px;">
           <v-card-text v-if="id">
@@ -92,7 +92,7 @@
                   <v-list-item v-else>
                     <v-list-item-content>
                       <v-list-item-title>Creating incident ticket...</v-list-item-title>
-                      <v-progress-linear indeterminate color="primary"></v-progress-linear>
+                      <v-progress-linear indeterminate color="info"></v-progress-linear>
                     </v-list-item-content>
                   </v-list-item>
                   <v-divider />
@@ -112,7 +112,7 @@
                   <v-list-item v-else>
                     <v-list-item-content>
                       <v-list-item-title>Creating incident video conference...</v-list-item-title>
-                      <v-progress-linear indeterminate color="primary"></v-progress-linear>
+                      <v-progress-linear indeterminate color="info"></v-progress-linear>
                     </v-list-item-content>
                   </v-list-item>
                   <v-divider />
@@ -132,7 +132,7 @@
                   <v-list-item v-else>
                     <v-list-item-content>
                       <v-list-item-title>Creating incident conversation...</v-list-item-title>
-                      <v-progress-linear indeterminate color="primary"></v-progress-linear>
+                      <v-progress-linear indeterminate color="info"></v-progress-linear>
                     </v-list-item-content>
                   </v-list-item>
                   <v-divider />
@@ -152,7 +152,7 @@
                   <v-list-item v-else>
                     <v-list-item-content>
                       <v-list-item-title>Creating incident storage...</v-list-item-title>
-                      <v-progress-linear indeterminate color="primary"></v-progress-linear>
+                      <v-progress-linear indeterminate color="info"></v-progress-linear>
                     </v-list-item-content>
                   </v-list-item>
                   <v-divider />
@@ -178,7 +178,7 @@
                     <v-list-item>
                       <v-list-item-content>
                         <v-list-item-title>Creating incident documents... </v-list-item-title>
-                        <v-progress-linear indeterminate color="primary"></v-progress-linear>
+                        <v-progress-linear indeterminate color="info"></v-progress-linear>
                       </v-list-item-content>
                     </v-list-item>
                   </span>
@@ -199,7 +199,7 @@
             </v-list>
             <v-container grid-list-md>
               <v-flex xs12>
-                <v-btn color="primary" depressed @click="resetSelected()"
+                <v-btn color="info" depressed @click="resetSelected()"
                   >Report another incident</v-btn
                 >
               </v-flex>
@@ -259,14 +259,14 @@
                     </v-flex>
                   </v-layout>
                   <v-btn
-                    color="primary"
+                    color="info"
                     depressed
                     :loading="loading"
                     :disabled="invalid || !validated"
                     @click="report()"
                     >Submit
                     <template v-slot:loader>
-                      <v-progress-linear indeterminate color="white" dark></v-progress-linear>
+                      <v-progress-linear indeterminate color="white"></v-progress-linear>
                     </template>
                   </v-btn>
                 </v-container>

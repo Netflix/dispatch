@@ -2,6 +2,9 @@
   <v-card :loading="loading">
     <v-card-title>Common Tags</v-card-title>
     <apexchart type="donut" height="250" :options="chartOptions" :series="series"></apexchart>
+    <template slot="progress">
+      <v-progress-linear color="info" indeterminate></v-progress-linear>
+    </template>
   </v-card>
 </template>
 

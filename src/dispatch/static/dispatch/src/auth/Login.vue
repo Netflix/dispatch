@@ -48,13 +48,13 @@
           </v-list-item-content>
           <v-row align="center" justify="end">
             <v-btn
-              color="primary"
+              color="info"
               :loading="loading"
               :disabled="invalid || !validated"
               @click="basicLogin({ email: email, password: password })"
               >Login
               <template v-slot:loader>
-                <v-progress-linear indeterminate color="white" dark></v-progress-linear>
+                <v-progress-linear indeterminate color="white"></v-progress-linear>
               </template>
             </v-btn>
           </v-row>

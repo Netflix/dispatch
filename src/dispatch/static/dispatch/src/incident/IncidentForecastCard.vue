@@ -2,6 +2,9 @@
   <v-card :loading="loading">
     <v-card-title>Forecast</v-card-title>
     <apexchart type="line" height="250" :options="chartOptions" :series="series"></apexchart>
+    <template slot="progress">
+      <v-progress-linear color="info" indeterminate></v-progress-linear>
+    </template>
   </v-card>
 </template>
 

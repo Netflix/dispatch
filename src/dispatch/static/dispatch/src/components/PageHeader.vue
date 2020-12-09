@@ -1,8 +1,12 @@
 <template>
   <v-layout class="align-center layout px-4 pt-4 app--page-header">
-    <v-breadcrumbs divider=">" :items="breadcrumbs">
+    <!--<v-breadcrumbs divider=">" :items="breadcrumbs">
       <template v-slot:item="props">
-        <router-link :to="props.item.href" :class="[props.item.disabled && 'disabled']">
+        <router-link
+          style="text-decoration: none; color: inherit;"
+          :to="props.item.href"
+          :class="[props.item.disabled && 'disabled']"
+        >
           {{ props.item.text }}
         </router-link>
       </template>
@@ -14,7 +18,7 @@
           refresh
         </v-icon>
       </v-btn>
-    </div>
+    </div>-->
   </v-layout>
 </template>
 

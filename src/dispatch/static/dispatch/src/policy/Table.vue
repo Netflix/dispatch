@@ -6,7 +6,7 @@
       Policies
     </div>
     <v-spacer />
-    <v-btn color="primary" dark class="mb-2" @click="createPolicy()">
+    <v-btn color="info" class="mb-2" @click="createPolicy()">
       New
     </v-btn>
     <v-flex xs12>

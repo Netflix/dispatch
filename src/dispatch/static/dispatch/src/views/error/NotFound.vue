@@ -8,7 +8,7 @@
             Sorry, page not found
           </h2>
           <div>
-            <v-btn color="primary" @click="goHome">
+            <v-btn color="info" @click="goHome">
               Go Home
             </v-btn>
           </div>

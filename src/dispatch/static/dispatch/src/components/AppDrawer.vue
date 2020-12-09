@@ -1,13 +1,7 @@
 <template>
-  <v-navigation-drawer app :value="toggleDrawer" clipped>
+  <v-navigation-drawer app :value="toggleDrawer" permanent clipped>
     <vue-perfect-scrollbar class="drawer-menu--scroll" :settings="scrollSettings">
       <v-list shaped>
-        <v-list-item class="px-2">
-          <v-btn color="error" rounded to="/incidents/report">
-            <v-icon left>error_outline</v-icon>
-            Report Incident
-          </v-btn>
-        </v-list-item>
         <v-list-group
           v-for="item in items"
           :key="item.title"
@@ -29,6 +23,14 @@
         </v-list-group>
       </v-list>
     </vue-perfect-scrollbar>
+    <template v-slot:append>
+      <div class="pa-3">
+        <v-btn color="error" block to="/incidents/report">
+          <v-icon left>error_outline</v-icon>
+          Report Incident
+        </v-btn>
+      </div>
+    </template>
   </v-navigation-drawer>
 </template>
 <script>

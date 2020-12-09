@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="showExport" persistent max-width="800px">
     <template v-slot:activator="{ on }">
-      <v-btn color="secondary" class="ml-2" dark v-on="on">Export</v-btn>
+      <v-btn color="secondary" class="ml-2" v-on="on">Export</v-btn>
     </template>
     <v-card>
       <v-card-title>
@@ -49,7 +49,7 @@
                 </v-list-item-content>
               </v-list-item>
             </v-list>
-            <v-btn color="primary" @click="e1 = 2">
+            <v-btn color="info" @click="e1 = 2">
               Continue
             </v-btn>
 
@@ -67,7 +67,7 @@
               chips
               return-object
             ></v-autocomplete>
-            <v-btn color="primary" @click="e1 = 3">
+            <v-btn color="info" @click="e1 = 3">
               Continue
             </v-btn>
 
@@ -84,8 +84,14 @@
               :loading="previewRowsLoading"
             >
             </v-data-table>
-            <v-badge :value="previewRows.total" overlap bordered :content="previewRows.total">
-              <v-btn color="primary" @click="exportToCSV()" :loading="exportLoading">
+            <v-badge
+              :value="previewRows.total"
+              overlap
+              color="info"
+              bordered
+              :content="previewRows.total"
+            >
+              <v-btn color="info" @click="exportToCSV()" :loading="exportLoading">
                 Export
               </v-btn>
             </v-badge>

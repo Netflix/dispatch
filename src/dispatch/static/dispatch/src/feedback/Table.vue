@@ -5,7 +5,7 @@
     <div class="headline">Feedback</div>
     <v-spacer />
     <table-filter-dialog />
-    <!-- <v&#45;btn color="primary" dark class="ml&#45;2" @click="createEditShow()">New</v&#45;btn> -->
+    <!-- <v&#45;btn color="info"  class="ml&#45;2" @click="createEditShow()">New</v&#45;btn> -->
     <v-flex xs12>
       <v-layout column>
         <v-flex>

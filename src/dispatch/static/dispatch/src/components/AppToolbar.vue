@@ -1,12 +1,12 @@
 <template>
-  <v-app-bar clipped-left clipped-right app color="primary" dark>
-    <v-app-bar-nav-icon @click="handleDrawerToggle" />
-    <span class="title ml-3 mr-5">Dispatch</span>
+  <v-app-bar clipped-left clipped-right app color="primary">
+    <!--<v-app-bar-nav-icon @click="handleDrawerToggle" />-->
+    <span class="button font-weight-bold">DISPATCH</span>
     <v-text-field
       v-model="queryString"
       flat
       hide-details
-      solo-inverted
+      solo
       prepend-inner-icon="search"
       label="Search"
       clearable
@@ -32,7 +32,7 @@
                 :src="userInfo().thumbnailPhotoUrl"
                 :alt="userInfo().fullName"
               />
-              <v-icon v-else dark>account_circle</v-icon>
+              <v-icon v-else>account_circle</v-icon>
             </v-avatar>
           </v-btn>
         </template>
@@ -60,9 +60,6 @@ export default {
   name: "AppToolbar",
   components: {},
   computed: {
-    toolbarColor() {
-      return this.$vuetify.options.extra.mainNav
-    },
     queryString: {
       set(query) {
         this.$store.dispatch("search/setQuery", query)

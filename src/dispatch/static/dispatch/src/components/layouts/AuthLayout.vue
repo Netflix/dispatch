@@ -3,7 +3,7 @@
     <snackbar />
     <v-content>
       <v-card flat>
-        <v-toolbar color="primary" extended flat height="150" />
+        <v-toolbar color="info" extended flat height="150" />
         <router-view :key="$route.path" />
       </v-card>
     </v-content>
