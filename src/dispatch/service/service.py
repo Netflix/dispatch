@@ -2,8 +2,10 @@ from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 
+from dispatch.exceptions import InvalidConfiguration
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
+from dispatch.plugin import service as plugin_service
 from dispatch.term import service as term_service
 
 from .models import Service, ServiceCreate, ServiceUpdate
@@ -79,6 +81,13 @@ def update(*, db_session, service: Service, service_in: ServiceUpdate) -> Servic
     update_data = service_in.dict(
         skip_defaults=True, exclude={"terms", "incident_priorities", "incident_types"}
     )
+
+    if service_in.is_active:  # user wants to enable the service
+        oncall_plugin = plugin_service.get_by_slug(db_session=db_session, slug=service_in.type)
+        if not oncall_plugin.enabled:
+            raise InvalidConfiguration(
+                f"Cannot enable service: {service.name}. Its associated plugin {oncall_plugin.title} is not enabled."
+            )
 
     for field in service_data:
         if field in update_data:

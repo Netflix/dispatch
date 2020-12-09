@@ -4,9 +4,11 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from dispatch.database import get_db, search_filter_sort_paginate
+from dispatch.exceptions import InvalidConfiguration
 
 from .models import ServiceCreate, ServicePagination, ServiceRead, ServiceUpdate
 from .service import create, delete, get, get_by_external_id, update
+
 
 router = APIRouter()
 
@@ -77,7 +79,12 @@ def update_service(
     service = get(db_session=db_session, service_id=service_id)
     if not service:
         raise HTTPException(status_code=404, detail="The service with this id does not exist.")
-    service = update(db_session=db_session, service=service, service_in=service_in)
+
+    try:
+        service = update(db_session=db_session, service=service, service_in=service_in)
+    except InvalidConfiguration as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
     return service
 
 

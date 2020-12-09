@@ -49,14 +49,14 @@ def get_enabled_by_type(*, db_session, plugin_type: str) -> List[Optional[Plugin
     )
 
 
-def get_all(*, db_session) -> List[Optional[Plugin]]:
-    """Returns all plugins."""
-    return db_session.query(Plugin)
-
-
 def get_by_slug(*, db_session, slug: str) -> Plugin:
     """Fetches a plugin by slug."""
     return db_session.query(Plugin).filter(Plugin.slug == slug).one_or_none()
+
+
+def get_all(*, db_session) -> List[Optional[Plugin]]:
+    """Returns all plugins."""
+    return db_session.query(Plugin)
 
 
 def create(*, db_session, plugin_in: PluginCreate) -> Plugin:
