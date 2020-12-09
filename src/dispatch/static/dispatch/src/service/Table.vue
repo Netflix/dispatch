@@ -30,6 +30,9 @@
               :loading="loading"
               loading-text="Loading... Please wait"
             >
+              <template v-slot:item.is_active="{ item }">
+                <v-simple-checkbox v-model="item.is_active" disabled></v-simple-checkbox>
+              </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
                   <template v-slot:activator="{ on }">
@@ -73,6 +76,8 @@ export default {
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
         { text: "Type", value: "type", sortable: true },
+        { text: "External Id", value: "external_id", sortable: true },
+        { text: "Enabled", value: "is_active", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
     }
