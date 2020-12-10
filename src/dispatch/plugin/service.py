@@ -3,6 +3,9 @@ from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 
 from dispatch.exceptions import InvalidConfiguration
+from dispatch.plugins.bases import OncallPlugin
+from dispatch.service import service as service_service
+
 from .models import Plugin, PluginCreate, PluginUpdate
 
 
@@ -46,14 +49,14 @@ def get_enabled_by_type(*, db_session, plugin_type: str) -> List[Optional[Plugin
     )
 
 
+def get_by_slug(*, db_session, slug: str) -> Plugin:
+    """Fetches a plugin by slug."""
+    return db_session.query(Plugin).filter(Plugin.slug == slug).one_or_none()
+
+
 def get_all(*, db_session) -> List[Optional[Plugin]]:
     """Returns all plugins."""
     return db_session.query(Plugin)
-
-
-def get_by_slug(*, db_session, slug: str) -> Plugin:
-    """Fetches a given plugin or creates a new one."""
-    return db_session.query(Plugin).filter(Plugin.slug == slug).one_or_none()
 
 
 def create(*, db_session, plugin_in: PluginCreate) -> Plugin:
@@ -83,6 +86,15 @@ def update(*, db_session, plugin: Plugin, plugin_in: PluginUpdate) -> Plugin:
             if len(enabled_plugins) == 1:
                 raise InvalidConfiguration(
                     f"Cannot disable plugin: {plugin.title}. It is required and no other plugins of type {plugin.type} are enabled."
+                )
+
+        if plugin.type == OncallPlugin.type:
+            oncall_services = service_service.get_all_by_type_and_status(
+                db_session=db_session, service_type=plugin.slug, is_active=True
+            )
+            if oncall_services:
+                raise InvalidConfiguration(
+                    f"Cannot disable plugin: {plugin.title}. One or more oncall services depend on it. "
                 )
 
     for field in plugin_data:
