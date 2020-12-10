@@ -36,7 +36,7 @@ const actions = {
   toggleDrawer({ commit }, value) {
     commit("TOGGLE_DRAWER", value)
   },
-  closeSnackBar({ commit }) {
+  closeSnackbar({ commit }) {
     commit("RESET_SNACKBAR")
   },
   performRefresh({ commit }) {
