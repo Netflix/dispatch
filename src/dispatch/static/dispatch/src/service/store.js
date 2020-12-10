@@ -90,7 +90,8 @@ const actions = {
             "app/SET_SNACKBAR",
             {
               text: "Service not created. Reason: " + err.response.data.detail,
-              color: "red"
+              color: "red",
+              timeout: 0
             },
             { root: true }
           )
@@ -107,7 +108,8 @@ const actions = {
             "app/SET_SNACKBAR",
             {
               text: "Service not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              color: "red",
+              timeout: 0
             },
             { root: true }
           )
@@ -126,7 +128,8 @@ const actions = {
           "app/SET_SNACKBAR",
           {
             text: "Service not deleted. Reason: " + err.response.data.detail,
-            color: "red"
+            color: "red",
+            timeout: 0
           },
           { root: true }
         )

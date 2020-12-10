@@ -83,7 +83,8 @@ const actions = {
             "app/SET_SNACKBAR",
             {
               text: "Plugin not created. Reason: " + err.response.data.detail,
-              color: "red"
+              color: "red",
+              timeout: 0
             },
             { root: true }
           )
@@ -100,7 +101,8 @@ const actions = {
             "app/SET_SNACKBAR",
             {
               text: "Plugin not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              color: "red",
+              timeout: 0
             },
             { root: true }
           )
@@ -119,7 +121,8 @@ const actions = {
           "app/SET_SNACKBAR",
           {
             text: "Plugin not deleted. Reason: " + err.response.data.detail,
-            color: "red"
+            color: "red",
+            timeout: 0
           },
           { root: true }
         )
