@@ -40,7 +40,7 @@
                 <incident-priority :priority="item.incident_priority.name" />
               </template>
               <template v-slot:item.status="{ item }">
-                <incident-status :status="item.status" />
+                <incident-status :status="item.status" :id="item.id" />
               </template>
               <template v-slot:item.cost="{ item }">{{ item.cost | toUSD }}</template>
               <template v-slot:item.commander="{ item }">

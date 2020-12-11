@@ -1,52 +1,49 @@
 <template>
   <v-card class="mx-auto" outlined :loading="loading" elevation="0">
     <v-subheader class="title">Search results for: "{{ query }}"</v-subheader>
-    <v-list v-if="!results.length">
-      <v-list-item no-action>
-        <v-list-item-content>
-          <v-list-item-title class="title"
-            >Sorry, we didn't find anything matching your query.</v-list-item-title
-          >
-        </v-list-item-content>
-      </v-list-item>
-    </v-list>
-    <div v-else>
-      <incident-list :items="incidents" />
-      <task-list :items="tasks" />
+    <v-expansion-panels flat>
+      <v-expansion-panel>
+        <v-expansion-panel-header>Incidents ({{ incidents.length }})</v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <incident-summary-table :items="incidents" />
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+    </v-expansion-panels>
+    <!--=<task-list :items="tasks" />
       <term-list :items="terms" />
       <definition-list :items="definitions" />
       <tag-list :items="tags" />
       <individual-list :items="individuals" />
       <team-list :items="teams" />
       <service-list :items="services" />
-    </div>
+      <document-list :items="documents" />-->
   </v-card>
 </template>
 
 <script>
 import { mapState } from "vuex"
-import IncidentList from "@/incident/List.vue"
-import ServiceList from "@/service/List.vue"
+import IncidentSummaryTable from "@/incident/IncidentSummaryTable.vue"
+/*import ServiceList from "@/service/List.vue"
 import IndividualList from "@/individual/List.vue"
 import TeamList from "@/team/List.vue"
 import DefinitionList from "@/definition/List.vue"
 import TermList from "@/term/List.vue"
 import TagList from "@/tag/List.vue"
 import TaskList from "@/task/List.vue"
-import DocumentList from "@/document/List.vue"
+import DocumentList from "@/document/List.vue"*/
 
 export default {
   name: "SearchResultList",
   components: {
-    IncidentList,
-    ServiceList,
+    IncidentSummaryTable
+    /*ServiceList,
     IndividualList,
     DefinitionList,
     TermList,
     TeamList,
     TagList,
     TaskList,
-    DocumentList
+    DocumentList*/
   },
   data() {
     return {}
@@ -56,47 +53,74 @@ export default {
     ...mapState("search", ["results", "query", "loading"]),
     definitions() {
       return this.results.filter(item => {
-        return item.type.toLowerCase().includes("definition")
+        return item.type
+          .toLowerCase()
+          .includes("definition")
+          .map(x => x.content)
       })
     },
     services() {
       return this.results.filter(item => {
-        return item.type.toLowerCase().includes("service")
+        return item.type
+          .toLowerCase()
+          .includes("service")
+          .map(x => x.content)
       })
     },
     individuals() {
       return this.results.filter(item => {
-        return item.type.toLowerCase().includes("individual_contact")
+        return item.type
+          .toLowerCase()
+          .includes("individual_contact")
+          .map(x => x.content)
       })
     },
     teams() {
       return this.results.filter(item => {
-        return item.type.toLowerCase().includes("team")
+        return item.type
+          .toLowerCase()
+          .includes("team")
+          .map(x => x.content)
       })
     },
     terms() {
       return this.results.filter(item => {
-        return item.type.toLowerCase().includes("term")
+        return item.type
+          .toLowerCase()
+          .includes("term")
+          .map(x => x.content)
       })
     },
     tags() {
       return this.results.filter(item => {
-        return item.type.toLowerCase().includes("tag")
+        return item.type
+          .toLowerCase()
+          .includes("tag")
+          .map(x => x.content)
       })
     },
     tasks() {
       return this.results.filter(item => {
-        return item.type.toLowerCase().includes("task")
+        return item.type
+          .toLowerCase()
+          .includes("task")
+          .map(x => x.content)
       })
     },
     incidents() {
       return this.results.filter(item => {
-        return item.type.toLowerCase().includes("incident")
+        return item.type
+          .toLowerCase()
+          .includes("incident")
+          .map(x => x.content)
       })
     },
     documents() {
       return this.results.filter(item => {
-        return item.type.toLowerCase().inclues("documents")
+        return item.type
+          .toLowerCase()
+          .inclues("documents")
+          .map(x => x.content)
       })
     }
   },

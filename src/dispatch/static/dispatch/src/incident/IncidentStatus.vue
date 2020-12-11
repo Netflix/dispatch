@@ -1,14 +1,34 @@
 <template>
   <div class="pl-5">
     <div v-if="status == 'Active'">
-      <v-badge bordered color="error" dot left offset-x="-10" offset-y="12">
-        {{ status }}
-      </v-badge>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-badge bordered color="error" slot="activator" dot left offset-x="-10" offset-y="12">
+            {{ status }}
+            <v-btn icon x-small v-bind="attrs" v-on="on" @click="joinIncident(id)">
+              <v-icon>
+                person_addded
+              </v-icon>
+            </v-btn>
+          </v-badge>
+        </template>
+        <span>Join Incident</span>
+      </v-tooltip>
     </div>
     <div v-if="status == 'Stable'">
-      <v-badge bordered color="warning" dot left offset-x="-10" offset-y="12">
-        {{ status }}
-      </v-badge>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-badge bordered color="warning" slot="activator" dot left offset-x="-10" offset-y="12">
+            {{ status }}
+            <v-btn icon x-small v-bind="attrs" v-on="on" @click="joinIncident(id)">
+              <v-icon>
+                person_addded
+              </v-icon>
+            </v-btn>
+          </v-badge>
+        </template>
+        <span>Join Incident</span>
+      </v-tooltip>
     </div>
     <div v-if="status == 'Closed'">
       <v-badge bordered color="success" dot left offset-x="-10" offset-y="12">
@@ -19,6 +39,8 @@
 </template>
 
 <script>
+import { mapActions } from "vuex"
+
 export default {
   name: "IncidentStatus",
 
@@ -26,7 +48,15 @@ export default {
     status: {
       type: String,
       required: true
+    },
+    id: {
+      type: Number,
+      required: true
     }
+  },
+
+  methods: {
+    ...mapActions("incident", ["joinIncident"])
   }
 }
 </script>
