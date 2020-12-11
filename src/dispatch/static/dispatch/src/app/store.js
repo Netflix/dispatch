@@ -65,7 +65,7 @@ const mutations = {
     state.loading = value
   },
   RESET_SNACKBAR(state) {
-    state.snackbar = Object.assign({}, getDefaultSnackbarState())
+    state.snackbar = getDefaultSnackbarState()
   },
   RESET_REFRESH(state) {
     state.refresh = Object.assign(state.refresh, getDefaulRefreshState())
