@@ -9,7 +9,7 @@
     <v-flex xs12>
       <v-layout column>
         <v-flex>
-          <v-card>
+          <v-card elevation="0">
             <v-card-title>
               <v-text-field
                 v-model="q"
@@ -18,7 +18,7 @@
                 single-line
                 hide-details
                 clearable
-                :loading="loading"
+                color="error"
               />
             </v-card-title>
             <v-data-table
@@ -27,11 +27,16 @@
               :server-items-length="total"
               :page.sync="page"
               :items-per-page.sync="itemsPerPage"
+              :loading="loading"
+              loading-text="Loading... Please wait"
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
             >
               <template v-slot:item.plugin="{ item }">
                 {{ item.plugin.title }}
+              </template>
+              <template v-slot:item.enabled="{ item }">
+                <v-simple-checkbox v-model="item.enabled" disabled></v-simple-checkbox>
               </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
@@ -42,7 +47,7 @@
                   </template>
                   <v-list>
                     <v-list-item @click="createEditShow(item)">
-                      <v-list-item-title>Edit</v-list-item-title>
+                      <v-list-item-title>Edit / View</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>

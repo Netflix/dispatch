@@ -8,7 +8,7 @@
     :label="label"
     multiple
     chips
-    :loading="loading"
+    :loading="error"
     @update:search-input="getFilteredData({ q: $event })"
   >
     <template v-slot:no-data>
@@ -78,7 +78,7 @@ export default {
   methods: {
     fetchData(filterOptions) {
       this.error = null
-      this.loading = true
+      this.loading = "error"
       TagApi.getAll(filterOptions).then(response => {
         this.items = response.data.items
         this.loading = false

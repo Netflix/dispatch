@@ -1,16 +1,16 @@
 <template>
-  <v-app-bar clipped-left clipped-right app color="primary">
+  <v-app-bar clipped-left clipped-right app flat class="v-bar--underline" color="primary">
     <!--<v-app-bar-nav-icon @click="handleDrawerToggle" />-->
-    <span class="button font-weight-bold">DISPATCH</span>
+    <span class="button font-weight-bold">D I S P A T C H</span>
+    <v-spacer />
     <v-text-field
       v-model="queryString"
-      flat
       hide-details
-      solo
       prepend-inner-icon="search"
       label="Search"
       clearable
-      class="search"
+      solo-inverted
+      flat
       @keyup.enter="performSearch()"
     />
     <v-spacer />

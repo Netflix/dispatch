@@ -12,7 +12,7 @@
     <v-flex xs12>
       <v-layout column>
         <v-flex>
-          <v-card>
+          <v-card elevation="0">
             <v-card-title>
               <v-text-field
                 v-model="q"
@@ -21,6 +21,7 @@
                 single-line
                 hide-details
                 clearable
+                color="error"
               />
             </v-card-title>
             <v-data-table
@@ -91,7 +92,7 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
-      "table.options.loading",
+      "table.loading",
       "table.rows.items",
       "table.rows.total"
     ])

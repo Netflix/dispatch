@@ -9,7 +9,7 @@
     <v-flex xs12>
       <v-layout column>
         <v-flex>
-          <v-card>
+          <v-card elevation="0">
             <v-card-title>
               <v-text-field
                 v-model="q"
@@ -18,7 +18,7 @@
                 single-line
                 hide-details
                 clearable
-                :loading="loading"
+                color="error"
               />
             </v-card-title>
             <v-data-table
@@ -29,20 +29,14 @@
               :items-per-page.sync="itemsPerPage"
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
+              :loading="loading"
+              loading-text="Loading... Please wait"
             >
+              <template slot="progress">
+                <v-progress-linear color="error" indeterminate></v-progress-linear>
+              </template>
               <template v-slot:item.participant="{ item }">
-                <v-chip
-                  v-if="item.participant"
-                  class="ma-2"
-                  pill
-                  small
-                  :href="item.participant.individual.weblink"
-                >
-                  {{ item.participant.individual.name }}
-                </v-chip>
-                <v-chip v-else class="ma-2" pill small>
-                  Anonymous
-                </v-chip>
+                <participant :participant="item.participant" />
               </template>
               <template v-slot:item.created_at="{ item }">{{
                 item.created_at | formatDate
@@ -78,12 +72,14 @@ import { mapActions } from "vuex"
 import DeleteDialog from "@/feedback/DeleteDialog.vue"
 // import NewEditSheet from "@/feedback/NewEditSheet.vue"
 import TableFilterDialog from "@/feedback/TableFilterDialog.vue"
+import Participant from "@/incident/Participant.vue"
 export default {
   name: "FeedbackTable",
 
   components: {
     TableFilterDialog,
-    DeleteDialog
+    DeleteDialog,
+    Participant
     // NewEditSheet
   },
   data() {

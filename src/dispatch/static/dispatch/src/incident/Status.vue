@@ -2,10 +2,10 @@
   <v-app>
     <v-content>
       <v-card flat>
-        <v-toolbar color="info" extended flat height="150" />
+        <v-toolbar color="gray8" extended flat height="150" />
         <v-card class="mx-auto" max-width="1000" style="margin-top: -64px;">
           <v-card-text>
-            <div>Dispatch</div>
+            <div>D I S P A T C H</div>
             <v-data-table
               :headers="headers"
               :items="items"
@@ -18,16 +18,24 @@
             >
               <template v-slot:top>
                 <v-toolbar flat>
-                  <v-toolbar-title>Active Security Incidents</v-toolbar-title>
+                  <v-toolbar-title>Active Incidents</v-toolbar-title>
                   <v-spacer></v-spacer>
-                  <v-btn color="info" class="mb-2" to="/incidents/report">Report an Incident</v-btn>
+                  <div class="mb-2">
+                    <v-btn color="error" block to="/incidents/report">
+                      <v-icon left>error_outline</v-icon>
+                      Report Incident
+                    </v-btn>
+                  </div>
                 </v-toolbar>
               </template>
               <template v-slot:item.commander="{ item }">
-                <a :href="item.commander.weblink" target="_blank" style="text-decoration: none;">
-                  {{ item.commander.name }}
-                  <v-icon small>open_in_new</v-icon>
-                </a>
+                <individual :individual="item.commander" />
+              </template>
+              <template v-slot:item.incident_priority.name="{ item }">
+                <incident-priority :priority="item.incident_priority.name" />
+              </template>
+              <template v-slot:item.status="{ item }">
+                <incident-status :status="item.status" />
               </template>
               <template v-slot:item.id="{ item }">
                 <v-btn x-small @click="joinIncident(item.id)">Join Incident</v-btn>
@@ -89,21 +97,24 @@
         </v-card>
       </v-card>
     </v-content>
-    <!-- App Footer -->
-    <v-footer height="auto" class="pa-3 app--footer">
-      <span class="caption">Netflix Security &copy; {{ new Date().getFullYear() }}</span>
-      <v-spacer />
-      <span class="caption mr-1">Be Secure</span>
-      <v-icon color="pink" small>favorite</v-icon>
-    </v-footer>
   </v-app>
 </template>
 
 <script>
 import { mapActions } from "vuex"
 import IncidentApi from "@/incident/api"
+import IncidentStatus from "@/incident/IncidentStatus.vue"
+import IncidentPriority from "@/incident/IncidentPriority.vue"
+import Individual from "@/individual/Individual.vue"
+
 export default {
   name: "IncidentStatus",
+
+  components: {
+    IncidentStatus,
+    IncidentPriority,
+    Individual
+  },
 
   data() {
     return {
@@ -112,7 +123,7 @@ export default {
       singleExpand: true,
       items: [],
       headers: [
-        { text: "Id", value: "name", sortable: false },
+        { text: "Name", value: "name", sortable: false },
         { text: "Title", value: "title", sortable: false },
         { text: "Priority", value: "incident_priority.name", sortable: false },
         { text: "Type", value: "incident_type.name", sortable: false },
@@ -129,7 +140,7 @@ export default {
 
   methods: {
     getActive() {
-      this.loading = true
+      this.loading = "error"
       IncidentApi.getAll({ fields: ["status"], ops: ["=="], values: ["Active"] }).then(response => {
         this.items = response.data.items
         this.loading = false

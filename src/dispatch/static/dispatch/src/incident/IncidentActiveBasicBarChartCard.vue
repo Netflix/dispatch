@@ -1,11 +1,11 @@
 <template>
-  <v-card :loading="loading">
-    <v-card-title>Hours Active</v-card-title>
-    <apexchart type="bar" height="250" :options="chartOptions" :series="series"></apexchart>
-    <template slot="progress">
-      <v-progress-linear color="info" indeterminate></v-progress-linear>
-    </template>
-  </v-card>
+  <dashboard-card
+    :loading="loading"
+    type="bar"
+    :options="chartOptions"
+    :series="series"
+    title="Hours Active"
+  />
 </template>
 
 <script>
@@ -13,7 +13,6 @@ import { forEach, map } from "lodash"
 import differenceInHours from "date-fns/differenceInHours"
 import parseISO from "date-fns/parseISO"
 
-import VueApexCharts from "vue-apexcharts"
 export default {
   name: "IncidentCostBasicBarChartCard",
 
@@ -25,15 +24,11 @@ export default {
       }
     },
     loading: {
-      type: Boolean,
+      type: [String, Boolean],
       default: function() {
         return false
       }
     }
-  },
-
-  components: {
-    apexchart: VueApexCharts
   },
 
   data() {

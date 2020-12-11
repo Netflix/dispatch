@@ -1,12 +1,12 @@
 <template>
-  <v-navigation-drawer app :value="toggleDrawer" permanent clipped>
+  <v-navigation-drawer app :value="toggleDrawer" permanent clipped class="gray9">
     <vue-perfect-scrollbar class="drawer-menu--scroll" :settings="scrollSettings">
-      <v-list shaped>
+      <v-list nav>
         <v-list-group
           v-for="item in items"
           :key="item.title"
           v-model="item.active"
-          :prepend-icon="item.action"
+          color="error"
           no-action
         >
           <template v-slot:activator>
@@ -15,7 +15,13 @@
             </v-list-item-content>
           </template>
 
-          <v-list-item v-for="child in item.items" :key="child.title" :to="child.route" exact>
+          <v-list-item
+            v-for="child in item.items"
+            :key="child.title"
+            :to="child.route"
+            exact
+            color="error"
+          >
             <v-list-item-content>
               <v-list-item-title v-text="child.title"></v-list-item-title>
             </v-list-item-content>
@@ -83,6 +89,7 @@ export default {
       {
         action: "book",
         items: [
+          { title: "Tags", route: "/knowledge/tags" },
           { title: "Documents", route: "/knowledge/documents" },
           { title: "Terms", route: "/knowledge/terms" },
           { title: "Definitions", route: "/knowledge/definitions" }

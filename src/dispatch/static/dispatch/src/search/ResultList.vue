@@ -1,6 +1,6 @@
 <template>
-  <v-card class="mx-auto">
-    <v-subheader>Search results for: "{{ query }}"</v-subheader>
+  <v-card class="mx-auto" outlined :loading="loading" elevation="0">
+    <v-subheader class="title">Search results for: "{{ query }}"</v-subheader>
     <v-list v-if="!results.length">
       <v-list-item no-action>
         <v-list-item-content>
@@ -33,6 +33,8 @@ import DefinitionList from "@/definition/List.vue"
 import TermList from "@/term/List.vue"
 import TagList from "@/tag/List.vue"
 import TaskList from "@/task/List.vue"
+import DocumentList from "@/document/List.vue"
+
 export default {
   name: "SearchResultList",
   components: {
@@ -43,14 +45,15 @@ export default {
     TermList,
     TeamList,
     TagList,
-    TaskList
+    TaskList,
+    DocumentList
   },
   data() {
     return {}
   },
 
   computed: {
-    ...mapState("search", ["results", "query"]),
+    ...mapState("search", ["results", "query", "loading"]),
     definitions() {
       return this.results.filter(item => {
         return item.type.toLowerCase().includes("definition")
@@ -89,6 +92,11 @@ export default {
     incidents() {
       return this.results.filter(item => {
         return item.type.toLowerCase().includes("incident")
+      })
+    },
+    documents() {
+      return this.results.filter(item => {
+        return item.type.toLowerCase().inclues("documents")
       })
     }
   },

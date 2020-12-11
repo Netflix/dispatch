@@ -1,17 +1,17 @@
 <template>
-  <v-card :loading="loading">
-    <v-card-title>Types</v-card-title>
-    <apexchart type="bar" height="250" :options="chartOptions" :series="series"></apexchart>
-    <template slot="progress">
-      <v-progress-linear color="red" indeterminate></v-progress-linear>
-    </template>
-  </v-card>
+  <dashboard-card
+    :loading="loading"
+    type="bar"
+    :options="chartOptions"
+    :series="series"
+    title="Types"
+  />
 </template>
 
 <script>
 import { countBy } from "lodash"
 
-import VueApexCharts from "vue-apexcharts"
+import DashboardCard from "@/dashboard/DashboardCard.vue"
 export default {
   name: "IncidentTypeBasicBarChartCard",
 
@@ -31,7 +31,7 @@ export default {
   },
 
   components: {
-    apexchart: VueApexCharts
+    DashboardCard
   },
 
   data() {

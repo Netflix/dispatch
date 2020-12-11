@@ -1,18 +1,18 @@
 <template>
-  <v-card :loading="loading">
-    <v-card-title>Types</v-card-title>
-    <apexchart type="bar" height="250" :options="chartOptions" :series="series"></apexchart>
-    <template slot="progress">
-      <v-progress-linear color="info" indeterminate></v-progress-linear>
-    </template>
-  </v-card>
+  <dashboard-card
+    :loading="loading"
+    type="bar"
+    :options="chartOptions"
+    :series="series"
+    title="Types"
+  />
 </template>
 
 <script>
 import { countBy, isArray, mergeWith, forEach, map, find, filter } from "lodash"
 
-import VueApexCharts from "vue-apexcharts"
 import IncidentTypeApi from "@/incident_type/api"
+import DashboardCard from "@/dashboard/DashboardCard.vue"
 export default {
   name: "IncidentBarChartCard",
 
@@ -24,7 +24,7 @@ export default {
       }
     },
     loading: {
-      type: Boolean,
+      type: [String, Boolean],
       default: function() {
         return false
       }
@@ -32,7 +32,7 @@ export default {
   },
 
   components: {
-    apexchart: VueApexCharts
+    DashboardCard
   },
 
   data() {

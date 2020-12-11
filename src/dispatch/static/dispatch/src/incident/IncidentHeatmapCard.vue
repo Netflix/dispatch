@@ -1,11 +1,11 @@
 <template>
-  <v-card :loading="loading">
-    <v-card-title>Heatmap</v-card-title>
-    <apexchart type="heatmap" height="350" :options="chartOptions" :series="series"></apexchart>
-    <template slot="progress">
-      <v-progress-linear color="info" indeterminate></v-progress-linear>
-    </template>
-  </v-card>
+  <dashboard-card
+    :loading="loading"
+    type="heatmap"
+    :options="chartOptions"
+    :series="series"
+    title="Heatmap"
+  />
 </template>
 
 <script>
@@ -13,7 +13,8 @@ import { countBy, isArray, mergeWith, forEach, map, find, sortBy } from "lodash"
 import { parseISO } from "date-fns"
 import locale from "date-fns/esm/locale/en-US"
 
-import VueApexCharts from "vue-apexcharts"
+import DashboardCard from "@/dashboard/DashboardCard.vue"
+
 export default {
   name: "IncidentHeatMapChartCard",
 
@@ -25,14 +26,14 @@ export default {
       }
     },
     loading: {
-      type: Boolean,
+      type: [String, Boolean],
       default: function() {
         return false
       }
     }
   },
   components: {
-    apexchart: VueApexCharts
+    DashboardCard
   },
 
   computed: {

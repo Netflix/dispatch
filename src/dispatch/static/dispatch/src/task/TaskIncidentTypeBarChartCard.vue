@@ -1,14 +1,17 @@
 <template>
-  <v-card :loading="loading">
-    <v-card-title>Types</v-card-title>
-    <apexchart type="bar" height="250" :options="chartOptions" :series="series"></apexchart>
-  </v-card>
+  <dashboard-card
+    :loading="loading"
+    type="bar"
+    :options="chartOptions"
+    :series="series"
+    title="Types"
+  />
 </template>
 
 <script>
 import { countBy, isArray, mergeWith, forEach, map } from "lodash"
+import DashboardCard from "@/dashboard/DashboardCard.vue"
 
-import VueApexCharts from "vue-apexcharts"
 export default {
   name: "TaskIncidentBarChartCard",
 
@@ -20,7 +23,7 @@ export default {
       }
     },
     loading: {
-      type: Boolean,
+      type: [String, Boolean],
       default: function() {
         return false
       }
@@ -28,7 +31,7 @@ export default {
   },
 
   components: {
-    apexchart: VueApexCharts
+    DashboardCard
   },
 
   data() {

@@ -8,7 +8,7 @@
     <v-flex xs12>
       <v-layout column>
         <v-flex>
-          <v-card>
+          <v-card elevation="0">
             <v-card-title>
               <v-text-field
                 v-model="q"
@@ -17,6 +17,7 @@
                 single-line
                 hide-details
                 clearable
+                color="error"
               />
             </v-card-title>
             <v-data-table
@@ -30,6 +31,9 @@
               :loading="loading"
               loading-text="Loading... Please wait"
             >
+              <template slot="progress">
+                <v-progress-linear color="error" indeterminate></v-progress-linear>
+              </template>
               <template v-slot:item.is_active="{ item }">
                 <v-simple-checkbox v-model="item.is_active" disabled></v-simple-checkbox>
               </template>

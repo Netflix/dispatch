@@ -1,6 +1,9 @@
 <template>
   <v-bottom-sheet v-model="showBulkEdit" hide-overlay persistent>
     <v-card :loading="bulkEditLoading" tile>
+      <template slot="progress">
+        <v-progress-linear color="error" indeterminate></v-progress-linear>
+      </template>
       <v-list>
         <v-list-item>
           <v-list-item-content>

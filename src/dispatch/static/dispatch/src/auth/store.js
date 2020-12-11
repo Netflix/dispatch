@@ -43,7 +43,7 @@ const state = {
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
-    commit("SET_TABLE_LOADING", true)
+    commit("SET_TABLE_LOADING", "error")
     return UserApi.getAll(state.table.options).then(response => {
       commit("SET_TABLE_LOADING", false)
       commit("SET_TABLE_ROWS", response.data)

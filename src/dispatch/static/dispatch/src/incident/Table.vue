@@ -11,7 +11,7 @@
     <v-flex xs12>
       <v-layout column>
         <v-flex>
-          <v-card>
+          <v-card elevation="0">
             <v-card-title>
               <v-text-field
                 v-model="q"
@@ -19,6 +19,7 @@
                 label="Search"
                 single-line
                 hide-details
+                color="error"
                 clearable
               />
             </v-card-title>
@@ -35,28 +36,18 @@
               loading-text="Loading... Please wait"
               show-select
             >
+              <template v-slot:item.incident_priority.name="{ item }">
+                <incident-priority :priority="item.incident_priority.name" />
+              </template>
+              <template v-slot:item.status="{ item }">
+                <incident-status :status="item.status" />
+              </template>
               <template v-slot:item.cost="{ item }">{{ item.cost | toUSD }}</template>
               <template v-slot:item.commander="{ item }">
-                <v-chip
-                  v-if="item.commander"
-                  class="ma-2"
-                  pill
-                  small
-                  :href="item.commander.weblink"
-                >
-                  <div v-if="item.commander">
-                    <div v-if="item.commander.name">{{ item.commander.name }}</div>
-                    <div v-else>{{ item.commander.email }}</div>
-                  </div>
-                </v-chip>
+                <individual :individual="item.commander" />
               </template>
               <template v-slot:item.reporter="{ item }">
-                <v-chip v-if="item.reporter" class="ma-2" pill small :href="item.reporter.weblink">
-                  <div v-if="item.reporter">
-                    <div v-if="item.reporter.name">{{ item.reporter.name }}</div>
-                    <div v-else>{{ item.reporter.email }}</div>
-                  </div>
-                </v-chip>
+                <individual :individual="item.reporter" />
               </template>
               <template v-slot:item.reported_at="{ item }">{{
                 item.reported_at | formatDate
@@ -70,7 +61,7 @@
                   </template>
                   <v-list>
                     <v-list-item @click="showEditSheet(item)">
-                      <v-list-item-title>Edit</v-list-item-title>
+                      <v-list-item-title>Edit / View</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>
@@ -92,6 +83,9 @@ import TableExportDialog from "@/incident/TableExportDialog.vue"
 import EditSheet from "@/incident/EditSheet.vue"
 import NewSheet from "@/incident/NewSheet.vue"
 import BulkEditSheet from "@/incident/BulkEditSheet.vue"
+import IncidentStatus from "@/incident/IncidentStatus.vue"
+import IncidentPriority from "@/incident/IncidentPriority.vue"
+import Individual from "@/individual/Individual.vue"
 
 export default {
   name: "IncidentTable",
@@ -101,7 +95,10 @@ export default {
     NewSheet,
     TableFilterDialog,
     TableExportDialog,
-    BulkEditSheet
+    BulkEditSheet,
+    IncidentStatus,
+    IncidentPriority,
+    Individual
   },
 
   props: ["name"],
@@ -109,15 +106,13 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Id", value: "name", align: "left", width: "10%" },
+        { text: "Name", value: "name", align: "left", width: "10%" },
         { text: "Title", value: "title", sortable: false },
         { text: "Status", value: "status", width: "10%" },
-        { text: "Visibility", value: "visibility", width: "10%" },
         { text: "Type", value: "incident_type.name" },
         { text: "Priority", value: "incident_priority.name", width: "10%" },
         { text: "Cost", value: "cost" },
         { text: "Commander", value: "commander", sortable: false },
-        { text: "Reporter", value: "reporter", sortable: false },
         { text: "Reported At", value: "reported_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]

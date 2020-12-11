@@ -9,7 +9,8 @@
     chips
     return-object
     :loading="loading"
-  />
+  >
+  </v-select>
 </template>
 
 <script>
@@ -46,7 +47,7 @@ export default {
 
   created() {
     this.error = null
-    this.loading = true
+    this.loading = "error"
     IncidentPriorityApi.getAll().then(response => {
       this.items = response.data.items
       this.loading = false

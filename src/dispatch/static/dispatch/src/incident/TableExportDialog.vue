@@ -83,6 +83,12 @@
               :items="previewRows.items"
               :loading="previewRowsLoading"
             >
+              <template v-slot:item.incident_priority.name="{ item }">
+                <incident-priority :priority="item.incident_priority.name" />
+              </template>
+              <template v-slot:item.status="{ item }">
+                <incident-status :status="item.status" />
+              </template>
             </v-data-table>
             <v-badge
               :value="previewRows.total"
@@ -115,6 +121,9 @@ import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
+import IncidentStatus from "@/incident/IncidentStatus.vue"
+import IncidentPriority from "@/incident/IncidentPriority.vue"
+
 export default {
   name: "IncidentTableExportDialog",
   data() {
@@ -169,7 +178,9 @@ export default {
     TagFilterCombobox,
     IncidentTypeCombobox,
     IncidentPriorityCombobox,
-    IncidentStatusMultiSelect
+    IncidentStatusMultiSelect,
+    IncidentStatus,
+    IncidentPriority
   },
   computed: {
     ...mapFields("incident", ["dialogs.showExport"])
@@ -202,7 +213,7 @@ export default {
 
     getPreviewData() {
       let tableOptions = this.formatTableOptions(this.filters)
-      this.previewRowsLoading = true
+      this.previewRowsLoading = "error"
       return IncidentApi.getAll(tableOptions).then(response => {
         this.previewRows = response.data
         this.previewRowsLoading = false
