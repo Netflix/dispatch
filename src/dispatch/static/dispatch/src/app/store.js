@@ -4,16 +4,15 @@ import router from "@/router"
 const getDefaultSnackbarState = () => {
   return {
     text: null,
-    color: "primary",
-    show: false,
-    timeout: 2000
+    type: "info",
+    show: false
   }
 }
 
 const getDefaulRefreshState = () => {
   return {
     show: false,
-    message: "blah"
+    message: ""
   }
 }
 
