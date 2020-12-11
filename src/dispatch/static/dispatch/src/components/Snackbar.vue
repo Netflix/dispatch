@@ -1,5 +1,5 @@
 <template>
-  <v-snackbar v-model="show" :timeout="timeout" :color="color">
+  <v-snackbar v-model="show" :timeout="timeout" :color="type">
     {{ text }}
     <v-btn color="primary" text @click="closeSnackbar">Close</v-btn>
   </v-snackbar>
@@ -12,7 +12,6 @@ import { mapActions } from "vuex"
 export default {
   data() {
     return {
-      color: "",
       timeout: 6000
     }
   },
@@ -23,8 +22,6 @@ export default {
 
   methods: {
     customizeSnackbar: function() {
-      this.color = this.type
-
       if (this.type == "error") {
         this.timeout = 0
       }
