@@ -87,14 +87,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Document created successfully." }, { root: true })
+          commit(
+            "app/SET_SNACKBAR",
+            { text: "Document created successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
             "app/SET_SNACKBAR",
             {
               text: "Document not created. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -104,14 +108,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Document updated successfully." }, { root: true })
+          commit(
+            "app/SET_SNACKBAR",
+            { text: "Document updated successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
             "app/SET_SNACKBAR",
             {
               text: "Document not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -123,14 +131,18 @@ const actions = {
       .then(function() {
         dispatch("closeRemove")
         dispatch("getAll")
-        commit("app/SET_SNACKBAR", { text: "Document deleted successfully." }, { root: true })
+        commit(
+          "app/SET_SNACKBAR",
+          { text: "Document deleted successfully.", type: "success" },
+          { root: true }
+        )
       })
       .catch(err => {
         commit(
           "app/SET_SNACKBAR",
           {
             text: "Document not deleted. Reason: " + err.response.data.detail,
-            color: "red"
+            type: "error"
           },
           { root: true }
         )

@@ -4,16 +4,15 @@ import router from "@/router"
 const getDefaultSnackbarState = () => {
   return {
     text: null,
-    color: "primary",
-    show: false,
-    timeout: 2000
+    type: "info",
+    show: false
   }
 }
 
 const getDefaulRefreshState = () => {
   return {
     show: false,
-    message: "blah"
+    message: ""
   }
 }
 
@@ -36,7 +35,7 @@ const actions = {
   toggleDrawer({ commit }, value) {
     commit("TOGGLE_DRAWER", value)
   },
-  closeSnackBar({ commit }) {
+  closeSnackbar({ commit }) {
     commit("RESET_SNACKBAR")
   },
   performRefresh({ commit }) {
@@ -65,7 +64,7 @@ const mutations = {
     state.loading = value
   },
   RESET_SNACKBAR(state) {
-    state.snackbar = Object.assign(state.snackbar, getDefaultSnackbarState())
+    state.snackbar = getDefaultSnackbarState()
   },
   RESET_REFRESH(state) {
     state.refresh = Object.assign(state.refresh, getDefaulRefreshState())

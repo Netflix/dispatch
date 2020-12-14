@@ -76,14 +76,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Definition created successfully." }, { root: true })
+          commit(
+            "app/SET_SNACKBAR",
+            { text: "Definition created successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
             "app/SET_SNACKBAR",
             {
               text: "Definition not created. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -93,14 +97,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Definition updated successfully." }, { root: true })
+          commit(
+            "app/SET_SNACKBAR",
+            { text: "Definition updated successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
             "app/SET_SNACKBAR",
             {
               text: "Definition not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -112,14 +120,18 @@ const actions = {
       .then(function() {
         dispatch("closeRemove")
         dispatch("getAll")
-        commit("app/SET_SNACKBAR", { text: "Definition deleted successfully." }, { root: true })
+        commit(
+          "app/SET_SNACKBAR",
+          { text: "Definition deleted successfully.", type: "success" },
+          { root: true }
+        )
       })
       .catch(err => {
         commit(
           "app/SET_SNACKBAR",
           {
             text: "Definition not deleted. Reason: " + err.response.data.detail,
-            color: "red"
+            type: "error"
           },
           { root: true }
         )

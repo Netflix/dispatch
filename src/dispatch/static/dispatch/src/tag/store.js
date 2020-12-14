@@ -82,14 +82,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Tag created successfully." }, { root: true })
+          commit(
+            "app/SET_SNACKBAR",
+            { text: "Tag created successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
             "app/SET_SNACKBAR",
             {
               text: "Tag not created. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -99,14 +103,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Tag updated successfully." }, { root: true })
+          commit(
+            "app/SET_SNACKBAR",
+            { text: "Tag updated successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
             "app/SET_SNACKBAR",
             {
               text: "Tag not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -118,14 +126,18 @@ const actions = {
       .then(function() {
         dispatch("closeRemove")
         dispatch("getAll")
-        commit("app/SET_SNACKBAR", { text: "Tag deleted successfully." }, { root: true })
+        commit(
+          "app/SET_SNACKBAR",
+          { text: "Tag deleted successfully.", type: "success" },
+          { root: true }
+        )
       })
       .catch(err => {
         commit(
           "app/SET_SNACKBAR",
           {
             text: "Tag not deleted. Reason: " + err.response.data.detail,
-            color: "red"
+            type: "error"
           },
           { root: true }
         )

@@ -65,14 +65,18 @@ const actions = {
         .then(() => {
           dispatch("closeEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "User created successfully." }, { root: true })
+          commit(
+            "app/SET_SNACKBAR",
+            { text: "User created successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
             "app/SET_SNACKBAR",
             {
               text: "User not created. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -82,14 +86,18 @@ const actions = {
         .then(() => {
           dispatch("closeEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "User updated successfully." }, { root: true })
+          commit(
+            "app/SET_SNACKBAR",
+            { text: "User updated successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
             "app/SET_SNACKBAR",
             {
               text: "User not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -101,14 +109,18 @@ const actions = {
       .then(function() {
         dispatch("closeRemove")
         dispatch("getAll")
-        commit("app/SET_SNACKBAR", { text: "User deleted successfully." }, { root: true })
+        commit(
+          "app/SET_SNACKBAR",
+          { text: "User deleted successfully.", type: "success" },
+          { root: true }
+        )
       })
       .catch(err => {
         commit(
           "app/SET_SNACKBAR",
           {
             text: "User not deleted. Reason: " + err.response.data.detail,
-            color: "red"
+            type: "error"
           },
           { root: true }
         )
@@ -135,7 +147,11 @@ const actions = {
         router.push({ path: "/dashboard" })
       })
       .catch(err => {
-        commit("app/SET_SNACKBAR", { text: err.response.data.detail, color: "red" }, { root: true })
+        commit(
+          "app/SET_SNACKBAR",
+          { text: err.response.data.detail, type: "error" },
+          { root: true }
+        )
       })
     commit("SET_BASIC_LOGIN_LOADING", false)
   },
@@ -145,7 +161,11 @@ const actions = {
         dispatch("basicLogin", payload)
       })
       .catch(err => {
-        commit("app/SET_SNACKBAR", { text: err.response.data.detail, color: "red" }, { root: true })
+        commit(
+          "app/SET_SNACKBAR",
+          { text: err.response.data.detail, type: "error" },
+          { root: true }
+        )
       })
   },
   login({ dispatch, commit }, payload) {

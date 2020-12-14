@@ -86,14 +86,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Individual created successfully." }, { root: true })
+          commit(
+            "app/SET_SNACKBAR",
+            { text: "Individual created successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
             "app/SET_SNACKBAR",
             {
               text: "Individual not created. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -103,14 +107,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Individual updated successfully." }, { root: true })
+          commit(
+            "app/SET_SNACKBAR",
+            { text: "Individual updated successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
             "app/SET_SNACKBAR",
             {
               text: "Individual not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -122,14 +130,18 @@ const actions = {
       .then(() => {
         dispatch("closeRemove")
         dispatch("getAll")
-        commit("app/SET_SNACKBAR", { text: "Individual deleted successfully." }, { root: true })
+        commit(
+          "app/SET_SNACKBAR",
+          { text: "Individual deleted successfully.", type: "success" },
+          { root: true }
+        )
       })
       .catch(err => {
         commit(
           "app/SET_SNACKBAR",
           {
             text: "Individual not deleted. Reason: " + err.response.data.detail,
-            color: "red"
+            type: "error"
           },
           { root: true }
         )

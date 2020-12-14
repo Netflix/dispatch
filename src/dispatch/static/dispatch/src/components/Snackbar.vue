@@ -1,7 +1,7 @@
 <template>
-  <v-snackbar v-model="show">
+  <v-snackbar v-model="show" :timeout="timeout" :color="type">
     {{ text }}
-    <v-btn text :color="color" @click.native="closeSnackbar" :timeout="timeout">Close</v-btn>
+    <v-btn color="primary" text @click="closeSnackbar">Close</v-btn>
   </v-snackbar>
 </template>
 
@@ -11,15 +11,26 @@ import { mapActions } from "vuex"
 
 export default {
   data() {
-    return {}
+    return {
+      timeout: 6000
+    }
   },
 
   computed: {
-    ...mapFields("app", ["snackbar.text", "snackbar.timeout", "snackbar.show", "snackbar.color"])
+    ...mapFields("app", ["snackbar.text", "snackbar.type", "snackbar.show"])
   },
 
   methods: {
+    customizeSnackbar: function() {
+      if (this.type == "error") {
+        this.timeout = 0
+      }
+    },
     ...mapActions("app", ["closeSnackbar"])
+  },
+
+  beforeUpdate() {
+    this.customizeSnackbar()
   }
 }
 </script>
