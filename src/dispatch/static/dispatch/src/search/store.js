@@ -16,7 +16,7 @@ const actions = {
     commit("SET_MODELS", models)
   },
   getResults({ commit, state }) {
-    commit("SET_LOADING", "error")
+    commit("SET_LOADING", false)
     return SearchApi.search(state.query, state.models)
       .then(response => {
         commit("SET_RESULTS", response.data.results)

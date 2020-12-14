@@ -2,7 +2,7 @@ export var opts = {
   theme: {
     themes: {
       light: {
-        primary: "#FFFFFF",
+        primary: "#E50914",
         secondary: "#404041",
         accent: "#8c9eff",
         anchor: "#0F0F0F",

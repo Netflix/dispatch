@@ -3,7 +3,7 @@
     <v-navigation-drawer v-model="showNewSheet" app clipped right width="800">
       <template v-slot:prepend>
         <v-card elevation="0">
-          <v-toolbar color="primary" class="elevation-1">
+          <v-toolbar color="white" class="elevation-1">
             <v-toolbar-title>Create Incident</v-toolbar-title>
 
             <v-spacer></v-spacer>

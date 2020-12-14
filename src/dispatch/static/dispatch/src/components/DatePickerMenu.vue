@@ -17,7 +17,7 @@
         v-on="on"
       ></v-text-field>
     </template>
-    <v-date-picker v-model="date" no-title scrollable>
+    <v-date-picker color="info" v-model="date" no-title scrollable>
       <v-spacer></v-spacer>
       <v-btn text color="info" @click="menu = false">Cancel</v-btn>
       <v-btn text color="info" @click="$refs.menu.save(date)">OK</v-btn>

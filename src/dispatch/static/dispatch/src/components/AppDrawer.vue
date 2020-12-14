@@ -2,26 +2,14 @@
   <v-navigation-drawer app :value="toggleDrawer" permanent clipped class="gray9">
     <vue-perfect-scrollbar class="drawer-menu--scroll" :settings="scrollSettings">
       <v-list nav>
-        <v-list-group
-          v-for="item in items"
-          :key="item.title"
-          v-model="item.active"
-          color="error"
-          no-action
-        >
+        <v-list-group v-for="item in items" :key="item.title" v-model="item.active" no-action>
           <template v-slot:activator>
             <v-list-item-content>
               <v-list-item-title v-text="item.title"></v-list-item-title>
             </v-list-item-content>
           </template>
 
-          <v-list-item
-            v-for="child in item.items"
-            :key="child.title"
-            :to="child.route"
-            exact
-            color="error"
-          >
+          <v-list-item v-for="child in item.items" :key="child.title" :to="child.route" exact>
             <v-list-item-content>
               <v-list-item-title v-text="child.title"></v-list-item-title>
             </v-list-item-content>
@@ -31,7 +19,7 @@
     </vue-perfect-scrollbar>
     <template v-slot:append>
       <div class="pa-3">
-        <v-btn color="error" block to="/incidents/report">
+        <v-btn color="primary" block to="/incidents/report">
           <v-icon left>error_outline</v-icon>
           Report Incident
         </v-btn>

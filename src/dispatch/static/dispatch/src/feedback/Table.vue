@@ -18,7 +18,6 @@
                 single-line
                 hide-details
                 clearable
-                color="error"
               />
             </v-card-title>
             <v-data-table
@@ -32,9 +31,6 @@
               :loading="loading"
               loading-text="Loading... Please wait"
             >
-              <template slot="progress">
-                <v-progress-linear color="error" indeterminate></v-progress-linear>
-              </template>
               <template v-slot:item.participant="{ item }">
                 <participant :participant="item.participant" />
               </template>

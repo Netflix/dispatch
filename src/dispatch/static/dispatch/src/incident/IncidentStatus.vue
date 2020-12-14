@@ -15,17 +15,17 @@
         <span>Join Incident</span>
       </v-tooltip>
     </div>
-    <div v-if="status == 'Stable'">
+    <div v-if="status == 'Stable'" class="mr-10">
+      <v-badge bordered color="warning" slot="activator" dot left offset-x="-10" offset-y="12">
+        {{ status }}
+      </v-badge>
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
-          <v-badge bordered color="warning" slot="activator" dot left offset-x="-10" offset-y="12">
-            {{ status }}
-            <v-btn icon x-small v-bind="attrs" v-on="on" @click="joinIncident(id)">
-              <v-icon>
-                person_addded
-              </v-icon>
-            </v-btn>
-          </v-badge>
+          <v-btn icon v-bind="attrs" v-on="on" @click="joinIncident(id)">
+            <v-icon>
+              mdi-account-plus
+            </v-icon>
+          </v-btn>
         </template>
         <span>Join Incident</span>
       </v-tooltip>

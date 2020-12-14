@@ -15,7 +15,6 @@
                 single-line
                 hide-details
                 clearable
-                color="error"
               />
             </v-card-title>
             <v-data-table
@@ -29,9 +28,6 @@
               :loading="loading"
               loading-text="Loading... Please wait"
             >
-              <template slot="progress">
-                <v-progress-linear color="error" indeterminate></v-progress-linear>
-              </template>
               <template v-slot:item.author="{ item }">
                 <a :href="item.author_url" target="_blank" style="text-decoration: none;">
                   {{ item.author }}
@@ -56,7 +52,7 @@
                   </template>
                   <v-list>
                     <v-list-item @click="editShow(item)">
-                      <v-list-item-title>Edit</v-list-item-title>
+                      <v-list-item-title>View / Edit</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>

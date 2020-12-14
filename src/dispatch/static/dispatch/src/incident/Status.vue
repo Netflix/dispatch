@@ -1,14 +1,19 @@
 <template>
   <v-app>
     <v-content>
-      <v-card flat>
-        <v-toolbar color="gray8" extended flat height="150" />
-        <v-card class="mx-auto" max-width="1000" style="margin-top: -64px;">
-          <v-card-text>
-            <div>D I S P A T C H</div>
-            <incident-summary-table :items="items" :loading="loading" />
-          </v-card-text>
-        </v-card>
+      <v-app-bar app flat class="v-bar--underline" color="white">
+        <router-link to="/" tag="span">
+          <span class="button font-weight-bold">D I S P A T C H</span>
+        </router-link>
+        <v-spacer />
+        <v-btn small color="primary" to="/incidents/report">
+          Report Incident
+        </v-btn>
+      </v-app-bar>
+      <v-card class="mx-auto ma-4" max-width="800" flat outlined>
+        <v-card-text>
+          <incident-summary-table :items="items" :loading="loading" />
+        </v-card-text>
       </v-card>
     </v-content>
   </v-app>

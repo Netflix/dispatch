@@ -19,7 +19,6 @@
                 label="Search"
                 single-line
                 hide-details
-                color="error"
                 clearable
               />
             </v-card-title>
@@ -61,7 +60,7 @@
                   </template>
                   <v-list>
                     <v-list-item @click="showEditSheet(item)">
-                      <v-list-item-title>Edit / View</v-list-item-title>
+                      <v-list-item-title>View / Edit</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>
@@ -108,7 +107,7 @@ export default {
       headers: [
         { text: "Name", value: "name", align: "left", width: "10%" },
         { text: "Title", value: "title", sortable: false },
-        { text: "Status", value: "status", width: "10%" },
+        { text: "Status", value: "status" },
         { text: "Type", value: "incident_type.name" },
         { text: "Priority", value: "incident_priority.name", width: "10%" },
         { text: "Cost", value: "cost" },

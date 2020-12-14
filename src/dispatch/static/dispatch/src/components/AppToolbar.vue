@@ -1,7 +1,9 @@
 <template>
-  <v-app-bar clipped-left clipped-right app flat class="v-bar--underline" color="primary">
+  <v-app-bar clipped-left clipped-right app flat class="v-bar--underline" color="white">
     <!--<v-app-bar-nav-icon @click="handleDrawerToggle" />-->
-    <span class="button font-weight-bold">D I S P A T C H</span>
+    <router-link to="/" tag="span">
+      <span class="button font-weight-bold">D I S P A T C H</span>
+    </router-link>
     <v-spacer />
     <v-text-field
       v-model="queryString"

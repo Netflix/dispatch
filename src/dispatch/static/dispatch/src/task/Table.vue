@@ -18,7 +18,6 @@
                 single-line
                 hide-details
                 clearable
-                color="error"
               />
             </v-card-title>
             <v-data-table
@@ -34,8 +33,10 @@
               loading-text="Loading... Please wait"
               show-select
             >
-              <template slot="progress">
-                <v-progress-linear color="error" indeterminate></v-progress-linear>
+              <template v-slot:item.description="{ item }">
+                <div class="text-truncate" style="max-width: 400px">
+                  {{ item.description }}
+                </div>
               </template>
               <template v-slot:item.incident_priority.name="{ item }">
                 <incident-priority :priority="item.incident.incident_priority.name" />
@@ -93,7 +94,7 @@
                   </template>
                   <v-list>
                     <v-list-item @click="createEditShow(item)">
-                      <v-list-item-title>Edit</v-list-item-title>
+                      <v-list-item-title>View / Edit</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>

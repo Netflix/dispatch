@@ -15,7 +15,6 @@
                 single-line
                 hide-details
                 clearable
-                color="error"
               />
             </v-card-title>
             <v-data-table
