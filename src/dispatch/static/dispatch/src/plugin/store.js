@@ -76,15 +76,18 @@ const actions = {
         .then(() => {
           dispatch("closeEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Plugin created successfully." }, { root: true })
+          commit(
+            "app/SET_SNACKBAR",
+            { text: "Plugin created successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
             "app/SET_SNACKBAR",
             {
               text: "Plugin not created. Reason: " + err.response.data.detail,
-              color: "red",
-              timeout: 0
+              type: "error"
             },
             { root: true }
           )
@@ -94,15 +97,18 @@ const actions = {
         .then(() => {
           dispatch("closeEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Plugin updated successfully." }, { root: true })
+          commit(
+            "app/SET_SNACKBAR",
+            { text: "Plugin updated successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
             "app/SET_SNACKBAR",
             {
               text: "Plugin not updated. Reason: " + err.response.data.detail,
-              color: "red",
-              timeout: 0
+              type: "error"
             },
             { root: true }
           )
@@ -114,15 +120,18 @@ const actions = {
       .then(function() {
         dispatch("closeRemove")
         dispatch("getAll")
-        commit("app/SET_SNACKBAR", { text: "Plugin deleted successfully." }, { root: true })
+        commit(
+          "app/SET_SNACKBAR",
+          { text: "Plugin deleted successfully.", type: "success" },
+          { root: true }
+        )
       })
       .catch(err => {
         commit(
           "app/SET_SNACKBAR",
           {
             text: "Plugin not deleted. Reason: " + err.response.data.detail,
-            color: "red",
-            timeout: 0
+            type: "error"
           },
           { root: true }
         )

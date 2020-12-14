@@ -172,7 +172,7 @@ const actions = {
             text:
               "Incident could not be reported. Please try again. Reason: " +
               err.response.data.detail,
-            color: "red"
+            type: "error"
           },
           { root: true }
         )
@@ -186,7 +186,11 @@ const actions = {
         .then(() => {
           dispatch("closeNewSheet")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Incident created successfully." }, { root: true })
+          commit(
+            "app/SET_SNACKBAR",
+            { text: "Incident created successfully.", type: "success" },
+            { root: true }
+          )
           commit("SET_SELECTED_LOADING", false)
         })
         .catch(err => {
@@ -194,7 +198,7 @@ const actions = {
             "app/SET_SNACKBAR",
             {
               text: "Incident not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -205,7 +209,11 @@ const actions = {
         .then(() => {
           dispatch("closeEditSheet")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Incident updated successfully." }, { root: true })
+          commit(
+            "app/SET_SNACKBAR",
+            { text: "Incident updated successfully.", type: "success" },
+            { root: true }
+          )
           commit("SET_SELECTED_LOADING", false)
         })
         .catch(err => {
@@ -213,7 +221,7 @@ const actions = {
             "app/SET_SNACKBAR",
             {
               text: "Incident not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -226,7 +234,11 @@ const actions = {
     return IncidentApi.bulkUpdate(state.table.rows.selected, payload)
       .then(() => {
         dispatch("getAll")
-        commit("app/SET_SNACKBAR", { text: "Incident(s) updated successfully." }, { root: true })
+        commit(
+          "app/SET_SNACKBAR",
+          { text: "Incident(s) updated successfully.", type: "success" },
+          { root: true }
+        )
         commit("SET_BULK_EDIT_LOADING", false)
       })
       .catch(err => {
@@ -234,7 +246,7 @@ const actions = {
           "app/SET_SNACKBAR",
           {
             text: "Incident(s) not updated. Reason: " + err.response.data.detail,
-            color: "red"
+            type: "error"
           },
           { root: true }
         )
@@ -246,14 +258,18 @@ const actions = {
       .then(function() {
         dispatch("closeRemove")
         dispatch("getAll")
-        commit("app/SET_SNACKBAR", { text: "Incident deleted successfully." }, { root: true })
+        commit(
+          "app/SET_SNACKBAR",
+          { text: "Incident deleted successfully.", type: "success" },
+          { root: true }
+        )
       })
       .catch(err => {
         commit(
           "app/SET_SNACKBAR",
           {
             text: "Incident not deleted. Reason: " + err.response.data.detail,
-            color: "red"
+            type: "error"
           },
           { root: true }
         )
@@ -266,7 +282,7 @@ const actions = {
     IncidentApi.join(incidentId, {}).then(() => {
       commit(
         "app/SET_SNACKBAR",
-        { text: "You have successfully joined the incident." },
+        { text: "You have successfully joined the incident.", type: "success" },
         { root: true }
       )
     })

@@ -110,14 +110,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Task created successfully." }, { root: true })
+          commit(
+            "app/SET_SNACKBAR",
+            { text: "Task created successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
             "app/SET_SNACKBAR",
             {
               text: "Task not created. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -127,14 +131,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Task updated successfully." }, { root: true })
+          commit(
+            "app/SET_SNACKBAR",
+            { text: "Task updated successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
             "app/SET_SNACKBAR",
             {
               text: "Task not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -146,7 +154,11 @@ const actions = {
     return TaskApi.bulkUpdate(state.table.rows.selected, payload)
       .then(() => {
         dispatch("getAll")
-        commit("app/SET_SNACKBAR", { text: "Task(s) updated successfully." }, { root: true })
+        commit(
+          "app/SET_SNACKBAR",
+          { text: "Task(s) updated successfully.", type: "success" },
+          { root: true }
+        )
         commit("SET_BULK_EDIT_LOADING", false)
       })
       .catch(err => {
@@ -155,7 +167,7 @@ const actions = {
           "app/SET_SNACKBAR",
           {
             text: "Task(s) not updated. Reason: " + err.response.data.detail,
-            color: "red"
+            type: "error"
           },
           { root: true }
         )
@@ -167,14 +179,18 @@ const actions = {
       .then(function() {
         dispatch("closeRemove")
         dispatch("getAll")
-        commit("app/SET_SNACKBAR", { text: "Task deleted successfully." }, { root: true })
+        commit(
+          "app/SET_SNACKBAR",
+          { text: "Task deleted successfully.", type: "success" },
+          { root: true }
+        )
       })
       .catch(err => {
         commit(
           "app/SET_SNACKBAR",
           {
             text: "Task not deleted. Reason: " + err.response.data.detail,
-            color: "red"
+            type: "error"
           },
           { root: true }
         )
