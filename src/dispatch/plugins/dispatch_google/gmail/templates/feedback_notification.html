@@ -9,7 +9,7 @@
 <li>
 <ul style="list-style-type:none; padding-left: 0;">
   {% if row.title_link %}
-  <li><a href="{{ row.title_link }}" target="_blank">{{ row.title }}</a></li>
+  <li><a href="{{ row.title_link }}" target="_blank" rel="noopener noreferrer">{{ row.title }}</a></li>
   {% elif row.datetime %}
   <li><b>{{ row.title }}</b></li
   <li>{{ row.datetime | datetime }}</li>
