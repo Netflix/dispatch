@@ -83,7 +83,7 @@ const actions = {
           dispatch("getAll")
           commit(
             "app/SET_SNACKBAR",
-            { text: "IncidentPriority created successfully." },
+            { text: "Incident priority created successfully.", type: "success" },
             { root: true }
           )
         })
@@ -91,8 +91,8 @@ const actions = {
           commit(
             "app/SET_SNACKBAR",
             {
-              text: "IncidentPriority not created. Reason: " + err.response.data.detail,
-              color: "red"
+              text: "Incident priority not created. Reason: " + err.response.data.detail,
+              type: "error"
             },
             { root: true }
           )
@@ -104,7 +104,7 @@ const actions = {
           dispatch("getAll")
           commit(
             "app/SET_SNACKBAR",
-            { text: "Incident Priority updated successfully." },
+            { text: "Incident priority updated successfully.", type: "success" },
             { root: true }
           )
         })
@@ -112,8 +112,8 @@ const actions = {
           commit(
             "app/SET_SNACKBAR",
             {
-              text: "Incident Priority not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              text: "Incident priority not updated. Reason: " + err.response.data.detail,
+              type: "error"
             },
             { root: true }
           )
@@ -127,7 +127,7 @@ const actions = {
         dispatch("getAll")
         commit(
           "app/SET_SNACKBAR",
-          { text: "Incident Priority deleted successfully." },
+          { text: "Incident priority deleted successfully.", type: "success" },
           { root: true }
         )
       })
@@ -135,8 +135,8 @@ const actions = {
         commit(
           "app/SET_SNACKBAR",
           {
-            text: "Incident Priority not deleted. Reason: " + err.response.data.detail,
-            color: "red"
+            text: "Incident priority not deleted. Reason: " + err.response.data.detail,
+            type: "error"
           },
           { root: true }
         )
