@@ -88,7 +88,11 @@ export default {
             dayCounts.push({ name: weekday, data: [0] })
           }
         })
-        series = mergeWith(series, dayCounts, function(objValue, srcValue) {
+
+        let sortedDayCounts = sortBy(dayCounts, function(obj) {
+          return weekdays.indexOf(obj.name)
+        })
+        series = mergeWith(series, sortedDayCounts, function(objValue, srcValue) {
           if (isArray(objValue)) {
             return objValue.concat(srcValue)
           }

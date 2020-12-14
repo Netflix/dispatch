@@ -34,6 +34,7 @@ Adding other objects::
     s.search(query=q)
 
 """
+from collections import defaultdict
 from sqlalchemy.sql.expression import literal
 
 from sqlalchemy_searchable import inspect_search_vectors, search
@@ -101,9 +102,9 @@ class CompositeSearch(object):
         objects_by_type = self.load_search_objects(objects_by_model)
 
         # mapping all to search result
+        objects = defaultdict(list)
         if by_type:
-            objects = []
             for x in search_result:
                 if x.type in objects_by_type:
-                    objects.append(self.map_result(x, objects_by_type[x.type][x.id]))
+                    objects[x.type].append(objects_by_type[x.type][x.id])
         return objects

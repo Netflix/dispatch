@@ -1,6 +1,7 @@
 from typing import List
 
 from fastapi import APIRouter, Depends
+from starlette.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
@@ -17,7 +18,7 @@ from .service import composite_search
 router = APIRouter()
 
 
-@router.get("/", response_model=SearchResponse)
+@router.get("/", response_class=JSONResponse)
 def search(
     *,
     db_session: Session = Depends(get_db),
@@ -40,11 +41,6 @@ def search(
 
     # add a filter for restricted incidents
     if current_user.role != UserRoles.admin:
-        filtered_results = []
-        for r in results:
-            if r["type"].lower() == "incident":
-                if r["content"].visibility != Visibility.open:
-                    continue
-            filtered_results.append(r)
-        results = filtered_results
-    return {"query": q, "results": results}
+        results["Incident"] = [i for i in results["Incident"] if i.visibility != Visibility.open]
+
+    return SearchResponse(**{"query": q, "results": results}).dict(by_alias=False)
