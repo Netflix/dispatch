@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-content>
-      <v-app-bar app flat class="v-bar--underline" color="white">
+      <v-app-bar app flat class="v-bar--underline" color="background0">
         <router-link to="/" tag="span">
           <span class="button font-weight-bold">D I S P A T C H</span>
         </router-link>
