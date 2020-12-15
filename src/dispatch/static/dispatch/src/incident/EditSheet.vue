@@ -21,7 +21,7 @@
           </v-btn>
         </v-list-item>
       </template>
-      <v-tabs color="gray3" fixed-tabs v-model="tab">
+      <v-tabs color="primary" fixed-tabs v-model="tab">
         <v-tab key="details">Details</v-tab>
         <v-tab key="resources">Resources</v-tab>
         <v-tab key="participants">Participants</v-tab>

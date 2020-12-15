@@ -1,5 +1,5 @@
 <template>
-  <v-navigation-drawer app :value="toggleDrawer" permanent clipped class="gray9">
+  <v-navigation-drawer app :value="toggleDrawer" permanent clipped class="background1">
     <vue-perfect-scrollbar class="drawer-menu--scroll" :settings="scrollSettings">
       <v-list nav>
         <v-list-group v-for="item in items" :key="item.title" v-model="item.active" no-action>
@@ -19,7 +19,7 @@
     </vue-perfect-scrollbar>
     <template v-slot:append>
       <div class="pa-3">
-        <v-btn color="primary" block to="/incidents/report">
+        <v-btn color="error" block to="/incidents/report">
           <v-icon left>error_outline</v-icon>
           Report Incident
         </v-btn>
