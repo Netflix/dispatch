@@ -86,7 +86,7 @@
             <v-list-item v-else>
               <v-list-item-content>
                 <v-list-item-title>Creating incident ticket...</v-list-item-title>
-                <v-progress-linear indeterminate color="info"></v-progress-linear>
+                <v-progress-linear indeterminate></v-progress-linear>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
@@ -106,7 +106,7 @@
             <v-list-item v-else>
               <v-list-item-content>
                 <v-list-item-title>Creating incident video conference...</v-list-item-title>
-                <v-progress-linear indeterminate color="info"></v-progress-linear>
+                <v-progress-linear indeterminate></v-progress-linear>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
@@ -126,7 +126,7 @@
             <v-list-item v-else>
               <v-list-item-content>
                 <v-list-item-title>Creating incident conversation...</v-list-item-title>
-                <v-progress-linear indeterminate color="info"></v-progress-linear>
+                <v-progress-linear indeterminate></v-progress-linear>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
@@ -146,7 +146,7 @@
             <v-list-item v-else>
               <v-list-item-content>
                 <v-list-item-title>Creating incident storage...</v-list-item-title>
-                <v-progress-linear indeterminate color="info"></v-progress-linear>
+                <v-progress-linear indeterminate></v-progress-linear>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
@@ -170,7 +170,7 @@
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-title>Creating incident documents... </v-list-item-title>
-                  <v-progress-linear indeterminate color="info"></v-progress-linear>
+                  <v-progress-linear indeterminate></v-progress-linear>
                 </v-list-item-content>
               </v-list-item>
             </span>
