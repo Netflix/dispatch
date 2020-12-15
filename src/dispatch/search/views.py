@@ -41,6 +41,6 @@ def search(
 
     # add a filter for restricted incidents
     if current_user.role != UserRoles.admin:
-        results["Incident"] = [i for i in results["Incident"] if i.visibility != Visibility.open]
+        results["Incident"] = [i for i in results["Incident"] if i.visibility == Visibility.open]
 
     return SearchResponse(**{"query": q, "results": results}).dict(by_alias=False)
