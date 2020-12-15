@@ -1,4 +1,4 @@
-import { DefaultLayout, DashboardLayout, AuthLayout } from "@/components/layouts"
+import { DefaultLayout, DashboardLayout, BasicLayout } from "@/components/layouts"
 
 export const publicRoute = [
   {
@@ -7,7 +7,7 @@ export const publicRoute = [
   },
   {
     path: "/auth",
-    component: AuthLayout,
+    component: BasicLayout,
     meta: { title: "Auth", icon: "view_compact", group: "auth" },
     children: [
       {
