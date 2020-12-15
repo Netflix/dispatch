@@ -1,13 +1,8 @@
 <template>
-  <ValidationObserver>
-    <v-card
-      class="mx-auto"
-      max-width="500"
-      style="margin-top: -64px;"
-      slot-scope="{ invalid, validated }"
-    >
+  <ValidationObserver v-slot="{ invalid, validated }">
+    <v-card class="mx-auto ma-4" max-width="600" flat outlined :loading="loading">
       <v-card-title>
-        Dispatch - Login
+        Login
       </v-card-title>
       <v-card-text>
         <v-container>
@@ -43,7 +38,7 @@
           <v-list-item-content>
             <v-list-item-subtitle
               >Don't have a account?
-              <router-link to="/register">Register</router-link></v-list-item-subtitle
+              <router-link to="/auth/register">Register</router-link></v-list-item-subtitle
             >
           </v-list-item-content>
           <v-row align="center" justify="end">

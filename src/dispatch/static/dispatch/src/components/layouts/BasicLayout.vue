@@ -2,8 +2,12 @@
   <v-app>
     <snackbar />
     <v-content>
+      <v-app-bar app flat class="v-bar--underline" color="white">
+        <router-link to="/" tag="span">
+          <span class="button font-weight-bold">D I S P A T C H</span>
+        </router-link>
+      </v-app-bar>
       <v-card flat>
-        <v-toolbar color="info" extended flat height="150" />
         <router-view :key="$route.path" />
       </v-card>
     </v-content>
