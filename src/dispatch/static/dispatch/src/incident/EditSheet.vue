@@ -2,52 +2,49 @@
   <ValidationObserver v-slot="{ invalid, validated }">
     <v-navigation-drawer v-model="showEditSheet" app clipped right width="800">
       <template v-slot:prepend>
-        <v-card elevation="0">
-          <v-toolbar color="white">
-            <v-toolbar-title>View/Edit - {{ name }}</v-toolbar-title>
-
-            <v-spacer></v-spacer>
-
-            <v-btn
-              icon
-              color="info"
-              :loading="loading"
-              :disabled="invalid || !validated"
-              @click="save()"
-            >
-              <v-icon>save</v-icon>
-            </v-btn>
-            <v-btn icon color="secondary" @click="closeEditSheet()">
-              <v-icon>close</v-icon>
-            </v-btn>
-          </v-toolbar>
-
-          <v-tabs v-model="tab" fixed align-with-title color="gray0">
-            <v-tab key="details">Details</v-tab>
-            <v-tab key="resources">Resources</v-tab>
-            <v-tab key="participants">Participants</v-tab>
-            <v-tab key="timeline">Timeline</v-tab>
-            <v-tab key="workflows">Workflows</v-tab>
-          </v-tabs>
-          <v-tabs-items v-model="tab">
-            <v-tab-item key="details">
-              <incident-details-tab />
-            </v-tab-item>
-            <v-tab-item key="resources">
-              <incident-resources-tab />
-            </v-tab-item>
-            <v-tab-item key="participants">
-              <incident-participants-tab />
-            </v-tab-item>
-            <v-tab-item key="timeline">
-              <incident-timeline-tab />
-            </v-tab-item>
-            <v-tab-item key="workflow_instances">
-              <incident-workflow-instance-tab />
-            </v-tab-item>
-          </v-tabs-items>
-        </v-card>
+        <v-list-item two-line>
+          <v-list-item-content>
+            <v-list-item-title class="title">{{ name }}</v-list-item-title>
+            <v-list-item-subtitle>Reported - {{ reported_at | formatDate }}</v-list-item-subtitle>
+          </v-list-item-content>
+          <v-btn
+            icon
+            color="info"
+            :loading="loading"
+            :disabled="invalid || !validated"
+            @click="save()"
+          >
+            <v-icon>save</v-icon>
+          </v-btn>
+          <v-btn icon color="secondary" @click="closeEditSheet">
+            <v-icon>close</v-icon>
+          </v-btn>
+        </v-list-item>
       </template>
+      <v-tabs color="gray3" fixed-tabs v-model="tab">
+        <v-tab key="details">Details</v-tab>
+        <v-tab key="resources">Resources</v-tab>
+        <v-tab key="participants">Participants</v-tab>
+        <v-tab key="timeline">Timeline</v-tab>
+        <v-tab key="workflows">Workflows</v-tab>
+      </v-tabs>
+      <v-tabs-items v-model="tab">
+        <v-tab-item key="details">
+          <incident-details-tab />
+        </v-tab-item>
+        <v-tab-item key="resources">
+          <incident-resources-tab />
+        </v-tab-item>
+        <v-tab-item key="participants">
+          <incident-participants-tab />
+        </v-tab-item>
+        <v-tab-item key="timeline">
+          <incident-timeline-tab />
+        </v-tab-item>
+        <v-tab-item key="workflow_instances">
+          <incident-workflow-instance-tab />
+        </v-tab-item>
+      </v-tabs-items>
     </v-navigation-drawer>
   </ValidationObserver>
 </template>
