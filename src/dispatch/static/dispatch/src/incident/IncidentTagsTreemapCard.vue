@@ -1,7 +1,7 @@
 <template>
   <dashboard-card
     :loading="loading"
-    type="donut"
+    type="treemap"
     :options="chartOptions"
     :series="series"
     title="Common Tags"
@@ -9,10 +9,10 @@
 </template>
 
 <script>
-import { forEach, countBy, chain, map } from "lodash"
+import { forEach, countBy, sortBy } from "lodash"
 import DashboardCard from "@/dashboard/DashboardCard.vue"
 export default {
-  name: "IncidentTopTagsDonutCard",
+  name: "IncidentTreeMapCard",
 
   props: {
     value: {
@@ -37,30 +37,10 @@ export default {
     chartOptions() {
       return {
         chart: {
-          type: "donut",
+          type: "treemap",
           height: 350,
           toolbar: {
             show: false
-          }
-        },
-        tooltip: {
-          enabled: false
-        },
-        dataLabels: {
-          enabled: false
-        },
-        labels: this.labels,
-        plotOptions: {
-          pie: {
-            donut: {
-              labels: {
-                show: true
-              },
-              total: {
-                show: true,
-                label: "Total"
-              }
-            }
           }
         },
         responsive: [
@@ -82,23 +62,14 @@ export default {
       forEach(this.value, function(value) {
         allTags.push(...value.tags)
       })
-      let countByName = countBy(allTags, "name")
-      var sorted = chain(countByName)
-        .map(function(cnt, name) {
-          return {
-            name: name,
-            count: cnt
-          }
-        })
-        .sortBy("count")
-        .value()
-      return sorted.slice(Math.max(sorted.length - 10, 0))
+      let tagCount = countBy(allTags, "name")
+      return sortBy(
+        Object.keys(tagCount).map(key => ({ x: key, y: tagCount[key] })),
+        ["y"]
+      )
     },
     series() {
-      return map(this.summaryData, "count")
-    },
-    labels() {
-      return map(this.summaryData, "name")
+      return [{ data: this.summaryData }]
     }
   }
 }
