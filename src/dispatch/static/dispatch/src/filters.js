@@ -10,6 +10,15 @@ Vue.filter("formatDate", function(value) {
   }
 })
 
+Vue.filter("initials", function(value) {
+  if (value) {
+    return value
+      .split(" ")
+      .map(n => n[0])
+      .join("")
+  }
+})
+
 Vue.filter("asString", function(value) {
   if (!value) return ""
   return value.toString()

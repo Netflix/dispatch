@@ -83,7 +83,7 @@ export default {
   methods: {
     fetchData(filterOptions) {
       this.error = null
-      this.loading = true
+      this.loading = "error"
       IncidentPriorityApi.getAll(filterOptions).then(response => {
         this.items = response.data.items
         this.loading = false

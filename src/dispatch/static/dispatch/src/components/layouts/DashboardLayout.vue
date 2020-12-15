@@ -10,7 +10,7 @@
       <page-header />
       <div class="page-wrapper">
         <v-container pa-4 grid-list-lg>
-          <v-tabs v-model="tab">
+          <v-tabs fixed-tabs v-model="tab" color="gray1">
             <v-tab to="incidents">Incidents</v-tab>
             <v-tab to="tasks">Tasks</v-tab>
           </v-tabs>
@@ -26,13 +26,6 @@
         </v-container>
       </div>
     </v-content>
-    <!-- App Footer -->
-    <v-footer height="auto" class="pa-3 app--footer">
-      <v-spacer />
-      <span class="caption mr-1">Made by Netflix Security</span>
-      <v-icon color="pink" small>favorite</v-icon>
-    </v-footer>
-    <!-- Go to top -->
   </v-app>
 </template>
 

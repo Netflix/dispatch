@@ -53,7 +53,7 @@ const getters = {
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
-    commit("SET_TABLE_LOADING", true)
+    commit("SET_TABLE_LOADING", "primary")
     return DocumentApi.getAll(state.table.options)
       .then(response => {
         commit("SET_TABLE_LOADING", false)

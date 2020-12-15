@@ -1,13 +1,16 @@
 <template>
-  <v-card :loading="loading">
-    <v-card-title>Cost</v-card-title>
-    <apexchart type="bar" height="250" :options="chartOptions" :series="series"></apexchart>
-  </v-card>
+  <dashboard-card
+    :loading="loading"
+    type="bar"
+    :options="chartOptions"
+    :series="series"
+    title="Cost"
+  />
 </template>
 
 <script>
 import { forEach, sumBy } from "lodash"
-import VueApexCharts from "vue-apexcharts"
+import DashboardCard from "@/dashboard/DashboardCard.vue"
 export default {
   name: "IncidentCostBarChartCard",
 
@@ -19,7 +22,7 @@ export default {
       }
     },
     loading: {
-      type: Boolean,
+      type: [String, Boolean],
       default: function() {
         return false
       }
@@ -27,7 +30,7 @@ export default {
   },
 
   components: {
-    apexchart: VueApexCharts
+    DashboardCard
   },
 
   computed: {

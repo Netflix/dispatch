@@ -5,11 +5,11 @@
     <div class="headline">Feedback</div>
     <v-spacer />
     <table-filter-dialog />
-    <!-- <v&#45;btn color="primary" dark class="ml&#45;2" @click="createEditShow()">New</v&#45;btn> -->
+    <!-- <v&#45;btn color="info"  class="ml&#45;2" @click="createEditShow()">New</v&#45;btn> -->
     <v-flex xs12>
       <v-layout column>
         <v-flex>
-          <v-card>
+          <v-card elevation="0">
             <v-card-title>
               <v-text-field
                 v-model="q"
@@ -18,7 +18,6 @@
                 single-line
                 hide-details
                 clearable
-                :loading="loading"
               />
             </v-card-title>
             <v-data-table
@@ -29,20 +28,11 @@
               :items-per-page.sync="itemsPerPage"
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
+              :loading="loading"
+              loading-text="Loading... Please wait"
             >
               <template v-slot:item.participant="{ item }">
-                <v-chip
-                  v-if="item.participant"
-                  class="ma-2"
-                  pill
-                  small
-                  :href="item.participant.individual.weblink"
-                >
-                  {{ item.participant.individual.name }}
-                </v-chip>
-                <v-chip v-else class="ma-2" pill small>
-                  Anonymous
-                </v-chip>
+                <participant :participant="item.participant" />
               </template>
               <template v-slot:item.created_at="{ item }">{{
                 item.created_at | formatDate
@@ -78,12 +68,14 @@ import { mapActions } from "vuex"
 import DeleteDialog from "@/feedback/DeleteDialog.vue"
 // import NewEditSheet from "@/feedback/NewEditSheet.vue"
 import TableFilterDialog from "@/feedback/TableFilterDialog.vue"
+import Participant from "@/incident/Participant.vue"
 export default {
   name: "FeedbackTable",
 
   components: {
     TableFilterDialog,
-    DeleteDialog
+    DeleteDialog,
+    Participant
     // NewEditSheet
   },
   data() {

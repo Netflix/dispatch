@@ -2,7 +2,7 @@
   <v-container fluid grid-list-xl>
     <v-layout row wrap>
       <v-flex class="d-flex justify-start" lg6 sm6 xs12>
-        <v-btn color="primary" dark @click="copyView">Share View</v-btn>
+        <v-btn color="info" @click="copyView">Share View</v-btn>
       </v-flex>
       <v-flex class="d-flex justify-end" lg6 sm6 xs12>
         <dialog-filter v-bind="query" @update="update" @loading="setLoading" />
@@ -138,7 +138,7 @@ export default {
   data() {
     return {
       tab: null,
-      loading: true,
+      loading: "error",
       items: []
     }
   },

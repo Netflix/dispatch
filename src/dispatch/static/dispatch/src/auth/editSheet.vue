@@ -6,7 +6,7 @@
           <v-list-item-title class="title">Edit</v-list-item-title>
           <v-list-item-subtitle>User</v-list-item-subtitle>
         </v-list-item-content>
-        <v-btn icon color="primary" :loading="loading" @click="save()">
+        <v-btn icon color="info" :loading="loading" @click="save()">
           <v-icon>save</v-icon>
         </v-btn>
         <v-btn icon color="secondary" @click="closeEdit">

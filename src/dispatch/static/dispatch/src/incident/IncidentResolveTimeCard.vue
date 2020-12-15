@@ -1,15 +1,18 @@
 <template>
-  <v-card :loading="loading">
-    <v-card-title>Mean Resolution (Active -> Closed)</v-card-title>
-    <apexchart type="line" height="250" :options="chartOptions" :series="series"></apexchart>
-  </v-card>
+  <dashboard-card
+    :loading="loading"
+    type="line"
+    :options="chartOptions"
+    :series="series"
+    title="Mean Resolution (Active -> Closed)"
+  />
 </template>
 
 <script>
 import { forEach, sumBy } from "lodash"
 import differenceInHours from "date-fns/differenceInHours"
 import parseISO from "date-fns/parseISO"
-import VueApexCharts from "vue-apexcharts"
+import DashboardCard from "@/dashboard/DashboardCard.vue"
 export default {
   name: "IncidentResolveTimeCard",
 
@@ -27,7 +30,7 @@ export default {
       }
     },
     loading: {
-      type: Boolean,
+      type: [String, Boolean],
       default: function() {
         return false
       }
@@ -35,7 +38,7 @@ export default {
   },
 
   components: {
-    apexchart: VueApexCharts
+    DashboardCard
   },
 
   data() {

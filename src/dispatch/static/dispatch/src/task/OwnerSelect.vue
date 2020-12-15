@@ -86,7 +86,7 @@ export default {
 
   methods: {
     querySelections(v) {
-      this.loading = true
+      this.loading = "error"
       // Simulated ajax query
       IndividualApi.getAll({ q: v }).then(response => {
         this.items = response.data.items
@@ -97,7 +97,7 @@ export default {
 
   mounted() {
     this.error = null
-    this.loading = true
+    this.loading = "error"
     IndividualApi.getAll().then(response => {
       this.items = response.data.items
       this.loading = false

@@ -1,13 +1,16 @@
 <template>
-  <v-card :loading="loading">
-    <v-card-title>Forecast</v-card-title>
-    <apexchart type="line" height="250" :options="chartOptions" :series="series"></apexchart>
-  </v-card>
+  <dashboard-card
+    :loading="loading"
+    type="line"
+    :options="chartOptions"
+    :series="series"
+    title="Forecast"
+  />
 </template>
 
 <script>
-import VueApexCharts from "vue-apexcharts"
 import IncidentApi from "@/incident/api"
+import DashboardCard from "@/dashboard/DashboardCard.vue"
 export default {
   name: "IncidentForecastCard",
   props: {
@@ -20,7 +23,7 @@ export default {
   },
 
   components: {
-    apexchart: VueApexCharts
+    DashboardCard
   },
 
   computed: {
@@ -74,7 +77,7 @@ export default {
 
   methods: {
     fetchData() {
-      this.loading = true
+      this.loading = "error"
       IncidentApi.getMetricForecast(this.value).then(response => {
         this.loading = false
         this.series = response.data.series

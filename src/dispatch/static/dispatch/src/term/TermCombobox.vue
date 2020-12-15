@@ -77,7 +77,7 @@ export default {
   methods: {
     fetchData(filterOptions) {
       this.error = null
-      this.loading = true
+      this.loading = "error"
       TermApi.getAll(filterOptions).then(response => {
         this.items = response.data.items
         this.loading = false

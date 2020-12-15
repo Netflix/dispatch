@@ -11,7 +11,8 @@
     return-object
     :hint="hint"
     :loading="loading"
-  />
+  >
+  </v-autocomplete>
 </template>
 
 <script>
@@ -73,7 +74,7 @@ export default {
 
   methods: {
     querySelections(v) {
-      this.loading = true
+      this.loading = "error"
       // Simulated ajax query
       ServiceApi.getAll({ q: v }).then(response => {
         this.items = response.data.items
@@ -84,7 +85,7 @@ export default {
 
   mounted() {
     this.error = null
-    this.loading = true
+    this.loading = "error"
     ServiceApi.getAll().then(response => {
       this.items = response.data.items
       this.loading = false

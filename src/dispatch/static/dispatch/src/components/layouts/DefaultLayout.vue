@@ -14,12 +14,6 @@
         </v-container>
       </div>
     </v-content>
-    <!-- App Footer -->
-    <v-footer height="auto" class="pa-3 app--footer">
-      <v-spacer />
-      <span class="caption mr-1">Made by Netflix Security</span>
-      <v-icon color="pink" small>favorite</v-icon>
-    </v-footer>
     <!-- Go to top -->
   </v-app>
 </template>

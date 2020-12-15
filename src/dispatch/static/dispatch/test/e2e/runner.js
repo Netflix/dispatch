@@ -42,7 +42,7 @@ devConfigPromise
       process.exit(code)
     })
 
-    runner.on("error", function(err) {
+    runner.on(false, function(err) {
       server.close()
       throw err
     })

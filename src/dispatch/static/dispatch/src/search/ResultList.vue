@@ -1,98 +1,60 @@
 <template>
-  <v-card class="mx-auto">
-    <v-subheader>Search results for: "{{ query }}"</v-subheader>
-    <v-list v-if="!results.length">
-      <v-list-item no-action>
-        <v-list-item-content>
-          <v-list-item-title class="title"
-            >Sorry, we didn't find anything matching your query.</v-list-item-title
-          >
-        </v-list-item-content>
-      </v-list-item>
-    </v-list>
-    <div v-else>
-      <incident-list :items="incidents" />
-      <task-list :items="tasks" />
-      <term-list :items="terms" />
-      <definition-list :items="definitions" />
-      <tag-list :items="tags" />
-      <individual-list :items="individuals" />
-      <team-list :items="teams" />
-      <service-list :items="services" />
-    </div>
+  <v-card class="mx-auto" outlined :loading="loading" elevation="0">
+    <v-subheader class="title">Search results for: "{{ query }}"</v-subheader>
+    <v-expansion-panels flat>
+      <v-expansion-panel>
+        <v-expansion-panel-header
+          >Incidents ({{ results.incidents.length }})</v-expansion-panel-header
+        >
+        <v-expansion-panel-content>
+          <incident-summary-table :items="results.incidents" />
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+      <v-expansion-panel>
+        <v-expansion-panel-header>Tasks ({{ results.tasks.length }})</v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <task-summary-table :items="results.tasks" />
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+      <v-expansion-panel>
+        <v-expansion-panel-header
+          >Documents ({{ results.documents.length }})</v-expansion-panel-header
+        >
+        <v-expansion-panel-content>
+          <document-summary-table :items="results.documents" />
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+      <v-expansion-panel>
+        <v-expansion-panel-header>Tag ({{ results.tags.length }})</v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <tag-summary-table :items="results.tags" />
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+    </v-expansion-panels>
   </v-card>
 </template>
 
 <script>
 import { mapState } from "vuex"
-import IncidentList from "@/incident/List.vue"
-import ServiceList from "@/service/List.vue"
-import IndividualList from "@/individual/List.vue"
-import TeamList from "@/team/List.vue"
-import DefinitionList from "@/definition/List.vue"
-import TermList from "@/term/List.vue"
-import TagList from "@/tag/List.vue"
-import TaskList from "@/task/List.vue"
+import IncidentSummaryTable from "@/incident/IncidentSummaryTable.vue"
+import TaskSummaryTable from "@/task/TaskSummaryTable.vue"
+import DocumentSummaryTable from "@/document/DocumentSummaryTable.vue"
+import TagSummaryTable from "@/tag/TagSummaryTable.vue"
+
 export default {
   name: "SearchResultList",
   components: {
-    IncidentList,
-    ServiceList,
-    IndividualList,
-    DefinitionList,
-    TermList,
-    TeamList,
-    TagList,
-    TaskList
+    IncidentSummaryTable,
+    TaskSummaryTable,
+    DocumentSummaryTable,
+    TagSummaryTable
   },
   data() {
     return {}
   },
 
   computed: {
-    ...mapState("search", ["results", "query"]),
-    definitions() {
-      return this.results.filter(item => {
-        return item.type.toLowerCase().includes("definition")
-      })
-    },
-    services() {
-      return this.results.filter(item => {
-        return item.type.toLowerCase().includes("service")
-      })
-    },
-    individuals() {
-      return this.results.filter(item => {
-        return item.type.toLowerCase().includes("individual_contact")
-      })
-    },
-    teams() {
-      return this.results.filter(item => {
-        return item.type.toLowerCase().includes("team")
-      })
-    },
-    terms() {
-      return this.results.filter(item => {
-        return item.type.toLowerCase().includes("term")
-      })
-    },
-    tags() {
-      return this.results.filter(item => {
-        return item.type.toLowerCase().includes("tag")
-      })
-    },
-    tasks() {
-      return this.results.filter(item => {
-        return item.type.toLowerCase().includes("task")
-      })
-    },
-    incidents() {
-      return this.results.filter(item => {
-        return item.type.toLowerCase().includes("incident")
-      })
-    }
-  },
-
-  methods: {}
+    ...mapState("search", ["results", "query", "loading"])
+  }
 }
 </script>

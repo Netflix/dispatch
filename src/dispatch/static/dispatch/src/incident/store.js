@@ -79,7 +79,7 @@ const getters = {
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
-    commit("SET_TABLE_LOADING", true)
+    commit("SET_TABLE_LOADING", "primary")
 
     let tableOptions = Object.assign({}, state.table.options)
     delete tableOptions.filters

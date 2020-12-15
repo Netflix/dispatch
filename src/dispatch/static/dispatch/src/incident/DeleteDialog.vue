@@ -18,10 +18,10 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="blue darken-1" text @click="close">
+        <v-btn color="blue en-1" text @click="close">
           Cancel
         </v-btn>
-        <v-btn color="red darken-1" text @click="performDelete(selectedIncident)">
+        <v-btn color="red en-1" text @click="performDelete(selectedIncident)">
           Delete
         </v-btn>
       </v-card-actions>

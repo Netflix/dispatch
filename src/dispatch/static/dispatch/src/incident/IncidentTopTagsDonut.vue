@@ -1,13 +1,16 @@
 <template>
-  <v-card :loading="loading">
-    <v-card-title>Common Tags</v-card-title>
-    <apexchart type="donut" height="250" :options="chartOptions" :series="series"></apexchart>
-  </v-card>
+  <dashboard-card
+    :loading="loading"
+    type="donut"
+    :options="chartOptions"
+    :series="series"
+    title="Common Tags"
+  />
 </template>
 
 <script>
 import { forEach, countBy, chain, map } from "lodash"
-import VueApexCharts from "vue-apexcharts"
+import DashboardCard from "@/dashboard/DashboardCard.vue"
 export default {
   name: "IncidentTopTagsDonutCard",
 
@@ -19,7 +22,7 @@ export default {
       }
     },
     loading: {
-      type: Boolean,
+      type: [String, Boolean],
       default: function() {
         return false
       }
@@ -27,7 +30,7 @@ export default {
   },
 
   components: {
-    apexchart: VueApexCharts
+    DashboardCard
   },
 
   computed: {

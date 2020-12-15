@@ -3,7 +3,7 @@
     <new-edit-sheet />
     <v-divider></v-divider>
     <v-list>
-      <v-list-group prepend-icon="book" no-action color="primary">
+      <v-list-group prepend-icon="book" no-action color="info">
         <template v-slot:activator>
           <v-list-item>
             <v-list-item-content>

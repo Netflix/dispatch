@@ -8,13 +8,7 @@
             <v-list-item-title v-else class="title">New</v-list-item-title>
             <v-list-item-subtitle>Service</v-list-item-subtitle>
           </v-list-item-content>
-          <v-btn
-            icon
-            color="primary"
-            :loading="loading"
-            :disabled="invalid || !validated"
-            @click="save()"
-          >
+          <v-btn icon color="info" :disabled="invalid || !validated" @click="save()">
             <v-icon>save</v-icon>
           </v-btn>
           <v-btn icon color="secondary" @click="closeCreateEdit()">
@@ -161,7 +155,7 @@ export default {
   },
 
   mounted() {
-    this.loading = true
+    this.loading = "error"
     PluginApi.getByType("oncall").then(response => {
       this.loading = false
       this.oncall_plugins = response.data.items.map(p => p.slug)

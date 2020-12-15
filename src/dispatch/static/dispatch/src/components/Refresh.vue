@@ -5,7 +5,7 @@
       <v-card-text>{{ message }}</v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="primary" text @click="performRefresh()">Refresh</v-btn>
+        <v-btn color="info" text @click="performRefresh()">Refresh</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

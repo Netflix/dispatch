@@ -1,13 +1,15 @@
 <template>
-  <div class="app-root">
-    <router-view />
-    <v-snackbar bottom right :value="updateExists" :timeout="0" color="primary">
-      An update is available
-      <v-btn text @click="refreshApp">
-        Update
-      </v-btn>
-    </v-snackbar>
-  </div>
+  <v-app>
+    <div class="app-root">
+      <router-view />
+      <v-snackbar bottom right :value="updateExists" :timeout="0" color="info">
+        An update is available
+        <v-btn text @click="refreshApp">
+          Update
+        </v-btn>
+      </v-snackbar>
+    </div>
+  </v-app>
 </template>
 
 <script>
