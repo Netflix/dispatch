@@ -10,7 +10,7 @@
       <page-header />
       <div class="page-wrapper">
         <v-container pa-4 grid-list-lg>
-          <v-tabs fixed-tabs v-model="tab" color="gray1">
+          <v-tabs fixed-tabs v-model="tab" color="primary">
             <v-tab to="incidents">Incidents</v-tab>
             <v-tab to="tasks">Tasks</v-tab>
           </v-tabs>

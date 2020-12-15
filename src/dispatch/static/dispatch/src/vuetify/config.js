@@ -10,6 +10,7 @@ export var opts = {
         info: "#4969E4",
         warning: "#FBA404",
         success: "#41B957",
+        toolbar: "#FFFFFF",
         background0: "#FFFFFF",
         background1: "#FAFAFA",
         background2: "#F0F0F0",
@@ -26,13 +27,14 @@ export var opts = {
         white: "#FFFFFF"
       },
       dark: {
-        primary: "#0F0F0F",
+        primary: "#E50914",
         secondary: "#B6B6B7",
         accent: "#8c9eff",
         error: "#E50914",
         info: "#4969E4",
         warning: "#FBA404",
         success: "#41B957",
+        toolbar: "#404041",
         background0: "#0F0F0F",
         background1: "#161616",
         background2: "#232323",

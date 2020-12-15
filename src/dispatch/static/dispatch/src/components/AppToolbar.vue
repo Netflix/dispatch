@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar clipped-left clipped-right app flat class="v-bar--underline" color="white">
+  <v-app-bar clipped-left clipped-right app flat class="v-bar--underline" color="background0">
     <!--<v-app-bar-nav-icon @click="handleDrawerToggle" />-->
     <router-link to="/" tag="span">
       <span class="button font-weight-bold">D I S P A T C H</span>
@@ -17,6 +17,23 @@
     />
     <v-spacer />
     <v-toolbar-items>
+      <v-tooltip v-if="!$vuetify.theme.dark" bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn v-on="on" small icon @click="toggleDarkTheme">
+            <v-icon class="mr-1">mdi-moon-waxing-crescent</v-icon>
+          </v-btn>
+        </template>
+        <span>Dark Mode On</span>
+      </v-tooltip>
+
+      <v-tooltip v-else bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn v-on="on" small icon @click="toggleDarkTheme">
+            <v-icon>mdi-white-balance-sunny</v-icon>
+          </v-btn>
+        </template>
+        <span>Dark Mode Off</span>
+      </v-tooltip>
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn icon v-on="on" @click="handleFullScreen()">
@@ -81,6 +98,10 @@ export default {
     performSearch() {
       this.$store.dispatch("search/getResults", this.$store.state.query)
       this.$router.push("/search")
+    },
+    toggleDarkTheme() {
+      this.$vuetify.theme.dark = !this.$vuetify.theme.dark
+      console.log(this.$vuetify.theme.dark)
     },
     ...mapState("auth", ["userInfo"]),
     ...mapActions("search", ["setQuery"]),

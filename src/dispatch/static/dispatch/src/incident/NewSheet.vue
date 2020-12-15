@@ -20,7 +20,7 @@
           </v-btn>
         </v-list-item>
       </template>
-      <v-tabs color="gray3" v-model="tab">
+      <v-tabs color="primary" v-model="tab">
         <v-tab key="details">Details</v-tab>
       </v-tabs>
       <v-tabs-items v-model="tab">
