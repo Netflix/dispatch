@@ -101,7 +101,6 @@ export default {
     },
     toggleDarkTheme() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark
-      console.log(this.$vuetify.theme.dark)
     },
     ...mapState("auth", ["userInfo"]),
     ...mapActions("search", ["setQuery"]),
