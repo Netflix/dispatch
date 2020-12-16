@@ -87,7 +87,7 @@
                 <incident-priority :priority="item.incident_priority.name" />
               </template>
               <template v-slot:item.status="{ item }">
-                <incident-status :status="item.status" />
+                <incident-status :status="item.status" :id="item.id" />
               </template>
             </v-data-table>
             <v-badge
@@ -233,14 +233,20 @@ export default {
           csvContent += [
             Object.keys(items[0]).join(","),
             ...items.map(item => {
-              return Object.values(item)
-                .map(value => {
-                  if (typeof value === "object") {
-                    return value[Object.keys(value)[0]]
-                  }
-                  return value
-                })
-                .join(",")
+              if (typeof item === "object") {
+                return Object.values(item)
+                  .map(value => {
+                    if (value === null) {
+                      return ""
+                    }
+                    if (typeof value === "object") {
+                      return value[Object.keys(value)[0]]
+                    }
+                    return value
+                  })
+                  .join(",")
+              }
+              return ""
             })
           ]
             .join("\n")
@@ -254,7 +260,8 @@ export default {
           this.exportLoading = false
           this.closeExport()
         })
-        .catch(() => {
+        .catch(err => {
+          console.log(err)
           this.exportLoading = false
           this.closeExport()
         })
