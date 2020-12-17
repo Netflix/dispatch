@@ -30,10 +30,12 @@ class Participant(Base):
 
     # relationships
     feedback = relationship("Feedback", backref="participant")
-    incident_id = Column(Integer, ForeignKey("incident.id"))
+    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     individual = relationship("IndividualContact", lazy="subquery", backref="participant")
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
-    participant_roles = relationship("ParticipantRole", backref="participant", lazy="subquery")
+    participant_roles = relationship(
+        "ParticipantRole", backref="participant", lazy="subquery", cascade="all, delete-orphan"
+    )
     reports = relationship("Report", backref="participant")
     created_tasks = relationship(
         "Task", backref="creator", primaryjoin="Participant.id==Task.creator_id"

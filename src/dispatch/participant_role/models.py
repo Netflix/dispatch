@@ -21,7 +21,7 @@ class ParticipantRole(Base):
     assumed_at = Column(DateTime, default=datetime.utcnow)
     renounced_at = Column(DateTime)
     role = Column(String, default=ParticipantRoleType.participant)
-    participant_id = Column(Integer, ForeignKey("participant.id"))
+    participant_id = Column(Integer, ForeignKey("participant.id", ondelete="CASCADE"))
 
 
 # Pydantic models...
