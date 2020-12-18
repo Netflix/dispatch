@@ -11,6 +11,7 @@
     return-object
     :hint="hint"
     :loading="loading"
+    no-filter
   >
   </v-autocomplete>
 </template>
