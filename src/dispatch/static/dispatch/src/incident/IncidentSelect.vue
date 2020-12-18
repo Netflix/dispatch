@@ -11,7 +11,6 @@
     clearable
     :loading="loading"
     return-object
-    cache-items
     no-filter
   >
     <template v-slot:selection="{ attr, on, item, selected }">
@@ -48,7 +47,7 @@ export default {
     value: {
       type: Object,
       default: function() {
-        return {}
+        return null
       }
     },
     label: {

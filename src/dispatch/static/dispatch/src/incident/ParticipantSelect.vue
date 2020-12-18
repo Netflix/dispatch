@@ -5,17 +5,30 @@
     item-text="name"
     :search-input.sync="search"
     :menu-props="{ maxHeight: '400' }"
+    hide-selected
     :label="label"
+    close
+    clearable
     :loading="loading"
-    chips
-    cache-items
     return-object
+    no-filter
   >
+    <template v-slot:selection="{ attr, on, item, selected }">
+      <v-chip v-bind="attr" :input-value="selected" v-on="on">
+        <span v-text="item.individual.name"></span>
+      </v-chip>
+    </template>
+    <template v-slot:item="{ item }">
+      <v-list-item-content>
+        <v-list-item-title v-text="item.individual.name"></v-list-item-title>
+        <v-list-item-subtitle v-text="item.individual.email"></v-list-item-subtitle>
+      </v-list-item-content>
+    </template>
     <template v-slot:no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No indivduals matching "
+            No individuals matching "
             <strong>{{ search }}</strong
             >".
           </v-list-item-title>
@@ -27,14 +40,14 @@
 
 <script>
 import IndividualApi from "@/individual/api"
-import { map } from "lodash"
+import { cloneDeep } from "lodash"
 export default {
   name: "ParticipantSelect",
   props: {
     value: {
       type: Object,
       default: function() {
-        return {}
+        return null
       }
     },
     label: {
@@ -56,55 +69,50 @@ export default {
   computed: {
     participant: {
       get() {
-        if (!this.value) return
-        return this.value
+        return cloneDeep(this.value)
       },
       set(value) {
-        let wrapped = value
-        if (!("individual" in wrapped)) {
-          wrapped = { individual: wrapped }
-        }
-        this.$emit("input", wrapped)
-        this.search = null
+        this.$emit("input", value)
       }
     }
   },
 
+  mounted() {
+    this.fetchData({})
+  },
+
   watch: {
     search(val) {
-      val && val !== this.select && this.querySelections(val)
+      if (!val) {
+        return
+      }
+      this.getFilteredData({ q: val })
     },
     value(val) {
       if (!val) return
-      console.log(val)
-      this.items.push.apply(
-        this.items,
-        map(val, function(item) {
-          console.log(item)
-          return item["individual"]
-        })
-      )
+      this.items.push(val)
     }
   },
 
   methods: {
-    querySelections(v) {
+    fetchData(filterOptions) {
       this.loading = "error"
-      // Simulated ajax query
-      IndividualApi.getAll({ q: v }).then(response => {
-        this.items = response.data.items
+      IndividualApi.getAll(filterOptions).then(response => {
+        this.items = response.data.items.map(function(x) {
+          return { individual: x }
+        })
         this.loading = false
       })
-    }
-  },
+    },
+    getFilteredData(query) {
+      // cancel pending call
+      clearTimeout(this._timerId)
 
-  mounted() {
-    this.error = null
-    this.loading = "error"
-    IndividualApi.getAll().then(response => {
-      this.items = response.data.items
-      this.loading = false
-    })
+      // delay new call 500ms
+      this._timerId = setTimeout(() => {
+        this.fetchData(query)
+      }, 500)
+    }
   }
 }
 </script>

@@ -39,9 +39,8 @@ from dispatch.incident_priority.models import (
     IncidentPriorityRead,
 )
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
-from dispatch.individual.models import IndividualContact
-from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
-from dispatch.participant.models import Participant, ParticipantRead
+from dispatch.models import DispatchBase, TimeStampMixin
+from dispatch.participant.models import Participant, ParticipantRead, ParticipantUpdate
 from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
 from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
@@ -264,8 +263,8 @@ class IncidentUpdate(IncidentBase):
     incident_type: IncidentTypeBase
     reported_at: Optional[datetime] = None
     stable_at: Optional[datetime] = None
-    commander: Optional[ParticipantRead]
-    reporter: Optional[ParticipantRead]
+    commander: Optional[ParticipantUpdate]
+    reporter: Optional[ParticipantUpdate]
     duplicates: Optional[List[IncidentReadNested]] = []
     tags: Optional[List[Any]] = []  # any until we figure out circular imports
     terms: Optional[List[Any]] = []  # any until we figure out circular imports

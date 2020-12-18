@@ -82,7 +82,7 @@ const actions = {
       })
     })
     return TaskApi.getAll(tableOptions).then(response => {
-      commit("SET_TABLE_LOADING", "primary")
+      commit("SET_TABLE_LOADING", false)
       commit("SET_TABLE_ROWS", response.data)
     })
   }, 200),
