@@ -43,12 +43,12 @@
 import IncidentApi from "@/incident/api"
 import { cloneDeep } from "lodash"
 export default {
-  name: "IncidentComboBox",
+  name: "IncidentSelect",
   props: {
     value: {
-      type: Array,
+      type: Object,
       default: function() {
-        return []
+        return {}
       }
     },
     label: {

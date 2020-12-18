@@ -7,6 +7,7 @@
     :menu-props="{ maxHeight: '400' }"
     :label="label"
     :loading="loading"
+    chips
     cache-items
     return-object
   >
@@ -39,7 +40,7 @@ export default {
     label: {
       type: String,
       default: function() {
-        return "Owner"
+        return "Participant"
       }
     }
   },
@@ -56,7 +57,7 @@ export default {
     participant: {
       get() {
         if (!this.value) return
-        return this.value["individual"]
+        return this.value
       },
       set(value) {
         let wrapped = value
@@ -75,6 +76,7 @@ export default {
     },
     value(val) {
       if (!val) return
+      console.log(val)
       this.items.push.apply(
         this.items,
         map(val, function(item) {
