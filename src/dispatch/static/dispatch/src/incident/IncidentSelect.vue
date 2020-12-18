@@ -12,6 +12,7 @@
     :loading="loading"
     return-object
     cache-items
+    :filter="customFilter"
   >
     <template v-slot:selection="{ attr, on, item, selected }">
       <v-chip v-bind="attr" :input-value="selected" v-on="on">
@@ -95,6 +96,17 @@ export default {
         this.items = response.data.items
         this.loading = false
       })
+    },
+    customFilter(item, queryText) {
+      const textOne = item.name.toLowerCase()
+      const textTwo = item.title.toLowerCase()
+      const textThree = item.description.toLowerCase()
+      const searchText = queryText.toLowerCase()
+      return (
+        textOne.indexOf(searchText) > -1 ||
+        textTwo.indexOf(searchText) > -1 ||
+        textThree.indexOf(searchText) > -1
+      )
     }
   },
 
