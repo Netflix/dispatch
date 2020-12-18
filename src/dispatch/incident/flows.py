@@ -112,8 +112,8 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
             title,
             incident.incident_type.name,
             incident.incident_priority.name,
-            incident.commander.email,
-            incident.reporter.email,
+            incident.commander.individual.email,
+            incident.reporter.individual.email,
             incident_type_plugin_metadata,
         )
         ticket.update({"resource_type": plugin.slug})
@@ -154,8 +154,8 @@ def update_external_incident_ticket(
         incident.incident_type.name,
         incident.incident_priority.name,
         incident.status.lower(),
-        incident.commander.email,
-        incident.reporter.email,
+        incident.commander.individual.email,
+        incident.reporter.individual.email,
         resolve_attr(incident, "conversation.weblink"),
         resolve_attr(incident, "incident_document.weblink"),
         resolve_attr(incident, "storage.weblink"),
@@ -357,7 +357,7 @@ def create_conversation(incident: Incident, participants: List[str], db_session:
 def set_conversation_topic(incident: Incident, db_session: SessionLocal):
     """Sets the conversation topic."""
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
-    conversation_topic = f":helmet_with_white_cross: {incident.commander.name} - Type: {incident.incident_type.name} - Priority: {incident.incident_priority.name} - Status: {incident.status}"
+    conversation_topic = f":helmet_with_white_cross: {incident.commander.individual.name} - Type: {incident.incident_type.name} - Priority: {incident.incident_priority.name} - Status: {incident.status}"
     plugin.instance.set_topic(incident.conversation.channel_id, conversation_topic)
 
 
@@ -645,7 +645,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
                     type=incident.incident_type.name,
                     title=incident.title,
                     description=incident.description,
-                    commander_fullname=incident.commander.name,
+                    commander_fullname=incident.commander.individual.name,
                     conversation_weblink=resolve_attr(incident, "conversation.weblink"),
                     document_weblink=resolve_attr(incident, "incident_document.weblink"),
                     storage_weblink=resolve_attr(incident, "storage.weblink"),
@@ -789,7 +789,7 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
             type=incident.incident_type.name,
             title=incident.title,
             description=incident.description,
-            commander_fullname=incident.commander.name,
+            commander_fullname=incident.commander.individual.name,
             conversation_weblink=resolve_attr(incident, "conversation.weblink"),
             document_weblink=resolve_attr(incident, "incident_document.weblink"),
             storage_weblink=resolve_attr(incident, "storage.weblink"),
@@ -1187,7 +1187,7 @@ def incident_remove_participant_flow(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    if user_email == incident.commander.email:
+    if user_email == incident.commander.individual.email:
         # we add the incident commander to the conversation again
         add_participant_to_conversation(user_email, incident_id, db_session)
 

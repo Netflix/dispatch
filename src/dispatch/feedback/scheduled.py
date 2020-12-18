@@ -17,7 +17,7 @@ def group_feedback_by_commander(feedback):
     """Groups feedback by commander."""
     grouped = defaultdict(lambda: [])
     for piece in feedback:
-        grouped[piece.incident.commander.email].append(piece)
+        grouped[piece.incident.commander.individual.email].append(piece)
     return grouped
 
 

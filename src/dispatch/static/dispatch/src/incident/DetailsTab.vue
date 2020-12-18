@@ -53,7 +53,7 @@
       </v-flex>
       <v-flex xs6>
         <ValidationProvider name="Commander" rules="required" immediate>
-          <individual-select
+          <participant-select
             v-model="commander"
             slot-scope="{ errors, valid }"
             label="Commander"
@@ -62,12 +62,12 @@
             hint="The incident's current commander"
             clearable
             required
-          ></individual-select>
+          />
         </ValidationProvider>
       </v-flex>
       <v-flex xs6>
         <ValidationProvider name="Reporter" rules="required" immediate>
-          <individual-select
+          <participant-select
             v-model="reporter"
             slot-scope="{ errors, valid }"
             label="Reporter"
@@ -76,7 +76,7 @@
             hint="The incident's current reporter"
             clearable
             required
-          ></individual-select>
+          />
         </ValidationProvider>
       </v-flex>
       <v-flex xs12>
@@ -124,12 +124,12 @@ import { ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
-import IndividualSelect from "@/individual/IndividualSelect.vue"
 import DatePickerMenu from "@/components/DatePickerMenu.vue"
 import TimePickerMenu from "@/components/TimePickerMenu.vue"
 import TermCombobox from "@/term/TermCombobox.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
+import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 
 extend("required", {
   ...required,
@@ -143,7 +143,7 @@ export default {
     ValidationProvider,
     IncidentPrioritySelect,
     IncidentTypeSelect,
-    IndividualSelect,
+    ParticipantSelect,
     TermCombobox,
     TagFilterCombobox,
     IncidentFilterCombobox,

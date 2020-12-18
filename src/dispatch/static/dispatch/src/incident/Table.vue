@@ -43,10 +43,10 @@
               </template>
               <template v-slot:item.cost="{ item }">{{ item.cost | toUSD }}</template>
               <template v-slot:item.commander="{ item }">
-                <individual :individual="item.commander" />
+                <incident-participant :participant="item.commander" />
               </template>
               <template v-slot:item.reporter="{ item }">
-                <individual :individual="item.reporter" />
+                <incident-participant :participant="item.reporter" />
               </template>
               <template v-slot:item.reported_at="{ item }">{{
                 item.reported_at | formatDate
@@ -84,7 +84,7 @@ import NewSheet from "@/incident/NewSheet.vue"
 import BulkEditSheet from "@/incident/BulkEditSheet.vue"
 import IncidentStatus from "@/incident/IncidentStatus.vue"
 import IncidentPriority from "@/incident/IncidentPriority.vue"
-import Individual from "@/individual/Individual.vue"
+import IncidentParticipant from "@/incident/Participant.vue"
 
 export default {
   name: "IncidentTable",
@@ -97,7 +97,7 @@ export default {
     BulkEditSheet,
     IncidentStatus,
     IncidentPriority,
-    Individual
+    IncidentParticipant
   },
 
   props: ["name"],
