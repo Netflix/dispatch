@@ -5,6 +5,7 @@
     <div class="headline">Tasks</div>
     <v-spacer />
     <table-filter-dialog />
+    <table-export-dialog />
     <v-btn color="info" class="ml-2" @click="createEditShow()">New</v-btn>
     <v-flex xs12>
       <v-layout column>
@@ -117,6 +118,7 @@ import TableFilterDialog from "@/task/TableFilterDialog.vue"
 import BulkEditSheet from "@/task/BulkEditSheet.vue"
 import IncidentPriority from "@/incident/IncidentPriority.vue"
 import Participant from "@/incident/Participant.vue"
+import TableExportDialog from "@/task/TableExportDialog.vue"
 
 export default {
   name: "TaskTable",
@@ -127,7 +129,8 @@ export default {
     NewEditSheet,
     BulkEditSheet,
     IncidentPriority,
-    Participant
+    Participant,
+    TableExportDialog
   },
   data() {
     return {
