@@ -148,11 +148,13 @@ def update(*, db_session, task: Task, task_in: TaskUpdate, sync_external: bool =
 
     # we add owner as a participant if they are not one already
     if task_in.owner:
-        task.owner = incident_flows.incident_add_or_reactivate_participant_flow(
-            db_session=db_session,
-            incident_id=task.incident.id,
-            user_email=task_in.owner.individual.email,
-        )
+        # don't reactive participants if the tasks is already resolved
+        if task_in.status != TaskStatus.resolved:
+            task.owner = incident_flows.incident_add_or_reactivate_participant_flow(
+                db_session=db_session,
+                incident_id=task.incident.id,
+                user_email=task_in.owner.individual.email,
+            )
 
     update_data = task_in.dict(
         skip_defaults=True, exclude={"assignees", "owner", "creator", "incident", "tickets"}
