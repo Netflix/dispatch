@@ -1,0 +1,17 @@
+{% extends "templates/base.mjml" %}
+{% block items %}
+{% for item in items %}
+<mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
+  <mj-column width="100%">
+    <ul style="list-style-type:none; padding-left: 0;">
+      <li>
+        <b
+          ><a href="{{ item.title_link }}" target="_blank" rel="noopener noreferrer">{{ item.title }}</a></b
+        >
+      </li>
+      <li>{{ item.text }}</li>
+    </ul>
+  </mj-column>
+</mj-section>
+{% endfor %}
+{% endblock %}

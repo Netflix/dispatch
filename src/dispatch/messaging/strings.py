@@ -8,7 +8,7 @@ from typing import List
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.incident.enums import IncidentStatus
 
-from .config import (
+from dispatch.config import (
     INCIDENT_RESOURCE_CONVERSATION_REFERENCE_DOCUMENT,
     INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT,
     INCIDENT_RESOURCE_INCIDENT_FAQ_DOCUMENT,

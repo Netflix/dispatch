@@ -1,0 +1,35 @@
+{% extends 'templates/base.mjml' %}
+{% block description %}
+<mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
+<mj-column width="100%">
+    <mj-text color="#212b35" font-weight="bold" font-size="20px">
+        {{ description }}
+    </mj-text>
+    </mj-column>
+</mj-section>
+{% endblock %}
+
+{% block items %}
+{% for item in items %}
+<mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
+    <mj-column width="100%">
+        {% for row in item %}
+            {% if row.title_link %}
+                <a href="{{ row.title_link }}" target="_blank" rel="noopener noreferrer">{{ row.title }}</a><
+            {% elif row.datetime %}
+                {{ row.title }}
+                {{ row.datetime | datetime }}
+            {% else %}
+                {{ row.title }}
+                {{ row.text }}
+            {% endif %}
+        {% endfor %}
+    </mj-column>
+</mj-section>
+<mj-section>
+    <mj-column>
+        <mj-divider border-width="1px" border-color="lightgrey" />
+    </mj-column>
+</mj-section>
+{% endfor %}
+{% endblock %}

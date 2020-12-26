@@ -14,7 +14,7 @@ from dispatch.database import resolve_attr
 from dispatch.decorators import background_task
 from dispatch.enums import Visibility
 from dispatch.individual import service as individual_service
-from dispatch.messaging import (
+from dispatch.messaging.strings import (
     INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION,
     INCIDENT_DAILY_SUMMARY_DESCRIPTION,
     INCIDENT_DAILY_SUMMARY_NO_ACTIVE_INCIDENTS_DESCRIPTION,

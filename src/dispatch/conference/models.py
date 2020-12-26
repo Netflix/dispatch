@@ -5,7 +5,7 @@ from pydantic import validator
 from sqlalchemy import Column, Integer, String
 
 from dispatch.database import Base
-from dispatch.messaging import INCIDENT_CONFERENCE_DESCRIPTION
+from dispatch.messaging.strings import INCIDENT_CONFERENCE_DESCRIPTION
 from dispatch.models import DispatchBase, ResourceMixin
 
 

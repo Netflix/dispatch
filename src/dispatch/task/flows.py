@@ -11,7 +11,7 @@ from collections import defaultdict
 from datetime import datetime
 
 from dispatch.database import SessionLocal
-from dispatch.messaging import (
+from dispatch.messaging.strings import (
     INCIDENT_TASK_REMINDER,
     INCIDENT_TASK_NEW_NOTIFICATION,
     INCIDENT_TASK_RESOLVED_NOTIFICATION,
