@@ -2,6 +2,7 @@
   <v-container>
     <v-row justify="end">
       <v-switch v-model="showDetails" label="Show details"></v-switch>
+      <v-btn color="secondary" class="ml-2 mr-2 mt-3" @click="exportToCSV()">Export</v-btn>
     </v-row>
     <v-timeline v-if="events.length" dense clipped>
       <v-timeline-item
@@ -49,10 +50,47 @@ export default {
   },
 
   computed: {
-    ...mapFields("incident", ["selected.events"]),
+    ...mapFields("incident", ["selected.events", "selected.name"]),
 
     sortedEvents: function() {
       return this.events.slice().sort((a, b) => new Date(a.started_at) - new Date(b.started_at))
+    }
+  },
+  methods: {
+    exportToCSV() {
+      this.exportLoading = true
+      let items = this.sortedEvents
+
+      let csvContent = "data:text/csv;charset=utf-8,"
+      csvContent += [
+        Object.keys(items[0]).join(","),
+        ...items.map(item => {
+          if (typeof item === "object") {
+            return Object.values(item)
+              .map(value => {
+                if (value === null) {
+                  return ""
+                }
+                if (typeof value === "object") {
+                  return value[Object.keys(value)[0]]
+                }
+                return value
+              })
+              .join(",")
+          }
+          return ""
+        })
+      ]
+        .join("\n")
+        .replace(/(^\[)|(\]$)/gm, "")
+
+      const data = encodeURI(csvContent)
+      const link = document.createElement("a")
+      link.setAttribute("href", data)
+      link.setAttribute("download", this.name + "-timeline-export.csv")
+      link.click()
+      this.exportLoading = false
+      this.closeExport()
     }
   }
 }
