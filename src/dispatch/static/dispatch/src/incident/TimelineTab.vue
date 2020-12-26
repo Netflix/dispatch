@@ -2,7 +2,13 @@
   <v-container>
     <v-row justify="end">
       <v-switch v-model="showDetails" label="Show details"></v-switch>
-      <v-btn color="secondary" class="ml-2 mr-2 mt-3" @click="exportToCSV()">Export</v-btn>
+      <v-btn
+        color="secondary"
+        class="ml-2 mr-2 mt-3"
+        @click="exportToCSV()"
+        :loading="exportLoading"
+        >Export</v-btn
+      >
     </v-row>
     <v-timeline v-if="events.length" dense clipped>
       <v-timeline-item
@@ -17,7 +23,7 @@
             {{ event.description }}
             <transition-group name="slide" v-if="showDetails">
               <template v-for="(value, key) in event.details">
-                <v-card flat="true" v-bind:key="key">
+                <v-card flat v-bind:key="key">
                   <v-card-title class="subtitle-1">{{ key | snakeToCamel }}</v-card-title>
                   <v-card-text>{{ value }}</v-card-text>
                 </v-card>
@@ -45,7 +51,8 @@ export default {
 
   data() {
     return {
-      showDetails: false
+      showDetails: false,
+      exportLoading: false
     }
   },
 
@@ -90,7 +97,6 @@ export default {
       link.setAttribute("download", this.name + "-timeline-export.csv")
       link.click()
       this.exportLoading = false
-      this.closeExport()
     }
   }
 }

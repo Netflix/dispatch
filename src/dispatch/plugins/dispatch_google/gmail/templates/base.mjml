@@ -1,0 +1,43 @@
+<mjml>
+  <mj-body background-color="#F0F0F0">
+    <mj-section>
+      <mj-column vertical-align="middle">
+        <mj-text align="left" font-size="11px" padding-bottom="0px" padding-top="0"><span style="font-size: 11px">D I S P A T C H</span></mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff">
+        <mj-column>
+            <mj-divider border-width="1px" border-color="#DEDEDE" />
+            <mj-raw>
+            {% block description %}{% endblock %}
+            </mj-raw>
+        </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff">
+        <mj-column>
+            <mj-divider border-width="1px" border-color="#DEDEDE" />
+            <mj-raw>
+            {% block items %}{% endblock %}
+            </mj-raw>
+        </mj-column>
+    </mj-section>
+    <mj-section background-color="#ffffff">
+        <mj-column>
+            <mj-divider border-width="1px" border-color="#DEDEDE" />
+            <mj-text>
+                For any questions about this message, please reach out to <a href="{{contact_weblink}}" target="_blank" rel="noopener noreferrer"><span class="lG">{{contact_fullname}}</span></a>.
+            </mj-text>
+        </mj-column>
+    </mj-section>
+    <mj-section full-width="full-width">
+      <mj-column width="100%" vertical-align="middle">
+        <mj-text align="center" font-size="11px" padding-bottom="0px" padding-top="0px">
+          <p style="font-size: 11px">[[DELIVERY_INFO]]</p>
+        </mj-text>
+        <mj-text align="center" font-size="11px" padding-bottom="0px" padding-top="0px">
+          <p style="font-size: 11px">[[POSTAL_ADDRESS]]</p>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
