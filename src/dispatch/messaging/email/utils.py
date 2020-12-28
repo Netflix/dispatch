@@ -3,6 +3,8 @@ import subprocess
 import tempfile
 import platform
 
+from dispatch.config import MJML_PATH
+
 
 from dispatch.messaging.strings import (
     DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
@@ -18,20 +20,20 @@ from .filters import env
 def get_template(message_type: MessageType):
     """Fetches the correct template based on the message type."""
     template_map = {
-        MessageType.incident_executive_report: ("executive_report.html", None),
-        MessageType.incident_notification: ("notification.html", None),
-        MessageType.incident_participant_welcome: ("notification.html", None),
-        MessageType.incident_tactical_report: ("tactical_report.html", None),
+        MessageType.incident_executive_report: ("executive_report.mjml", None),
+        MessageType.incident_notification: ("notification.mjml", None),
+        MessageType.incident_participant_welcome: ("notification.mjml", None),
+        MessageType.incident_tactical_report: ("tactical_report.mjml", None),
         MessageType.incident_task_reminder: (
-            "task_notification.html",
+            "task_notification.mjml",
             INCIDENT_TASK_REMINDER_DESCRIPTION,
         ),
         MessageType.document_evergreen_reminder: (
-            "document_evergreen_reminder.html",
+            "document_evergreen_reminder.mjml",
             DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
         ),
         MessageType.incident_feedback_daily_digest: (
-            "feedback_notification.html",
+            "feedback_notification.mjml",
             INCIDENT_FEEDBACK_DAILY_DIGEST_DESCRIPTION,
         ),
     }
@@ -69,7 +71,14 @@ def create_message_body(message_template: dict, message_type: MessageType, **kwa
 def render_html(template):
     """Uses the mjml cli to create html."""
     with tempfile.NamedTemporaryFile() as fp:
-        return subprocess.run(["mjml", fp.name, "-s"], capture_output=True)
+        print(template)
+        fp.write(template.encode("utf-8"))
+        process = subprocess.run(
+            ["./mjml", fp.name, "-s"],
+            cwd=MJML_PATH,
+            capture_output=True,
+        )
+        return process.stdout.decode("utf-8")
 
 
 def preview_email(name, html_message):

@@ -95,6 +95,11 @@ DISPATCH_AUTHENTICATION_PROVIDER_SLUG = config(
     "DISPATCH_AUTHENTICATION_PROVIDER_SLUG", default="dispatch-auth-provider-basic"
 )
 
+MJML_PATH = config(
+    "MJML_PATH",
+    default=f"{os.path.dirname(os.path.realpath(__file__))}/static/dispatch/node_modules/.bin",
+)
+
 DISPATCH_JWT_AUDIENCE = config("DISPATCH_JWT_AUDIENCE", default=None)
 DISPATCH_JWT_EMAIL_OVERRIDE = config("DISPATCH_JWT_EMAIL_OVERRIDE", default=None)
 

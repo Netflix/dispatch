@@ -13,17 +13,19 @@
 {% for item in items %}
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
     <mj-column width="100%">
-        {% for row in item %}
+        <mj-text>
+            <ul style="list-style-type:none; padding-left: 0;">
             {% if row.title_link %}
-                <a href="{{ row.title_link }}" target="_blank" rel="noopener noreferrer">{{ row.title }}</a><
+                <li><a href="{{ row.title_link }}" target="_blank" rel="noopener noreferrer">{{ row.title }}</a></li>
             {% elif row.datetime %}
-                {{ row.title }}
-                {{ row.datetime | datetime }}
+                <li><b>{{ row.title }}</b></li
+                <li>{{ row.datetime | datetime }}</li>
             {% else %}
-                {{ row.title }}
-                {{ row.text }}
+                <li><b>{{ row.title }}</b></li
+                <li>{{ row.text }}</li>
             {% endif %}
-        {% endfor %}
+            </ul>
+        </mj-text>
     </mj-column>
 </mj-section>
 <mj-section>
