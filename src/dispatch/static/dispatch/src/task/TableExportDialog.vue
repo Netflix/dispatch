@@ -5,7 +5,7 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Export Taskss</span>
+        <span class="headline">Export Tasks</span>
       </v-card-title>
       <v-stepper v-model="e1">
         <v-stepper-header>
