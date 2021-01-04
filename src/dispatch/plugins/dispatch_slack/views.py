@@ -113,7 +113,7 @@ def check_command_restrictions(
     }
 
     # no permissions have been defined
-    if command not in command.key():
+    if command not in command.keys():
         return True
 
     slack_client = dispatch_slack_service.create_slack_client()
