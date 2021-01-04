@@ -115,11 +115,27 @@ Incident-specifc commands can only be run in incident conversations.""".replace(
     "\n", " "
 ).strip()
 
+INCIDENT_CONVERSATION_COMMAND_RUN_BY_NON_PRIVILEGED_USER = """
+Looks like you tried to run `{{command}}`.
+This is a sensitive command and cannot be run by regular participants.""".replace(
+    "\n", " "
+).strip()
+
 INCIDENT_CONVERSATION_COMMAND_RUN_IN_CONVERSATION_WHERE_BOT_NOT_PRESENT = """
 Looks like you tried to run `{{command}}` in a conversation where the Dispatch bot is not present.
 Add the bot to your conversation or run the command in one of the following conversations: {{conversations}}""".replace(
     "\n", " "
 ).strip()
+
+
+def create_command_run_by_non_privileged_user_message(command: str):
+    """Creates a message for when a sensitive command is run by a non priviledged user."""
+    return {
+        "response_type": "ephemeral",
+        "text": Template(INCIDENT_CONVERSATION_COMMAND_RUN_BY_NON_PRIVILEGED_USER).render(
+            command=command
+        ),
+    }
 
 
 def create_command_run_in_nonincident_conversation_message(command: str):
@@ -133,7 +149,7 @@ def create_command_run_in_nonincident_conversation_message(command: str):
 
 
 def create_command_run_in_conversation_where_bot_not_present_message(
-    command: str, conversations: []
+    command: str, conversations: List
 ):
     """Creates a message for when a nonincident specific command is run in a conversation where the Dispatch bot is not present."""
     conversations = (", ").join([f"#{conversation}" for conversation in conversations])
