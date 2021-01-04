@@ -71,7 +71,6 @@ def create_message_body(message_template: dict, message_type: MessageType, **kwa
 def render_html(template):
     """Uses the mjml cli to create html."""
     with tempfile.NamedTemporaryFile() as fp:
-        print(template)
         fp.write(template.encode("utf-8"))
         process = subprocess.run(
             ["./mjml", fp.name, "-s"],
