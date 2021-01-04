@@ -221,7 +221,7 @@ async def handle_command(
         )
 
         # allow everyone other than participants engage in sensitive commands
-        if participant.role == ParticipantRoleType.participant:
+        if participant.current_role.role == ParticipantRoleType.participant:
             return create_command_run_by_non_privileged_user_message(command)
 
     for f in command_functions(command):

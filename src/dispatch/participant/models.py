@@ -3,11 +3,16 @@ from datetime import datetime
 from typing import Optional, List
 
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy import Column, Boolean, String, Integer, ForeignKey, DateTime, event
+from sqlalchemy import Column, Boolean, String, Integer, ForeignKey, DateTime, event, select
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from dispatch.database import Base
 from dispatch.models import DispatchBase, IndividualReadNested
-from dispatch.participant_role.models import ParticipantRoleCreate, ParticipantRoleRead
+from dispatch.participant_role.models import (
+    ParticipantRoleCreate,
+    ParticipantRoleRead,
+    ParticipantRole,
+)
 
 
 class Participant(Base):
@@ -39,6 +44,21 @@ class Participant(Base):
         "Task", backref="creator", primaryjoin="Participant.id==Task.creator_id"
     )
     owned_tasks = relationship("Task", backref="owner", primaryjoin="Participant.id==Task.owner_id")
+
+    @hybrid_property
+    def current_role(self):
+        if self.participant_roles:
+            for pr in self.participant_roles:
+                if not pr.renounced_at:
+                    return pr
+
+    @current_role.expression
+    def current_role(cls):
+        return (
+            select([Participant])
+            .where(Participant.incident_id == cls.id)
+            .where(ParticipantRole.renounced_at == None)  # noqa
+        )
 
     @staticmethod
     def _active_at(mapper, connection, target):
