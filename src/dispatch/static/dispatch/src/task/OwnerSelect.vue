@@ -9,6 +9,7 @@
     :loading="loading"
     cache-items
     return-object
+    no-filter
   >
     <template v-slot:no-data>
       <v-list-item>

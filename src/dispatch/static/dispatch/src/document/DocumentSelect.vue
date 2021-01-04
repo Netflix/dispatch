@@ -14,6 +14,7 @@
       placeholder="Start typing to search"
       return-object
       :loading="loading"
+      no-filter
     />
   </ValidationProvider>
 </template>

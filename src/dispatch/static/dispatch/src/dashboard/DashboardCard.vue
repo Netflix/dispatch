@@ -1,7 +1,7 @@
 <template>
   <v-card :loading="loading" outlined elevation="0">
     <v-card-title>{{ title }}</v-card-title>
-    <apexchart :type="type" height="250" :options="options" :series="series"></apexchart>
+    <apexchart :type="type" height="250" :options="localOptions" :series="series"></apexchart>
   </v-card>
 </template>
 
@@ -38,6 +38,24 @@ export default {
     title: {
       type: String,
       required: true
+    }
+  },
+
+  data() {
+    return {
+      localOptions: JSON.parse(JSON.stringify(this.options))
+    }
+  },
+  watch: {
+    "$vuetify.theme.dark": function(newValue) {
+      this.localOptions = {
+        ...this.localOoptions,
+        ...{
+          theme: {
+            mode: newValue ? "dark" : "light"
+          }
+        }
+      }
     }
   }
 }

@@ -12,6 +12,7 @@
     :loading="loading"
     return-object
     cache-items
+    no-filter
   >
     <template v-slot:selection="{ attr, on, item, selected }">
       <v-chip v-bind="attr" :input-value="selected" v-on="on">

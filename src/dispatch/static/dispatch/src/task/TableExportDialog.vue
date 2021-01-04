@@ -5,7 +5,7 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Export Incidents</span>
+        <span class="headline">Export Tasks</span>
       </v-card-title>
       <v-stepper v-model="e1">
         <v-stepper-header>
@@ -30,22 +30,25 @@
             <v-list dense>
               <v-list-item>
                 <v-list-item-content>
-                  <tag-filter-combobox v-model="filters.tag" label="Tags" />
+                  <incident-combobox v-model="filters.incident" />
                 </v-list-item-content>
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  <incident-type-combobox v-model="filters.incident_type" />
+                  <task-status-multi-select v-model="filters.status" />
                 </v-list-item-content>
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  <incident-priority-combobox v-model="filters.incident_priority" />
+                  <incident-type-combobox v-model="filters.incident_type" label="Incident Type" />
                 </v-list-item-content>
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  <incident-status-multi-select v-model="filters.status" />
+                  <incident-priority-combobox
+                    v-model="filters.incident_priority"
+                    label="Incident Priority"
+                  />
                 </v-list-item-content>
               </v-list-item>
             </v-list>
@@ -83,11 +86,58 @@
               :items="previewRows.items"
               :loading="previewRowsLoading"
             >
-              <template v-slot:item.incident_priority.name="{ item }">
-                <incident-priority :priority="item.incident_priority.name" />
+              <template v-slot:item.description="{ item }">
+                <div class="text-truncate" style="max-width: 400px">
+                  {{ item.description }}
+                </div>
               </template>
-              <template v-slot:item.status="{ item }">
-                <incident-status :status="item.status" :id="item.id" />
+              <template v-slot:item.incident.status="{ item }">
+                <incident-status :status="item.incident.status" :id="item.id" />
+              </template>
+              <template v-slot:item.incident_priority.name="{ item }">
+                <incident-priority :priority="item.incident.incident_priority.name" />
+              </template>
+              <template v-slot:item.creator.individual_contact.name="{ item }">
+                <participant :participant="item.creator" />
+              </template>
+              <template v-slot:item.owner.individual_contact.name="{ item }">
+                <participant :participant="item.owner" />
+              </template>
+              <template v-slot:item.incident_type.name="{ item }">
+                {{ item.incident.incident_type.name }}
+              </template>
+              <template v-slot:item.tickets="{ item }">
+                <a
+                  v-for="ticket in item.tickets"
+                  :key="ticket.weblink"
+                  :href="ticket.weblink"
+                  target="_blank"
+                  style="text-decoration: none;"
+                >
+                  Ticket
+                  <v-icon small>open_in_new</v-icon>
+                </a>
+              </template>
+              <template v-slot:item.assignees="{ item }">
+                <participant
+                  v-for="assignee in item.assignees"
+                  :key="assignee.id"
+                  :participant="assignee"
+                >
+                </participant>
+              </template>
+              <template v-slot:item.resolve_by="{ item }">{{
+                item.resolve_by | formatDate
+              }}</template>
+              <template v-slot:item.created_at="{ item }">{{
+                item.created_at | formatDate
+              }}</template>
+              <template v-slot:item.resolved_at="{ item }"
+                >{{ item.resolved_at | formatDate }}
+              </template>
+              <template v-slot:item.source="{ item }">
+                {{ item.source }}
+                <a :href="item.weblink" target="_blank" style="text-decoration: none;"> </a>
               </template>
             </v-data-table>
             <v-badge
@@ -116,48 +166,45 @@
 import { mapFields } from "vuex-map-fields"
 import { forEach, each, has } from "lodash"
 import { mapActions } from "vuex"
-import IncidentApi from "@/incident/api"
-import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import TaskApi from "@/task/api"
+import IncidentCombobox from "@/incident/IncidentCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
+import TaskStatusMultiSelect from "@/task/TaskStatusMultiSelect.vue"
 import IncidentStatus from "@/incident/IncidentStatus.vue"
 import IncidentPriority from "@/incident/IncidentPriority.vue"
+import Participant from "@/incident/Participant.vue"
 
 export default {
-  name: "IncidentTableExportDialog",
+  name: "TaskTableExportDialog",
   data() {
     return {
       e1: 1,
       selectedFields: [
-        { text: "Name", value: "name", sortable: false },
-        { text: "Title", value: "title", sortable: false },
-        { text: "Status", value: "status", sortable: false },
+        { text: "Incident Name", value: "incident.name", sortable: false },
+        { text: "Incident Priority", value: "incident_priority.name", sortable: false },
+        { text: "Incident Status", value: "incident.status", sortable: false },
         { text: "Incident Type", value: "incident_type.name", sortable: false },
-        { text: "Incident Priority", value: "incident_priority.name", sortable: false }
+        { text: "Status", value: "status", sortable: false },
+        { text: "Creator", value: "creator.individual_contact.name", sortable: false },
+        { text: "Owner", value: "owner.individual_contact.name", sortable: false },
+        { text: "Assignees", value: "assignees", sortable: false }
       ],
       allFields: [
-        { text: "Name", value: "name", sortable: false },
-        { text: "Title", value: "title", sortable: false },
-        { text: "Status", value: "status", sortable: false },
-        { text: "Cost", value: "cost", sortable: false },
-        { text: "Visibility", value: "visibility", sortable: false },
-        { text: "Incident Type", value: "incident_type.name", sortable: false },
+        { text: "Incident Name", value: "incident.name", sortable: false },
         { text: "Incident Priority", value: "incident_priority.name", sortable: false },
-        { text: "Reporter", value: "reporter.email", sortable: false },
-        { text: "Commander", value: "commander.email", sortable: false },
-        { text: "Primary Team", value: "primary_team", sortable: false },
-        { text: "Primary Location", value: "primary_location", sortable: false },
-        { text: "Reported At", value: "reported_at", sortable: false },
-        { text: "Stable At", value: "stable_at", sortable: false },
-        { text: "Closed At", value: "closed_at", sortable: false },
-        { text: "Incident Document Weblink", value: "incident_document.weblink", sortable: false },
-        {
-          text: "Incident Review Document Weblink",
-          value: "incident_review_document.weblink",
-          sortable: false
-        },
-        { text: "Storage Weblink", value: "storage.weblink", sortable: false }
+        { text: "Incident Status", value: "incident.status", sortable: false },
+        { text: "Incident Type", value: "incident_type.name", sortable: false },
+        { text: "Status", value: "status", sortable: false },
+        { text: "Creator", value: "creator.individual_contact.name", sortable: false },
+        { text: "Owner", value: "owner.individual_contact.name", sortable: false },
+        { text: "Assignees", value: "assignees", sortable: false },
+        { text: "Description", value: "description", sortable: false },
+        { text: "Source", value: "source", sortable: false },
+        { text: "Tickets", value: "tickets", sortable: false },
+        { text: "Due By", value: "resolve_by", sortable: true },
+        { text: "Created At", value: "created_at", sortable: true },
+        { text: "Resolved At", value: "resolved_at", sortable: true }
       ],
       previewRows: {
         items: [],
@@ -165,29 +212,30 @@ export default {
       },
       previewRowsLoading: false,
       filters: {
+        incident: null,
         incident_type: null,
         incident_priority: null,
-        status: null,
-        tag: null
+        status: null
       },
       exportLoading: false
     }
   },
   components: {
     // IndividualCombobox,
-    TagFilterCombobox,
+    IncidentCombobox,
     IncidentTypeCombobox,
     IncidentPriorityCombobox,
-    IncidentStatusMultiSelect,
+    TaskStatusMultiSelect,
     IncidentStatus,
-    IncidentPriority
+    IncidentPriority,
+    Participant
   },
   computed: {
-    ...mapFields("incident", ["dialogs.showExport"])
+    ...mapFields("task", ["dialogs.showExport"])
   },
 
   methods: {
-    ...mapActions("incident", ["closeExport"]),
+    ...mapActions("task", ["closeExport"]),
 
     formatTableOptions(filters) {
       let tableOptions = {}
@@ -214,7 +262,7 @@ export default {
     getPreviewData() {
       let tableOptions = this.formatTableOptions(this.filters)
       this.previewRowsLoading = "error"
-      return IncidentApi.getAll(tableOptions).then(response => {
+      return TaskApi.getAll(tableOptions).then(response => {
         this.previewRows = response.data
         this.previewRowsLoading = false
       })
@@ -225,7 +273,7 @@ export default {
       tableOptions["itemsPerPage"] = -1
       tableOptions["include"] = this.selectedFields.map(item => item.value)
       this.exportLoading = true
-      return IncidentApi.getAll(tableOptions)
+      return TaskApi.getAll(tableOptions)
         .then(response => {
           let items = response.data.items
 
@@ -269,12 +317,7 @@ export default {
   },
   mounted() {
     this.$watch(
-      vm => [
-        vm.filters.incident_type,
-        vm.filters.incident_priority,
-        vm.filters.status,
-        vm.filters.tag
-      ],
+      vm => [vm.filters.incident_type, vm.filters.incident_priority, vm.filters.status],
       () => {
         this.getPreviewData()
       }

@@ -14,6 +14,7 @@
     return-object
     placeholder="Start typing to search"
     cache-items
+    no-filter
     :loading="loading"
   >
     <template v-slot:no-data>
