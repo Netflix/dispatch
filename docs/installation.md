@@ -36,6 +36,18 @@ To start, run the install script:
 ./install.sh
 ```
 
+### The "first" user problem
+
+For any new installation of Dispatch, new users are expected to register themselves via the `/auth/register` endpoint in the Dispatch UI. By default, users registering via this method are granted regular "user" permissions within Dispatch. As such there is no direct way through the UI to allow a user obtain an "Admin" role (as no other Admins exist to grant them access).
+
+For these users we have a cli command that allows users to be granted the role of their choosing:
+
+```bash
+dispatch user update --role Admin <email-address-of-registered-user>
+```
+
+After one admin user has been established they are allowed to grant this role to others via the UI.
+
 ## Going to Production
 
 Before you deploy Dispatch to production there are a few considerations and steps that should taken.
@@ -111,7 +123,7 @@ proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http
 proxy_redirect off;
 proxy_buffering off;
 proxy_set_header Host $host;
-        proxy_set_header        X-Real-IP       $remote_addr;
+proxy_set_header X-Real-IP $remote_addr;
 proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
 }
 
