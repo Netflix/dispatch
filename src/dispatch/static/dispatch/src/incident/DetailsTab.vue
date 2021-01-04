@@ -73,7 +73,7 @@
             label="Reporter"
             :error-messages="errors"
             :success="valid"
-            hint="The incident's current reporter"
+            hint="The participant who reported the incident."
             clearable
             required
           />
