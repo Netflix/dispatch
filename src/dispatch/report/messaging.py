@@ -91,7 +91,7 @@ def send_executive_report_to_notifications_group(
         next_steps=executive_report.details.get("next_steps"),
         weblink=executive_report.document.weblink,
         notifications_group=incident.notifications_group.email,
-        contact_fullname=incident.commander.name,
+        contact_fullname=incident.commander.individual.name,
         contact_weblink=incident.commander.weblink,
     )
 
@@ -132,11 +132,11 @@ def send_incident_report_reminder(
     ]
 
     plugin.instance.send_direct(
-        incident.commander.email,
+        incident.commander.individual.email,
         message_text,
         message_template,
         message_type,
         items=items,
     )
 
-    log.debug(f"Incident report reminder sent to {incident.commander.email}.")
+    log.debug(f"Incident report reminder sent to {incident.commander.individual.email}.")

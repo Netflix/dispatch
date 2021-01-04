@@ -5,7 +5,6 @@
       :items="items"
       :search-input.sync="search"
       :menu-props="{ maxHeight: '400' }"
-      cache-items
       slot-scope="{ errors, valid }"
       :error-messages="errors"
       :success="valid"

@@ -129,7 +129,7 @@ def daily_summary(db_session=None):
                                     f"*Title*: {incident.title}\n"
                                     f"*Type*: {incident.incident_type.name}\n"
                                     f"*Priority*: {incident.incident_priority.name}\n"
-                                    f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
+                                    f"*Incident Commander*: <{incident.commander.individual.weblink}|{incident.commander.individual.name}>"
                                 ),
                             },
                             "block_id": f"{ConversationButtonActions.invite_user}-active-{idx}",
@@ -199,7 +199,7 @@ def daily_summary(db_session=None):
                                     f"*Title*: {incident.title}\n"
                                     f"*Type*: {incident.incident_type.name}\n"
                                     f"*Priority*: {incident.incident_priority.name}\n"
-                                    f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>\n"
+                                    f"*Incident Commander*: <{incident.commander.individual.weblink}|{incident.commander.individual.name}>\n"
                                     f"*Status*: {incident.status}"
                                 ),
                             },
@@ -229,7 +229,7 @@ def daily_summary(db_session=None):
                                     f"*Title*: {incident.title}\n"
                                     f"*Type*: {incident.incident_type.name}\n"
                                     f"*Priority*: {incident.incident_priority.name}\n"
-                                    f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>\n"
+                                    f"*Incident Commander*: <{incident.commander.individual.weblink}|{incident.commander.individual.name}>\n"
                                     f"*Status*: {incident.status}"
                                 ),
                             },

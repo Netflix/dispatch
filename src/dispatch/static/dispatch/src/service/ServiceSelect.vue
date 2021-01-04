@@ -4,7 +4,6 @@
     :items="items"
     :search-input.sync="search"
     :menu-props="{ maxHeight: '400' }"
-    cache-items
     item-text="name"
     :label="label"
     placeholder="Start typing to Search"

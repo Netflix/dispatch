@@ -93,10 +93,10 @@ def get_incident(
     # we want to provide additional protections around restricted incidents
     if incident.visibility == Visibility.restricted:
         # reject if the user isn't an admin, reporter or commander
-        if incident.reporter.email == current_user.email:
+        if incident.reporter.individual.email == current_user.email:
             return incident
 
-        if incident.commander.email == current_user.email:
+        if incident.commander.individual.email == current_user.email:
             return incident
 
         if current_user.role == UserRoles.admin:
@@ -153,7 +153,10 @@ def update_incident(
     # we want to provide additional protections around restricted incidents
     if incident.visibility == Visibility.restricted:
         # reject if the user isn't an admin or commander
-        if current_user.email != incident.commander.email or current_user.role != UserRoles.admin:
+        if (
+            current_user.email != incident.commander.individual.email
+            or current_user.role != UserRoles.admin
+        ):
             raise HTTPException(
                 status_code=401, detail="You do no have permission to update this incident."
             )
@@ -175,7 +178,7 @@ def update_incident(
         incident_assign_role_flow,
         current_user.email,
         incident_id=incident.id,
-        assignee_email=incident_in.commander.email,
+        assignee_email=incident_in.commander.individual.email,
         assignee_role=ParticipantRoleType.incident_commander,
     )
 
@@ -184,7 +187,7 @@ def update_incident(
         incident_assign_role_flow,
         current_user.email,
         incident_id=incident.id,
-        assignee_email=incident_in.reporter.email,
+        assignee_email=incident_in.reporter.individual.email,
         assignee_role=ParticipantRoleType.reporter,
     )
 

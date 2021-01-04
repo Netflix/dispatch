@@ -196,7 +196,7 @@ def create_executive_report(
         overview=overview,
         next_steps=next_steps,
         previous_reports="\n".join(previous_executive_reports),
-        commander_fullname=incident.commander.name,
+        commander_fullname=incident.commander.individual.name,
         commander_weblink=incident.commander.weblink,
     )
 
