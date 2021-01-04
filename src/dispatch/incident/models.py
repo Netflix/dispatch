@@ -39,9 +39,8 @@ from dispatch.incident_priority.models import (
     IncidentPriorityRead,
 )
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
-from dispatch.individual.models import IndividualContact
-from dispatch.models import DispatchBase, IndividualReadNested, TimeStampMixin
-from dispatch.participant.models import Participant, ParticipantRead
+from dispatch.models import DispatchBase, TimeStampMixin
+from dispatch.participant.models import Participant, ParticipantRead, ParticipantUpdate
 from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
 from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
@@ -100,12 +99,12 @@ class Incident(Base, TimeStampMixin):
                         and pr.renounced_at
                         is None  # Column renounced_at will be null for the current incident commander
                     ):
-                        return p.individual
+                        return p
 
     @commander.expression
     def commander(cls):
         return (
-            select([IndividualContact])
+            select([Participant])
             .where(Participant.incident_id == cls.id)
             .where(ParticipantRole.role == ParticipantRoleType.incident_commander)
             .where(ParticipantRole.renounced_at == None)  # noqa
@@ -117,12 +116,12 @@ class Incident(Base, TimeStampMixin):
             for p in self.participants:
                 for role in p.participant_roles:
                     if role.role == ParticipantRoleType.reporter:
-                        return p.individual
+                        return p
 
     @reporter.expression
     def reporter(cls):
         return (
-            select([IndividualContact])
+            select([Participant])
             .where(Participant.incident_id == cls.id)
             .where(ParticipantRole.role == ParticipantRoleType.reporter)
             .where(ParticipantRole.renounced_at == None)  # noqa
@@ -256,8 +255,8 @@ class IncidentReadNested(IncidentBase):
     id: int
     cost: float = None
     name: str = None
-    reporter: Optional[IndividualReadNested]
-    commander: Optional[IndividualReadNested]
+    reporter: Optional[ParticipantRead]
+    commander: Optional[ParticipantRead]
     incident_priority: IncidentPriorityRead
     incident_type: IncidentTypeRead
     created_at: Optional[datetime] = None
@@ -277,8 +276,8 @@ class IncidentUpdate(IncidentBase):
     incident_type: IncidentTypeBase
     reported_at: Optional[datetime] = None
     stable_at: Optional[datetime] = None
-    commander: Optional[IndividualReadNested]
-    reporter: Optional[IndividualReadNested]
+    commander: Optional[ParticipantUpdate]
+    reporter: Optional[ParticipantUpdate]
     duplicates: Optional[List[IncidentReadNested]] = []
     tags: Optional[List[Any]] = []  # any until we figure out circular imports
     terms: Optional[List[Any]] = []  # any until we figure out circular imports
@@ -290,8 +289,8 @@ class IncidentRead(IncidentBase):
     name: str = None
     primary_team: Any
     primary_location: Any
-    reporter: Optional[IndividualReadNested]
-    commander: Optional[IndividualReadNested]
+    reporter: Optional[ParticipantRead]
+    commander: Optional[ParticipantRead]
     last_tactical_report: Optional[ReportRead]
     last_executive_report: Optional[ReportRead]
     incident_priority: IncidentPriorityRead

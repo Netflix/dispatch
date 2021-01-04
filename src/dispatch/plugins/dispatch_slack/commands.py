@@ -331,7 +331,7 @@ def list_incidents(incident_id: int, command: dict = None, db_session=None):
                                     f"*Type*: {incident.incident_type.name}\n"
                                     f"*Priority*: {incident.incident_priority.name}\n"
                                     f"*Status*: {incident.status}\n"
-                                    f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
+                                    f"*Incident Commander*: <{incident.commander.individual.weblink}|{incident.commander.individual.name}>"
                                 ),
                             },
                         }

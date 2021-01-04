@@ -11,7 +11,7 @@
     chips
     clearable
     :loading="loading"
-    @update:search-input="fetchData({ q: $event })"
+    @update:search-input="getFilteredData({ q: $event })"
   >
     <template v-slot:no-data>
       <v-list-item>

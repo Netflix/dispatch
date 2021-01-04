@@ -17,6 +17,7 @@
     "font-awesome": "^4.7.0",
     "good-env": "^5.2.0",
     "lodash.truncate": "^4.4.2",
+    "mjml": "^4.7.1",
     "moment": "^2.29.1",
     "quill": "^1.3.7",
     "register-service-worker": "^1.7.2",

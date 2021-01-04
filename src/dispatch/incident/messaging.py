@@ -17,7 +17,7 @@ from dispatch.enums import Visibility
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident, IncidentRead
-from dispatch.messaging import (
+from dispatch.messaging.strings import (
     INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION,
     INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION,
     INCIDENT_COMMANDER,
@@ -78,8 +78,8 @@ def send_welcome_ephemeral_message_to_participant(
         "type_description": incident.incident_type.description,
         "priority": incident.incident_priority.name,
         "priority_description": incident.incident_priority.description,
-        "commander_fullname": incident.commander.name,
-        "commander_weblink": incident.commander.weblink,
+        "commander_fullname": incident.commander.individual.name,
+        "commander_weblink": incident.commander.individual.weblink,
         "document_weblink": resolve_attr(incident, "incident_document.weblink"),
         "storage_weblink": resolve_attr(incident, "storage.weblink"),
         "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
@@ -131,15 +131,15 @@ def send_welcome_email_to_participant(
         "type_description": incident.incident_type.description,
         "priority": incident.incident_priority.name,
         "priority_description": incident.incident_priority.description,
-        "commander_fullname": incident.commander.name,
-        "commander_weblink": incident.commander.weblink,
+        "commander_fullname": incident.commander.individual.name,
+        "commander_weblink": incident.commander.individual.weblink,
         "document_weblink": resolve_attr(incident, "incident_document.weblink"),
         "storage_weblink": resolve_attr(incident, "storage.weblink"),
         "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
         "conference_weblink": resolve_attr(incident, "conference.weblink"),
         "conference_challenge": resolve_attr(incident, "conference.conference_challenge"),
-        "contact_fullname": incident.commander.name,
-        "contact_weblink": incident.commander.weblink,
+        "contact_fullname": incident.commander.individual.name,
+        "contact_weblink": incident.commander.individual.weblink,
     }
 
     faq_doc = document_service.get_incident_faq_document(db_session=db_session)
@@ -245,15 +245,15 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
         "type_description": incident.incident_type.description,
         "priority": incident.incident_priority.name,
         "priority_description": incident.incident_priority.description,
-        "commander_fullname": incident.commander.name,
-        "commander_weblink": incident.commander.weblink,
+        "commander_fullname": incident.commander.individual.name,
+        "commander_weblink": incident.commander.individual.weblink,
         "document_weblink": resolve_attr(incident, "incident_document.weblink"),
         "storage_weblink": resolve_attr(incident, "storage.weblink"),
         "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
         "conference_weblink": resolve_attr(incident, "conference.weblink"),
         "conference_challenge": resolve_attr(incident, "conference.conference_challenge"),
-        "contact_fullname": incident.commander.name,
-        "contact_weblink": incident.commander.weblink,
+        "contact_fullname": incident.commander.individual.name,
+        "contact_weblink": incident.commander.individual.weblink,
         "incident_id": incident.id,
     }
     faq_doc = document_service.get_incident_faq_document(db_session=db_session)
@@ -345,8 +345,8 @@ def send_incident_update_notifications(
             incident_priority_new=incident.incident_priority.name,
             incident_status_old=previous_incident.status.value,
             incident_status_new=incident.status,
-            commander_fullname=incident.commander.name,
-            commander_weblink=incident.commander.weblink,
+            commander_fullname=incident.commander.individual.name,
+            commander_weblink=incident.commander.individual.weblink,
         )
 
     if incident.visibility == Visibility.open:
@@ -373,8 +373,8 @@ def send_incident_update_notifications(
                 incident_priority_new=incident.incident_priority.name,
                 incident_status_old=previous_incident.status.value,
                 incident_status_new=incident.status,
-                commander_fullname=incident.commander.name,
-                commander_weblink=incident.commander.weblink,
+                commander_fullname=incident.commander.individual.name,
+                commander_weblink=incident.commander.individual.weblink,
             )
 
         # we send an update to the incident notification distribution lists
@@ -389,8 +389,8 @@ def send_incident_update_notifications(
                 status=incident.status,
                 priority=incident.incident_priority.name,
                 priority_description=incident.incident_priority.description,
-                commander_fullname=incident.commander.name,
-                commander_weblink=incident.commander.weblink,
+                commander_fullname=incident.commander.individual.name,
+                commander_weblink=incident.commander.individual.weblink,
                 document_weblink=resolve_attr(incident, "incident_document.weblink"),
                 storage_weblink=resolve_attr(incident, "storage.weblink"),
                 ticket_weblink=resolve_attr(incident, "ticket.weblink"),
@@ -401,8 +401,8 @@ def send_incident_update_notifications(
                 incident_type_new=incident.incident_type.name,
                 incident_status_old=previous_incident.status.value,
                 incident_status_new=incident.status,
-                contact_fullname=incident.commander.name,
-                contact_weblink=incident.commander.weblink,
+                contact_fullname=incident.commander.individual.name,
+                contact_weblink=incident.commander.individual.weblink,
             )
 
     log.debug("Incident update notifications sent.")
@@ -501,7 +501,7 @@ def send_incident_commander_readded_notification(incident_id: int, db_session: S
         notification_text,
         INCIDENT_COMMANDER_READDED_NOTIFICATION,
         notification_type,
-        commander_fullname=incident.commander.name,
+        commander_fullname=incident.commander.individual.name,
     )
 
     log.debug("Incident commander readded notification sent.")
@@ -645,8 +645,8 @@ def send_incident_resources_ephemeral_message_to_participant(
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     message_kwargs = {
-        "commander_fullname": incident.commander.name,
-        "commander_weblink": incident.commander.weblink,
+        "commander_fullname": incident.commander.individual.name,
+        "commander_weblink": incident.commander.individual.weblink,
         "document_weblink": resolve_attr(incident, "incident_document.weblink"),
         "storage_weblink": resolve_attr(incident, "storage.weblink"),
         "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
@@ -707,14 +707,14 @@ def send_incident_close_reminder(incident: Incident, db_session: SessionLocal):
     ]
 
     plugin.instance.send_direct(
-        incident.commander.email,
+        incident.commander.individual.email,
         message_text,
         message_template,
         MessageType.incident_status_reminder,
         items=items,
     )
 
-    log.debug(f"Incident close reminder sent to {incident.commander.email}.")
+    log.debug(f"Incident close reminder sent to {incident.commander.individual.email}.")
 
 
 def send_incident_closed_information_review_reminder(incident: Incident, db_session: SessionLocal):
@@ -745,14 +745,16 @@ def send_incident_closed_information_review_reminder(incident: Incident, db_sess
     ]
 
     plugin.instance.send_direct(
-        incident.commander.email,
+        incident.commander.individual.email,
         message_text,
         message_template,
         MessageType.incident_closed_information_review_reminder,
         items=items,
     )
 
-    log.debug(f"Incident closed information review reminder sent to {incident.commander.email}.")
+    log.debug(
+        f"Incident closed information review reminder sent to {incident.commander.individual.email}."
+    )
 
 
 def send_incident_rating_feedback_message(incident: Incident, db_session: SessionLocal):

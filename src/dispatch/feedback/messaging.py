@@ -3,7 +3,7 @@ from typing import List
 
 from dispatch.config import DISPATCH_HELP_EMAIL, INCIDENT_RESPONSE_TEAM_EMAIL
 from dispatch.database import SessionLocal
-from dispatch.messaging import (
+from dispatch.messaging.strings import (
     INCIDENT_FEEDBACK_DAILY_DIGEST,
     MessageType,
 )
