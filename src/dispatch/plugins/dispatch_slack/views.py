@@ -113,7 +113,7 @@ def check_command_restrictions(
     }
 
     # no permissions have been defined
-    if command not in command.keys():
+    if command not in command_permissons.keys():
         return True
 
     slack_client = dispatch_slack_service.create_slack_client()
@@ -249,8 +249,10 @@ async def handle_command(
 
     # some commands are sensitive and we only let non-participants execute them
     user_id = command_details.get("user_id")
-    restricted_command = check_command_restrictions(command, user_id)
-    if not restricted_command:
+    allowed = check_command_restrictions(
+        command=command, user_id=user_id, incident_id=incident_id, db_session=db_session
+    )
+    if not allowed:
         return create_command_run_by_non_privileged_user_message(command)
 
     for f in command_functions(command):
