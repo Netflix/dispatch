@@ -15,7 +15,7 @@ from sqlalchemy import (
     select,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from fastapi_permissions import Allow
