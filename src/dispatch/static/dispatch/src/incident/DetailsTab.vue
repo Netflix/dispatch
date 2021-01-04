@@ -59,7 +59,7 @@
             label="Commander"
             :error-messages="errors"
             :success="valid"
-            hint="The incident's current commander"
+            hint="The participant acting as incident commander."
             clearable
             required
           />
