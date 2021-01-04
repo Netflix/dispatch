@@ -26,7 +26,8 @@ const state = {
   },
   dialogs: {
     showCreateEdit: false,
-    showRemove: false
+    showRemove: false,
+    showExport: false
   },
   table: {
     rows: {
@@ -103,6 +104,12 @@ const actions = {
   closeRemove({ commit }) {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
+  },
+  showExport({ commit }) {
+    commit("SET_DIALOG_SHOW_EXPORT", true)
+  },
+  closeExport({ commit }) {
+    commit("SET_DIALOG_SHOW_EXPORT", false)
   },
   save({ commit, dispatch }) {
     if (!state.selected.id) {
@@ -213,6 +220,9 @@ const mutations = {
   },
   SET_DIALOG_CREATE_EDIT(state, value) {
     state.dialogs.showCreateEdit = value
+  },
+  SET_DIALOG_SHOW_EXPORT(state, value) {
+    state.dialogs.showExport = value
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showRemove = value
