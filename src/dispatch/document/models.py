@@ -18,7 +18,7 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database import Base
 from dispatch.incident_priority.models import IncidentPriorityCreate, IncidentPriorityRead
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead
-from dispatch.messaging import INCIDENT_DOCUMENT_DESCRIPTIONS
+from dispatch.messaging.strings import INCIDENT_DOCUMENT_DESCRIPTIONS
 from dispatch.models import DispatchBase, ResourceMixin, TermNested, TermReadNested, TimeStampMixin
 
 # Association tables for many to many relationships

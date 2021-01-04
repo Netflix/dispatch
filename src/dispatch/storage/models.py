@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy import Column, Integer
 
 from dispatch.database import Base
-from dispatch.messaging import INCIDENT_STORAGE_DESCRIPTION
+from dispatch.messaging.strings import INCIDENT_STORAGE_DESCRIPTION
 from dispatch.models import DispatchBase, ResourceMixin
 
 

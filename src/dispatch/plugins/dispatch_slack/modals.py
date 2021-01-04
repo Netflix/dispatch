@@ -20,7 +20,7 @@ from dispatch.incident.enums import IncidentStatus, IncidentSlackViewBlockId, Ne
 from dispatch.incident.models import Incident
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
-from dispatch.messaging import INCIDENT_WORKFLOW_CREATED_NOTIFICATION
+from dispatch.messaging.strings import INCIDENT_WORKFLOW_CREATED_NOTIFICATION
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant, ParticipantUpdate
 from dispatch.plugin import service as plugin_service

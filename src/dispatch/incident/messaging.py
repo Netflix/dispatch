@@ -17,7 +17,7 @@ from dispatch.enums import Visibility
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident, IncidentRead
-from dispatch.messaging import (
+from dispatch.messaging.strings import (
     INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION,
     INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION,
     INCIDENT_COMMANDER,
