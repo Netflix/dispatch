@@ -86,6 +86,49 @@ def verify_timestamp(timestamp: int):
         raise HTTPException(status_code=403, detail="Invalid request timestamp")
 
 
+def check_command_restrictions(
+    command: str, user_id: str, incident_id: int, db_session: Session
+) -> bool:
+    """Checks the current user's role to determine what commands they are allowed to run."""
+    # some commands are sensitive and we only let non-participants execute them
+    command_permissons = {
+        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [
+            ParticipantRoleType.incident_commander,
+            ParticipantRoleType.scribe,
+        ],
+        SLACK_COMMAND_ASSIGN_ROLE_SLUG: [
+            ParticipantRoleType.incident_commander,
+            ParticipantRoleType.reporter,
+            ParticipantRoleType.liaison,
+            ParticipantRoleType.scribe,
+        ],
+        SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [
+            ParticipantRoleType.incident_commander,
+            ParticipantRoleType.scribe,
+        ],
+        SLACK_COMMAND_REPORT_TACTICAL_SLUG: [
+            ParticipantRoleType.incident_commander,
+            ParticipantRoleType.scribe,
+        ],
+    }
+
+    # no permissions have been defined
+    if command not in command_permissons.keys():
+        return True
+
+    slack_client = dispatch_slack_service.create_slack_client()
+    user_email = dispatch_slack_service.get_user_email(slack_client, user_id)
+    participant = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=incident_id, email=user_email
+    )
+
+    # if any required role is active, allow command
+    for current_role in participant.current_roles:
+        for allowed_role in command_permissons[command]:
+            if current_role.role == allowed_role:
+                return True
+
+
 @router.post("/slack/event")
 async def handle_event(
     event: EventEnvelope,
@@ -205,24 +248,12 @@ async def handle_command(
             )
 
     # some commands are sensitive and we only let non-participants execute them
-    restricted_commands = [
-        SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
-        SLACK_COMMAND_ASSIGN_ROLE_SLUG,
-        SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
-        SLACK_COMMAND_REPORT_TACTICAL_SLUG,
-    ]
-    if command in restricted_commands:
-        user_id = command_details.get("user_id")
-        # We create an async Slack client
-        slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
-        user_email = await dispatch_slack_service.get_user_email_async(slack_async_client, user_id)
-        participant = participant_service.get_by_incident_id_and_email(
-            db_session=db_session, incident_id=incident_id, email=user_email
-        )
-
-        # allow everyone other than participants engage in sensitive commands
-        if participant.role == ParticipantRoleType.participant:
-            return create_command_run_by_non_privileged_user_message(command)
+    user_id = command_details.get("user_id")
+    allowed = check_command_restrictions(
+        command=command, user_id=user_id, incident_id=incident_id, db_session=db_session
+    )
+    if not allowed:
+        return create_command_run_by_non_privileged_user_message(command)
 
     for f in command_functions(command):
         background_tasks.add_task(f, incident_id, command=command_details)

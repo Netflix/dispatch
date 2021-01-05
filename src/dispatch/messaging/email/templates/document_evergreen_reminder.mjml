@@ -13,6 +13,7 @@
 {% for item in items %}
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
     <mj-column width="100%">
+        {% for row in item %}
         <mj-text>
             <ul style="list-style-type:none; padding-left: 0;">
             {% if row.title_link %}
@@ -26,6 +27,7 @@
             {% endif %}
             </ul>
         </mj-text>
+        {% endfor %}
     </mj-column>
 </mj-section>
 <mj-section>

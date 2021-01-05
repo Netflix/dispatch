@@ -1,4 +1,5 @@
 import os
+import logging
 import subprocess
 import tempfile
 import platform
@@ -15,6 +16,8 @@ from dispatch.messaging.strings import (
 )
 
 from .filters import env
+
+log = logging.getLogger(__name__)
 
 
 def get_template(message_type: MessageType):
@@ -77,6 +80,8 @@ def render_html(template):
             cwd=MJML_PATH,
             capture_output=True,
         )
+        if process.stderr:
+            log.error(process.stderr)
         return process.stdout.decode("utf-8")
 
 
