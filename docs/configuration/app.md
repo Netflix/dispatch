@@ -47,6 +47,10 @@ In general, do not include any quotation marks when adding configuration values.
 
 > Optional configuration for using Sentry to report Dispatch errors.
 
+#### `MJML_PATH` \[default: <dispatch-dir>/static/dispatch/node_modules/.bin]
+
+> Dispatch uses [MJML](https://mjml.io/documentation/) to generate its html emails. This package also requires the `node` binary to be available on the standard path (or set in Dispatch's path). Use this variable to adjust the location where Dispatch should look for the `mjml` command.
+
 #### `VUE_APP_SENTRY_DSN` \[default: none\]
 
 > Optional configuration for using Sentry to report Dispatch errors.
@@ -110,13 +114,13 @@ In order for this plugin to work, you need to set `DISPATCH_JWT_SECRET`.
 #### Configuration for `dispatch-auth-provider-pkce`
 
 {% hint style="warning" %}
-In order for this plugin to work with your OIDC setup, you may need to set 
-`DISPATCH_JWT_AUDIENCE` and `DISPATCH_PKCE_DONT_VERIFY_AT_HASH`. 
+In order for this plugin to work with your OIDC setup, you may need to set
+`DISPATCH_JWT_AUDIENCE` and `DISPATCH_PKCE_DONT_VERIFY_AT_HASH`.
 {% endhint %}
 
 #### `DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWK` \['default': true\]
 
-> Used by Dispatch's authentication backend to pull the JSON Web Key Set \(JWKS\) public key from the specified provider. 
+> Used by Dispatch's authentication backend to pull the JSON Web Key Set \(JWKS\) public key from the specified provider.
 > This will likely be the `jwks_uri` URL from your OIDC provider.
 
 #### `DISPATCH_PKCE_DONT_VERIFY_AT_HASH` \['default': false\]
@@ -126,7 +130,7 @@ In order for this plugin to work with your OIDC setup, you may need to set
 
 #### `VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL`
 
-> The well-known configuration URL for your OIDC provider, without a trailing slash. Used by the Dispatch 
+> The well-known configuration URL for your OIDC provider, without a trailing slash. Used by the Dispatch
 > Web UI to authenticate a user via Proof Key Code Exchange \(PKCE\).
 
 #### `VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID`
