@@ -25,7 +25,7 @@
         </mj-text>
     </mj-column>
 </mj-section>
-<mj-section>
+<mj-section background-color="#ffffff">
     <mj-column>
         <mj-divider border-width="1px" border-color="lightgrey" />
     </mj-column>
@@ -40,7 +40,7 @@
         </mj-text>
     </mj-column>
 </mj-section>
-<mj-section>
+<mj-section background-color="#ffffff">
     <mj-column>
         <mj-divider border-width="1px" border-color="lightgrey" />
     </mj-column>
@@ -55,7 +55,7 @@
         </mj-text>
     </mj-column>
 </mj-section>
-<mj-section>
+<mj-section background-color="#ffffff">
     <mj-column>
         <mj-divider border-width="1px" border-color="lightgrey" />
     </mj-column>
