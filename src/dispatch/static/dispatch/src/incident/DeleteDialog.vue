@@ -12,13 +12,13 @@
       <v-card-text>
         <v-container grid-list-md>
           <v-layout wrap>
-            Are you sure you would like to delete this incident?
+            Are you sure you want to delete this incident?
           </v-layout>
         </v-container>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="blue en-1" text @click="close">
+        <v-btn color="blue en-1" text @click="closeDeleteDialog()">
           Cancel
         </v-btn>
         <v-btn color="red en-1" text @click="performDelete(selectedIncident)">
@@ -30,25 +30,22 @@
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex"
+import { mapFields } from "vuex-map-fields"
+import { mapActions } from "vuex"
 export default {
   name: "IncidentDeleteDialog",
   data() {
     return {}
   },
   computed: {
-    ...mapState("incident", ["selectedIncident", "showDeleteDialog"])
+    ...mapFields("incident", ["dialogs.showDeleteDialog"])
   },
 
   methods: {
-    ...mapActions("incident", ["deleteIncident"]),
+    ...mapActions("incident", ["closeDeleteDialog"]),
 
     performDelete(incident) {
       this.$store.dispatch("incident/deleteIncident", incident)
-    },
-
-    close() {
-      this.$store.dispatch("incident/showDeleteDialog", false)
     }
   }
 }

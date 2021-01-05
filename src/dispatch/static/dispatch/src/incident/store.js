@@ -38,10 +38,10 @@ const state = {
     ...getDefaultSelectedState()
   },
   dialogs: {
+    showDeleteDialog: false,
     showEditSheet: false,
-    showNewSheet: false,
-    showRemove: false,
-    showExport: false
+    showExport: false,
+    showNewSheet: false
   },
   table: {
     rows: {
@@ -134,11 +134,11 @@ const actions = {
     commit("SET_DIALOG_SHOW_EDIT_SHEET", false)
     commit("RESET_SELECTED")
   },
-  removeShow({ commit }, incident) {
+  showDeleteDialog({ commit }, incident) {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", incident)
   },
-  closeRemove({ commit }) {
+  closeDeleteDialog({ commit }) {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
   },
@@ -253,10 +253,10 @@ const actions = {
         commit("SET_BULK_EDIT_LOADING", false)
       })
   },
-  remove({ commit, dispatch }) {
+  deleteIncident({ commit, dispatch }) {
     return IncidentApi.delete(state.selected.id)
       .then(function() {
-        dispatch("closeRemove")
+        dispatch("closeDeleteDialog")
         dispatch("getAll")
         commit(
           "app/SET_SNACKBAR",
@@ -312,7 +312,7 @@ const mutations = {
     state.dialogs.showExport = value
   },
   SET_DIALOG_DELETE(state, value) {
-    state.dialogs.showRemove = value
+    state.dialogs.showDeleteDialog = value
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
