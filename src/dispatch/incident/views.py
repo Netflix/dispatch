@@ -223,13 +223,24 @@ def join_incident(
 
 
 @router.delete("/{incident_id}", response_model=IncidentRead, summary="Delete an incident.")
-def delete_incident(*, db_session: Session = Depends(get_db), incident_id: str):
+def delete_incident(
+    *,
+    db_session: Session = Depends(get_db),
+    incident_id: str,
+    current_user: DispatchUser = Depends(get_current_user),
+):
     """
     Delete an individual incident.
     """
+    if current_user.role != UserRoles.admin:
+        raise HTTPException(
+            status_code=401, detail="You do no have permission to delete incidents."
+        )
+
     incident = get(db_session=db_session, incident_id=incident_id)
     if not incident:
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
+
     delete(db_session=db_session, incident_id=incident.id)
 
 

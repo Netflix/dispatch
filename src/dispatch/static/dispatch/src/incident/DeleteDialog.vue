@@ -4,11 +4,6 @@
       <v-card-title>
         <span class="headline">Delete Incident?</span>
       </v-card-title>
-      <!--<v-alert
-        :value="alert"
-        type="error"
-        transition="slide-y-transition"
-      >There was an issue deleting.</v-alert>-->
       <v-card-text>
         <v-container grid-list-md>
           <v-layout wrap>
