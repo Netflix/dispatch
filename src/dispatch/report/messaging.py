@@ -92,7 +92,7 @@ def send_executive_report_to_notifications_group(
         weblink=executive_report.document.weblink,
         notifications_group=incident.notifications_group.email,
         contact_fullname=incident.commander.individual.name,
-        contact_weblink=incident.commander.weblink,
+        contact_weblink=incident.commander.individual.weblink,
     )
 
     log.debug(f"Executive report sent to notifications group {incident.notifications_group.email}.")
