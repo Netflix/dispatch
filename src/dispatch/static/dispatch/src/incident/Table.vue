@@ -3,10 +3,10 @@
     <edit-sheet />
     <new-sheet />
     <delete-dialog />
-    <table-filter-dialog />
-    <table-export-dialog />
     <div class="headline">Incidents</div>
     <v-spacer />
+    <table-filter-dialog />
+    <table-export-dialog />
     <v-btn color="info" class="ml-2" @click="showNewSheet()">New</v-btn>
     <v-flex xs12>
       <v-layout column>
