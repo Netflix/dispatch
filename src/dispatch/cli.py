@@ -168,7 +168,7 @@ def dispatch_user():
     "--role",
     "-r",
     type=click.Choice(UserRoles),
-    help="Sets default output format for configuration files",
+    help="Role to be assigned to the user.",
 )
 def update_user(email: str, role: str):
     """Updates a user's roles."""
