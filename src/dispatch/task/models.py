@@ -84,9 +84,12 @@ class Task(Base, ResourceMixin, TimeStampMixin):
     priority = Column(String, default=TaskPriority.low)
     status = Column(String, default=TaskStatus.open)
     reminders = Column(Boolean, default=True)
-    incident_id = Column(Integer, ForeignKey("incident.id"))
-    search_vector = Column(TSVectorType("description"))
+
+    # relationships
+    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     tickets = relationship("Ticket", secondary=assoc_task_tickets, backref="tasks")
+
+    search_vector = Column(TSVectorType("description"))
 
     @staticmethod
     def _resolved_at(mapper, connection, target):

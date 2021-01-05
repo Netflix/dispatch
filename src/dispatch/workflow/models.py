@@ -83,7 +83,7 @@ class Workflow(Base, TimeStampMixin):
 class WorkflowInstance(Base, ResourceMixin, TimeStampMixin):
     id = Column(Integer, primary_key=True)
     workflow_id = Column(Integer, ForeignKey("workflow.id"))
-    incident_id = Column(Integer, ForeignKey("incident.id"))
+    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     parameters = Column(JSON, default=[])
     run_reason = Column(String)
     creator_id = Column(Integer, ForeignKey("participant.id"))

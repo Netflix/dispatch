@@ -55,16 +55,16 @@ from .enums import IncidentStatus
 assoc_incident_terms = Table(
     "assoc_incident_terms",
     Base.metadata,
-    Column("incident_id", Integer, ForeignKey("incident.id")),
-    Column("term_id", Integer, ForeignKey("term.id")),
+    Column("incident_id", Integer, ForeignKey("incident.id", ondelete="CASCADE")),
+    Column("term_id", Integer, ForeignKey("term.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("incident_id", "term_id"),
 )
 
 assoc_incident_tags = Table(
     "assoc_incident_tags",
     Base.metadata,
-    Column("incident_id", Integer, ForeignKey("incident.id")),
-    Column("tag_id", Integer, ForeignKey("tag.id")),
+    Column("incident_id", Integer, ForeignKey("incident.id", ondelete="CASCADE")),
+    Column("tag_id", Integer, ForeignKey("tag.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("incident_id", "tag_id"),
 )
 
@@ -194,24 +194,37 @@ class Incident(Base, TimeStampMixin):
             return Counter(locations).most_common(1)[0][0]
 
     # resources
-    conference = relationship("Conference", uselist=False, backref="incident")
-    conversation = relationship("Conversation", uselist=False, backref="incident")
-    documents = relationship("Document", lazy="subquery", backref="incident")
-    events = relationship("Event", backref="incident")
-    feedback = relationship("Feedback", backref="incident")
-    groups = relationship("Group", lazy="subquery", backref="incident")
     incident_priority = relationship("IncidentPriority", backref="incident")
     incident_priority_id = Column(Integer, ForeignKey("incident_priority.id"))
     incident_type = relationship("IncidentType", backref="incident")
     incident_type_id = Column(Integer, ForeignKey("incident_type.id"))
-    participants = relationship("Participant", backref="incident")
-    reports = relationship("Report", backref="incident")
-    storage = relationship("Storage", uselist=False, backref="incident")
+
+    conference = relationship(
+        "Conference", uselist=False, backref="incident", cascade="all, delete-orphan"
+    )
+    conversation = relationship(
+        "Conversation", uselist=False, backref="incident", cascade="all, delete-orphan"
+    )
+    documents = relationship(
+        "Document", lazy="subquery", backref="incident", cascade="all, delete-orphan"
+    )
+    events = relationship("Event", backref="incident", cascade="all, delete-orphan")
+    feedback = relationship("Feedback", backref="incident", cascade="all, delete-orphan")
+    groups = relationship(
+        "Group", lazy="subquery", backref="incident", cascade="all, delete-orphan"
+    )
+    participants = relationship("Participant", backref="incident", cascade="all, delete-orphan")
+    reports = relationship("Report", backref="incident", cascade="all, delete-orphan")
+    storage = relationship(
+        "Storage", uselist=False, backref="incident", cascade="all, delete-orphan"
+    )
     tags = relationship("Tag", secondary=assoc_incident_tags, backref="incidents")
-    tasks = relationship("Task", backref="incident")
+    tasks = relationship("Task", backref="incident", cascade="all, delete-orphan")
     terms = relationship("Term", secondary=assoc_incident_terms, backref="incidents")
-    ticket = relationship("Ticket", uselist=False, backref="incident")
-    workflow_instances = relationship("WorkflowInstance", backref="incident")
+    ticket = relationship("Ticket", uselist=False, backref="incident", cascade="all, delete-orphan")
+    workflow_instances = relationship(
+        "WorkflowInstance", backref="incident", cascade="all, delete-orphan"
+    )
 
     # allow incidents to be marked as duplicate
     duplicate_id = Column(Integer, ForeignKey("incident.id"))
