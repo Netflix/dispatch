@@ -16,7 +16,7 @@ class Feedback(Base, TimeStampMixin):
     feedback = Column(String)
 
     # Relationships
-    incident_id = Column(Integer, ForeignKey("incident.id"))
+    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     participant_id = Column(Integer, ForeignKey("participant.id"))
 
 

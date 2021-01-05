@@ -2,7 +2,7 @@ from pydantic import validator
 
 from typing import Optional
 
-from sqlalchemy import Column, Integer
+from sqlalchemy import Column, Integer, ForeignKey
 
 from dispatch.database import Base
 from dispatch.messaging.strings import INCIDENT_TICKET_DESCRIPTION
@@ -11,6 +11,7 @@ from dispatch.models import DispatchBase, ResourceMixin
 
 class Ticket(Base, ResourceMixin):
     id = Column(Integer, primary_key=True)
+    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
 
 
 # Pydantic models...
