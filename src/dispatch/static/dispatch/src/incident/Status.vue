@@ -10,7 +10,7 @@
           Report Incident
         </v-btn>
       </v-app-bar>
-      <v-card class="mx-auto ma-4" max-width="800" flat outlined>
+      <v-card class="mx-auto ma-4" max-width="1000" flat outlined>
         <v-card-text>
           <incident-summary-table :items="items" :loading="loading" />
         </v-card-text>
