@@ -2,11 +2,11 @@
   <v-layout wrap>
     <edit-sheet />
     <new-sheet />
-    <!--<delete-dialog />-->
-    <div class="headline">Incidents</div>
-    <v-spacer />
+    <delete-dialog />
     <table-filter-dialog />
     <table-export-dialog />
+    <div class="headline">Incidents</div>
+    <v-spacer />
     <v-btn color="info" class="ml-2" @click="showNewSheet()">New</v-btn>
     <v-flex xs12>
       <v-layout column>
@@ -62,6 +62,9 @@
                     <v-list-item @click="showEditSheet(item)">
                       <v-list-item-title>View / Edit</v-list-item-title>
                     </v-list-item>
+                    <v-list-item @click="showDeleteDialog(item)">
+                      <v-list-item-title>Delete</v-list-item-title>
+                    </v-list-item>
                   </v-list>
                 </v-menu>
               </template>
@@ -77,27 +80,29 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import TableFilterDialog from "@/incident/TableFilterDialog.vue"
-import TableExportDialog from "@/incident/TableExportDialog.vue"
-import EditSheet from "@/incident/EditSheet.vue"
-import NewSheet from "@/incident/NewSheet.vue"
 import BulkEditSheet from "@/incident/BulkEditSheet.vue"
-import IncidentStatus from "@/incident/IncidentStatus.vue"
-import IncidentPriority from "@/incident/IncidentPriority.vue"
+import DeleteDialog from "@/incident/DeleteDialog.vue"
+import EditSheet from "@/incident/EditSheet.vue"
 import IncidentParticipant from "@/incident/Participant.vue"
+import IncidentPriority from "@/incident/IncidentPriority.vue"
+import IncidentStatus from "@/incident/IncidentStatus.vue"
+import NewSheet from "@/incident/NewSheet.vue"
+import TableExportDialog from "@/incident/TableExportDialog.vue"
+import TableFilterDialog from "@/incident/TableFilterDialog.vue"
 
 export default {
   name: "IncidentTable",
 
   components: {
-    EditSheet,
-    NewSheet,
-    TableFilterDialog,
-    TableExportDialog,
     BulkEditSheet,
-    IncidentStatus,
+    DeleteDialog,
+    EditSheet,
+    IncidentParticipant,
     IncidentPriority,
-    IncidentParticipant
+    IncidentStatus,
+    NewSheet,
+    TableExportDialog,
+    TableFilterDialog
   },
 
   props: ["name"],
@@ -173,7 +178,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident", ["getAll", "showNewSheet", "showEditSheet", "removeShow"])
+    ...mapActions("incident", ["getAll", "showNewSheet", "showEditSheet", "showDeleteDialog"])
   }
 }
 </script>
