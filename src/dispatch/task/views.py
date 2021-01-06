@@ -62,6 +62,7 @@ def get_tasks(
             "page": ...,
             "total": ...,
         }
+
         return TaskPagination(**pagination).dict(include=include_fields)
     return TaskPagination(**pagination).dict()
 

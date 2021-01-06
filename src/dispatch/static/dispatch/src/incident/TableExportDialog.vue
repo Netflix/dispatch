@@ -116,6 +116,8 @@
 import { mapFields } from "vuex-map-fields"
 import { forEach, each, has } from "lodash"
 import { mapActions } from "vuex"
+import Util from "@/util"
+
 import IncidentApi from "@/incident/api"
 import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
@@ -144,8 +146,8 @@ export default {
         { text: "Visibility", value: "visibility", sortable: false },
         { text: "Incident Type", value: "incident_type.name", sortable: false },
         { text: "Incident Priority", value: "incident_priority.name", sortable: false },
-        { text: "Reporter", value: "reporter.email", sortable: false },
-        { text: "Commander", value: "commander.email", sortable: false },
+        { text: "Reporter", value: "reporter.individual.email", sortable: false },
+        { text: "Commander", value: "commander.individual.email", sortable: false },
         { text: "Primary Team", value: "primary_team", sortable: false },
         { text: "Primary Location", value: "primary_location", sortable: false },
         { text: "Reported At", value: "reported_at", sortable: false },
@@ -229,34 +231,7 @@ export default {
         .then(response => {
           let items = response.data.items
 
-          let csvContent = "data:text/csv;charset=utf-8,"
-          csvContent += [
-            Object.keys(items[0]).join(","),
-            ...items.map(item => {
-              if (typeof item === "object") {
-                return Object.values(item)
-                  .map(value => {
-                    if (value === null) {
-                      return ""
-                    }
-                    if (typeof value === "object") {
-                      return value[Object.keys(value)[0]]
-                    }
-                    return value
-                  })
-                  .join(",")
-              }
-              return ""
-            })
-          ]
-            .join("\n")
-            .replace(/(^\[)|(\]$)/gm, "")
-
-          const data = encodeURI(csvContent)
-          const link = document.createElement("a")
-          link.setAttribute("href", data)
-          link.setAttribute("download", "incidentExport.csv")
-          link.click()
+          Util.exportCSV(items, "incident-details-export.csv")
           this.exportLoading = false
           this.closeExport()
         })
