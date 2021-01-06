@@ -45,6 +45,7 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
+import Util from "@/util"
 
 export default {
   name: "IncidentTimelineTab",
@@ -67,35 +68,7 @@ export default {
     exportToCSV() {
       this.exportLoading = true
       let items = this.sortedEvents
-
-      let csvContent = "data:text/csv;charset=utf-8,"
-      csvContent += [
-        Object.keys(items[0]).join(","),
-        ...items.map(item => {
-          if (typeof item === "object") {
-            return Object.values(item)
-              .map(value => {
-                if (value === null) {
-                  return ""
-                }
-                if (typeof value === "object") {
-                  return value[Object.keys(value)[0]]
-                }
-                return value
-              })
-              .join(",")
-          }
-          return ""
-        })
-      ]
-        .join("\n")
-        .replace(/(^\[)|(\]$)/gm, "")
-
-      const data = encodeURI(csvContent)
-      const link = document.createElement("a")
-      link.setAttribute("href", data)
-      link.setAttribute("download", this.name + "-timeline-export.csv")
-      link.click()
+      Util.exportCSV(items, this.name + "-timeline-export.csv")
       this.exportLoading = false
     }
   }

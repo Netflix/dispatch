@@ -166,6 +166,8 @@
 import { mapFields } from "vuex-map-fields"
 import { forEach, each, has } from "lodash"
 import { mapActions } from "vuex"
+import Util from "@/util"
+
 import TaskApi from "@/task/api"
 import IncidentCombobox from "@/incident/IncidentCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
@@ -186,9 +188,9 @@ export default {
         { text: "Incident Status", value: "incident.status", sortable: false },
         { text: "Incident Type", value: "incident_type.name", sortable: false },
         { text: "Status", value: "status", sortable: false },
-        { text: "Creator", value: "creator.individual_contact.name", sortable: false },
-        { text: "Owner", value: "owner.individual_contact.name", sortable: false },
-        { text: "Assignees", value: "assignees", sortable: false }
+        { text: "Creator", value: "creator.individual.email", sortable: false },
+        { text: "Owner", value: "owner.individual.email", sortable: false },
+        { text: "Assignees", value: "assignees[].individual.name", sortable: false }
       ],
       allFields: [
         { text: "Incident Name", value: "incident.name", sortable: false },
@@ -196,9 +198,9 @@ export default {
         { text: "Incident Status", value: "incident.status", sortable: false },
         { text: "Incident Type", value: "incident_type.name", sortable: false },
         { text: "Status", value: "status", sortable: false },
-        { text: "Creator", value: "creator.individual_contact.name", sortable: false },
-        { text: "Owner", value: "owner.individual_contact.name", sortable: false },
-        { text: "Assignees", value: "assignees", sortable: false },
+        { text: "Creator", value: "creator.individual.email", sortable: false },
+        { text: "Owner", value: "owner.individual.email", sortable: false },
+        { text: "Assignees", value: "assignees[].individual.email", sortable: false },
         { text: "Description", value: "description", sortable: false },
         { text: "Source", value: "source", sortable: false },
         { text: "Tickets", value: "tickets", sortable: false },
@@ -276,35 +278,7 @@ export default {
       return TaskApi.getAll(tableOptions)
         .then(response => {
           let items = response.data.items
-
-          let csvContent = "data:text/csv;charset=utf-8,"
-          csvContent += [
-            Object.keys(items[0]).join(","),
-            ...items.map(item => {
-              if (typeof item === "object") {
-                return Object.values(item)
-                  .map(value => {
-                    if (value === null) {
-                      return ""
-                    }
-                    if (typeof value === "object") {
-                      return value[Object.keys(value)[0]]
-                    }
-                    return value
-                  })
-                  .join(",")
-              }
-              return ""
-            })
-          ]
-            .join("\n")
-            .replace(/(^\[)|(\]$)/gm, "")
-
-          const data = encodeURI(csvContent)
-          const link = document.createElement("a")
-          link.setAttribute("href", data)
-          link.setAttribute("download", "incidentExport.csv")
-          link.click()
+          Util.exportCSV(items, "incident-tasks-export.csv")
           this.exportLoading = false
           this.closeExport()
         })
