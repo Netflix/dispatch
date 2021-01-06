@@ -86,7 +86,7 @@ def verify_timestamp(timestamp: int):
         raise HTTPException(status_code=403, detail="Invalid request timestamp")
 
 
-def check_command_restrictions(
+async def check_command_restrictions(
     command: str, user_id: str, incident_id: int, db_session: Session
 ) -> bool:
     """Checks the current user's role to determine what commands they are allowed to run."""
@@ -116,8 +116,8 @@ def check_command_restrictions(
     if command not in command_permissons.keys():
         return True
 
-    slack_client = dispatch_slack_service.create_slack_client()
-    user_email = dispatch_slack_service.get_user_email(slack_client, user_id)
+    slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
+    user_email = await dispatch_slack_service.get_user_email_async(slack_async_client, user_id)
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident_id, email=user_email
     )
@@ -249,7 +249,7 @@ async def handle_command(
 
     # some commands are sensitive and we only let non-participants execute them
     user_id = command_details.get("user_id")
-    allowed = check_command_restrictions(
+    allowed = await check_command_restrictions(
         command=command, user_id=user_id, incident_id=incident_id, db_session=db_session
     )
     if not allowed:
