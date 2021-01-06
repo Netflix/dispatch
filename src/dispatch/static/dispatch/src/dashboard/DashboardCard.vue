@@ -47,9 +47,12 @@ export default {
     }
   },
   watch: {
+    options: function(newVal, oldVal) {
+      this.localOptions = { ...this.localOptions, ...newVal }
+    },
     "$vuetify.theme.dark": function(newValue) {
       this.localOptions = {
-        ...this.localOoptions,
+        ...this.localOptions,
         ...{
           theme: {
             mode: newValue ? "dark" : "light"
