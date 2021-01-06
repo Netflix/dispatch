@@ -16,11 +16,6 @@
 {% endblock %}
 
 {% block items %}
-<mj-section background-color="#ffffff">
-    <mj-column>
-        <mj-divider border-width="1px" border-color="lightgrey" />
-    </mj-column>
-</mj-section>
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
     <mj-column width="100%">
         <mj-text color="#212b35" font-weight="bold" font-size="20px">
