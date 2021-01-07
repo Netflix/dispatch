@@ -70,7 +70,7 @@ def create_tactical_report(
     # we send the tactical report to the tactical group
     send_tactical_report_to_tactical_group(incident_id, tactical_report, db_session)
 
-    # we let the user know that the report has been sent to the notifications group
+    # we let the user know that the report has been sent to the tactical group
     send_feedack_to_user(
         incident.conversation.channel_id,
         user_id,
