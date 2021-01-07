@@ -29,6 +29,7 @@ const getDefaultSelectedState = () => {
     workflow_instances: null,
     title: null,
     visibility: null,
+    trackingOnly: null,
     loading: false
   }
 }
@@ -150,6 +151,9 @@ const actions = {
   },
   report({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
+    if (state.selected.trackingOnly === true) {
+      state.selected.status = "Closed"
+    }
     return IncidentApi.create(state.selected)
       .then(response => {
         commit("SET_SELECTED", response.data)
