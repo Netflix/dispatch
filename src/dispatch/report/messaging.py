@@ -63,6 +63,39 @@ def send_tactical_report_to_conversation(
     log.debug("Tactical report sent to conversation {incident.conversation.channel_id}.")
 
 
+def send_tactical_report_to_tactical_group(
+    incident_id: int,
+    tactical_report: Report,
+    db_session: SessionLocal,
+):
+    """Sends a tactical report to the tactical group."""
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
+
+    if not plugin:
+        log.warning("Tactical report not sent, no email plugin enabled.")
+        return
+
+    # we load the incident instance
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    subject = f"{incident.name.upper()} - Tactical Report"
+    plugin.instance.send(
+        incident.notifications_group.email,
+        INCIDENT_TACTICAL_REPORT,
+        MessageType.incident_tactical_report,
+        subject=subject,
+        name=subject,
+        title=incident.title,
+        conditions=tactical_report.details.get("conditions"),
+        actions=tactical_report.details.get("actions"),
+        needs=tactical_report.details.get("needs"),
+        contact_fullname=incident.commander.individual.name,
+        contact_weblink=incident.commander.individual.weblink,
+    )
+
+    log.debug(f"Tactical report sent to tactical group {incident.tactical_group.email}.")
+
+
 def send_executive_report_to_notifications_group(
     incident_id: int,
     executive_report: Report,
@@ -72,7 +105,7 @@ def send_executive_report_to_notifications_group(
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
 
     if not plugin:
-        log.warning("Executive report notification not sent, no email plugin enabled.")
+        log.warning("Executive report not sent, no email plugin enabled.")
         return
 
     # we load the incident instance

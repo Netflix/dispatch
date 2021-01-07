@@ -18,7 +18,7 @@
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
     <mj-column width="100%">
         <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            <b>Incident Title</b>
+            Incident Title
         </mj-text>
         <mj-text color="#212b35" font-size="16px">
             {{ title }}
@@ -28,7 +28,7 @@
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
     <mj-column width="100%">
         <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            <b>Conditions</b>
+            Conditions
         </mj-text>
         <mj-text color="#212b35" font-size="16px">
             {{ conditions }}
@@ -38,7 +38,7 @@
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
     <mj-column width="100%">
         <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            <b>Actions</b>
+            Actions
         </mj-text>
         <mj-text color="#212b35" font-size="16px">
             {{ actions }}
@@ -48,7 +48,7 @@
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
     <mj-column width="100%">
         <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            <b>Needs</b>
+            Needs
         </mj-text>
         <mj-text color="#212b35" font-size="16px">
             {{ needs }}
