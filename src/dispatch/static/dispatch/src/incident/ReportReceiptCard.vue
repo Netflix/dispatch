@@ -3,9 +3,9 @@
     <v-card-text>
       <p class="display-2 text--primary">Security Incident Report</p>
       <p>
-        This page will be populated with incident resources as they are created. If you have any
-        questions, please feel free to review the Frequently Asked Questions (FAQ) document linked
-        below, and/or reach out to the listed Incident Commander.
+        This page will be populated with incident resources as they are created (if available). If
+        you have any questions, please feel free to review the Frequently Asked Questions (FAQ)
+        document linked below, and/or reach out to the listed Incident Commander.
       </p>
       <v-list three-line>
         <v-list-group :value="true">
@@ -14,13 +14,13 @@
           </template>
           <v-list-item-group>
             <v-list-item
-              :href="commander.weblink"
+              :href="commander.individual.weblink"
               target="_blank"
               title="The Incident Commander maintains all necessary context, and drives the incident to resolution."
             >
               <v-list-item-content>
                 <v-list-item-title>Commander</v-list-item-title>
-                <v-list-item-subtitle>{{ commander.name }}</v-list-item-subtitle>
+                <v-list-item-subtitle>{{ commander.individual.name }}</v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
                 <v-list-item-icon>
@@ -66,7 +66,7 @@
           </v-list-item-group>
         </v-list-group>
       </v-list>
-      <v-list three-line>
+      <v-list three-line v-if="!trackingOnly">
         <v-list-group :value="true">
           <template v-slot:activator>
             <v-list-item-title class="title">Incident Resources</v-list-item-title>
@@ -260,6 +260,7 @@ export default {
       "selected.visibility",
       "selected.storage",
       "selected.documents",
+      "selected.trackingOnly",
       "selected.loading",
       "selected.ticket",
       "selected.id"

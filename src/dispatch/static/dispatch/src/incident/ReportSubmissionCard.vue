@@ -51,6 +51,24 @@
               <v-flex xs12>
                 <tag-filter-combobox v-model="tags" label="Tags"></tag-filter-combobox>
               </v-flex>
+              <v-flex xs12>
+                <v-checkbox v-model="trackingOnly" label="Tracking Only">
+                  <template v-slot:label>
+                    <div>
+                      Tracking Only
+                      <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-icon v-bind="attrs" v-on="on">
+                            help_outline
+                          </v-icon>
+                        </template>
+                        This incident does not require additional action. No incident resources will
+                        be created for this incident.
+                      </v-tooltip>
+                    </div>
+                  </template>
+                </v-checkbox>
+              </v-flex>
             </v-layout>
             <template>
               <v-btn
@@ -102,7 +120,6 @@ export default {
       isSubmitted: false
     }
   },
-  mounted() {},
   computed: {
     ...mapFields("incident", [
       "selected.incident_priority",
@@ -118,6 +135,7 @@ export default {
       "selected.documents",
       "selected.loading",
       "selected.ticket",
+      "selected.trackingOnly",
       "selected.id"
     ])
   },
