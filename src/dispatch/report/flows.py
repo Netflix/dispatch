@@ -14,8 +14,9 @@ from dispatch.plugin import service as plugin_service
 
 from .enums import ReportTypes
 from .messaging import (
-    send_tactical_report_to_conversation,
     send_executive_report_to_notifications_group,
+    send_tactical_report_to_conversation,
+    send_tactical_report_to_tactical_group,
 )
 from .models import ReportCreate
 from .service import create, get_all_by_incident_id_and_type
@@ -65,6 +66,17 @@ def create_tactical_report(
 
     # we send the tactical report to the conversation
     send_tactical_report_to_conversation(incident_id, conditions, actions, needs, db_session)
+
+    # we send the tactical report to the tactical group
+    send_tactical_report_to_tactical_group(incident_id, tactical_report, db_session)
+
+    # we let the user know that the report has been sent to the tactical group
+    send_feedack_to_user(
+        incident.conversation.channel_id,
+        user_id,
+        f"The tactical report has been emailed to the incident tactical group ({incident.notifications_group.email}).",
+        db_session,
+    )
 
     return tactical_report
 
@@ -215,7 +227,7 @@ def create_executive_report(
     send_feedack_to_user(
         incident.conversation.channel_id,
         user_id,
-        f"The executive report has been emailed to the notifications distribution list ({incident.notifications_group.email}).",
+        f"The executive report has been emailed to the incident notifications group ({incident.notifications_group.email}).",
         db_session,
     )
 
