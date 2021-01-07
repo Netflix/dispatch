@@ -2,7 +2,7 @@
 {% block description %}
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
 <mj-column width="100%">
-    <mj-text color="#212b35" font-weight="bold" font-size="20px">
+    <mj-text color="#212b35" font-size="16px">
         {{ description }}
     </mj-text>
     </mj-column>
