@@ -2,11 +2,11 @@
 {% block description %}
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
 <mj-column width="100%">
-    <mj-text color="#212b35" font-weight="bold" font-size="20px">
+    <mj-text color="#212b35" font-size="16px">
         This message is for <b>notification</b> purposes only. No direct action of you
         is currently required.
     </mj-text>
-    <mj-text color="#212b35" font-weight="bold" font-size="20px">
+    <mj-text color="#212b35" font-size="16px">
         Please be aware that this is a point in time update and the details below will
         likely change.
     </mj-text>
@@ -18,55 +18,40 @@
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
     <mj-column width="100%">
         <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            <ul style="list-style-type:none; padding-left: 0;">
-                <li><b>Incident Title</b></li>
-                <li>{{ title }}</li>
-            </ul>
+            Incident Title
         </mj-text>
-    </mj-column>
-</mj-section>
-<mj-section background-color="#ffffff">
-    <mj-column>
-        <mj-divider border-width="1px" border-color="lightgrey" />
+        <mj-text color="#212b35" font-size="16px">
+            {{ title }}
+        </mj-text>
     </mj-column>
 </mj-section>
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
     <mj-column width="100%">
         <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            <ul style="list-style-type:none; padding-left: 0;">
-                <li><b>Conditions</b></li>
-                <li>{{ conditions }}</li>
-            </ul>
+            Conditions
         </mj-text>
-    </mj-column>
-</mj-section>
-<mj-section background-color="#ffffff">
-    <mj-column>
-        <mj-divider border-width="1px" border-color="lightgrey" />
+        <mj-text color="#212b35" font-size="16px">
+            {{ conditions }}
+        </mj-text>
     </mj-column>
 </mj-section>
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
     <mj-column width="100%">
         <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            <ul style="list-style-type:none; padding-left: 0;">
-                <li><b>Actions</b></li>
-                <li>{{ actions }}</li>
-            </ul>
+            Actions
         </mj-text>
-    </mj-column>
-</mj-section>
-<mj-section background-color="#ffffff">
-    <mj-column>
-        <mj-divider border-width="1px" border-color="lightgrey" />
+        <mj-text color="#212b35" font-size="16px">
+            {{ actions }}
+        </mj-text>
     </mj-column>
 </mj-section>
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
     <mj-column width="100%">
         <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            <ul style="list-style-type:none; padding-left: 0;">
-                <li><b>Needs</b></li>
-                <li>{{ needs }}</li>
-            </ul>
+            Needs
+        </mj-text>
+        <mj-text color="#212b35" font-size="16px">
+            {{ needs }}
         </mj-text>
     </mj-column>
 </mj-section>

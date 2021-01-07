@@ -19,7 +19,7 @@
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
     <mj-column width="100%">
         <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            <b>Incident Title</b>
+            Incident Title
         </mj-text>
         <mj-text color="#212b35" font-size="16px">
             {{ title }}
@@ -29,7 +29,7 @@
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
     <mj-column width="100%">
         <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            <b>Current Status</b>
+            Current Status
         </mj-text>
         <mj-text color="#212b35" font-size="16px">
             {{ current_status }}
@@ -39,7 +39,7 @@
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
     <mj-column width="100%">
         <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            <b>Overview</b>
+            Overview
         </mj-text>
         <mj-text color="#212b35" font-size="16px">
             {{ overview }}
@@ -49,7 +49,7 @@
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
     <mj-column width="100%">
         <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            <b>Next Steps</b>
+            Next Steps
         </mj-text>
         <mj-text color="#212b35" font-size="16px">
             {{ next_steps }}
