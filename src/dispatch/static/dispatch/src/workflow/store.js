@@ -95,14 +95,14 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             { text: "Workflow created successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Workflow not created. Reason: " + err.response.data.detail,
               type: "error"
@@ -116,14 +116,14 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             { text: "Workflow updated successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Workflow not updated. Reason: " + err.response.data.detail,
               type: "error"
@@ -139,14 +139,14 @@ const actions = {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
-          "app/SET_SNACKBAR",
+          "notification/addBeNotification",
           { text: "Workflow deleted successfully.", type: "success" },
           { root: true }
         )
       })
       .catch(err => {
         commit(
-          "app/SET_SNACKBAR",
+          "notification/addBeNotification",
           {
             text: "Workflow not deleted. Reason: " + err.response.data.detail,
             type: "error"

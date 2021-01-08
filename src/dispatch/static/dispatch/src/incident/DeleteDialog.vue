@@ -16,7 +16,7 @@
         <v-btn color="blue en-1" text @click="closeDeleteDialog()">
           Cancel
         </v-btn>
-        <v-btn color="red en-1" text @click="performDelete(selectedIncident)">
+        <v-btn color="red en-1" text @click="deleteIncident(selected)">
           Delete
         </v-btn>
       </v-card-actions>
@@ -33,15 +33,11 @@ export default {
     return {}
   },
   computed: {
-    ...mapFields("incident", ["dialogs.showDeleteDialog"])
+    ...mapFields("incident", ["dialogs.showDeleteDialog", "selected"])
   },
 
   methods: {
-    ...mapActions("incident", ["closeDeleteDialog"]),
-
-    performDelete(incident) {
-      this.$store.dispatch("incident/deleteIncident", incident)
-    }
+    ...mapActions("incident", ["closeDeleteDialog", "deleteIncident"])
   }
 }
 </script>

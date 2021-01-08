@@ -79,14 +79,14 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             { text: "Team created successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Team not created. Reason: " + err.response.data.detail,
               type: "error"
@@ -100,14 +100,14 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             { text: "Team updated successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Team not updated. Reason: " + err.response.data.detail,
               type: "error"
@@ -123,14 +123,14 @@ const actions = {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
-          "app/SET_SNACKBAR",
+          "notification/addBeNotification",
           { text: "Team deleted successfully.", type: "success" },
           { root: true }
         )
       })
       .catch(err => {
         commit(
-          "app/SET_SNACKBAR",
+          "notification/addBeNotification",
           {
             text: "Team not deleted. Reason: " + err.response.data.detail,
             type: "error"

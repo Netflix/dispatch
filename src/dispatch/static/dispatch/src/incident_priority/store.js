@@ -82,14 +82,14 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             { text: "Incident priority created successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Incident priority not created. Reason: " + err.response.data.detail,
               type: "error"
@@ -103,14 +103,14 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             { text: "Incident priority updated successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Incident priority not updated. Reason: " + err.response.data.detail,
               type: "error"
@@ -126,14 +126,14 @@ const actions = {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
-          "app/SET_SNACKBAR",
+          "notification/addBeNotification",
           { text: "Incident priority deleted successfully.", type: "success" },
           { root: true }
         )
       })
       .catch(err => {
         commit(
-          "app/SET_SNACKBAR",
+          "notification/addBeNotification",
           {
             text: "Incident priority not deleted. Reason: " + err.response.data.detail,
             type: "error"

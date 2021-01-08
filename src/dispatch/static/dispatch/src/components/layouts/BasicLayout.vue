@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <snackbar />
+    <notification-snackbars-wrapper />
     <v-content>
       <v-app-bar app flat class="v-bar--underline" color="background0">
         <router-link to="/" tag="span">
@@ -15,10 +15,10 @@
 </template>
 
 <script>
-import Snackbar from "@/components/Snackbar.vue"
+import NotificationSnackbarsWrapper from "@/components/NotificationSnackbarsWrapper.vue"
 export default {
   components: {
-    Snackbar
+    NotificationSnackbarsWrapper
   },
   data: () => ({}),
 

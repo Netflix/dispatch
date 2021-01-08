@@ -87,14 +87,14 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             { text: "Individual created successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Individual not created. Reason: " + err.response.data.detail,
               type: "error"
@@ -108,14 +108,14 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             { text: "Individual updated successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Individual not updated. Reason: " + err.response.data.detail,
               type: "error"
@@ -131,14 +131,14 @@ const actions = {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
-          "app/SET_SNACKBAR",
+          "notification/addBeNotification",
           { text: "Individual deleted successfully.", type: "success" },
           { root: true }
         )
       })
       .catch(err => {
         commit(
-          "app/SET_SNACKBAR",
+          "notification/addBeNotification",
           {
             text: "Individual not deleted. Reason: " + err.response.data.detail,
             type: "error"
