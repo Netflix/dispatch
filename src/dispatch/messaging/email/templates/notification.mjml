@@ -3,14 +3,11 @@
 <mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
   <mj-column width="100%">
   {% for item in items %}
-    <mj-text>
-      <ul style="list-style-type:none; padding-left: 0;">
-        <li>
-          <b><a href="{{ item.title_link }}" target="_blank" rel="noopener noreferrer">{{ item.title }}</a></b
-          >
-        </li>
-        <li>{{ item.text }}</li>
-      </ul>
+    <mj-text color="#212b35" font-weight="bold" font-size="20px">
+        <a href="{{ item.title_link }}" target="_blank" rel="noopener noreferrer">{{ item.title }}</a>
+    </mj-text>
+    <mj-text color="#212b35" font-size="16px">
+        {{ item.text }}
     </mj-text>
   {% endfor %}
   </mj-column>

@@ -28,15 +28,15 @@ def get_template(message_type: MessageType):
         MessageType.incident_participant_welcome: ("notification.mjml", None),
         MessageType.incident_tactical_report: ("tactical_report.mjml", None),
         MessageType.incident_task_reminder: (
-            "task_notification.mjml",
+            "notification_list.mjml",
             INCIDENT_TASK_REMINDER_DESCRIPTION,
         ),
         MessageType.document_evergreen_reminder: (
-            "document_evergreen_reminder.mjml",
+            "notification_list.mjml",
             DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
         ),
         MessageType.incident_feedback_daily_digest: (
-            "feedback_notification.mjml",
+            "notification_list.mjml",
             INCIDENT_FEEDBACK_DAILY_DIGEST_DESCRIPTION,
         ),
     }
