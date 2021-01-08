@@ -78,7 +78,7 @@ def send_tactical_report_to_tactical_group(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    subject = f"{incident.name.upper()} - Tactical Report"
+    subject = f"{incident.name} - Tactical Report"
     plugin.instance.send(
         incident.notifications_group.email,
         INCIDENT_TACTICAL_REPORT,
@@ -111,7 +111,7 @@ def send_executive_report_to_notifications_group(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    subject = f"{incident.name.upper()} - Executive Report"
+    subject = f"{incident.name} - Executive Report"
     plugin.instance.send(
         incident.notifications_group.email,
         INCIDENT_EXECUTIVE_REPORT,

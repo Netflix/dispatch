@@ -285,13 +285,13 @@ INCIDENT_CLOSED_RATING_FEEDBACK_DESCRIPTION = """
 Thanks for participating in the {{name}} ("{{title}}") incident. We would appreciate if you could rate your experience and provide feedback."""
 
 INCIDENT_TYPE_CHANGE_DESCRIPTION = """
-The incident type has been changed from *{{ incident_type_old }}* to *{{ incident_type_new }}*."""
+The incident type has been changed from {{ incident_type_old }} to {{ incident_type_new }}."""
 
 INCIDENT_STATUS_CHANGE_DESCRIPTION = """
-The incident status has been changed from *{{ incident_status_old }}* to *{{ incident_status_new }}*."""
+The incident status has been changed from {{ incident_status_old }} to {{ incident_status_new }}."""
 
 INCIDENT_PRIORITY_CHANGE_DESCRIPTION = """
-The incident priority has been changed from *{{ incident_priority_old }}* to *{{ incident_priority_new }}*."""
+The incident priority has been changed from {{ incident_priority_old }} to {{ incident_priority_new }}."""
 
 INCIDENT_NAME_WITH_ENGAGEMENT = {
     "title": "{{name}} Incident Notification",
