@@ -3,7 +3,8 @@
     <!--<loading />-->
     <app-toolbar />
     <app-drawer />
-    <snackbar />
+    <notification-snackbars-wrapper />
+
     <refresh />
     <v-content>
       <!-- Page Header -->
@@ -22,16 +23,16 @@
 import AppDrawer from "@/components/AppDrawer"
 import AppToolbar from "@/components/AppToolbar"
 import PageHeader from "@/components/PageHeader"
-import Snackbar from "@/components/Snackbar.vue"
 import Refresh from "@/components/Refresh.vue"
+import NotificationSnackbarsWrapper from "@/components/NotificationSnackbarsWrapper.vue"
 
 export default {
   components: {
     AppDrawer,
     AppToolbar,
     PageHeader,
-    Snackbar,
-    Refresh
+    Refresh,
+    NotificationSnackbarsWrapper
   },
 
   created() {

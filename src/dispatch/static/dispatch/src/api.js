@@ -35,11 +35,11 @@ instance.interceptors.response.use(
     }
     if (err.response.status == 500) {
       store.commit(
-        "app/SET_SNACKBAR",
+        "notification/addBeNotification",
         {
           text:
             "Something has gone very wrong, please retry or let your admin know that you received this error.",
-          color: "red"
+          type: "error"
         },
         { root: true }
       )

@@ -1,14 +1,6 @@
 import { getField, updateField } from "vuex-map-fields"
 import router from "@/router"
 
-const getDefaultSnackbarState = () => {
-  return {
-    text: null,
-    type: "info",
-    show: false
-  }
-}
-
 const getDefaulRefreshState = () => {
   return {
     show: false,
@@ -18,9 +10,6 @@ const getDefaulRefreshState = () => {
 
 const state = {
   toggleDrawer: true,
-  snackbar: {
-    ...getDefaultSnackbarState()
-  },
   refresh: {
     ...getDefaulRefreshState()
   },
@@ -34,9 +23,6 @@ const getters = {
 const actions = {
   toggleDrawer({ commit }, value) {
     commit("TOGGLE_DRAWER", value)
-  },
-  closeSnackbar({ commit }) {
-    commit("RESET_SNACKBAR")
   },
   performRefresh({ commit }) {
     router.go()
@@ -56,15 +42,8 @@ const mutations = {
     state.refresh = value
     state.refresh.show = true
   },
-  SET_SNACKBAR(state, value) {
-    state.snackbar = value
-    state.snackbar.show = true
-  },
   SET_LOADING(state, value) {
     state.loading = value
-  },
-  RESET_SNACKBAR(state) {
-    state.snackbar = getDefaultSnackbarState()
   },
   RESET_REFRESH(state) {
     state.refresh = Object.assign(state.refresh, getDefaulRefreshState())
