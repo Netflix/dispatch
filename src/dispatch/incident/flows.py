@@ -916,9 +916,10 @@ def status_flow_dispatcher(
     """Runs the correct flows depending on the incident's current and previous status."""
     # we have a currently active incident
     if current_status == IncidentStatus.active:
-        # re-activate incident
-        incident_active_status_flow(incident=incident, db_session=db_session)
-        send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
+        if previous_status == IncidentStatus.closed:
+            # re-activate incident
+            incident_active_status_flow(incident=incident, db_session=db_session)
+            send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
 
     # we currently have a stable incident
     elif current_status == IncidentStatus.stable:
@@ -934,7 +935,6 @@ def status_flow_dispatcher(
         if previous_status == IncidentStatus.active:
             incident_stable_status_flow(incident=incident, db_session=db_session)
             incident_closed_status_flow(incident=incident, db_session=db_session)
-
         elif previous_status == IncidentStatus.stable:
             incident_closed_status_flow(incident=incident, db_session=db_session)
 
