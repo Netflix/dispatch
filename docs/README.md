@@ -17,7 +17,7 @@ This means you can let Dispatch focus on creating resources, assembling particip
 ![](https://github.com/Netflix/dispatch/raw/master/docs/.gitbook/assets/thumb-6.png)
 ![](https://github.com/Netflix/dispatch/raw/master/docs/.gitbook/assets/thumb-4.png)
 ![](https://github.com/Netflix/dispatch/raw/master/docs/.gitbook/assets/thumb-3.png)
-![](https://github.com/Netflix/dispatch/raw/master/docs/.gitbook/assets/thumb-6.png)
+![](https://github.com/Netflix/dispatch/raw/master/docs/.gitbook/assets/thumb-5.png)
 
 ## Project resources
 
