@@ -17,8 +17,8 @@ from .config import (
     JIRA_API_URL,
     JIRA_USERNAME,
     JIRA_PASSWORD,
-    JIRA_PROJECT_KEY,
-    JIRA_ISSUE_TYPE_ID,
+    JIRA_PROJECT_ID,
+    JIRA_ISSUE_TYPE_NAME,
 )
 
 
@@ -77,7 +77,7 @@ def create_issue_fields(
     return issue_fields
 
 
-def create(client: Any, issue_fields: dict, type: str = JIRA_PROJECT_KEY) -> dict:
+def create(client: Any, issue_fields: dict, type: str = JIRA_PROJECT_ID) -> dict:
     """Creates a Jira issue."""
     issue = client.create_issue(fields=issue_fields)
     return {"resource_id": issue.key, "weblink": f"{JIRA_BROWSER_URL}/browse/{issue.key}"}
@@ -137,14 +137,14 @@ class JiraTicketPlugin(TicketPlugin):
         reporter_username = get_user_name(reporter)
 
         issue_fields = {
-            "project": {"key": JIRA_PROJECT_KEY},
-            "issuetype": {"id": JIRA_ISSUE_TYPE_ID},
+            "project": {"id": JIRA_PROJECT_ID},
+            "issuetype": {"name": JIRA_ISSUE_TYPE_NAME},
             "summary": title,
             "assignee": {"name": commander_username},
             "reporter": {"name": reporter_username},
         }
 
-        return create(client, issue_fields, type=JIRA_PROJECT_KEY)
+        return create(client, issue_fields, type=JIRA_PROJECT_ID)
 
     def update(
         self,
