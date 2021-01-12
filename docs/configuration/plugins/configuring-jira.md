@@ -26,7 +26,7 @@ Dispatch ships with Jira support. Each Jira installation is unique, so you will 
 
 ## `JIRA_PROJECT_ID` \[Required\]
 
-> ID for Jira project.[Here's how to find the JIRA project ID](https://community.atlassian.com/t5/Jira-questions/JIRA-Project-ID/qaq-p/193094) or [this](https://confluence.atlassian.com/jirakb/how-to-get-project-id-from-the-jira-user-interface-827341414.html).
+> ID for Jira project. You can find the JIRA project like [this](https://community.atlassian.com/t5/Jira-questions/JIRA-Project-ID/qaq-p/193094) or like [this](https://confluence.atlassian.com/jirakb/how-to-get-project-id-from-the-jira-user-interface-827341414.html).
 
 ## `JIRA_ISSUE_TYPE_NAME` \[Required\]
 
