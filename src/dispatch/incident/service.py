@@ -223,6 +223,7 @@ def create(
 
 
 def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> Incident:
+    """Updates an existing incident."""
     incident_priority = incident_priority_service.get_by_name(
         db_session=db_session, name=incident_in.incident_priority.name
     )
@@ -278,8 +279,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
 
 
 def delete(*, db_session, incident_id: int):
-    # TODO: When deleting, respect referential integrity here in the code. Or add cascading deletes
-    # in models.py.
+    """Deletes an existing incident."""
     db_session.query(Incident).filter(Incident.id == incident_id).delete()
     db_session.commit()
 
