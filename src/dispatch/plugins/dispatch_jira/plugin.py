@@ -16,12 +16,11 @@ from dispatch.plugins.bases import TicketPlugin
 from .config import (
     JIRA_API_URL,
     JIRA_BROWSER_URL,
-    JIRA_ISSUE_TYPE_ID,
+    JIRA_ISSUE_TYPE_NAME,
     JIRA_PASSWORD,
-    JIRA_PROJECT_KEY,
+    JIRA_PROJECT_ID,
     JIRA_USERNAME,
 )
-
 
 ISSUE_SUMMARY_TEMPLATE = """
 {color:red}*Confidential Information - For Internal Use Only*{color}
@@ -100,7 +99,7 @@ def create_issue_fields(
     return issue_fields
 
 
-def create(client: Any, issue_fields: dict, type: str = JIRA_PROJECT_KEY) -> dict:
+def create(client: Any, issue_fields: dict) -> dict:
     """Creates a Jira issue."""
     issue = client.create_issue(fields=issue_fields)
     return {"resource_id": issue.key, "weblink": f"{JIRA_BROWSER_URL}/browse/{issue.key}"}
@@ -156,13 +155,13 @@ class JiraTicketPlugin(TicketPlugin):
         reporter_user: User = get_user(client, reporter_username)
 
         issue_fields = {
-            "project": {"name": JIRA_PROJECT_KEY},
-            "issuetype": {"id": JIRA_ISSUE_TYPE_ID},
+            "project": {"id": JIRA_PROJECT_ID},
+            "issuetype": {"name": JIRA_ISSUE_TYPE_NAME},
             "summary": title,
             "assignee": {"id": commander_user.accountId},
             "reporter": {"id": reporter_user.accountId},
         }
-        return create(client, issue_fields, type=JIRA_PROJECT_KEY)
+        return create(client, issue_fields, type=JIRA_PROJECT_ID)
 
     def update(
         self,
@@ -196,8 +195,8 @@ class JiraTicketPlugin(TicketPlugin):
             description=description,
             incident_type=incident_type,
             priority=priority,
-            commander_user=commander_user,
-            reporter_user=reporter_user,
+            commander_account_id=commander_user.accountId,
+            reporter_account_id=reporter_user.accountId,
             conversation_weblink=conversation_weblink,
             document_weblink=document_weblink,
             storage_weblink=storage_weblink,
