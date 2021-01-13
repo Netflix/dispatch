@@ -14,7 +14,7 @@ google-auth-oauthlib
 h11==0.9.0 # NOTE pinning due to uvicorn
 httpx
 jinja2
-jira==2.0.0
+jira
 joblib
 numpy
 oauth2client
