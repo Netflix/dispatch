@@ -4,7 +4,6 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
-import json
 from typing import Any
 
 from jinja2 import Template
