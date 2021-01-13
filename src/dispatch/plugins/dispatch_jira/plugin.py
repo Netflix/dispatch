@@ -161,7 +161,7 @@ class JiraTicketPlugin(TicketPlugin):
             "assignee": {"id": commander_user.accountId},
             "reporter": {"id": reporter_user.accountId},
         }
-        return create(client, issue_fields, type=JIRA_PROJECT_ID)
+        return create(client, issue_fields)
 
     def update(
         self,
@@ -195,8 +195,8 @@ class JiraTicketPlugin(TicketPlugin):
             description=description,
             incident_type=incident_type,
             priority=priority,
-            commander_account_id=commander_user.accountId,
-            reporter_account_id=reporter_user.accountId,
+            commander_user=commander_user,
+            reporter_user=reporter_user,
             conversation_weblink=conversation_weblink,
             document_weblink=document_weblink,
             storage_weblink=storage_weblink,
