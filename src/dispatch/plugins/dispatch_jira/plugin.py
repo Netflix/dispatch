@@ -198,7 +198,7 @@ class JiraTicketPlugin(TicketPlugin):
             incident_type=incident_type,
             priority=priority,
             commander_user=commander_user,
-            commander_user=reporter_user,
+            reporter_user=reporter_user,
             conversation_weblink=conversation_weblink,
             document_weblink=document_weblink,
             storage_weblink=storage_weblink,
