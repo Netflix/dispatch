@@ -39,7 +39,9 @@ def get_all(*, db_session) -> List[Optional[IncidentType]]:
 def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
     """Creates an incident type."""
     incident_type = IncidentType(
-        **incident_type_in.dict(exclude={"commander_service", "template_document"}),
+        **incident_type_in.dict(
+            exclude={"template_document", "commander_service", "liaison_service"}
+        ),
     )
 
     if incident_type_in.template_document:

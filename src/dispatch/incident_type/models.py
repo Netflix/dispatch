@@ -17,6 +17,7 @@ class IncidentType(Base):
     name = Column(String, unique=True)
     slug = Column(String)
     description = Column(String)
+    conversation = Column(String)
     exclude_from_metrics = Column(Boolean, default=False)
     default = Column(Boolean, default=False)
     visibility = Column(String, default=Visibility.open)
@@ -81,6 +82,7 @@ class Service(DispatchBase):
 class IncidentTypeBase(DispatchBase):
     name: str
     description: Optional[str]
+    conversation: Optional[str]
 
 
 class IncidentTypeCreate(IncidentTypeBase):
