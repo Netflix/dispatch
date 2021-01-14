@@ -7,7 +7,6 @@ from sqlalchemy import func
 from dispatch.config import (
     DISPATCH_UI_URL,
     INCIDENT_ONCALL_SERVICE_ID,
-    INCIDENT_NOTIFICATION_CONVERSATIONS,
 )
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.database import resolve_attr
@@ -288,10 +287,16 @@ def daily_summary(db_session=None):
             }
         )
 
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    convo_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    if not convo_plugin:
+        log.warning(
+            f"Unable to send the Incident Daily Summary. The {convo_plugin.slug} plugin is not enabled."
+        )
+        return
 
-    for c in INCIDENT_NOTIFICATION_CONVERSATIONS:
-        plugin.instance.send(c, "Incident Daily Summary", {}, "", blocks=blocks)
+    convo_plugin.instance.send(
+        incident.incident_type.conversation, "Incident Daily Summary", {}, "", blocks=blocks
+    )
 
 
 @scheduler.add(every(5).minutes, name="calculate-incidents-cost")
