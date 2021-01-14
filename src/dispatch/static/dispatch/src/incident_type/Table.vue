@@ -69,6 +69,7 @@ export default {
         { text: "Visibility", value: "visibility", sortable: false },
         { text: "Service", value: "commander_service.name", sortable: false },
         { text: "Document", value: "template_document.name", sortable: false },
+        { text: "Conversation", value: "conversation", sortable: false },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
     }
