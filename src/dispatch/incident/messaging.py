@@ -261,17 +261,20 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
 
     convo_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
     if convo_plugin:
-        convo_plugin.instance.send(
-            incident.incident_type.conversation,
-            notification_text,
-            message_template,
-            notification_type,
-            **message_kwargs,
-        )
+        if incident.incident_type.conversation:
+            convo_plugin.instance.send(
+                incident.incident_type.conversation,
+                notification_text,
+                message_template,
+                notification_type,
+                **message_kwargs,
+            )
+        else:
+            log.warning(
+                f"No incident conversation notification sent. No conversation is defined for {incident.incident_type.name} in the UI."
+            )
     else:
-        log.warning(
-            "No incident conversation notifications sent. No conversation plugin is active."
-        )
+        log.warning("No incident conversation notification sent. No conversation plugin is active.")
 
     # we send status notifications to distribution lists
     email_plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
@@ -355,24 +358,29 @@ def send_incident_update_notifications(
             notification_conversation_notification_template.insert(0, INCIDENT_NAME)
 
         # we send an update to the incident notification conversation
-        convo_plugin.instance.send(
-            incident.incident_type.conversation,
-            notification_text,
-            notification_conversation_notification_template,
-            notification_type,
-            name=incident.name,
-            ticket_weblink=incident.ticket.weblink,
-            title=incident.title,
-            incident_id=incident.id,
-            incident_type_old=previous_incident.incident_type.name,
-            incident_type_new=incident.incident_type.name,
-            incident_priority_old=previous_incident.incident_priority.name,
-            incident_priority_new=incident.incident_priority.name,
-            incident_status_old=previous_incident.status.value,
-            incident_status_new=incident.status,
-            commander_fullname=incident.commander.individual.name,
-            commander_weblink=incident.commander.individual.weblink,
-        )
+        if incident.incident_type.conversation:
+            convo_plugin.instance.send(
+                incident.incident_type.conversation,
+                notification_text,
+                notification_conversation_notification_template,
+                notification_type,
+                name=incident.name,
+                ticket_weblink=incident.ticket.weblink,
+                title=incident.title,
+                incident_id=incident.id,
+                incident_type_old=previous_incident.incident_type.name,
+                incident_type_new=incident.incident_type.name,
+                incident_priority_old=previous_incident.incident_priority.name,
+                incident_priority_new=incident.incident_priority.name,
+                incident_status_old=previous_incident.status.value,
+                incident_status_new=incident.status,
+                commander_fullname=incident.commander.individual.name,
+                commander_weblink=incident.commander.individual.weblink,
+            )
+        else:
+            log.warning(
+                f"No incident conversation notification sent. No conversation is defined for {incident.incident_type.name} in the UI."
+            )
 
         # we send an update to the incident notification distribution lists
         email_plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
