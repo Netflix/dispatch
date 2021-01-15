@@ -57,7 +57,7 @@ const state = {
         incident_type: [],
         incident_priority: [],
         status: [],
-        tag: []
+        tags: []
       },
       q: "",
       page: 1,
