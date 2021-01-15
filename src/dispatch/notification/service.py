@@ -1,6 +1,6 @@
-from typing import List, Optional
 from datetime import datetime, timedelta
 from fastapi.encoders import jsonable_encoder
+from typing import Optional
 
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
