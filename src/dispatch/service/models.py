@@ -6,8 +6,12 @@ from sqlalchemy.orm import backref, relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
-from dispatch.incident_priority.models import IncidentPriorityCreate, IncidentPriorityRead
-from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead
+from dispatch.incident_priority.models import (
+    IncidentPriorityCreate,
+    IncidentPriorityRead,
+    IncidentPriorityUpdate,
+)
+from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeUpdate
 from dispatch.models import DispatchBase, TermReadNested, TimeStampMixin
 from dispatch.term.models import TermCreate
 
@@ -84,8 +88,8 @@ class ServiceCreate(ServiceBase):
 
 class ServiceUpdate(ServiceBase):
     terms: Optional[List[TermCreate]] = []
-    incident_priorities: Optional[List[IncidentPriorityCreate]] = []
-    incident_types: Optional[List[IncidentTypeCreate]] = []
+    incident_priorities: Optional[List[IncidentPriorityUpdate]] = []
+    incident_types: Optional[List[IncidentTypeUpdate]] = []
 
 
 class ServiceRead(ServiceBase):

@@ -12,6 +12,7 @@ from dispatch.incident.views import router as incident_router
 from dispatch.incident_priority.views import router as incident_priority_router
 from dispatch.incident_type.views import router as incident_type_router
 from dispatch.individual.views import router as individual_contact_router
+from dispatch.notification.views import router as notification_router
 from dispatch.plugin.views import router as plugin_router
 from dispatch.policy.views import router as policy_router
 from dispatch.route.views import router as route_router
@@ -63,6 +64,9 @@ authenticated_api_router.include_router(
 authenticated_api_router.include_router(workflow_router, prefix="/workflows", tags=["workflows"])
 authenticated_api_router.include_router(plugin_router, prefix="/plugins", tags=["plugins"])
 authenticated_api_router.include_router(feedback_router, prefix="/feedback", tags=["feedback"])
+authenticated_api_router.include_router(
+    notification_router, prefix="/notifications", tags=["notifications"]
+)
 
 doc_router = APIRouter()
 
