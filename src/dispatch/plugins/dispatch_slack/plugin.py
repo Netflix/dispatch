@@ -86,10 +86,9 @@ class SlackConversationPlugin(ConversationPlugin):
     def __init__(self):
         self.client = slack.WebClient(token=str(SLACK_API_BOT_TOKEN))
 
-    def create(self, name: str, participants: List[dict], is_private: bool = True):
-        """Creates a new slack conversation."""
-        participants = [resolve_user(self.client, p)["id"] for p in participants]
-        return create_conversation(self.client, name, participants, is_private)
+    def create(self, name: str, is_private: bool = True):
+        """Creates a new Slack conversation."""
+        return create_conversation(self.client, name, is_private)
 
     def send(
         self,
