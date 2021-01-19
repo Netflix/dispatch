@@ -117,6 +117,10 @@ def make_call(client: Any, endpoint: str, **kwargs):
         if e.response["error"] == "user_not_in_channel":
             raise TryAgain
 
+        # NOTE we've experienced a wide range of issues when Slack's performance is degraded
+        if e.response["error"] == "fatal_error":
+            raise TryAgain
+
         if e.response.headers.get("Retry-After"):
             wait = int(e.response.headers["Retry-After"])
             log.info(f"SlackError: Rate limit hit. Waiting {wait} seconds.")
