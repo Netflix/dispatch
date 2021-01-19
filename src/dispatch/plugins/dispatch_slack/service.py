@@ -118,6 +118,8 @@ def make_call(client: Any, endpoint: str, **kwargs):
 
         # NOTE we've experienced a wide range of issues when Slack's performance is degraded
         if e.response["error"] == "fatal_error":
+            # we wait 5 minutes before trying again, as performance issues take time to troubleshoot and fix
+            time.sleep(300)
             raise TryAgain
 
         if e.response.headers.get("Retry-After"):
