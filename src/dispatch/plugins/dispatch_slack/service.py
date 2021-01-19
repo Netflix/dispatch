@@ -99,8 +99,7 @@ SLACK_GET_ENDPOINTS = [
 
 @retry(stop=stop_after_attempt(5), retry=retry_if_exception_type(TryAgain))
 def make_call(client: Any, endpoint: str, **kwargs):
-    """Make an slack client api call."""
-
+    """Make an Slack client api call."""
     try:
         if endpoint in SLACK_GET_ENDPOINTS:
             response = client.api_call(endpoint, http_verb="GET", params=kwargs)
@@ -133,7 +132,7 @@ def make_call(client: Any, endpoint: str, **kwargs):
 
 
 async def make_call_async(client: Any, endpoint: str, **kwargs):
-    """Make an slack client api call."""
+    """Make an Slack client api call."""
 
     try:
         if endpoint in SLACK_GET_ENDPOINTS:
@@ -267,19 +266,15 @@ def set_conversation_purpose(client: Any, conversation_id: str, purpose: str):
     return make_call(client, "conversations.setPurpose", channel=conversation_id, purpose=purpose)
 
 
-def create_conversation(client: Any, name: str, participants: List[str], is_private: bool = False):
-    """Make a new slack conversation."""
-    participants = list(set(participants))
+def create_conversation(client: Any, name: str, is_private: bool = False):
+    """Make a new Slack conversation."""
     response = make_call(
         client,
         "conversations.create",
         name=name.lower(),  # slack disallows upperCase
         is_group=is_private,
         is_private=is_private,
-        # user_ids=participants,  # NOTE this allows for 30 folks max
     )["channel"]
-
-    add_users_to_conversation(client, response["id"], participants)
 
     return {
         "id": response["id"],
