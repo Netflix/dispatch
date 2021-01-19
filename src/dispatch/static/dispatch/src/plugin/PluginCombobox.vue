@@ -94,7 +94,7 @@ export default {
     },
     fetchData(filterOptions) {
       this.error = null
-      this.loading = true
+      this.loading = "error"
 
       if (this.type) {
         // Add type filtering

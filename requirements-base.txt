@@ -28,6 +28,8 @@ python-multipart
 pytz
 requests
 rsa==4.0  # NOTE pinning for google-auth
+idna==2.10
+chardet==3.0.4
 schedule
 sentry-asgi
 sentry-sdk

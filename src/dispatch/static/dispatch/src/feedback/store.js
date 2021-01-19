@@ -50,7 +50,7 @@ const getters = {
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
-    commit("SET_TABLE_LOADING", true)
+    commit("SET_TABLE_LOADING", "primary")
     let tableOptions = Object.assign({}, state.table.options)
     delete tableOptions.filters
 
@@ -99,14 +99,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Feedback created successfully." }, { root: true })
+          commit(
+            "notification/addBeNotification",
+            { text: "Feedback created successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Feedback not created. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -116,14 +120,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Feedback updated successfully." }, { root: true })
+          commit(
+            "notification/addBeNotification",
+            { text: "Feedback updated successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Feedback not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -135,14 +143,18 @@ const actions = {
       .then(function() {
         dispatch("closeRemove")
         dispatch("getAll")
-        commit("app/SET_SNACKBAR", { text: "Feedback deleted successfully." }, { root: true })
+        commit(
+          "notification/addBeNotification",
+          { text: "Feedback deleted successfully.", type: "success" },
+          { root: true }
+        )
       })
       .catch(err => {
         commit(
-          "app/SET_SNACKBAR",
+          "notification/addBeNotification",
           {
             text: "Feedback not deleted. Reason: " + err.response.data.detail,
-            color: "red"
+            type: "error"
           },
           { root: true }
         )

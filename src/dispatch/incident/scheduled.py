@@ -14,7 +14,7 @@ from dispatch.database import resolve_attr
 from dispatch.decorators import background_task
 from dispatch.enums import Visibility
 from dispatch.individual import service as individual_service
-from dispatch.messaging import (
+from dispatch.messaging.strings import (
     INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION,
     INCIDENT_DAILY_SUMMARY_DESCRIPTION,
     INCIDENT_DAILY_SUMMARY_NO_ACTIVE_INCIDENTS_DESCRIPTION,
@@ -89,8 +89,10 @@ def auto_tagger(db_session):
 @scheduler.add(every(1).day.at("18:00"), name="incident-daily-summary")
 @background_task
 def daily_summary(db_session=None):
-    """Fetches all open incidents and provides a daily summary."""
-
+    """
+    Fetches all active, and stable and closed incidents in the last 24 hours
+    and sends a daily summary to all incident notification conversations.
+    """
     blocks = []
     blocks.append(
         {
@@ -127,7 +129,7 @@ def daily_summary(db_session=None):
                                     f"*Title*: {incident.title}\n"
                                     f"*Type*: {incident.incident_type.name}\n"
                                     f"*Priority*: {incident.incident_priority.name}\n"
-                                    f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>"
+                                    f"*Incident Commander*: <{incident.commander.individual.weblink}|{incident.commander.individual.name}>"
                                 ),
                             },
                             "block_id": f"{ConversationButtonActions.invite_user}-active-{idx}",
@@ -197,7 +199,7 @@ def daily_summary(db_session=None):
                                     f"*Title*: {incident.title}\n"
                                     f"*Type*: {incident.incident_type.name}\n"
                                     f"*Priority*: {incident.incident_priority.name}\n"
-                                    f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>\n"
+                                    f"*Incident Commander*: <{incident.commander.individual.weblink}|{incident.commander.individual.name}>\n"
                                     f"*Status*: {incident.status}"
                                 ),
                             },
@@ -227,7 +229,7 @@ def daily_summary(db_session=None):
                                     f"*Title*: {incident.title}\n"
                                     f"*Type*: {incident.incident_type.name}\n"
                                     f"*Priority*: {incident.incident_priority.name}\n"
-                                    f"*Incident Commander*: <{incident.commander.weblink}|{incident.commander.name}>\n"
+                                    f"*Incident Commander*: <{incident.commander.individual.weblink}|{incident.commander.individual.name}>\n"
                                     f"*Status*: {incident.status}"
                                 ),
                             },
@@ -254,13 +256,24 @@ def daily_summary(db_session=None):
 
         if not oncall_service:
             log.warning(
-                "Oncall service ID specified, but not found in the database. Did you create it?"
+                "INCIDENT_ONCALL_SERVICE_ID configured in the .env file, but not found in the database. Did you create the oncall service in the UI?"
             )
             return
 
-        oncall_plugin = plugins.get(oncall_service.type)
-        oncall_email = oncall_plugin.get(service_id=INCIDENT_ONCALL_SERVICE_ID)
+        oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
+        if not oncall_plugin:
+            log.warning(
+                f"Unable to resolve the oncall, INCIDENT_ONCALL_SERVICE_ID configured, but associated plugin ({oncall_plugin.slug}) is not enabled."
+            )
+            return
 
+        if oncall_plugin.slug != oncall_service.type:
+            log.warning(
+                f"Unable to resolve the oncall. Oncall plugin enabled not of type {oncall_plugin.slug}."
+            )
+            return
+
+        oncall_email = oncall_plugin.instance.get(service_id=INCIDENT_ONCALL_SERVICE_ID)
         oncall_individual = individual_service.resolve_user_by_email(oncall_email, db_session)
 
         blocks.append(

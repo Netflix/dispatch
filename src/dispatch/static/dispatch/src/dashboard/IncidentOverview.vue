@@ -2,7 +2,7 @@
   <v-container fluid grid-list-xl>
     <v-layout row wrap>
       <v-flex class="d-flex justify-start" lg6 sm6 xs12>
-        <v-btn color="primary" dark @click="copyView">Share View</v-btn>
+        <v-btn color="info" @click="copyView">Share View</v-btn>
       </v-flex>
       <v-flex class="d-flex justify-end" lg6 sm6 xs12>
         <dialog-filter v-bind="query" @update="update" @loading="setLoading" />
@@ -75,17 +75,8 @@
           :loading="loading"
         ></incident-primary-team-bar-chart-card>
       </v-flex>
-      <v-flex lg6 sm6 xs12>
-        <incident-top-tags-donut-card
-          v-model="items"
-          :loading="loading"
-        ></incident-top-tags-donut-card>
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
-        <incident-top-terms-donut-card
-          v-model="items"
-          :loading="loading"
-        ></incident-top-terms-donut-card>
+      <v-flex lg12 sm12 xs12>
+        <incident-tags-treemap-card v-model="items" :loading="loading"></incident-tags-treemap-card>
       </v-flex>
       <!-- Statistics Ends -->
     </v-layout>
@@ -108,8 +99,7 @@ import IncidentForecastCard from "@/incident/IncidentForecastCard.vue"
 import IncidentHeatmapCard from "@/incident/IncidentHeatmapCard.vue"
 import IncidentPrimaryLocationBarChartCard from "@/incident/IncidentPrimaryLocationBarChartCard.vue"
 import IncidentPrimaryTeamBarChartCard from "@/incident/IncidentPrimaryTeamBarChartCard.vue"
-import IncidentTopTermsDonutCard from "@/incident/IncidentTopTermsDonut.vue"
-import IncidentTopTagsDonutCard from "@/incident/IncidentTopTagsDonut.vue"
+import IncidentTagsTreemapCard from "@/incident/IncidentTagsTreemapCard.vue"
 export default {
   name: "IncidentDashboard",
 
@@ -131,14 +121,13 @@ export default {
     IncidentForecastCard,
     IncidentPrimaryLocationBarChartCard,
     IncidentPrimaryTeamBarChartCard,
-    IncidentTopTagsDonutCard,
-    IncidentTopTermsDonutCard
+    IncidentTagsTreemapCard
   },
 
   data() {
     return {
       tab: null,
-      loading: true,
+      loading: "error",
       items: []
     }
   },
@@ -157,7 +146,7 @@ export default {
       this.$copyText(window.location).then(
         function() {
           store.commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "View copied to clipboard."
             },
@@ -166,7 +155,7 @@ export default {
         },
         function() {
           store.commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Failed to copy view to clipboard.",
               color: "red"

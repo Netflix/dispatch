@@ -4,14 +4,15 @@
     :items="items"
     :search-input.sync="search"
     :menu-props="{ maxHeight: '400' }"
-    cache-items
     item-text="name"
     :label="label"
     placeholder="Start typing to Search"
     return-object
     :hint="hint"
     :loading="loading"
-  />
+    no-filter
+  >
+  </v-autocomplete>
 </template>
 
 <script>
@@ -73,7 +74,7 @@ export default {
 
   methods: {
     querySelections(v) {
-      this.loading = true
+      this.loading = "error"
       // Simulated ajax query
       ServiceApi.getAll({ q: v }).then(response => {
         this.items = response.data.items
@@ -84,7 +85,7 @@ export default {
 
   mounted() {
     this.error = null
-    this.loading = true
+    this.loading = "error"
     ServiceApi.getAll().then(response => {
       this.items = response.data.items
       this.loading = false

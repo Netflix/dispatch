@@ -40,7 +40,6 @@ def page_oncall(
         "type": "incident",
         "title": f"{incident_name} - {incident_title}",
         "service": {"id": service_id, "type": "service_reference"},
-        "incident_key": incident_name,
         "body": {"type": "incident_body", "details": incident_description},
         "escalation_policy": {"id": escalation_policy_id, "type": "escalation_policy_reference"},
     }

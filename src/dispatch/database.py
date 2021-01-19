@@ -87,10 +87,10 @@ def composite_search(*, db_session, query_str: str, models: List[Base]):
     return s.search(query=q)
 
 
-def search(*, db_session, query_str: str, model: str):
+def search(*, db_session, query_str: str, model: str, sort=False):
     """Perform a search based on the query."""
     q = db_session.query(get_class_by_tablename(model))
-    return search_db(q, query_str, sort=True)
+    return search_db(q, query_str, sort=sort)
 
 
 def create_filter_spec(model, fields, ops, values, user_role):
@@ -208,17 +208,17 @@ def search_filter_sort_paginate(
 ):
     """Common functionality for searching, filtering and sorting"""
     model_cls = get_class_by_tablename(model)
+    filter_spec = create_filter_spec(model, fields, ops, values, user_role)
+    sort_spec = create_sort_spec(model, sort_by, descending)
+
     if query_str:
-        query = search(db_session=db_session, query_str=query_str, model=model)
+        sort = False if sort_spec else True
+        query = search(db_session=db_session, query_str=query_str, model=model, sort=sort)
     else:
         query = db_session.query(model_cls)
 
     query = join_required_attrs(query, model_cls, join_attrs, fields, sort_by)
-
-    filter_spec = create_filter_spec(model, fields, ops, values, user_role)
     query = apply_filters(query, filter_spec)
-
-    sort_spec = create_sort_spec(model, sort_by, descending)
     query = apply_sort(query, sort_spec)
 
     if items_per_page == -1:

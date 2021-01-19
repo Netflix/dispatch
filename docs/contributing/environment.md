@@ -45,7 +45,7 @@ Python 3.7.3
 ```
 
 {% hint style="info" %}
-Dispatch uses uses async functionality and requires `python 3.7.3+`.
+Dispatch uses async functionality and requires `python 3.7.3+`.
 {% endhint %}
 
 Create a new virtualenv just for Dispatch:

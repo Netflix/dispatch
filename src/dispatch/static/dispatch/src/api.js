@@ -29,17 +29,17 @@ instance.interceptors.response.use(
   function(err) {
     if (err.response.status == 401) {
       if (authProviderSlug === "dispatch-auth-provider-basic") {
-        router.push({ path: "/login" })
+        router.push({ path: "/auth/login" })
         store.dispatch("auth/logout")
       }
     }
     if (err.response.status == 500) {
       store.commit(
-        "app/SET_SNACKBAR",
+        "notification/addBeNotification",
         {
           text:
             "Something has gone very wrong, please retry or let your admin know that you received this error.",
-          color: "red"
+          type: "error"
         },
         { root: true }
       )

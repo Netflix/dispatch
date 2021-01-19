@@ -6,7 +6,7 @@
     <v-flex xs12>
       <v-layout column>
         <v-flex>
-          <v-card>
+          <v-card elevation="0">
             <v-card-title>
               <v-text-field
                 v-model="q"
@@ -52,7 +52,7 @@
                   </template>
                   <v-list>
                     <v-list-item @click="editShow(item)">
-                      <v-list-item-title>Edit</v-list-item-title>
+                      <v-list-item-title>View / Edit</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>

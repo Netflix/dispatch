@@ -149,7 +149,7 @@ def after_hours(user_email: str, incident_id: int, event: dict = None, db_sessio
 
     # get their timezone from slack
     commander_info = dispatch_slack_service.get_user_info_by_email(
-        slack_client, email=incident.commander.email
+        slack_client, email=incident.commander.individual.email
     )
 
     commander_tz = commander_info["tz"]
@@ -215,6 +215,7 @@ def member_joined_channel(
             participant.added_by = added_by_participant
             participant.added_reason = event.event.text
 
+        db_session.add(participant)
         db_session.commit()
 
 

@@ -10,7 +10,7 @@
           </v-list-item-content>
           <v-btn
             icon
-            color="primary"
+            color="info"
             :loading="loading"
             :disabled="invalid || !validated"
             @click="save()"
@@ -64,7 +64,7 @@
               </v-flex>
               <v-flex xs12>
                 <ValidationProvider name="owner" rules="required" immediate>
-                  <owner-select
+                  <participant-select
                     v-model="owner"
                     slot-scope="{ errors, valid }"
                     label="Owner"
@@ -73,7 +73,7 @@
                     hint="The tasks current owner"
                     clearable
                     required
-                  ></owner-select>
+                  ></participant-select>
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
@@ -128,8 +128,8 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import OwnerSelect from "@/task/OwnerSelect.vue"
 import IncidentSelect from "@/incident/IncidentSelect.vue"
+import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import AssigneeCombobox from "@/task/AssigneeCombobox.vue"
 import DatePickerMenu from "@/components/DatePickerMenu.vue"
 import TimePickerMenu from "@/components/TimePickerMenu.vue"
@@ -146,9 +146,9 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    OwnerSelect,
     IncidentSelect,
     AssigneeCombobox,
+    ParticipantSelect,
     TimePickerMenu,
     DatePickerMenu
   },

@@ -19,9 +19,9 @@ log = logging.getLogger(__name__)
 
 def get_assignees(content: str) -> List[str]:
     """Gets assignees from comment."""
-    regex = r"\@([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)"
+    regex = r"[+@]([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)"
     matches = re.findall(regex, content)
-    return [m for m in matches]
+    return list(matches)
 
 
 def parse_comment(content: str) -> Dict:
@@ -33,12 +33,14 @@ def parse_comment(content: str) -> Dict:
 def get_task_status(task: dict):
     """Gets the current status from a task."""
     status = {"status": TaskStatus.open, "resolved_at": None, "resolved_by": None}
+
     if task.get("resolved"):
         for r in task["replies"]:
             if r.get("action") == "resolve":
                 status["resolved_by"] = r["author"]["displayName"]
                 status["resolved_at"] = r["createdTime"]
                 status["status"] = TaskStatus.resolved
+
     return status
 
 
@@ -84,6 +86,17 @@ def list_tasks(client: Any, file_id: str):
         description = t.get("quotedFileContent", {}).get("value", "")
         tickets = get_tickets(t["replies"])
 
+        task_meta = {
+            "task": {
+                "resource_id": t["id"],
+                "description": description,
+                "created_at": t["createdTime"],
+                "assignees": assignees,
+                "tickets": tickets,
+                "weblink": f'https://docs.google.com/a/{GOOGLE_DOMAIN}/document/d/{file_id}/edit?disco={t["id"]}',
+            }
+        }
+
         # this is a dirty hack because google doesn't return emailAddresses for comments
         # complete with conflicting docs
         # https://developers.google.com/drive/api/v2/reference/comments#resource
@@ -97,23 +110,10 @@ def list_tasks(client: Any, file_id: str):
             .first()
         )
 
-        if not owner:
-            log.error(f"Unable to identify owner by displayName: {t['author']['displayName']}")
-            continue
+        if owner:
+            task_meta["task"].update({"owner": {"individual": {"email": owner.email}}})
 
         db_session.close()
-
-        task_meta = {
-            "task": {
-                "resource_id": t["id"],
-                "description": description,
-                "owner": {"individual": {"email": owner.email}},
-                "created_at": t["createdTime"],
-                "assignees": assignees,
-                "tickets": tickets,
-                "weblink": f'https://docs.google.com/a/{GOOGLE_DOMAIN}/document/d/{file_id}/edit?disco={t["id"]}',
-            }
-        }
 
         task_meta["task"].update(status)
 

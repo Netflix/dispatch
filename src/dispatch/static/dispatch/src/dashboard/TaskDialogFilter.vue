@@ -1,8 +1,8 @@
 <template>
   <v-dialog v-model="display" max-width="600px">
     <template v-slot:activator="{ on }">
-      <v-badge :value="numFilters" bordered overlap :content="numFilters">
-        <v-btn color="secondary" dark v-on="on">Filter</v-btn>
+      <v-badge :value="numFilters" bordered overlap color="info" :content="numFilters">
+        <v-btn color="secondary" v-on="on">Filter</v-btn>
       </v-badge>
     </template>
     <v-card>
@@ -137,7 +137,7 @@ export default {
         })
       })
 
-      this.$emit("loading", true)
+      this.$emit("loading", "error")
       TaskApi.getAll(filterOptions).then(response => {
         this.$emit("update", response.data.items)
         this.$emit("loading", false)

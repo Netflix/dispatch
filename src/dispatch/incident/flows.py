@@ -45,7 +45,6 @@ from dispatch.participant.models import Participant
 from dispatch.participant_role import flows as participant_role_flows
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
-from dispatch.plugins.base import plugins
 from dispatch.report.enums import ReportTypes
 from dispatch.report.messaging import send_incident_report_reminder
 from dispatch.service import service as service_service
@@ -113,8 +112,8 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
             title,
             incident.incident_type.name,
             incident.incident_priority.name,
-            incident.commander.email,
-            incident.reporter.email,
+            incident.commander.individual.email,
+            incident.reporter.individual.email,
             incident_type_plugin_metadata,
         )
         ticket.update({"resource_type": plugin.slug})
@@ -155,8 +154,8 @@ def update_external_incident_ticket(
         incident.incident_type.name,
         incident.incident_priority.name,
         incident.status.lower(),
-        incident.commander.email,
-        incident.reporter.email,
+        incident.commander.individual.email,
+        incident.reporter.individual.email,
         resolve_attr(incident, "conversation.weblink"),
         resolve_attr(incident, "incident_document.weblink"),
         resolve_attr(incident, "storage.weblink"),
@@ -358,7 +357,7 @@ def create_conversation(incident: Incident, participants: List[str], db_session:
 def set_conversation_topic(incident: Incident, db_session: SessionLocal):
     """Sets the conversation topic."""
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
-    conversation_topic = f":helmet_with_white_cross: {incident.commander.name} - Type: {incident.incident_type.name} - Priority: {incident.incident_priority.name} - Status: {incident.status}"
+    conversation_topic = f":helmet_with_white_cross: {incident.commander.individual.name} - Type: {incident.incident_type.name} - Priority: {incident.incident_priority.name} - Status: {incident.status}"
     plugin.instance.set_topic(incident.conversation.channel_id, conversation_topic)
 
 
@@ -646,7 +645,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
                     type=incident.incident_type.name,
                     title=incident.title,
                     description=incident.description,
-                    commander_fullname=incident.commander.name,
+                    commander_fullname=incident.commander.individual.name,
                     conversation_weblink=resolve_attr(incident, "conversation.weblink"),
                     document_weblink=resolve_attr(incident, "incident_document.weblink"),
                     storage_weblink=resolve_attr(incident, "storage.weblink"),
@@ -790,7 +789,7 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
             type=incident.incident_type.name,
             title=incident.title,
             description=incident.description,
-            commander_fullname=incident.commander.name,
+            commander_fullname=incident.commander.individual.name,
             conversation_weblink=resolve_attr(incident, "conversation.weblink"),
             document_weblink=resolve_attr(incident, "incident_document.weblink"),
             storage_weblink=resolve_attr(incident, "storage.weblink"),
@@ -917,8 +916,9 @@ def status_flow_dispatcher(
     """Runs the correct flows depending on the incident's current and previous status."""
     # we have a currently active incident
     if current_status == IncidentStatus.active:
-        # re-activate incident
-        incident_active_status_flow(incident=incident, db_session=db_session)
+        if previous_status == IncidentStatus.closed:
+            # re-activate incident
+            incident_active_status_flow(incident=incident, db_session=db_session)
         send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
 
     # we currently have a stable incident
@@ -935,7 +935,6 @@ def status_flow_dispatcher(
         if previous_status == IncidentStatus.active:
             incident_stable_status_flow(incident=incident, db_session=db_session)
             incident_closed_status_flow(incident=incident, db_session=db_session)
-
         elif previous_status == IncidentStatus.stable:
             incident_closed_status_flow(incident=incident, db_session=db_session)
 
@@ -1067,12 +1066,9 @@ def incident_assign_role_flow(
 
 @background_task
 def incident_engage_oncall_flow(
-    user_id: str, user_email: str, incident_id: int, action: dict, db_session=None
+    user_email: str, incident_id: int, oncall_service_id: str, page=None, db_session=None
 ):
     """Runs the incident engage oncall flow."""
-    oncall_service_id = action["submission"]["oncall_service_id"]
-    page = action["submission"]["page"]
-
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
@@ -1080,14 +1076,27 @@ def incident_engage_oncall_flow(
     oncall_service = service_service.get_by_external_id(
         db_session=db_session, external_id=oncall_service_id
     )
-    oncall_plugin = plugins.get(oncall_service.type)
-    oncall_email = oncall_plugin.get(service_id=oncall_service_id)
+
+    # we get the active oncall plugin
+    oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
+
+    if oncall_plugin:
+        if oncall_plugin.slug != oncall_service.type:
+            log.warning(
+                f"Unable to engage the oncall. Oncall plugin enabled not of type {oncall_plugin.slug}."
+            )
+            return None, None
+    else:
+        log.warning("Unable to engage the oncall. No oncall plugins enabled.")
+        return None, None
+
+    oncall_email = oncall_plugin.instance.get(service_id=oncall_service_id)
 
     # we add the oncall to the incident
     incident_add_or_reactivate_participant_flow(oncall_email, incident.id, db_session=db_session)
 
     # we load the individual
-    individual = individual_service.get_by_email(db_session=db_session, email=user_email)
+    individual = individual_service.get_by_email(db_session=db_session, email=oncall_email)
 
     event_service.log(
         db_session=db_session,
@@ -1098,7 +1107,9 @@ def incident_engage_oncall_flow(
 
     if page == "Yes":
         # we page the oncall
-        oncall_plugin.page(oncall_service_id, incident.name, incident.title, incident.description)
+        oncall_plugin.instance.page(
+            oncall_service_id, incident.name, incident.title, incident.description
+        )
 
         event_service.log(
             db_session=db_session,
@@ -1106,6 +1117,8 @@ def incident_engage_oncall_flow(
             description=f"{oncall_service.name} on-call paged",
             incident_id=incident.id,
         )
+
+    return individual, oncall_service
 
 
 @background_task
@@ -1174,7 +1187,7 @@ def incident_remove_participant_flow(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    if user_email == incident.commander.email:
+    if user_email == incident.commander.individual.email:
         # we add the incident commander to the conversation again
         add_participant_to_conversation(user_email, incident_id, db_session)
 

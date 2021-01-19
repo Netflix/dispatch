@@ -44,10 +44,10 @@
 
       <v-card-actions>
         <v-spacer />
-        <v-btn color="blue darken-1" text @click="close">
+        <v-btn color="blue en-1" text @click="close">
           Cancel
         </v-btn>
-        <v-btn color="blue darken-1" text @click="performSave(selectedPolicy)">
+        <v-btn color="blue en-1" text @click="performSave(selectedPolicy)">
           Save
         </v-btn>
       </v-card-actions>

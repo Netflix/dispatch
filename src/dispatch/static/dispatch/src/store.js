@@ -2,6 +2,7 @@ import Vue from "vue"
 import Vuex from "vuex"
 
 import app from "@/app/store"
+import notification from "@/app/notificationStore"
 import auth from "@/auth/store"
 import definition from "@/definition/store"
 import document from "@/document/store"
@@ -27,6 +28,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   modules: {
     app,
+    notification,
     auth,
     definition,
     document,

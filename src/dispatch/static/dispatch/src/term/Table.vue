@@ -6,13 +6,13 @@
       Terms
     </div>
     <v-spacer />
-    <v-btn color="primary" dark class="mb-2" @click="createEditShow()">
+    <v-btn color="info" class="mb-2" @click="createEditShow()">
       New
     </v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
-          <v-card>
+          <v-card elevation="0">
             <v-card-title>
               <v-text-field
                 v-model="q"
@@ -46,7 +46,7 @@
                   </template>
                   <v-list>
                     <v-list-item @click="createEditShow(item)">
-                      <v-list-item-title>Edit</v-list-item-title>
+                      <v-list-item-title>View / Edit</v-list-item-title>
                     </v-list-item>
                     <v-list-item @click="removeShow(item)">
                       <v-list-item-title>Delete</v-list-item-title>
@@ -91,7 +91,7 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
-      "table.options.loading",
+      "table.loading",
       "table.rows.items",
       "table.rows.total"
     ])

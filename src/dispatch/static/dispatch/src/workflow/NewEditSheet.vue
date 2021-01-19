@@ -10,7 +10,7 @@
           </v-list-item-content>
           <v-btn
             icon
-            color="primary"
+            color="info"
             :loading="loading"
             :disabled="invalid || !validated"
             @click="save()"
@@ -146,7 +146,6 @@ export default {
       this.plugin = event.plugin
     },
     setParameters(event) {
-      console.log(event)
       this.parameters = event.parameters
     }
   }

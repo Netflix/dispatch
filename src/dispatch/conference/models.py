@@ -2,10 +2,10 @@ from typing import Optional
 from jinja2 import Template
 
 from pydantic import validator
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 
 from dispatch.database import Base
-from dispatch.messaging import INCIDENT_CONFERENCE_DESCRIPTION
+from dispatch.messaging.strings import INCIDENT_CONFERENCE_DESCRIPTION
 from dispatch.models import DispatchBase, ResourceMixin
 
 
@@ -13,6 +13,7 @@ class Conference(Base, ResourceMixin):
     id = Column(Integer, primary_key=True)
     conference_id = Column(String)
     conference_challenge = Column(String, nullable=False, server_default="N/A")
+    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
 
 
 # Pydantic models...

@@ -11,7 +11,7 @@
     clearable
     :loading="loading"
     return-object
-    cache-items
+    no-filter
   >
     <template v-slot:selection="{ attr, on, item, selected }">
       <v-chip v-bind="attr" :input-value="selected" v-on="on">
@@ -42,12 +42,12 @@
 import IncidentApi from "@/incident/api"
 import { cloneDeep } from "lodash"
 export default {
-  name: "IncidentComboBox",
+  name: "IncidentSelect",
   props: {
     value: {
-      type: Array,
+      type: Object,
       default: function() {
-        return []
+        return null
       }
     },
     label: {
@@ -89,7 +89,7 @@ export default {
 
   methods: {
     querySelections(v) {
-      this.loading = true
+      this.loading = "error"
       // Simulated ajax query
       IncidentApi.getAll({ q: v }).then(response => {
         this.items = response.data.items
@@ -100,7 +100,7 @@ export default {
 
   mounted() {
     this.error = null
-    this.loading = true
+    this.loading = "error"
     IncidentApi.getAll().then(response => {
       this.items = response.data.items
       this.loading = false

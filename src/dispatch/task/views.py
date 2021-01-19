@@ -2,6 +2,8 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from sqlalchemy.orm import Session
+
+from dispatch.common.utils.views import create_pydantic_include
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 
@@ -13,7 +15,7 @@ from .service import get, update, create, delete
 router = APIRouter()
 
 
-@router.get("/", response_model=TaskPagination, tags=["tasks"])
+@router.get("/", summary="Retrieve a list of all tasks.")
 def get_tasks(
     db_session: Session = Depends(get_db),
     page: int = 1,
@@ -24,11 +26,12 @@ def get_tasks(
     fields: List[str] = Query([], alias="fields[]"),
     ops: List[str] = Query([], alias="ops[]"),
     values: List[str] = Query([], alias="values[]"),
+    include: List[str] = Query([], alias="include[]"),
 ):
     """
     Retrieve all tasks.
     """
-    return search_filter_sort_paginate(
+    pagination = search_filter_sort_paginate(
         db_session=db_session,
         model="Task",
         query_str=query_str,
@@ -48,6 +51,20 @@ def get_tasks(
             ("owner", "owner"),
         ],
     )
+
+    if include:
+        # only allow two levels for now
+        include_sets = create_pydantic_include(include)
+
+        include_fields = {
+            "items": {"__all__": include_sets},
+            "itemsPerPage": ...,
+            "page": ...,
+            "total": ...,
+        }
+
+        return TaskPagination(**pagination).dict(include=include_fields)
+    return TaskPagination(**pagination).dict()
 
 
 @router.post("/", response_model=TaskRead, tags=["tasks"])

@@ -9,6 +9,7 @@ from alembic.config import Config as AlembicConfig
 from tabulate import tabulate
 
 from dispatch import __version__, config
+from dispatch.enums import UserRoles
 
 from .main import *  # noqa
 from .database import Base, engine
@@ -153,6 +154,36 @@ def sync_triggers():
     sync_trigger(engine, "term", "search_vector", ["text"])
     sync_trigger(engine, "dispatch_user", "search_vector", ["email"])
     sync_trigger(engine, "workflow", "search_vector", ["name", "description"])
+
+
+@dispatch_cli.group("user")
+def dispatch_user():
+    """Container for all user commands."""
+    pass
+
+
+@dispatch_user.command("update")
+@click.argument("email")
+@click.option(
+    "--role",
+    "-r",
+    type=click.Choice(UserRoles),
+    help="Role to be assigned to the user.",
+)
+def update_user(email: str, role: str):
+    """Updates a user's roles."""
+    from dispatch.database import SessionLocal
+    from dispatch.auth import service as user_service
+    from dispatch.auth.models import UserUpdate
+
+    db_session = SessionLocal()
+    user = user_service.get_by_email(email=email, db_session=db_session)
+    if not user:
+        click.secho(f"No user found. Email: {email}", fg="red")
+        return
+
+    user_service.update(user=user, user_in=UserUpdate(id=user.id, role=role), db_session=db_session)
+    click.secho("User successfully updated.", fg="green")
 
 
 @dispatch_cli.group("database")
@@ -445,6 +476,7 @@ def dispatch_scheduler():
     """Container for all dispatch scheduler commands."""
     # we need scheduled tasks to be imported
     from .document.scheduled import sync_document_terms  # noqa
+    from .feedback.scheduled import feedback_daily_digest  # noqa
     from .incident.scheduled import daily_summary, auto_tagger  # noqa
     from .report.scheduled import incident_report_reminders  # noqa
     from .tag.scheduled import sync_tags  # noqa

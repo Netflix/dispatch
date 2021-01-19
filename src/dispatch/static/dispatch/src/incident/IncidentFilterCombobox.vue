@@ -17,7 +17,7 @@
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No Incidents matching "
+            No incidents matching "
             <strong>{{ search }}</strong
             >"
           </v-list-item-title>
@@ -103,7 +103,7 @@ export default {
     },
     fetchData(filterOptions) {
       this.error = null
-      this.loading = true
+      this.loading = "error"
       IncidentApi.getAll(filterOptions).then(response => {
         this.items = response.data.items
         this.total = response.data.total

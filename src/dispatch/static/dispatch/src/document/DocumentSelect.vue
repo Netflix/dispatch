@@ -5,7 +5,6 @@
       :items="items"
       :search-input.sync="search"
       :menu-props="{ maxHeight: '400' }"
-      cache-items
       slot-scope="{ errors, valid }"
       :error-messages="errors"
       :success="valid"
@@ -14,6 +13,7 @@
       placeholder="Start typing to search"
       return-object
       :loading="loading"
+      no-filter
     />
   </ValidationProvider>
 </template>
@@ -70,7 +70,7 @@ export default {
 
   methods: {
     querySelections(v) {
-      this.loading = true
+      this.loading = "error"
       // Simulated ajax query
       DocumentApi.getAll({ q: v }).then(response => {
         this.items = response.data.items
@@ -81,7 +81,7 @@ export default {
 
   mounted() {
     this.error = null
-    this.loading = true
+    this.loading = "error"
     DocumentApi.getAll().then(response => {
       this.items = response.data.items
       this.loading = false

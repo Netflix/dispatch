@@ -1,102 +1,33 @@
 <template>
-  <v-navigation-drawer app :value="toggleDrawer" clipped>
+  <v-navigation-drawer app :value="toggleDrawer" permanent clipped class="background1">
     <vue-perfect-scrollbar class="drawer-menu--scroll" :settings="scrollSettings">
-      <v-list dense>
-        <template v-for="item in menus">
-          <!--group with subitems-->
-          <v-list-group
-            v-if="item.items"
-            :key="item.title"
-            :group="item.group"
-            :prepend-icon="item.icon"
-            no-action="no-action"
-          >
-            <v-list-item slot="activator" ripple="ripple">
-              <v-list-item-content>
-                <v-list-item-title>{{ item.title }}</v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-            <template v-for="subItem in item.items">
-              <!--sub group-->
-              <v-list-group
-                v-if="subItem.items"
-                :key="subItem.name"
-                :group="subItem.group"
-                sub-group="sub-group"
-              >
-                <v-list-item slot="activator" ripple="ripple">
-                  <v-list-item-content>
-                    <v-list-item-title>{{ subItem.title }}</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item
-                  v-for="grand in subItem.children"
-                  :key="grand.name"
-                  to="genChildTarget(item, grand)"
-                  ripple="ripple"
-                >
-                  <v-list-item-content>
-                    <v-list-item-title>{{ grand.title }}</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list-group>
-              <!--child item-->
-              <v-list-item
-                v-else
-                :key="subItem.name"
-                :to="genChildTarget(item, subItem)"
-                :disabled="subItem.disabled"
-                :target="subItem.target"
-                ripple="ripple"
-                exact
-              >
-                <v-list-item-content>
-                  <v-list-item-title>
-                    <span>{{ subItem.title }}</span>
-                  </v-list-item-title>
-                </v-list-item-content>
-                <v-list-item-action v-if="subItem.action">
-                  <v-icon :class="[subItem.actionClass || 'success--text']">
-                    {{ subItem.action }}
-                  </v-icon>
-                </v-list-item-action>
-              </v-list-item>
-            </template>
-          </v-list-group>
-          <v-subheader v-else-if="item.header" :key="item.name">
-            {{ item.header }}
-          </v-subheader>
-          <v-divider v-else-if="item.divider" :key="item.name" />
-          <!--top-level link-->
-          <v-list-item
-            v-else
-            :key="item.name"
-            :to="item.href"
-            ripple="ripple"
-            :disabled="item.disabled"
-            :target="item.target"
-            rel="noopener"
-            exact
-          >
-            <v-list-item-action v-if="item.icon">
-              <v-icon>{{ item.icon }}</v-icon>
-            </v-list-item-action>
+      <v-list nav>
+        <v-list-group v-for="item in items" :key="item.title" v-model="item.active" no-action>
+          <template v-slot:activator>
             <v-list-item-content>
-              <v-list-item-title>{{ item.title }}</v-list-item-title>
+              <v-list-item-title v-text="item.title"></v-list-item-title>
             </v-list-item-content>
-            <v-list-item-action v-if="item.subAction">
-              <v-icon class="success--text">
-                {{ item.subAction }}
-              </v-icon>
-            </v-list-item-action>
+          </template>
+
+          <v-list-item v-for="child in item.items" :key="child.title" :to="child.route" exact>
+            <v-list-item-content>
+              <v-list-item-title v-text="child.title"></v-list-item-title>
+            </v-list-item-content>
           </v-list-item>
-        </template>
+        </v-list-group>
       </v-list>
     </vue-perfect-scrollbar>
+    <template v-slot:append>
+      <div class="pa-3">
+        <v-btn color="error" block to="/incidents/report">
+          <v-icon left>error_outline</v-icon>
+          Report Incident
+        </v-btn>
+      </div>
+    </template>
   </v-navigation-drawer>
 </template>
 <script>
-import menu from "@/api/menu"
 import { mapState } from "vuex"
 import VuePerfectScrollbar from "vue-perfect-scrollbar"
 export default {
@@ -114,32 +45,68 @@ export default {
       default: "260"
     }
   },
-  data() {
-    return {
-      menus: menu,
-      scrollSettings: {
-        maxScrollbarLength: 160
+
+  data: () => ({
+    items: [
+      {
+        action: "dashboard",
+        items: [
+          { title: "Incidents", route: "/dashboard/incidents" },
+          { title: "Tasks", route: "/dashboard/tasks" }
+        ],
+        title: "Dashboard"
+      },
+      {
+        action: "error_outline",
+        items: [
+          { title: "List", route: "/incidents/list" },
+          { title: "Tasks", route: "/incidents/tasks" },
+          { title: "Feedback", route: "/incidents/feedback" }
+        ],
+        title: "Incident"
+      },
+      {
+        action: "people",
+        items: [
+          { title: "Individuals", route: "/contact/individuals" },
+          { title: "Teams", route: "/contact/teams" },
+          { title: "Services", route: "/contact/services" }
+        ],
+        title: "Contact"
+      },
+      {
+        action: "book",
+        items: [
+          { title: "Tags", route: "/knowledge/tags" },
+          { title: "Documents", route: "/knowledge/documents" },
+          { title: "Terms", route: "/knowledge/terms" },
+          { title: "Definitions", route: "/knowledge/definitions" }
+        ],
+        title: "Knowledge"
+      },
+      {
+        action: "settings",
+        items: [
+          { title: "Incident Priorities", route: "/configuration/incidentPriorities" },
+          { title: "Incident Types", route: "/configuration/incidentTypes" },
+          { title: "Plugins", route: "/configuration/plugins" },
+          { title: "Tag Types", route: "/configuration/tagTypes" },
+          { title: "Users", route: "/configuration/users" },
+          { title: "Workflows", route: "/configuration/workflows" }
+        ],
+        title: "Configuration"
       }
+    ],
+    scrollSettings: {
+      maxScrollbarLength: 160
     }
-  },
+  }),
   computed: {
     computeLogo() {
       return "/static/m.png"
     },
     ...mapState("app", ["toggleDrawer"])
   },
-  created() {},
-
-  methods: {
-    genChildTarget(item, subItem) {
-      if (subItem.href) return
-      if (subItem.component) {
-        return {
-          name: subItem.component
-        }
-      }
-      return { name: `${item.group}/${subItem.name}` }
-    }
-  }
+  created() {}
 }
 </script>

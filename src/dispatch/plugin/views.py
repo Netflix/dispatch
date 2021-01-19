@@ -3,11 +3,12 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from dispatch.exceptions import InvalidConfiguration
 from dispatch.database import get_db, search_filter_sort_paginate
+from dispatch.exceptions import InvalidConfiguration
 
 from .models import PluginCreate, PluginPagination, PluginRead, PluginUpdate
 from .service import get, update
+
 
 router = APIRouter()
 

@@ -175,3 +175,11 @@ groups:read
 #### `SLACK_COMMAND_LIST_INCIDENTS_SLUG` \[Optional. Default: '/dispatch-list-incidents'\]
 
 > Lists current active and stable incidents, and closed incidents in the last 24 hours.
+
+#### `SLACK_COMMAND_RUN_WORKFLOW_SLUG` \[Optional. Default: '/dispatch-run-workflow'\]
+
+> Run a workflow and associate artifacts with this incident.
+
+#### `SLACK_COMMAND_LIST_WORKFLOWS_SLUG` \[Optional. Default: '/dispatch-list-workflows'\]
+
+> List workflows previously run during this incident.

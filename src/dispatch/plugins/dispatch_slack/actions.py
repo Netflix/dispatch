@@ -40,7 +40,7 @@ def add_user_to_conversation(
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     if incident.status == IncidentStatus.closed:
-        message = f"Sorry, we cannot add you to a closed incident. Please reach out to the incident commander ({incident.commander.name}) for details."
+        message = f"Sorry, we cannot add you to a closed incident. Please reach out to the incident commander ({incident.commander.individual.name}) for details."
         dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
     else:
         dispatch_slack_service.add_users_to_conversation(
@@ -126,6 +126,31 @@ def handle_update_incident_action(
 
 
 @slack_background_task
+def handle_engage_oncall_action(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    action: dict,
+    db_session=None,
+    slack_client=None,
+):
+    """Adds and pages based on the oncall modal."""
+    oncall_service_id = action["submission"]["oncall_service_id"]
+    page = action["submission"]["page"]
+
+    oncall_individual, oncall_service = incident_flows.incident_engage_oncall_flow(
+        user_email, incident_id, oncall_service_id, page=page, db_session=db_session
+    )
+
+    if not oncall_service or not oncall_individual:
+        message = "Could not engage oncall. Oncall service plugin not enabled."
+    else:
+        message = f"You have successfully engaged {oncall_individual.name} from oncall rotation {oncall_service.name}."
+    dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
+
+
+@slack_background_task
 def handle_assign_role_action(
     user_id: str,
     user_email: str,
@@ -146,7 +171,7 @@ def dialog_action_functions(action: str):
     """Interprets the action and routes it to the appropriate function."""
     action_mappings = {
         SLACK_COMMAND_ASSIGN_ROLE_SLUG: [handle_assign_role_action],
-        SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [incident_flows.incident_engage_oncall_flow],
+        SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [handle_engage_oncall_action],
         SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [report_flows.create_executive_report],
         SLACK_COMMAND_REPORT_TACTICAL_SLUG: [report_flows.create_tactical_report],
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [handle_update_incident_action],

@@ -1,8 +1,10 @@
 from typing import List
 
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from dispatch.common.utils.views import create_pydantic_include
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.database import get_db, search_filter_sort_paginate
@@ -26,7 +28,7 @@ from .service import create, delete, get, update
 router = APIRouter()
 
 
-@router.get("/", response_model=IncidentPagination, summary="Retrieve a list of all incidents.")
+@router.get("/", summary="Retrieve a list of all incidents.")
 def get_incidents(
     db_session: Session = Depends(get_db),
     page: int = 1,
@@ -38,11 +40,12 @@ def get_incidents(
     ops: List[str] = Query([], alias="ops[]"),
     values: List[str] = Query([], alias="values[]"),
     current_user: DispatchUser = Depends(get_current_user),
+    include: List[str] = Query([], alias="include[]"),
 ):
     """
     Retrieve a list of all incidents.
     """
-    return search_filter_sort_paginate(
+    pagination = search_filter_sort_paginate(
         db_session=db_session,
         model="Incident",
         query_str=query_str,
@@ -58,6 +61,19 @@ def get_incidents(
         ],
         user_role=current_user.role,
     )
+
+    if include:
+        # only allow two levels for now
+        include_sets = create_pydantic_include(include)
+
+        include_fields = {
+            "items": {"__all__": include_sets},
+            "itemsPerPage": ...,
+            "page": ...,
+            "total": ...,
+        }
+        return IncidentPagination(**pagination).dict(include=include_fields)
+    return IncidentPagination(**pagination).dict()
 
 
 @router.get("/{incident_id}", response_model=IncidentRead, summary="Retrieve a single incident.")
@@ -77,17 +93,17 @@ def get_incident(
     # we want to provide additional protections around restricted incidents
     if incident.visibility == Visibility.restricted:
         # reject if the user isn't an admin, reporter or commander
-        if incident.reporter.email == current_user.email:
+        if incident.reporter.individual.email == current_user.email:
             return incident
 
-        if incident.commander.email == current_user.email:
+        if incident.commander.individual.email == current_user.email:
             return incident
 
         if current_user.role == UserRoles.admin:
             return incident
 
         raise HTTPException(
-            status_code=401, detail="You do no have permission to view this incident."
+            status_code=401, detail="You do not have permission to view this incident."
         )
 
     return incident
@@ -137,9 +153,12 @@ def update_incident(
     # we want to provide additional protections around restricted incidents
     if incident.visibility == Visibility.restricted:
         # reject if the user isn't an admin or commander
-        if current_user.email != incident.commander.email or current_user.role != UserRoles.admin:
+        if (
+            current_user.email != incident.commander.individual.email
+            or current_user.role != UserRoles.admin
+        ):
             raise HTTPException(
-                status_code=401, detail="You do no have permission to update this incident."
+                status_code=401, detail="You do not have permission to update this incident."
             )
 
     previous_incident = IncidentRead.from_orm(incident)
@@ -159,7 +178,7 @@ def update_incident(
         incident_assign_role_flow,
         current_user.email,
         incident_id=incident.id,
-        assignee_email=incident_in.commander.email,
+        assignee_email=incident_in.commander.individual.email,
         assignee_role=ParticipantRoleType.incident_commander,
     )
 
@@ -168,7 +187,7 @@ def update_incident(
         incident_assign_role_flow,
         current_user.email,
         incident_id=incident.id,
-        assignee_email=incident_in.reporter.email,
+        assignee_email=incident_in.reporter.individual.email,
         assignee_role=ParticipantRoleType.reporter,
     )
 
@@ -195,7 +214,7 @@ def join_incident(
         # reject if the user isn't an admin
         if current_user.role != UserRoles.admin.value:
             raise HTTPException(
-                status_code=401, detail="You do no have permission to join this incident."
+                status_code=401, detail="You do not have permission to join this incident."
             )
 
     background_tasks.add_task(
@@ -204,13 +223,24 @@ def join_incident(
 
 
 @router.delete("/{incident_id}", response_model=IncidentRead, summary="Delete an incident.")
-def delete_incident(*, db_session: Session = Depends(get_db), incident_id: str):
+def delete_incident(
+    *,
+    db_session: Session = Depends(get_db),
+    incident_id: str,
+    current_user: DispatchUser = Depends(get_current_user),
+):
     """
     Delete an individual incident.
     """
+    if current_user.role != UserRoles.admin:
+        raise HTTPException(
+            status_code=401, detail="You do not have permission to delete incidents."
+        )
+
     incident = get(db_session=db_session, incident_id=incident_id)
     if not incident:
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
+
     delete(db_session=db_session, incident_id=incident.id)
 
 

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 13.0 (Debian 13.0-1.pgdg100+1)
+-- Dumped from database version 13.1 (Debian 13.1-1.pgdg100+1)
 -- Dumped by pg_dump version 13.1 (Ubuntu 13.1-1.pgdg20.10+1)
 
 SET statement_timeout = 0;
@@ -844,18 +844,6 @@ ALTER TABLE public.document_id_seq OWNER TO dispatch;
 
 ALTER SEQUENCE public.document_id_seq OWNED BY public.document.id;
 
-
---
--- Name: document_incident; Type: TABLE; Schema: public; Owner: dispatch
---
-
-CREATE TABLE public.document_incident (
-    incident_id integer NOT NULL,
-    document_id integer NOT NULL
-);
-
-
-ALTER TABLE public.document_incident OWNER TO dispatch;
 
 --
 -- Name: document_incident_priority; Type: TABLE; Schema: public; Owner: dispatch
@@ -2348,7 +2336,7 @@ ALTER TABLE ONLY public.workflow_instance ALTER COLUMN id SET DEFAULT nextval('p
 --
 
 COPY public.alembic_version (version_num) FROM stdin;
-1c3f808aa00c
+996dea17749b
 \.
 
 
@@ -2448,20 +2436,6 @@ COPY public.dispatch_user (id, email, password, role, search_vector, updated_at,
 --
 
 COPY public.document (resource_type, resource_id, weblink, id, name, description, report_id, search_vector, incident_id, created_at, updated_at, evergreen, evergreen_last_reminder_at, evergreen_owner, evergreen_reminder_interval) FROM stdin;
-dispatch-generic-incident-document	1uSKfArHafY2aN2kHi5Muv6LM8d5t83uVEMRkW0swfjA	https://docs.google.com/document/d/1uSKfArHafY2aN2kHi5Muv6LM8d5t83uVEMRkW0swfjA	1	Incident Document Template	This is a document for all incident facts and context. All incident participants are expected to contribute to this document. It is shared with all incident participants.	\N	'document':2 'incid':1 'templat':3	\N	2020-07-24 17:26:35.824567	2020-07-24 17:26:35.824582	\N	\N	\N	\N
-dispatch-executive-report-document-template	1cdwlyhNEdVP9mMbaDVa1Hr-_rj9y4umxIucBntmwP-g	https://docs.google.com/document/d/1cdwlyhNEdVP9mMbaDVa1Hr-_rj9y4umxIucBntmwP-g/	2	Executive Report Document Template	This is a document template for executive reports.	\N	'document':3 'execut':1 'report':2 'templat':4	\N	2020-07-24 17:33:15.201277	2020-07-24 17:33:15.201306	\N	\N	\N	\N
-dispatch-incident-sheet-template	1a6j9SmzsFnk8RwxNgzieX8nhCvRpH2GybtvgI7PvGLg	https://docs.google.com/spreadsheets/d/1a6j9SmzsFnk8RwxNgzieX8nhCvRpH2GybtvgI7PvGLg/	3	Incident Tracking Sheet Template	This is a sheet for tracking impacted assets. All incident participants are expected to contribute to this sheet. It is shared with all incident participants.	\N	'incid':1 'sheet':3 'templat':4 'track':2	\N	2020-07-24 17:34:06.474813	2020-07-24 17:34:06.474819	\N	\N	\N	\N
-dispatch-incident-review-document-template	1IKz1FHOfI7iSWx0t5vwvgi5k1AQACo3GIYSpvnvQaco	https://docs.google.com/document/d/1IKz1FHOfI7iSWx0t5vwvgi5k1AQACo3GIYSpvnvQaco/	4	Post Incident Review Template	Post incident review template review document.	\N	'incid':2 'post':1 'review':3 'templat':4	\N	2020-07-24 17:34:51.201291	2020-07-24 17:34:51.201305	\N	\N	\N	\N
-dispatch-incident-sheet	1PZp5SWRIZGgwggUANZFWEPJUDJvH4HHSBmkknUhSx48	https://docs.google.com/spreadsheets/d/1PZp5SWRIZGgwggUANZFWEPJUDJvH4HHSBmkknUhSx48/edit?usp=drivesdk	5	dispatch-1 - Incident Tracking Sheet	\N	\N	'-1':2 'dispatch':1 'incid':3 'sheet':5 'track':4	1	2020-07-24 18:03:12.561807	2020-07-24 18:03:12.58184	\N	\N	\N	\N
-dispatch-incident-document	1D7mD9mUa0mMN3dRbXpO6AaolIQsEQ-jehvVJfaU5vRA	https://docs.google.com/document/d/1D7mD9mUa0mMN3dRbXpO6AaolIQsEQ-jehvVJfaU5vRA/edit?usp=drivesdk	6	dispatch-1 - Incident Document	\N	\N	'-1':2 'dispatch':1 'document':4 'incid':3	1	2020-07-24 18:03:12.593469	2020-07-24 18:03:12.606821	\N	\N	\N	\N
-\.
-
-
---
--- Data for Name: document_incident; Type: TABLE DATA; Schema: public; Owner: dispatch
---
-
-COPY public.document_incident (incident_id, document_id) FROM stdin;
 \.
 
 
@@ -3223,14 +3197,6 @@ ALTER TABLE ONLY public.dispatch_user
 
 
 --
--- Name: document_incident document_incident_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
---
-
-ALTER TABLE ONLY public.document_incident
-    ADD CONSTRAINT document_incident_pkey PRIMARY KEY (incident_id, document_id);
-
-
---
 -- Name: document_incident_priority document_incident_priority_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
 --
 
@@ -3938,7 +3904,7 @@ CREATE TRIGGER workflow_search_vector_trigger BEFORE INSERT OR UPDATE ON public.
 --
 
 ALTER TABLE ONLY public.assoc_incident_tags
-    ADD CONSTRAINT assoc_incident_tags_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+    ADD CONSTRAINT assoc_incident_tags_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id) ON DELETE CASCADE;
 
 
 --
@@ -3946,7 +3912,7 @@ ALTER TABLE ONLY public.assoc_incident_tags
 --
 
 ALTER TABLE ONLY public.assoc_incident_tags
-    ADD CONSTRAINT assoc_incident_tags_tag_id_fkey FOREIGN KEY (tag_id) REFERENCES public.tag(id);
+    ADD CONSTRAINT assoc_incident_tags_tag_id_fkey FOREIGN KEY (tag_id) REFERENCES public.tag(id) ON DELETE CASCADE;
 
 
 --
@@ -3954,7 +3920,7 @@ ALTER TABLE ONLY public.assoc_incident_tags
 --
 
 ALTER TABLE ONLY public.assoc_incident_terms
-    ADD CONSTRAINT assoc_incident_terms_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+    ADD CONSTRAINT assoc_incident_terms_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id) ON DELETE CASCADE;
 
 
 --
@@ -3962,7 +3928,7 @@ ALTER TABLE ONLY public.assoc_incident_terms
 --
 
 ALTER TABLE ONLY public.assoc_incident_terms
-    ADD CONSTRAINT assoc_incident_terms_term_id_fkey FOREIGN KEY (term_id) REFERENCES public.term(id);
+    ADD CONSTRAINT assoc_incident_terms_term_id_fkey FOREIGN KEY (term_id) REFERENCES public.term(id) ON DELETE CASCADE;
 
 
 --
@@ -4018,7 +3984,7 @@ ALTER TABLE ONLY public.assoc_individual_contact_terms
 --
 
 ALTER TABLE ONLY public.conference
-    ADD CONSTRAINT conference_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+    ADD CONSTRAINT conference_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id) ON DELETE CASCADE;
 
 
 --
@@ -4026,7 +3992,7 @@ ALTER TABLE ONLY public.conference
 --
 
 ALTER TABLE ONLY public.conversation
-    ADD CONSTRAINT conversation_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+    ADD CONSTRAINT conversation_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id) ON DELETE CASCADE;
 
 
 --
@@ -4062,27 +4028,11 @@ ALTER TABLE ONLY public.definition_terms
 
 
 --
--- Name: document_incident document_incident_document_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
---
-
-ALTER TABLE ONLY public.document_incident
-    ADD CONSTRAINT document_incident_document_id_fkey FOREIGN KEY (document_id) REFERENCES public.document(id);
-
-
---
 -- Name: document document_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
 --
 
 ALTER TABLE ONLY public.document
-    ADD CONSTRAINT document_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
-
-
---
--- Name: document_incident document_incident_incident_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
---
-
-ALTER TABLE ONLY public.document_incident
-    ADD CONSTRAINT document_incident_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+    ADD CONSTRAINT document_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id) ON DELETE CASCADE;
 
 
 --
@@ -4146,7 +4096,7 @@ ALTER TABLE ONLY public.document_terms
 --
 
 ALTER TABLE ONLY public.event
-    ADD CONSTRAINT event_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+    ADD CONSTRAINT event_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id) ON DELETE CASCADE;
 
 
 --
@@ -4154,7 +4104,7 @@ ALTER TABLE ONLY public.event
 --
 
 ALTER TABLE ONLY public.event
-    ADD CONSTRAINT event_individual_id_fkey FOREIGN KEY (individual_id) REFERENCES public.individual_contact(id);
+    ADD CONSTRAINT event_individual_id_fkey FOREIGN KEY (individual_id) REFERENCES public.individual_contact(id) ON DELETE CASCADE;
 
 
 --
@@ -4162,7 +4112,7 @@ ALTER TABLE ONLY public.event
 --
 
 ALTER TABLE ONLY public.feedback
-    ADD CONSTRAINT feedback_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+    ADD CONSTRAINT feedback_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id) ON DELETE CASCADE;
 
 
 --
@@ -4178,7 +4128,7 @@ ALTER TABLE ONLY public.feedback
 --
 
 ALTER TABLE ONLY public."group"
-    ADD CONSTRAINT group_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+    ADD CONSTRAINT group_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id) ON DELETE CASCADE;
 
 
 --
@@ -4222,14 +4172,6 @@ ALTER TABLE ONLY public.incident_type
 
 
 --
--- Name: incident_type incident_type_template_document_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
---
-
-ALTER TABLE ONLY public.incident_type
-    ADD CONSTRAINT incident_type_template_document_id_fkey FOREIGN KEY (template_document_id) REFERENCES public.document(id);
-
-
---
 -- Name: individual_contact individual_contact_team_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
 --
 
@@ -4250,7 +4192,7 @@ ALTER TABLE ONLY public.participant
 --
 
 ALTER TABLE ONLY public.participant
-    ADD CONSTRAINT participant_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+    ADD CONSTRAINT participant_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id) ON DELETE CASCADE;
 
 
 --
@@ -4266,7 +4208,7 @@ ALTER TABLE ONLY public.participant
 --
 
 ALTER TABLE ONLY public.participant_role
-    ADD CONSTRAINT participant_role_participant_id_fkey FOREIGN KEY (participant_id) REFERENCES public.participant(id);
+    ADD CONSTRAINT participant_role_participant_id_fkey FOREIGN KEY (participant_id) REFERENCES public.participant(id) ON DELETE CASCADE;
 
 
 --
@@ -4394,7 +4336,7 @@ ALTER TABLE ONLY public.recommendation_terms
 --
 
 ALTER TABLE ONLY public.report
-    ADD CONSTRAINT report_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+    ADD CONSTRAINT report_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id) ON DELETE CASCADE;
 
 
 --
@@ -4474,7 +4416,7 @@ ALTER TABLE ONLY public.service_terms
 --
 
 ALTER TABLE ONLY public.storage
-    ADD CONSTRAINT storage_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+    ADD CONSTRAINT storage_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id) ON DELETE CASCADE;
 
 
 --
@@ -4490,7 +4432,7 @@ ALTER TABLE ONLY public.tag
 --
 
 ALTER TABLE ONLY public.task_assignees
-    ADD CONSTRAINT task_assignees_participant_id_fkey FOREIGN KEY (participant_id) REFERENCES public.participant(id);
+    ADD CONSTRAINT task_assignees_participant_id_fkey FOREIGN KEY (participant_id) REFERENCES public.participant(id) ON DELETE CASCADE;
 
 
 --
@@ -4498,7 +4440,7 @@ ALTER TABLE ONLY public.task_assignees
 --
 
 ALTER TABLE ONLY public.task_assignees
-    ADD CONSTRAINT task_assignees_task_id_fkey FOREIGN KEY (task_id) REFERENCES public.task(id);
+    ADD CONSTRAINT task_assignees_task_id_fkey FOREIGN KEY (task_id) REFERENCES public.task(id) ON DELETE CASCADE;
 
 
 --
@@ -4514,7 +4456,7 @@ ALTER TABLE ONLY public.task
 --
 
 ALTER TABLE ONLY public.task
-    ADD CONSTRAINT task_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+    ADD CONSTRAINT task_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id) ON DELETE CASCADE;
 
 
 --
@@ -4530,7 +4472,7 @@ ALTER TABLE ONLY public.task
 --
 
 ALTER TABLE ONLY public.task_tickets
-    ADD CONSTRAINT task_tickets_task_id_fkey FOREIGN KEY (task_id) REFERENCES public.task(id);
+    ADD CONSTRAINT task_tickets_task_id_fkey FOREIGN KEY (task_id) REFERENCES public.task(id) ON DELETE CASCADE;
 
 
 --
@@ -4538,7 +4480,7 @@ ALTER TABLE ONLY public.task_tickets
 --
 
 ALTER TABLE ONLY public.task_tickets
-    ADD CONSTRAINT task_tickets_ticket_id_fkey FOREIGN KEY (ticket_id) REFERENCES public.ticket(id);
+    ADD CONSTRAINT task_tickets_ticket_id_fkey FOREIGN KEY (ticket_id) REFERENCES public.ticket(id) ON DELETE CASCADE;
 
 
 --
@@ -4610,7 +4552,7 @@ ALTER TABLE ONLY public.team_contact_terms
 --
 
 ALTER TABLE ONLY public.ticket
-    ADD CONSTRAINT ticket_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+    ADD CONSTRAINT ticket_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id) ON DELETE CASCADE;
 
 
 --
@@ -4674,7 +4616,7 @@ ALTER TABLE ONLY public.workflow_instance
 --
 
 ALTER TABLE ONLY public.workflow_instance
-    ADD CONSTRAINT workflow_instance_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id);
+    ADD CONSTRAINT workflow_instance_incident_id_fkey FOREIGN KEY (incident_id) REFERENCES public.incident(id) ON DELETE CASCADE;
 
 
 --

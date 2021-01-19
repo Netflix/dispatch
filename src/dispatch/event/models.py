@@ -23,8 +23,8 @@ class Event(Base, TimeStampMixin):
     details = Column(JSONType, nullable=True)
 
     # relationships
-    individual_id = Column(Integer, ForeignKey("individual_contact.id"))
-    incident_id = Column(Integer, ForeignKey("incident.id"))
+    individual_id = Column(Integer, ForeignKey("individual_contact.id", ondelete="CASCADE"))
+    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
 
     # full text search capabilities
     search_vector = Column(

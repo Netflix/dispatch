@@ -49,7 +49,7 @@ const getters = {
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
-    commit("SET_TABLE_LOADING", true)
+    commit("SET_TABLE_LOADING", "primary")
     return ServiceApi.getAll(state.table.options)
       .then(response => {
         commit("SET_TABLE_LOADING", false)
@@ -83,14 +83,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Service created successfully." }, { root: true })
+          commit(
+            "notification/addBeNotification",
+            { text: "Service created successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Service not created. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -100,14 +104,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Service updated successfully." }, { root: true })
+          commit(
+            "notification/addBeNotification",
+            { text: "Service updated successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Service not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -119,14 +127,18 @@ const actions = {
       .then(function() {
         dispatch("closeRemove")
         dispatch("getAll")
-        commit("app/SET_SNACKBAR", { text: "Service deleted successfully." }, { root: true })
+        commit(
+          "notification/addBeNotification",
+          { text: "Service deleted successfully.", type: "success" },
+          { root: true }
+        )
       })
       .catch(err => {
         commit(
-          "app/SET_SNACKBAR",
+          "notification/addBeNotification",
           {
             text: "Service not deleted. Reason: " + err.response.data.detail,
-            color: "red"
+            type: "error"
           },
           { root: true }
         )

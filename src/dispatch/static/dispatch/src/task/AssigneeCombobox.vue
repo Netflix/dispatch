@@ -13,7 +13,7 @@
     clearable
     return-object
     placeholder="Start typing to search"
-    cache-items
+    no-filter
     :loading="loading"
   >
     <template v-slot:no-data>
@@ -95,7 +95,7 @@ export default {
 
   methods: {
     querySelections(v) {
-      this.loading = true
+      this.loading = "error"
       // Simulated ajax query
       IndividualApi.getAll({ q: v }).then(response => {
         this.items = response.data.items
@@ -106,7 +106,7 @@ export default {
 
   mounted() {
     this.error = null
-    this.loading = true
+    this.loading = "error"
     IndividualApi.getAll().then(response => {
       this.items = response.data.items
       this.loading = false

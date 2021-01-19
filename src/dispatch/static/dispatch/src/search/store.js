@@ -2,7 +2,8 @@ import SearchApi from "@/search/api"
 const state = {
   results: [],
   query: "",
-  models: []
+  models: [],
+  loading: false
 }
 
 const getters = {}
@@ -15,13 +16,30 @@ const actions = {
     commit("SET_MODELS", models)
   },
   getResults({ commit, state }) {
-    return SearchApi.search(state.query, state.models).then(response => {
-      commit("SET_RESULTS", response.data.results)
-    })
+    commit("SET_LOADING", false)
+    return SearchApi.search(state.query, state.models)
+      .then(response => {
+        commit("SET_RESULTS", response.data.results)
+        commit("SET_LOADING", false)
+      })
+      .catch(err => {
+        commit(
+          "notification/addBeNotification",
+          {
+            text: "Search Failed. Reason: " + err.response.data.detail,
+            color: "red"
+          },
+          { root: true }
+        )
+        commit("SET_LOADING", false)
+      })
   }
 }
 
 const mutations = {
+  SET_LOADING(state, value) {
+    state.loading = value
+  },
   SET_RESULTS(state, results) {
     state.results = results
   },

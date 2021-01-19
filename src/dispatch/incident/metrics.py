@@ -98,7 +98,7 @@ def make_forecast(
             dataframe, seasonal_periods=12, trend="add", seasonal="add"
         ).fit(use_boxcox=True)
     except Exception as e:
-        log.error(f"Issue forecasting incidents: {e}")
+        log.warning(f"Issue forecasting incidents: {e}")
         return {
             "categories": [],
             "series": [{"name": "Predicted", "data": []}],

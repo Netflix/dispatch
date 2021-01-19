@@ -9,7 +9,7 @@
           </v-list-item-content>
           <v-btn
             icon
-            color="primary"
+            color="info"
             :loading="loading"
             :disabled="invalid || !validated"
             @click="save()"
@@ -21,7 +21,7 @@
           </v-btn>
         </v-list-item>
       </template>
-      <v-tabs fixed-tabs v-model="tab">
+      <v-tabs color="primary" fixed-tabs v-model="tab">
         <v-tab key="details">Details</v-tab>
         <v-tab key="resources">Resources</v-tab>
         <v-tab key="participants">Participants</v-tab>

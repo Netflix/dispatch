@@ -1,64 +1,4 @@
-// export function camel (str) {
-//   const camel = (str || '').replace(/-([^-])/g, g => g[1].toUpperCase());
-
-//   return capitalize(camel);
-// }
-
-// export function camelActual (str) {
-//   return (str || '').replace(/-(\w)/g, (_, c) => (c ? c.toUpperCase() : ''));
-// }
-
-// export function kebab (str) {
-//   return (str || '').replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-// }
-
-// export function capitalize (str) {
-//   str = str || '';
-
-//   return `${str.substr(0, 1).toUpperCase()}${str.slice(1)}`;
-// }
-
-// export function findProduct (store, id) {
-//   return store.state.store.products.find(p => p.id === id);
-// }
-
-// export function isOnSale (variants) {
-//   return variants.some(variant => {
-//     return parseFloat(variant.price) < parseFloat(variant.compareAtPrice);
-//   });
-// }
-
-// export function randomNumber (min, max) {
-//   return Math.floor(Math.random() * max) + min;
-// }
-
-// export function randomString (length = 5) {
-//   let text = '';
-//   const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-//   for (let i = 0; i < length; i++) {
-//     text += possible.charAt(Math.floor(Math.random() * possible.length));
-//   }
-
-//   return text;
-// }
-import { mapValues, groupBy } from "lodash"
-const nest = function(seq, keys) {
-  if (!keys.length) return seq
-  var first = keys[0]
-  var rest = keys.slice(1)
-  return mapValues(groupBy(seq, first), function(value) {
-    return nest(value, rest)
-  })
-}
-
-const randomElement = (arr = []) => {
-  return arr[Math.floor(Math.random() * arr.length)]
-}
-
-const kebab = str => {
-  return (str || "").replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase()
-}
+import { flatMap, isPlainObject } from "lodash"
 
 const toggleFullScreen = () => {
   let doc = window.document
@@ -87,9 +27,47 @@ const toggleFullScreen = () => {
   }
 }
 
+const mapValuesFlat = obj => {
+  return flatMap(obj, v => {
+    if (isPlainObject(v)) {
+      return mapValuesFlat(v)
+    }
+    return v
+  })
+}
+
+const exportCSV = function(items, fileName) {
+  let csvContent = "data:text/csv;charset=utf-8,"
+  csvContent += [
+    Object.keys(items[0]).join(","),
+    ...items.map(item => {
+      if (typeof item === "object") {
+        return Object.values(item)
+          .map(value => {
+            if (value === null) {
+              return ""
+            }
+            if (typeof value === "object") {
+              return mapValuesFlat(value).join("|")
+            }
+            return value
+          })
+          .join(",")
+      }
+      return ""
+    })
+  ]
+    .join("\n")
+    .replace(/(^\[)|(\]$)/gm, "")
+
+  const data = encodeURI(csvContent)
+  const link = document.createElement("a")
+  link.setAttribute("href", data)
+  link.setAttribute("download", fileName)
+  link.click()
+}
+
 export default {
-  randomElement,
   toggleFullScreen,
-  kebab,
-  nest
+  exportCSV
 }

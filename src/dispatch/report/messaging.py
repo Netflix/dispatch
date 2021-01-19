@@ -1,10 +1,12 @@
 import logging
 
+from datetime import datetime, timedelta
+
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.database import SessionLocal, resolve_attr
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import Incident
-from dispatch.messaging import (
+from dispatch.messaging.strings import (
     INCIDENT_EXECUTIVE_REPORT,
     INCIDENT_REPORT_REMINDER,
     INCIDENT_TACTICAL_REPORT,
@@ -61,20 +63,55 @@ def send_tactical_report_to_conversation(
     log.debug("Tactical report sent to conversation {incident.conversation.channel_id}.")
 
 
-def send_executive_report_to_notifications_group(
-    incident_id: int, executive_report: Report, db_session: SessionLocal,
+def send_tactical_report_to_tactical_group(
+    incident_id: int,
+    tactical_report: Report,
+    db_session: SessionLocal,
 ):
-    """Sends an executive report to the notifications group."""
+    """Sends a tactical report to the tactical group."""
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
 
     if not plugin:
-        log.warning("Executive report notification not sent, no email plugin enabled.")
+        log.warning("Tactical report not sent, no email plugin enabled.")
         return
 
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    subject = f"{incident.name.upper()} - Executive Report"
+    subject = f"{incident.name} - Tactical Report"
+    plugin.instance.send(
+        incident.notifications_group.email,
+        INCIDENT_TACTICAL_REPORT,
+        MessageType.incident_tactical_report,
+        subject=subject,
+        name=subject,
+        title=incident.title,
+        conditions=tactical_report.details.get("conditions"),
+        actions=tactical_report.details.get("actions"),
+        needs=tactical_report.details.get("needs"),
+        contact_fullname=incident.commander.individual.name,
+        contact_weblink=incident.commander.individual.weblink,
+    )
+
+    log.debug(f"Tactical report sent to tactical group {incident.tactical_group.email}.")
+
+
+def send_executive_report_to_notifications_group(
+    incident_id: int,
+    executive_report: Report,
+    db_session: SessionLocal,
+):
+    """Sends an executive report to the notifications group."""
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
+
+    if not plugin:
+        log.warning("Executive report not sent, no email plugin enabled.")
+        return
+
+    # we load the incident instance
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    subject = f"{incident.name} - Executive Report"
     plugin.instance.send(
         incident.notifications_group.email,
         INCIDENT_EXECUTIVE_REPORT,
@@ -87,8 +124,8 @@ def send_executive_report_to_notifications_group(
         next_steps=executive_report.details.get("next_steps"),
         weblink=executive_report.document.weblink,
         notifications_group=incident.notifications_group.email,
-        contact_fullname=incident.commander.name,
-        contact_weblink=incident.commander.weblink,
+        contact_fullname=incident.commander.individual.name,
+        contact_weblink=incident.commander.individual.weblink,
     )
 
     log.debug(f"Executive report sent to notifications group {incident.notifications_group.email}.")
@@ -101,6 +138,13 @@ def send_incident_report_reminder(
     message_text = f"Incident {report_type.value} Reminder"
     message_template = INCIDENT_REPORT_REMINDER
     command_name, message_type = get_report_reminder_settings(report_type)
+
+    # check to see if there wasn't a recent report
+    now = datetime.utcnow()
+    if incident.last_tactical_report:
+        last_reported_at = incident.last_tactical_report.created_at
+        if now - last_reported_at < timedelta(hours=1):
+            return
 
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
     if not plugin:
@@ -121,7 +165,11 @@ def send_incident_report_reminder(
     ]
 
     plugin.instance.send_direct(
-        incident.commander.email, message_text, message_template, message_type, items=items,
+        incident.commander.individual.email,
+        message_text,
+        message_template,
+        message_type,
+        items=items,
     )
 
-    log.debug(f"Incident report reminder sent to {incident.commander.email}.")
+    log.debug(f"Incident report reminder sent to {incident.commander.individual.email}.")

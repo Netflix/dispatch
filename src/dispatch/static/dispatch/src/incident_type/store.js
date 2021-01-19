@@ -49,7 +49,7 @@ const getters = {
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
-    commit("SET_TABLE_LOADING", true)
+    commit("SET_TABLE_LOADING", "primary")
     return IncidentTypeApi.getAll(state.table.options)
       .then(response => {
         commit("SET_TABLE_LOADING", false)
@@ -83,14 +83,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "IncidentType created successfully." }, { root: true })
+          commit(
+            "notification/addBeNotification",
+            { text: "Incident type created successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
-              text: "IncidentType not created. Reason: " + err.response.data.detail,
-              color: "red"
+              text: "Incident type not created. Reason: " + err.response.data.detail,
+              type: "error"
             },
             { root: true }
           )
@@ -101,17 +105,17 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "app/SET_SNACKBAR",
-            { text: "Incident Type updated successfully." },
+            "notification/addBeNotification",
+            { text: "Incident type updated successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
-              text: "Incident Type not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              text: "Incident type not updated. Reason: " + err.response.data.detail,
+              type: "error"
             },
             { root: true }
           )
@@ -123,14 +127,18 @@ const actions = {
       .then(function() {
         dispatch("closeRemove")
         dispatch("getAll")
-        commit("app/SET_SNACKBAR", { text: "Incident Type deleted successfully." }, { root: true })
+        commit(
+          "notification/addBeNotification",
+          { text: "Incident type deleted successfully.", type: "success" },
+          { root: true }
+        )
       })
       .catch(err => {
         commit(
-          "app/SET_SNACKBAR",
+          "notification/addBeNotification",
           {
-            text: "Incident Type not deleted. Reason: " + err.response.data.detail,
-            color: "red"
+            text: "Incident type not deleted. Reason: " + err.response.data.detail,
+            type: "error"
           },
           { root: true }
         )

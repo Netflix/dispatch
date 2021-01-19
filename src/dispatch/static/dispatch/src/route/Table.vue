@@ -2,10 +2,10 @@
   <v-layout wrap>
     <div>
       <v-dialog v-model="loading" persistent width="300">
-        <v-card dark>
+        <v-card>
           <v-card-text>
             Finding the best matches
-            <v-progress-linear indeterminate color="primary" class="mb-0" />
+            <v-progress-linear indeterminate color="info" class="mb-0" />
           </v-card-text>
         </v-card>
       </v-dialog>

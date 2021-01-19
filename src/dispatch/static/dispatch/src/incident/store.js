@@ -29,6 +29,7 @@ const getDefaultSelectedState = () => {
     workflow_instances: null,
     title: null,
     visibility: null,
+    trackingOnly: null,
     loading: false
   }
 }
@@ -38,14 +39,16 @@ const state = {
     ...getDefaultSelectedState()
   },
   dialogs: {
+    showDeleteDialog: false,
     showEditSheet: false,
-    showNewSheet: false,
-    showRemove: false
+    showExport: false,
+    showNewSheet: false
   },
   table: {
     rows: {
       items: [],
-      total: null
+      total: null,
+      selected: []
     },
     options: {
       filters: {
@@ -54,7 +57,7 @@ const state = {
         incident_type: [],
         incident_priority: [],
         status: [],
-        tag: []
+        tags: []
       },
       q: "",
       page: 1,
@@ -62,7 +65,8 @@ const state = {
       sortBy: ["reported_at"],
       descending: [true]
     },
-    loading: false
+    loading: false,
+    bulkEditLoading: false
   }
 }
 
@@ -76,7 +80,7 @@ const getters = {
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
-    commit("SET_TABLE_LOADING", true)
+    commit("SET_TABLE_LOADING", "primary")
 
     let tableOptions = Object.assign({}, state.table.options)
     delete tableOptions.filters
@@ -131,16 +135,25 @@ const actions = {
     commit("SET_DIALOG_SHOW_EDIT_SHEET", false)
     commit("RESET_SELECTED")
   },
-  removeShow({ commit }, incident) {
+  showDeleteDialog({ commit }, incident) {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", incident)
   },
-  closeRemove({ commit }) {
+  closeDeleteDialog({ commit }) {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
   },
+  showExport({ commit }) {
+    commit("SET_DIALOG_SHOW_EXPORT", true)
+  },
+  closeExport({ commit }) {
+    commit("SET_DIALOG_SHOW_EXPORT", false)
+  },
   report({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
+    if (state.selected.trackingOnly === true) {
+      state.selected.status = "Closed"
+    }
     return IncidentApi.create(state.selected)
       .then(response => {
         commit("SET_SELECTED", response.data)
@@ -158,12 +171,12 @@ const actions = {
       })
       .catch(err => {
         commit(
-          "app/SET_SNACKBAR",
+          "notification/addBeNotification",
           {
             text:
               "Incident could not be reported. Please try again. Reason: " +
               err.response.data.detail,
-            color: "red"
+            type: "error"
           },
           { root: true }
         )
@@ -177,15 +190,19 @@ const actions = {
         .then(() => {
           dispatch("closeNewSheet")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Incident created successfully." }, { root: true })
+          commit(
+            "notification/addBeNotification",
+            { text: "Incident created successfully.", type: "success" },
+            { root: true }
+          )
           commit("SET_SELECTED_LOADING", false)
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Incident not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -196,15 +213,19 @@ const actions = {
         .then(() => {
           dispatch("closeEditSheet")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Incident updated successfully." }, { root: true })
+          commit(
+            "notification/addBeNotification",
+            { text: "Incident updated successfully.", type: "success" },
+            { root: true }
+          )
           commit("SET_SELECTED_LOADING", false)
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Incident not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -212,19 +233,47 @@ const actions = {
         })
     }
   },
-  remove({ commit, dispatch }) {
-    return IncidentApi.delete(state.selected.id)
-      .then(function() {
-        dispatch("closeRemove")
+  saveBulk({ commit, dispatch }, payload) {
+    commit("SET_BULK_EDIT_LOADING", true)
+    return IncidentApi.bulkUpdate(state.table.rows.selected, payload)
+      .then(() => {
         dispatch("getAll")
-        commit("app/SET_SNACKBAR", { text: "Incident deleted successfully." }, { root: true })
+        commit(
+          "notification/addBeNotification",
+          { text: "Incident(s) updated successfully.", type: "success" },
+          { root: true }
+        )
+        commit("SET_BULK_EDIT_LOADING", false)
       })
       .catch(err => {
         commit(
-          "app/SET_SNACKBAR",
+          "notification/addBeNotification",
+          {
+            text: "Incident(s) not updated. Reason: " + err.response.data.detail,
+            type: "error"
+          },
+          { root: true }
+        )
+        commit("SET_BULK_EDIT_LOADING", false)
+      })
+  },
+  deleteIncident({ commit, dispatch }) {
+    return IncidentApi.delete(state.selected.id)
+      .then(function() {
+        dispatch("closeDeleteDialog")
+        dispatch("getAll")
+        commit(
+          "notification/addBeNotification",
+          { text: "Incident deleted successfully.", type: "success" },
+          { root: true }
+        )
+      })
+      .catch(err => {
+        commit(
+          "notification/addBeNotification",
           {
             text: "Incident not deleted. Reason: " + err.response.data.detail,
-            color: "red"
+            type: "error"
           },
           { root: true }
         )
@@ -236,8 +285,8 @@ const actions = {
   joinIncident({ commit }, incidentId) {
     IncidentApi.join(incidentId, {}).then(() => {
       commit(
-        "app/SET_SNACKBAR",
-        { text: "You have successfully joined the incident." },
+        "notification/addBeNotification",
+        { text: "You have successfully joined the incident.", type: "success" },
         { root: true }
       )
     })
@@ -253,6 +302,8 @@ const mutations = {
     state.table.loading = value
   },
   SET_TABLE_ROWS(state, value) {
+    // reset selected on table load
+    value["selected"] = []
     state.table.rows = value
   },
   SET_DIALOG_SHOW_EDIT_SHEET(state, value) {
@@ -261,11 +312,17 @@ const mutations = {
   SET_DIALOG_SHOW_NEW_SHEET(state, value) {
     state.dialogs.showNewSheet = value
   },
+  SET_DIALOG_SHOW_EXPORT(state, value) {
+    state.dialogs.showExport = value
+  },
   SET_DIALOG_DELETE(state, value) {
-    state.dialogs.showRemove = value
+    state.dialogs.showDeleteDialog = value
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
+  },
+  SET_BULK_EDIT_LOADING(state, value) {
+    state.table.bulkEditLoading = value
   },
   SET_SELECTED_LOADING(state, value) {
     state.selected.loading = value

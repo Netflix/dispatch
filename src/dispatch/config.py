@@ -95,6 +95,11 @@ DISPATCH_AUTHENTICATION_PROVIDER_SLUG = config(
     "DISPATCH_AUTHENTICATION_PROVIDER_SLUG", default="dispatch-auth-provider-basic"
 )
 
+MJML_PATH = config(
+    "MJML_PATH",
+    default=f"{os.path.dirname(os.path.realpath(__file__))}/static/dispatch/node_modules/.bin",
+)
+
 DISPATCH_JWT_AUDIENCE = config("DISPATCH_JWT_AUDIENCE", default=None)
 DISPATCH_JWT_EMAIL_OVERRIDE = config("DISPATCH_JWT_EMAIL_OVERRIDE", default=None)
 
@@ -164,9 +169,13 @@ INCIDENT_STORAGE_OPEN_ON_CLOSE = config("INCIDENT_STORAGE_OPEN_ON_CLOSE", defaul
 INCIDENT_NOTIFICATION_CONVERSATIONS = config(
     "INCIDENT_NOTIFICATION_CONVERSATIONS", cast=CommaSeparatedStrings, default=""
 )
+
 INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS = config(
     "INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS", cast=CommaSeparatedStrings, default=""
 )
+
+INCIDENT_RESPONSE_TEAM_EMAIL = config("INCIDENT_RESPONSE_TEAM_EMAIL", default="")
+
 INCIDENT_ONCALL_SERVICE_ID = config("INCIDENT_ONCALL_SERVICE_ID", default=None)
 if not INCIDENT_ONCALL_SERVICE_ID:
     INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID = config(

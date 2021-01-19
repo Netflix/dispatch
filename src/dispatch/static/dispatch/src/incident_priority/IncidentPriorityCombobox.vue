@@ -11,7 +11,7 @@
     chips
     clearable
     :loading="loading"
-    @update:search-input="fetchData({ q: $event })"
+    @update:search-input="getFilteredData({ q: $event })"
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -83,7 +83,7 @@ export default {
   methods: {
     fetchData(filterOptions) {
       this.error = null
-      this.loading = true
+      this.loading = "error"
       IncidentPriorityApi.getAll(filterOptions).then(response => {
         this.items = response.data.items
         this.loading = false

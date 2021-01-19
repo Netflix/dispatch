@@ -2,16 +2,17 @@ from pydantic import validator
 
 from typing import Optional
 
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, Integer, ForeignKey
 
 from dispatch.database import Base
-from dispatch.messaging import INCIDENT_CONVERSATION_DESCRIPTION
+from dispatch.messaging.strings import INCIDENT_CONVERSATION_DESCRIPTION
 from dispatch.models import DispatchBase, ResourceMixin
 
 
 class Conversation(Base, ResourceMixin):
     id = Column(Integer, primary_key=True)
     channel_id = Column(String)
+    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
 
 
 # Pydantic models...

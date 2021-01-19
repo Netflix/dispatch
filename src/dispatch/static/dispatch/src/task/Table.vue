@@ -5,11 +5,12 @@
     <div class="headline">Tasks</div>
     <v-spacer />
     <table-filter-dialog />
-    <v-btn color="primary" dark class="ml-2" @click="createEditShow()">New</v-btn>
+    <table-export-dialog />
+    <v-btn color="info" class="ml-2" @click="createEditShow()">New</v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
-          <v-card>
+          <v-card elevation="0">
             <v-card-title>
               <v-text-field
                 v-model="q"
@@ -18,7 +19,6 @@
                 single-line
                 hide-details
                 clearable
-                :loading="loading"
               />
             </v-card-title>
             <v-data-table
@@ -29,37 +29,24 @@
               :items-per-page.sync="itemsPerPage"
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
+              v-model="selected"
+              :loading="loading"
+              loading-text="Loading... Please wait"
+              show-select
             >
-              <template v-slot:item.creator.individual_contact.name="{ item }">
-                <v-chip
-                  v-if="item.creator"
-                  class="ma-2"
-                  pill
-                  small
-                  :href="item.creator.individual.weblink"
-                >
-                  {{ item.creator.individual.name }}
-                </v-chip>
-                <v-chip v-else class="ma-2" pill small>
-                  Unknown
-                </v-chip>
-              </template>
-              <template v-slot:item.owner.individual_contact.name="{ item }">
-                <v-chip
-                  v-if="item.owner"
-                  class="ma-2"
-                  pill
-                  small
-                  :href="item.owner.individual.weblink"
-                >
-                  {{ item.owner.individual.name }}
-                </v-chip>
-                <v-chip v-else class="ma-2" pill small>
-                  Unknown
-                </v-chip>
+              <template v-slot:item.description="{ item }">
+                <div class="text-truncate" style="max-width: 400px">
+                  {{ item.description }}
+                </div>
               </template>
               <template v-slot:item.incident_priority.name="{ item }">
-                {{ item.incident.incident_priority.name }}
+                <incident-priority :priority="item.incident.incident_priority.name" />
+              </template>
+              <template v-slot:item.creator.individual_contact.name="{ item }">
+                <participant :participant="item.creator" />
+              </template>
+              <template v-slot:item.owner.individual_contact.name="{ item }">
+                <participant :participant="item.owner" />
               </template>
               <template v-slot:item.incident_type.name="{ item }">
                 {{ item.incident.incident_type.name }}
@@ -77,16 +64,12 @@
                 </a>
               </template>
               <template v-slot:item.assignees="{ item }">
-                <v-chip
+                <participant
                   v-for="assignee in item.assignees"
                   :key="assignee.id"
-                  class="ma-2"
-                  pill
-                  small
-                  :href="assignee.individual.weblink"
+                  :participant="assignee"
                 >
-                  {{ assignee.individual.name }}
-                </v-chip>
+                </participant>
               </template>
               <template v-slot:item.resolve_by="{ item }">{{
                 item.resolve_by | formatDate
@@ -112,7 +95,7 @@
                   </template>
                   <v-list>
                     <v-list-item @click="createEditShow(item)">
-                      <v-list-item-title>Edit</v-list-item-title>
+                      <v-list-item-title>View / Edit</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>
@@ -122,6 +105,7 @@
         </v-flex>
       </v-layout>
     </v-flex>
+    <bulk-edit-sheet></bulk-edit-sheet>
   </v-layout>
 </template>
 
@@ -131,13 +115,22 @@ import { mapActions } from "vuex"
 import DeleteDialog from "@/task/DeleteDialog.vue"
 import NewEditSheet from "@/task/NewEditSheet.vue"
 import TableFilterDialog from "@/task/TableFilterDialog.vue"
+import BulkEditSheet from "@/task/BulkEditSheet.vue"
+import IncidentPriority from "@/incident/IncidentPriority.vue"
+import Participant from "@/incident/Participant.vue"
+import TableExportDialog from "@/task/TableExportDialog.vue"
+
 export default {
   name: "TaskTable",
 
   components: {
     TableFilterDialog,
     DeleteDialog,
-    NewEditSheet
+    NewEditSheet,
+    BulkEditSheet,
+    IncidentPriority,
+    Participant,
+    TableExportDialog
   },
   data() {
     return {
@@ -175,7 +168,8 @@ export default {
       "table.options.filters.status",
       "table.loading",
       "table.rows.items",
-      "table.rows.total"
+      "table.rows.total",
+      "table.rows.selected"
     ])
   },
 

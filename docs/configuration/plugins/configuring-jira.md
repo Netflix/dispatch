@@ -24,11 +24,10 @@ Dispatch ships with Jira support. Each Jira installation is unique, so you will 
 
 > Password for the Jira service account.
 
-## `JIRA_PROJECT_KEY` \[Required\]
+## `JIRA_PROJECT_ID` \[Required\]
 
-> Key for Jira project.
+> ID for Jira project. You can find the JIRA project like [this](https://community.atlassian.com/t5/Jira-questions/JIRA-Project-ID/qaq-p/193094) or like [this](https://confluence.atlassian.com/jirakb/how-to-get-project-id-from-the-jira-user-interface-827341414.html).
 
-## `JIRA_ISSUE_TYPE_ID` \[Required\]
+## `JIRA_ISSUE_TYPE_NAME` \[Required\]
 
-> Id for Jira issue type.
-
+> Name of the Jira issue type.

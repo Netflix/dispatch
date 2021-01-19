@@ -41,21 +41,36 @@ def create_task_reminders(db_session=None):
     """Creates multiple task reminders."""
     tasks = task_service.get_overdue_tasks(db_session=db_session)
     log.debug(f"New tasks that need reminders. NumTasks: {len(tasks)}")
-    # lets only remind for active incidents for now
+
+    # let's only remind for active incidents for now
     tasks = [t for t in tasks if t.incident.status == IncidentStatus.active]
+
     if tasks:
         contact_fullname = contact_weblink = DISPATCH_HELP_EMAIL
+
         # NOTE INCIDENT_ONCALL_SERVICE_ID is optional
         if INCIDENT_ONCALL_SERVICE_ID:
             oncall_service = service_service.get_by_external_id(
                 db_session=db_session, external_id=INCIDENT_ONCALL_SERVICE_ID
             )
-            oncall_plugin = plugin_service.get_by_slug(
-                db_session=db_session, slug=oncall_service.type
-            )
-            if not oncall_plugin.enabled:
+
+            if not oncall_service:
                 log.warning(
-                    f"Unable to resolve oncall, INCIDENT_ONCALL_SERVICE_ID configured but associated plugin ({oncall_plugin.slug}) is not enabled."
+                    "INCIDENT_ONCALL_SERVICE_ID configured in the .env file, but not found in the database. Did you create the oncall service in the UI?"
+                )
+                return
+
+            oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
+
+            if oncall_plugin.slug != oncall_service.type:
+                log.warning(
+                    f"Unable to resolve the oncall. Oncall plugin enabled not of type {oncall_plugin.slug}."
+                )
+                return
+
+            if not oncall_plugin:
+                log.warning(
+                    f"Unable to resolve the oncall, INCIDENT_ONCALL_SERVICE_ID configured, but associated plugin ({oncall_plugin.slug}) is not enabled."
                 )
                 contact_fullname = "Unknown"
                 contact_weblink = None
@@ -96,7 +111,9 @@ def sync_tasks(db_session, incidents, notify: bool = False):
                 for task in tasks:
                     # we get the task information
                     try:
-                        create_or_update_task(db_session, incident, task["task"], notify=notify)
+                        create_or_update_task(
+                            db_session, incident, task["task"], notify=notify, sync_external=False
+                        )
                     except Exception as e:
                         log.exception(e)
             except Exception as e:

@@ -47,7 +47,7 @@ const getters = {
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
-    commit("SET_TABLE_LOADING", true)
+    commit("SET_TABLE_LOADING", "primary")
     return IncidentPriorityApi.getAll(state.table.options)
       .then(response => {
         commit("SET_TABLE_LOADING", false)
@@ -82,17 +82,17 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "app/SET_SNACKBAR",
-            { text: "IncidentPriority created successfully." },
+            "notification/addBeNotification",
+            { text: "Incident priority created successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
-              text: "IncidentPriority not created. Reason: " + err.response.data.detail,
-              color: "red"
+              text: "Incident priority not created. Reason: " + err.response.data.detail,
+              type: "error"
             },
             { root: true }
           )
@@ -103,17 +103,17 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "app/SET_SNACKBAR",
-            { text: "Incident Priority updated successfully." },
+            "notification/addBeNotification",
+            { text: "Incident priority updated successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
-              text: "Incident Priority not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              text: "Incident priority not updated. Reason: " + err.response.data.detail,
+              type: "error"
             },
             { root: true }
           )
@@ -126,17 +126,17 @@ const actions = {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
-          "app/SET_SNACKBAR",
-          { text: "Incident Priority deleted successfully." },
+          "notification/addBeNotification",
+          { text: "Incident priority deleted successfully.", type: "success" },
           { root: true }
         )
       })
       .catch(err => {
         commit(
-          "app/SET_SNACKBAR",
+          "notification/addBeNotification",
           {
-            text: "Incident Priority not deleted. Reason: " + err.response.data.detail,
-            color: "red"
+            text: "Incident priority not deleted. Reason: " + err.response.data.detail,
+            type: "error"
           },
           { root: true }
         )

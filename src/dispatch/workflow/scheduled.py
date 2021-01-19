@@ -3,7 +3,7 @@ import logging
 from schedule import every
 
 from dispatch.decorators import background_task
-from dispatch.messaging import (
+from dispatch.messaging.strings import (
     INCIDENT_WORKFLOW_UPDATE_NOTIFICATION,
     INCIDENT_WORKFLOW_COMPLETE_NOTIFICATION,
 )

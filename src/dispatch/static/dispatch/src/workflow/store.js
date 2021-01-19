@@ -45,7 +45,7 @@ const getters = {
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
-    commit("SET_TABLE_LOADING", true)
+    commit("SET_TABLE_LOADING", "primary")
     let tableOptions = Object.assign({}, state.table.options)
     delete tableOptions.filters
 
@@ -65,10 +65,14 @@ const actions = {
         tableOptions.ops.push("==")
       })
     })
-    return WorkflowApi.getAll(tableOptions).then(response => {
-      commit("SET_TABLE_LOADING", false)
-      commit("SET_TABLE_ROWS", response.data)
-    })
+    return WorkflowApi.getAll(tableOptions)
+      .then(response => {
+        commit("SET_TABLE_LOADING", false)
+        commit("SET_TABLE_ROWS", response.data)
+      })
+      .catch(() => {
+        commit("SET_TABLE_LOADING", false)
+      })
   }, 200),
   createEditShow({ commit }, workflow) {
     commit("SET_DIALOG_CREATE_EDIT", true)
@@ -94,14 +98,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Workflow created successfully." }, { root: true })
+          commit(
+            "notification/addBeNotification",
+            { text: "Workflow created successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Workflow not created. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -111,14 +119,18 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
-          commit("app/SET_SNACKBAR", { text: "Workflow updated successfully." }, { root: true })
+          commit(
+            "notification/addBeNotification",
+            { text: "Workflow updated successfully.", type: "success" },
+            { root: true }
+          )
         })
         .catch(err => {
           commit(
-            "app/SET_SNACKBAR",
+            "notification/addBeNotification",
             {
               text: "Workflow not updated. Reason: " + err.response.data.detail,
-              color: "red"
+              type: "error"
             },
             { root: true }
           )
@@ -130,14 +142,18 @@ const actions = {
       .then(function() {
         dispatch("closeRemove")
         dispatch("getAll")
-        commit("app/SET_SNACKBAR", { text: "Workflow deleted successfully." }, { root: true })
+        commit(
+          "notification/addBeNotification",
+          { text: "Workflow deleted successfully.", type: "success" },
+          { root: true }
+        )
       })
       .catch(err => {
         commit(
-          "app/SET_SNACKBAR",
+          "notification/addBeNotification",
           {
             text: "Workflow not deleted. Reason: " + err.response.data.detail,
-            color: "red"
+            type: "error"
           },
           { root: true }
         )

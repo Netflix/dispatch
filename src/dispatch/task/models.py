@@ -55,16 +55,16 @@ def default_resolution_time(context):
 assoc_task_assignees = Table(
     "task_assignees",
     Base.metadata,
-    Column("participant_id", Integer, ForeignKey("participant.id")),
-    Column("task_id", Integer, ForeignKey("task.id")),
+    Column("participant_id", Integer, ForeignKey("participant.id", ondelete="CASCADE")),
+    Column("task_id", Integer, ForeignKey("task.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("participant_id", "task_id"),
 )
 
 assoc_task_tickets = Table(
     "task_tickets",
     Base.metadata,
-    Column("ticket_id", Integer, ForeignKey("ticket.id")),
-    Column("task_id", Integer, ForeignKey("task.id")),
+    Column("ticket_id", Integer, ForeignKey("ticket.id", ondelete="CASCADE")),
+    Column("task_id", Integer, ForeignKey("task.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("ticket_id", "task_id"),
 )
 
@@ -84,9 +84,12 @@ class Task(Base, ResourceMixin, TimeStampMixin):
     priority = Column(String, default=TaskPriority.low)
     status = Column(String, default=TaskStatus.open)
     reminders = Column(Boolean, default=True)
-    incident_id = Column(Integer, ForeignKey("incident.id"))
-    search_vector = Column(TSVectorType("description"))
+
+    # relationships
+    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     tickets = relationship("Ticket", secondary=assoc_task_tickets, backref="tasks")
+
+    search_vector = Column(TSVectorType("description"))
 
     @staticmethod
     def _resolved_at(mapper, connection, target):

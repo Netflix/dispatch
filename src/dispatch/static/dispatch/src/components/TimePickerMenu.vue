@@ -19,7 +19,12 @@
         v-on="on"
       ></v-text-field>
     </template>
-    <v-time-picker v-model="time" full-width @click:minute="$refs.menu.save(time)"></v-time-picker>
+    <v-time-picker
+      v-model="time"
+      color="info"
+      full-width
+      @click:minute="$refs.menu.save(time)"
+    ></v-time-picker>
   </v-menu>
 </template>
 

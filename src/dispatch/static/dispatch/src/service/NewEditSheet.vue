@@ -8,13 +8,7 @@
             <v-list-item-title v-else class="title">New</v-list-item-title>
             <v-list-item-subtitle>Service</v-list-item-subtitle>
           </v-list-item-content>
-          <v-btn
-            icon
-            color="primary"
-            :loading="loading"
-            :disabled="invalid || !validated"
-            @click="save()"
-          >
+          <v-btn icon color="info" :disabled="invalid || !validated" @click="save()">
             <v-icon>save</v-icon>
           </v-btn>
           <v-btn icon color="secondary" @click="closeCreateEdit()">
@@ -57,7 +51,6 @@
                   />
                 </ValidationProvider>
               </v-flex>
-              <!-- Disable type (default to pager duty) until we have a way to validate. -->
               <v-flex xs12>
                 <ValidationProvider name="Type" rules="required" immediate>
                   <v-select
@@ -67,7 +60,7 @@
                     :items="oncall_plugins"
                     label="Type"
                     :error-messages="errors"
-                    hint="Oncall plugin to use"
+                    hint="Oncall plugin to use."
                     :success="valid"
                   ></v-select>
                 </ValidationProvider>
@@ -80,7 +73,7 @@
                     label="External Id"
                     :error-messages="errors"
                     :success="valid"
-                    hint="An external identififer for service."
+                    hint="An external identifier for service."
                     clearable
                     required
                   />
@@ -162,7 +155,7 @@ export default {
   },
 
   mounted() {
-    this.loading = true
+    this.loading = "error"
     PluginApi.getByType("oncall").then(response => {
       this.loading = false
       this.oncall_plugins = response.data.items.map(p => p.slug)

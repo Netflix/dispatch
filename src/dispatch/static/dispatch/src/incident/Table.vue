@@ -2,15 +2,16 @@
   <v-layout wrap>
     <edit-sheet />
     <new-sheet />
-    <!--<delete-dialog />-->
+    <delete-dialog />
     <div class="headline">Incidents</div>
     <v-spacer />
     <table-filter-dialog />
-    <v-btn color="primary" dark class="ml-2" @click="showNewSheet()">New</v-btn>
+    <table-export-dialog />
+    <v-btn color="info" class="ml-2" @click="showNewSheet()">New</v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
-          <v-card>
+          <v-card elevation="0">
             <v-card-title>
               <v-text-field
                 v-model="q"
@@ -30,30 +31,22 @@
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
               :loading="loading"
+              v-model="selected"
               loading-text="Loading... Please wait"
+              show-select
             >
+              <template v-slot:item.incident_priority.name="{ item }">
+                <incident-priority :priority="item.incident_priority.name" />
+              </template>
+              <template v-slot:item.status="{ item }">
+                <incident-status :status="item.status" :id="item.id" />
+              </template>
               <template v-slot:item.cost="{ item }">{{ item.cost | toUSD }}</template>
               <template v-slot:item.commander="{ item }">
-                <v-chip
-                  v-if="item.commander"
-                  class="ma-2"
-                  pill
-                  small
-                  :href="item.commander.weblink"
-                >
-                  <div v-if="item.commander">
-                    <div v-if="item.commander.name">{{ item.commander.name }}</div>
-                    <div v-else>{{ item.commander.email }}</div>
-                  </div>
-                </v-chip>
+                <incident-participant :participant="item.commander" />
               </template>
               <template v-slot:item.reporter="{ item }">
-                <v-chip v-if="item.reporter" class="ma-2" pill small :href="item.reporter.weblink">
-                  <div v-if="item.reporter">
-                    <div v-if="item.reporter.name">{{ item.reporter.name }}</div>
-                    <div v-else>{{ item.reporter.email }}</div>
-                  </div>
-                </v-chip>
+                <incident-participant :participant="item.reporter" />
               </template>
               <template v-slot:item.reported_at="{ item }">{{
                 item.reported_at | formatDate
@@ -67,7 +60,10 @@
                   </template>
                   <v-list>
                     <v-list-item @click="showEditSheet(item)">
-                      <v-list-item-title>Edit</v-list-item-title>
+                      <v-list-item-title>View / Edit</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="showDeleteDialog(item)">
+                      <v-list-item-title>Delete</v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </v-menu>
@@ -77,22 +73,35 @@
         </v-flex>
       </v-layout>
     </v-flex>
+    <bulk-edit-sheet></bulk-edit-sheet>
   </v-layout>
 </template>
 
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import TableFilterDialog from "@/incident/TableFilterDialog.vue"
+import BulkEditSheet from "@/incident/BulkEditSheet.vue"
+import DeleteDialog from "@/incident/DeleteDialog.vue"
 import EditSheet from "@/incident/EditSheet.vue"
+import IncidentParticipant from "@/incident/Participant.vue"
+import IncidentPriority from "@/incident/IncidentPriority.vue"
+import IncidentStatus from "@/incident/IncidentStatus.vue"
 import NewSheet from "@/incident/NewSheet.vue"
+import TableExportDialog from "@/incident/TableExportDialog.vue"
+import TableFilterDialog from "@/incident/TableFilterDialog.vue"
 
 export default {
   name: "IncidentTable",
 
   components: {
+    BulkEditSheet,
+    DeleteDialog,
     EditSheet,
+    IncidentParticipant,
+    IncidentPriority,
+    IncidentStatus,
     NewSheet,
+    TableExportDialog,
     TableFilterDialog
   },
 
@@ -101,15 +110,13 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Id", value: "name", align: "left", width: "10%" },
+        { text: "Name", value: "name", align: "left", width: "10%" },
         { text: "Title", value: "title", sortable: false },
-        { text: "Status", value: "status", width: "10%" },
-        { text: "Visibility", value: "visibility", width: "10%" },
+        { text: "Status", value: "status" },
         { text: "Type", value: "incident_type.name" },
         { text: "Priority", value: "incident_priority.name", width: "10%" },
         { text: "Cost", value: "cost" },
         { text: "Commander", value: "commander", sortable: false },
-        { text: "Reporter", value: "reporter", sortable: false },
         { text: "Reported At", value: "reported_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
@@ -131,7 +138,8 @@ export default {
       "table.options.descending",
       "table.loading",
       "table.rows.items",
-      "table.rows.total"
+      "table.rows.total",
+      "table.rows.selected"
     ])
   },
 
@@ -170,7 +178,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident", ["getAll", "showNewSheet", "showEditSheet", "removeShow"])
+    ...mapActions("incident", ["getAll", "showNewSheet", "showEditSheet", "showDeleteDialog"])
   }
 }
 </script>
