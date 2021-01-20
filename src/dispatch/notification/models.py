@@ -7,7 +7,6 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
 from dispatch.policy.models import PolicyCreate, PolicyRead, PolicyUpdate
-from dispatch.term.models import TermCreate, TermRead, TermUpdate
 
 from dispatch.models import DispatchBase, TimeStampMixin
 
