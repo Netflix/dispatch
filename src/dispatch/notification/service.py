@@ -19,7 +19,7 @@ def get_all(*, db_session):
 
 def create(*, db_session, notification_in: NotificationCreate) -> Notification:
     """Creates a new notification."""
-    policy = policy_service.get_by_name(db_session=db_session, text=notification_in.policy.name)
+    policy = policy_service.get_by_name(db_session=db_session, name=notification_in.policy.name)
 
     notification = Notification(
         **notification_in.dict(exclude={"policy"}),
@@ -37,7 +37,7 @@ def update(
     """Updates a notification."""
     notification_data = jsonable_encoder(notification)
 
-    policy = policy_service.get_by_name(db_session=db_session, text=notification_in.policy.name)
+    policy = policy_service.get_by_name(db_session=db_session, name=notification_in.policy.name)
 
     update_data = notification_in.dict(
         skip_defaults=True,
