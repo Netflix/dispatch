@@ -63,6 +63,7 @@ export default {
             show: false
           }
         },
+        colors: ["#008FFB", "#00E396", "#FEB019", "#FF4560", "#775DD0", "#546E7A", "#4ECDC4"],
         responsive: [
           {
             options: {
