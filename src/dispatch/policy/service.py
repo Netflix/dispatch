@@ -35,7 +35,7 @@ def create(*, db_session, policy_in: PolicyCreate) -> Policy:
 
 def create_all(*, db_session, policies_in: List[PolicyCreate]) -> List[Policy]:
     """Creates all policies."""
-    policies = [Policy(text=d.text) for d in policies_in]
+    policies = [Policy(name=p.name) for p in policies_in]
     db_session.bulk_save_insert(policies)
     db_session.commit()
     db_session.refresh()
