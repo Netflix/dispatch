@@ -1,55 +1,15 @@
 from datetime import datetime
 from typing import Optional, List
 
-from sqlalchemy import Column, Integer, String, ForeignKey, Table, PrimaryKeyConstraint
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
-from dispatch.incident_priority.models import (
-    IncidentPriorityCreate,
-    IncidentPriorityRead,
-    IncidentPriorityUpdate,
-)
-from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeUpdate
-from dispatch.tag.models import TagCreate, TagRead, TagUpdate
+from dispatch.policy.models import PolicyCreate, PolicyRead, PolicyUpdate
 from dispatch.term.models import TermCreate, TermRead, TermUpdate
 
 from dispatch.models import DispatchBase, TimeStampMixin
-
-
-# Association tables for many-to-many relationships
-notification_incident_type_assoc_table = Table(
-    "notification_incident_type",
-    Base.metadata,
-    Column("notification_id", Integer, ForeignKey("notification.id", ondelete="CASCADE")),
-    Column("incident_type_id", Integer, ForeignKey("incident_type.id", ondelete="CASCADE")),
-    PrimaryKeyConstraint("notification_id", "incident_type_id"),
-)
-
-notification_incident_priority_assoc_table = Table(
-    "notification_incident_priority",
-    Base.metadata,
-    Column("notification_id", Integer, ForeignKey("notification.id", ondelete="CASCADE")),
-    Column("incident_priority_id", Integer, ForeignKey("incident_priority.id", ondelete="CASCADE")),
-    PrimaryKeyConstraint("notification_id", "incident_priority_id"),
-)
-
-notification_tag_assoc_table = Table(
-    "notification_tag",
-    Base.metadata,
-    Column("notification_id", Integer, ForeignKey("notification.id", ondelete="CASCADE")),
-    Column("tag_id", Integer, ForeignKey("tag.id", ondelete="CASCADE")),
-    PrimaryKeyConstraint("notification_id", "tag_id"),
-)
-
-notification_term_assoc_table = Table(
-    "notification_term",
-    Base.metadata,
-    Column("notification_id", Integer, ForeignKey("notification.id", ondelete="CASCADE")),
-    Column("term_id", Integer, ForeignKey("term.id", ondelete="CASCADE")),
-    PrimaryKeyConstraint("notification_id", "term_id"),
-)
 
 
 class Notification(Base, TimeStampMixin):
@@ -59,20 +19,13 @@ class Notification(Base, TimeStampMixin):
     description = Column(String)
     type = Column(String)
     target = Column(String)
+    enabled = Column(Boolean, default=True)
 
     # Relationships
-    incident_types = relationship(
-        "IncidentType", secondary=notification_incident_type_assoc_table, backref="notifications"
-    )
-    incident_priorities = relationship(
-        "IncidentPriority",
-        secondary=notification_incident_priority_assoc_table,
-        backref="notifications",
-    )
-    tags = relationship("Tag", secondary=notification_tag_assoc_table, backref="notifications")
-    terms = relationship("Term", secondary=notification_term_assoc_table, backref="notifications")
+    policy_id = Column(Integer, ForeignKey("policy.id"))
+    policy = relationship("Policy", backref="notifications")
 
-    search_vector = Column(TSVectorType("conversation_name", "conversation_description"))
+    search_vector = Column(TSVectorType("name", "description"))
 
 
 # Pydantic models
@@ -81,30 +34,22 @@ class NotificationBase(DispatchBase):
     description: Optional[str] = None
     type: str
     target: str
+    enabled: Optional[bool]
 
 
 class NotificationCreate(NotificationBase):
-    incident_types: Optional[List[IncidentTypeCreate]] = []
-    incident_priorities: Optional[List[IncidentPriorityCreate]] = []
-    tags: Optional[List[TagCreate]] = []
-    terms: Optional[List[TermCreate]] = []
+    policy: PolicyCreate
 
 
 class NotificationUpdate(NotificationBase):
-    incident_types: Optional[List[IncidentTypeUpdate]] = []
-    incident_priorities: Optional[List[IncidentPriorityUpdate]] = []
-    tags: Optional[List[TagUpdate]] = []
-    terms: Optional[List[TermUpdate]] = []
+    policy: Optional[PolicyUpdate]
 
 
 class NotificationRead(NotificationBase):
     id: int
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-    incident_types: Optional[List[IncidentTypeRead]] = []
-    incident_priorities: Optional[List[IncidentPriorityRead]] = []
-    tags: Optional[List[TagRead]] = []
-    terms: Optional[List[TermRead]] = []
+    policy: Optional[PolicyRead]
 
 
 class NotificationPagination(DispatchBase):
