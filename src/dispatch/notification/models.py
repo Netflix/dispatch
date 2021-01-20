@@ -12,7 +12,6 @@ from dispatch.incident_priority.models import (
     IncidentPriorityUpdate,
 )
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeUpdate
-from dispatch.plugin.models import PluginCreate, PluginRead, PluginUpdate
 from dispatch.tag.models import TagCreate, TagRead, TagUpdate
 from dispatch.term.models import TermCreate, TermRead, TermUpdate
 
@@ -34,14 +33,6 @@ notification_incident_priority_assoc_table = Table(
     Column("notification_id", Integer, ForeignKey("notification.id", ondelete="CASCADE")),
     Column("incident_priority_id", Integer, ForeignKey("incident_priority.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("notification_id", "incident_priority_id"),
-)
-
-notification_plugin_assoc_table = Table(
-    "notification_plugin",
-    Base.metadata,
-    Column("notification_id", Integer, ForeignKey("notification.id", ondelete="CASCADE")),
-    Column("plugin_id", Integer, ForeignKey("plugin.id", ondelete="CASCADE")),
-    PrimaryKeyConstraint("notification_id", "plugin_id"),
 )
 
 notification_tag_assoc_table = Table(
@@ -67,6 +58,7 @@ class Notification(Base, TimeStampMixin):
     name = Column(String)
     description = Column(String)
     type = Column(String)
+    target = Column(String)
 
     # Relationships
     incident_types = relationship(
@@ -76,9 +68,6 @@ class Notification(Base, TimeStampMixin):
         "IncidentPriority",
         secondary=notification_incident_priority_assoc_table,
         backref="notifications",
-    )
-    plugins = relationship(
-        "Plugin", secondary=notification_plugin_assoc_table, backref="notifications"
     )
     tags = relationship("Tag", secondary=notification_tag_assoc_table, backref="notifications")
     terms = relationship("Term", secondary=notification_term_assoc_table, backref="notifications")
@@ -91,12 +80,12 @@ class NotificationBase(DispatchBase):
     name: str
     description: Optional[str] = None
     type: str
+    target: str
 
 
 class NotificationCreate(NotificationBase):
     incident_types: Optional[List[IncidentTypeCreate]] = []
     incident_priorities: Optional[List[IncidentPriorityCreate]] = []
-    plugins: Optional[List[PluginCreate]] = []
     tags: Optional[List[TagCreate]] = []
     terms: Optional[List[TermCreate]] = []
 
@@ -104,7 +93,6 @@ class NotificationCreate(NotificationBase):
 class NotificationUpdate(NotificationBase):
     incident_types: Optional[List[IncidentTypeUpdate]] = []
     incident_priorities: Optional[List[IncidentPriorityUpdate]] = []
-    plugins: Optional[List[PluginUpdate]] = []
     tags: Optional[List[TagUpdate]] = []
     terms: Optional[List[TermUpdate]] = []
 
@@ -115,7 +103,6 @@ class NotificationRead(NotificationBase):
     updated_at: Optional[datetime] = None
     incident_types: Optional[List[IncidentTypeRead]] = []
     incident_priorities: Optional[List[IncidentPriorityRead]] = []
-    plugins: Optional[List[PluginRead]] = []
     tags: Optional[List[TagRead]] = []
     terms: Optional[List[TermRead]] = []
 

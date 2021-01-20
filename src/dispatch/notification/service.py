@@ -4,7 +4,6 @@ from typing import Optional
 
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
-from dispatch.plugin import service as plugin_service
 from dispatch.tag import service as tag_service
 from dispatch.term import service as term_service
 
@@ -31,10 +30,6 @@ def create(*, db_session, notification_in: NotificationCreate) -> Notification:
         incident_priority_service.get_by_name(db_session=db_session, name=n.name)
         for n in notification_in.incident_priorities
     ]
-    plugins = [
-        plugin_service.get_by_name(db_session=db_session, name=n.name)
-        for n in notification_in.plugins
-    ]
     tags = [
         tag_service.get_by_name(db_session=db_session, name=n.name) for n in notification_in.tags
     ]
@@ -43,12 +38,9 @@ def create(*, db_session, notification_in: NotificationCreate) -> Notification:
     ]
 
     notification = Notification(
-        **notification_in.dict(
-            exclude={"incident_types", "incident_priorities", "plugins", "tags", "terms"}
-        ),
+        **notification_in.dict(exclude={"incident_types", "incident_priorities", "tags", "terms"}),
         incident_types=incident_types,
         incident_priorities=incident_priorities,
-        plugins=plugins,
         tags=tags,
         terms=terms,
     )
@@ -72,10 +64,6 @@ def update(
         incident_priority_service.get_by_name(db_session=db_session, name=n.name)
         for n in notification_in.incident_priorities
     ]
-    plugins = [
-        plugin_service.get_by_name(db_session=db_session, name=n.name)
-        for n in notification_in.plugins
-    ]
     tags = [
         tag_service.get_by_name(db_session=db_session, name=n.name) for n in notification_in.tags
     ]
@@ -85,7 +73,7 @@ def update(
 
     update_data = notification_in.dict(
         skip_defaults=True,
-        exclude={"incident_types", "incident_priorities", "plugins", "tags", "terms"},
+        exclude={"incident_types", "incident_priorities", "tags", "terms"},
     )
 
     for field in notification_data:
@@ -94,7 +82,6 @@ def update(
 
     notification.incident_types = incident_types
     notification.incident_priorities = incident_priorities
-    notification.plugins = plugins
     notification.tags = tags
     notification.terms = terms
     db_session.add(notification)
