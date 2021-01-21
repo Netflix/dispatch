@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
-from dispatch.policy.models import PolicyCreate, PolicyRead, PolicyUpdate
+from dispatch.search.models import SearchFilterCreate, SearchFilterRead, SearchFilterUpdate
 
 from dispatch.models import DispatchBase, TimeStampMixin
 
@@ -21,8 +21,8 @@ class Notification(Base, TimeStampMixin):
     enabled = Column(Boolean, default=True)
 
     # Relationships
-    policy_id = Column(Integer, ForeignKey("policy.id"))
-    policy = relationship("Policy", backref="notifications")
+    search_filter_id = Column(Integer, ForeignKey("search_filter.id"))
+    search_filter = relationship("SearchFilter", backref="notifications")
 
     search_vector = Column(TSVectorType("name", "description"))
 
@@ -37,18 +37,18 @@ class NotificationBase(DispatchBase):
 
 
 class NotificationCreate(NotificationBase):
-    policy: PolicyCreate
+    search_filter: SearchFilterCreate
 
 
 class NotificationUpdate(NotificationBase):
-    policy: Optional[PolicyUpdate]
+    search_filter: Optional[SearchFilterUpdate]
 
 
 class NotificationRead(NotificationBase):
     id: int
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-    policy: Optional[PolicyRead]
+    search_filter: Optional[SearchFilterRead]
 
 
 class NotificationPagination(DispatchBase):

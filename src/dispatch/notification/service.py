@@ -1,8 +1,7 @@
-from datetime import datetime, timedelta
 from fastapi.encoders import jsonable_encoder
 from typing import Optional
 
-from dispatch.policy import service as policy_service
+from dispatch.search import service as search_service
 
 from .models import Notification, NotificationCreate, NotificationUpdate
 
@@ -19,11 +18,13 @@ def get_all(*, db_session):
 
 def create(*, db_session, notification_in: NotificationCreate) -> Notification:
     """Creates a new notification."""
-    policy = policy_service.get_by_name(db_session=db_session, name=notification_in.policy.name)
+    search_filter = search_service.get_by_name(
+        db_session=db_session, name=notification_in.policy.name
+    )
 
     notification = Notification(
-        **notification_in.dict(exclude={"policy"}),
-        policy=policy,
+        **notification_in.dict(exclude={"search_filter"}),
+        search_filter=search_filter,
     )
 
     db_session.add(notification)
@@ -37,7 +38,9 @@ def update(
     """Updates a notification."""
     notification_data = jsonable_encoder(notification)
 
-    policy = policy_service.get_by_name(db_session=db_session, name=notification_in.policy.name)
+    search_filter = search_service.get_by_name(
+        db_session=db_session, name=notification_in.policy.name
+    )
 
     update_data = notification_in.dict(
         skip_defaults=True,
@@ -48,7 +51,7 @@ def update(
         if field in update_data:
             setattr(notification, field, update_data[field])
 
-    notification.policy = policy
+    notification.search_filter = search_filter
     db_session.add(notification)
     db_session.commit()
     return notification
