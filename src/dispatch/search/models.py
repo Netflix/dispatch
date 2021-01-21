@@ -1,7 +1,14 @@
 from typing import List, Optional
-from pydantic import Field
 
+from pydantic import Field
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql.sqltypes import JSON
+from sqlalchemy_utils import TSVectorType
+
+from dispatch.database import Base
 from dispatch.models import DispatchBase
+
 
 from dispatch.incident.models import IncidentReadNested
 from dispatch.tag.models import TagRead
@@ -12,6 +19,46 @@ from dispatch.team.models import TeamContactRead
 from dispatch.service.models import ServiceRead
 from dispatch.document.models import DocumentRead
 from dispatch.task.models import TaskRead
+
+
+class SearchFilter(Base):
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+    description = Column(String)
+    expression = Column(JSON)
+
+    creator_id = Column(Integer, ForeignKey("dispatch_user.id"))
+    creator = relationship("DispatchUser", backref="search_filters")
+    type = Column(String)
+
+    search_vector = Column(
+        TSVectorType("name", "description", weights={"name": "A", "description": "B"})
+    )
+
+
+# Pydantic models...
+class SearchFilterBase(DispatchBase):
+    expression: str
+    name: Optional[str]
+    type: Optional[str]
+    description: Optional[str]
+
+
+class SearchFilterCreate(SearchFilterBase):
+    pass
+
+
+class SearchFilterUpdate(SearchFilterBase):
+    id: int
+
+
+class SearchFilterRead(SearchFilterBase):
+    id: int
+
+
+class SearchFilterPagination(DispatchBase):
+    items: List[SearchFilterRead]
+    total: int
 
 
 # Pydantic models...
