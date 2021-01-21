@@ -19,7 +19,7 @@ def get_all(*, db_session):
 def create(*, db_session, notification_in: NotificationCreate) -> Notification:
     """Creates a new notification."""
     search_filter = search_service.get_by_name(
-        db_session=db_session, name=notification_in.policy.name
+        db_session=db_session, name=notification_in.search_filter.name
     )
 
     notification = Notification(
