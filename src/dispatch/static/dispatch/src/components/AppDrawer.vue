@@ -89,6 +89,7 @@ export default {
         items: [
           { title: "Incident Priorities", route: "/configuration/incidentPriorities" },
           { title: "Incident Types", route: "/configuration/incidentTypes" },
+          { title: "Notifications", route: "/configuration/notifications" },
           { title: "Plugins", route: "/configuration/plugins" },
           { title: "Tag Types", route: "/configuration/tagTypes" },
           { title: "Users", route: "/configuration/users" },

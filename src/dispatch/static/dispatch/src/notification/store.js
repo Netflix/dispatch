@@ -1,7 +1,7 @@
 import NotificationApi from "@/notification/api"
 
 import { getField, updateField } from "vuex-map-fields"
-import { debounce, forEach, each, has } from "lodash"
+import { debounce } from "lodash"
 
 const getDefaultSelectedState = () => {
   return {
@@ -30,12 +30,6 @@ const state = {
       total: null
     },
     options: {
-      filters: {
-        name: [],
-        type: [],
-        target: [],
-        policy: []
-      },
       q: "",
       page: 1,
       itemsPerPage: 10,
@@ -53,29 +47,14 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    let tableOptions = Object.assign({}, state.table.options)
-    delete tableOptions.filters
-
-    tableOptions.fields = []
-    tableOptions.ops = []
-    tableOptions.values = []
-
-    forEach(state.table.options.filters, function(value, key) {
-      each(value, function(value) {
-        if (has(value, "id")) {
-          tableOptions.fields.push(key + ".id")
-          tableOptions.values.push(value.id)
-        } else {
-          tableOptions.fields.push(key)
-          tableOptions.values.push(value)
-        }
-        tableOptions.ops.push("==")
+    return NotificationApi.getAll(state.table.options)
+      .then(response => {
+        commit("SET_TABLE_LOADING", false)
+        commit("SET_TABLE_ROWS", response.data)
       })
-    })
-    return NotificationApi.getAll(tableOptions).then(response => {
-      commit("SET_TABLE_LOADING", false)
-      commit("SET_TABLE_ROWS", response.data)
-    })
+      .catch(() => {
+        commit("SET_TABLE_LOADING", false)
+      })
   }, 200),
   createEditShow({ commit }, notification) {
     commit("SET_DIALOG_CREATE_EDIT", true)
