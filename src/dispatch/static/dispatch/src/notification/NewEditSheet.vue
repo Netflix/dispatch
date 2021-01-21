@@ -91,9 +91,6 @@
                   label="Enabled"
                 />
               </v-flex>
-              <!-- <v&#45;flex xs12> -->
-              <!--   <policy&#45;select v&#45;model="policy" /> -->
-              <!-- </v&#45;flex> -->
             </v-layout>
           </v-container>
         </v-card-text>
@@ -107,7 +104,6 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
-// import PolicySelect from "@/policy/PolicySelect.vue"
 
 extend("required", {
   ...required,
@@ -120,7 +116,6 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider
-    // PolicySelect
   },
 
   computed: {
@@ -130,7 +125,7 @@ export default {
       "selected.type",
       "selected.target",
       "selected.enabled",
-      "selected.policy",
+      "selected.search_filter",
       "selected.id",
       "selected.loading",
       "dialogs.showCreateEdit"

@@ -30,9 +30,6 @@
               :loading="loading"
               loading-text="Loading... Please wait"
             >
-              <!-- <template v&#45;slot:item.policy="{ item }"> -->
-              <!--   <policy :policy="item.policy" /> -->
-              <!-- </template> -->
               <template v-slot:item.enabled="{ item }">
                 <v-simple-checkbox v-model="item.enabled" disabled></v-simple-checkbox>
               </template>
@@ -69,14 +66,12 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import DeleteDialog from "@/notification/DeleteDialog.vue"
 import NewEditSheet from "@/notification/NewEditSheet.vue"
-// import Policy from "@/incident/Participant.vue"
 export default {
   name: "NotificationTable",
 
   components: {
     DeleteDialog,
     NewEditSheet
-    // Policy,
   },
   data() {
     return {
@@ -85,7 +80,7 @@ export default {
         { text: "Description", value: "description", sortable: false },
         { text: "Type", value: "type", sortable: false },
         { text: "Target", value: "target", sortable: false },
-        { text: "Policy", value: "policy", sortable: true },
+        { text: "Search Filter", value: "searchFilter", sortable: true },
         { text: "Enabled", value: "enabled", sortable: false },
         { text: "Created At", value: "created_at", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }

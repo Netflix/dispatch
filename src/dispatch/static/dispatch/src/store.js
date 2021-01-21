@@ -13,7 +13,6 @@ import individual from "@/individual/store"
 import notification from "@/notification/store"
 import notification_backend from "@/app/notificationStore"
 import plugin from "@/plugin/store"
-import policy from "@/policy/store"
 import route from "@/route/store"
 import search from "@/search/store"
 import service from "@/service/store"
@@ -40,7 +39,6 @@ export default new Vuex.Store({
     notification,
     notification_backend,
     plugin,
-    policy,
     route,
     search,
     service,

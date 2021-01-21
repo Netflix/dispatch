@@ -53,7 +53,7 @@ def search(
     return SearchResponse(**{"query": q, "results": results}).dict(by_alias=False)
 
 
-@router.get("/", response_model=SearchFilterPagination)
+@router.get("/filters", response_model=SearchFilterPagination)
 def get_filters(
     db_session: Session = Depends(get_db), page: int = 0, itemsPerPage: int = 5, q: str = None
 ):
@@ -70,7 +70,7 @@ def get_filters(
     return {"items": items, "total": total}
 
 
-@router.post("/", response_model=SearchFilterRead)
+@router.post("/filters", response_model=SearchFilterRead)
 def create_search_filter(
     *, db_session: Session = Depends(get_db), search_filter_in: SearchFilterCreate
 ):
@@ -82,7 +82,7 @@ def create_search_filter(
     return search_filter
 
 
-@router.put("/{search_filter_id}", response_model=SearchFilterRead)
+@router.put("/filters/{search_filter_id}", response_model=SearchFilterRead)
 def update_search_filter(
     *,
     db_session: Session = Depends(get_db),
@@ -101,7 +101,7 @@ def update_search_filter(
     return search_filter
 
 
-@router.delete("/{search_filter_id}")
+@router.delete("/filters/{search_filter_id}")
 def delete_filter(*, db_session: Session = Depends(get_db), search_filter_id: int):
     """
     Delete a search filter.
