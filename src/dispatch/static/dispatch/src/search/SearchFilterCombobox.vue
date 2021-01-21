@@ -15,8 +15,7 @@
         <v-list-item-content>
           <v-list-item-title>
             No filters matching "
-            <strong>{{ search }}</strong
-            >". Press <kbd>enter</kbd> to create a new one.
+            <strong>{{ search }}</strong>
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>

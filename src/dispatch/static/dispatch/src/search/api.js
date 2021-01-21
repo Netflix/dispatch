@@ -7,7 +7,7 @@ export default {
     return API.get(`${resource}`, { params: { q: query, models: models } })
   },
   getAllFilters(options) {
-    return API.get(`${resource}/filters/`, { params: { ...options } })
+    return API.get(`${resource}/filters`, { params: { ...options } })
   },
 
   get(searchFilterId) {

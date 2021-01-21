@@ -1,12 +1,19 @@
 import SearchApi from "@/search/api"
+import { getField, updateField } from "vuex-map-fields"
+
 const state = {
   results: [],
   query: "",
   models: [],
+  dialogs: {
+    showCreate: false
+  },
   loading: false
 }
 
-const getters = {}
+const getters = {
+  getField
+}
 
 const actions = {
   setQuery({ commit }, query) {
@@ -33,10 +40,17 @@ const actions = {
         )
         commit("SET_LOADING", false)
       })
+  },
+  showCreateDialog({ commit }) {
+    commit("SET_DIALOG_SHOW_CREATE", true)
+  },
+  closeCreateDialog({ commit }) {
+    commit("SET_DIALOG_SHOW_CREATE", false)
   }
 }
 
 const mutations = {
+  updateField,
   SET_LOADING(state, value) {
     state.loading = value
   },
@@ -48,6 +62,9 @@ const mutations = {
   },
   SET_MODELS(state, models) {
     state.models = models
+  },
+  SET_DIALOG_SHOW_CREATE(state, value) {
+    state.dialogs.showCreate = value
   }
 }
 

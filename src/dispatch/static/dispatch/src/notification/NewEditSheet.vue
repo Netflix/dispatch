@@ -85,6 +85,13 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
+                <search-filter-combobox
+                  v-model="search_filters"
+                  hint="Select one or more filters that will determine when notification is sent."
+                />
+                <search-filter-create-dialog />
+              </v-flex>
+              <v-flex xs12>
                 <v-checkbox
                   v-model="enabled"
                   hint="Whether the notification is enabled or not."
@@ -104,6 +111,8 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
+import SearchFilterCombobox from "@/search/SearchFilterCombobox.vue"
+import SearchFilterCreateDialog from "@/search/SearchFilterCreateDialog.vue"
 
 extend("required", {
   ...required,
@@ -115,7 +124,9 @@ export default {
 
   components: {
     ValidationObserver,
-    ValidationProvider
+    ValidationProvider,
+    SearchFilterCombobox,
+    SearchFilterCreateDialog
   },
 
   computed: {
@@ -125,7 +136,7 @@ export default {
       "selected.type",
       "selected.target",
       "selected.enabled",
-      "selected.search_filter",
+      "selected.search_filters",
       "selected.id",
       "selected.loading",
       "dialogs.showCreateEdit"
