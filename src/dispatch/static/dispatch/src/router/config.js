@@ -142,6 +142,12 @@ export const protectedRoute = [
           import(/* webpackChunkName: "routing-table" */ "@/incident_priority/Table.vue")
       },
       {
+        path: "/configuration/notifications",
+        name: "NotificationTable",
+        meta: { title: "Notifications" },
+        component: () => import(/* webpackChunkName: "routing-table" */ "@/notification/Table.vue")
+      },
+      {
         path: "/configuration/plugins",
         name: "PluginTable",
         meta: { title: "Plugins" },
