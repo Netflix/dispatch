@@ -6,33 +6,44 @@ from .dsl import build_parser
 
 
 def get(*, db_session, policy_id: int) -> Optional[Policy]:
+    """Gets a policy by id."""
     return db_session.query(Policy).filter(Policy.id == policy_id).first()
 
 
-def get_by_text(*, db_session, text: str) -> Optional[Policy]:
-    return db_session.query(Policy).filter(Policy.text == text).first()
+def get_by_name(*, db_session, name: str) -> Optional[Policy]:
+    """Gets a policy by name."""
+    return db_session.query(Policy).filter(Policy.name == name).first()
+
+
+def get_by_expression(*, db_session, expression: str) -> Optional[Policy]:
+    """Gets a policy by expression."""
+    return db_session.query(Policy).filter(Policy.expression == expression).one_or_none()
 
 
 def get_all(*, db_session):
+    """Gets all policies."""
     return db_session.query(Policy)
 
 
 def create(*, db_session, policy_in: PolicyCreate) -> Policy:
+    """Creates a new policy."""
     policy = Policy(**policy_in.dict())
     db_session.add(policy)
     db_session.commit()
     return policy
 
 
-def create_all(*, db_session, policys_in: List[PolicyCreate]) -> List[Policy]:
-    policys = [Policy(text=d.text) for d in policys_in]
-    db_session.bulk_save_insert(policys)
+def create_all(*, db_session, policies_in: List[PolicyCreate]) -> List[Policy]:
+    """Creates all policies."""
+    policies = [Policy(name=p.name) for p in policies_in]
+    db_session.bulk_save_insert(policies)
     db_session.commit()
     db_session.refresh()
-    return policys
+    return policies
 
 
 def update(*, db_session, policy: Policy, policy_in: PolicyUpdate) -> Policy:
+    """Updates a policy."""
     policy_data = jsonable_encoder(policy)
     update_data = policy_in.dict(skip_defaults=True)
 
@@ -46,7 +57,8 @@ def update(*, db_session, policy: Policy, policy_in: PolicyUpdate) -> Policy:
 
 
 def create_or_update(*, db_session, policy_in: PolicyCreate) -> Policy:
-    update_data = policy_in.dict(skip_defaults=True, exclude={"terms"})
+    """Creates or updates a policy."""
+    update_data = policy_in.dict(skip_defaults=True)
 
     q = db_session.query(Policy)
     for attr, value in update_data.items():
@@ -61,12 +73,13 @@ def create_or_update(*, db_session, policy_in: PolicyCreate) -> Policy:
 
 
 def parse(policy: str) -> dict:
-    sample = "footbar eq 123 or bar eq blah"
+    """Parse a policy."""
     query = build_parser()
-    return query.parseString(sample, parseAll=True)
+    return query.parseString(policy, parseAll=True)
 
 
 def delete(*, db_session, policy_id: int):
+    """Delets a policy."""
     policy = db_session.query(Policy).filter(Policy.id == policy_id).first()
     db_session.delete(policy)
     db_session.commit()
