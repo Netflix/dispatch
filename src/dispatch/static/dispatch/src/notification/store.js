@@ -1,16 +1,17 @@
-import WorkflowApi from "@/workflow/api"
+import NotificationApi from "@/notification/api"
 
 import { getField, updateField } from "vuex-map-fields"
-import { debounce, forEach, each, has } from "lodash"
+import { debounce } from "lodash"
 
 const getDefaultSelectedState = () => {
   return {
-    description: null,
-    enabled: null,
-    resource_id: null,
-    parameters: [],
-    name: null,
     id: null,
+    name: null,
+    description: null,
+    type: null,
+    target: null,
+    enabled: null,
+    policy: null,
     loading: false
   }
 }
@@ -29,11 +30,11 @@ const state = {
       total: null
     },
     options: {
-      filters: {},
       q: "",
       page: 1,
       itemsPerPage: 10,
-      descending: [false]
+      sortBy: ["created_at"],
+      descending: [true]
     },
     loading: false
   }
@@ -46,26 +47,7 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    let tableOptions = Object.assign({}, state.table.options)
-    delete tableOptions.filters
-
-    tableOptions.fields = []
-    tableOptions.ops = []
-    tableOptions.values = []
-
-    forEach(state.table.options.filters, function(value, key) {
-      each(value, function(value) {
-        if (has(value, "id")) {
-          tableOptions.fields.push(key + ".id")
-          tableOptions.values.push(value.id)
-        } else {
-          tableOptions.fields.push(key)
-          tableOptions.values.push(value)
-        }
-        tableOptions.ops.push("==")
-      })
-    })
-    return WorkflowApi.getAll(tableOptions)
+    return NotificationApi.getAll(state.table.options)
       .then(response => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
@@ -74,15 +56,15 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 200),
-  createEditShow({ commit }, workflow) {
+  createEditShow({ commit }, notification) {
     commit("SET_DIALOG_CREATE_EDIT", true)
-    if (workflow) {
-      commit("SET_SELECTED", workflow)
+    if (notification) {
+      commit("SET_SELECTED", notification)
     }
   },
-  removeShow({ commit }, workflow) {
+  removeShow({ commit }, notification) {
     commit("SET_DIALOG_DELETE", true)
-    commit("SET_SELECTED", workflow)
+    commit("SET_SELECTED", notification)
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
@@ -94,13 +76,13 @@ const actions = {
   },
   save({ commit, dispatch }) {
     if (!state.selected.id) {
-      return WorkflowApi.create(state.selected)
+      return NotificationApi.create(state.selected)
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Workflow created successfully.", type: "success" },
+            { text: "Notification created successfully.", type: "success" },
             { root: true }
           )
         })
@@ -108,20 +90,20 @@ const actions = {
           commit(
             "notification_backend/addBeNotification",
             {
-              text: "Workflow not created. Reason: " + err.response.data.detail,
+              text: "Notification not created. Reason: " + err.response.data.detail,
               type: "error"
             },
             { root: true }
           )
         })
     } else {
-      return WorkflowApi.update(state.selected.id, state.selected)
+      return NotificationApi.update(state.selected.id, state.selected)
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Workflow updated successfully.", type: "success" },
+            { text: "Notification updated successfully.", type: "success" },
             { root: true }
           )
         })
@@ -129,7 +111,7 @@ const actions = {
           commit(
             "notification_backend/addBeNotification",
             {
-              text: "Workflow not updated. Reason: " + err.response.data.detail,
+              text: "Notification not updated. Reason: " + err.response.data.detail,
               type: "error"
             },
             { root: true }
@@ -138,13 +120,13 @@ const actions = {
     }
   },
   remove({ commit, dispatch }) {
-    return WorkflowApi.delete(state.selected.id)
+    return NotificationApi.delete(state.selected.id)
       .then(function() {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
           "notification_backend/addBeNotification",
-          { text: "Workflow deleted successfully.", type: "success" },
+          { text: "Notification deleted successfully.", type: "success" },
           { root: true }
         )
       })
@@ -152,7 +134,7 @@ const actions = {
         commit(
           "notification_backend/addBeNotification",
           {
-            text: "Workflow not deleted. Reason: " + err.response.data.detail,
+            text: "Notification not deleted. Reason: " + err.response.data.detail,
             type: "error"
           },
           { root: true }

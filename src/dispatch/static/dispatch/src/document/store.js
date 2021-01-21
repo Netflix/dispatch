@@ -88,14 +88,14 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             { text: "Document created successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             {
               text: "Document not created. Reason: " + err.response.data.detail,
               type: "error"
@@ -109,14 +109,14 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             { text: "Document updated successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             {
               text: "Document not updated. Reason: " + err.response.data.detail,
               type: "error"
@@ -132,14 +132,14 @@ const actions = {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           { text: "Document deleted successfully.", type: "success" },
           { root: true }
         )
       })
       .catch(err => {
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           {
             text: "Document not deleted. Reason: " + err.response.data.detail,
             type: "error"

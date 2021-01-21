@@ -35,7 +35,7 @@ instance.interceptors.response.use(
     }
     if (err.response.status == 500) {
       store.commit(
-        "notification/addBeNotification",
+        "notification_backend/addBeNotification",
         {
           text:
             "Something has gone very wrong, please retry or let your admin know that you received this error.",

@@ -24,7 +24,7 @@ const actions = {
       })
       .catch(err => {
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           {
             text: "Search Failed. Reason: " + err.response.data.detail,
             color: "red"

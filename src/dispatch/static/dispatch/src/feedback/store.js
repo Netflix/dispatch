@@ -100,14 +100,14 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             { text: "Feedback created successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             {
               text: "Feedback not created. Reason: " + err.response.data.detail,
               type: "error"
@@ -121,14 +121,14 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             { text: "Feedback updated successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             {
               text: "Feedback not updated. Reason: " + err.response.data.detail,
               type: "error"
@@ -144,14 +144,14 @@ const actions = {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           { text: "Feedback deleted successfully.", type: "success" },
           { root: true }
         )
       })
       .catch(err => {
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           {
             text: "Feedback not deleted. Reason: " + err.response.data.detail,
             type: "error"
