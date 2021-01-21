@@ -36,7 +36,6 @@ from .factories import (
     IndividualContactFactory,
     ParticipantFactory,
     ParticipantRoleFactory,
-    PolicyFactory,
     RecommendationAccuracyFactory,
     RecommendationFactory,
     ServiceFactory,
@@ -312,11 +311,6 @@ def participant(session):
 @pytest.fixture
 def participants(session):
     return [ParticipantFactory(), ParticipantFactory()]
-
-
-@pytest.fixture
-def policy(session):
-    return PolicyFactory()
 
 
 @pytest.fixture

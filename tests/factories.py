@@ -21,7 +21,6 @@ from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
 from dispatch.participant.models import Participant
 from dispatch.participant_role.models import ParticipantRole
-from dispatch.policy.models import Policy
 from dispatch.route.models import Recommendation, RecommendationAccuracy
 from dispatch.service.models import Service
 from dispatch.report.models import Report
@@ -326,19 +325,6 @@ class ParticipantFactory(BaseFactory):
         if extracted:
             for report in extracted:
                 self.status_reports.append(report)
-
-
-class PolicyFactory(BaseFactory):
-    """Policy Factory."""
-
-    name = Sequence(lambda n: f"policy{n}")
-    description = FuzzyText()
-    expression = ""
-
-    class Meta:
-        """Factory Configuration."""
-
-        model = Policy
 
 
 class RecommendationAccuracyFactory(BaseFactory):

@@ -43,6 +43,9 @@
                 </v-list-item-content>
               </v-list-item>
             </v-list>
+            <div style="height: 100px">
+              <advanced-editor v-model="filters"></advanced-editor>
+            </div>
             <v-btn color="info" @click="e1 = 2">
               Continue
             </v-btn>
@@ -91,6 +94,7 @@ import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
 import IncidentStatus from "@/incident/IncidentStatus.vue"
 import IncidentPriority from "@/incident/IncidentPriority.vue"
+import AdvancedEditor from "@/search/AdvancedEditor.vue"
 
 export default {
   name: "SearchFilterCreateDialog",
@@ -123,7 +127,8 @@ export default {
     IncidentPriorityCombobox,
     IncidentStatusMultiSelect,
     IncidentStatus,
-    IncidentPriority
+    IncidentPriority,
+    AdvancedEditor
   },
   computed: {
     ...mapFields("search", ["loading", "dialogs.showCreate"])
