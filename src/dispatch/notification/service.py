@@ -39,7 +39,7 @@ def update(
     notification_data = jsonable_encoder(notification)
 
     search_filter = search_service.get_by_name(
-        db_session=db_session, name=notification_in.policy.name
+        db_session=db_session, name=notification_in.search_filter.name
     )
 
     update_data = notification_in.dict(
