@@ -171,7 +171,7 @@ const actions = {
       })
       .catch(err => {
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           {
             text:
               "Incident could not be reported. Please try again. Reason: " +
@@ -191,7 +191,7 @@ const actions = {
           dispatch("closeNewSheet")
           dispatch("getAll")
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             { text: "Incident created successfully.", type: "success" },
             { root: true }
           )
@@ -199,7 +199,7 @@ const actions = {
         })
         .catch(err => {
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             {
               text: "Incident not updated. Reason: " + err.response.data.detail,
               type: "error"
@@ -214,7 +214,7 @@ const actions = {
           dispatch("closeEditSheet")
           dispatch("getAll")
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             { text: "Incident updated successfully.", type: "success" },
             { root: true }
           )
@@ -222,7 +222,7 @@ const actions = {
         })
         .catch(err => {
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             {
               text: "Incident not updated. Reason: " + err.response.data.detail,
               type: "error"
@@ -239,7 +239,7 @@ const actions = {
       .then(() => {
         dispatch("getAll")
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           { text: "Incident(s) updated successfully.", type: "success" },
           { root: true }
         )
@@ -247,7 +247,7 @@ const actions = {
       })
       .catch(err => {
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           {
             text: "Incident(s) not updated. Reason: " + err.response.data.detail,
             type: "error"
@@ -263,14 +263,14 @@ const actions = {
         dispatch("closeDeleteDialog")
         dispatch("getAll")
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           { text: "Incident deleted successfully.", type: "success" },
           { root: true }
         )
       })
       .catch(err => {
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           {
             text: "Incident not deleted. Reason: " + err.response.data.detail,
             type: "error"
@@ -285,7 +285,7 @@ const actions = {
   joinIncident({ commit }, incidentId) {
     IncidentApi.join(incidentId, {}).then(() => {
       commit(
-        "notification/addBeNotification",
+        "notification_backend/addBeNotification",
         { text: "You have successfully joined the incident.", type: "success" },
         { root: true }
       )

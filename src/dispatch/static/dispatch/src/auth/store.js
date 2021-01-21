@@ -66,14 +66,14 @@ const actions = {
           dispatch("closeEdit")
           dispatch("getAll")
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             { text: "User created successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             {
               text: "User not created. Reason: " + err.response.data.detail,
               type: "error"
@@ -87,14 +87,14 @@ const actions = {
           dispatch("closeEdit")
           dispatch("getAll")
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             { text: "User updated successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             {
               text: "User not updated. Reason: " + err.response.data.detail,
               type: "error"
@@ -110,14 +110,14 @@ const actions = {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           { text: "User deleted successfully.", type: "success" },
           { root: true }
         )
       })
       .catch(err => {
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           {
             text: "User not deleted. Reason: " + err.response.data.detail,
             type: "error"
@@ -148,7 +148,7 @@ const actions = {
       })
       .catch(err => {
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           { text: err.response.data.detail, type: "error" },
           { root: true }
         )
@@ -162,7 +162,7 @@ const actions = {
       })
       .catch(err => {
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           { text: err.response.data.detail, type: "error" },
           { root: true }
         )

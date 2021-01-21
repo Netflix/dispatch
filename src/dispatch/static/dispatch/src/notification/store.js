@@ -81,14 +81,14 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             { text: "Notification created successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             {
               text: "Notification not created. Reason: " + err.response.data.detail,
               type: "error"
@@ -102,14 +102,14 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             { text: "Notification updated successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             {
               text: "Notification not updated. Reason: " + err.response.data.detail,
               type: "error"
@@ -125,14 +125,14 @@ const actions = {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           { text: "Notification deleted successfully.", type: "success" },
           { root: true }
         )
       })
       .catch(err => {
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           {
             text: "Notification not deleted. Reason: " + err.response.data.detail,
             type: "error"

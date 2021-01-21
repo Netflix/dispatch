@@ -122,14 +122,14 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             { text: "Task created successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             {
               text: "Task not created. Reason: " + err.response.data.detail,
               type: "error"
@@ -143,14 +143,14 @@ const actions = {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             { text: "Task updated successfully.", type: "success" },
             { root: true }
           )
         })
         .catch(err => {
           commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             {
               text: "Task not updated. Reason: " + err.response.data.detail,
               type: "error"
@@ -166,7 +166,7 @@ const actions = {
       .then(() => {
         dispatch("getAll")
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           { text: "Task(s) updated successfully.", type: "success" },
           { root: true }
         )
@@ -175,7 +175,7 @@ const actions = {
       .catch(err => {
         console.log(err)
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           {
             text: "Task(s) not updated. Reason: " + err.response.data.detail,
             type: "error"
@@ -191,14 +191,14 @@ const actions = {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           { text: "Task deleted successfully.", type: "success" },
           { root: true }
         )
       })
       .catch(err => {
         commit(
-          "notification/addBeNotification",
+          "notification_backend/addBeNotification",
           {
             text: "Task not deleted. Reason: " + err.response.data.detail,
             type: "error"

@@ -102,7 +102,7 @@ export default {
       this.$copyText(window.location).then(
         function() {
           store.commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             {
               text: "View copied to clipboard."
             },
@@ -111,7 +111,7 @@ export default {
         },
         function() {
           store.commit(
-            "notification/addBeNotification",
+            "notification_backend/addBeNotification",
             {
               text: "Failed to copy view to clipboard.",
               color: "red"

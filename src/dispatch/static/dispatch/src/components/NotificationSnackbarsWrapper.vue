@@ -1,16 +1,16 @@
 <template>
   <v-snackbar
-    v-model="notification.show"
-    :timeout="notification.timeout"
-    :color="notification.type"
-    @input="setSeen(notification.index)"
+    v-model="notification_backend.show"
+    :timeout="notification_backend.timeout"
+    :color="notification_backend.type"
+    @input="setSeen(notification_backend.index)"
   >
-    {{ notification.text }}
-    <v-btn text @click="setSeen(notification.index)">Close</v-btn>
+    {{ notification_backend.text }}
+    <v-btn text @click="setSeen(notification_backend.index)">Close</v-btn>
     <!--<template v-slot:action="{ attrs }">
-      <v-btn text left v-bind="attrs" @click="remove(notification.index)">Delete</v-btn>
+      <v-btn text left v-bind="attrs" @click="remove(notification_backend.index)">Delete</v-btn>
       <v-badge :value="queueLength > 1" :content="queueLength">
-        <v-btn text v-bind="attrs" @click="setSeen(notification.index)">Close</v-btn>
+        <v-btn text v-bind="attrs" @click="setSeen(notification_backend.index)">Close</v-btn>
       </v-badge>
     </template>-->
   </v-snackbar>
@@ -24,7 +24,7 @@ export default {
   name: "NotificationSnackbarsWrapper",
 
   computed: {
-    ...mapFields("notification", ["backendNotifications"]),
+    ...mapFields("notification_backend", ["backendNotifications"]),
     notificationQueue: function() {
       const indexed = this.backendNotifications.map((o, i) => {
         return {
@@ -46,7 +46,7 @@ export default {
     notificationQueue: {
       deep: true,
       handler: function() {
-        if (!this.notification.show && this.hasPending) {
+        if (!this.notification_backend.show && this.hasPending) {
           const newNot = this.notificationQueue.shift()
           this.$nextTick(() => (this.notification = { ...newNot }))
         }
@@ -56,7 +56,7 @@ export default {
 
   data() {
     return {
-      notification: {}
+      notification_backend: {}
     }
   },
 
@@ -65,7 +65,10 @@ export default {
   },
 
   methods: {
-    ...mapActions("notification", ["removeBackendNotification", "setBackendNotificationSeen"]),
+    ...mapActions("notification_backend", [
+      "removeBackendNotification",
+      "setBackendNotificationSeen"
+    ]),
     setSeen(i) {
       this.showNext()
       this.setBackendNotificationSeen(i)
@@ -75,7 +78,7 @@ export default {
       this.removeBackendNotification(i)
     },
     reset() {
-      this.notification = {
+      this.notification_backend = {
         message: "",
         show: false,
         type: "",
@@ -84,9 +87,9 @@ export default {
       }
     },
     showNext() {
-      if (!this.notification.show && this.hasPending) {
+      if (!this.notification_backend.show && this.hasPending) {
         const newNot = this.notificationQueue.shift()
-        this.$nextTick(() => (this.notification = { ...newNot }))
+        this.$nextTick(() => (this.notification_backend = { ...newNot }))
       } else {
         this.reset()
       }
