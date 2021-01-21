@@ -26,7 +26,6 @@ class SearchFilter(Base):
     name = Column(String, unique=True)
     description = Column(String)
     expression = Column(JSON)
-
     creator_id = Column(Integer, ForeignKey("dispatch_user.id"))
     creator = relationship("DispatchUser", backref="search_filters")
     type = Column(String)
