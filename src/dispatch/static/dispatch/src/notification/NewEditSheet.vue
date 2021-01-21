@@ -124,7 +124,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("document", [
+    ...mapFields("notification", [
       "selected.name",
       "selected.description",
       "selected.type",

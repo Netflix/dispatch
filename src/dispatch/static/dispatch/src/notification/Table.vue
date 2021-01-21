@@ -83,10 +83,10 @@ export default {
       headers: [
         { text: "Name", value: "name", sortable: false },
         { text: "Description", value: "description", sortable: false },
-        { text: "Type", value: "type", sortable: true },
-        { text: "Target", value: "target", sortable: true },
+        { text: "Type", value: "type", sortable: false },
+        { text: "Target", value: "target", sortable: false },
         { text: "Policy", value: "policy", sortable: true },
-        { text: "Enabled", value: "enabled", sortable: true },
+        { text: "Enabled", value: "enabled", sortable: false },
         { text: "Created At", value: "created_at", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
@@ -94,7 +94,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("notifications", [
+    ...mapFields("notification", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
