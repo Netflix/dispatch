@@ -14,6 +14,10 @@ export default {
     return API.get(`${resource}/filters/${searchFilterId}`)
   },
 
+  create(payload) {
+    return API.post(`${resource}/filters`, payload)
+  },
+
   update(searchFilterId, payload) {
     return API.put(`${resource}/filters/${searchFilterId}`, payload)
   },

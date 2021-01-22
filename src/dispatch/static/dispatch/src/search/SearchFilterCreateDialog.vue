@@ -78,6 +78,13 @@
                 <incident-status :status="item.status" :id="item.id" />
               </template>
             </v-data-table>
+            <v-text-field
+              v-model="name"
+              label="Name"
+              hint="A name for your saved search."
+              clearable
+              required
+            />
             <v-textarea
               v-model="description"
               label="Description"
@@ -85,7 +92,8 @@
               clearable
               auto-grow
             />
-            <v-btn color="info" @click="save()" :loading="loading">
+
+            <v-btn color="info" @click="save('incident')" :loading="loading">
               Save
             </v-btn>
             <v-btn @click="closeCreateDialog()" text>
@@ -163,6 +171,7 @@ export default {
     ...mapFields("search", [
       "selected.description",
       "selected.expression",
+      "selected.name",
       "selected.type",
       "loading",
       "dialogs.showCreate"
@@ -206,6 +215,7 @@ export default {
     }
   },
   mounted() {
+    this.type = "incident"
     this.getPreviewData()
     this.$watch(
       vm => [

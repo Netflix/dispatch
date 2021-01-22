@@ -84,11 +84,13 @@
                   />
                 </ValidationProvider>
               </v-flex>
-              <v-flex xs12>
+              <v-flex xs8>
                 <search-filter-combobox
-                  v-model="search_filters"
+                  v-model="search_filter"
                   hint="Select one or more filters that will determine when notification is sent."
                 />
+              </v-flex>
+              <v-flex xs4>
                 <search-filter-create-dialog />
               </v-flex>
               <v-flex xs12>
@@ -136,7 +138,7 @@ export default {
       "selected.type",
       "selected.target",
       "selected.enabled",
-      "selected.search_filters",
+      "selected.search_filter",
       "selected.id",
       "selected.loading",
       "dialogs.showCreateEdit"

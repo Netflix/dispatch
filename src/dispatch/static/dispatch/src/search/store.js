@@ -5,7 +5,9 @@ const getDefaultSelectedState = () => {
   return {
     expression: null,
     description: null,
-    type: null
+    name: null,
+    type: null,
+    loading: false
   }
 }
 
@@ -110,6 +112,9 @@ const mutations = {
   updateField,
   SET_LOADING(state, value) {
     state.loading = value
+  },
+  SET_SELECTED_LOADING(state, value) {
+    state.selected.loading = value
   },
   SET_RESULTS(state, results) {
     state.results = results

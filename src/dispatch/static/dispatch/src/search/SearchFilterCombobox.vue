@@ -2,14 +2,27 @@
   <v-combobox
     v-model="terms"
     :items="items"
+    item-text="name"
     :search-input.sync="search"
     hide-selected
     :label="label"
-    multiple
     chips
+    close
+    clearable
     :loading="loading"
     @update:search-input="getFilteredData({ q: $event })"
   >
+    <template v-slot:selection="{ attr, on, item, selected }">
+      <v-chip v-bind="attr" :input-value="selected" v-on="on">
+        <span v-text="item.name"></span>
+      </v-chip>
+    </template>
+    <template v-slot:item="{ item }">
+      <v-list-item-content>
+        <v-list-item-title v-text="item.name"></v-list-item-title>
+        <v-list-item-subtitle v-text="item.description"></v-list-item-subtitle>
+      </v-list-item-content>
+    </template>
     <template v-slot:no-data>
       <v-list-item>
         <v-list-item-content>
@@ -37,7 +50,7 @@ export default {
     },
     label: {
       type: String,
-      default: "Select Search Filter"
+      default: "Search Filter"
     }
   },
   data() {
@@ -55,7 +68,7 @@ export default {
       },
       set(value) {
         this.search = null
-        this._terms = value.map(v => {
+        this._filters = value.map(v => {
           if (typeof v === "string") {
             v = {
               text: v
@@ -64,7 +77,7 @@ export default {
           }
           return v
         })
-        this.$emit("input", this._terms)
+        this.$emit("input", this._filters)
       }
     }
   },

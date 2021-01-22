@@ -37,7 +37,7 @@ class SearchFilter(Base):
 
 # Pydantic models...
 class SearchFilterBase(DispatchBase):
-    expression: str
+    expression: List[dict]
     name: Optional[str]
     type: Optional[str]
     description: Optional[str]
