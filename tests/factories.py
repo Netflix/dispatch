@@ -30,6 +30,7 @@ from dispatch.task.models import Task
 from dispatch.team.models import TeamContact
 from dispatch.term.models import Term
 from dispatch.ticket.models import Ticket
+from dispatch.auth.models import DispatchUser  # noqa
 
 
 class BaseFactory(SQLAlchemyModelFactory):
