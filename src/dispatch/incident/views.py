@@ -1,5 +1,5 @@
+import json
 from typing import List
-
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -34,6 +34,7 @@ def get_incidents(
     page: int = 1,
     items_per_page: int = Query(5, alias="itemsPerPage"),
     query_str: str = Query(None, alias="q"),
+    filter_spec: str = Query(None, alias="filter"),
     sort_by: List[str] = Query([], alias="sortBy[]"),
     descending: List[bool] = Query([], alias="descending[]"),
     fields: List[str] = Query([], alias="fields[]"),
@@ -45,10 +46,24 @@ def get_incidents(
     """
     Retrieve a list of all incidents.
     """
+    filter_spec = json.loads(filter_spec)
+
+    if current_user.role != UserRoles.admin:
+        # add support for filtering restricted incidents based on role
+        filter_spec.append(
+            {
+                "model": "Incident",
+                "field": "visibility",
+                "op": "!=",
+                "value": Visibility.restricted,
+            }
+        )
+
     pagination = search_filter_sort_paginate(
         db_session=db_session,
         model="Incident",
         query_str=query_str,
+        filter_spec=filter_spec,
         page=page,
         items_per_page=items_per_page,
         sort_by=sort_by,

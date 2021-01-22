@@ -1,6 +1,14 @@
 import SearchApi from "@/search/api"
 import { getField, updateField } from "vuex-map-fields"
 
+const getDefaultSelectedState = () => {
+  return {
+    expression: null,
+    description: null,
+    type: null
+  }
+}
+
 const state = {
   results: [],
   query: "",
@@ -8,7 +16,10 @@ const state = {
   dialogs: {
     showCreate: false
   },
-  loading: false
+  loading: false,
+  selected: {
+    ...getDefaultSelectedState()
+  }
 }
 
 const getters = {
@@ -46,6 +57,52 @@ const actions = {
   },
   closeCreateDialog({ commit }) {
     commit("SET_DIALOG_SHOW_CREATE", false)
+  },
+  save({ commit }) {
+    commit("SET_SELECTED_LOADING", true)
+    if (!state.selected.id) {
+      return SearchApi.create(state.selected)
+        .then(() => {
+          commit(
+            "notification_backend/addBeNotification",
+            { text: "Search filter created successfully.", type: "success" },
+            { root: true }
+          )
+          commit("SET_SELECTED_LOADING", false)
+        })
+        .catch(err => {
+          commit(
+            "notification_backend/addBeNotification",
+            {
+              text: "Search Filter not updated. Reason: " + err.response.data.detail,
+              type: "error"
+            },
+            { root: true }
+          )
+          commit("SET_SELECTED_LOADING", false)
+        })
+    } else {
+      return SearchApi.update(state.selected.id, state.selected)
+        .then(() => {
+          commit(
+            "notification_backend/addBeNotification",
+            { text: "Search filter updated successfully.", type: "success" },
+            { root: true }
+          )
+          commit("SET_SELECTED_LOADING", false)
+        })
+        .catch(err => {
+          commit(
+            "notification_backend/addBeNotification",
+            {
+              text: "Search filter not updated. Reason: " + err.response.data.detail,
+              type: "error"
+            },
+            { root: true }
+          )
+          commit("SET_SELECTED_LOADING", false)
+        })
+    }
   }
 }
 

@@ -12,19 +12,29 @@ export default {
   name: "AdvancedEditor",
   props: {
     value: {
-      type: Object,
+      type: Array,
       default: function() {
-        return {}
+        return []
       }
     }
   },
   computed: {
     content: {
       get() {
-        return JSON.stringify(this.value)
+        return JSON.stringify(this.value, null, 2)
       },
       set(value) {
-        this.$emit("input", JSON.parse(value))
+        try {
+          var o = JSON.parse(value)
+
+          // create our filter query
+
+          if (o && typeof o === "object") {
+            this.$emit("input", o)
+          }
+        } catch (e) {
+          return false
+        }
       }
     }
   },
@@ -35,9 +45,10 @@ export default {
   },
   mounted() {
     this.editor = ace.edit("advancedEditor")
-    this.editor.setValue(JSON.stringify(this.content), 1)
+    this.session = this.editor.getSession()
+    this.editor.setValue(this.content, 1)
 
-    this.editor.getSession().setMode("ace/mode/json")
+    this.session.setMode("ace/mode/json")
     this.editor.setTheme("ace/theme/github")
 
     this.editor.on("change", () => {

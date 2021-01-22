@@ -21,31 +21,40 @@
 
         <v-stepper-items>
           <v-stepper-content step="1">
-            <v-list dense>
-              <v-list-item>
-                <v-list-item-content>
-                  <tag-filter-combobox v-model="filters.tag" label="Tags" />
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-content>
-                  <incident-type-combobox v-model="filters.incident_type" />
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-content>
-                  <incident-priority-combobox v-model="filters.incident_priority" />
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-content>
-                  <incident-status-multi-select v-model="filters.status" />
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
-            <div style="height: 100px">
-              <advanced-editor v-model="filters"></advanced-editor>
-            </div>
+            <v-tabs color="primary" right>
+              <v-tab>Basic</v-tab>
+              <v-tab>Advanced</v-tab>
+              <v-tab-item>
+                <v-list dense>
+                  <v-list-item>
+                    <v-list-item-content>
+                      <tag-filter-combobox v-model="filters.tag" label="Tags" />
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-content>
+                      <incident-type-combobox v-model="filters.incident_type" />
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-content>
+                      <incident-priority-combobox v-model="filters.incident_priority" />
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-content>
+                      <incident-status-multi-select v-model="filters.status" />
+                    </v-list-item-content>
+                  </v-list-item>
+                </v-list>
+              </v-tab-item>
+              <v-tab-item>
+                <div style="height: 400px">
+                  <advanced-editor v-model="expression"></advanced-editor>
+                </div>
+              </v-tab-item>
+            </v-tabs>
+
             <v-btn color="info" @click="e1 = 2">
               Continue
             </v-btn>
@@ -69,6 +78,13 @@
                 <incident-status :status="item.status" :id="item.id" />
               </template>
             </v-data-table>
+            <v-textarea
+              v-model="description"
+              label="Description"
+              hint="A short description."
+              clearable
+              auto-grow
+            />
             <v-btn color="info" @click="save()" :loading="loading">
               Save
             </v-btn>
@@ -85,6 +101,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { forEach, each, has } from "lodash"
+
 import { mapActions } from "vuex"
 
 import IncidentApi from "@/incident/api"
@@ -95,6 +112,17 @@ import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombob
 import IncidentStatus from "@/incident/IncidentStatus.vue"
 import IncidentPriority from "@/incident/IncidentPriority.vue"
 import AdvancedEditor from "@/search/AdvancedEditor.vue"
+
+const toPascalCase = str =>
+  `${str}`
+    .replace(new RegExp(/[-_]+/, "g"), " ")
+    .replace(new RegExp(/[^\w\s]/, "g"), "")
+    .replace(
+      new RegExp(/\s+(.)(\w+)/, "g"),
+      ($1, $2, $3) => `${$2.toUpperCase() + $3.toLowerCase()}`
+    )
+    .replace(new RegExp(/\s/, "g"), "")
+    .replace(new RegExp(/\w/), s => s.toUpperCase())
 
 export default {
   name: "SearchFilterCreateDialog",
@@ -118,7 +146,8 @@ export default {
         incident_priority: null,
         status: null,
         tag: null
-      }
+      },
+      filterExpression: null
     }
   },
   components: {
@@ -131,38 +160,46 @@ export default {
     AdvancedEditor
   },
   computed: {
-    ...mapFields("search", ["loading", "dialogs.showCreate"])
+    ...mapFields("search", [
+      "selected.description",
+      "selected.expression",
+      "selected.type",
+      "loading",
+      "dialogs.showCreate"
+    ])
   },
 
   methods: {
-    ...mapActions("search", ["closeCreateDialog"]),
+    ...mapActions("search", ["closeCreateDialog", "save"]),
 
-    formatTableOptions(filters) {
-      let tableOptions = {}
-
-      tableOptions.fields = []
-      tableOptions.ops = []
-      tableOptions.values = []
-
+    createFilterExpression(filters) {
+      let filterExpression = []
       forEach(filters, function(value, key) {
         each(value, function(value) {
           if (has(value, "id")) {
-            tableOptions.fields.push(key + ".id")
-            tableOptions.values.push(value.id)
+            filterExpression.push({
+              model: toPascalCase(key),
+              field: "id",
+              op: "==",
+              value: value.id
+            })
           } else {
-            tableOptions.fields.push(key)
-            tableOptions.values.push(value)
+            filterExpression.push({ field: key, op: "==", value: value })
           }
-          tableOptions.ops.push("==")
         })
       })
-      return tableOptions
+
+      if (filterExpression.length > 0) {
+        return [{ and: filterExpression }]
+      } else {
+        return []
+      }
     },
 
     getPreviewData() {
-      let tableOptions = this.formatTableOptions(this.filters)
+      let params = { filter: JSON.stringify(this.expression) }
       this.previewRowsLoading = "error"
-      return IncidentApi.getAll(tableOptions).then(response => {
+      return IncidentApi.getAll(params).then(response => {
         this.previewRows = response.data
         this.previewRowsLoading = false
       })
@@ -178,6 +215,7 @@ export default {
         vm.filters.tag
       ],
       () => {
+        this.expression = this.createFilterExpression(this.filters)
         this.getPreviewData()
       }
     )

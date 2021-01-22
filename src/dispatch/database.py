@@ -196,6 +196,7 @@ def search_filter_sort_paginate(
     db_session,
     model,
     query_str: str = None,
+    filter_spec: List[dict] = None,
     page: int = 1,
     items_per_page: int = 5,
     sort_by: List[str] = None,
@@ -208,7 +209,6 @@ def search_filter_sort_paginate(
 ):
     """Common functionality for searching, filtering and sorting"""
     model_cls = get_class_by_tablename(model)
-    filter_spec = create_filter_spec(model, fields, ops, values, user_role)
     sort_spec = create_sort_spec(model, sort_by, descending)
 
     if query_str:
@@ -218,6 +218,10 @@ def search_filter_sort_paginate(
         query = db_session.query(model_cls)
 
     query = join_required_attrs(query, model_cls, join_attrs, fields, sort_by)
+
+    if not filter_spec:
+        filter_spec = create_filter_spec(model, fields, ops, values, user_role)
+
     query = apply_filters(query, filter_spec)
     query = apply_sort(query, sort_spec)
 
