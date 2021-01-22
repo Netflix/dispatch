@@ -4,11 +4,14 @@
     :items="items"
     item-text="name"
     :search-input.sync="search"
+    :menu-props="{ maxHeight: '400' }"
     hide-selected
     :label="label"
     chips
     close
     clearable
+    multiple
+    no-filter
     :loading="loading"
     @update:search-input="getFilteredData({ q: $event })"
   >

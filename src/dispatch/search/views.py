@@ -61,7 +61,7 @@ def get_filters(
     Retrieve filters.
     """
     if q:
-        query = search(db_session=db_session, query_str=q, model=SearchFilter)
+        query = search(db_session=db_session, q=q, model=SearchFilter)
     else:
         query = get_all(db_session=db_session)
 

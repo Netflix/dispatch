@@ -1,14 +1,23 @@
 from datetime import datetime
 from typing import Optional, List
 
-from sqlalchemy import Boolean, Column, Integer, String, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.schema import PrimaryKeyConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
 from dispatch.search.models import SearchFilterCreate, SearchFilterRead, SearchFilterUpdate
 
 from dispatch.models import DispatchBase, TimeStampMixin
+
+assoc_notification_filters = Table(
+    "assoc_notification_filters",
+    Base.metadata,
+    Column("notification_id", Integer, ForeignKey("notification.id", ondelete="CASCADE")),
+    Column("search_filter_id", Integer, ForeignKey("search_filter.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("notification_id", "search_filter_id"),
+)
 
 
 class Notification(Base, TimeStampMixin):
@@ -21,8 +30,9 @@ class Notification(Base, TimeStampMixin):
     enabled = Column(Boolean, default=True)
 
     # Relationships
-    search_filter_id = Column(Integer, ForeignKey("search_filter.id"))
-    search_filter = relationship("SearchFilter", backref="notifications")
+    filters = relationship(
+        "SearchFilter", secondary=assoc_notification_filters, backref="notifications"
+    )
 
     search_vector = Column(TSVectorType("name", "description"))
 
@@ -37,18 +47,18 @@ class NotificationBase(DispatchBase):
 
 
 class NotificationCreate(NotificationBase):
-    search_filter: SearchFilterCreate
+    filters: List[SearchFilterRead]
 
 
 class NotificationUpdate(NotificationBase):
-    search_filter: Optional[SearchFilterUpdate]
+    filters: Optional[List[SearchFilterUpdate]]
 
 
 class NotificationRead(NotificationBase):
     id: int
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-    search_filter: Optional[SearchFilterRead]
+    filters: Optional[List[SearchFilterRead]]
 
 
 class NotificationPagination(DispatchBase):

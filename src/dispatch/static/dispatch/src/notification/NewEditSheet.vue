@@ -86,7 +86,8 @@
               </v-flex>
               <v-flex xs8>
                 <search-filter-combobox
-                  v-model="search_filter"
+                  v-model="filters"
+                  label="Filters"
                   hint="Select one or more filters that will determine when notification is sent."
                 />
               </v-flex>
@@ -138,7 +139,7 @@ export default {
       "selected.type",
       "selected.target",
       "selected.enabled",
-      "selected.search_filter",
+      "selected.filters",
       "selected.id",
       "selected.loading",
       "dialogs.showCreateEdit"

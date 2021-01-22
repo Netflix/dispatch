@@ -27,6 +27,19 @@ def match(*, db_session, filter_spec, model, model_id: int):
     return query.filter(model.id == model_id).one_or_none()
 
 
+def get_or_create(*, db_session, search_filter_in) -> SearchFilter:
+    if search_filter_in.id:
+        q = db_session.query(SearchFilter).filter(SearchFilter.id == search_filter_in.id)
+    else:
+        q = db_session.query(SearchFilter).filter_by(**search_filter_in.dict(exclude={"id"}))
+
+    instance = q.first()
+    if instance:
+        return instance
+
+    return create(db_session=db_session, search_filter_in=search_filter_in)
+
+
 def get_all(*, db_session):
     """Gets all search filters."""
     return db_session.query(SearchFilter)
