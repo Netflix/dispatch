@@ -22,20 +22,24 @@ const authProviderSlug = process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SL
 // router guards
 router.beforeEach((to, from, next) => {
   store.dispatch("app/setLoading", true)
-  if (!store.state.auth.status.loggedIn) {
-    if (authProviderSlug === "dispatch-auth-provider-pkce") {
-      pkceAuthProvider.login(to, from, next)
-    } else if (authProviderSlug === "dispatch-auth-provider-basic") {
-      basicAuthProvider.login(to, from, next)
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!store.state.auth.status.loggedIn) {
+      if (authProviderSlug === "dispatch-auth-provider-pkce") {
+        pkceAuthProvider.login(to, from, next)
+      } else if (authProviderSlug === "dispatch-auth-provider-basic") {
+        basicAuthProvider.login(to, from, next)
+      } else {
+        // defaults to none, allows custom providers
+        customAuthProvider.login(to, from, next)
+      }
     } else {
-      // defaults to none, allows custom providers
-      customAuthProvider.login(to, from, next)
+      // get user info from the server if we don't already have it
+      if (!store.state.auth.userInfo) {
+        store.dispatch("auth/getUserInfo")
+      }
+      next()
     }
   } else {
-    // get user info from the server if we don't already have it
-    if (!store.state.auth.userInfo) {
-      store.dispatch("auth/getUserInfo")
-    }
     next()
   }
 })
