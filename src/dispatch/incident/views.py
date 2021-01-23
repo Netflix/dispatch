@@ -50,14 +50,15 @@ def get_incidents(
 
     if current_user.role != UserRoles.admin:
         # add support for filtering restricted incidents based on role
-        filter_spec.append(
-            {
-                "model": "Incident",
-                "field": "visibility",
-                "op": "!=",
-                "value": Visibility.restricted,
-            }
-        )
+        if filter_spec:
+            filter_spec.append(
+                {
+                    "model": "Incident",
+                    "field": "visibility",
+                    "op": "!=",
+                    "value": Visibility.restricted,
+                }
+            )
 
     pagination = search_filter_sort_paginate(
         db_session=db_session,
