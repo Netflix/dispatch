@@ -10,7 +10,6 @@ from typing import List, Optional
 import logging
 import os
 import re
-import slack
 
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.decorators import apply, counter, timer
@@ -19,7 +18,6 @@ from dispatch.plugins import dispatch_slack as slack_plugin
 from dispatch.plugins.bases import ConversationPlugin, DocumentPlugin, ContactPlugin
 
 from .config import (
-    SLACK_API_BOT_TOKEN,
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
     SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
@@ -35,6 +33,7 @@ from .config import (
 from .views import router as slack_event_router
 from .messaging import create_message_blocks
 from .service import (
+    create_slack_client,
     add_users_to_conversation,
     archive_conversation,
     unarchive_conversation,
@@ -84,7 +83,7 @@ class SlackConversationPlugin(ConversationPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
-        self.client = slack.WebClient(token=str(SLACK_API_BOT_TOKEN))
+        self.client = create_slack_client()
 
     def create(self, name: str, is_private: bool = True):
         """Creates a new Slack conversation."""
@@ -198,7 +197,7 @@ class SlackContactPlugin(ContactPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
-        self.client = slack.WebClient(token=str(SLACK_API_BOT_TOKEN))
+        self.client = create_slack_client()
 
     def get(self, email: str, **kwargs):
         """Fetch user info by email."""
@@ -237,7 +236,7 @@ class SlackDocumentPlugin(DocumentPlugin):
     def __init__(self):
         self.cachedir = os.path.dirname(os.path.realpath(__file__))
         self.memory = Memory(cachedir=self.cachedir, verbose=0)
-        self.client = slack.WebClient(token=str(SLACK_API_BOT_TOKEN))
+        self.client = create_slack_client()
 
     def get(self, **kwargs) -> dict:
         """Queries slack for documents."""

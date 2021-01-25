@@ -26,6 +26,30 @@ from .service import get_user_email
 from .decorators import slack_background_task
 
 
+async def handle_slack_action(*, db_session, client, request, background_tasks):
+    """Handles slack action message."""
+    # We resolve the user's email
+    user_id = request["user"]["id"]
+    user_email = await dispatch_slack_service.get_user_email_async(client, user_id)
+
+    request["user"]["email"] = user_email
+
+    # When there are no exceptions within the dialog submission, your app must respond with 200 OK with an empty body.
+    response_body = {}
+    if request.get("view"):
+        handle_modal_action(request, background_tasks)
+        if request["type"] == "view_submission":
+            # For modals we set "response_action" to "clear" to close all views in the modal.
+            # An empty body is currently not working.
+            response_body = {"response_action": "clear"}
+    elif request["type"] == "dialog_submission":
+        handle_dialog_action(request, background_tasks, db_session=db_session)
+    elif request["type"] == "block_actions":
+        handle_block_action(request, background_tasks)
+
+    return response_body
+
+
 @slack_background_task
 def add_user_to_conversation(
     user_id: str,

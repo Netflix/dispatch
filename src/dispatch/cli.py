@@ -4,6 +4,7 @@ import sys
 
 import click
 import uvicorn
+import asyncio
 from alembic import command as alembic_command
 from alembic.config import Config as AlembicConfig
 from tabulate import tabulate
@@ -17,6 +18,8 @@ from .exceptions import DispatchException
 from .plugins.base import plugins
 from .scheduler import scheduler
 from .logging import configure_logging
+
+from dispatch.plugins.dispatch_slack import socket_mode
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -583,6 +586,12 @@ def run_server(log_level):
 
 
 dispatch_server.add_command(uvicorn.main, name="start")
+
+
+@dispatch_server.command("slack")
+def run_slack_websocket():
+    """Runs the slack websocket process."""
+    asyncio.run(socket_mode.run_websocket_process())
 
 
 @dispatch_server.command("shell")

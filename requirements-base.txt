@@ -34,7 +34,7 @@ schedule
 sentry-asgi
 sentry-sdk
 sh
-slackclient
+slack_sdk
 spacy
 sqlalchemy
 sqlalchemy-filters

@@ -1,13 +1,17 @@
-from datetime import datetime, timezone
-from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
-from typing import Any, Dict, List, Optional
-import functools
-import logging
-import slack
 import time
+import logging
+import functools
 
-from .config import SLACK_API_BOT_TOKEN, SLACK_APP_USER_SLUG, SLACK_USER_ID_OVERRIDE
+import slack_sdk
+from typing import Any, Dict, List, Optional
 
+from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
+
+from .config import (
+    SLACK_APP_USER_SLUG,
+    SLACK_API_BOT_TOKEN,
+    SLACK_USER_ID_OVERRIDE,
+)
 
 log = logging.getLogger(__name__)
 
@@ -18,7 +22,9 @@ class NoConversationFoundException(Exception):
 
 def create_slack_client(run_async: bool = False):
     """Creates a Slack Web API client."""
-    return slack.WebClient(token=str(SLACK_API_BOT_TOKEN), run_async=run_async)
+    if not run_async:
+        return slack_sdk.WebClient(token=str(SLACK_API_BOT_TOKEN))
+    return slack_sdk.AsyncWebClient(token=str(SLACK_API_BOT_TOKEN))
 
 
 def resolve_user(client: Any, user_id: str):

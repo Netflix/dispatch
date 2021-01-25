@@ -1,6 +1,8 @@
 import logging
 from typing import List
 
+from sqlalchemy.orm import Session
+
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.database import resolve_attr
 from dispatch.decorators import background_task
@@ -9,13 +11,16 @@ from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.participant import service as participant_service
+from dispatch.conversation import service as conversation_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.task import service as task_service
 from dispatch.task.models import TaskStatus, Task
+from dispatch.participant_role.models import ParticipantRoleType
 
 from .config import (
+    SLACK_APP_USER_SLUG,
     SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG,
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
@@ -50,9 +55,56 @@ from .dialogs import (
     create_update_incident_dialog,
 )
 
+from .messaging import (
+    INCIDENT_CONVERSATION_COMMAND_MESSAGE,
+    create_command_run_in_conversation_where_bot_not_present_message,
+    create_command_run_in_nonincident_conversation_message,
+    create_command_run_by_non_privileged_user_message,
+)
 
 log = logging.getLogger(__name__)
 slack_client = dispatch_slack_service.create_slack_client()
+
+
+def check_command_restrictions(
+    command: str, user_email: str, incident_id: int, db_session: Session
+) -> bool:
+    """Checks the current user's role to determine what commands they are allowed to run."""
+    # some commands are sensitive and we only let non-participants execute them
+    command_permissons = {
+        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [
+            ParticipantRoleType.incident_commander,
+            ParticipantRoleType.scribe,
+        ],
+        SLACK_COMMAND_ASSIGN_ROLE_SLUG: [
+            ParticipantRoleType.incident_commander,
+            ParticipantRoleType.reporter,
+            ParticipantRoleType.liaison,
+            ParticipantRoleType.scribe,
+        ],
+        SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [
+            ParticipantRoleType.incident_commander,
+            ParticipantRoleType.scribe,
+        ],
+        SLACK_COMMAND_REPORT_TACTICAL_SLUG: [
+            ParticipantRoleType.incident_commander,
+            ParticipantRoleType.scribe,
+        ],
+    }
+
+    # no permissions have been defined
+    if command not in command_permissons.keys():
+        return True
+
+    participant = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=incident_id, email=user_email
+    )
+
+    # if any required role is active, allow command
+    for current_role in participant.current_roles:
+        for allowed_role in command_permissons[command]:
+            if current_role.role == allowed_role:
+                return True
 
 
 def command_functions(command: str):
@@ -96,6 +148,61 @@ def filter_tasks_by_assignee_and_creator(tasks: List[Task], by_assignee: str, by
                 filtered_tasks.append(t)
 
     return filtered_tasks
+
+
+async def handle_slack_command(*, db_session, client, request, background_tasks):
+    """Handles slack command message."""
+    # We fetch conversation by channel id
+    channel_id = request.get("channel_id")
+    conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
+        db_session=db_session, channel_id=channel_id
+    )
+
+    # We get the name of command that was run
+    command = request.get("command")
+
+    incident_id = 0
+    if conversation:
+        incident_id = conversation.incident_id
+    else:
+        if command not in [SLACK_COMMAND_REPORT_INCIDENT_SLUG, SLACK_COMMAND_LIST_INCIDENTS_SLUG]:
+            # We let the user know that incident-specific commands
+            # can only be run in incident conversations
+            return create_command_run_in_nonincident_conversation_message(command)
+
+        # We get the list of public and private conversations the Slack bot is a member of
+        (
+            public_conversations,
+            private_conversations,
+        ) = dispatch_slack_service.get_conversations_by_user_id(client, SLACK_APP_USER_SLUG)
+
+        # We get the name of conversation where the command was run
+        conversation_id = request.get("channel_id")
+        conversation_name = await dispatch_slack_service.get_conversation_name_by_id_async(
+            client, conversation_id
+        )
+
+        if (
+            not conversation_name
+            or conversation_name not in public_conversations + private_conversations
+        ):
+            # We let the user know in which public conversations they can run the command
+            return create_command_run_in_conversation_where_bot_not_present_message(
+                command, public_conversations
+            )
+
+    # some commands are sensitive and we only let non-participants execute them
+    user_id = request.get("user_id")
+    allowed = check_command_restrictions(
+        command=command, user_id=user_id, incident_id=incident_id, db_session=db_session
+    )
+    if not allowed:
+        return create_command_run_by_non_privileged_user_message(command)
+
+    for f in command_functions(command):
+        background_tasks.add_task(f, incident_id, command=request)
+
+    return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(command, f"Running... Command: {command}")
 
 
 @background_task
