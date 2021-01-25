@@ -174,7 +174,9 @@ async def handle_slack_command(*, db_session, client, request, background_tasks)
         (
             public_conversations,
             private_conversations,
-        ) = dispatch_slack_service.get_conversations_by_user_id(client, SLACK_APP_USER_SLUG)
+        ) = await dispatch_slack_service.get_conversations_by_user_id_async(
+            client, SLACK_APP_USER_SLUG
+        )
 
         # We get the name of conversation where the command was run
         conversation_id = request.get("channel_id")
@@ -191,10 +193,12 @@ async def handle_slack_command(*, db_session, client, request, background_tasks)
                 command, public_conversations
             )
 
-    # some commands are sensitive and we only let non-participants execute them
     user_id = request.get("user_id")
+    user_email = await dispatch_slack_service.get_user_email_async(client, user_id)
+
+    # some commands are sensitive and we only let non-participants execute them
     allowed = check_command_restrictions(
-        command=command, user_id=user_id, incident_id=incident_id, db_session=db_session
+        command=command, user_email=user_email, incident_id=incident_id, db_session=db_session
     )
     if not allowed:
         return create_command_run_by_non_privileged_user_message(command)

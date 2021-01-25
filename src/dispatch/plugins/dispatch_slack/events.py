@@ -69,20 +69,20 @@ class EventEnvelope(BaseModel):
     type: str
 
 
-def get_channel_id_from_event(event_body: dict):
+def get_channel_id_from_event(event: dict):
     """Returns the channel id from the Slack event."""
     channel_id = ""
-    if event_body.channel_id:
-        return event_body.channel_id
-    if event_body.channel:
-        return event_body.channel
-    if event_body.item.channel:
-        return event_body.item.channel
+    if event.get("channel_id"):
+        return event["channel_id"]
+    if event.get("channel"):
+        return event["channel"]
+    if event.get("item", {}).get("channel"):
+        return event["item"]["channel"]
 
     return channel_id
 
 
-def event_functions(event: EventEnvelope):
+def event_functions(event: dict):
     """Interprets the events and routes it the appropriate function."""
     event_mappings = {
         "member_joined_channel": [member_joined_channel],
@@ -93,15 +93,14 @@ def event_functions(event: EventEnvelope):
         "reaction_added": [handle_reaction_added_event],
     }
 
-    return event_mappings.get(event.event.type, [])
+    return event_mappings.get(event.get("event", {}).get("type"), [])
 
 
 async def handle_slack_event(*, db_session, client, request, background_tasks):
     """Handles slack event message."""
-    event_body = request.event
-
-    user_id = event_body.user
-    channel_id = get_channel_id_from_event(event_body)
+    event = request["event"]
+    user_id = event["user"]
+    channel_id = get_channel_id_from_event(event)
 
     if user_id and channel_id:
         conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
@@ -113,10 +112,10 @@ async def handle_slack_event(*, db_session, client, request, background_tasks):
             user_email = await dispatch_slack_service.get_user_email_async(client, user_id)
 
             # Dispatch event functions to be executed in the background
-            for f in event_functions(request):
+            for f in event_functions(event):
                 background_tasks.add_task(f, user_email, conversation.incident_id, event=event)
 
-    return {"ok"}
+    return {"ok": ""}
 
 
 @background_task

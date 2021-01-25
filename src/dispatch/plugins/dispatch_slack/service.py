@@ -2,7 +2,9 @@ import time
 import logging
 import functools
 
-import slack_sdk
+from slack_sdk import WebClient
+from slack_sdk.web.async_client import AsyncWebClient
+
 from typing import Any, Dict, List, Optional
 
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
@@ -23,8 +25,8 @@ class NoConversationFoundException(Exception):
 def create_slack_client(run_async: bool = False):
     """Creates a Slack Web API client."""
     if not run_async:
-        return slack_sdk.WebClient(token=str(SLACK_API_BOT_TOKEN))
-    return slack_sdk.AsyncWebClient(token=str(SLACK_API_BOT_TOKEN))
+        return WebClient(token=str(SLACK_API_BOT_TOKEN))
+    return AsyncWebClient(token=str(SLACK_API_BOT_TOKEN))
 
 
 def resolve_user(client: Any, user_id: str):
@@ -111,7 +113,7 @@ def make_call(client: Any, endpoint: str, **kwargs):
             response = client.api_call(endpoint, http_verb="GET", params=kwargs)
         else:
             response = client.api_call(endpoint, json=kwargs)
-    except slack.errors.SlackApiError as e:
+    except slack_sdk.errors.SlackApiError as e:
         log.error(f"SlackError. Response: {e.response} Endpoint: {endpoint} kwargs: {kwargs}")
 
         # NOTE we've seen some eventual consistency problems with channel creation
@@ -147,7 +149,7 @@ async def make_call_async(client: Any, endpoint: str, **kwargs):
             response = await client.api_call(endpoint, http_verb="GET", params=kwargs)
         else:
             response = await client.api_call(endpoint, json=kwargs)
-    except slack.errors.SlackApiError as e:
+    except slack_sdk.errors.SlackApiError as e:
         log.error(f"SlackError. Response: {e.response} Endpoint: {endpoint} kwargs: {kwargs}")
 
         if e.response.headers.get("Retry-After"):
@@ -178,10 +180,11 @@ def get_user_info_by_id(client: Any, user_id: str):
     return make_call(client, "users.info", user=user_id)["user"]
 
 
-@functools.lru_cache()
+# @functools.lru_cache()
 async def get_user_info_by_id_async(client: Any, user_id: str):
     """Gets profile information about a user by id."""
-    return (await make_call_async(client, "users.info", user=user_id))["user"]
+    user_info = await make_call_async(client, "users.info", user=user_id)
+    return user_info["user"]
 
 
 @functools.lru_cache()
@@ -201,12 +204,14 @@ def get_user_profile_by_email(client: Any, email: str):
 
 def get_user_email(client: Any, user_id: str):
     """Gets the user's email."""
-    return get_user_info_by_id(client, user_id)["profile"]["email"]
+    user_info = get_user_info_by_id(client, user_id)
+    return user_info["profile"]["email"]
 
 
 async def get_user_email_async(client: Any, user_id: str):
     """Gets the user's email."""
-    return (await get_user_info_by_id_async(client, user_id))["profile"]["email"]
+    user_info = await get_user_info_by_id_async(client, user_id)
+    return user_info["profile"]["email"]
 
 
 def get_user_username(client: Any, user_id: str):
@@ -219,7 +224,7 @@ def get_user_avatar_url(client: Any, email: str):
     return get_user_info_by_email(client, email)["profile"]["image_512"]
 
 
-@functools.lru_cache()
+# @functools.lru_cache()
 async def get_conversations_by_user_id_async(client: Any, user_id: str):
     """Gets the list of public and private conversations a user is a member of."""
     result = await make_call_async(
@@ -257,7 +262,7 @@ async def get_conversation_name_by_id_async(client: Any, conversation_id: str):
         return (await make_call_async(client, "conversations.info", channel=conversation_id))[
             "channel"
         ]["name"]
-    except slack.errors.SlackApiError as e:
+    except slack_sdk.errors.SlackApiError as e:
         if e.response["error"] == "channel_not_found":
             return None
         else:

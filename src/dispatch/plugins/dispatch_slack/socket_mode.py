@@ -2,10 +2,12 @@ import asyncio
 from fastapi import BackgroundTasks
 
 from dispatch.database import SessionLocal
-from dispatch.plugins.dispatch_slack.actions import handle_slack_action
 from slack_sdk.web.async_client import AsyncWebClient
 
 from .config import SLACK_API_BOT_TOKEN, SLACK_APP_TOKEN
+from .actions import handle_slack_action
+from .events import handle_slack_event
+from .commands import handle_slack_command
 
 
 async def run_websocket_process():
@@ -24,22 +26,36 @@ async def run_websocket_process():
     async def process(client: SocketModeClient, req: SocketModeRequest):
         db_session = SessionLocal()
         background_tasks = BackgroundTasks()
-        if req.type == "events_api":
-            # Acknowledge the request anyway
-            response = SocketModeResponse(envelope_id=req.envelope_id)
-            await client.send_socket_mode_response(response)
 
-            # Add a reaction to the message if it's a new message
-            if (
-                req.payload["event"]["type"] == "message"
-                and req.payload["event"].get("subtype") is None
-            ):
-                await handle_slack_action(
-                    db_session=db_session,
-                    client=client.web_client,
-                    request=req,
-                    background_tasks=background_tasks,
-                )
+        if req.type == "events_api":
+            response = await handle_slack_event(
+                db_session=db_session,
+                client=client.web_client,
+                request=req.payload,
+                background_tasks=background_tasks,
+            )
+
+        if req.type == "slash_commands":
+            response = await handle_slack_command(
+                db_session=db_session,
+                client=client.web_client,
+                request=req.payload,
+                background_tasks=background_tasks,
+            )
+
+        if req.type == "interactive":
+            response = await handle_slack_action(
+                db_session=db_session,
+                client=client.web_client,
+                request=req.payload,
+                background_tasks=background_tasks,
+            )
+
+        response = SocketModeResponse(envelope_id=req.envelope_id, payload=response)
+        await client.send_socket_mode_response(response)
+
+        # run the background tasks
+        await background_tasks()
 
     # Add a new listener to receive messages from Slack
     # You can add more listeners like this
