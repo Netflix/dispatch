@@ -14,33 +14,16 @@ from sqlalchemy.orm import Session
 from starlette.requests import Request
 from starlette.responses import Response
 
-from dispatch.conversation import service as conversation_service
-from dispatch.participant import service as participant_service
-from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.database import get_db
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from . import __version__
-from .actions import handle_block_action, handle_dialog_action
-from .commands import command_functions
 from .config import (
-    SLACK_APP_USER_SLUG,
-    SLACK_COMMAND_LIST_INCIDENTS_SLUG,
-    SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
-    SLACK_COMMAND_REPORT_INCIDENT_SLUG,
-    SLACK_COMMAND_REPORT_TACTICAL_SLUG,
-    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
-    SLACK_COMMAND_ASSIGN_ROLE_SLUG,
     SLACK_SIGNING_SECRET,
 )
-from .events import event_functions, get_channel_id_from_event, EventEnvelope
-from .messaging import (
-    INCIDENT_CONVERSATION_COMMAND_MESSAGE,
-    create_command_run_in_conversation_where_bot_not_present_message,
-    create_command_run_in_nonincident_conversation_message,
-    create_command_run_by_non_privileged_user_message,
-)
-from .modals import handle_modal_action
+from .events import handle_slack_event, EventEnvelope
+from .actions import handle_slack_action
+from .commands import handle_slack_command
 
 
 router = APIRouter()
@@ -86,49 +69,6 @@ def verify_timestamp(timestamp: int):
         raise HTTPException(status_code=403, detail="Invalid request timestamp")
 
 
-async def check_command_restrictions(
-    command: str, user_id: str, incident_id: int, db_session: Session
-) -> bool:
-    """Checks the current user's role to determine what commands they are allowed to run."""
-    # some commands are sensitive and we only let non-participants execute them
-    command_permissons = {
-        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [
-            ParticipantRoleType.incident_commander,
-            ParticipantRoleType.scribe,
-        ],
-        SLACK_COMMAND_ASSIGN_ROLE_SLUG: [
-            ParticipantRoleType.incident_commander,
-            ParticipantRoleType.reporter,
-            ParticipantRoleType.liaison,
-            ParticipantRoleType.scribe,
-        ],
-        SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [
-            ParticipantRoleType.incident_commander,
-            ParticipantRoleType.scribe,
-        ],
-        SLACK_COMMAND_REPORT_TACTICAL_SLUG: [
-            ParticipantRoleType.incident_commander,
-            ParticipantRoleType.scribe,
-        ],
-    }
-
-    # no permissions have been defined
-    if command not in command_permissons.keys():
-        return True
-
-    slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
-    user_email = await dispatch_slack_service.get_user_email_async(slack_async_client, user_id)
-    participant = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=incident_id, email=user_email
-    )
-
-    # if any required role is active, allow command
-    for current_role in participant.current_roles:
-        for allowed_role in command_permissons[command]:
-            if current_role.role == allowed_role:
-                return True
-
-
 @router.post("/slack/event")
 async def handle_event(
     event: EventEnvelope,
@@ -148,36 +88,23 @@ async def handle_event(
     # We verify the signature
     verify_signature(raw_request_body, x_slack_request_timestamp, x_slack_signature)
 
+    # We add the user-agent string to the response headers
+    response.headers["X-Slack-Powered-By"] = create_ua_string()
+
     # Echo the URL verification challenge code back to Slack
     if event.challenge:
         return {"challenge": event.challenge}
 
-    event_body = event.event
+    slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
 
-    user_id = event_body.user
-    channel_id = get_channel_id_from_event(event_body)
+    request = event.dict()
 
-    if user_id and channel_id:
-        conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
-            db_session=db_session, channel_id=channel_id
-        )
-
-        if conversation and dispatch_slack_service.is_user(user_id):
-            # We create an async Slack client
-            slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
-
-            # We resolve the user's email
-            user_email = await dispatch_slack_service.get_user_email_async(
-                slack_async_client, user_id
-            )
-
-            # Dispatch event functions to be executed in the background
-            for f in event_functions(event):
-                background_tasks.add_task(f, user_email, conversation.incident_id, event=event)
-
-    # We add the user-agent string to the response headers
-    response.headers["X-Slack-Powered-By"] = create_ua_string()
-    return {"ok"}
+    return await handle_slack_event(
+        db_session=db_session,
+        client=slack_async_client,
+        request=request,
+        background_tasks=background_tasks,
+    )
 
 
 @router.post("/slack/command")
@@ -192,7 +119,7 @@ async def handle_command(
     """Handle all incomming Slack commands."""
     raw_request_body = bytes.decode(await request.body())
     request_body_form = await request.form()
-    command_details = request_body_form._dict
+    request = request_body_form._dict
 
     # We verify the timestamp
     verify_timestamp(x_slack_request_timestamp)
@@ -203,62 +130,14 @@ async def handle_command(
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()
 
-    # We fetch conversation by channel id
-    channel_id = command_details.get("channel_id")
-    conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
-        db_session=db_session, channel_id=channel_id
+    slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
+
+    return await handle_slack_command(
+        db_session=db_session,
+        client=slack_async_client,
+        request=request,
+        background_tasks=background_tasks,
     )
-
-    # We get the name of command that was run
-    command = command_details.get("command")
-
-    incident_id = 0
-    if conversation:
-        incident_id = conversation.incident_id
-    else:
-        if command not in [SLACK_COMMAND_REPORT_INCIDENT_SLUG, SLACK_COMMAND_LIST_INCIDENTS_SLUG]:
-            # We let the user know that incident-specific commands
-            # can only be run in incident conversations
-            return create_command_run_in_nonincident_conversation_message(command)
-
-        # We create an async Slack client
-        slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
-
-        # We get the list of public and private conversations the Slack bot is a member of
-        (
-            public_conversations,
-            private_conversations,
-        ) = await dispatch_slack_service.get_conversations_by_user_id_async(
-            slack_async_client, SLACK_APP_USER_SLUG
-        )
-
-        # We get the name of conversation where the command was run
-        conversation_id = command_details.get("channel_id")
-        conversation_name = await dispatch_slack_service.get_conversation_name_by_id_async(
-            slack_async_client, conversation_id
-        )
-
-        if (
-            not conversation_name
-            or conversation_name not in public_conversations + private_conversations
-        ):
-            # We let the user know in which public conversations they can run the command
-            return create_command_run_in_conversation_where_bot_not_present_message(
-                command, public_conversations
-            )
-
-    # some commands are sensitive and we only let non-participants execute them
-    user_id = command_details.get("user_id")
-    allowed = await check_command_restrictions(
-        command=command, user_id=user_id, incident_id=incident_id, db_session=db_session
-    )
-    if not allowed:
-        return create_command_run_by_non_privileged_user_message(command)
-
-    for f in command_functions(command):
-        background_tasks.add_task(f, incident_id, command=command_details)
-
-    return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(command, f"Running... Command: {command}")
 
 
 @router.post("/slack/action")
@@ -273,7 +152,7 @@ async def handle_action(
     """Handle all incomming Slack actions."""
     raw_request_body = bytes.decode(await request.body())
     request_body_form = await request.form()
-    action = json.loads(request_body_form.get("payload"))
+    request = json.loads(request_body_form.get("payload"))
 
     # We verify the timestamp
     verify_timestamp(x_slack_request_timestamp)
@@ -281,30 +160,15 @@ async def handle_action(
     # We verify the signature
     verify_signature(raw_request_body, x_slack_request_timestamp, x_slack_signature)
 
+    # We add the user-agent string to the response headers
+    response.headers["X-Slack-Powered-By"] = create_ua_string()
+
     # We create an async Slack client
     slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
 
-    # We resolve the user's email
-    user_id = action["user"]["id"]
-    user_email = await dispatch_slack_service.get_user_email_async(slack_async_client, user_id)
-
-    action["user"]["email"] = user_email
-
-    # We add the user-agent string to the response headers
-    # NOTE: I don't think this header ever gets sent? (kglisson)
-    response.headers["X-Slack-Powered-By"] = create_ua_string()
-
-    # When there are no exceptions within the dialog submission, your app must respond with 200 OK with an empty body.
-    response_body = {}
-    if action.get("view"):
-        handle_modal_action(action, background_tasks)
-        if action["type"] == "view_submission":
-            # For modals we set "response_action" to "clear" to close all views in the modal.
-            # An empty body is currently not working.
-            response_body = {"response_action": "clear"}
-    elif action["type"] == "dialog_submission":
-        handle_dialog_action(action, background_tasks, db_session=db_session)
-    elif action["type"] == "block_actions":
-        handle_block_action(action, background_tasks)
-
-    return response_body
+    return await handle_slack_action(
+        db_session=db_session,
+        client=slack_async_client,
+        request=request,
+        background_tasks=background_tasks,
+    )

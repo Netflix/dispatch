@@ -73,7 +73,7 @@ def update_notification(
     *,
     db_session: Session = Depends(get_db),
     notification_id: int,
-    notification_in: NotificationUpdate
+    notification_in: NotificationUpdate,
 ):
     """
     Update a notification by id.

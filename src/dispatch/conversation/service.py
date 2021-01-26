@@ -33,7 +33,9 @@ def get_by_channel_id_ignoring_channel_type(db_session, channel_id: str) -> Opti
             # The channel type has changed. We update the channel id in the database
             conversation_in = ConversationUpdate(channel_id=channel_id)
             update(
-                db_session=db_session, conversation=conversation, conversation_in=conversation_in,
+                db_session=db_session,
+                conversation=conversation,
+                conversation_in=conversation_in,
             )
 
             event_service.log(

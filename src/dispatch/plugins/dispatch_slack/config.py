@@ -2,6 +2,7 @@ from dispatch.config import config, Secret
 
 # Configuration
 SLACK_API_BOT_TOKEN = config("SLACK_API_BOT_TOKEN", cast=Secret)
+SLACK_SOCKET_MODE_APP_TOKEN = config("SLACK_SOCKET_MODE_APP_TOKEN", cast=Secret)
 SLACK_APP_USER_SLUG = config("SLACK_APP_USER_SLUG")
 SLACK_BAN_THREADS = config("SLACK_BAN_THREADS", default=True)
 SLACK_PROFILE_DEPARTMENT_FIELD_ID = config("SLACK_PROFILE_DEPARTMENT_FIELD_ID", default="")
