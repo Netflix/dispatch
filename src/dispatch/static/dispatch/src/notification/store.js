@@ -11,7 +11,7 @@ const getDefaultSelectedState = () => {
     type: null,
     target: null,
     enabled: null,
-    policy: null,
+    filters: null,
     loading: false
   }
 }
