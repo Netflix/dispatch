@@ -1,18 +1,12 @@
 <template>
   <v-snackbar
-    v-model="notification_backend.show"
-    :timeout="notification_backend.timeout"
-    :color="notification_backend.type"
-    @input="setSeen(notification_backend.index)"
+    v-model="notification.show"
+    :timeout="notification.timeout"
+    :color="notification.type"
+    @input="setSeen(notification.index)"
   >
-    {{ notification_backend.text }}
-    <v-btn text @click="setSeen(notification_backend.index)">Close</v-btn>
-    <!--<template v-slot:action="{ attrs }">
-      <v-btn text left v-bind="attrs" @click="remove(notification_backend.index)">Delete</v-btn>
-      <v-badge :value="queueLength > 1" :content="queueLength">
-        <v-btn text v-bind="attrs" @click="setSeen(notification_backend.index)">Close</v-btn>
-      </v-badge>
-    </template>-->
+    {{ notification.text }}
+    <v-btn text @click="setSeen(notification.index)">Close</v-btn>
   </v-snackbar>
 </template>
 
@@ -24,9 +18,9 @@ export default {
   name: "NotificationSnackbarsWrapper",
 
   computed: {
-    ...mapFields("notification_backend", ["backendNotifications"]),
+    ...mapFields("notification_backend", ["notifications"]),
     notificationQueue: function() {
-      const indexed = this.backendNotifications.map((o, i) => {
+      const indexed = this.notifications.map((o, i) => {
         return {
           index: i,
           ...o
@@ -46,7 +40,7 @@ export default {
     notificationQueue: {
       deep: true,
       handler: function() {
-        if (!this.notification_backend.show && this.hasPending) {
+        if (!this.notification.show && this.hasPending) {
           const newNot = this.notificationQueue.shift()
           this.$nextTick(() => (this.notification = { ...newNot }))
         }
@@ -56,7 +50,7 @@ export default {
 
   data() {
     return {
-      notification_backend: {}
+      notification: {}
     }
   },
 
@@ -78,7 +72,7 @@ export default {
       this.removeBackendNotification(i)
     },
     reset() {
-      this.notification_backend = {
+      this.notification = {
         message: "",
         show: false,
         type: "",
@@ -87,9 +81,9 @@ export default {
       }
     },
     showNext() {
-      if (!this.notification_backend.show && this.hasPending) {
+      if (!this.notification.show && this.hasPending) {
         const newNot = this.notificationQueue.shift()
-        this.$nextTick(() => (this.notification_backend = { ...newNot }))
+        this.$nextTick(() => (this.notification = { ...newNot }))
       } else {
         this.reset()
       }

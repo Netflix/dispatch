@@ -14,8 +14,8 @@ from dispatch.incident_type.views import router as incident_type_router
 from dispatch.individual.views import router as individual_contact_router
 from dispatch.notification.views import router as notification_router
 from dispatch.plugin.views import router as plugin_router
-from dispatch.policy.views import router as policy_router
-from dispatch.route.views import router as route_router
+
+# from dispatch.route.views import router as route_router
 from dispatch.search.views import router as search_router
 from dispatch.service.views import router as service_router
 from dispatch.tag.views import router as tag_router
@@ -47,7 +47,6 @@ authenticated_api_router.include_router(
     individual_contact_router, prefix="/individuals", tags=["individuals"]
 )
 # authenticated_api_router.include_router(route_router, prefix="/route", tags=["route"])
-authenticated_api_router.include_router(policy_router, prefix="/policies", tags=["policies"])
 authenticated_api_router.include_router(
     definition_router, prefix="/definitions", tags=["definitions"]
 )

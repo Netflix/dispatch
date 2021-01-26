@@ -84,6 +84,16 @@
                   />
                 </ValidationProvider>
               </v-flex>
+              <v-flex xs8>
+                <search-filter-combobox
+                  v-model="filters"
+                  label="Filters"
+                  hint="Select one or more filters that will determine when notification is sent."
+                />
+              </v-flex>
+              <v-flex xs4>
+                <search-filter-create-dialog />
+              </v-flex>
               <v-flex xs12>
                 <v-checkbox
                   v-model="enabled"
@@ -91,9 +101,6 @@
                   label="Enabled"
                 />
               </v-flex>
-              <!-- <v&#45;flex xs12> -->
-              <!--   <policy&#45;select v&#45;model="policy" /> -->
-              <!-- </v&#45;flex> -->
             </v-layout>
           </v-container>
         </v-card-text>
@@ -107,7 +114,8 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
-// import PolicySelect from "@/policy/PolicySelect.vue"
+import SearchFilterCombobox from "@/search/SearchFilterCombobox.vue"
+import SearchFilterCreateDialog from "@/search/SearchFilterCreateDialog.vue"
 
 extend("required", {
   ...required,
@@ -119,8 +127,9 @@ export default {
 
   components: {
     ValidationObserver,
-    ValidationProvider
-    // PolicySelect
+    ValidationProvider,
+    SearchFilterCombobox,
+    SearchFilterCreateDialog
   },
 
   computed: {
@@ -130,7 +139,7 @@ export default {
       "selected.type",
       "selected.target",
       "selected.enabled",
-      "selected.policy",
+      "selected.filters",
       "selected.id",
       "selected.loading",
       "dialogs.showCreateEdit"

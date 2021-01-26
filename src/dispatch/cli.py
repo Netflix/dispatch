@@ -148,7 +148,7 @@ def sync_triggers():
         engine, "individual_contact", "search_vector", ["name", "title", "company", "notes"]
     )
     sync_trigger(engine, "plugin", "search_vector", ["title"])
-    sync_trigger(engine, "policy", "search_vector", ["name", "description"])
+    sync_trigger(engine, "search_filter", "search_vector", ["name", "description"])
     sync_trigger(engine, "report", "search_vector", ["details_raw"])
     sync_trigger(engine, "service", "search_vector", ["name"])
     sync_trigger(engine, "tag", "search_vector", ["name"])

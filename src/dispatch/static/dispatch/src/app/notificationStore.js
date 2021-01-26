@@ -1,13 +1,13 @@
 import { getField, updateField } from "vuex-map-fields"
 
 const state = {
-  backendNotifications: []
+  notifications: []
 }
 
 const getters = {
   getField,
   getBackendNotifications({ state }) {
-    return state.backendNotifications
+    return state.notifications
   }
 }
 
@@ -21,17 +21,16 @@ const mutations = {
     if (payload.show !== false) {
       payload.show = true
     }
-    console.log(payload)
-    state.backendNotifications.push({ ...payload })
+    state.notifications.push({ ...payload })
   },
   removeBeNotification(state, index) {
-    state.backendNotifications.splice(index, 1)
+    state.notifications.splice(index, 1)
   },
   removeAllBeNotifications(state) {
-    state.backendNotifications = []
+    state.notifications = []
   },
   setBeNotificationSeen(state, index) {
-    state.backendNotifications[index].show = false
+    state.notifications[index].show = false
   }
 }
 
