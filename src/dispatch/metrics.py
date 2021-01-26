@@ -12,7 +12,9 @@ class Metrics(object):
 
     def __init__(self):
         if not METRIC_PROVIDERS:
-            log.info("No metric providers defined via METRIC_PROVIDERS env var. Metrics will not be sent.")
+            log.info(
+                "No metric providers defined via METRIC_PROVIDERS env var. Metrics will not be sent."
+            )
         else:
             self._providers = METRIC_PROVIDERS
 

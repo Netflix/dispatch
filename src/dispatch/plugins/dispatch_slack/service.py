@@ -2,7 +2,7 @@ import time
 import logging
 import functools
 
-from slack_sdk import WebClient
+import slack_sdk
 from slack_sdk.web.async_client import AsyncWebClient
 
 from typing import Any, Dict, List, Optional
@@ -25,7 +25,7 @@ class NoConversationFoundException(Exception):
 def create_slack_client(run_async: bool = False):
     """Creates a Slack Web API client."""
     if not run_async:
-        return WebClient(token=str(SLACK_API_BOT_TOKEN))
+        return slack_sdk.WebClient(token=str(SLACK_API_BOT_TOKEN))
     return AsyncWebClient(token=str(SLACK_API_BOT_TOKEN))
 
 
@@ -310,7 +310,7 @@ def unarchive_conversation(client: Any, conversation_id: str):
     """Unarchives an existing conversation."""
     try:
         return make_call(client, "conversations.unarchive", channel=conversation_id)
-    except slack.errors.SlackApiError as e:
+    except slack_sdk.errors.SlackApiError as e:
         # if the channel isn't achived thats okay
         if e.response["error"] != "not_archived":
             raise e

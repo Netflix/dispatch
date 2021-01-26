@@ -38,7 +38,9 @@ def get_resources_from_incident_types(db_session, incident_types: List[IncidentT
     }
 
 
-def get_resources_from_priorities(db_session, incident_priorities: List[IncidentPriorityBase]) -> set:
+def get_resources_from_priorities(
+    db_session, incident_priorities: List[IncidentPriorityBase]
+) -> set:
     """Get all resources related to a specific priority."""
     incident_priority_names = [i.name for i in incident_priorities]
     incident_priority_models = (
@@ -58,15 +60,21 @@ def get_resources_from_context(db_session, context: ContextBase) -> set:
     """Fetch relevent resources based on context only."""
     incident_types_resources = (
         get_resources_from_incident_types(db_session, incident_types=context.incident_types)
-        if context.incident_types else set()
+        if context.incident_types
+        else set()
     )
 
     priorities_resources = (
         get_resources_from_priorities(db_session, incident_priorities=context.incident_priorities)
-        if context.incident_priorities else set()
+        if context.incident_priorities
+        else set()
     )
 
-    _, term_resources = get_resources_from_terms(db_session, terms=context.terms) if context.terms else (None, set())
+    _, term_resources = (
+        get_resources_from_terms(db_session, terms=context.terms)
+        if context.terms
+        else (None, set())
+    )
 
     return (incident_types_resources & priorities_resources) | term_resources
 
