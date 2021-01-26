@@ -7,10 +7,39 @@ description: Configuration options for the Slack plugin.
 {% hint style="info" %}
 Dispatch ships with support for Slack. Below, is how to configure the Slack plugin to work with `Dispatch`. This plugin is required for core functionality.
 
-The plugin relies on the [Events API](https://api.slack.com/events-api) to receive events for the event types the app is subscribed to. `Dispatch` receives these events at the `/api/v1/events/slack/event` API endpoint. Slack will also send Web requests to the `/api/v1/events/slack/command` and `/api/v1/events/slack/action` API endpoints for slash \(`/`\) commands and interactive components like dialogs and modals. These endpoints must be publicly available in order for the `Dispatch` Slack app to work correctly.
-{% endhint %}
+Dispatch supports both the [Event Mode](https://api.slack.com/events-api) and [Socket Mode](https://api.slack.com/apis/connections/socket).
+
+Which mode should you choose?
+
+- If you have Dispatch deployed behind a firewall use **socket mode**
+- If you are deploying Dispatch publically use **event mode**
+
+## Events Mode
+
+To enable event mode:
+
+- Ensure that the following configuration items are set:
+  - `SLACK_SIGNING_SECRET`
+  - `SLACK_API_BOT_TOKEN`
+
+Additional, event mode requires specific url mapping that must be **publically** available:
+
+- `Dispatch` receives general events at the `/api/v1/events/slack/event` endpoint (reactions).
+- `Dispatch` receives command events at the `/api/v1/events/slack/command` endpoint (`/dispatch-*` commands)
+- `Dispatch` recieves action events at the `/api/v1/events/slack/action` (dialogs and modals) endpoint.
+
+## Socket Mode
+
+To enable socket mode:
+
+- Ensure the following configuration items are set:
+  - `SLACK_SOCKET_MODE_APP_TOKEN`
+
+Socket mode does not require the mapping of endpoints and these values are ingored in socket mode.
 
 ## Slack Configuration
+
+Both `socket mode` or `event mode` you will need set the following configuration items within slack itself.
 
 ### Event Subscriptions
 
@@ -89,6 +118,10 @@ groups:read
 #### `SLACK_SIGNING_SECRET` \[Required. Secret: True\]
 
 > Secret used to verify signatures included on each HTTP request that Slack sends. Slack refers to this as your "Signing Secret."
+
+#### `SLACK_SOCKET_MODE_APP_TOKEN` \[Required. Secret: True\]
+
+> Socket specific app token, used to authenticate to the websocket api.
 
 #### `SLACK_APP_USER_SLUG` \[Required\]
 
