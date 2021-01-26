@@ -131,7 +131,7 @@ def create_filter_spec(model, fields, ops, values, user_role):
     # add admin only filter
     if user_role != UserRoles.admin:
         # add support for filtering restricted incidents
-        if model.lower() == "incident":
+        if model.lower() in ["incident", "task"]:
             filter_spec.append(
                 {
                     "model": model,
