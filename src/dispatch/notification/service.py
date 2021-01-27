@@ -1,9 +1,10 @@
 import logging
 
-from typing import Optional
+from typing import Optional, Type
 
 from fastapi.encoders import jsonable_encoder
 
+from dispatch.database import Base
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.bases import ConversationPlugin, EmailPlugin
 from dispatch.search import service as search_service
@@ -76,7 +77,7 @@ def delete(*, db_session, notification_id: int):
     db_session.commit()
 
 
-def send(*, db_session, class_instance, notification_params):
+def send(*, db_session, class_instance: Type[Base], notification_params: dict):
     """Sends notifications."""
     notifications = get_all(db_session=db_session)
     for notification in notifications:

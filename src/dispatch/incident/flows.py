@@ -56,8 +56,8 @@ from .messaging import (
     get_suggested_document_items,
     send_incident_closed_information_review_reminder,
     send_incident_commander_readded_notification,
+    send_incident_created_notifications,
     send_incident_new_role_assigned_notification,
-    send_incident_notifications,
     send_incident_participant_announcement_message,
     send_incident_rating_feedback_message,
     send_incident_resources_ephemeral_message_to_participant,
@@ -685,7 +685,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
                 log.exception(e)
 
     if incident.visibility == Visibility.open:
-        send_incident_notifications(incident, db_session)
+        send_incident_created_notifications(incident, db_session)
         event_service.log(
             db_session=db_session,
             source="Dispatch Core App",

@@ -13,10 +13,12 @@ from dispatch.config import (
 )
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.database import SessionLocal, resolve_attr
+from dispatch.document import service as document_service
 from dispatch.enums import Visibility
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident, IncidentRead
+from dispatch.notification import service as notification_service
 from dispatch.messaging.strings import (
     INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION,
     INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION,
@@ -37,7 +39,6 @@ from dispatch.messaging.strings import (
     INCIDENT_TYPE_CHANGE,
     MessageType,
 )
-from dispatch.document import service as document_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.plugin import service as plugin_service
@@ -225,19 +226,16 @@ def send_incident_suggested_reading_messages(
         log.debug(f"Suggested reading ephemeral message sent to {participant_email}.")
 
 
-def send_incident_status_notifications(incident: Incident, db_session: SessionLocal):
-    """Sends incident status notifications to conversations and distribution lists."""
-    notification_text = "Incident Notification"
-    notification_type = MessageType.incident_notification
-    message_template = INCIDENT_NOTIFICATION.copy()
+def send_incident_created_notifications(incident: Incident, db_session: SessionLocal):
+    """Sends incident created notifications."""
+    notification_template = INCIDENT_NOTIFICATION.copy()
 
-    # we send status notifications to conversations
     if incident.status != IncidentStatus.closed:
-        message_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
+        notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
     else:
-        message_template.insert(0, INCIDENT_NAME)
+        notification_template.insert(0, INCIDENT_NAME)
 
-    message_kwargs = {
+    notification_kwargs = {
         "name": incident.name,
         "title": incident.title,
         "status": incident.status,
@@ -256,44 +254,23 @@ def send_incident_status_notifications(incident: Incident, db_session: SessionLo
         "contact_weblink": incident.commander.individual.weblink,
         "incident_id": incident.id,
     }
+
     faq_doc = document_service.get_incident_faq_document(db_session=db_session)
     if faq_doc:
-        message_kwargs.update({"faq_weblink": faq_doc.weblink})
+        notification_kwargs.update({"faq_weblink": faq_doc.weblink})
 
-    convo_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
-    if convo_plugin:
-        for conversation in INCIDENT_NOTIFICATION_CONVERSATIONS:
-            convo_plugin.instance.send(
-                conversation,
-                notification_text,
-                message_template,
-                notification_type,
-                **message_kwargs,
-            )
-    else:
-        log.warning(
-            "No incident conversation notifications sent. No conversation plugin is active."
-        )
+    notification_params = {
+        "text": "Incident Notification",
+        "type": MessageType.incident_notification,
+        "template": notification_template,
+        "kwargs": notification_kwargs,
+    }
 
-    # we send status notifications to distribution lists
-    email_plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
-    if email_plugin:
-        for distro in INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS:
-            email_plugin.instance.send(
-                distro, message_template, notification_type, **message_kwargs
-            )
-    else:
-        log.warning("No incident email notifications sent. No email plugin is active.")
+    notification_service.send(
+        db_session=db_session, class_instance=incident, notification_params=notification_params
+    )
 
-    log.debug("Incident status notifications sent.")
-
-
-def send_incident_notifications(incident: Incident, db_session: SessionLocal):
-    """Sends all incident notifications."""
-    # we send the incident status notifications
-    send_incident_status_notifications(incident, db_session)
-
-    log.debug("Incident notifications sent.")
+    log.debug("Incident created notifications sent.")
 
 
 def send_incident_update_notifications(
