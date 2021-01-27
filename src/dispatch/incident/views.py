@@ -46,11 +46,11 @@ def get_incidents(
     """
     Retrieve a list of all incidents.
     """
-    filter_spec = json.loads(filter_spec)
 
     if current_user.role != UserRoles.admin:
         # add support for filtering restricted incidents based on role
         if filter_spec:
+            filter_spec = json.loads(filter_spec)
             filter_spec.append(
                 {
                     "model": "Incident",
