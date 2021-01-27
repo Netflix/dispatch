@@ -37,6 +37,16 @@ To enable socket mode:
 
 Socket mode does not require the mapping of endpoints and these values are ingored in socket mode.
 
+Socket mode requires that you run a seperate process (from the main dispatch webserver) to be able to receive websocket events.
+
+The easiest way to run this process is via the command:
+
+```
+dispatch server slack
+```
+
+This process will have to be deamonized in a similar manner to the dispatch webserver.
+
 ## Slack Configuration
 
 Both `socket mode` or `event mode` you will need set the following configuration items within slack itself.

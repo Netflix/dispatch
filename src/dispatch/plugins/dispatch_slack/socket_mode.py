@@ -4,7 +4,7 @@ from fastapi import BackgroundTasks
 from dispatch.database import SessionLocal
 from slack_sdk.web.async_client import AsyncWebClient
 
-from .config import SLACK_API_BOT_TOKEN, SLACK_APP_TOKEN
+from .config import SLACK_API_BOT_TOKEN, SLACK_SOCKET_MODE_APP_TOKEN
 from .actions import handle_slack_action
 from .events import handle_slack_event
 from .commands import handle_slack_command
@@ -18,7 +18,7 @@ async def run_websocket_process():
     # Initialize SocketModeClient with an app-level token + WebClient
     client = SocketModeClient(
         # This app-level token will be used only for establishing a connection
-        app_token=str(SLACK_APP_TOKEN),  # xapp-A111-222-xyz
+        app_token=str(SLACK_SOCKET_MODE_APP_TOKEN),  # xapp-A111-222-xyz
         # You will be using this WebClient for performing Web API calls in listeners
         web_client=AsyncWebClient(token=str(SLACK_API_BOT_TOKEN)),  # xoxb-111-222-xyz
     )
