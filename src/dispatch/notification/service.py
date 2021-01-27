@@ -80,10 +80,10 @@ def send(*, db_session, class_instance, notification_params):
     """Sends notifications."""
     notifications = get_all(db_session=db_session)
     for notification in notifications:
-        for filter in notification.filters:
+        for filter_spec in notification.filters:
             match = search_service.match(
                 db_session=db_session,
-                filter_spec=filter,
+                filter_spec=filter_spec,
                 class_instance=class_instance,
             )
             if match and notification.enabled:
