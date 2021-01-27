@@ -58,35 +58,50 @@ export const protectedRoute = [
   {
     path: "/incidents",
     component: DefaultLayout,
-    redirect: "/incidents/list",
     meta: { title: "Incidents", icon: "view_compact", group: "incidents", requiresAuth: true },
     children: [
       {
-        path: "list",
+        path: "",
         name: "IncidentTable",
         meta: { title: "List" },
+        component: () => import(/* webpackChunkName: "incident-table" */ "@/incident/Table.vue"),
         children: [
           {
             path: ":name",
-            name: "IncidentTable",
             component: () =>
-              import(/* webpackChunkName: "incident-table" */ "@/incident/Table.vue"),
-            props: true
+              import(/* webpackChunkName: "incident-table" */ "@/incident/EditSheet.vue"),
+            props: true,
+            meta: {
+              showEditSheet: true
+            }
           }
-        ],
-        component: () => import(/* webpackChunkName: "incident-table" */ "@/incident/Table.vue")
-      },
+        ]
+      }
+    ]
+  },
+  {
+    path: "/tasks",
+    component: DefaultLayout,
+    meta: { title: "Tasks", icon: "view_compact", group: "tasks", requiresAuth: true },
+    children: [
       {
-        path: "tasks",
+        path: "",
         name: "TaskTable",
-        meta: { title: "Tasks" },
-        component: () => import(/* webpackChunkName: "knowledge-table" */ "@/task/Table.vue")
-      },
+        meta: { title: "List" },
+        component: () => import(/* webpackChunkName: "task-table" */ "@/task/Table.vue")
+      }
+    ]
+  },
+  {
+    path: "/feedback",
+    component: DefaultLayout,
+    meta: { title: "Feedback", icon: "view_compact", group: "feedback", requiresAuth: true },
+    children: [
       {
-        path: "feedback",
+        path: "",
         name: "FeedbackTable",
         meta: { title: "Feedback" },
-        component: () => import(/* webpackChunkName: "knowledge-table" */ "@/feedback/Table.vue")
+        component: () => import(/* webpackChunkName: "feedback-table" */ "@/feedback/Table.vue")
       }
     ]
   },
@@ -132,7 +147,8 @@ export const protectedRoute = [
         path: "/configuration/incidentTypes",
         name: "IncidentTypeTable",
         meta: { title: "Incident Types" },
-        component: () => import(/* webpackChunkName: "routing-table" */ "@/incident_type/Table.vue")
+        component: () =>
+          import(/* webpackChunkName: "incident-type-table" */ "@/incident_type/Table.vue")
       },
       {
         path: "/configuration/incidentPriorities",
@@ -145,31 +161,32 @@ export const protectedRoute = [
         path: "/configuration/notifications",
         name: "NotificationTable",
         meta: { title: "Notifications" },
-        component: () => import(/* webpackChunkName: "routing-table" */ "@/notification/Table.vue")
+        component: () =>
+          import(/* webpackChunkName: "notification-table" */ "@/notification/Table.vue")
       },
       {
         path: "/configuration/plugins",
         name: "PluginTable",
         meta: { title: "Plugins" },
-        component: () => import(/* webpackChunkName: "routing-table" */ "@/plugin/Table.vue")
+        component: () => import(/* webpackChunkName: "plugin-table" */ "@/plugin/Table.vue")
       },
       {
         path: "/configuration/tagTypes",
         name: "TagTypeTable",
         meta: { title: "Tag Types" },
-        component: () => import(/* webpackChunkName: "routing-table" */ "@/tag_type/Table.vue")
+        component: () => import(/* webpackChunkName: "tag-type-table" */ "@/tag_type/Table.vue")
       },
       {
         path: "/configuration/users",
         name: "UserTable",
         meta: { title: "Users" },
-        component: () => import(/* webpackChunkName: "routing-table" */ "@/auth/Table.vue")
+        component: () => import(/* webpackChunkName: "users-table" */ "@/auth/Table.vue")
       },
       {
         path: "/configuration/workflows",
         name: "WorkflowTable",
         meta: { title: "Workflows" },
-        component: () => import(/* webpackChunkName: "routing-table" */ "@/workflow/Table.vue")
+        component: () => import(/* webpackChunkName: "workflows-table" */ "@/workflow/Table.vue")
       }
     ]
   },
@@ -194,7 +211,7 @@ export const protectedRoute = [
         path: "teams",
         name: "TaamTable",
         meta: { title: "Teams" },
-        component: () => import(/* webpackChunkName: "individual-table" */ "@/team/Table.vue")
+        component: () => import(/* webpackChunkName: "team-table" */ "@/team/Table.vue")
       }
     ]
   },
@@ -213,7 +230,7 @@ export const protectedRoute = [
         path: "documents",
         name: "DocumentTable",
         meta: { title: "Documents" },
-        component: () => import(/* webpackChunkName: "definition-table" */ "@/document/Table.vue")
+        component: () => import(/* webpackChunkName: "document-table" */ "@/document/Table.vue")
       },
       {
         path: "definitions",
@@ -225,7 +242,7 @@ export const protectedRoute = [
         path: "terms",
         name: "TermTable",
         meta: { title: "Terms" },
-        component: () => import(/* webpackChunkName: "knowledge-table" */ "@/term/Table.vue")
+        component: () => import(/* webpackChunkName: "term-table" */ "@/term/Table.vue")
       }
     ]
   },

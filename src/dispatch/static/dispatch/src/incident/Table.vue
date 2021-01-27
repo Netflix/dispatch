@@ -1,6 +1,8 @@
 <template>
   <v-layout wrap>
-    <edit-sheet />
+    <div v-if="showEditSheet">
+      <router-view></router-view>
+    </div>
     <new-sheet />
     <delete-dialog />
     <div class="headline">Incidents</div>
@@ -59,7 +61,7 @@
                     </v-btn>
                   </template>
                   <v-list>
-                    <v-list-item @click="showEditSheet(item)">
+                    <v-list-item :to="`/incidents/${item.name}`">
                       <v-list-item-title>View / Edit</v-list-item-title>
                     </v-list-item>
                     <v-list-item @click="showDeleteDialog(item)">
@@ -82,7 +84,6 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import BulkEditSheet from "@/incident/BulkEditSheet.vue"
 import DeleteDialog from "@/incident/DeleteDialog.vue"
-import EditSheet from "@/incident/EditSheet.vue"
 import IncidentParticipant from "@/incident/Participant.vue"
 import IncidentPriority from "@/incident/IncidentPriority.vue"
 import IncidentStatus from "@/incident/IncidentStatus.vue"
@@ -96,7 +97,6 @@ export default {
   components: {
     BulkEditSheet,
     DeleteDialog,
-    EditSheet,
     IncidentParticipant,
     IncidentPriority,
     IncidentStatus,
@@ -119,7 +119,8 @@ export default {
         { text: "Commander", value: "commander", sortable: false },
         { text: "Reported At", value: "reported_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
-      ]
+      ],
+      showEditSheet: false
     }
   },
 
@@ -143,11 +144,16 @@ export default {
     ])
   },
 
-  mounted() {
-    // process our props
-    if (this.name) {
-      this.q = this.name
+  watch: {
+    $route: {
+      immediate: true,
+      handler: function(newVal) {
+        this.showEditSheet = newVal.meta && newVal.meta.showEditSheet
+      }
     }
+  },
+
+  mounted() {
     this.getAll()
 
     this.$watch(
@@ -178,7 +184,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident", ["getAll", "showNewSheet", "showEditSheet", "showDeleteDialog"])
+    ...mapActions("incident", ["getAll", "showNewSheet", "showDeleteDialog"])
   }
 }
 </script>

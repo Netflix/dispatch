@@ -59,9 +59,9 @@ export default {
       {
         action: "error_outline",
         items: [
-          { title: "List", route: "/incidents/list" },
-          { title: "Tasks", route: "/incidents/tasks" },
-          { title: "Feedback", route: "/incidents/feedback" }
+          { title: "Incidents", route: "/incidents" },
+          { title: "Tasks", route: "/tasks" },
+          { title: "Feedback", route: "/feedback" }
         ],
         title: "Incident"
       },

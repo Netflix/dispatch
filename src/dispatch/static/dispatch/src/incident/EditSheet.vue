@@ -1,6 +1,6 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
-    <v-navigation-drawer v-model="showEditSheet" app clipped right width="800">
+    <v-navigation-drawer app clipped right width="800">
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
@@ -78,6 +78,8 @@ export default {
     }
   },
 
+  props: ["incidentName"],
+
   computed: {
     ...mapFields("incident", [
       "selected.id",
@@ -88,8 +90,21 @@ export default {
     ])
   },
 
+  created() {
+    this.fetchDetails()
+  },
+
+  watch: {
+    $route() {
+      this.fetchDetails()
+    }
+  },
+
   methods: {
-    ...mapActions("incident", ["save", "closeEditSheet"])
+    fetchDetails() {
+      this.getDetails({ name: this.$route.params.name })
+    },
+    ...mapActions("incident", ["save", "getDetails", "closeEditSheet"])
   }
 }
 </script>
