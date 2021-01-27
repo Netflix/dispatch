@@ -1,9 +1,17 @@
-from fastapi.encoders import jsonable_encoder
+import logging
+
 from typing import Optional
 
+from fastapi.encoders import jsonable_encoder
+
+from dispatch.plugin import service as plugin_service
+from dispatch.plugins.bases import ConversationPlugin, EmailPlugin
 from dispatch.search import service as search_service
 
 from .models import Notification, NotificationCreate, NotificationUpdate
+
+
+log = logging.getLogger(__name__)
 
 
 def get(*, db_session, notification_id: int) -> Optional[Notification]:
@@ -66,3 +74,31 @@ def delete(*, db_session, notification_id: int):
     )
     db_session.delete(notification)
     db_session.commit()
+
+
+def send(*, db_session, class_instance, notification_params):
+    """Sends notifications."""
+    notifications = get_all(db_session=db_session)
+    for notification in notifications:
+        for filter in notification.filters:
+            match = search_service.match(
+                db_session=db_session,
+                filter_spec=filter,
+                class_instance=class_instance,
+            )
+            if match and notification.enabled:
+                plugin = plugin_service.get_active(
+                    db_session=db_session, plugin_type=notification.type
+                )
+                if plugin:
+                    plugin.instance.send(
+                        notification.target,
+                        notification_params.text,
+                        notification_params.template,
+                        notification_params.type,
+                        **notification_params.kwargs,
+                    )
+                else:
+                    log.warning(
+                        f"Notification {notification.name} not sent. No {notification.type} plugin is active."
+                    )

@@ -1,11 +1,13 @@
 from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
+
 from sqlalchemy_searchable import search as search_db
 from sqlalchemy_filters import apply_filters
 
-from dispatch.database import Base, get_class_by_tablename
 from dispatch.common.utils.composite_search import CompositeSearch
+from dispatch.database import Base, get_class_by_tablename
+
 from .models import SearchFilter, SearchFilterCreate, SearchFilterUpdate
 
 
@@ -19,12 +21,13 @@ def get_by_name(*, db_session, name: str) -> Optional[SearchFilter]:
     return db_session.query(SearchFilter).filter(SearchFilter.name == name).first()
 
 
-def match(*, db_session, filter_spec, model, model_id: int):
-    """Matches an incident with a given search filter."""
-    model_cls = get_class_by_tablename(model)
+def match(*, db_session, filter_spec, class_instance):
+    """Matches an class instance with a given search filter."""
+    table_name = class_instance.sa_instance_state.mapper.mapped_table.name
+    model_cls = get_class_by_tablename(table_name)
     query = db_session.query(model_cls)
     query = apply_filters(query, filter_spec)
-    return query.filter(model.id == model_id).one_or_none()
+    return query.filter(model_cls.id == class_instance.id).one_or_none()
 
 
 def get_or_create(*, db_session, search_filter_in) -> SearchFilter:
