@@ -8,7 +8,7 @@ env = Environment(loader=FileSystemLoader(here), autoescape=True)
 
 
 def format_datetime(value):
-    return datetime.fromisoformat(value).strftime("%A %d. %B %Y")
+    return datetime.fromisoformat(value).strftime("%A, %B %d, %Y")
 
 
 env.filters["datetime"] = format_datetime
