@@ -1,4 +1,5 @@
 import IncidentApi from "@/incident/api"
+import router from "@/router"
 
 import { getField, updateField } from "vuex-map-fields"
 import { debounce, forEach, each, has } from "lodash"
@@ -57,7 +58,7 @@ const state = {
         incident_type: [],
         incident_priority: [],
         status: [],
-        tags: []
+        tag: []
       },
       q: "",
       page: 1,
@@ -115,6 +116,37 @@ const actions = {
       commit("SET_SELECTED", response.data)
     })
   },
+  getDetails({ commit, state }, payload) {
+    commit("SET_SELECTED_LOADING", true)
+    if ("id" in payload) {
+      return IncidentApi.get(state.selected.id).then(response => {
+        commit("SET_SELECTED", response.data)
+        commit("SET_SELECTED_LOADING", false)
+      })
+    } else if ("name" in payload) {
+      // this is kinda dirty
+      return IncidentApi.getAll({
+        filter: JSON.stringify([
+          { and: [{ model: "Incident", field: "name", op: "==", value: payload.name }] }
+        ])
+      }).then(response => {
+        if (response.data.items.length) {
+          commit("SET_SELECTED", response.data.items[0])
+        } else {
+          commit(
+            "notification_backend/addBeNotification",
+            {
+              text: `Incident '${payload.name}' could not be found.`,
+              type: "error"
+            },
+            { root: true }
+          )
+          commit("SET_DIALOG_SHOW_EDIT_SHEET", false)
+        }
+        commit("SET_SELECTED_LOADING", false)
+      })
+    }
+  },
   showNewSheet({ commit }, incident) {
     commit("SET_DIALOG_SHOW_NEW_SHEET", true)
     if (incident) {
@@ -125,15 +157,13 @@ const actions = {
     commit("SET_DIALOG_SHOW_NEW_SHEET", false)
     commit("RESET_SELECTED")
   },
-  showEditSheet({ commit }, incident) {
+  showEditSheet({ commit }) {
     commit("SET_DIALOG_SHOW_EDIT_SHEET", true)
-    if (incident) {
-      commit("SET_SELECTED", incident)
-    }
   },
   closeEditSheet({ commit }) {
     commit("SET_DIALOG_SHOW_EDIT_SHEET", false)
     commit("RESET_SELECTED")
+    router.push("/incidents")
   },
   showDeleteDialog({ commit }, incident) {
     commit("SET_DIALOG_DELETE", true)

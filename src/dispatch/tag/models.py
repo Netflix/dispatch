@@ -45,7 +45,7 @@ class TagUpdate(TagBase):
 
 class TagRead(TagBase):
     id: int
-    tag_type: TagTypeRead
+    tag_type: Optional[TagTypeRead]
 
 
 class TagPagination(DispatchBase):

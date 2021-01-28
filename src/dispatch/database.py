@@ -134,7 +134,7 @@ def create_filter_spec(model, fields, ops, values, user_role):
         if model.lower() in ["incident", "task"]:
             filter_spec.append(
                 {
-                    "model": model,
+                    "model": "Incident",
                     "field": "visibility",
                     "op": "!=",
                     "value": Visibility.restricted,
