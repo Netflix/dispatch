@@ -119,7 +119,7 @@ def get_incident(
             return incident
 
         raise HTTPException(
-            status_code=401, detail="You do not have permission to view this incident."
+            status_code=403, detail="You do not have permission to view this incident."
         )
 
     return incident
@@ -174,7 +174,7 @@ def update_incident(
             or current_user.role != UserRoles.admin
         ):
             raise HTTPException(
-                status_code=401, detail="You do not have permission to update this incident."
+                status_code=403, detail="You do not have permission to update this incident."
             )
 
     previous_incident = IncidentRead.from_orm(incident)
@@ -230,7 +230,7 @@ def join_incident(
         # reject if the user isn't an admin
         if current_user.role != UserRoles.admin.value:
             raise HTTPException(
-                status_code=401, detail="You do not have permission to join this incident."
+                status_code=403, detail="You do not have permission to join this incident."
             )
 
     background_tasks.add_task(
@@ -250,7 +250,7 @@ def delete_incident(
     """
     if current_user.role != UserRoles.admin:
         raise HTTPException(
-            status_code=401, detail="You do not have permission to delete incidents."
+            status_code=403, detail="You do not have permission to delete incidents."
         )
 
     incident = get(db_session=db_session, incident_id=incident_id)
