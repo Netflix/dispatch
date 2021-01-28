@@ -80,10 +80,10 @@ def send(*, db_session, class_instance: Type[Base], notification_params: dict):
     """Sends notifications."""
     notifications = get_all(db_session=db_session)
     for notification in notifications:
-        for filter_spec in notification.filters:
+        for search_filter in notification.filters:
             match = search_service.match(
                 db_session=db_session,
-                filter_spec=filter_spec,
+                filter_spec=search_filter.expression,
                 class_instance=class_instance,
             )
             if match and notification.enabled:
@@ -93,10 +93,10 @@ def send(*, db_session, class_instance: Type[Base], notification_params: dict):
                 if plugin:
                     plugin.instance.send(
                         notification.target,
-                        notification_params.text,
-                        notification_params.template,
-                        notification_params.type,
-                        **notification_params.kwargs,
+                        notification_params["text"],
+                        notification_params["template"],
+                        notification_params["type"],
+                        **notification_params["kwargs"],
                     )
                 else:
                     log.warning(
