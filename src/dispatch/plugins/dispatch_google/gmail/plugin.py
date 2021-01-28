@@ -68,7 +68,8 @@ class GoogleGmailEmailPlugin(EmailPlugin):
     def send(
         self,
         recipient: str,
-        message_template: dict,
+        notification_text: str,
+        notification_template: dict,
         notification_type: MessageType,
         items: Optional[List] = None,
         **kwargs,
@@ -77,7 +78,7 @@ class GoogleGmailEmailPlugin(EmailPlugin):
         # TODO allow for bulk sending (kglisson)
         client = get_service("gmail", "v1", self.scopes)
 
-        subject = f"{kwargs['name'].upper()} - Incident Notification"
+        subject = f"{kwargs['name'].upper()} - {notification_text}"
         if kwargs.get("subject"):
             subject = kwargs["subject"]
 
@@ -86,10 +87,10 @@ class GoogleGmailEmailPlugin(EmailPlugin):
             cc = kwargs["cc"]
 
         if not items:
-            message_body = create_message_body(message_template, notification_type, **kwargs)
+            message_body = create_message_body(notification_template, notification_type, **kwargs)
         else:
             message_body = create_multi_message_body(
-                message_template, notification_type, items, **kwargs
+                notification_template, notification_type, items, **kwargs
             )
 
         html_message = create_html_message(recipient, cc, subject, message_body)
