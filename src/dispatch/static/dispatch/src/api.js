@@ -6,7 +6,8 @@ const instance = axios.create({
   baseURL: "/api/v1"
 })
 
-const authProviderSlug = process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG
+const authProviderSlug =
+  process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG || "dispatch-auth-provider-basic"
 
 instance.interceptors.request.use(
   config => {
