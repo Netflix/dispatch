@@ -6,7 +6,6 @@ from fastapi.encoders import jsonable_encoder
 
 from dispatch.database import Base
 from dispatch.plugin import service as plugin_service
-from dispatch.plugins.bases import ConversationPlugin, EmailPlugin
 from dispatch.search import service as search_service
 
 from .models import Notification, NotificationCreate, NotificationUpdate
