@@ -18,7 +18,6 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
-from fastapi_permissions import Allow
 
 from dispatch.config import (
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
@@ -310,17 +309,6 @@ class IncidentRead(IncidentBase):
     duplicates: Optional[List[IncidentReadNested]] = []
     stable_at: Optional[datetime] = None
     closed_at: Optional[datetime] = None
-
-    def __acl__(self):
-        if self.visibility == Visibility.restricted:
-            return [
-                (Allow, f"role:{UserRoles.admin}", "view"),
-                (Allow, f"role:{UserRoles.admin}", "edit"),
-            ]
-        return [
-            (Allow, f"role:{UserRoles.user}", "view"),
-            (Allow, f"role:{UserRoles.user}", "edit"),
-        ]
 
 
 class IncidentPagination(DispatchBase):
