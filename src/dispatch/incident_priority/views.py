@@ -3,7 +3,10 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from dispatch.auth.models import DispatchUser
+from dispatch.auth.service import get_current_user
 from dispatch.database import get_db, search_filter_sort_paginate
+from dispatch.enums import UserRoles
 
 from .models import (
     IncidentPriorityCreate,
@@ -12,6 +15,7 @@ from .models import (
     IncidentPriorityUpdate,
 )
 from .service import create, get, update
+
 
 router = APIRouter()
 
@@ -47,11 +51,19 @@ def get_incident_priorities(
 
 @router.post("/", response_model=IncidentPriorityRead)
 def create_incident_priority(
-    *, db_session: Session = Depends(get_db), incident_priority_in: IncidentPriorityCreate
+    *,
+    db_session: Session = Depends(get_db),
+    incident_priority_in: IncidentPriorityCreate,
+    current_user: DispatchUser = Depends(get_current_user),
 ):
     """
-    Create a new incident_priority.
+    Create a new incident priority.
     """
+    # We restrict the creation of incident priorities to admins only
+    if current_user.role != UserRoles.admin:
+        raise HTTPException(
+            status_code=403, detail="You do not have permission to create incident priorities."
+        )
     incident_priority = create(db_session=db_session, incident_priority_in=incident_priority_in)
     return incident_priority
 
@@ -62,15 +74,23 @@ def update_incident_priority(
     db_session: Session = Depends(get_db),
     incident_priority_id: int,
     incident_priority_in: IncidentPriorityUpdate,
+    current_user: DispatchUser = Depends(get_current_user),
 ):
     """
-    Update an existing incident_priority.
+    Update an existing incident priority.
     """
     incident_priority = get(db_session=db_session, incident_priority_id=incident_priority_id)
     if not incident_priority:
         raise HTTPException(
-            status_code=404, detail="The incident_priority with this id does not exist."
+            status_code=404, detail="The incident priority with this id does not exist."
         )
+
+    # We restrict updating incident types to admins only
+    if current_user.role != UserRoles.admin:
+        raise HTTPException(
+            status_code=403, detail="You do not have permission to update incident priorities."
+        )
+
     incident_priority = update(
         db_session=db_session,
         incident_priority=incident_priority,
@@ -82,11 +102,11 @@ def update_incident_priority(
 @router.get("/{incident_priority_id}", response_model=IncidentPriorityRead)
 def get_incident_priority(*, db_session: Session = Depends(get_db), incident_priority_id: int):
     """
-    Get a single incident_priority.
+    Get an incident priority.
     """
     incident_priority = get(db_session=db_session, incident_priority_id=incident_priority_id)
     if not incident_priority:
         raise HTTPException(
-            status_code=404, detail="The incident_priority with this id does not exist."
+            status_code=404, detail="The incident priority with this id does not exist."
         )
     return incident_priority

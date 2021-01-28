@@ -72,12 +72,12 @@ def update_incident_type(
     current_user: DispatchUser = Depends(get_current_user),
 ):
     """
-    Update an existing incident_type.
+    Update an existing incident type.
     """
     incident_type = get(db_session=db_session, incident_type_id=incident_type_id)
     if not incident_type:
         raise HTTPException(
-            status_code=404, detail="The incident_type with this id does not exist."
+            status_code=404, detail="The incident type with this id does not exist."
         )
 
     # We restrict updating incident types to admins only
@@ -95,11 +95,11 @@ def update_incident_type(
 @router.get("/{incident_type_id}", response_model=IncidentTypeRead)
 def get_incident_type(*, db_session: Session = Depends(get_db), incident_type_id: int):
     """
-    Get a single incident_type.
+    Get an incident type.
     """
     incident_type = get(db_session=db_session, incident_type_id=incident_type_id)
     if not incident_type:
         raise HTTPException(
-            status_code=404, detail="The incident_type with this id does not exist."
+            status_code=404, detail="The incident type with this id does not exist."
         )
     return incident_type
