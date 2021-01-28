@@ -85,7 +85,7 @@ def update_incident_priority(
             status_code=404, detail="The incident priority with this id does not exist."
         )
 
-    # We restrict updating incident types to admins only
+    # We restrict updating incident priorities to admins only
     if current_user.role != UserRoles.admin:
         raise HTTPException(
             status_code=403, detail="You do not have permission to update incident priorities."

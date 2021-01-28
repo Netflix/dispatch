@@ -3,7 +3,10 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from dispatch.auth.models import DispatchUser
+from dispatch.auth.service import get_current_user
 from dispatch.database import get_db, search_filter_sort_paginate
+from dispatch.enums import UserRoles
 from dispatch.exceptions import InvalidConfiguration
 
 from .models import PluginCreate, PluginPagination, PluginRead, PluginUpdate
@@ -56,7 +59,7 @@ def get_plugins_by_type(
     values: List[str] = Query([], alias="value[]"),
 ):
     """
-    Get all plugins.
+    Get all plugins by type.
     """
     return search_filter_sort_paginate(
         db_session=db_session,
@@ -85,7 +88,11 @@ def get_plugin(*, db_session: Session = Depends(get_db), plugin_id: int):
 
 @router.put("/{plugin_id}", response_model=PluginCreate)
 def update_plugin(
-    *, db_session: Session = Depends(get_db), plugin_id: int, plugin_in: PluginUpdate
+    *,
+    db_session: Session = Depends(get_db),
+    plugin_id: int,
+    plugin_in: PluginUpdate,
+    current_user: DispatchUser = Depends(get_current_user),
 ):
     """
     Update a plugin.
@@ -93,6 +100,10 @@ def update_plugin(
     plugin = get(db_session=db_session, plugin_id=plugin_id)
     if not plugin:
         raise HTTPException(status_code=404, detail="The plugin with this id does not exist.")
+
+    # We restrict updating plugins to admins only
+    if current_user.role != UserRoles.admin:
+        raise HTTPException(status_code=403, detail="You do not have permission to update plugins.")
 
     try:
         plugin = update(db_session=db_session, plugin=plugin, plugin_in=plugin_in)
