@@ -1,4 +1,5 @@
 SQLAlchemy-Searchable
+aiohttp
 aiofiles
 alembic
 arrow
