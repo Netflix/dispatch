@@ -5,12 +5,13 @@
     :license: Apache, see LICENSE for more details.
 """
 import logging
-from typing import List, Optional
+from typing import Optional
+
 from fastapi import HTTPException, Depends
 from fastapi.encoders import jsonable_encoder
 from starlette.requests import Request
-from starlette.status import HTTP_401_UNAUTHORIZED
-from fastapi_permissions import Authenticated, configure_permissions
+from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
+from dispatch.enums import UserRoles
 
 from sqlalchemy.orm import Session
 from dispatch.database import get_db
@@ -85,13 +86,3 @@ def get_current_user(*, db_session: Session = Depends(get_db), request: Request)
         )
 
     return get_or_create(db_session=db_session, user_in=UserRegister(email=user_email))
-
-
-def get_active_principals(user: DispatchUser = Depends(get_current_user)) -> List[str]:
-    """Fetches the current participants for a given user."""
-    principals = [Authenticated]
-    principals.extend(getattr(user, "principals", []))
-    return principals
-
-
-Permission = configure_permissions(get_active_principals)

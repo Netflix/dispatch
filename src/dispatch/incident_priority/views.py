@@ -4,9 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from dispatch.auth.models import DispatchUser
-from dispatch.auth.service import get_current_user
+from dispatch.auth.permissons import AdminPermission, PermissionsDependency
 from dispatch.database import get_db, search_filter_sort_paginate
-from dispatch.enums import UserRoles
 
 from .models import (
     IncidentPriorityCreate,
@@ -49,32 +48,33 @@ def get_incident_priorities(
     )
 
 
-@router.post("/", response_model=IncidentPriorityRead)
+@router.post(
+    "/",
+    response_model=IncidentPriorityRead,
+    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+)
 def create_incident_priority(
     *,
     db_session: Session = Depends(get_db),
     incident_priority_in: IncidentPriorityCreate,
-    current_user: DispatchUser = Depends(get_current_user),
 ):
     """
     Create a new incident priority.
     """
-    # We restrict the creation of incident priorities to admins only
-    if current_user.role != UserRoles.admin:
-        raise HTTPException(
-            status_code=403, detail="You do not have permission to create incident priorities."
-        )
     incident_priority = create(db_session=db_session, incident_priority_in=incident_priority_in)
     return incident_priority
 
 
-@router.put("/{incident_priority_id}", response_model=IncidentPriorityRead)
+@router.put(
+    "/{incident_priority_id}",
+    response_model=IncidentPriorityRead,
+    dependencies=[Depends(PermissionsDependency(AdminPermission))],
+)
 def update_incident_priority(
     *,
     db_session: Session = Depends(get_db),
     incident_priority_id: int,
     incident_priority_in: IncidentPriorityUpdate,
-    current_user: DispatchUser = Depends(get_current_user),
 ):
     """
     Update an existing incident priority.
@@ -83,12 +83,6 @@ def update_incident_priority(
     if not incident_priority:
         raise HTTPException(
             status_code=404, detail="The incident priority with this id does not exist."
-        )
-
-    # We restrict updating incident priorities to admins only
-    if current_user.role != UserRoles.admin:
-        raise HTTPException(
-            status_code=403, detail="You do not have permission to update incident priorities."
         )
 
     incident_priority = update(

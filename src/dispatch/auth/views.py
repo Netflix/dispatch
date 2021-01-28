@@ -2,9 +2,9 @@ from typing import List
 
 from fastapi import APIRouter, Depends, Request, HTTPException, Query
 from sqlalchemy.orm import Session
+from dispatch.auth.permissons import AdminPermission, PermissionsDependency
 
 from dispatch.database import get_db, search_filter_sort_paginate
-from dispatch.enums import UserRoles
 
 from .models import (
     UserLogin,
@@ -14,15 +14,8 @@ from .models import (
     UserPagination,
     UserLoginResponse,
     UserRegisterResponse,
-    DispatchUser,
 )
-from .service import (
-    get,
-    get_by_email,
-    update,
-    create,
-    get_current_user,
-)
+from .service import get, get_by_email, update, create, get_current_user
 
 
 auth_router = APIRouter()
@@ -69,27 +62,27 @@ def get_user(*, db_session: Session = Depends(get_db), user_id: int):
     return user
 
 
-@user_router.put("/{user_id}", response_model=UserUpdate)
+@user_router.put(
+    "/{user_id}",
+    response_model=UserUpdate,
+    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+)
 def update_user(
     *,
     db_session: Session = Depends(get_db),
     user_id: int,
     user_in: UserUpdate,
-    current_user: DispatchUser = Depends(get_current_user),
 ):
     """
     Update a user.
     """
-    if current_user.role == UserRoles.admin:
-        user = get(db_session=db_session, user_id=user_id)
-        if not user:
-            raise HTTPException(status_code=404, detail="The user with this id does not exist.")
+    user = get(db_session=db_session, user_id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="The user with this id does not exist.")
 
-        user = update(db_session=db_session, user=user, user_in=user_in)
+    user = update(db_session=db_session, user=user, user_in=user_in)
 
-        return user
-
-    raise HTTPException(status_code=403, detail="You do no have permission to modify users.")
+    return user
 
 
 @auth_router.post("/login", response_model=UserLoginResponse)

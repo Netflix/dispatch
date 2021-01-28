@@ -3,10 +3,8 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from dispatch.auth.models import DispatchUser
-from dispatch.auth.service import get_current_user
+from dispatch.auth.permissons import AdminPermission, PermissionsDependency
 from dispatch.database import get_db, search_filter_sort_paginate
-from dispatch.enums import UserRoles
 
 from .models import IncidentTypeCreate, IncidentTypePagination, IncidentTypeRead, IncidentTypeUpdate
 from .service import create, get, update
@@ -44,32 +42,33 @@ def get_incident_types(
     )
 
 
-@router.post("/", response_model=IncidentTypeRead)
+@router.post(
+    "/",
+    response_model=IncidentTypeRead,
+    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+)
 def create_incident_type(
     *,
     db_session: Session = Depends(get_db),
     incident_type_in: IncidentTypeCreate,
-    current_user: DispatchUser = Depends(get_current_user),
 ):
     """
     Create a new incident type.
     """
-    # We restrict the creation of incident types to admins only
-    if current_user.role != UserRoles.admin:
-        raise HTTPException(
-            status_code=403, detail="You do not have permission to create incident types."
-        )
     incident_type = create(db_session=db_session, incident_type_in=incident_type_in)
     return incident_type
 
 
-@router.put("/{incident_type_id}", response_model=IncidentTypeRead)
+@router.put(
+    "/{incident_type_id}",
+    response_model=IncidentTypeRead,
+    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+)
 def update_incident_type(
     *,
     db_session: Session = Depends(get_db),
     incident_type_id: int,
     incident_type_in: IncidentTypeUpdate,
-    current_user: DispatchUser = Depends(get_current_user),
 ):
     """
     Update an existing incident type.
@@ -78,12 +77,6 @@ def update_incident_type(
     if not incident_type:
         raise HTTPException(
             status_code=404, detail="The incident type with this id does not exist."
-        )
-
-    # We restrict updating incident types to admins only
-    if current_user.role != UserRoles.admin:
-        raise HTTPException(
-            status_code=403, detail="You do not have permission to update incident types."
         )
 
     incident_type = update(

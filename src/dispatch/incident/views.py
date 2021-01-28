@@ -3,6 +3,13 @@ from typing import List
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from dispatch.auth.permissons import (
+    AdminPermission,
+    IncidentEditPermission,
+    IncidentJoinPermission,
+    PermissionsDependency,
+    IncidentViewPermission,
+)
 
 from dispatch.common.utils.views import create_pydantic_include
 from dispatch.auth.models import DispatchUser
@@ -28,6 +35,8 @@ from .service import create, delete, get, update
 router = APIRouter()
 
 
+# TODO we should be able to harden GET params to bad data similar to the way
+# we do with POST data
 @router.get("/", summary="Retrieve a list of all incidents.")
 def get_incidents(
     db_session: Session = Depends(get_db),
@@ -46,19 +55,19 @@ def get_incidents(
     """
     Retrieve a list of all incidents.
     """
-
-    if current_user.role != UserRoles.admin:
+    if filter_spec:
         # add support for filtering restricted incidents based on role
-        if filter_spec:
-            filter_spec = json.loads(filter_spec)
-            filter_spec.append(
-                {
-                    "model": "Incident",
-                    "field": "visibility",
-                    "op": "!=",
-                    "value": Visibility.restricted,
-                }
-            )
+        filter_spec = json.loads(filter_spec)
+        if current_user.role != UserRoles.admin:
+            if filter_spec:
+                filter_spec.append(
+                    {
+                        "model": "Incident",
+                        "field": "visibility",
+                        "op": "!=",
+                        "value": Visibility.restricted,
+                    }
+                )
 
     pagination = search_filter_sort_paginate(
         db_session=db_session,
@@ -92,12 +101,16 @@ def get_incidents(
     return IncidentPagination(**pagination).dict()
 
 
-@router.get("/{incident_id}", response_model=IncidentRead, summary="Retrieve a single incident.")
+@router.get(
+    "/{incident_id}",
+    response_model=IncidentRead,
+    summary="Retrieve a single incident.",
+    dependencies=[Depends(PermissionsDependency([IncidentViewPermission]))],
+)
 def get_incident(
     *,
     db_session: Session = Depends(get_db),
     incident_id: str,
-    current_user: DispatchUser = Depends(get_current_user),
 ):
     """
     Retrieve details about a specific incident.
@@ -105,22 +118,6 @@ def get_incident(
     incident = get(db_session=db_session, incident_id=incident_id)
     if not incident:
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
-
-    # we want to provide additional protections around restricted incidents
-    if incident.visibility == Visibility.restricted:
-        # reject if the user isn't an admin, reporter or commander
-        if incident.reporter.individual.email == current_user.email:
-            return incident
-
-        if incident.commander.individual.email == current_user.email:
-            return incident
-
-        if current_user.role == UserRoles.admin:
-            return incident
-
-        raise HTTPException(
-            status_code=403, detail="You do not have permission to view this incident."
-        )
 
     return incident
 
@@ -150,7 +147,12 @@ def create_incident(
     return incident
 
 
-@router.put("/{incident_id}", response_model=IncidentRead, summary="Update an existing incident.")
+@router.put(
+    "/{incident_id}",
+    response_model=IncidentRead,
+    summary="Update an existing incident.",
+    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
+)
 def update_incident(
     *,
     db_session: Session = Depends(get_db),
@@ -165,17 +167,6 @@ def update_incident(
     incident = get(db_session=db_session, incident_id=incident_id)
     if not incident:
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
-
-    # we want to provide additional protections around restricted incidents
-    if incident.visibility == Visibility.restricted:
-        # reject if the user isn't an admin or commander
-        if (
-            current_user.email != incident.commander.individual.email
-            or current_user.role != UserRoles.admin
-        ):
-            raise HTTPException(
-                status_code=403, detail="You do not have permission to update this incident."
-            )
 
     previous_incident = IncidentRead.from_orm(incident)
 
@@ -210,7 +201,11 @@ def update_incident(
     return incident
 
 
-@router.post("/{incident_id}/join", summary="Join an incident.")
+@router.post(
+    "/{incident_id}/join",
+    summary="Join an incident.",
+    dependencies=[Depends(PermissionsDependency([IncidentJoinPermission]))],
+)
 def join_incident(
     *,
     db_session: Session = Depends(get_db),
@@ -238,21 +233,20 @@ def join_incident(
     )
 
 
-@router.delete("/{incident_id}", response_model=IncidentRead, summary="Delete an incident.")
+@router.delete(
+    "/{incident_id}",
+    response_model=IncidentRead,
+    summary="Delete an incident.",
+    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+)
 def delete_incident(
     *,
     db_session: Session = Depends(get_db),
     incident_id: str,
-    current_user: DispatchUser = Depends(get_current_user),
 ):
     """
     Delete an individual incident.
     """
-    if current_user.role != UserRoles.admin:
-        raise HTTPException(
-            status_code=403, detail="You do not have permission to delete incidents."
-        )
-
     incident = get(db_session=db_session, incident_id=incident_id)
     if not incident:
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
