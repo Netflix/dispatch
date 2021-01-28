@@ -1,19 +1,28 @@
+import logging
+
 import asyncio
 from fastapi import BackgroundTasks
 
 from dispatch.database import SessionLocal
 from slack_sdk.web.async_client import AsyncWebClient
 
-from .config import SLACK_API_BOT_TOKEN, SLACK_SOCKET_MODE_APP_TOKEN
 from .actions import handle_slack_action
-from .events import handle_slack_event
 from .commands import handle_slack_command
+from .config import SLACK_API_BOT_TOKEN, SLACK_SOCKET_MODE_APP_TOKEN
+from .events import handle_slack_event
+
+
+log = logging.getLogger(__name__)
 
 
 async def run_websocket_process():
     from slack_sdk.socket_mode.aiohttp import SocketModeClient
     from slack_sdk.socket_mode.response import SocketModeResponse
     from slack_sdk.socket_mode.request import SocketModeRequest
+
+    if not SLACK_SOCKET_MODE_APP_TOKEN:
+        log.error("SLACK_SOCKET_MODE_APP_TOKEN not defined in .env file.")
+        return
 
     # Initialize SocketModeClient with an app-level token + WebClient
     client = SocketModeClient(
