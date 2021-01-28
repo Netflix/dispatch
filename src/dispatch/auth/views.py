@@ -1,6 +1,8 @@
 from typing import List
+
 from fastapi import APIRouter, Depends, Request, HTTPException, Query
 from sqlalchemy.orm import Session
+
 from dispatch.database import get_db, search_filter_sort_paginate
 from dispatch.enums import UserRoles
 
@@ -21,6 +23,7 @@ from .service import (
     create,
     get_current_user,
 )
+
 
 auth_router = APIRouter()
 user_router = APIRouter()
@@ -86,7 +89,7 @@ def update_user(
 
         return user
 
-    raise HTTPException(status_code=401, detail="You do no have permission to modify users.")
+    raise HTTPException(status_code=403, detail="You do no have permission to modify users.")
 
 
 @auth_router.post("/login", response_model=UserLoginResponse)
