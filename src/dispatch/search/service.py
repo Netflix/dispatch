@@ -6,7 +6,7 @@ from sqlalchemy_searchable import search as search_db
 from sqlalchemy_filters import apply_filters
 
 from dispatch.common.utils.composite_search import CompositeSearch
-from dispatch.database import Base, get_class_by_tablename
+from dispatch.database import Base, get_class_by_tablename, get_table_name_by_class_instance
 
 from .models import SearchFilter, SearchFilterCreate, SearchFilterUpdate
 
@@ -23,8 +23,7 @@ def get_by_name(*, db_session, name: str) -> Optional[SearchFilter]:
 
 def match(*, db_session, filter_spec, class_instance):
     """Matches an class instance with a given search filter."""
-    table_name = class_instance.sa_instance_state.mapper.mapped_table.name
-    print(f"table_name {table_name}")
+    table_name = get_table_name_by_class_instance(class_instance)
     model_cls = get_class_by_tablename(table_name)
     query = db_session.query(model_cls)
     query = apply_filters(query, filter_spec)
