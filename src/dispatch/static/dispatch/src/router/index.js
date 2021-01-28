@@ -17,7 +17,8 @@ const router = new Router({
   routes: routes
 })
 
-const authProviderSlug = process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG
+const authProviderSlug =
+  process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG || "dispatch-auth-provider-basic"
 
 // router guards
 router.beforeEach((to, from, next) => {
