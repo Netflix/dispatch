@@ -57,7 +57,7 @@ def create_incident_type(
     # We restrict the creation of incident types to admins only
     if current_user.role != UserRoles.admin:
         raise HTTPException(
-            status_code=401, detail="You do not have permission to create incident types."
+            status_code=403, detail="You do not have permission to create incident types."
         )
     incident_type = create(db_session=db_session, incident_type_in=incident_type_in)
     return incident_type
@@ -83,7 +83,7 @@ def update_incident_type(
     # We restrict updating incident types to admins only
     if current_user.role != UserRoles.admin:
         raise HTTPException(
-            status_code=401, detail="You do not have permission to update incident types."
+            status_code=403, detail="You do not have permission to update incident types."
         )
 
     incident_type = update(
