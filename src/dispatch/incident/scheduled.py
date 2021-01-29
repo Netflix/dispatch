@@ -22,7 +22,6 @@ from dispatch.messaging.strings import (
     INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
 )
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
-from dispatch.plugins.base import plugins
 from dispatch.scheduler import scheduler
 from dispatch.service import service as service_service
 from dispatch.plugin import service as plugin_service
