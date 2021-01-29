@@ -52,7 +52,7 @@ def get_overdue_tasks(*, db_session) -> List[Optional[Task]]:
             or_(
                 Task.last_reminder_at + timedelta(days=1)
                 < datetime.utcnow(),  # daily reminders after due date.
-                Task.last_reminder_at == None,
+                Task.last_reminder_at == None,  # noqa
             )
         )
         .all()
