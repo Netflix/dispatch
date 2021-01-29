@@ -10,8 +10,7 @@ from typing import Optional
 from fastapi import HTTPException, Depends
 from fastapi.encoders import jsonable_encoder
 from starlette.requests import Request
-from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
-from dispatch.enums import UserRoles
+from starlette.status import HTTP_401_UNAUTHORIZED
 
 from sqlalchemy.orm import Session
 from dispatch.database import get_db
@@ -84,5 +83,6 @@ def get_current_user(*, db_session: Session = Depends(get_db), request: Request)
         log.exception(
             f"Unable to determine user email based on configured auth provider or no default auth user email defined. Provider: {DISPATCH_AUTHENTICATION_PROVIDER_SLUG}"
         )
+        raise credentials_exception
 
     return get_or_create(db_session=db_session, user_in=UserRegister(email=user_email))

@@ -6,8 +6,8 @@ Create Date: 2020-04-29 12:21:04.458208
 
 """
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy import orm
+import sqlalchemy as sa  # noqa
+from sqlalchemy import orm  # noqa
 from dispatch.auth.models import DispatchUser
 
 

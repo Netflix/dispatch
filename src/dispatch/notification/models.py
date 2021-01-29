@@ -7,7 +7,7 @@ from sqlalchemy.sql.schema import PrimaryKeyConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
-from dispatch.search.models import SearchFilterCreate, SearchFilterRead, SearchFilterUpdate
+from dispatch.search.models import SearchFilterRead, SearchFilterUpdate
 
 from dispatch.models import DispatchBase, TimeStampMixin
 

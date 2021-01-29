@@ -93,7 +93,7 @@ class IncidentJoinPermission(BasePermission):
         )
 
         if current_incident.visibility == Visibility.restricted:
-            return AdminPermission(request=request).has_required_permissions()
+            return AdminPermission(request=request)
 
         return True
 
@@ -108,9 +108,9 @@ class IncidentViewPermission(BasePermission):
         )
         if current_incident.visibility == Visibility.restricted:
             return any(
-                AdminPermission(request=request).has_required_permissions(),
-                IncidentCommanderPermission(request=request).has_required_permissions(),
-                IncidentReporterPermission(request=request).has_required_permissions(),
+                AdminPermission(request=request),
+                IncidentCommanderPermission(request=request),
+                IncidentReporterPermission(request=request),
             )
         return True
 
@@ -121,9 +121,9 @@ class IncidentEditPermission(BasePermission):
         request: Request,
     ) -> bool:
         return any(
-            AdminPermission(request=request).has_required_permissions(),
-            IncidentCommanderPermission(request=request).has_required_permissions(),
-            IncidentReporterPermission(request=request).has_required_permissions(),
+            AdminPermission(request=request),
+            IncidentCommanderPermission(request=request),
+            IncidentReporterPermission(request=request),
         )
 
 
