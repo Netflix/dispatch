@@ -1,6 +1,6 @@
 import logging
 
-from typing import Optional, Type
+from typing import List, Optional, Type
 
 from fastapi.encoders import jsonable_encoder
 
@@ -22,6 +22,13 @@ def get(*, db_session, notification_id: int) -> Optional[Notification]:
 def get_all(*, db_session):
     """Gets all notifications."""
     return db_session.query(Notification)
+
+
+def get_all_enabled(*, db_session) -> Optional[List[Notification]]:
+    """Gets all enabled notifications."""
+    return (
+        db_session.query(Notification).filter(Notification.enabled == True)  # noqa Flake8 E712
+    ).all()
 
 
 def create(*, db_session, notification_in: NotificationCreate) -> Notification:
@@ -78,7 +85,7 @@ def delete(*, db_session, notification_id: int):
 
 def send(*, db_session, class_instance: Type[Base], notification_params: dict):
     """Sends notifications."""
-    notifications = get_all(db_session=db_session)
+    notifications = get_all_enabled(db_session=db_session)
     for notification in notifications:
         for search_filter in notification.filters:
             match = search_service.match(
@@ -86,7 +93,7 @@ def send(*, db_session, class_instance: Type[Base], notification_params: dict):
                 filter_spec=search_filter.expression,
                 class_instance=class_instance,
             )
-            if match and notification.enabled:
+            if match:
                 plugin = plugin_service.get_active(
                     db_session=db_session, plugin_type=notification.type
                 )
