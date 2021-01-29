@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from dispatch.auth.permissons import AdminPermission, PermissionsDependency
+from dispatch.auth.permissions import AdminPermission, PermissionsDependency
 from dispatch.database import get_db, search_filter_sort_paginate
 
 from .models import IncidentTypeCreate, IncidentTypePagination, IncidentTypeRead, IncidentTypeUpdate

@@ -3,7 +3,7 @@ from typing import List
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from dispatch.auth.permissons import (
+from dispatch.auth.permissions import (
     AdminPermission,
     IncidentEditPermission,
     IncidentJoinPermission,

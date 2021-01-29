@@ -1,15 +1,12 @@
 import logging
 from abc import ABC, abstractmethod
 
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException
 from starlette.requests import Request
 from starlette.status import HTTP_403_FORBIDDEN
 
-from dispatch.database import get_db
 from dispatch.enums import UserRoles, Visibility
 from dispatch.auth.service import get_current_user
-from dispatch.auth.models import DispatchUser
-from dispatch.incident.models import Incident
 from dispatch.incident import service as incident_service
 
 
@@ -38,7 +35,6 @@ class BasePermission(ABC):
 
     error_msg = "Forbidden."
     status_code = HTTP_403_FORBIDDEN
-    error_code = HTTP_403_FORBIDDEN
 
     @abstractmethod
     def has_required_permissions(self, request: Request) -> bool:
