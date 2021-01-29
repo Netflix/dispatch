@@ -40,11 +40,15 @@ def get_or_create(*, db_session, tag_in: TagCreate) -> Tag:
 
 def update(*, db_session, tag: Tag, tag_in: TagUpdate) -> Tag:
     tag_data = jsonable_encoder(tag)
-    update_data = tag_in.dict(skip_defaults=True)
+    update_data = tag_in.dict(skip_defaults=True, exclude={"tag_type"})
+
+    tag_type = tag_type_service.get_by_name(db_session=db_session, name=tag_in.tag_type.name)
 
     for field in tag_data:
         if field in update_data:
             setattr(tag, field, update_data[field])
+
+    tag.tag_type = tag_type
 
     db_session.add(tag)
     db_session.commit()
