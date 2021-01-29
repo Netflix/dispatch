@@ -72,6 +72,11 @@ def get_class_by_tablename(table_fullname: str) -> Any:
     raise Exception(f"Incorrect tablename '{mapped_name}'. Check the name of your model.")
 
 
+def get_table_name_by_class_instance(class_instance: Base) -> str:
+    """Returns the name of the table for a given class instance."""
+    return class_instance._sa_instance_state.mapper.mapped_table.name
+
+
 def paginate(query: Query, page: int, items_per_page: int):
     # Never pass a negative OFFSET value to SQL.
     offset_adj = 0 if page <= 0 else page - 1

@@ -70,7 +70,7 @@ def create_reminder(db_session: SessionLocal, owner_email: str, documents: List[
         log.warning("Document reminder not sent, no email plugin enabled.")
         return
 
-    message_template = DOCUMENT_EVERGREEN_REMINDER
+    notification_template = DOCUMENT_EVERGREEN_REMINDER
 
     items = []
     for doc in documents:
@@ -82,10 +82,11 @@ def create_reminder(db_session: SessionLocal, owner_email: str, documents: List[
             }
         )
     notification_type = "document-evergreen-reminder"
-    name = subject = "Document Evergreen Reminder"
+    name = subject = notification_text = "Document Evergreen Reminder"
     plugin.instance.send(
         owner_email,
-        message_template,
+        notification_text,
+        notification_template,
         notification_type,
         name=name,
         subject=subject,

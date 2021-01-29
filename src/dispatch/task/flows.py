@@ -38,10 +38,8 @@ def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact
     # send email
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
     if not plugin:
-        log.warning("Task reminder not sent, no email plugin enabled.")
+        log.warning("Task reminder not sent. No email plugin enabled.")
         return
-
-    message_template = INCIDENT_TASK_REMINDER
 
     items = []
     for t in tasks:
@@ -58,11 +56,13 @@ def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact
             }
         )
 
+    notification_template = INCIDENT_TASK_REMINDER
     notification_type = "incident-task-reminder"
-    name = subject = "Incident Task Reminder"
+    name = subject = notification_text = "Incident Task Reminder"
     plugin.instance.send(
         assignee_email,
-        message_template,
+        notification_text,
+        notification_template,
         notification_type,
         name=name,
         subject=subject,

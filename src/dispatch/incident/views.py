@@ -46,19 +46,19 @@ def get_incidents(
     """
     Retrieve a list of all incidents.
     """
-
-    if current_user.role != UserRoles.admin:
+    if filter_spec:
+        filter_spec = json.loads(filter_spec)
         # add support for filtering restricted incidents based on role
-        if filter_spec:
-            filter_spec = json.loads(filter_spec)
-            filter_spec.append(
-                {
-                    "model": "Incident",
-                    "field": "visibility",
-                    "op": "!=",
-                    "value": Visibility.restricted,
-                }
-            )
+        if current_user.role != UserRoles.admin:
+            if filter_spec:
+                filter_spec.append(
+                    {
+                        "model": "Incident",
+                        "field": "visibility",
+                        "op": "!=",
+                        "value": Visibility.restricted,
+                    }
+                )
 
     pagination = search_filter_sort_paginate(
         db_session=db_session,
