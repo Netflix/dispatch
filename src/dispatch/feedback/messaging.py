@@ -42,10 +42,11 @@ def send_incident_feedback_daily_digest(
             }
         )
 
-    name = subject = "Incident Feedback Daily Digest"
+    name = subject = notification_text = "Incident Feedback Daily Digest"
     contact_fullname = contact_weblink = DISPATCH_HELP_EMAIL
     plugin.instance.send(
         commander_email,
+        notification_text,
         INCIDENT_FEEDBACK_DAILY_DIGEST,
         MessageType.incident_feedback_daily_digest,
         name=name,

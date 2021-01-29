@@ -52,7 +52,6 @@
         </mj-column>
       </mj-section>
     </mj-wrapper>
-
     <mj-wrapper full-width="full-width">
       <mj-section>
         <mj-column width="100%" padding="0">
@@ -68,9 +67,7 @@
             </mj-text>
           </mj-column>
         </mj-group>
-
       </mj-section>
     </mj-wrapper>
-
   </mj-body>
 </mjml>
