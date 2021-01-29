@@ -21,7 +21,6 @@ from dispatch.config import (
 class MessageType(str, Enum):
     incident_closed_information_review_reminder = "incident-closed-information-review-reminder"
     incident_daily_summary = "incident-daily-summary"
-    incident_daily_summary_no_incidents = "incident-daily-summary-no-incidents"
     incident_executive_report = "incident-executive-report"
     incident_notification = "incident-notification"
     incident_participant_suggested_reading = "incident-participant-suggested-reading"

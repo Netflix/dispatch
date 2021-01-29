@@ -20,24 +20,26 @@ from dispatch.messaging.strings import (
     INCIDENT_DAILY_SUMMARY_NO_ACTIVE_INCIDENTS_DESCRIPTION,
     INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
     INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
+    MessageType,
 )
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
+from dispatch.notification import service as notification_service
+from dispatch.plugin import service as plugin_service
 from dispatch.plugins.base import plugins
 from dispatch.scheduler import scheduler
-from dispatch.service import service as service_service
-from dispatch.plugin import service as plugin_service
+from dispatch.service import flows as service_flows
 from dispatch.tag import service as tag_service
 from dispatch.tag.models import Tag
 
 from .enums import IncidentStatus
 from .flows import update_external_incident_ticket
+from .messaging import send_incident_close_reminder
 from .service import (
     calculate_cost,
     get_all,
     get_all_by_status,
     get_all_last_x_hours_by_status,
 )
-from .messaging import send_incident_close_reminder
 
 
 log = logging.getLogger(__name__)
@@ -93,205 +95,146 @@ def daily_summary(db_session=None):
     Fetches all active, and stable and closed incidents in the last 24 hours
     and sends a daily summary to all incident notification conversations.
     """
-    blocks = []
-    blocks.append(
-        {
-            "type": "header",
-            "text": {
-                "type": "plain_text",
-                "text": f"{INCIDENT_DAILY_SUMMARY_DESCRIPTION}",
-            },
-        }
-    )
+    notification_kwargs = {
+        "header": INCIDENT_DAILY_SUMMARY_DESCRIPTION,
+    }
 
     active_incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active)
     if active_incidents:
-        blocks.append(
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": f"*{INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION}*",
-                },
-            }
-        )
+        incidents = []
         for idx, incident in enumerate(active_incidents):
-            ticket_weblink = resolve_attr(incident, "ticket.weblink")
             if incident.visibility == Visibility.open:
                 try:
-                    blocks.append(
+                    incidents.append(
                         {
-                            "type": "section",
-                            "text": {
-                                "type": "mrkdwn",
-                                "text": (
-                                    f"*<{ticket_weblink}|{incident.name}>*\n"
-                                    f"*Title*: {incident.title}\n"
-                                    f"*Type*: {incident.incident_type.name}\n"
-                                    f"*Priority*: {incident.incident_priority.name}\n"
-                                    f"*Incident Commander*: <{incident.commander.individual.weblink}|{incident.commander.individual.name}>"
-                                ),
+                            "title": incident.title,
+                            "incident_type": incident.incident_type.name,
+                            "incident_priority": incident.incident_priority.name,
+                            "incident_commander_name": incident.commander.individual.name,
+                            "incident_commander_weblink": incident.commander.individual.weblink,
+                            "ticket_name": incident.name,
+                            "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
+                            "button": {
+                                "id": f"{ConversationButtonActions.invite_user}-active-{idx}",
+                                "text": "Join Incident",
+                                "value": str(incident.id),
                             },
-                            "block_id": f"{ConversationButtonActions.invite_user}-active-{idx}",
-                            "accessory": {
-                                "type": "button",
-                                "text": {"type": "plain_text", "text": "Join Incident"},
-                                "value": f"{incident.id}",
-                            },
-                        }
+                        },
                     )
                 except Exception as e:
                     log.exception(e)
 
-        blocks.append(
+        notification_kwargs.append(
             {
-                "type": "context",
-                "elements": [
-                    {
-                        "type": "mrkdwn",
-                        "text": f"For more information about active incidents, please visit the active incidents status <{DISPATCH_UI_URL}/incidents/status|page>.",
-                    }
-                ],
+                "active_incidents": {
+                    "description": INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION,
+                    "context": f"For more information about active incidents, please visit the active incidents status <{DISPATCH_UI_URL}/incidents/status|page>.",
+                    "incidents": incidents,
+                }
             }
         )
     else:
-        blocks.append(
+        notification_kwargs.append(
             {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": INCIDENT_DAILY_SUMMARY_NO_ACTIVE_INCIDENTS_DESCRIPTION,
-                },
+                "active_incidents": {
+                    "description": INCIDENT_DAILY_SUMMARY_NO_ACTIVE_INCIDENTS_DESCRIPTION,
+                    "context": "",
+                    "incidents": [],
+                }
             }
         )
 
-    blocks.append({"type": "divider"})
-    blocks.append(
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": f"*{INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION}*",
-            },
-        }
-    )
-
-    hours = 24
     stable_incidents = get_all_last_x_hours_by_status(
-        db_session=db_session, status=IncidentStatus.stable, hours=hours
+        db_session=db_session, status=IncidentStatus.stable, hours=24
     )
     closed_incidents = get_all_last_x_hours_by_status(
-        db_session=db_session, status=IncidentStatus.closed, hours=hours
+        db_session=db_session, status=IncidentStatus.closed, hours=24
     )
     if stable_incidents or closed_incidents:
+        incidents = []
         for idx, incident in enumerate(stable_incidents):
-            ticket_weblink = resolve_attr(incident, "ticket.weblink")
-
             if incident.visibility == Visibility.open:
                 try:
-                    blocks.append(
+                    incidents.append(
                         {
-                            "type": "section",
-                            "text": {
-                                "type": "mrkdwn",
-                                "text": (
-                                    f"*<{ticket_weblink}|{incident.name}>*\n"
-                                    f"*Title*: {incident.title}\n"
-                                    f"*Type*: {incident.incident_type.name}\n"
-                                    f"*Priority*: {incident.incident_priority.name}\n"
-                                    f"*Incident Commander*: <{incident.commander.individual.weblink}|{incident.commander.individual.name}>\n"
-                                    f"*Status*: {incident.status}"
-                                ),
+                            "title": incident.title,
+                            "incident_type": incident.incident_type.name,
+                            "incident_priority": incident.incident_priority.name,
+                            "incident_commander_name": incident.commander.individual.name,
+                            "incident_commander_weblink": incident.commander.individual.weblink,
+                            "ticket_name": incident.name,
+                            "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
+                            "status": incident.status,
+                            "button": {
+                                "id": f"{ConversationButtonActions.invite_user}-stable-{idx}",
+                                "text": "Join Incident",
+                                "value": str(incident.id),
                             },
-                            "block_id": f"{ConversationButtonActions.invite_user}-stable-{idx}",
-                            "accessory": {
-                                "type": "button",
-                                "text": {"type": "plain_text", "text": "Join Incident"},
-                                "value": f"{incident.id}",
-                            },
-                        }
+                        },
                     )
                 except Exception as e:
                     log.exception(e)
 
         for incident in closed_incidents:
-            ticket_weblink = resolve_attr(incident, "ticket.weblink")
-
             if incident.visibility == Visibility.open:
                 try:
-                    blocks.append(
+                    incidents.append(
                         {
-                            "type": "section",
-                            "text": {
-                                "type": "mrkdwn",
-                                "text": (
-                                    f"*<{ticket_weblink}|{incident.name}>*\n"
-                                    f"*Title*: {incident.title}\n"
-                                    f"*Type*: {incident.incident_type.name}\n"
-                                    f"*Priority*: {incident.incident_priority.name}\n"
-                                    f"*Incident Commander*: <{incident.commander.individual.weblink}|{incident.commander.individual.name}>\n"
-                                    f"*Status*: {incident.status}"
-                                ),
-                            },
-                        }
+                            "title": incident.title,
+                            "incident_type": incident.incident_type.name,
+                            "incident_priority": incident.incident_priority.name,
+                            "incident_commander_name": incident.commander.individual.name,
+                            "incident_commander_weblink": incident.commander.individual.weblink,
+                            "ticket_name": incident.name,
+                            "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
+                            "status": incident.status,
+                        },
                     )
                 except Exception as e:
                     log.exception(e)
+
+        notification_kwargs.append(
+            {
+                "active_incidents": {
+                    "description": INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
+                    "context": "",
+                    "incidents": incidents,
+                }
+            }
+        )
     else:
-        blocks.append(
+        notification_kwargs.append(
             {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
-                },
+                "stable_closed_incidents": {
+                    "description": INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
+                    "context": "",
+                    "incidents": [],
+                }
             }
         )
 
-    # NOTE INCIDENT_ONCALL_SERVICE_ID is optional
-    if INCIDENT_ONCALL_SERVICE_ID:
-        oncall_service = service_service.get_by_external_id(
-            db_session=db_session, external_id=INCIDENT_ONCALL_SERVICE_ID
-        )
-
-        if not oncall_service:
-            log.warning(
-                "INCIDENT_ONCALL_SERVICE_ID configured in the .env file, but not found in the database. Did you create the oncall service in the UI?"
+    if INCIDENT_ONCALL_SERVICE_ID:  # Optional configuration variable
+        oncall_email = service_flows.get_oncall_email(INCIDENT_ONCALL_SERVICE_ID, db_session)
+        if oncall_email:
+            oncall_individual = individual_service.resolve_user_by_email(oncall_email, db_session)
+            notification_kwargs.append(
+                {
+                    "context": f"For any questions about this notification, please reach out to <{oncall_individual['weblink']}|{oncall_individual['fullname']}> (current on-call).",
+                }
             )
-            return
 
-        oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
-        if not oncall_plugin:
-            log.warning(
-                f"Unable to resolve the oncall, INCIDENT_ONCALL_SERVICE_ID configured, but associated plugin ({oncall_plugin.slug}) is not enabled."
-            )
-            return
+    notification_template = "<NEEDS_TO_BE_DEFINED>"
 
-        if oncall_plugin.slug != oncall_service.type:
-            log.warning(
-                f"Unable to resolve the oncall. Oncall plugin enabled not of type {oncall_plugin.slug}."
-            )
-            return
+    notification_params = {
+        "text": INCIDENT_DAILY_SUMMARY_DESCRIPTION,
+        "type": MessageType.incident_daily_summary,
+        "template": notification_template,
+        "kwargs": notification_kwargs,
+    }
 
-        oncall_email = oncall_plugin.instance.get(service_id=INCIDENT_ONCALL_SERVICE_ID)
-        oncall_individual = individual_service.resolve_user_by_email(oncall_email, db_session)
-
-        blocks.append(
-            {
-                "type": "context",
-                "elements": [
-                    {
-                        "type": "mrkdwn",
-                        "text": f"For any questions about this notification, please reach out to <{oncall_individual['weblink']}|{oncall_individual['fullname']}> (current on-call)",
-                    }
-                ],
-            }
-        )
-
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
-
-    for c in INCIDENT_NOTIFICATION_CONVERSATIONS:
-        plugin.instance.send(c, "Incident Daily Summary", {}, "", blocks=blocks)
+    notification_service.send(
+        db_session=db_session, class_instance=incident, notification_params=notification_params
+    )
 
 
 @scheduler.add(every(5).minutes, name="calculate-incidents-cost")
