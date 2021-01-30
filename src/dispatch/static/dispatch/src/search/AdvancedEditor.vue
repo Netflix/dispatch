@@ -18,41 +18,31 @@ export default {
       }
     }
   },
-  computed: {
-    content: {
-      get() {
-        return JSON.stringify(this.value, null, 2)
-      },
-      set(value) {
-        try {
-          var o = JSON.parse(value)
-
-          // create our filter query
-
-          if (o && typeof o === "object") {
-            this.$emit("input", o)
-          }
-        } catch (e) {
-          return false
-        }
-      }
-    }
-  },
   watch: {
-    content(value) {
-      this.editor.setValue(value, 1)
+    value(value) {
+      if (this.editor.getValue() !== JSON.stringify(value, null, 2)) {
+        this.editor.setValue(JSON.stringify(value, null, 2))
+        this.editor.renderer.updateFull()
+      }
     }
   },
   mounted() {
     this.editor = ace.edit("advancedEditor")
     this.session = this.editor.getSession()
-    this.editor.setValue(this.content, 1)
 
     this.session.setMode("ace/mode/json")
     this.editor.setTheme("ace/theme/github")
 
     this.editor.on("change", () => {
-      this.content = this.editor.getValue()
+      try {
+        var o = JSON.parse(this.editor.getValue())
+
+        if (o && typeof o === "object") {
+          this.$emit("input", o)
+        }
+      } catch (e) {
+        return false
+      }
     })
   }
 }
