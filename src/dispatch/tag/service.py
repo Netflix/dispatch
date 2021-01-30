@@ -20,7 +20,7 @@ def get_all(*, db_session):
 
 def create(*, db_session, tag_in: TagCreate) -> Tag:
     tag_type = tag_type_service.get_by_name(
-        db_session=db_session, tag_type_name=tag_in.tag_type.name
+        db_session=db_session, name=tag_in.tag_type.name
     )
     tag = Tag(**tag_in.dict(exclude={"tag_type"}), tag_type=tag_type)
     db_session.add(tag)
