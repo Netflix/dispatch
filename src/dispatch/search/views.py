@@ -1,26 +1,26 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from starlette.responses import JSONResponse
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 
-from dispatch.database import get_class_by_tablename, get_db, paginate
+from dispatch.database import get_class_by_tablename, get_db, search_filter_sort_paginate
 from dispatch.enums import SearchTypes, UserRoles
 
 from dispatch.enums import Visibility
 
 from .models import (
     SearchResponse,
-    SearchFilter,
     SearchFilterCreate,
     SearchFilterUpdate,
     SearchFilterRead,
     SearchFilterPagination,
 )
-from .service import composite_search, create, delete, get, get_all, update
+from .service import composite_search, create, delete, get, update
 
 router = APIRouter()
 
@@ -55,19 +55,31 @@ def search(
 
 @router.get("/filters", response_model=SearchFilterPagination)
 def get_filters(
-    db_session: Session = Depends(get_db), page: int = 0, itemsPerPage: int = 5, q: str = None
+    db_session: Session = Depends(get_db),
+    page: int = 1,
+    items_per_page: int = Query(5, alias="itemsPerPage"),
+    query_str: str = Query(None, alias="q"),
+    sort_by: List[str] = Query([], alias="sortBy[]"),
+    descending: List[bool] = Query([], alias="descending[]"),
+    fields: List[str] = Query([], alias="field[]"),
+    ops: List[str] = Query([], alias="op[]"),
+    values: List[str] = Query([], alias="value[]"),
 ):
     """
     Retrieve filters.
     """
-    if q:
-        query = search(db_session=db_session, q=q, model=SearchFilter)
-    else:
-        query = get_all(db_session=db_session)
-
-    items, total = paginate(query=query, page=page, items_per_page=itemsPerPage)
-
-    return {"items": items, "total": total}
+    return search_filter_sort_paginate(
+        db_session=db_session,
+        model="SearchFilter",
+        query_str=query_str,
+        page=page,
+        items_per_page=items_per_page,
+        sort_by=sort_by,
+        descending=descending,
+        fields=fields,
+        values=values,
+        ops=ops,
+    )
 
 
 @router.post("/filters", response_model=SearchFilterRead)
@@ -77,9 +89,13 @@ def create_search_filter(
     """
     Create a new filter.
     """
-    # TODO check for similarity
-    search_filter = create(db_session=db_session, search_filter_in=search_filter_in)
-    return search_filter
+    try:
+        search_filter = create(db_session=db_session, search_filter_in=search_filter_in)
+        return search_filter
+    except IntegrityError:
+        raise HTTPException(
+            status_code=409, detail="A search filter already exists with this name."
+        )
 
 
 @router.put("/filters/{search_filter_id}", response_model=SearchFilterRead)
