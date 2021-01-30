@@ -10,8 +10,6 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Session
 from dispatch.tag.models import Tag
 
-import sqlalchemy_utils
-
 
 # revision identifiers, used by Alembic.
 revision = "1221a4d60f03"
