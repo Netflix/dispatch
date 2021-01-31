@@ -11,11 +11,11 @@ def get(*, db_session, tag_type_id: int) -> Optional[TagType]:
     return db_session.query(TagType).filter(TagType.id == tag_type_id).one_or_none()
 
 
-def get_by_name(*, db_session, tag_type_name: str) -> Optional[TagType]:
+def get_by_name(*, db_session, name: str) -> Optional[TagType]:
     """
     Gets a tag type by its name.
     """
-    return db_session.query(TagType).filter(TagType.name == tag_type_name).one_or_none()
+    return db_session.query(TagType).filter(TagType.name == name).one_or_none()
 
 
 def get_all(*, db_session):
