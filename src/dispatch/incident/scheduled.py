@@ -25,7 +25,6 @@ from dispatch.messaging.strings import (
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.notification import service as notification_service
 from dispatch.plugin import service as plugin_service
-from dispatch.plugins.base import plugins
 from dispatch.scheduler import scheduler
 from dispatch.service import flows as service_flows
 from dispatch.tag import service as tag_service
@@ -92,8 +91,7 @@ def auto_tagger(db_session):
 @background_task
 def daily_summary(db_session=None):
     """
-    Fetches all active, and stable and closed incidents in the last 24 hours
-    and sends a daily summary to all incident notification conversations.
+    Creates and sends an incident daily summary.
     """
     notification_kwargs = {
         "header": INCIDENT_DAILY_SUMMARY_DESCRIPTION,
