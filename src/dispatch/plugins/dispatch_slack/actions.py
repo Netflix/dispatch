@@ -223,7 +223,7 @@ def handle_executive_report_create(
         next_steps=action["submission"]["next_steps"],
     )
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-    report_flows.create_executive_report(
+    executive_report = report_flows.create_executive_report(
         user_email=user_email, incident_id=incident_id, executive_report_in=executive_report_in
     )
 
@@ -231,7 +231,7 @@ def handle_executive_report_create(
     send_feedack_to_user(
         incident.conversation.channel_id,
         user_id,
-        f"The executive report document has been created and can be found in the incident storage here: {executive_report_document['weblink']}",
+        f"The executive report document has been created and can be found in the incident storage here: {executive_report.document.weblink}",
         db_session,
     )
 
