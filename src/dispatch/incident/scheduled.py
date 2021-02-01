@@ -195,9 +195,9 @@ def daily_summary(db_session=None):
 
         notification_kwargs.append(
             {
-                "active_incidents": {
+                "stable_closed_incidents": {
                     "description": INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
-                    "context": "",
+                    "context": f"For more information about stable or closed incidents, please visit the <{DISPATCH_UI_URL}/incidents/list|Dispatch Web UI>.",
                     "incidents": incidents,
                 }
             }
