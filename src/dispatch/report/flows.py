@@ -74,7 +74,7 @@ def create_tactical_report(
     send_feedack_to_user(
         incident.conversation.channel_id,
         user_id,
-        f"The tactical report has been emailed to the incident tactical group ({incident.notifications_group.email}).",
+        f"The tactical report has been emailed to the incident tactical group ({incident.tactical_group.email}).",
         db_session,
     )
 
