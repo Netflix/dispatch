@@ -7,7 +7,19 @@ const getDefaultSelectedState = () => {
     description: null,
     name: null,
     type: null,
-    loading: false
+    loading: false,
+    previewRows: {
+      items: [],
+      total: null
+    },
+    previewRowsLoading: false,
+    step: 1,
+    filters: {
+      incident_type: null,
+      incident_priority: null,
+      status: null,
+      tag: null
+    }
   }
 }
 
@@ -71,12 +83,14 @@ const actions = {
             { root: true }
           )
           commit("SET_SELECTED_LOADING", false)
+          commit("SET_DIALOG_SHOW_CREATE", false)
+          commit("RESET_SELECTED")
         })
         .catch(err => {
           commit(
             "notification_backend/addBeNotification",
             {
-              text: "Search Filter not updated. Reason: " + err.response.data.detail,
+              text: "Search Filter not saved. Reason: " + err.response.data.detail,
               type: "error"
             },
             { root: true }
@@ -127,6 +141,9 @@ const mutations = {
   },
   SET_DIALOG_SHOW_CREATE(state, value) {
     state.dialogs.showCreate = value
+  },
+  RESET_SELECTED(state) {
+    state.selected = Object.assign(state.selected, getDefaultSelectedState())
   }
 }
 
