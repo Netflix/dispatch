@@ -59,3 +59,15 @@ class ReportRead(ReportBase):
 class ReportPagination(ReportBase):
     total: int
     items: List[ReportRead] = []
+
+
+class TacticalReportCreate(DispatchBase):
+    conditions: str
+    actions: str
+    needs: str
+
+
+class ExecutiveReportCreate(DispatchBase):
+    current_status: str
+    overview: str
+    next_steps: str

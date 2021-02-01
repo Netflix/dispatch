@@ -1,6 +1,7 @@
 import json
 from typing import List
 
+from starlette.requests import Request
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from dispatch.auth.permissions import (
@@ -18,6 +19,8 @@ from dispatch.database import get_db, search_filter_sort_paginate
 from dispatch.enums import Visibility, UserRoles
 from dispatch.incident.enums import IncidentStatus
 from dispatch.participant_role.models import ParticipantRoleType
+from dispatch.report.models import TacticalReportCreate, ExecutiveReportCreate
+from dispatch.report import service as report_service
 
 from .flows import (
     incident_add_or_reactivate_participant_flow,
@@ -28,11 +31,19 @@ from .flows import (
     incident_update_flow,
 )
 from .metrics import make_forecast
-from .models import IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
+from .models import Incident, IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
 from .service import create, delete, get, update
 
 
 router = APIRouter()
+
+
+def get_current_incident(*, db_session: Session = Depends(get_db), request: Request) -> Incident:
+    """Fetches incident or returns a 404."""
+    incident = get(db_session=db_session, incident_id=request.path_params.id)
+    if not incident:
+        raise HTTPException(status_code=404, detail="The requested incident does not exist.")
+    return incident
 
 
 # TODO we should be able to harden GET params to bad data similar to the way
@@ -110,16 +121,12 @@ def get_incidents(
 def get_incident(
     *,
     db_session: Session = Depends(get_db),
-    incident_id: str,
+    current_incident: Incident = Depends(get_current_incident),
 ):
     """
     Retrieve details about a specific incident.
     """
-    incident = get(db_session=db_session, incident_id=incident_id)
-    if not incident:
-        raise HTTPException(status_code=404, detail="The requested incident does not exist.")
-
-    return incident
+    return current_incident
 
 
 @router.post("/", response_model=IncidentRead, summary="Create a new incident.")
@@ -156,7 +163,7 @@ def create_incident(
 def update_incident(
     *,
     db_session: Session = Depends(get_db),
-    incident_id: str,
+    current_incident: Incident = Depends(get_current_incident),
     incident_in: IncidentUpdate,
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
@@ -164,14 +171,10 @@ def update_incident(
     """
     Update an individual incident.
     """
-    incident = get(db_session=db_session, incident_id=incident_id)
-    if not incident:
-        raise HTTPException(status_code=404, detail="The requested incident does not exist.")
-
-    previous_incident = IncidentRead.from_orm(incident)
+    previous_incident = IncidentRead.from_orm(current_incident)
 
     # NOTE: Order matters we have to get the previous state for change detection
-    incident = update(db_session=db_session, incident=incident, incident_in=incident_in)
+    incident = update(db_session=db_session, incident=current_incident, incident_in=incident_in)
 
     background_tasks.add_task(
         incident_update_flow,
@@ -209,27 +212,69 @@ def update_incident(
 def join_incident(
     *,
     db_session: Session = Depends(get_db),
-    incident_id: str,
+    current_incident: Incident = Depends(get_current_incident),
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
     """
     Join an individual incident.
     """
-    incident = get(db_session=db_session, incident_id=incident_id)
-    if not incident:
-        raise HTTPException(status_code=404, detail="The requested incident does not exist.")
-
-    # we want to provide additional protections around restricted incidents
-    if incident.visibility == Visibility.restricted:
-        # reject if the user isn't an admin
-        if current_user.role != UserRoles.admin.value:
-            raise HTTPException(
-                status_code=403, detail="You do not have permission to join this incident."
-            )
-
     background_tasks.add_task(
-        incident_add_or_reactivate_participant_flow, current_user.email, incident_id=incident.id
+        incident_add_or_reactivate_participant_flow,
+        current_user.email,
+        incident_id=current_incident.id,
+    )
+
+
+@router.post(
+    "/{incident_id}/report/tactical",
+    summary="Create a tactical report.",
+    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
+)
+def create_tactical_report(
+    *,
+    db_session: Session = Depends(get_db),
+    tactical_report_in: TacticalReportCreate,
+    current_user: DispatchUser = Depends(get_current_user),
+    current_incident: Incident = Depends(get_current_incident),
+    background_tasks: BackgroundTasks,
+):
+    """
+    Creates a new tactical report.
+    """
+    background_tasks.add_task(
+        report_service.create_tactical_report(
+            user_email=current_user.email,
+            channel_id=None,
+            incident_id=current_incident.id,
+            tactical_report_in=tactical_report_in,
+        )
+    )
+
+
+@router.post(
+    "/{incident_id}/report/executive",
+    summary="Create a executive report.",
+    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
+)
+def create_executive_report(
+    *,
+    db_session: Session = Depends(get_db),
+    current_incident: Incident = Depends(get_current_incident),
+    executive_report_in: ExecutiveReportCreate,
+    current_user: DispatchUser = Depends(get_current_user),
+    background_tasks: BackgroundTasks,
+):
+    """
+    Creates a new tactical report.
+    """
+    background_tasks.add_task(
+        report_service.create_executive_report(
+            user_email=current_user.email,
+            channel_id=None,
+            incident_id=current_incident.id,
+            executive_report_in=executive_report_in,
+        )
     )
 
 
@@ -242,16 +287,12 @@ def join_incident(
 def delete_incident(
     *,
     db_session: Session = Depends(get_db),
-    incident_id: str,
+    current_incident: Incident = Depends(get_current_incident),
 ):
     """
     Delete an individual incident.
     """
-    incident = get(db_session=db_session, incident_id=incident_id)
-    if not incident:
-        raise HTTPException(status_code=404, detail="The requested incident does not exist.")
-
-    delete(db_session=db_session, incident_id=incident.id)
+    delete(db_session=db_session, incident_id=current_incident.id)
 
 
 @router.get("/metric/forecast/{incident_type}", summary="Get incident forecast data.")

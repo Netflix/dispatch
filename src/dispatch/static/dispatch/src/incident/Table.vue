@@ -64,6 +64,9 @@
                     <v-list-item :to="`/incidents/${item.name}`">
                       <v-list-item-title>View / Edit</v-list-item-title>
                     </v-list-item>
+                    <v-list-item @click="showNewReportSheet()">
+                      <v-list-item-title>Create Report</v-list-item-title>
+                    </v-list-item>
                     <v-list-item @click="showDeleteDialog(item)">
                       <v-list-item-title>Delete</v-list-item-title>
                     </v-list-item>
