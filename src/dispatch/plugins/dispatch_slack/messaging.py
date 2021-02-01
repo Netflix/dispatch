@@ -117,7 +117,7 @@ Incident-specifc commands can only be run in incident conversations.""".replace(
 
 INCIDENT_CONVERSATION_COMMAND_RUN_BY_NON_PRIVILEGED_USER = """
 Looks like you tried to run `{{command}}`.
-This is a sensitive command and cannot be run by regular participants.""".replace(
+This is a sensitive command and cannot with your current role.""".replace(
     "\n", " "
 ).strip()
 
