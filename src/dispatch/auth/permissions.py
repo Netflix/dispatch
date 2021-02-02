@@ -45,6 +45,16 @@ class BasePermission(ABC):
             raise HTTPException(status_code=self.status_code, detail=self.error_msg)
 
 
+def any_permission(permissions: list, request: Request):
+    for p in permissions:
+        try:
+            p(request=request)
+            return True
+        except HTTPException:
+            pass
+    return False
+
+
 class PermissionsDependency(object):
     """
     Permission dependency that is used to define and check all the permission
@@ -89,7 +99,7 @@ class IncidentJoinPermission(BasePermission):
         request: Request,
     ) -> bool:
         current_incident = incident_service.get(
-            db_session=request.state.db, incident_id=request.path_params.id
+            db_session=request.state.db, incident_id=request.path_params["incident_id"]
         )
 
         if current_incident.visibility == Visibility.restricted:
@@ -104,13 +114,16 @@ class IncidentViewPermission(BasePermission):
         request: Request,
     ) -> bool:
         current_incident = incident_service.get(
-            db_session=request.state.db, incident_id=request.path_params.id
+            db_session=request.state.db, incident_id=request.path_params["incident_id"]
         )
         if current_incident.visibility == Visibility.restricted:
-            return any(
-                AdminPermission(request=request),
-                IncidentCommanderPermission(request=request),
-                IncidentReporterPermission(request=request),
+            return any_permission(
+                permissions=[
+                    AdminPermission,
+                    IncidentCommanderPermission,
+                    IncidentReporterPermission,
+                ],
+                request=request,
             )
         return True
 
@@ -120,10 +133,13 @@ class IncidentEditPermission(BasePermission):
         self,
         request: Request,
     ) -> bool:
-        return any(
-            AdminPermission(request=request),
-            IncidentCommanderPermission(request=request),
-            IncidentReporterPermission(request=request),
+        return any_permission(
+            permissions=[
+                AdminPermission,
+                IncidentCommanderPermission,
+                IncidentReporterPermission,
+            ],
+            request=request,
         )
 
 
@@ -134,7 +150,7 @@ class IncidentReporterPermission(BasePermission):
     ) -> bool:
         current_user = get_current_user(db_session=request.state.db, request=request)
         current_incident = incident_service.get(
-            db_session=request.state.db, incident_id=request.path_params.id
+            db_session=request.state.db, incident_id=request.path_params["incident_id"]
         )
 
         if current_incident.reporter.individual.email == current_user.email:
@@ -148,7 +164,7 @@ class IncidentCommanderPermission(BasePermission):
     ) -> bool:
         current_user = get_current_user(db_session=request.state.db, request=request)
         current_incident = incident_service.get(
-            db_session=request.state.db, incident_id=request.path_params.id
+            db_session=request.state.db, incident_id=request.path_params["incident_id"]
         )
         if current_incident.commander.individual.email == current_user.email:
             return True
