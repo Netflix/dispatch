@@ -105,7 +105,12 @@ class UserRead(UserBase):
 
 class UserUpdate(DispatchBase):
     id: int
-    role: UserRoles
+    role: Optional[UserRoles]
+    password: Optional[str]
+
+    @validator("password", pre=True)
+    def hash(cls, v):
+        return hash_password(v)
 
 
 class UserRegisterResponse(DispatchBase):
