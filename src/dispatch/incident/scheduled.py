@@ -200,21 +200,17 @@ def daily_summary(db_session=None):
             {
                 "stable_closed_incidents": {
                     "description": INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
-                    "context": "",
+                    "context": f"For more information about stable or closed incidents, please visit the <{DISPATCH_UI_URL}/incidents/list|Dispatch Web UI>.",
                     "incidents": [],
                 }
             }
         )
 
-    if INCIDENT_ONCALL_SERVICE_ID:  # Optional configuration variable
-        oncall_email = service_flows.get_oncall_email(INCIDENT_ONCALL_SERVICE_ID, db_session)
-        if oncall_email:
-            oncall_individual = individual_service.resolve_user_by_email(oncall_email, db_session)
-            notification_kwargs.update(
-                {
-                    "context": f"For any questions about this notification, please reach out to <{oncall_individual['weblink']}|{oncall_individual['fullname']}> (current on-call).",
-                }
-            )
+    notification_kwargs.update(
+        {
+            "context": "For any questions about an incident, please reach out to incident's commander.",
+        }
+    )
 
     notification_template = []
 

@@ -231,7 +231,7 @@ def get_template(message_type: MessageType):
             None,
         ),
         MessageType.incident_daily_summary: (
-            daily_incidents_summary_notification,
+            default_notification,
             INCIDENT_DAILY_SUMMARY_DESCRIPTION,
         ),
     }
@@ -285,40 +285,11 @@ def default_notification(items: list):
     return blocks
 
 
-def daily_incidents_summary_notification(items: list):
-    """Creates Slack blocks for the daily incidents summary notification."""
-    blocks = []
-    blocks.append({"type": "divider"})
-    for item in items:
-        if isinstance(item, list):  # handle case where we are passing multiple grouped items
-            blocks += default_notification(item)
-
-        if item.get("title_link") == "None":  # avoid adding blocks with no data
-            continue
-
-        block = {
-            "type": "section",
-            "text": {"type": "mrkdwn", "text": format_default_text(item)},
-        }
-
-        if item.get("button_text") and item.get("button_value"):
-            block.update(
-                {
-                    "block_id": item["button_action"],
-                    "accessory": {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": item["button_text"]},
-                        "value": item["button_value"],
-                    },
-                }
-            )
-
-        blocks.append(block)
-    return blocks
-
-
 def create_message_blocks(
-    message_template: List[dict], message_type: MessageType, items: Optional[List] = None, **kwargs
+    message_template: List[dict],
+    message_type: MessageType,
+    items: Optional[List] = None,
+    **kwargs,
 ):
     """Creates all required blocks for a given message type and template."""
     if not items:
