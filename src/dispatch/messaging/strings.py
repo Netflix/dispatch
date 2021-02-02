@@ -19,9 +19,11 @@ from dispatch.config import (
 
 
 class MessageType(str, Enum):
+    document_evergreen_reminder = "document-evergreen-reminder"
     incident_closed_information_review_reminder = "incident-closed-information-review-reminder"
     incident_daily_summary = "incident-daily-summary"
     incident_executive_report = "incident-executive-report"
+    incident_feedback_daily_digest = "incident-feedback-daily-digest"
     incident_notification = "incident-notification"
     incident_participant_suggested_reading = "incident-participant-suggested-reading"
     incident_participant_welcome = "incident-participant-welcome"
@@ -31,8 +33,6 @@ class MessageType(str, Enum):
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
-    document_evergreen_reminder = "document-evergreen-reminder"
-    incident_feedback_daily_digest = "incident-feedback-daily-digest"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -62,8 +62,13 @@ This is a daily digest of feedback about incidents handled by you.""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_DESCRIPTION = """
+INCIDENT_DAILY_SUMMARY_TITLE = """
 Daily Incidents Summary""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_DAILY_SUMMARY_DESCRIPTION = """
+This is a daily summary of active, stable and closed incidents in the last 24 hours.""".replace(
     "\n", " "
 ).strip()
 

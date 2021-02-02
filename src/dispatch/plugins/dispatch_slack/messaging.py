@@ -9,10 +9,11 @@ from typing import List, Optional
 from jinja2 import Template
 
 from dispatch.messaging.strings import (
+    DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
+    INCIDENT_DAILY_SUMMARY_DESCRIPTION,
     INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
     INCIDENT_TASK_LIST_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
-    DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
     MessageType,
     render_message_template,
 )
@@ -229,6 +230,10 @@ def get_template(message_type: MessageType):
             default_notification,
             None,
         ),
+        MessageType.incident_daily_summary: (
+            daily_incidents_summary_notification,
+            INCIDENT_DAILY_SUMMARY_DESCRIPTION,
+        ),
     }
 
     template_func, description = template_map.get(message_type, (None, None))
@@ -249,7 +254,39 @@ def format_default_text(item: dict):
 
 
 def default_notification(items: list):
-    """This is a default dispatch slack notification."""
+    """This is a default Dispatch Slack notification."""
+    blocks = []
+    blocks.append({"type": "divider"})
+    for item in items:
+        if isinstance(item, list):  # handle case where we are passing multiple grouped items
+            blocks += default_notification(item)
+
+        if item.get("title_link") == "None":  # avoid adding blocks with no data
+            continue
+
+        block = {
+            "type": "section",
+            "text": {"type": "mrkdwn", "text": format_default_text(item)},
+        }
+
+        if item.get("button_text") and item.get("button_value"):
+            block.update(
+                {
+                    "block_id": item["button_action"],
+                    "accessory": {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": item["button_text"]},
+                        "value": item["button_value"],
+                    },
+                }
+            )
+
+        blocks.append(block)
+    return blocks
+
+
+def daily_incidents_summary_notification(items: list):
+    """Creates Slack blocks for the daily incidents summary notification."""
     blocks = []
     blocks.append({"type": "divider"})
     for item in items:

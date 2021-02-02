@@ -7,7 +7,6 @@ from sqlalchemy import func
 from dispatch.config import (
     DISPATCH_UI_URL,
     INCIDENT_ONCALL_SERVICE_ID,
-    INCIDENT_NOTIFICATION_CONVERSATIONS,
 )
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.database import resolve_attr
@@ -16,10 +15,10 @@ from dispatch.enums import Visibility
 from dispatch.individual import service as individual_service
 from dispatch.messaging.strings import (
     INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION,
-    INCIDENT_DAILY_SUMMARY_DESCRIPTION,
     INCIDENT_DAILY_SUMMARY_NO_ACTIVE_INCIDENTS_DESCRIPTION,
     INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
     INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
+    INCIDENT_DAILY_SUMMARY_TITLE,
     MessageType,
 )
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
@@ -94,7 +93,7 @@ def daily_summary(db_session=None):
     Creates and sends an incident daily summary.
     """
     notification_kwargs = {
-        "header": INCIDENT_DAILY_SUMMARY_DESCRIPTION,
+        "header": INCIDENT_DAILY_SUMMARY_TITLE,
     }
 
     active_incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active)
@@ -112,17 +111,15 @@ def daily_summary(db_session=None):
                             "incident_commander_weblink": incident.commander.individual.weblink,
                             "ticket_name": incident.name,
                             "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
-                            "button": {
-                                "id": f"{ConversationButtonActions.invite_user}-active-{idx}",
-                                "text": "Join Incident",
-                                "value": str(incident.id),
-                            },
+                            "button_text": "Join Incident",
+                            "button_value": str(incident.id),
+                            "button_action": f"{ConversationButtonActions.invite_user}-active-{idx}",
                         },
                     )
                 except Exception as e:
                     log.exception(e)
 
-        notification_kwargs.append(
+        notification_kwargs.update(
             {
                 "active_incidents": {
                     "description": INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION,
@@ -132,7 +129,7 @@ def daily_summary(db_session=None):
             }
         )
     else:
-        notification_kwargs.append(
+        notification_kwargs.update(
             {
                 "active_incidents": {
                     "description": INCIDENT_DAILY_SUMMARY_NO_ACTIVE_INCIDENTS_DESCRIPTION,
@@ -163,11 +160,9 @@ def daily_summary(db_session=None):
                             "ticket_name": incident.name,
                             "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
                             "status": incident.status,
-                            "button": {
-                                "id": f"{ConversationButtonActions.invite_user}-stable-{idx}",
-                                "text": "Join Incident",
-                                "value": str(incident.id),
-                            },
+                            "button_text": "Join Incident",
+                            "button_value": str(incident.id),
+                            "button_action": f"{ConversationButtonActions.invite_user}-stable-{idx}",
                         },
                     )
                 except Exception as e:
@@ -191,7 +186,7 @@ def daily_summary(db_session=None):
                 except Exception as e:
                     log.exception(e)
 
-        notification_kwargs.append(
+        notification_kwargs.update(
             {
                 "stable_closed_incidents": {
                     "description": INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
@@ -201,7 +196,7 @@ def daily_summary(db_session=None):
             }
         )
     else:
-        notification_kwargs.append(
+        notification_kwargs.update(
             {
                 "stable_closed_incidents": {
                     "description": INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
@@ -215,16 +210,16 @@ def daily_summary(db_session=None):
         oncall_email = service_flows.get_oncall_email(INCIDENT_ONCALL_SERVICE_ID, db_session)
         if oncall_email:
             oncall_individual = individual_service.resolve_user_by_email(oncall_email, db_session)
-            notification_kwargs.append(
+            notification_kwargs.update(
                 {
                     "context": f"For any questions about this notification, please reach out to <{oncall_individual['weblink']}|{oncall_individual['fullname']}> (current on-call).",
                 }
             )
 
-    notification_template = "<NEEDS_TO_BE_DEFINED>"
+    notification_template = []
 
     notification_params = {
-        "text": INCIDENT_DAILY_SUMMARY_DESCRIPTION,
+        "text": INCIDENT_DAILY_SUMMARY_TITLE,
         "type": MessageType.incident_daily_summary,
         "template": notification_template,
         "kwargs": notification_kwargs,
