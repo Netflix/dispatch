@@ -14,9 +14,10 @@
           </v-stepper-step>
           <v-divider></v-divider>
 
-          <v-stepper-step step="2" editable>
+          <v-stepper-step :complete="step > 2" step="2" editable>
             Preview
           </v-stepper-step>
+          <v-divider></v-divider>
 
           <v-stepper-step step="3" editable>
             Save
@@ -197,7 +198,19 @@ export default {
         { text: "Status", value: "status", sortable: false },
         { text: "Incident Type", value: "incident_type.name", sortable: false },
         { text: "Incident Priority", value: "incident_priority.name", sortable: false }
-      ]
+      ],
+      step: 1,
+      previewRows: {
+        items: [],
+        total: null
+      },
+      previewRowsLoading: false,
+      filters: {
+        incident_type: null,
+        incident_priority: null,
+        status: null,
+        tag: null
+      }
     }
   },
   components: {
@@ -216,11 +229,6 @@ export default {
       "selected.description",
       "selected.expression",
       "selected.name",
-      "selected.filters",
-      "selected.previewRowsLoading",
-      "selected.previewRows",
-      "selected.type",
-      "selected.step",
       "loading",
       "dialogs.showCreate"
     ])
@@ -232,18 +240,22 @@ export default {
     createFilterExpression(filters) {
       let filterExpression = []
       forEach(filters, function(value, key) {
+        let subFilter = []
         each(value, function(value) {
           if (has(value, "id")) {
-            filterExpression.push({
+            subFilter.push({
               model: toPascalCase(key),
               field: "id",
               op: "==",
               value: value.id
             })
           } else {
-            filterExpression.push({ field: key, op: "==", value: value })
+            subFilter.push({ field: key, op: "==", value: value })
           }
         })
+        if (subFilter.length > 1) {
+          filterExpression.push({ or: subFilter })
+        }
       })
 
       if (filterExpression.length > 0) {
