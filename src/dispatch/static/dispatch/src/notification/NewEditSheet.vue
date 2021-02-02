@@ -57,18 +57,12 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Type" rules="required" immediate>
-                  <v-text-field
-                    v-model="type"
-                    slot-scope="{ errors, valid }"
-                    label="Type"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="The type of the notification."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <v-select
+                  v-model="type"
+                  :items="typeItems"
+                  label="Type"
+                  hint="The type of the notification."
+                ></v-select>
               </v-flex>
               <v-flex xs12>
                 <ValidationProvider name="Target" rules="required" immediate>
@@ -125,6 +119,10 @@ export default {
     ValidationObserver,
     ValidationProvider,
     SearchFilterCombobox
+  },
+
+  data() {
+    return { typeItems: ["email", "conversation"] }
   },
 
   computed: {

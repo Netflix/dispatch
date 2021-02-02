@@ -8,7 +8,7 @@ const getDefaultSelectedState = () => {
     id: null,
     name: null,
     description: null,
-    type: null,
+    type: "conversation",
     target: null,
     enabled: null,
     filters: null,
