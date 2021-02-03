@@ -189,6 +189,25 @@ def update_user(email: str, role: str):
     click.secho("User successfully updated.", fg="green")
 
 
+@dispatch_user.command("reset")
+@click.argument("email")
+@click.password_option()
+def reset_user_password(email: str, password: str):
+    """Resets a user's password."""
+    from dispatch.database import SessionLocal
+    from dispatch.auth import service as user_service
+    from dispatch.auth.models import UserUpdate
+
+    db_session = SessionLocal()
+    user = user_service.get_by_email(email=email, db_session=db_session)
+    if not user:
+        click.secho(f"No user found. Email: {email}", fg="red")
+        return
+
+    user_service.update(user=user, user_in=UserUpdate(id=user.id, password=password), db_session=db_session)
+    click.secho("User successfully updated.", fg="green")
+
+
 @dispatch_cli.group("database")
 def dispatch_database():
     """Container for all dispatch database commands."""

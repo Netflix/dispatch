@@ -29,7 +29,6 @@ export default {
   mounted() {
     this.editor = ace.edit("advancedEditor")
     this.session = this.editor.getSession()
-
     this.session.setMode("ace/mode/json")
     this.editor.setTheme("ace/theme/github")
 

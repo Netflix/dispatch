@@ -60,11 +60,14 @@ def get_or_create(*, db_session, user_in: UserRegister) -> DispatchUser:
 def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUser:
     """Updates a user."""
     user_data = jsonable_encoder(user)
-    update_data = user_in.dict(skip_defaults=True)
+    password = bytes(user_in.password, "utf-8")
+
+    update_data = user_in.dict(exclude={"password"}, skip_defaults=True)
     for field in user_data:
         if field in update_data:
             setattr(user, field, update_data[field])
 
+    user.password = password
     db_session.add(user)
     db_session.commit()
     return user
