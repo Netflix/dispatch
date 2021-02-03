@@ -83,7 +83,24 @@ def delete(*, db_session, notification_id: int):
     db_session.commit()
 
 
-def send(*, db_session, class_instance: Type[Base], notification_params: dict):
+def send(*, db_session, notification: Notification, notification_params: dict):
+    """Send a notification via plugin."""
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type=notification.type)
+    if plugin:
+        plugin.instance.send(
+            notification.target,
+            notification_params["text"],
+            notification_params["template"],
+            notification_params["type"],
+            **notification_params["kwargs"],
+        )
+    else:
+        log.warning(
+            f"Notification {notification.name} not sent. No {notification.type} plugin is active."
+        )
+
+
+def filter_and_send(*, db_session, class_instance: Type[Base], notification_params: dict):
     """Sends notifications."""
     notifications = get_all_enabled(db_session=db_session)
     for notification in notifications:
@@ -94,18 +111,15 @@ def send(*, db_session, class_instance: Type[Base], notification_params: dict):
                 class_instance=class_instance,
             )
             if match:
-                plugin = plugin_service.get_active(
-                    db_session=db_session, plugin_type=notification.type
+                send(
+                    db_session=db_session,
+                    notification=notification,
+                    notification_params=notification_params,
                 )
-                if plugin:
-                    plugin.instance.send(
-                        notification.target,
-                        notification_params["text"],
-                        notification_params["template"],
-                        notification_params["type"],
-                        **notification_params["kwargs"],
-                    )
-                else:
-                    log.warning(
-                        f"Notification {notification.name} not sent. No {notification.type} plugin enabled."
-                    )
+
+        if not notification.filters:
+            send(
+                db_session=db_session,
+                notification=notification,
+                notification_params=notification_params,
+            )
