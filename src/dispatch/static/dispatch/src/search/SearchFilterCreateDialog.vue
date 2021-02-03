@@ -134,6 +134,10 @@
                   </ValidationProvider>
                 </v-card-text>
                 <v-card-actions>
+                  <v-spacer />
+                  <v-btn @click="closeCreateDialog()" text>
+                    Cancel
+                  </v-btn>
                   <v-btn
                     color="info"
                     @click="save('incident')"
@@ -141,9 +145,6 @@
                     :disabled="invalid || !validated"
                   >
                     Save
-                  </v-btn>
-                  <v-btn @click="closeCreateDialog()" text>
-                    Cancel
                   </v-btn>
                 </v-card-actions>
               </v-card>

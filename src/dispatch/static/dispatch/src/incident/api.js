@@ -23,6 +23,10 @@ export default {
     return API.put(`${resource}/${incidentId}`, payload)
   },
 
+  createReport(incidentId, type, payload) {
+    return API.post(`${resource}/${incidentId}/report/${type}`, payload)
+  },
+
   bulkUpdate(incidents, payload) {
     return Promise.all(
       incidents.map(incident => {

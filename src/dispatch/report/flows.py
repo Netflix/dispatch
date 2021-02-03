@@ -3,22 +3,21 @@ import logging
 from datetime import date
 
 from dispatch.config import INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT
-from dispatch.conversation.messaging import send_feedack_to_user
 from dispatch.decorators import background_task
 from dispatch.document import service as document_service
 from dispatch.document.models import DocumentCreate
 from dispatch.event import service as event_service
+from dispatch.exceptions import InvalidConfiguration
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.plugin import service as plugin_service
 
 from .enums import ReportTypes
 from .messaging import (
-    send_executive_report_to_notifications_group,
     send_tactical_report_to_conversation,
     send_tactical_report_to_tactical_group,
 )
-from .models import ReportCreate
+from .models import ReportCreate, TacticalReportCreate, ExecutiveReportCreate
 from .service import create, get_all_by_incident_id_and_type
 
 
@@ -27,12 +26,12 @@ log = logging.getLogger(__name__)
 
 @background_task
 def create_tactical_report(
-    user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
+    user_email: str, incident_id: int, tactical_report_in: TacticalReportCreate, db_session=None
 ):
     """Creates and sends a new tactical report to a conversation."""
-    conditions = action["submission"]["conditions"]
-    actions = action["submission"]["actions"]
-    needs = action["submission"]["needs"]
+    conditions = tactical_report_in.conditions
+    actions = tactical_report_in.actions
+    needs = tactical_report_in.needs
 
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
@@ -70,41 +69,30 @@ def create_tactical_report(
     # we send the tactical report to the tactical group
     send_tactical_report_to_tactical_group(incident_id, tactical_report, db_session)
 
-    # we let the user know that the report has been sent to the tactical group
-    send_feedack_to_user(
-        incident.conversation.channel_id,
-        user_id,
-        f"The tactical report has been emailed to the incident tactical group ({incident.tactical_group.email}).",
-        db_session,
-    )
-
     return tactical_report
 
 
 @background_task
 def create_executive_report(
-    user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
+    user_email: str,
+    incident_id: int,
+    executive_report_in: ExecutiveReportCreate,
+    db_session=None,
 ):
     """Creates an executive report."""
     report_template = document_service.get_executive_report_template(db_session=db_session)
 
     current_date = date.today().strftime("%B %d, %Y")
 
-    current_status = action["submission"]["current_status"]
-    overview = action["submission"]["overview"]
-    next_steps = action["submission"]["next_steps"]
+    current_status = executive_report_in.current_status
+    overview = executive_report_in.overview
+    next_steps = executive_report_in.next_steps
 
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     if not report_template:
-        send_feedack_to_user(
-            incident.conversation.channel_id,
-            user_id,
-            "No executive report template defined.",
-            db_session,
-        )
-        return
+        raise InvalidConfiguration("No executive report template defined.")
 
     # we fetch all previous executive reports
     executive_reports = get_all_by_incident_id_and_type(
@@ -210,25 +198,6 @@ def create_executive_report(
         previous_reports="\n".join(previous_executive_reports),
         commander_fullname=incident.commander.individual.name,
         commander_weblink=incident.commander.individual.weblink,
-    )
-
-    # we let the user know that the report has been created
-    send_feedack_to_user(
-        incident.conversation.channel_id,
-        user_id,
-        f"The executive report document has been created and can be found in the incident storage here: {executive_report_document['weblink']}",
-        db_session,
-    )
-
-    # we send the executive report to the notifications group
-    send_executive_report_to_notifications_group(incident_id, executive_report, db_session)
-
-    # we let the user know that the report has been sent to the notifications group
-    send_feedack_to_user(
-        incident.conversation.channel_id,
-        user_id,
-        f"The executive report has been emailed to the incident notifications group ({incident.notifications_group.email}).",
-        db_session,
     )
 
     return executive_report

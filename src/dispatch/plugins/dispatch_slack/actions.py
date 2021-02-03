@@ -2,6 +2,7 @@ from fastapi import BackgroundTasks
 
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.enums import ConversationButtonActions
+from dispatch.conversation.messaging import send_feedack_to_user
 from dispatch.database import SessionLocal
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
@@ -10,6 +11,7 @@ from dispatch.incident.models import IncidentUpdate, IncidentRead
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.report import flows as report_flows
+from dispatch.report.models import ExecutiveReportCreate, TacticalReportCreate
 from dispatch.task import service as task_service
 from dispatch.task.models import TaskStatus
 
@@ -175,6 +177,74 @@ def handle_engage_oncall_action(
 
 
 @slack_background_task
+def handle_tactical_report_create(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    action: dict,
+    db_session=None,
+    slack_client=None,
+):
+    """Handles the creation of a tactical report."""
+    tactical_report_in = TacticalReportCreate(
+        conditions=action["submission"]["conditions"],
+        actions=action["submission"]["actions"],
+        needs=action["submission"]["needs"],
+    )
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    report_flows.create_tactical_report(
+        user_email=user_email, incident_id=incident_id, tactical_report_in=tactical_report_in
+    )
+
+    # we let the user know that the report has been sent to the tactical group
+    send_feedack_to_user(
+        incident.conversation.channel_id,
+        user_id,
+        f"The tactical report has been emailed to the incident tactical group ({incident.tactical_group.email}).",
+        db_session,
+    )
+
+
+@slack_background_task
+def handle_executive_report_create(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    action: dict,
+    db_session=None,
+    slack_client=None,
+):
+    """Handles the creation of executive reports."""
+    executive_report_in = ExecutiveReportCreate(
+        current_status=action["submission"]["current_status"],
+        overview=action["submission"]["overview"],
+        next_steps=action["submission"]["next_steps"],
+    )
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    executive_report = report_flows.create_executive_report(
+        user_email=user_email, incident_id=incident_id, executive_report_in=executive_report_in
+    )
+
+    # we let the user know that the report has been created
+    send_feedack_to_user(
+        incident.conversation.channel_id,
+        user_id,
+        f"The executive report document has been created and can be found in the incident storage here: {executive_report.document.weblink}",
+        db_session,
+    )
+
+    # we let the user know that the report has been sent to the notifications group
+    send_feedack_to_user(
+        incident.conversation.channel_id,
+        user_id,
+        f"The executive report has been emailed to the incident notifications group ({incident.notifications_group.email}).",
+        db_session,
+    )
+
+
+@slack_background_task
 def handle_assign_role_action(
     user_id: str,
     user_email: str,
@@ -196,8 +266,8 @@ def dialog_action_functions(action: str):
     action_mappings = {
         SLACK_COMMAND_ASSIGN_ROLE_SLUG: [handle_assign_role_action],
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [handle_engage_oncall_action],
-        SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [report_flows.create_executive_report],
-        SLACK_COMMAND_REPORT_TACTICAL_SLUG: [report_flows.create_tactical_report],
+        SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [handle_executive_report_create],
+        SLACK_COMMAND_REPORT_TACTICAL_SLUG: [handle_tactical_report_create],
         SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [handle_update_incident_action],
     }
 
