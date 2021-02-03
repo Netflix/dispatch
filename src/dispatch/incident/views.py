@@ -254,7 +254,7 @@ def create_tactical_report(
 
 @router.post(
     "/{incident_id}/report/executive",
-    summary="Create a executive report.",
+    summary="Create an executive report.",
     dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
 )
 def create_executive_report(
