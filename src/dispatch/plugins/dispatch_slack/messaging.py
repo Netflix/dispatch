@@ -9,10 +9,11 @@ from typing import List, Optional
 from jinja2 import Template
 
 from dispatch.messaging.strings import (
+    DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
+    INCIDENT_DAILY_REPORT_DESCRIPTION,
     INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
     INCIDENT_TASK_LIST_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
-    DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
     MessageType,
     render_message_template,
 )
@@ -229,6 +230,10 @@ def get_template(message_type: MessageType):
             default_notification,
             None,
         ),
+        MessageType.incident_daily_report: (
+            default_notification,
+            None,
+        ),
     }
 
     template_func, description = template_map.get(message_type, (None, None))
@@ -245,11 +250,13 @@ def format_default_text(item: dict):
         return f"*<{item['title_link']}|{item['title']}>*\n{item['text']}"
     if item.get("datetime"):
         return f"*{item['title']}*\n <!date^{int(item['datetime'].timestamp())}^ {{date}} | {item['datetime']}"
-    return f"*{item['title']}*\n{item['text']}"
+    if item.get("title"):
+        return f"*{item['title']}*\n{item['text']}"
+    return item["text"]
 
 
 def default_notification(items: list):
-    """This is a default dispatch slack notification."""
+    """Creates blocks for a default notification."""
     blocks = []
     blocks.append({"type": "divider"})
     for item in items:
@@ -259,10 +266,19 @@ def default_notification(items: list):
         if item.get("title_link") == "None":  # avoid adding blocks with no data
             continue
 
-        block = {
-            "type": "section",
-            "text": {"type": "mrkdwn", "text": format_default_text(item)},
-        }
+        if item.get("type"):
+            block = {
+                "type": item["type"],
+            }
+            if item["type"] == "context":
+                block.update({"elements": [{"type": "mrkdwn", "text": format_default_text(item)}]})
+            else:
+                block.update({"text": {"type": "plain_text", "text": format_default_text(item)}})
+        else:
+            block = {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": format_default_text(item)},
+            }
 
         if item.get("button_text") and item.get("button_value"):
             block.update(
@@ -277,11 +293,15 @@ def default_notification(items: list):
             )
 
         blocks.append(block)
+
     return blocks
 
 
 def create_message_blocks(
-    message_template: List[dict], message_type: MessageType, items: Optional[List] = None, **kwargs
+    message_template: List[dict],
+    message_type: MessageType,
+    items: Optional[List] = None,
+    **kwargs,
 ):
     """Creates all required blocks for a given message type and template."""
     if not items:
@@ -300,7 +320,15 @@ def create_message_blocks(
         rendered_items = render_message_template(message_template, **item)
         blocks += template_func(rendered_items)
 
-    return blocks
+    if items[0].get("items_grouped"):
+        blocks_grouped = []
+        for item in items[0]["items_grouped"]:
+            rendered_items_grouped = render_message_template(
+                items[0]["items_grouped_template"], **item
+            )
+            blocks_grouped += template_func(rendered_items_grouped)
+
+    return blocks + blocks_grouped
 
 
 def slack_preview(message, block=None):
