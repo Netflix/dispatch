@@ -13,7 +13,7 @@
           <v-tab-item key="tactical" value="tactical">
             <v-card elevation="0">
               <v-card-text>
-                Tactical reports are only send to incident participants and are generally used for
+                Tactical reports are only sent to incident participants and are generally used for
                 status reports.
                 <v-textarea
                   v-model="conditions"
