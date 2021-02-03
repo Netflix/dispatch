@@ -83,7 +83,7 @@ def delete(*, db_session, notification_id: int):
     db_session.commit()
 
 
-def send_matched(*, db_session, notification: Notification, notification_params: dict):
+def send(*, db_session, notification: Notification, notification_params: dict):
     """Send a notification via plugin."""
     plugin = plugin_service.get_active(db_session=db_session, plugin_type=notification.type)
     if plugin:
@@ -100,7 +100,7 @@ def send_matched(*, db_session, notification: Notification, notification_params:
         )
 
 
-def send(*, db_session, class_instance: Type[Base], notification_params: dict):
+def filter_and_send(*, db_session, class_instance: Type[Base], notification_params: dict):
     """Sends notifications."""
     notifications = get_all_enabled(db_session=db_session)
     for notification in notifications:
@@ -111,14 +111,14 @@ def send(*, db_session, class_instance: Type[Base], notification_params: dict):
                 class_instance=class_instance,
             )
             if match:
-                send_matched(
+                send(
                     db_session=db_session,
                     notification=notification,
                     notification_params=notification_params,
                 )
 
         if not notification.filters:
-            send_matched(
+            send(
                 db_session=db_session,
                 notification=notification,
                 notification_params=notification_params,
