@@ -266,7 +266,7 @@ def create_executive_report(
     background_tasks: BackgroundTasks,
 ):
     """
-    Creates a new tactical report.
+    Creates a new executive report.
     """
     background_tasks.add_task(
         report_flows.create_executive_report(
