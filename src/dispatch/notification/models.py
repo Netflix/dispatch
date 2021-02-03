@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from typing import Optional, List
 
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table
@@ -10,6 +11,12 @@ from dispatch.database import Base
 from dispatch.search.models import SearchFilterRead, SearchFilterUpdate
 
 from dispatch.models import DispatchBase, TimeStampMixin
+
+
+class NotificationTypeEnum(str, Enum):
+    conversation = "conversation"
+    email = "email"
+
 
 assoc_notification_filters = Table(
     "assoc_notification_filters",
@@ -41,13 +48,13 @@ class Notification(Base, TimeStampMixin):
 class NotificationBase(DispatchBase):
     name: str
     description: Optional[str] = None
-    type: str
+    type: NotificationTypeEnum
     target: str
     enabled: Optional[bool]
 
 
 class NotificationCreate(NotificationBase):
-    filters: List[SearchFilterRead]
+    filters: Optional[List[SearchFilterRead]]
 
 
 class NotificationUpdate(NotificationBase):
