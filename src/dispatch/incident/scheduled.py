@@ -12,15 +12,10 @@ from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.database import resolve_attr
 from dispatch.decorators import background_task
 from dispatch.enums import Visibility
-from dispatch.individual import service as individual_service
 from dispatch.messaging.strings import (
-    INCIDENT_DAILY_REPORT_ACTIVE_INCIDENTS_DESCRIPTION,
-    INCIDENT_DAILY_REPORT_NO_ACTIVE_INCIDENTS_DESCRIPTION,
-    INCIDENT_DAILY_REPORT_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
-    INCIDENT_DAILY_REPORT_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
-    INCIDENT_DAILY_REPORT_TITLE,
-    INCIDENT_DAILY_REPORT,
     INCIDENT,
+    INCIDENT_DAILY_REPORT,
+    INCIDENT_DAILY_REPORT_TITLE,
     MessageType,
 )
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text

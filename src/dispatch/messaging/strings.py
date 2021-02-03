@@ -77,26 +77,6 @@ For any questions about an incident, please reach out to incident's commander.""
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_REPORT_ACTIVE_INCIDENTS_DESCRIPTION = """
-Active Incidents""".replace(
-    "\n", " "
-).strip()
-
-INCIDENT_DAILY_REPORT_NO_ACTIVE_INCIDENTS_DESCRIPTION = """
-There are no active incidents at this moment.""".replace(
-    "\n", " "
-).strip()
-
-INCIDENT_DAILY_REPORT_STABLE_CLOSED_INCIDENTS_DESCRIPTION = """
-Stable or Closed Incidents (last 24 hours)""".replace(
-    "\n", " "
-).strip()
-
-INCIDENT_DAILY_REPORT_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION = """
-There are no stable or closed incidents in the last 24 hours.""".replace(
-    "\n", " "
-).strip()
-
 INCIDENT_COMMANDER_DESCRIPTION = """
 The Incident Commander (IC) is responsible for
 knowing the full context of the incident.
