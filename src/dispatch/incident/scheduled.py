@@ -14,12 +14,12 @@ from dispatch.decorators import background_task
 from dispatch.enums import Visibility
 from dispatch.individual import service as individual_service
 from dispatch.messaging.strings import (
-    INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION,
-    INCIDENT_DAILY_SUMMARY_NO_ACTIVE_INCIDENTS_DESCRIPTION,
-    INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
-    INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
-    INCIDENT_DAILY_SUMMARY_TITLE,
-    INCIDENT_DAILY_SUMMARY,
+    INCIDENT_DAILY_REPORT_ACTIVE_INCIDENTS_DESCRIPTION,
+    INCIDENT_DAILY_REPORT_NO_ACTIVE_INCIDENTS_DESCRIPTION,
+    INCIDENT_DAILY_REPORT_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
+    INCIDENT_DAILY_REPORT_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
+    INCIDENT_DAILY_REPORT_TITLE,
+    INCIDENT_DAILY_REPORT,
     MessageType,
 )
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
@@ -86,11 +86,11 @@ def auto_tagger(db_session):
             )
 
 
-@scheduler.add(every(1).day.at("18:00"), name="incident-daily-summary")
+@scheduler.add(every(1).day.at("18:00"), name="incident-daily-report")
 @background_task
-def daily_summary(db_session=None):
+def daily_report(db_session=None):
     """
-    Creates and sends an incident daily summary.
+    Creates and sends an incident daily report.
     """
     notification_kwargs = {}
 
@@ -120,7 +120,7 @@ def daily_summary(db_session=None):
         notification_kwargs.update(
             {
                 "active_incidents": {
-                    "description": INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION,
+                    "description": INCIDENT_DAILY_REPORT_ACTIVE_INCIDENTS_DESCRIPTION,
                     "context": f"For more information about active incidents, please visit the active incidents status <{DISPATCH_UI_URL}/incidents/status|page>.",
                     "incidents": incidents,
                 }
@@ -130,7 +130,7 @@ def daily_summary(db_session=None):
         notification_kwargs.update(
             {
                 "active_incidents": {
-                    "description": INCIDENT_DAILY_SUMMARY_NO_ACTIVE_INCIDENTS_DESCRIPTION,
+                    "description": INCIDENT_DAILY_REPORT_NO_ACTIVE_INCIDENTS_DESCRIPTION,
                     "context": "",
                     "incidents": [],
                 }
@@ -187,7 +187,7 @@ def daily_summary(db_session=None):
         notification_kwargs.update(
             {
                 "stable_closed_incidents": {
-                    "description": INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
+                    "description": INCIDENT_DAILY_REPORT_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
                     "context": f"For more information about stable or closed incidents, please visit the <{DISPATCH_UI_URL}/incidents/list|Dispatch Web UI>.",
                     "incidents": incidents,
                 }
@@ -197,7 +197,7 @@ def daily_summary(db_session=None):
         notification_kwargs.update(
             {
                 "stable_closed_incidents": {
-                    "description": INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
+                    "description": INCIDENT_DAILY_REPORT_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
                     "context": f"For more information about stable or closed incidents, please visit the <{DISPATCH_UI_URL}/incidents/list|Dispatch Web UI>.",
                     "incidents": [],
                 }
@@ -205,9 +205,9 @@ def daily_summary(db_session=None):
         )
 
     notification_params = {
-        "text": INCIDENT_DAILY_SUMMARY_TITLE,
-        "type": MessageType.incident_daily_summary,
-        "template": INCIDENT_DAILY_SUMMARY,
+        "text": INCIDENT_DAILY_REPORT_TITLE,
+        "type": MessageType.incident_daily_report,
+        "template": INCIDENT_DAILY_REPORT,
         "kwargs": notification_kwargs,
     }
 

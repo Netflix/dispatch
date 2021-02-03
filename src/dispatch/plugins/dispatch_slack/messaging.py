@@ -10,7 +10,7 @@ from jinja2 import Template
 
 from dispatch.messaging.strings import (
     DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
-    INCIDENT_DAILY_SUMMARY_DESCRIPTION,
+    INCIDENT_DAILY_REPORT_DESCRIPTION,
     INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
     INCIDENT_TASK_LIST_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
@@ -230,8 +230,8 @@ def get_template(message_type: MessageType):
             default_notification,
             None,
         ),
-        MessageType.incident_daily_summary: (
-            incident_daily_summary_notification,
+        MessageType.incident_daily_report: (
+            incident_daily_report_notification,
             None,
         ),
     }
@@ -288,8 +288,8 @@ def default_notification(items: list):
     return blocks
 
 
-def incident_daily_summary_notification(items: list):
-    """Creates blocks for the incident daily summary notification."""
+def incident_daily_report_notification(items: list):
+    """Creates blocks for the incident daily report notification."""
     blocks = []
     for item in items:
         print(item)

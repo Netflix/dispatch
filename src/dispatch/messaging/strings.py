@@ -21,7 +21,7 @@ from dispatch.config import (
 class MessageType(str, Enum):
     document_evergreen_reminder = "document-evergreen-reminder"
     incident_closed_information_review_reminder = "incident-closed-information-review-reminder"
-    incident_daily_summary = "incident-daily-summary"
+    incident_daily_report = "incident-daily-report"
     incident_executive_report = "incident-executive-report"
     incident_feedback_daily_digest = "incident-feedback-daily-digest"
     incident_notification = "incident-notification"
@@ -62,37 +62,37 @@ This is a daily digest of feedback about incidents handled by you.""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_TITLE = """
-Daily Incidents Summary""".replace(
+INCIDENT_DAILY_REPORT_TITLE = """
+Incidents Daily Report""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_DESCRIPTION = """
-This is a daily summary of active, stable and closed incidents in the last 24 hours.""".replace(
+INCIDENT_DAILY_REPORT_DESCRIPTION = """
+This is a daily report of incidents that are currently active and incidents that have been marked as stable or closed in the last 24 hours.""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_FOOTER_CONTEXT = """
+INCIDENT_DAILY_REPORT_FOOTER_CONTEXT = """
 For any questions about an incident, please reach out to incident's commander.""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION = """
+INCIDENT_DAILY_REPORT_ACTIVE_INCIDENTS_DESCRIPTION = """
 Active Incidents""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_NO_ACTIVE_INCIDENTS_DESCRIPTION = """
+INCIDENT_DAILY_REPORT_NO_ACTIVE_INCIDENTS_DESCRIPTION = """
 There are no active incidents at this moment.""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION = """
+INCIDENT_DAILY_REPORT_STABLE_CLOSED_INCIDENTS_DESCRIPTION = """
 Stable or Closed Incidents (last 24 hours)""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION = """
+INCIDENT_DAILY_REPORT_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION = """
 There are no stable or closed incidents in the last 24 hours.""".replace(
     "\n", " "
 ).strip()
@@ -576,24 +576,24 @@ INCIDENT_FEEDBACK_DAILY_DIGEST = [
     {"title": "Created At", "text": "", "datetime": "{{ created_at}}"},
 ]
 
-INCIDENT_DAILY_SUMMARY_HEADER = {
+INCIDENT_DAILY_REPORT_HEADER = {
     "type": "header",
-    "text": INCIDENT_DAILY_SUMMARY_TITLE,
+    "text": INCIDENT_DAILY_REPORT_TITLE,
 }
 
-INCIDENT_DAILY_SUMMARY_HEADER_DESCRIPTION = {
-    "text": INCIDENT_DAILY_SUMMARY_DESCRIPTION,
+INCIDENT_DAILY_REPORT_HEADER_DESCRIPTION = {
+    "text": INCIDENT_DAILY_REPORT_DESCRIPTION,
 }
 
-INCIDENT_DAILY_SUMMARY_FOOTER = {
+INCIDENT_DAILY_REPORT_FOOTER = {
     "type": "context",
-    "text": INCIDENT_DAILY_SUMMARY_FOOTER_CONTEXT,
+    "text": INCIDENT_DAILY_REPORT_FOOTER_CONTEXT,
 }
 
-INCIDENT_DAILY_SUMMARY = [
-    INCIDENT_DAILY_SUMMARY_HEADER,
-    INCIDENT_DAILY_SUMMARY_HEADER_DESCRIPTION,
-    INCIDENT_DAILY_SUMMARY_FOOTER,
+INCIDENT_DAILY_REPORT = [
+    INCIDENT_DAILY_REPORT_HEADER,
+    INCIDENT_DAILY_REPORT_HEADER_DESCRIPTION,
+    INCIDENT_DAILY_REPORT_FOOTER,
 ]
 
 
