@@ -19,10 +19,11 @@ from dispatch.config import (
 
 
 class MessageType(str, Enum):
+    document_evergreen_reminder = "document-evergreen-reminder"
     incident_closed_information_review_reminder = "incident-closed-information-review-reminder"
-    incident_daily_summary = "incident-daily-summary"
-    incident_daily_summary_no_incidents = "incident-daily-summary-no-incidents"
+    incident_daily_report = "incident-daily-report"
     incident_executive_report = "incident-executive-report"
+    incident_feedback_daily_digest = "incident-feedback-daily-digest"
     incident_notification = "incident-notification"
     incident_participant_suggested_reading = "incident-participant-suggested-reading"
     incident_participant_welcome = "incident-participant-welcome"
@@ -32,8 +33,6 @@ class MessageType(str, Enum):
     incident_tactical_report = "incident-tactical-report"
     incident_task_list = "incident-task-list"
     incident_task_reminder = "incident-task-reminder"
-    document_evergreen_reminder = "document-evergreen-reminder"
-    incident_feedback_daily_digest = "incident-feedback-daily-digest"
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
@@ -63,27 +62,37 @@ This is a daily digest of feedback about incidents handled by you.""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_DESCRIPTION = """
-Daily Incidents Summary""".replace(
+INCIDENT_DAILY_REPORT_TITLE = """
+Incidents Daily Report""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION = """
+INCIDENT_DAILY_REPORT_DESCRIPTION = """
+This is a daily report of incidents that are currently active and incidents that have been marked as stable or closed in the last 24 hours.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_DAILY_REPORT_FOOTER_CONTEXT = """
+For any questions about an incident, please reach out to incident's commander.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_DAILY_REPORT_ACTIVE_INCIDENTS_DESCRIPTION = """
 Active Incidents""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_NO_ACTIVE_INCIDENTS_DESCRIPTION = """
+INCIDENT_DAILY_REPORT_NO_ACTIVE_INCIDENTS_DESCRIPTION = """
 There are no active incidents at this moment.""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION = """
+INCIDENT_DAILY_REPORT_STABLE_CLOSED_INCIDENTS_DESCRIPTION = """
 Stable or Closed Incidents (last 24 hours)""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION = """
+INCIDENT_DAILY_REPORT_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION = """
 There are no stable or closed incidents in the last 24 hours.""".replace(
     "\n", " "
 ).strip()
@@ -306,6 +315,15 @@ INCIDENT_NAME_WITH_ENGAGEMENT = {
     "button_text": "Join Incident",
     "button_value": "{{incident_id}}",
     "button_action": ConversationButtonActions.invite_user,
+}
+
+INCIDENT_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION = {
+    "title": "{{name}}",
+    "title_link": "{{ticket_weblink}}",
+    "text": "{{ignore}}",
+    "button_text": "{{button_text}}",
+    "button_value": "{{button_value}}",
+    "button_action": "{{button_action}}",
 }
 
 INCIDENT_NAME = {
@@ -567,20 +585,46 @@ INCIDENT_FEEDBACK_DAILY_DIGEST = [
     {"title": "Created At", "text": "", "datetime": "{{ created_at}}"},
 ]
 
+INCIDENT_DAILY_REPORT_HEADER = {
+    "type": "header",
+    "text": INCIDENT_DAILY_REPORT_TITLE,
+}
+
+INCIDENT_DAILY_REPORT_HEADER_DESCRIPTION = {
+    "text": INCIDENT_DAILY_REPORT_DESCRIPTION,
+}
+
+INCIDENT_DAILY_REPORT_FOOTER = {
+    "type": "context",
+    "text": INCIDENT_DAILY_REPORT_FOOTER_CONTEXT,
+}
+
+INCIDENT_DAILY_REPORT = [
+    INCIDENT_DAILY_REPORT_HEADER,
+    INCIDENT_DAILY_REPORT_HEADER_DESCRIPTION,
+    INCIDENT_DAILY_REPORT_FOOTER,
+]
+
+INCIDENT = [
+    INCIDENT_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION,
+    INCIDENT_TITLE,
+    INCIDENT_STATUS,
+    INCIDENT_TYPE,
+    INCIDENT_PRIORITY,
+    INCIDENT_COMMANDER,
+]
+
 
 def render_message_template(message_template: List[dict], **kwargs):
     """Renders the jinja data included in the template itself."""
     data = []
     new_copy = copy.deepcopy(message_template)
     for d in new_copy:
-        if d.get("status_mapping"):
-            d["text"] = d["status_mapping"][kwargs["status"]]
+        if d.get("header"):
+            d["header"] = Template(d["header"]).render(**kwargs)
 
-        if d.get("datetime"):
-            d["datetime"] = Template(d["datetime"]).render(**kwargs)
-
-        d["text"] = Template(d["text"]).render(**kwargs)
-        d["title"] = Template(d["title"]).render(**kwargs)
+        if d.get("title"):
+            d["title"] = Template(d["title"]).render(**kwargs)
 
         if d.get("title_link"):
             d["title_link"] = Template(d["title_link"]).render(**kwargs)
@@ -592,11 +636,26 @@ def render_message_template(message_template: List[dict], **kwargs):
             if not d["title_link"]:
                 continue
 
+        if d.get("text"):
+            d["text"] = Template(d["text"]).render(**kwargs)
+
         if d.get("button_text"):
             d["button_text"] = Template(d["button_text"]).render(**kwargs)
 
         if d.get("button_value"):
             d["button_value"] = Template(d["button_value"]).render(**kwargs)
+
+        if d.get("button_action"):
+            d["button_action"] = Template(d["button_action"]).render(**kwargs)
+
+        if d.get("status_mapping"):
+            d["text"] = d["status_mapping"][kwargs["status"]]
+
+        if d.get("datetime"):
+            d["datetime"] = Template(d["datetime"]).render(**kwargs)
+
+        if d.get("context"):
+            d["context"] = Template(d["context"]).render(**kwargs)
 
         data.append(d)
     return data
