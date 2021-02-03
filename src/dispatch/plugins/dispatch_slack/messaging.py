@@ -231,7 +231,7 @@ def get_template(message_type: MessageType):
             None,
         ),
         MessageType.incident_daily_report: (
-            incident_daily_report_notification,
+            default_notification,
             None,
         ),
     }
@@ -260,39 +260,6 @@ def default_notification(items: list):
     blocks = []
     blocks.append({"type": "divider"})
     for item in items:
-        if isinstance(item, list):  # handle case where we are passing multiple grouped items
-            blocks += default_notification(item)
-
-        if item.get("title_link") == "None":  # avoid adding blocks with no data
-            continue
-
-        block = {
-            "type": "section",
-            "text": {"type": "mrkdwn", "text": format_default_text(item)},
-        }
-
-        if item.get("button_text") and item.get("button_value"):
-            block.update(
-                {
-                    "block_id": item["button_action"],
-                    "accessory": {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": item["button_text"]},
-                        "value": item["button_value"],
-                    },
-                }
-            )
-
-        blocks.append(block)
-
-    return blocks
-
-
-def incident_daily_report_notification(items: list):
-    """Creates blocks for the incident daily report notification."""
-    blocks = []
-    for item in items:
-        print(item)
         if isinstance(item, list):  # handle case where we are passing multiple grouped items
             blocks += default_notification(item)
 
@@ -331,7 +298,10 @@ def incident_daily_report_notification(items: list):
 
 
 def create_message_blocks(
-    message_template: List[dict], message_type: MessageType, items: Optional[List] = None, **kwargs
+    message_template: List[dict],
+    message_type: MessageType,
+    items: Optional[List] = None,
+    **kwargs,
 ):
     """Creates all required blocks for a given message type and template."""
     if not items:
@@ -350,7 +320,16 @@ def create_message_blocks(
         rendered_items = render_message_template(message_template, **item)
         blocks += template_func(rendered_items)
 
-    return blocks
+    if items[0].get("items_grouped"):
+        blocks_grouped = []
+        for item in items[0]["items_grouped"]:
+            print(item)
+            rendered_items_grouped = render_message_template(
+                items[0]["items_grouped_template"], **item
+            )
+            blocks_grouped += template_func(rendered_items_grouped)
+
+    return blocks + blocks_grouped
 
 
 def slack_preview(message, block=None):

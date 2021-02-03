@@ -317,6 +317,15 @@ INCIDENT_NAME_WITH_ENGAGEMENT = {
     "button_action": ConversationButtonActions.invite_user,
 }
 
+INCIDENT_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION = {
+    "title": "{{name}}",
+    "title_link": "{{ticket_weblink}}",
+    "text": "{{ignore}}",
+    "button_text": "{{button_text}}",
+    "button_value": "{{button_value}}",
+    "button_action": "{{button_action}}",
+}
+
 INCIDENT_NAME = {
     "title": "{{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
@@ -596,6 +605,15 @@ INCIDENT_DAILY_REPORT = [
     INCIDENT_DAILY_REPORT_FOOTER,
 ]
 
+INCIDENT = [
+    INCIDENT_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION,
+    INCIDENT_TITLE,
+    INCIDENT_STATUS,
+    INCIDENT_TYPE,
+    INCIDENT_PRIORITY,
+    INCIDENT_COMMANDER,
+]
+
 
 def render_message_template(message_template: List[dict], **kwargs):
     """Renders the jinja data included in the template itself."""
@@ -626,6 +644,9 @@ def render_message_template(message_template: List[dict], **kwargs):
 
         if d.get("button_value"):
             d["button_value"] = Template(d["button_value"]).render(**kwargs)
+
+        if d.get("button_action"):
+            d["button_action"] = Template(d["button_action"]).render(**kwargs)
 
         if d.get("status_mapping"):
             d["text"] = d["status_mapping"][kwargs["status"]]

@@ -20,6 +20,7 @@ from dispatch.messaging.strings import (
     INCIDENT_DAILY_REPORT_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
     INCIDENT_DAILY_REPORT_TITLE,
     INCIDENT_DAILY_REPORT,
+    INCIDENT,
     MessageType,
 )
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
@@ -92,117 +93,51 @@ def daily_report(db_session=None):
     """
     Creates and sends an incident daily report.
     """
-    notification_kwargs = {}
-
     active_incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active)
-    if active_incidents:
-        incidents = []
-        for idx, incident in enumerate(active_incidents):
-            if incident.visibility == Visibility.open:
-                try:
-                    incidents.append(
-                        {
-                            "title": incident.title,
-                            "incident_type": incident.incident_type.name,
-                            "incident_priority": incident.incident_priority.name,
-                            "incident_commander_name": incident.commander.individual.name,
-                            "incident_commander_weblink": incident.commander.individual.weblink,
-                            "ticket_name": incident.name,
-                            "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
-                            "button_text": "Join Incident",
-                            "button_value": str(incident.id),
-                            "button_action": f"{ConversationButtonActions.invite_user}-active-{idx}",
-                        },
-                    )
-                except Exception as e:
-                    log.exception(e)
-
-        notification_kwargs.update(
-            {
-                "active_incidents": {
-                    "description": INCIDENT_DAILY_REPORT_ACTIVE_INCIDENTS_DESCRIPTION,
-                    "context": f"For more information about active incidents, please visit the active incidents status <{DISPATCH_UI_URL}/incidents/status|page>.",
-                    "incidents": incidents,
-                }
-            }
-        )
-    else:
-        notification_kwargs.update(
-            {
-                "active_incidents": {
-                    "description": INCIDENT_DAILY_REPORT_NO_ACTIVE_INCIDENTS_DESCRIPTION,
-                    "context": "",
-                    "incidents": [],
-                }
-            }
-        )
-
     stable_incidents = get_all_last_x_hours_by_status(
         db_session=db_session, status=IncidentStatus.stable, hours=24
     )
     closed_incidents = get_all_last_x_hours_by_status(
         db_session=db_session, status=IncidentStatus.closed, hours=24
     )
-    if stable_incidents or closed_incidents:
-        incidents = []
-        for idx, incident in enumerate(stable_incidents):
-            if incident.visibility == Visibility.open:
-                try:
-                    incidents.append(
+    incidents = active_incidents + stable_incidents + closed_incidents
+
+    items_grouped_template = INCIDENT
+    items_grouped = []
+    for idx, incident in enumerate(incidents):
+        if incident.visibility == Visibility.open:
+            try:
+                item = {
+                    "commander_fullname": incident.commander.individual.name,
+                    "commander_weblink": incident.commander.individual.weblink,
+                    "incident_id": incident.id,
+                    "name": incident.name,
+                    "priority": incident.incident_priority.name,
+                    "priority_description": incident.incident_priority.description,
+                    "status": incident.status,
+                    "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
+                    "title": incident.title,
+                    "type": incident.incident_type.name,
+                    "type_description": incident.incident_type.description,
+                }
+
+                if incident.status != IncidentStatus.closed.value:
+                    item.update(
                         {
-                            "title": incident.title,
-                            "incident_type": incident.incident_type.name,
-                            "incident_priority": incident.incident_priority.name,
-                            "incident_commander_name": incident.commander.individual.name,
-                            "incident_commander_weblink": incident.commander.individual.weblink,
-                            "ticket_name": incident.name,
-                            "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
-                            "status": incident.status,
                             "button_text": "Join Incident",
                             "button_value": str(incident.id),
-                            "button_action": f"{ConversationButtonActions.invite_user}-stable-{idx}",
-                        },
+                            "button_action": f"{ConversationButtonActions.invite_user.value}-{incident.status}-{idx}",
+                        }
                     )
-                except Exception as e:
-                    log.exception(e)
 
-        for incident in closed_incidents:
-            if incident.visibility == Visibility.open:
-                try:
-                    incidents.append(
-                        {
-                            "title": incident.title,
-                            "incident_type": incident.incident_type.name,
-                            "incident_priority": incident.incident_priority.name,
-                            "incident_commander_name": incident.commander.individual.name,
-                            "incident_commander_weblink": incident.commander.individual.weblink,
-                            "ticket_name": incident.name,
-                            "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
-                            "status": incident.status,
-                        },
-                    )
-                except Exception as e:
-                    log.exception(e)
+                items_grouped.append(item)
+            except Exception as e:
+                log.exception(e)
 
-        notification_kwargs.update(
-            {
-                "stable_closed_incidents": {
-                    "description": INCIDENT_DAILY_REPORT_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
-                    "context": f"For more information about stable or closed incidents, please visit the <{DISPATCH_UI_URL}/incidents/list|Dispatch Web UI>.",
-                    "incidents": incidents,
-                }
-            }
-        )
-    else:
-        notification_kwargs.update(
-            {
-                "stable_closed_incidents": {
-                    "description": INCIDENT_DAILY_REPORT_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
-                    "context": f"For more information about stable or closed incidents, please visit the <{DISPATCH_UI_URL}/incidents/list|Dispatch Web UI>.",
-                    "incidents": [],
-                }
-            }
-        )
+    notification_kwargs = {
+        "items_grouped": items_grouped,
+        "items_grouped_template": items_grouped_template,
+    }
 
     notification_params = {
         "text": INCIDENT_DAILY_REPORT_TITLE,
@@ -211,7 +146,7 @@ def daily_report(db_session=None):
         "kwargs": notification_kwargs,
     }
 
-    notification_service.send(
+    notification_service.filter_and_send(
         db_session=db_session, class_instance=incident, notification_params=notification_params
     )
 
