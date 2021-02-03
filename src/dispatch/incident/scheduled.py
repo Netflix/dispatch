@@ -19,13 +19,13 @@ from dispatch.messaging.strings import (
     INCIDENT_DAILY_SUMMARY_NO_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
     INCIDENT_DAILY_SUMMARY_STABLE_CLOSED_INCIDENTS_DESCRIPTION,
     INCIDENT_DAILY_SUMMARY_TITLE,
+    INCIDENT_DAILY_SUMMARY,
     MessageType,
 )
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.notification import service as notification_service
 from dispatch.plugin import service as plugin_service
 from dispatch.scheduler import scheduler
-from dispatch.service import flows as service_flows
 from dispatch.tag import service as tag_service
 from dispatch.tag.models import Tag
 
@@ -92,9 +92,7 @@ def daily_summary(db_session=None):
     """
     Creates and sends an incident daily summary.
     """
-    notification_kwargs = {
-        "header": INCIDENT_DAILY_SUMMARY_TITLE,
-    }
+    notification_kwargs = {}
 
     active_incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active)
     if active_incidents:
@@ -206,18 +204,10 @@ def daily_summary(db_session=None):
             }
         )
 
-    notification_kwargs.update(
-        {
-            "context": "For any questions about an incident, please reach out to incident's commander.",
-        }
-    )
-
-    notification_template = []
-
     notification_params = {
         "text": INCIDENT_DAILY_SUMMARY_TITLE,
         "type": MessageType.incident_daily_summary,
-        "template": notification_template,
+        "template": INCIDENT_DAILY_SUMMARY,
         "kwargs": notification_kwargs,
     }
 

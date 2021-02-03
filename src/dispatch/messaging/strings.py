@@ -72,6 +72,11 @@ This is a daily summary of active, stable and closed incidents in the last 24 ho
     "\n", " "
 ).strip()
 
+INCIDENT_DAILY_SUMMARY_FOOTER_CONTEXT = """
+For any questions about an incident, please reach out to incident's commander.""".replace(
+    "\n", " "
+).strip()
+
 INCIDENT_DAILY_SUMMARY_ACTIVE_INCIDENTS_DESCRIPTION = """
 Active Incidents""".replace(
     "\n", " "
@@ -571,20 +576,37 @@ INCIDENT_FEEDBACK_DAILY_DIGEST = [
     {"title": "Created At", "text": "", "datetime": "{{ created_at}}"},
 ]
 
+INCIDENT_DAILY_SUMMARY_HEADER = {
+    "type": "header",
+    "text": INCIDENT_DAILY_SUMMARY_TITLE,
+}
+
+INCIDENT_DAILY_SUMMARY_HEADER_DESCRIPTION = {
+    "text": INCIDENT_DAILY_SUMMARY_DESCRIPTION,
+}
+
+INCIDENT_DAILY_SUMMARY_FOOTER = {
+    "type": "context",
+    "text": INCIDENT_DAILY_SUMMARY_FOOTER_CONTEXT,
+}
+
+INCIDENT_DAILY_SUMMARY = [
+    INCIDENT_DAILY_SUMMARY_HEADER,
+    INCIDENT_DAILY_SUMMARY_HEADER_DESCRIPTION,
+    INCIDENT_DAILY_SUMMARY_FOOTER,
+]
+
 
 def render_message_template(message_template: List[dict], **kwargs):
     """Renders the jinja data included in the template itself."""
     data = []
     new_copy = copy.deepcopy(message_template)
     for d in new_copy:
-        if d.get("status_mapping"):
-            d["text"] = d["status_mapping"][kwargs["status"]]
+        if d.get("header"):
+            d["header"] = Template(d["header"]).render(**kwargs)
 
-        if d.get("datetime"):
-            d["datetime"] = Template(d["datetime"]).render(**kwargs)
-
-        d["text"] = Template(d["text"]).render(**kwargs)
-        d["title"] = Template(d["title"]).render(**kwargs)
+        if d.get("title"):
+            d["title"] = Template(d["title"]).render(**kwargs)
 
         if d.get("title_link"):
             d["title_link"] = Template(d["title_link"]).render(**kwargs)
@@ -596,11 +618,23 @@ def render_message_template(message_template: List[dict], **kwargs):
             if not d["title_link"]:
                 continue
 
+        if d.get("text"):
+            d["text"] = Template(d["text"]).render(**kwargs)
+
         if d.get("button_text"):
             d["button_text"] = Template(d["button_text"]).render(**kwargs)
 
         if d.get("button_value"):
             d["button_value"] = Template(d["button_value"]).render(**kwargs)
+
+        if d.get("status_mapping"):
+            d["text"] = d["status_mapping"][kwargs["status"]]
+
+        if d.get("datetime"):
+            d["datetime"] = Template(d["datetime"]).render(**kwargs)
+
+        if d.get("context"):
+            d["context"] = Template(d["context"]).render(**kwargs)
 
         data.append(d)
     return data

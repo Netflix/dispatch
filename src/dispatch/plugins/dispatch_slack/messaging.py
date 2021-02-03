@@ -231,8 +231,8 @@ def get_template(message_type: MessageType):
             None,
         ),
         MessageType.incident_daily_summary: (
-            default_notification,
-            INCIDENT_DAILY_SUMMARY_DESCRIPTION,
+            incident_daily_summary_notification,
+            None,
         ),
     }
 
@@ -250,11 +250,13 @@ def format_default_text(item: dict):
         return f"*<{item['title_link']}|{item['title']}>*\n{item['text']}"
     if item.get("datetime"):
         return f"*{item['title']}*\n <!date^{int(item['datetime'].timestamp())}^ {{date}} | {item['datetime']}"
-    return f"*{item['title']}*\n{item['text']}"
+    if item.get("title"):
+        return f"*{item['title']}*\n{item['text']}"
+    return item["text"]
 
 
 def default_notification(items: list):
-    """This is a default Dispatch Slack notification."""
+    """Creates blocks for a default notification."""
     blocks = []
     blocks.append({"type": "divider"})
     for item in items:
@@ -282,14 +284,54 @@ def default_notification(items: list):
             )
 
         blocks.append(block)
+
+    return blocks
+
+
+def incident_daily_summary_notification(items: list):
+    """Creates blocks for the incident daily summary notification."""
+    blocks = []
+    for item in items:
+        print(item)
+        if isinstance(item, list):  # handle case where we are passing multiple grouped items
+            blocks += default_notification(item)
+
+        if item.get("title_link") == "None":  # avoid adding blocks with no data
+            continue
+
+        if item.get("type"):
+            block = {
+                "type": item["type"],
+            }
+            if item["type"] == "context":
+                block.update({"elements": [{"type": "mrkdwn", "text": format_default_text(item)}]})
+            else:
+                block.update({"text": {"type": "plain_text", "text": format_default_text(item)}})
+        else:
+            block = {
+                "type": "section",
+                "text": {"type": "mrkdwn", "text": format_default_text(item)},
+            }
+
+        if item.get("button_text") and item.get("button_value"):
+            block.update(
+                {
+                    "block_id": item["button_action"],
+                    "accessory": {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": item["button_text"]},
+                        "value": item["button_value"],
+                    },
+                }
+            )
+
+        blocks.append(block)
+
     return blocks
 
 
 def create_message_blocks(
-    message_template: List[dict],
-    message_type: MessageType,
-    items: Optional[List] = None,
-    **kwargs,
+    message_template: List[dict], message_type: MessageType, items: Optional[List] = None, **kwargs
 ):
     """Creates all required blocks for a given message type and template."""
     if not items:

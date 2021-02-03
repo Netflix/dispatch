@@ -107,5 +107,5 @@ def send(*, db_session, class_instance: Type[Base], notification_params: dict):
                     )
                 else:
                     log.warning(
-                        f"Notification {notification.name} not sent. No {notification.type} plugin is active."
+                        f"Notification {notification.name} not sent. No {notification.type} plugin enabled."
                     )
