@@ -24,7 +24,6 @@ try:
     from dispatch.participant.models import Participant  # noqa lgtm[py/unused-import]
     from dispatch.participant_role.models import ParticipantRole  # noqa lgtm[py/unused-import]
     from dispatch.plugin.models import Plugin  # noqa lgtm[py/unused-import]
-    from dispatch.policy.models import Policy  # noqa lgtm[py/unused-import]
     from dispatch.report.models import Report  # noqa lgtm[py/unused-import]
     from dispatch.route.models import (
         Recommendation,  # noqa lgtm[py/unused-import]

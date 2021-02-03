@@ -35,15 +35,35 @@ const getDefaultSelectedState = () => {
   }
 }
 
+const getDefaultReportState = () => {
+  return {
+    type: "tactical",
+    tactical: {
+      conditions: null,
+      actions: null,
+      needs: null
+    },
+    executive: {
+      current_status: null,
+      overview: null,
+      next_steps: null
+    }
+  }
+}
+
 const state = {
   selected: {
     ...getDefaultSelectedState()
   },
   dialogs: {
     showDeleteDialog: false,
+    showReportDialog: false,
     showEditSheet: false,
     showExport: false,
     showNewSheet: false
+  },
+  report: {
+    ...getDefaultReportState()
   },
   table: {
     rows: {
@@ -171,6 +191,14 @@ const actions = {
   },
   closeDeleteDialog({ commit }) {
     commit("SET_DIALOG_DELETE", false)
+    commit("RESET_SELECTED")
+  },
+  showReportDialog({ commit }, incident) {
+    commit("SET_DIALOG_REPORT", true)
+    commit("SET_SELECTED", incident)
+  },
+  closeReportDialog({ commit }) {
+    commit("SET_DIALOG_REPORT", false)
     commit("RESET_SELECTED")
   },
   showExport({ commit }) {
@@ -309,6 +337,32 @@ const actions = {
         )
       })
   },
+  createReport({ commit, dispatch }) {
+    return IncidentApi.createReport(
+      state.selected.id,
+      state.report.type,
+      state.report[state.report.type]
+    )
+      .then(function() {
+        dispatch("closeReportDialog")
+        dispatch("getAll")
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Report created successfully.", type: "success" },
+          { root: true }
+        )
+      })
+      .catch(err => {
+        commit(
+          "notification_backend/addBeNotification",
+          {
+            text: "Report not created. Reason: " + err.response.data.detail,
+            type: "error"
+          },
+          { root: true }
+        )
+      })
+  },
   resetSelected({ commit }) {
     commit("RESET_SELECTED")
   },
@@ -348,8 +402,12 @@ const mutations = {
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showDeleteDialog = value
   },
+  SET_DIALOG_REPORT(state, value) {
+    state.dialogs.showReportDialog = value
+  },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
+    state.report = Object.assign(state.report, getDefaultReportState())
   },
   SET_BULK_EDIT_LOADING(state, value) {
     state.table.bulkEditLoading = value

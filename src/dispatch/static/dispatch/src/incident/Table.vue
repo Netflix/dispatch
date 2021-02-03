@@ -5,6 +5,7 @@
     </div>
     <new-sheet />
     <delete-dialog />
+    <report-dialog />
     <div class="headline">Incidents</div>
     <v-spacer />
     <table-filter-dialog />
@@ -64,7 +65,10 @@
                     <v-list-item :to="`/incidents/${item.name}`">
                       <v-list-item-title>View / Edit</v-list-item-title>
                     </v-list-item>
-                    <v-list-item @click="showNewReportSheet()">
+                    <v-list-item
+                      @click="showReportDialog(item)"
+                      :disabled="item.status == 'Closed'"
+                    >
                       <v-list-item-title>Create Report</v-list-item-title>
                     </v-list-item>
                     <v-list-item @click="showDeleteDialog(item)">
@@ -87,6 +91,7 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import BulkEditSheet from "@/incident/BulkEditSheet.vue"
 import DeleteDialog from "@/incident/DeleteDialog.vue"
+import ReportDialog from "@/incident/ReportDialog.vue"
 import IncidentParticipant from "@/incident/Participant.vue"
 import IncidentPriority from "@/incident/IncidentPriority.vue"
 import IncidentStatus from "@/incident/IncidentStatus.vue"
@@ -100,6 +105,7 @@ export default {
   components: {
     BulkEditSheet,
     DeleteDialog,
+    ReportDialog,
     IncidentParticipant,
     IncidentPriority,
     IncidentStatus,
@@ -187,7 +193,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident", ["getAll", "showNewSheet", "showDeleteDialog"])
+    ...mapActions("incident", ["getAll", "showNewSheet", "showDeleteDialog", "showReportDialog"])
   }
 }
 </script>

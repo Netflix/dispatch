@@ -20,7 +20,7 @@ from dispatch.enums import Visibility, UserRoles
 from dispatch.incident.enums import IncidentStatus
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.report.models import TacticalReportCreate, ExecutiveReportCreate
-from dispatch.report import service as report_service
+from dispatch.report import flows as report_flows
 
 from .flows import (
     incident_add_or_reactivate_participant_flow,
@@ -40,7 +40,7 @@ router = APIRouter()
 
 def get_current_incident(*, db_session: Session = Depends(get_db), request: Request) -> Incident:
     """Fetches incident or returns a 404."""
-    incident = get(db_session=db_session, incident_id=request.path_params.id)
+    incident = get(db_session=db_session, incident_id=request.path_params["incident_id"])
     if not incident:
         raise HTTPException(status_code=404, detail="The requested incident does not exist.")
     return incident
@@ -243,7 +243,7 @@ def create_tactical_report(
     Creates a new tactical report.
     """
     background_tasks.add_task(
-        report_service.create_tactical_report(
+        report_flows.create_tactical_report(
             user_email=current_user.email,
             channel_id=None,
             incident_id=current_incident.id,
@@ -269,7 +269,7 @@ def create_executive_report(
     Creates a new tactical report.
     """
     background_tasks.add_task(
-        report_service.create_executive_report(
+        report_flows.create_executive_report(
             user_email=current_user.email,
             channel_id=None,
             incident_id=current_incident.id,
