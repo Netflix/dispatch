@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from dispatch.database import get_db, search_filter_sort_paginate
+from dispatch.auth.permissions import AdminPermission, PermissionsDependency
 
 from .models import (
     NotificationCreate,
@@ -57,7 +58,11 @@ def get_notification(*, db_session: Session = Depends(get_db), notification_id: 
     return notification
 
 
-@router.post("/", response_model=NotificationRead)
+@router.post(
+    "/",
+    response_model=NotificationRead,
+    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+)
 def create_notification(
     *, db_session: Session = Depends(get_db), notification_in: NotificationCreate
 ):
@@ -68,7 +73,11 @@ def create_notification(
     return notification
 
 
-@router.put("/{notification_id}", response_model=NotificationRead)
+@router.put(
+    "/{notification_id}",
+    response_model=NotificationRead,
+    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+)
 def update_notification(
     *,
     db_session: Session = Depends(get_db),
