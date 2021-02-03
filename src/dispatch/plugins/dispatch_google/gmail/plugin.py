@@ -78,7 +78,11 @@ class GoogleGmailEmailPlugin(EmailPlugin):
         # TODO allow for bulk sending (kglisson)
         client = get_service("gmail", "v1", self.scopes)
 
-        subject = f"{kwargs['name'].upper()} - {notification_text}"
+        subject = notification_text
+
+        if kwargs.get("name"):
+            subject = f"{kwargs['name'].upper()} - {notification_text}"
+
         if kwargs.get("subject"):
             subject = kwargs["subject"]
 

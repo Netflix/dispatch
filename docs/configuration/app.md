@@ -180,14 +180,6 @@ Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispa
 
 > After an incident is closed, Netflix as an organization, tries to be transparent and allow others within the organization to view incident data. This is may not desirable in all organizations. This controls whether to open up incident data on incident close.
 
-#### `INCIDENT_NOTIFICATION_CONVERSATIONS` \[default: ''\]
-
-> Comma separated list of conversations \(e.g. Slack channels\) to be notified of new incidents.
-
-#### `INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS` \[default: ''\]
-
-> Comma separated list of email addresses to be notified of new incidents.
-
 #### `INCIDENT_RESPONSE_TEAM_EMAIL` \[default: ''\]
 
 > Specifies the email address of the incident response team. Used for cc'ing the team in certain email communications (e.g. incident feedback daily digest).

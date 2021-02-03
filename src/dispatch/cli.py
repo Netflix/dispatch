@@ -204,7 +204,9 @@ def reset_user_password(email: str, password: str):
         click.secho(f"No user found. Email: {email}", fg="red")
         return
 
-    user_service.update(user=user, user_in=UserUpdate(id=user.id, password=password), db_session=db_session)
+    user_service.update(
+        user=user, user_in=UserUpdate(id=user.id, password=password), db_session=db_session
+    )
     click.secho("User successfully updated.", fg="green")
 
 
@@ -499,7 +501,7 @@ def dispatch_scheduler():
     # we need scheduled tasks to be imported
     from .document.scheduled import sync_document_terms  # noqa
     from .feedback.scheduled import feedback_daily_digest  # noqa
-    from .incident.scheduled import daily_summary, auto_tagger  # noqa
+    from .incident.scheduled import daily_report, auto_tagger  # noqa
     from .report.scheduled import incident_report_reminders  # noqa
     from .tag.scheduled import sync_tags  # noqa
     from .task.scheduled import sync_tasks, create_task_reminders  # noqa
