@@ -194,7 +194,10 @@ def handle_tactical_report_create(
     )
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     report_flows.create_tactical_report(
-        user_email=user_email, incident_id=incident_id, tactical_report_in=tactical_report_in
+        user_email=user_email,
+        incident_id=incident_id,
+        tactical_report_in=tactical_report_in,
+        db_session=db_session,
     )
 
     # we let the user know that the report has been sent to the tactical group
@@ -224,7 +227,10 @@ def handle_executive_report_create(
     )
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     executive_report = report_flows.create_executive_report(
-        user_email=user_email, incident_id=incident_id, executive_report_in=executive_report_in
+        user_email=user_email,
+        incident_id=incident_id,
+        executive_report_in=executive_report_in,
+        db_session=db_session,
     )
 
     # we let the user know that the report has been created
