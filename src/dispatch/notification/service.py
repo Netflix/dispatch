@@ -33,10 +33,12 @@ def get_all_enabled(*, db_session) -> Optional[List[Notification]]:
 
 def create(*, db_session, notification_in: NotificationCreate) -> Notification:
     """Creates a new notification."""
-    filters = [
-        search_service.get(db_session=db_session, search_filter_id=f.id)
-        for f in notification_in.filters
-    ]
+    filters = []
+    if notification_in.filters:
+        filters = [
+            search_service.get(db_session=db_session, search_filter_id=f.id)
+            for f in notification_in.filters
+        ]
 
     notification = Notification(
         **notification_in.dict(exclude={"filters"}),
