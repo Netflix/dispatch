@@ -7,6 +7,7 @@ from dispatch.participant import service as participant_service
 from .models import ParticipantRoleType
 from .service import get_all_active_roles, add_role, renounce_role
 
+
 log = logging.getLogger(__name__)
 
 
@@ -81,7 +82,7 @@ def assign_role_flow(
         event_service.log(
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"{assignee_email} has been assigned the role of {assignee_role}",
+            description=f"{assignee_participant.individual.name} has been assigned the role of {assignee_role}",
             incident_id=incident_id,
         )
 
