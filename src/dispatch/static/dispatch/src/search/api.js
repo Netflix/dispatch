@@ -1,6 +1,6 @@
 import API from "@/api"
 
-const resource = "/search/"
+const resource = "/search"
 
 export default {
   search(query, models) {
