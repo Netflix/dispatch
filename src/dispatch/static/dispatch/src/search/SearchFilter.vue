@@ -9,7 +9,7 @@
           {{ filter.name }}
         </v-chip>
       </template>
-      <v-card width="300">
+      <v-card width="400">
         <v-list dark>
           <v-list-item>
             <v-list-item-avatar color="teal">
@@ -29,15 +29,17 @@
         <v-list>
           <v-list-item>
             <v-list-item-action>
-              <v-icon>mdi-briefcase</v-icon>
+              <v-icon>mdi-text-box</v-icon>
             </v-list-item-action>
             <v-list-item-subtitle>{{ filter.description }}</v-list-item-subtitle>
           </v-list-item>
           <v-list-item v-if="filter.expression">
             <v-list-item-action>
-              <v-icon>business</v-icon>
+              <v-icon>mdi-code-json</v-icon>
             </v-list-item-action>
-            <v-list-item-subtitle>{{ filter.expression }}</v-list-item-subtitle>
+            <v-list-item-subtitle
+              ><pre>{{ filter.expression }}</pre></v-list-item-subtitle
+            >
           </v-list-item>
         </v-list>
       </v-card>
