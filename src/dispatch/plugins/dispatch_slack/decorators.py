@@ -59,7 +59,7 @@ def slack_background_task(func):
             # notify the user the interaction failed
             message = f"Sorry, we've run into an unexpected error. For help, please reach out to the incident commander and provide them the following token: {slack_interaction_guid}"
             dispatch_slack_service.send_ephemeral_message(
-                kwargs["slack_client"], args["channel_id"], args["user_id"], message
+                kwargs["slack_client"], args[2], args[0], message
             )
 
         finally:
