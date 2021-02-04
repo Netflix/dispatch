@@ -320,8 +320,8 @@ def create_message_blocks(
         rendered_items = render_message_template(message_template, **item)
         blocks += template_func(rendered_items)
 
+    blocks_grouped = []
     if items[0].get("items_grouped"):
-        blocks_grouped = []
         for item in items[0]["items_grouped"]:
             rendered_items_grouped = render_message_template(
                 items[0]["items_grouped_template"], **item
