@@ -39,7 +39,7 @@
           </v-list-item>
         </template>
         <template slot="append-outer">
-          <search-filter-create-dialog />
+          <search-filter-create-dialog v-model="createdFilter" />
         </template>
       </v-combobox>
     </v-row>
@@ -71,7 +71,8 @@ export default {
     return {
       loading: false,
       items: [],
-      search: null
+      search: null,
+      createdFilter: null
     }
   },
 
@@ -98,6 +99,12 @@ export default {
 
   created() {
     this.fetchData({})
+  },
+
+  watch: {
+    createdFilter: function(newVal) {
+      this.terms.append(newVal)
+    }
   },
 
   methods: {

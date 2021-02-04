@@ -103,7 +103,7 @@
             </v-card>
           </v-stepper-content>
           <v-stepper-content step="3">
-            <ValidationObserver v-slot="{ invalid, validated }">
+            <ValidationObserver disabled v-slot="{ invalid, validated }">
               <v-card>
                 <v-card-text>
                   Provide a name and description for your filter.
@@ -227,6 +227,7 @@ export default {
   },
   computed: {
     ...mapFields("search", [
+      "selected",
       "selected.description",
       "selected.expression",
       "selected.name",
@@ -254,7 +255,7 @@ export default {
             subFilter.push({ field: key, op: "==", value: value })
           }
         })
-        if (subFilter.length > 1) {
+        if (subFilter.length > 0) {
           filterExpression.push({ or: subFilter })
         }
       })
@@ -270,6 +271,7 @@ export default {
       // reset local data
       Object.assign(this.$data, this.$options.data.apply(this))
       this.save("incident")
+      this.$emit("input", this.selected)
     },
 
     getPreviewData() {
