@@ -109,7 +109,7 @@ LABEL org.opencontainers.image.authors="oss@netflix.com"
 # add our user and group first to make sure their IDs get assigned consistently
 RUN groupadd -r dispatch && useradd -r -m -g dispatch dispatch
 
-COPY --from=sdist /usr/local/bin/gosu /usr/local/bin/tini /usr/local/bin/
+COPY --from=sdist /usr/local/bin/gosu /usr/local/bin/tini /usr/local/bin/node /usr/local/bin/
 
 # Sane defaults for pip
 ENV PIP_NO_CACHE_DIR=off \
