@@ -51,7 +51,7 @@
                     label="Description"
                     :error-messages="errors"
                     :success="valid"
-                    hint="The document's description."
+                    hint="A description for your document."
                     clearable
                     required
                   />
@@ -65,7 +65,7 @@
                     label="Weblink"
                     :error-messages="errors"
                     :success="valid"
-                    hint="Weblink for the document."
+                    hint="A weblink for the document."
                     clearable
                     required
                   />
@@ -76,10 +76,10 @@
                   <v-text-field
                     v-model="resource_id"
                     slot-scope="{ errors, valid }"
-                    label="ID"
+                    label="External Id"
                     :error-messages="errors"
                     :success="valid"
-                    hint="An external identififer for document."
+                    hint="An external identifier for document. Tipically, the unique id in the weblink."
                     clearable
                   />
                 </ValidationProvider>
