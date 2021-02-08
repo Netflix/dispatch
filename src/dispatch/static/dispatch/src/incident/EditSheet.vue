@@ -95,7 +95,7 @@ export default {
   },
 
   watch: {
-    $route() {
+    "$route.params.name": function() {
       this.fetchDetails()
     }
   },
