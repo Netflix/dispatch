@@ -62,7 +62,9 @@
                             help_outline
                           </v-icon>
                         </template>
-                        Dispatch will only create a ticket for this incident. The status of the incident will be closed and no collaboration resources will be created. No further action from you will be needed.
+                        Dispatch will only create a ticket for this incident. The status of the
+                        incident will be closed and no collaboration resources will be created. No
+                        further action from you will be needed.
                       </v-tooltip>
                     </div>
                   </template>
