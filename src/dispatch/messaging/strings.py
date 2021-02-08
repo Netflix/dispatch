@@ -294,7 +294,7 @@ INCIDENT_NAME_WITH_ENGAGEMENT = {
     "text": INCIDENT_NOTIFICATION_PURPOSES_FYI,
     "button_text": "Join Incident",
     "button_value": "{{incident_id}}",
-    "button_action": ConversationButtonActions.invite_user,
+    "button_action": ConversationButtonActions.invite_user.value,
 }
 
 INCIDENT_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION = {

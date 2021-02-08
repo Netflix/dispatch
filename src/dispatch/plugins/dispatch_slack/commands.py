@@ -264,7 +264,7 @@ def list_tasks(
                             f"*Assignees:* {', '.join(assignees)}"
                         ),
                     },
-                    "block_id": f"{ConversationButtonActions.update_task_status}-{task.status}-{idx}",
+                    "block_id": f"{ConversationButtonActions.update_task_status.value}-{task.status}-{idx}",
                     "accessory": {
                         "type": "button",
                         "text": {"type": "plain_text", "text": button_text},

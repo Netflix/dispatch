@@ -287,9 +287,14 @@ def dialog_action_functions(action: str):
 def block_action_functions(action: str):
     """Interprets the action and routes it to the appropriate function."""
     action_mappings = {
-        ConversationButtonActions.invite_user: [add_user_to_conversation],
-        ConversationButtonActions.update_task_status: [update_task_status],
-        ConversationButtonActions.provide_feedback: [create_rating_feedback_modal],
+        ConversationButtonActions.invite_user.value: [add_user_to_conversation],
+        ConversationButtonActions.update_task_status.value: [update_task_status],
+        ConversationButtonActions.provide_feedback.value: [create_rating_feedback_modal],
+        # Note these are temporary for backward compatibility of block ids and should be remove in a future release
+        "ConversationButtonActions.invite_user": [add_user_to_conversation],
+        "ConversationButtonActions.update_task_status": [
+            update_task_status,
+        ],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc
