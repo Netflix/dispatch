@@ -96,7 +96,10 @@ def update_notification(
     return notification
 
 
-@router.delete("/{notification_id}")
+@router.delete(
+    "/{notification_id}",
+    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+)
 def delete_notification(*, db_session: Session = Depends(get_db), notification_id: int):
     """
     Delete a notification, returning only an HTTP 200 OK if successful.

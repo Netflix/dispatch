@@ -10,7 +10,6 @@ from dispatch.config import DISPATCH_UI_URL
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.database import SessionLocal, resolve_attr
 from dispatch.document import service as document_service
-from dispatch.enums import Visibility
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident, IncidentRead
@@ -328,42 +327,40 @@ def send_incident_update_notifications(
                 "Incident updated notification not sent to incident conversation. No conversation plugin enabled."
             )
 
-    # we only send notifications about incident updates to fyi conversations
-    # and distribution lists if the incident's visibility is open
-    if incident.visibility == Visibility.open:
-        fyi_notification_template = notification_template.copy()
-        if incident.status != IncidentStatus.closed:
-            fyi_notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
-        else:
-            fyi_notification_template.insert(0, INCIDENT_NAME)
+    # we send a notification to the notification conversations and emails
+    fyi_notification_template = notification_template.copy()
+    if incident.status != IncidentStatus.closed:
+        fyi_notification_template.insert(0, INCIDENT_NAME_WITH_ENGAGEMENT)
+    else:
+        fyi_notification_template.insert(0, INCIDENT_NAME)
 
-        notification_kwargs = {
-            "commander_fullname": incident.commander.individual.name,
-            "commander_weblink": incident.commander.individual.weblink,
-            "contact_fullname": incident.commander.individual.name,
-            "contact_weblink": incident.commander.individual.weblink,
-            "incident_id": incident.id,
-            "incident_priority_new": incident.incident_priority.name,
-            "incident_priority_old": previous_incident.incident_priority.name,
-            "incident_status_new": incident.status,
-            "incident_status_old": previous_incident.status.value,
-            "incident_type_new": incident.incident_type.name,
-            "incident_type_old": previous_incident.incident_type.name,
-            "name": incident.name,
-            "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
-            "title": incident.title,
-        }
+    notification_kwargs = {
+        "commander_fullname": incident.commander.individual.name,
+        "commander_weblink": incident.commander.individual.weblink,
+        "contact_fullname": incident.commander.individual.name,
+        "contact_weblink": incident.commander.individual.weblink,
+        "incident_id": incident.id,
+        "incident_priority_new": incident.incident_priority.name,
+        "incident_priority_old": previous_incident.incident_priority.name,
+        "incident_status_new": incident.status,
+        "incident_status_old": previous_incident.status.value,
+        "incident_type_new": incident.incident_type.name,
+        "incident_type_old": previous_incident.incident_type.name,
+        "name": incident.name,
+        "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
+        "title": incident.title,
+    }
 
-        notification_params = {
-            "text": notification_text,
-            "type": notification_type,
-            "template": fyi_notification_template,
-            "kwargs": notification_kwargs,
-        }
+    notification_params = {
+        "text": notification_text,
+        "type": notification_type,
+        "template": fyi_notification_template,
+        "kwargs": notification_kwargs,
+    }
 
-        notification_service.filter_and_send(
-            db_session=db_session, class_instance=incident, notification_params=notification_params
-        )
+    notification_service.filter_and_send(
+        db_session=db_session, class_instance=incident, notification_params=notification_params
+    )
 
     log.debug("Incident updated notifications sent.")
 
