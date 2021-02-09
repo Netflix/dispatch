@@ -69,20 +69,19 @@ class EventEnvelope(BaseModel):
     type: str
 
 
-def get_channel_id_from_event(event: dict):
+def get_channel_id_from_event(event: EventEnvelope):
     """Returns the channel id from the Slack event."""
     channel_id = ""
-    if event.get("channel_id"):
-        return event["channel_id"]
-    if event.get("channel"):
-        return event["channel"]
-    if event.get("item", {}).get("channel"):
-        return event["item"]["channel"]
-
+    if event.event.channel_id:
+        return event.event.channel_id
+    if event.event.channel:
+        return event.event.channel
+    if event.item.channel:
+        return event.item.channel
     return channel_id
 
 
-def event_functions(event: dict):
+def event_functions(event: EventEnvelope):
     """Interprets the events and routes it the appropriate function."""
     event_mappings = {
         "member_joined_channel": [member_joined_channel],
@@ -92,14 +91,12 @@ def event_functions(event: dict):
         "message.im": [],
         "reaction_added": [handle_reaction_added_event],
     }
+    return event_mappings.get(event.event.type)
 
-    return event_mappings.get(event.get("event", {}).get("type"), [])
 
-
-async def handle_slack_event(*, db_session, client, request, background_tasks):
+async def handle_slack_event(*, db_session, client, event, background_tasks):
     """Handles slack event message."""
-    event = request["event"]
-    user_id = event["user"]
+    user_id = event.event.user
     channel_id = get_channel_id_from_event(event)
 
     if user_id and channel_id:
@@ -120,7 +117,7 @@ async def handle_slack_event(*, db_session, client, request, background_tasks):
 
 @background_task
 def handle_reaction_added_event(
-    user_email: str, incident_id: int, event: dict = None, db_session=None
+    user_email: str, incident_id: int, event: EventEnvelope = None, db_session=None
 ):
     """Handles an event where a reaction is added to a message."""
     reaction = event.event.reaction
@@ -161,7 +158,7 @@ def is_business_hours(commander_tz: str):
 
 
 @background_task
-def after_hours(user_email: str, incident_id: int, event: dict = None, db_session=None):
+def after_hours(user_email: str, incident_id: int, event: EventEnvelope = None, db_session=None):
     """Notifies the user that this incident is current in after hours mode."""
     # we want to ignore user joined messages
     if event.event.subtype == "group_join":
@@ -242,7 +239,7 @@ def member_joined_channel(
 
 
 @background_task
-def ban_threads_warning(user_email: str, incident_id: int, event: dict = None, db_session=None):
+def ban_threads_warning(user_email: str, incident_id: int, event: EventEnvelope = None, db_session=None):
     """Sends the user an ephemeral message if they use threads."""
     if not SLACK_BAN_THREADS:
         return
