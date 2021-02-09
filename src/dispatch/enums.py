@@ -12,7 +12,6 @@ class SearchTypes(str, Enum):
     individual_contact = "IndividualContact"
     team_contact = "TeamContact"
     service = "Service"
-    policy = "Policy"
     tag = "Tag"
     task = "Task"
     document = "Document"
