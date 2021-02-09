@@ -97,12 +97,10 @@ async def handle_event(
 
     slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
 
-    request = event.dict()
-
     return await handle_slack_event(
         db_session=db_session,
         client=slack_async_client,
-        request=request,
+        event=event,
         background_tasks=background_tasks,
     )
 
