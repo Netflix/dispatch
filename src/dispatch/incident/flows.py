@@ -684,14 +684,14 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
                 )
                 log.exception(e)
 
-    if incident.visibility == Visibility.open:
-        send_incident_created_notifications(incident, db_session)
-        event_service.log(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description="Incident notifications sent",
-            incident_id=incident.id,
-        )
+    send_incident_created_notifications(incident, db_session)
+
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Incident notifications sent",
+        incident_id=incident.id,
+    )
 
     suggested_document_items = get_suggested_document_items(incident.id, db_session)
 
