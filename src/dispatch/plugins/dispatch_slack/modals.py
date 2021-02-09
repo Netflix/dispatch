@@ -1038,11 +1038,15 @@ def create_rating_feedback_modal(
 
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    modal_create_template = build_rating_feedback_blocks(incident=incident)
+    if not incident:
+        message = "Sorry, you cannot submit feedback about this incident it does not exist."
+        dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
+    else:
+        modal_create_template = build_rating_feedback_blocks(incident=incident)
 
-    dispatch_slack_service.open_modal_with_user(
-        client=slack_client, trigger_id=trigger_id, modal=modal_create_template
-    )
+        dispatch_slack_service.open_modal_with_user(
+            client=slack_client, trigger_id=trigger_id, modal=modal_create_template
+        )
 
 
 @background_task

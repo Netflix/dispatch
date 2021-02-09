@@ -64,8 +64,10 @@ def add_user_to_conversation(
 ):
     """Adds a user to a conversation."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-    if incident.status == IncidentStatus.closed:
+    if not incident:
+        message = "Sorry, we cannot add you to this incident it does not exist."
+        dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
+    elif incident.status == IncidentStatus.closed:
         message = f"Sorry, we cannot add you to a closed incident. Please reach out to the incident commander ({incident.commander.individual.name}) for details."
         dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
     else:
