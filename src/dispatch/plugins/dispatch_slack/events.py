@@ -76,8 +76,8 @@ def get_channel_id_from_event(event: EventEnvelope):
         return event.event.channel_id
     if event.event.channel:
         return event.event.channel
-    if event.item.channel:
-        return event.item.channel
+    if event.event.item.channel:
+        return event.event.item.channel
     return channel_id
 
 
