@@ -91,7 +91,7 @@ def event_functions(event: EventEnvelope):
         "message.im": [],
         "reaction_added": [handle_reaction_added_event],
     }
-    return event_mappings.get(event.event.type)
+    return event_mappings.get(event.event.type, [])
 
 
 async def handle_slack_event(*, db_session, client, event, background_tasks):
