@@ -41,7 +41,7 @@ def get_template(message_type: MessageType):
             INCIDENT_FEEDBACK_DAILY_DIGEST_DESCRIPTION,
         ),
         MessageType.incident_daily_report: (
-            "notification.mjml",
+            "notification_list.mjml",
             INCIDENT_DAILY_REPORT_DESCRIPTION,
         ),
     }
@@ -71,8 +71,19 @@ def create_multi_message_body(
 def create_message_body(message_template: dict, message_type: MessageType, **kwargs):
     """Creates the correct message body based on message type."""
     template, description = get_template(message_type)
-    rendered = render_message_template(message_template, **kwargs)
-    kwargs.update({"items": rendered, "description": description})
+
+    items_grouped_rendered = []
+    if kwargs.get("items_grouped"):
+        items_grouped_template = kwargs["items_grouped_template"]
+        for item in kwargs["items_grouped"]:
+            item_rendered = render_message_template(items_grouped_template, **item)
+            items_grouped_rendered.append(item_rendered)
+
+        kwargs.update({"items": items_grouped_rendered, "description": description})
+        return render_html(template.render(**kwargs))
+
+    items_rendered = render_message_template(message_template, **kwargs)
+    kwargs.update({"items": items_rendered, "description": description})
     return render_html(template.render(**kwargs))
 
 
