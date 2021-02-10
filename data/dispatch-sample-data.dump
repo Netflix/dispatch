@@ -212,6 +212,22 @@ CREATE FUNCTION public.report_search_vector_update() RETURNS trigger
 ALTER FUNCTION public.report_search_vector_update() OWNER TO dispatch;
 
 --
+-- Name: search_filter_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
+--
+
+CREATE FUNCTION public.search_filter_search_vector_update() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+            BEGIN
+                NEW.search_vector = to_tsvector('pg_catalog.english', coalesce(NEW.name, '')) || to_tsvector('pg_catalog.english', coalesce(NEW.description, ''));
+                RETURN NEW;
+            END
+            $$;
+
+
+ALTER FUNCTION public.search_filter_search_vector_update() OWNER TO dispatch;
+
+--
 -- Name: service_search_vector_update(); Type: FUNCTION; Schema: public; Owner: dispatch
 --
 
@@ -617,6 +633,18 @@ CREATE TABLE public.assoc_individual_contact_terms (
 
 
 ALTER TABLE public.assoc_individual_contact_terms OWNER TO dispatch;
+
+--
+-- Name: assoc_notification_filters; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.assoc_notification_filters (
+    notification_id integer NOT NULL,
+    search_filter_id integer NOT NULL
+);
+
+
+ALTER TABLE public.assoc_notification_filters OWNER TO dispatch;
 
 --
 -- Name: conference; Type: TABLE; Schema: public; Owner: dispatch
@@ -1188,6 +1216,47 @@ ALTER SEQUENCE public.individual_contact_id_seq OWNED BY public.individual_conta
 
 
 --
+-- Name: notification; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.notification (
+    id integer NOT NULL,
+    name character varying,
+    description character varying,
+    type character varying,
+    target character varying,
+    enabled boolean,
+    search_vector tsvector,
+    updated_at timestamp without time zone,
+    created_at timestamp without time zone
+);
+
+
+ALTER TABLE public.notification OWNER TO dispatch;
+
+--
+-- Name: notification_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.notification_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.notification_id_seq OWNER TO dispatch;
+
+--
+-- Name: notification_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.notification_id_seq OWNED BY public.notification.id;
+
+
+--
 -- Name: participant; Type: TABLE; Schema: public; Owner: dispatch
 --
 
@@ -1311,43 +1380,6 @@ ALTER TABLE public.plugin_id_seq OWNER TO dispatch;
 --
 
 ALTER SEQUENCE public.plugin_id_seq OWNED BY public.plugin.id;
-
-
---
--- Name: policy; Type: TABLE; Schema: public; Owner: dispatch
---
-
-CREATE TABLE public.policy (
-    id integer NOT NULL,
-    name character varying,
-    description character varying,
-    expression character varying,
-    search_vector tsvector
-);
-
-
-ALTER TABLE public.policy OWNER TO dispatch;
-
---
--- Name: policy_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
---
-
-CREATE SEQUENCE public.policy_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.policy_id_seq OWNER TO dispatch;
-
---
--- Name: policy_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
---
-
-ALTER SEQUENCE public.policy_id_seq OWNED BY public.policy.id;
 
 
 --
@@ -1543,6 +1575,45 @@ ALTER TABLE public.report_id_seq OWNER TO dispatch;
 --
 
 ALTER SEQUENCE public.report_id_seq OWNED BY public.report.id;
+
+
+--
+-- Name: search_filter; Type: TABLE; Schema: public; Owner: dispatch
+--
+
+CREATE TABLE public.search_filter (
+    id integer NOT NULL,
+    name character varying,
+    description character varying,
+    expression json,
+    creator_id integer,
+    type character varying,
+    search_vector tsvector
+);
+
+
+ALTER TABLE public.search_filter OWNER TO dispatch;
+
+--
+-- Name: search_filter_id_seq; Type: SEQUENCE; Schema: public; Owner: dispatch
+--
+
+CREATE SEQUENCE public.search_filter_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.search_filter_id_seq OWNER TO dispatch;
+
+--
+-- Name: search_filter_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dispatch
+--
+
+ALTER SEQUENCE public.search_filter_id_seq OWNED BY public.search_filter.id;
 
 
 --
@@ -2213,6 +2284,13 @@ ALTER TABLE ONLY public.individual_contact ALTER COLUMN id SET DEFAULT nextval('
 
 
 --
+-- Name: notification id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.notification ALTER COLUMN id SET DEFAULT nextval('public.notification_id_seq'::regclass);
+
+
+--
 -- Name: participant id; Type: DEFAULT; Schema: public; Owner: dispatch
 --
 
@@ -2234,13 +2312,6 @@ ALTER TABLE ONLY public.plugin ALTER COLUMN id SET DEFAULT nextval('public.plugi
 
 
 --
--- Name: policy id; Type: DEFAULT; Schema: public; Owner: dispatch
---
-
-ALTER TABLE ONLY public.policy ALTER COLUMN id SET DEFAULT nextval('public.policy_id_seq'::regclass);
-
-
---
 -- Name: recommendation id; Type: DEFAULT; Schema: public; Owner: dispatch
 --
 
@@ -2259,6 +2330,13 @@ ALTER TABLE ONLY public.recommendation_accuracy ALTER COLUMN id SET DEFAULT next
 --
 
 ALTER TABLE ONLY public.report ALTER COLUMN id SET DEFAULT nextval('public.report_id_seq'::regclass);
+
+
+--
+-- Name: search_filter id; Type: DEFAULT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.search_filter ALTER COLUMN id SET DEFAULT nextval('public.search_filter_id_seq'::regclass);
 
 
 --
@@ -2336,7 +2414,7 @@ ALTER TABLE ONLY public.workflow_instance ALTER COLUMN id SET DEFAULT nextval('p
 --
 
 COPY public.alembic_version (version_num) FROM stdin;
-996dea17749b
+03f742366750
 \.
 
 
@@ -2377,6 +2455,14 @@ COPY public.assoc_individual_contact_incident_type (incident_type_id, individual
 --
 
 COPY public.assoc_individual_contact_terms (term_id, individual_contact_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: assoc_notification_filters; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.assoc_notification_filters (notification_id, search_filter_id) FROM stdin;
 \.
 
 
@@ -2549,6 +2635,14 @@ t	f	\N	dispatch@example.com	\N	\N	\N	1	dispatch@example.com	\N	\N	\N	Unknown	\N	
 
 
 --
+-- Data for Name: notification; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.notification (id, name, description, type, target, enabled, search_vector, updated_at, created_at) FROM stdin;
+\.
+
+
+--
 -- Data for Name: participant; Type: TABLE DATA; Schema: public; Owner: dispatch
 --
 
@@ -2588,14 +2682,6 @@ COPY public.plugin (id, title, slug, description, version, author, author_url, t
 11	Google Gmail Plugin - Email Management	google-gmail-email	Uses gmail to facilitate emails.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	email	t	f	f	null	'email':4 'gmail':2 'googl':1 'manag':5 'plugin':3
 13	Jira Plugin - Ticket Management	jira-ticket	Uses Jira to help manage external tickets.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	ticket	f	f	f	null	'jira':1 'manag':4 'plugin':2 'ticket':3
 15	Slack Plugin - Contact Information Resolver	slack-contact	Uses Slack to resolve contact information details.	0.1.0	Netflix	https://github.com/netflix/dispatch.git	contact	f	f	f	null	'contact':3 'inform':4 'plugin':2 'resolv':5 'slack':1
-\.
-
-
---
--- Data for Name: policy; Type: TABLE DATA; Schema: public; Owner: dispatch
---
-
-COPY public.policy (id, name, description, expression, search_vector) FROM stdin;
 \.
 
 
@@ -2683,6 +2769,14 @@ COPY public.recommendation_terms (term_id, recommendation_id) FROM stdin;
 
 COPY public.report (id, created_at, details, details_raw, type, incident_id, participant_id, search_vector) FROM stdin;
 1	2020-07-24 18:11:55.229674	{"conditions": "List of conditions", "actions": "List of actions", "needs": "List of needs"}	List of conditions List of actions List of needs	Tactical Report	1	1	'action':6 'condit':3 'list':1,4,7 'need':9
+\.
+
+
+--
+-- Data for Name: search_filter; Type: TABLE DATA; Schema: public; Owner: dispatch
+--
+
+COPY public.search_filter (id, name, description, expression, creator_id, type, search_vector) FROM stdin;
 \.
 
 
@@ -2966,6 +3060,13 @@ SELECT pg_catalog.setval('public.individual_contact_id_seq', 3, true);
 
 
 --
+-- Name: notification_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.notification_id_seq', 1, false);
+
+
+--
 -- Name: participant_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
@@ -2987,13 +3088,6 @@ SELECT pg_catalog.setval('public.plugin_id_seq', 16, true);
 
 
 --
--- Name: policy_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
---
-
-SELECT pg_catalog.setval('public.policy_id_seq', 1, false);
-
-
---
 -- Name: recommendation_accuracy_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
 --
 
@@ -3012,6 +3106,13 @@ SELECT pg_catalog.setval('public.recommendation_id_seq', 2, true);
 --
 
 SELECT pg_catalog.setval('public.report_id_seq', 1, true);
+
+
+--
+-- Name: search_filter_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dispatch
+--
+
+SELECT pg_catalog.setval('public.search_filter_id_seq', 1, false);
 
 
 --
@@ -3130,6 +3231,14 @@ ALTER TABLE ONLY public.assoc_individual_contact_incident_type
 
 ALTER TABLE ONLY public.assoc_individual_contact_terms
     ADD CONSTRAINT assoc_individual_contact_terms_pkey PRIMARY KEY (term_id, individual_contact_id);
+
+
+--
+-- Name: assoc_notification_filters assoc_notification_filters_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.assoc_notification_filters
+    ADD CONSTRAINT assoc_notification_filters_pkey PRIMARY KEY (notification_id, search_filter_id);
 
 
 --
@@ -3317,6 +3426,14 @@ ALTER TABLE ONLY public.individual_contact
 
 
 --
+-- Name: notification notification_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.notification
+    ADD CONSTRAINT notification_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: participant participant_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
 --
 
@@ -3346,22 +3463,6 @@ ALTER TABLE ONLY public.plugin
 
 ALTER TABLE ONLY public.plugin
     ADD CONSTRAINT plugin_slug_key UNIQUE (slug);
-
-
---
--- Name: policy policy_name_key; Type: CONSTRAINT; Schema: public; Owner: dispatch
---
-
-ALTER TABLE ONLY public.policy
-    ADD CONSTRAINT policy_name_key UNIQUE (name);
-
-
---
--- Name: policy policy_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
---
-
-ALTER TABLE ONLY public.policy
-    ADD CONSTRAINT policy_pkey PRIMARY KEY (id);
 
 
 --
@@ -3442,6 +3543,22 @@ ALTER TABLE ONLY public.recommendation_terms
 
 ALTER TABLE ONLY public.report
     ADD CONSTRAINT report_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: search_filter search_filter_name_key; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.search_filter
+    ADD CONSTRAINT search_filter_name_key UNIQUE (name);
+
+
+--
+-- Name: search_filter search_filter_pkey; Type: CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.search_filter
+    ADD CONSTRAINT search_filter_pkey PRIMARY KEY (id);
 
 
 --
@@ -3725,6 +3842,13 @@ CREATE INDEX ix_individual_contact_search_vector ON public.individual_contact US
 
 
 --
+-- Name: ix_notification_search_vector; Type: INDEX; Schema: public; Owner: dispatch
+--
+
+CREATE INDEX ix_notification_search_vector ON public.notification USING gin (search_vector);
+
+
+--
 -- Name: ix_plugin_search_vector; Type: INDEX; Schema: public; Owner: dispatch
 --
 
@@ -3732,17 +3856,17 @@ CREATE INDEX ix_plugin_search_vector ON public.plugin USING gin (search_vector);
 
 
 --
--- Name: ix_policy_search_vector; Type: INDEX; Schema: public; Owner: dispatch
---
-
-CREATE INDEX ix_policy_search_vector ON public.policy USING gin (search_vector);
-
-
---
 -- Name: ix_report_search_vector; Type: INDEX; Schema: public; Owner: dispatch
 --
 
 CREATE INDEX ix_report_search_vector ON public.report USING gin (search_vector);
+
+
+--
+-- Name: ix_search_filter_search_vector; Type: INDEX; Schema: public; Owner: dispatch
+--
+
+CREATE INDEX ix_search_filter_search_vector ON public.search_filter USING gin (search_vector);
 
 
 --
@@ -3844,17 +3968,17 @@ CREATE TRIGGER plugin_search_vector_trigger BEFORE INSERT OR UPDATE ON public.pl
 
 
 --
--- Name: policy policy_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
---
-
-CREATE TRIGGER policy_search_vector_trigger BEFORE INSERT OR UPDATE ON public.policy FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'description');
-
-
---
 -- Name: report report_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
 --
 
 CREATE TRIGGER report_search_vector_trigger BEFORE INSERT OR UPDATE ON public.report FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'details_raw');
+
+
+--
+-- Name: search_filter search_filter_search_vector_trigger; Type: TRIGGER; Schema: public; Owner: dispatch
+--
+
+CREATE TRIGGER search_filter_search_vector_trigger BEFORE INSERT OR UPDATE ON public.search_filter FOR EACH ROW EXECUTE FUNCTION tsvector_update_trigger('search_vector', 'pg_catalog.english', 'name', 'description');
 
 
 --
@@ -3977,6 +4101,22 @@ ALTER TABLE ONLY public.assoc_individual_contact_terms
 
 ALTER TABLE ONLY public.assoc_individual_contact_terms
     ADD CONSTRAINT assoc_individual_contact_terms_term_id_fkey FOREIGN KEY (term_id) REFERENCES public.term(id);
+
+
+--
+-- Name: assoc_notification_filters assoc_notification_filters_notification_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.assoc_notification_filters
+    ADD CONSTRAINT assoc_notification_filters_notification_id_fkey FOREIGN KEY (notification_id) REFERENCES public.notification(id) ON DELETE CASCADE;
+
+
+--
+-- Name: assoc_notification_filters assoc_notification_filters_search_filter_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.assoc_notification_filters
+    ADD CONSTRAINT assoc_notification_filters_search_filter_id_fkey FOREIGN KEY (search_filter_id) REFERENCES public.search_filter(id) ON DELETE CASCADE;
 
 
 --
@@ -4345,6 +4485,14 @@ ALTER TABLE ONLY public.report
 
 ALTER TABLE ONLY public.report
     ADD CONSTRAINT report_participant_id_fkey FOREIGN KEY (participant_id) REFERENCES public.participant(id);
+
+
+--
+-- Name: search_filter search_filter_creator_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dispatch
+--
+
+ALTER TABLE ONLY public.search_filter
+    ADD CONSTRAINT search_filter_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.dispatch_user(id);
 
 
 --
