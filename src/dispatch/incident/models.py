@@ -72,7 +72,7 @@ class Incident(Base, TimeStampMixin):
     name = Column(String)
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
-    status = Column(String, default=IncidentStatus.active)
+    status = Column(String, default=IncidentStatus.active.value)
     cost = Column(Float, default=0)
     visibility = Column(String, default=Visibility.open)
 
