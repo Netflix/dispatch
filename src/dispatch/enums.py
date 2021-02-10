@@ -7,22 +7,22 @@ class Visibility(str, Enum):
 
 
 class SearchTypes(str, Enum):
-    term = "Term"
     definition = "Definition"
+    document = "Document"
+    incident = "Incident"
+    incident_priority = "IncidentPriority"
+    incident_type = "IncidentType"
     individual_contact = "IndividualContact"
-    team_contact = "TeamContact"
+    plugin = "Plugin"
+    search_filter = "SearchFilter"
     service = "Service"
     tag = "Tag"
     task = "Task"
-    document = "Document"
-    plugin = "Plugin"
-    incident_priority = "IncidentPriority"
-    incident_type = "IncidentType"
-    incident = "Incident"
-    search_filter = "SearchFilter"
+    team_contact = "TeamContact"
+    term = "Term"
 
 
 class UserRoles(str, Enum):
-    user = "User"
-    poweruser = "Poweruser"
     admin = "Admin"
+    poweruser = "Poweruser"
+    user = "User"

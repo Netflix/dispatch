@@ -89,9 +89,7 @@ def get_all(*, db_session) -> List[Optional[Incident]]:
     return db_session.query(Incident)
 
 
-def get_all_by_status(
-    *, db_session, status: IncidentStatus, skip=0, limit=100
-) -> List[Optional[Incident]]:
+def get_all_by_status(*, db_session, status: str, skip=0, limit=100) -> List[Optional[Incident]]:
     """Returns all incidents based on the given status."""
     return (
         db_session.query(Incident).filter(Incident.status == status).offset(skip).limit(limit).all()
@@ -99,35 +97,35 @@ def get_all_by_status(
 
 
 def get_all_last_x_hours_by_status(
-    *, db_session, status: IncidentStatus, hours: int, skip=0, limit=100
+    *, db_session, status: str, hours: int, skip=0, limit=100
 ) -> List[Optional[Incident]]:
     """Returns all incidents of a given status in the last x hours."""
     now = datetime.utcnow()
 
-    if status == IncidentStatus.active:
+    if status == IncidentStatus.active.value:
         return (
             db_session.query(Incident)
-            .filter(Incident.status == IncidentStatus.active)
+            .filter(Incident.status == IncidentStatus.active.value)
             .filter(Incident.created_at >= now - timedelta(hours=hours))
             .offset(skip)
             .limit(limit)
             .all()
         )
 
-    if status == IncidentStatus.stable:
+    if status == IncidentStatus.stable.value:
         return (
             db_session.query(Incident)
-            .filter(Incident.status == IncidentStatus.stable)
+            .filter(Incident.status == IncidentStatus.stable.value)
             .filter(Incident.stable_at >= now - timedelta(hours=hours))
             .offset(skip)
             .limit(limit)
             .all()
         )
 
-    if status == IncidentStatus.closed:
+    if status == IncidentStatus.closed.value:
         return (
             db_session.query(Incident)
-            .filter(Incident.status == IncidentStatus.closed)
+            .filter(Incident.status == IncidentStatus.closed.value)
             .filter(Incident.closed_at >= now - timedelta(hours=hours))
             .offset(skip)
             .limit(limit)

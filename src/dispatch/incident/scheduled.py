@@ -86,70 +86,72 @@ def auto_tagger(db_session):
 @background_task
 def daily_report(db_session=None):
     """
-    Creates and sends an incident daily report.
+    Creates and sends incidents daily reports based on notifications.
     """
     notifications = notification_service.get_all_enabled(db_session=db_session)
     for notification in notifications:
-        for filter in notification.filters:
-            pass
+        for search_filter in notification.filters:
+            active_incidents = get_all_by_status(
+                db_session=db_session, status=IncidentStatus.active.value
+            )
+            stable_incidents = get_all_last_x_hours_by_status(
+                db_session=db_session, status=IncidentStatus.stable.value, hours=24
+            )
+            closed_incidents = get_all_last_x_hours_by_status(
+                db_session=db_session, status=IncidentStatus.closed.value, hours=24
+            )
+            incidents = active_incidents + stable_incidents + closed_incidents
 
-    active_incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active)
-    stable_incidents = get_all_last_x_hours_by_status(
-        db_session=db_session, status=IncidentStatus.stable, hours=24
-    )
-    closed_incidents = get_all_last_x_hours_by_status(
-        db_session=db_session, status=IncidentStatus.closed, hours=24
-    )
-    incidents = active_incidents + stable_incidents + closed_incidents
+            items_grouped = []
+            items_grouped_template = INCIDENT
+            for idx, incident in enumerate(incidents):
+                try:
+                    item = {
+                        "commander_fullname": incident.commander.individual.name,
+                        "commander_weblink": incident.commander.individual.weblink,
+                        "incident_id": incident.id,
+                        "name": incident.name,
+                        "priority": incident.incident_priority.name,
+                        "priority_description": incident.incident_priority.description,
+                        "status": incident.status,
+                        "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
+                        "title": incident.title,
+                        "type": incident.incident_type.name,
+                        "type_description": incident.incident_type.description,
+                    }
 
-    items_grouped_template = INCIDENT
-    items_grouped = []
-    for idx, incident in enumerate(incidents):
-        try:
-            item = {
-                "commander_fullname": incident.commander.individual.name,
-                "commander_weblink": incident.commander.individual.weblink,
-                "incident_id": incident.id,
-                "name": incident.name,
-                "priority": incident.incident_priority.name,
-                "priority_description": incident.incident_priority.description,
-                "status": incident.status,
-                "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
-                "title": incident.title,
-                "type": incident.incident_type.name,
-                "type_description": incident.incident_type.description,
+                    if incident.status != IncidentStatus.closed.value:
+                        item.update(
+                            {
+                                "button_text": "Join Incident",
+                                "button_value": str(incident.id),
+                                "button_action": f"{ConversationButtonActions.invite_user.value}-{incident.status}-{idx}",
+                            }
+                        )
+
+                    items_grouped.append(item)
+                except Exception as e:
+                    log.exception(e)
+
+            notification_kwargs = {
+                "contact_fullname": DISPATCH_HELP_EMAIL,
+                "contact_weblink": DISPATCH_HELP_EMAIL,
+                "items_grouped": items_grouped,
+                "items_grouped_template": items_grouped_template,
             }
 
-            if incident.status != IncidentStatus.closed.value:
-                item.update(
-                    {
-                        "button_text": "Join Incident",
-                        "button_value": str(incident.id),
-                        "button_action": f"{ConversationButtonActions.invite_user.value}-{incident.status}-{idx}",
-                    }
-                )
+            notification_params = {
+                "text": INCIDENT_DAILY_REPORT_TITLE,
+                "type": MessageType.incident_daily_report,
+                "template": INCIDENT_DAILY_REPORT,
+                "kwargs": notification_kwargs,
+            }
 
-            items_grouped.append(item)
-        except Exception as e:
-            log.exception(e)
-
-    notification_kwargs = {
-        "contact_fullname": DISPATCH_HELP_EMAIL,
-        "contact_weblink": DISPATCH_HELP_EMAIL,
-        "items_grouped": items_grouped,
-        "items_grouped_template": items_grouped_template,
-    }
-
-    notification_params = {
-        "text": INCIDENT_DAILY_REPORT_TITLE,
-        "type": MessageType.incident_daily_report,
-        "template": INCIDENT_DAILY_REPORT,
-        "kwargs": notification_kwargs,
-    }
-
-    notification_service.filter_and_send(
-        db_session=db_session, class_instance=incident, notification_params=notification_params
-    )
+            notification_service.send(
+                db_session=db_session,
+                notification=notification,
+                notification_params=notification_params,
+            )
 
 
 @scheduler.add(every(5).minutes, name="calculate-incidents-cost")
