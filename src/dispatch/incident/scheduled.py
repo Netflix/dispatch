@@ -88,6 +88,11 @@ def daily_report(db_session=None):
     """
     Creates and sends an incident daily report.
     """
+    notifications = notification_service.get_all_enabled(db_session=db_session)
+    for notification in notifications:
+        for filter in notification.filters:
+            pass
+
     active_incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active)
     stable_incidents = get_all_last_x_hours_by_status(
         db_session=db_session, status=IncidentStatus.stable, hours=24
@@ -100,34 +105,33 @@ def daily_report(db_session=None):
     items_grouped_template = INCIDENT
     items_grouped = []
     for idx, incident in enumerate(incidents):
-        if incident.visibility == Visibility.open:
-            try:
-                item = {
-                    "commander_fullname": incident.commander.individual.name,
-                    "commander_weblink": incident.commander.individual.weblink,
-                    "incident_id": incident.id,
-                    "name": incident.name,
-                    "priority": incident.incident_priority.name,
-                    "priority_description": incident.incident_priority.description,
-                    "status": incident.status,
-                    "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
-                    "title": incident.title,
-                    "type": incident.incident_type.name,
-                    "type_description": incident.incident_type.description,
-                }
+        try:
+            item = {
+                "commander_fullname": incident.commander.individual.name,
+                "commander_weblink": incident.commander.individual.weblink,
+                "incident_id": incident.id,
+                "name": incident.name,
+                "priority": incident.incident_priority.name,
+                "priority_description": incident.incident_priority.description,
+                "status": incident.status,
+                "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
+                "title": incident.title,
+                "type": incident.incident_type.name,
+                "type_description": incident.incident_type.description,
+            }
 
-                if incident.status != IncidentStatus.closed.value:
-                    item.update(
-                        {
-                            "button_text": "Join Incident",
-                            "button_value": str(incident.id),
-                            "button_action": f"{ConversationButtonActions.invite_user.value}-{incident.status}-{idx}",
-                        }
-                    )
+            if incident.status != IncidentStatus.closed.value:
+                item.update(
+                    {
+                        "button_text": "Join Incident",
+                        "button_value": str(incident.id),
+                        "button_action": f"{ConversationButtonActions.invite_user.value}-{incident.status}-{idx}",
+                    }
+                )
 
-                items_grouped.append(item)
-            except Exception as e:
-                log.exception(e)
+            items_grouped.append(item)
+        except Exception as e:
+            log.exception(e)
 
     notification_kwargs = {
         "contact_fullname": DISPATCH_HELP_EMAIL,
