@@ -22,7 +22,7 @@ def get_by_name(*, db_session, name: str) -> Optional[SearchFilter]:
 
 
 def match(*, db_session, filter_spec: List[dict], class_instance: Base):
-    """Matches an class instance with a given search filter."""
+    """Matches a class instance with a given search filter."""
     table_name = get_table_name_by_class_instance(class_instance)
     model_cls = get_class_by_tablename(table_name)
     query = db_session.query(model_cls)

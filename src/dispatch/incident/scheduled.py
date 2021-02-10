@@ -88,19 +88,19 @@ def daily_report(db_session=None):
     """
     Creates and sends an incident daily report.
     """
-    active_incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active)
+    active_incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active.value)
     stable_incidents = get_all_last_x_hours_by_status(
-        db_session=db_session, status=IncidentStatus.stable, hours=24
+        db_session=db_session, status=IncidentStatus.stable.value, hours=24
     )
     closed_incidents = get_all_last_x_hours_by_status(
-        db_session=db_session, status=IncidentStatus.closed, hours=24
+        db_session=db_session, status=IncidentStatus.closed.value, hours=24
     )
     incidents = active_incidents + stable_incidents + closed_incidents
 
-    items_grouped_template = INCIDENT
     items_grouped = []
+    items_grouped_template = INCIDENT
     for idx, incident in enumerate(incidents):
-        if incident.visibility == Visibility.open:
+        if incident.visibility == Visibility.open.value:
             try:
                 item = {
                     "commander_fullname": incident.commander.individual.name,
