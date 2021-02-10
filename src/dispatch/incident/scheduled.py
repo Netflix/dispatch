@@ -5,8 +5,8 @@ from schedule import every
 from sqlalchemy import func
 
 from dispatch.config import (
+    DISPATCH_HELP_EMAIL,
     DISPATCH_UI_URL,
-    INCIDENT_ONCALL_SERVICE_ID,
 )
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.database import resolve_attr
@@ -130,6 +130,8 @@ def daily_report(db_session=None):
                 log.exception(e)
 
     notification_kwargs = {
+        "contact_fullname": DISPATCH_HELP_EMAIL,
+        "contact_weblink": DISPATCH_HELP_EMAIL,
         "items_grouped": items_grouped,
         "items_grouped_template": items_grouped_template,
     }

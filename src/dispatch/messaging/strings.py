@@ -36,9 +36,9 @@ class MessageType(str, Enum):
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
-    IncidentStatus.active: "This incident is under active investigation.",
-    IncidentStatus.stable: "This incident is stable, the bulk of the investigation has been completed or most of the risk has been mitigated.",
-    IncidentStatus.closed: "This no longer requires additional involvement, long term incident action items have been assigned to their respective owners.",
+    IncidentStatus.active.value: "This incident is under active investigation.",
+    IncidentStatus.stable.value: "This incident is stable, the bulk of the investigation has been completed or most of the risk has been mitigated.",
+    IncidentStatus.closed.value: "This no longer requires additional involvement, long term incident action items have been assigned to their respective owners.",
 }
 
 INCIDENT_TASK_REMINDER_DESCRIPTION = """
@@ -552,7 +552,7 @@ INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION = [
         "text": INCIDENT_CLOSED_RATING_FEEDBACK_DESCRIPTION,
         "button_text": "Provide Feeback",
         "button_value": "{{incident_id}}",
-        "button_action": ConversationButtonActions.provide_feedback,
+        "button_action": ConversationButtonActions.provide_feedback.value,
     }
 ]
 
