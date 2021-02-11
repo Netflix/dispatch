@@ -89,15 +89,18 @@ def create_message_body(message_template: dict, message_type: MessageType, **kwa
 
 def render_html(template):
     """Uses the mjml cli to create html."""
-    with tempfile.NamedTemporaryFile() as fp:
-        fp.write(template.encode("utf-8"))
+
+    with tempfile.NamedTemporaryFile("w+") as fp:
+        fp.write(template)
+        fp.flush()
         process = subprocess.run(
             ["./mjml", fp.name, "-s"],
             cwd=MJML_PATH,
             capture_output=True,
         )
         if process.stderr:
-            log.error(process.stderr)
+            log.error(process.stderr.decode("utf-8"))
+            raise Exception("MJML template processing failed.")
         return process.stdout.decode("utf-8")
 
 

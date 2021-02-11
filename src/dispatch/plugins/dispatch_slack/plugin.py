@@ -53,6 +53,7 @@ from .service import (
     send_ephemeral_message,
     send_message,
     set_conversation_topic,
+    chunks,
 )
 
 
@@ -104,7 +105,8 @@ class SlackConversationPlugin(ConversationPlugin):
         if not blocks:
             blocks = create_message_blocks(message_template, notification_type, items, **kwargs)
 
-        return send_message(self.client, conversation_id, text, blocks, persist)
+        for c in chunks(blocks, 50):
+            send_message(self.client, conversation_id, text, c, persist)
 
     def send_direct(
         self,
