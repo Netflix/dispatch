@@ -53,7 +53,6 @@ def list_plugins():
     db_session = SessionLocal()
     table = []
     for p in plugins.all():
-        print(p.slug)
         record = plugin_service.get_by_slug(db_session=db_session, slug=p.slug)
 
         if not record:
