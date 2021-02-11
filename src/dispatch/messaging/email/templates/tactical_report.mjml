@@ -1,58 +1,65 @@
 {% extends 'templates/base.mjml' %}
 {% block description %}
-<mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
-<mj-column width="100%">
-    <mj-text color="#212b35" font-size="16px">
-        This message is for <b>notification</b> purposes only. No direct action of you
-        is currently required.
+<mj-section>
+  <mj-column>
+    <mj-text mj-class="section-title">
+      {{ name }} - Tactical Report
     </mj-text>
-    <mj-text color="#212b35" font-size="16px">
-        Please be aware that this is a point in time update and the details below will
-        likely change.
+    <mj-text>
+      This message is for <b>notification</b> purposes only. No direct action of you
+      is currently required.
     </mj-text>
-    </mj-column>
+    <mj-text>
+      Please be aware that this is a point in time update and the details below will
+      likely change.
+    </mj-text>
+  </mj-column>
 </mj-section>
 {% endblock %}
 
 {% block items %}
-<mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
-    <mj-column width="100%">
-        <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            Incident Title
-        </mj-text>
-        <mj-text color="#212b35" font-size="16px">
-            {{ title }}
-        </mj-text>
-    </mj-column>
+<mj-section>
+  <mj-column>
+    <mj-divider />
+    <mj-text mj-class="section-title">
+      Title
+    </mj-text>
+    <mj-text>
+      {{ title }}
+    </mj-text>
+  </mj-column>
 </mj-section>
-<mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
-    <mj-column width="100%">
-        <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            Conditions
-        </mj-text>
-        <mj-text color="#212b35" font-size="16px">
-            {{ conditions }}
-        </mj-text>
-    </mj-column>
+<mj-section>
+  <mj-column>
+    <mj-divider />
+    <mj-text mj-class="section-title">
+      Conditions
+    </mj-text>
+    <mj-text>
+      {{ conditions }}
+    </mj-text>
+  </mj-column>
 </mj-section>
-<mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
-    <mj-column width="100%">
-        <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            Actions
-        </mj-text>
-        <mj-text color="#212b35" font-size="16px">
-            {{ actions }}
-        </mj-text>
-    </mj-column>
+<mj-section>
+  <mj-column>
+    <mj-divider />
+    <mj-text mj-class="section-title">
+      Actions
+    </mj-text>
+    <mj-text>
+      {{ actions }}
+    </mj-text>
+  </mj-column>
 </mj-section>
-<mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
-    <mj-column width="100%">
-        <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            Needs
-        </mj-text>
-        <mj-text color="#212b35" font-size="16px">
-            {{ needs }}
-        </mj-text>
-    </mj-column>
+<mj-section>
+  <mj-column>
+    <mj-divider />
+    <mj-text mj-class="section-title">
+      Needs
+    </mj-text>
+    <mj-text>
+      {{ needs }}
+    </mj-text>
+  </mj-column>
 </mj-section>
 {% endblock %}

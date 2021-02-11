@@ -243,11 +243,10 @@ def create_tactical_report(
     Creates a new tactical report.
     """
     background_tasks.add_task(
-        report_flows.create_tactical_report(
-            user_email=current_user.email,
-            incident_id=current_incident.id,
-            tactical_report_in=tactical_report_in,
-        )
+        report_flows.create_tactical_report,
+        user_email=current_user.email,
+        incident_id=current_incident.id,
+        tactical_report_in=tactical_report_in,
     )
 
 
@@ -268,11 +267,10 @@ def create_executive_report(
     Creates a new executive report.
     """
     background_tasks.add_task(
-        report_flows.create_executive_report(
-            user_email=current_user.email,
-            incident_id=current_incident.id,
-            executive_report_in=executive_report_in,
-        )
+        report_flows.create_executive_report,
+        user_email=current_user.email,
+        incident_id=current_incident.id,
+        executive_report_in=executive_report_in,
     )
 
 

@@ -1,66 +1,74 @@
 {% extends 'templates/base.mjml' %}
 {% block description %}
-<mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
-<mj-column width="100%">
-    <mj-text color="#212b35" font-size="16px">
-        You're receiving this executive report, because you're a member of this incident's
-        notifications Google group ({{ notifications_group }}).
+<mj-section>
+  <mj-column>
+    <mj-text mj-class="section-title">
+      {{ name }} - Executive Report
     </mj-text>
-    <mj-text color="#212b35" font-size="16px">
-        Please be aware that this report is a point in time update and
-        the details below are likely to change as the incident evolves.
-        No direct action from you is currently required.
+    <mj-text>
+      You're receiving this executive report, because you're a member of this incident's
+      notifications Google group ({{ notifications_group }}).
     </mj-text>
-    </mj-column>
+    <mj-text>
+      Please be aware that this report is a point in time update and
+      the details below are likely to change as the incident evolves.
+      No direct action from you is currently required.
+    </mj-text>
+  </mj-column>
 </mj-section>
 {% endblock %}
 
 {% block items %}
-<mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
-    <mj-column width="100%">
-        <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            Incident Title
-        </mj-text>
-        <mj-text color="#212b35" font-size="16px">
-            {{ title }}
-        </mj-text>
-    </mj-column>
-</mj-section>
-<mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
-    <mj-column width="100%">
-        <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            Current Status
-        </mj-text>
-        <mj-text color="#212b35" font-size="16px">
-            {{ current_status }}
-        </mj-text>
-    </mj-column>
-</mj-section>
-<mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
-    <mj-column width="100%">
-        <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            Overview
-        </mj-text>
-        <mj-text color="#212b35" font-size="16px">
-            {{ overview }}
-        </mj-text>
-    </mj-column>
-</mj-section>
-<mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
-    <mj-column width="100%">
-        <mj-text color="#212b35" font-weight="bold" font-size="20px">
-            Next Steps
-        </mj-text>
-        <mj-text color="#212b35" font-size="16px">
-            {{ next_steps }}
-        </mj-text>
-    </mj-column>
-</mj-section>
-<mj-section background-color="#ffffff" padding-left="15px" padding-right="15px">
-<mj-column width="100%">
-    <mj-text color="#212b35" font-size="16px">
-        A document version of the report can be found <a href="{{ weblink }}" target="_blank" rel="noopener noreferrer">here</a>. Please, use the document for questions and feedback.
+<mj-section>
+  <mj-column>
+    <mj-divider />
+    <mj-text mj-class="section-title">
+      Title
     </mj-text>
-    </mj-column>
+    <mj-text>
+      {{ title }}
+    </mj-text>
+  </mj-column>
+</mj-section>
+<mj-section>
+  <mj-column>
+    <mj-divider />
+    <mj-text mj-class="section-title">
+      Current Status
+    </mj-text>
+    <mj-text>
+      {{ current_status }}
+    </mj-text>
+  </mj-column>
+</mj-section>
+<mj-section>
+  <mj-column>
+    <mj-divider />
+    <mj-text mj-class="section-title">
+      Overview
+    </mj-text>
+    <mj-text>
+      {{ overview }}
+    </mj-text>
+  </mj-column>
+</mj-section>
+<mj-section>
+  <mj-column>
+    <mj-divider />
+    <mj-text mj-class="section-title">
+      Next Steps
+    </mj-text>
+    <mj-text>
+      {{ next_steps }}
+    </mj-text>
+  </mj-column>
+</mj-section>
+<mj-section>
+  <mj-column>
+    <mj-divider />
+    <mj-text>
+      A document version of the report can be found <a href="{{ weblink }}" target="_blank" rel="noopener noreferrer">here</a>. Please, use the document for questions and feedback.
+    </mj-text>
+  </mj-column>
 </mj-section>
 {% endblock %}

@@ -312,41 +312,41 @@ INCIDENT_NAME = {
     "text": INCIDENT_NOTIFICATION_PURPOSES_FYI,
 }
 
-INCIDENT_TITLE = {"title": "Incident Title", "text": "{{title}}"}
+INCIDENT_TITLE = {"title": "Title", "text": "{{title}}"}
 
-INCIDENT_DESCRIPTION = {"title": "Incident Description", "text": "{{description}}"}
+INCIDENT_DESCRIPTION = {"title": "Description", "text": "{{description}}"}
 
 INCIDENT_STATUS = {
-    "title": "Incident Status - {{status}}",
+    "title": "Status - {{status}}",
     "status_mapping": INCIDENT_STATUS_DESCRIPTIONS,
 }
 
-INCIDENT_TYPE = {"title": "Incident Type - {{type}}", "text": "{{type_description}}"}
+INCIDENT_TYPE = {"title": "Type - {{type}}", "text": "{{type_description}}"}
 
 INCIDENT_PRIORITY = {
-    "title": "Incident Priority - {{priority}}",
+    "title": "Priority - {{priority}}",
     "text": "{{priority_description}}",
 }
 
 INCIDENT_PRIORITY_FYI = {
-    "title": "Incident Priority - {{priority}}",
+    "title": "Priority - {{priority}}",
     "text": "{{priority_description}}",
 }
 
 INCIDENT_COMMANDER = {
-    "title": "Incident Commander - {{commander_fullname}}",
+    "title": "Commander - {{commander_fullname}}",
     "title_link": "{{commander_weblink}}",
     "text": INCIDENT_COMMANDER_DESCRIPTION,
 }
 
 INCIDENT_CONFERENCE = {
-    "title": "Incident Conference",
+    "title": "Conference",
     "title_link": "{{conference_weblink}}",
     "text": INCIDENT_CONFERENCE_DESCRIPTION,
 }
 
 INCIDENT_STORAGE = {
-    "title": "Incident Storage",
+    "title": "Storage",
     "title_link": "{{storage_weblink}}",
     "text": INCIDENT_STORAGE_DESCRIPTION,
 }
@@ -358,25 +358,25 @@ INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT = {
 }
 
 INCIDENT_INVESTIGATION_DOCUMENT = {
-    "title": "Incident Investigation Document",
+    "title": "Investigation Document",
     "title_link": "{{document_weblink}}",
     "text": INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,
 }
 
 INCIDENT_INVESTIGATION_SHEET = {
-    "title": "Incident Investigation Sheet",
+    "title": "Investigation Sheet",
     "title_link": "{{sheet_weblink}}",
     "text": INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
 }
 
 INCIDENT_REVIEW_DOCUMENT = {
-    "title": "Incident Review Document",
+    "title": "Review Document",
     "title_link": "{{review_document_weblink}}",
     "text": INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,
 }
 
 INCIDENT_FAQ_DOCUMENT = {
-    "title": "Incident FAQ Document",
+    "title": "FAQ Document",
     "title_link": "{{faq_weblink}}",
     "text": INCIDENT_FAQ_DOCUMENT_DESCRIPTION,
 }
@@ -384,12 +384,12 @@ INCIDENT_FAQ_DOCUMENT = {
 INCIDENT_TYPE_CHANGE = {"title": "Incident Type Change", "text": INCIDENT_TYPE_CHANGE_DESCRIPTION}
 
 INCIDENT_STATUS_CHANGE = {
-    "title": "Incident Status Change",
+    "title": "Status Change",
     "text": INCIDENT_STATUS_CHANGE_DESCRIPTION,
 }
 
 INCIDENT_PRIORITY_CHANGE = {
-    "title": "Incident Priority Change",
+    "title": "Priority Change",
     "text": INCIDENT_PRIORITY_CHANGE_DESCRIPTION,
 }
 
