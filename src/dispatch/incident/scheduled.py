@@ -13,7 +13,6 @@ from dispatch.config import (
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.database import resolve_attr
 from dispatch.decorators import background_task
-from dispatch.enums import Visibility
 from dispatch.messaging.strings import (
     INCIDENT,
     INCIDENT_DAILY_REPORT,
