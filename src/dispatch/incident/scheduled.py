@@ -1,5 +1,7 @@
 import logging
 
+from collections import defaultdict
+
 from datetime import datetime, date
 from schedule import every
 from sqlalchemy import func
@@ -22,6 +24,7 @@ from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_f
 from dispatch.notification import service as notification_service
 from dispatch.plugin import service as plugin_service
 from dispatch.scheduler import scheduler
+from dispatch.search import service as search_service
 from dispatch.tag import service as tag_service
 from dispatch.tag.models import Tag
 
@@ -86,24 +89,43 @@ def auto_tagger(db_session):
 @background_task
 def daily_report(db_session=None):
     """
-    Creates and sends incidents daily reports based on notifications.
+    Creates and sends incident daily reports based on notifications.
     """
-    notifications = notification_service.get_all_enabled(db_session=db_session)
-    for notification in notifications:
-        for search_filter in notification.filters:
-            active_incidents = get_all_by_status(
-                db_session=db_session, status=IncidentStatus.active.value
-            )
-            stable_incidents = get_all_last_x_hours_by_status(
-                db_session=db_session, status=IncidentStatus.stable.value, hours=24
-            )
-            closed_incidents = get_all_last_x_hours_by_status(
-                db_session=db_session, status=IncidentStatus.closed.value, hours=24
-            )
-            incidents = active_incidents + stable_incidents + closed_incidents
+    # we fetch all active, stable and closed incidents
+    active_incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active.value)
+    stable_incidents = get_all_last_x_hours_by_status(
+        db_session=db_session, status=IncidentStatus.stable.value, hours=24
+    )
+    closed_incidents = get_all_last_x_hours_by_status(
+        db_session=db_session, status=IncidentStatus.closed.value, hours=24
+    )
+    incidents = active_incidents + stable_incidents + closed_incidents
 
+    # we map incidents to notification filters
+    incidents_notification_filters_mapping = defaultdict(lambda: defaultdict(lambda: []))
+    notifications = notification_service.get_all_enabled(db_session=db_session)
+    for incident in incidents:
+        for notification in notifications:
+            for search_filter in notification.filters:
+                match = search_service.match(
+                    db_session=db_session,
+                    filter_spec=search_filter.expression,
+                    class_instance=incident,
+                )
+                if match:
+                    incidents_notification_filters_mapping[notification.id][
+                        search_filter.id
+                    ].append(incident)
+
+            if not notification.filters:
+                incidents_notification_filters_mapping[notification.id][0].append(incident)
+
+    # we create and send an incidents daily report for each notification filter
+    for notification_id, search_filter_dict in incidents_notification_filters_mapping.items():
+        for search_filter_id, incidents in search_filter_dict.items():
             items_grouped = []
             items_grouped_template = INCIDENT
+
             for idx, incident in enumerate(incidents):
                 try:
                     item = {
@@ -146,6 +168,10 @@ def daily_report(db_session=None):
                 "template": INCIDENT_DAILY_REPORT,
                 "kwargs": notification_kwargs,
             }
+
+            notification = notification_service.get(
+                db_session=db_session, notification_id=notification_id
+            )
 
             notification_service.send(
                 db_session=db_session,
