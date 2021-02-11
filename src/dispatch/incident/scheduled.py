@@ -1,5 +1,7 @@
 import logging
 
+from collections import defaultdict
+
 from datetime import datetime, date
 from schedule import every
 from sqlalchemy import func
@@ -22,6 +24,7 @@ from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_f
 from dispatch.notification import service as notification_service
 from dispatch.plugin import service as plugin_service
 from dispatch.scheduler import scheduler
+from dispatch.search import service as search_service
 from dispatch.tag import service as tag_service
 from dispatch.tag.models import Tag
 
@@ -86,8 +89,9 @@ def auto_tagger(db_session):
 @background_task
 def daily_report(db_session=None):
     """
-    Creates and sends an incident daily report.
+    Creates and sends incident daily reports based on notifications.
     """
+    # we fetch all active, stable and closed incidents
     active_incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.active.value)
     stable_incidents = get_all_last_x_hours_by_status(
         db_session=db_session, status=IncidentStatus.stable.value, hours=24
@@ -97,55 +101,83 @@ def daily_report(db_session=None):
     )
     incidents = active_incidents + stable_incidents + closed_incidents
 
-    items_grouped = []
-    items_grouped_template = INCIDENT
-    for idx, incident in enumerate(incidents):
-        if incident.visibility == Visibility.open.value:
-            try:
-                item = {
-                    "commander_fullname": incident.commander.individual.name,
-                    "commander_weblink": incident.commander.individual.weblink,
-                    "incident_id": incident.id,
-                    "name": incident.name,
-                    "priority": incident.incident_priority.name,
-                    "priority_description": incident.incident_priority.description,
-                    "status": incident.status,
-                    "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
-                    "title": incident.title,
-                    "type": incident.incident_type.name,
-                    "type_description": incident.incident_type.description,
-                }
+    # we map incidents to notification filters
+    incidents_notification_filters_mapping = defaultdict(lambda: defaultdict(lambda: []))
+    notifications = notification_service.get_all_enabled(db_session=db_session)
+    for incident in incidents:
+        for notification in notifications:
+            for search_filter in notification.filters:
+                match = search_service.match(
+                    db_session=db_session,
+                    filter_spec=search_filter.expression,
+                    class_instance=incident,
+                )
+                if match:
+                    incidents_notification_filters_mapping[notification.id][
+                        search_filter.id
+                    ].append(incident)
 
-                if incident.status != IncidentStatus.closed.value:
-                    item.update(
-                        {
-                            "button_text": "Join Incident",
-                            "button_value": str(incident.id),
-                            "button_action": f"{ConversationButtonActions.invite_user.value}-{incident.status}-{idx}",
-                        }
-                    )
+            if not notification.filters:
+                incidents_notification_filters_mapping[notification.id][0].append(incident)
 
-                items_grouped.append(item)
-            except Exception as e:
-                log.exception(e)
+    # we create and send an incidents daily report for each notification filter
+    for notification_id, search_filter_dict in incidents_notification_filters_mapping.items():
+        for search_filter_id, incidents in search_filter_dict.items():
+            items_grouped = []
+            items_grouped_template = INCIDENT
 
-    notification_kwargs = {
-        "contact_fullname": DISPATCH_HELP_EMAIL,
-        "contact_weblink": DISPATCH_HELP_EMAIL,
-        "items_grouped": items_grouped,
-        "items_grouped_template": items_grouped_template,
-    }
+            for idx, incident in enumerate(incidents):
+                try:
+                    item = {
+                        "commander_fullname": incident.commander.individual.name,
+                        "commander_weblink": incident.commander.individual.weblink,
+                        "incident_id": incident.id,
+                        "name": incident.name,
+                        "priority": incident.incident_priority.name,
+                        "priority_description": incident.incident_priority.description,
+                        "status": incident.status,
+                        "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
+                        "title": incident.title,
+                        "type": incident.incident_type.name,
+                        "type_description": incident.incident_type.description,
+                    }
 
-    notification_params = {
-        "text": INCIDENT_DAILY_REPORT_TITLE,
-        "type": MessageType.incident_daily_report,
-        "template": INCIDENT_DAILY_REPORT,
-        "kwargs": notification_kwargs,
-    }
+                    if incident.status != IncidentStatus.closed.value:
+                        item.update(
+                            {
+                                "button_text": "Join Incident",
+                                "button_value": str(incident.id),
+                                "button_action": f"{ConversationButtonActions.invite_user.value}-{incident.status}-{idx}",
+                            }
+                        )
 
-    notification_service.filter_and_send(
-        db_session=db_session, class_instance=incident, notification_params=notification_params
-    )
+                    items_grouped.append(item)
+                except Exception as e:
+                    log.exception(e)
+
+            notification_kwargs = {
+                "contact_fullname": DISPATCH_HELP_EMAIL,
+                "contact_weblink": DISPATCH_HELP_EMAIL,
+                "items_grouped": items_grouped,
+                "items_grouped_template": items_grouped_template,
+            }
+
+            notification_params = {
+                "text": INCIDENT_DAILY_REPORT_TITLE,
+                "type": MessageType.incident_daily_report,
+                "template": INCIDENT_DAILY_REPORT,
+                "kwargs": notification_kwargs,
+            }
+
+            notification = notification_service.get(
+                db_session=db_session, notification_id=notification_id
+            )
+
+            notification_service.send(
+                db_session=db_session,
+                notification=notification,
+                notification_params=notification_params,
+            )
 
 
 @scheduler.add(every(5).minutes, name="calculate-incidents-cost")

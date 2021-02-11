@@ -67,7 +67,7 @@ def create_incident_priority(
 @router.put(
     "/{incident_priority_id}",
     response_model=IncidentPriorityRead,
-    dependencies=[Depends(PermissionsDependency(AdminPermission))],
+    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
 )
 def update_incident_priority(
     *,
