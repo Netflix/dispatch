@@ -14,6 +14,7 @@ from dispatch.plugin import service as plugin_service
 
 from .enums import ReportTypes
 from .messaging import (
+    send_executive_report_to_notifications_group,
     send_tactical_report_to_conversation,
     send_tactical_report_to_tactical_group,
 )
@@ -199,5 +200,8 @@ def create_executive_report(
         commander_fullname=incident.commander.individual.name,
         commander_weblink=incident.commander.individual.weblink,
     )
+
+    # we send the executive report to the notifications group
+    send_executive_report_to_notifications_group(incident.id, executive_report, db_session)
 
     return executive_report
