@@ -29,6 +29,9 @@
               :loading="loading"
               loading-text="Loading... Please wait"
             >
+              <template v-slot:item.default="{ item }">
+                <v-simple-checkbox v-model="item.default" disabled></v-simple-checkbox>
+              </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
                   <template v-slot:activator="{ on }">
@@ -67,6 +70,7 @@ export default {
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
         { text: "Visibility", value: "visibility", sortable: false },
+        { text: "Default", value: "default", sortable: true },
         { text: "Service", value: "commander_service.name", sortable: false },
         { text: "Document", value: "template_document.name", sortable: false },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
