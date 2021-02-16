@@ -17,7 +17,7 @@ import VueClipboard from "vue-clipboard2"
 if (process.env.VUE_APP_SENTRY_ENABLED) {
   const APP_HOSTNAME = document.location.host
 
-  let DSN = `"https://1:1@${APP_HOSTNAME}/0`
+  let DSN = `https://1:1@${APP_HOSTNAME}/0`
 
   // Allow global override
   if (process.env.VUE_APP_SENTRY_DSN) {
