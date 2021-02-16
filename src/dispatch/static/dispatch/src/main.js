@@ -13,11 +13,22 @@ import * as Integrations from "@sentry/integrations"
 
 import VueClipboard from "vue-clipboard2"
 
-if (process.env.VUE_APP_SENTRY_DSN) {
+// Configure sentry
+if (process.env.VUE_APP_SENTRY_ENABLED) {
+  const APP_HOSTNAME = document.location.host
+
+  let DSN = `"https://1:1@${APP_HOSTNAME}/0`
+
+  // Allow global override
+  if (process.env.VUE_APP_SENTRY_DSN) {
+    DSN = process.env.VUE_APP_SENTRY_DSN
+  }
+
   Sentry.init({
-    dsn: process.env.VUE_APP_SENTRY_DSN,
+    dsn: DSN,
     integrations: [new Integrations.Vue({ Vue, attachProps: true })]
   })
+  Sentry.setTag(process.env.VUE_APP_SENTRY_APP_KEY, APP_HOSTNAME)
 }
 
 Vue.config.productionTip = false

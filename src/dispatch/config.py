@@ -109,8 +109,6 @@ if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-pkce":
     if not DISPATCH_JWT_EMAIL_OVERRIDE:
         log.warn("No JWT Email Override specified. 'email' is expected in the idtoken.")
 
-VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG = DISPATCH_AUTHENTICATION_PROVIDER_SLUG
-
 DISPATCH_JWT_SECRET = config("DISPATCH_JWT_SECRET", default=None)
 DISPATCH_JWT_ALG = config("DISPATCH_JWT_ALG", default="HS256")
 DISPATCH_JWT_EXP = config("DISPATCH_JWT_EXP", cast=int, default=86400)  # Seconds
@@ -135,11 +133,19 @@ if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-pkce":
             "No PKCE JWKS url provided, this is required if you are using PKCE authentication."
         )
 
+# sentry middleware
+SENTRY_DSN = config("SENTRY_DSN", default=None)
+
+VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG = DISPATCH_AUTHENTICATION_PROVIDER_SLUG
+VUE_APP_SENTRY_ENABLED = config("VUE_APP_SENTRY_ENABLED", default="")
+VUE_APP_SENTRY_DSN = SENTRY_DSN
+VUE_APP_SENTRY_APP_KEY = config("VUE_APP_SENTRY_APP_KEY", default="")
+
 VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL = config(
-    "VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL", default=None
+    "VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL", default=""
 )
 VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID = config(
-    "VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID", default=None
+    "VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID", default=""
 )
 
 # static files
@@ -150,9 +156,6 @@ STATIC_DIR = config("STATIC_DIR", default=DEFAULT_STATIC_DIR)
 
 # metrics
 METRIC_PROVIDERS = config("METRIC_PROVIDERS", cast=CommaSeparatedStrings, default="")
-
-# sentry middleware
-SENTRY_DSN = config("SENTRY_DSN", default=None)
 
 # database
 DATABASE_HOSTNAME = config("DATABASE_HOSTNAME")
