@@ -366,7 +366,7 @@ def send_incident_update_notifications(
 
 
 def send_incident_participant_announcement_message(
-    participant_email: str, incident_id: int, db_session=SessionLocal
+    participant_email: str, incident_id: int, db_session: SessionLocal
 ):
     """Announces a participant in the conversation."""
     convo_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
@@ -388,7 +388,7 @@ def send_incident_participant_announcement_message(
     participant_info = {}
     contact_plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
     if contact_plugin:
-        participant_info = contact_plugin.instance.get(participant_email)
+        participant_info = contact_plugin.instance.get(participant_email, db_session=db_session)
 
     participant_name = participant_info.get("fullname", "Unknown")
     participant_team = participant_info.get("team", "Unknown")
