@@ -356,7 +356,12 @@ def create_conversation(incident: Incident, db_session: SessionLocal):
 
 def set_conversation_topic(incident: Incident, db_session: SessionLocal):
     """Sets the conversation topic."""
-    conversation_topic = f":helmet_with_white_cross: {incident.commander.individual.name} - Type: {incident.incident_type.name} - Priority: {incident.incident_priority.name} - Status: {incident.status}"
+    conversation_topic = (
+        f":helmet_with_white_cross: {incident.commander.individual.name}, {incident.commander.team} - "
+        f"Type: {incident.incident_type.name} - "
+        f"Priority: {incident.incident_priority.name} - "
+        f"Status: {incident.status}"
+    )
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
 
     try:
