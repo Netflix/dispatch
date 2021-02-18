@@ -150,31 +150,33 @@
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <span v-if="documents.length">
-              <span v-for="document in documents" :key="document.resource_id">
-                <v-list-item :href="document.weblink" target="_blank">
-                  <v-list-item-content>
-                    <v-list-item-title>{{ document.resource_type | deslug }}</v-list-item-title>
-                    <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
-                  </v-list-item-content>
-                  <v-list-item-action>
-                    <v-list-item-icon>
-                      <v-icon>open_in_new</v-icon>
-                    </v-list-item-icon>
-                  </v-list-item-action>
-                </v-list-item>
-                <v-divider />
+            <span v-if="activeResourcePlugins.document">
+              <span v-if="documents.length">
+                <span v-for="document in documents" :key="document.resource_id">
+                  <v-list-item :href="document.weblink" target="_blank">
+                    <v-list-item-content>
+                      <v-list-item-title>{{ document.resource_type | deslug }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
+                    </v-list-item-content>
+                    <v-list-item-action>
+                      <v-list-item-icon>
+                        <v-icon>open_in_new</v-icon>
+                      </v-list-item-icon>
+                    </v-list-item-action>
+                  </v-list-item>
+                  <v-divider />
+                </span>
               </span>
+              <span v-else>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>Creating incident documents... </v-list-item-title>
+                    <v-progress-linear indeterminate></v-progress-linear>
+                  </v-list-item-content>
+                </v-list-item>
+              </span>
+              <v-divider />
             </span>
-            <span v-else>
-              <v-list-item>
-                <v-list-item-content>
-                  <v-list-item-title>Creating incident documents... </v-list-item-title>
-                  <v-progress-linear indeterminate></v-progress-linear>
-                </v-list-item-content>
-              </v-list-item>
-            </span>
-            <v-divider />
           </span>
           <v-list-item v-if="incident_faq" :href="incident_faq.weblink" target="_blank">
             <v-list-item-content>
