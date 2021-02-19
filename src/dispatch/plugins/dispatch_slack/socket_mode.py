@@ -9,7 +9,7 @@ from slack_sdk.web.async_client import AsyncWebClient
 from .actions import handle_slack_action
 from .commands import handle_slack_command
 from .config import SLACK_API_BOT_TOKEN, SLACK_SOCKET_MODE_APP_TOKEN
-from .events import handle_slack_event
+from .events import handle_slack_event, EventEnvelope
 
 
 log = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ async def run_websocket_process():
             response = await handle_slack_event(
                 db_session=db_session,
                 client=client.web_client,
-                request=req.payload,
+                event=EventEnvelope(**req.payload),
                 background_tasks=background_tasks,
             )
 
