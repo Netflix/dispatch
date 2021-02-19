@@ -51,7 +51,7 @@ def get_email_username(email: str) -> str:
 
 
 def get_user_field(client: JIRA, user_email) -> dict:
-    """Returns correct Jira user field based on Jira hosting option."""
+    """Returns correct Jira user field based on Jira hosting type."""
     if JIRA_HOSTING_TYPE == "Server":
         user = client.search_users(user_email, maxResults=1)[0]
         return {"name": user.name}
