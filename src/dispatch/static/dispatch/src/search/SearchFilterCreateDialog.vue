@@ -35,7 +35,7 @@
                     <v-list dense>
                       <v-list-item>
                         <v-list-item-content>
-                          <tag-filter-combobox v-model="filters.tag" label="Tags" />
+                          <tag-filter-combobox v-model="filters.tags" label="Tags" />
                         </v-list-item-content>
                       </v-list-item>
                       <v-list-item>
