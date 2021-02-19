@@ -16,11 +16,13 @@ from dispatch.plugins.bases import TicketPlugin
 from .config import (
     JIRA_API_URL,
     JIRA_BROWSER_URL,
+    JIRA_HOSTING_TYPE,
     JIRA_ISSUE_TYPE_NAME,
     JIRA_PASSWORD,
     JIRA_PROJECT_ID,
     JIRA_USERNAME,
 )
+
 
 ISSUE_SUMMARY_TEMPLATE = """
 {color:red}*Confidential Information - For Internal Use Only*{color}
@@ -41,26 +43,47 @@ Incident Commander: [~{{commander_username}}]
 """
 
 
-def get_user_name(email: str) -> str:
+def get_email_username(email: str) -> str:
     """Returns username part of email, if valid email is provided."""
     if "@" in email:
         return email.split("@")[0]
     return email
 
 
-def get_user(client: JIRA, username: str) -> User:
-    """Helper method to fetch object from JIRA."""
-    user = next(
-        client._fetch_pages(
-            User,
-            None,
-            "user/search",
-            startAt=0,
-            maxResults=1,
-            params={"query": username},
+def get_user_field(client: JIRA, user_email) -> dict:
+    """Returns correct Jira user field based on Jira hosting option."""
+    if JIRA_HOSTING_TYPE == "Server":
+        user = client.search_users(user_email, maxResults=1)[0]
+        return {"name": user.name}
+    if JIRA_HOSTING_TYPE == "Cloud":
+        username = get_email_username(user_email)
+        user = next(
+            client._fetch_pages(
+                User,
+                None,
+                "user/search",
+                startAt=0,
+                maxResults=1,
+                params={"query": username},
+            )
         )
-    )
-    return user
+        return {"id": user.accountId}
+
+
+def process_incident_type_plugin_metadata(plugin_metadata: dict):
+    """
+    Processes the given incident type plugin metadata.
+    """
+    project_id = JIRA_PROJECT_ID
+    issue_type_name = JIRA_ISSUE_TYPE_NAME
+    if plugin_metadata:
+        for key_value in plugin_metadata["metadata"]:
+            if key_value["key"] == "project_id":
+                project_id = key_value["value"]
+            if key_value["key"] == "issue_type_name":
+                issue_type_name = key_value["value"]
+
+    return project_id, issue_type_name
 
 
 def create_issue_fields(
@@ -68,8 +91,9 @@ def create_issue_fields(
     description: str,
     incident_type: str,
     priority: str,
-    commander_user: User,
-    reporter_user: User,
+    assignee: dict,
+    reporter: dict,
+    commander_username: str,
     conversation_weblink: str,
     document_weblink: str,
     storage_weblink: str,
@@ -80,15 +104,15 @@ def create_issue_fields(
     issue_fields = {}
 
     issue_fields.update({"summary": title})
-    issue_fields.update({"assignee": {"id": commander_user.accountId}})
-    issue_fields.update({"reporter": {"id": reporter_user.accountId}})
+    issue_fields.update({"assignee": assignee})
+    issue_fields.update({"reporter": reporter})
 
     description = Template(ISSUE_SUMMARY_TEMPLATE).render(
         description=description,
         incident_type=incident_type,
         priority=priority,
         cost=cost,
-        commander_username=get_user_name(commander_user.emailAddress),
+        commander_username=commander_username,
         document_weblink=document_weblink,
         conference_weblink=conference_weblink,
         conversation_weblink=conversation_weblink,
@@ -141,26 +165,28 @@ class JiraTicketPlugin(TicketPlugin):
         title: str,
         incident_type: str,
         incident_priority: str,
-        commander: str,
-        reporter: str,
+        commander_email: str,
+        reporter_email: str,
         incident_type_plugin_metadata: dict = {},
     ):
         """Creates a Jira issue."""
         client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
 
-        commander_username = get_user_name(commander)
-        reporter_username = get_user_name(reporter)
+        assignee = get_user_field(client, commander_email)
+        reporter = get_user_field(client, reporter_email)
 
-        commander_user: User = get_user(client, commander_username)
-        reporter_user: User = get_user(client, reporter_username)
+        project_id, issue_type_name = process_incident_type_plugin_metadata(
+            incident_type_plugin_metadata
+        )
 
         issue_fields = {
-            "project": {"id": JIRA_PROJECT_ID},
-            "issuetype": {"name": JIRA_ISSUE_TYPE_NAME},
+            "project": {"id": project_id},
+            "issuetype": {"name": issue_type_name},
+            "assignee": assignee,
+            "reporter": reporter,
             "summary": title,
-            "assignee": {"id": commander_user.accountId},
-            "reporter": {"id": reporter_user.accountId},
         }
+
         return create(client, issue_fields)
 
     def update(
@@ -183,11 +209,10 @@ class JiraTicketPlugin(TicketPlugin):
         """Updates Jira issue fields."""
         client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
 
-        commander_username = get_user_name(commander_email)
-        reporter_username = get_user_name(reporter_email)
+        assignee = get_user_field(client, commander_email)
+        reporter = get_user_field(client, reporter_email)
 
-        commander_user: User = get_user(client, commander_username)
-        reporter_user: User = get_user(client, reporter_username)
+        commander_username = get_email_username(commander_email)
 
         issue = client.issue(ticket_id)
         issue_fields = create_issue_fields(
@@ -195,8 +220,9 @@ class JiraTicketPlugin(TicketPlugin):
             description=description,
             incident_type=incident_type,
             priority=priority,
-            commander_user=commander_user,
-            reporter_user=reporter_user,
+            assignee=assignee,
+            reporter=reporter,
+            commander_username=commander_username,
             conversation_weblink=conversation_weblink,
             document_weblink=document_weblink,
             storage_weblink=storage_weblink,
