@@ -134,7 +134,7 @@ if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-pkce":
         )
 
 # sentry middleware
-SENTRY_DSN = config("SENTRY_DSN", default=None)
+SENTRY_DSN = config("SENTRY_DSN", default="")
 
 VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG = DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 VUE_APP_SENTRY_ENABLED = config("VUE_APP_SENTRY_ENABLED", default="")
