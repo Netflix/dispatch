@@ -6,6 +6,7 @@
 """
 import logging
 import time
+from enum import Enum
 from typing import Any, List
 
 from googleapiclient.errors import HttpError
@@ -15,9 +16,20 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import ParticipantGroupPlugin
 from dispatch.plugins.dispatch_google import groups as google_group_plugin
 from dispatch.plugins.dispatch_google.common import get_service
-from dispatch.plugins.dispatch_google.config import GOOGLE_USER_OVERRIDE, GOOGLE_DOMAIN
+from dispatch.plugins.dispatch_google.config import (
+    DWD_ENABLED,
+    GOOGLE_CUSTOMER_ID,
+    GOOGLE_DOMAIN,
+    GOOGLE_USER_OVERRIDE,
+)
 
 log = logging.getLogger(__name__)
+
+
+class GroupLabels(str, Enum):
+    google_group = "cloudidentity.googleapis.com/groups.discussion_forum"
+    dynamic_groups = "cloudidentity.googleapis.com/groups.dynamic"
+    security_groups = "cloudidentity.googleapis.com/groups.security"
 
 
 @retry(
@@ -25,10 +37,32 @@ log = logging.getLogger(__name__)
     retry=retry_if_exception_type(TryAgain),
     wait=wait_exponential(multiplier=1, min=2, max=5),
 )
-def make_call(client: Any, func: Any, delay: int = None, propagate_errors: bool = False, **kwargs):
+def make_call(
+    client: Any,
+    func: Any,
+    delay: int = None,
+    propagate_errors: bool = False,
+    params: dict = {},
+    **kwargs,
+):
     """Make an google client api call."""
     try:
-        data = getattr(client, func)(**kwargs).execute()
+        # Get the request, so that we can modify the request params
+        request = getattr(client, func)(**kwargs)
+
+        # Set the request params based on the methodId property
+        if request.methodId == "cloudidentity.groups.create":
+            log.debug("Using param initialGroupConfig=WITH_INITIAL_OWNER.")
+            request.uri += "&initialGroupConfig=WITH_INITIAL_OWNER"
+        elif request.methodId == "cloudidentity.groups.lookup":
+            log.debug(f"Using param groupKey.id={params['group_email']}.")
+            request.uri += f"&groupKey.id={params['group_email']}"
+        elif request.methodId == "cloudidentity.groups.memberships.lookup":
+            log.debug(f"Using param memberKey.id={params['member_email']}.")
+            request.uri += f"&memberKey.id={params['member_email']}"
+
+        # Execute the request
+        data = request.execute()
 
         if delay:
             time.sleep(delay)
@@ -41,6 +75,24 @@ def make_call(client: Any, func: Any, delay: int = None, propagate_errors: bool 
             log.error(e.content.decode())
 
         raise TryAgain
+
+
+def get_group_name(client: Any, group_email: str):
+    # Pass the group email via the params dictionary
+    response = make_call(client.groups(), "lookup", params={"group_email": group_email})
+    return response.get("name")
+
+
+def get_group_membership_name(client: Any, group_email: str, member_email: str):
+    group_name = get_group_name(client, group_email)
+    response = make_call(
+        client.groups().memberships(),
+        "lookup",
+        # Pass the member email via the params dictionary
+        params={"member_email": member_email},
+        parent=group_name,
+    )
+    return response.get("name")
 
 
 def expand_group(client: Any, group_key: str):
@@ -61,20 +113,26 @@ def expand_group(client: Any, group_key: str):
 def add_member(client: Any, group_key: str, email: str, role: str):
     """Adds a member to a google group."""
     members = [email]
+    group_name = get_group_name(client, group_key)
 
     if role == "OWNER":
         members = expand_group(client, group_key)
 
     for m in members:
-        body = {"email": m, "role": role}
-        if GOOGLE_USER_OVERRIDE:
-            log.warning("GOOGLE_USER_OVERIDE set. Using override.")
-            body["email"] = GOOGLE_USER_OVERRIDE
+        body = {"preferredMemberKey": {"id": m}, "roles": {"name": role}}
+        if DWD_ENABLED and GOOGLE_USER_OVERRIDE:
+            log.warning("GOOGLE_USER_OVERIDE set and DWD is enabled. Using override.")
+            body["preferredMemberKey"] = GOOGLE_USER_OVERRIDE
 
         try:
             make_call(
-                client.members(), "insert", groupKey=group_key, body=body, propagate_errors=True
+                client.groups().memberships(),
+                "create",
+                parent=group_name,
+                body=body,
+                propagate_errors=True,
             )
+            log.debug(f"Participant {m} successfully added to {group_key} group")
         except HttpError as e:
             #  we are okay with duplication errors upon insert
             if e.resp.status in [409]:
@@ -86,30 +144,40 @@ def add_member(client: Any, group_key: str, email: str, role: str):
             log.debug(f"Error adding group member. GroupKey={group_key} Body={body} ")
 
 
-def remove_member(client: Any, group_key: str, email: str):
+def remove_member(client: Any, group_email: str, member_email: str):
     """Removes member from google group."""
-    return make_call(client.members(), "delete", groupKey=group_key, memberKey=email)
+    membership_name = get_group_membership_name(client, group_email, member_email)
+    return make_call(client.groups().memberships(), "delete", name=membership_name)
 
 
-def list_members(client: Any, group_key: str, **kwargs):
+def list_members(client: Any, group_email: str, **kwargs):
     """Lists all members of google group."""
-    return make_call(client.members(), "list", groupKey=group_key, **kwargs)
+    group_name = get_group_name(client, group_email)
+    return make_call(client.groups().memberships(), "list", parent=group_name)
 
 
-def create_group(client: Any, name: str, email: str, description: str):
+def create_group(client: Any, name: str, group_email: str, description: str):
     """Creates a new google group."""
-    body = {"email": email, "name": name, "adminCreated": False, "description": description}
-    return make_call(client.groups(), "insert", body=body, delay=3)
+    body = {
+        "parent": f"customers/{GOOGLE_CUSTOMER_ID}",
+        "groupKey": {"id": group_email},
+        "displayName": name,
+        "description": description,
+        "labels": {GroupLabels.google_group: ""},
+    }
+    return make_call(client.groups(), "create", body=body, delay=3)
 
 
-def delete_group(client: Any, group_key: str, **kwargs):
+def delete_group(client: Any, group_email: str, **kwargs):
     """Delete a google group."""
-    return make_call(client.groups(), "delete", groupKey=group_key, **kwargs)
+    group_name = get_group_name(client, group_email)
+    return make_call(client.groups(), "delete", name=group_name, **kwargs)
 
 
 def list_groups(client: Any, **kwargs):
     """Lists all google groups available."""
-    return make_call(client.groups(), "list", **kwargs)
+    parent = f"customers/{GOOGLE_CUSTOMER_ID}"
+    return make_call(client.groups(), "list", parent=parent, **kwargs)
 
 
 @apply(timer, exclude=["__init__"])
@@ -127,51 +195,55 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
 
     def __init__(self):
         self.scopes = [
-            "https://www.googleapis.com/auth/admin.directory.group",
-            "https://www.googleapis.com/auth/apps.groups.settings",
+            "https://www.googleapis.com/auth/cloud-identity.groups",
         ]
 
     def create(
         self, name: str, participants: List[str], description: str = None, role: str = "MEMBER"
     ):
         """Creates a new Google Group."""
-        client = get_service("admin", "directory_v1", self.scopes)
+        client = get_service("cloudidentity", "v1", self.scopes)
         group_key = f"{name.lower()}@{GOOGLE_DOMAIN}"
 
         if not description:
             description = "Group automatically created by Dispatch."
 
-        group = create_group(client, name, group_key, description)
+        group_response = create_group(client, name, group_key, description)
+        group = group_response["response"]
 
+        group["email"] = group["groupKey"]["id"]
+        group_email_prefix = group["email"].split("@")[0]
+        group["group_name"] = group["name"]
+        group["id"] = group["name"].split("/")[1]
+        group["name"] = group_email_prefix
+
+        log.debug(f"Group created: {group}")
         for p in participants:
             add_member(client, group_key, p, role)
-
         group.update(
-            {
-                "weblink": f"https://groups.google.com/a/{GOOGLE_DOMAIN}/forum/#!forum/{group['name']}"
-            }
+            {"weblink": f"https://groups.google.com/a/{GOOGLE_DOMAIN}/g/{group_email_prefix}"}
         )
         return group
 
     def add(self, email: str, participants: List[str], role: str = "MEMBER"):
         """Adds participants to an existing Google Group."""
-        client = get_service("admin", "directory_v1", self.scopes)
+        client = get_service("cloudidentity", "v1", self.scopes)
         for p in participants:
             add_member(client, email, p, role)
 
     def remove(self, email: str, participants: List[str]):
         """Removes participants from an existing Google Group."""
-        client = get_service("admin", "directory_v1", self.scopes)
+        client = get_service("cloudidentity", "v1", self.scopes)
         for p in participants:
             remove_member(client, email, p)
 
     def list(self, email: str):
         """Lists members from an existing Google Group."""
-        client = get_service("admin", "directory_v1", self.scopes)
+        client = get_service("cloudidentity", "v1", self.scopes)
         members = list_members(client, email)
         return [m["email"] for m in members["members"]]
 
     def delete(self, email: str):
         """Deletes an existing Google group."""
-        client = get_service("admin", "directory_v1", self.scopes)
+        client = get_service("cloudidentity", "v1", self.scopes)
         delete_group(client, email)

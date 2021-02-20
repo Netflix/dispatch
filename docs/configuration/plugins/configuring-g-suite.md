@@ -1,12 +1,37 @@
 ---
-description: Configuration page for all G Suite plugins.
+description: Configuration page for all Google Workspace plugins.
 ---
 
-# Configuring G Suite Integration
+# Configuring Google Workspace Integration
+
+The Google Workspace (Formerly GSuite) plugins allows the following features:
+
+1. Create a incident specific folder
+1. Create a group to manage permissions on that folder
+1. Create a investigation document
+1. Create google meet URLs
+1. Send emails to participants
+
+`DWD_ENABLED` config variable offers a choice to take the domain-wide delegation (DWD) route or not.
+
+The DWD path requires that the domain-admin provide domain-wide control to the GCP service account that you create to use with dispatch for querying the API. This path allows the service account access to impersonate any domain user. Some Workspace APIs require domain-wide credentials while others don't.
+
+The non-DWD path (where `DWD_ENABLED=False`) will use undelegated credentials generated from the GCP console and will only support 3 of the 5 supported Google Workspace APIs. Here the service account acts on behalf on itself and won't impersonate any domain-user.
 
 {% hint style="info" %}
-Dispatch ships with several G Suite plugins \(Docs, Groups, Drive, etc.,\). This page documents the available configuration
-for these plugins and the permissions required to enable them. These plugins are required for core functionality.
+For the non-DWD path, you will need to use a shared-drive and add the service account email address to the shared drive as `Manager`. If we don't do this, the incident storage and documents will be created under the 15GB of drive space alloted to a service account which is limited and can run out quickly (or slowly based on the usage, but point is that it is limited amount of space).
+{% endhint %}
+
+| Workspace Component | DWD Requirement     |
+|---------------------|---------------------|
+| Groups API          | Doesn't require DWD |
+| Drive API           | Doesn't require DWD |
+| Docs API            | Doesn't require DWD |
+| Gmail API           | Requires DWD        |
+| Calendar API        | Requests DWD        |
+
+{% hint style="info" %}
+Dispatch ships with several Google Workspace plugins \(Docs, Groups, Drive, etc.,\). This page documents the available configuration for these plugins and the permissions required to enable them. These plugins are required for core functionality.
 {% endhint %}
 
 ## Dispatch Configuration Variables
@@ -48,17 +73,27 @@ for these plugins and the permissions required to enable them. These plugins are
 
 > Used for development to funnel all emails to a specific user.
 
-## G Suite Setup
+### `DWD_ENABLED` \[Optional. Default: True\]
 
-To set up G Suite integration, you'll need to create some resources in Google Cloud Platform, and then link them to your
-G Suite organization.
+> This variable flags to dispatch that domain-wide delegation is enabled on the service account. This will be a boolean value.
+
+### `GOOGLE_CUSTOMER_ID` \[Optional. Default: None\]
+
+> Unique string assigned to each google workspace customer. It can be found by using these [instructions](https://support.google.com/a/answer/10070793?hl=en).
+
+It is needed to use the [Groups API](https://cloud.google.com/identity/docs/how-to/create-google-groups#creating_a_google_group) which doesn't require admin SDK. It is passed as the parent resource under which groups are created, under which memberships are created.
+NOTE: You've to add a 'C' as a prefix to the ID you get from the instructions above.
+
+## Google Workspace Setup
+
+To set up Goolge Workspace integration, you'll need to create some resources in Google Cloud Platform, and then link them to your Google Workspace organization.
 
 ## Enable Required APIs in Google Cloud Platform
 
-Navigate to the Google Cloud Platform \(GCP\) [console](https://console.cloud.google.com/). You will want to
+Navigate to the Google Cloud Platform (GCP) [console](https://console.cloud.google.com/). You will want to
 create a new GCP Project for Dispatch's integration.
 
-Create a new service account within the GCP project \(APIs & Services &gt; Credentials &gt; Create Credentials &gt; Service Account\). 
+Create a new service account within the GCP project (APIs & Services &gt; Credentials &gt; Create Credentials &gt; Service Account).
 You do not need to assign any Google Cloud permissions to this service account when prompted.
 
 Once created, download the JSON based key. You'll use these values to configure Dispatch:
@@ -77,25 +112,29 @@ Enable the following APIs \(APIs and Services &gt; Library\):
 * Google Docs API
 * Google Calendar API
 * Gmail API
-* Admin SDK \(necessary to create and manage groups\)
+* Google Groups API (This API replaces Admin SDK for managing groups)
 
-Finally, create your OAuth application which is how G Suite will authorize the service account and API key \(APIs & Services &gt; OAuth Consent Screen\).
+Finally, create your OAuth application which is how G Suite will authorize the service account and API key (APIs & Services &gt; OAuth Consent Screen).
 Specify the following scopes:
 
-```text
+```bash
+# For non-DWD path
 https://www.googleapis.com/auth/documents
 https://www.googleapis.com/auth/drive
-https://mail.google.com/
-https://www.googleapis.com/auth/admin.directory.group
 https://www.googleapis.com/auth/apps.groups.settings
+https://www.googleapis.com/auth/cloud-identity.groups
+
+# Add the below two scopes for the DWD path, in addition to the above scopes
+https://www.googleapis.com/auth/admin.directory.group
+https://mail.google.com/
 https://www.googleapis.com/auth/calendar
 ```
 
 **Note:** If you will not use Google Meet for your conference then you do not need the `https://www.googleapis.com/auth/calendar` scope.
 
-## Connecting Dispatch to G Suite
+## Connecting Dispatch to Google Workspace
 
-Navigate to the G Suite Admin [Domain-wide Delegation](https://admin.google.com/ac/owl/domainwidedelegation) page 
-\(Security &gt; API Controls &gt; Domain-wide Delegation\) and add a new API client. 
+Navigate to the Google Workspace Admin [Domain-wide Delegation](https://admin.google.com/ac/owl/domainwidedelegation) page
+\(Security &gt; API Controls &gt; Domain-wide Delegation\) and add a new API client.
 
 Enter the Client ID you used for `GOOGLE_SERVICE_ACCOUNT_CLIENT_ID`, and then paste in a comma-separated list of the OAuth scopes above.
