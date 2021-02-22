@@ -6,7 +6,7 @@ description: What to expect as an incident commander.
 
 ## Reporting
 
-Within Dispatch, Incident Commanders \(ICs\) are also participants, and will receive all of the participant messaging as well. When resolved as the Incident Commander, you are assigned that role by Dispatch, and your identity is propagated via various messaging.
+Within Dispatch, Incident Commanders \(ICs\) are also participants and will receive all of the participant messaging. When resolved as the Incident Commander, you are assigned that Dispatch role, and your identity is propagated.
 
 All Slack commands are listed below, or you may view _groups_ of commands relating to [People](#people), [Communications](#communications), [Tasks](#tasks), and [Incident Resources & Metadata](#incident-resources-and-metadata).
 
@@ -35,15 +35,15 @@ These commands help manage the people helping resolve the incident.
 
 ### /dispatch-assign-role
 
-Anyone helping run an incident may play various roles. For example, you may have a scribe, or an executive liaison, or you may hand off the incident to a new Incident Commander. At any of these times, use `/dispatch-assign-role` to easily assign a role to any individual.
+Anyone helping run an incident may play various roles. For example, you may have a scribe or an executive liaison, or you may hand off the incident to a new Incident Commander. At any of these times, use `/dispatch-assign-role` to quickly assign a role to any individual.
 
-It's especially important to use this command when handing off responsibility for incident leadership. Doing so will help avoid any confusion about the identity of the current Incident Commander.
+It's essential to use this command when handing off responsibility for incident leadership. Doing so will help avoid any confusion about the identity of the current Incident Commander.
 
 ![](../.gitbook/assets/slack-conversation-assign-role.png)
 
 ### /dispatch-engage-oncall
 
-You'll need the help of various teams to resolve an incident. To quickly engage an on-call member of another team, use `/dispatch-engage-oncall` to resolve their identity, and optionally page them.
+You'll need the help of various teams to resolve an incident. To quickly engage an on-call member of another team, use `/dispatch-engage-oncall` to determine their identity and optionally page them.
 
 ![](../.gitbook/assets/slack-conversation-engage-oncall.png)
 
@@ -65,13 +65,13 @@ These commands help manage incident communications.
 
 ### /dispatch-notifications-group
 
-An incident notifications group consists of individuals or distribution lists. Manage this group by using `/dispatch-notifications-group`.
+An incident notifications group consists of individuals or distribution lists. Manage this group by using `/dispatch-notifications-group.`
 
 ![](../.gitbook/assets/slack-conversation-notifications-group.png)
 
 ### /dispatch-report-executive
 
-Many stakeholders may be invested in the progress of an incident, but aren't expected to be involved on a tactical level. For example, your Chief Financial Officer may want to know of an ongoing security incident regarding financial data, but should never be involved on a tactical level (directing participants or actions). To keep external stakeholders such as these informed, use `/dispatch-report-executive` to build and distribute a high-level report.
+Some stakeholders are invested in an incident's progress but aren't expected to be directly involved with the incident. For example, your Chief Financial Officer may want to know of an ongoing security incident regarding financial data but will likely not be directing participants or their actions. To keep external stakeholders such as these informed, use `/dispatch-report-executive` to build and distribute a high-level report.
 
 ![](../.gitbook/assets/slack-conversation-report-executive.png)
 
@@ -83,7 +83,7 @@ Use `/dispatch-report-incident` to report a new incident.
 
 ### /dispatch-report-tactical
 
-Regular tactical reports, such as using the Conditions, Actions, and Needs (CAN) format, are critical to keep your participants well-informed. Use `/dispatch-report-tactical` to easily create these.
+Regular tactical reports, such as using the Conditions, Actions, and Needs (CAN) format, are critical to keeping your participants well-informed. Use `/dispatch-report-tactical` to easily create these.
 
 The report form will appear like this:
 
@@ -95,7 +95,7 @@ The output in the Slack channel will appear like this:
 
 ## Tasks
 
-Dispatch provides a lightweight bridge between Google Docs comments that are assigned as tasks, and your incident Slack channel.
+Dispatch provides a lightweight bridge between Google Docs comments assigned as tasks and your Slack incident channel.
 
 It looks like this, in the Incident Document:
 
@@ -111,7 +111,7 @@ Any individual who issues the `/dispatch-list-my-tasks` command will see a list 
 
 ### /dispatch-list-tasks
 
-Use `/dispatch-list-tasks` to display an ephemeral message listing all tasks associated with the incident.
+Use `/dispatch-list-tasks` to display a temporary message listing all tasks associated with the incident.
 
 ![](../.gitbook/assets/slack-conversation-list-tasks.png)
 
@@ -127,7 +127,7 @@ This command allows the IC to modify several aspects of the incident without eve
 
 ### /dispatch-add-timeline-event
 
-This command helps you add an event to the incident timeline. You may use local time (derived from your Slack profile), or Coordinated Universal Time (UTC).
+This command helps you add an event to the incident timeline. You may use local time (derived from your Slack profile) or Coordinated Universal Time (UTC).
 
 ![](../.gitbook/assets/slack-conversation-add-timeline-event.png)
 

@@ -5,7 +5,7 @@ description: Configuration options for the PagerDuty plugin.
 # Configuring PagerDuty
 
 {% hint style="info" %}
-Dispatch ships with support for resolving oncall schedules via the PagerDuty API. This plugin is not required for core functionality, however a plugin of type `oncall` must always be enabled. The current implementation expects a schedule to be associated with the escalation policy. 
+Dispatch ships with support for resolving on-call schedules via the PagerDuty API.
 {% endhint %}
 
 ### Env Configuration
