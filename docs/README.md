@@ -6,13 +6,13 @@ description: Everything you need to know about Dispatch!
 
 ### What's Dispatch?
 
-Put simply, Dispatch is:
+Dispatch is:
 
-> All of the ad-hoc things you’re doing to manage incidents today, done for you, and a bunch of other things you should've been doing, but have not had the time!
+> All of the ad-hoc things you're doing to manage incidents today, done for you, and a bunch of other things you should've been doing but have not had the time!
 
-Dispatch helps us effectively manage security incidents by deeply integrating with existing tools used throughout an organization \(Slack, GSuite, Jira, etc.,\) Dispatch is able to leverage the existing familiarity of these tools to provide orchestration instead of introducing another tool.
+Dispatch helps us effectively manage security incidents by integrating with existing tools used throughout an organization \(Slack, GSuite, Jira, etc.,\) Dispatch can leverage the existing familiarity of these tools, orchestrating them, instead of introducing another tool.
 
-This means you can let Dispatch focus on creating resources, assembling participants, sending out notifications, tracking tasks, and assisting with post-incident reviews; allowing you to focus on actually fixing the issue!
+This means you can let Dispatch focus on creating resources, assembling participants, sending out notifications, tracking tasks, and assisting with post-incident reviews, allowing you to focus on actually fixing the issue!
 
 ![](https://github.com/Netflix/dispatch/raw/master/docs/.gitbook/assets/thumb-6.png)
 ![](https://github.com/Netflix/dispatch/raw/master/docs/.gitbook/assets/thumb-4.png)

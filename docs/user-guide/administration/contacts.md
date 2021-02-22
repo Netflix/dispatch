@@ -8,9 +8,9 @@ description: Configuring Dispatch's contact repository
 
 In Dispatch, Individuals are either internal or external people identifiers. Typically, an organization will maintain a robust internal directory for user identities. Dispatch does not expect to replace those data stores. Instead, it keeps a lightweight notion of identities to associate with incidents for filtering and metrics.
 
-It's common for incident response teams to maintain a list of contacts, and for runbooks to specify whom should be contacted when an incident of a particular type occurs. Dispatch handles this for incident response teams by pulling the right individuals directly into an incident. By assigning terms, incident types, or incident priorities to individuals, Dispatch is able to directly add them to the incident \(if internal\) or suggest reaching out to them \(if external\).
+It's common for incident response teams to maintain a list of contacts and run books to specify whom to contactd when an incident occurs. Dispatch handles this for incident response teams by pulling the right individuals directly into an incident. By assigning terms, incident types, or incident priorities to individuals, Dispatch can instantly add them to the incident \(if internal\) or suggest reaching out to them \(if external\).
 
-To create a new individual contact navigate to: `Dispatch > Individuals > New`
+To create a new individual contact, navigate to: `Dispatch > Individuals > New`.
 
 ![](../../.gitbook/assets/admin-ui-contacts-individuals.png)
 
@@ -26,7 +26,7 @@ In addition to fields about the individual, Dispatch allows you to associate the
 
 ## Team
 
-Like `Individuals`, there are often groups of individuals (teams) that need to be engaged and/or notified during an incident. With teams, Dispatch manages those groups \(typically, team distribution lists\) providing a centralized datastore for that contact data.
+Like `Individuals`, there are often groups of individuals (teams) that need to be engaged and notified during an incident. Dispatch manages those groups \(typically, team distribution lists\), providing a centralized data store for that contact data.
 
 To create a new team contact navigate to: `Dispatch > Teams > New`
 
@@ -44,9 +44,9 @@ In addition to fields about the team, Dispatch allows you to associate a team wi
 
 ## Service
 
-Similar to `Teams` there are often groups of individuals (teams) responsible for an application or service which need to be involved in an incident. However, in these circumstances we don't want to engage the _whole_ team. We only want to engage the individual that is oncall for the service. `Services` allow Dispatch to resolve these individuals via third-party oncall services (e.g. PagerDuty, OpsGenie).
+Like `Teams`, there are often groups of individuals (teams) responsible for an application or service that need to be involved in an incident. However, in these circumstances, we don't want to engage the _whole_ team. We only want to engage the individual that is on-call for the service. `Services` allow Dispatch to resolve these individuals via third-party on-call services (e.g., PagerDuty, OpsGenie).
 
-To create a new oncall service navigate to: `Dispatch > Services > New`
+To create a new on-call service, navigate to: `Dispatch > Services > New`
 
 ![](../../.gitbook/assets/admin-ui-contacts-services.png)
 
@@ -54,12 +54,12 @@ To create a new oncall service navigate to: `Dispatch > Services > New`
 
 **Description:** Description of the service.
 
-**Plugin:** The associated service plugin that Dispatch will use to resolve the oncall person.
+**Plugin:** The associated service plugin that Dispatch will use to resolve the on-call person.
 
-**External Id:** The external ID that will be used by Dispatch and the defined plugin to resolve the oncall person.
+**External Id:** The external ID used by Dispatch and the defined plugin to resolve the on-call person.
 
 **Enabled:** Flag that determines if this particular service is active.
 
 #### Engagement
 
-In addition to fields about the service, Dispatch allows you to associate the service with other Dispatch primitives. For instance, if you would like to involve a service for all incidents of a given priority, associate that priority with the service.
+In addition to the service fields, Dispatch allows you to associate the service with other Dispatch primitives. For instance, if you would like to involve a service for all incidents of a given priority, associate that priority with the service.
