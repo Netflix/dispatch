@@ -293,12 +293,6 @@ The incident priority has been changed from {{ incident_priority_old }} to {{ in
     "\n", " "
 ).strip()
 
-INCIDENT_REPORT_DETAILS_DESCRIPTION = """
-The incident report details can be found below.""".replace(
-    "\n", " "
-).strip()
-
-
 INCIDENT_NAME_WITH_ENGAGEMENT = {
     "title": "{{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
@@ -345,13 +339,13 @@ INCIDENT_PRIORITY_FYI = {
 }
 
 INCIDENT_REPORTER = {
-    "title": "Reporter - {{reporter_fullname}} on {{reporter_team}}",
+    "title": "Reporter - {{reporter_fullname}}, {{reporter_team}}",
     "title_link": "{{reporter_weblink}}",
     "text": INCIDENT_REPORTER_DESCRIPTION,
 }
 
 INCIDENT_COMMANDER = {
-    "title": "Commander - {{commander_fullname}}",
+    "title": "Commander - {{commander_fullname}}, {{commander_team}}",
     "title_link": "{{commander_weblink}}",
     "text": INCIDENT_COMMANDER_DESCRIPTION,
 }
@@ -425,9 +419,11 @@ INCIDENT_PARTICIPANT_WELCOME = {
 INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
     INCIDENT_PARTICIPANT_WELCOME,
     INCIDENT_TITLE,
+    INCIDENT_DESCRIPTION,
     INCIDENT_STATUS,
     INCIDENT_TYPE,
     INCIDENT_PRIORITY,
+    INCIDENT_REPORTER,
     INCIDENT_COMMANDER,
     INCIDENT_INVESTIGATION_DOCUMENT,
     INCIDENT_STORAGE,
@@ -437,6 +433,9 @@ INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
 ]
 
 INCIDENT_RESOURCES_MESSAGE = [
+    INCIDENT_TITLE,
+    INCIDENT_DESCRIPTION,
+    INCIDENT_REPORTER,
     INCIDENT_COMMANDER,
     INCIDENT_INVESTIGATION_DOCUMENT,
     INCIDENT_REVIEW_DOCUMENT,
@@ -450,7 +449,14 @@ INCIDENT_NOTIFICATION_COMMON = [INCIDENT_TITLE]
 
 INCIDENT_NOTIFICATION = INCIDENT_NOTIFICATION_COMMON.copy()
 INCIDENT_NOTIFICATION.extend(
-    [INCIDENT_STATUS, INCIDENT_TYPE, INCIDENT_PRIORITY_FYI, INCIDENT_COMMANDER]
+    [
+        INCIDENT_DESCRIPTION,
+        INCIDENT_STATUS,
+        INCIDENT_TYPE,
+        INCIDENT_PRIORITY_FYI,
+        INCIDENT_REPORTER,
+        INCIDENT_COMMANDER,
+    ]
 )
 
 INCIDENT_TACTICAL_REPORT = [
@@ -609,18 +615,6 @@ INCIDENT = [
     INCIDENT_TYPE,
     INCIDENT_PRIORITY,
     INCIDENT_COMMANDER,
-]
-
-INCIDENT_REPORT_DETAILS_HEADER = {
-    "title": "Incident Report Details",
-    "text": INCIDENT_REPORT_DETAILS_DESCRIPTION,
-}
-
-INCIDENT_REPORT_DETAILS = [
-    INCIDENT_REPORT_DETAILS_HEADER,
-    INCIDENT_TITLE,
-    INCIDENT_DESCRIPTION,
-    INCIDENT_REPORTER,
 ]
 
 

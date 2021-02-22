@@ -27,7 +27,6 @@ from dispatch.messaging.strings import (
     INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM,
     INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
     INCIDENT_PRIORITY_CHANGE,
-    INCIDENT_REPORT_DETAILS,
     INCIDENT_RESOURCES_MESSAGE,
     INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_STATUS_CHANGE,
@@ -70,13 +69,18 @@ def send_welcome_ephemeral_message_to_participant(
     message_kwargs = {
         "name": incident.name,
         "title": incident.title,
+        "description": incident.description,
         "status": incident.status,
         "type": incident.incident_type.name,
         "type_description": incident.incident_type.description,
         "priority": incident.incident_priority.name,
         "priority_description": incident.incident_priority.description,
         "commander_fullname": incident.commander.individual.name,
+        "commander_team": incident.commander.team,
         "commander_weblink": incident.commander.individual.weblink,
+        "reporter_fullname": incident.reporter.individual.name,
+        "reporter_team": incident.reporter.team,
+        "reporter_weblink": incident.reporter.individual.weblink,
         "document_weblink": resolve_attr(incident, "incident_document.weblink"),
         "storage_weblink": resolve_attr(incident, "storage.weblink"),
         "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
@@ -123,13 +127,18 @@ def send_welcome_email_to_participant(
     message_kwargs = {
         "name": incident.name,
         "title": incident.title,
+        "description": incident.description,
         "status": incident.status,
         "type": incident.incident_type.name,
         "type_description": incident.incident_type.description,
         "priority": incident.incident_priority.name,
         "priority_description": incident.incident_priority.description,
         "commander_fullname": incident.commander.individual.name,
+        "commander_team": incident.commander.team,
         "commander_weblink": incident.commander.individual.weblink,
+        "reporter_fullname": incident.reporter.individual.name,
+        "reporter_team": incident.reporter.team,
+        "reporter_weblink": incident.reporter.individual.weblink,
         "document_weblink": resolve_attr(incident, "incident_document.weblink"),
         "storage_weblink": resolve_attr(incident, "storage.weblink"),
         "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
@@ -236,12 +245,17 @@ def send_incident_created_notifications(incident: Incident, db_session: SessionL
     notification_kwargs = {
         "name": incident.name,
         "title": incident.title,
+        "description": incident.description,
         "status": incident.status,
         "type": incident.incident_type.name,
         "type_description": incident.incident_type.description,
         "priority": incident.incident_priority.name,
         "priority_description": incident.incident_priority.description,
+        "reporter_fullname": incident.reporter.individual.name,
+        "reporter_team": incident.reporter.team,
+        "reporter_weblink": incident.reporter.individual.weblink,
         "commander_fullname": incident.commander.individual.name,
+        "commander_team": incident.commander.team,
         "commander_weblink": incident.commander.individual.weblink,
         "document_weblink": resolve_attr(incident, "incident_document.weblink"),
         "storage_weblink": resolve_attr(incident, "storage.weblink"),
@@ -312,6 +326,7 @@ def send_incident_update_notifications(
                 incident_conversation_notification_template,
                 notification_type,
                 commander_fullname=incident.commander.individual.name,
+                commander_team=incident.commander.team,
                 commander_weblink=incident.commander.individual.weblink,
                 incident_priority_new=incident.incident_priority.name,
                 incident_priority_old=previous_incident.incident_priority.name,
@@ -337,6 +352,7 @@ def send_incident_update_notifications(
 
     notification_kwargs = {
         "commander_fullname": incident.commander.individual.name,
+        "commander_team": incident.commander.team,
         "commander_weblink": incident.commander.individual.weblink,
         "contact_fullname": incident.commander.individual.name,
         "contact_weblink": incident.commander.individual.weblink,
@@ -603,8 +619,14 @@ def send_incident_resources_ephemeral_message_to_participant(
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     message_kwargs = {
+        "title": incident.title,
+        "description": incident.description,
         "commander_fullname": incident.commander.individual.name,
+        "commander_team": incident.commander.team,
         "commander_weblink": incident.commander.individual.weblink,
+        "reporter_fullname": incident.reporter.individual.name,
+        "reporter_team": incident.reporter.team,
+        "reporter_weblink": incident.reporter.individual.weblink,
         "document_weblink": resolve_attr(incident, "incident_document.weblink"),
         "storage_weblink": resolve_attr(incident, "storage.weblink"),
         "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
@@ -749,30 +771,3 @@ def send_incident_rating_feedback_message(incident: Incident, db_session: Sessio
         )
 
     log.debug("Incident rating and feedback message sent to all participants.")
-
-
-def send_incident_report_details_message(incident: Incident, db_session: SessionLocal):
-    """Sends a message with the incident report details in the conversation."""
-    notification_text = "Incident Report Details"
-    notification_type = MessageType.incident_notification
-    notification_template = INCIDENT_REPORT_DETAILS
-
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
-    if not plugin:
-        log.warning("Incident report details not sent. No plugin conversation enabled.")
-        return
-
-    plugin.instance.send(
-        incident.conversation.channel_id,
-        notification_text,
-        notification_template,
-        notification_type,
-        title=incident.title,
-        description=incident.description,
-        reporter_fullname=incident.reporter.individual.name,
-        reporter_weblink=incident.reporter.individual.weblink,
-        reporter_team=incident.reporter.team,
-        persist=True,
-    )
-
-    log.debug("Incident report details sent.")

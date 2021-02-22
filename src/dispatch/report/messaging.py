@@ -90,6 +90,7 @@ def send_tactical_report_to_tactical_group(
         actions=tactical_report.details.get("actions"),
         needs=tactical_report.details.get("needs"),
         contact_fullname=incident.commander.individual.name,
+        contact_team=incident.commander.team,
         contact_weblink=incident.commander.individual.weblink,
     )
 
