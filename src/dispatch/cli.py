@@ -137,6 +137,27 @@ def install_plugins(force):
         db_session.commit()
 
 
+@plugins_group.command("uninstall")
+@click.argument("plugins")
+def uninstall_plugins(plugins: str):
+    """Uninstalls all plugins, or only one."""
+    from dispatch.database import SessionLocal
+    from dispatch.plugin import service as plugin_service
+
+    db_session = SessionLocal()
+
+    plugin_slugs = plugins.split(", ")
+    for plugin_slug in plugin_slugs:
+        plugin = plugin_service.get_by_slug(db_session=db_session, slug=plugin_slug)
+        if not plugin:
+            click.secho(
+                f"Plugin slug {plugin_slug} does not exist. Make sure you're passing the plugin's slug.",
+                fg="blue",
+            )
+
+        plugin_service.delete(db_session=db_session, plugin_id=plugin.id)
+
+
 def sync_triggers():
     from sqlalchemy_searchable import sync_trigger
 
