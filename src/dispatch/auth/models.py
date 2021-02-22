@@ -108,9 +108,9 @@ class UserUpdate(DispatchBase):
     role: Optional[UserRoles]
     password: Optional[str]
 
-    @validator("password", pre=True)
+    @validator("password", pre=True, always=True)
     def hash(cls, v):
-        return hash_password(v)
+        return hash_password(str(v))
 
 
 class UserRegisterResponse(DispatchBase):
