@@ -20,7 +20,6 @@
 </template>
 
 <script>
-import { mapActions } from "vuex"
 import IncidentApi from "@/incident/api"
 import IncidentSummaryTable from "@/incident/IncidentSummaryTable.vue"
 
@@ -49,8 +48,7 @@ export default {
         this.items = response.data.items
         this.loading = false
       })
-    },
-    ...mapActions("incident", ["joinIncident"])
+    }
   }
 }
 </script>
