@@ -5,7 +5,7 @@ description: Configuration options for the Jira plugin.
 # Configuring Jira
 
 {% hint style="info" %}
-Dispatch ships with Jira support. Each Jira installation is unique, so you will likely want to create a Jira specific plugin for your organization. This plugin is not required for core functionality, however a plugin of type `ticket` must always be enabled.
+Dispatch ships with Jira support. Each Jira installation is unique, so you will likely want to create a Jira-specific plugin for your organization. This plugin is not required for core functionality. However, a plugin of type `ticket` must always be enabled.
 {% endhint %}
 
 ## `JIRA_BROWSER_URL` \[Required\]
