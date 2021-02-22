@@ -110,7 +110,7 @@ class UserUpdate(DispatchBase):
 
     @validator("password", pre=True, always=True)
     def hash(cls, v):
-        return hash_password(v)
+        return hash_password(str(v))
 
 
 class UserRegisterResponse(DispatchBase):
