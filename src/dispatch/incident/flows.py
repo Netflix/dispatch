@@ -60,6 +60,7 @@ from .messaging import (
     send_incident_new_role_assigned_notification,
     send_incident_participant_announcement_message,
     send_incident_rating_feedback_message,
+    send_incident_report_details_message,
     send_incident_resources_ephemeral_message_to_participant,
     send_incident_review_document_notification,
     send_incident_suggested_reading_messages,
@@ -652,6 +653,9 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
         # we set the conversation topic
         set_conversation_topic(incident, db_session)
+
+        # we send and pin the incident report details in the conversation
+        send_incident_report_details_message(incident, db_session)
 
     db_session.add(incident)
     db_session.commit()

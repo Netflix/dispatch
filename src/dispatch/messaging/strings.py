@@ -77,6 +77,11 @@ For any questions about an incident, please reach out to incident's commander.""
     "\n", " "
 ).strip()
 
+INCIDENT_REPORTER_DESCRIPTION = """
+The person who reported the incident. Contact them if the report details need clarification.""".replace(
+    "\n", " "
+).strip()
+
 INCIDENT_COMMANDER_DESCRIPTION = """
 The Incident Commander (IC) is responsible for
 knowing the full context of the incident.
@@ -288,6 +293,12 @@ The incident priority has been changed from {{ incident_priority_old }} to {{ in
     "\n", " "
 ).strip()
 
+INCIDENT_REPORT_DETAILS_DESCRIPTION = """
+The following details summarize the incident report.""".replace(
+    "\n", " "
+).strip()
+
+
 INCIDENT_NAME_WITH_ENGAGEMENT = {
     "title": "{{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
@@ -331,6 +342,12 @@ INCIDENT_PRIORITY = {
 INCIDENT_PRIORITY_FYI = {
     "title": "Priority - {{priority}}",
     "text": "{{priority_description}}",
+}
+
+INCIDENT_REPORTER = {
+    "title": "Reporter - {{reporter_fullname}} on {{reporter_team}}",
+    "title_link": "{{reporter_weblink}}",
+    "text": INCIDENT_REPORTER_DESCRIPTION,
 }
 
 INCIDENT_COMMANDER = {
@@ -592,6 +609,18 @@ INCIDENT = [
     INCIDENT_TYPE,
     INCIDENT_PRIORITY,
     INCIDENT_COMMANDER,
+]
+
+INCIDENT_REPORT_DETAILS_HEADER = {
+    "title": "Incident Report Details",
+    "text": INCIDENT_REPORT_DETAILS_DESCRIPTION,
+}
+
+INCIDENT_REPORT_DETAILS = [
+    INCIDENT_REPORT_DETAILS_HEADER,
+    INCIDENT_TITLE,
+    INCIDENT_DESCRIPTION,
+    INCIDENT_REPORTER,
 ]
 
 

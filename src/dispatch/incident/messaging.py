@@ -27,6 +27,7 @@ from dispatch.messaging.strings import (
     INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM,
     INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
     INCIDENT_PRIORITY_CHANGE,
+    INCIDENT_REPORT_DETAILS,
     INCIDENT_RESOURCES_MESSAGE,
     INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_STATUS_CHANGE,
@@ -748,3 +749,30 @@ def send_incident_rating_feedback_message(incident: Incident, db_session: Sessio
         )
 
     log.debug("Incident rating and feedback message sent to all participants.")
+
+
+def send_incident_report_details_message(incident: Incident, db_session: SessionLocal):
+    """Sends a message with the incident report details in the conversation."""
+    notification_text = "Incident Report Details"
+    notification_type = MessageType.incident_notification
+    notification_template = INCIDENT_REPORT_DETAILS
+
+    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    if not plugin:
+        log.warning("Incident report details not sent. No plugin conversation enabled.")
+        return
+
+    plugin.instance.send(
+        incident.conversation.channel_id,
+        notification_text,
+        notification_template,
+        notification_type,
+        title=incident.title,
+        description=incident.description,
+        reporter_fullname=incident.reporter.individual.name,
+        reporter_weblink=incident.reporter.individual.weblink,
+        reporter_team=incident.reporter.team,
+        persist=True,
+    )
+
+    log.debug("Incident report details sent.")
