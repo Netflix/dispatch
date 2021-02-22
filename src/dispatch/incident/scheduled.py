@@ -129,6 +129,7 @@ def daily_report(db_session=None):
                 try:
                     item = {
                         "commander_fullname": incident.commander.individual.name,
+                        "commander_team": incident.commander.team,
                         "commander_weblink": incident.commander.individual.weblink,
                         "incident_id": incident.id,
                         "name": incident.name,
