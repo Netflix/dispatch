@@ -294,7 +294,7 @@ The incident priority has been changed from {{ incident_priority_old }} to {{ in
 ).strip()
 
 INCIDENT_REPORT_DETAILS_DESCRIPTION = """
-The following details summarize the incident report.""".replace(
+The incident report details can be found below.""".replace(
     "\n", " "
 ).strip()
 
