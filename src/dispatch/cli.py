@@ -138,16 +138,15 @@ def install_plugins(force):
 
 
 @plugins_group.command("uninstall")
-@click.argument("plugins")
-def uninstall_plugins(plugins: str):
+@click.argument("plugins", nargs=-1)
+def uninstall_plugins(plugins):
     """Uninstalls all plugins, or only one."""
     from dispatch.database import SessionLocal
     from dispatch.plugin import service as plugin_service
 
     db_session = SessionLocal()
 
-    plugin_slugs = plugins.split(", ")
-    for plugin_slug in plugin_slugs:
+    for plugin_slug in plugins:
         plugin = plugin_service.get_by_slug(db_session=db_session, slug=plugin_slug)
         if not plugin:
             click.secho(
