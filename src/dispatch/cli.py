@@ -151,7 +151,7 @@ def uninstall_plugins(plugins):
         if not plugin:
             click.secho(
                 f"Plugin slug {plugin_slug} does not exist. Make sure you're passing the plugin's slug.",
-                fg="blue",
+                fg="red",
             )
 
         plugin_service.delete(db_session=db_session, plugin_id=plugin.id)
