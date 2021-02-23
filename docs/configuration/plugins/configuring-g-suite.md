@@ -86,7 +86,7 @@ NOTE: You've to add a 'C' as a prefix to the ID you get from the instructions ab
 
 ## Google Workspace Setup
 
-To set up Goolge Workspace integration, you'll need to create some resources in Google Cloud Platform, and then link them to your Google Workspace organization.
+To set up Google Workspace integration, you'll need to create some resources in Google Cloud Platform, and then link them to your Google Workspace organization.
 
 ## Enable Required APIs in Google Cloud Platform
 
