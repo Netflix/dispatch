@@ -33,7 +33,6 @@ def base64_decode(input: str):
     """Returns a b64 decoded string."""
     return base64.b64decode(input.encode("ascii")).decode("ascii")
 
-
 async def handle_slack_action(*, db_session, client, request, background_tasks):
     """Handles slack action message."""
     # We resolve the user's email
