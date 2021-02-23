@@ -114,7 +114,7 @@ Enable the following APIs \(APIs and Services &gt; Library\):
 * Gmail API
 * Google Groups API (This API replaces Admin SDK for managing groups)
 
-Finally, create your OAuth application which is how G Suite will authorize the service account and API key (APIs & Services &gt; OAuth Consent Screen).
+Finally, create your OAuth application which is how Google Workspace will authorize the service account and API key (APIs & Services &gt; OAuth Consent Screen).
 Specify the following scopes:
 
 ```bash
