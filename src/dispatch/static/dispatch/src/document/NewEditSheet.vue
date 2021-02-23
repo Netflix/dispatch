@@ -201,7 +201,13 @@ export default {
   },
 
   methods: {
-    ...mapActions("document", ["save", "closeCreateEdit"])
+    ...mapActions("document", ["closeCreateEdit"]),
+    save() {
+      const self = this
+      this.$store.dispatch("document/save").then(function(data) {
+        self.$emit("new-document-created", data)
+      })
+    }
   }
 }
 </script>

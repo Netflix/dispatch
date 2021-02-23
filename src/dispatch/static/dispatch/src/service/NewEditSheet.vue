@@ -145,7 +145,13 @@ export default {
   },
 
   methods: {
-    ...mapActions("service", ["save", "closeCreateEdit"])
+    ...mapActions("service", ["closeCreateEdit"]),
+    save() {
+      const self = this
+      this.$store.dispatch("service/save").then(function(data) {
+        self.$emit("new-service-created", data)
+      })
+    }
   },
 
   data() {

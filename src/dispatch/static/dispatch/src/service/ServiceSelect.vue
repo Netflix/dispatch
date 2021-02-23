@@ -1,23 +1,34 @@
 <template>
-  <v-autocomplete
-    v-model="service"
-    :items="items"
-    :search-input.sync="search"
-    :menu-props="{ maxHeight: '400' }"
-    item-text="name"
-    :label="label"
-    placeholder="Start typing to Search"
-    return-object
-    :hint="hint"
-    :loading="loading"
-    no-filter
-  >
-  </v-autocomplete>
+  <ValidationProvider name="service" immediate>
+    <v-autocomplete
+      v-model="service"
+      :items="items"
+      :search-input.sync="search"
+      :menu-props="{ maxHeight: '400' }"
+      item-text="name"
+      :label="label"
+      placeholder="Start typing to Search"
+      return-object
+      :hint="hint"
+      :loading="loading"
+      no-filter
+    >
+      <template slot="append-outer">
+        <v-btn icon @click="createEditShow({})"><v-icon>add</v-icon></v-btn>
+        <new-edit-sheet @new-service-created="addItem($event)" />
+      </template>
+    </v-autocomplete>
+  </ValidationProvider>
 </template>
 
 <script>
-import ServiceApi from "@/service/api"
+import { mapActions } from "vuex"
 import { cloneDeep } from "lodash"
+import { ValidationProvider } from "vee-validate"
+
+import ServiceApi from "@/service/api"
+import NewEditSheet from "@/service/NewEditSheet.vue"
+
 export default {
   name: "ServiceSelect",
 
@@ -40,6 +51,11 @@ export default {
         return "Service to associate"
       }
     }
+  },
+
+  components: {
+    ValidationProvider,
+    NewEditSheet
   },
 
   data() {
@@ -73,6 +89,11 @@ export default {
   },
 
   methods: {
+    ...mapActions("service", ["createEditShow"]),
+    addItem(v) {
+      this.service = v
+      this.items.push(v)
+    },
     querySelections(v) {
       this.loading = "error"
       // Simulated ajax query
