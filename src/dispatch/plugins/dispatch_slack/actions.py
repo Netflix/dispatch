@@ -1,3 +1,4 @@
+import base64
 from fastapi import BackgroundTasks
 
 from dispatch.conversation import service as conversation_service
@@ -26,6 +27,11 @@ from .config import (
 from .modals import create_rating_feedback_modal, handle_modal_action
 from .service import get_user_email
 from .decorators import slack_background_task
+
+
+def base64_decode(input: str):
+    """Returns a b64 decoded string."""
+    return base64.b64decode(input).decode("ascii")
 
 
 async def handle_slack_action(*, db_session, client, request, background_tasks):
@@ -89,7 +95,8 @@ def update_task_status(
     slack_client=None,
 ):
     """Updates a task based on user input."""
-    action_type, external_task_id = action["actions"][0]["value"].split("-")
+    action_type, external_task_id_b64 = action["actions"][0]["value"].split("-")
+    external_task_id = base64_decode(external_task_id_b64)
 
     resolve = True
     if action_type == "reopen":

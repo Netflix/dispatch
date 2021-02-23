@@ -5,9 +5,7 @@
         <v-list-item :href="participant.individual.weblink" target="_blank">
           <v-list-item-content>
             <v-list-item-title>
-              {{ participant.individual.name }} ({{
-                participant.participant_roles | commaString("role")
-              }})
+              {{ participant.individual.name }} ({{ participant.participant_roles | activeRoles }})
             </v-list-item-title>
             <v-list-item-subtitle>
               {{ participant.team }} - {{ participant.location }}
@@ -37,6 +35,19 @@ export default {
   name: "IncidentParticipantsTab",
   computed: {
     ...mapFields("incident", ["selected.participants"])
+  },
+
+  filters: {
+    activeRoles: function(value) {
+      return value
+        .map(function(v) {
+          if (!v.renounced_at) {
+            return v.role
+          }
+        })
+        .filter(Boolean)
+        .join(", ")
+    }
   }
 }
 </script>
