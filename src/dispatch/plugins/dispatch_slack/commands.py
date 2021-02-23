@@ -69,7 +69,7 @@ slack_client = dispatch_slack_service.create_slack_client()
 
 def base64_encode(input: str):
     """Returns a b64 encoded string."""
-    return base64.b64encode(input).decode("ascii")
+    return base64.b64encode(input.encode("ascii")).decode("ascii")
 
 
 def check_command_restrictions(
