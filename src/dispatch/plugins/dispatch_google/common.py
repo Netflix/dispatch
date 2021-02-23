@@ -70,10 +70,6 @@ def get_service(service_name: str, version: str, scopes: list):
             # Conditionally use delegated credentials when DWD is enabled.
             "credentials": delegated_credentials if DWD_ENABLED else credentials,
             "cache_discovery": False,
+            "developerKey": GOOGLE_DEVELOPER_KEY,
         }
-        # Add developerKey only when DWD is enabled
-        if DWD_ENABLED:
-            log.debug("Adding the developerKey argument because domain-wide delegation is enabled.")
-            kwargs.update({"developerKey": GOOGLE_DEVELOPER_KEY})
-
         return googleapiclient.discovery.build(service_name, version, **kwargs)

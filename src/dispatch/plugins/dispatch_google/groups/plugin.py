@@ -13,6 +13,7 @@ from googleapiclient.errors import HttpError
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from dispatch.decorators import apply, counter, timer
+from dispatch.exceptions import DispatchPluginException
 from dispatch.plugins.bases import ParticipantGroupPlugin
 from dispatch.plugins.dispatch_google import groups as google_group_plugin
 from dispatch.plugins.dispatch_google.common import get_service
@@ -158,6 +159,11 @@ def list_members(client: Any, group_email: str, **kwargs):
 
 def create_group(client: Any, name: str, group_email: str, description: str):
     """Creates a new google group."""
+    if not GOOGLE_CUSTOMER_ID:
+        raise DispatchPluginException(
+            "Google Groups plugin requires 'GOOGLE_CUSTOMER_ID' but one has not been defined"
+        )
+
     body = {
         "parent": f"customers/{GOOGLE_CUSTOMER_ID}",
         "groupKey": {"id": group_email},
@@ -211,6 +217,7 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
         group_response = create_group(client, name, group_key, description)
         group = group_response["response"]
 
+        # Populate the fields of 'group' dict as required by other parts of the code
         group["email"] = group["groupKey"]["id"]
         group_email_prefix = group["email"].split("@")[0]
         group["group_name"] = group["name"]
