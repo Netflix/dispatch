@@ -7,7 +7,7 @@
       :menu-props="{ maxHeight: '400' }"
       item-text="name"
       :label="label"
-      placeholder="Start typing to Search"
+      placeholder="Start typing to search"
       return-object
       :hint="hint"
       :loading="loading"
