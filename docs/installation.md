@@ -12,7 +12,7 @@ Dispatch relies on multiple services to work, which are all orchestrated by `Doc
 
 ## Installing Dispatch Server
 
-We strongly recommend using Docker, for installing Dispatch and all its services. If you need to do something custom, you can use this repository as the basis of your setup. If you do not wish to use the Docker images we provide, you can still find Dispatch on PyPI; however, we don't recommend that method. You'll need to work your way back from the main Dispatch image. It is not too hard, but you are likely to spend a lot more time and hit some bumps.
+We strongly recommend using Docker for installing Dispatch and all its services. If you need to do something custom, you can use this repository as the basis of your setup. If you do not wish to use the Docker images we provide, you can still find Dispatch on PyPI; however, we don't recommend that method. You'll need to work your way back from the main Dispatch image. It is not too hard, but you are likely to spend a lot more time and hit some bumps.
 
 To install Dispatch from the repository, clone the repository locally:
 
@@ -23,11 +23,11 @@ git clone https://github.com/Netflix/dispatch-docker.git
 Before starting the installation, we strongly recommend you check out [how to configure your Dispatch instance](configuration/) as you'd need to rebuild your images \(`docker-compose build`\) if you want to change your configuration settings. You may copy and edit the example configs provided in the repository. If none exists, the install script will use these examples as actual configurations.
 
 {% hint style="info" %}
-Note: Dispatch will not start without at least a few required configuration variables, see the example [env](https://github.com/Netflix/dispatch/blob/develop/docker/.env.example).
+Note: Dispatch will not start without at least a few required configuration variables. See the example [env](https://github.com/Netflix/dispatch/blob/develop/docker/.env.example).
 {% endhint %}
 
 {% hint style="info" %}
-Note: Dispatch does not contain any data by default. For evaluation purposes, we do provide an example data set located [here](https://github.com/Netflix/dispatch/blob/develop/data/dispatch-sample-data.dump). For instructions for restoring this data see [here](https://hawkins.gitbook.io/dispatch/cli#restore-dump).
+Note: Dispatch does not contain any data by default. For evaluation purposes, we do provide an example data set located [here](https://github.com/Netflix/dispatch/blob/develop/data/dispatch-sample-data.dump). For instructions for restoring this data, see [here](https://hawkins.gitbook.io/dispatch/cli#restore-dump).
 {% endhint %}
 
 To start, run the install script:
@@ -38,52 +38,52 @@ To start, run the install script:
 
 ### The "first" user problem
 
-For any new installation of Dispatch, new users are expected to register themselves via the `/auth/register` endpoint in the Dispatch UI. By default, users registering via this method are granted regular "user" permissions within Dispatch. As such there is no direct way through the UI to allow a user obtain an "Admin" role (as no other Admins exist to grant them access).
+For any new Dispatch installation, new users are expected to register themselves via the `/auth/register` endpoint in the Dispatch UI. By default, users registering via this method are granted regular "user" permissions within Dispatch. There is no direct way through the UI to allow a user to obtain an "Admin" role (as no other Admins exist to grant them access).
 
-For these users we have a cli command that allows users to be granted the role of their choosing:
+For these users, we have a CLI command that allows users to be granted the role of their choosing:
 
 ```bash
 dispatch user update --role Admin <email-address-of-registered-user>
 ```
 
-After one admin user has been established they are allowed to grant this role to others via the UI.
+After one admin user has been established, they can grant this role to others via the UI.
 
 ## Going to Production
 
-Before you deploy Dispatch to production there are a few considerations and steps that should taken.
+Before you deploy Dispatch to production, there are a few considerations and steps that should be taken.
 
 ### Basics
 
-Because of the sensitivity of the information stored and maintained by Dispatch it is important that you follow standard host hardening practices:
+Because of the sensitivity of the information stored and maintained by Dispatch. You must follow standard host hardening practices:
 
 - Run Dispatch with a limited user
 - Disabled any unneeded services
 - Enable remote logging
-- Restrict access to host
+- Restrict access to the host
 
 ### Credential Management
 
-Dispatch plugins require API tokens that are used to communicate with third party resources. These are typically stored in either the an environment variable or in the Dispatch `.env` file.
+Dispatch plugins require API tokens to communicate with third-party resources. These tokens are stored in either an environment variable or in the Dispatch `.env` file.
 
-By default these strings are in plain text, but Dispatch does provide hooks that allow for these credentials to be decrypted on server start. See the [Secret Provider](configuration/app.md#general) configuration option.
+By default, these strings are in plain text, but Dispatch does provide hooks that allow for these credentials to be decrypted on server start. See the [Secret Provider](configuration/app.md#general) configuration option.
 
 ### Authentication
 
-To get going quickly, Dispatch provides a "Basic Authentication" provider that controls access via a username and password combination. By default, this provider allows for **open registration**. Meaning that anyone will be able to create a Dispatch account if they have network access to your server.
+Dispatch provides a "Basic" authentication provider that controls access via a username and password combination to get going quickly. By default, this provider allows for **open registration**, which means that anyone will be able to create a Dispatch account if they have network access to your server.
 
-For a more robust authentication, Dispatch provides a PKCE authentication method that can be used to integrate with existing and more robust SSO solutions. See the [Authentication Provider](configuration/app.md#authentication)
+Dispatch provides a "PKCE" authentication method to integrate existing and more robust SSO solutions for more robust authentication. See the [Authentication Provider](configuration/app.md#authentication)
 
 ### TLS/SSL
 
 #### Nginx
 
-Nginx is a very popular choice to serve a Python project:
+Nginx is a popular choice to serve a Python project:
 
 - It’s fast.
 - It’s lightweight.
 - Configuration files are simple.
 
-Nginx doesn’t run any Python process, it only serves requests from outside to the Python server.
+Nginx doesn’t run any Python process; it only serves requests from outside to the Python server.
 
 Therefore, there are two steps:
 
@@ -93,12 +93,12 @@ Therefore, there are two steps:
 You will benefit from having:
 
 - The possibility to have several projects listening to the port 80;
-- Your web site processes won’t run with admin rights, even if –user doesn’t work on your OS;
-  -The ability to manage a Python process without touching Nginx or the other processes. It’s very handy for updates.
+- Your web site processes won’t run with admin rights, even if –the user doesn’t work on your OS;
+  -The ability to manage a Python process without touching Nginx or the other processes. It’s convenient for updates.
 
-You must create a Nginx configuration file for Dispatch. On GNU/Linux, they usually go into /etc/nginx/conf.d/. Name it dispatch.conf.
+You must create an Nginx configuration file for Dispatch. On GNU/Linux, they usually go into `/etc/nginx/conf.d/`. Name it `dispatch.conf`.
 
-proxy_pass just passes the external request to the Python process. The port must match the one used by the Dispatch process of course.
+proxy_pass passes the external request to the Python process. The port must match the one used by the Dispatch process.
 
 You can make some adjustments to get a better user experience:
 
@@ -134,12 +134,12 @@ proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
     }
 
 }
-This makes Nginx serve the favicon and static files which it is much better at than python.
+Nginx will serve the favicon and static files, which it is much better at than python.
 
-It is highly recommended that you deploy TLS when deploying Dispatch. This may be obvious given Dispatch’s purpose but the sensitive nature of Dispatch and what it controls makes this essential. This is a sample config for Dispatch that also terminates TLS:
+We recommended that you deploy TLS when deploying Dispatch. It may be obvious given Dispatch’s purpose, but the sensitive nature of Dispatch and what it controls makes this essential. A sample config for Dispatch that also terminates TLS:
 
 {% hint style="info" %}
-Some paths will have to be adjusted based on where you have choose to install Dispatch.
+Some paths will have to be adjusted based on where you have chosen to install Dispatch.
 {% endhint %}
 
 ```
@@ -165,7 +165,7 @@ ssl_certificate_key /path/to/private_key;
 ssl_session_timeout 1d;
 ssl_session_cache shared:SSL:50m;
 
-# Diffie-Hellman parameter for DHE ciphersuites, recommended 2048 bits
+# Diffie-Hellman parameter for DHE cipher suites, recommended 2048 bits
 
 ssl_dhparam /path/to/dhparam.pem;
 
@@ -247,7 +247,7 @@ SetEnv proxy-nokeepalive 1
 
 ProxyRequests Off
 
-# Proxy requests to the api to the dispatch service (and sanitize redirects from it)
+# Proxy requests to the API to the dispatch service (and sanitize redirects from it)
 
 ProxyPass "/api" "http://127.0.0.1:8000/api"
 ProxyPassReverse "/api" "http://127.0.0.1:8000/api"
@@ -256,9 +256,9 @@ ProxyPassReverse "/api" "http://127.0.0.1:8000/api"
 ```
 
 {% hint style="info" %}
-This is a rather incomplete apache config for running Dispatch (needs mod_wsgi etc.), if you have a working apache config please let us know!
+The above config is somewhat incomplete. If you have a working apache config, please let us know!
 {% endhint %}
 
-Also included in the configurations above are several best practices when it comes to deploying TLS. Things like enabling HSTS, disabling vulnerable ciphers are all good ideas when it comes to deploying Dispatch into a production environment.
+Also included in the configurations above are several best practices when it comes to deploying TLS. Things like enabling HSTS, disabling vulnerable ciphers are all excellent ideas for deploying Dispatch into a production environment.
 
 For more SSL configuration options see: [Mozilla SSL Configuration Generator](https://mozilla.github.io/server-side-tls/ssl-config-generator/)

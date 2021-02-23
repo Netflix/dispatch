@@ -58,7 +58,13 @@ export const protectedRoute = [
   {
     path: "/incidents",
     component: DefaultLayout,
-    meta: { title: "Incidents", icon: "view_compact", group: "incidents", requiresAuth: true },
+    meta: {
+      title: "Incidents",
+      icon: "view_compact",
+      group: "incidents",
+      requiresAuth: true,
+      showEditSheet: false
+    },
     children: [
       {
         path: "",

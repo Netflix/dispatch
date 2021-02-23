@@ -11,7 +11,7 @@ description: >-
 
 Dispatch uses the same configuration system as [Starlette](https://www.starlette.io/config/).
 
-By default, the config will be read from environment variables and/or `.env` files.
+By default, the config is read from environment variables or `.env` files.
 
 {% hint style="info" %}
 All config items prefixed with `VUE_APP` are envvars for the Vue frontend. These variables are used only during the building of the javascript bundle. See [here](https://cli.vuejs.org/guide/mode-and-env.html) for details. You will want to include these variables in `src/dispatch/static/dispatch/.env` during build time.
@@ -29,11 +29,11 @@ In general, do not include any quotation marks when adding configuration values.
 
 #### `STATIC_DIR` \[default: './src/static/dispatch/dist'\]
 
-> Controls where static content for the Dispatch Web UI should be served from. This can also be explicitly set to `''` if you wish to serve static content outside of the Dispatch server.
+> Controls where on the local disk, static content for the Dispatch Web UI should be served. This variable can also be explicitly set to `''` if you wish to serve static content outside of the Dispatch server.
 
 #### `METRIC_PROVIDERS` \[default: ""\]
 
-> A comma separated list of metric providers Dispatch will send key system metrics to.
+> A comma-separated list of metric providers where Dispatch will send key system metrics.
 
 #### `SECRET_PROVIDER` \[default: None\]
 
@@ -41,7 +41,7 @@ In general, do not include any quotation marks when adding configuration values.
 
 #### `ENV_TAGS` \[defaut: ""\]
 
-> A comma separated list of tags that Dispatch will attempt to pull from the environment. As an example the string `foo:bar,baz:blah` will create two tags: `foo` with the environment value for `bar` and `baz` with the environment value for `blah`.
+> A comma-separated list of tags that Dispatch will attempt to pull from the environment. For example, the string `foo:bar,baz:blah` will create two tags: `foo` with the environment value for `bar` and `baz` with the environment value for `blah`.
 
 #### `SENTRY_DSN` \[default: none\]
 
@@ -49,7 +49,7 @@ In general, do not include any quotation marks when adding configuration values.
 
 #### `MJML_PATH` \[default: <dispatch-dir>/static/dispatch/node_modules/.bin]
 
-> Dispatch uses [MJML](https://mjml.io/documentation/) to generate its html emails. This package also requires the `node` binary to be available on the standard path (or set in Dispatch's path). Use this variable to adjust the location where Dispatch should look for the `mjml` command.
+> Dispatch uses [MJML](https://mjml.io/documentation/) to generate its HTML emails. This package also requires the `node` binary to be available on the standard path (or set in Dispatch's path). Use this variable to adjust the location where Dispatch should look for the `mjml` command.
 
 #### `VUE_APP_SENTRY_DSN` \[default: none\]
 
@@ -65,13 +65,13 @@ In general, do not include any quotation marks when adding configuration values.
 
 #### `DISPATCH_UI_URL`
 
-> URL being used for Dispatch's Admin UI. Used in messaging to refer to the Admin UI.
+> URL of the Dispatch's Admin UI, used by messaging to refer to the Admin UI.
 
 ### Authentication
 
 #### `DISPATCH_AUTHENTICATION_PROVIDER_SLUG` \['default': dispatch-auth-provider-basic\]
 
-> Used by Dispatch to determine which authentication provider to use, by default Dispatch ships with a PKCE authentication provider.
+> Used by Dispatch to determine which authentication provider to use; by default, Dispatch ships with a PKCE authentication provider.
 
 {% hint style="info" %}
 If you wish to disable authentication set `DISPATCH_AUTHENTICATION_PROVIDER_SLUG=`
@@ -80,11 +80,11 @@ If you wish to disable authentication set `DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 #### Configuration for `dispatch-auth-provider-basic`
 
 {% hint style="warning" %}
-Today, basic authentication allows self registration without approval.
+Today, basic authentication allows self-registration without approval.
 {% endhint %}
 
 {% hint style="warning" %}
-In order for this plugin to work, you need to set `DISPATCH_JWT_SECRET`.
+For this plugin to work, you need to set `DISPATCH_JWT_SECRET`.
 {% endhint %}
 
 #### `DISPATCH_JWT_SECRET`
@@ -114,7 +114,7 @@ In order for this plugin to work, you need to set `DISPATCH_JWT_SECRET`.
 #### Configuration for `dispatch-auth-provider-pkce`
 
 {% hint style="warning" %}
-In order for this plugin to work with your OIDC setup, you may need to set
+For this plugin to work with your OIDC setup, you may need to set
 `DISPATCH_JWT_AUDIENCE` and `DISPATCH_PKCE_DONT_VERIFY_AT_HASH`.
 {% endhint %}
 
@@ -141,7 +141,7 @@ In order for this plugin to work with your OIDC setup, you may need to set
 
 #### `DATABASE_HOSTNAME`
 
-> Dispatch relies on a `Postgres` database. This host name should point to a supporter version of `Postgres (9.6+)`.
+> Dispatch relies on a `Postgres` database. This hostname should point to a supporter version of `Postgres (9.6+)`.
 
 #### `DATABASE_CREDENTIALS` \[secret: True\]
 
@@ -159,7 +159,7 @@ In order for this plugin to work with your OIDC setup, you may need to set
 
 ### Incident Cost
 
-Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/service.py#L279) the cost of an incident by adding up the time participants have spent on each incident role \(e.g. Incident Commander\) and applying an [engagement multiplier](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/service.py#L266) that's based on the incident role. It also includes time spent on incident review related activities. Dispatch calculates and published the cost for all incidents [every 5 minutes](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/scheduled.py#L257).
+Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/service.py#L279) the cost of an incident by adding up the time participants have spent on each incident role \(e.g., Incident Commander\) and applying an [engagement multiplier](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/service.py#L266) that's based on the incident role. It also includes time spent on incident review-related activities. Dispatch calculates and published the cost for all incidents [every 5 minutes](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/scheduled.py#L257).
 
 #### `ANNUAL_COST_EMPLOYEE` \[default: '50000'\]
 
@@ -173,20 +173,20 @@ Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispa
 
 #### `INCIDENT_STORAGE_FOLDER_ID`
 
-> Top level folder where all incident data is stored. Note: viewing actual incident data is still on a per-sub folder basis. For Google Drive,
-> you can get the folder ID from viewing a folder in the Google Drive UI, and copying the last part of the URL (`/drive/u/0/folders/<this value>`)
+> Top-level folder where all incident data is stored. Note: viewing actual incident data is still on a per-sub folder basis. For Google Drive,
+> you can get the folder ID from viewing a folder in the Google Drive UI and copying the last part of the URL (`/drive/u/0/folders/<this value>`)
 
 #### `INCIDENT_STORAGE_OPEN_ON_CLOSE` \[default: 'true'\]
 
-> After an incident is closed, Netflix as an organization, tries to be transparent and allow others within the organization to view incident data. This is may not desirable in all organizations. This controls whether to open up incident data on incident close.
+> After an incident is closed, Netflix, as an organization, tries to be transparent and allow others within the organization to view incident data. This behavior is may not desirable in all organizations. This variable controls whether to open up incident data on incident close.
 
 #### `INCIDENT_RESPONSE_TEAM_EMAIL` \[default: ''\]
 
-> Specifies the email address of the incident response team. Used for cc'ing the team in certain email communications (e.g. incident feedback daily digest).
+> Specifies the email address of the incident response team. Used for cc'ing the team in certain email communications (e.g., incident feedback daily digest).
 
 #### `INCIDENT_ONCALL_SERVICE_ID` \[default: None\]
 
-> Specifies the oncall service id to use to resolve the oncall person.
+> Specifies the on-call service id to use to resolve the on-call person.
 
 #### `INCIDENT_RESOURCE_TASK` \[default: 'google-docs-incident-task'\]
 

@@ -27,8 +27,21 @@
               :sort-desc.sync="descending"
               :loading="loading"
               loading-text="Loading... Please wait"
-              @click:row="editShow"
             >
+              <template v-slot:item.data-table-actions="{ item }">
+                <v-menu bottom left>
+                  <template v-slot:activator="{ on }">
+                    <v-btn icon v-on="on">
+                      <v-icon>mdi-dots-vertical</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item @click="editShow(item)">
+                      <v-list-item-title>View / Edit</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </template>
             </v-data-table>
           </v-card>
         </v-flex>
@@ -51,7 +64,8 @@ export default {
     return {
       headers: [
         { text: "Email", value: "email", sortable: true },
-        { text: "Role", value: "role", sortable: true }
+        { text: "Role", value: "role", sortable: true },
+        { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
     }
   },

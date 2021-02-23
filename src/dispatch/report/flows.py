@@ -198,6 +198,7 @@ def create_executive_report(
         next_steps=next_steps,
         previous_reports="\n".join(previous_executive_reports),
         commander_fullname=incident.commander.individual.name,
+        commander_team=incident.commander.team,
         commander_weblink=incident.commander.individual.weblink,
     )
 
