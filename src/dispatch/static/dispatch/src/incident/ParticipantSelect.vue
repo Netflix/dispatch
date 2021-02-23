@@ -1,29 +1,18 @@
 <template>
-  <v-autocomplete
+  <v-combobox
     v-model="participant"
     :items="items"
-    item-text="name"
+    item-text="individual.name"
     :search-input.sync="search"
-    :menu-props="{ maxHeight: '400' }"
     hide-selected
     :label="label"
-    close
     clearable
+    chips
     :loading="loading"
-    return-object
+    @update:search-input="getFilteredData({ q: $event })"
     no-filter
+    return-object
   >
-    <template v-slot:selection="{ attr, on, item, selected }">
-      <v-chip v-bind="attr" :input-value="selected" v-on="on">
-        <span v-text="item.individual.name"></span>
-      </v-chip>
-    </template>
-    <template v-slot:item="{ item }">
-      <v-list-item-content>
-        <v-list-item-title v-text="item.individual.name"></v-list-item-title>
-        <v-list-item-subtitle v-text="item.individual.email"></v-list-item-subtitle>
-      </v-list-item-content>
-    </template>
     <template v-slot:no-data>
       <v-list-item>
         <v-list-item-content>
@@ -35,12 +24,32 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-  </v-autocomplete>
+    <template v-slot:item="data">
+      <v-list-item-content>
+        <v-list-item-title v-text="data.item.individual.name"></v-list-item-title>
+        <v-list-item-subtitle v-text="data.item.individual.email"></v-list-item-subtitle>
+      </v-list-item-content>
+    </template>
+    <template v-slot:selection="{ attr, on, item, selected }">
+      <v-chip v-bind="attr" :input-value="selected" v-on="on">
+        <span v-text="item.individual.name"></span>
+      </v-chip>
+    </template>
+    <template v-slot:append-item>
+      <v-list-item v-if="more" @click="loadMore()">
+        <v-list-item-content>
+          <v-list-item-subtitle>
+            Load More
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
+  </v-combobox>
 </template>
 
 <script>
 import IndividualApi from "@/individual/api"
-import { cloneDeep } from "lodash"
+import { cloneDeep, debounce } from "lodash"
 export default {
   name: "ParticipantSelect",
   props: {
@@ -62,6 +71,8 @@ export default {
     return {
       loading: false,
       items: [],
+      more: false,
+      numItems: 5,
       search: null
     }
   },
@@ -77,42 +88,35 @@ export default {
     }
   },
 
-  mounted() {
+  created() {
     this.fetchData({})
   },
 
-  watch: {
-    search(val) {
-      if (!val) {
-        return
-      }
-      this.getFilteredData({ q: val })
-    },
-    value(val) {
-      if (!val) return
-      this.items.push(val)
-    }
-  },
-
   methods: {
+    loadMore() {
+      this.numItems = this.numItems + 5
+      this.getFilteredData({ q: this.search, itemsPerPage: this.numItems })
+    },
     fetchData(filterOptions) {
       this.loading = "error"
       IndividualApi.getAll(filterOptions).then(response => {
         this.items = response.data.items.map(function(x) {
           return { individual: x }
         })
+        this.total = response.data.total
+
+        if (this.items.length < this.total) {
+          this.more = true
+        } else {
+          this.more = false
+        }
+
         this.loading = false
       })
     },
-    getFilteredData(query) {
-      // cancel pending call
-      clearTimeout(this._timerId)
-
-      // delay new call 500ms
-      this._timerId = setTimeout(() => {
-        this.fetchData(query)
-      }, 500)
-    }
+    getFilteredData: debounce(function(options) {
+      this.fetchData(options)
+    }, 500)
   }
 }
 </script>
