@@ -14,14 +14,25 @@
       return-object
       :loading="loading"
       no-filter
-    />
+    >
+      <template slot="append-outer">
+        <v-btn icon @click="createEditShow({})">
+          <v-icon>add</v-icon>
+        </v-btn>
+        <new-edit-sheet @new-document-created="addItem($event)" />
+      </template>
+    </v-autocomplete>
   </ValidationProvider>
 </template>
 
 <script>
-import DocumentApi from "@/document/api"
+import { mapActions } from "vuex"
 import { cloneDeep } from "lodash"
 import { ValidationProvider } from "vee-validate"
+
+import DocumentApi from "@/document/api"
+import NewEditSheet from "@/document/NewEditSheet.vue"
+
 export default {
   name: "DocumentSelect",
 
@@ -35,7 +46,8 @@ export default {
   },
 
   components: {
-    ValidationProvider
+    ValidationProvider,
+    NewEditSheet
   },
 
   data() {
@@ -69,6 +81,11 @@ export default {
   },
 
   methods: {
+    ...mapActions("document", ["createEditShow"]),
+    addItem(value) {
+      this.document = value
+      this.items.push(value)
+    },
     querySelections(v) {
       this.loading = "error"
       // Simulated ajax query
