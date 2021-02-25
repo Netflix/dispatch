@@ -46,6 +46,13 @@ export default {
   computed: {
     incident_types: {
       get() {
+        if (this.visibility !== "All") {
+          return cloneDeep(
+            this.value.filter(
+              incident_type => incident_type.visibility.indexOf(this.visibility) !== -1
+            )
+          )
+        }
         return cloneDeep(this.value)
       },
       set(value) {
