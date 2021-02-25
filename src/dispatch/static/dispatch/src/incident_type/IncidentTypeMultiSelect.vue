@@ -25,6 +25,14 @@ export default {
       default: function() {
         return []
       }
+    },
+    visibility: {
+      type: String,
+      default: "All",
+      validator: function(value) {
+        // The value must match one of these strings
+        return ["All", "Open", "Restricted"].indexOf(value) !== -1
+      }
     }
   },
 

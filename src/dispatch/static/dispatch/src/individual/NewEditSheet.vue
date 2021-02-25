@@ -81,7 +81,7 @@
                 <incident-priority-multi-select v-model="incident_priorities" />
               </v-flex>
               <v-flex>
-                <incident-type-multi-select v-model="incident_types" />
+                <incident-type-multi-select v-model="incident_types" visibility="Open" />
               </v-flex>
             </v-layout>
           </v-container>
