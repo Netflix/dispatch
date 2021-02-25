@@ -82,7 +82,7 @@ Dispatch ships with several Google Workspace plugins \(Docs, Groups, Drive, etc.
 > Unique string assigned to each google workspace customer. It can be found by using these [instructions](https://support.google.com/a/answer/10070793?hl=en).
 
 It is needed to use the [Groups API](https://cloud.google.com/identity/docs/how-to/create-google-groups#creating_a_google_group) which doesn't require admin SDK. It is passed as the parent resource under which groups are created, under which memberships are created.
-NOTE: You've to add a 'C' as a prefix to the ID you get from the instructions above.
+**You have to add a 'C' as a prefix to the ID you get from the instructions above (e.g. "Cabcd123").**
 
 ## Google Workspace Setup
 
