@@ -19,7 +19,7 @@ class IncidentType(Base):
     description = Column(String)
     exclude_from_metrics = Column(Boolean, default=False)
     default = Column(Boolean, default=False)
-    visibility = Column(String, default=Visibility.open)
+    visibility = Column(String, default=Visibility.open.value)
     plugin_metadata = Column(JSON, default=[])
 
     template_document_id = Column(Integer, ForeignKey("document.id"))
