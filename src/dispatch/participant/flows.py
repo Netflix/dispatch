@@ -6,6 +6,7 @@ from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType, ParticipantRoleCreate
+from dispatch.service.models import Service
 from dispatch.plugin import service as plugin_service
 
 from .service import get_or_create, get_by_incident_id_and_email
@@ -15,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 def add_participant(
-    user_email: str, incident_id: id, db_session: SessionLocal, role: ParticipantRoleType = None
+    user_email: str, incident_id: id, db_session: SessionLocal, service: Service = None, role: ParticipantRoleType = None
 ):
     """Adds a participant."""
     # We load the incident
@@ -35,6 +36,7 @@ def add_participant(
         db_session=db_session,
         incident_id=incident.id,
         individual_id=individual.id,
+        service=service,
         participant_roles=[participant_role],
     )
 

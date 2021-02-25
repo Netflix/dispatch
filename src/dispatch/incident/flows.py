@@ -48,6 +48,7 @@ from dispatch.plugin import service as plugin_service
 from dispatch.report.enums import ReportTypes
 from dispatch.report.messaging import send_incident_report_reminder
 from dispatch.service import service as service_service
+from dispatch.service.models import Service
 from dispatch.storage import service as storage_service
 from dispatch.ticket import service as ticket_service
 from dispatch.ticket.models import TicketCreate
@@ -458,14 +459,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         # we set the incident name
         incident.name = ticket["resource_id"]
 
-    # get the incident participants based on incident type and priority
-    individual_participants, team_participants = get_incident_participants(incident, db_session)
-
-    # add individuals to incident
-    for individual in individual_participants:
-        participant_flows.add_participant(
-            user_email=individual.email, incident_id=incident.id, db_session=db_session
-        )
+    individual_participants, team_participants = resolve_incident_participants(incident, db_session)
 
     event_service.log(
         db_session=db_session,
@@ -976,9 +970,16 @@ def resolve_incident_participants(incident: Incident, db_session: SessionLocal):
         individual_participants, team_participants = get_incident_participants(incident, db_session)
 
         # we add the individuals as incident participants
-        for individual in individual_participants:
+        for individual, service in individual_participants:
+            if service:
+                # we need to ensure that we don't add another member of a service if one
+                # already exists (e.g. overlapping oncalls, we assume they will hand-off if necessary)
+                participant = participant_service.get_by_incident_id_and_service(incident_id=incident.id, service_id=service.id, db_session=db_session)
+                if participant:
+                    continue
+
             incident_add_or_reactivate_participant_flow(
-                individual.email, incident.id, db_session=db_session
+                individual.email, incident.id, service=service, db_session=db_session
             )
 
         # we add the team distributions lists to the notifications group
@@ -988,6 +989,8 @@ def resolve_incident_participants(incident: Incident, db_session: SessionLocal):
         if group_plugin:
             team_participant_emails = [x.email for x in team_participants]
             group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
+
+    return individual_participants, team_participants
 
 
 @background_task
@@ -1151,6 +1154,7 @@ def incident_engage_oncall_flow(
 def incident_add_or_reactivate_participant_flow(
     user_email: str,
     incident_id: int,
+    service: Service = None,
     role: ParticipantRoleType = None,
     event: dict = None,
     db_session=None,
@@ -1181,7 +1185,7 @@ def incident_add_or_reactivate_participant_flow(
     else:
         # we add the participant to the incident
         participant = participant_flows.add_participant(
-            user_email, incident_id, db_session, role=role
+            user_email, incident_id, db_session, service=service, role=role
         )
 
         # we add the participant to the tactical group

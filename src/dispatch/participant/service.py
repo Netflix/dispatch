@@ -63,6 +63,20 @@ def get_by_incident_id_and_email(
     )
 
 
+def get_by_incident_id_and_service(
+    *, db_session, incident_id: int, service_id: int
+) -> Optional[Participant]:
+    """
+    Get participant by incident and service id.
+    """
+    return (
+        db_session.query(Participant)
+        .filter(Participant.incident_id == incident_id)
+        .filter(Participant.service_id == service_id)
+        .one_or_none()
+    )
+
+
 def get_all(*, db_session) -> List[Optional[Participant]]:
     """
     Get all participants.
