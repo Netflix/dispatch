@@ -58,6 +58,7 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import NewEditSheet from "@/incident_type/NewEditSheet.vue"
+
 export default {
   name: "IncidentTypeTable",
 

@@ -80,7 +80,7 @@ const actions = {
   save({ commit, dispatch }) {
     if (!state.selected.id) {
       return ServiceApi.create(state.selected)
-        .then(() => {
+        .then(function(resp) {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
@@ -88,6 +88,7 @@ const actions = {
             { text: "Service created successfully.", type: "success" },
             { root: true }
           )
+          return resp.data
         })
         .catch(err => {
           commit(

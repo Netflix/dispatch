@@ -84,7 +84,7 @@ const actions = {
   save({ commit, dispatch }) {
     if (!state.selected.id) {
       return DocumentApi.create(state.selected)
-        .then(() => {
+        .then(function(resp) {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
@@ -92,6 +92,7 @@ const actions = {
             { text: "Document created successfully.", type: "success" },
             { root: true }
           )
+          return resp.data
         })
         .catch(err => {
           commit(
