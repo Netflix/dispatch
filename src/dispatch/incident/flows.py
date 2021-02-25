@@ -970,26 +970,23 @@ def status_flow_dispatcher(
 
 def resolve_incident_participants(incident: Incident, db_session: SessionLocal):
     """Controls how and when participants are resolved and associated with an incident."""
-    # only add resolve new partcipants in some situations
+    # we only resolve incident participants when the incident is active
     if incident.status == IncidentStatus.active:
         # get the incident participants based on incident type and priority
         individual_participants, team_participants = get_incident_participants(incident, db_session)
 
-        # let's not attempt to add new participants for non-active incidents (it's confusing)
-        if incident.status == IncidentStatus.active:
-            # we add the individuals as incident participants
-            for individual in individual_participants:
-                incident_add_or_reactivate_participant_flow(
-                    individual.email, incident.id, db_session=db_session
-                )
+        # we add the individuals as incident participants
+        for individual in individual_participants:
+            incident_add_or_reactivate_participant_flow(
+                individual.email, incident.id, db_session=db_session
+            )
 
         # we add the team distributions lists to the notifications group
-        team_participant_emails = [x.email for x in team_participants]
-
         group_plugin = plugin_service.get_active(
             db_session=db_session, plugin_type="participant-group"
         )
         if group_plugin:
+            team_participant_emails = [x.email for x in team_participants]
             group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
 
 
