@@ -21,9 +21,9 @@ def get_services(
     query_str: str = Query(None, alias="q"),
     sort_by: List[str] = Query([], alias="sortBy[]"),
     descending: List[bool] = Query([], alias="descending[]"),
-    fields: List[str] = Query([], alias="field[]"),
-    ops: List[str] = Query([], alias="op[]"),
-    values: List[str] = Query([], alias="value[]"),
+    fields: List[str] = Query([], alias="fields[]"),
+    ops: List[str] = Query([], alias="ops[]"),
+    values: List[str] = Query([], alias="values[]"),
 ):
     """
     Retrieve all services.

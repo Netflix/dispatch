@@ -99,9 +99,9 @@ export default {
       if (this.type) {
         // Add type filtering
         Object.assign(filterOptions, {
-          "field[]": "type",
-          "op[]": "==",
-          "value[]": this.type
+          "fields[]": "type",
+          "ops[]": "==",
+          "values[]": this.type
         })
       }
 
