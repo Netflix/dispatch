@@ -35,6 +35,7 @@ class Participant(Base):
 
     # relationships
     feedback = relationship("Feedback", backref="participant")
+    service_id = Column(Integer, ForeignKey("service.id", ondelete="CASCADE"))
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     individual = relationship("IndividualContact", lazy="subquery", backref="participant")
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
