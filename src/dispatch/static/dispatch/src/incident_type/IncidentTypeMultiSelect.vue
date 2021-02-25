@@ -25,6 +25,12 @@ export default {
       default: function() {
         return []
       }
+    },
+    visibilities: {
+      type: Array,
+      default: function() {
+        return []
+      }
     }
   },
 
@@ -49,12 +55,17 @@ export default {
   created() {
     this.error = null
     this.loading = "error"
-    IncidentTypeApi.getAll({ itemsPerPage: 50, sortBy: ["name"], descending: [false] }).then(
-      response => {
-        this.items = response.data.items
-        this.loading = false
-      }
-    )
+    IncidentTypeApi.getAll({
+      itemsPerPage: 50,
+      sortBy: ["name"],
+      descending: [false],
+      fields: ["visibility"],
+      ops: ["=="],
+      values: this.visibilities
+    }).then(response => {
+      this.items = response.data.items
+      this.loading = false
+    })
   }
 }
 </script>
