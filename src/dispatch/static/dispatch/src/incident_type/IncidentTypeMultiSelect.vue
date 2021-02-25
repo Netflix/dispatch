@@ -26,12 +26,10 @@ export default {
         return []
       }
     },
-    visibility: {
-      type: String,
-      default: "All",
-      validator: function(value) {
-        // The value must match one of these strings
-        return ["All", "Open", "Restricted"].indexOf(value) !== -1
+    visibilities: {
+      type: Array,
+      default: function() {
+        return []
       }
     }
   },
@@ -46,13 +44,6 @@ export default {
   computed: {
     incident_types: {
       get() {
-        if (this.visibility !== "All") {
-          return cloneDeep(
-            this.value.filter(
-              incident_type => incident_type.visibility.indexOf(this.visibility) !== -1
-            )
-          )
-        }
         return cloneDeep(this.value)
       },
       set(value) {
@@ -64,12 +55,17 @@ export default {
   created() {
     this.error = null
     this.loading = "error"
-    IncidentTypeApi.getAll({ itemsPerPage: 50, sortBy: ["name"], descending: [false] }).then(
-      response => {
-        this.items = response.data.items
-        this.loading = false
-      }
-    )
+    IncidentTypeApi.getAll({
+      itemsPerPage: 50,
+      sortBy: ["name"],
+      descending: [false],
+      fields: ["visibility"],
+      ops: ["=="],
+      values: this.visibilities
+    }).then(response => {
+      this.items = response.data.items
+      this.loading = false
+    })
   }
 }
 </script>
