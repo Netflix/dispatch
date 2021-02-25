@@ -247,12 +247,12 @@ export default {
           if (has(value, "id")) {
             subFilter.push({
               model: toPascalCase(key),
-              fields: "id",
-              ops: "==",
-              values: value.id
+              field: "id",
+              op: "==",
+              value: value.id
             })
           } else {
-            subFilter.push({ fields: key, ops: "==", values: value })
+            subFilter.push({ field: key, op: "==", value: value })
           }
         })
         if (subFilter.length > 0) {
