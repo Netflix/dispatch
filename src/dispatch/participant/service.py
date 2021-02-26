@@ -143,7 +143,7 @@ def create(*, db_session, participant_in: ParticipantCreate) -> Participant:
     ]
 
     participant = Participant(
-        **participant_in.dict(exclude={"participant_roles"}), participant_roles=participant_roles
+        **participant_in.dict(exclude={"participant_roles", "service"}), participant_roles=participant_roles
     )
 
     db_session.add(participant)
