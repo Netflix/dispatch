@@ -24,7 +24,7 @@ package.json
 /build
 /env
 /tmp
-/node_modules/
+node_modules
 /wheelhouse
 /test_cli/
 .idea/
