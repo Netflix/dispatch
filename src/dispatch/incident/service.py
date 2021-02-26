@@ -2,8 +2,6 @@ import math
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-
-from dispatch.config import ANNUAL_COST_EMPLOYEE, BUSINESS_HOURS_YEAR
 from dispatch.database import SessionLocal
 from dispatch.event import service as event_service
 from dispatch.incident_priority import service as incident_priority_service
@@ -18,10 +16,6 @@ from dispatch.term.models import TermUpdate
 
 from .enums import IncidentStatus
 from .models import Incident, IncidentUpdate
-
-
-HOURS_IN_DAY = 24
-SECONDS_IN_HOUR = 3600
 
 
 def assign_incident_role(
@@ -280,94 +274,3 @@ def delete(*, db_session, incident_id: int):
     """Deletes an existing incident."""
     db_session.query(Incident).filter(Incident.id == incident_id).delete()
     db_session.commit()
-
-
-def get_engagement_multiplier(participant_role: str):
-    """Returns an engagement multiplier for a given incident role."""
-    engagement_mappings = {
-        ParticipantRoleType.incident_commander: 1,
-        ParticipantRoleType.scribe: 0.75,
-        ParticipantRoleType.liaison: 0.75,
-        ParticipantRoleType.participant: 0.5,
-        ParticipantRoleType.reporter: 0.5,
-    }
-
-    return engagement_mappings.get(participant_role)
-
-
-def calculate_cost(incident_id: int, db_session: SessionLocal, incident_review=True):
-    """Calculates the cost of a given incident."""
-    incident = get(db_session=db_session, incident_id=incident_id)
-
-    participants_total_response_time_seconds = 0
-    for participant in incident.participants:
-
-        participant_total_roles_time_seconds = 0
-        for participant_role in participant.participant_roles:
-            # TODO(mvilanova): skip if we did not see activity from the participant in the incident conversation
-
-            participant_role_assumed_at = participant_role.assumed_at
-
-            if incident.status == IncidentStatus.active.value:
-                # the incident is still active. we use the current time
-                participant_role_renounced_at = datetime.utcnow()
-            else:
-                # the incident is stable or closed. we use the stable_at time
-                participant_role_renounced_at = incident.stable_at
-
-            if participant_role.renounced_at:
-                # the participant left the conversation or got assigned another role
-                # we use the renounced_at time
-                participant_role_renounced_at = participant_role.renounced_at
-
-            # we calculate the time the participant has spent in the incident role
-            participant_role_time = participant_role_renounced_at - participant_role_assumed_at
-
-            if participant_role_time.total_seconds() < 0:
-                # the participant was added after the incident was marked as stable
-                continue
-
-            # we calculate the number of hours the participant has spent in the incident role
-            participant_role_time_hours = participant_role_time.total_seconds() / SECONDS_IN_HOUR
-
-            # we make the assumption that participants only spend 8 hours a day working on the incident,
-            # if the incident goes past 24hrs
-            # TODO(mvilanova): adjust based on incident priority
-            if participant_role_time_hours > HOURS_IN_DAY:
-                days, hours = divmod(participant_role_time_hours, HOURS_IN_DAY)
-                participant_role_time_hours = math.ceil(((days * HOURS_IN_DAY) / 3) + hours)
-
-            # we make the assumption that participants spend more or less time based on their role
-            # and we adjust the time spent based on that
-            participant_role_time_seconds = int(
-                participant_role_time_hours
-                * SECONDS_IN_HOUR
-                * get_engagement_multiplier(participant_role.role)
-            )
-
-            participant_total_roles_time_seconds += participant_role_time_seconds
-
-        participants_total_response_time_seconds += participant_total_roles_time_seconds
-
-    # we calculate the time spent in incident review related activities
-    incident_review_hours = 0
-    if incident_review:
-        num_participants = len(incident.participants)
-        incident_review_prep = (
-            1  # we make the assumption that it takes an hour to prepare the incident review
-        )
-        incident_review_meeting = (
-            num_participants * 0.5 * 1
-        )  # we make the assumption that only half of the incident participants will attend the 1-hour, incident review session
-        incident_review_hours = incident_review_prep + incident_review_meeting
-
-    # we calculate and round up the hourly rate
-    hourly_rate = math.ceil(ANNUAL_COST_EMPLOYEE / BUSINESS_HOURS_YEAR)
-
-    # we calculate and round up the incident cost
-    incident_cost = math.ceil(
-        ((participants_total_response_time_seconds / SECONDS_IN_HOUR) + incident_review_hours)
-        * hourly_rate
-    )
-
-    return incident_cost

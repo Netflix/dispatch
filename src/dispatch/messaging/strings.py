@@ -23,7 +23,7 @@ class MessageType(str, Enum):
     incident_closed_information_review_reminder = "incident-closed-information-review-reminder"
     incident_daily_report = "incident-daily-report"
     incident_executive_report = "incident-executive-report"
-    incident_feedback_daily_digest = "incident-feedback-daily-digest"
+    incident_feedback_daily_report = "incident-feedback-daily-report"
     incident_notification = "incident-notification"
     incident_participant_suggested_reading = "incident-participant-suggested-reading"
     incident_participant_welcome = "incident-participant-welcome"
@@ -57,8 +57,8 @@ respond to incidents. Please review them and update, or clearly mark the documen
     "\n", " "
 ).strip()
 
-INCIDENT_FEEDBACK_DAILY_DIGEST_DESCRIPTION = """
-This is a daily digest of feedback about incidents handled by you.""".replace(
+INCIDENT_FEEDBACK_DAILY_REPORT_DESCRIPTION = """
+This is a daily report of feedback about incidents handled by you.""".replace(
     "\n", " "
 ).strip()
 
@@ -579,7 +579,7 @@ INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION = [
     }
 ]
 
-INCIDENT_FEEDBACK_DAILY_DIGEST = [
+INCIDENT_FEEDBACK_DAILY_REPORT = [
     {"title": "Incident", "text": "{{ name }}"},
     {"title": "Incident Title", "text": "{{ title }}"},
     {"title": "Rating", "text": "{{ rating }}"},

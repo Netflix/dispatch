@@ -161,21 +161,24 @@ def sync_triggers():
     from sqlalchemy_searchable import sync_trigger
 
     sync_trigger(engine, "definition", "search_vector", ["text"])
+    sync_trigger(engine, "dispatch_user", "search_vector", ["email"])
     sync_trigger(engine, "document", "search_vector", ["name"])
     sync_trigger(engine, "incident", "search_vector", ["name", "title", "description"])
+    sync_trigger(engine, "incident_cost_type", "search_vector", ["name", "description"])
+    sync_trigger(engine, "incident_priority", "search_vector", ["name", "description"])
     sync_trigger(engine, "incident_type", "search_vector", ["name", "description"])
     sync_trigger(
         engine, "individual_contact", "search_vector", ["name", "title", "company", "notes"]
     )
+    sync_trigger(engine, "notification", "search_vector", ["name", "description"])
     sync_trigger(engine, "plugin", "search_vector", ["title"])
-    sync_trigger(engine, "search_filter", "search_vector", ["name", "description"])
     sync_trigger(engine, "report", "search_vector", ["details_raw"])
+    sync_trigger(engine, "search_filter", "search_vector", ["name", "description"])
     sync_trigger(engine, "service", "search_vector", ["name"])
     sync_trigger(engine, "tag", "search_vector", ["name"])
     sync_trigger(engine, "task", "search_vector", ["description"])
     sync_trigger(engine, "team_contact", "search_vector", ["name", "company", "notes"])
     sync_trigger(engine, "term", "search_vector", ["text"])
-    sync_trigger(engine, "dispatch_user", "search_vector", ["email"])
     sync_trigger(engine, "workflow", "search_vector", ["name", "description"])
 
 
@@ -520,13 +523,23 @@ def dispatch_scheduler():
     """Container for all dispatch scheduler commands."""
     # we need scheduled tasks to be imported
     from .document.scheduled import sync_document_terms  # noqa
-    from .feedback.scheduled import feedback_daily_digest  # noqa
-    from .incident.scheduled import daily_report, auto_tagger  # noqa
+    from .feedback.scheduled import daily_report  # noqa
+    from .incident.scheduled import daily_report, auto_tagger, close_incident_reminder  # noqa
+    from .incident_cost.scheduled import calculate_incidents_opportunity_cost  # noqa
     from .report.scheduled import incident_report_reminders  # noqa
     from .tag.scheduled import sync_tags  # noqa
-    from .task.scheduled import sync_tasks, create_task_reminders  # noqa
+    from .task.scheduled import (
+        create_task_reminders,
+        daily_sync_task,
+        sync_active_stable_tasks,
+        sync_tasks,
+    )  # noqa
     from .term.scheduled import sync_terms  # noqa
-    from .workflow.scheduled import sync_workflows, sync_active_stable_workflows  # noqa
+    from .workflow.scheduled import (
+        sync_workflows,
+        daily_sync_workflow,
+        sync_active_stable_workflows,
+    )  # noqa
 
 
 @dispatch_scheduler.command("list")

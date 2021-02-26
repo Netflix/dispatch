@@ -31,7 +31,6 @@ from .enums import IncidentStatus
 from .flows import update_external_incident_ticket
 from .messaging import send_incident_close_reminder
 from .service import (
-    calculate_cost,
     get_all,
     get_all_by_status,
     get_all_last_x_hours_by_status,
@@ -178,34 +177,6 @@ def daily_report(db_session=None):
                 notification=notification,
                 notification_params=notification_params,
             )
-
-
-@scheduler.add(every(5).minutes, name="calculate-incidents-cost")
-@background_task
-def calculate_incidents_cost(db_session=None):
-    """Calculates the cost of all incidents."""
-
-    # we want to update all incidents, all the time
-    incidents = get_all(db_session=db_session)
-    for incident in incidents:
-        try:
-            # we calculate the cost
-            incident_cost = calculate_cost(incident.id, db_session)
-
-            # if the cost hasn't changed, don't continue
-            if incident.cost == incident_cost:
-                continue
-
-            # we update the incident
-            incident.cost = incident_cost
-            db_session.add(incident)
-            db_session.commit()
-
-            log.debug(f"Incident cost for {incident.name} updated in the database.")
-
-        except Exception as e:
-            # we shouldn't fail to update all incidents when one fails
-            log.exception(e)
 
 
 @scheduler.add(every(1).day.at("18:00"), name="incident-status-reminder")
