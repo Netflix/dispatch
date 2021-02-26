@@ -8,6 +8,7 @@ from fastapi.encoders import jsonable_encoder
 
 from dispatch.config import ANNUAL_COST_EMPLOYEE, BUSINESS_HOURS_YEAR
 from dispatch.database import SessionLocal
+from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.participant_role.models import ParticipantRoleType
 
@@ -120,7 +121,7 @@ def calculate_incident_opportunity_cost(
     """
     Calculates the opportunity cost of a given incident.
     """
-    incident = get(db_session=db_session, incident_id=incident_id)
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     participants_total_response_time_seconds = 0
     for participant in incident.participants:

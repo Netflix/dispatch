@@ -1,13 +1,8 @@
-import math
-
 from datetime import datetime
 
 from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
-
-from dispatch.database import SessionLocal
-from dispatch.incident.enums import IncidentStatus
 
 from .models import IncidentCostType, IncidentCostTypeCreate, IncidentCostTypeUpdate
 

@@ -22,7 +22,9 @@ def calculate_incidents_opportunity_cost(db_session=None):
     """
     Calculates and saves the opportunity cost for all incidents.
     """
-    opportunity_cost_type = incident_cost_type_service.get_by_name("Opportunity Cost", db_session)
+    opportunity_cost_type = incident_cost_type_service.get_by_name(
+        incident_cost_type_name="Opportunity Cost", db_session=db_session
+    )
 
     # we want to update the opportunity cost of all incidents, all the time
     incidents = incident_service.get_all(db_session=db_session)

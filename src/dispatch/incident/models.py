@@ -6,7 +6,6 @@ from pydantic import validator
 from sqlalchemy import (
     Column,
     DateTime,
-    Float,
     ForeignKey,
     Integer,
     PrimaryKeyConstraint,
