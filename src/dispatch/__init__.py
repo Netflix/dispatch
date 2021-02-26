@@ -7,6 +7,10 @@ try:
 except Exception:
     VERSION = "unknown"
 
+# fix is in the works see: https://github.com/mpdavis/python-jose/pull/207
+import warnings
+warnings.filterwarnings('ignore', message='int_from_bytes is deprecated')
+
 # sometimes we pull version info before dispatch is totally installed
 try:
     from dispatch.conference.models import Conference  # noqa lgtm[py/unused-import]
