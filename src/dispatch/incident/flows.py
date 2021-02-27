@@ -974,21 +974,16 @@ def resolve_incident_participants(incident: Incident, db_session: SessionLocal):
             if service:
                 # we need to ensure that we don't add another member of a service if one
                 # already exists (e.g. overlapping oncalls, we assume they will hand-off if necessary)
-                participant = participant_service.get_by_incident_id_and_service(incident_id=incident.id, service_id=service.id, db_session=db_session)
+                participant = participant_service.get_by_incident_id_and_service(
+                    incident_id=incident.id, service_id=service.id, db_session=db_session
+                )
                 if participant:
+                    log.debug("Skipping resolved participant, service member already engaged.")
                     continue
 
             incident_add_or_reactivate_participant_flow(
                 individual.email, incident.id, service=service, db_session=db_session
             )
-
-        # we add the team distributions lists to the notifications group
-        group_plugin = plugin_service.get_active(
-            db_session=db_session, plugin_type="participant-group"
-        )
-        if group_plugin:
-            team_participant_emails = [x.email for x in team_participants]
-            group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
 
     return individual_participants, team_participants
 
@@ -1015,7 +1010,17 @@ def incident_update_flow(
     update_external_incident_ticket(incident, db_session)
 
     # add new folks to the incident if appropriate
-    resolve_incident_participants(incident, db_session)
+    # we only have to do this for teams as new members will be added to tactical
+    # groups on incident join
+    _, team_participants = resolve_incident_participants(incident, db_session)
+
+    # we add the team distributions lists to the notifications group
+    group_plugin = plugin_service.get_active(
+        db_session=db_session, plugin_type="participant-group"
+    )
+    if group_plugin:
+        team_participant_emails = [x.email for x in team_participants]
+        group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
 
     if notify:
         send_incident_update_notifications(incident, previous_incident, db_session)

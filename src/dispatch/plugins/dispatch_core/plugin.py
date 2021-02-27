@@ -259,7 +259,7 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
                     individual = individual_service.get_or_create(
                         db_session=db_session, email=individual_email
                     )
-                    individual_contacts.append(individual, s)
+                    individual_contacts.append((individual, s))
                     recommendation.individual_contacts.append(individual)
                 else:
                     log.warning(

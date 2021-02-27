@@ -44,7 +44,7 @@ def assign_incident_role(
             assignee_email,
             incident.id,
             db_session,
-            role,
+            role=role,
         )
         return
 
@@ -70,7 +70,7 @@ def assign_incident_role(
         assignee_email,
         incident.id,
         db_session,
-        role,
+        role=role,
     )
 
 
@@ -206,15 +206,13 @@ def create(
         incident_id=incident.id,
     )
 
-    # We add the reporter to the incident
-    participant_flows.add_participant(
-        reporter_email, incident.id, db_session, ParticipantRoleType.reporter
-    )
-
     # Add other incident roles (e.g. commander and liaison)
+    assign_incident_role(db_session, incident, reporter_email, ParticipantRoleType.reporter)
+
     assign_incident_role(
         db_session, incident, reporter_email, ParticipantRoleType.incident_commander
     )
+
     assign_incident_role(db_session, incident, reporter_email, ParticipantRoleType.liaison)
 
     return incident

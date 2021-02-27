@@ -16,7 +16,11 @@ log = logging.getLogger(__name__)
 
 
 def add_participant(
-    user_email: str, incident_id: id, db_session: SessionLocal, service: Service = None, role: ParticipantRoleType = None
+    user_email: str,
+    incident_id: id,
+    db_session: SessionLocal,
+    service: Service = None,
+    role: ParticipantRoleType = None,
 ):
     """Adds a participant."""
     # We load the incident
@@ -27,6 +31,7 @@ def add_participant(
 
     # We create a role for the participant
     participant_role_in = ParticipantRoleCreate(role=role)
+
     participant_role = participant_role_service.create(
         db_session=db_session, participant_role_in=participant_role_in
     )
