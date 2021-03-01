@@ -47,9 +47,9 @@ In general, do not include any quotation marks when adding configuration values.
 
 > Optional configuration for using Sentry to report Dispatch errors.
 
-#### `MJML_PATH` \[default: <dispatch-dir>/static/dispatch/node_modules/.bin]
+#### `MJML_PATH` \[default: /node_modules/.bin]
 
-> Dispatch uses [MJML](https://mjml.io/documentation/) to generate its HTML emails. This package also requires the `node` binary to be available on the standard path (or set in Dispatch's path). Use this variable to adjust the location where Dispatch should look for the `mjml` command.
+> Dispatch uses [MJML](https://mjml.io/documentation/) to generate its HTML emails. This package also requires the `node` binary to be available on the standard path (or set in Dispatch's path). Use this variable to adjust the location where Dispatch should look for the `mjml` command. **If you are using the stock docker image of Dispatch you must manually set this field to the default path.**
 
 #### `VUE_APP_SENTRY_DSN` \[default: none\]
 
