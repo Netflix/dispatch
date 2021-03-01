@@ -14,7 +14,7 @@ class IncidentCostType(Base, TimeStampMixin):
     # columns
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    description = Column(String, nullable=False)
+    description = Column(String)
     details = Column(JSONType, nullable=True)
     default = Column(Boolean, default=False)
 

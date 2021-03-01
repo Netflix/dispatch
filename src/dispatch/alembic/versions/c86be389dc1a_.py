@@ -23,7 +23,7 @@ def upgrade():
         "incident_cost_type",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("name", sa.String(), nullable=True),
-        sa.Column("description", sa.String(), nullable=False),
+        sa.Column("description", sa.String(), nullable=True),
         sa.Column("details", sqlalchemy_utils.types.json.JSONType(), nullable=True),
         sa.Column("default", sa.Boolean(), nullable=True),
         sa.Column("search_vector", sqlalchemy_utils.types.ts_vector.TSVectorType(), nullable=True),
