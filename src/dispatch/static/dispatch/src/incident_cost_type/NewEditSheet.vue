@@ -60,7 +60,7 @@
               <v-flex xs12>
                 <v-checkbox
                   v-model="default_incident_cost_type"
-                  label="Default Incident Cost Type"
+                  label="Default"
                   hint="Check this if this incident cost type should be the default."
                 />
               </v-flex>
