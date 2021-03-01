@@ -473,14 +473,15 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         incident_id=incident.id,
     )
 
-    # we create the participant groups (tactical and notification)
-    individual_participants = [x.individual for x in incident.participants]
-    participant_emails = [x.individual.email for x in incident.participants]
-
     group_plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant-group")
-    tactical_group = None
-    notification_group = None
     if group_plugin:
+        tactical_group = None
+        notification_group = None
+
+        # we create the participant groups (tactical and notification)
+        individual_participants = [x.individual for x in incident.participants]
+        participant_emails = [x.individual.email for x in incident.participants]
+
         try:
             tactical_group, notification_group = create_participant_groups(
                 incident, individual_participants, team_participants, db_session
