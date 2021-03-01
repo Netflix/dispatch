@@ -54,15 +54,15 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 200),
-  createEditShow({ commit }, notification) {
+  createEditShow({ commit }, incidentCostType) {
     commit("SET_DIALOG_CREATE_EDIT", true)
-    if (notification) {
-      commit("SET_SELECTED", notification)
+    if (incidentCostType) {
+      commit("SET_SELECTED", incidentCostType)
     }
   },
-  removeShow({ commit }, notification) {
+  removeShow({ commit }, incidentCostType) {
     commit("SET_DIALOG_DELETE", true)
-    commit("SET_SELECTED", notification)
+    commit("SET_SELECTED", incidentCostType)
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)

@@ -87,7 +87,7 @@ def update_incident_cost_type(
     incident_cost_type_in: IncidentCostTypeUpdate,
 ):
     """
-    Update a incident cost type by id.
+    Update an incident cost type by id.
     """
     incident_cost_type = get(db_session=db_session, incident_cost_type_id=incident_cost_type_id)
     if not incident_cost_type:
@@ -108,7 +108,7 @@ def update_incident_cost_type(
 )
 def delete_incident_cost_type(*, db_session: Session = Depends(get_db), incident_cost_type_id: int):
     """
-    Delete a incident cost type, returning only an HTTP 200 OK if successful.
+    Delete an incident cost type, returning only an HTTP 200 OK if successful.
     """
     incident_cost_type = get(db_session=db_session, incident_cost_type_id=incident_cost_type_id)
     if not incident_cost_type:
