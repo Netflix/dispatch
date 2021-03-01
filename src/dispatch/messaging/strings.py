@@ -77,6 +77,11 @@ For any questions about an incident, please reach out to incident's commander.""
     "\n", " "
 ).strip()
 
+INCIDENT_REPORTER_DESCRIPTION = """
+The person who reported the incident. Contact them if the report details need clarification.""".replace(
+    "\n", " "
+).strip()
+
 INCIDENT_COMMANDER_DESCRIPTION = """
 The Incident Commander (IC) is responsible for
 knowing the full context of the incident.
@@ -333,8 +338,14 @@ INCIDENT_PRIORITY_FYI = {
     "text": "{{priority_description}}",
 }
 
+INCIDENT_REPORTER = {
+    "title": "Reporter - {{reporter_fullname}}, {{reporter_team}}",
+    "title_link": "{{reporter_weblink}}",
+    "text": INCIDENT_REPORTER_DESCRIPTION,
+}
+
 INCIDENT_COMMANDER = {
-    "title": "Commander - {{commander_fullname}}",
+    "title": "Commander - {{commander_fullname}}, {{commander_team}}",
     "title_link": "{{commander_weblink}}",
     "text": INCIDENT_COMMANDER_DESCRIPTION,
 }
@@ -408,9 +419,11 @@ INCIDENT_PARTICIPANT_WELCOME = {
 INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
     INCIDENT_PARTICIPANT_WELCOME,
     INCIDENT_TITLE,
+    INCIDENT_DESCRIPTION,
     INCIDENT_STATUS,
     INCIDENT_TYPE,
     INCIDENT_PRIORITY,
+    INCIDENT_REPORTER,
     INCIDENT_COMMANDER,
     INCIDENT_INVESTIGATION_DOCUMENT,
     INCIDENT_STORAGE,
@@ -420,6 +433,9 @@ INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
 ]
 
 INCIDENT_RESOURCES_MESSAGE = [
+    INCIDENT_TITLE,
+    INCIDENT_DESCRIPTION,
+    INCIDENT_REPORTER,
     INCIDENT_COMMANDER,
     INCIDENT_INVESTIGATION_DOCUMENT,
     INCIDENT_REVIEW_DOCUMENT,
@@ -433,7 +449,14 @@ INCIDENT_NOTIFICATION_COMMON = [INCIDENT_TITLE]
 
 INCIDENT_NOTIFICATION = INCIDENT_NOTIFICATION_COMMON.copy()
 INCIDENT_NOTIFICATION.extend(
-    [INCIDENT_STATUS, INCIDENT_TYPE, INCIDENT_PRIORITY_FYI, INCIDENT_COMMANDER]
+    [
+        INCIDENT_DESCRIPTION,
+        INCIDENT_STATUS,
+        INCIDENT_TYPE,
+        INCIDENT_PRIORITY_FYI,
+        INCIDENT_REPORTER,
+        INCIDENT_COMMANDER,
+    ]
 )
 
 INCIDENT_TACTICAL_REPORT = [

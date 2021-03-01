@@ -4,11 +4,11 @@ description: Overview of the Dispatch CLI.
 
 # CLI
 
-Dispatch ships with a robust CLI, providing configuration, server, scheduler, plugin, database and shell commands. Here we'll give a partial overview; if you'd like a complete list of Dispatch commands available via the CLI, please use the command `dispatch --help` once you have installed the application.
+Dispatch ships with a robust CLI, providing configuration, server, scheduler, plugin, database, and shell commands. Here we'll give a partial overview; if you'd like a complete list of Dispatch commands available via the CLI, please use the command `dispatch --help` once you have installed the application.
 
 ## Server
 
-The server sub-command contains all Dispatch server related commands.
+The server sub-command contains all Dispatch server-related commands.
 
 ```bash
 > dispatch server --help                                                                        develop ⬇ ◼
@@ -29,11 +29,11 @@ Commands:
 
 ### Config
 
-The `config` command is helpful in debugging as it shows the configuration variables as they are seen by the server \(combining envvars, defaults and the .env file\).
+The `config` command helps debug as it shows the configuration variables seen by the server \(combining envvars, defaults, and the .env file\).
 
 ```bash
 > dispatch server config
-> 
+>
 Key                                       Value
 ----------------------------------------  -----------------------
 DISPATCH_DOMAIN                           example.com
@@ -44,7 +44,7 @@ METRIC_PROVIDERS                          spectator-metric
 
 ### Develop
 
-The `develop` command is used to start a development server. This server will continually watch for file changes and reload the server accordingly. You'll find it useful to combine this with a `DEBUG` log level, as below.
+The `develop` command starts the development server. This server will continually watch for file changes and reload the server accordingly. You'll find it useful to combine this with a `DEBUG` log level, as below.
 
 ```bash
 > dispatch server develop --log-level debug
@@ -52,7 +52,7 @@ The `develop` command is used to start a development server. This server will co
 
 ### Routes
 
-The `routes` command is useful for development. It shows a not only which endpoints at which the server is currently listening, but also the HTTP verb methods that are accepted, and whether or not authentication is enabled for the endpoint.
+The `routes` command is useful for development. This command shows which endpoints the server is currently listening on, the HTTP verb methods are accepted, and whether authentication is enabled.
 
 ```bash
 > dispatch server routes
@@ -67,7 +67,7 @@ Path                                  Authenticated    Methods
 
 ### Shell
 
-The `shell` command is useful for development. It drops you into a python interactive shell with the same context as the server itself.
+The `shell` command is useful for development. It drops you into an interactive python shell with the same context as the server itself.
 
 ```bash
 > dispatch server shell
@@ -75,7 +75,7 @@ The `shell` command is useful for development. It drops you into a python intera
 
 ### Start
 
-The `start` command is used to start a production grade Dispatch web server. It's really an alias to the [uvicorn](https://www.uvicorn.org/) webserver, so it contains all of the options and flags available with that server.
+The `start` command starts a production-grade Dispatch web server. It's an alias to the [uvicorn](https://www.uvicorn.org/) web server, so it contains all of the options and flags available with that server.
 
 ```bash
 > dispatch server start --help
@@ -93,7 +93,7 @@ Options:
   ...
 ```
 
-To start Dispatch you will need to tell the start command where to find the `dispatch` [ASGI](https://asgi.readthedocs.io/en/latest/) application. For example a common set of flags might be:
+To start Dispatch, you will need to tell the start command where to find the `dispatch` [ASGI](https://asgi.readthedocs.io/en/latest/) application. For example, a common set of flags might be:
 
 ```bash
 > dispatch server start dispatch.main:app --workers 6 --host 127.0.0.1 --port 8000 --proxy-headers
@@ -119,7 +119,7 @@ Commands:
 
 ### List
 
-The `list` command lists all tasks that are currently registered with the scheduler. Today the scheduler periods are hard coded and cannot be adjusted.
+The `list` command lists all tasks registered with the scheduler. Today the scheduler periods are hardcoded and cannot be adjusted.
 
 ```bash
 > dispatch scheduler list
@@ -137,7 +137,7 @@ application-sync                 1:00:00
 
 ### Start
 
-The `start` command starts the scheduler, and allows tasks be executed based on the defined period.
+The `start` command starts the scheduler and allows tasks to be executed based on the defined period.
 
 ```bash
 > dispatch scheduler start
@@ -164,7 +164,7 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  downgrade      Downgrades database schema to next newest version.
+  downgrade      Downgrades database schema to the next newest version.
   drop           Drops all data in database.
   heads          Shows the heads of the database.
   history        Shows the history of the database.
@@ -176,7 +176,7 @@ Commands:
 ```
 
 {% hint style="info" %}
-Note: The database command is a combination of custom commands and `alembic` commands. For more information about alembic database migrations see [here](https://alembic.sqlalchemy.org/en/latest/).
+Note: The database command is a combination of custom commands and `alembic` commands. For more information about alembic database migrations, see [here](https://alembic.sqlalchemy.org/en/latest/).
 {% endhint %}
 
 ### Init
@@ -189,9 +189,9 @@ The `init` command takes a fresh database and creates the necessary tables and v
 
 ### Revision
 
-The `revision` command is an `alembic` command that creates a new database schema revision based on the models defined within the application.
+The `revision` command is an `alembic` command that creates a new database schema revision based on the application's models.
 
-It's most often used with the `--autogenerate` flag:
+Commonly used in conjunction with the `--autogenerate` flag:
 
 ```bash
 > dispatch database revision --autogenerate
@@ -207,9 +207,9 @@ The `upgrade` and `downgrade` commands manage how `alembic` database migrations 
 
 ### Restore/Dump
 
-The `restore` and `dump` commands allow you to quickly backup and restore the Dispatch database. They can also be used to load our [example](https://github.com/Netflix/dispatch/blob/develop/data/dispatch-sample-data.dump) data set into your Dispatch installation.
+The `restore` and `dump` commands allow you to quickly backup and restore the Dispatch database. It can also be used to load our [example](https://github.com/Netflix/dispatch/blob/develop/data/dispatch-sample-data.dump) data set into your Dispatch installation.
 
-Today, the `.dump` file must be located in `$CWD` and must be named `dispatch-backup.dump`
+Today, the `.dump` file must be located in `$CWD` and must be named `dispatch-backup.dump`.
 
 ## Plugins
 
@@ -217,7 +217,7 @@ The `plugin` command contains all of the logic for dealing with Dispatch's plugi
 
 ### List
 
-The `list` command lists all currently available plugins. This is useful in determining which plugins are available to be used via configuration variables.
+The `list` command lists all currently available plugins. This command is useful in determining which plugins are available to be used via configuration variables.
 
 ```bash
 > dispatch database list
@@ -230,4 +230,3 @@ Google Gmail - Conversation       google-gmail-conversation       0.1.0       co
 Google Group - Participant Group  google-group-participant-group  0.1.0       participant_group  Kevin Glisson  Uses Google Groups to help manage participant membership.
 ...
 ```
-

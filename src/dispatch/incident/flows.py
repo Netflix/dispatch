@@ -74,23 +74,25 @@ log = logging.getLogger(__name__)
 
 def get_incident_participants(incident: Incident, db_session: SessionLocal):
     """Get additional incident participants based on priority, type, and description."""
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant")
     individual_contacts = []
     team_contacts = []
-    if plugin:
-        individual_contacts, team_contacts = plugin.instance.get(
-            incident.incident_type,
-            incident.incident_priority,
-            incident.description,
-            db_session=db_session,
-        )
 
-        event_service.log(
-            db_session=db_session,
-            source=plugin.title,
-            description="Incident participants resolved",
-            incident_id=incident.id,
-        )
+    if incident.visibility == Visibility.open.value:
+        plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant")
+        if plugin:
+            individual_contacts, team_contacts = plugin.instance.get(
+                incident.incident_type,
+                incident.incident_priority,
+                incident.description,
+                db_session=db_session,
+            )
+
+            event_service.log(
+                db_session=db_session,
+                source=plugin.title,
+                description="Incident participants resolved",
+                incident_id=incident.id,
+            )
 
     return individual_contacts, team_contacts
 
@@ -100,7 +102,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     plugin = plugin_service.get_active(db_session=db_session, plugin_type="ticket")
     if plugin:
         title = incident.title
-        if incident.visibility == Visibility.restricted:
+        if incident.visibility == Visibility.restricted.value:
             title = incident.incident_type.name
 
         incident_type_plugin_metadata = incident_type_service.get_by_name(
@@ -140,7 +142,7 @@ def update_external_incident_ticket(
 
     title = incident.title
     description = incident.description
-    if incident.visibility == Visibility.restricted:
+    if incident.visibility == Visibility.restricted.value:
         title = description = incident.incident_type.name
 
     incident_type_plugin_metadata = incident_type_service.get_by_name(
@@ -853,8 +855,8 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
         convo_plugin.instance.archive(incident.conversation.channel_id)
 
     if INCIDENT_STORAGE_OPEN_ON_CLOSE:
-        # incidents with restricted visibility are never opened
-        if incident.visibility == Visibility.open:
+        # storage for incidents with restricted visibility is never opened
+        if incident.visibility == Visibility.open.value:
             # add organization wide permission
             storage_plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
             if storage_plugin:
@@ -968,26 +970,23 @@ def status_flow_dispatcher(
 
 def resolve_incident_participants(incident: Incident, db_session: SessionLocal):
     """Controls how and when participants are resolved and associated with an incident."""
-    # only add resolve new partcipants in some situations
+    # we only resolve incident participants when the incident is active
     if incident.status == IncidentStatus.active:
         # get the incident participants based on incident type and priority
         individual_participants, team_participants = get_incident_participants(incident, db_session)
 
-        # lets not attempt to add new participants for non-active incidents (it's confusing)
-        if incident.status == IncidentStatus.active:
-            # we add the individuals as incident participants
-            for individual in individual_participants:
-                incident_add_or_reactivate_participant_flow(
-                    individual.email, incident.id, db_session=db_session
-                )
-
-        team_participant_emails = [x.email for x in team_participants]
+        # we add the individuals as incident participants
+        for individual in individual_participants:
+            incident_add_or_reactivate_participant_flow(
+                individual.email, incident.id, db_session=db_session
+            )
 
         # we add the team distributions lists to the notifications group
         group_plugin = plugin_service.get_active(
             db_session=db_session, plugin_type="participant-group"
         )
         if group_plugin:
+            team_participant_emails = [x.email for x in team_participants]
             group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
 
 

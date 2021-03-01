@@ -129,6 +129,7 @@ def daily_report(db_session=None):
                 try:
                     item = {
                         "commander_fullname": incident.commander.individual.name,
+                        "commander_team": incident.commander.team,
                         "commander_weblink": incident.commander.individual.weblink,
                         "incident_id": incident.id,
                         "name": incident.name,
@@ -201,13 +202,6 @@ def calculate_incidents_cost(db_session=None):
             db_session.commit()
 
             log.debug(f"Incident cost for {incident.name} updated in the database.")
-
-            if incident.ticket:
-                # we update the external ticket
-                update_external_incident_ticket(incident, db_session)
-                log.debug(f"Incident cost for {incident.name} updated in the ticket.")
-            else:
-                log.debug(f"Ticket not found. Incident cost for {incident.name} not updated.")
 
         except Exception as e:
             # we shouldn't fail to update all incidents when one fails

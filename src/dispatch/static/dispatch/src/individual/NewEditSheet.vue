@@ -81,7 +81,7 @@
                 <incident-priority-multi-select v-model="incident_priorities" />
               </v-flex>
               <v-flex>
-                <incident-type-multi-select v-model="incident_types" />
+                <incident-type-multi-select v-model="incident_types" :visibilities="visibilities" />
               </v-flex>
             </v-layout>
           </v-container>
@@ -107,6 +107,12 @@ extend("required", {
 
 export default {
   name: "IndividualNewEditSheet",
+
+  data() {
+    return {
+      visibilities: ["Open"]
+    }
+  },
 
   components: {
     ValidationObserver,

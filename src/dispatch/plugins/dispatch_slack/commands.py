@@ -1,3 +1,4 @@
+import base64
 import logging
 from typing import List
 
@@ -64,6 +65,11 @@ from .messaging import (
 
 log = logging.getLogger(__name__)
 slack_client = dispatch_slack_service.create_slack_client()
+
+
+def base64_encode(input: str):
+    """Returns a b64 encoded string."""
+    return base64.b64encode(input.encode("ascii")).decode("ascii")
 
 
 def check_command_restrictions(
@@ -268,7 +274,7 @@ def list_tasks(
                     "accessory": {
                         "type": "button",
                         "text": {"type": "plain_text", "text": button_text},
-                        "value": f"{action_type}-{task.resource_id}",
+                        "value": f"{action_type}-{base64_encode(task.resource_id)}",
                     },
                 }
             )

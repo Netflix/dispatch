@@ -1,6 +1,7 @@
 import logging
 import os
 import base64
+from urllib import parse
 from typing import List
 
 from starlette.config import Config
@@ -134,7 +135,7 @@ if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-pkce":
         )
 
 # sentry middleware
-SENTRY_DSN = config("SENTRY_DSN", default=None)
+SENTRY_DSN = config("SENTRY_DSN", default="")
 
 VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG = DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 VUE_APP_SENTRY_ENABLED = config("VUE_APP_SENTRY_ENABLED", default="")
@@ -160,9 +161,13 @@ METRIC_PROVIDERS = config("METRIC_PROVIDERS", cast=CommaSeparatedStrings, defaul
 # database
 DATABASE_HOSTNAME = config("DATABASE_HOSTNAME")
 DATABASE_CREDENTIALS = config("DATABASE_CREDENTIALS", cast=Secret)
+
+# this will support special chars for credentials
+_DATABASE_CREDENTIAL_USER, _DATABASE_CREDENTIAL_PASSWORD = str(DATABASE_CREDENTIALS).split(":")
+_QUOTED_DATABASE_PASSWORD = parse.quote(str(_DATABASE_CREDENTIAL_PASSWORD))
 DATABASE_NAME = config("DATABASE_NAME", default="dispatch")
 DATABASE_PORT = config("DATABASE_PORT", default="5432")
-SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{DATABASE_CREDENTIALS}@{DATABASE_HOSTNAME}:{DATABASE_PORT}/{DATABASE_NAME}"
+SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{_DATABASE_CREDENTIAL_USER}:{_QUOTED_DATABASE_PASSWORD}@{DATABASE_HOSTNAME}:{DATABASE_PORT}/{DATABASE_NAME}"
 
 # incident resources
 INCIDENT_STORAGE_FOLDER_ID = config("INCIDENT_STORAGE_FOLDER_ID", default=None)

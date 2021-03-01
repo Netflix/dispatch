@@ -80,7 +80,7 @@ def send_tactical_report_to_tactical_group(
 
     notification_text = "Tactical Report"
     plugin.instance.send(
-        incident.notifications_group.email,
+        incident.tactical_group.email,
         notification_text,
         INCIDENT_TACTICAL_REPORT,
         MessageType.incident_tactical_report,
@@ -90,6 +90,7 @@ def send_tactical_report_to_tactical_group(
         actions=tactical_report.details.get("actions"),
         needs=tactical_report.details.get("needs"),
         contact_fullname=incident.commander.individual.name,
+        contact_team=incident.commander.team,
         contact_weblink=incident.commander.individual.weblink,
     )
 

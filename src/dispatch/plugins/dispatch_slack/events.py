@@ -239,7 +239,9 @@ def member_joined_channel(
 
 
 @background_task
-def ban_threads_warning(user_email: str, incident_id: int, event: EventEnvelope = None, db_session=None):
+def ban_threads_warning(
+    user_email: str, incident_id: int, event: EventEnvelope = None, db_session=None
+):
     """Sends the user an ephemeral message if they use threads."""
     if not SLACK_BAN_THREADS:
         return

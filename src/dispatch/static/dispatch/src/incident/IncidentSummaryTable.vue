@@ -1,6 +1,5 @@
 <template>
   <div>
-    <edit-sheet />
     <v-data-table :headers="headers" :items="items" :loading="loading" hide-default-footer>
       <template v-slot:item.incident_priority.name="{ item }">
         <incident-priority :priority="item.incident_priority.name" />
@@ -23,8 +22,8 @@
             </v-btn>
           </template>
           <v-list>
-            <v-list-item @click="showEditSheet(item)">
-              <v-list-item-title>Edit / View</v-list-item-title>
+            <v-list-item :to="`/incidents/${item.name}`">
+              <v-list-item-title>View / Edit</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -37,7 +36,6 @@ import { mapActions } from "vuex"
 
 import IncidentPriority from "@/incident/IncidentPriority.vue"
 import IncidentStatus from "@/incident/IncidentStatus"
-import EditSheet from "@/incident/EditSheet.vue"
 import IncidentParticipant from "@/incident/Participant.vue"
 
 export default {
@@ -46,8 +44,7 @@ export default {
   components: {
     IncidentPriority,
     IncidentStatus,
-    IncidentParticipant,
-    EditSheet
+    IncidentParticipant
   },
 
   data() {

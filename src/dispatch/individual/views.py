@@ -3,6 +3,8 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from dispatch.auth.permissions import PermissionsDependency, AdminPermission
+
 from dispatch.database import get_db, search_filter_sort_paginate
 
 from .models import (
@@ -24,9 +26,9 @@ def get_individuals(
     query_str: str = Query(None, alias="q"),
     sort_by: List[str] = Query([], alias="sortBy[]"),
     descending: List[bool] = Query([], alias="descending[]"),
-    fields: List[str] = Query([], alias="field[]"),
-    ops: List[str] = Query([], alias="op[]"),
-    values: List[str] = Query([], alias="value[]"),
+    fields: List[str] = Query([], alias="fields[]"),
+    ops: List[str] = Query([], alias="ops[]"),
+    values: List[str] = Query([], alias="values[]"),
 ):
     """
     Retrieve individual contacts.
@@ -72,7 +74,12 @@ def get_individual(*, db_session: Session = Depends(get_db), individual_contact_
     return individual
 
 
-@router.put("/{individual_contact_id}", response_model=IndividualContactRead)
+@router.put(
+    "/{individual_contact_id}",
+    response_model=IndividualContactRead,
+    summary="Update an individuals contact information.",
+    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+)
 def update_individual(
     *,
     db_session: Session = Depends(get_db),
@@ -93,7 +100,10 @@ def update_individual(
     return individual
 
 
-@router.delete("/{individual_contact_id}")
+@router.delete(
+    "/{individual_contact_id}",
+    summary="Delete an individual contact.",
+    dependencies=[Depends(PermissionsDependency([AdminPermission]))])
 def delete_individual(*, db_session: Session = Depends(get_db), individual_contact_id: int):
     """
     Delete a individual contact.
