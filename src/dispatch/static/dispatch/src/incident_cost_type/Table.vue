@@ -64,7 +64,7 @@ import { mapActions } from "vuex"
 import DeleteDialog from "@/incident_cost_type/DeleteDialog.vue"
 import NewEditSheet from "@/incident_cost_type/NewEditSheet.vue"
 export default {
-  name: "IncidentTypeCostTable",
+  name: "IncidentCostTypeTable",
 
   components: {
     DeleteDialog,

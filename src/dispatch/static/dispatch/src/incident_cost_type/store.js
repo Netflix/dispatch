@@ -1,4 +1,4 @@
-import IncidentTypeCostApi from "@/incident_cost_type/api"
+import IncidentCostTypeApi from "@/incident_cost_type/api"
 
 import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
@@ -45,7 +45,7 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    return IncidentTypeCostApi.getAll(state.table.options)
+    return IncidentCostTypeApi.getAll(state.table.options)
       .then(response => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
@@ -74,7 +74,7 @@ const actions = {
   },
   save({ commit, dispatch }) {
     if (!state.selected.id) {
-      return IncidentTypeCostApi.create(state.selected)
+      return IncidentCostTypeApi.create(state.selected)
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
@@ -95,7 +95,7 @@ const actions = {
           )
         })
     } else {
-      return IncidentTypeCostApi.update(state.selected.id, state.selected)
+      return IncidentCostTypeApi.update(state.selected.id, state.selected)
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
@@ -118,7 +118,7 @@ const actions = {
     }
   },
   remove({ commit, dispatch }) {
-    return IncidentTypeCostApi.delete(state.selected.id)
+    return IncidentCostTypeApi.delete(state.selected.id)
       .then(function() {
         dispatch("closeRemove")
         dispatch("getAll")
