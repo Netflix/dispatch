@@ -6,7 +6,7 @@
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
             <v-list-item-title v-else class="title">New</v-list-item-title>
-            <v-list-item-subtitle>Notification</v-list-item-subtitle>
+            <v-list-item-subtitle>Incident Cost Type</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
             icon
@@ -100,7 +100,7 @@ export default {
       "selected.loading",
       "dialogs.showCreateEdit"
     ]),
-    ...mapFields("incident_type", {
+    ...mapFields("incident_cost_type", {
       default_incident_cost_type: "selected.default"
     })
   },
