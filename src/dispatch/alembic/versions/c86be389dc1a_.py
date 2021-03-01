@@ -60,7 +60,7 @@ def upgrade():
     op.drop_column("incident", "cost")
     # ### end Alembic commands ###
 
-    # we create a default incident cost type for reponse cost
+    # we create a default incident cost type for response cost
     bind = op.get_bind()
     db_session = sa.orm.Session(bind=bind)
 
