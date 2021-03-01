@@ -33,9 +33,7 @@ def _revoke_other_default(target, value, oldvalue, initiator):
 
     if value:
         previous_default = (
-            session.query(IncidentCostType)
-            .filter(IncidentCostType.default == true())
-            .one_or_none()  # noqa
+            session.query(IncidentCostType).filter(IncidentCostType.default == true()).one_or_none()
         )
 
         if previous_default:
