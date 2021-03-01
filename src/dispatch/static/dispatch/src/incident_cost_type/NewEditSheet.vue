@@ -88,7 +88,7 @@ export default {
 
   components: {
     ValidationObserver,
-    ValidationProvider,
+    ValidationProvider
   },
 
   computed: {
@@ -103,7 +103,6 @@ export default {
     ...mapFields("incident_type", {
       default_incident_cost_type: "selected.default"
     })
-
   },
 
   methods: {

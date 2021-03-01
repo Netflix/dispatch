@@ -154,7 +154,9 @@ export const protectedRoute = [
         name: "IncidentCostTypeTable",
         meta: { title: "Incident Cost Types" },
         component: () =>
-          import(/* webpackChunkName: "incident-cost-type-table" */ "@/incident_cost_type/Table.vue")
+          import(
+            /* webpackChunkName: "incident-cost-type-table" */ "@/incident_cost_type/Table.vue"
+          )
       },
       {
         path: "/configuration/incidentPriorities",

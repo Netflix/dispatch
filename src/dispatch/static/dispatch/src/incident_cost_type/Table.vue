@@ -68,7 +68,7 @@ export default {
 
   components: {
     DeleteDialog,
-    NewEditSheet,
+    NewEditSheet
   },
   data() {
     return {
