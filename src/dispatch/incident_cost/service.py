@@ -115,11 +115,11 @@ def get_engagement_multiplier(participant_role: str):
     return engagement_mappings.get(participant_role)
 
 
-def calculate_incident_opportunity_cost(
+def calculate_incident_response_cost(
     incident_id: int, db_session: SessionLocal, incident_review=True
 ):
     """
-    Calculates the opportunity cost of a given incident.
+    Calculates the response cost of a given incident.
     """
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 

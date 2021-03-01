@@ -4,6 +4,8 @@ from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 
+from sqlalchemy.sql.expression import true
+
 from .models import IncidentCostType, IncidentCostTypeCreate, IncidentCostTypeUpdate
 
 
@@ -15,6 +17,13 @@ def get(*, db_session, incident_cost_type_id: int) -> Optional[IncidentCostType]
         db_session.query(IncidentCostType)
         .filter(IncidentCostType.id == incident_cost_type_id)
         .one_or_none()
+    )
+
+
+def get_default(*, db_session):
+    """Returns the default incident cost type."""
+    return (
+        db_session.query(IncidentCostType).filter(IncidentCostType.default == true()).one_or_none()
     )
 
 

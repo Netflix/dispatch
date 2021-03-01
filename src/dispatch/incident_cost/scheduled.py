@@ -8,7 +8,7 @@ from dispatch.incident_cost_type import service as incident_cost_type_service
 from dispatch.scheduler import scheduler
 
 from .service import (
-    calculate_incident_opportunity_cost,
+    calculate_incident_response_cost,
     get_by_incident_id_and_incident_cost_type_id,
 )
 
@@ -16,40 +16,41 @@ from .service import (
 log = logging.getLogger(__name__)
 
 
-@scheduler.add(every(5).minutes, name="calculate-incidents-opportunity-cost")
+@scheduler.add(every(5).minutes, name="calculate-incidents-response-cost")
 @background_task
-def calculate_incidents_opportunity_cost(db_session=None):
+def calculate_incidents_response_cost(db_session=None):
     """
-    Calculates and saves the opportunity cost for all incidents.
+    Calculates and saves the response cost for all incidents.
     """
-    opportunity_cost_type = incident_cost_type_service.get_by_name(
-        incident_cost_type_name="Opportunity Cost", db_session=db_session
-    )
+    response_cost_type = incident_cost_type_service.get_default(db_session=db_session)
+    if not response_cost_type:
+        log.warning("A default cost type for response cost has not been defined.")
+        return
 
-    # we want to update the opportunity cost of all incidents, all the time
+    # we want to update the response cost of all incidents, all the time
     incidents = incident_service.get_all(db_session=db_session)
     for incident in incidents:
         try:
-            incident_opportunity_cost = get_by_incident_id_and_incident_cost_type_id(
+            incident_response_cost = get_by_incident_id_and_incident_cost_type_id(
                 incident_id=incident.id,
-                incident_cost_type_id=opportunity_cost_type.id,
+                incident_cost_type_id=response_cost_type.id,
                 db_session=db_session,
             )
 
-            # we calculate the opportunity cost
-            cost = calculate_incident_opportunity_cost(incident.id, db_session)
+            # we calculate the response cost amount
+            amount = calculate_incident_response_cost(incident.id, db_session)
 
-            # we don't need to update the cost if it hasn't changed
-            if incident_opportunity_cost.amount == cost:
+            # we don't need to update the cost amount if it hasn't changed
+            if incident_response_cost.amount == amount:
                 continue
 
-            # we save the new incident cost
-            incident_opportunity_cost.amount = cost
-            db_session.add(incident_opportunity_cost)
+            # we save the new incident cost amount
+            incident_response_cost.amount = amount
+            db_session.add(incident_response_cost)
             db_session.commit()
 
             log.debug(
-                f"Opportunity cost amount for {incident.name} incident updated in the database."
+                f"Response cost amount for {incident.name} incident has been updated in the database."
             )
 
         except Exception as e:

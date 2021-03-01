@@ -525,7 +525,7 @@ def dispatch_scheduler():
     from .document.scheduled import sync_document_terms, create_evergreen_reminders  # noqa
     from .feedback.scheduled import daily_report  # noqa
     from .incident.scheduled import daily_report, auto_tagger, close_incident_reminder  # noqa
-    from .incident_cost.scheduled import calculate_incidents_opportunity_cost  # noqa
+    from .incident_cost.scheduled import calculate_incidents_response_cost  # noqa
     from .report.scheduled import incident_report_reminders  # noqa
     from .tag.scheduled import sync_tags  # noqa
     from .task.scheduled import (
