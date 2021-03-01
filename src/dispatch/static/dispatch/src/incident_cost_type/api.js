@@ -7,7 +7,7 @@ export default {
     return API.get(`${resource}/`, { params: { ...options } })
   },
 
-  get(notificationId) {
+  get(incidentCostTypeId) {
     return API.get(`${resource}/${incidentCostTypeId}`)
   },
 
@@ -15,11 +15,11 @@ export default {
     return API.post(`${resource}/`, payload)
   },
 
-  update(notificationId, payload) {
+  update(incidentCostTypeId, payload) {
     return API.put(`${resource}/${incidentCostTypeId}`, payload)
   },
 
-  delete(notificationId) {
+  delete(incidentCostTypeId) {
     return API.delete(`${resource}/${incidentCostTypeId}`)
   }
 }
