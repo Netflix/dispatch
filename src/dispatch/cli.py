@@ -522,7 +522,7 @@ def revision_database(
 def dispatch_scheduler():
     """Container for all dispatch scheduler commands."""
     # we need scheduled tasks to be imported
-    from .document.scheduled import sync_document_terms  # noqa
+    from .document.scheduled import sync_document_terms, create_evergreen_reminders  # noqa
     from .feedback.scheduled import daily_report  # noqa
     from .incident.scheduled import daily_report, auto_tagger, close_incident_reminder  # noqa
     from .incident_cost.scheduled import calculate_incidents_opportunity_cost  # noqa
@@ -532,11 +532,9 @@ def dispatch_scheduler():
         create_task_reminders,
         daily_sync_task,
         sync_active_stable_tasks,
-        sync_tasks,
     )  # noqa
     from .term.scheduled import sync_terms  # noqa
     from .workflow.scheduled import (
-        sync_workflows,
         daily_sync_workflow,
         sync_active_stable_workflows,
     )  # noqa
