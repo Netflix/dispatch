@@ -2,8 +2,9 @@ from typing import List, Optional
 from pydantic import validator
 
 from sqlalchemy import event, Column, Boolean, ForeignKey, Integer, String, JSON
-from sqlalchemy.orm import relationship, object_session
 from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.orm import relationship, object_session
+from sqlalchemy.sql.expression import true
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
@@ -52,7 +53,7 @@ def _revoke_other_default(target, value, oldvalue, initiator):
 
     if value:
         previous_default = (
-            session.query(IncidentType).filter(IncidentType.default == True).one_or_none()  # noqa
+            session.query(IncidentType).filter(IncidentType.default == true()).one_or_none()  # noqa
         )
 
         if previous_default:
