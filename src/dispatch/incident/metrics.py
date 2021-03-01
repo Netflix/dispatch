@@ -2,7 +2,6 @@ import math
 import logging
 from itertools import groupby
 
-from sqlalchemy.sql.expression import true
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
@@ -91,6 +90,7 @@ def make_forecast(
 
     # fill periods without incidents with 0
     idx = pd.date_range(dataframe.index[0], dataframe.index[-1], freq="M")
+    dataframe.index = idx
     dataframe = dataframe.reindex(idx, fill_value=0)
 
     try:
