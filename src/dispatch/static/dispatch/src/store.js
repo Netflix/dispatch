@@ -7,6 +7,7 @@ import definition from "@/definition/store"
 import document from "@/document/store"
 import feedback from "@/feedback/store"
 import incident from "@/incident/store"
+import incident_cost_type from "@/incident_cost_type/store"
 import incident_priority from "@/incident_priority/store"
 import incident_type from "@/incident_type/store"
 import individual from "@/individual/store"
@@ -33,6 +34,7 @@ export default new Vuex.Store({
     document,
     feedback,
     incident,
+    incident_cost_type,
     incident_priority,
     incident_type,
     individual,
