@@ -33,6 +33,9 @@
               <template v-slot:item.default="{ item }">
                 <v-simple-checkbox v-model="item.default" disabled></v-simple-checkbox>
               </template>
+              <template v-slot:item.created_at="{ item }">{{
+                item.created_at | formatDate
+              }}</template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
                   <template v-slot:activator="{ on }">
@@ -70,6 +73,7 @@ export default {
     DeleteDialog,
     NewEditSheet
   },
+
   data() {
     return {
       headers: [

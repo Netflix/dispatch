@@ -53,10 +53,12 @@ class IncidentCostTypeCreate(IncidentCostTypeBase):
 
 
 class IncidentCostTypeUpdate(IncidentCostTypeBase):
+    id: int
     default: Optional[bool] = False
 
 
 class IncidentCostTypeRead(IncidentCostTypeBase):
+    id: int
     default: Optional[bool] = False
 
 
