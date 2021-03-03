@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlalchemy import Column, ForeignKey, Integer, Numeric
 from sqlalchemy.orm import relationship
 
@@ -39,3 +41,12 @@ class IncidentCostUpdate(IncidentCostBase):
 class IncidentCostRead(IncidentCostBase):
     id: int
     incident_cost_type: IncidentCostTypeRead
+
+
+class IncidentCostNested(IncidentCostBase):
+    id: int
+
+
+class IncidentCostPagination(DispatchBase):
+    total: int
+    items: List[IncidentCostRead] = []
