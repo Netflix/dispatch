@@ -92,7 +92,7 @@ def update_incident_cost_type(
     incident_cost_type = get(db_session=db_session, incident_cost_type_id=incident_cost_type_id)
     if not incident_cost_type:
         raise HTTPException(
-            status_code=404, detail="A incident cost type with this id does not exist."
+            status_code=404, detail="An incident cost type with this id does not exist."
         )
     incident_cost_type = update(
         db_session=db_session,

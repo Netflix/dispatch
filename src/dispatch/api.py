@@ -9,6 +9,7 @@ from dispatch.definition.views import router as definition_router
 from dispatch.document.views import router as document_router
 from dispatch.feedback.views import router as feedback_router
 from dispatch.incident.views import router as incident_router
+from dispatch.incident_cost.views import router as incident_cost_router
 from dispatch.incident_cost_type.views import router as incident_cost_type_router
 from dispatch.incident_priority.views import router as incident_priority_router
 from dispatch.incident_type.views import router as incident_type_router
@@ -66,6 +67,9 @@ authenticated_api_router.include_router(plugin_router, prefix="/plugins", tags=[
 authenticated_api_router.include_router(feedback_router, prefix="/feedback", tags=["feedback"])
 authenticated_api_router.include_router(
     notification_router, prefix="/notifications", tags=["notifications"]
+)
+authenticated_api_router.include_router(
+    incident_cost_router, prefix="/incident_costs", tags=["incident_costs"]
 )
 authenticated_api_router.include_router(
     incident_cost_type_router, prefix="/incident_cost_types", tags=["incident_cost_types"]
