@@ -189,6 +189,14 @@ class Incident(Base, TimeStampMixin):
             locations = [p.location for p in self.participants]
             return Counter(locations).most_common(1)[0][0]
 
+    @hybrid_property
+    def total_cost(self):
+        if self.incident_costs:
+            total_cost = 0
+            for cost in self.incident_costs:
+                total_cost += cost.amount
+            return total_cost
+
     # resources
     incident_costs = relationship("IncidentCost", backref="incident", cascade="all, delete-orphan")
 
@@ -308,6 +316,7 @@ class IncidentRead(IncidentBase):
     stable_at: Optional[datetime] = None
     closed_at: Optional[datetime] = None
     incident_costs: Optional[List[IncidentCostRead]] = []
+    total_cost: float
 
 
 class IncidentPagination(DispatchBase):

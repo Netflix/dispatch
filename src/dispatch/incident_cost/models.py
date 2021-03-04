@@ -16,7 +16,7 @@ from dispatch.models import DispatchBase, TimeStampMixin
 class IncidentCost(Base, TimeStampMixin):
     # columns
     id = Column(Integer, primary_key=True)
-    amount = Column(Numeric(precision=10, scale=2), nullable=False)
+    amount = Column(Numeric(precision=10, scale=2), nullable=True)
 
     # relationships
     incident_cost_type = relationship("IncidentCostType", backref="incident_cost")
@@ -26,7 +26,7 @@ class IncidentCost(Base, TimeStampMixin):
 
 # Pydantic Models
 class IncidentCostBase(DispatchBase):
-    amount: float
+    amount: float = 0.0
 
 
 class IncidentCostCreate(IncidentCostBase):

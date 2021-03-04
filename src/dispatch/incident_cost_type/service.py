@@ -6,10 +6,15 @@ from fastapi.encoders import jsonable_encoder
 
 from sqlalchemy.sql.expression import true
 
-from .models import IncidentCostType, IncidentCostTypeCreate, IncidentCostTypeUpdate
+from .models import (
+    IncidentCostType,
+    IncidentCostTypeCreate,
+    IncidentCostTypeUpdate,
+    IncidentCostTypeRead,
+)
 
 
-def get(*, db_session, incident_cost_type_id: int) -> Optional[IncidentCostType]:
+def get(*, db_session, incident_cost_type_id: int) -> Optional[IncidentCostTypeRead]:
     """
     Gets an incident cost type by its id.
     """
@@ -20,19 +25,21 @@ def get(*, db_session, incident_cost_type_id: int) -> Optional[IncidentCostType]
     )
 
 
-def get_default(*, db_session):
+def get_default(*, db_session) -> Optional[IncidentCostTypeRead]:
     """Returns the default incident cost type."""
     return (
         db_session.query(IncidentCostType).filter(IncidentCostType.default == true()).one_or_none()
     )
 
 
-def get_by_name(*, db_session, incident_cost_type_name: str) -> List[Optional[IncidentCostType]]:
+def get_by_name(*, db_session, incident_cost_type_name: str) -> Optional[IncidentCostTypeRead]:
     """
     Gets an incident cost type by its name.
     """
-    return db_session.query(IncidentCostType).filter(
-        IncidentCostType.name == incident_cost_type_name
+    return (
+        db_session.query(IncidentCostType)
+        .filter(IncidentCostType.name == incident_cost_type_name)
+        .first()
     )
 
 

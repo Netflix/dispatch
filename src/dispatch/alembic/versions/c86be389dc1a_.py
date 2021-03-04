@@ -45,7 +45,7 @@ def upgrade():
     op.create_table(
         "incident_cost",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("amount", sa.Numeric(precision=10, scale=2), nullable=False),
+        sa.Column("amount", sa.Numeric(precision=10, scale=2), nullable=True),
         sa.Column("incident_cost_type_id", sa.Integer(), nullable=True),
         sa.Column("incident_id", sa.Integer(), nullable=True),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
