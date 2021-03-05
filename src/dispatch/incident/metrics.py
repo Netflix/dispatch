@@ -56,7 +56,7 @@ def make_forecast(
 
     # exclude last two months
     query = query.filter(
-        Incident.reported_at < date.today().replace(day=1) + relativedelta(months=-2)
+        Incident.reported_at < date.today().replace(day=1) + relativedelta(months=-1)
     )
 
     if incident_type != "all":
