@@ -73,7 +73,7 @@ This is a daily report of incidents that are currently active and incidents that
 ).strip()
 
 INCIDENT_DAILY_REPORT_FOOTER_CONTEXT = """
-For any questions about an incident, please reach out to incident's commander.""".replace(
+For any questions about an incident, please reach out to the incident's commander.""".replace(
     "\n", " "
 ).strip()
 
