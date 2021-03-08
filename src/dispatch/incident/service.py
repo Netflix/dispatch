@@ -36,41 +36,32 @@ def assign_incident_role(
     assignee_email = reporter_email
 
     oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
-    if not oncall_plugin:
-        assignee_email = reporter_email
-
-        # Add a new participant (duplicate participants with different roles will be updated)
-        participant_flows.add_participant(
-            assignee_email,
-            incident.id,
-            db_session,
-            role,
-        )
-        return
-
     if role == ParticipantRoleType.incident_commander:
         # default to reporter
         if incident.incident_type.commander_service:
             service = incident.incident_type.commander_service
-            assignee_email = oncall_plugin.instance.get(service_id=service.external_id)
-            if incident.incident_priority.page_commander:
-                oncall_plugin.instance.page(
-                    service_id=service.external_id,
-                    incident_name=incident.name,
-                    incident_title=incident.title,
-                    incident_description=incident.description,
-                )
-    else:
+            if oncall_plugin:
+                assignee_email = oncall_plugin.instance.get(service_id=service.external_id)
+                if incident.incident_priority.page_commander:
+                    oncall_plugin.instance.page(
+                        service_id=service.external_id,
+                        incident_name=incident.name,
+                        incident_title=incident.title,
+                        incident_description=incident.description,
+                    )
+
+    elif role == ParticipantRoleType.liaison:
         if incident.incident_type.liaison_service:
             service = incident.incident_type.liaison_service
-            assignee_email = oncall_plugin.instance.get(service_id=service.external_id)
+            if oncall_plugin:
+                assignee_email = oncall_plugin.instance.get(service_id=service.external_id)
 
     # Add a new participant (duplicate participants with different roles will be updated)
     participant_flows.add_participant(
         assignee_email,
         incident.id,
         db_session,
-        role,
+        role=role,
     )
 
 
@@ -206,15 +197,13 @@ def create(
         incident_id=incident.id,
     )
 
-    # We add the reporter to the incident
-    participant_flows.add_participant(
-        reporter_email, incident.id, db_session, ParticipantRoleType.reporter
-    )
-
     # Add other incident roles (e.g. commander and liaison)
+    assign_incident_role(db_session, incident, reporter_email, ParticipantRoleType.reporter)
+
     assign_incident_role(
         db_session, incident, reporter_email, ParticipantRoleType.incident_commander
     )
+
     assign_incident_role(db_session, incident, reporter_email, ParticipantRoleType.liaison)
 
     return incident
