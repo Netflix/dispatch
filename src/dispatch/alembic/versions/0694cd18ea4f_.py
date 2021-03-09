@@ -1,7 +1,7 @@
 """Adds the ability to track which service was engaged by.
 
 Revision ID: 0694cd18ea4f
-Revises: 03f742366750
+Revises: c86be389dc1a
 Create Date: 2021-02-25 15:57:55.131626
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "0694cd18ea4f"
-down_revision = "03f742366750"
+down_revision = "c86be389dc1a"
 branch_labels = None
 depends_on = None
 
