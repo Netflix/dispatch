@@ -523,7 +523,7 @@ def dispatch_scheduler():
     from .feedback.scheduled import feedback_daily_digest  # noqa
     from .incident.scheduled import daily_report, auto_tagger  # noqa
     from .report.scheduled import incident_report_reminders  # noqa
-    from .tag.scheduled import sync_tags  # noqa
+    from .tag.scheduled import sync_tags, build_tag_models  # noqa
     from .task.scheduled import sync_tasks, create_task_reminders  # noqa
     from .term.scheduled import sync_terms  # noqa
     from .workflow.scheduled import sync_workflows, sync_active_stable_workflows  # noqa

@@ -3,7 +3,8 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from dispatch.database import get_db, search_filter_sort_paginate
+from dispatch.database import get_class_by_tablename, get_db, search_filter_sort_paginate
+from dispatch.tag.recommender import get_recommendations
 
 from .models import (
     TagCreate,
@@ -86,3 +87,18 @@ def delete_tag(*, db_session: Session = Depends(get_db), tag_id: int):
     if not tag:
         raise HTTPException(status_code=404, detail="An tag with this ID does not exist.")
     delete(db_session=db_session, tag_id=tag_id)
+
+
+@router.get("/recommendations/{model_name}/{id}", response_model=TagPagination)
+def get_tag_recommendations(*, db_session: Session = Depends(get_db), model_name: str, id: int):
+    """
+    Retrieves a tag recommendation based on the model and model id.
+    """
+    model_object = get_class_by_tablename(model_name)
+    model = db_session.query(model_object).filter(model_object.id == id).one_or_none()
+
+    if not model:
+        raise HTTPException(status_code=404, detail=f"No model found. ModelName: {model_name} Id: {id}")
+
+    tags = get_recommendations(db_session, [t.id for t in model.tags], model_name)
+    return {"items": tags, "total": len(tags)}
