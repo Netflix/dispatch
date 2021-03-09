@@ -11,6 +11,10 @@ export default {
     return API.get(`${resource}/${tagId}`)
   },
 
+  getRecommendations(model, modelId) {
+    return API.get(`${resource}/recommendations/${model}/${modelId}`)
+  },
+
   create(payload) {
     return API.post(`${resource}/`, payload)
   },

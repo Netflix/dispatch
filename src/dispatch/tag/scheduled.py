@@ -37,5 +37,5 @@ def build_tag_models(db_session=None):
     # incident model
     incidents = incident_service.get_all(db_session=db_session).all()
     log.debug("Starting to build the incident/tag model...")
-    build_model(incidents, "incidents")
+    build_model(incidents, "incident")
     log.debug("Starting succesfully build the incident/tag model.")

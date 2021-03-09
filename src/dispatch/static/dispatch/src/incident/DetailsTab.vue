@@ -109,7 +109,7 @@
         <term-combobox label="Terms" v-model="terms" />
       </v-flex>
       <v-flex xs12>
-        <tag-filter-combobox label="Tags" v-model="tags" />
+        <tag-filter-combobox label="Tags" v-model="tags" model="incident" :modelId="id" />
       </v-flex>
       <v-flex xs12>
         <incident-filter-combobox label="Duplicates" v-model="duplicates" />

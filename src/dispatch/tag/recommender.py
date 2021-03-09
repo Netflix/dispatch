@@ -157,11 +157,11 @@ def get_recommendations(db_session: SessionLocal, tag_ids: List[str], model_name
 
     # convert back to tag objects
     tags = []
-    for t in recommendations_dataframe[:recommendations]:
-        tags.append(tag_service.get(db_session=db_session, tag_id=t))
+    for t in recommendations_dataframe["tag"][:recommendations]:
+        tags.append(tag_service.get(db_session=db_session, tag_id=int(t)))
 
-    log.debug(f"Making tag recommendation. TagIds: {','.join([t.name for t in tags])} ModelName: {model_name} Recomendations: ", list(recommendations_dataframe["tag"][:recommendations]))
-    return recommendations_dataframe[:recommendations]
+    log.debug(f"Making tag recommendation. RecommendedTags: {','.join([t.name for t in tags])} ModelName: {model_name}")
+    return tags
 
 
 def build_model(items: List[Any], model_name: str):
