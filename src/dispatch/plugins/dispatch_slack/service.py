@@ -311,7 +311,7 @@ def unarchive_conversation(client: Any, conversation_id: str):
     try:
         return make_call(client, "conversations.unarchive", channel=conversation_id)
     except slack_sdk.errors.SlackApiError as e:
-        # if the channel isn't achived thats okay
+        # if the channel isn't archived thats okay
         if e.response["error"] != "not_archived":
             raise e
 
