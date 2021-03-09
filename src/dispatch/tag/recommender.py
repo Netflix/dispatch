@@ -40,7 +40,7 @@ def correlation(df, tag_a, tag_b):
     # Find all rows where b == True AND a != True
     b_not_a = df[(df[tag_b]) & ~(df[tag_a])]
 
-    # Calculate the number of possitive and possible outcomes using the shape attribute
+    # Calculate the number of positive and possible outcomes using the shape attribute
     possible_outcomes = (
         a_and_b.shape[0] + a_not_b.shape[0] + b_not_a.shape[0]
     )  # shape[0] returns the number of rows
