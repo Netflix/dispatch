@@ -1,22 +1,50 @@
 <template>
-  <!-- <v&#45;container grid&#45;list&#45;md> -->
-  <!--   <v&#45;layout wrap></v&#45;layout> -->
-  <!-- </v&#45;container> -->
-  <div>
-    <span v-for="incident_cost in incident_costs" :key="incident_cost.id">
+  <v-container grid-list-md>
+    <v-layout wrap>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            {{ incident_cost.amount | toUSD }}
+            Response Cost
           </v-list-item-title>
           <v-list-item-subtitle>
-            {{ incident_cost.incident_cost_type.name }}
+            {{ 550 | toUSD }}
+          </v-list-item-subtitle>
+        </v-list-item-content>
+        <v-list-item-content>
+          <v-list-item-title>
+            Additional Costs
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            {{ 550 | toUSD }}
+          </v-list-item-subtitle>
+        </v-list-item-content>
+        <v-list-item-content>
+          <v-list-item-title>
+            Total Cost
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            {{ 500 | toUSD }}
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
       <v-divider />
-    </span>
-  </div>
+    </v-layout>
+  </v-container>
+  <!-- <div> -->
+  <!--   <span v&#45;for="incident_cost in incident_costs" :key="incident_cost.id"> -->
+  <!--     <v&#45;list&#45;item> -->
+  <!--       <v&#45;list&#45;item&#45;content> -->
+  <!--         <v&#45;list&#45;item&#45;title> -->
+  <!--           {{ incident_cost.amount | toUSD }} -->
+  <!--         </v&#45;list&#45;item&#45;title> -->
+  <!--         <v&#45;list&#45;item&#45;subtitle> -->
+  <!--           {{ incident_cost.incident_cost_type.name }} -->
+  <!--         </v&#45;list&#45;item&#45;subtitle> -->
+  <!--       </v&#45;list&#45;item&#45;content> -->
+  <!--     </v&#45;list&#45;item> -->
+  <!-- <v&#45;divider /> -->
+  <!--   </span> -->
+  <!-- </div> -->
 </template>
 
 <script>
