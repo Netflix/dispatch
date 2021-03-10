@@ -103,7 +103,8 @@ def update_individual(
 @router.delete(
     "/{individual_contact_id}",
     summary="Delete an individual contact.",
-    dependencies=[Depends(PermissionsDependency([AdminPermission]))])
+    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+)
 def delete_individual(*, db_session: Session = Depends(get_db), individual_contact_id: int):
     """
     Delete a individual contact.

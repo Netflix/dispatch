@@ -130,7 +130,7 @@ Add the bot to your conversation or run the command in one of the following conv
 
 
 def create_command_run_by_non_privileged_user_message(command: str):
-    """Creates a message for when a sensitive command is run by a non priviledged user."""
+    """Creates a message for when a sensitive command is run by a non privileged user."""
     return {
         "response_type": "ephemeral",
         "text": Template(INCIDENT_CONVERSATION_COMMAND_RUN_BY_NON_PRIVILEGED_USER).render(

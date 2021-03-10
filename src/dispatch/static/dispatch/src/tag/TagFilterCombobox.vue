@@ -58,6 +58,12 @@ export default {
     label: {
       type: String,
       default: "Add Tags"
+    },
+    model: {
+      type: String
+    },
+    modelId: {
+      type: Number
     }
   },
   data() {
@@ -92,7 +98,7 @@ export default {
   },
 
   created() {
-    this.fetchData({})
+    this.fetchData({ q: null })
   },
 
   methods: {
@@ -103,6 +109,21 @@ export default {
     fetchData(filterOptions) {
       this.error = null
       this.loading = "error"
+
+      // fetch recommendations model and ID are provided
+      if (!filterOptions.q) {
+        if (this.model && this.modelId) {
+          TagApi.getRecommendations(this.model, this.modelId).then(response => {
+            this.items = response.data.items
+            this.total = response.data.total
+            // we don't support more for suggestions (limited)
+            this.more = false
+            this.loading = false
+          })
+          return
+        }
+      }
+
       TagApi.getAll(filterOptions).then(response => {
         this.items = response.data.items
         this.total = response.data.total

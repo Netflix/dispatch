@@ -246,6 +246,7 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
         recommendation = route_service.get(db_session=db_session, route_in=route_in)
 
         log.debug(f"Recommendation: {recommendation}")
+        individual_contacts = [(x, None) for x in recommendation.individual_contacts]
         # we need to resolve our service contacts to individuals
         for s in recommendation.service_contacts:
             plugin = plugin_service.get_by_slug(db_session=db_session, slug=s.type)
@@ -258,6 +259,7 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
                     individual = individual_service.get_or_create(
                         db_session=db_session, email=individual_email
                     )
+                    individual_contacts.append((individual, s))
                     recommendation.individual_contacts.append(individual)
                 else:
                     log.warning(
@@ -269,4 +271,4 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
                 )
 
         db_session.commit()
-        return list(recommendation.individual_contacts), list(recommendation.team_contacts)
+        return list(individual_contacts), list(recommendation.team_contacts)
