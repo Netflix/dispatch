@@ -153,7 +153,8 @@ export default {
       "selected.template_document",
       "selected.visibility",
       "selected.plugin_metadata",
-      "selected.exclude_from_metrics"
+      "selected.exclude_from_metrics",
+      "selected.default"
     ]),
     ...mapFields("incident_type", {
       default_incident_type: "selected.default"
