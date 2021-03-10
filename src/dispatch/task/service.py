@@ -78,7 +78,7 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
         )
 
         # due to the freeform nature of task assignment, we can sometimes pick up other emails
-        # e.g. a google group that we cannont resolve to an individual assignee
+        # e.g. a google group that we cannot resolve to an individual assignee
         if assignee:
             assignees.append(assignee)
 
