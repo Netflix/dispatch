@@ -5,7 +5,12 @@
         <v-btn color="info" @click="copyView">Share View</v-btn>
       </v-flex>
       <v-flex class="d-flex justify-end" lg6 sm6 xs12>
-        <dialog-filter v-bind="query" @update="update" @loading="setLoading" />
+        <dialog-filter
+          v-bind="query"
+          @update="update"
+          @filterOptions="setFilterOptions"
+          @loading="setLoading"
+        />
       </v-flex>
     </v-layout>
     <v-layout row wrap>
@@ -49,7 +54,7 @@
         ></incident-cost-bar-chart-card>
       </v-flex>
       <v-flex lg12 sm12 xs12>
-        <incident-forecast-card></incident-forecast-card>
+        <incident-forecast-card v-model="filterOptions"></incident-forecast-card>
       </v-flex>
       <v-flex lg6 sm6 xs12>
         <incident-active-time-card
@@ -128,6 +133,7 @@ export default {
     return {
       tab: null,
       loading: "error",
+      filterOptions: {},
       items: []
     }
   },
@@ -137,6 +143,9 @@ export default {
       this.items = filter(data, function(item) {
         return !item.incident_type.exclude_from_metrics && !item.duplicates.length
       })
+    },
+    setFilterOptions(options) {
+      this.filterOptions = options
     },
     setLoading(data) {
       this.loading = data
