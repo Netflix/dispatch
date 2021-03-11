@@ -84,7 +84,6 @@ def make_forecast(incidents: List[Incident]):
             dataframe, seasonal_periods=12, trend="add", seasonal="add"
         ).fit()
     except Exception as e:
-        raise e
         log.warning(f"Issue forecasting incidents: {e}")
         return [], []
 
