@@ -1,8 +1,8 @@
 version: "3.1"
 services:
   postgres:
-    image: postgres
-    hostname: postgres:12
+    image: postgres:12
+    hostname: postgres
     ports:
       - "5432:5432"
     environment:
