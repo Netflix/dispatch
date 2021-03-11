@@ -79,7 +79,7 @@ async def handle_event(
     x_slack_signature: str = Header(None),
     db_session: Session = Depends(get_db),
 ):
-    """Handle all incomming Slack events."""
+    """Handle all incoming Slack events."""
     raw_request_body = bytes.decode(await request.body())
 
     # We verify the timestamp
@@ -114,7 +114,7 @@ async def handle_command(
     x_slack_signature: str = Header(None),
     db_session: Session = Depends(get_db),
 ):
-    """Handle all incomming Slack commands."""
+    """Handle all incoming Slack commands."""
     raw_request_body = bytes.decode(await request.body())
     request_body_form = await request.form()
     request = request_body_form._dict
@@ -147,7 +147,7 @@ async def handle_action(
     x_slack_signature: str = Header(None),
     db_session: Session = Depends(get_db),
 ):
-    """Handle all incomming Slack actions."""
+    """Handle all incoming Slack actions."""
     raw_request_body = bytes.decode(await request.body())
     request_body_form = await request.form()
     request = json.loads(request_body_form.get("payload"))

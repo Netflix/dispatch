@@ -39,7 +39,7 @@ In general, do not include any quotation marks when adding configuration values.
 
 > Defines the provider to use for configuration secret decryption. Available options are: `kms-secret` and `metatron-secret`
 
-#### `ENV_TAGS` \[defaut: ""\]
+#### `ENV_TAGS` \[default: ""\]
 
 > A comma-separated list of tags that Dispatch will attempt to pull from the environment. For example, the string `foo:bar,baz:blah` will create two tags: `foo` with the environment value for `bar` and `baz` with the environment value for `blah`.
 

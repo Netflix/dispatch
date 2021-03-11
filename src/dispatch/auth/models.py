@@ -22,7 +22,7 @@ from dispatch.config import (
 
 
 def generate_password():
-    """Generates a resonable password if none is provided."""
+    """Generates a reasonable password if none is provided."""
     alphanumeric = string.ascii_letters + string.digits
     while True:
         password = "".join(secrets.choice(alphanumeric) for i in range(10))

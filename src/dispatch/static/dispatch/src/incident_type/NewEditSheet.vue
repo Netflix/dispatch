@@ -67,13 +67,19 @@
                 />
               </v-flex>
               <v-flex xs12>
-                <service-select label="Commander Service" v-model="commander_service" />
+                <ValidationObserver disabled>
+                  <service-select label="Commander Service" v-model="commander_service" />
+                </ValidationObserver>
               </v-flex>
               <v-flex xs12>
-                <service-select label="Liaison Service" v-model="liaison_service" />
+                <ValidationObserver disabled>
+                  <service-select label="Liaison Service" v-model="liaison_service" />
+                </ValidationObserver>
               </v-flex>
               <v-flex xs12>
-                <document-select v-model="template_document" />
+                <ValidationObserver disabled>
+                  <document-select v-model="template_document" />
+                </ValidationObserver>
               </v-flex>
               <v-flex xs 12>
                 <v-checkbox
@@ -147,7 +153,8 @@ export default {
       "selected.template_document",
       "selected.visibility",
       "selected.plugin_metadata",
-      "selected.exclude_from_metrics"
+      "selected.exclude_from_metrics",
+      "selected.default"
     ]),
     ...mapFields("incident_type", {
       default_incident_type: "selected.default"

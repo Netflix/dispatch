@@ -12,7 +12,7 @@ Dispatch supports both the [Event Mode](https://api.slack.com/events-api) and [S
 Which mode should you choose?
 
 - If you have Dispatch deployed behind a firewall, use **socket mode**
-- If you are deploying Dispatch publically, use **event mode**
+- If you are deploying Dispatch publicly, use **event mode**
 
 ## Events Mode
 
@@ -22,11 +22,11 @@ To enable event mode:
   - `SLACK_SIGNING_SECRET`
   - `SLACK_API_BOT_TOKEN`
 
-Additional, event mode requires specific url mapping that must be **publically** available:
+Additional, event mode requires specific url mapping that must be **publicly** available:
 
 - `Dispatch` receives general events at the `/api/v1/events/slack/event` endpoint (reactions).
 - `Dispatch` receives command events at the `/api/v1/events/slack/command` endpoint (`/dispatch-*` commands)
-- `Dispatch` recieves action events at the `/api/v1/events/slack/action` (dialogs and modals) endpoint.
+- `Dispatch` receives action events at the `/api/v1/events/slack/action` (dialogs and modals) endpoint.
 
 ## Socket Mode
 
