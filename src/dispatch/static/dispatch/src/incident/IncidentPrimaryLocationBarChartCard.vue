@@ -9,8 +9,8 @@
 </template>
 
 <script>
-import { countBy, isArray, mergeWith, forEach, map } from "lodash"
-
+import { forEach } from "lodash"
+import DashboardUtils from "@/dashboard/utils"
 import DashboardCard from "@/dashboard/DashboardCard.vue"
 
 export default {
@@ -74,24 +74,15 @@ export default {
       }
     },
     series() {
-      let series = []
+      let allLocations = []
       forEach(this.value, function(value) {
-        let typeCount = map(
-          countBy(value, function(item) {
-            return item.primary_location
-          }),
-          function(value, key) {
-            return { name: key, data: [value] }
-          }
-        )
-
-        series = mergeWith(series, typeCount, function(objValue, srcValue) {
-          if (isArray(objValue)) {
-            return objValue.concat(srcValue)
-          }
+        forEach(value, function(value) {
+          allLocations.push(value.primary_location)
         })
       })
-
+      let series = DashboardUtils.createCountedSeriesData(this.value, "primary_location", [
+        ...new Set(allLocations)
+      ])
       return series
     },
     categoryData() {

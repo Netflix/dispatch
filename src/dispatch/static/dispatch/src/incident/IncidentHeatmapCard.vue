@@ -14,6 +14,7 @@ import { parseISO } from "date-fns"
 import locale from "date-fns/esm/locale/en-US"
 
 import DashboardCard from "@/dashboard/DashboardCard.vue"
+import DashboardUtils from "@/dashboard/utils"
 
 export default {
   name: "IncidentHeatMapChartCard",
@@ -46,6 +47,7 @@ export default {
             show: false
           }
         },
+        colors: DashboardUtils.defaultColorTheme(),
         responsive: [
           {
             options: {
@@ -58,7 +60,7 @@ export default {
         dataLabels: {
           enabled: false
         },
-        colors: ["#008FFB"],
+
         xaxis: {
           categories: this.categoryData || [],
           title: {

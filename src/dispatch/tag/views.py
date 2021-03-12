@@ -98,7 +98,9 @@ def get_tag_recommendations(*, db_session: Session = Depends(get_db), model_name
     model = db_session.query(model_object).filter(model_object.id == id).one_or_none()
 
     if not model:
-        raise HTTPException(status_code=404, detail=f"No model found. ModelName: {model_name} Id: {id}")
+        raise HTTPException(
+            status_code=404, detail=f"No model found. ModelName: {model_name} Id: {id}"
+        )
 
     tags = get_recommendations(db_session, [t.id for t in model.tags], model_name)
     return {"items": tags, "total": len(tags)}

@@ -137,6 +137,7 @@ export default {
       })
 
       this.$emit("loading", "error")
+      this.$emit("filterOptions", this.filters)
       IncidentApi.getAll(filterOptions).then(response => {
         this.$emit("update", response.data.items)
         this.$emit("loading", false)
