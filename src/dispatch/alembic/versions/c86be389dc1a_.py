@@ -1,7 +1,7 @@
 """Adds data models for incident cost and incident cost type
 
 Revision ID: c86be389dc1a
-Revises: 03f742366750
+Revises: 0694cd18ea4f
 Create Date: 2021-03-01 12:52:05.029318
 
 """
@@ -16,7 +16,7 @@ from dispatch.incident_cost_type import service as incident_cost_type_service
 
 # revision identifiers, used by Alembic.
 revision = "c86be389dc1a"
-down_revision = "03f742366750"
+down_revision = "0694cd18ea4f"
 branch_labels = None
 depends_on = None
 
