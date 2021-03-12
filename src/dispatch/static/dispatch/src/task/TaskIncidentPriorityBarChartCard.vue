@@ -36,7 +36,7 @@ export default {
 
   data() {
     return {
-      order: ["High", "Medium", "Low", "Info"]
+      order: ["High", "Medium", "Low"]
     }
   },
 
@@ -60,7 +60,7 @@ export default {
             }
           }
         ],
-        colors: ["#FF4560", "#FEB019", "#00E396", "#008FFB"],
+        colors: ["#FF4560", "#FEB019", "#008FFB"],
         xaxis: {
           categories: this.categoryData || [],
           title: {

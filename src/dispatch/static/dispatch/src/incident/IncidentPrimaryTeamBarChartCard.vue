@@ -9,8 +9,10 @@
 </template>
 
 <script>
-import { countBy, isArray, mergeWith, forEach, map } from "lodash"
+import { forEach } from "lodash"
 import DashboardCard from "@/dashboard/DashboardCard.vue"
+import DashboardUtils from "@/dashboard/utils"
+
 export default {
   name: "IncidentPrimaryTeamBarChartCard",
 
@@ -48,6 +50,7 @@ export default {
             show: false
           }
         },
+        colors: DashboardUtils.defaultColorTheme(),
         responsive: [
           {
             options: {
@@ -72,24 +75,15 @@ export default {
       }
     },
     series() {
-      let series = []
+      let allTeams = []
       forEach(this.value, function(value) {
-        let typeCount = map(
-          countBy(value, function(item) {
-            return item.primary_team
-          }),
-          function(value, key) {
-            return { name: key, data: [value] }
-          }
-        )
-
-        series = mergeWith(series, typeCount, function(objValue, srcValue) {
-          if (isArray(objValue)) {
-            return objValue.concat(srcValue)
-          }
+        forEach(value, function(value) {
+          allTeams.push(value.primary_team)
         })
       })
-
+      let series = DashboardUtils.createCountedSeriesData(this.value, "primary_team", [
+        ...new Set(allTeams)
+      ])
       return series
     },
     categoryData() {
