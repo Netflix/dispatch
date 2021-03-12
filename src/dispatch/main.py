@@ -16,7 +16,7 @@ import httpx
 from .api import api_router
 from .common.utils.cli import install_plugins, install_plugin_events
 from .config import STATIC_DIR
-from .database import SessionLocal
+from .database import engine, sessionmaker
 from .extensions import configure_extensions
 from .logging import configure_logging
 from .metrics import provider as metric_provider
@@ -70,7 +70,10 @@ async def default_page(request, call_next):
 async def db_session_middleware(request: Request, call_next):
     response = Response("Internal Server Error", status_code=500)
     try:
-        request.state.db = SessionLocal()
+        # add correct schema mapping depending on the request
+        schema_engine = engine.execution_options(schema_translate_map={"public": None, None: "project_schema_one"})
+        session = sessionmaker(bind=schema_engine)
+        request.state.db = session()
         response = await call_next(request)
     finally:
         request.state.db.close()

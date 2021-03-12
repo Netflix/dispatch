@@ -22,7 +22,8 @@ from .config import SQLALCHEMY_DATABASE_URI
 log = logging.getLogger(__file__)
 
 engine = create_engine(str(SQLALCHEMY_DATABASE_URI))
-SessionLocal = sessionmaker(bind=engine)
+schema_engine = engine.execution_options(schema_translate_map={"public": None})
+SessionLocal = sessionmaker(bind=schema_engine)
 
 
 def resolve_table_name(name):
