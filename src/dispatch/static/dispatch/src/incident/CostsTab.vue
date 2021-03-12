@@ -1,18 +1,28 @@
 <template>
   <v-container grid-list-md>
     <v-layout wrap>
-      <v-flex xs12>
-        <span class="subtitle-2">Total Cost: {{ totalCost | toUSD }}</span>
-      </v-flex>
-      <v-flex xs12>
-        <span class="subtitle-2">Response Cost: {{ responseCost | toUSD }}</span>
-      </v-flex>
-      <v-flex xs12>
-        <incident-cost-input
-          @input="updateIncidentCosts({ data: $event })"
-          v-model="incident_costs"
-        />
-      </v-flex>
+      <v-list>
+        <span v-for="(cost, index) in incident_costs" :key="`cost-${index}`">
+          <v-list-item target="_blank">
+            <v-list-item-content>
+              <v-list-item-title>{{ cost.incident_cost_type.name }}</v-list-item-title>
+              <v-list-item-subtitle>{{ cost.incident_cost_type.description }}</v-list-item-subtitle>
+            </v-list-item-content>
+            <v-list-item-action>{{ cost.amount | toUSD }} </v-list-item-action>
+          </v-list-item>
+          <v-divider />
+        </span>
+        <v-list-item target="_blank">
+          <v-list-item-content>
+            <v-list-item-title>Total Cost</v-list-item-title>
+          </v-list-item-content>
+          <v-list-item-action>{{ totalCost | toUSD }} </v-list-item-action>
+        </v-list-item>
+        <v-divider />
+        <v-flex xs12>
+          <incident-cost-input @input="updateIncidentCosts($event)" />
+        </v-flex>
+      </v-list>
     </v-layout>
   </v-container>
 </template>
@@ -31,14 +41,6 @@ export default {
   computed: {
     ...mapFields("incident", ["selected.incident_costs"]),
 
-    responseCost: function() {
-      for (let i = 0; i < this.incident_costs.length; i++) {
-        if (this.incident_costs[i].incident_cost_type.name == "Response Cost")
-          return this.incident_costs[i].amount
-      }
-      return 0
-    },
-
     totalCost: function() {
       var totalCost = this.incident_costs.reduce(function(accumulator, item) {
         return accumulator + item.amount
@@ -49,11 +51,7 @@ export default {
 
   methods: {
     updateIncidentCosts(event) {
-      console.log("Before updating incident costs in CostsTab.vue")
-      console.log(this.incident_costs)
-      this.incident_costs = event.data
-      console.log("After updating incident costs in CostsTab.vue")
-      console.log(this.incident_costs)
+      this.incident_costs.push(event)
     }
   }
 }

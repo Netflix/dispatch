@@ -91,7 +91,7 @@ def create(*, db_session, incident_cost_in: IncidentCostCreate) -> IncidentCost:
     )
     incident_cost = IncidentCost(
         **incident_cost_in.dict(exclude={"incident_cost_type"}),
-        incident_cost_type=incident_cost_type
+        incident_cost_type=incident_cost_type,
     )
     db_session.add(incident_cost)
     db_session.commit()

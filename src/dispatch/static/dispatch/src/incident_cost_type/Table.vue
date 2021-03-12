@@ -33,6 +33,7 @@
               <template v-slot:item.default="{ item }">
                 <v-simple-checkbox v-model="item.default" disabled></v-simple-checkbox>
               </template>
+              <template v-slot:item.details="{ item }">{{ item.details }}</template>
               <template v-slot:item.created_at="{ item }">{{
                 item.created_at | formatDate
               }}</template>

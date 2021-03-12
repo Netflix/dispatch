@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import Column, ForeignKey, Integer, Numeric
 from sqlalchemy.orm import relationship
@@ -34,8 +34,8 @@ class IncidentCostCreate(IncidentCostBase):
 
 
 class IncidentCostUpdate(IncidentCostBase):
-    id: int
-    incident_cost_type: IncidentCostTypeUpdate
+    id: Optional[int]
+    incident_cost_type: IncidentCostTypeRead
 
 
 class IncidentCostRead(IncidentCostBase):

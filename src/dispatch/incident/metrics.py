@@ -45,9 +45,7 @@ def create_incident_metric_query(
         )
 
     else:
-        query = query.filter(
-            Incident.reported_at <= end_date
-        )
+        query = query.filter(Incident.reported_at <= end_date)
 
     # exclude incident types
     query = query.filter(IncidentType.exclude_from_metrics.isnot(True))

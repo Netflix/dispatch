@@ -64,7 +64,7 @@ def update(
     *,
     db_session,
     incident_cost_type: IncidentCostType,
-    incident_cost_type_in: IncidentCostTypeUpdate
+    incident_cost_type_in: IncidentCostTypeUpdate,
 ) -> IncidentCostType:
     """
     Updates an incident cost type.

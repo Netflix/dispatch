@@ -316,7 +316,7 @@ class IncidentRead(IncidentBase):
     stable_at: Optional[datetime] = None
     closed_at: Optional[datetime] = None
     incident_costs: Optional[List[IncidentCostRead]] = []
-    total_cost: float
+    total_cost: Optional[float]
 
 
 class IncidentPagination(DispatchBase):

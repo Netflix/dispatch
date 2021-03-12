@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import Column, Integer, String, Boolean, event
@@ -46,6 +47,7 @@ class IncidentCostTypeBase(DispatchBase):
     name: str
     description: Optional[str]
     details: Optional[dict]
+    created_at: datetime
 
 
 class IncidentCostTypeCreate(IncidentCostTypeBase):
