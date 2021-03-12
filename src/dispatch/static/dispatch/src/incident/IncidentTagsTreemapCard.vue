@@ -4,13 +4,15 @@
     type="treemap"
     :options="chartOptions"
     :series="series"
-    title="Common Tags"
+    title="Tag Treemap"
   />
 </template>
 
 <script>
-import { forEach, countBy, sortBy } from "lodash"
+import { forEach, countBy, sortBy, groupBy } from "lodash"
 import DashboardCard from "@/dashboard/DashboardCard.vue"
+import DashboardUtils from "@/dashboard/utils"
+
 export default {
   name: "IncidentTreeMapCard",
 
@@ -43,6 +45,7 @@ export default {
             show: false
           }
         },
+        colors: DashboardUtils.defaultColorTheme(),
         responsive: [
           {
             options: {
@@ -57,19 +60,28 @@ export default {
         }
       }
     },
-    summaryData() {
+    series() {
+      // get all possible tags
       let allTags = []
       forEach(this.value, function(value) {
         allTags.push(...value.tags)
       })
-      let tagCount = countBy(allTags, "name")
-      return sortBy(
-        Object.keys(tagCount).map(key => ({ x: key, y: tagCount[key] })),
-        ["y"]
+
+      let tagSeries = []
+      forEach(
+        groupBy(allTags, function(value) {
+          return value.tag_type.name
+        }),
+        function(value, key) {
+          let tagCount = countBy(value, "name")
+          let data = sortBy(
+            Object.keys(tagCount).map(key => ({ x: key, y: tagCount[key] })),
+            ["y"]
+          )
+          tagSeries.push({ name: key, data: data })
+        }
       )
-    },
-    series() {
-      return [{ data: this.summaryData }]
+      return tagSeries
     }
   }
 }

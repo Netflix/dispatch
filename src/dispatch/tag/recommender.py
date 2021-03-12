@@ -136,7 +136,9 @@ def find_highest_correlations(correlated_dataframe, recommendations):
     return corr_df_sliced
 
 
-def get_recommendations(db_session: SessionLocal, tag_ids: List[str], model_name: str, recommendations: int = 5):
+def get_recommendations(
+    db_session: SessionLocal, tag_ids: List[str], model_name: str, recommendations: int = 5
+):
     """Get recommendations based on current tag."""
     try:
         correlation_dataframe = load_model(model_name)
@@ -160,7 +162,9 @@ def get_recommendations(db_session: SessionLocal, tag_ids: List[str], model_name
     for t in recommendations_dataframe["tag"][:recommendations]:
         tags.append(tag_service.get(db_session=db_session, tag_id=int(t)))
 
-    log.debug(f"Making tag recommendation. RecommendedTags: {','.join([t.name for t in tags])} ModelName: {model_name}")
+    log.debug(
+        f"Making tag recommendation. RecommendedTags: {','.join([t.name for t in tags])} ModelName: {model_name}"
+    )
     return tags
 
 

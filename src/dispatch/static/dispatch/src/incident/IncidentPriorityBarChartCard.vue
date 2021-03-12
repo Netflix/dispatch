@@ -9,9 +9,9 @@
 </template>
 
 <script>
-import { countBy, isArray, mergeWith, forEach, map, find, sortBy } from "lodash"
-
+import { map, sortBy } from "lodash"
 import DashboardCard from "@/dashboard/DashboardCard.vue"
+import DashboardUtils from "@/dashboard/utils"
 import IncidentPriorityApi from "@/incident_priority/api"
 export default {
   name: "IncidentPriorityBarChartCard",
@@ -43,7 +43,12 @@ export default {
 
   created: function() {
     IncidentPriorityApi.getAll().then(response => {
-      this.priorities = map(response.data.items, "name")
+      this.priorities = map(
+        sortBy(response.data.items, function(value) {
+          return value.view_order
+        }),
+        "name"
+      )
     })
   },
 
@@ -67,7 +72,7 @@ export default {
             }
           }
         ],
-        colors: ["#FF4560", "#FEB019", "#008FFB"],
+        colors: ["#008FFB", "#FF4560", "#FEB019"],
         xaxis: {
           categories: this.categoryData || [],
           title: {
@@ -83,35 +88,11 @@ export default {
       }
     },
     series() {
-      let series = []
-      let priorities = this.priorities
-      forEach(this.value, function(value) {
-        let priorityCounts = map(
-          countBy(value, function(item) {
-            return item.incident_priority.name
-          }),
-          function(value, key) {
-            return { name: key, data: [value] }
-          }
-        )
-
-        forEach(priorities, function(priority) {
-          let found = find(priorityCounts, { name: priority })
-          if (!found) {
-            priorityCounts.push({ name: priority, data: [0] })
-          }
-        })
-        series = mergeWith(series, priorityCounts, function(objValue, srcValue) {
-          if (isArray(objValue)) {
-            return objValue.concat(srcValue)
-          }
-        })
-      })
-
-      // sort
-      series = sortBy(series, function(obj) {
-        return priorities.indexOf(obj.name)
-      })
+      let series = DashboardUtils.createCountedSeriesData(
+        this.value,
+        "incident_priority.name",
+        this.priorities
+      )
       return series
     },
     categoryData() {

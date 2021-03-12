@@ -11,13 +11,15 @@
 <script>
 import IncidentApi from "@/incident/api"
 import DashboardCard from "@/dashboard/DashboardCard.vue"
+import SearchUtils from "@/search/utils"
+
 export default {
   name: "IncidentForecastCard",
   props: {
     value: {
-      type: String,
+      type: Object,
       default: function() {
-        return "all"
+        return {}
       }
     }
   },
@@ -78,7 +80,9 @@ export default {
   methods: {
     fetchData() {
       this.loading = "error"
-      IncidentApi.getMetricForecast(this.value).then(response => {
+      let expression = SearchUtils.createFilterExpression(this.value)
+      let params = { filter: JSON.stringify(expression) }
+      IncidentApi.getMetricForecast(params).then(response => {
         this.loading = false
         this.series = response.data.series
         this.categories = response.data.categories
@@ -86,8 +90,10 @@ export default {
     }
   },
 
-  mounted() {
-    this.fetchData()
+  watch: {
+    value: function() {
+      this.fetchData()
+    }
   }
 }
 </script>
