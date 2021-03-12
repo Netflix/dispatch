@@ -8,6 +8,7 @@ from jose import jwt
 from typing import Optional
 from pydantic import validator
 from sqlalchemy import Column, String, Binary, Integer
+from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
@@ -48,6 +49,9 @@ class DispatchUser(Base, TimeStampMixin):
     password = Column(Binary, nullable=False)
     role = Column(String, nullable=False, default=UserRoles.user)
 
+    organization_id = Column()
+    projects = Column()
+
     search_vector = Column(TSVectorType("email", weights={"email": "A"}))
 
     def check_password(self, password):
@@ -62,6 +66,10 @@ class DispatchUser(Base, TimeStampMixin):
 
     def principals(self):
         return [f"user:{self.email}", f"role:{self.role}"]
+
+    __table_args__ = {
+        "schema": "public"
+    }
 
 
 class UserBase(DispatchBase):
