@@ -158,7 +158,6 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
-import { forEach, each, has } from "lodash"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
@@ -172,22 +171,12 @@ import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombob
 import IncidentStatus from "@/incident/IncidentStatus.vue"
 import IncidentPriority from "@/incident/IncidentPriority.vue"
 import AdvancedEditor from "@/search/AdvancedEditor.vue"
+import SearchUtils from "@/search/utils"
 
 extend("required", {
   ...required,
   message: "This field is required"
 })
-
-const toPascalCase = str =>
-  `${str}`
-    .replace(new RegExp(/[-_]+/, "g"), " ")
-    .replace(new RegExp(/[^\w\s]/, "g"), "")
-    .replace(
-      new RegExp(/\s+(.)(\w+)/, "g"),
-      ($1, $2, $3) => `${$2.toUpperCase() + $3.toLowerCase()}`
-    )
-    .replace(new RegExp(/\s/, "g"), "")
-    .replace(new RegExp(/\w/), s => s.toUpperCase())
 
 export default {
   name: "SearchFilterCreateDialog",
@@ -239,34 +228,6 @@ export default {
   methods: {
     ...mapActions("search", ["closeCreateDialog", "save"]),
 
-    createFilterExpression(filters) {
-      let filterExpression = []
-      forEach(filters, function(value, key) {
-        let subFilter = []
-        each(value, function(value) {
-          if (has(value, "id")) {
-            subFilter.push({
-              model: toPascalCase(key),
-              field: "id",
-              op: "==",
-              value: value.id
-            })
-          } else {
-            subFilter.push({ field: key, op: "==", value: value })
-          }
-        })
-        if (subFilter.length > 0) {
-          filterExpression.push({ or: subFilter })
-        }
-      })
-
-      if (filterExpression.length > 0) {
-        return [{ and: filterExpression }]
-      } else {
-        return []
-      }
-    },
-
     saveFilter() {
       // reset local data
       Object.assign(this.$data, this.$options.data.apply(this))
@@ -294,7 +255,7 @@ export default {
         vm.filters.tag
       ],
       () => {
-        this.expression = this.createFilterExpression(this.filters)
+        this.expression = SearchUtils.createFilterExpression(this.filters)
         this.getPreviewData()
       }
     )
