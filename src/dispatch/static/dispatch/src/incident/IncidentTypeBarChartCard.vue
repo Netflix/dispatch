@@ -9,10 +9,12 @@
 </template>
 
 <script>
-import { countBy, isArray, mergeWith, forEach, map, find, filter } from "lodash"
+import { map, filter } from "lodash"
 
 import IncidentTypeApi from "@/incident_type/api"
 import DashboardCard from "@/dashboard/DashboardCard.vue"
+import DashboardUtils from "@/dashboard/utils"
+
 export default {
   name: "IncidentBarChartCard",
 
@@ -63,7 +65,7 @@ export default {
             show: false
           }
         },
-        colors: ["#008FFB", "#00E396", "#FEB019", "#FF4560", "#775DD0", "#546E7A", "#4ECDC4"],
+        colors: DashboardUtils.defaultColorTheme(),
         responsive: [
           {
             options: {
@@ -88,36 +90,7 @@ export default {
       }
     },
     series() {
-      let series = []
-      let types = this.types
-      forEach(this.value, function(value) {
-        let typeCounts = map(
-          countBy(value, function(item) {
-            return item.incident_type.name
-          }),
-          function(value, key) {
-            return { name: key, data: [value] }
-          }
-        )
-
-        forEach(types, function(type) {
-          let found = find(typeCounts, { name: type })
-          if (!found) {
-            typeCounts.push({ name: type, data: [0] })
-          }
-        })
-        series = mergeWith(series, typeCounts, function(objValue, srcValue) {
-          if (isArray(objValue)) {
-            return objValue.concat(srcValue)
-          }
-        })
-      })
-
-      // sort
-      //series = sortBy(series, function(obj) {
-      //  return types.indexOf(obj.name)
-      //})
-      return series
+      return DashboardUtils.createCountedSeriesData(this.value, "incident_type.name", this.types)
     },
     categoryData() {
       return Object.keys(this.value)
