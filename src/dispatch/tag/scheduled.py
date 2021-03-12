@@ -33,7 +33,7 @@ def sync_tags(db_session=None):
 @scheduler.add(every(1).hour, name="tag-model-builder")
 @background_task
 def build_tag_models(db_session=None):
-    """Builds the intensive tag recommandation models."""
+    """Builds the intensive tag recommendation models."""
     # incident model
     incidents = incident_service.get_all(db_session=db_session).all()
     log.debug("Starting to build the incident/tag model...")

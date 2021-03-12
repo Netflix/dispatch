@@ -71,9 +71,10 @@ export default {
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
         { text: "Visibility", value: "visibility", sortable: false },
-        { text: "Default", value: "default", sortable: true },
-        { text: "Service", value: "commander_service.name", sortable: false },
+        { text: "Commander Service", value: "commander_service.name", sortable: false },
+        { text: "Liaison Service", value: "liaison_service.name", sortable: false },
         { text: "Document", value: "template_document.name", sortable: false },
+        { text: "Default", value: "default", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]
     }

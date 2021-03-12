@@ -91,7 +91,7 @@ def create_or_update(*, db_session, search_filter_in: SearchFilterCreate) -> Sea
 
 
 def delete(*, db_session, search_filter_id: int):
-    """Delets a search filter."""
+    """Deletes a search filter."""
     search_filter = (
         db_session.query(SearchFilter).filter(SearchFilter.id == search_filter_id).first()
     )

@@ -169,7 +169,7 @@ def get(*, db_session, route_in: RouteRequest) -> Dict[Any, Any]:
 
     resources = list(set(resources))
 
-    # create a recommandation entry we can use to data mine at a later time
+    # create a recommendation entry we can use to data mine at a later time
     recommendation = create_recommendation(
         db_session=db_session,
         text=route_in.text,

@@ -56,7 +56,7 @@ class TeamContact(Base, ContactMixin):
     )
     incidents = relationship(
         "Incident", secondary=assoc_team_contact_incidents, backref="teams"
-    )  # I'm not sure this needs to be set explictly rather than via a query
+    )  # I'm not sure this needs to be set explicitly rather than via a query
     terms = relationship("Term", secondary=assoc_team_contact_terms, backref="teams")
     search_vector = Column(TSVectorType("name", "notes", weights={"name": "A", "notes": "B"}))
 
