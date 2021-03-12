@@ -10,10 +10,7 @@
         <span>Add Incident Cost</span>
       </v-tooltip>
     </v-row>
-    <span
-      v-for="(incident_cost, idx) in incident_costs"
-      :key="incident_cost.incident_cost_type.name"
-    >
+    <span v-for="(incident_cost, idx) in incident_costs" :key="idx">
       <v-row align="center" dense>
         <v-col cols="12" sm="1">
           <v-tooltip bottom>
@@ -27,42 +24,12 @@
         </v-col>
         <v-col cols="12" sm="10">
           <incident-cost-type-combobox
-            @input="setIncidentCostType({ incident_cost_type: $event, idx: idx })"
-            label="Incident Cost Type"
+            @input="setIncidentCostType({ incident_cost_type: $event })"
+            label="Type"
             :value="incident_cost_type"
           />
-        </v-col>
-        <v-col cols="12" sm="1">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
-              <v-btn small icon @click="addCost(incident_cost)" v-on="on">
-                <v-icon>add</v-icon>
-              </v-btn>
-            </template>
-            <span>Add Cost</span>
-          </v-tooltip>
-        </v-col>
-      </v-row>
-      <v-row align="center" dense v-for="meta in plugin.metadata" :key="meta.key">
-        <v-col cols="12" sm="1">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
-              <v-btn small icon @click="removeItem(plugin)" v-on="on"
-                ><v-icon>remove</v-icon></v-btn
-              >
-            </template>
-            <span>Remove Item</span>
-          </v-tooltip>
-        </v-col>
-        <v-col cols="12" sm="5">
-          <v-text-field label="Cost Type" v-model="incident_cost.type" type="text"></v-text-field>
-        </v-col>
-        <v-col cols="12" sm="6">
-          <v-text-field
-            label="Cost Amount"
-            v-model="incident_cost.amount"
-            type="text"
-          ></v-text-field>
+          <v-text-field label="Amount" v-model="amount" prefix="$">
+          </v-text-field>
         </v-col>
       </v-row>
     </span>
@@ -79,6 +46,13 @@ export default {
     IncidentCostTypeCombobox
   },
 
+  data() {
+    return {
+      amount: 0,
+      incident_cost_type: null
+    }
+  },
+
   props: {
     value: {
       type: Array,
@@ -89,7 +63,7 @@ export default {
   },
 
   computed: {
-    incident_cost_types: {
+    incident_costs: {
       get() {
         return [...this.value]
       }
@@ -98,29 +72,33 @@ export default {
 
   methods: {
     addIncidentCost() {
-      this.incident_costs.push({ amount: null })
-      // this.incident_costs.push({ amount: null, metadata: [{ key: "", value: "" }] })
+      console.log(this.amount)
+      console.log(this.incident_cost_type)
+      console.log(this.incident_costs)
+      console.log("Before adding an incident costs in IncidentCostInput.vue")
+      this.incident_costs.push({ amount: this.amount, incident_cost_type: this.incident_cost_type })
       this.$emit("input", this.incident_costs)
+      console.log("After adding an incident costs in IncidentCostInput.vue")
+      this.amount = 0 // value is not getting resetted
+      this.incident_cost_type = null // value is not getting resetted
+      console.log(this.amount)
+      console.log(this.incident_cost_type)
     },
     removeIncidentCost(idx) {
+      console.log("Before removing an incident costs in IncidentCostInput.vue")
       this.incident_costs.splice(idx)
       this.$emit("input", this.incident_costs)
+      console.log("After removing an incident costs in IncidentCostInput.vue")
     },
-    addCost(incident_cost) {
-      incident_cost.push({ key: null, value: null })
-      this.$emit("input", this.incident_costs)
+    setIncidentCostType(event) {
+      console.log("Before setting the incident cost type in IncidentCostInput.vue")
+      console.log(this.incident_cost_type)
+      console.log(event.incident_cost_type)
+      this.incident_cost_type = event.incident_cost_type
+      // this.$emit("input", this.incident_costs) Do I need to emit here?
+      console.log("After setting the incident cost type in IncidentCostInput.vue")
+      console.log(this.incident_cost_type)
     }
-    // removeItem(plugin, idx) {
-    //   plugin.metadata.splice(idx)
-    //   this.$emit("input", this.plugins)
-    // }
-    // setPlugin(event) {
-    //   if (!event.plugin.metadata) {
-    //     event.plugin.metadata = [{ key: null, value: null }]
-    //   }
-    //   this.plugins[event.idx] = event.plugin
-    //   this.$emit("input", this.plugins)
-    // }
   }
 }
 </script>

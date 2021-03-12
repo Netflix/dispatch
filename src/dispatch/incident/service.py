@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from dispatch.database import SessionLocal
 from dispatch.event import service as event_service
+from dispatch.incident_cost import service as incident_cost_service
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.participant import flows as participant_flows
@@ -224,33 +225,39 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
     for d in incident_in.duplicates:
         duplicates.append(get(db_session=db_session, incident_id=d.id))
 
+    incident_costs = []
+    for incident_cost in incident_in.incident_costs:
+        incident_costs.append(
+            incident_cost_service.get(db_session=db_session, incident_cost_id=incident_cost.id)
+        )
+
     update_data = incident_in.dict(
         skip_defaults=True,
         exclude={
-            "incident_type",
-            "incident_priority",
             "commander",
+            "duplicates",
+            "incident_costs",
+            "incident_priority",
+            "incident_type",
             "reporter",
             "status",
-            "visibility",
             "tags",
             "terms",
-            "duplicates",
+            "visibility",
         },
     )
 
     for field in update_data.keys():
         setattr(incident, field, update_data[field])
 
-    incident.terms = terms
-    incident.tags = tags
     incident.duplicates = duplicates
-
-    incident.status = incident_in.status
-    incident.visibility = incident_in.visibility
-
+    incident.incident_costs = incident_costs
     incident.incident_priority = incident_priority
     incident.incident_type = incident_type
+    incident.status = incident_in.status
+    incident.tags = tags
+    incident.terms = terms
+    incident.visibility = incident_in.visibility
 
     db_session.add(incident)
     db_session.commit()

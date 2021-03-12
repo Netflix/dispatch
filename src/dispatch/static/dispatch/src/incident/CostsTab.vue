@@ -48,9 +48,12 @@ export default {
   },
 
   methods: {
-    // ...mapActions("incident_cost", ["save", "closeCreateEdit"]),
     updateIncidentCosts(event) {
+      console.log("Before updating incident costs in CostsTab.vue")
+      console.log(this.incident_costs)
       this.incident_costs = event.data
+      console.log("After updating incident costs in CostsTab.vue")
+      console.log(this.incident_costs)
     }
   }
 }

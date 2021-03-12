@@ -2,9 +2,10 @@
   <v-combobox
     v-model="incident_cost_types"
     :items="items"
+    item-text="name"
     :search-input.sync="search"
-    hide-selected
     :label="label"
+    hide-selected
     multiple
     chips
     :loading="loading"
@@ -29,6 +30,7 @@ import IncidentCostTypeApi from "@/incident_cost_type/api"
 import { cloneDeep, debounce } from "lodash"
 export default {
   name: "IncidentCostTypeCombobox",
+
   props: {
     value: {
       type: Array,
@@ -41,6 +43,7 @@ export default {
       default: "Add Incident Cost Types"
     }
   },
+
   data() {
     return {
       loading: false,
@@ -59,7 +62,7 @@ export default {
         this._incident_cost_types = value.map(v => {
           if (typeof v === "string") {
             v = {
-              text: v
+              name: v
             }
             this.items.push(v)
           }
