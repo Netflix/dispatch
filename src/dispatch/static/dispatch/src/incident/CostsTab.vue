@@ -1,30 +1,26 @@
 <template>
-  <v-container grid-list-md>
-    <v-layout wrap>
-      <v-list>
-        <span v-for="(cost, index) in incident_costs" :key="`cost-${index}`">
-          <v-list-item target="_blank">
-            <v-list-item-content>
-              <v-list-item-title>{{ cost.incident_cost_type.name }}</v-list-item-title>
-              <v-list-item-subtitle>{{ cost.incident_cost_type.description }}</v-list-item-subtitle>
-            </v-list-item-content>
-            <v-list-item-action>{{ cost.amount | toUSD }} </v-list-item-action>
-          </v-list-item>
-          <v-divider />
-        </span>
-        <v-list-item target="_blank">
-          <v-list-item-content>
-            <v-list-item-title>Total Cost</v-list-item-title>
-          </v-list-item-content>
-          <v-list-item-action>{{ totalCost | toUSD }} </v-list-item-action>
-        </v-list-item>
-        <v-divider />
-        <v-flex xs12>
-          <incident-cost-input @input="updateIncidentCosts($event)" />
-        </v-flex>
-      </v-list>
-    </v-layout>
-  </v-container>
+  <v-list>
+    <span v-for="(cost, index) in incident_costs" :key="`cost-${index}`">
+      <v-list-item target="_blank">
+        <v-list-item-content>
+          <v-list-item-title>{{ cost.incident_cost_type.name }}</v-list-item-title>
+          <v-list-item-subtitle>{{ cost.incident_cost_type.description }}</v-list-item-subtitle>
+        </v-list-item-content>
+        <v-list-item-action>{{ cost.amount | toUSD }} </v-list-item-action>
+      </v-list-item>
+      <v-divider />
+    </span>
+    <v-list-item target="_blank">
+      <v-list-item-content>
+        <v-list-item-title>Total Cost</v-list-item-title>
+      </v-list-item-content>
+      <v-list-item-action>{{ totalCost | toUSD }} </v-list-item-action>
+    </v-list-item>
+    <v-divider />
+    <v-flex xs12>
+      <incident-cost-input @input="updateIncidentCosts($event)" />
+    </v-flex>
+  </v-list>
 </template>
 
 <script>
