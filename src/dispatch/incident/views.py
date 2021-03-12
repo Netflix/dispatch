@@ -1,6 +1,10 @@
 import json
 from typing import List
 
+import calendar
+from datetime import date
+from dateutil.relativedelta import relativedelta
+
 from starlette.requests import Request
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -30,7 +34,7 @@ from .flows import (
     incident_create_stable_flow,
     incident_update_flow,
 )
-from .metrics import make_forecast
+from .metrics import make_forecast, create_incident_metric_query
 from .models import Incident, IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
 from .service import create, delete, get, update
 
@@ -291,9 +295,72 @@ def delete_incident(
     delete(db_session=db_session, incident_id=current_incident.id)
 
 
-@router.get("/metric/forecast/{incident_type}", summary="Get incident forecast data.")
-def get_incident_forecast(*, db_session: Session = Depends(get_db), incident_type: str):
+def get_month_range(relative):
+    today = date.today()
+    relative_month = today - relativedelta(months=relative)
+    _, month_end_day = calendar.monthrange(relative_month.year, relative_month.month)
+    month_start = relative_month.replace(day=1)
+    month_end = relative_month.replace(day=month_end_day)
+    return month_start, month_end
+
+
+@router.get("/metric/forecast", summary="Get incident forecast data.")
+def get_incident_forecast(
+    *,
+    db_session: Session = Depends(get_db),
+    filter_spec: str = Query(None, alias="filter"),
+):
     """
     Get incident forecast data.
     """
-    return make_forecast(db_session=db_session, incident_type=incident_type)
+    categories = []
+    predicted = []
+    actual = []
+
+    if filter_spec:
+        filter_spec = json.loads(filter_spec)
+
+    for i in reversed(range(1, 5)):
+        start_date, end_date = get_month_range(i)
+
+        if i == 1:
+            incidents = create_incident_metric_query(
+                db_session=db_session,
+                filter_spec=filter_spec,
+                end_date=end_date,
+            )
+
+            predicted_months, predicted_counts = make_forecast(incidents=incidents)
+            categories = categories + predicted_months
+            predicted = predicted + predicted_counts
+
+        else:
+            incidents = create_incident_metric_query(
+                db_session=db_session,
+                filter_spec=filter_spec,
+                end_date=end_date
+            )
+
+            # get only first predicted month for completed months
+            predicted_months, predicted_counts = make_forecast(incidents=incidents)
+            if predicted_months and predicted_counts:
+                categories.append(predicted_months[0])
+                predicted.append(predicted_counts[0])
+
+        # get actual month counts
+        incidents = create_incident_metric_query(
+            db_session=db_session,
+            filter_spec=filter_spec,
+            end_date=end_date,
+            start_date=start_date
+        )
+
+        actual.append(len(incidents))
+
+    return {
+        "categories": categories,
+        "series": [
+            {"name": "Predicted", "data": predicted},
+            {"name": "Actual", "data": actual[1:]},
+        ],
+    }
