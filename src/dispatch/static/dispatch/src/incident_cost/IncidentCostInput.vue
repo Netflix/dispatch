@@ -41,18 +41,12 @@ export default {
     }
   },
 
-  props: {
-    value: {
-      type: Array,
-      default: function() {
-        return []
-      }
-    }
-  },
-
   methods: {
     addIncidentCost() {
+      // Passing data to parent component
       this.$emit("input", { amount: this.amount, incident_cost_type: this.incident_cost_type })
+
+      // Resetting default values
       this.amount = 0
       this.incident_cost_type = null
     }

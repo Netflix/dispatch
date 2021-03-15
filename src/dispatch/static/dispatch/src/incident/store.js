@@ -12,11 +12,12 @@ const getDefaultSelectedState = () => {
     created_at: null,
     description: null,
     documents: null,
+    duplicates: [],
     events: null,
     id: null,
+    incident_costs: [],
     incident_priority: null,
     incident_type: null,
-    incident_costs: [],
     name: null,
     participants: null,
     reported_at: null,
@@ -27,11 +28,10 @@ const getDefaultSelectedState = () => {
     tags: [],
     terms: [],
     ticket: null,
-    duplicates: [],
-    workflow_instances: null,
     title: null,
-    visibility: null,
     trackingOnly: null,
+    visibility: null,
+    workflow_instances: null,
     loading: false
   }
 }

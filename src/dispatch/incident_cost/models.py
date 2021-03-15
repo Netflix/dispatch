@@ -26,7 +26,7 @@ class IncidentCost(Base, TimeStampMixin):
 
 # Pydantic Models
 class IncidentCostBase(DispatchBase):
-    amount: float = 0.0
+    amount: float = 0
 
 
 class IncidentCostCreate(IncidentCostBase):
