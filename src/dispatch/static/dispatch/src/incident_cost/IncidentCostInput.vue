@@ -36,7 +36,7 @@ export default {
 
   data() {
     return {
-      amount: 0,
+      amount: null,
       incident_cost_type: null
     }
   },
@@ -47,7 +47,7 @@ export default {
       this.$emit("input", { amount: this.amount, incident_cost_type: this.incident_cost_type })
 
       // Resetting default values
-      this.amount = 0
+      this.amount = null
       this.incident_cost_type = null
     }
   }

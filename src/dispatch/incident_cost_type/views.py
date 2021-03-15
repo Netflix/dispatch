@@ -63,7 +63,6 @@ def get_incident_cost_type(*, db_session: Session = Depends(get_db), incident_co
 @router.post(
     "/",
     response_model=IncidentCostTypeRead,
-    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
 )
 def create_incident_cost_type(
     *, db_session: Session = Depends(get_db), incident_cost_type_in: IncidentCostTypeCreate

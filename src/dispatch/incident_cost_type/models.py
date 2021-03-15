@@ -47,7 +47,7 @@ class IncidentCostTypeBase(DispatchBase):
     name: str
     description: Optional[str]
     details: Optional[dict]
-    created_at: datetime
+    created_at: Optional[datetime]
 
 
 class IncidentCostTypeCreate(IncidentCostTypeBase):

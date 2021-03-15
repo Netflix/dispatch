@@ -380,6 +380,13 @@ const actions = {
 
 const mutations = {
   updateField,
+  addIncidentCost(state, value) {
+    state.selected.incident_costs.push(value)
+  },
+  removeIncidentCost(state, idx) {
+    console.log(idx)
+    state.selected.incident_costs.splice(idx, 1)
+  },
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
   },

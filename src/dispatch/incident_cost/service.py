@@ -11,6 +11,7 @@ from dispatch.database import SessionLocal
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident_cost_type import service as incident_cost_type_service
+from dispatch.incident_cost import service as incident_cost_service
 from dispatch.participant_role.models import ParticipantRoleType
 
 from .models import IncidentCost, IncidentCostCreate, IncidentCostUpdate
@@ -66,17 +67,13 @@ def get_all(*, db_session) -> List[Optional[IncidentCost]]:
     return db_session.query(IncidentCost)
 
 
-def get_or_create(*, db_session, incident_id: int, incident_cost_type_id: int) -> IncidentCost:
+def get_or_create(*, db_session, incident_cost_in: IncidentCostCreate) -> IncidentCost:
     """Gets or creates an incident cost."""
-    incident_cost = get_by_incident_id_and_incident_cost_type_id(
-        db_session=db_session, incident_id=incident_id, incident_cost_type_id=incident_cost_type_id
-    )
-
-    if not incident_cost:
-        incident_cost_type = incident_cost_type_service.get(
-            db_session=db_session, incident_cost_type_id=incident_cost_type_id
+    if incident_cost_in.id:
+        incident_cost = incident_cost_service.get(
+            db_session=db_session, incident_cost_id=incident_cost_in.id
         )
-        incident_cost_in = IncidentCostCreate(incident_cost_type=incident_cost_type)
+    else:
         incident_cost = create(db_session=db_session, incident_cost_in=incident_cost_in)
 
     return incident_cost

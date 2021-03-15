@@ -4,7 +4,9 @@ from schedule import every
 
 from dispatch.incident import service as incident_service
 from dispatch.decorators import background_task
+from dispatch.incident_cost.models import IncidentCostCreate
 from dispatch.incident_cost_type import service as incident_cost_type_service
+from dispatch.incident_cost_type.models import IncidentCostTypeRead
 from dispatch.scheduler import scheduler
 
 from .service import (
@@ -31,23 +33,22 @@ def calculate_incidents_response_cost(db_session=None):
     incidents = incident_service.get_all(db_session=db_session)
     for incident in incidents:
         try:
-            incident_response_cost = get_or_create(
-                incident_id=incident.id,
-                incident_cost_type_id=response_cost_type.id,
-                db_session=db_session,
-            )
-
             # we calculate the response cost amount
             amount = calculate_incident_response_cost(incident.id, db_session)
 
-            # we don't need to update the cost amount if it hasn't changed
+            incident_cost_in = IncidentCostCreate(
+                incident_cost_type=IncidentCostTypeRead(**response_cost_type.__dict__), amount=amount
+            )
+
+            incident_response_cost = get_or_create(
+                db_session=db_session, incident_cost_in=incident_cost_in
+            )
+
             if incident_response_cost.amount == amount:
                 continue
 
             # we save the new incident cost amount
-            incident_response_cost.amount = amount
             incident.incident_costs.append(incident_response_cost)
-            db_session.add(incident_response_cost)
             db_session.add(incident)
             db_session.commit()
 
