@@ -1,5 +1,12 @@
 <template>
   <v-list>
+    <v-list-item target="_blank">
+      <v-list-item-content>
+        <v-list-item-title>Total Cost</v-list-item-title>
+      </v-list-item-content>
+      <v-list-item-action>{{ totalCost | toUSD }} </v-list-item-action>
+    </v-list-item>
+    <v-divider />
     <span v-for="(cost, index) in incident_costs" :key="`cost-${index}`">
       <v-list-item target="_blank">
         <v-list-item-icon>
@@ -22,13 +29,6 @@
       </v-list-item>
       <v-divider />
     </span>
-    <v-list-item target="_blank">
-      <v-list-item-content>
-        <v-list-item-title>Total Cost</v-list-item-title>
-      </v-list-item-content>
-      <v-list-item-action>{{ totalCost | toUSD }} </v-list-item-action>
-    </v-list-item>
-    <v-divider />
     <v-flex xs12>
       <incident-cost-input @input="addIncidentCost($event)" />
     </v-flex>
