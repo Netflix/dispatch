@@ -1,7 +1,7 @@
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, inspect
 
 from dispatch.config import SQLALCHEMY_DATABASE_URI
 from dispatch.database import Base
@@ -26,39 +26,6 @@ target_metadata = Base.metadata  # noqa
 # ... etc.
 
 
-def run_migrations_offline():
-    """Run migrations in 'offline' mode.
-
-    This configures the context with just a URL
-    and not an Engine, though an Engine is acceptable
-    here as well.  By skipping the Engine creation
-    we don't even need a DBAPI to be available.
-
-    Calls to context.execute() here emit the given string to the
-    script output.
-
-    """
-    url = config.get_main_option("sqlalchemy.url")
-    context.configure(url=url, target_metadata=target_metadata, literal_binds=True)
-
-    def process_revision_directives(context, revision, directives):
-        if config.cmd_opts.autogenerate:
-            script = directives[0]
-            if script.upgrade_ops.is_empty():
-                directives[:] = []
-
-    # connectable = ...
-    with connectable.connect() as connection:  # noqa
-        context.configure(
-            connection=connection,
-            target_metadata=target_metadata,
-            process_revision_directives=process_revision_directives,
-        )
-
-        with context.begin_transaction():
-            context.run_migrations()
-
-
 def run_migrations_online():
     """Run migrations in 'online' mode.
 
@@ -73,11 +40,31 @@ def run_migrations_online():
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
 
+        print()
+        print("-" * 80)
+        print("Migrating schema 'public'\n")
+
         with context.begin_transaction():
             context.run_migrations()
 
+        try:
+            # get the schema names
+            tenant_schemas = inspect(connection).get_schema_names()
+
+            # attempt to migrate all project tenant schemas
+            for schema in tenant_schemas:
+                if schema.startswith("project."):
+                    print()
+                    print("-" * 80)
+                    print(f"Migrating schema {schema}\n")
+                    connection.execute(f'set search_path to "{schema}", public')
+                    with context.begin_transaction():
+                        context.run_migrations()
+        finally:
+            connection.close()
+
 
 if context.is_offline_mode():
-    run_migrations_offline()
+    print("Can't run migrations offline")
 else:
     run_migrations_online()

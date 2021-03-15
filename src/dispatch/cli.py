@@ -175,8 +175,10 @@ def sync_triggers():
     sync_trigger(engine, "task", "search_vector", ["description"])
     sync_trigger(engine, "team_contact", "search_vector", ["name", "company", "notes"])
     sync_trigger(engine, "term", "search_vector", ["text"])
-    sync_trigger(engine, "dispatch_user", "search_vector", ["email"])
     sync_trigger(engine, "workflow", "search_vector", ["name", "description"])
+    sync_trigger(engine, "public.dispatch_user", "search_vector", ["email"])
+    sync_trigger(engine, "public.project", "search_vector", ["name", "description"])
+    sync_trigger(engine, "public.organization", "search_vector", ["name", "description"])
 
 
 @dispatch_cli.group("user")

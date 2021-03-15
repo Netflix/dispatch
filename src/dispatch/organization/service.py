@@ -2,63 +2,43 @@ from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 
-from .models import TeamContact, TeamContactCreate, TeamContactUpdate
+from .models import Organization, OrganizationCreate, OrganizationUpdate
 
 
-def get(*, db_session, team_contact_id: int) -> Optional[TeamContact]:
-    return db_session.query(TeamContact).filter(TeamContact.id == team_contact_id).first()
+def get(*, db_session, organization_id: int) -> Optional[Organization]:
+    return db_session.query(Organization).filter(Organization.id == organization_id).first()
 
 
-def get_all(*, db_session) -> List[Optional[TeamContact]]:
-    return db_session.query(TeamContact)
+def get_all(*, db_session) -> List[Optional[Organization]]:
+    return db_session.query(Organization)
 
 
-def get_or_create(*, db_session, email: str, **kwargs) -> TeamContact:
-    contact = get_by_email(db_session=db_session, email=email)
-
-    if not contact:
-        team_contact = TeamContactCreate(email=email, **kwargs)
-        contact = create(db_session=db_session, team_contact_in=team_contact)
-
-    return contact
-
-
-def create(*, db_session, team_contact_in: TeamContactCreate) -> TeamContact:
-    team = TeamContact(
-        **team_contact_in.dict(exclude={"terms", "incident_priorities", "incident_types"}),
+def create(*, db_session, organization_in: OrganizationCreate) -> Organization:
+    team = Organization(
+        **organization_in.dict(),
     )
     db_session.add(team)
     db_session.commit()
     return team
 
 
-def create_all(*, db_session, team_contacts_in: List[TeamContactCreate]) -> List[TeamContact]:
-    contacts = [TeamContact(**t.dict()) for t in team_contacts_in]
-    db_session.bulk_save_objects(contacts)
-    db_session.commit()
-    return contacts
-
-
 def update(
-    *, db_session, team_contact: TeamContact, team_contact_in: TeamContactUpdate
-) -> TeamContact:
-    team_contact_data = jsonable_encoder(team_contact)
+    *, db_session, organization: Organization, organization_in: OrganizationUpdate
+) -> Organization:
+    organization_data = jsonable_encoder(organization)
 
-    update_data = team_contact_in.dict(
-        skip_defaults=True, exclude={"terms", "incident_priorities", "incident_types"}
-    )
+    update_data = organization_in.dict(skip_defaults=True)
 
-    for field in team_contact_data:
+    for field in organization_data:
         if field in update_data:
-            setattr(team_contact, field, update_data[field])
+            setattr(organization, field, update_data[field])
 
-    db_session.add(team_contact)
+    db_session.add(organization)
     db_session.commit()
-    return team_contact
+    return organization
 
 
-def delete(*, db_session, team_contact_id: int):
-    team = db_session.query(TeamContact).filter(TeamContact.id == team_contact_id).first()
-    team.terms = []
+def delete(*, db_session, organization_id: int):
+    organization = db_session.query(Organization).filter(Organization.id == organization_id).first()
     db_session.delete(team)
     db_session.commit()
