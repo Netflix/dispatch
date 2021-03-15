@@ -7,7 +7,10 @@ import bcrypt
 from jose import jwt
 from typing import Optional
 from pydantic import validator
-from sqlalchemy import Column, String, Binary, Integer
+
+from sqlalchemy import Column, String, Binary, Integer, Table
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
@@ -42,14 +45,23 @@ def hash_password(password: str):
     return bcrypt.hashpw(pw, salt)
 
 
+assoc_user_projects = Table(
+    "assoc_user_projects",
+    Base.metadata,
+    Column("dispatch_user_id", Integer, ForeignKey("public.dispatch_user.id")),
+    Column("project_id", Integer, ForeignKey("public.project.id")),
+    schema="public",
+)
+
+
 class DispatchUser(Base, TimeStampMixin):
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True)
     password = Column(Binary, nullable=False)
     role = Column(String, nullable=False, default=UserRoles.user)
 
-    organization_id = Column()
-    projects = Column()
+    organization_id = Column(Integer, ForeignKey("public.organization.id"))
+    projects = relationship("Project", secondary=assoc_user_projects)
 
     search_vector = Column(TSVectorType("email", weights={"email": "A"}))
 

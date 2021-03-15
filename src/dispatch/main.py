@@ -72,7 +72,7 @@ async def db_session_middleware(request: Request, call_next):
     try:
         # add correct schema mapping depending on the request
         schema_engine = engine.execution_options(
-            schema_translate_map={"public": None, None: "project_schema_one"}
+            schema_translate_map={"public": None}
         )
         session = sessionmaker(bind=schema_engine)
         request.state.db = session()
