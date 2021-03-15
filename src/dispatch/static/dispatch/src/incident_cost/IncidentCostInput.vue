@@ -17,7 +17,7 @@
           <template v-slot:activator="{ on }">
             <v-btn small icon @click="addIncidentCost()" v-on="on"><v-icon>add</v-icon></v-btn>
           </template>
-          <span>Add Incident Cost</span>
+          <span>Add Cost</span>
         </v-tooltip>
       </v-col>
     </v-row>
@@ -43,12 +43,14 @@ export default {
 
   methods: {
     addIncidentCost() {
-      // Passing data to parent component
-      this.$emit("input", { amount: this.amount, incident_cost_type: this.incident_cost_type })
+      if (this.amount !== null && this.incident_cost_type !== null) {
+        // Passing data to parent component
+        this.$emit("input", { amount: this.amount, incident_cost_type: this.incident_cost_type })
 
-      // Resetting default values
-      this.amount = null
-      this.incident_cost_type = null
+        // Resetting default values
+        this.amount = null
+        this.incident_cost_type = null
+      }
     }
   }
 }

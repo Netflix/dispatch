@@ -5,9 +5,9 @@
         <v-list-item-icon>
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
-              <v-btn small icon @click="removeIncidentCost(index)" v-on="on"
-                ><v-icon>remove</v-icon></v-btn
-              >
+              <v-btn small icon @click="removeIncidentCost(index)" v-on="on">
+                <v-icon>remove</v-icon>
+              </v-btn>
             </template>
             <span>Remove Cost</span>
           </v-tooltip>
@@ -18,7 +18,7 @@
           </v-list-item-title>
           <v-list-item-subtitle>{{ cost.incident_cost_type.description }}</v-list-item-subtitle>
         </v-list-item-content>
-        <v-list-item-action>{{ cost.amount | toUSD }} </v-list-item-action>
+        <v-list-item-action>{{ cost.amount | toUSD }}</v-list-item-action>
       </v-list-item>
       <v-divider />
     </span>
