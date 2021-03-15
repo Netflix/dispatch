@@ -21,7 +21,7 @@ class Organization(Base):
     __table_args__ = {"schema": "public"}
 
 
-class OrganizationBase(Base):
+class OrganizationBase(DispatchBase):
     name: str
     description: Optional[str]
 

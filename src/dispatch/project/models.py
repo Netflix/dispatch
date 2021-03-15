@@ -11,7 +11,7 @@ class Project(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
-    organization_id = Column(Integer, ForeignKey("organization.id"))
+    organization_id = Column(Integer, ForeignKey("public.organization.id"))
 
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})
