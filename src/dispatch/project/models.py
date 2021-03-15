@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database import Base
@@ -11,7 +11,13 @@ class Project(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
-    search_vector = Column(TSVectorType("name", "description", weights={"name": "A", "notes": "B"}))
+    organization_id = Column(Integer, ForeignKey("organization.id"))
+
+    search_vector = Column(
+        TSVectorType("name", "description", weights={"name": "A", "description": "B"})
+    )
+
+    __table_args__ = {"schema": "public"}
 
 
 class ProjectBase(ContactBase):

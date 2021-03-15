@@ -71,7 +71,9 @@ async def db_session_middleware(request: Request, call_next):
     response = Response("Internal Server Error", status_code=500)
     try:
         # add correct schema mapping depending on the request
-        schema_engine = engine.execution_options(schema_translate_map={"public": None, None: "project_schema_one"})
+        schema_engine = engine.execution_options(
+            schema_translate_map={"public": None, None: "project_schema_one"}
+        )
         session = sessionmaker(bind=schema_engine)
         request.state.db = session()
         response = await call_next(request)
