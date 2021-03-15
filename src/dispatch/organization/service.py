@@ -40,5 +40,5 @@ def update(
 
 def delete(*, db_session, organization_id: int):
     organization = db_session.query(Organization).filter(Organization.id == organization_id).first()
-    db_session.delete(team)
+    db_session.delete(organization)
     db_session.commit()
