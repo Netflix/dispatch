@@ -18,6 +18,7 @@ class IncidentCostType(Base, TimeStampMixin):
     description = Column(String)
     details = Column(JSONType, nullable=True)
     default = Column(Boolean, default=False)
+    editable = Column(Boolean, default=True)
 
     # full text search capabilities
     search_vector = Column(
@@ -48,20 +49,20 @@ class IncidentCostTypeBase(DispatchBase):
     description: Optional[str]
     details: Optional[dict]
     created_at: Optional[datetime]
+    default: Optional[bool]
+    editable: Optional[bool]
 
 
 class IncidentCostTypeCreate(IncidentCostTypeBase):
-    default: Optional[bool] = False
+    pass
 
 
 class IncidentCostTypeUpdate(IncidentCostTypeBase):
     id: int
-    default: Optional[bool] = False
 
 
 class IncidentCostTypeRead(IncidentCostTypeBase):
     id: int
-    default: Optional[bool] = False
 
 
 class IncidentCostTypeNested(IncidentCostTypeBase):
