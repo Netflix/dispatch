@@ -1070,14 +1070,16 @@ def incident_assign_role_flow(
                 "weblink": None,
             }
 
-        # we send a notification to the incident conversation
-        send_incident_new_role_assigned_notification(
-            assigner_contact_info, assignee_contact_info, assignee_role, incident, db_session
-        )
+        if incident.status != IncidentStatus.closed:
+            # we send a notification to the incident conversation
+            send_incident_new_role_assigned_notification(
+                assigner_contact_info, assignee_contact_info, assignee_role, incident, db_session
+            )
 
     if assignee_role == ParticipantRoleType.incident_commander:
-        # we update the conversation topic
-        set_conversation_topic(incident, db_session)
+        if incident.status != IncidentStatus.closed:
+            # we update the conversation topic
+            set_conversation_topic(incident, db_session)
 
         # we update the external ticket
         update_external_incident_ticket(incident, db_session)
