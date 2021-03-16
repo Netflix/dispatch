@@ -26,23 +26,6 @@ class IncidentCostType(Base, TimeStampMixin):
     )
 
 
-@event.listens_for(IncidentCostType.default, "set")
-def _revoke_other_default(target, value, oldvalue, initiator):
-    """Removes the previous default when a new one is set."""
-    session = object_session(target)
-    if session is None:
-        return
-
-    if value:
-        previous_default = (
-            session.query(IncidentCostType).filter(IncidentCostType.default == true()).one_or_none()
-        )
-
-        if previous_default:
-            previous_default.default = False
-            session.commit()
-
-
 # Pydantic Models
 class IncidentCostTypeBase(DispatchBase):
     name: str

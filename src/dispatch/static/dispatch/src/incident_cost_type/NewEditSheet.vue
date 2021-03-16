@@ -62,6 +62,7 @@
                   v-model="default_incident_cost_type"
                   label="Default"
                   hint="Check this if this incident cost type should be the default."
+                  disabled
                 />
               </v-flex>
               <v-flex xs12>
@@ -69,7 +70,6 @@
                   v-model="editable"
                   label="Editable"
                   hint="Whether this cost type can be edited or not."
-                  value
                   disabled
                 />
               </v-flex>
