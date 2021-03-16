@@ -6,7 +6,6 @@ from sqlalchemy.orm import relationship
 from dispatch.database import Base
 from dispatch.incident_cost_type.models import (
     IncidentCostTypeCreate,
-    IncidentCostTypeUpdate,
     IncidentCostTypeRead,
 )
 from dispatch.models import DispatchBase, TimeStampMixin

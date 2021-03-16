@@ -1,8 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import Column, Integer, String, Boolean, event
-from sqlalchemy.orm import object_session
+from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.expression import true
 from sqlalchemy_utils import TSVectorType, JSONType
 
