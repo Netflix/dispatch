@@ -29,7 +29,7 @@ class IncidentCostType(Base, TimeStampMixin):
 class IncidentCostTypeBase(DispatchBase):
     name: str
     description: Optional[str]
-    details: Optional[dict]
+    details: Optional[dict] = {}
     created_at: Optional[datetime]
     default: Optional[bool]
     editable: Optional[bool]
