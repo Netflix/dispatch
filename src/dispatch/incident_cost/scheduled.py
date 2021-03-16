@@ -11,7 +11,7 @@ from dispatch.scheduler import scheduler
 
 from .service import (
     calculate_incident_response_cost,
-    get_or_create,
+    get_by_incident_id_and_incident_cost_type_id,
 )
 
 
@@ -26,28 +26,31 @@ def calculate_incidents_response_cost(db_session=None):
     """
     response_cost_type = incident_cost_type_service.get_default(db_session=db_session)
     if not response_cost_type:
-        log.warning("A default cost type for response cost has not been defined.")
+        log.warning(
+            "A default cost type for response cost does not exist. Response costs won't be calculated."
+        )
         return
 
     # we want to update the response cost of all incidents, all the time
     incidents = incident_service.get_all(db_session=db_session)
     for incident in incidents:
         try:
+            # we get the response cost for the given incident
+            incident_response_cost = get_by_incident_id_and_incident_cost_type_id(
+                db_session=db_session,
+                incident_id=incident.id,
+                incident_cost_type_id=response_cost_type.id,
+            )
+
             # we calculate the response cost amount
             amount = calculate_incident_response_cost(incident.id, db_session)
 
-            incident_cost_in = IncidentCostCreate(
-                incident_cost_type=IncidentCostTypeRead(**response_cost_type.__dict__), amount=amount
-            )
-
-            incident_response_cost = get_or_create(
-                db_session=db_session, incident_cost_in=incident_cost_in
-            )
-
+            # we don't need to update the cost amount if it hasn't changed
             if incident_response_cost.amount == amount:
                 continue
 
             # we save the new incident cost amount
+            incident_response_cost.amount = amount
             incident.incident_costs.append(incident_response_cost)
             db_session.add(incident)
             db_session.commit()

@@ -60,10 +60,7 @@ def get_incident_cost_type(*, db_session: Session = Depends(get_db), incident_co
     return incident_cost_type
 
 
-@router.post(
-    "/",
-    response_model=IncidentCostTypeRead,
-)
+@router.post("/", response_model=IncidentCostTypeRead)
 def create_incident_cost_type(
     *, db_session: Session = Depends(get_db), incident_cost_type_in: IncidentCostTypeCreate
 ):
@@ -74,11 +71,7 @@ def create_incident_cost_type(
     return incident_cost_type
 
 
-@router.put(
-    "/{incident_cost_type_id}",
-    response_model=IncidentCostTypeRead,
-    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
-)
+@router.put("/{incident_cost_type_id}", response_model=IncidentCostTypeRead)
 def update_incident_cost_type(
     *,
     db_session: Session = Depends(get_db),
@@ -107,10 +100,7 @@ def update_incident_cost_type(
     return incident_cost_type
 
 
-@router.delete(
-    "/{incident_cost_type_id}",
-    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
-)
+@router.delete("/{incident_cost_type_id}")
 def delete_incident_cost_type(*, db_session: Session = Depends(get_db), incident_cost_type_id: int):
     """
     Delete an incident cost type, returning only an HTTP 200 OK if successful.

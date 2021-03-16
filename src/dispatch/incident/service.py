@@ -4,6 +4,7 @@ from typing import List, Optional
 from dispatch.database import SessionLocal
 from dispatch.event import service as event_service
 from dispatch.incident_cost import service as incident_cost_service
+from dispatch.incident_cost.models import IncidentCostCreate
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.participant import flows as participant_flows
@@ -229,7 +230,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
     for incident_cost in incident_in.incident_costs:
         incident_costs.append(
             incident_cost_service.get_or_create(
-                db_session=db_session, incident_cost_in=incident_cost
+                db_session=db_session, incident_cost_in=IncidentCostCreate(**incident_cost)
             )
         )
 
