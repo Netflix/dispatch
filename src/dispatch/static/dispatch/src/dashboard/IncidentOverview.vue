@@ -199,7 +199,7 @@ export default {
       return this.items.length
     },
     totalCost() {
-      return sumBy(this.items, "cost")
+      return sumBy(this.items, "total_cost")
     },
     avgCost() {
       return this.totalCost / this.totalIncidents
