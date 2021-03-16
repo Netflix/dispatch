@@ -10,7 +10,7 @@ const getDefaultSelectedState = () => {
     description: null,
     details: null,
     default: false,
-    editable: false,
+    editable: true,
     loading: false
   }
 }
