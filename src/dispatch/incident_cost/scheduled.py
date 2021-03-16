@@ -11,6 +11,7 @@ from dispatch.scheduler import scheduler
 
 from .service import (
     calculate_incident_response_cost,
+    create,
     get_by_incident_id_and_incident_cost_type_id,
 )
 
@@ -41,6 +42,15 @@ def calculate_incidents_response_cost(db_session=None):
                 incident_id=incident.id,
                 incident_cost_type_id=response_cost_type.id,
             )
+
+            if not incident_response_cost:
+                # we create the response cost if it doesn't exist
+                incident_cost_in = IncidentCostCreate(
+                    incident_cost_type=IncidentCostTypeRead(**response_cost_type.__dict__),
+                )
+                incident_response_cost = create(
+                    db_session=db_session, incident_cost_in=incident_cost_in
+                )
 
             # we calculate the response cost amount
             amount = calculate_incident_response_cost(incident.id, db_session)
