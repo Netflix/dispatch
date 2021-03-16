@@ -8,8 +8,8 @@ from dispatch.database import engine
 from .models import Project, ProjectCreate, ProjectUpdate
 
 
-def get(*, db_session, team_id: int) -> Optional[Project]:
-    return db_session.query(Project).filter(Project.id == team_id).first()
+def get(*, db_session, project_id: int) -> Optional[Project]:
+    return db_session.query(Project).filter(Project.id == project_id).first()
 
 
 def get_all(*, db_session) -> List[Optional[Project]]:
