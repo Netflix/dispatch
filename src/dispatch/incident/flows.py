@@ -948,7 +948,9 @@ def status_flow_dispatcher(
         if previous_status == IncidentStatus.closed:
             # re-activate incident
             incident_active_status_flow(incident=incident, db_session=db_session)
-        send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
+            send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
+        elif previous_status == IncidentStatus.stable:
+            send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
 
     # we currently have a stable incident
     elif current_status == IncidentStatus.stable:
