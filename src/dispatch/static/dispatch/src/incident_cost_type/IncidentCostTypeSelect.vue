@@ -1,6 +1,6 @@
 <template>
   <v-select
-    v-model="incident_type"
+    v-model="incident_cost_type"
     :items="items"
     :menu-props="{ maxHeight: '400' }"
     item-text="name"
@@ -18,10 +18,10 @@
 </template>
 
 <script>
-import IncidentTypeApi from "@/incident_type/api"
-import { cloneDeep } from "lodash"
+import IncidentCostTypeApi from "@/incident_cost_type/api"
+import { cloneDeep, debounce } from "lodash"
 export default {
-  name: "IncidentTypeSelect",
+  name: "IncidentCostTypeSelect",
 
   props: {
     value: {
@@ -40,7 +40,7 @@ export default {
   },
 
   computed: {
-    incident_type: {
+    incident_cost_type: {
       get() {
         return cloneDeep(this.value)
       },
@@ -51,14 +51,21 @@ export default {
   },
 
   created() {
-    this.error = null
-    this.loading = "error"
-    IncidentTypeApi.getAll({ itemsPerPage: 50, sortBy: ["name"], descending: [false] }).then(
-      response => {
+    this.fetchData({ fields: ["editable"], ops: ["=="], values: [true] })
+  },
+
+  methods: {
+    fetchData(filterOptions) {
+      this.error = null
+      this.loading = "error"
+      IncidentCostTypeApi.getAll(filterOptions).then(response => {
         this.items = response.data.items
         this.loading = false
-      }
-    )
+      })
+    },
+    getFilteredData: debounce(function(options) {
+      this.fetchData(options)
+    }, 500)
   }
 }
 </script>

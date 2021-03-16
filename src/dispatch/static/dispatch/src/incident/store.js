@@ -12,8 +12,10 @@ const getDefaultSelectedState = () => {
     created_at: null,
     description: null,
     documents: null,
+    duplicates: [],
     events: null,
     id: null,
+    incident_costs: [],
     incident_priority: null,
     incident_type: null,
     name: null,
@@ -26,11 +28,10 @@ const getDefaultSelectedState = () => {
     tags: [],
     terms: [],
     ticket: null,
-    duplicates: [],
-    workflow_instances: null,
     title: null,
-    visibility: null,
     trackingOnly: null,
+    visibility: null,
+    workflow_instances: null,
     loading: false
   }
 }
@@ -379,6 +380,13 @@ const actions = {
 
 const mutations = {
   updateField,
+  addIncidentCost(state, value) {
+    state.selected.incident_costs.push(value)
+  },
+  removeIncidentCost(state, idx) {
+    console.log(idx)
+    state.selected.incident_costs.splice(idx, 1)
+  },
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
   },

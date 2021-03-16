@@ -150,11 +150,13 @@ export const protectedRoute = [
     },
     children: [
       {
-        path: "/configuration/incidentTypes",
-        name: "IncidentTypeTable",
-        meta: { title: "Incident Types" },
+        path: "/configuration/incidentCostTypes",
+        name: "IncidentCostTypeTable",
+        meta: { title: "Incident Cost Types" },
         component: () =>
-          import(/* webpackChunkName: "incident-type-table" */ "@/incident_type/Table.vue")
+          import(
+            /* webpackChunkName: "incident-cost-type-table" */ "@/incident_cost_type/Table.vue"
+          )
       },
       {
         path: "/configuration/incidentPriorities",
@@ -162,6 +164,13 @@ export const protectedRoute = [
         meta: { title: "Incident Priorities" },
         component: () =>
           import(/* webpackChunkName: "routing-table" */ "@/incident_priority/Table.vue")
+      },
+      {
+        path: "/configuration/incidentTypes",
+        name: "IncidentTypeTable",
+        meta: { title: "Incident Types" },
+        component: () =>
+          import(/* webpackChunkName: "incident-type-table" */ "@/incident_type/Table.vue")
       },
       {
         path: "/configuration/notifications",

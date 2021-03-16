@@ -163,7 +163,7 @@ def update_external_incident_ticket(
         resolve_attr(incident, "incident_document.weblink"),
         resolve_attr(incident, "storage.weblink"),
         resolve_attr(incident, "conference.weblink"),
-        incident.cost,
+        incident.total_cost,
         incident_type_plugin_metadata=incident_type_plugin_metadata,
     )
 

@@ -87,6 +87,7 @@ export default {
       {
         action: "settings",
         items: [
+          { title: "Incident Cost Types", route: "/configuration/incidentCostTypes" },
           { title: "Incident Priorities", route: "/configuration/incidentPriorities" },
           { title: "Incident Types", route: "/configuration/incidentTypes" },
           { title: "Notifications", route: "/configuration/notifications" },
