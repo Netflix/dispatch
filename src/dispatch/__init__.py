@@ -48,7 +48,6 @@ try:
     from dispatch.organization.models import Organization  # noqa lgtm[py/unused-import]
     from dispatch.project.models import Project  # noqa lgtm[py/unused-import]
 except Exception as e:
-    print(e)
     pass
 
 

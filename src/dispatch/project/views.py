@@ -6,18 +6,18 @@ from sqlalchemy.orm import Session
 from dispatch.database import get_db, search_filter_sort_paginate
 
 from .models import (
-    TeamContactCreate,
-    TeamContactRead,
-    TeamContactUpdate,
-    TeamPagination,
+    ProjectCreate,
+    ProjectRead,
+    ProjectUpdate,
+    ProjectPagination,
 )
 from .service import create, delete, get, get_by_email, update
 
 router = APIRouter()
 
 
-@router.get("/", response_model=TeamPagination)
-def get_teams(
+@router.get("/", response_model=ProjectPagination)
+def get_projects(
     db_session: Session = Depends(get_db),
     page: int = 1,
     items_per_page: int = Query(5, alias="itemsPerPage"),
@@ -29,11 +29,11 @@ def get_teams(
     values: List[str] = Query([], alias="values[]"),
 ):
     """
-    Get all team contacts.
+    Get all project contacts.
     """
     return search_filter_sort_paginate(
         db_session=db_session,
-        model="TeamContact",
+        model="Project",
         query_str=query_str,
         page=page,
         items_per_page=items_per_page,
@@ -45,54 +45,54 @@ def get_teams(
     )
 
 
-@router.post("/", response_model=TeamContactRead)
-def create_team(*, db_session: Session = Depends(get_db), team_contact_in: TeamContactCreate):
+@router.post("/", response_model=ProjectRead)
+def create_project(*, db_session: Session = Depends(get_db), project_in: ProjectCreate):
     """
-    Create a new team contact.
+    Create a new project contact.
     """
-    team = get_by_email(db_session=db_session, email=team_contact_in.email)
-    if team:
-        raise HTTPException(status_code=400, detail="The team with this email already exists.")
-    team = create(db_session=db_session, team_contact_in=team_contact_in)
-    return team
+    project = get_by_email(db_session=db_session, email=project_in.email)
+    if project:
+        raise HTTPException(status_code=400, detail="The project with this email already exists.")
+    project = create(db_session=db_session, project_in=project_in)
+    return project
 
 
-@router.get("/{team_id}", response_model=TeamContactRead)
-def get_team(*, db_session: Session = Depends(get_db), team_contact_id: int):
+@router.get("/{project_id}", response_model=ProjectRead)
+def get_project(*, db_session: Session = Depends(get_db), project_id: int):
     """
-    Get a team contact.
+    Get a project contact.
     """
-    team = get(db_session=db_session, team_contact_id=team_contact_id)
-    if not team:
-        raise HTTPException(status_code=404, detail="The team with this id does not exist.")
-    return team
+    project = get(db_session=db_session, project_id=project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="The project with this id does not exist.")
+    return project
 
 
-@router.put("/{team_contact_id}", response_model=TeamContactRead)
-def update_team(
+@router.put("/{projectg_id}", response_model=ProjectRead)
+def update_project(
     *,
     db_session: Session = Depends(get_db),
-    team_contact_id: int,
-    team_contact_in: TeamContactUpdate,
+    project_id: int,
+    project_in: ProjectUpdate,
 ):
     """
-    Update a team contact.
+    Update a project contact.
     """
-    team = get(db_session=db_session, team_contact_id=team_contact_id)
-    if not team:
-        raise HTTPException(status_code=404, detail="The team with this id does not exist.")
-    team = update(db_session=db_session, team_contact=team, team_contact_in=team_contact_in)
-    return team
+    project = get(db_session=db_session, project_id=project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="The project with this id does not exist.")
+    project = update(db_session=db_session, project=project, project_in=project_in)
+    return project
 
 
-@router.delete("/{team_contact_id}", response_model=TeamContactRead)
-def delete_team(*, db_session: Session = Depends(get_db), team_contact_id: int):
+@router.delete("/{project_id}", response_model=ProjectRead)
+def delete_project(*, db_session: Session = Depends(get_db), project_id: int):
     """
-    Delete a team contact.
+    Delete a project contact.
     """
-    team = get(db_session=db_session, team_contact_id=team_contact_id)
-    if not team:
-        raise HTTPException(status_code=404, detail="The team with this id does not exist.")
+    project = get(db_session=db_session, project_id=project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="The project with this id does not exist.")
 
-    delete(db_session=db_session, team_contact_id=team_contact_id)
-    return team
+    delete(db_session=db_session, project_id=project_id)
+    return project
