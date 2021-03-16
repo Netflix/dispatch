@@ -230,7 +230,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
     for incident_cost in incident_in.incident_costs:
         incident_costs.append(
             incident_cost_service.get_or_create(
-                db_session=db_session, incident_cost_in=IncidentCostCreate(**incident_cost)
+                db_session=db_session, incident_cost_in=incident_cost
             )
         )
 
