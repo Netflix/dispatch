@@ -7,7 +7,7 @@
       <v-list-item-action>{{ totalCost | toUSD }} </v-list-item-action>
     </v-list-item>
     <v-divider />
-    <span v-for="(cost, index) in incident_costs" :key="`cost-${index}`">
+    <span v-for="(cost, index) in orderedIncidentCosts" :key="`cost-${index}`">
       <v-list-item target="_blank">
         <v-list-item-icon v-if="cost.incident_cost_type.editable">
           <v-tooltip bottom>
@@ -36,6 +36,7 @@
 </template>
 
 <script>
+import _ from "lodash"
 import { mapMutations } from "vuex"
 import { mapMultiRowFields } from "vuex-map-fields"
 import IncidentCostInput from "@/incident_cost/IncidentCostInput.vue"
@@ -55,6 +56,10 @@ export default {
         return accumulator + item.amount
       }, 0)
       return totalCost
+    },
+
+    orderedIncidentCosts: function() {
+      return _.orderBy(this.incident_costs, "id")
     }
   },
 
