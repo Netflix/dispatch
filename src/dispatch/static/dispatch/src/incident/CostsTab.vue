@@ -9,7 +9,7 @@
     <v-divider />
     <span v-for="(cost, index) in incident_costs" :key="`cost-${index}`">
       <v-list-item target="_blank">
-        <v-list-item-icon>
+        <v-list-item-icon v-if="cost.incident_cost_type.editable">
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
               <v-btn small icon @click="removeIncidentCost(index)" v-on="on">
