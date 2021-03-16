@@ -51,7 +51,7 @@ export default {
   },
 
   created() {
-    this.fetchData({})
+    this.fetchData({ fields: ["editable"], ops: ["=="], values: [true] })
   },
 
   methods: {
