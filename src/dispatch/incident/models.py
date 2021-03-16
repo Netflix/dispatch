@@ -198,7 +198,12 @@ class Incident(Base, TimeStampMixin):
             return total_cost
 
     # resources
-    incident_costs = relationship("IncidentCost", backref="incident", cascade="all, delete-orphan")
+    incident_costs = relationship(
+        "IncidentCost",
+        backref="incident",
+        cascade="all, delete-orphan",
+        order_by="IncidentCost.created_at",
+    )
 
     incident_priority = relationship("IncidentPriority", backref="incident")
     incident_priority_id = Column(Integer, ForeignKey("incident_priority.id"))

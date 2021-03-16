@@ -384,7 +384,6 @@ const mutations = {
     state.selected.incident_costs.push(value)
   },
   removeIncidentCost(state, idx) {
-    console.log(idx)
     state.selected.incident_costs.splice(idx, 1)
   },
   SET_SELECTED(state, value) {
