@@ -33,6 +33,9 @@
               <template v-slot:item.default="{ item }">
                 <v-simple-checkbox v-model="item.default" disabled></v-simple-checkbox>
               </template>
+              <template v-slot:item.editable="{ item }">
+                <v-simple-checkbox v-model="item.editable" disabled></v-simple-checkbox>
+              </template>
               <template v-slot:item.details="{ item }">{{ item.details }}</template>
               <template v-slot:item.created_at="{ item }">{{
                 item.created_at | formatDate
@@ -82,6 +85,7 @@ export default {
         { text: "Description", value: "description", sortable: false },
         { text: "Details", value: "details", sortable: false },
         { text: "Default", value: "default", sortable: true },
+        { text: "Editable", value: "editable", sortable: true },
         { text: "Created At", value: "created_at", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ]

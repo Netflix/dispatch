@@ -64,6 +64,15 @@
                   hint="Check this if this incident cost type should be the default."
                 />
               </v-flex>
+              <v-flex xs12>
+                <v-checkbox
+                  v-model="editable"
+                  label="Editable"
+                  hint="Whether this cost type can be edited or not."
+                  value
+                  disabled
+                />
+              </v-flex>
             </v-layout>
           </v-container>
         </v-card-text>
@@ -96,6 +105,7 @@ export default {
       "selected.name",
       "selected.description",
       "selected.details",
+      "selected.editable",
       "selected.id",
       "selected.loading",
       "dialogs.showCreateEdit"
