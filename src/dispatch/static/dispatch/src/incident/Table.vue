@@ -132,8 +132,9 @@ export default {
         { text: "Status", value: "status" },
         { text: "Type", value: "incident_type.name" },
         { text: "Priority", value: "incident_priority.name", width: "10%" },
-        { text: "Costs", value: "incident_costs" },
         { text: "Commander", value: "commander", sortable: false },
+        { text: "Reporter", value: "reporter", sortable: false },
+        { text: "Costs", value: "incident_costs" },
         { text: "Reported At", value: "reported_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ],
