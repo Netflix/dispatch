@@ -28,8 +28,8 @@ class WorkflowInstanceStatus(str, Enum):
 assoc_workflow_instances_artifacts = Table(
     "workflow_instance_artifact",
     Base.metadata,
-    Column("document_id", Integer, ForeignKey("document.id")),
-    Column("workflow_instance_id", Integer, ForeignKey("workflow_instance.id")),
+    Column("document_id", Integer, ForeignKey("document.id", ondelete="CASCADE")),
+    Column("workflow_instance_id", Integer, ForeignKey("workflow_instance.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("document_id", "workflow_instance_id"),
 )
 
