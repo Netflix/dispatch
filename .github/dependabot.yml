@@ -18,7 +18,7 @@ updates:
       interval: "weekly"
 
     # enable version updates for pypi
-  - package-ecosystem: "pip-compile"
+  - package-ecosystem: "pip"
     # look for `requirements.in` in the `root` directory
     directory: "/"
     # check for updates every day (weekdays)
