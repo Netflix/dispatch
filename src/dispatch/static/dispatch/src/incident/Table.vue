@@ -44,7 +44,13 @@
               <template v-slot:item.status="{ item }">
                 <incident-status :status="item.status" :id="item.id" />
               </template>
-              <template v-slot:item.total_cost="{ item }">{{ item.total_cost | toUSD }}</template>
+              <template v-slot:item.incident_costs="{ item }">
+                <incident-cost
+                  v-for="incident_cost in item.incident_costs"
+                  :key="incident_cost.id"
+                  :incident_cost="incident_cost"
+                />
+              </template>
               <template v-slot:item.commander="{ item }">
                 <incident-participant :participant="item.commander" />
               </template>
@@ -91,11 +97,12 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import BulkEditSheet from "@/incident/BulkEditSheet.vue"
 import DeleteDialog from "@/incident/DeleteDialog.vue"
-import ReportDialog from "@/incident/ReportDialog.vue"
+import IncidentCost from "@/incident_cost/IncidentCost.vue"
 import IncidentParticipant from "@/incident/Participant.vue"
 import IncidentPriority from "@/incident/IncidentPriority.vue"
 import IncidentStatus from "@/incident/IncidentStatus.vue"
 import NewSheet from "@/incident/NewSheet.vue"
+import ReportDialog from "@/incident/ReportDialog.vue"
 import TableExportDialog from "@/incident/TableExportDialog.vue"
 import TableFilterDialog from "@/incident/TableFilterDialog.vue"
 
@@ -105,11 +112,12 @@ export default {
   components: {
     BulkEditSheet,
     DeleteDialog,
-    ReportDialog,
+    IncidentCost,
     IncidentParticipant,
     IncidentPriority,
     IncidentStatus,
     NewSheet,
+    ReportDialog,
     TableExportDialog,
     TableFilterDialog
   },
@@ -124,7 +132,7 @@ export default {
         { text: "Status", value: "status" },
         { text: "Type", value: "incident_type.name" },
         { text: "Priority", value: "incident_priority.name", width: "10%" },
-        { text: "Total Cost", value: "total_cost" },
+        { text: "Costs", value: "incident_costs" },
         { text: "Commander", value: "commander", sortable: false },
         { text: "Reported At", value: "reported_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
