@@ -36,7 +36,7 @@ def get_template(message_type: MessageType):
             "notification_list.mjml",
             DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
         ),
-        MessageType.incident_feedback_daily_digest: (
+        MessageType.incident_feedback_daily_report: (
             "notification_list.mjml",
             INCIDENT_FEEDBACK_DAILY_REPORT_DESCRIPTION,
         ),
