@@ -119,7 +119,7 @@ groups:read
 
 ## Dispatch Configuration
 
-#### `SLACK_WORKSPACE_NAME \[Required. Secret: True\]`
+#### `SLACK_WORKSPACE_NAME` \[Required. Secret: True\]
 
 > Specifies the name of the workspace where the Slack app is installed. This variable is typically the subdomain provided by Slack. For example, if your Slack workspace is accessible at `example.slack.com`, you would set your workspace name to `example`.
 
