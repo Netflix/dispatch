@@ -1,0 +1,28 @@
+# Basic dependabot.yml file with
+# minimum configuration for two package managers
+
+version: 2
+updates:
+  # Enable version updates for npm
+  - package-ecosystem: "npm"
+    directory: "/src/dispatch/static/dispatch"
+    # Check the npm registry for updates every day (weekdays)
+    schedule:
+      interval: "daily"
+    versioning-strategy: lockfile-only
+
+  # Enable version updates for Docker
+  - package-ecosystem: "docker"
+    directory: "/docker"
+    # Check for updates once a week
+    schedule:
+      interval: "weekly"
+
+    # enable version updates for pypi
+  - package-ecosystem: "pip"
+    # look for `requirements.in` in the `root` directory
+    directory: "/"
+    # check for updates every day (weekdays)
+    schedule:
+      interval: "daily"
+    versioning-strategy: lockfile-only
