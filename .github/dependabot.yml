@@ -9,6 +9,7 @@ updates:
     # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "daily"
+    versioning-strategy: lockfile-only
 
   # Enable version updates for Docker
   - package-ecosystem: "docker"
@@ -24,3 +25,4 @@ updates:
     # check for updates every day (weekdays)
     schedule:
       interval: "daily"
+    versioning-strategy: lockfile-only
