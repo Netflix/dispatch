@@ -45,17 +45,10 @@
                 <incident-status :status="item.status" :id="item.id" />
               </template>
               <template v-slot:item.incident_costs="{ item }">
-                <incident-cost
-                  v-for="incident_cost in item.incident_costs"
-                  :key="incident_cost.id"
-                  :incident_cost="incident_cost"
-                />
+                <incident-cost-card :incident_costs="item.incident_costs" />
               </template>
               <template v-slot:item.commander="{ item }">
                 <incident-participant :participant="item.commander" />
-              </template>
-              <template v-slot:item.reporter="{ item }">
-                <incident-participant :participant="item.reporter" />
               </template>
               <template v-slot:item.reported_at="{ item }">{{
                 item.reported_at | formatDate
@@ -97,7 +90,7 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import BulkEditSheet from "@/incident/BulkEditSheet.vue"
 import DeleteDialog from "@/incident/DeleteDialog.vue"
-import IncidentCost from "@/incident_cost/IncidentCost.vue"
+import IncidentCostCard from "@/incident_cost/IncidentCostCard.vue"
 import IncidentParticipant from "@/incident/Participant.vue"
 import IncidentPriority from "@/incident/IncidentPriority.vue"
 import IncidentStatus from "@/incident/IncidentStatus.vue"
@@ -112,7 +105,7 @@ export default {
   components: {
     BulkEditSheet,
     DeleteDialog,
-    IncidentCost,
+    IncidentCostCard,
     IncidentParticipant,
     IncidentPriority,
     IncidentStatus,
@@ -133,8 +126,7 @@ export default {
         { text: "Type", value: "incident_type.name" },
         { text: "Priority", value: "incident_priority.name", width: "10%" },
         { text: "Commander", value: "commander", sortable: false },
-        { text: "Reporter", value: "reporter", sortable: false },
-        { text: "Costs", value: "incident_costs" },
+        { text: "Cost", value: "incident_costs", sortable: false },
         { text: "Reported At", value: "reported_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }
       ],
