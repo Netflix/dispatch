@@ -1,40 +1,32 @@
 <template>
-  <v-navigation-drawer app :value="toggleDrawer" permanent clipped class="background1">
-    <vue-perfect-scrollbar class="drawer-menu--scroll" :settings="scrollSettings">
-      <v-list nav>
-        <v-list-group v-for="item in items" :key="item.title" v-model="item.active" no-action>
-          <template v-slot:activator>
-            <v-list-item-content>
-              <v-list-item-title v-text="item.title"></v-list-item-title>
-            </v-list-item-content>
-          </template>
+  <v-navigation-drawer app permanent width="440" clipped class="background1">
+    <v-row class="fill-height" no-gutters>
+      <v-navigation-drawer width="220" permanent>
+        <v-list dense nav>
+          <v-list-item v-for="item in items" :key="item.title">
+            <v-list-item-action>
+              <v-icon>{{ item.icon }}</v-icon>
+            </v-list-item-action>
 
-          <v-list-item v-for="child in item.items" :key="child.title" :to="child.route" exact>
             <v-list-item-content>
-              <v-list-item-title v-text="child.title"></v-list-item-title>
+              <v-list-item-title>{{ item.title }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-        </v-list-group>
+        </v-list>
+      </v-navigation-drawer>
+
+      <v-list class="grow">
+        <v-list-item v-for="link in links" :key="link" link>
+          <v-list-item-title v-text="link"></v-list-item-title>
+        </v-list-item>
       </v-list>
-    </vue-perfect-scrollbar>
-    <template v-slot:append>
-      <div class="pa-3">
-        <v-btn color="error" block to="/incidents/report">
-          <v-icon left>error_outline</v-icon>
-          Report Incident
-        </v-btn>
-      </div>
-    </template>
+    </v-row>
   </v-navigation-drawer>
 </template>
 <script>
 import { mapState } from "vuex"
-import VuePerfectScrollbar from "vue-perfect-scrollbar"
 export default {
   name: "AppDrawer",
-  components: {
-    VuePerfectScrollbar
-  },
   props: {
     expanded: {
       type: Boolean,
@@ -47,14 +39,44 @@ export default {
   },
 
   data: () => ({
+    links: ["Home", "Contacts", "Settings"],
     items: [
+      { title: "Projects", icon: "mdi-view-dashboard" },
+      { title: "Incidents", icon: "mdi-view-dashboard" },
+      { title: "Tasks", icon: "mdi-forum" }
+    ],
+    items2: [
+      {
+        action: "project",
+        items: [
+          { title: "Incidents", route: "/dashboard/incidents" },
+          { title: "Tasks", route: "/dashboard/tasks" }
+        ],
+        title: "Projects"
+      },
+      {
+        action: "incidents",
+        items: [
+          { title: "Incidents", route: "/dashboard/incidents" },
+          { title: "Tasks", route: "/dashboard/tasks" }
+        ],
+        title: "Incidents"
+      },
+      {
+        action: "task",
+        items: [
+          { title: "Incidents", route: "/dashboard/incidents" },
+          { title: "Tasks", route: "/dashboard/tasks" }
+        ],
+        title: "Tasks"
+      },
       {
         action: "dashboard",
         items: [
           { title: "Incidents", route: "/dashboard/incidents" },
           { title: "Tasks", route: "/dashboard/tasks" }
         ],
-        title: "Dashboard"
+        title: ""
       },
       {
         action: "error_outline",
