@@ -41,8 +41,8 @@ assoc_document_incident_types = Table(
 assoc_document_terms = Table(
     "document_terms",
     Base.metadata,
-    Column("term_id", Integer, ForeignKey("term.id")),
-    Column("document_id", Integer, ForeignKey("document.id")),
+    Column("term_id", Integer, ForeignKey("term.id", ondelete="CASCADE")),
+    Column("document_id", Integer, ForeignKey("document.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("term_id", "document_id"),
 )
 
@@ -59,9 +59,7 @@ class Document(Base, ResourceMixin, TimeStampMixin):
     incident_types = relationship(
         "IncidentType", secondary=assoc_document_incident_types, backref="documents"
     )
-    terms = relationship(
-        "Term", secondary=assoc_document_terms, backref=backref("documents", cascade="all")
-    )
+    terms = relationship("Term", secondary=assoc_document_terms, backref="documents")
 
     evergreen = Column(Boolean)
     evergreen_owner = Column(String)
