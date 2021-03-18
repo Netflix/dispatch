@@ -74,8 +74,8 @@ class Task(Base, ResourceMixin, TimeStampMixin):
     resolved_at = Column(DateTime)
     resolve_by = Column(DateTime, default=default_resolution_time)
     last_reminder_at = Column(DateTime)
-    creator_id = Column(Integer, ForeignKey("participant.id"))
-    owner_id = Column(Integer, ForeignKey("participant.id"))
+    creator_id = Column(Integer, ForeignKey("participant.id", ondelete="CASCADE"))
+    owner_id = Column(Integer, ForeignKey("participant.id", ondelete="CASCADE"))
     assignees = relationship(
         "Participant", secondary=assoc_task_assignees, backref="assigned_tasks", lazy="subquery"
     )

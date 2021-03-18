@@ -116,6 +116,7 @@ class ServiceReadNested(DispatchBase):
 class IndividualReadNested(ContactBase):
     id: Optional[int]
     title: Optional[str] = None
+    external_id: Optional[str]
     weblink: Optional[str]
     title: Optional[str]
 
