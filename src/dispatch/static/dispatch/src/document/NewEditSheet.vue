@@ -79,7 +79,7 @@
                     label="External Id"
                     :error-messages="errors"
                     :success="valid"
-                    hint="An external identifier for document. Tipically, the unique id in the weblink."
+                    hint="External identifier for document. Used for API integration (e.g. Google doc file id). Typically is the unique id in the weblink."
                     clearable
                   />
                 </ValidationProvider>
