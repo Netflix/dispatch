@@ -13,6 +13,7 @@ from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
 
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from dispatch.database import get_db
 
 from dispatch.plugins.base import plugins
@@ -51,10 +52,11 @@ def create(*, db_session, user_in: UserRegister) -> DispatchUser:
 
 def get_or_create(*, db_session, user_in: UserRegister) -> DispatchUser:
     """Gets an existing user or creates a new one."""
-    user = get_by_email(db_session=db_session, email=user_in.email)
-    if not user:
+    try:
         return create(db_session=db_session, user_in=user_in)
-    return user
+    except IntegrityError:
+        db_session.rollback()
+        return get_by_email(db_session=db_session, email=user_in.email)
 
 
 def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUser:
