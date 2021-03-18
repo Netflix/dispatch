@@ -165,9 +165,9 @@ groups:read
 
 
 ### Commands
-List of available commands (for easy cut & paste into Slack Slash Commands section), with variable names for optional override.
+Below are the optional env variables to override the default slack command names as documented in the [Incident Commander](../../user-guide/incident-commander.md#all-slack-commands) user guide page.  Also included are the descriptions for easy cut & paste into the Slack Slash Commands set-up.
 
-| Variable | Default command + *Command description* |
+| Override env var | Default command + *Command description* |
 --- | ---
 | `SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG`           | /dispatch-add-timeline-event  |
 |                                                   | *Opens a dialog to add an event to the incident timeline.* |
