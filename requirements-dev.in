@@ -1,0 +1,9 @@
+IPython
+black
+coverage
+devtools
+factory-boy
+faker
+flake8
+pytest
+vulture
