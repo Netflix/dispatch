@@ -36,24 +36,24 @@ assoc_workflow_instances_artifacts = Table(
 assoc_workflow_incident_priorities = Table(
     "workflow_incident_priority",
     Base.metadata,
-    Column("incident_priority_id", Integer, ForeignKey("incident_priority.id")),
-    Column("workflow_id", Integer, ForeignKey("workflow.id")),
+    Column("incident_priority_id", Integer, ForeignKey("incident_priority.id", ondelete="CASCADE")),
+    Column("workflow_id", Integer, ForeignKey("workflow.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("incident_priority_id", "workflow_id"),
 )
 
 assoc_workflow_incident_types = Table(
     "workflow_incident_type",
     Base.metadata,
-    Column("incident_type_id", Integer, ForeignKey("incident_type.id")),
-    Column("workflow_id", Integer, ForeignKey("workflow.id")),
+    Column("incident_type_id", Integer, ForeignKey("incident_type.id", ondelete="CASCADE")),
+    Column("workflow_id", Integer, ForeignKey("workflow.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("incident_type_id", "workflow_id"),
 )
 
 assoc_workflow_terms = Table(
     "workflow_term",
     Base.metadata,
-    Column("term_id", Integer, ForeignKey("term.id")),
-    Column("workflow_id", Integer, ForeignKey("workflow.id")),
+    Column("term_id", Integer, ForeignKey("term.id", ondelete="CASCADE")),
+    Column("workflow_id", Integer, ForeignKey("workflow.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("term_id", "workflow_id"),
 )
 
