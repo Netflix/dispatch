@@ -163,7 +163,7 @@ def update_external_incident_ticket(
         resolve_attr(incident, "incident_document.weblink"),
         resolve_attr(incident, "storage.weblink"),
         resolve_attr(incident, "conference.weblink"),
-        incident.cost,
+        incident.total_cost,
         incident_type_plugin_metadata=incident_type_plugin_metadata,
     )
 
@@ -948,7 +948,9 @@ def status_flow_dispatcher(
         if previous_status == IncidentStatus.closed:
             # re-activate incident
             incident_active_status_flow(incident=incident, db_session=db_session)
-        send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
+            send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
+        elif previous_status == IncidentStatus.stable:
+            send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
 
     # we currently have a stable incident
     elif current_status == IncidentStatus.stable:
@@ -1068,14 +1070,16 @@ def incident_assign_role_flow(
                 "weblink": None,
             }
 
-        # we send a notification to the incident conversation
-        send_incident_new_role_assigned_notification(
-            assigner_contact_info, assignee_contact_info, assignee_role, incident, db_session
-        )
+        if incident.status != IncidentStatus.closed:
+            # we send a notification to the incident conversation
+            send_incident_new_role_assigned_notification(
+                assigner_contact_info, assignee_contact_info, assignee_role, incident, db_session
+            )
 
     if assignee_role == ParticipantRoleType.incident_commander:
-        # we update the conversation topic
-        set_conversation_topic(incident, db_session)
+        if incident.status != IncidentStatus.closed:
+            # we update the conversation topic
+            set_conversation_topic(incident, db_session)
 
         # we update the external ticket
         update_external_incident_ticket(incident, db_session)

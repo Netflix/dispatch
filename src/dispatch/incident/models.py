@@ -6,7 +6,6 @@ from pydantic import validator
 from sqlalchemy import (
     Column,
     DateTime,
-    Float,
     ForeignKey,
     Integer,
     PrimaryKeyConstraint,
@@ -17,7 +16,6 @@ from sqlalchemy import (
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
-
 
 from dispatch.config import (
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
@@ -31,6 +29,7 @@ from dispatch.database import Base
 from dispatch.document.models import DocumentRead
 from dispatch.enums import Visibility
 from dispatch.event.models import EventRead
+from dispatch.incident_cost.models import IncidentCostRead, IncidentCostUpdate
 from dispatch.incident_priority.models import (
     IncidentPriorityBase,
     IncidentPriorityCreate,
@@ -73,7 +72,6 @@ class Incident(Base, TimeStampMixin):
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
     status = Column(String, default=IncidentStatus.active.value)
-    cost = Column(Float, default=0)
     visibility = Column(String, default=Visibility.open)
 
     # auto generated
@@ -191,7 +189,22 @@ class Incident(Base, TimeStampMixin):
             locations = [p.location for p in self.participants]
             return Counter(locations).most_common(1)[0][0]
 
+    @hybrid_property
+    def total_cost(self):
+        if self.incident_costs:
+            total_cost = 0
+            for cost in self.incident_costs:
+                total_cost += cost.amount
+            return total_cost
+
     # resources
+    incident_costs = relationship(
+        "IncidentCost",
+        backref="incident",
+        cascade="all, delete-orphan",
+        order_by="IncidentCost.created_at",
+    )
+
     incident_priority = relationship("IncidentPriority", backref="incident")
     incident_priority_id = Column(Integer, ForeignKey("incident_priority.id"))
     incident_type = relationship("IncidentType", backref="incident")
@@ -251,7 +264,6 @@ class IncidentBase(DispatchBase):
 
 class IncidentReadNested(IncidentBase):
     id: int
-    cost: float = None
     name: str = None
     reporter: Optional[ParticipantRead]
     commander: Optional[ParticipantRead]
@@ -279,11 +291,11 @@ class IncidentUpdate(IncidentBase):
     duplicates: Optional[List[IncidentReadNested]] = []
     tags: Optional[List[Any]] = []  # any until we figure out circular imports
     terms: Optional[List[Any]] = []  # any until we figure out circular imports
+    incident_costs: Optional[List[IncidentCostUpdate]] = []
 
 
 class IncidentRead(IncidentBase):
     id: int
-    cost: float = None
     name: str = None
     primary_team: Any
     primary_location: Any
@@ -308,6 +320,8 @@ class IncidentRead(IncidentBase):
     duplicates: Optional[List[IncidentReadNested]] = []
     stable_at: Optional[datetime] = None
     closed_at: Optional[datetime] = None
+    incident_costs: Optional[List[IncidentCostRead]] = []
+    total_cost: Optional[float]
 
 
 class IncidentPagination(DispatchBase):

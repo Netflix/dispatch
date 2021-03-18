@@ -27,6 +27,7 @@
         <v-tab key="participants">Participants</v-tab>
         <v-tab key="timeline">Timeline</v-tab>
         <v-tab key="workflows">Workflows</v-tab>
+        <v-tab key="costs">Costs</v-tab>
       </v-tabs>
       <v-tabs-items v-model="tab">
         <v-tab-item key="details">
@@ -44,6 +45,9 @@
         <v-tab-item key="workflow_instances">
           <incident-workflow-instance-tab />
         </v-tab-item>
+        <v-tab-item key="costs">
+          <incident-costs-tab />
+        </v-tab-item>
       </v-tabs-items>
     </v-navigation-drawer>
   </ValidationObserver>
@@ -59,6 +63,7 @@ import IncidentResourcesTab from "@/incident/ResourcesTab.vue"
 import IncidentParticipantsTab from "@/incident/ParticipantsTab.vue"
 import IncidentTimelineTab from "@/incident/TimelineTab.vue"
 import IncidentWorkflowInstanceTab from "@/incident/WorkflowInstanceTab.vue"
+import IncidentCostsTab from "@/incident/CostsTab.vue"
 
 export default {
   name: "IncidentEditSheet",
@@ -69,7 +74,8 @@ export default {
     IncidentResourcesTab,
     IncidentParticipantsTab,
     IncidentTimelineTab,
-    IncidentWorkflowInstanceTab
+    IncidentWorkflowInstanceTab,
+    IncidentCostsTab
   },
 
   data() {

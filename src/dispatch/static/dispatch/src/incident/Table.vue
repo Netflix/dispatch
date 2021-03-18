@@ -44,7 +44,7 @@
               <template v-slot:item.status="{ item }">
                 <incident-status :status="item.status" :id="item.id" />
               </template>
-              <template v-slot:item.cost="{ item }">{{ item.cost | toUSD }}</template>
+              <template v-slot:item.total_cost="{ item }">{{ item.total_cost | toUSD }}</template>
               <template v-slot:item.commander="{ item }">
                 <incident-participant :participant="item.commander" />
               </template>
@@ -124,7 +124,7 @@ export default {
         { text: "Status", value: "status" },
         { text: "Type", value: "incident_type.name" },
         { text: "Priority", value: "incident_priority.name", width: "10%" },
-        { text: "Cost", value: "cost" },
+        { text: "Total Cost", value: "total_cost" },
         { text: "Commander", value: "commander", sortable: false },
         { text: "Reported At", value: "reported_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" }

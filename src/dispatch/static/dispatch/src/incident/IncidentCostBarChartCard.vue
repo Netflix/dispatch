@@ -95,7 +95,7 @@ export default {
     series() {
       let series = { name: "cost", data: [] }
       forEach(this.value, function(value) {
-        series.data.push(sumBy(value, "cost"))
+        series.data.push(sumBy(value, "total_cost"))
       })
 
       return [series]

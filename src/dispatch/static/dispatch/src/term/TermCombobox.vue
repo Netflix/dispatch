@@ -1,6 +1,7 @@
 <template>
   <v-combobox
     v-model="terms"
+    item-text="text"
     :items="items"
     :search-input.sync="search"
     hide-selected
