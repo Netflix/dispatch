@@ -72,6 +72,19 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
+                <ValidationProvider name="ExternalId">
+                  <v-text-field
+                    v-model="external_id"
+                    slot-scope="{ errors, valid }"
+                    label="ExternalId"
+                    :error-messages="errors"
+                    :success="valid"
+                    hint="Individual's external ID."
+                    clearable
+                  />
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
                 <span class="subtitle-2">Engagement</span>
               </v-flex>
               <v-flex xs12>
@@ -127,6 +140,7 @@ export default {
       "selected.name",
       "selected.email",
       "selected.company",
+      "selected.external_id",
       "selected.terms",
       "selected.incident_priorities",
       "selected.incident_types",

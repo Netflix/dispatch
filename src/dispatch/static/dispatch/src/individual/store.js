@@ -10,6 +10,7 @@ const getDefaultSelectedState = () => {
     company: null,
     notes: null,
     title: null,
+    external_id: null,
     terms: [],
     incident_priorities: [],
     incident_types: [],

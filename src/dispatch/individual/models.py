@@ -44,6 +44,7 @@ class IndividualContact(ContactMixin, Base):
     office_phone = Column(String)
     title = Column(String)
     weblink = Column(String)
+    external_id = Column(String)
 
     # this is a self referential relationship lets punt on this for now.
     # relationship_owner_id = Column(Integer, ForeignKey("individual_contact.id"))
@@ -78,6 +79,7 @@ class IndividualContactBase(ContactBase):
     mobile_phone: Optional[str]
     office_phone: Optional[str]
     title: Optional[str]
+    external_id: Optional[str]
 
 
 class IndividualContactCreate(IndividualContactBase):
