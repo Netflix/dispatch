@@ -94,7 +94,7 @@ def update_organization(
 @router.delete("/{organization_id}", response_model=OrganizationRead)
 def delete_organization(*, db_session: Session = Depends(get_db), organization_id: int):
     """
-    Delete a organization.
+    Delete an organization.
     """
     organization = get(db_session=db_session, organization_id=organization_id)
     if not organization:
