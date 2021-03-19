@@ -57,10 +57,7 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <incident-cost-type-category-select
-                  v-model="category"
-                  hint="FAIR Form of Loss Category."
-                />
+                <incident-cost-type-category-select v-model="category" />
               </v-flex>
               <!-- TODO(mvilanova): Add section for cost type details -->
               <v-flex xs12>
