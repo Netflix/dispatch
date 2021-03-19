@@ -29,7 +29,7 @@ def get_organizations(
     values: List[str] = Query([], alias="values[]"),
 ):
     """
-    Get all organization contacts.
+    Get all organizations.
     """
     return search_filter_sort_paginate(
         db_session=db_session,
@@ -80,7 +80,7 @@ def update_organization(
     organization_in: OrganizationUpdate,
 ):
     """
-    Update a organization contact.
+    Update a organization.
     """
     organization = get(db_session=db_session, organization_id=organization_id)
     if not organization:
@@ -94,11 +94,11 @@ def update_organization(
 @router.delete("/{organization_id}", response_model=OrganizationRead)
 def delete_organization(*, db_session: Session = Depends(get_db), organization_id: int):
     """
-    Delete a organization.
+    Delete an organization.
     """
     organization = get(db_session=db_session, organization_id=organization_id)
     if not organization:
-        raise HTTPException(status_code=404, detail="The organization with this id does not exist.")
+        raise HTTPException(status_code=404, detail="An organization with this id does not exist.")
 
     delete(db_session=db_session, organization_id=organization_id)
     return organization
