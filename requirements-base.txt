@@ -120,7 +120,7 @@ jira==2.0.0
     # via -r requirements-base.in
 joblib==1.0.1
     # via -r requirements-base.in
-lxml==4.6.2
+lxml==4.6.3
     # via
     #   emails
     #   premailer
