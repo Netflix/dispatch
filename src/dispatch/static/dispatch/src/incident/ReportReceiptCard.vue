@@ -226,9 +226,9 @@ export default {
   },
   mounted() {
     DocumentApi.getAll({
-      "field[]": "resource_type",
-      "op[]": "==",
-      "value[]": "dispatch-incident-faq"
+      "fields[]": "resource_type",
+      "ops[]": "==",
+      "values[]": "dispatch-incident-faq"
     }).then(response => {
       if (response.data.items.length) {
         this.incident_faq = response.data.items[0]
@@ -236,9 +236,9 @@ export default {
     })
     PluginApi.getAll({
       itemsPerPage: -1,
-      "field[]": "enabled",
-      "op[]": "==",
-      "value[]": "true"
+      "fields[]": "enabled",
+      "ops[]": "==",
+      "values[]": "true"
     }).then(response => {
       let data = response.data.items
       let activeResourcePlugins = this.activeResourcePlugins
