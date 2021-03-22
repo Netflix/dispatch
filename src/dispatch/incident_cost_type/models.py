@@ -15,6 +15,7 @@ class IncidentCostType(Base, TimeStampMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
+    category = Column(String)
     details = Column(JSONType, nullable=True)
     default = Column(Boolean, default=False)
     editable = Column(Boolean, default=True)
@@ -29,6 +30,7 @@ class IncidentCostType(Base, TimeStampMixin):
 class IncidentCostTypeBase(DispatchBase):
     name: str
     description: Optional[str]
+    category: Optional[str]
     details: Optional[dict] = {}
     created_at: Optional[datetime]
     default: Optional[bool]

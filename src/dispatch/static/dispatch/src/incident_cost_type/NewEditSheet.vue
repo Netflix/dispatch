@@ -56,6 +56,9 @@
                   />
                 </ValidationProvider>
               </v-flex>
+              <v-flex xs12>
+                <incident-cost-type-category-select v-model="category" />
+              </v-flex>
               <!-- TODO(mvilanova): Add section for cost type details -->
               <v-flex xs12>
                 <v-checkbox
@@ -86,6 +89,7 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
+import IncidentCostTypeCategorySelect from "@/incident_cost_type/IncidentCostTypeCategorySelect.vue"
 
 extend("required", {
   ...required,
@@ -97,13 +101,15 @@ export default {
 
   components: {
     ValidationObserver,
-    ValidationProvider
+    ValidationProvider,
+    IncidentCostTypeCategorySelect
   },
 
   computed: {
     ...mapFields("incident_cost_type", [
       "selected.name",
       "selected.description",
+      "selected.category",
       "selected.details",
       "selected.editable",
       "selected.id",

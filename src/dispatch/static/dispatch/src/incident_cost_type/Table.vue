@@ -83,6 +83,7 @@ export default {
       headers: [
         { text: "Name", value: "name", sortable: false },
         { text: "Description", value: "description", sortable: false },
+        { text: "Category", value: "category", sortable: false },
         { text: "Details", value: "details", sortable: false },
         { text: "Default", value: "default", sortable: true },
         { text: "Editable", value: "editable", sortable: true },
