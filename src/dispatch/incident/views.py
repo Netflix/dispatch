@@ -71,10 +71,12 @@ def get_incidents(
     """
     Retrieve a list of all incidents.
     """
+    if filter_spec:
+        filter_spec = json.loads(filter_spec)
+
     pagination = search_filter_sort_paginate(
         db_session=db_session,
         model="Incident",
-        user=current_user,
         query_str=query_str,
         filter_spec=filter_spec,
         page=page,
@@ -87,6 +89,8 @@ def get_incidents(
         join_attrs=[
             ("tag", "tags"),
         ],
+        user_role=current_user.role,
+        user_email=current_user.email,
     )
 
     if include:

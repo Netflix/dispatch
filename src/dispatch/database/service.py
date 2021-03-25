@@ -4,13 +4,16 @@ from itertools import groupby
 
 from typing import Any, List
 
+from sqlalchemy import and_, not_
 from sqlalchemy.orm import Query, sessionmaker
 from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
 from sqlalchemy_searchable import search as search_db
 
 from dispatch.common.utils.composite_search import CompositeSearch
 from dispatch.enums import Visibility, UserRoles
+from dispatch.incident.models import Incident
 from dispatch.individual.models import IndividualContact
+from dispatch.task.models import Task
 
 from .base import Base, get_class_by_tablename, get_model_name_by_tablename
 
@@ -149,14 +152,27 @@ def search_filter_sort_paginate(
     else:
         query = db_session.query(model_cls)
 
-    print(query.all())
+    query_a = query
 
     if user_role != UserRoles.admin.value:
-        if model.lower() in ["incident", "task"]:
-            # we filter restricted incidents and tasks based on incident participation
-            query = query.join(IndividualContact).filter(IndividualContact.email == user_email)
-
-    print(query.all())
+        # we filter restricted incidents and tasks based on incident participation
+        if model.lower() == "incident":
+            print(f"Before filtering: {len(query_a.all())}")
+            query_b = query.filter(
+                not_(
+                    and_(
+                        Incident.visibility == Visibility.restricted.value,
+                        Incident.participants.individual.email != user_email,
+                    )
+                )
+            )
+            print(f"After filtering: {len(query_b.all())}")
+            elements = list(set(query_a.all()) - set(query_b.all()))
+            for element in elements:
+                print(element.name)
+            query = query_b
+        if model.lower() == "task":
+            pass
 
     query = join_required_attrs(query, model_cls, join_attrs, fields, sort_by)
 
