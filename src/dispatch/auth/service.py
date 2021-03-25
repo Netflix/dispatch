@@ -14,7 +14,7 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from dispatch.database import get_db
+from dispatch.database.base import get_db
 
 from dispatch.plugins.base import plugins
 from dispatch.config import (

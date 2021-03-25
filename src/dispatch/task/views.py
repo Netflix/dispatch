@@ -3,11 +3,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from sqlalchemy.orm import Session
 
-from dispatch.common.utils.views import create_pydantic_include
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
-
-from dispatch.database import get_db, search_filter_sort_paginate
+from dispatch.common.utils.views import create_pydantic_include
+from dispatch.database.base import get_db
+from dispatch.database.service import search_filter_sort_paginate
 
 from .models import TaskCreate, TaskUpdate, TaskRead, TaskPagination
 from .service import get, update, create, delete

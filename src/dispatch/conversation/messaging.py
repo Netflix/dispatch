@@ -1,4 +1,4 @@
-from dispatch.database import SessionLocal
+from dispatch.database.base import SessionLocal
 from dispatch.plugin import service as plugin_service
 
 

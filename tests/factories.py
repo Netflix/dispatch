@@ -7,7 +7,7 @@ from factory import Sequence, post_generation, SubFactory, LazyAttribute
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime
 
-from dispatch.database import SessionLocal
+from dispatch.database.base import SessionLocal
 
 from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation

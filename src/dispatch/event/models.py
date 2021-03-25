@@ -7,7 +7,7 @@ from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID as SQLAlchemyUUID
 from sqlalchemy_utils import TSVectorType, JSONType
 
-from dispatch.database import Base
+from dispatch.database.base import Base
 from dispatch.models import DispatchBase, TimeStampMixin
 
 

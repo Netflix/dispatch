@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 
-from dispatch.database import Base
+from dispatch.database.base import Base
 from dispatch.models import DispatchBase, ResourceMixin
 
 

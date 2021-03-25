@@ -10,7 +10,7 @@ from pydantic import validator
 from sqlalchemy import Column, String, Binary, Integer
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database import Base
+from dispatch.database.base import Base
 from dispatch.models import TimeStampMixin, DispatchBase
 from dispatch.enums import UserRoles
 

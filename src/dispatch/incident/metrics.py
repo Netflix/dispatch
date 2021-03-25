@@ -12,9 +12,11 @@ from statsmodels.tsa.api import ExponentialSmoothing
 
 from sqlalchemy import and_
 
-from dispatch.database import apply_filters
+from dispatch.database.service import apply_filters
 from dispatch.incident_type.models import IncidentType
+
 from .models import Incident
+
 
 log = logging.getLogger(__name__)
 

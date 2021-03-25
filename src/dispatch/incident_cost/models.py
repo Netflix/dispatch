@@ -3,7 +3,7 @@ from typing import List, Optional
 from sqlalchemy import Column, ForeignKey, Integer, Numeric
 from sqlalchemy.orm import relationship
 
-from dispatch.database import Base
+from dispatch.database.base import Base
 from dispatch.incident_cost_type.models import (
     IncidentCostTypeCreate,
     IncidentCostTypeRead,

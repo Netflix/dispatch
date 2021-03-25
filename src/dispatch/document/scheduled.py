@@ -6,7 +6,7 @@ from collections import defaultdict
 from schedule import every
 from sqlalchemy import func
 
-from dispatch.database import SessionLocal
+from dispatch.database.base import SessionLocal
 from dispatch.config import DISPATCH_HELP_EMAIL
 from dispatch.messaging.strings import DOCUMENT_EVERGREEN_REMINDER
 from dispatch.decorators import background_task

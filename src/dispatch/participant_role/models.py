@@ -4,7 +4,7 @@ from typing import List, Optional
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 
-from dispatch.database import Base
+from dispatch.database.base import Base
 from dispatch.models import DispatchBase
 
 

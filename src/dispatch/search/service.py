@@ -6,7 +6,7 @@ from sqlalchemy_searchable import search as search_db
 from sqlalchemy_filters import apply_filters
 
 from dispatch.common.utils.composite_search import CompositeSearch
-from dispatch.database import Base, get_class_by_tablename, get_table_name_by_class_instance
+from dispatch.database.base import Base, get_class_by_tablename, get_table_name_by_class_instance
 
 from .models import SearchFilter, SearchFilterCreate, SearchFilterUpdate
 

@@ -3,7 +3,7 @@ from typing import List, Optional
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database import Base
+from dispatch.database.base import Base
 from dispatch.models import DefinitionNested, DefinitionReadNested, DispatchBase
 
 

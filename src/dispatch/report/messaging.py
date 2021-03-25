@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timedelta
 
 from dispatch.conversation.enums import ConversationCommands
-from dispatch.database import SessionLocal, resolve_attr
+from dispatch.database.base import SessionLocal, resolve_attr
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import Incident
 from dispatch.messaging.strings import (
