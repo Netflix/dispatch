@@ -5,7 +5,7 @@ from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.expression import true
 from sqlalchemy_utils import TSVectorType, JSONType
 
-from dispatch.database import Base
+from dispatch.database.core import Base
 from dispatch.models import DispatchBase, TimeStampMixin
 
 

@@ -14,16 +14,14 @@ from sqlalchemy.orm import Session
 from starlette.requests import Request
 from starlette.responses import Response
 
-from dispatch.database import get_db
+from dispatch.database.core import get_db
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from . import __version__
-from .config import (
-    SLACK_SIGNING_SECRET,
-)
-from .events import handle_slack_event, EventEnvelope
 from .actions import handle_slack_action
 from .commands import handle_slack_command
+from .config import SLACK_SIGNING_SECRET
+from .events import handle_slack_event, EventEnvelope
 
 
 router = APIRouter()

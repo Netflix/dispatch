@@ -3,7 +3,7 @@ import logging
 import asyncio
 from fastapi import BackgroundTasks
 
-from dispatch.database import SessionLocal
+from dispatch.database.core import SessionLocal
 from slack_sdk.web.async_client import AsyncWebClient
 
 from .actions import handle_slack_action

@@ -5,7 +5,7 @@ from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database import Base
+from dispatch.database.core import Base
 from dispatch.incident_priority.models import IncidentPriorityCreate, IncidentPriorityRead
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead
 from dispatch.term.models import TermCreate

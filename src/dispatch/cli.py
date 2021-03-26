@@ -13,7 +13,7 @@ from dispatch import __version__, config
 from dispatch.enums import UserRoles
 
 from .main import *  # noqa
-from .database import Base, engine
+from .database.core import Base, engine
 from .exceptions import DispatchException
 from .plugins.base import plugins
 from .scheduler import scheduler
@@ -47,7 +47,7 @@ def plugins_group():
 @plugins_group.command("list")
 def list_plugins():
     """Shows all available plugins"""
-    from dispatch.database import SessionLocal
+    from dispatch.database.core import SessionLocal
     from dispatch.plugin import service as plugin_service
 
     db_session = SessionLocal()
@@ -99,7 +99,7 @@ def list_plugins():
 )
 def install_plugins(force):
     """Installs all plugins, or only one."""
-    from dispatch.database import SessionLocal
+    from dispatch.database.core import SessionLocal
     from dispatch.plugin import service as plugin_service
     from dispatch.plugin.models import Plugin
 
@@ -141,7 +141,7 @@ def install_plugins(force):
 @click.argument("plugins", nargs=-1)
 def uninstall_plugins(plugins):
     """Uninstalls all plugins, or only one."""
-    from dispatch.database import SessionLocal
+    from dispatch.database.core import SessionLocal
     from dispatch.plugin import service as plugin_service
 
     db_session = SessionLocal()
@@ -198,7 +198,7 @@ def dispatch_user():
 )
 def update_user(email: str, role: str):
     """Updates a user's roles."""
-    from dispatch.database import SessionLocal
+    from dispatch.database.core import SessionLocal
     from dispatch.auth import service as user_service
     from dispatch.auth.models import UserUpdate
 
@@ -217,7 +217,7 @@ def update_user(email: str, role: str):
 @click.password_option()
 def reset_user_password(email: str, password: str):
     """Resets a user's password."""
-    from dispatch.database import SessionLocal
+    from dispatch.database.core import SessionLocal
     from dispatch.auth import service as user_service
     from dispatch.auth.models import UserUpdate
 

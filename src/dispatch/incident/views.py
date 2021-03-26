@@ -16,15 +16,15 @@ from dispatch.auth.permissions import (
     IncidentViewPermission,
 )
 
-from dispatch.common.utils.views import create_pydantic_include
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
-from dispatch.database import get_db, search_filter_sort_paginate
-from dispatch.enums import Visibility, UserRoles
+from dispatch.common.utils.views import create_pydantic_include
+from dispatch.database.core import get_db
+from dispatch.database.service import search_filter_sort_paginate
 from dispatch.incident.enums import IncidentStatus
 from dispatch.participant_role.models import ParticipantRoleType
-from dispatch.report.models import TacticalReportCreate, ExecutiveReportCreate
 from dispatch.report import flows as report_flows
+from dispatch.report.models import TacticalReportCreate, ExecutiveReportCreate
 
 from .flows import (
     incident_add_or_reactivate_participant_flow,
@@ -72,17 +72,6 @@ def get_incidents(
     """
     if filter_spec:
         filter_spec = json.loads(filter_spec)
-        # add support for filtering restricted incidents based on role
-        if current_user.role != UserRoles.admin:
-            if filter_spec:
-                filter_spec.append(
-                    {
-                        "model": "Incident",
-                        "field": "visibility",
-                        "op": "!=",
-                        "value": Visibility.restricted,
-                    }
-                )
 
     pagination = search_filter_sort_paginate(
         db_session=db_session,
@@ -100,6 +89,7 @@ def get_incidents(
             ("tag", "tags"),
         ],
         user_role=current_user.role,
+        user_email=current_user.email,
     )
 
     if include:

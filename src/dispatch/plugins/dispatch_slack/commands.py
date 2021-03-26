@@ -4,21 +4,21 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
+from dispatch.conversation import service as conversation_service
 from dispatch.conversation.enums import ConversationButtonActions
-from dispatch.database import resolve_attr
+from dispatch.database.core import resolve_attr
 from dispatch.decorators import background_task
 from dispatch.enums import Visibility
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.participant import service as participant_service
-from dispatch.conversation import service as conversation_service
 from dispatch.participant_role import service as participant_role_service
+from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.task import service as task_service
 from dispatch.task.models import TaskStatus, Task
-from dispatch.participant_role.models import ParticipantRoleType
 
 from .config import (
     SLACK_APP_USER_SLUG,

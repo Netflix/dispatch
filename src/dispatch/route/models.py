@@ -4,7 +4,7 @@ from pydantic import validator
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.orm import relationship
 
-from dispatch.database import Base
+from dispatch.database.core import Base
 from dispatch.incident_priority.models import IncidentPriorityRead
 from dispatch.incident_type.models import IncidentTypeRead
 from dispatch.models import (

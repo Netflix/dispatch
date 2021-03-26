@@ -3,8 +3,11 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from dispatch.auth.models import DispatchUser
 from dispatch.auth.permissions import AdminPermission, PermissionsDependency
-from dispatch.database import get_db, search_filter_sort_paginate
+from dispatch.auth.service import get_current_user
+from dispatch.database.core import get_db
+from dispatch.database.service import search_filter_sort_paginate
 
 from .models import IncidentTypeCreate, IncidentTypePagination, IncidentTypeRead, IncidentTypeUpdate
 from .service import create, get, update
@@ -24,6 +27,7 @@ def get_incident_types(
     fields: List[str] = Query([], alias="fields[]"),
     ops: List[str] = Query([], alias="ops[]"),
     values: List[str] = Query([], alias="values[]"),
+    current_user: DispatchUser = Depends(get_current_user),
 ):
     """
     Returns all incident types.
@@ -39,6 +43,7 @@ def get_incident_types(
         fields=fields,
         values=values,
         ops=ops,
+        user_role=current_user.role,
     )
 
 

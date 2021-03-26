@@ -9,7 +9,7 @@ from sqlalchemy.sql.schema import PrimaryKeyConstraint
 from sqlalchemy.sql.sqltypes import Boolean
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database import Base
+from dispatch.database.core import Base
 from dispatch.document.models import DocumentCreate
 from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin
 from dispatch.participant.models import ParticipantRead

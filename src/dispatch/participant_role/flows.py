@@ -1,6 +1,6 @@
 import logging
 
-from dispatch.database import SessionLocal
+from dispatch.database.core import SessionLocal
 from dispatch.event import service as event_service
 from dispatch.participant import service as participant_service
 

@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from dispatch.database import get_db, paginate
+from dispatch.database.core import get_db
+from dispatch.database.service import paginate
 from dispatch.search.service import search
 
 from .models import (

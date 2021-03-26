@@ -5,8 +5,8 @@ from functools import wraps
 from typing import Any, List
 
 from dispatch.metrics import provider as metrics_provider
-from .database import SessionLocal
 
+from .database.core import SessionLocal
 
 log = logging.getLogger(__name__)
 

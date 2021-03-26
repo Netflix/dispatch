@@ -1,80 +1,25 @@
-import re
 import logging
 import json
-from typing import Any, List
 from itertools import groupby
-import functools
 
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import Query, sessionmaker
+from typing import List
+
+from sqlalchemy import and_, not_
+from sqlalchemy.orm import Query
 from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
-from sqlalchemy_searchable import make_searchable
 from sqlalchemy_searchable import search as search_db
-from starlette.requests import Request
 
 from dispatch.common.utils.composite_search import CompositeSearch
 from dispatch.enums import Visibility, UserRoles
+from dispatch.incident.models import Incident
+from dispatch.incident_type.models import IncidentType
+from dispatch.individual.models import IndividualContact
+from dispatch.participant.models import Participant
 
+from .core import Base, get_class_by_tablename, get_model_name_by_tablename
 
-from .config import SQLALCHEMY_DATABASE_URI
 
 log = logging.getLogger(__file__)
-
-engine = create_engine(str(SQLALCHEMY_DATABASE_URI))
-SessionLocal = sessionmaker(bind=engine)
-
-
-def resolve_table_name(name):
-    """Resolves table names to their mapped names."""
-    names = re.split("(?=[A-Z])", name)  # noqa
-    return "_".join([x.lower() for x in names if x])
-
-
-raise_attribute_error = object()
-
-
-def resolve_attr(obj, attr, default=None):
-    """Attempts to access attr via dotted notation, returns none if attr does not exist."""
-    try:
-        return functools.reduce(getattr, attr.split("."), obj)
-    except AttributeError:
-        return default
-
-
-class CustomBase:
-    @declared_attr
-    def __tablename__(self):
-        return resolve_table_name(self.__name__)
-
-
-Base = declarative_base(cls=CustomBase)
-
-make_searchable(Base.metadata)
-
-
-def get_db(request: Request):
-    return request.state.db
-
-
-def get_model_name_by_tablename(table_fullname: str) -> str:
-    """Returns the model name of a given table."""
-    return get_class_by_tablename(table_fullname=table_fullname).__name__
-
-
-def get_class_by_tablename(table_fullname: str) -> Any:
-    """Return class reference mapped to table."""
-    mapped_name = resolve_table_name(table_fullname)
-    for c in Base._decl_class_registry.values():
-        if hasattr(c, "__table__"):
-            if c.__table__.fullname.lower() == mapped_name.lower():
-                return c
-    raise Exception(f"Incorrect tablename '{mapped_name}'. Check the name of your model.")
-
-
-def get_table_name_by_class_instance(class_instance: Base) -> str:
-    """Returns the name of the table for a given class instance."""
-    return class_instance._sa_instance_state.mapper.mapped_table.name
 
 
 def paginate(query: Query, page: int, items_per_page: int):
@@ -98,7 +43,7 @@ def search(*, db_session, query_str: str, model: str, sort=False):
     return search_db(q, query_str, sort=sort)
 
 
-def create_filter_spec(model, fields, ops, values, user_role):
+def create_filter_spec(model, fields, ops, values):
     """Creates a filter spec."""
     filters = []
 
@@ -133,23 +78,8 @@ def create_filter_spec(model, fields, ops, values, user_role):
         else:
             filter_spec.append({"or": filters})
 
-    # add admin only filter
-    if user_role != UserRoles.admin:
-        # add support for filtering restricted incidents
-        if model.lower() in ["incident", "task"]:
-            filter_spec.append(
-                {
-                    "model": "Incident",
-                    "field": "visibility",
-                    "op": "!=",
-                    "value": Visibility.restricted,
-                }
-            )
-
-    if filter_spec:
-        filter_spec = {"and": filter_spec}
-
     log.debug(f"Filter Spec: {json.dumps(filter_spec, indent=2)}")
+
     return filter_spec
 
 
@@ -210,9 +140,10 @@ def search_filter_sort_paginate(
     ops: List[str] = None,
     values: List[str] = None,
     join_attrs: List[str] = None,
-    user_role: UserRoles = UserRoles.user,
+    user_role: UserRoles = UserRoles.user.value,
+    user_email: str = None,
 ):
-    """Common functionality for searching, filtering and sorting"""
+    """Common functionality for searching, filtering, sorting, and pagination."""
     model_cls = get_class_by_tablename(model)
     sort_spec = create_sort_spec(model, sort_by, descending)
 
@@ -222,10 +153,28 @@ def search_filter_sort_paginate(
     else:
         query = db_session.query(model_cls)
 
+    if user_role != UserRoles.admin.value:
+        if model.lower() == "incident":
+            # we filter restricted incidents based on incident participation
+            query = (
+                query.join(Participant)
+                .join(IndividualContact)
+                .filter(
+                    not_(
+                        and_(
+                            Incident.visibility == Visibility.restricted.value,
+                            IndividualContact.email != user_email,
+                        )
+                    )
+                )
+            )
+        if model.lower() == "incidenttype":
+            query = query.filter(IncidentType.visibility == Visibility.open.value)
+
     query = join_required_attrs(query, model_cls, join_attrs, fields, sort_by)
 
     if not filter_spec:
-        filter_spec = create_filter_spec(model, fields, ops, values, user_role)
+        filter_spec = create_filter_spec(model, fields, ops, values)
 
     query = apply_filters(query, filter_spec)
     query = apply_sort(query, sort_spec)
@@ -234,6 +183,7 @@ def search_filter_sort_paginate(
         items_per_page = None
 
     query, pagination = apply_pagination(query, page_number=page, page_size=items_per_page)
+
     return {
         "items": query.all(),
         "itemsPerPage": pagination.page_size,

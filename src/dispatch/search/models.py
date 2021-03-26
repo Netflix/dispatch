@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import JSON
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database import Base
+from dispatch.database.core import Base
 from dispatch.models import DispatchBase
 
 

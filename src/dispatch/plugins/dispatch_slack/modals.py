@@ -7,7 +7,7 @@ from datetime import datetime
 from enum import Enum
 from fastapi import BackgroundTasks
 from sqlalchemy.orm import Session
-from dispatch.database import SessionLocal
+from dispatch.database.core import SessionLocal
 
 from dispatch.decorators import background_task
 from dispatch.event import service as event_service
