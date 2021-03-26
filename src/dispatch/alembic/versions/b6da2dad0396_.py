@@ -8,7 +8,7 @@ Create Date: 2021-03-19 13:07:36.153462
 from alembic import op
 import sqlalchemy as sa
 
-from dispatch.database.base import SessionLocal
+from dispatch.database.core import SessionLocal
 from dispatch.incident_cost_type.models import IncidentCostTypeUpdate
 from dispatch.incident_cost_type import service as incident_cost_type_service
 

@@ -7,7 +7,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import JSONType, TSVectorType
 
 
-from dispatch.database.base import Base
+from dispatch.database.core import Base
 from dispatch.models import DispatchBase
 
 from .enums import ReportTypes

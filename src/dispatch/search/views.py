@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
-from dispatch.database.base import get_db, get_class_by_tablename
+from dispatch.database.core import get_db, get_class_by_tablename
 from dispatch.database.service import search_filter_sort_paginate
 from dispatch.enums import SearchTypes, UserRoles
 from dispatch.enums import Visibility

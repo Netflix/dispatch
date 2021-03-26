@@ -26,7 +26,7 @@ from dispatch.conference import service as conference_service
 from dispatch.conference.models import ConferenceCreate
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.models import ConversationCreate
-from dispatch.database.base import SessionLocal, resolve_attr
+from dispatch.database.core import SessionLocal, resolve_attr
 from dispatch.decorators import background_task
 from dispatch.document import service as document_service
 from dispatch.document.models import DocumentCreate

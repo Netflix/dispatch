@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from sqlalchemy import Column, Integer, String, ForeignKey
 
-from dispatch.database.base import Base
+from dispatch.database.core import Base
 from dispatch.incident.models import IncidentReadNested
 from dispatch.models import DispatchBase, TimeStampMixin
 from dispatch.participant.models import ParticipantRead

@@ -6,7 +6,7 @@ from typing import Any, List
 
 from dispatch.metrics import provider as metrics_provider
 
-from .database.base import SessionLocal
+from .database.core import SessionLocal
 
 log = logging.getLogger(__name__)
 

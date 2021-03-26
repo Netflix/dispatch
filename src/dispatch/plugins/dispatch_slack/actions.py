@@ -4,7 +4,7 @@ from fastapi import BackgroundTasks
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.conversation.messaging import send_feedack_to_user
-from dispatch.database.base import SessionLocal
+from dispatch.database.core import SessionLocal
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus

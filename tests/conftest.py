@@ -21,7 +21,7 @@ environ["METRIC_PROVIDERS"] = ""  # TODO move this to the default
 environ["STATIC_DIR"] = ""  # we don't need static files for tests
 
 from dispatch import config
-from dispatch.database.base import Base, engine, SessionLocal
+from dispatch.database.core import Base, engine, SessionLocal
 
 from .factories import (
     ConferenceFactory,

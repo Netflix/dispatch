@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
-from dispatch.database.base import SessionLocal
+from dispatch.database.core import SessionLocal
 
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service

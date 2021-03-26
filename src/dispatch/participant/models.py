@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, Boolean, String, Integer, ForeignKey, DateTime, event, select
 from sqlalchemy.ext.hybrid import hybrid_property
 
-from dispatch.database.base import Base
+from dispatch.database.core import Base
 from dispatch.models import DispatchBase, IndividualReadNested
 from dispatch.participant_role.models import (
     ParticipantRoleCreate,

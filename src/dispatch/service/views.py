@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from dispatch.database.base import get_db
+from dispatch.database.core import get_db
 from dispatch.database.service import search_filter_sort_paginate
 from dispatch.exceptions import InvalidConfiguration
 

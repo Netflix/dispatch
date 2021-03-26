@@ -5,7 +5,7 @@ import uuid
 from functools import wraps
 
 from dispatch.metrics import provider as metrics_provider
-from dispatch.database.base import SessionLocal
+from dispatch.database.core import SessionLocal
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 

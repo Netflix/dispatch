@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from dispatch.database.base import SessionLocal
+from dispatch.database.core import SessionLocal
 from dispatch.event import service as event_service
 from dispatch.incident_cost import service as incident_cost_service
 from dispatch.incident_cost.models import IncidentCostCreate

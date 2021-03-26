@@ -17,7 +17,7 @@ import httpx
 from .api import api_router
 from .common.utils.cli import install_plugins, install_plugin_events
 from .config import STATIC_DIR
-from .database.base import SessionLocal
+from .database.core import SessionLocal
 from .extensions import configure_extensions
 from .logging import configure_logging
 from .metrics import provider as metric_provider

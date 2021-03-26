@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database.base import Base
+from dispatch.database.core import Base
 from dispatch.models import DispatchBase, TimeStampMixin
 from dispatch.tag_type.models import TagTypeCreate, TagTypeRead, TagTypeUpdate
 

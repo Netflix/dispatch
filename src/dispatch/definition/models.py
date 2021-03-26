@@ -4,7 +4,7 @@ from sqlalchemy import Table, Column, Integer, String, ForeignKey, PrimaryKeyCon
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database.base import Base
+from dispatch.database.core import Base
 from dispatch.models import (
     DispatchBase,
     TermNested,

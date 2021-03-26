@@ -100,7 +100,7 @@ def list_tasks(client: Any, file_id: str):
         # this is a dirty hack because google doesn't return emailAddresses for comments
         # complete with conflicting docs
         # https://developers.google.com/drive/api/v2/reference/comments#resource
-        from dispatch.database.base import SessionLocal
+        from dispatch.database.core import SessionLocal
         from dispatch.individual.models import IndividualContact
 
         db_session = SessionLocal()

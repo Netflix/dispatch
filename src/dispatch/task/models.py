@@ -16,7 +16,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database.base import Base
+from dispatch.database.core import Base
 from dispatch.config import INCIDENT_RESOURCE_INCIDENT_TASK
 from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin
 

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from dispatch.auth.permissions import AdminPermission, PermissionsDependency
-from dispatch.database.base import get_db
+from dispatch.database.core import get_db
 from dispatch.database.service import search_filter_sort_paginate
 
 from .models import IncidentTypeCreate, IncidentTypePagination, IncidentTypeRead, IncidentTypeUpdate

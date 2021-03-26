@@ -12,7 +12,7 @@ import tempfile
 import pandas as pd
 from pandas.core.frame import DataFrame
 
-from dispatch.database.base import SessionLocal
+from dispatch.database.core import SessionLocal
 from dispatch.tag import service as tag_service
 
 log = logging.getLogger(__name__)

@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy_utils import TSVectorType, JSONType
 
-from dispatch.database.base import Base
+from dispatch.database.core import Base
 from dispatch.models import DispatchBase
 from dispatch.plugins.base import plugins
 
