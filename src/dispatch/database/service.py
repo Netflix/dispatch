@@ -12,6 +12,7 @@ from sqlalchemy_searchable import search as search_db
 from dispatch.common.utils.composite_search import CompositeSearch
 from dispatch.enums import Visibility, UserRoles
 from dispatch.incident.models import Incident
+from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
 from dispatch.participant.models import Participant
 
@@ -167,6 +168,8 @@ def search_filter_sort_paginate(
                     )
                 )
             )
+        if model.lower() == "incidenttype":
+            query = query.filter(IncidentType.visibility == Visibility.open.value)
 
     query = join_required_attrs(query, model_cls, join_attrs, fields, sort_by)
 
