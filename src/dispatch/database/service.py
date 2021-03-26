@@ -13,6 +13,7 @@ from dispatch.common.utils.composite_search import CompositeSearch
 from dispatch.enums import Visibility, UserRoles
 from dispatch.incident.models import Incident
 from dispatch.individual.models import IndividualContact
+from dispatch.participant.models import Participant
 from dispatch.task.models import Task
 
 from .base import Base, get_class_by_tablename, get_model_name_by_tablename
@@ -152,27 +153,21 @@ def search_filter_sort_paginate(
     else:
         query = db_session.query(model_cls)
 
-    query_a = query
-
     if user_role != UserRoles.admin.value:
-        # we filter restricted incidents and tasks based on incident participation
         if model.lower() == "incident":
-            print(f"Before filtering: {len(query_a.all())}")
-            query_b = query.filter(
-                not_(
-                    and_(
-                        Incident.visibility == Visibility.restricted.value,
-                        Incident.participants.individual.email != user_email,
+            # we filter restricted incidents based on incident participation
+            query = (
+                query.join(Participant)
+                .join(IndividualContact)
+                .filter(
+                    not_(
+                        and_(
+                            Incident.visibility == Visibility.restricted.value,
+                            IndividualContact.email != user_email,
+                        )
                     )
                 )
             )
-            print(f"After filtering: {len(query_b.all())}")
-            elements = list(set(query_a.all()) - set(query_b.all()))
-            for element in elements:
-                print(element.name)
-            query = query_b
-        if model.lower() == "task":
-            pass
 
     query = join_required_attrs(query, model_cls, join_attrs, fields, sort_by)
 
@@ -186,6 +181,7 @@ def search_filter_sort_paginate(
         items_per_page = None
 
     query, pagination = apply_pagination(query, page_number=page, page_size=items_per_page)
+
     return {
         "items": query.all(),
         "itemsPerPage": pagination.page_size,

@@ -11,7 +11,7 @@ from dispatch.config import (
     DISPATCH_UI_URL,
 )
 from dispatch.conversation.enums import ConversationButtonActions
-from dispatch.database import resolve_attr
+from dispatch.database.base import resolve_attr
 from dispatch.decorators import background_task
 from dispatch.messaging.strings import (
     INCIDENT,
