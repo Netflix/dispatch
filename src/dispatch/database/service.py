@@ -2,10 +2,10 @@ import logging
 import json
 from itertools import groupby
 
-from typing import Any, List
+from typing import List
 
 from sqlalchemy import and_, not_
-from sqlalchemy.orm import Query, sessionmaker
+from sqlalchemy.orm import Query
 from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
 from sqlalchemy_searchable import search as search_db
 
@@ -14,9 +14,8 @@ from dispatch.enums import Visibility, UserRoles
 from dispatch.incident.models import Incident
 from dispatch.individual.models import IndividualContact
 from dispatch.participant.models import Participant
-from dispatch.task.models import Task
 
-from .base import Base, get_class_by_tablename, get_model_name_by_tablename
+from .core import Base, get_class_by_tablename, get_model_name_by_tablename
 
 
 log = logging.getLogger(__file__)
