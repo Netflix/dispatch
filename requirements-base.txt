@@ -83,7 +83,7 @@ google-api-python-client==2.0.2
     # via -r requirements-base.in
 google-auth-httplib2==0.1.0
     # via google-api-python-client
-google-auth-oauthlib==0.4.3
+google-auth-oauthlib==0.4.4
     # via -r requirements-base.in
 google-auth==1.28.0
     # via
