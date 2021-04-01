@@ -31,7 +31,7 @@ def assign_incident_role(
     assignee_email = reporter_email
 
     oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
-    if role == ParticipantRoleType.incident_commander:
+    if role == ParticipantRoleType.incident_commander.value:
         # default to reporter
         if incident.incident_type.commander_service:
             service = incident.incident_type.commander_service
@@ -45,7 +45,7 @@ def assign_incident_role(
                         incident_description=incident.description,
                     )
 
-    elif role == ParticipantRoleType.liaison:
+    elif role == ParticipantRoleType.liaison.value:
         if incident.incident_type.liaison_service:
             service = incident.incident_type.liaison_service
             if oncall_plugin:
