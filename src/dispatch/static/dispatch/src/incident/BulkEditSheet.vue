@@ -7,7 +7,7 @@
             <v-list-item-subtitle>{{ selected.length }} selected</v-list-item-subtitle>
           </v-list-item-content>
 
-          <v-spacer></v-spacer>
+          <v-spacer />
 
           <v-list-item-icon>
             <v-btn text @click="saveBulk({ status: 'Active' })">
@@ -40,12 +40,12 @@ export default {
   name: "IncidentBulkEditSheet",
   computed: {
     ...mapFields("incident", ["table.rows.selected", "table.bulkEditLoading"]),
-    showBulkEdit: function() {
+    showBulkEdit: function () {
       return this.selected.length ? true : false
-    }
+    },
   },
   methods: {
-    ...mapActions("incident", ["saveBulk"])
-  }
+    ...mapActions("incident", ["saveBulk"]),
+  },
 }
 </script>

@@ -3,7 +3,7 @@
     <template v-slot:prepend>
       <v-list-item two-line>
         <v-list-item-content>
-          <v-list-item-title class="title">Edit</v-list-item-title>
+          <v-list-item-title class="title"> Edit </v-list-item-title>
           <v-list-item-subtitle>User</v-list-item-subtitle>
         </v-list-item-content>
         <v-btn icon color="info" :loading="loading" @click="save()">
@@ -25,11 +25,10 @@
               <v-text-field v-model="email" disabled label="Email" hint="User's email." />
             </v-flex>
             <v-flex xs12>
-              <v-select
-                v-model="role"
-                label="Role"
-                :items="roles"
-                hint="The user's current role."
+              <user-role-combobox
+                v-model="projects"
+                label="Roles"
+                hint="The user's current roles"
               />
             </v-flex>
           </v-layout>
@@ -42,28 +41,28 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import UserRoleCombobox from "@/auth/UserRoleCombobox.vue"
 
 export default {
   name: "UserEditSheet",
 
-  data() {
-    return {
-      roles: ["User", "Poweruser", "Admin"]
-    }
+  components: {
+    UserRoleCombobox,
   },
 
   computed: {
     ...mapFields("auth", [
       "selected.email",
-      "selected.role",
+      "selected.projects",
+      "selected.organizations",
       "selected.id",
       "selected.loading",
-      "dialogs.showEdit"
-    ])
+      "dialogs.showEdit",
+    ]),
   },
 
   methods: {
-    ...mapActions("auth", ["save", "closeEdit"])
-  }
+    ...mapActions("auth", ["save", "closeEdit"]),
+  },
 }
 </script>

@@ -1,7 +1,7 @@
 <template>
   <div v-if="items.length">
     <new-edit-sheet />
-    <v-divider></v-divider>
+    <v-divider />
     <v-list>
       <v-list-group prepend-icon="book" no-action color="info">
         <template v-slot:activator>
@@ -17,7 +17,7 @@
           @click="createEditShow(item.content)"
         >
           <v-list-item-content>
-            <v-list-item-title v-text="item.content.text"></v-list-item-title>
+            <v-list-item-title v-text="item.content.text" />
             <v-list-item-subtitle>Text</v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
@@ -32,18 +32,18 @@ export default {
   name: "DefinitionList",
 
   components: {
-    NewEditSheet
+    NewEditSheet,
   },
 
   props: {
     items: {
       default: null,
-      type: Array
-    }
+      type: Array,
+    },
   },
 
   methods: {
-    ...mapActions("definition", ["createEditShow"])
-  }
+    ...mapActions("definition", ["createEditShow"]),
+  },
 }
 </script>

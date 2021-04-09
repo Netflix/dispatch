@@ -9,7 +9,7 @@ from dispatch.models import DispatchBase, TimeStampMixin
 from dispatch.participant.models import ParticipantRead
 
 
-class Feedback(Base, TimeStampMixin):
+class Feedback(TimeStampMixin, Base):
     # Columns
     id = Column(Integer, primary_key=True)
     rating = Column(String)

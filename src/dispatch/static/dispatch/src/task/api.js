@@ -21,7 +21,7 @@ export default {
 
   bulkUpdate(tasks, payload) {
     return Promise.all(
-      tasks.map(task => {
+      tasks.map((task) => {
         return this.update(task.id, { ...task, ...payload })
       })
     )
@@ -29,5 +29,5 @@ export default {
 
   delete(taskId) {
     return API.delete(`${resource}/${taskId}`)
-  }
+  },
 }

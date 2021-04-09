@@ -5,12 +5,16 @@
         <div class="layout row ma-0">
           <div class="sm4 xs4 flex">
             <div class="layout column ma-0 justify-center align-center">
-              <v-icon size="76px">{{ icon }}</v-icon>
+              <v-icon size="76px">
+                {{ icon }}
+              </v-icon>
             </div>
           </div>
           <div class="layout column ma-0 justify-center">
             <span class="caption">{{ subTitle }}</span>
-            <div class="headline">{{ title }}</div>
+            <div class="headline">
+              {{ title }}
+            </div>
             <span class="caption">{{ supTitle }}</span>
           </div>
         </div>
@@ -24,28 +28,28 @@ export default {
   props: {
     supTitle: {
       type: String,
-      required: false
+      default: "",
     },
     subTitle: {
       type: String,
-      required: false
+      default: "",
     },
     title: {
       type: [Number, String],
-      required: false
+      default: "",
     },
     icon: {
       type: String,
-      required: false
+      default: "",
     },
     color: {
       type: String,
-      required: false
-    }
+      default: "",
+    },
   },
 
   data() {
     return {}
-  }
+  },
 }
 </script>

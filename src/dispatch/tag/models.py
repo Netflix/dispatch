@@ -5,11 +5,12 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, TimeStampMixin
+from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin
+from dispatch.project.models import ProjectRead
 from dispatch.tag_type.models import TagTypeCreate, TagTypeRead, TagTypeUpdate
 
 
-class Tag(Base, TimeStampMixin):
+class Tag(Base, TimeStampMixin, ProjectMixin):
     # Columns
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
@@ -36,6 +37,7 @@ class TagBase(DispatchBase):
 
 class TagCreate(TagBase):
     tag_type: TagTypeCreate
+    project: ProjectRead
 
 
 class TagUpdate(TagBase):

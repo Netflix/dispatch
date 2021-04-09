@@ -31,23 +31,27 @@ export default {
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return {}
-      }
+      },
     },
     label: {
       type: String,
-      default: function() {
+      default: function () {
         return "Individual"
-      }
-    }
+      },
+    },
+    project: {
+      type: String,
+      default: null,
+    },
   },
 
   data() {
     return {
       loading: false,
       items: [],
-      search: null
+      search: null,
     }
   },
 
@@ -58,11 +62,11 @@ export default {
       },
       set(value) {
         this.$emit("input", value)
-      }
-    }
+      },
+    },
   },
 
-  created() {
+  mounted() {
     this.fetchData({})
   },
 
@@ -70,11 +74,11 @@ export default {
     fetchData(filterOptions) {
       this.error = null
       this.loading = "error"
-      IndividualApi.getAll(filterOptions).then(response => {
+      IndividualApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
-    }
-  }
+    },
+  },
 }
 </script>

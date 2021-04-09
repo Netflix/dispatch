@@ -4,9 +4,22 @@ from typing import List, Optional
 from pydantic import BaseModel
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, event, ForeignKey
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import relationship
 
 
 # SQLAlchemy models...
+class ProjectMixin(object):
+    """ Project mixin"""
+
+    @declared_attr
+    def project_id(cls):  # noqa
+        return Column(Integer, ForeignKey("project.id", ondelete="CASCADE"))
+
+    @declared_attr
+    def project(cls):  # noqa
+        return relationship("Project", lazy="joined")
+
+
 class TimeStampMixin(object):
     """ Timestamping mixin"""
 
@@ -42,10 +55,6 @@ class ResourceMixin(TimeStampMixin):
     resource_type = Column(String)
     resource_id = Column(String)
     weblink = Column(String)
-
-    @declared_attr
-    def incident_id(cls):  # noqa
-        return Column(Integer, ForeignKey("incident.id"))
 
 
 # Pydantic models...

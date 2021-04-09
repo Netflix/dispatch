@@ -28,5 +28,5 @@ export default {
 
   getByType(searchFilterType) {
     return API.get(`${resource}/filters/${searchFilterType}`)
-  }
+  },
 }

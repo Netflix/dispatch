@@ -2,13 +2,9 @@
   <v-layout wrap>
     <new-edit-sheet />
     <delete-dialog />
-    <div class="headline">
-      Definitions
-    </div>
+    <div class="headline">Definitions</div>
     <v-spacer />
-    <v-btn color="info" class="mb-2" @click="createEditShow()">
-      New
-    </v-btn>
+    <v-btn color="info" class="mb-2" @click="createEditShow()"> New </v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -69,14 +65,14 @@ export default {
 
   components: {
     DeleteDialog,
-    NewEditSheet
+    NewEditSheet,
   },
   data() {
     return {
       headers: [
         { text: "Text", value: "text", sortable: false },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" }
-      ]
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+      ],
     }
   },
 
@@ -87,24 +83,28 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
+      "table.options.filters.project",
       "table.loading",
       "table.rows.items",
-      "table.rows.total"
-    ])
+      "table.rows.total",
+    ]),
+    ...mapFields("route", ["query"]),
   },
 
   mounted() {
+    this.project = [{ name: this.query.project }]
+
     this.getAll({})
 
     this.$watch(
-      vm => [vm.page],
+      (vm) => [vm.page],
       () => {
         this.getAll()
       }
     )
 
     this.$watch(
-      vm => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
+      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
       () => {
         this.page = 1
         this.getAll()
@@ -113,7 +113,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("definition", ["getAll", "createEditShow", "removeShow"])
-  }
+    ...mapActions("definition", ["getAll", "createEditShow", "removeShow"]),
+  },
 }
 </script>

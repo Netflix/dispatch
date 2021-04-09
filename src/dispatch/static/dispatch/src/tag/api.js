@@ -1,10 +1,12 @@
 import API from "@/api"
 
-const resource = "/tags"
+const resource = "tags"
 
 export default {
   getAll(options) {
-    return API.get(`${resource}/`, { params: { ...options } })
+    return API.get(`/${resource}/`, {
+      params: { ...options },
+    })
   },
 
   get(tagId) {
@@ -12,18 +14,18 @@ export default {
   },
 
   getRecommendations(model, modelId) {
-    return API.get(`${resource}/recommendations/${model}/${modelId}`)
+    return API.get(`/${resource}/recommendations/${model}/${modelId}`)
   },
 
   create(payload) {
-    return API.post(`${resource}/`, payload)
+    return API.post(`/${resource}/`, payload)
   },
 
   update(tagId, payload) {
-    return API.put(`${resource}/${tagId}`, payload)
+    return API.put(`/${resource}/${tagId}`, payload)
   },
 
   delete(tagId) {
-    return API.delete(`${resource}/${tagId}`)
-  }
+    return API.delete(`/${resource}/${tagId}`)
+  },
 }

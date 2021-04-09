@@ -34,24 +34,28 @@ export default {
   name: "IncidentPriorityComboBox",
   props: {
     value: {
-      priority: Array,
-      default: function() {
+      type: Array,
+      default: function () {
         return []
-      }
+      },
     },
     label: {
-      priority: String,
-      default: function() {
+      type: String,
+      default: function () {
         return "Priorities"
-      }
-    }
+      },
+    },
+    project: {
+      type: String,
+      default: null,
+    },
   },
 
   data() {
     return {
       loading: false,
       items: [],
-      search: null
+      search: null,
     }
   },
 
@@ -62,18 +66,18 @@ export default {
       },
       set(value) {
         this.search = null
-        this._incidentPriorities = value.map(v => {
+        this._incidentPriorities = value.map((v) => {
           if (typeof v === "string") {
             v = {
-              name: v
+              name: v,
             }
             this.items.push(v)
           }
           return v
         })
         this.$emit("input", this._incidentPriorities)
-      }
-    }
+      },
+    },
   },
 
   created() {
@@ -84,14 +88,14 @@ export default {
     fetchData(filterOptions) {
       this.error = null
       this.loading = "error"
-      IncidentPriorityApi.getAll(filterOptions).then(response => {
+      IncidentPriorityApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
     },
-    getFilteredData: debounce(function(options) {
+    getFilteredData: debounce(function (options) {
       this.fetchData(options)
-    }, 500)
-  }
+    }, 500),
+  },
 }
 </script>

@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_conference_create(session):
     from dispatch.conference.service import create
     from dispatch.conference.models import ConferenceCreate

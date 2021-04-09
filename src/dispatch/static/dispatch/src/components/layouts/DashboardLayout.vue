@@ -9,21 +9,7 @@
       <!-- Page Header -->
       <page-header />
       <div class="page-wrapper">
-        <v-container pa-4 grid-list-lg>
-          <v-tabs fixed-tabs v-model="tab" color="primary">
-            <v-tab to="incidents">Incidents</v-tab>
-            <v-tab to="tasks">Tasks</v-tab>
-          </v-tabs>
-          <v-tabs-items v-model="tab">
-            <v-tab-item id="incidents">
-              <router-view name="incidents"></router-view>
-            </v-tab-item>
-            <v-tab-item id="tasks">
-              <router-view name="tasks"></router-view>
-            </v-tab-item>
-          </v-tabs-items>
-          <router-view />
-        </v-container>
+        <router-view />
       </div>
     </v-content>
   </v-app>
@@ -41,7 +27,7 @@ export default {
 
   data() {
     return {
-      tab: null
+      tab: null,
     }
   },
   components: {
@@ -49,12 +35,12 @@ export default {
     AppToolbar,
     PageHeader,
     Refresh,
-    NotificationSnackbarsWrapper
+    NotificationSnackbarsWrapper,
   },
 
   created() {
     this.$vuetify.theme.light = true
-  }
+  },
 }
 </script>
 

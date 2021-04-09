@@ -17,5 +17,5 @@ export default {
 
   update(pluginId, payload) {
     return API.put(`${resource}/${pluginId}`, payload)
-  }
+  },
 }

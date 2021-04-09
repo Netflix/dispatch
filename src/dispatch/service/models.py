@@ -12,7 +12,8 @@ from dispatch.incident_priority.models import (
     IncidentPriorityUpdate,
 )
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeUpdate
-from dispatch.models import DispatchBase, TermReadNested, TimeStampMixin
+from dispatch.models import DispatchBase, TermReadNested, TimeStampMixin, ProjectMixin
+from dispatch.project.models import ProjectRead
 from dispatch.term.models import TermCreate
 
 # Association tables for many to many relationships
@@ -50,7 +51,7 @@ assoc_service_terms = Table(
 
 
 # SQLAlchemy models...
-class Service(TimeStampMixin, Base):
+class Service(Base, TimeStampMixin, ProjectMixin):
     id = Column(Integer, primary_key=True)
     is_active = Column(Boolean, default=True)
     name = Column(String)
@@ -84,6 +85,7 @@ class ServiceCreate(ServiceBase):
     terms: Optional[List[TermCreate]] = []
     incident_priorities: Optional[List[IncidentPriorityCreate]] = []
     incident_types: Optional[List[IncidentTypeCreate]] = []
+    project: ProjectRead
 
 
 class ServiceUpdate(ServiceBase):

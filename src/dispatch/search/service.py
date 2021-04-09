@@ -1,11 +1,7 @@
 from typing import List, Optional
-
 from fastapi.encoders import jsonable_encoder
-
-from sqlalchemy_searchable import search as search_db
 from sqlalchemy_filters import apply_filters
 
-from dispatch.common.utils.composite_search import CompositeSearch
 from dispatch.database.core import Base, get_class_by_tablename, get_table_name_by_class_instance
 
 from .models import SearchFilter, SearchFilterCreate, SearchFilterUpdate
@@ -97,16 +93,3 @@ def delete(*, db_session, search_filter_id: int):
     )
     db_session.delete(search_filter)
     db_session.commit()
-
-
-def composite_search(*, db_session, query_str: str, models: List[Base]):
-    """Perform a multi-table search based on the supplied query."""
-    s = CompositeSearch(db_session, models)
-    q = s.build_query(query_str, sort=True)
-    return s.search(query=q)
-
-
-def search(*, db_session, query_str: str, model: Base):
-    """Perform a search based on the query."""
-    q = db_session.query(model)
-    return search_db(q, query_str, sort=True)

@@ -1,7 +1,8 @@
-import FeedbackApi from "@/feedback/api"
-
 import { getField, updateField } from "vuex-map-fields"
-import { debounce, forEach, each, has } from "lodash"
+import { debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import FeedbackApi from "@/feedback/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -10,67 +11,50 @@ const getDefaultSelectedState = () => {
     participant: null,
     rating: null,
     feedback: null,
-    loading: false
+    loading: false,
   }
 }
 
 const state = {
   selected: {
-    ...getDefaultSelectedState()
+    ...getDefaultSelectedState(),
   },
   dialogs: {
     showCreateEdit: false,
-    showRemove: false
+    showRemove: false,
   },
   table: {
     rows: {
       items: [],
-      total: null
+      total: null,
     },
     options: {
-      filters: {
-        incident: [],
-        rating: [],
-        feedback: [],
-        participant: []
-      },
       q: "",
       page: 1,
       itemsPerPage: 10,
       sortBy: ["created_at"],
-      descending: [true]
+      descending: [true],
+      filters: {
+        incident: [],
+        rating: [],
+        feedback: [],
+        participant: [],
+        project: [],
+      },
     },
-    loading: false
-  }
+    loading: false,
+  },
 }
 
 const getters = {
-  getField
+  getField,
 }
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    let tableOptions = Object.assign({}, state.table.options)
-    delete tableOptions.filters
-
-    tableOptions.fields = []
-    tableOptions.ops = []
-    tableOptions.values = []
-
-    forEach(state.table.options.filters, function(value, key) {
-      each(value, function(value) {
-        if (has(value, "id")) {
-          tableOptions.fields.push(key + ".id")
-          tableOptions.values.push(value.id)
-        } else {
-          tableOptions.fields.push(key)
-          tableOptions.values.push(value)
-        }
-        tableOptions.ops.push("==")
-      })
-    })
-    return FeedbackApi.getAll(tableOptions).then(response => {
+    let params = SearchUtils.createParametersFromTableOptions(state.table.options)
+    return FeedbackApi.getAll(params).then((response) => {
       commit("SET_TABLE_LOADING", false)
       commit("SET_TABLE_ROWS", response.data)
     })
@@ -105,12 +89,12 @@ const actions = {
             { root: true }
           )
         })
-        .catch(err => {
+        .catch((err) => {
           commit(
             "notification_backend/addBeNotification",
             {
               text: "Feedback not created. Reason: " + err.response.data.detail,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
@@ -126,12 +110,12 @@ const actions = {
             { root: true }
           )
         })
-        .catch(err => {
+        .catch((err) => {
           commit(
             "notification_backend/addBeNotification",
             {
               text: "Feedback not updated. Reason: " + err.response.data.detail,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
@@ -140,7 +124,7 @@ const actions = {
   },
   remove({ commit, dispatch }) {
     return FeedbackApi.delete(state.selected.id)
-      .then(function() {
+      .then(function () {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
@@ -149,17 +133,17 @@ const actions = {
           { root: true }
         )
       })
-      .catch(err => {
+      .catch((err) => {
         commit(
           "notification_backend/addBeNotification",
           {
             text: "Feedback not deleted. Reason: " + err.response.data.detail,
-            type: "error"
+            type: "error",
           },
           { root: true }
         )
       })
-  }
+  },
 }
 
 const mutations = {
@@ -181,7 +165,7 @@ const mutations = {
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
-  }
+  },
 }
 
 export default {
@@ -189,5 +173,5 @@ export default {
   state,
   getters,
   actions,
-  mutations
+  mutations,
 }

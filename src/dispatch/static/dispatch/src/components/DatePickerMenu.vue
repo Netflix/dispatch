@@ -9,18 +9,12 @@
     min-width="290px"
   >
     <template v-slot:activator="{ on }">
-      <v-text-field
-        v-model="date"
-        label="Select Date"
-        prepend-icon="event"
-        readonly
-        v-on="on"
-      ></v-text-field>
+      <v-text-field v-model="date" label="Select Date" prepend-icon="event" readonly v-on="on" />
     </template>
     <v-date-picker color="info" v-model="date" no-title scrollable>
-      <v-spacer></v-spacer>
-      <v-btn text color="info" @click="menu = false">Cancel</v-btn>
-      <v-btn text color="info" @click="$refs.menu.save(date)">OK</v-btn>
+      <v-spacer />
+      <v-btn text color="info" @click="menu = false"> Cancel </v-btn>
+      <v-btn text color="info" @click="$refs.menu.save(date)"> OK </v-btn>
     </v-date-picker>
   </v-menu>
 </template>
@@ -31,13 +25,14 @@ export default {
 
   props: {
     value: {
-      type: String
-    }
+      type: String,
+      default: "",
+    },
   },
 
   data() {
     return {
-      menu: false
+      menu: false,
     }
   },
 
@@ -56,8 +51,8 @@ export default {
           value = value + "T" + this.value.substring(11, 19)
         }
         this.$emit("input", value)
-      }
-    }
-  }
+      },
+    },
+  },
 }
 </script>

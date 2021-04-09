@@ -4,8 +4,8 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
-            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
+            <v-list-item-title v-else class="title"> New </v-list-item-title>
             <v-list-item-subtitle>Individual</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
@@ -115,7 +115,7 @@ import TermCombobox from "@/term/TermCombobox.vue"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
@@ -123,7 +123,7 @@ export default {
 
   data() {
     return {
-      visibilities: ["Open"]
+      visibilities: ["Open"],
     }
   },
 
@@ -132,7 +132,7 @@ export default {
     ValidationProvider,
     IncidentPriorityMultiSelect,
     IncidentTypeMultiSelect,
-    TermCombobox
+    TermCombobox,
   },
 
   computed: {
@@ -146,12 +146,12 @@ export default {
       "selected.incident_types",
       "selected.id",
       "selected.loading",
-      "dialogs.showCreateEdit"
-    ])
+      "dialogs.showCreateEdit",
+    ]),
   },
 
   methods: {
-    ...mapActions("individual", ["save", "closeCreateEdit"])
-  }
+    ...mapActions("individual", ["save", "closeCreateEdit"]),
+  },
 }
 </script>

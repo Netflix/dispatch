@@ -11,8 +11,8 @@
     <template v-slot:item="data">
       <template>
         <v-list-item-content>
-          <v-list-item-title v-text="data.item.name"></v-list-item-title>
-          <v-list-item-subtitle v-text="data.item.description"></v-list-item-subtitle>
+          <v-list-item-title v-text="data.item.name" />
+          <v-list-item-subtitle v-text="data.item.description" />
         </v-list-item-content>
       </template>
     </template>
@@ -28,16 +28,20 @@ export default {
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return {}
-      }
-    }
+      },
+    },
+    project: {
+      type: String,
+      default: null,
+    },
   },
 
   data() {
     return {
       loading: false,
-      items: []
+      items: [],
     }
   },
 
@@ -48,19 +52,19 @@ export default {
       },
       set(value) {
         this.$emit("input", value)
-      }
-    }
+      },
+    },
   },
 
   created() {
     this.error = null
     this.loading = "error"
     TagTypeApi.getAll({ itemsPerPage: 50, sortBy: ["name"], descending: [false] }).then(
-      response => {
+      (response) => {
         this.items = response.data.items
         this.loading = false
       }
     )
-  }
+  },
 }
 </script>

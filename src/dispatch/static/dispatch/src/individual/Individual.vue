@@ -56,14 +56,16 @@ export default {
   name: "IncidentPriority",
 
   data: () => ({
-    menu: false
+    menu: false,
   }),
 
   props: {
     individual: {
       type: Object,
-      required: false
-    }
-  }
+      default: function () {
+        return {}
+      },
+    },
+  },
 }
 </script>

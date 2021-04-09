@@ -22,6 +22,7 @@ from dispatch.incident_priority.models import IncidentPriority
 from dispatch.incident_type.models import IncidentType
 from dispatch.individual import service as individual_service
 from dispatch.plugins import dispatch_core as dispatch_plugin
+from dispatch.incident import service as incident_service
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.bases import (
     ParticipantPlugin,
@@ -142,12 +143,15 @@ class DispatchTicketPlugin(TicketPlugin):
         commander: str,
         reporter: str,
         plugin_metadata: dict,
+        db_session=None,
     ):
         """Creates a Dispatch ticket."""
-        resource_id = f"dispatch-{incident_id}"
+        incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+        resource_id = f"dispatch-{incident.project.name}-{incident.id}"
         return {
             "resource_id": resource_id,
-            "weblink": f"{DISPATCH_UI_URL}/incidents/{resource_id}",
+            "weblink": f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{resource_id}?project={incident.project.name}",
             "resource_type": "dispatch-internal-ticket",
         }
 

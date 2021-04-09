@@ -32,12 +32,12 @@ export default {
     AppToolbar,
     PageHeader,
     Refresh,
-    NotificationSnackbarsWrapper
+    NotificationSnackbarsWrapper,
   },
 
   created() {
     this.$vuetify.theme.light = true
-  }
+  },
 }
 </script>
 

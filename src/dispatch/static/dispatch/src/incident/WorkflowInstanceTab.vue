@@ -57,9 +57,7 @@
       </span>
     </div>
     <div v-else>
-      <p class="text-center">
-        No workflow data available.
-      </p>
+      <p class="text-center">No workflow data available.</p>
     </div>
   </div>
 </template>
@@ -70,7 +68,7 @@ import { mapFields } from "vuex-map-fields"
 export default {
   name: "IncidentWorkflowInstanceTab",
   computed: {
-    ...mapFields("incident", ["selected.workflow_instances"])
-  }
+    ...mapFields("incident", ["selected.workflow_instances"]),
+  },
 }
 </script>

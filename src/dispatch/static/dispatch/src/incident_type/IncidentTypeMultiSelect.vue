@@ -9,8 +9,7 @@
     chips
     return-object
     :loading="loading"
-  >
-  </v-select>
+  />
 </template>
 
 <script>
@@ -22,22 +21,22 @@ export default {
   props: {
     value: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
+      },
     },
     visibilities: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
-    }
+      },
+    },
   },
 
   data() {
     return {
       loading: false,
-      items: []
+      items: [],
     }
   },
 
@@ -48,8 +47,8 @@ export default {
       },
       set(value) {
         this.$emit("input", value)
-      }
-    }
+      },
+    },
   },
 
   created() {
@@ -61,11 +60,11 @@ export default {
       descending: [false],
       fields: ["visibility"],
       ops: ["=="],
-      values: this.visibilities
-    }).then(response => {
+      values: this.visibilities,
+    }).then((response) => {
       this.items = response.data.items
       this.loading = false
     })
-  }
+  },
 }
 </script>

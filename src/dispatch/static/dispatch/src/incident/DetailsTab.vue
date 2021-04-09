@@ -46,10 +46,10 @@
         />
       </v-flex>
       <v-flex xs6>
-        <incident-type-select v-model="incident_type" />
+        <incident-type-select v-model="incident_type" :project="project" />
       </v-flex>
       <v-flex xs6>
-        <incident-priority-select v-model="incident_priority" />
+        <incident-priority-select v-model="incident_priority" :project="project" />
       </v-flex>
       <v-flex xs6>
         <ValidationProvider name="Commander" rules="required" immediate>
@@ -62,6 +62,7 @@
             hint="The participant acting as incident commander."
             clearable
             required
+            :project="project"
           />
         </ValidationProvider>
       </v-flex>
@@ -76,6 +77,7 @@
             hint="The participant who reported the incident."
             clearable
             required
+            :project="project"
           />
         </ValidationProvider>
       </v-flex>
@@ -85,10 +87,10 @@
       <v-flex xs12>
         <v-row>
           <v-col cols="6">
-            <date-picker-menu v-model="reported_at"></date-picker-menu>
+            <date-picker-menu v-model="reported_at" />
           </v-col>
           <v-col cols="6">
-            <time-picker-menu v-model="reported_at"></time-picker-menu>
+            <time-picker-menu v-model="reported_at" />
           </v-col>
         </v-row>
       </v-flex>
@@ -98,21 +100,18 @@
       <v-flex xs12>
         <v-row>
           <v-col cols="6">
-            <date-picker-menu v-model="stable_at"></date-picker-menu>
+            <date-picker-menu v-model="stable_at" />
           </v-col>
           <v-col cols="6">
-            <time-picker-menu v-model="stable_at"></time-picker-menu>
+            <time-picker-menu v-model="stable_at" />
           </v-col>
         </v-row>
       </v-flex>
       <v-flex xs12>
-        <term-combobox label="Terms" v-model="terms" />
+        <tag-filter-combobox label="Tags" v-model="tags" model="incident" :model-id="id" />
       </v-flex>
       <v-flex xs12>
-        <tag-filter-combobox label="Tags" v-model="tags" model="incident" :modelId="id" />
-      </v-flex>
-      <v-flex xs12>
-        <incident-filter-combobox label="Duplicates" v-model="duplicates" />
+        <incident-filter-combobox label="Duplicates" v-model="duplicates" :project="project" />
       </v-flex>
     </v-layout>
   </v-container>
@@ -126,14 +125,13 @@ import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.v
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import DatePickerMenu from "@/components/DatePickerMenu.vue"
 import TimePickerMenu from "@/components/TimePickerMenu.vue"
-import TermCombobox from "@/term/TermCombobox.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
@@ -144,17 +142,16 @@ export default {
     IncidentPrioritySelect,
     IncidentTypeSelect,
     ParticipantSelect,
-    TermCombobox,
     TagFilterCombobox,
     IncidentFilterCombobox,
     TimePickerMenu,
-    DatePickerMenu
+    DatePickerMenu,
   },
 
   data() {
     return {
       statuses: ["Active", "Stable", "Closed"],
-      visibilities: ["Open", "Restricted"]
+      visibilities: ["Open", "Restricted"],
     }
   },
 
@@ -172,11 +169,12 @@ export default {
       "selected.status",
       "selected.terms",
       "selected.tags",
+      "selected.project",
       "selected.incident_priority",
       "selected.incident_type",
       "selected.duplicates",
-      "selected.visibility"
-    ])
-  }
+      "selected.visibility",
+    ]),
+  },
 }
 </script>

@@ -4,8 +4,8 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
-            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
+            <v-list-item-title v-else class="title"> New </v-list-item-title>
             <v-list-item-subtitle>Task</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
@@ -59,7 +59,7 @@
                     hint="The tasks associated incident"
                     clearable
                     required
-                  ></incident-select>
+                  />
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
@@ -73,7 +73,7 @@
                     hint="The tasks current owner"
                     clearable
                     required
-                  ></participant-select>
+                  />
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
@@ -87,7 +87,7 @@
                     hint="The tasks current assignees"
                     clearable
                     required
-                  ></assignee-combobox>
+                  />
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
@@ -96,10 +96,10 @@
               <v-flex xs12>
                 <v-row>
                   <v-col cols="6">
-                    <date-picker-menu v-model="resolved_at"></date-picker-menu>
+                    <date-picker-menu v-model="resolved_at" />
                   </v-col>
                   <v-col cols="6">
-                    <time-picker-menu v-model="resolved_at"></time-picker-menu>
+                    <time-picker-menu v-model="resolved_at" />
                   </v-col>
                 </v-row>
               </v-flex>
@@ -109,10 +109,10 @@
               <v-flex xs12>
                 <v-row>
                   <v-col cols="6">
-                    <date-picker-menu v-model="resolve_by"></date-picker-menu>
+                    <date-picker-menu v-model="resolve_by" />
                   </v-col>
                   <v-col cols="6">
-                    <time-picker-menu v-model="resolve_by"></time-picker-menu>
+                    <time-picker-menu v-model="resolve_by" />
                   </v-col>
                 </v-row>
               </v-flex>
@@ -137,7 +137,7 @@ import { required } from "vee-validate/dist/rules"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
@@ -150,12 +150,12 @@ export default {
     AssigneeCombobox,
     ParticipantSelect,
     TimePickerMenu,
-    DatePickerMenu
+    DatePickerMenu,
   },
 
   data() {
     return {
-      statuses: ["Open", "Resolved"]
+      statuses: ["Open", "Resolved"],
     }
   },
 
@@ -171,12 +171,12 @@ export default {
       "selected.incident",
       "selected.id",
       "selected.loading",
-      "dialogs.showCreateEdit"
-    ])
+      "dialogs.showCreateEdit",
+    ]),
   },
 
   methods: {
-    ...mapActions("task", ["save", "closeCreateEdit"])
-  }
+    ...mapActions("task", ["save", "closeCreateEdit"]),
+  },
 }
 </script>

@@ -4,8 +4,8 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
-            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
+            <v-list-item-title v-else class="title"> New </v-list-item-title>
             <v-list-item-subtitle>Incident Cost Type</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
@@ -93,7 +93,7 @@ import IncidentCostTypeCategorySelect from "@/incident_cost_type/IncidentCostTyp
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
@@ -102,7 +102,7 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    IncidentCostTypeCategorySelect
+    IncidentCostTypeCategorySelect,
   },
 
   computed: {
@@ -114,15 +114,15 @@ export default {
       "selected.editable",
       "selected.id",
       "selected.loading",
-      "dialogs.showCreateEdit"
+      "dialogs.showCreateEdit",
     ]),
     ...mapFields("incident_cost_type", {
-      default_incident_cost_type: "selected.default"
-    })
+      default_incident_cost_type: "selected.default",
+    }),
   },
 
   methods: {
-    ...mapActions("incident_cost_type", ["save", "closeCreateEdit"])
-  }
+    ...mapActions("incident_cost_type", ["save", "closeCreateEdit"]),
+  },
 }
 </script>

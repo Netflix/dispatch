@@ -4,8 +4,8 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
-            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
+            <v-list-item-title v-else class="title"> New </v-list-item-title>
             <v-list-item-subtitle>Notification</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
@@ -62,7 +62,7 @@
                   :items="typeItems"
                   label="Type"
                   hint="The type of the notification."
-                ></v-select>
+                />
               </v-flex>
               <v-flex xs12>
                 <ValidationProvider name="Target" rules="required" immediate>
@@ -109,7 +109,7 @@ import SearchFilterCombobox from "@/search/SearchFilterCombobox.vue"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
@@ -118,7 +118,7 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    SearchFilterCombobox
+    SearchFilterCombobox,
   },
 
   data() {
@@ -135,12 +135,12 @@ export default {
       "selected.filters",
       "selected.id",
       "selected.loading",
-      "dialogs.showCreateEdit"
-    ])
+      "dialogs.showCreateEdit",
+    ]),
   },
 
   methods: {
-    ...mapActions("notification", ["save", "closeCreateEdit"])
-  }
+    ...mapActions("notification", ["save", "closeCreateEdit"]),
+  },
 }
 </script>

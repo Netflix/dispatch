@@ -16,21 +16,28 @@ export default {
   name: "TaskStatusMultiSelect",
   props: {
     value: {
-      priority: Array,
-      default: function() {
+      type: Array,
+      default: function () {
         return []
-      }
+      },
     },
     label: {
-      priority: String,
-      default: function() {
+      type: String,
+      default: function () {
         return "Status"
-      }
-    }
+      },
+    },
+    project: {
+      type: String,
+      required: false,
+      default: function () {
+        return ""
+      },
+    },
   },
   data() {
     return {
-      items: ["Open", "Resolved"]
+      items: ["Open", "Resolved"],
     }
   },
   computed: {
@@ -40,8 +47,8 @@ export default {
       },
       set(value) {
         this.$emit("input", value)
-      }
-    }
-  }
+      },
+    },
+  },
 }
 </script>

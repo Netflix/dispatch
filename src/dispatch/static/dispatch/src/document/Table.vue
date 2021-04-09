@@ -4,7 +4,7 @@
     <delete-dialog />
     <div class="headline">Documents</div>
     <v-spacer />
-    <v-btn color="info" class="mb-2" @click="createEditShow()">New</v-btn>
+    <v-btn color="info" class="mb-2" @click="createEditShow()"> New </v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -31,10 +31,10 @@
               loading-text="Loading... Please wait"
             >
               <template v-slot:item.evergreen="{ item }">
-                <v-simple-checkbox v-model="item.evergreen" disabled></v-simple-checkbox>
+                <v-simple-checkbox v-model="item.evergreen" disabled />
               </template>
               <template v-slot:item.name="{ item }">
-                <a :href="item.weblink" target="_blank" style="text-decoration: none;">
+                <a :href="item.weblink" target="_blank" style="text-decoration: none">
                   {{ item.name }}
                   <v-icon small>open_in_new</v-icon>
                 </a>
@@ -74,7 +74,7 @@ export default {
 
   components: {
     DeleteDialog,
-    NewEditSheet
+    NewEditSheet,
   },
   data() {
     return {
@@ -84,8 +84,8 @@ export default {
         { text: "Evergreen Enabled", value: "evergreen", sortable: true },
         { text: "Evergreen Interval (days)", value: "evergreen_reminder_interval", sortable: true },
         { text: "Evergreen Owner", value: "evergreen_owner", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" }
-      ]
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+      ],
     }
   },
 
@@ -96,24 +96,27 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
+      "table.options.filters.project",
       "table.loading",
       "table.rows.items",
-      "table.rows.total"
-    ])
+      "table.rows.total",
+    ]),
+    ...mapFields("route", ["query"]),
   },
 
   mounted() {
+    this.project = [{ name: this.query.project }]
     this.getAll({})
 
     this.$watch(
-      vm => [vm.page],
+      (vm) => [vm.page],
       () => {
         this.getAll()
       }
     )
 
     this.$watch(
-      vm => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
+      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
       () => {
         this.page = 1
         this.getAll()
@@ -122,7 +125,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("document", ["getAll", "createEditShow", "removeShow"])
-  }
+    ...mapActions("document", ["getAll", "createEditShow", "removeShow"]),
+  },
 }
 </script>

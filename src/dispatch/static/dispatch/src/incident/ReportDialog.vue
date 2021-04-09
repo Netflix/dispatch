@@ -6,8 +6,8 @@
       </v-card-title>
       <v-card-text>
         <v-tabs color="primary" v-model="type" right>
-          <v-tab key="tactical" href="#tactical">Tactical</v-tab>
-          <v-tab key="executive" href="#executive">Executive</v-tab>
+          <v-tab key="tactical" href="#tactical"> Tactical </v-tab>
+          <v-tab key="executive" href="#executive"> Executive </v-tab>
         </v-tabs>
         <v-tabs-items v-model="type">
           <v-tab-item key="tactical" value="tactical">
@@ -73,12 +73,8 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn text @click="closeReportDialog()">
-          Cancel
-        </v-btn>
-        <v-btn color="info" text @click="createReport()">
-          Create
-        </v-btn>
+        <v-btn text @click="closeReportDialog()"> Cancel </v-btn>
+        <v-btn color="info" text @click="createReport()"> Create </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -101,12 +97,12 @@ export default {
       "report.tactical.needs",
       "report.executive.current_status",
       "report.executive.overview",
-      "report.executive.next_steps"
-    ])
+      "report.executive.next_steps",
+    ]),
   },
 
   methods: {
-    ...mapActions("incident", ["closeReportDialog", "createReport"])
-  }
+    ...mapActions("incident", ["closeReportDialog", "createReport"]),
+  },
 }
 </script>

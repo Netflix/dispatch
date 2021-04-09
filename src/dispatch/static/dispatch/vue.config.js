@@ -10,12 +10,12 @@ module.exports = {
   configureWebpack: {
     plugins: [
       // Ignore all locale files of moment.js
-      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
+      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
     ],
-    devtool: "source-map"
+    devtool: "source-map",
   },
 
-  chainWebpack: config => {
+  chainWebpack: (config) => {
     config.resolve.alias.set("@$", resolve("src")).set("@views", resolve("src/views"))
   },
 
@@ -23,9 +23,9 @@ module.exports = {
     loaderOptions: {
       less: {
         modifyVars: {},
-        javascriptEnabled: true
-      }
-    }
+        javascriptEnabled: true,
+      },
+    },
   },
 
   devServer: {
@@ -34,16 +34,16 @@ module.exports = {
       "^/api": {
         target: "http://localhost:8000",
         ws: false,
-        changeOrigin: true
-      }
+        changeOrigin: true,
+      },
     },
     historyApiFallback: true,
     overlay: {
       warnings: false,
-      errors: true
-    }
+      errors: true,
+    },
   },
 
   assetsDir: "static",
-  runtimeCompiler: true
+  runtimeCompiler: true,
 }

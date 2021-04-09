@@ -77,8 +77,8 @@ export default {
       "selected.storage",
       "selected.documents",
       "selected.conference",
-      "selected.conversation"
-    ])
-  }
+      "selected.conversation",
+    ]),
+  },
 }
 </script>

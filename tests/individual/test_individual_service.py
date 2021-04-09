@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_get(session, individual_contact):
     from dispatch.individual.service import get
 
@@ -22,7 +19,7 @@ def test_get_all(session, individual_contact):
     assert len(t_individual_contacts) > 1
 
 
-def test_get_or_create(session, individual_contact):
+def test_get_or_create(session, project, individual_contact):
     from dispatch.individual.service import create, get_by_email
     from dispatch.individual.models import IndividualContactCreate
 
@@ -43,13 +40,14 @@ def test_get_or_create(session, individual_contact):
             mobile_phone=mobile_phone,
             office_phone=office_phone,
             weblink=weblink,
+            project={"id": project.id, "name": project.name},
         )
         contact = create(db_session=session, individual_contact_in=individual_contact_in)
 
     assert contact
 
 
-def test_create(session):
+def test_create(session, project):
     from dispatch.individual.service import create
     from dispatch.individual.models import IndividualContactCreate
 
@@ -67,6 +65,7 @@ def test_create(session):
         mobile_phone=mobile_phone,
         office_phone=office_phone,
         weblink=weblink,
+        project={"id": project.id, "name": project.name},
     )
     individual_contact = create(db_session=session, individual_contact_in=individual_contact_in)
     assert individual_contact

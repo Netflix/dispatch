@@ -1,11 +1,11 @@
 <template>
   <v-dialog v-model="show" persistent max-width="800px">
     <v-card elevation="0" outlined>
-      <v-card-title class="title">Latest Incident Reports</v-card-title>
+      <v-card-title class="title"> Latest Incident Reports </v-card-title>
     </v-card>
     <v-card-text>
       <v-card outlined>
-        <v-card-title class="title">Description</v-card-title>
+        <v-card-title class="title"> Description </v-card-title>
         <v-card-text>{{ item.description }}</v-card-text>
       </v-card>
       <v-card outlined>
@@ -47,8 +47,8 @@ export default {
 
   data() {
     return {
-      show: false
+      show: false,
     }
-  }
+  },
 }
 </script>

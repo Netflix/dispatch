@@ -1,7 +1,7 @@
 <template>
   <v-card :loading="loading" outlined elevation="0">
     <v-card-title>{{ title }}</v-card-title>
-    <apexchart :type="type" height="250" :options="localOptions" :series="series"></apexchart>
+    <apexchart :type="type" height="250" :options="localOptions" :series="series" />
   </v-card>
 </template>
 
@@ -11,55 +11,55 @@ export default {
   name: "DashboardCard",
 
   components: {
-    apexchart: VueApexCharts
+    apexchart: VueApexCharts,
   },
 
   props: {
     loading: {
       type: [String, Boolean],
-      default: function() {
+      default: function () {
         return false
-      }
+      },
     },
     type: {
       type: String,
-      default: function() {
+      default: function () {
         return "bar"
-      }
+      },
     },
     options: {
       type: Object,
-      required: true
+      required: true,
     },
     series: {
       type: Array[Object],
-      required: true
+      required: true,
     },
     title: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
 
   data() {
     return {
-      localOptions: JSON.parse(JSON.stringify(this.options))
+      localOptions: JSON.parse(JSON.stringify(this.options)),
     }
   },
   watch: {
-    options: function(newVal) {
+    options: function (newVal) {
       this.localOptions = { ...this.localOptions, ...newVal }
     },
-    "$vuetify.theme.dark": function(newValue) {
+    "$vuetify.theme.dark": function (newValue) {
       this.localOptions = {
         ...this.localOptions,
         ...{
           theme: {
-            mode: newValue ? "dark" : "light"
-          }
-        }
+            mode: newValue ? "dark" : "light",
+          },
+        },
       }
-    }
-  }
+    },
+  },
 }
 </script>

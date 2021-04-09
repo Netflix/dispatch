@@ -21,5 +21,5 @@ export default {
 
   delete(feedbackId) {
     return API.delete(`${resource}/${feedbackId}`)
-  }
+  },
 }

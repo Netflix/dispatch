@@ -5,10 +5,11 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, TimeStampMixin
+from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin
+from dispatch.project.models import ProjectRead
 
 
-class TagType(Base, TimeStampMixin):
+class TagType(Base, TimeStampMixin, ProjectMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     description = Column(String)
@@ -22,7 +23,7 @@ class TagTypeBase(DispatchBase):
 
 
 class TagTypeCreate(TagTypeBase):
-    pass
+    project: ProjectRead
 
 
 class TagTypeUpdate(TagTypeBase):

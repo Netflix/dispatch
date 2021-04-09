@@ -7,10 +7,11 @@ from sqlalchemy.orm import object_session
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase
+from dispatch.models import DispatchBase, ProjectMixin
+from dispatch.project.models import ProjectRead
 
 
-class IncidentPriority(Base):
+class IncidentPriority(Base, ProjectMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     description = Column(String)
@@ -51,6 +52,7 @@ class IncidentPriorityBase(DispatchBase):
     page_commander: Optional[StrictBool]
     tactical_report_reminder: Optional[int]
     executive_report_reminder: Optional[int]
+    project: Optional[ProjectRead]
     default: Optional[bool]
     view_order: Optional[int]
 

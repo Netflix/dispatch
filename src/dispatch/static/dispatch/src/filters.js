@@ -1,84 +1,81 @@
 import Vue from "vue"
 import moment from "moment"
 
-Vue.filter("formatDate", function(value) {
+Vue.filter("formatDate", function (value) {
   if (value) {
-    return moment
-      .utc(String(value))
-      .local()
-      .calendar()
+    return moment.utc(String(value)).local().calendar()
   }
 })
 
-Vue.filter("initials", function(value) {
+Vue.filter("initials", function (value) {
   if (value) {
     return value
       .split(" ")
-      .map(n => n[0])
+      .map((n) => n[0])
       .join("")
   }
 })
 
-Vue.filter("asString", function(value) {
+Vue.filter("asString", function (value) {
   if (!value) return ""
   return value.toString()
 })
 
-Vue.filter("capitalize", function(value) {
+Vue.filter("capitalize", function (value) {
   if (!value) return ""
   value = value.toString()
   return value.charAt(0).toUpperCase() + value.slice(1)
 })
 
-Vue.filter("toUSD", function(value) {
+Vue.filter("toUSD", function (value) {
   if (value) {
     var formatter = new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-      maximumSignificantDigits: 6
+      maximumSignificantDigits: 6,
     })
     return formatter.format(value)
   }
   return value
 })
 
-Vue.filter("toNumberString", function(value) {
+Vue.filter("toNumberString", function (value) {
   if (value) {
     var formatter = new Intl.NumberFormat("en-US", {
-      maximumSignificantDigits: 6
+      maximumSignificantDigits: 6,
     })
     return formatter.format(value)
   }
   return value
 })
 
-Vue.filter("deslug", function(value) {
+Vue.filter("deslug", function (value) {
   if (value) {
     return value
       .split("-")
       .slice(2)
-      .map(function(word) {
+      .map(function (word) {
         return word.charAt(0).toUpperCase() + word.slice(1)
       })
       .join(" ")
   }
 })
 
-Vue.filter("snakeToCamel", function(value) {
+Vue.filter("snakeToCamel", function (value) {
   if (value) {
     return value
       .split("_")
-      .map(function(value) {
+      .map(function (value) {
         return value.charAt(0).toUpperCase() + value.substring(1)
       })
       .join(" ")
   }
 })
 
-Vue.filter("commaString", function(value, key) {
+Vue.filter("commaString", function (value, key) {
   if (value) {
     return value
-      .map(function(el) {
+      .map(function (el) {
         return el[key]
       })
       .join(", ")

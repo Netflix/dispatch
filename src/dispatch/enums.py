@@ -23,6 +23,7 @@ class SearchTypes(str, Enum):
 
 
 class UserRoles(str, Enum):
+    owner = "Owner"
+    manager = "Manager"
     admin = "Admin"
-    poweruser = "Poweruser"
-    user = "User"
+    member = "Member"

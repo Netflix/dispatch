@@ -340,7 +340,11 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
         db_session=db_session, incident_id=incident_id
     ).all()
 
-    contact_plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    contact_plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="contact"
+    )
 
     for participant in participants:
         if participant.is_active:

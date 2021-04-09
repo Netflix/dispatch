@@ -38,16 +38,16 @@ export default {
   props: {
     value: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
+      },
     },
     label: {
       type: String,
-      default: function() {
+      default: function () {
         return "Assignee"
-      }
-    }
+      },
+    },
   },
 
   data() {
@@ -55,27 +55,27 @@ export default {
       loading: false,
       items: [],
       select: null,
-      search: null
+      search: null,
     }
   },
 
   computed: {
     assignee: {
       get() {
-        return map(this.value, function(item) {
+        return map(this.value, function (item) {
           return item["individual"]
         })
       },
       set(value) {
-        let wrapped = map(value, function(item) {
+        let wrapped = map(value, function (item) {
           if (!("individual" in item)) {
             return { individual: item }
           }
           return item
         })
         this.$emit("input", wrapped)
-      }
-    }
+      },
+    },
   },
 
   watch: {
@@ -86,31 +86,31 @@ export default {
       if (!val) return
       this.items.push.apply(
         this.items,
-        map(val, function(item) {
+        map(val, function (item) {
           return item["individual"]
         })
       )
-    }
+    },
   },
 
   methods: {
     querySelections(v) {
       this.loading = "error"
       // Simulated ajax query
-      IndividualApi.getAll({ q: v }).then(response => {
+      IndividualApi.getAll({ q: v }).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
-    }
+    },
   },
 
   mounted() {
     this.error = null
     this.loading = "error"
-    IndividualApi.getAll().then(response => {
+    IndividualApi.getAll().then((response) => {
       this.items = response.data.items
       this.loading = false
     })
-  }
+  },
 }
 </script>

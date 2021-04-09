@@ -2,10 +2,10 @@
   <ValidationObserver v-slot="{ invalid, validated }">
     <v-card class="mx-auto ma-4" max-width="600" flat outlined :loading="loading">
       <v-card-text>
-        <p class="display-1 text--primary">Report Security Incident</p>
+        <p class="display-1 text--primary">Report Incident</p>
         <p>
-          If you suspect a security incident and require help from security, please fill out the
-          following to the best of your abilities.
+          If you suspect a incident and require help, please fill out the following to the best of
+          your abilities.
         </p>
         <v-form>
           <v-container grid-list-md>
@@ -43,13 +43,16 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <incident-type-select v-model="incident_type" />
+                <project-select v-model="project" />
               </v-flex>
               <v-flex xs12>
-                <incident-priority-select v-model="incident_priority" />
+                <incident-type-select :project="project" v-model="incident_type" />
               </v-flex>
               <v-flex xs12>
-                <tag-filter-combobox v-model="tags" label="Tags"></tag-filter-combobox>
+                <incident-priority-select :project="project" v-model="incident_priority" />
+              </v-flex>
+              <v-flex xs12>
+                <tag-filter-combobox :project="project" v-model="tags" label="Tags" />
               </v-flex>
               <v-flex xs12>
                 <v-checkbox v-model="trackingOnly" label="Tracking Only">
@@ -58,9 +61,7 @@
                       Tracking Only
                       <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
-                          <v-icon v-bind="attrs" v-on="on">
-                            help_outline
-                          </v-icon>
+                          <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                         </template>
                         Dispatch will only create a ticket for this incident. The status of the
                         incident will be closed and no collaboration resources will be created. No
@@ -78,9 +79,10 @@
                 :loading="loading"
                 :disabled="invalid || !validated"
                 @click="report()"
-                >Submit
+              >
+                Submit
                 <template v-slot:loader>
-                  <v-progress-linear indeterminate color="white"></v-progress-linear>
+                  <v-progress-linear indeterminate color="white" />
                 </template>
               </v-btn>
             </template>
@@ -98,14 +100,14 @@ import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
+import ProjectSelect from "@/project/ProjectSelect.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
-// import IncidentMembersCombobox from "@/incident/IncidentMembersCombobox.vue"
 export default {
   name: "ReportSubmissionCard",
 
@@ -114,11 +116,12 @@ export default {
     ValidationObserver,
     IncidentTypeSelect,
     IncidentPrioritySelect,
-    TagFilterCombobox
+    ProjectSelect,
+    TagFilterCombobox,
   },
   data() {
     return {
-      isSubmitted: false
+      isSubmitted: false,
     }
   },
   computed: {
@@ -136,13 +139,29 @@ export default {
       "selected.documents",
       "selected.loading",
       "selected.ticket",
+      "selected.project",
       "selected.trackingOnly",
-      "selected.id"
-    ])
+      "selected.id",
+    ]),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
-    ...mapActions("incident", ["report", "get", "resetSelected"])
-  }
+    ...mapActions("incident", ["report", "get", "resetSelected"]),
+  },
+
+  mounted() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
+
+    if (this.query.incident_type) {
+      this.incident_type = { name: this.query.incident_type }
+    }
+
+    if (this.query.incident_priority) {
+      this.incident_priority = { name: this.query.incident_priority }
+    }
+  },
 }
 </script>

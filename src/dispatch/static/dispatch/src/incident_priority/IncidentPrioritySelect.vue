@@ -11,8 +11,8 @@
     <template v-slot:item="data">
       <template>
         <v-list-item-content>
-          <v-list-item-title v-text="data.item.name"></v-list-item-title>
-          <v-list-item-subtitle v-text="data.item.description"></v-list-item-subtitle>
+          <v-list-item-title v-text="data.item.name" />
+          <v-list-item-subtitle v-text="data.item.description" />
         </v-list-item-content>
       </template>
     </template>
@@ -20,23 +20,30 @@
 </template>
 
 <script>
-import IncidentPriorityApi from "@/incident_priority/api"
 import { cloneDeep } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import IncidentPriorityApi from "@/incident_priority/api"
+
 export default {
   name: "IncidentPrioritySelect",
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return {}
-      }
-    }
+      },
+    },
+    project: {
+      type: [Object],
+      default: null,
+    },
   },
 
   data() {
     return {
       loading: false,
-      items: []
+      items: [],
     }
   },
 
@@ -47,17 +54,31 @@ export default {
       },
       set(value) {
         this.$emit("input", value)
-      }
-    }
+      },
+    },
   },
 
   created() {
     this.error = null
     this.loading = "error"
-    IncidentPriorityApi.getAll({ sortBy: ["view_order"], descending: [false] }).then(response => {
+
+    let filterOptions = {
+      sortBy: ["view_order"],
+      descending: [false],
+    }
+
+    if (this.project) {
+      filterOptions = {
+        filters: {
+          project: [this.project],
+        },
+      }
+      filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
+    }
+    IncidentPriorityApi.getAll(filterOptions).then((response) => {
       this.items = response.data.items
       this.loading = false
     })
-  }
+  },
 }
 </script>

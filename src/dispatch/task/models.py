@@ -18,7 +18,7 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.config import INCIDENT_RESOURCE_INCIDENT_TASK
-from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin
+from dispatch.models import DispatchBase, ResourceMixin
 
 from dispatch.incident.models import IncidentReadNested
 from dispatch.ticket.models import TicketRead
@@ -69,13 +69,15 @@ assoc_task_tickets = Table(
 )
 
 
-class Task(Base, ResourceMixin, TimeStampMixin):
+class Task(Base, ResourceMixin):
     id = Column(Integer, primary_key=True)
     resolved_at = Column(DateTime)
     resolve_by = Column(DateTime, default=default_resolution_time)
     last_reminder_at = Column(DateTime)
     creator_id = Column(Integer, ForeignKey("participant.id", ondelete="CASCADE"))
     owner_id = Column(Integer, ForeignKey("participant.id", ondelete="CASCADE"))
+    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
+
     assignees = relationship(
         "Participant", secondary=assoc_task_assignees, backref="assigned_tasks", lazy="subquery"
     )
@@ -86,7 +88,6 @@ class Task(Base, ResourceMixin, TimeStampMixin):
     reminders = Column(Boolean, default=True)
 
     # relationships
-    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     tickets = relationship("Ticket", secondary=assoc_task_tickets, backref="tasks")
 
     search_vector = Column(TSVectorType("description"))

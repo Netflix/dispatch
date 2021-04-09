@@ -19,7 +19,7 @@
             :value="param.key"
             @input="updateItemKey(idx, $event)"
             type="text"
-          ></v-text-field>
+          />
         </v-col>
         <v-col cols="12" sm="6">
           <v-text-field
@@ -27,13 +27,13 @@
             :value="param.value"
             @input="updateItemValue(idx, $event)"
             type="text"
-          ></v-text-field>
+          />
         </v-col>
       </v-row>
     </span>
     <v-row align="center" dense>
       <v-col cols="12" sm="12">
-        <v-btn @click="addItem()">Add Parameter</v-btn>
+        <v-btn @click="addItem()"> Add Parameter </v-btn>
       </v-col>
     </v-row>
   </v-container>
@@ -50,18 +50,18 @@ export default {
   props: {
     value: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
-    }
+      },
+    },
   },
 
   computed: {
     parameters: {
       get() {
         return cloneDeep(this.value)
-      }
-    }
+      },
+    },
   },
 
   methods: {
@@ -80,7 +80,7 @@ export default {
     updateItemValue(idx, event) {
       this.parameters[idx]["value"] = event
       this.$emit("input", this.parameters)
-    }
-  }
+    },
+  },
 }
 </script>

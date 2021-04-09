@@ -1,11 +1,9 @@
-from typing import List
-
-from fastapi import APIRouter, Depends, Request, HTTPException, Query
+from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.orm import Session
-from dispatch.auth.permissions import AdminPermission, PermissionsDependency
+from dispatch.auth.permissions import OrganizationOwnerPermission, PermissionsDependency
 
 from dispatch.database.core import get_db
-from dispatch.database.service import search_filter_sort_paginate
+from dispatch.database.service import common_parameters, search_filter_sort_paginate
 
 from .models import (
     UserLogin,
@@ -24,32 +22,11 @@ user_router = APIRouter()
 
 
 @user_router.get("/", response_model=UserPagination)
-def get_users(
-    db_session: Session = Depends(get_db),
-    page: int = 1,
-    items_per_page: int = Query(5, alias="itemsPerPage"),
-    query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query([], alias="sortBy[]"),
-    descending: List[bool] = Query([], alias="descending[]"),
-    fields: List[str] = Query([], alias="fields[]"),
-    ops: List[str] = Query([], alias="ops[]"),
-    values: List[str] = Query([], alias="values[]"),
-):
+def get_users(*, common: dict = Depends(common_parameters)):
     """
     Get all users.
     """
-    return search_filter_sort_paginate(
-        db_session=db_session,
-        model="DispatchUser",
-        query_str=query_str,
-        page=page,
-        items_per_page=items_per_page,
-        sort_by=sort_by,
-        descending=descending,
-        fields=fields,
-        values=values,
-        ops=ops,
-    )
+    return search_filter_sort_paginate(model="DispatchUser", **common)
 
 
 @user_router.get("/{user_id}", response_model=UserRead)
@@ -63,10 +40,18 @@ def get_user(*, db_session: Session = Depends(get_db), user_id: int):
     return user
 
 
+@auth_router.get("/me", response_model=UserRead)
+def get_me(
+    req: Request,
+    db_session: Session = Depends(get_db),
+):
+    return get_current_user(db_session=db_session, request=req)
+
+
 @user_router.put(
     "/{user_id}",
-    response_model=UserUpdate,
-    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+    response_model=UserRead,
+    dependencies=[Depends(PermissionsDependency([OrganizationOwnerPermission]))],
 )
 def update_user(
     *,
@@ -109,11 +94,3 @@ def register_user(
         raise HTTPException(status_code=400, detail="User with that email address exists.")
 
     return user
-
-
-@user_router.get("/me", response_model=UserRead)
-def get_me(
-    req: Request,
-    db_session: Session = Depends(get_db),
-):
-    return get_current_user(db_session=db_session, request=req)

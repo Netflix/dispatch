@@ -11,9 +11,10 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.document.models import DocumentCreate
-from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin
+from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin, ProjectMixin
 from dispatch.participant.models import ParticipantRead
 from dispatch.plugin.models import PluginRead
+from dispatch.project.models import ProjectRead
 
 
 class WorkflowInstanceStatus(str, Enum):
@@ -58,7 +59,7 @@ assoc_workflow_terms = Table(
 )
 
 
-class Workflow(Base, TimeStampMixin):
+class Workflow(Base, ProjectMixin, TimeStampMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
@@ -80,13 +81,14 @@ class Workflow(Base, TimeStampMixin):
     search_vector = Column(TSVectorType("name", "description"))
 
 
-class WorkflowInstance(Base, ResourceMixin, TimeStampMixin):
+class WorkflowInstance(Base, ResourceMixin):
     id = Column(Integer, primary_key=True)
     workflow_id = Column(Integer, ForeignKey("workflow.id"))
-    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     parameters = Column(JSON, default=[])
     run_reason = Column(String)
     creator_id = Column(Integer, ForeignKey("participant.id"))
+    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
+
     creator = relationship(
         "Participant", backref="created_workflow_instances", foreign_keys=[creator_id]
     )
@@ -109,7 +111,7 @@ class WorkflowBase(DispatchBase):
 
 
 class WorkflowCreate(WorkflowBase):
-    pass
+    project: ProjectRead
 
 
 class WorkflowUpdate(WorkflowBase):

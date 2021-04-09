@@ -14,43 +14,43 @@ const getDefaultSelectedState = () => {
     updated_at: null,
     company: null,
     email: null,
-    loading: false
+    loading: false,
   }
 }
 
 const state = {
   selected: {
-    ...getDefaultSelectedState()
+    ...getDefaultSelectedState(),
   },
   dialogs: {
     showCreateEdit: false,
-    showRemove: false
+    showRemove: false,
   },
   table: {
     rows: {
       items: [],
-      total: null
+      total: null,
     },
     options: {
       q: "",
       page: 1,
       itemsPerPage: 10,
       sortBy: ["name"],
-      descending: [true]
+      descending: [true],
     },
-    loading: false
-  }
+    loading: false,
+  },
 }
 
 const getters = {
-  getField
+  getField,
 }
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
     return TeamApi.getAll(state.table.options)
-      .then(response => {
+      .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
       })
@@ -88,12 +88,12 @@ const actions = {
             { root: true }
           )
         })
-        .catch(err => {
+        .catch((err) => {
           commit(
             "notification_backend/addBeNotification",
             {
               text: "Team not created. Reason: " + err.response.data.detail,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
@@ -109,12 +109,12 @@ const actions = {
             { root: true }
           )
         })
-        .catch(err => {
+        .catch((err) => {
           commit(
             "notification_backend/addBeNotification",
             {
               text: "Team not updated. Reason: " + err.response.data.detail,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
@@ -123,7 +123,7 @@ const actions = {
   },
   remove({ commit, dispatch }) {
     return TeamApi.delete(state.selected.id)
-      .then(function() {
+      .then(function () {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
@@ -132,17 +132,17 @@ const actions = {
           { root: true }
         )
       })
-      .catch(err => {
+      .catch((err) => {
         commit(
           "notification_backend/addBeNotification",
           {
             text: "Team not deleted. Reason: " + err.response.data.detail,
-            type: "error"
+            type: "error",
           },
           { root: true }
         )
       })
-  }
+  },
 }
 
 const mutations = {
@@ -164,7 +164,7 @@ const mutations = {
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
-  }
+  },
 }
 
 export default {
@@ -172,5 +172,5 @@ export default {
   state,
   getters,
   actions,
-  mutations
+  mutations,
 }

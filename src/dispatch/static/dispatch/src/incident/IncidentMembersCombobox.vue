@@ -55,12 +55,12 @@ export default {
   props: {
     value: {
       type: Object,
-      default: null
-    }
+      default: null,
+    },
   },
   data() {
     return {
-      search: ""
+      search: "",
     }
   },
 
@@ -73,8 +73,8 @@ export default {
       },
       get() {
         return this.$store.state.text
-      }
-    }
+      },
+    },
   },
 
   components: {},
@@ -89,7 +89,7 @@ export default {
     removeMember(payload) {
       this.$emit("removeMember", payload)
     },
-    setFilterOptions: debounce(function() {}, 200)
-  }
+    setFilterOptions: debounce(function () {}, 200),
+  },
 }
 </script>

@@ -2,16 +2,14 @@
   <v-app>
     <v-content>
       <v-app-bar app flat class="v-bar--underline" color="background0">
-        <router-link to="/" tag="span">
+        <router-link to="/" style="text-decoration: none">
           <span class="button font-weight-bold">D I S P A T C H</span>
         </router-link>
         <v-spacer />
-        <v-btn small color="info" to="/incidents/status">
-          Active Incidents
-        </v-btn>
+        <v-btn small color="info" :to="{ name: 'status' }"> Active Incidents </v-btn>
       </v-app-bar>
       <report-receipt-card v-if="id" />
-      <report-submission-card v-else />
+      <report-submission-card project="project" v-else />
     </v-content>
   </v-app>
 </template>
@@ -20,18 +18,26 @@
 import { mapFields } from "vuex-map-fields"
 import ReportSubmissionCard from "@/incident/ReportSubmissionCard.vue"
 import ReportReceiptCard from "@/incident/ReportReceiptCard.vue"
+
 export default {
   name: "ReportForm",
 
+  props: {
+    project: {
+      type: String,
+      default: null,
+    },
+  },
+
   components: {
     ReportSubmissionCard,
-    ReportReceiptCard
+    ReportReceiptCard,
   },
   data() {
     return {}
   },
   computed: {
-    ...mapFields("incident", ["selected.id"])
-  }
+    ...mapFields("incident", ["selected.id"]),
+  },
 }
 </script>

@@ -9,13 +9,14 @@
         <incident-cost-type-select v-model="incident_cost_type" />
       </v-col>
       <v-col cols="12" sm="4">
-        <v-text-field type="number" label="Amount" v-model.number="amount" prefix="$">
-        </v-text-field>
+        <v-text-field type="number" label="Amount" v-model.number="amount" prefix="$" />
       </v-col>
       <v-col cols="12" sm="1">
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
-            <v-btn small icon @click="addIncidentCost()" v-on="on"><v-icon>add</v-icon></v-btn>
+            <v-btn small icon @click="addIncidentCost()" v-on="on">
+              <v-icon>add</v-icon>
+            </v-btn>
           </template>
           <span>Add Cost</span>
         </v-tooltip>
@@ -31,13 +32,13 @@ export default {
   name: "IncidentCostInput",
 
   components: {
-    IncidentCostTypeSelect
+    IncidentCostTypeSelect,
   },
 
   data() {
     return {
       amount: null,
-      incident_cost_type: null
+      incident_cost_type: null,
     }
   },
 
@@ -51,7 +52,7 @@ export default {
         this.amount = null
         this.incident_cost_type = null
       }
-    }
-  }
+    },
+  },
 }
 </script>

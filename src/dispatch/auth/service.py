@@ -21,7 +21,16 @@ from dispatch.config import (
     DISPATCH_AUTHENTICATION_PROVIDER_SLUG,
     DISPATCH_AUTHENTICATION_DEFAULT_USER,
 )
-from .models import DispatchUser, UserRegister, UserUpdate
+from dispatch.organization import service as organization_service
+from dispatch.project import service as project_service
+
+from .models import (
+    DispatchUser,
+    DispatchUserOrganization,
+    DispatchUserProject,
+    UserRegister,
+    UserUpdate,
+)
 
 log = logging.getLogger(__name__)
 
@@ -44,8 +53,25 @@ def create(*, db_session, user_in: UserRegister) -> DispatchUser:
     """Creates a new dispatch user."""
     # pydantic forces a string password, but we really want bytes
     password = bytes(user_in.password, "utf-8")
+
+    # create the user
     user = DispatchUser(**user_in.dict(exclude={"password"}), password=password)
     db_session.add(user)
+
+    # get the default organization
+    default_org = organization_service.get_default(db_session=db_session)
+
+    # add the user to the default organization
+    db_session.add(
+        DispatchUserOrganization(dispatch_user_id=user.id, organization_id=default_org.id)
+    )
+
+    # get default project
+    default_project = project_service.get_default(db_session=db_session)
+
+    # add user to the default project
+    db_session.add(DispatchUserProject(dispatch_user_id=user.id, project_id=default_project.id))
+
     db_session.commit()
     return user
 

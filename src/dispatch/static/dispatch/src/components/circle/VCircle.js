@@ -10,7 +10,7 @@ export default {
     medium: Boolean,
     dot: Boolean,
     pill: Boolean,
-    ring: Boolean
+    ring: Boolean,
   },
   computed: {
     classes() {
@@ -22,19 +22,19 @@ export default {
         "circle-dot": this.dot,
         "circle-pill": this.pill,
         "theme--light": this.light,
-        "theme--dark": this.dark
+        "theme--dark": this.dark,
       }
       return classes
-    }
+    },
   },
   render(h) {
     const data = {
       staticClass: "circle",
       class: this.classes,
       attrs: { tabindex: this.disabled ? -1 : 0 },
-      on: this.$listeners
+      on: this.$listeners,
     }
 
     return h("span", data, [this.$slots.default])
-  }
+  },
 }

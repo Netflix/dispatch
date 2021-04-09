@@ -16,22 +16,22 @@ export default {
   name: "IncidentStatusMultiSelect",
   props: {
     value: {
-      priority: Array,
-      default: function() {
+      type: Array,
+      default: function () {
         return []
-      }
+      },
     },
     label: {
-      priority: String,
-      default: function() {
+      type: String,
+      default: function () {
         return "Statuses"
-      }
-    }
+      },
+    },
   },
 
   data() {
     return {
-      items: ["Active", "Stable", "Closed"]
+      items: ["Active", "Stable", "Closed"],
     }
   },
 
@@ -42,8 +42,8 @@ export default {
       },
       set(value) {
         this.$emit("input", value)
-      }
-    }
-  }
+      },
+    },
+  },
 }
 </script>

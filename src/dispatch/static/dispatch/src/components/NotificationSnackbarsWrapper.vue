@@ -6,7 +6,7 @@
     @input="setSeen(notification.index)"
   >
     {{ notification.text }}
-    <v-btn text @click="setSeen(notification.index)">Close</v-btn>
+    <v-btn text @click="setSeen(notification.index)"> Close </v-btn>
   </v-snackbar>
 </template>
 
@@ -19,38 +19,38 @@ export default {
 
   computed: {
     ...mapFields("notification_backend", ["notifications"]),
-    notificationQueue: function() {
+    notificationQueue: function () {
       const indexed = this.notifications.map((o, i) => {
         return {
           index: i,
-          ...o
+          ...o,
         }
       })
-      return indexed.filter(o => o.show === true)
+      return indexed.filter((o) => o.show === true)
     },
-    queueLength: function() {
+    queueLength: function () {
       return this.notificationQueue.length
     },
-    hasPending: function() {
+    hasPending: function () {
       return this.queueLength > 0
-    }
+    },
   },
 
   watch: {
     notificationQueue: {
       deep: true,
-      handler: function() {
+      handler: function () {
         if (!this.notification.show && this.hasPending) {
           const newNot = this.notificationQueue.shift()
           this.$nextTick(() => (this.notification = { ...newNot }))
         }
-      }
-    }
+      },
+    },
   },
 
   data() {
     return {
-      notification: {}
+      notification: {},
     }
   },
 
@@ -61,7 +61,7 @@ export default {
   methods: {
     ...mapActions("notification_backend", [
       "removeBackendNotification",
-      "setBackendNotificationSeen"
+      "setBackendNotificationSeen",
     ]),
     setSeen(i) {
       this.showNext()
@@ -77,7 +77,7 @@ export default {
         show: false,
         type: "",
         index: -1,
-        timeout: undefined
+        timeout: undefined,
       }
     },
     showNext() {
@@ -87,7 +87,7 @@ export default {
       } else {
         this.reset()
       }
-    }
-  }
+    },
+  },
 }
 </script>

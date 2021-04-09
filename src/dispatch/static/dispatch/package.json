@@ -15,6 +15,7 @@
     "ace-builds": "^1.4.12",
     "apexcharts": "^3.24.0",
     "axios": "^0.21.1",
+    "core-js": "^3.6.5",
     "date-fns": "^2.16.1",
     "font-awesome": "^4.7.0",
     "good-env": "^5.2.0",
@@ -35,13 +36,14 @@
     "vuetify": "2.2.20",
     "vuex": "^3.6.0",
     "vuex-map-fields": "^1.4.1",
-    "vuex-persist": "^2.3.0"
+    "vuex-persist": "^2.3.0",
+    "vuex-router-sync": "^5.0.0"
   },
   "devDependencies": {
     "@mdi/font": "^5.8.55",
-    "@typescript-eslint/parser": "^1.13.0",
-    "@vue/cli-plugin-babel": "^4.5.9",
-    "@vue/cli-plugin-eslint": "^4.5.9",
+    "@typescript-eslint/parser": "^4.20.0",
+    "@vue/cli-plugin-babel": "^4.5.12",
+    "@vue/cli-plugin-eslint": "^4.5.12",
     "@vue/cli-plugin-pwa": "^4.5.9",
     "@vue/cli-service": "^4.5.9",
     "@vue/eslint-config-prettier": "^6.0.0",
@@ -53,6 +55,7 @@
     "eslint-plugin-vuetify": "^1.0.0-beta.7",
     "jquery": "^3.5.1",
     "jwt-decode": "^2.2.0",
+    "prettier": "^2.2.1",
     "prettier-eslint": "^9.0.2",
     "sass": "^1.32.0",
     "sass-loader": "^8.0.2",
@@ -66,9 +69,11 @@
   "eslintConfig": {
     "root": true,
     "extends": [
-      "plugin:vue/essential",
+      "plugin:vue/strongly-recommended",
       "plugin:prettier/recommended",
-      "eslint:recommended"
+      "eslint:recommended",
+      "plugin:vue/essential",
+      "@vue/prettier"
     ],
     "parserOptions": {
       "parser": "babel-eslint",
@@ -87,6 +92,7 @@
           "no-undef": "off"
         }
       }
-    ]
+    ],
+    "rules": {}
   }
 }

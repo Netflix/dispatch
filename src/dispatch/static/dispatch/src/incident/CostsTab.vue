@@ -44,22 +44,22 @@ export default {
   name: "IncidentCostsTab",
 
   components: {
-    IncidentCostInput
+    IncidentCostInput,
   },
 
   computed: {
     ...mapMultiRowFields("incident", ["selected.incident_costs"]),
 
-    totalCost: function() {
-      var total_cost = this.incident_costs.reduce(function(accumulator, item) {
+    totalCost: function () {
+      var total_cost = this.incident_costs.reduce(function (accumulator, item) {
         return accumulator + item.amount
       }, 0)
       return total_cost
-    }
+    },
   },
 
   methods: {
-    ...mapMutations("incident", ["addIncidentCost", "removeIncidentCost"])
-  }
+    ...mapMutations("incident", ["addIncidentCost", "removeIncidentCost"]),
+  },
 }
 </script>

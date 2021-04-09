@@ -18,20 +18,20 @@ export default {
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return {}
-      }
+      },
     },
     loading: {
       type: [String, Boolean],
-      default: function() {
+      default: function () {
         return false
-      }
-    }
+      },
+    },
   },
 
   components: {
-    DashboardCard
+    DashboardCard,
   },
 
   data() {
@@ -46,45 +46,45 @@ export default {
           height: 350,
           stacked: true,
           toolbar: {
-            show: false
-          }
+            show: false,
+          },
         },
         responsive: [
           {
             options: {
               legend: {
-                position: "top"
-              }
-            }
-          }
+                position: "top",
+              },
+            },
+          },
         ],
         xaxis: {
           categories: this.categoryData || [],
           title: {
-            text: "Month"
-          }
+            text: "Month",
+          },
         },
         fill: {
-          opacity: 1
+          opacity: 1,
         },
         legend: {
-          position: "top"
-        }
+          position: "top",
+        },
       }
     },
     series() {
       let series = []
-      forEach(this.value, function(value) {
+      forEach(this.value, function (value) {
         let typeCount = map(
-          countBy(value, function(item) {
+          countBy(value, function (item) {
             return item.incident.incident_type.name
           }),
-          function(value, key) {
+          function (value, key) {
             return { name: key, data: [value] }
           }
         )
 
-        series = mergeWith(series, typeCount, function(objValue, srcValue) {
+        series = mergeWith(series, typeCount, function (objValue, srcValue) {
           if (isArray(objValue)) {
             return objValue.concat(srcValue)
           }
@@ -95,7 +95,7 @@ export default {
     },
     categoryData() {
       return Object.keys(this.value)
-    }
-  }
+    },
+  },
 }
 </script>

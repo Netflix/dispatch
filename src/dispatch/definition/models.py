@@ -7,9 +7,11 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
 from dispatch.models import (
     DispatchBase,
+    ProjectMixin,
     TermNested,
     TermReadNested,
 )
+from dispatch.project.models import ProjectRead
 
 # Association tables
 definition_teams = Table(
@@ -29,7 +31,7 @@ definition_terms = Table(
 )
 
 
-class Definition(Base):
+class Definition(Base, ProjectMixin):
     id = Column(Integer, primary_key=True)
     text = Column(String, unique=True)
     source = Column(String, default="dispatch")
@@ -46,6 +48,7 @@ class DefinitionBase(DispatchBase):
 
 class DefinitionCreate(DefinitionBase):
     terms: Optional[List[TermNested]] = []
+    project: ProjectRead
 
 
 class DefinitionUpdate(DefinitionBase):

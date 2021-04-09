@@ -18,25 +18,25 @@ export default {
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return {}
-      }
+      },
     },
     loading: {
       type: [String, Boolean],
-      default: function() {
+      default: function () {
         return false
-      }
-    }
+      },
+    },
   },
 
   components: {
-    DashboardCard
+    DashboardCard,
   },
 
   data() {
     return {
-      order: ["High", "Medium", "Low"]
+      order: ["High", "Medium", "Low"],
     }
   },
 
@@ -48,41 +48,41 @@ export default {
           height: 350,
           stacked: true,
           toolbar: {
-            show: false
-          }
+            show: false,
+          },
         },
         responsive: [
           {
             options: {
               legend: {
-                position: "top"
-              }
-            }
-          }
+                position: "top",
+              },
+            },
+          },
         ],
         colors: ["#FF4560", "#FEB019", "#008FFB"],
         xaxis: {
           categories: this.categoryData || [],
           title: {
-            text: "Month"
-          }
+            text: "Month",
+          },
         },
         fill: {
-          opacity: 1
+          opacity: 1,
         },
         legend: {
-          position: "top"
-        }
+          position: "top",
+        },
       }
     },
     series() {
       let aggCount = {}
-      forEach(this.value, function(value) {
-        let count = countBy(value, function(item) {
+      forEach(this.value, function (value) {
+        let count = countBy(value, function (item) {
           return item.incident.incident_priority.name
         })
 
-        forEach(count, function(value, key) {
+        forEach(count, function (value, key) {
           if (aggCount[key]) {
             aggCount[key].push(value)
           } else {
@@ -92,7 +92,7 @@ export default {
       })
 
       let series = []
-      forEach(this.order, function(o) {
+      forEach(this.order, function (o) {
         if (aggCount[o]) {
           series.push({ name: o, data: aggCount[o] })
         } else {
@@ -103,7 +103,7 @@ export default {
     },
     categoryData() {
       return Object.keys(this.value)
-    }
-  }
+    },
+  },
 }
 </script>

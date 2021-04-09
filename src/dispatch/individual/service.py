@@ -3,6 +3,7 @@ from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 from dispatch.database.core import SessionLocal
 
+from dispatch.incident.models import Incident
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.term import service as term_service
@@ -38,12 +39,16 @@ def get_all(*, db_session) -> List[Optional[IndividualContact]]:
     return db_session.query(IndividualContact)
 
 
-def get_or_create(*, db_session, email: str, **kwargs) -> IndividualContact:
+def get_or_create(
+    *, db_session, email: str, incident: Incident = None, **kwargs
+) -> IndividualContact:
     """Gets or creates an individual."""
     contact = get_by_email(db_session=db_session, email=email)
 
     if not contact:
-        contact_plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
+        contact_plugin = plugin_service.get_active(
+            db_session=db_session, project_id=incident.project.id, plugin_type="contact"
+        )
         individual_info = {}
 
         if contact_plugin:

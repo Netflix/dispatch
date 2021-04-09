@@ -21,5 +21,5 @@ export default {
 
   delete(individualId) {
     return API.delete(`${resource}/${individualId}`)
-  }
+  },
 }

@@ -58,15 +58,15 @@ export default {
   name: "UserTable",
 
   components: {
-    NewEditSheet
+    NewEditSheet,
   },
+
   data() {
     return {
       headers: [
         { text: "Email", value: "email", sortable: true },
-        { text: "Role", value: "role", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" }
-      ]
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+      ],
     }
   },
 
@@ -79,23 +79,31 @@ export default {
       "table.options.descending",
       "table.loading",
       "table.rows.items",
-      "table.rows.total"
-    ])
+      "table.rows.total",
+    ]),
   },
 
   mounted() {
     this.getAll({})
 
     this.$watch(
-      vm => [vm.q, vm.page, vm.itemsPerPage, vm.sortBy, vm.descending],
+      (vm) => [vm.page],
       () => {
+        this.getAll()
+      }
+    )
+
+    this.$watch(
+      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
+      () => {
+        this.page = 1
         this.getAll()
       }
     )
   },
 
   methods: {
-    ...mapActions("auth", ["getAll", "editShow"])
-  }
+    ...mapActions("auth", ["getAll", "editShow"]),
+  },
 }
 </script>
