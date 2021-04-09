@@ -5,7 +5,8 @@
   "scripts": {
     "serve": "NODE_ENV=dev NODE_OPTIONS='--max-http-header-size=100000' vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "build-report": "vue-cli-service build --report"
   },
   "dependencies": {
     "@openid/appauth": "^1.3.0",

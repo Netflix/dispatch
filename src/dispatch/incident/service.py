@@ -56,7 +56,7 @@ def assign_incident_role(
     # Add a new participant (duplicate participants with different roles will be updated)
     participant_flows.add_participant(
         assignee_email,
-        incident.id,
+        incident,
         db_session,
         role=role,
     )
