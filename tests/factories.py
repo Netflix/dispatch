@@ -685,7 +685,6 @@ class EventFactory(BaseFactory):
     ended_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
     source = FuzzyText()
     description = FuzzyText()
-    project = SubFactory(ProjectFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -715,7 +714,6 @@ class ConferenceFactory(ResourceBaseFactory):
     conference_id = Sequence(lambda n: f"conference{n}")
     conference_challenge = FuzzyText()
     incident = SubFactory(IncidentFactory)
-    project = SubFactory(ProjectFactory)
 
     class Meta:
         model = Conference

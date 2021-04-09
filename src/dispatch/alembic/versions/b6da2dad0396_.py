@@ -9,7 +9,6 @@ from alembic import op
 import sqlalchemy as sa
 
 from sqlalchemy.orm import Session
-from sqlalchemy import Column, String, Integer, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql.expression import true
 
@@ -26,11 +25,11 @@ depends_on = None
 class IncidentCostType(Base):
     __tablename__ = "incident_cost_type"
     # columns
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    description = Column(String)
-    category = Column(String)
-    default = Column(Boolean, default=False)
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.String)
+    description = sa.Column(sa.String)
+    category = sa.Column(sa.String)
+    default = sa.Column(sa.Boolean, default=False)
 
 
 def upgrade():

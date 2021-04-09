@@ -11,7 +11,6 @@ from pydantic import validator
 from sqlalchemy import Column, String, Binary, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
-from sqlalchemy.sql.sqltypes import Boolean
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base

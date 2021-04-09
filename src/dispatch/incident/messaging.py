@@ -10,7 +10,6 @@ from dispatch.config import DISPATCH_UI_URL
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.database.core import SessionLocal, resolve_attr
 from dispatch.document import service as document_service
-from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident, IncidentRead
 from dispatch.notification import service as notification_service

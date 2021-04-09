@@ -11,11 +11,9 @@ from alembic import op
 from datetime import datetime
 import sqlalchemy as sa
 from sqlalchemy.sql.sqltypes import Boolean
-import sqlalchemy_utils
 from sqlalchemy.orm import relationship, Session
 from sqlalchemy_utils import TSVectorType
 
-from sqlalchemy import Column, String, Integer, DateTime, event, ForeignKey, Binary
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -38,9 +36,9 @@ class UserRoles(str, Enum):
 class TimeStampMixin(object):
     """ Timestamping mixin"""
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = sa.Column(sa.DateTime, default=datetime.utcnow)
     created_at._creation_order = 9998
-    updated_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = sa.Column(sa.DateTime, default=datetime.utcnow)
     updated_at._creation_order = 9998
 
     @staticmethod
@@ -49,7 +47,7 @@ class TimeStampMixin(object):
 
     @classmethod
     def __declare_last__(cls):
-        event.listen(cls, "before_update", cls._updated_at)
+        sa.event.listen(cls, "before_update", cls._updated_at)
 
 
 # Define tables as they were at the time of this migration
@@ -57,55 +55,55 @@ class TimeStampMixin(object):
 # migration
 class Organization(Base):
     __tablename__ = "organization"
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    description = Column(String)
-    default = Column(Boolean)
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.String)
+    description = sa.Column(sa.String)
+    default = sa.Column(Boolean)
     projects = relationship("Project")
 
-    search_vector = Column(
+    search_vector = sa.Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})
     )
 
 
 class Project(Base):
     __tablename__ = "project"
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    description = Column(String)
-    default = Column(Boolean)
-    organization_id = Column(Integer, ForeignKey("organization.id"))
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.String)
+    description = sa.Column(sa.String)
+    default = sa.Column(Boolean)
+    organization_id = sa.Column(sa.Integer, sa.ForeignKey("organization.id"))
 
-    search_vector = Column(
+    search_vector = sa.Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})
     )
 
 
 class DispatchUser(Base, TimeStampMixin):
     __tablename__ = "dispatch_user"
-    id = Column(Integer, primary_key=True)
-    email = Column(String, unique=True)
-    password = Column(Binary, nullable=False)
-    role = Column(String)
+    id = sa.Column(sa.Integer, primary_key=True)
+    email = sa.Column(sa.String, unique=True)
+    password = sa.Column(sa.Binary, nullable=False)
+    role = sa.Column(sa.String)
 
-    search_vector = Column(TSVectorType("email", weights={"email": "A"}))
+    search_vector = sa.Column(TSVectorType("email", weights={"email": "A"}))
 
 
 class DispatchUserOrganization(Base, TimeStampMixin):
     __tablename__ = "dispatch_user_organization"
-    id = Column("id", Integer, primary_key=True)
-    dispatch_user_id = Column(Integer, ForeignKey("dispatch_user.id"))
-    organization_id = Column(Integer, ForeignKey("organization.id"))
-    role = Column(String)
+    id = sa.Column("id", sa.Integer, primary_key=True)
+    dispatch_user_id = sa.Column(sa.Integer, sa.ForeignKey("dispatch_user.id"))
+    organization_id = sa.Column(sa.Integer, sa.ForeignKey("organization.id"))
+    role = sa.Column(sa.String)
     dispatch_user = relationship(DispatchUser, backref="organizations")
 
 
 class DispatchUserProject(Base, TimeStampMixin):
     __tablename__ = "dispatch_user_project"
-    id = Column("id", Integer, primary_key=True)
-    dispatch_user_id = Column(Integer, ForeignKey("dispatch_user.id"))
-    project_id = Column(Integer, ForeignKey("project.id"))
-    role = Column(String, nullable=False, default=UserRoles.member)
+    id = sa.Column("id", sa.Integer, primary_key=True)
+    dispatch_user_id = sa.Column(sa.Integer, sa.ForeignKey("dispatch_user.id"))
+    project_id = sa.Column(sa.Integer, sa.ForeignKey("project.id"))
+    role = sa.Column(sa.String, nullable=False, default=UserRoles.member)
 
     dispatch_user = relationship(DispatchUser, backref="projects")
 
@@ -139,7 +137,7 @@ def upgrade():
         sa.Column("default", sa.Boolean(), nullable=True),
         sa.Column("description", sa.String(), nullable=True),
         sa.Column("organization_id", sa.Integer(), nullable=True),
-        sa.Column("search_vector", sqlalchemy_utils.types.ts_vector.TSVectorType(), nullable=True),
+        sa.Column("search_vector", TSVectorType(), nullable=True),
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organization.id"],
@@ -232,10 +230,6 @@ def upgrade():
     op.create_foreign_key(None, "document", "project", ["project_id"], ["id"], ondelete="CASCADE")
     op.execute(f"update document set project_id = {default_project.id}")
 
-    op.add_column("feedback", sa.Column("project_id", sa.Integer(), nullable=True))
-    op.create_foreign_key(None, "feedback", "project", ["project_id"], ["id"], ondelete="CASCADE")
-    op.execute(f"update feedback set project_id = {default_project.id}")
-
     op.add_column("incident", sa.Column("project_id", sa.Integer(), nullable=True))
     op.create_foreign_key(None, "incident", "project", ["project_id"], ["id"], ondelete="CASCADE")
     op.execute(f"update incident set project_id = {default_project.id}")
@@ -298,10 +292,6 @@ def upgrade():
     op.create_foreign_key(None, "tag_type", "project", ["project_id"], ["id"], ondelete="CASCADE")
     op.execute(f"update tag_type set project_id = {default_project.id}")
 
-    op.add_column("task", sa.Column("project_id", sa.Integer(), nullable=True))
-    op.create_foreign_key(None, "task", "project", ["project_id"], ["id"], ondelete="CASCADE")
-    op.execute(f"update task set project_id = {default_project.id}")
-
     op.add_column("team_contact", sa.Column("project_id", sa.Integer(), nullable=True))
     op.create_foreign_key(
         None, "team_contact", "project", ["project_id"], ["id"], ondelete="CASCADE"
@@ -327,8 +317,6 @@ def downgrade():
     op.drop_column("term", "project_id")
     op.drop_constraint(None, "team_contact", type_="foreignkey")
     op.drop_column("team_contact", "project_id")
-    op.drop_constraint(None, "task", type_="foreignkey")
-    op.drop_column("task", "project_id")
     op.drop_constraint(None, "tag_type", type_="foreignkey")
     op.drop_column("tag_type", "project_id")
     op.drop_constraint(None, "tag", type_="foreignkey")
@@ -353,8 +341,6 @@ def downgrade():
     op.drop_column("incident_cost", "project_id")
     op.drop_constraint(None, "incident", type_="foreignkey")
     op.drop_column("incident", "project_id")
-    op.drop_constraint(None, "feedback", type_="foreignkey")
-    op.drop_column("feedback", "project_id")
     op.drop_constraint(None, "document", type_="foreignkey")
     op.drop_column("document", "project_id")
     op.add_column(

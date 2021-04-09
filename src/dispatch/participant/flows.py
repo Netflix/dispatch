@@ -3,7 +3,6 @@ import logging
 from dispatch.database.core import SessionLocal
 from dispatch.incident.models import Incident
 from dispatch.event import service as event_service
-from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType, ParticipantRoleCreate
