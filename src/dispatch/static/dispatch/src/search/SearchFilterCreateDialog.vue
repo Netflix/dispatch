@@ -53,15 +53,19 @@
                   </v-tab-item>
                   <v-tab-item>
                     <div style="height: 400px">
-                      <advanced-editor v-model="expression" />
+                      <MonacoEditor
+                        v-model="expression_str"
+                        :options="editorOptions"
+                        language="json"
+                      ></MonacoEditor>
                     </div>
                   </v-tab-item>
                 </v-tabs>
               </v-card-text>
               <v-card-actions>
-                <v-btn color="info" @click="step = 2"> Continue </v-btn>
-
+                <v-spacer />
                 <v-btn @click="closeCreateDialog()" text> Cancel </v-btn>
+                <v-btn color="info" @click="step = 2"> Continue </v-btn>
               </v-card-actions>
             </v-card>
           </v-stepper-content>
@@ -85,8 +89,9 @@
                 </v-data-table>
               </v-card-text>
               <v-card-actions>
-                <v-btn color="info" @click="step = 3" :loading="loading"> Continue </v-btn>
+                <v-spacer />
                 <v-btn @click="closeCreateDialog()" text> Cancel </v-btn>
+                <v-btn color="info" @click="step = 3" :loading="loading"> Continue </v-btn>
               </v-card-actions>
             </v-card>
           </v-stepper-content>
@@ -148,6 +153,7 @@ import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
 import { mapActions } from "vuex"
+import MonacoEditor from "monaco-editor-vue"
 
 import IncidentApi from "@/incident/api"
 import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
@@ -156,7 +162,6 @@ import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
 import IncidentStatus from "@/incident/IncidentStatus.vue"
 import IncidentPriority from "@/incident/IncidentPriority.vue"
-import AdvancedEditor from "@/search/AdvancedEditor.vue"
 import SearchUtils from "@/search/utils"
 
 extend("required", {
@@ -168,6 +173,10 @@ export default {
   name: "SearchFilterCreateDialog",
   data() {
     return {
+      editorOptions: {
+        automaticLayout: true,
+        renderValidationDecorations: "on",
+      },
       previewFields: [
         { text: "Name", value: "name", sortable: false },
         { text: "Title", value: "title", sortable: false },
@@ -198,7 +207,7 @@ export default {
     IncidentStatusMultiSelect,
     IncidentStatus,
     IncidentPriority,
-    AdvancedEditor,
+    MonacoEditor,
   },
   computed: {
     ...mapFields("search", [
@@ -209,6 +218,14 @@ export default {
       "loading",
       "dialogs.showCreate",
     ]),
+    expression_str: {
+      get: function () {
+        return JSON.stringify(this.expression, null, "\t") || "[]"
+      },
+      set: function (newValue) {
+        this.expression = JSON.parse(newValue)
+      },
+    },
   },
 
   methods: {

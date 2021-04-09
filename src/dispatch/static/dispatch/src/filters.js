@@ -1,9 +1,9 @@
 import Vue from "vue"
-import moment from "moment"
+import { parseISO, formatRelative } from "date-fns"
 
 Vue.filter("formatDate", function (value) {
   if (value) {
-    return moment.utc(String(value)).local().calendar()
+    return formatRelative(parseISO(value), Date.now())
   }
 })
 
