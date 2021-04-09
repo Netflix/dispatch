@@ -14,6 +14,8 @@ warnings.filterwarnings("ignore", message="int_from_bytes is deprecated")
 
 # sometimes we pull version info before dispatch is totally installed
 try:
+    from dispatch.organization.models import Organization  # noqa lgtm[py/unused-import]
+    from dispatch.project.models import Project  # noqa lgtm[py/unused-import]
     from dispatch.conference.models import Conference  # noqa lgtm[py/unused-import]
     from dispatch.conversation.models import Conversation  # noqa lgtm[py/unused-import]
     from dispatch.definition.models import Definition  # noqa lgtm[py/unused-import]

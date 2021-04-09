@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_get(session, incident_priority):
     from dispatch.incident_priority.service import get
 
@@ -22,14 +19,18 @@ def test_get_all(session, incident_priorities):
     assert len(t_incident_priorities) > 1
 
 
-def test_create(session):
+def test_create(session, project):
     from dispatch.incident_priority.service import create
     from dispatch.incident_priority.models import IncidentPriorityCreate
 
     name = "XXX"
     description = "XXXXXX"
 
-    incident_priority_in = IncidentPriorityCreate(name=name, description=description)
+    incident_priority_in = IncidentPriorityCreate(
+        name=name,
+        description=description,
+        project={"id": project.id, "name": project.name},
+    )
     incident_priority = create(db_session=session, incident_priority_in=incident_priority_in)
     assert incident_priority
 

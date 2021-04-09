@@ -21,5 +21,5 @@ export default {
 
   delete(serviceId) {
     return API.delete(`${resource}/${serviceId}`)
-  }
+  },
 }

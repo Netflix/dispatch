@@ -4,8 +4,8 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
-            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
+            <v-list-item-title v-else class="title"> New </v-list-item-title>
             <v-list-item-subtitle>Service</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn icon color="info" :disabled="invalid || !validated" @click="save()">
@@ -62,7 +62,7 @@
                     :error-messages="errors"
                     hint="Oncall plugin to use."
                     :success="valid"
-                  ></v-select>
+                  />
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
@@ -114,7 +114,7 @@ import PluginApi from "@/plugin/api"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
@@ -125,7 +125,7 @@ export default {
     ValidationProvider,
     IncidentPriorityMultiSelect,
     IncidentTypeMultiSelect,
-    TermCombobox
+    TermCombobox,
   },
 
   computed: {
@@ -140,32 +140,32 @@ export default {
       "selected.external_id",
       "selected.is_active",
       "selected.loading",
-      "dialogs.showCreateEdit"
-    ])
+      "dialogs.showCreateEdit",
+    ]),
   },
 
   methods: {
     ...mapActions("service", ["closeCreateEdit"]),
     save() {
       const self = this
-      this.$store.dispatch("service/save").then(function(data) {
+      this.$store.dispatch("service/save").then(function (data) {
         self.$emit("new-service-created", data)
       })
-    }
+    },
   },
 
   data() {
     return {
-      oncall_plugins: null
+      oncall_plugins: null,
     }
   },
 
   mounted() {
     this.loading = "error"
-    PluginApi.getByType("oncall").then(response => {
+    PluginApi.getByType("oncall").then((response) => {
       this.loading = false
-      this.oncall_plugins = response.data.items.map(p => p.slug)
+      this.oncall_plugins = response.data.items.map((p) => p.slug)
     })
-  }
+  },
 }
 </script>

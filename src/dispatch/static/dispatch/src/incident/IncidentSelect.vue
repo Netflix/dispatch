@@ -15,13 +15,13 @@
   >
     <template v-slot:selection="{ attr, on, item, selected }">
       <v-chip v-bind="attr" :input-value="selected" v-on="on">
-        <span v-text="item.name"></span>
+        <span v-text="item.name" />
       </v-chip>
     </template>
     <template v-slot:item="{ item }">
       <v-list-item-content>
-        <v-list-item-title v-text="item.name"></v-list-item-title>
-        <v-list-item-subtitle v-text="item.title"></v-list-item-subtitle>
+        <v-list-item-title v-text="item.name" />
+        <v-list-item-subtitle v-text="item.title" />
       </v-list-item-content>
     </template>
     <template v-slot:no-data>
@@ -46,23 +46,23 @@ export default {
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return null
-      }
+      },
     },
     label: {
       type: String,
-      default: function() {
+      default: function () {
         return "Incident"
-      }
-    }
+      },
+    },
   },
 
   data() {
     return {
       loading: false,
       items: [],
-      search: null
+      search: null,
     }
   },
 
@@ -73,8 +73,8 @@ export default {
       },
       set(value) {
         this.$emit("input", value)
-      }
-    }
+      },
+    },
   },
 
   watch: {
@@ -84,27 +84,27 @@ export default {
     value(val) {
       if (!val) return
       this.items.push(val)
-    }
+    },
   },
 
   methods: {
     querySelections(v) {
       this.loading = "error"
       // Simulated ajax query
-      IncidentApi.getAll({ q: v }).then(response => {
+      IncidentApi.getAll({ q: v }).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
-    }
+    },
   },
 
   mounted() {
     this.error = null
     this.loading = "error"
-    IncidentApi.getAll().then(response => {
+    IncidentApi.getAll().then((response) => {
       this.items = response.data.items
       this.loading = false
     })
-  }
+  },
 }
 </script>

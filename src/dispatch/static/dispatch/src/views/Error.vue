@@ -7,13 +7,9 @@
         </div>
         <div class="text-md-center">
           <h1>500</h1>
-          <h2 class="my-3 headline ">
-            Sorry, the server is down.
-          </h2>
+          <h2 class="my-3 headline">Sorry, the server is down.</h2>
           <div>
-            <v-btn color="info" @click="goHome">
-              Go Home
-            </v-btn>
+            <v-btn color="info" @click="goHome"> Go Home </v-btn>
           </div>
         </div>
       </v-layout>
@@ -26,8 +22,8 @@ export default {
   methods: {
     goHome() {
       this.$router.push({ path: "/" })
-    }
-  }
+    },
+  },
 }
 </script>
 <style scoped lang="css">

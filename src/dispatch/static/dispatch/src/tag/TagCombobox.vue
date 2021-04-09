@@ -33,20 +33,24 @@ export default {
   props: {
     value: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
+      },
     },
     label: {
       type: String,
-      default: "Add Tags"
-    }
+      default: "Add Tags",
+    },
+    project: {
+      type: String,
+      default: null,
+    },
   },
   data() {
     return {
       loading: false,
       items: [],
-      search: null
+      search: null,
     }
   },
 
@@ -57,18 +61,18 @@ export default {
       },
       set(value) {
         this.search = null
-        this._tags = value.map(v => {
+        this._tags = value.map((v) => {
           if (typeof v === "string") {
             v = {
-              name: v
+              name: v,
             }
             this.items.push(v)
           }
           return v
         })
         this.$emit("input", this._tags)
-      }
-    }
+      },
+    },
   },
 
   created() {
@@ -79,14 +83,14 @@ export default {
     fetchData(filterOptions) {
       this.error = null
       this.loading = "error"
-      TagApi.getAll(filterOptions).then(response => {
+      TagApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
     },
-    getFilteredData: debounce(function(options) {
+    getFilteredData: debounce(function (options) {
       this.fetchData(options)
-    }, 500)
-  }
+    }, 500),
+  },
 }
 </script>

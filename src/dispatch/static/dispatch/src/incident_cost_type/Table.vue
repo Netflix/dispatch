@@ -4,7 +4,7 @@
     <delete-dialog />
     <div class="headline">Incident Cost Types</div>
     <v-spacer />
-    <v-btn color="info" class="ml-2" @click="createEditShow()">New</v-btn>
+    <v-btn color="info" class="ml-2" @click="createEditShow()"> New </v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -31,15 +31,17 @@
               loading-text="Loading... Please wait"
             >
               <template v-slot:item.default="{ item }">
-                <v-simple-checkbox v-model="item.default" disabled></v-simple-checkbox>
+                <v-simple-checkbox v-model="item.default" disabled />
               </template>
               <template v-slot:item.editable="{ item }">
-                <v-simple-checkbox v-model="item.editable" disabled></v-simple-checkbox>
+                <v-simple-checkbox v-model="item.editable" disabled />
               </template>
-              <template v-slot:item.details="{ item }">{{ item.details }}</template>
-              <template v-slot:item.created_at="{ item }">{{
-                item.created_at | formatDate
-              }}</template>
+              <template v-slot:item.details="{ item }">
+                {{ item.details }}
+              </template>
+              <template v-slot:item.created_at="{ item }">
+                {{ item.created_at | formatDate }}
+              </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
                   <template v-slot:activator="{ on }">
@@ -75,7 +77,7 @@ export default {
 
   components: {
     DeleteDialog,
-    NewEditSheet
+    NewEditSheet,
   },
 
   data() {
@@ -88,8 +90,8 @@ export default {
         { text: "Default", value: "default", sortable: true },
         { text: "Editable", value: "editable", sortable: true },
         { text: "Created At", value: "created_at", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" }
-      ]
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+      ],
     }
   },
 
@@ -100,24 +102,28 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
+      "table.options.filters",
       "table.loading",
       "table.rows.items",
-      "table.rows.total"
-    ])
+      "table.rows.total",
+    ]),
+    ...mapFields("route", ["query"]),
   },
 
   mounted() {
+    this.project = [{ name: this.query.project }]
+
     this.getAll({})
 
     this.$watch(
-      vm => [vm.page],
+      (vm) => [vm.page],
       () => {
         this.getAll()
       }
     )
 
     this.$watch(
-      vm => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
+      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
       () => {
         this.page = 1
         this.getAll()
@@ -126,7 +132,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident_cost_type", ["getAll", "createEditShow", "removeShow"])
-  }
+    ...mapActions("incident_cost_type", ["getAll", "createEditShow", "removeShow"]),
+  },
 }
 </script>

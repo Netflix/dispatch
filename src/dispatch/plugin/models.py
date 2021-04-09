@@ -5,11 +5,11 @@ from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy_utils import TSVectorType, JSONType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase
+from dispatch.models import DispatchBase, ProjectMixin
 from dispatch.plugins.base import plugins
 
 
-class Plugin(Base):
+class Plugin(Base, ProjectMixin):
     id = Column(Integer, primary_key=True)
     title = Column(String)
     slug = Column(String, unique=True)
@@ -29,7 +29,15 @@ class Plugin(Base):
         """Fetches a plugin instance that matches this record."""
         return plugins.get(self.slug)
 
-    search_vector = Column(TSVectorType("title"))
+    search_vector = Column(
+        TSVectorType(
+            "title",
+            "slug",
+            "type",
+            "description",
+            weights={"title": "A", "slug": "B", "type": "C", "description": "C"},
+        )
+    )
 
 
 # Pydantic models...

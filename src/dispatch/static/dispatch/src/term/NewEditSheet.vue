@@ -4,8 +4,8 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
-            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
+            <v-list-item-title v-else class="title"> New </v-list-item-title>
             <v-list-item-subtitle>Term</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
@@ -50,7 +50,7 @@
                 v-model="discoverable"
                 label="Discoverable"
                 hint="Is this term a common word or is it eligible for auto-detection?"
-              ></v-checkbox>
+              />
             </v-flex>
           </v-container>
         </v-card-text>
@@ -68,7 +68,7 @@ import DefinitionCombobox from "@/definition/DefinitionCombobox.vue"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
@@ -77,7 +77,7 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    DefinitionCombobox
+    DefinitionCombobox,
   },
   computed: {
     ...mapFields("term", [
@@ -86,12 +86,12 @@ export default {
       "selected.discoverable",
       "selected.id",
       "selected.loading",
-      "dialogs.showCreateEdit"
-    ])
+      "dialogs.showCreateEdit",
+    ]),
   },
 
   methods: {
-    ...mapActions("term", ["save", "closeCreateEdit"])
-  }
+    ...mapActions("term", ["save", "closeCreateEdit"]),
+  },
 }
 </script>

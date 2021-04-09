@@ -10,8 +10,8 @@
   >
     <template v-slot:item="data">
       <v-list-item-content>
-        <v-list-item-title v-text="data.item.name"></v-list-item-title>
-        <v-list-item-subtitle v-text="data.item.description"></v-list-item-subtitle>
+        <v-list-item-title v-text="data.item.name" />
+        <v-list-item-subtitle v-text="data.item.description" />
       </v-list-item-content>
     </template>
   </v-select>
@@ -26,16 +26,20 @@ export default {
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return {}
-      }
-    }
+      },
+    },
+    project: {
+      type: String,
+      default: null,
+    },
   },
 
   data() {
     return {
       loading: false,
-      items: []
+      items: [],
     }
   },
 
@@ -46,8 +50,8 @@ export default {
       },
       set(value) {
         this.$emit("input", value)
-      }
-    }
+      },
+    },
   },
 
   created() {
@@ -58,14 +62,14 @@ export default {
     fetchData(filterOptions) {
       this.error = null
       this.loading = "error"
-      IncidentCostTypeApi.getAll(filterOptions).then(response => {
+      IncidentCostTypeApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
     },
-    getFilteredData: debounce(function(options) {
+    getFilteredData: debounce(function (options) {
       this.fetchData(options)
-    }, 500)
-  }
+    }, 500),
+  },
 }
 </script>

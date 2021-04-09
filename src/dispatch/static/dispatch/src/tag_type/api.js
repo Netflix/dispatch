@@ -21,5 +21,5 @@ export default {
 
   delete(tagTypeId) {
     return API.delete(`${resource}/${tagTypeId}`)
-  }
+  },
 }

@@ -23,9 +23,7 @@
     <template v-slot:append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
-          <v-list-item-subtitle>
-            Load More
-          </v-list-item-subtitle>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
     </template>
@@ -33,24 +31,32 @@
 </template>
 
 <script>
-import PluginApi from "@/plugin/api"
 import { cloneDeep, debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import PluginApi from "@/plugin/api"
+
 export default {
   name: "PluginCombobox",
   props: {
     value: {
-      type: Object,
-      default: function() {
-        return {}
-      }
+      type: [Object, String],
+      default: function () {
+        return null
+      },
     },
     type: {
-      type: String
+      type: String,
+      default: null,
     },
     label: {
       type: String,
-      defualt: "Plugins"
-    }
+      default: "Plugins",
+    },
+    project: {
+      type: Object,
+      default: null,
+    },
   },
   data() {
     return {
@@ -58,7 +64,7 @@ export default {
       items: [],
       more: false,
       numItems: 5,
-      search: null
+      search: null,
     }
   },
 
@@ -71,17 +77,17 @@ export default {
         this.search = null
         if (typeof value === "string") {
           let v = {
-            slug: value
+            slug: value,
           }
           this.items.push(v)
         }
         this.$emit("input", value)
-      }
-    }
+      },
+    },
   },
 
   created() {
-    this.fetchData({})
+    this.fetchData()
   },
 
   methods: {
@@ -89,23 +95,26 @@ export default {
       this.numItems = this.numItems + 5
       this.getFilteredData({
         q: this.search,
-        itemsPerPage: this.numItems
+        itemsPerPage: this.numItems,
       })
     },
     fetchData(filterOptions) {
       this.error = null
       this.loading = "error"
 
-      if (this.type) {
-        // Add type filtering
-        Object.assign(filterOptions, {
-          "fields[]": "type",
-          "ops[]": "==",
-          "values[]": this.type
-        })
+      if (this.project) {
+        let options = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+            type: [this.type],
+          },
+        }
+
+        filterOptions = SearchUtils.createParametersFromTableOptions(options)
       }
 
-      PluginApi.getAll(filterOptions).then(response => {
+      PluginApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.total = response.data.total
 
@@ -118,9 +127,9 @@ export default {
         this.loading = false
       })
     },
-    getFilteredData: debounce(function(options) {
+    getFilteredData: debounce(function (options) {
       this.fetchData(options)
-    }, 500)
-  }
+    }, 500),
+  },
 }
 </script>

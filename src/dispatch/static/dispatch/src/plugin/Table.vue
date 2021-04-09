@@ -29,19 +29,19 @@
               loading-text="Loading... Please wait"
             >
               <template v-slot:item.author="{ item }">
-                <a :href="item.author_url" target="_blank" style="text-decoration: none;">
+                <a :href="item.author_url" target="_blank" style="text-decoration: none">
                   {{ item.author }}
                   <v-icon small>open_in_new</v-icon>
                 </a>
               </template>
               <template v-slot:item.enabled="{ item }">
-                <v-simple-checkbox v-model="item.enabled" disabled></v-simple-checkbox>
+                <v-simple-checkbox v-model="item.enabled" disabled />
               </template>
               <template v-slot:item.multiple="{ item }">
-                <v-simple-checkbox v-model="item.multiple" disabled></v-simple-checkbox>
+                <v-simple-checkbox v-model="item.multiple" disabled />
               </template>
               <template v-slot:item.required="{ item }">
-                <v-simple-checkbox v-model="item.required" disabled></v-simple-checkbox>
+                <v-simple-checkbox v-model="item.required" disabled />
               </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
@@ -73,7 +73,7 @@ export default {
   name: "PluginTable",
 
   components: {
-    NewEditSheet
+    NewEditSheet,
   },
   data() {
     return {
@@ -86,8 +86,8 @@ export default {
         { text: "Required", value: "required", sortable: true },
         { text: "Multiple Allowed", value: "multiple", sortable: true },
         { text: "Type", value: "type", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" }
-      ]
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+      ],
     }
   },
 
@@ -98,24 +98,28 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
+      "table.options.filters.project",
       "table.loading",
       "table.rows.items",
-      "table.rows.total"
-    ])
+      "table.rows.total",
+    ]),
+    ...mapFields("route", ["query"]),
   },
 
   mounted() {
+    this.project = [{ name: this.query.project }]
+
     this.getAll({})
 
     this.$watch(
-      vm => [vm.page],
+      (vm) => [vm.page],
       () => {
         this.getAll()
       }
     )
 
     this.$watch(
-      vm => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
+      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
       () => {
         this.page = 1
         this.getAll()
@@ -124,7 +128,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("plugin", ["getAll", "editShow"])
-  }
+    ...mapActions("plugin", ["getAll", "editShow"]),
+  },
 }
 </script>

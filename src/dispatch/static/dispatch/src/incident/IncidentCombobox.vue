@@ -16,13 +16,13 @@
   >
     <template v-slot:selection="{ attr, on, item, selected }">
       <v-chip v-bind="attr" :input-value="selected" v-on="on">
-        <span v-text="item.name"></span>
+        <span v-text="item.name" />
       </v-chip>
     </template>
     <template v-slot:item="{ item }">
       <v-list-item-content>
-        <v-list-item-title v-text="item.name"></v-list-item-title>
-        <v-list-item-subtitle v-text="item.title"></v-list-item-subtitle>
+        <v-list-item-title v-text="item.name" />
+        <v-list-item-subtitle v-text="item.title" />
       </v-list-item-content>
     </template>
     <template v-slot:no-data>
@@ -47,23 +47,23 @@ export default {
   props: {
     value: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
+      },
     },
     label: {
       type: String,
-      default: function() {
+      default: function () {
         return "Incident"
-      }
-    }
+      },
+    },
   },
 
   data() {
     return {
       loading: false,
       items: [],
-      search: null
+      search: null,
     }
   },
 
@@ -73,10 +73,10 @@ export default {
         return cloneDeep(this.value)
       },
       set(value) {
-        this._incidents = value.map(v => {
+        this._incidents = value.map((v) => {
           if (typeof v === "string") {
             v = {
-              name: v
+              name: v,
             }
             this.items.push(v)
           }
@@ -84,8 +84,8 @@ export default {
         })
         this.$emit("input", this._incidents)
         this.search = null
-      }
-    }
+      },
+    },
   },
 
   created() {
@@ -96,14 +96,14 @@ export default {
     fetchData(filterOptions) {
       this.error = null
       this.loading = "error"
-      IncidentApi.getAll(filterOptions).then(response => {
+      IncidentApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
     },
-    getFilteredData: debounce(function(options) {
+    getFilteredData: debounce(function (options) {
       this.fetchData(options)
-    }, 500)
-  }
+    }, 500),
+  },
 }
 </script>

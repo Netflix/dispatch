@@ -9,42 +9,47 @@ const getDefaultSelectedState = () => {
   return {
     id: null,
     email: null,
-    role: null,
-    loading: false
+    loading: false,
+    projects: null,
+    organizations: null,
   }
 }
 
 const state = {
-  status: { loggedIn: false },
-  userInfo: { email: "" },
-  accessToken: localStorage.getItem("token") || null,
+  currentUser: {
+    loggedIn: false,
+    token: null,
+    email: "",
+    projects: [],
+    organizations: [],
+  },
   selected: {
-    ...getDefaultSelectedState()
+    ...getDefaultSelectedState(),
   },
   loading: false,
   dialogs: {
-    showEdit: false
+    showEdit: false,
   },
   table: {
     rows: {
       items: [],
-      total: null
+      total: null,
     },
     options: {
       q: "",
       page: 1,
       itemsPerPage: 10,
       sortBy: ["email"],
-      descending: [true]
+      descending: [true],
     },
-    loading: false
-  }
+    loading: false,
+  },
 }
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    return UserApi.getAll(state.table.options).then(response => {
+    return UserApi.getAll(state.table.options).then((response) => {
       commit("SET_TABLE_LOADING", false)
       commit("SET_TABLE_ROWS", response.data)
     })
@@ -71,12 +76,12 @@ const actions = {
             { root: true }
           )
         })
-        .catch(err => {
+        .catch((err) => {
           commit(
             "notification_backend/addBeNotification",
             {
               text: "User not created. Reason: " + err.response.data.detail,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
@@ -92,12 +97,12 @@ const actions = {
             { root: true }
           )
         })
-        .catch(err => {
+        .catch((err) => {
           commit(
             "notification_backend/addBeNotification",
             {
               text: "User not updated. Reason: " + err.response.data.detail,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
@@ -106,7 +111,7 @@ const actions = {
   },
   remove({ commit, dispatch }) {
     return UserApi.delete(state.selected.id)
-      .then(function() {
+      .then(function () {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
@@ -115,12 +120,12 @@ const actions = {
           { root: true }
         )
       })
-      .catch(err => {
+      .catch((err) => {
         commit(
           "notification_backend/addBeNotification",
           {
             text: "User not deleted. Reason: " + err.response.data.detail,
-            type: "error"
+            type: "error",
           },
           { root: true }
         )
@@ -139,14 +144,18 @@ const actions = {
     }
     router.push({ path: redirectUrl.pathname, query: queryMap })
   },
-  basicLogin({ commit }, payload) {
+  basicLogin({ commit, getters }, payload) {
     commit("SET_BASIC_LOGIN_LOADING", true)
     UserApi.login(payload.email, payload.password)
-      .then(function(res) {
+      .then(function (res) {
         commit("SET_USER_LOGIN", res.data.token)
-        router.push({ path: "/dashboard" })
+        router.push({
+          name: "IncidentOverview",
+          params: { organization: getters.defaultOrganization.organization.name },
+          query: { project: getters.defaultProject.project.name },
+        })
       })
-      .catch(err => {
+      .catch((err) => {
         commit(
           "notification_backend/addBeNotification",
           { text: err.response.data.detail, type: "error" },
@@ -155,12 +164,17 @@ const actions = {
       })
     commit("SET_BASIC_LOGIN_LOADING", false)
   },
-  register({ dispatch, commit }, payload) {
+  register({ commit, getters }, payload) {
     UserApi.register(payload.email, payload.password)
-      .then(function() {
-        dispatch("basicLogin", payload)
+      .then(function (res) {
+        commit("SET_USER_LOGIN", res.data.token)
+        router.push({
+          name: "IncidentOverview",
+          params: { organization: getters.defaultOrganization.organization.name },
+          query: { project: getters.defaultProject.project.name },
+        })
       })
-      .catch(err => {
+      .catch((err) => {
         commit(
           "notification_backend/addBeNotification",
           { text: err.response.data.detail, type: "error" },
@@ -169,7 +183,7 @@ const actions = {
       })
   },
   login({ dispatch, commit }, payload) {
-    commit("SET_USER_LOGIN", payload.token)
+    commit("SET_USER_LOGIN", payload)
     dispatch("loginRedirect", payload.redirectUri).then(() => {
       dispatch("createExpirationCheck")
     })
@@ -179,10 +193,10 @@ const actions = {
   },
   createExpirationCheck({ state, commit }) {
     // expiration time minus 10 min
-    let expire_at = subMinutes(fromUnixTime(state.userInfo.exp), 10)
+    let expire_at = subMinutes(fromUnixTime(state.currentUser.exp), 10)
     let now = new Date()
 
-    setTimeout(function() {
+    setTimeout(function () {
       commit(
         "app/SET_REFRESH",
         { show: true, message: "Your credentials have expired. Please refresh the page." },
@@ -190,11 +204,6 @@ const actions = {
       )
     }, differenceInMilliseconds(expire_at, now))
   },
-  getUserInfo({ commit }) {
-    UserApi.getUserInfo().then(function(res) {
-      commit("SET_USER_INFO", res.data)
-    })
-  }
 }
 
 const mutations = {
@@ -214,31 +223,36 @@ const mutations = {
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
   },
-  SET_USER_INFO(state, info) {
-    state.userInfo = info
-  },
   SET_BASIC_LOGIN_LOADING(state, value) {
     state.loading = value
   },
-  SET_USER_LOGIN(state, accessToken) {
-    state.accessToken = accessToken
-    state.status = { loggedIn: true }
-    state.userInfo = jwt_decode(accessToken)
-    localStorage.setItem("token", accessToken)
+  SET_USER_LOGIN(state, token) {
+    state.currentUser = {
+      token: token,
+      loggedIn: true,
+      ...jwt_decode(token),
+    }
+    localStorage.setItem("token", token)
   },
   SET_USER_LOGOUT(state) {
-    state.status = { loggedIn: false }
-    state.userInfo = null
-    state.accessToken = null
+    state.currentUser = { loggedIn: false }
     localStorage.removeItem("token")
-  }
+  },
 }
 
 const getters = {
   getField,
-  accessToken: () => state.accessToken,
-  email: () => state.userInfo.email,
-  exp: () => state.userInfo.exp
+  defaultProject: (state) => {
+    return (
+      state.currentUser.projects.find((project) => project.default) || state.currentUser.projects[0]
+    )
+  },
+  defaultOrganization: (state) => {
+    return (
+      state.currentUser.organizations.find((organization) => organization.default) ||
+      state.currentUser.organizations[0]
+    )
+  },
 }
 
 export default {
@@ -246,5 +260,5 @@ export default {
   state,
   getters,
   actions,
-  mutations
+  mutations,
 }

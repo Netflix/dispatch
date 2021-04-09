@@ -1,7 +1,8 @@
-import TaskApi from "@/task/api"
-
 import { getField, updateField } from "vuex-map-fields"
-import { debounce, forEach, each, has } from "lodash"
+import { debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import TaskApi from "@/task/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -16,24 +17,24 @@ const getDefaultSelectedState = () => {
     priority: null,
     source: null,
     id: null,
-    loading: false
+    loading: false,
   }
 }
 
 const state = {
   selected: {
-    ...getDefaultSelectedState()
+    ...getDefaultSelectedState(),
   },
   dialogs: {
     showCreateEdit: false,
     showRemove: false,
-    showExport: false
+    showExport: false,
   },
   table: {
     rows: {
       items: [],
       total: null,
-      selected: []
+      selected: [],
     },
     options: {
       filters: {
@@ -43,47 +44,30 @@ const state = {
         incident: [],
         incident_type: [],
         incident_priority: [],
-        status: []
+        status: [],
+        project: [],
       },
       q: "",
       page: 1,
       itemsPerPage: 10,
       sortBy: ["status"],
-      descending: [false]
+      descending: [false],
     },
     loading: false,
-    bulkEditLoading: false
-  }
+    bulkEditLoading: false,
+  },
 }
 
 const getters = {
-  getField
+  getField,
 }
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    let tableOptions = Object.assign({}, state.table.options)
-    delete tableOptions.filters
-
-    tableOptions.fields = []
-    tableOptions.ops = []
-    tableOptions.values = []
-
-    forEach(state.table.options.filters, function(value, key) {
-      each(value, function(value) {
-        if (has(value, "id")) {
-          tableOptions.fields.push(key + ".id")
-          tableOptions.values.push(value.id)
-        } else {
-          tableOptions.fields.push(key)
-          tableOptions.values.push(value)
-        }
-        tableOptions.ops.push("==")
-      })
-    })
-    return TaskApi.getAll(tableOptions)
-      .then(response => {
+    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options })
+    return TaskApi.getAll(params)
+      .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
       })
@@ -127,12 +111,12 @@ const actions = {
             { root: true }
           )
         })
-        .catch(err => {
+        .catch((err) => {
           commit(
             "notification_backend/addBeNotification",
             {
               text: "Task not created. Reason: " + err.response.data.detail,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
@@ -148,12 +132,12 @@ const actions = {
             { root: true }
           )
         })
-        .catch(err => {
+        .catch((err) => {
           commit(
             "notification_backend/addBeNotification",
             {
               text: "Task not updated. Reason: " + err.response.data.detail,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
@@ -172,13 +156,13 @@ const actions = {
         )
         commit("SET_BULK_EDIT_LOADING", false)
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err)
         commit(
           "notification_backend/addBeNotification",
           {
             text: "Task(s) not updated. Reason: " + err.response.data.detail,
-            type: "error"
+            type: "error",
           },
           { root: true }
         )
@@ -187,7 +171,7 @@ const actions = {
   },
   remove({ commit, dispatch }) {
     return TaskApi.delete(state.selected.id)
-      .then(function() {
+      .then(function () {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
@@ -196,17 +180,17 @@ const actions = {
           { root: true }
         )
       })
-      .catch(err => {
+      .catch((err) => {
         commit(
           "notification_backend/addBeNotification",
           {
             text: "Task not deleted. Reason: " + err.response.data.detail,
-            type: "error"
+            type: "error",
           },
           { root: true }
         )
       })
-  }
+  },
 }
 
 const mutations = {
@@ -236,7 +220,7 @@ const mutations = {
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
-  }
+  },
 }
 
 export default {
@@ -244,5 +228,5 @@ export default {
   state,
   getters,
   actions,
-  mutations
+  mutations,
 }

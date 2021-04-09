@@ -62,7 +62,11 @@ def test_create(session):
     source = "Dispatch event source"
     description = "Dispatch event description"
     event_in = EventCreate(
-        uuid=uuid, started_at=started_at, ended_at=ended_at, source=source, description=description
+        uuid=uuid,
+        started_at=started_at,
+        ended_at=ended_at,
+        source=source,
+        description=description,
     )
     event = create(db_session=session, event_in=event_in)
     assert source == event.source

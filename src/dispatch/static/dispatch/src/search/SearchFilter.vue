@@ -37,9 +37,10 @@
             <v-list-item-action>
               <v-icon>mdi-code-json</v-icon>
             </v-list-item-action>
-            <v-list-item-subtitle
-              ><pre>{{ filter.expression }}</pre></v-list-item-subtitle
-            >
+            <v-list-item-subtitle>
+              >
+              <pre>{{ filter.expression }}</pre>
+            </v-list-item-subtitle>
           </v-list-item>
         </v-list>
       </v-card>
@@ -52,14 +53,14 @@ export default {
   name: "SearchFilter",
 
   data: () => ({
-    menu: false
+    menu: false,
   }),
 
   props: {
     filter: {
       type: Object,
-      required: false
-    }
-  }
+      default: null,
+    },
+  },
 }
 </script>

@@ -3,7 +3,7 @@
     <new-edit-sheet />
     <v-data-table :headers="headers" :items="items" hide-default-footer>
       <template v-slot:item.name="{ item }">
-        <a :href="item.weblink" target="_blank" style="text-decoration: none;">
+        <a :href="item.weblink" target="_blank" style="text-decoration: none">
           {{ item.name }}
           <v-icon small>open_in_new</v-icon>
         </a>
@@ -36,35 +36,35 @@ export default {
   name: "DocumentSummaryTable",
 
   components: {
-    NewEditSheet
+    NewEditSheet,
   },
   data() {
     return {
       headers: [
         { text: "Name", value: "name", sortable: false },
         { text: "Description", value: "description", sortable: false },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" }
-      ]
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+      ],
     }
   },
 
   props: {
     items: {
-      default: function() {
+      default: function () {
         return []
       },
-      type: Array
+      type: Array,
     },
     loading: {
-      default: function() {
+      default: function () {
         return false
       },
-      type: [String, Boolean]
-    }
+      type: [String, Boolean],
+    },
   },
 
   methods: {
-    ...mapActions("document", ["createEditShow", "removeShow"])
-  }
+    ...mapActions("document", ["createEditShow", "removeShow"]),
+  },
 }
 </script>

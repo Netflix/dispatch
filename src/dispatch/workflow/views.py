@@ -1,10 +1,8 @@
-from typing import List
-
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
-from dispatch.database.service import search_filter_sort_paginate
+from dispatch.database.service import common_parameters, search_filter_sort_paginate
 
 from .models import WorkflowPagination, WorkflowRead, WorkflowCreate, WorkflowUpdate
 from .service import create, delete, get, update
@@ -13,32 +11,11 @@ router = APIRouter()
 
 
 @router.get("/", response_model=WorkflowPagination)
-def get_workflows(
-    db_session: Session = Depends(get_db),
-    page: int = 1,
-    items_per_page: int = Query(5, alias="itemsPerPage"),
-    query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query([], alias="sortBy[]"),
-    descending: List[bool] = Query([], alias="descending[]"),
-    fields: List[str] = Query([], alias="fields[]"),
-    ops: List[str] = Query([], alias="ops[]"),
-    values: List[str] = Query([], alias="values[]"),
-):
+def get_workflows(*, common: dict = Depends(common_parameters)):
     """
     Get all workflows.
     """
-    return search_filter_sort_paginate(
-        db_session=db_session,
-        model="Workflow",
-        query_str=query_str,
-        page=page,
-        items_per_page=items_per_page,
-        sort_by=sort_by,
-        descending=descending,
-        fields=fields,
-        values=values,
-        ops=ops,
-    )
+    return search_filter_sort_paginate(model="Workflow", **common)
 
 
 @router.get("/{workflow_id}", response_model=WorkflowRead)

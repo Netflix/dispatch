@@ -25,8 +25,8 @@ export default {
   props: {
     priority: {
       type: String,
-      required: true
-    }
-  }
+      required: true,
+    },
+  },
 }
 </script>

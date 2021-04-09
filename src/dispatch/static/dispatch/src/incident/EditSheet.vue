@@ -4,8 +4,15 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title class="title">{{ name }}</v-list-item-title>
-            <v-list-item-subtitle>Reported - {{ reported_at | formatDate }}</v-list-item-subtitle>
+            <v-list-item-title class="title">
+              {{ name }}
+
+              <v-chip class="ma-2" color="pink" label text-color="white">
+                <v-icon left> mdi-label </v-icon>
+                {{ project.name }}
+              </v-chip>
+            </v-list-item-title>
+            <v-list-item-subtitle> Reported - {{ reported_at | formatDate }} </v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
             icon
@@ -22,12 +29,12 @@
         </v-list-item>
       </template>
       <v-tabs color="primary" fixed-tabs v-model="tab">
-        <v-tab key="details">Details</v-tab>
-        <v-tab key="resources">Resources</v-tab>
-        <v-tab key="participants">Participants</v-tab>
-        <v-tab key="timeline">Timeline</v-tab>
-        <v-tab key="workflows">Workflows</v-tab>
-        <v-tab key="costs">Costs</v-tab>
+        <v-tab key="details"> Details </v-tab>
+        <v-tab key="resources"> Resources </v-tab>
+        <v-tab key="participants"> Participants </v-tab>
+        <v-tab key="timeline"> Timeline </v-tab>
+        <v-tab key="workflows"> Workflows </v-tab>
+        <v-tab key="costs"> Costs </v-tab>
       </v-tabs>
       <v-tabs-items v-model="tab">
         <v-tab-item key="details">
@@ -75,25 +82,24 @@ export default {
     IncidentParticipantsTab,
     IncidentTimelineTab,
     IncidentWorkflowInstanceTab,
-    IncidentCostsTab
+    IncidentCostsTab,
   },
 
   data() {
     return {
-      tab: null
+      tab: null,
     }
   },
-
-  props: ["incidentName"],
 
   computed: {
     ...mapFields("incident", [
       "selected.id",
       "selected.name",
+      "selected.project",
       "selected.reported_at",
       "selected.loading",
-      "dialogs.showEditSheet"
-    ])
+      "dialogs.showEditSheet",
+    ]),
   },
 
   created() {
@@ -101,16 +107,16 @@ export default {
   },
 
   watch: {
-    "$route.params.name": function() {
+    "$route.params.name": function () {
       this.fetchDetails()
-    }
+    },
   },
 
   methods: {
     fetchDetails() {
       this.getDetails({ name: this.$route.params.name })
     },
-    ...mapActions("incident", ["save", "getDetails", "closeEditSheet"])
-  }
+    ...mapActions("incident", ["save", "getDetails", "closeEditSheet"]),
+  },
 }
 </script>

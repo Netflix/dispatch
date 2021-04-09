@@ -22,7 +22,7 @@ devtools==0.6.1
     # via -r requirements-dev.in
 factory-boy==3.2.0
     # via -r requirements-dev.in
-faker==6.6.3
+faker==6.6.1
     # via
     #   -r requirements-dev.in
     #   factory-boy

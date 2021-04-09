@@ -36,9 +36,10 @@ from dispatch.incident_priority.models import (
     IncidentPriorityRead,
 )
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
-from dispatch.models import DispatchBase, TimeStampMixin
+from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.participant.models import Participant, ParticipantRead, ParticipantUpdate
 from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
+from dispatch.project.models import ProjectRead
 from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
@@ -66,7 +67,7 @@ assoc_incident_tags = Table(
 )
 
 
-class Incident(Base, TimeStampMixin):
+class Incident(Base, TimeStampMixin, ProjectMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     title = Column(String, nullable=False)
@@ -92,7 +93,7 @@ class Incident(Base, TimeStampMixin):
                 for pr in p.participant_roles:
                     if (
                         pr.role == ParticipantRoleType.incident_commander
-                        and pr.renounced_at
+                        and pr.renounced_at  # noqa
                         is None  # Column renounced_at will be null for the current incident commander
                     ):
                         return p
@@ -229,7 +230,7 @@ class Incident(Base, TimeStampMixin):
     storage = relationship(
         "Storage", uselist=False, backref="incident", cascade="all, delete-orphan"
     )
-    tags = relationship("Tag", secondary=assoc_incident_tags, backref="incidents")
+    tags = relationship("Tag", secondary=assoc_incident_tags, backref="incidents", lazy="joined")
     tasks = relationship("Task", backref="incident", cascade="all, delete-orphan")
     terms = relationship("Term", secondary=assoc_incident_terms, backref="incidents")
     ticket = relationship("Ticket", uselist=False, backref="incident", cascade="all, delete-orphan")
@@ -279,6 +280,7 @@ class IncidentCreate(IncidentBase):
     incident_priority: Optional[IncidentPriorityCreate]
     incident_type: Optional[IncidentTypeCreate]
     tags: Optional[List[Any]] = []  # any until we figure out circular imports
+    project: ProjectRead
 
 
 class IncidentUpdate(IncidentBase):
@@ -322,6 +324,7 @@ class IncidentRead(IncidentBase):
     closed_at: Optional[datetime] = None
     incident_costs: Optional[List[IncidentCostRead]] = []
     total_cost: Optional[float]
+    project: ProjectRead
 
 
 class IncidentPagination(DispatchBase):

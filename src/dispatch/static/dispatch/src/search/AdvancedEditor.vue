@@ -1,5 +1,5 @@
 <template>
-  <div id="advancedEditor" style="width: 100%; height: 100%;"></div>
+  <div id="advancedEditor" style="width: 100%; height: 100%" />
 </template>
 
 <script>
@@ -13,10 +13,10 @@ export default {
   props: {
     value: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
-    }
+      },
+    },
   },
   watch: {
     value(value) {
@@ -24,7 +24,7 @@ export default {
         this.editor.setValue(JSON.stringify(value, null, 2))
         this.editor.renderer.updateFull()
       }
-    }
+    },
   },
   mounted() {
     this.editor = ace.edit("advancedEditor")
@@ -43,6 +43,6 @@ export default {
         return false
       }
     })
-  }
+  },
 }
 </script>

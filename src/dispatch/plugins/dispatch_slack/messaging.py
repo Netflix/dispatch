@@ -111,7 +111,7 @@ INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
 }
 
 INCIDENT_CONVERSATION_COMMAND_RUN_IN_NONINCIDENT_CONVERSATION = """
-Looks like you tried to run `{{command}}` in an nonincident conversation.
+Looks like you tried to run `{{command}}` in an non-incident conversation.
 Incident-specifc commands can only be run in incident conversations.""".replace(
     "\n", " "
 ).strip()
@@ -152,7 +152,7 @@ def create_command_run_in_nonincident_conversation_message(command: str):
 def create_command_run_in_conversation_where_bot_not_present_message(
     command: str, conversations: List
 ):
-    """Creates a message for when a nonincident specific command is run in a conversation where the Dispatch bot is not present."""
+    """Creates a message for when a non-incident specific command is run in a conversation where the Dispatch bot is not present."""
     conversations = (", ").join([f"#{conversation}" for conversation in conversations])
     return {
         "response_type": "ephemeral",

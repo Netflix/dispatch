@@ -4,7 +4,7 @@
     <delete-dialog />
     <div class="headline">Teams</div>
     <v-spacer />
-    <v-btn color="info" class="mb-2" @click="createEditShow()">New</v-btn>
+    <v-btn color="info" class="mb-2" @click="createEditShow()"> New </v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -65,7 +65,7 @@ export default {
 
   components: {
     DeleteDialog,
-    NewEditSheet
+    NewEditSheet,
   },
   data() {
     return {
@@ -73,8 +73,8 @@ export default {
         { text: "Name", value: "name", sortable: true },
         { text: "Company", value: "company", sortable: true },
         { text: "Email", value: "email", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" }
-      ]
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+      ],
     }
   },
 
@@ -87,22 +87,22 @@ export default {
       "table.options.descending",
       "table.loading",
       "table.rows.items",
-      "table.rows.total"
-    ])
+      "table.rows.total",
+    ]),
   },
 
   mounted() {
     this.getAll({})
 
     this.$watch(
-      vm => [vm.page],
+      (vm) => [vm.page],
       () => {
         this.getAll()
       }
     )
 
     this.$watch(
-      vm => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
+      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
       () => {
         this.page = 1
         this.getAll()
@@ -111,7 +111,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("team", ["getAll", "createEditShow", "removeShow"])
-  }
+    ...mapActions("team", ["getAll", "createEditShow", "removeShow"]),
+  },
 }
 </script>

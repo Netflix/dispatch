@@ -4,20 +4,20 @@ import router from "@/router"
 const getDefaulRefreshState = () => {
   return {
     show: false,
-    message: ""
+    message: "",
   }
 }
 
 const state = {
   toggleDrawer: true,
   refresh: {
-    ...getDefaulRefreshState()
+    ...getDefaulRefreshState(),
   },
-  loading: false
+  loading: false,
 }
 
 const getters = {
-  getField
+  getField,
 }
 
 const actions = {
@@ -30,7 +30,7 @@ const actions = {
   },
   setLoading({ commit }, value) {
     commit("SET_LOADING", value)
-  }
+  },
 }
 
 const mutations = {
@@ -47,7 +47,7 @@ const mutations = {
   },
   RESET_REFRESH(state) {
     state.refresh = Object.assign(state.refresh, getDefaulRefreshState())
-  }
+  },
 }
 
 export default {
@@ -55,5 +55,5 @@ export default {
   state,
   getters,
   actions,
-  mutations
+  mutations,
 }

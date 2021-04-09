@@ -3,7 +3,7 @@
     <template v-slot:prepend>
       <v-list-item two-line>
         <v-list-item-content>
-          <v-list-item-title class="title">Edit</v-list-item-title>
+          <v-list-item-title class="title"> Edit </v-list-item-title>
           <v-list-item-subtitle>Plugin</v-list-item-subtitle>
         </v-list-item-content>
         <v-btn icon color="info" :loading="loading" @click="save()">
@@ -75,12 +75,12 @@ export default {
       "selected.description",
       "selected.enabled",
       "selected.loading",
-      "dialogs.showEdit"
-    ])
+      "dialogs.showEdit",
+    ]),
   },
 
   methods: {
-    ...mapActions("plugin", ["save", "closeEdit"])
-  }
+    ...mapActions("plugin", ["save", "closeEdit"]),
+  },
 }
 </script>

@@ -1,11 +1,11 @@
 <template>
   <v-card class="mx-auto" outlined :loading="loading" elevation="0">
-    <v-subheader class="title">Search results for: "{{ query }}"</v-subheader>
+    <v-subheader class="title"> Search results for: "{{ query }}" </v-subheader>
     <v-expansion-panels flat>
       <v-expansion-panel>
-        <v-expansion-panel-header
-          >Incidents ({{ results.incidents.length }})</v-expansion-panel-header
-        >
+        <v-expansion-panel-header>
+          Incidents ({{ results.incidents.length }})
+        </v-expansion-panel-header>
         <v-expansion-panel-content>
           <incident-summary-table :items="results.incidents" />
         </v-expansion-panel-content>
@@ -17,15 +17,15 @@
         </v-expansion-panel-content>
       </v-expansion-panel>
       <v-expansion-panel>
-        <v-expansion-panel-header
-          >Documents ({{ results.documents.length }})</v-expansion-panel-header
-        >
+        <v-expansion-panel-header>
+          Documents ({{ results.documents.length }})
+        </v-expansion-panel-header>
         <v-expansion-panel-content>
           <document-summary-table :items="results.documents" />
         </v-expansion-panel-content>
       </v-expansion-panel>
       <v-expansion-panel>
-        <v-expansion-panel-header>Tag ({{ results.tags.length }})</v-expansion-panel-header>
+        <v-expansion-panel-header>Tags ({{ results.tags.length }})</v-expansion-panel-header>
         <v-expansion-panel-content>
           <tag-summary-table :items="results.tags" />
         </v-expansion-panel-content>
@@ -47,14 +47,14 @@ export default {
     IncidentSummaryTable,
     TaskSummaryTable,
     DocumentSummaryTable,
-    TagSummaryTable
+    TagSummaryTable,
   },
   data() {
     return {}
   },
 
   computed: {
-    ...mapState("search", ["results", "query", "loading"])
-  }
+    ...mapState("search", ["results", "query", "loading"]),
+  },
 }
 </script>

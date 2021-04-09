@@ -482,7 +482,9 @@ def build_update_notifications_group_blocks(incident: Incident, db_session: Sess
         "private_metadata": json.dumps({"incident_id": str(incident.id)}),
     }
 
-    group_plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant-group")
+    group_plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
+    )
     members = group_plugin.instance.list(incident.notifications_group.email)
 
     members_block = {
@@ -545,7 +547,9 @@ def update_notifications_group_from_submitted_form(action: dict, db_session=None
     incident_id = action["view"]["private_metadata"]["incident_id"]
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    group_plugin = plugin_service.get_active(db_session=db_session, plugin_type="participant-group")
+    group_plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
+    )
 
     group_plugin.instance.add(incident.notifications_group.email, members_added)
     group_plugin.instance.remove(incident.notifications_group.email, members_removed)
@@ -1067,7 +1071,7 @@ def rating_feedback_from_submitted_form(action: dict, db_session=None):
     rating = parsed_form_data.get(IncidentRatingFeedbackBlockFields.rating)["value"]
     anonymous = parsed_form_data.get(IncidentRatingFeedbackBlockFields.anonymous)["value"]
 
-    feedback_in = FeedbackCreate(rating=rating, feedback=feedback)
+    feedback_in = FeedbackCreate(rating=rating, feedback=feedback, project=incident.project)
     feedback = feedback_service.create(db_session=db_session, feedback_in=feedback_in)
 
     incident.feedback.append(feedback)

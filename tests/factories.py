@@ -31,6 +31,8 @@ from dispatch.team.models import TeamContact
 from dispatch.term.models import Term
 from dispatch.ticket.models import Ticket
 from dispatch.auth.models import DispatchUser  # noqa
+from dispatch.project.models import Project
+from dispatch.organization.models import Organization
 
 
 class BaseFactory(SQLAlchemyModelFactory):
@@ -49,6 +51,44 @@ class TimeStampBaseFactory(BaseFactory):
 
     created_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
     updated_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
+
+
+class OrganizationFactory(BaseFactory):
+    """Organization Factory."""
+
+    name = Sequence(lambda n: f"organization{n}")
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Organization
+
+    @post_generation
+    def projects(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        for project in extracted:
+            self.projects.append(project)
+
+
+class ProjectFactory(BaseFactory):
+    """Project Factory."""
+
+    name = Sequence(lambda n: f"project{n}")
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Project
+
+    @post_generation
+    def organization(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.organization_id = extracted.id
 
 
 class ResourceBaseFactory(TimeStampBaseFactory):
@@ -163,6 +203,7 @@ class DefinitionFactory(BaseFactory):
 
     text = FuzzyText()
     source = "dispatch"
+    project = SubFactory(ProjectFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -217,6 +258,7 @@ class IncidentPriorityFactory(BaseFactory):
 
     name = FuzzyText()
     description = FuzzyText()
+    project = SubFactory(ProjectFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -230,6 +272,7 @@ class IncidentTypeFactory(BaseFactory):
     name = FuzzyText()
     description = FuzzyText()
     slug = FuzzyText()
+    project = SubFactory(ProjectFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -245,6 +288,7 @@ class IndividualContactFactory(ContactBaseFactory):
     office_phone = "111-111-1111"
     title = FuzzyText()
     weblink = FuzzyText()
+    project = SubFactory(ProjectFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -429,6 +473,7 @@ class ServiceFactory(TimeStampBaseFactory):
     is_active = True
     name = Sequence(lambda n: f"service{n}")
     external_id = FuzzyText()
+    project = SubFactory(ProjectFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -539,6 +584,7 @@ class TeamContactFactory(ContactBaseFactory):
 
     name = Sequence(lambda n: f"team{n}")
     notes = FuzzyText()
+    project = SubFactory(ProjectFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -586,6 +632,7 @@ class TermFactory(BaseFactory):
     """Term Factory."""
 
     text = FuzzyText()
+    project = SubFactory(ProjectFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -613,6 +660,7 @@ class IncidentFactory(BaseFactory):
     title = FuzzyText()
     description = FuzzyText()
     status = FuzzyChoice(["Active", "Stable", "Closed"])
+    project = SubFactory(ProjectFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -637,6 +685,7 @@ class EventFactory(BaseFactory):
     ended_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
     source = FuzzyText()
     description = FuzzyText()
+    project = SubFactory(ProjectFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -663,9 +712,10 @@ class EventFactory(BaseFactory):
 class ConferenceFactory(ResourceBaseFactory):
     """Conference Factory."""
 
-    class Meta:
-        model = Conference
-
     conference_id = Sequence(lambda n: f"conference{n}")
     conference_challenge = FuzzyText()
     incident = SubFactory(IncidentFactory)
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        model = Conference

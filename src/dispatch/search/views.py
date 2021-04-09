@@ -1,14 +1,13 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from starlette.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
-from dispatch.auth.models import DispatchUser
-from dispatch.auth.service import get_current_user
 from dispatch.database.core import get_db, get_class_by_tablename
-from dispatch.database.service import search_filter_sort_paginate
+from dispatch.database.service import composite_search
+from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.enums import SearchTypes, UserRoles
 from dispatch.enums import Visibility
 
@@ -19,66 +18,60 @@ from .models import (
     SearchFilterRead,
     SearchFilterPagination,
 )
-from .service import composite_search, create, delete, get, update
+from .service import create, delete, get, update
 
 router = APIRouter()
 
 
-@router.get("/", response_class=JSONResponse)
+@router.get("", response_class=JSONResponse)
 def search(
     *,
-    db_session: Session = Depends(get_db),
-    skip: int = 0,
-    limit: int = 10,
-    q: str = None,
+    common: dict = Depends(common_parameters),
     type: List[str] = [
         v.value for v in SearchTypes
     ],  # hack for pydantic enum json generation see: https://github.com/samuelcolvin/pydantic/pull/1749
-    current_user: DispatchUser = Depends(get_current_user),
 ):
     """
     Perform a search.
     """
-    if q:
+    if common["query_str"]:
         models = [get_class_by_tablename(t) for t in type]
-        results = composite_search(db_session=db_session, query_str=q, models=models)
+        results = composite_search(
+            db_session=common["db_session"],
+            query_str=common["query_str"],
+            models=models,
+            current_user=common["current_user"],
+        )
     else:
         results = []
 
     # add a filter for restricted incidents
-    if current_user.role != UserRoles.admin:
-        results["Incident"] = [i for i in results["Incident"] if i.visibility == Visibility.open]
+    # TODO won't currently show incidents that you are a member
+    admin_projects = []
+    for p in common["current_user"].projects:
+        if p.role == UserRoles.admin:
+            admin_projects.append(p)
 
-    return SearchResponse(**{"query": q, "results": results}).dict(by_alias=False)
+    filtered_incidents = []
+    for incident in results["Incident"]:
+        if incident.project in admin_projects:
+            filtered_incidents.append(incident)
+            continue
+
+        if incident.visibility == Visibility.open:
+            filtered_incidents.append(incident)
+
+    results["Incident"] = filtered_incidents
+
+    return SearchResponse(**{"query": common["query_str"], "results": results}).dict(by_alias=False)
 
 
 @router.get("/filters", response_model=SearchFilterPagination)
-def get_filters(
-    db_session: Session = Depends(get_db),
-    page: int = 1,
-    items_per_page: int = Query(5, alias="itemsPerPage"),
-    query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query([], alias="sortBy[]"),
-    descending: List[bool] = Query([], alias="descending[]"),
-    fields: List[str] = Query([], alias="fields[]"),
-    ops: List[str] = Query([], alias="ops[]"),
-    values: List[str] = Query([], alias="values[]"),
-):
+def get_filters(*, common: dict = Depends(common_parameters)):
     """
     Retrieve filters.
     """
-    return search_filter_sort_paginate(
-        db_session=db_session,
-        model="SearchFilter",
-        query_str=query_str,
-        page=page,
-        items_per_page=items_per_page,
-        sort_by=sort_by,
-        descending=descending,
-        fields=fields,
-        values=values,
-        ops=ops,
-    )
+    return search_filter_sort_paginate(model="SearchFilter", **common)
 
 
 @router.post("/filters", response_model=SearchFilterRead)

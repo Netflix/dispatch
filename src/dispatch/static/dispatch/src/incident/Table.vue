@@ -1,7 +1,7 @@
 <template>
   <v-layout wrap>
     <div v-if="showEditSheet">
-      <router-view></router-view>
+      <router-view />
     </div>
     <new-sheet />
     <delete-dialog />
@@ -10,7 +10,7 @@
     <v-spacer />
     <table-filter-dialog />
     <table-export-dialog />
-    <v-btn color="info" class="ml-2" @click="showNewSheet()">New</v-btn>
+    <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -45,14 +45,14 @@
                 <incident-status :status="item.status" :id="item.id" />
               </template>
               <template v-slot:item.incident_costs="{ item }">
-                <incident-cost-card :incident_costs="item.incident_costs" />
+                <incident-cost-card :incident-costs="item.incident_costs" />
               </template>
               <template v-slot:item.commander="{ item }">
                 <incident-participant :participant="item.commander" />
               </template>
-              <template v-slot:item.reported_at="{ item }">{{
-                item.reported_at | formatDate
-              }}</template>
+              <template v-slot:item.reported_at="{ item }">
+                {{ item.reported_at | formatDate }}
+              </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
                   <template v-slot:activator="{ on }">
@@ -61,7 +61,12 @@
                     </v-btn>
                   </template>
                   <v-list>
-                    <v-list-item :to="`/incidents/${item.name}`">
+                    <v-list-item
+                      :to="{
+                        name: 'IncidentTableEdit',
+                        params: { name: item.name },
+                      }"
+                    >
                       <v-list-item-title>View / Edit</v-list-item-title>
                     </v-list-item>
                     <v-list-item
@@ -81,7 +86,7 @@
         </v-flex>
       </v-layout>
     </v-flex>
-    <bulk-edit-sheet></bulk-edit-sheet>
+    <bulk-edit-sheet />
   </v-layout>
 </template>
 
@@ -112,10 +117,15 @@ export default {
     NewSheet,
     ReportDialog,
     TableExportDialog,
-    TableFilterDialog
+    TableFilterDialog,
   },
 
-  props: ["name"],
+  props: {
+    name: {
+      type: String,
+      default: null,
+    },
+  },
 
   data() {
     return {
@@ -128,9 +138,9 @@ export default {
         { text: "Commander", value: "commander", sortable: false },
         { text: "Cost", value: "incident_costs", sortable: false },
         { text: "Reported At", value: "reported_at" },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" }
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
-      showEditSheet: false
+      showEditSheet: false,
     }
   },
 
@@ -146,35 +156,41 @@ export default {
       "table.options.filters.incident_priority",
       "table.options.filters.status",
       "table.options.filters.tag",
+      "table.options.filters.project",
       "table.options.descending",
       "table.loading",
       "table.rows.items",
       "table.rows.total",
-      "table.rows.selected"
-    ])
+      "table.rows.selected",
+    ]),
+    ...mapFields("route", ["query"]),
   },
 
   watch: {
     $route: {
       immediate: true,
-      handler: function(newVal) {
+      handler: function (newVal) {
         this.showEditSheet = newVal.meta && newVal.meta.showEditSheet
-      }
-    }
+      },
+    },
   },
 
   mounted() {
+    if (this.query.project) {
+      this.project = [{ name: this.query.project }]
+    }
+
     this.getAll()
 
     this.$watch(
-      vm => [vm.page],
+      (vm) => [vm.page],
       () => {
         this.getAll()
       }
     )
 
     this.$watch(
-      vm => [
+      (vm) => [
         vm.q,
         vm.sortBy,
         vm.itemsPerPage,
@@ -184,17 +200,21 @@ export default {
         vm.incident_type,
         vm.incident_priority,
         vm.status,
-        vm.tag
+        vm.tag,
       ],
       () => {
         this.page = 1
+
+        // convert cost sort by to total cost
+        //let index = this.sortBy.findIndex((column) => column === "incident_costs")
+        //this.sortBy[index] = "total_cost"
         this.getAll()
       }
     )
   },
 
   methods: {
-    ...mapActions("incident", ["getAll", "showNewSheet", "showDeleteDialog", "showReportDialog"])
-  }
+    ...mapActions("incident", ["getAll", "showNewSheet", "showDeleteDialog", "showReportDialog"]),
+  },
 }
 </script>

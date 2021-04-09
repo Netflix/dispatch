@@ -5,7 +5,9 @@
       <v-spacer />
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn small icon @click="addPlugin()" v-on="on"><v-icon>add</v-icon></v-btn>
+          <v-btn small icon @click="addPlugin()" v-on="on">
+            <v-icon>add</v-icon>
+          </v-btn>
         </template>
         <span>Add Plugin</span>
       </v-tooltip>
@@ -48,10 +50,10 @@
           </v-tooltip>
         </v-col>
         <v-col cols="12" sm="5">
-          <v-text-field label="Key" v-model="meta.key" type="text"></v-text-field>
+          <v-text-field label="Key" v-model="meta.key" type="text" />
         </v-col>
         <v-col cols="12" sm="6">
-          <v-text-field label="Value" v-model="meta.value" type="text"></v-text-field>
+          <v-text-field label="Value" v-model="meta.value" type="text" />
         </v-col>
       </v-row>
     </span>
@@ -64,24 +66,24 @@ export default {
   name: "PluginMetadataInput",
 
   components: {
-    PluginCombobox
+    PluginCombobox,
   },
 
   props: {
     value: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
-    }
+      },
+    },
   },
 
   computed: {
     plugins: {
       get() {
         return [...this.value]
-      }
-    }
+      },
+    },
   },
 
   methods: {
@@ -107,7 +109,7 @@ export default {
       }
       this.plugins[event.idx] = event.plugin
       this.$emit("input", this.plugins)
-    }
-  }
+    },
+  },
 }
 </script>

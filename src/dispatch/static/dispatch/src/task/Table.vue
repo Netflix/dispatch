@@ -6,7 +6,7 @@
     <v-spacer />
     <table-filter-dialog />
     <table-export-dialog />
-    <v-btn color="info" class="ml-2" @click="createEditShow()">New</v-btn>
+    <v-btn color="info" class="ml-2" @click="createEditShow()"> New </v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -57,7 +57,7 @@
                   :key="ticket.weblink"
                   :href="ticket.weblink"
                   target="_blank"
-                  style="text-decoration: none;"
+                  style="text-decoration: none"
                 >
                   Ticket
                   <v-icon small>open_in_new</v-icon>
@@ -68,20 +68,19 @@
                   v-for="assignee in item.assignees"
                   :key="assignee.id"
                   :participant="assignee"
-                >
-                </participant>
+                />
               </template>
-              <template v-slot:item.resolve_by="{ item }">{{
-                item.resolve_by | formatDate
-              }}</template>
-              <template v-slot:item.created_at="{ item }">{{
-                item.created_at | formatDate
-              }}</template>
-              <template v-slot:item.resolved_at="{ item }"
-                >{{ item.resolved_at | formatDate }}
+              <template v-slot:item.resolve_by="{ item }">
+                {{ item.resolve_by | formatDate }}
+              </template>
+              <template v-slot:item.created_at="{ item }">
+                {{ item.created_at | formatDate }}
+              </template>
+              <template v-slot:item.resolved_at="{ item }">
+                {{ item.resolved_at | formatDate }}
               </template>
               <template v-slot:item.source="{ item }">
-                <a :href="item.weblink" target="_blank" style="text-decoration: none;">
+                <a :href="item.weblink" target="_blank" style="text-decoration: none">
                   {{ item.source }}
                   <v-icon small>open_in_new</v-icon>
                 </a>
@@ -105,13 +104,14 @@
         </v-flex>
       </v-layout>
     </v-flex>
-    <bulk-edit-sheet></bulk-edit-sheet>
+    <bulk-edit-sheet />
   </v-layout>
 </template>
 
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+
 import DeleteDialog from "@/task/DeleteDialog.vue"
 import NewEditSheet from "@/task/NewEditSheet.vue"
 import TableFilterDialog from "@/task/TableFilterDialog.vue"
@@ -130,7 +130,7 @@ export default {
     BulkEditSheet,
     IncidentPriority,
     Participant,
-    TableExportDialog
+    TableExportDialog,
   },
   data() {
     return {
@@ -148,13 +148,14 @@ export default {
         { text: "Due By", value: "resolve_by", sortable: true },
         { text: "Created At", value: "created_at", sortable: true },
         { text: "Resolved At", value: "resolved_at", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" }
-      ]
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+      ],
     }
   },
 
   computed: {
     ...mapFields("task", [
+      "table.options",
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
@@ -166,25 +167,27 @@ export default {
       "table.options.filters.incident_type",
       "table.options.filters.incident_priority",
       "table.options.filters.status",
+      "table.options.filters.project",
       "table.loading",
       "table.rows.items",
       "table.rows.total",
-      "table.rows.selected"
-    ])
+      "table.rows.selected",
+    ]),
+    ...mapFields("route", ["query"]),
   },
 
   mounted() {
     this.getAll({})
 
     this.$watch(
-      vm => [vm.page],
+      (vm) => [vm.page],
       () => {
         this.getAll()
       }
     )
 
     this.$watch(
-      vm => [
+      (vm) => [
         vm.q,
         vm.itemsPerPage,
         vm.sortBy,
@@ -194,7 +197,7 @@ export default {
         vm.incident,
         vm.incident_type,
         vm.incident_priority,
-        vm.status
+        vm.status,
       ],
       () => {
         this.page = 1
@@ -204,7 +207,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("task", ["getAll", "createEditShow", "removeShow"])
-  }
+    ...mapActions("task", ["getAll", "createEditShow", "removeShow"]),
+  },
 }
 </script>

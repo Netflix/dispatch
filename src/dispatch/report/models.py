@@ -6,7 +6,6 @@ from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, event
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import JSONType, TSVectorType
 
-
 from dispatch.database.core import Base
 from dispatch.models import DispatchBase
 

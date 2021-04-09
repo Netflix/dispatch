@@ -43,10 +43,12 @@ log = logging.getLogger(__name__)
 
 
 def get_suggested_documents(
-    db_session, incident_type: str, priority: str, description: str
+    db_session, project_id: int, incident_type: str, priority: str, description: str
 ) -> list:
     """Get additional incident documents based on priority, type, and description."""
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="document-resolver")
+    plugin = plugin_service.get_active(
+        db_session=db_session, project_id=project_id, plugin_type="document-resolver"
+    )
     documents = []
     if plugin:
         documents = plugin.instance.get(incident_type, priority, description, db_session=db_session)
@@ -54,16 +56,16 @@ def get_suggested_documents(
 
 
 def send_welcome_ephemeral_message_to_participant(
-    participant_email: str, incident_id: int, db_session: SessionLocal
+    participant_email: str, incident: Incident, db_session: SessionLocal
 ):
     """Sends an ephemeral message to the participant."""
     # we load the incident instance
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
     if not plugin:
         log.warning("Incident welcome message not sent, not conversation plugin enabled.")
         return
-
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # we send the ephemeral message
     message_kwargs = {
@@ -113,16 +115,16 @@ def send_welcome_ephemeral_message_to_participant(
 
 
 def send_welcome_email_to_participant(
-    participant_email: str, incident_id: int, db_session: SessionLocal
+    participant_email: str, incident: Incident, db_session: SessionLocal
 ):
     """Sends a welcome email to the participant."""
     # we load the incident instance
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
+    plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="email"
+    )
     if not plugin:
         log.warning("Participant welcome email not sent, not email plugin configured.")
         return
-
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     message_kwargs = {
         "name": incident.name,
@@ -173,25 +175,26 @@ def send_welcome_email_to_participant(
 
 
 def send_incident_welcome_participant_messages(
-    participant_email: str, incident_id: int, db_session: SessionLocal
+    participant_email: str, incident: Incident, db_session: SessionLocal
 ):
     """Sends welcome messages to the participant."""
     # we send the welcome ephemeral message
-    send_welcome_ephemeral_message_to_participant(participant_email, incident_id, db_session)
+    send_welcome_ephemeral_message_to_participant(participant_email, incident, db_session)
 
     # we send the welcome email
-    send_welcome_email_to_participant(participant_email, incident_id, db_session)
+    send_welcome_email_to_participant(participant_email, incident, db_session)
 
     log.debug(f"Welcome participant messages sent {participant_email}.")
 
 
-def get_suggested_document_items(incident_id: int, db_session: SessionLocal):
+def get_suggested_document_items(incident: Incident, db_session: SessionLocal):
     """Create the suggested document item message."""
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
     suggested_documents = get_suggested_documents(
-        db_session, incident.incident_type, incident.incident_priority, incident.description
+        db_session,
+        incident.project.id,
+        incident.incident_type,
+        incident.incident_priority,
+        incident.description,
     )
 
     items = []
@@ -210,14 +213,13 @@ def get_suggested_document_items(incident_id: int, db_session: SessionLocal):
 
 
 def send_incident_suggested_reading_messages(
-    incident_id: int, items: list, participant_email: str, db_session: SessionLocal
+    incident: Incident, items: list, participant_email: str, db_session: SessionLocal
 ):
     """Sends a suggested reading message to a participant."""
     if items:
-        # we load the incident instance
-        incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-        plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+        plugin = plugin_service.get_active(
+            db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+        )
         if not plugin:
             log.warning("Suggested reading message not sent, no conversation plugin enabled.")
             return
@@ -279,7 +281,10 @@ def send_incident_created_notifications(incident: Incident, db_session: SessionL
     }
 
     notification_service.filter_and_send(
-        db_session=db_session, class_instance=incident, notification_params=notification_params
+        db_session=db_session,
+        incident=incident,
+        class_instance=incident,
+        notification_params=notification_params,
     )
 
     log.debug("Incident created notifications sent.")
@@ -318,7 +323,9 @@ def send_incident_update_notifications(
         incident_conversation_notification_template = notification_template.copy()
         incident_conversation_notification_template.insert(0, INCIDENT_NAME)
 
-        convo_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+        convo_plugin = plugin_service.get_active(
+            db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+        )
         if convo_plugin:
             convo_plugin.instance.send(
                 incident.conversation.channel_id,
@@ -376,17 +383,22 @@ def send_incident_update_notifications(
     }
 
     notification_service.filter_and_send(
-        db_session=db_session, class_instance=incident, notification_params=notification_params
+        db_session=db_session,
+        incident=incident,
+        class_instance=incident,
+        notification_params=notification_params,
     )
 
     log.debug("Incident updated notifications sent.")
 
 
 def send_incident_participant_announcement_message(
-    participant_email: str, incident_id: int, db_session: SessionLocal
+    participant_email: str, incident: Incident, db_session: SessionLocal
 ):
     """Announces a participant in the conversation."""
-    convo_plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    convo_plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
     if not convo_plugin:
         log.warning("Incident participant annoucement not sent, no conversation plugin enabled.")
         return
@@ -395,15 +407,14 @@ def send_incident_participant_announcement_message(
     notification_type = MessageType.incident_notification
     notification_template = []
 
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
     participant = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=incident_id, email=participant_email
+        db_session=db_session, incident_id=incident.id, email=participant_email
     )
 
     participant_info = {}
-    contact_plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
+    contact_plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="contact"
+    )
     if contact_plugin:
         participant_info = contact_plugin.instance.get(participant_email, db_session=db_session)
 
@@ -455,15 +466,14 @@ def send_incident_participant_announcement_message(
     log.debug("Incident participant announcement message sent.")
 
 
-def send_incident_commander_readded_notification(incident_id: int, db_session: SessionLocal):
+def send_incident_commander_readded_notification(incident: Incident, db_session: SessionLocal):
     """Sends a notification about re-adding the incident commander to the conversation."""
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
 
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
     if not plugin:
         log.warning(
             "Unable to send commander re-added notification, no conversation plugin enabled."
@@ -491,7 +501,9 @@ def send_incident_participant_has_role_ephemeral_message(
     """Sends an ephemeral message to the assigner to let them know that the assignee already has the role."""
     notification_text = "Incident Assign Role Notification"
 
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
     if not plugin:
         log.warning(
             "Unabled to send incident participant has role message, no conversation plugin enabled."
@@ -526,7 +538,9 @@ def send_incident_participant_role_not_assigned_ephemeral_message(
     """Sends an ephemeral message to the assigner to let them know that we were not able to assign the role."""
     notification_text = "Incident Assign Role Notification"
 
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
     if not plugin:
         log.warning(
             "Unabled to send incident participant role not assigned message, no conversation plugin enabled."
@@ -563,7 +577,9 @@ def send_incident_new_role_assigned_notification(
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
 
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
     if not plugin:
         log.warning("Incident new role message not sent because no conversation plugin is enabled.")
         return
@@ -584,13 +600,15 @@ def send_incident_new_role_assigned_notification(
 
 
 def send_incident_review_document_notification(
-    conversation_id: str, review_document_weblink: str, db_session: SessionLocal
+    conversation_id: str, review_document_weblink: str, incident: Incident, db_session: SessionLocal
 ):
     """Sends the review document notification."""
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
 
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
     if not plugin:
         log.warning("Incident review document not sent, no conversation enabled.")
         return
@@ -607,16 +625,15 @@ def send_incident_review_document_notification(
 
 
 def send_incident_resources_ephemeral_message_to_participant(
-    user_id: str, incident_id: int, db_session: SessionLocal
+    user_id: str, incident: Incident, db_session: SessionLocal
 ):
     """Sends the list of incident resources to the participant via an ephemeral message."""
-    # we load the incident instance
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
     if not plugin:
         log.warning("Incident resource message not sent, no conversation plugin enabled.")
         return
-
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     message_kwargs = {
         "title": incident.title,
@@ -669,7 +686,9 @@ def send_incident_close_reminder(incident: Incident, db_session: SessionLocal):
     message_text = "Incident Status Reminder"
     message_template = INCIDENT_STATUS_REMINDER
 
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
     if not plugin:
         log.warning("Incident close reminder message not sent, no conversation plugin enabled.")
         return
@@ -706,7 +725,9 @@ def send_incident_closed_information_review_reminder(incident: Incident, db_sess
     message_text = "Incident Closed Information Review Reminder"
     message_template = INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION
 
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
     if not plugin:
         log.warning(
             "Incident closed information review reminder message not sent, no conversation plugin enabled."
@@ -745,7 +766,9 @@ def send_incident_rating_feedback_message(incident: Incident, db_session: Sessio
     notification_text = "Incident Rating and Feedback"
     notification_template = INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION
 
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
     if not plugin:
         log.warning(
             "Incident rating and feedback message not sent, no conversation plugin enabled."

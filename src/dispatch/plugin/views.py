@@ -1,11 +1,9 @@
-from typing import List
-
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from dispatch.auth.permissions import AdminPermission, PermissionsDependency
 from dispatch.database.core import get_db
-from dispatch.database.service import search_filter_sort_paginate
+from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.auth.permissions import ProjectAdminPermission, PermissionsDependency
 from dispatch.exceptions import InvalidConfiguration
 
 from .models import PluginCreate, PluginPagination, PluginRead, PluginUpdate
@@ -16,62 +14,20 @@ router = APIRouter()
 
 
 @router.get("/", response_model=PluginPagination)
-def get_plugins(
-    db_session: Session = Depends(get_db),
-    page: int = 1,
-    items_per_page: int = Query(5, alias="itemsPerPage"),
-    query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query([], alias="sortBy[]"),
-    descending: List[bool] = Query([], alias="descending[]"),
-    fields: List[str] = Query([], alias="fields[]"),
-    ops: List[str] = Query([], alias="ops[]"),
-    values: List[str] = Query([], alias="values[]"),
-):
+def get_plugins(*, common: dict = Depends(common_parameters)):
     """
     Get all plugins.
     """
-    return search_filter_sort_paginate(
-        db_session=db_session,
-        model="Plugin",
-        query_str=query_str,
-        page=page,
-        items_per_page=items_per_page,
-        sort_by=sort_by,
-        descending=descending,
-        fields=fields,
-        values=values,
-        ops=ops,
-    )
+    return search_filter_sort_paginate(model="Plugin", **common)
 
 
 @router.get("/{plugin_type}", response_model=PluginPagination)
-def get_plugins_by_type(
-    plugin_type: str,
-    db_session: Session = Depends(get_db),
-    page: int = 1,
-    items_per_page: int = Query(5, alias="itemsPerPage"),
-    query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query([], alias="sortBy[]"),
-    descending: List[bool] = Query([], alias="descending[]"),
-    fields: List[str] = Query([], alias="fields[]"),
-    ops: List[str] = Query([], alias="ops[]"),
-    values: List[str] = Query([], alias="values[]"),
-):
+def get_plugins_by_type(plugin_type: str, common: dict = Depends(common_parameters)):
     """
     Get all plugins by type.
     """
-    return search_filter_sort_paginate(
-        db_session=db_session,
-        model="Plugin",
-        query_str=query_str,
-        page=page,
-        items_per_page=items_per_page,
-        sort_by=sort_by,
-        descending=descending,
-        fields=["type"],
-        values=[plugin_type],
-        ops=["=="],
-    )
+    common["filter_spec"] = [{"field": "type", "op": "==", "value": plugin_type}]
+    return search_filter_sort_paginate(model="Plugin", **common)
 
 
 @router.get("/{plugin_id}", response_model=PluginRead)
@@ -88,7 +44,7 @@ def get_plugin(*, db_session: Session = Depends(get_db), plugin_id: int):
 @router.put(
     "/{plugin_id}",
     response_model=PluginCreate,
-    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([ProjectAdminPermission]))],
 )
 def update_plugin(
     *,

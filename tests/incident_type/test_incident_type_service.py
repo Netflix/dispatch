@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_get(session, incident_type):
     from dispatch.incident_type.service import get
 
@@ -29,13 +26,17 @@ def test_get_all(session, incident_types):
     assert len(t_incident_types) > 1
 
 
-def test_create(session, document):
+def test_create(session, project, document):
     from dispatch.incident_type.service import create
     from dispatch.incident_type.models import IncidentTypeCreate
 
     name = "XXX"
 
-    incident_type_in = IncidentTypeCreate(name=name, template_document=document)
+    incident_type_in = IncidentTypeCreate(
+        name=name,
+        template_document=document,
+        project={"id": project.id, "name": project.name},
+    )
 
     incident_type = create(db_session=session, incident_type_in=incident_type_in)
     assert incident_type

@@ -5,6 +5,8 @@ from starlette.responses import JSONResponse
 
 from dispatch.auth.service import get_current_user
 from dispatch.auth.views import user_router, auth_router
+from dispatch.organization.views import router as organization_router
+from dispatch.project.views import router as project_router
 from dispatch.definition.views import router as definition_router
 from dispatch.document.views import router as document_router
 from dispatch.feedback.views import router as feedback_router
@@ -39,40 +41,68 @@ if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-basic":
     api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 # NOTE: All api routes should be authenticated by default
-authenticated_api_router.include_router(user_router, prefix="/user", tags=["users"])
-authenticated_api_router.include_router(document_router, prefix="/documents", tags=["documents"])
-authenticated_api_router.include_router(tag_router, prefix="/tags", tags=["tags"])
-authenticated_api_router.include_router(tag_type_router, prefix="/tag_types", tags=["tag_types"])
-authenticated_api_router.include_router(service_router, prefix="/services", tags=["services"])
-authenticated_api_router.include_router(team_contact_router, prefix="/teams", tags=["teams"])
 authenticated_api_router.include_router(
-    individual_contact_router, prefix="/individuals", tags=["individuals"]
+    organization_router, prefix="/organizations", tags=["organizations"]
+)
+authenticated_api_router.include_router(
+    project_router, prefix="/{organization}/projects", tags=["projects"]
+)
+authenticated_api_router.include_router(user_router, prefix="/{organization}/users", tags=["users"])
+authenticated_api_router.include_router(
+    document_router, prefix="/{organization}/documents", tags=["documents"]
+)
+authenticated_api_router.include_router(tag_router, prefix="/{organization}/tags", tags=["tags"])
+authenticated_api_router.include_router(
+    tag_type_router, prefix="/{organization}/tag_types", tags=["tag_types"]
+)
+authenticated_api_router.include_router(
+    service_router, prefix="/{organization}/services", tags=["services"]
+)
+authenticated_api_router.include_router(
+    team_contact_router, prefix="/{organization}/teams", tags=["teams"]
+)
+authenticated_api_router.include_router(
+    individual_contact_router, prefix="/{organization}/individuals", tags=["individuals"]
 )
 # authenticated_api_router.include_router(route_router, prefix="/route", tags=["route"])
 authenticated_api_router.include_router(
-    definition_router, prefix="/definitions", tags=["definitions"]
+    definition_router, prefix="/{organization}/definitions", tags=["definitions"]
 )
-authenticated_api_router.include_router(team_router, prefix="/terms", tags=["terms"])
-authenticated_api_router.include_router(task_router, prefix="/tasks", tags=["tasks"])
-authenticated_api_router.include_router(search_router, prefix="/search", tags=["search"])
-authenticated_api_router.include_router(incident_router, prefix="/incidents", tags=["incidents"])
+authenticated_api_router.include_router(team_router, prefix="/{organization}/terms", tags=["terms"])
+authenticated_api_router.include_router(task_router, prefix="/{organization}/tasks", tags=["tasks"])
 authenticated_api_router.include_router(
-    incident_type_router, prefix="/incident_types", tags=["incident_types"]
+    search_router, prefix="/{organization}/search", tags=["search"]
 )
 authenticated_api_router.include_router(
-    incident_priority_router, prefix="/incident_priorities", tags=["incident_priorities"]
-)
-authenticated_api_router.include_router(workflow_router, prefix="/workflows", tags=["workflows"])
-authenticated_api_router.include_router(plugin_router, prefix="/plugins", tags=["plugins"])
-authenticated_api_router.include_router(feedback_router, prefix="/feedback", tags=["feedback"])
-authenticated_api_router.include_router(
-    notification_router, prefix="/notifications", tags=["notifications"]
+    incident_router, prefix="/{organization}/incidents", tags=["incidents"]
 )
 authenticated_api_router.include_router(
-    incident_cost_router, prefix="/incident_costs", tags=["incident_costs"]
+    incident_type_router, prefix="/{organization}/incident_types", tags=["incident_types"]
 )
 authenticated_api_router.include_router(
-    incident_cost_type_router, prefix="/incident_cost_types", tags=["incident_cost_types"]
+    incident_priority_router,
+    prefix="/{organization}/incident_priorities",
+    tags=["incident_priorities"],
+)
+authenticated_api_router.include_router(
+    workflow_router, prefix="/{organization}/workflows", tags=["workflows"]
+)
+authenticated_api_router.include_router(
+    plugin_router, prefix="/{organization}/plugins", tags=["plugins"]
+)
+authenticated_api_router.include_router(
+    feedback_router, prefix="/{organization}/feedback", tags=["feedback"]
+)
+authenticated_api_router.include_router(
+    notification_router, prefix="/{organization}/notifications", tags=["notifications"]
+)
+authenticated_api_router.include_router(
+    incident_cost_router, prefix="/{organization}/incident_costs", tags=["incident_costs"]
+)
+authenticated_api_router.include_router(
+    incident_cost_type_router,
+    prefix="/{organization}/incident_cost_types",
+    tags=["incident_cost_types"],
 )
 
 doc_router = APIRouter()

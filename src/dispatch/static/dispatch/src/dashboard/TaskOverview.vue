@@ -2,7 +2,7 @@
   <v-container fluid grid-list-xl>
     <v-layout row wrap>
       <v-flex class="d-flex justify-start" lg6 sm6 xs12>
-        <v-btn color="info" @click="copyView">Share View</v-btn>
+        <v-btn color="info" @click="copyView"> Share View </v-btn>
       </v-flex>
       <v-flex class="d-flex justify-end" lg6 sm6 xs12>
         <task-dialog-filter v-bind="query" @update="update" @loading="setLoading" />
@@ -13,42 +13,36 @@
         <stat-widget
           icon="playlist_add_check"
           :title="totalTasks | toNumberString"
-          supTitle="Tasks"
+          sup-title="Tasks"
         />
       </v-flex>
       <v-flex lg3 sm6 xs12>
         <stat-widget
           icon="watch_later"
           :title="totalHours | toNumberString"
-          supTitle="Total Hours"
+          sup-title="Total Hours"
         />
       </v-flex>
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="people" :title="uniqTeams | toNumberString" supTitle="Unique Teams" />
+        <stat-widget icon="people" :title="uniqTeams | toNumberString" sup-title="Unique Teams" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
         <stat-widget
           icon="person"
           :title="uniqAssignees | toNumberString"
-          supTitle="Unique Assignees"
+          sup-title="Unique Assignees"
         />
       </v-flex>
       <!-- Widgets Ends -->
       <!-- Statistics -->
       <v-flex lg6 sm6 xs12>
-        <task-incident-priority-bar-chart-card
-          v-model="groupedItems"
-          :loading="loading"
-        ></task-incident-priority-bar-chart-card>
+        <task-incident-priority-bar-chart-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <v-flex lg6 sm6 xs12>
-        <task-incident-type-bar-chart-card
-          v-model="groupedItems"
-          :loading="loading"
-        ></task-incident-type-bar-chart-card>
+        <task-incident-type-bar-chart-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <v-flex lg6 sm6 xs12>
-        <task-active-time-card v-model="groupedItems" :loading="loading"></task-active-time-card>
+        <task-active-time-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <!-- Statistics Ends -->
     </v-layout>
@@ -70,8 +64,11 @@ export default {
 
   props: {
     query: {
-      type: Object
-    }
+      type: Object,
+      default: function () {
+        return {}
+      },
+    },
   },
 
   components: {
@@ -79,14 +76,14 @@ export default {
     StatWidget,
     TaskIncidentPriorityBarChartCard,
     TaskIncidentTypeBarChartCard,
-    TaskActiveTimeCard
+    TaskActiveTimeCard,
   },
 
   data() {
     return {
       tab: null,
       loading: true,
-      items: []
+      items: [],
     }
   },
 
@@ -97,35 +94,35 @@ export default {
     setLoading(data) {
       this.loading = data
     },
-    copyView: function() {
+    copyView: function () {
       let store = this.$store
       this.$copyText(window.location).then(
-        function() {
+        function () {
           store.commit(
             "notification_backend/addBeNotification",
             {
-              text: "View copied to clipboard."
+              text: "View copied to clipboard.",
             },
             { root: true }
           )
         },
-        function() {
+        function () {
           store.commit(
             "notification_backend/addBeNotification",
             {
               text: "Failed to copy view to clipboard.",
-              color: "red"
+              color: "red",
             },
             { root: true }
           )
         }
       )
-    }
+    },
   },
 
   computed: {
     tasksByMonth() {
-      return groupBy(this.items, function(item) {
+      return groupBy(this.items, function (item) {
         return parseISO(item.created_at).toLocaleString("default", { month: "short" })
       })
     },
@@ -136,26 +133,26 @@ export default {
       return this.items.length
     },
     uniqTeams() {
-      let allTeams = map(this.items, function(item) {
+      let allTeams = map(this.items, function (item) {
         return map(item.assignees, "team")
       }).flat(1)
       return uniq(allTeams).length
     },
     uniqAssignees() {
-      let allAssignees = map(this.items, function(item) {
+      let allAssignees = map(this.items, function (item) {
         return map(item.assignees, "individual.name")
       }).flat(1)
       return uniq(allAssignees).length
     },
     totalHours() {
-      return sumBy(this.items, function(item) {
+      return sumBy(this.items, function (item) {
         let endTime = new Date().toISOString()
         if (item.resolved_at) {
           endTime = item.resolved_at
         }
         return differenceInHours(parseISO(endTime), parseISO(item.created_at))
       })
-    }
-  }
+    },
+  },
 }
 </script>

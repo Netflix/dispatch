@@ -2,7 +2,7 @@
   <v-dialog v-model="display" max-width="600px">
     <template v-slot:activator="{ on }">
       <v-badge :value="numFilters" bordered overlap color="info" :content="numFilters">
-        <v-btn color="secondary" v-on="on">Filter</v-btn>
+        <v-btn color="secondary" v-on="on"> Filter </v-btn>
       </v-badge>
     </template>
     <v-card>
@@ -21,15 +21,15 @@
               min-width="290px"
             >
               <template v-slot:activator="{ on }">
-                <v-text-field
-                  v-model="dateRangeText"
-                  label="Window"
-                  readonly
-                  v-on="on"
-                ></v-text-field>
+                <v-text-field v-model="dateRangeText" label="Window" readonly v-on="on" />
               </template>
-              <v-date-picker v-model="localWindow" type="month" range> </v-date-picker>
+              <v-date-picker v-model="localWindow" type="month" range />
             </v-menu>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
+            <project-combobox v-model="localProject" label="Projects" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
@@ -53,14 +53,16 @@
 </template>
 
 <script>
+import { parseISO } from "date-fns"
+import subMonths from "date-fns/subMonths"
 import { map, sum, forEach, each, has, assign } from "lodash"
-// import IndividualCombobox from "@/individual/IndividualCombobox.vue"
+
+import SearchUtils from "@/search/utils"
 import IncidentApi from "@/incident/api"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
-import subMonths from "date-fns/subMonths"
-import { parseISO } from "date-fns"
 
 export default {
   name: "IncidentOverviewFilterBar",
@@ -68,43 +70,45 @@ export default {
   props: {
     tag: {
       type: [String, Array],
-      default: function() {
+      default: function () {
         return []
-      }
+      },
     },
-    incident_type: {
+    incidentType: {
       type: [String, Array],
-      default: function() {
+      default: function () {
         return []
-      }
+      },
     },
-    incident_priority: {
+    incidentPriority: {
       type: [String, Array],
-      default: function() {
+      default: function () {
         return []
-      }
+      },
+    },
+    project: {
+      type: [String, Array],
+      default: function () {
+        return []
+      },
     },
     window: {
       type: Array,
-      default: function() {
+      default: function () {
         let now = new Date()
         let today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-        let start = subMonths(today, 6)
-          .toISOString()
-          .substr(0, 10)
+        let start = subMonths(today, 6).toISOString().substr(0, 10)
         let end = today.toISOString().substr(0, 10)
         return [start, end]
-      }
-    }
+      },
+    },
   },
 
   methods: {
     fetchData() {
-      let filterOptions = {}
-
       let localWindow = this.localWindow
       // ensure we have a decent date string
-      localWindow = map(localWindow, function(item) {
+      localWindow = map(localWindow, function (item) {
         return parseISO(item).toISOString()
       })
 
@@ -112,41 +116,44 @@ export default {
         localWindow[1] = localWindow[0]
       }
 
-      // we always window
-      filterOptions.itemsPerPage = -1
-      filterOptions.sortBy = ["reported_at"]
-      filterOptions.descending = [false]
-      filterOptions.fields = ["reported_at", "reported_at"]
-      filterOptions.ops = [">=", "<="]
-      filterOptions.values = localWindow
+      let filterOptions = {
+        itemsPerPage: -1,
+        descending: [false],
+        sortBy: ["reported_at"],
+        filters: {
+          project: this.localProject,
+          incident_type: this.localIncidentType,
+          incident_priority: this.localIncidentPriority,
+          tag: this.localTag,
+        },
+      }
 
-      forEach(this.filters, function(value, key) {
-        each(value, function(value) {
-          if (typeof value === "string") {
-            filterOptions.fields.push(key + ".name")
-            filterOptions.values.push(value)
-          } else if (has(value, "id")) {
-            filterOptions.fields.push(key + ".id")
-            filterOptions.values.push(value.id)
-          } else {
-            filterOptions.fields.push(key)
-            filterOptions.values.push(value)
-          }
-          filterOptions.ops.push("==")
-        })
-      })
+      let windowFilter = [
+        {
+          field: "reported_at",
+          op: ">=",
+          value: localWindow[0],
+        },
+        {
+          field: "reported_at",
+          op: "<=",
+          value: localWindow[1],
+        },
+      ]
+
+      filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions, windowFilter)
 
       this.$emit("loading", "error")
-      this.$emit("filterOptions", this.filters)
-      IncidentApi.getAll(filterOptions).then(response => {
+      this.$emit("filterOptions", filterOptions)
+      IncidentApi.getAll(filterOptions).then((response) => {
         this.$emit("update", response.data.items)
         this.$emit("loading", false)
       })
     },
     serializeFilters() {
       let flatFilters = {}
-      forEach(this.filters, function(value, key) {
-        each(value, function(item) {
+      forEach(this.filters, function (value, key) {
+        each(value, function (item) {
           if (has(flatFilters, key)) {
             flatFilters[key].push(item.name)
           } else {
@@ -164,14 +171,14 @@ export default {
       assign(queryParams, this.serializeFilters())
       assign(queryParams, this.serializeWindow())
       this.$router.replace({ query: queryParams })
-    }
+    },
   },
 
   components: {
-    // IndividualCombobox,
     TagFilterCombobox,
     IncidentTypeCombobox,
-    IncidentPriorityCombobox
+    IncidentPriorityCombobox,
+    ProjectCombobox,
   },
 
   data() {
@@ -179,19 +186,26 @@ export default {
       menu: false,
       display: false,
       localWindow: this.window,
-      localTag: typeof this.tag === "string" ? [this.tag] : this.tag,
+      localTag: typeof this.tag === "string" ? [{ name: this.tag }] : this.tag,
       localIncidentPriority:
-        typeof this.incident_priority === "string"
-          ? [this.incident_priority]
-          : this.incident_priority,
+        typeof this.incidentPriority === "string"
+          ? [{ name: this.incidentPriority }]
+          : this.incidentPriority,
       localIncidentType:
-        typeof this.incident_type === "string" ? [this.incident_type] : this.incident_type
+        typeof this.incidentType === "string" ? [{ name: this.incidentType }] : this.incidentType,
+      localProject: typeof this.project === "string" ? [{ name: this.project }] : this.project,
     }
   },
 
   mounted() {
     this.$watch(
-      vm => [vm.localWindow, vm.localTag, vm.localIncidentPriority, vm.localIncidentType],
+      (vm) => [
+        vm.localWindow,
+        vm.localTag,
+        vm.localIncidentPriority,
+        vm.localIncidentType,
+        vm.localProject,
+      ],
       () => {
         this.updateURL()
         this.fetchData()
@@ -208,20 +222,22 @@ export default {
       return {
         tag: this.localTag,
         incident_priority: this.localIncidentPriority,
-        incident_type: this.localIncidentType
+        incident_type: this.localIncidentType,
+        project: this.localProject,
       }
     },
-    numFilters: function() {
+    numFilters: function () {
       return sum([
         this.localIncidentType.length,
         this.localIncidentPriority.length,
         this.localTag.length,
-        1
+        this.localProject.length,
+        1,
       ])
     },
     dateRangeText() {
       return this.localWindow.join(" ~ ")
-    }
-  }
+    },
+  },
 }
 </script>

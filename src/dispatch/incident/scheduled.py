@@ -8,7 +8,6 @@ from sqlalchemy import func
 
 from dispatch.config import (
     DISPATCH_HELP_EMAIL,
-    DISPATCH_UI_URL,
 )
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.database.core import resolve_attr
@@ -28,7 +27,6 @@ from dispatch.tag import service as tag_service
 from dispatch.tag.models import Tag
 
 from .enums import IncidentStatus
-from .flows import update_external_incident_ticket
 from .messaging import send_incident_close_reminder
 from .service import (
     get_all,

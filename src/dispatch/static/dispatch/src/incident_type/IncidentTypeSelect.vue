@@ -10,32 +10,39 @@
   >
     <template v-slot:item="data">
       <v-list-item-content>
-        <v-list-item-title v-text="data.item.name"></v-list-item-title>
-        <v-list-item-subtitle v-text="data.item.description"></v-list-item-subtitle>
+        <v-list-item-title v-text="data.item.name" />
+        <v-list-item-subtitle v-text="data.item.description" />
       </v-list-item-content>
     </template>
   </v-select>
 </template>
 
 <script>
-import IncidentTypeApi from "@/incident_type/api"
 import { cloneDeep } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import IncidentTypeApi from "@/incident_type/api"
+
 export default {
   name: "IncidentTypeSelect",
 
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return {}
-      }
-    }
+      },
+    },
+    project: {
+      type: [Object],
+      default: null,
+    },
   },
 
   data() {
     return {
       loading: false,
-      items: []
+      items: [],
     }
   },
 
@@ -46,19 +53,33 @@ export default {
       },
       set(value) {
         this.$emit("input", value)
-      }
-    }
+      },
+    },
   },
 
   created() {
     this.error = null
     this.loading = "error"
-    IncidentTypeApi.getAll({ itemsPerPage: 50, sortBy: ["name"], descending: [false] }).then(
-      response => {
-        this.items = response.data.items
-        this.loading = false
+    let filterOptions = {
+      itemsPerPage: 50,
+      sortBy: ["name"],
+      descending: [false],
+    }
+
+    if (this.project) {
+      filterOptions = {
+        ...filterOptions,
+        filters: {
+          project: [this.project],
+        },
       }
-    )
-  }
+      filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
+    }
+
+    IncidentTypeApi.getAll(filterOptions).then((response) => {
+      this.items = response.data.items
+      this.loading = false
+    })
+  },
 }
 </script>

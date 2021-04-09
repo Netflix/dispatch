@@ -6,19 +6,13 @@
       </v-card-title>
       <v-card-text>
         <v-container grid-list-md>
-          <v-layout wrap>
-            Are you sure you want to delete this incident?
-          </v-layout>
+          <v-layout wrap> Are you sure you want to delete this incident? </v-layout>
         </v-container>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="blue en-1" text @click="closeDeleteDialog()">
-          Cancel
-        </v-btn>
-        <v-btn color="red en-1" text @click="deleteIncident(selected)">
-          Delete
-        </v-btn>
+        <v-btn color="blue en-1" text @click="closeDeleteDialog()"> Cancel </v-btn>
+        <v-btn color="red en-1" text @click="deleteIncident(selected)"> Delete </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -33,11 +27,11 @@ export default {
     return {}
   },
   computed: {
-    ...mapFields("incident", ["dialogs.showDeleteDialog", "selected"])
+    ...mapFields("incident", ["dialogs.showDeleteDialog", "selected"]),
   },
 
   methods: {
-    ...mapActions("incident", ["closeDeleteDialog", "deleteIncident"])
-  }
+    ...mapActions("incident", ["closeDeleteDialog", "deleteIncident"]),
+  },
 }
 </script>

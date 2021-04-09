@@ -17,18 +17,19 @@ def get(*, db_session, plugin_id: int) -> Optional[Plugin]:
     return db_session.query(Plugin).filter(Plugin.id == plugin_id).one_or_none()
 
 
-def get_active(*, db_session, plugin_type: str) -> Optional[Plugin]:
+def get_active(*, db_session, plugin_type: str, project_id=None) -> Optional[Plugin]:
     """Fetches the current active plugin for the given type."""
     plugin = (
         db_session.query(Plugin)
         .filter(Plugin.type == plugin_type)
+        .filter(Plugin.project_id == project_id)
         .filter(Plugin.enabled == True)  # noqa
         .one_or_none()
     )
 
     if not plugin:
         log.warning(
-            f"Attempted to fetch active plugin, but none were found. PluginType: {plugin_type}"
+            f"Attempted to fetch active plugin, but none were found. PluginType: {plugin_type} ProjectId: {project_id}"
         )
 
     return plugin

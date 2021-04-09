@@ -7,7 +7,11 @@ import bcrypt
 from jose import jwt
 from typing import Optional
 from pydantic import validator
+
 from sqlalchemy import Column, String, Binary, Integer
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql.schema import ForeignKey
+from sqlalchemy.sql.sqltypes import Boolean
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
@@ -19,6 +23,8 @@ from dispatch.config import (
     DISPATCH_JWT_ALG,
     DISPATCH_JWT_EXP,
 )
+from dispatch.project.models import Project, ProjectRead
+from dispatch.organization.models import Organization, OrganizationRead
 
 
 def generate_password():
@@ -28,8 +34,8 @@ def generate_password():
         password = "".join(secrets.choice(alphanumeric) for i in range(10))
         if (
             any(c.islower() for c in password)
-            and any(c.isupper() for c in password)
-            and sum(c.isdigit() for c in password) >= 3
+            and any(c.isupper() for c in password)  # noqa
+            and sum(c.isdigit() for c in password) >= 3  # noqa
         ):
             break
     return password
@@ -46,7 +52,6 @@ class DispatchUser(Base, TimeStampMixin):
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True)
     password = Column(Binary, nullable=False)
-    role = Column(String, nullable=False, default=UserRoles.user)
 
     search_vector = Column(TSVectorType("email", weights={"email": "A"}))
 
@@ -57,15 +62,55 @@ class DispatchUser(Base, TimeStampMixin):
     def token(self):
         now = datetime.utcnow()
         exp = (now + timedelta(seconds=DISPATCH_JWT_EXP)).timestamp()
-        data = {"exp": exp, "email": self.email, "role": self.role}
+        data = {
+            "exp": exp,
+            "email": self.email,
+            "projects": [UserProject.from_orm(p).dict() for p in self.projects],
+            "organizations": [UserOrganization.from_orm(o).dict() for o in self.organizations],
+        }
         return jwt.encode(data, DISPATCH_JWT_SECRET, algorithm=DISPATCH_JWT_ALG)
 
-    def principals(self):
-        return [f"user:{self.email}", f"role:{self.role}"]
+    def get_project_role(self, project_name):
+        """Gets the users role for a given project."""
+        for p in self.projects:
+            if p.name == project_name:
+                return p.role
+
+
+class DispatchUserOrganization(Base, TimeStampMixin):
+    id = Column("id", Integer, primary_key=True)
+    dispatch_user_id = Column(Integer, ForeignKey("dispatch_user.id"))
+    organization_id = Column(Integer, ForeignKey("organization.id"))
+    organization = relationship(Organization)
+    role = Column(String)
+    dispatch_user = relationship(DispatchUser, backref="organizations")
+
+
+class DispatchUserProject(Base, TimeStampMixin):
+    id = Column("id", Integer, primary_key=True)
+    dispatch_user_id = Column(Integer, ForeignKey("dispatch_user.id"))
+    project_id = Column(Integer, ForeignKey("project.id"))
+    project = relationship(Project)
+    role = Column(String, nullable=False, default=UserRoles.member)
+    dispatch_user = relationship(DispatchUser, backref="projects")
+
+
+class UserProject(DispatchBase):
+    project: ProjectRead
+    default: Optional[bool] = False
+    role: str
+
+
+class UserOrganization(DispatchBase):
+    organization: OrganizationRead
+    default: Optional[bool] = False
+    role: Optional[str]
 
 
 class UserBase(DispatchBase):
     email: str
+    projects: Optional[List[UserProject]] = []
+    organizations: Optional[List[UserOrganization]] = []
 
     @validator("email")
     def email_required(cls, v):
@@ -100,12 +145,10 @@ class UserLoginResponse(DispatchBase):
 
 class UserRead(UserBase):
     id: int
-    role: str
 
 
 class UserUpdate(DispatchBase):
     id: int
-    role: Optional[UserRoles]
     password: Optional[str]
 
     @validator("password", pre=True, always=True)
@@ -114,7 +157,7 @@ class UserUpdate(DispatchBase):
 
 
 class UserRegisterResponse(DispatchBase):
-    email: str
+    token: Optional[str]
 
 
 class UserPagination(DispatchBase):

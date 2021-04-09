@@ -9,11 +9,12 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.enums import Visibility
-from dispatch.models import DispatchBase
+from dispatch.models import DispatchBase, ProjectMixin
 from dispatch.plugin.models import PluginMetadata
+from dispatch.project.models import ProjectRead
 
 
-class IncidentType(Base):
+class IncidentType(ProjectMixin, Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     slug = Column(String)
@@ -91,6 +92,7 @@ class IncidentTypeCreate(IncidentTypeBase):
     plugin_metadata: List[PluginMetadata] = []
     exclude_from_metrics: Optional[bool] = False
     default: Optional[bool] = False
+    project: Optional[ProjectRead]
 
     @validator("plugin_metadata", pre=True)
     def replace_none_with_empty_list(cls, value):
@@ -121,6 +123,7 @@ class IncidentTypeRead(IncidentTypeBase):
     plugin_metadata: List[PluginMetadata] = []
     exclude_from_metrics: Optional[bool] = False
     default: Optional[bool] = False
+    project: ProjectRead
 
     @validator("plugin_metadata", pre=True)
     def replace_none_with_empty_list(cls, value):

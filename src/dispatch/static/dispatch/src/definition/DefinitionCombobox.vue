@@ -32,17 +32,21 @@ export default {
   props: {
     value: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
-    }
+      },
+    },
+    project: {
+      type: String,
+      default: null,
+    },
   },
 
   data() {
     return {
       loading: false,
       items: [],
-      search: null
+      search: null,
     }
   },
 
@@ -53,18 +57,18 @@ export default {
       },
       set(value) {
         this.search = null
-        this._definitions = value.map(v => {
+        this._definitions = value.map((v) => {
           if (typeof v === "string") {
             v = {
-              text: v
+              text: v,
             }
             this.items.push(v)
           }
           return v
         })
         this.$emit("input", this._definitions)
-      }
-    }
+      },
+    },
   },
 
   created() {
@@ -75,14 +79,14 @@ export default {
     fetchData(filterOptions) {
       this.error = null
       this.loading = "error"
-      DefinitionApi.getAll(filterOptions).then(response => {
+      DefinitionApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
     },
-    getFilteredData: debounce(function(options) {
+    getFilteredData: debounce(function (options) {
       this.fetchData(options)
-    }, 500)
-  }
+    }, 500),
+  },
 }
 </script>

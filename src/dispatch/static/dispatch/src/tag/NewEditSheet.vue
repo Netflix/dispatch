@@ -4,8 +4,8 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
-            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
+            <v-list-item-title v-else class="title"> New </v-list-item-title>
             <v-list-item-subtitle>Tag</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
@@ -93,7 +93,7 @@
                   v-model="discoverable"
                   label="Discoverable"
                   hint="Is this tag a common word or is it eligible for auto-detection?"
-                ></v-checkbox>
+                />
               </v-flex>
             </v-layout>
           </v-container>
@@ -112,7 +112,7 @@ import TagTypeSelect from "@/tag_type/TagTypeSelect.vue"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
@@ -121,7 +121,7 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    TagTypeSelect
+    TagTypeSelect,
   },
 
   computed: {
@@ -134,12 +134,12 @@ export default {
       "selected.source",
       "selected.discoverable",
       "selected.loading",
-      "dialogs.showCreateEdit"
-    ])
+      "dialogs.showCreateEdit",
+    ]),
   },
 
   methods: {
-    ...mapActions("tag", ["save", "closeCreateEdit"])
-  }
+    ...mapActions("tag", ["save", "closeCreateEdit"]),
+  },
 }
 </script>

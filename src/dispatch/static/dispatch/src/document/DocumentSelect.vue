@@ -39,15 +39,19 @@ export default {
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return {}
-      }
-    }
+      },
+    },
+    project: {
+      type: String,
+      default: null,
+    },
   },
 
   components: {
     ValidationProvider,
-    NewEditSheet
+    NewEditSheet,
   },
 
   data() {
@@ -55,7 +59,7 @@ export default {
       loading: false,
       search: null,
       select: null,
-      items: []
+      items: [],
     }
   },
 
@@ -66,7 +70,7 @@ export default {
     value(val) {
       if (!val) return
       this.items.push(val)
-    }
+    },
   },
 
   computed: {
@@ -76,8 +80,8 @@ export default {
       },
       set(value) {
         this.$emit("input", value)
-      }
-    }
+      },
+    },
   },
 
   methods: {
@@ -89,20 +93,20 @@ export default {
     querySelections(v) {
       this.loading = "error"
       // Simulated ajax query
-      DocumentApi.getAll({ q: v }).then(response => {
+      DocumentApi.getAll({ q: v }).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
-    }
+    },
   },
 
   mounted() {
     this.error = null
     this.loading = "error"
-    DocumentApi.getAll().then(response => {
+    DocumentApi.getAll().then((response) => {
       this.items = response.data.items
       this.loading = false
     })
-  }
+  },
 }
 </script>

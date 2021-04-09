@@ -33,20 +33,25 @@ export default {
   props: {
     value: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
+      },
     },
     label: {
       type: String,
-      default: "Add Terms"
-    }
+      default: "Add Terms",
+    },
+    project: {
+      type: String,
+      required: false,
+      default: "",
+    },
   },
   data() {
     return {
       loading: false,
       items: [],
-      search: null
+      search: null,
     }
   },
 
@@ -57,18 +62,18 @@ export default {
       },
       set(value) {
         this.search = null
-        this._terms = value.map(v => {
+        this._terms = value.map((v) => {
           if (typeof v === "string") {
             v = {
-              text: v
+              text: v,
             }
             this.items.push(v)
           }
           return v
         })
         this.$emit("input", this._terms)
-      }
-    }
+      },
+    },
   },
 
   created() {
@@ -79,14 +84,14 @@ export default {
     fetchData(filterOptions) {
       this.error = null
       this.loading = "error"
-      TermApi.getAll(filterOptions).then(response => {
+      TermApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
     },
-    getFilteredData: debounce(function(options) {
+    getFilteredData: debounce(function (options) {
       this.fetchData(options)
-    }, 500)
-  }
+    }, 500),
+  },
 }
 </script>

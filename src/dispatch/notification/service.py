@@ -5,6 +5,7 @@ from typing import List, Optional, Type
 from fastapi.encoders import jsonable_encoder
 
 from dispatch.database.core import Base
+from dispatch.incident.models import Incident
 from dispatch.plugin import service as plugin_service
 from dispatch.search import service as search_service
 
@@ -85,9 +86,11 @@ def delete(*, db_session, notification_id: int):
     db_session.commit()
 
 
-def send(*, db_session, notification: Notification, notification_params: dict):
+def send(*, db_session, incident: Incident, notification: Notification, notification_params: dict):
     """Send a notification via plugin."""
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type=notification.type)
+    plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type=notification.type
+    )
     if plugin:
         plugin.instance.send(
             notification.target,
@@ -102,7 +105,9 @@ def send(*, db_session, notification: Notification, notification_params: dict):
         )
 
 
-def filter_and_send(*, db_session, class_instance: Type[Base], notification_params: dict):
+def filter_and_send(
+    *, db_session, incident: Incident, class_instance: Type[Base], notification_params: dict
+):
     """Sends notifications."""
     notifications = get_all_enabled(db_session=db_session)
     for notification in notifications:
@@ -115,6 +120,7 @@ def filter_and_send(*, db_session, class_instance: Type[Base], notification_para
             if match:
                 send(
                     db_session=db_session,
+                    incident=incident,
                     notification=notification,
                     notification_params=notification_params,
                 )
@@ -122,6 +128,7 @@ def filter_and_send(*, db_session, class_instance: Type[Base], notification_para
         if not notification.filters:
             send(
                 db_session=db_session,
+                incident=incident,
                 notification=notification,
                 notification_params=notification_params,
             )

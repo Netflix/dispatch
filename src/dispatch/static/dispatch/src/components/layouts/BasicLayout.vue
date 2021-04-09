@@ -3,7 +3,7 @@
     <notification-snackbars-wrapper />
     <v-content>
       <v-app-bar app flat class="v-bar--underline" color="background0">
-        <router-link to="/" tag="span">
+        <router-link to="/" style="text-decoration: none">
           <span class="button font-weight-bold">D I S P A T C H</span>
         </router-link>
       </v-app-bar>
@@ -18,11 +18,11 @@
 import NotificationSnackbarsWrapper from "@/components/NotificationSnackbarsWrapper.vue"
 export default {
   components: {
-    NotificationSnackbarsWrapper
+    NotificationSnackbarsWrapper,
   },
   data: () => ({}),
 
-  methods: {}
+  methods: {},
 }
 </script>
 <style scoped lang="css">

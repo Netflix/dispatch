@@ -8,11 +8,11 @@ from dispatch.incident_cost_type.models import (
     IncidentCostTypeCreate,
     IncidentCostTypeRead,
 )
-from dispatch.models import DispatchBase, TimeStampMixin
+from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 
 
 # SQLAlchemy Model
-class IncidentCost(Base, TimeStampMixin):
+class IncidentCost(Base, TimeStampMixin, ProjectMixin):
     # columns
     id = Column(Integer, primary_key=True)
     amount = Column(Numeric(precision=10, scale=2), nullable=True)

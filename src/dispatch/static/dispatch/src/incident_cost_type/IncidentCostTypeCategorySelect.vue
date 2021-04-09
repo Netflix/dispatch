@@ -18,21 +18,21 @@ export default {
   props: {
     value: {
       type: String,
-      default: function() {
+      default: function () {
         return ""
-      }
+      },
     },
     label: {
       type: String,
-      default: function() {
+      default: function () {
         return "Category"
-      }
-    }
+      },
+    },
   },
 
   data() {
     return {
-      items: ["Primary", "Secondary"]
+      items: ["Primary", "Secondary"],
     }
   },
 
@@ -43,8 +43,8 @@ export default {
       },
       set(value) {
         this.$emit("input", value)
-      }
-    }
-  }
+      },
+    },
+  },
 }
 </script>

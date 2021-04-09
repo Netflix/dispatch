@@ -2,7 +2,7 @@
   <v-dialog v-model="display" max-width="600px">
     <template v-slot:activator="{ on }">
       <v-badge :value="numFilters" bordered overlap color="info" :content="numFilters">
-        <v-btn color="secondary" v-on="on">Filter</v-btn>
+        <v-btn color="secondary" v-on="on"> Filter </v-btn>
       </v-badge>
     </template>
     <v-card>
@@ -10,18 +10,11 @@
         <span class="headline">Column Filters</span>
       </v-card-title>
       <v-list dense>
-        <!--
-          <v-list-item>
-            <v-list-item-content>
-              <individual-combobox v-model="commander" label="Commanders"></individual-combobox>
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item>
-            <v-list-item-content>
-              <individual-combobox v-model="reporter" label="Reporters"></individual-combobox>
-            </v-list-item-content>
-          </v-list-item>
-          -->
+        <v-list-item>
+          <v-list-item-content>
+            <project-combobox v-model="project" label="Projects" />
+          </v-list-item-content>
+        </v-list-item>
         <v-list-item>
           <v-list-item-content>
             <tag-filter-combobox v-model="tag" label="Tags" />
@@ -51,25 +44,25 @@
 import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
-// import IndividualCombobox from "@/individual/IndividualCombobox.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
+import ProjectCombobox from "@/project/ProjectCombobox.vue"
 
 export default {
   name: "IncidentTableFilterDialog",
 
   components: {
-    // IndividualCombobox,
     TagFilterCombobox,
     IncidentTypeCombobox,
     IncidentPriorityCombobox,
-    IncidentStatusMultiSelect
+    ProjectCombobox,
+    IncidentStatusMultiSelect,
   },
 
   data() {
     return {
-      display: false
+      display: false,
     }
   },
 
@@ -79,19 +72,21 @@ export default {
       "table.options.filters.reporter",
       "table.options.filters.incident_type",
       "table.options.filters.incident_priority",
+      "table.options.filters.project",
       "table.options.filters.status",
-      "table.options.filters.tag"
+      "table.options.filters.tag",
     ]),
-    numFilters: function() {
+    numFilters: function () {
       return sum([
         this.reporter.length,
         this.commander.length,
         this.incident_type.length,
         this.incident_priority.length,
+        this.project.length,
         this.tag.length,
-        this.status.length
+        this.status.length,
       ])
-    }
-  }
+    },
+  },
 }
 </script>

@@ -4,11 +4,12 @@ from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DefinitionNested, DefinitionReadNested, DispatchBase
+from dispatch.models import DefinitionNested, DefinitionReadNested, DispatchBase, ProjectMixin
+from dispatch.project.models import ProjectRead
 
 
 # SQLAlchemy models...
-class Term(Base):
+class Term(Base, ProjectMixin):
     id = Column(Integer, primary_key=True)
     text = Column(String, unique=True)
     discoverable = Column(Boolean, default=True)
@@ -24,6 +25,7 @@ class TermBase(DispatchBase):
 
 class TermCreate(TermBase):
     definitions: Optional[List[DefinitionNested]] = []
+    project: ProjectRead
 
 
 class TermUpdate(TermBase):

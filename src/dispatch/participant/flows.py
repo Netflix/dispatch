@@ -1,6 +1,7 @@
 import logging
 
 from dispatch.database.core import SessionLocal
+from dispatch.incident.models import Incident
 from dispatch.event import service as event_service
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
@@ -17,17 +18,16 @@ log = logging.getLogger(__name__)
 
 def add_participant(
     user_email: str,
-    incident_id: id,
+    incident: Incident,
     db_session: SessionLocal,
     service: Service = None,
     role: ParticipantRoleType = None,
 ):
     """Adds a participant."""
-    # We load the incident
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
     # We get or create a new individual
-    individual = individual_service.get_or_create(db_session=db_session, email=user_email)
+    individual = individual_service.get_or_create(
+        db_session=db_session, incident=incident, email=user_email
+    )
 
     # We create a role for the participant
     participant_role_in = ParticipantRoleCreate(role=role)
@@ -57,26 +57,25 @@ def add_participant(
         db_session=db_session,
         source="Dispatch Core App",
         description=f"{individual.name} added to incident with {participant_role.role} role",
-        incident_id=incident_id,
+        incident_id=incident.id,
     )
 
     return participant
 
 
-def remove_participant(user_email: str, incident_id: int, db_session: SessionLocal):
+def remove_participant(user_email: str, incident: Incident, db_session: SessionLocal):
     """Removes a participant."""
-    # We load the incident
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
     # We get information about the individual
-    contact_plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
+    contact_plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="contact"
+    )
     individual_info = contact_plugin.instance.get(user_email)
     individual_fullname = individual_info["fullname"]
 
     log.debug(f"Removing {individual_fullname} from incident {incident.name}...")
 
     participant = get_by_incident_id_and_email(
-        db_session=db_session, incident_id=incident_id, email=user_email
+        db_session=db_session, incident_id=incident.id, email=user_email
     )
 
     if not participant:
@@ -105,26 +104,26 @@ def remove_participant(user_email: str, incident_id: int, db_session: SessionLoc
         db_session=db_session,
         source="Dispatch Core App",
         description=f"{participant.individual.name} removed from incident",
-        incident_id=incident_id,
+        incident_id=incident.id,
     )
 
     return True
 
 
-def reactivate_participant(user_email: str, incident_id: int, db_session: SessionLocal):
+def reactivate_participant(user_email: str, incident: Incident, db_session: SessionLocal):
     """Reactivates a participant."""
-    # We load the incident
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # We get information about the individual
-    contact_plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
+    contact_plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="contact"
+    )
     individual_info = contact_plugin.instance.get(user_email)
     individual_fullname = individual_info["fullname"]
 
     log.debug(f"Reactivating {individual_fullname} on incident {incident.name}...")
 
     participant = get_by_incident_id_and_email(
-        db_session=db_session, incident_id=incident_id, email=user_email
+        db_session=db_session, incident_id=incident.id, email=user_email
     )
 
     if not participant:
@@ -151,7 +150,7 @@ def reactivate_participant(user_email: str, incident_id: int, db_session: Sessio
         db_session=db_session,
         source="Dispatch Core App",
         description=f"{individual_fullname} reactivated",
-        incident_id=incident_id,
+        incident_id=incident.id,
     )
 
     return True

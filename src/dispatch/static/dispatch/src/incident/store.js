@@ -1,8 +1,9 @@
+import { getField, updateField } from "vuex-map-fields"
+import { debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
 import IncidentApi from "@/incident/api"
 import router from "@/router"
-
-import { getField, updateField } from "vuex-map-fields"
-import { debounce, forEach, each, has } from "lodash"
 
 const getDefaultSelectedState = () => {
   return {
@@ -15,7 +16,7 @@ const getDefaultSelectedState = () => {
     duplicates: [],
     events: null,
     id: null,
-    incident_costs: [],
+    incident_costs: null,
     incident_priority: null,
     incident_type: null,
     name: null,
@@ -26,13 +27,14 @@ const getDefaultSelectedState = () => {
     status: null,
     storage: null,
     tags: [],
+    project: null,
     terms: [],
     ticket: null,
     title: null,
     trackingOnly: null,
     visibility: null,
     workflow_instances: null,
-    loading: false
+    loading: false,
   }
 }
 
@@ -42,35 +44,35 @@ const getDefaultReportState = () => {
     tactical: {
       conditions: null,
       actions: null,
-      needs: null
+      needs: null,
     },
     executive: {
       current_status: null,
       overview: null,
-      next_steps: null
-    }
+      next_steps: null,
+    },
   }
 }
 
 const state = {
   selected: {
-    ...getDefaultSelectedState()
+    ...getDefaultSelectedState(),
   },
   dialogs: {
     showDeleteDialog: false,
     showReportDialog: false,
     showEditSheet: false,
     showExport: false,
-    showNewSheet: false
+    showNewSheet: false,
   },
   report: {
-    ...getDefaultReportState()
+    ...getDefaultReportState(),
   },
   table: {
     rows: {
       items: [],
       total: null,
-      selected: []
+      selected: [],
     },
     options: {
       filters: {
@@ -79,17 +81,18 @@ const state = {
         incident_type: [],
         incident_priority: [],
         status: [],
-        tag: []
+        tag: [],
+        project: [],
       },
       q: "",
       page: 1,
       itemsPerPage: 10,
       sortBy: ["reported_at"],
-      descending: [true]
+      descending: [true],
     },
     loading: false,
-    bulkEditLoading: false
-  }
+    bulkEditLoading: false,
+  },
 }
 
 const getters = {
@@ -97,34 +100,15 @@ const getters = {
   tableOptions({ state }) {
     // format our filters
     return state.table.options
-  }
+  },
 }
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-
-    let tableOptions = Object.assign({}, state.table.options)
-    delete tableOptions.filters
-
-    tableOptions.fields = []
-    tableOptions.ops = []
-    tableOptions.values = []
-
-    forEach(state.table.options.filters, function(value, key) {
-      each(value, function(value) {
-        if (has(value, "id")) {
-          tableOptions.fields.push(key + ".id")
-          tableOptions.values.push(value.id)
-        } else {
-          tableOptions.fields.push(key)
-          tableOptions.values.push(value)
-        }
-        tableOptions.ops.push("==")
-      })
-    })
-    return IncidentApi.getAll(tableOptions)
-      .then(response => {
+    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options })
+    return IncidentApi.getAll(params)
+      .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
       })
@@ -133,14 +117,14 @@ const actions = {
       })
   }, 200),
   get({ commit, state }) {
-    return IncidentApi.get(state.selected.id).then(response => {
+    return IncidentApi.get(state.selected.id).then((response) => {
       commit("SET_SELECTED", response.data)
     })
   },
   getDetails({ commit, state }, payload) {
     commit("SET_SELECTED_LOADING", true)
     if ("id" in payload) {
-      return IncidentApi.get(state.selected.id).then(response => {
+      return IncidentApi.get(state.selected.id).then((response) => {
         commit("SET_SELECTED", response.data)
         commit("SET_SELECTED_LOADING", false)
       })
@@ -148,9 +132,9 @@ const actions = {
       // this is kinda dirty
       return IncidentApi.getAll({
         filter: JSON.stringify([
-          { and: [{ model: "Incident", field: "name", op: "==", value: payload.name }] }
-        ])
-      }).then(response => {
+          { and: [{ model: "Incident", field: "name", op: "==", value: payload.name }] },
+        ]),
+      }).then((response) => {
         if (response.data.items.length) {
           commit("SET_SELECTED", response.data.items[0])
         } else {
@@ -158,7 +142,7 @@ const actions = {
             "notification_backend/addBeNotification",
             {
               text: `Incident '${payload.name}' could not be found.`,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
@@ -184,7 +168,7 @@ const actions = {
   closeEditSheet({ commit }) {
     commit("SET_DIALOG_SHOW_EDIT_SHEET", false)
     commit("RESET_SELECTED")
-    router.push("/incidents")
+    router.push({ name: "IncidentTable" })
   },
   showDeleteDialog({ commit }, incident) {
     commit("SET_DIALOG_DELETE", true)
@@ -214,10 +198,10 @@ const actions = {
       state.selected.status = "Closed"
     }
     return IncidentApi.create(state.selected)
-      .then(response => {
+      .then((response) => {
         commit("SET_SELECTED", response.data)
         commit("SET_SELECTED_LOADING", false)
-        this.interval = setInterval(function() {
+        this.interval = setInterval(function () {
           if (state.selected.id) {
             dispatch("get")
           }
@@ -228,14 +212,14 @@ const actions = {
           }
         }, 5000)
       })
-      .catch(err => {
+      .catch((err) => {
         commit(
           "notification_backend/addBeNotification",
           {
             text:
               "Incident could not be reported. Please try again. Reason: " +
               err.response.data.detail,
-            type: "error"
+            type: "error",
           },
           { root: true }
         )
@@ -256,12 +240,12 @@ const actions = {
           )
           commit("SET_SELECTED_LOADING", false)
         })
-        .catch(err => {
+        .catch((err) => {
           commit(
             "notification_backend/addBeNotification",
             {
               text: "Incident not updated. Reason: " + err.response.data.detail,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
@@ -279,12 +263,12 @@ const actions = {
           )
           commit("SET_SELECTED_LOADING", false)
         })
-        .catch(err => {
+        .catch((err) => {
           commit(
             "notification_backend/addBeNotification",
             {
               text: "Incident not updated. Reason: " + err.response.data.detail,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
@@ -304,12 +288,12 @@ const actions = {
         )
         commit("SET_BULK_EDIT_LOADING", false)
       })
-      .catch(err => {
+      .catch((err) => {
         commit(
           "notification_backend/addBeNotification",
           {
             text: "Incident(s) not updated. Reason: " + err.response.data.detail,
-            type: "error"
+            type: "error",
           },
           { root: true }
         )
@@ -318,7 +302,7 @@ const actions = {
   },
   deleteIncident({ commit, dispatch }) {
     return IncidentApi.delete(state.selected.id)
-      .then(function() {
+      .then(function () {
         dispatch("closeDeleteDialog")
         dispatch("getAll")
         commit(
@@ -327,12 +311,12 @@ const actions = {
           { root: true }
         )
       })
-      .catch(err => {
+      .catch((err) => {
         commit(
           "notification_backend/addBeNotification",
           {
             text: "Incident not deleted. Reason: " + err.response.data.detail,
-            type: "error"
+            type: "error",
           },
           { root: true }
         )
@@ -344,7 +328,7 @@ const actions = {
       state.report.type,
       state.report[state.report.type]
     )
-      .then(function() {
+      .then(function () {
         dispatch("closeReportDialog")
         dispatch("getAll")
         commit(
@@ -353,12 +337,12 @@ const actions = {
           { root: true }
         )
       })
-      .catch(err => {
+      .catch((err) => {
         commit(
           "notification_backend/addBeNotification",
           {
             text: "Report not created. Reason: " + err.response.data.detail,
-            type: "error"
+            type: "error",
           },
           { root: true }
         )
@@ -375,7 +359,7 @@ const actions = {
         { root: true }
       )
     })
-  }
+  },
 }
 
 const mutations = {
@@ -421,7 +405,7 @@ const mutations = {
   },
   SET_SELECTED_LOADING(state, value) {
     state.selected.loading = value
-  }
+  },
 }
 
 export default {
@@ -429,5 +413,5 @@ export default {
   state,
   getters,
   actions,
-  mutations
+  mutations,
 }

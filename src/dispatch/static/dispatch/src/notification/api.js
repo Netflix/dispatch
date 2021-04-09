@@ -21,5 +21,5 @@ export default {
 
   delete(notificationId) {
     return API.delete(`${resource}/${notificationId}`)
-  }
+  },
 }

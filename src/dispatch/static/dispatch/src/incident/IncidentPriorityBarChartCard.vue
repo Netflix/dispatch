@@ -19,32 +19,32 @@ export default {
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return {}
-      }
+      },
     },
     loading: {
       type: [String, Boolean],
-      default: function() {
+      default: function () {
         return false
-      }
-    }
+      },
+    },
   },
 
   components: {
-    DashboardCard
+    DashboardCard,
   },
 
   data() {
     return {
-      priorities: []
+      priorities: [],
     }
   },
 
-  created: function() {
-    IncidentPriorityApi.getAll().then(response => {
+  created: function () {
+    IncidentPriorityApi.getAll().then((response) => {
       this.priorities = map(
-        sortBy(response.data.items, function(value) {
+        sortBy(response.data.items, function (value) {
           return value.view_order
         }),
         "name"
@@ -60,31 +60,31 @@ export default {
           height: 350,
           stacked: true,
           toolbar: {
-            show: false
-          }
+            show: false,
+          },
         },
         responsive: [
           {
             options: {
               legend: {
-                position: "top"
-              }
-            }
-          }
+                position: "top",
+              },
+            },
+          },
         ],
         colors: ["#008FFB", "#FF4560", "#FEB019"],
         xaxis: {
           categories: this.categoryData || [],
           title: {
-            text: "Month"
-          }
+            text: "Month",
+          },
         },
         fill: {
-          opacity: 1
+          opacity: 1,
         },
         legend: {
-          position: "top"
-        }
+          position: "top",
+        },
       }
     },
     series() {
@@ -97,7 +97,7 @@ export default {
     },
     categoryData() {
       return Object.keys(this.value)
-    }
-  }
+    },
+  },
 }
 </script>

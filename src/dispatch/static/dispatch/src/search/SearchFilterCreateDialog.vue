@@ -1,7 +1,9 @@
 <template>
   <v-dialog v-model="showCreate" persistent max-width="800px">
     <template v-slot:activator="{ on }">
-      <v-btn icon v-on="on"><v-icon>add</v-icon></v-btn>
+      <v-btn icon v-on="on">
+        <v-icon>add</v-icon>
+      </v-btn>
     </template>
     <v-card>
       <v-card-title>
@@ -9,19 +11,13 @@
       </v-card-title>
       <v-stepper v-model="step">
         <v-stepper-header>
-          <v-stepper-step :complete="step > 1" step="1" editable>
-            Filter
-          </v-stepper-step>
-          <v-divider></v-divider>
+          <v-stepper-step :complete="step > 1" step="1" editable> Filter </v-stepper-step>
+          <v-divider />
 
-          <v-stepper-step :complete="step > 2" step="2" editable>
-            Preview
-          </v-stepper-step>
-          <v-divider></v-divider>
+          <v-stepper-step :complete="step > 2" step="2" editable> Preview </v-stepper-step>
+          <v-divider />
 
-          <v-stepper-step step="3" editable>
-            Save
-          </v-stepper-step>
+          <v-stepper-step step="3" editable> Save </v-stepper-step>
         </v-stepper-header>
 
         <v-stepper-items>
@@ -57,19 +53,15 @@
                   </v-tab-item>
                   <v-tab-item>
                     <div style="height: 400px">
-                      <advanced-editor v-model="expression"></advanced-editor>
+                      <advanced-editor v-model="expression" />
                     </div>
                   </v-tab-item>
                 </v-tabs>
               </v-card-text>
               <v-card-actions>
-                <v-btn color="info" @click="step = 2">
-                  Continue
-                </v-btn>
+                <v-btn color="info" @click="step = 2"> Continue </v-btn>
 
-                <v-btn @click="closeCreateDialog()" text>
-                  Cancel
-                </v-btn>
+                <v-btn @click="closeCreateDialog()" text> Cancel </v-btn>
               </v-card-actions>
             </v-card>
           </v-stepper-content>
@@ -93,12 +85,8 @@
                 </v-data-table>
               </v-card-text>
               <v-card-actions>
-                <v-btn color="info" @click="step = 3" :loading="loading">
-                  Continue
-                </v-btn>
-                <v-btn @click="closeCreateDialog()" text>
-                  Cancel
-                </v-btn>
+                <v-btn color="info" @click="step = 3" :loading="loading"> Continue </v-btn>
+                <v-btn @click="closeCreateDialog()" text> Cancel </v-btn>
               </v-card-actions>
             </v-card>
           </v-stepper-content>
@@ -135,9 +123,7 @@
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
-                  <v-btn @click="closeCreateDialog()" text>
-                    Cancel
-                  </v-btn>
+                  <v-btn @click="closeCreateDialog()" text> Cancel </v-btn>
                   <v-btn
                     color="info"
                     @click="save('incident')"
@@ -175,7 +161,7 @@ import SearchUtils from "@/search/utils"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
@@ -187,20 +173,20 @@ export default {
         { text: "Title", value: "title", sortable: false },
         { text: "Status", value: "status", sortable: false },
         { text: "Incident Type", value: "incident_type.name", sortable: false },
-        { text: "Incident Priority", value: "incident_priority.name", sortable: false }
+        { text: "Incident Priority", value: "incident_priority.name", sortable: false },
       ],
       step: 1,
       previewRows: {
         items: [],
-        total: null
+        total: null,
       },
       previewRowsLoading: false,
       filters: {
-        incident_type: null,
-        incident_priority: null,
-        status: null,
-        tag: null
-      }
+        incident_type: [],
+        incident_priority: [],
+        status: [],
+        tag: [],
+      },
     }
   },
   components: {
@@ -212,7 +198,7 @@ export default {
     IncidentStatusMultiSelect,
     IncidentStatus,
     IncidentPriority,
-    AdvancedEditor
+    AdvancedEditor,
   },
   computed: {
     ...mapFields("search", [
@@ -221,8 +207,8 @@ export default {
       "selected.expression",
       "selected.name",
       "loading",
-      "dialogs.showCreate"
-    ])
+      "dialogs.showCreate",
+    ]),
   },
 
   methods: {
@@ -236,29 +222,32 @@ export default {
     },
 
     getPreviewData() {
-      let params = { filter: JSON.stringify(this.expression) }
-      this.previewRowsLoading = "error"
-      return IncidentApi.getAll(params).then(response => {
+      let params = {}
+      if (this.expression) {
+        params = { filter: JSON.stringify(this.expression) }
+        this.previewRowsLoading = "error"
+      }
+      return IncidentApi.getAll(params).then((response) => {
         this.previewRows = response.data
         this.previewRowsLoading = false
       })
-    }
+    },
   },
   mounted() {
     this.type = "incident"
     this.getPreviewData()
     this.$watch(
-      vm => [
+      (vm) => [
         vm.filters.incident_type,
         vm.filters.incident_priority,
         vm.filters.status,
-        vm.filters.tag
+        vm.filters.tag,
       ],
       () => {
         this.expression = SearchUtils.createFilterExpression(this.filters)
         this.getPreviewData()
       }
     )
-  }
+  },
 }
 </script>
