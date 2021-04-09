@@ -1,4 +1,5 @@
 const path = require("path")
+const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin")
 const webpack = require("webpack")
 
 function resolve(dir) {
@@ -7,6 +8,15 @@ function resolve(dir) {
 
 // vue.config.js
 module.exports = {
+  chainWebpack: (config) => {
+    config.plugin("monaco-editor").use(MonacoWebpackPlugin, [
+      {
+        // Languages are loaded on demand at runtime
+        languages: ["json"],
+        features: ["find"],
+      },
+    ])
+  },
   configureWebpack: {
     plugins: [
       // Ignore all locale files of moment.js

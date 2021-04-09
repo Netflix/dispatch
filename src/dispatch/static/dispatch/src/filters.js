@@ -3,7 +3,7 @@ import { parseISO, formatRelative } from "date-fns"
 
 Vue.filter("formatDate", function (value) {
   if (value) {
-    return formatRelative(parseISO(value))
+    return formatRelative(parseISO(value), Date.now())
   }
 })
 
