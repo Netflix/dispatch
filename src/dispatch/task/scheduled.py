@@ -89,8 +89,15 @@ def create_task_reminders(db_session=None):
 
 def sync_tasks(db_session, incidents, notify: bool = False):
     """Syncs tasks and sends update notifications to incident channels."""
-    drive_task_plugin = plugin_service.get_active(db_session=db_session, plugin_type="task")
     for incident in incidents:
+        drive_task_plugin = plugin_service.get_active(
+            db_session=db_session, project_id=incident.project.id, plugin_type="task"
+        )
+
+        if not drive_task_plugin:
+            log.warning(f"Skipping task sync no task plugin enabled. IncidentId: {incident.id}")
+            continue
+
         for doc_type in [
             INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
             INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
