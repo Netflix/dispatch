@@ -24,7 +24,7 @@ router = APIRouter()
 @router.get("/", response_model=ProjectPagination)
 def get_projects(common: dict = Depends(common_parameters)):
     """
-    Get all project contacts.
+    Get all projects.
     """
     return search_filter_sort_paginate(model="Project", **common)
 
