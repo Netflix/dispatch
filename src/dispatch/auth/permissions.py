@@ -119,9 +119,9 @@ class OrganizationManagerPermission(BasePermission):
 
         current_user = get_current_user(db_session=request.state.db, request=request)
 
-        for org in current_user.organizations:
-            if org.id == current_organization.id:
-                if org.role == UserRoles.manager:
+        for user_org in current_user.organizations:
+            if user_org.organization.id == current_organization.id:
+                if user_org.role == UserRoles.manager:
                     return True
 
 
@@ -131,6 +131,7 @@ class ProjectAdminPermission(BasePermission):
         request: Request,
     ) -> bool:
         current_project = None
+
         project_id = request.path_params.get("project_id")
         if project_id:
             current_project = project_service.get(
@@ -144,10 +145,10 @@ class ProjectAdminPermission(BasePermission):
             )
             current_project = current_incident.project
 
-        current_user = get_current_user(db_session=request.state.db, request=request)
-
         if not current_project:
             return
+
+        current_user = get_current_user(db_session=request.state.db, request=request)
 
         for p in current_user.projects:
             if p.project_id == current_project.id:
