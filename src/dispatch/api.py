@@ -26,7 +26,7 @@ from dispatch.tag.views import router as tag_router
 from dispatch.tag_type.views import router as tag_type_router
 from dispatch.task.views import router as task_router
 from dispatch.team.views import router as team_contact_router
-from dispatch.term.views import router as team_router
+from dispatch.term.views import router as term_router
 from dispatch.workflow.views import router as workflow_router
 
 from .config import DISPATCH_AUTHENTICATION_PROVIDER_SLUG
@@ -68,7 +68,7 @@ authenticated_api_router.include_router(
 authenticated_api_router.include_router(
     definition_router, prefix="/{organization}/definitions", tags=["definitions"]
 )
-authenticated_api_router.include_router(team_router, prefix="/{organization}/terms", tags=["terms"])
+authenticated_api_router.include_router(term_router, prefix="/{organization}/terms", tags=["terms"])
 authenticated_api_router.include_router(task_router, prefix="/{organization}/tasks", tags=["tasks"])
 authenticated_api_router.include_router(
     search_router, prefix="/{organization}/search", tags=["search"]
