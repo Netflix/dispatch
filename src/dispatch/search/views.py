@@ -54,11 +54,7 @@ def search(
 
     filtered_incidents = []
     for incident in results["Incident"]:
-        if incident.project in admin_projects:
-            filtered_incidents.append(incident)
-            continue
-
-        if incident.visibility == Visibility.open:
+        if incident.project in admin_projects or incident.visibility == Visibility.open.value:
             filtered_incidents.append(incident)
 
     results["Incident"] = filtered_incidents

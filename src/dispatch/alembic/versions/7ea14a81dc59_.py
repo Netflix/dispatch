@@ -104,7 +104,6 @@ class DispatchUserProject(Base, TimeStampMixin):
     dispatch_user_id = sa.Column(sa.Integer, sa.ForeignKey("dispatch_user.id"))
     project_id = sa.Column(sa.Integer, sa.ForeignKey("project.id"))
     role = sa.Column(sa.String, nullable=False, default=UserRoles.member)
-
     dispatch_user = relationship(DispatchUser, backref="projects")
 
 
@@ -115,13 +114,13 @@ def upgrade():
     # Create organization table
     Organization.__table__.create(bind)
 
-    # op.create_index(
-    #    "ix_organization_search_vector",
-    #    "organization",
-    #    ["search_vector"],
-    #    unique=False,
-    #    postgresql_using="gin",
-    # )
+    op.create_index(
+        "ix_organization_search_vector",
+        "organization",
+        ["search_vector"],
+        unique=False,
+        postgresql_using="gin",
+    )
 
     default_org = Organization(
         name="default", default=True, description="Default dispatch organization."
@@ -181,7 +180,7 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
 
-    # associate users with default project
+    # associate users with the default project
     op.create_table(
         "dispatch_user_project",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -214,7 +213,7 @@ def upgrade():
             )
         )
 
-        # everybody is use a regular project member for now
+        # everybody is a regular project member for now
         session.add(DispatchUserProject(dispatch_user_id=u.id, project_id=default_project.id))
 
     # we don't need role anymore

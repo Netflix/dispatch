@@ -26,7 +26,7 @@ log = logging.getLogger(__file__)
 
 
 def restricted_incident_filter(query: orm.Query, current_user: DispatchUser):
-    """Adds additional incident filters to query (usually for permissions)"""
+    """Adds additional incident filters to query (usually for permissions)."""
     return (
         query.join(Participant, Incident.id == Participant.incident_id)
         .join(IndividualContact)

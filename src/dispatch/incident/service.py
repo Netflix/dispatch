@@ -148,15 +148,14 @@ def create(
     visibility: str = None,
 ) -> Incident:
     """Creates a new incident."""
-    # We get the incident type by name
     if not project:
         project = project_service.get_default(db_session=db_session)
         if not project:
             raise Exception("No project specificed and no default has been defined.")
-
     else:
         project = project_service.get_by_name(db_session=db_session, name=project["name"])
 
+    # We get the incident type by name
     if not incident_type:
         incident_type = incident_type_service.get_default(db_session=db_session)
         if not incident_type:

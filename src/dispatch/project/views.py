@@ -24,7 +24,7 @@ router = APIRouter()
 @router.get("/", response_model=ProjectPagination)
 def get_projects(common: dict = Depends(common_parameters)):
     """
-    Get all project contacts.
+    Get all projects.
     """
     return search_filter_sort_paginate(model="Project", **common)
 
@@ -41,7 +41,7 @@ def create_project(*, db_session: Session = Depends(get_db), project_in: Project
     """
     project = get_by_name(db_session=db_session, name=project_in.name)
     if project:
-        raise HTTPException(status_code=400, detail="The project with this email already exists.")
+        raise HTTPException(status_code=400, detail="A project with this name already exists.")
     project = create(db_session=db_session, project_in=project_in)
     return project
 
@@ -57,7 +57,7 @@ def get_project(*, db_session: Session = Depends(get_db), project_id: int):
     """
     project = get(db_session=db_session, project_id=project_id)
     if not project:
-        raise HTTPException(status_code=404, detail="The project with this id does not exist.")
+        raise HTTPException(status_code=404, detail="A project with this id does not exist.")
     return project
 
 
@@ -77,7 +77,7 @@ def update_project(
     """
     project = get(db_session=db_session, project_id=project_id)
     if not project:
-        raise HTTPException(status_code=404, detail="The project with this id does not exist.")
+        raise HTTPException(status_code=404, detail="A project with this id does not exist.")
     project = update(db_session=db_session, project=project, project_in=project_in)
     return project
 
@@ -93,7 +93,7 @@ def delete_project(*, db_session: Session = Depends(get_db), project_id: int):
     """
     project = get(db_session=db_session, project_id=project_id)
     if not project:
-        raise HTTPException(status_code=404, detail="The project with this id does not exist.")
+        raise HTTPException(status_code=404, detail="A project with this id does not exist.")
 
     delete(db_session=db_session, project_id=project_id)
     return project

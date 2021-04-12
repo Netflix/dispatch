@@ -75,7 +75,7 @@ async def db_session_middleware(request: Request, call_next):
         session = sessionmaker(bind=engine)
 
         if not session:
-            response = Response("Internal Server Error", status_code=404)
+            return response
 
         request.state.db = session()
         response = await call_next(request)

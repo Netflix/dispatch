@@ -11,13 +11,13 @@ def get(*, db_session, project_id: int) -> Optional[Project]:
     return db_session.query(Project).filter(Project.id == project_id).first()
 
 
-def get_default(*, db_session):
-    """Returns default project."""
+def get_default(*, db_session) -> Optional[Project]:
+    """Returns the default project."""
     return db_session.query(Project).filter(Project.default == true()).one_or_none()
 
 
 def get_by_name(*, db_session, name: str) -> Optional[Project]:
-    """Returns a project baserd on the given project name."""
+    """Returns a project based on the given project name."""
     return db_session.query(Project).filter(Project.name == name).one_or_none()
 
 

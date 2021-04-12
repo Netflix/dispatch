@@ -23,12 +23,12 @@ def get_all(*, db_session) -> List[Optional[Organization]]:
 
 
 def create(*, db_session, organization_in: OrganizationCreate) -> Organization:
-    team = Organization(
+    organization = Organization(
         **organization_in.dict(),
     )
-    db_session.add(team)
+    db_session.add(organization)
     db_session.commit()
-    return team
+    return organization
 
 
 def get_or_create(*, db_session, organization_in: OrganizationCreate) -> Organization:
