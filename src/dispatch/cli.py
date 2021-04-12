@@ -294,7 +294,7 @@ def init_database():
         project_in=ProjectCreate(
             name="default",
             default=True,
-            description="Default dispatch project",
+            description="Default dispatch project.",
             organization_id=default_org.id,
         ),
     )
