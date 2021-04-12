@@ -37,7 +37,7 @@ def test_create(session, project):
     name = "createName"
     service_in = ServiceCreate(
         name=name,
-        project=project.__dict__,
+        project=project,
     )
 
     service = create(db_session=session, service_in=service_in)

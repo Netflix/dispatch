@@ -29,7 +29,7 @@ def test_create(session, project):
     incident_priority_in = IncidentPriorityCreate(
         name=name,
         description=description,
-        project=project.__dict__,
+        project=project,
     )
     incident_priority = create(db_session=session, incident_priority_in=incident_priority_in)
     assert incident_priority

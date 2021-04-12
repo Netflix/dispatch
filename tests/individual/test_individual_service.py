@@ -65,7 +65,7 @@ def test_create(session, project):
         mobile_phone=mobile_phone,
         office_phone=office_phone,
         weblink=weblink,
-        project=project.__dict__,
+        project=project,
     )
     individual_contact = create(db_session=session, individual_contact_in=individual_contact_in)
     assert individual_contact

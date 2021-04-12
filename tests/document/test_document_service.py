@@ -26,7 +26,7 @@ def test_create(session, project):
         resource_id=resource_id,
         resource_type=resource_type,
         weblink=weblink,
-        project=project.__dict__,
+        project=project,
     )
     document = create(db_session=session, document_in=document_in)
     assert document

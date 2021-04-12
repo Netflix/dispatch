@@ -5,7 +5,8 @@ from starlette.testclient import TestClient
 from starlette.config import environ
 
 # set test config
-environ["DATABASE_CREDENTIALS"] = "postgres:dispatch"
+environ["SECRET_PROVIDER"] = ""
+environ["DATABASE_CREDENTIALS"] = "dispatch:dispatch"
 environ["DATABASE_HOSTNAME"] = "localhost"
 environ["DISPATCH_HELP_EMAIL"] = "example@example.com"
 environ["DISPATCH_HELP_SLACK_CHANNEL"] = "help-me"
@@ -81,10 +82,12 @@ def testapp():
 
 @pytest.fixture(scope="session", autouse=True)
 def db():
-    if database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
-        drop_database(str(config.SQLALCHEMY_DATABASE_URI))
-
-    create_database(str(config.SQLALCHEMY_DATABASE_URI))
+    try:
+        if database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
+            drop_database(str(config.SQLALCHEMY_DATABASE_URI))
+    except Exception:
+        create_database(str(config.SQLALCHEMY_DATABASE_URI))
+    print(config.SQLALCHEMY_DATABASE_URI)
     Base.metadata.create_all(engine)  # Create the tables.
     _db = SessionLocal()
     yield _db
