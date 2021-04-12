@@ -104,7 +104,6 @@ class DispatchUserProject(Base, TimeStampMixin):
     dispatch_user_id = sa.Column(sa.Integer, sa.ForeignKey("dispatch_user.id"))
     project_id = sa.Column(sa.Integer, sa.ForeignKey("project.id"))
     role = sa.Column(sa.String, nullable=False, default=UserRoles.member)
-
     dispatch_user = relationship(DispatchUser, backref="projects")
 
 
@@ -114,14 +113,6 @@ def upgrade():
 
     # Create organization table
     Organization.__table__.create(bind)
-
-    # op.create_index(
-    #    "ix_organization_search_vector",
-    #    "organization",
-    #    ["search_vector"],
-    #    unique=False,
-    #    postgresql_using="gin",
-    # )
 
     default_org = Organization(
         name="default", default=True, description="Default dispatch organization."
