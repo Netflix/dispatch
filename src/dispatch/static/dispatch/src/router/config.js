@@ -51,7 +51,7 @@ export const protectedRoute = [
     meta: { requiresAuth: true },
     redirect: {
       name: "IncidentOverview",
-      params: { organization: "Default" },
+      params: { organization: "default" },
     },
   },
   ...withPrefix("/:organization/", [

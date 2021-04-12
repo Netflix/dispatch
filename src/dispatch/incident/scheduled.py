@@ -174,7 +174,7 @@ def daily_report(db_session=None):
 
             notification_service.send(
                 db_session=db_session,
-                project_id=project_id,
+                project_id=notification.project.id,
                 notification=notification,
                 notification_params=notification_params,
             )
