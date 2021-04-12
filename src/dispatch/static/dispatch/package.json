@@ -20,6 +20,7 @@
     "mjml": "^4.8.1",
     "monaco-editor-vue": "^1.0.10",
     "monaco-editor-webpack-plugin": "^3.0.1",
+    "monaco-editor": "^0.23.0",
     "register-service-worker": "^1.7.2",
     "roboto-fontface": "*",
     "vee-validate": "^3.4.5",
