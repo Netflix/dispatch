@@ -47,7 +47,9 @@ def calculate_incidents_response_cost(db_session=None):
             if not incident_response_cost:
                 # we create the response cost if it doesn't exist
                 incident_cost_in = IncidentCostCreate(
-                    incident_cost_type=IncidentCostTypeRead(**response_cost_type.__dict__),
+                    incident_cost_type=IncidentCostTypeRead(
+                        **response_cost_type.__dict__,
+                    ),
                     project=ProjectRead(**incident.project.__dict__),
                 )
                 incident_response_cost = create(
