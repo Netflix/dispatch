@@ -90,6 +90,7 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
+      "table.options.filters.project",
       "table.loading",
       "table.rows.items",
       "table.rows.total",
@@ -97,6 +98,8 @@ export default {
   },
 
   mounted() {
+    this.project = [{ name: this.query.project }]
+
     this.getAll({})
 
     this.$watch(

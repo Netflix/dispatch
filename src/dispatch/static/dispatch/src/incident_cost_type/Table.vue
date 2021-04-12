@@ -102,7 +102,7 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
-      "table.options.filters",
+      "table.options.filters.project",
       "table.loading",
       "table.rows.items",
       "table.rows.total",
