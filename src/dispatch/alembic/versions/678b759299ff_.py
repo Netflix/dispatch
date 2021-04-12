@@ -33,7 +33,7 @@ def upgrade():
         [
             {
                 "name": "Response Cost",
-                "description": "Cost of responding to an incident. Also known as oppertunity cost.",
+                "description": "Cost associated with handling an incident.",
                 "details": {},
                 "default": True,
                 "editable": False,
