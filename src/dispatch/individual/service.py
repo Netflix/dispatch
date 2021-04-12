@@ -4,6 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from dispatch.database.core import SessionLocal
 
 from dispatch.incident.models import Incident
+from dispatch.project import service as project_service
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.term import service as term_service
@@ -65,6 +66,9 @@ def get_or_create(
 
 def create(*, db_session, individual_contact_in: IndividualContactCreate) -> IndividualContact:
     """Creates an individual."""
+    project = project_service.get_by_name(
+        db_session=db_session, name=individual_contact_in.project.name
+    )
     terms = [
         term_service.get_or_create(db_session=db_session, term_in=t)
         for t in individual_contact_in.terms
@@ -78,10 +82,13 @@ def create(*, db_session, individual_contact_in: IndividualContactCreate) -> Ind
         for n in individual_contact_in.incident_types
     ]
     contact = IndividualContact(
-        **individual_contact_in.dict(exclude={"terms", "incident_priorities", "incident_types"}),
+        **individual_contact_in.dict(
+            exclude={"terms", "incident_priorities", "incident_types", "project"}
+        ),
         terms=terms,
         incident_types=incident_types,
         incident_priorities=incident_priorities,
+        project=project,
     )
     db_session.add(contact)
     db_session.commit()
