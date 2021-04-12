@@ -8,7 +8,7 @@ aiofiles==0.6.0
     # via -r requirements-base.in
 aiohttp==3.7.4.post0
     # via -r requirements-base.in
-alembic==1.5.7
+alembic==1.5.8
     # via -r requirements-base.in
 arrow==1.0.3
     # via -r requirements-base.in
