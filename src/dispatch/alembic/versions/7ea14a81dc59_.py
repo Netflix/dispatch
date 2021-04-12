@@ -172,7 +172,7 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
 
-    # associate users with default project
+    # associate users with the default project
     op.create_table(
         "dispatch_user_project",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -205,7 +205,7 @@ def upgrade():
             )
         )
 
-        # everybody is use a regular project member for now
+        # everybody is a regular project member for now
         session.add(DispatchUserProject(dispatch_user_id=u.id, project_id=default_project.id))
 
     # we don't need role anymore
