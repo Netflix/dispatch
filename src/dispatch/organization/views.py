@@ -65,7 +65,7 @@ def create_organization(
     organization = get_by_name(db_session=db_session, name=organization_in.name)
     if organization:
         raise HTTPException(
-            status_code=400, detail="The organization with this name already exists."
+            status_code=400, detail="An organization with this name already exists."
         )
     organization = create(db_session=db_session, organization_in=organization_in)
     return organization
@@ -78,7 +78,7 @@ def get_organization(*, db_session: Session = Depends(get_db), organization_id: 
     """
     organization = get(db_session=db_session, organization_id=organization_id)
     if not organization:
-        raise HTTPException(status_code=404, detail="The organization with this id does not exist.")
+        raise HTTPException(status_code=404, detail="An organization with this id does not exist.")
     return organization
 
 
@@ -98,7 +98,7 @@ def update_organization(
     """
     organization = get(db_session=db_session, organization_id=organization_id)
     if not organization:
-        raise HTTPException(status_code=404, detail="The organization with this id does not exist.")
+        raise HTTPException(status_code=404, detail="An organization with this id does not exist.")
     organization = update(
         db_session=db_session, organization=organization, organization_in=organization_in
     )
