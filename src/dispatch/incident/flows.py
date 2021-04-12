@@ -552,15 +552,14 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         db_session=db_session, project_id=incident.project.id, plugin_type="storage"
     )
     if storage_plugin:
-        # we create storage resource
+        # we create the storage resource
         try:
             if group_plugin:
+                group_emails = []
                 if tactical_group and notification_group:
-                    storage = create_incident_storage(
-                        incident, [tactical_group["email"], notification_group["email"]], db_session
-                    )
-                else:
-                    storage = create_incident_storage(incident, [], db_session)
+                    group_emails = [tactical_group["email"], notification_group["email"]]
+
+                storage = create_incident_storage(incident, group_emails, db_session)
             else:
                 # we don't have a group so add participants directly
                 storage = create_incident_storage(incident, participant_emails, db_session)
