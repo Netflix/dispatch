@@ -38,6 +38,9 @@ const state = {
       itemsPerPage: 10,
       sortBy: ["name"],
       descending: [true],
+      filters: {
+        project: [],
+      },
     },
     loading: false,
   },
