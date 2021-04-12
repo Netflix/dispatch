@@ -691,7 +691,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             log.exception(e)
 
         # we add participants to the conversation
-        add_participants_to_conversation(participant_emails, incident.id, db_session)
+        add_participants_to_conversation(participant_emails, incident, db_session)
 
         # we set the conversation topic
         set_conversation_topic(incident, db_session)
