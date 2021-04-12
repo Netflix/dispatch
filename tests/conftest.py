@@ -87,7 +87,6 @@ def db():
             drop_database(str(config.SQLALCHEMY_DATABASE_URI))
     except Exception:
         create_database(str(config.SQLALCHEMY_DATABASE_URI))
-    print(config.SQLALCHEMY_DATABASE_URI)
     Base.metadata.create_all(engine)  # Create the tables.
     _db = SessionLocal()
     yield _db
