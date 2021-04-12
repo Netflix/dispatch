@@ -35,7 +35,7 @@ def test_create(session, project, document):
     incident_type_in = IncidentTypeCreate(
         name=name,
         template_document=document,
-        project={"id": project.id, "name": project.name},
+        project=project,
     )
 
     incident_type = create(db_session=session, incident_type_in=incident_type_in)

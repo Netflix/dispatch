@@ -40,7 +40,7 @@ def test_get_or_create(session, project, individual_contact):
             mobile_phone=mobile_phone,
             office_phone=office_phone,
             weblink=weblink,
-            project={"id": project.id, "name": project.name},
+            project=project.__dict__,
         )
         contact = create(db_session=session, individual_contact_in=individual_contact_in)
 
@@ -65,7 +65,7 @@ def test_create(session, project):
         mobile_phone=mobile_phone,
         office_phone=office_phone,
         weblink=weblink,
-        project={"id": project.id, "name": project.name},
+        project=project,
     )
     individual_contact = create(db_session=session, individual_contact_in=individual_contact_in)
     assert individual_contact

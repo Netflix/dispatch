@@ -3,6 +3,7 @@ from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql.expression import true
 
+from dispatch.project import service as project_service
 from dispatch.document import service as document_service
 from dispatch.service import service as service_service
 
@@ -36,8 +37,10 @@ def get_all(*, db_session) -> List[Optional[IncidentType]]:
 
 def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
     """Creates an incident type."""
+    project = project_service.get_by_name(db_session=db_session, name=incident_type_in.project.name)
     incident_type = IncidentType(
-        **incident_type_in.dict(exclude={"commander_service", "template_document"}),
+        **incident_type_in.dict(exclude={"commander_service", "template_document", "project"}),
+        project=project,
     )
 
     if incident_type_in.template_document:
