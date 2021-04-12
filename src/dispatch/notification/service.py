@@ -86,10 +86,10 @@ def delete(*, db_session, notification_id: int):
     db_session.commit()
 
 
-def send(*, db_session, incident: Incident, notification: Notification, notification_params: dict):
+def send(*, db_session, project_id: int, notification: Notification, notification_params: dict):
     """Send a notification via plugin."""
     plugin = plugin_service.get_active(
-        db_session=db_session, project_id=incident.project.id, plugin_type=notification.type
+        db_session=db_session, project_id=project_id, plugin_type=notification.type
     )
     if plugin:
         plugin.instance.send(
@@ -120,7 +120,7 @@ def filter_and_send(
             if match:
                 send(
                     db_session=db_session,
-                    incident=incident,
+                    project_id=incident.project.id,
                     notification=notification,
                     notification_params=notification_params,
                 )
@@ -128,7 +128,7 @@ def filter_and_send(
         if not notification.filters:
             send(
                 db_session=db_session,
-                incident=incident,
+                project_id=incident.project.id,
                 notification=notification,
                 notification_params=notification_params,
             )

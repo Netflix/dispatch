@@ -16,6 +16,7 @@ module.exports = {
         features: ["find"],
       },
     ])
+    config.resolve.alias.set("@$", resolve("src")).set("@views", resolve("src/views"))
   },
   configureWebpack: {
     plugins: [
@@ -24,11 +25,6 @@ module.exports = {
     ],
     devtool: "source-map",
   },
-
-  chainWebpack: (config) => {
-    config.resolve.alias.set("@$", resolve("src")).set("@views", resolve("src/views"))
-  },
-
   css: {
     loaderOptions: {
       less: {

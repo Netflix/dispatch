@@ -3,6 +3,7 @@ from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql.expression import true
 
+from dispatch.project import service as project_service
 from .models import IncidentPriority, IncidentPriorityCreate, IncidentPriorityUpdate
 
 
@@ -39,7 +40,12 @@ def get_all(*, db_session) -> List[Optional[IncidentPriority]]:
 
 def create(*, db_session, incident_priority_in: IncidentPriorityCreate) -> IncidentPriority:
     """Creates an incident priority."""
-    incident_priority = IncidentPriority(**incident_priority_in.dict())
+    project = project_service.get_by_name(
+        db_session=db_session, name=incident_priority_in.project.name
+    )
+    incident_priority = IncidentPriority(
+        **incident_priority_in.dict(exclude={"project"}), project=project
+    )
     db_session.add(incident_priority)
     db_session.commit()
     return incident_priority

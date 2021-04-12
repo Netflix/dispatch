@@ -113,6 +113,10 @@ class OrganizationManagerPermission(BasePermission):
         current_organization = organization_service.get_by_name(
             db_session=request.state.db, name=request.path_params["organization"]
         )
+
+        if not current_organization:
+            return
+
         current_user = get_current_user(db_session=request.state.db, request=request)
 
         for org in current_user.organizations:
@@ -258,7 +262,8 @@ class IncidentCommanderPermission(BasePermission):
             db_session=request.state.db, incident_id=request.path_params["incident_id"]
         )
         if not current_incident:
-            return False
+            return
 
-        if current_incident.commander.individual.email == current_user.email:
-            return True
+        if current_incident.commander:
+            if current_incident.commander.individual.email == current_user.email:
+                return True

@@ -49,9 +49,11 @@ def auto_tagger(db_session):
     phrases = build_term_vocab(tag_strings)
     matcher = build_phrase_matcher("dispatch-tag", phrases)
 
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="storage")
-
     for incident in get_all(db_session=db_session).all():
+        plugin = plugin_service.get_active(
+            db_session=db_session, project_id=incident.project.id, plugin_type="storage"
+        )
+
         log.debug(f"Processing incident. Name: {incident.name}")
 
         doc = incident.incident_document
@@ -172,6 +174,7 @@ def daily_report(db_session=None):
 
             notification_service.send(
                 db_session=db_session,
+                project_id=notification.project.id,
                 notification=notification,
                 notification_params=notification_params,
             )
