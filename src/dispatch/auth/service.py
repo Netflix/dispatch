@@ -66,10 +66,10 @@ def create(*, db_session, user_in: UserRegister) -> DispatchUser:
         DispatchUserOrganization(dispatch_user_id=user.id, organization_id=default_org.id)
     )
 
-    # get default project
+    # get the default project
     default_project = project_service.get_default(db_session=db_session)
 
-    # add user to the default project
+    # add the user to the default project
     db_session.add(DispatchUserProject(dispatch_user_id=user.id, project_id=default_project.id))
 
     db_session.commit()
