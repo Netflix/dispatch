@@ -14,6 +14,9 @@ from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.common.utils.composite_search import CompositeSearch
 from dispatch.enums import Visibility
+from dispatch.feedback.models import Feedback
+from dispatch.task.models import Task
+from dispatch.project.models import Project
 from dispatch.incident.models import Incident
 from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
@@ -59,6 +62,19 @@ def apply_model_specific_filters(model: Base, query: orm.Query, current_user: Di
 
     for f in filters:
         query = f(query, current_user)
+
+    return query
+
+
+def apply_model_specific_joins(model: Base, query: orm.query):
+    """Applies any model specific implicity joins."""
+    model_map = {Feedback: [Incident, Project], Task: [Incident, Project]}
+
+    joined_models = model_map.get(model, [])
+    print(joined_models)
+
+    for m in joined_models:
+        query = query.join(m)
 
     return query
 
@@ -159,11 +175,13 @@ def search_filter_sort_paginate(
     sort_spec = create_sort_spec(model, sort_by, descending)
 
     query = db_session.query(model_cls)
+    query = apply_model_specific_joins(model_cls, query)
+
     if query_str:
         sort = False if sort_spec else True
         query = search(db_session=db_session, query_str=query_str, model=model, sort=sort)
 
-    query = apply_model_specific_filters(model, query, current_user)
+    query = apply_model_specific_filters(model_cls, query, current_user)
     query = apply_filters(query, filter_spec)
     query = apply_sort(query, sort_spec)
 

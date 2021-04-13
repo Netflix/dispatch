@@ -13,6 +13,7 @@ from sqlalchemy import (
     Table,
     PrimaryKeyConstraint,
 )
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
@@ -91,6 +92,10 @@ class Task(Base, ResourceMixin):
     tickets = relationship("Ticket", secondary=assoc_task_tickets, backref="tasks")
 
     search_vector = Column(TSVectorType("description"))
+
+    @hybrid_property
+    def project(self):
+        return self.incident.project
 
     @staticmethod
     def _resolved_at(mapper, connection, target):

@@ -127,6 +127,7 @@ export default {
         vm.rating,
         vm.feedback,
         vm.participant,
+        vm.project,
       ],
       () => {
         this.page = 1
