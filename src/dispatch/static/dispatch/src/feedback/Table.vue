@@ -60,6 +60,8 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+
+import RouterUtils from "@/router/utils"
 import DeleteDialog from "@/feedback/DeleteDialog.vue"
 import TableFilterDialog from "@/feedback/TableFilterDialog.vue"
 import Participant from "@/incident/Participant.vue"
@@ -92,6 +94,7 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
+      "table.options.filters",
       "table.options.filters.incident",
       "table.options.filters.rating",
       "table.options.filters.feedback",
@@ -105,9 +108,8 @@ export default {
   },
 
   mounted() {
-    if (this.query.project) {
-      this.project = [{ name: this.query.project }]
-    }
+    this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.query) }
+
     this.getAll({})
 
     this.$watch(
@@ -126,11 +128,13 @@ export default {
         vm.incident,
         vm.rating,
         vm.feedback,
+        vm.project,
         vm.participant,
         vm.project,
       ],
       () => {
         this.page = 1
+        RouterUtils.updateURLFilters(this.filters)
         this.getAll()
       }
     )

@@ -112,6 +112,7 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
+import RouterUtils from "@/router/utils"
 import DeleteDialog from "@/task/DeleteDialog.vue"
 import NewEditSheet from "@/task/NewEditSheet.vue"
 import TableFilterDialog from "@/task/TableFilterDialog.vue"
@@ -161,6 +162,7 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
+      "table.options.filters",
       "table.options.filters.creator",
       "table.options.filters.assignee",
       "table.options.filters.incident",
@@ -177,9 +179,8 @@ export default {
   },
 
   mounted() {
-    if (this.query.project) {
-      this.project = [{ name: this.query.project }]
-    }
+    this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.query) }
+
     this.getAll({})
 
     this.$watch(
@@ -200,11 +201,13 @@ export default {
         vm.incident,
         vm.incident_type,
         vm.incident_priority,
+        vm.project,
         vm.status,
         vm.project,
       ],
       () => {
         this.page = 1
+        RouterUtils.updateURLFilters(this.filters)
         this.getAll()
       }
     )
