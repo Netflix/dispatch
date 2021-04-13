@@ -201,6 +201,7 @@ export default {
         vm.incident_priority,
         vm.status,
         vm.tag,
+        vm.project,
       ],
       () => {
         this.page = 1

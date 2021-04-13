@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Optional, List
 
 from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.ext.hybrid import hybrid_property
+
 
 from dispatch.database.core import Base
 from dispatch.incident.models import IncidentReadNested
@@ -18,6 +20,10 @@ class Feedback(TimeStampMixin, Base):
     # Relationships
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     participant_id = Column(Integer, ForeignKey("participant.id"))
+
+    @hybrid_property
+    def project(self):
+        return self.incident.project
 
 
 # Pydantic models

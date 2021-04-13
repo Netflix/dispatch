@@ -177,6 +177,9 @@ export default {
   },
 
   mounted() {
+    if (this.query.project) {
+      this.project = [{ name: this.query.project }]
+    }
     this.getAll({})
 
     this.$watch(
@@ -198,6 +201,7 @@ export default {
         vm.incident_type,
         vm.incident_priority,
         vm.status,
+        vm.project,
       ],
       () => {
         this.page = 1
