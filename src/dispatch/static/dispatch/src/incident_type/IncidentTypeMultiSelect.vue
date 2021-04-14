@@ -4,7 +4,7 @@
     :items="items"
     :menu-props="{ maxHeight: '400' }"
     item-text="name"
-    label="Add incident types"
+    label="Add Incident Types"
     multiple
     chips
     return-object
