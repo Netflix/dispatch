@@ -72,11 +72,11 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="ExternalId">
+                <ValidationProvider name="ExternalId" immediate>
                   <v-text-field
                     v-model="external_id"
                     slot-scope="{ errors, valid }"
-                    label="ExternalId"
+                    label="External Id"
                     :error-messages="errors"
                     :success="valid"
                     hint="Individual's external ID."
