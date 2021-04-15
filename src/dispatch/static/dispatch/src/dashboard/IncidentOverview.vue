@@ -5,7 +5,7 @@
         <v-btn color="info" @click="copyView"> Share View </v-btn>
       </v-flex>
       <v-flex class="d-flex justify-end" lg6 sm6 xs12>
-        <dialog-filter :project="project" @update="update" @loading="setLoading" />
+        <dialog-filter @update="update" @loading="setLoading" />
       </v-flex>
     </v-layout>
     <v-layout row wrap>

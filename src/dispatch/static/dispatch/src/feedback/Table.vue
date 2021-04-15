@@ -108,8 +108,8 @@ export default {
   },
 
   mounted() {
+    console.log(this.filters)
     this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.query) }
-
     this.getAll({})
 
     this.$watch(

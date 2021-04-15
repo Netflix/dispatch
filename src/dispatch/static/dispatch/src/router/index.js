@@ -46,11 +46,16 @@ function hasQueryParams(route) {
 }
 
 router.beforeEach((to, from, next) => {
-  if (!hasQueryParams(to) && hasQueryParams(from)) {
-    next({ name: to.name, query: from.query })
-  } else {
-    next()
+  // We only want to automatically copy params when we are navigating
+  // "project" subMenu's
+  if (to.meta.subMenu === "project") {
+    if (!hasQueryParams(to) && hasQueryParams(from)) {
+      next({ name: to.name, query: from.query })
+    } else {
+      next()
+    }
   }
+  next()
 })
 
 router.afterEach(function () {
