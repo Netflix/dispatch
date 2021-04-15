@@ -139,7 +139,7 @@ export default {
     ...mapActions("workflow", ["save", "closeCreateEdit"]),
   },
 
-  mounted() {
+  created() {
     this.project = { name: this.query.project }
   },
 }

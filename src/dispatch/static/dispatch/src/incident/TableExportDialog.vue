@@ -200,7 +200,7 @@ export default {
         })
     },
   },
-  mounted() {
+  created() {
     this.$watch(
       (vm) => [vm.incident_type, vm.incident_priority, vm.status, vm.project, vm.tag],
       () => {

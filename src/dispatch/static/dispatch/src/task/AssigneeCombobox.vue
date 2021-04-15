@@ -104,7 +104,7 @@ export default {
     },
   },
 
-  mounted() {
+  created() {
     this.error = null
     this.loading = "error"
     IndividualApi.getAll().then((response) => {

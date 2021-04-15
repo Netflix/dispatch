@@ -73,7 +73,7 @@ export default {
           project: [this.project],
         },
       }
-      filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
     }
     IncidentPriorityApi.getAll(filterOptions).then((response) => {
       this.items = response.data.items

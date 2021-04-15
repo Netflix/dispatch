@@ -83,17 +83,14 @@ export default {
     },
   },
 
-  mounted() {
+  created() {
+    this.fetchData()
     this.$watch(
       (vm) => [vm.options],
       () => {
         this.fetchData()
       }
     )
-  },
-
-  created() {
-    this.fetchData()
   },
 }
 </script>

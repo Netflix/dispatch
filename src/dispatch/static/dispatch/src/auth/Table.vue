@@ -83,8 +83,8 @@ export default {
     ]),
   },
 
-  mounted() {
-    this.getAll({})
+  created() {
+    this.getAll()
 
     this.$watch(
       (vm) => [vm.page],

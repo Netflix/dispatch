@@ -7,7 +7,7 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
 from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin
 from dispatch.project.models import ProjectRead
-from dispatch.tag_type.models import TagTypeRead, TagTypeUpdate
+from dispatch.tag_type.models import TagTypeRead, TagTypeCreate, TagTypeUpdate
 
 
 class Tag(Base, TimeStampMixin, ProjectMixin):
@@ -36,7 +36,7 @@ class TagBase(DispatchBase):
 
 
 class TagCreate(TagBase):
-    tag_type: TagTypeRead
+    tag_type: TagTypeCreate
     project: ProjectRead
 
 

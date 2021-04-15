@@ -178,10 +178,10 @@ export default {
     ...mapFields("route", ["query"]),
   },
 
-  mounted() {
+  created() {
     this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.query) }
 
-    this.getAll({})
+    this.getAll()
 
     this.$watch(
       (vm) => [vm.page],

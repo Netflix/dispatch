@@ -34,6 +34,7 @@ def sync_tags(db_session=None):
             # we always use the plugin project when syncing
             project = p.project.__dict__
             t["tag_type"].update({"project": project})
+            print(t)
             tag_in = TagCreate(**t, project=project)
             tag_service.get_or_create(db_session=db_session, tag_in=tag_in)
 

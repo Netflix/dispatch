@@ -250,7 +250,7 @@ export default {
       })
     },
   },
-  mounted() {
+  created() {
     this.type = "incident"
     this.getPreviewData()
     this.$watch(

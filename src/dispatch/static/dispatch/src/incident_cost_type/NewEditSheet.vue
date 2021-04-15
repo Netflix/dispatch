@@ -127,7 +127,7 @@ export default {
     ...mapActions("incident_cost_type", ["save", "closeCreateEdit"]),
   },
 
-  mounted() {
+  created() {
     if (this.query.project) {
       this.project = { name: this.query.project }
     }

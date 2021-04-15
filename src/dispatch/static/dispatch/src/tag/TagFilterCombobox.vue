@@ -138,7 +138,7 @@ export default {
             project: [this.project],
           },
         }
-        filterOptions = SearchUtils.createParametersFromTableOptions(options)
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...options })
       }
 
       TagApi.getAll(filterOptions).then((response) => {

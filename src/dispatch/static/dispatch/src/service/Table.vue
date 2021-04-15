@@ -95,12 +95,13 @@ export default {
       "table.rows.items",
       "table.rows.total",
     ]),
+    ...mapFields("route", ["query"]),
   },
 
-  mounted() {
+  created() {
     this.project = [{ name: this.query.project }]
 
-    this.getAll({})
+    this.getAll()
 
     this.$watch(
       (vm) => [vm.page],

@@ -15,9 +15,9 @@ const getDefaultSelectedState = () => {
     liaison_service: null,
     template_document: null,
     plugin_metadata: [],
-    project: null,
     exclude_from_metrics: null,
     default: false,
+    project: null,
   }
 }
 
@@ -55,7 +55,7 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    let params = SearchUtils.createParametersFromTableOptions(state.table.options)
+    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options })
     return IncidentTypeApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)

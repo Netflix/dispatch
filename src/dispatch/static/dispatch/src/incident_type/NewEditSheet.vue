@@ -169,7 +169,7 @@ export default {
       this.plugin_metadata = event.data
     },
   },
-  mounted() {
+  created() {
     if (this.query.project) {
       this.project = { name: this.query.project }
     }

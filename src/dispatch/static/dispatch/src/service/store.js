@@ -1,6 +1,8 @@
-import ServiceApi from "@/service/api"
 import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import ServiceApi from "@/service/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -54,7 +56,8 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    return ServiceApi.getAll(state.table.options)
+    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options })
+    return ServiceApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
