@@ -93,6 +93,8 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+
+import RouterUtils from "@/router/utils"
 import BulkEditSheet from "@/incident/BulkEditSheet.vue"
 import DeleteDialog from "@/incident/DeleteDialog.vue"
 import IncidentCostCard from "@/incident_cost/IncidentCostCard.vue"
@@ -150,6 +152,7 @@ export default {
       "table.options.page",
       "table.options.itemsPerPage",
       "table.options.sortBy",
+      "table.options.filters",
       "table.options.filters.commander",
       "table.options.filters.reporter",
       "table.options.filters.incident_type",
@@ -176,9 +179,7 @@ export default {
   },
 
   mounted() {
-    if (this.query.project) {
-      this.project = [{ name: this.query.project }]
-    }
+    this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.query) }
 
     this.getAll()
 
@@ -209,6 +210,7 @@ export default {
         // convert cost sort by to total cost
         //let index = this.sortBy.findIndex((column) => column === "incident_costs")
         //this.sortBy[index] = "total_cost"
+        RouterUtils.updateURLFilters(this.filters)
         this.getAll()
       }
     )

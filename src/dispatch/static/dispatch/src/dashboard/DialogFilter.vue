@@ -12,39 +12,72 @@
       <v-list dense>
         <v-list-item>
           <v-list-item-content>
-            <v-menu
-              ref="menu"
-              v-model="menu"
-              :close-on-content-click="false"
-              transition="scale-transition"
-              offset-y
-              min-width="290px"
-            >
-              <template v-slot:activator="{ on }">
-                <v-text-field v-model="dateRangeText" label="Window" readonly v-on="on" />
-              </template>
-              <v-date-picker v-model="localWindow" type="month" range />
-            </v-menu>
+            <v-col cols="12" sm="6" md="6">
+              <v-menu
+                v-model="menuStart"
+                :close-on-content-click="false"
+                transition="scale-transition"
+                offset-y
+                min-width="auto"
+              >
+                <template v-slot:activator="{ on, attrs }">
+                  <v-text-field
+                    v-model="filters.window.start"
+                    label="Reported After"
+                    prepend-icon="mdi-calendar"
+                    v-bind="attrs"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker
+                  v-model="filters.window.start"
+                  @input="menuStart = false"
+                ></v-date-picker>
+              </v-menu>
+            </v-col>
+            <v-col cols="12" sm="6" md="6">
+              <v-menu
+                v-model="menuEnd"
+                :close-on-content-click="false"
+                transition="scale-transition"
+                offset-y
+                min-width="auto"
+              >
+                <template v-slot:activator="{ on, attrs }">
+                  <v-text-field
+                    v-model="filters.window.end"
+                    label="Reported Before"
+                    prepend-icon="mdi-calendar"
+                    v-bind="attrs"
+                    v-on="on"
+                  ></v-text-field>
+                </template>
+                <v-date-picker
+                  v-model="filters.window.end"
+                  @input="menuEnd = false"
+                ></v-date-picker>
+              </v-menu>
+            </v-col>
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <project-combobox v-model="localProject" label="Projects" />
+            <project-combobox v-model="filters.project" label="Projects" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <tag-filter-combobox v-model="localTag" label="Tags" />
+            <tag-filter-combobox v-model="filters.tag" label="Tags" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-type-combobox v-model="localIncidentType" />
+            <incident-type-combobox v-model="filters.incident_type" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-priority-combobox v-model="localIncidentPriority" />
+            <incident-priority-combobox v-model="filters.incident_priority" />
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -53,10 +86,11 @@
 </template>
 
 <script>
-import { parseISO } from "date-fns"
+import { mapFields } from "vuex-map-fields"
 import subMonths from "date-fns/subMonths"
-import { map, sum, forEach, each, has, assign } from "lodash"
+import { sum } from "lodash"
 
+import RouterUtils from "@/router/utils"
 import SearchUtils from "@/search/utils"
 import IncidentApi from "@/incident/api"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
@@ -64,82 +98,80 @@ import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
 
+let defaultStart = function () {
+  let now = new Date()
+  let today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  return subMonths(today, 6).toISOString().substr(0, 10)
+}
+
+let defaultEnd = function () {
+  let now = new Date()
+  let today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  return today.toISOString().substr(0, 10)
+}
+
 export default {
   name: "IncidentOverviewFilterBar",
 
-  props: {
-    tag: {
-      type: [String, Array],
-      default: function () {
-        return []
+  data() {
+    return {
+      menuStart: false,
+      menuEnd: false,
+      display: false,
+      filters: {
+        project: [],
+        incident_type: [],
+        incident_priority: [],
+        status: [],
+        tag: [],
+        window: {
+          start: defaultStart(),
+          end: defaultEnd(),
+        },
       },
+    }
+  },
+
+  computed: {
+    numFilters: function () {
+      return sum([
+        this.filters.tag.length,
+        this.filters.incident_priority.length,
+        this.filters.incident_type.length,
+        this.filters.status.length,
+        this.filters.project.length,
+        1,
+      ])
     },
-    incidentType: {
-      type: [String, Array],
-      default: function () {
-        return []
-      },
-    },
-    incidentPriority: {
-      type: [String, Array],
-      default: function () {
-        return []
-      },
-    },
-    project: {
-      type: [String, Array],
-      default: function () {
-        return []
-      },
-    },
-    window: {
-      type: Array,
-      default: function () {
-        let now = new Date()
-        let today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-        let start = subMonths(today, 6).toISOString().substr(0, 10)
-        let end = today.toISOString().substr(0, 10)
-        return [start, end]
-      },
-    },
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
     fetchData() {
-      let localWindow = this.localWindow
-      // ensure we have a decent date string
-      localWindow = map(localWindow, function (item) {
-        return parseISO(item).toISOString()
-      })
+      let windowFilter = [
+        {
+          model: "Incident",
+          field: "reported_at",
+          op: ">=",
+          value: this.filters.window.start,
+        },
+        {
+          model: "Incident",
+          field: "reported_at",
+          op: "<=",
+          value: this.filters.window.end,
+        },
+      ]
 
-      if (localWindow.length == 1) {
-        localWindow[1] = localWindow[0]
-      }
+      let localFilters = { ...this.filters }
+      delete localFilters.window
 
       let filterOptions = {
         itemsPerPage: -1,
         descending: [false],
         sortBy: ["reported_at"],
-        filters: {
-          project: this.localProject,
-          incident_type: this.localIncidentType,
-          incident_priority: this.localIncidentPriority,
-          tag: this.localTag,
-        },
+        filters: localFilters,
       }
-
-      let windowFilter = [
-        {
-          field: "reported_at",
-          op: ">=",
-          value: localWindow[0],
-        },
-        {
-          field: "reported_at",
-          op: "<=",
-          value: localWindow[1],
-        },
-      ]
 
       filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions, windowFilter)
 
@@ -150,28 +182,6 @@ export default {
         this.$emit("loading", false)
       })
     },
-    serializeFilters() {
-      let flatFilters = {}
-      forEach(this.filters, function (value, key) {
-        each(value, function (item) {
-          if (has(flatFilters, key)) {
-            flatFilters[key].push(item.name)
-          } else {
-            flatFilters[key] = [item.name]
-          }
-        })
-      })
-      return flatFilters
-    },
-    serializeWindow() {
-      return { start: this.localWindow[0], end: this.localWindow[1] }
-    },
-    updateURL() {
-      let queryParams = {}
-      assign(queryParams, this.serializeFilters())
-      assign(queryParams, this.serializeWindow())
-      this.$router.replace({ query: queryParams })
-    },
   },
 
   components: {
@@ -181,33 +191,20 @@ export default {
     ProjectCombobox,
   },
 
-  data() {
-    return {
-      menu: false,
-      display: false,
-      localWindow: this.window,
-      localTag: typeof this.tag === "string" ? [{ name: this.tag }] : this.tag,
-      localIncidentPriority:
-        typeof this.incidentPriority === "string"
-          ? [{ name: this.incidentPriority }]
-          : this.incidentPriority,
-      localIncidentType:
-        typeof this.incidentType === "string" ? [{ name: this.incidentType }] : this.incidentType,
-      localProject: typeof this.project === "string" ? [{ name: this.project }] : this.project,
-    }
-  },
-
   mounted() {
+    this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.query) }
     this.$watch(
       (vm) => [
-        vm.localWindow,
-        vm.localTag,
-        vm.localIncidentPriority,
-        vm.localIncidentType,
-        vm.localProject,
+        vm.filters.window.start,
+        vm.filters.window.end,
+        vm.filters.tag,
+        vm.filters.incident_priority,
+        vm.filters.incident_type,
+        vm.filters.status,
+        vm.filters.project,
       ],
       () => {
-        this.updateURL()
+        RouterUtils.updateURLFilters(this.filters)
         this.fetchData()
       }
     )
@@ -215,29 +212,6 @@ export default {
 
   created() {
     this.fetchData()
-  },
-
-  computed: {
-    filters() {
-      return {
-        tag: this.localTag,
-        incident_priority: this.localIncidentPriority,
-        incident_type: this.localIncidentType,
-        project: this.localProject,
-      }
-    },
-    numFilters: function () {
-      return sum([
-        this.localIncidentType.length,
-        this.localIncidentPriority.length,
-        this.localTag.length,
-        this.localProject.length,
-        1,
-      ])
-    },
-    dateRangeText() {
-      return this.localWindow.join(" ~ ")
-    },
   },
 }
 </script>
