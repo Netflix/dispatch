@@ -12,6 +12,7 @@ const getDefaultSelectedState = () => {
     category: null,
     details: {},
     default: false,
+    project: null,
     editable: true,
     loading: false,
   }

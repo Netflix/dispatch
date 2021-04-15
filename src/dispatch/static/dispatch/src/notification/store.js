@@ -11,6 +11,7 @@ const getDefaultSelectedState = () => {
     description: null,
     type: "conversation",
     target: null,
+    project: null,
     enabled: null,
     filters: null,
     loading: false,

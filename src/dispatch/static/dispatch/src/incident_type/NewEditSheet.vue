@@ -147,6 +147,7 @@ export default {
       "selected.liaison_service",
       "selected.description",
       "selected.id",
+      "selected.project",
       "selected.loading",
       "selected.name",
       "selected.slug",
@@ -159,6 +160,7 @@ export default {
     ...mapFields("incident_type", {
       default_incident_type: "selected.default",
     }),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
@@ -166,6 +168,11 @@ export default {
     updatePluginMetadata(event) {
       this.plugin_metadata = event.data
     },
+  },
+  mounted() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
   },
 }
 </script>

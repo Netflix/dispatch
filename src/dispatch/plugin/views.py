@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
-from dispatch.auth.permissions import ProjectAdminPermission, PermissionsDependency
+from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.exceptions import InvalidConfiguration
 
 from .models import PluginCreate, PluginPagination, PluginRead, PluginUpdate
@@ -44,7 +44,7 @@ def get_plugin(*, db_session: Session = Depends(get_db), plugin_id: int):
 @router.put(
     "/{plugin_id}",
     response_model=PluginCreate,
-    dependencies=[Depends(PermissionsDependency([ProjectAdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_plugin(
     *,

@@ -1,6 +1,7 @@
 from typing import Optional
 from fastapi.encoders import jsonable_encoder
 
+from dispatch.project import service as project_service
 from .models import TagType, TagTypeCreate, TagTypeUpdate
 
 
@@ -29,7 +30,8 @@ def create(*, db_session, tag_type_in: TagTypeCreate) -> TagType:
     """
     Creates a new tag type.
     """
-    tag_type = TagType(**tag_type_in.dict())
+    project = project_service.get_by_name(db_session=db_session, name=tag_type_in.project.name)
+    tag_type = TagType(**tag_type_in.dict(exclude={"project"}), project=project)
     db_session.add(tag_type)
     db_session.commit()
     return tag_type

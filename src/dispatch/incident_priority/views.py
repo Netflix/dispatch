@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
-from dispatch.auth.permissions import ProjectAdminPermission, PermissionsDependency
+from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 
 from .models import (
     IncidentPriorityCreate,
@@ -28,7 +28,7 @@ def get_incident_priorities(*, common: dict = Depends(common_parameters)):
 @router.post(
     "/",
     response_model=IncidentPriorityRead,
-    dependencies=[Depends(PermissionsDependency([ProjectAdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def create_incident_priority(
     *,
@@ -45,7 +45,7 @@ def create_incident_priority(
 @router.put(
     "/{incident_priority_id}",
     response_model=IncidentPriorityRead,
-    dependencies=[Depends(PermissionsDependency([ProjectAdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_incident_priority(
     *,

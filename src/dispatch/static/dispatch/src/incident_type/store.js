@@ -15,6 +15,7 @@ const getDefaultSelectedState = () => {
     liaison_service: null,
     template_document: null,
     plugin_metadata: [],
+    project: null,
     exclude_from_metrics: null,
     default: false,
   }

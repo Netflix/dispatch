@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
-from dispatch.auth.permissions import ProjectAdminPermission, PermissionsDependency
+from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 
 from .models import (
     NotificationCreate,
@@ -39,7 +39,7 @@ def get_notification(*, db_session: Session = Depends(get_db), notification_id: 
 @router.post(
     "/",
     response_model=NotificationRead,
-    dependencies=[Depends(PermissionsDependency([ProjectAdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def create_notification(
     *, db_session: Session = Depends(get_db), notification_in: NotificationCreate
@@ -54,7 +54,7 @@ def create_notification(
 @router.put(
     "/{notification_id}",
     response_model=NotificationRead,
-    dependencies=[Depends(PermissionsDependency([ProjectAdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_notification(
     *,
@@ -76,7 +76,7 @@ def update_notification(
 
 @router.delete(
     "/{notification_id}",
-    dependencies=[Depends(PermissionsDependency([ProjectAdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def delete_notification(*, db_session: Session = Depends(get_db), notification_id: int):
     """

@@ -2,6 +2,7 @@ from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 
 from .models import Definition, DefinitionCreate, DefinitionUpdate
+from dispatch.project import service as project_service
 from dispatch.term import service as term_service
 
 
@@ -21,7 +22,11 @@ def create(*, db_session, definition_in: DefinitionCreate) -> Definition:
     terms = [
         term_service.get_or_create(db_session=db_session, term_in=t) for t in definition_in.terms
     ]
-    definition = Definition(**definition_in.dict(exclude={"terms"}), terms=terms)
+
+    project = project_service.get_by_name(db_session=db_session, name=definition_in.project.name)
+    definition = Definition(
+        **definition_in.dict(exclude={"terms", "project"}), project=project, terms=terms
+    )
     db_session.add(definition)
     db_session.commit()
     return definition

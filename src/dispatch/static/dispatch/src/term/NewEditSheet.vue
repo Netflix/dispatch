@@ -84,14 +84,22 @@ export default {
       "selected.text",
       "selected.definitions",
       "selected.discoverable",
+      "selected.project",
       "selected.id",
       "selected.loading",
       "dialogs.showCreateEdit",
     ]),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
     ...mapActions("term", ["save", "closeCreateEdit"]),
+  },
+
+  mounted() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
   },
 }
 </script>

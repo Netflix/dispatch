@@ -89,16 +89,24 @@ export default {
       "dialogs.showCreateEdit",
       "selected.id",
       "selected.name",
+      "selected.project",
       "selected.description",
       "selected.loading",
     ]),
     ...mapFields("tag_type", {
       default_tag_type: "selected.default",
     }),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
     ...mapActions("tag_type", ["save", "closeCreateEdit"]),
+  },
+
+  mounted() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
   },
 }
 </script>

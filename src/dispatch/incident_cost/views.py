@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
 from dispatch.database.service import search_filter_sort_paginate
-from dispatch.auth.permissions import ProjectAdminPermission, PermissionsDependency
+from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 
 from .models import (
     IncidentCostCreate,
@@ -62,7 +62,7 @@ def get_incident_cost(*, db_session: Session = Depends(get_db), incident_cost_id
 @router.post(
     "/",
     response_model=IncidentCostRead,
-    dependencies=[Depends(PermissionsDependency([ProjectAdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def create_incident_cost(
     *, db_session: Session = Depends(get_db), incident_cost_in: IncidentCostCreate
@@ -77,7 +77,7 @@ def create_incident_cost(
 @router.put(
     "/{incident_cost_id}",
     response_model=IncidentCostRead,
-    dependencies=[Depends(PermissionsDependency([ProjectAdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_incident_cost(
     *,
@@ -101,7 +101,7 @@ def update_incident_cost(
 
 @router.delete(
     "/{incident_cost_id}",
-    dependencies=[Depends(PermissionsDependency([ProjectAdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def delete_incident_cost(*, db_session: Session = Depends(get_db), incident_cost_id: int):
     """

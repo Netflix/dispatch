@@ -125,35 +125,47 @@ class OrganizationManagerPermission(BasePermission):
                     return True
 
 
-class ProjectAdminPermission(BasePermission):
+class SensitiveProjectActionPermission(BasePermission):
     def has_required_permissions(
         self,
         request: Request,
     ) -> bool:
-        current_project = None
+        return any_permission(
+            permissions=[
+                OrganizationOwnerPermission,
+                OrganizationManagerPermission,
+                ProjectAdminPermission,
+            ],
+            request=request,
+        )
 
-        project_id = request.path_params.get("project_id")
-        if project_id:
-            current_project = project_service.get(
-                db_session=request.state.db, project_id=project_id
-            )
 
-        incident_id = request.path_params.get("incident_id")
-        if incident_id:
-            current_incident = incident_service.get(
-                db_session=request.state.db, incident_id=incident_id
-            )
-            current_project = current_incident.project
+# TODO try to deteremine how to get access the async request body
+class ProjectAdminPermission(BasePermission):
+    async def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        return False
 
-        if not current_project:
-            return
 
-        current_user = get_current_user(db_session=request.state.db, request=request)
-
-        for p in current_user.projects:
-            if p.project_id == current_project.id:
-                if p.role == UserRoles.admin:
-                    return True
+#        current_project = None
+#        request_json = await request.json()
+#
+#        if request_json.get("project", {}).get("name"):
+#            current_project = project_service.get_by_name(
+#                db_session=request.state.db, name=request_json["project"]["name"]
+#            )
+#
+#        if not current_project:
+#            return
+#
+#        current_user = get_current_user(db_session=request.state.db, request=request)
+#
+#        for p in current_user.projects:
+#            if p.project_id == current_project.id:
+#                if p.role == UserRoles.admin:
+#                    return True
 
 
 class ProjectCreatePermission(BasePermission):

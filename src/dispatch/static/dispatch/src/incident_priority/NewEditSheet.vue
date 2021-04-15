@@ -161,6 +161,7 @@ export default {
       "dialogs.showCreateEdit",
       "selected.description",
       "selected.id",
+      "selected.project",
       "selected.loading",
       "selected.name",
       "selected.view_order",
@@ -172,10 +173,17 @@ export default {
     ...mapFields("incident_priority", {
       default_incident_priority: "selected.default",
     }),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
     ...mapActions("incident_priority", ["save", "closeCreateEdit"]),
+  },
+
+  mounted() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
   },
 }
 </script>

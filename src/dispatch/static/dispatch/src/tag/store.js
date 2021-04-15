@@ -11,6 +11,7 @@ const getDefaultSelectedState = () => {
     uri: null,
     id: null,
     description: "Generic tag",
+    project: null,
     created_at: null,
     discoverable: null,
     updated_at: null,

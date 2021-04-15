@@ -136,12 +136,14 @@ export default {
       "selected.incident_priorities",
       "selected.incident_types",
       "selected.id",
+      "selected.project",
       "selected.description",
       "selected.external_id",
       "selected.is_active",
       "selected.loading",
       "dialogs.showCreateEdit",
     ]),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
@@ -161,6 +163,9 @@ export default {
   },
 
   mounted() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
     this.loading = "error"
     PluginApi.getByType("oncall").then((response) => {
       this.loading = false

@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 
+from dispatch.project import service as project_service
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.term import service as term_service
@@ -43,8 +44,13 @@ def create(*, db_session, team_contact_in: TeamContactCreate) -> TeamContact:
         incident_type_service.get_by_name(db_session=db_session, name=n.name)
         for n in team_contact_in.incident_types
     ]
+
+    project = project_service.get_by_name(db_session=db_session, name=team_contact_in.project.name)
     team = TeamContact(
-        **team_contact_in.dict(exclude={"terms", "incident_priorities", "incident_types"}),
+        **team_contact_in.dict(
+            exclude={"terms", "incident_priorities", "incident_types", "project"}
+        ),
+        project=project,
         terms=terms,
         incident_types=incident_types,
         incident_priorities=incident_priorities,

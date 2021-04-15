@@ -13,6 +13,7 @@ const getDefaultSelectedState = () => {
     created_at: null,
     updated_at: null,
     company: null,
+    project: null,
     email: null,
     loading: false,
   }

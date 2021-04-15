@@ -134,13 +134,21 @@ export default {
       "selected.enabled",
       "selected.filters",
       "selected.id",
+      "selected.project",
       "selected.loading",
       "dialogs.showCreateEdit",
     ]),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
     ...mapActions("notification", ["save", "closeCreateEdit"]),
+  },
+
+  mounted() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
   },
 }
 </script>

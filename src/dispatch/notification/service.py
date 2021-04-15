@@ -6,6 +6,7 @@ from fastapi.encoders import jsonable_encoder
 
 from dispatch.database.core import Base
 from dispatch.incident.models import Incident
+from dispatch.project import service as project_service
 from dispatch.plugin import service as plugin_service
 from dispatch.search import service as search_service
 
@@ -41,9 +42,10 @@ def create(*, db_session, notification_in: NotificationCreate) -> Notification:
             for f in notification_in.filters
         ]
 
+    project = project_service.get_by_name(db_session=db_session, name=notification_in.project.name)
+
     notification = Notification(
-        **notification_in.dict(exclude={"filters"}),
-        filters=filters,
+        **notification_in.dict(exclude={"filters", "project"}), filters=filters, project=project
     )
 
     db_session.add(notification)

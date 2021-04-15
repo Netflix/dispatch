@@ -34,7 +34,9 @@
                 <v-simple-checkbox v-model="item.discoverable" disabled />
               </template>
               <template v-slot:item.tag_type.name="{ item }">
-                {{ item.tag_type.name }}
+                <span v-if="item.tag_type">
+                  {{ item.tag_type.name }}
+                </span>
               </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
-from dispatch.auth.permissions import ProjectAdminPermission, PermissionsDependency
+from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 
 from .models import (
     IncidentCostTypeCreate,
@@ -41,7 +41,7 @@ def get_incident_cost_type(*, db_session: Session = Depends(get_db), incident_co
 @router.post(
     "/",
     response_model=IncidentCostTypeRead,
-    dependencies=[Depends(PermissionsDependency([ProjectAdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def create_incident_cost_type(
     *, db_session: Session = Depends(get_db), incident_cost_type_in: IncidentCostTypeCreate
@@ -56,7 +56,7 @@ def create_incident_cost_type(
 @router.put(
     "/{incident_cost_type_id}",
     response_model=IncidentCostTypeRead,
-    dependencies=[Depends(PermissionsDependency([ProjectAdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_incident_cost_type(
     *,
@@ -88,7 +88,7 @@ def update_incident_cost_type(
 
 @router.delete(
     "/{incident_cost_type_id}",
-    dependencies=[Depends(PermissionsDependency([ProjectAdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def delete_incident_cost_type(*, db_session: Session = Depends(get_db), incident_cost_type_id: int):
     """

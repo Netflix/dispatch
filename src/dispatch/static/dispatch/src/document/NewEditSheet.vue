@@ -194,10 +194,12 @@ export default {
       "selected.evergreen_owner",
       "selected.evergreen",
       "selected.evergreen_reminder_interval",
+      "selected.project",
       "selected.id",
       "selected.loading",
       "dialogs.showCreateEdit",
     ]),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
@@ -208,6 +210,12 @@ export default {
         self.$emit("new-document-created", data)
       })
     },
+  },
+
+  mounted() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
   },
 }
 </script>

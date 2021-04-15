@@ -4,6 +4,8 @@ from fastapi.encoders import jsonable_encoder
 
 from sqlalchemy.sql.expression import true
 
+from dispatch.project import service as project_service
+
 from .models import (
     IncidentCostType,
     IncidentCostTypeCreate,
@@ -52,7 +54,12 @@ def create(*, db_session, incident_cost_type_in: IncidentCostTypeCreate) -> Inci
     """
     Creates a new incident cost type.
     """
-    incident_cost_type = IncidentCostType(**incident_cost_type_in.dict())
+    project = project_service.get_by_name(
+        db_session=db_session, name=incident_cost_type_in.project.name
+    )
+    incident_cost_type = IncidentCostType(
+        **incident_cost_type_in.dict(exclude={"project"}), project=project
+    )
     db_session.add(incident_cost_type)
     db_session.commit()
     return incident_cost_type

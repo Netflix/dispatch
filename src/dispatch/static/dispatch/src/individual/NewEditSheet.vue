@@ -145,13 +145,21 @@ export default {
       "selected.incident_priorities",
       "selected.incident_types",
       "selected.id",
+      "selected.project",
       "selected.loading",
       "dialogs.showCreateEdit",
     ]),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
     ...mapActions("individual", ["save", "closeCreateEdit"]),
+  },
+
+  mounted() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
   },
 }
 </script>

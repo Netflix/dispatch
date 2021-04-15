@@ -9,6 +9,7 @@ const getDefaultSelectedState = () => {
     terms: [],
     text: null,
     id: null,
+    project: null,
     loading: false,
   }
 }

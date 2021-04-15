@@ -2,7 +2,7 @@ from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 
 from sqlalchemy.sql.expression import true
-
+from dispatch.project import service as project_service
 from dispatch.plugin import service as plugin_service
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
@@ -37,11 +37,13 @@ def get_enabled(*, db_session) -> List[Optional[Workflow]]:
 
 def create(*, db_session, workflow_in: WorkflowCreate) -> Workflow:
     """Creates a new workflow."""
-    workflow = Workflow(
-        **workflow_in.dict(exclude={"plugin"}),
-    )
     plugin = plugin_service.get(db_session=db_session, plugin_id=workflow_in.plugin.id)
-    workflow.plugin = plugin
+    project = project_service.get_by_name(db_session=db_session, name=workflow_in.project.name)
+    workflow = Workflow(
+        **workflow_in.dict(exclude={"plugin", "project"}),
+        plugin=plugin,
+        project=project,
+    )
 
     db_session.add(workflow)
     db_session.commit()

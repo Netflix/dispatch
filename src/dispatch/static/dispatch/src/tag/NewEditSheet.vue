@@ -132,14 +132,22 @@ export default {
       "selected.uri",
       "selected.description",
       "selected.source",
+      "selected.project",
       "selected.discoverable",
       "selected.loading",
       "dialogs.showCreateEdit",
     ]),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
     ...mapActions("tag", ["save", "closeCreateEdit"]),
+  },
+
+  mounted() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
   },
 }
 </script>

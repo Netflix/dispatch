@@ -113,9 +113,11 @@ export default {
       "selected.details",
       "selected.editable",
       "selected.id",
+      "selected.project",
       "selected.loading",
       "dialogs.showCreateEdit",
     ]),
+    ...mapFields("route", ["query"]),
     ...mapFields("incident_cost_type", {
       default_incident_cost_type: "selected.default",
     }),
@@ -123,6 +125,12 @@ export default {
 
   methods: {
     ...mapActions("incident_cost_type", ["save", "closeCreateEdit"]),
+  },
+
+  mounted() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
   },
 }
 </script>

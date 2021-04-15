@@ -11,6 +11,7 @@ const getDefaultSelectedState = () => {
     page_commander: null,
     view_order: null,
     tactical_report_reminder: null,
+    project: null,
     executive_report_reminder: null,
     description: null,
     loading: false,

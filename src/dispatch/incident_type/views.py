@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
-from dispatch.auth.permissions import ProjectAdminPermission, PermissionsDependency
+from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 
 from .models import IncidentTypeCreate, IncidentTypePagination, IncidentTypeRead, IncidentTypeUpdate
 from .service import create, get, update
@@ -23,7 +23,7 @@ def get_incident_types(*, common: dict = Depends(common_parameters)):
 @router.post(
     "/",
     response_model=IncidentTypeRead,
-    dependencies=[Depends(PermissionsDependency([ProjectAdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def create_incident_type(
     *,
@@ -40,7 +40,7 @@ def create_incident_type(
 @router.put(
     "/{incident_type_id}",
     response_model=IncidentTypeRead,
-    dependencies=[Depends(PermissionsDependency([ProjectAdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_incident_type(
     *,
