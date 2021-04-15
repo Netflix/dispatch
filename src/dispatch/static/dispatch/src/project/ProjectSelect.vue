@@ -69,7 +69,7 @@ export default {
           project: [this.project],
         },
       }
-      filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
     }
 
     ProjectApi.getAll(filterOptions).then((response) => {

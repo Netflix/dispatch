@@ -35,19 +35,27 @@ export default {
     }
   },
 
-  mounted() {
+  created() {
     this.getActive()
   },
 
   methods: {
     getActive() {
       this.loading = "error"
-      IncidentApi.getAll({ fields: ["status"], ops: ["=="], values: ["Active"] }).then(
-        (response) => {
-          this.items = response.data.items
-          this.loading = false
-        }
-      )
+      IncidentApi.getAll({
+        filter: JSON.stringify({
+          and: [
+            {
+              field: "status",
+              op: "==",
+              value: "Active",
+            },
+          ],
+        }),
+      }).then((response) => {
+        this.items = response.data.items
+        this.loading = false
+      })
     },
   },
 }

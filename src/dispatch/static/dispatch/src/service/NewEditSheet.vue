@@ -162,7 +162,7 @@ export default {
     }
   },
 
-  mounted() {
+  created() {
     if (this.query.project) {
       this.project = { name: this.query.project }
     }

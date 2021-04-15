@@ -86,7 +86,8 @@ export default {
     }
   },
 
-  mounted() {
+  created() {
+    this.fetchData()
     this.$watch(
       (vm) => [vm.localIncident, vm.localProject],
       () => {
@@ -94,11 +95,6 @@ export default {
       }
     )
   },
-
-  created() {
-    this.fetchData()
-  },
-
   computed: {
     filters() {
       return {

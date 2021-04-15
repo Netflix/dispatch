@@ -54,14 +54,28 @@ export default {
   created() {
     this.error = null
     this.loading = "error"
-    IncidentTypeApi.getAll({
+
+    let params = {
       itemsPerPage: 50,
       sortBy: ["name"],
       descending: [false],
-      fields: ["visibility"],
-      ops: ["=="],
-      values: this.visibilities,
-    }).then((response) => {
+    }
+
+    if (this.visibilities.length) {
+      let filter = { and: [] }
+
+      this.visibilities.forEach(function (item) {
+        filter.and.push({
+          field: "visibility",
+          op: "==",
+          value: item,
+        })
+      })
+
+      params = { ...params, ...{ filter: filter } }
+    }
+
+    IncidentTypeApi.getAll(params).then((response) => {
       this.items = response.data.items
       this.loading = false
     })

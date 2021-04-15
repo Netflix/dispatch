@@ -55,7 +55,17 @@ export default {
   },
 
   created() {
-    this.fetchData({ fields: ["editable"], ops: ["=="], values: [true] })
+    this.fetchData({
+      filter: JSON.stringify({
+        and: [
+          {
+            field: "editable",
+            op: "==",
+            value: "true",
+          },
+        ],
+      }),
+    })
   },
 
   methods: {

@@ -184,8 +184,9 @@ export default {
     ProjectCombobox,
   },
 
-  mounted() {
+  created() {
     this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.query) }
+    this.fetchData()
     this.$watch(
       (vm) => [
         vm.filters.window.start,
@@ -201,10 +202,6 @@ export default {
         this.fetchData()
       }
     )
-  },
-
-  created() {
-    this.fetchData()
   },
 }
 </script>

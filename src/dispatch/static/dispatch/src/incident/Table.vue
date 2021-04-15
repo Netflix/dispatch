@@ -178,7 +178,7 @@ export default {
     },
   },
 
-  mounted() {
+  created() {
     this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.query) }
 
     this.getAll()

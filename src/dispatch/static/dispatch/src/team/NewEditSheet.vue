@@ -142,7 +142,7 @@ export default {
     ...mapActions("team", ["save", "closeCreateEdit"]),
   },
 
-  mounted() {
+  created() {
     if (this.query.project) {
       this.project = { name: this.query.project }
     }

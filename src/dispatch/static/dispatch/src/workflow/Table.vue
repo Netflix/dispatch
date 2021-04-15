@@ -98,7 +98,7 @@ export default {
     ...mapFields("route", ["query"]),
   },
 
-  mounted() {
+  created() {
     this.project = [{ name: this.query.project }]
 
     this.getAll()

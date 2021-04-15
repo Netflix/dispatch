@@ -111,7 +111,7 @@ export default {
           },
         }
 
-        filterOptions = SearchUtils.createParametersFromTableOptions(options)
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...options })
       }
 
       PluginApi.getAll(filterOptions).then((response) => {

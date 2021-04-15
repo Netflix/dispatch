@@ -150,7 +150,7 @@ export default {
     ...mapActions("incident", ["report", "get", "resetSelected"]),
   },
 
-  mounted() {
+  created() {
     if (this.query.project) {
       this.project = { name: this.query.project }
     }

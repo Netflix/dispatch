@@ -110,7 +110,7 @@ export default {
     },
   },
 
-  mounted() {
+  created() {
     this.error = null
     this.loading = "error"
     ServiceApi.getAll().then((response) => {

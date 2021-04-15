@@ -73,7 +73,7 @@ export default {
           project: [this.project],
         },
       }
-      filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
     }
 
     IncidentTypeApi.getAll(filterOptions).then((response) => {

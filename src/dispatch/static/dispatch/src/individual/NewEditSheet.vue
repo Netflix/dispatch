@@ -156,7 +156,7 @@ export default {
     ...mapActions("individual", ["save", "closeCreateEdit"]),
   },
 
-  mounted() {
+  created() {
     if (this.query.project) {
       this.project = { name: this.query.project }
     }
