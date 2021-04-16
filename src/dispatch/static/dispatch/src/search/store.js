@@ -15,10 +15,11 @@ const getDefaultSelectedState = () => {
     previewRowsLoading: false,
     step: 1,
     filters: {
-      incident_type: null,
-      incident_priority: null,
-      status: null,
-      tags: null,
+      incident_type: [],
+      incident_priority: [],
+      status: [],
+      tag: [],
+      project: [],
     },
   }
 }

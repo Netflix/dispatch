@@ -27,7 +27,7 @@
       <template>
         <v-list-item-content>
           <v-list-item-title v-text="data.item.name" />
-          <v-list-item-subtitle v-text="data.item.tag_type.name" />
+          <v-list-item-subtitle v-if="data.item.tag_type" v-text="data.item.tag_type.name" />
         </v-list-item-content>
       </template>
     </template>
@@ -106,6 +106,12 @@ export default {
 
   created() {
     this.fetchData({ q: null })
+    this.$watch(
+      (vm) => [vm.project],
+      () => {
+        this.fetchData({ q: null })
+      }
+    )
   },
 
   methods: {

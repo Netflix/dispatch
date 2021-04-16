@@ -101,13 +101,13 @@
                 <span class="subtitle-2">Engagement</span>
               </v-flex>
               <v-flex xs12>
-                <term-combobox v-model="terms" />
+                <term-combobox :project="project" v-model="terms" />
               </v-flex>
               <v-flex xs12>
-                <incident-priority-multi-select v-model="incident_priorities" />
+                <incident-priority-multi-select :project="project" v-model="incident_priorities" />
               </v-flex>
               <v-flex>
-                <incident-type-multi-select v-model="incident_types" />
+                <incident-type-multi-select :project="project" v-model="incident_types" />
               </v-flex>
               <v-flex xs12>
                 <span class="subtitle-2">Evergreen</span>

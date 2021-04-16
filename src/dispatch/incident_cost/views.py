@@ -1,6 +1,4 @@
-from typing import List
-
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db

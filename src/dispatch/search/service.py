@@ -3,6 +3,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy_filters import apply_filters
 
 from dispatch.database.core import Base, get_class_by_tablename, get_table_name_by_class_instance
+from dispatch.project import service as project_service
 
 from .models import SearchFilter, SearchFilterCreate, SearchFilterUpdate
 
@@ -46,7 +47,8 @@ def get_all(*, db_session):
 
 def create(*, db_session, search_filter_in: SearchFilterCreate) -> SearchFilter:
     """Creates a new search filter."""
-    search_filter = SearchFilter(**search_filter_in.dict())
+    project = project_service.get_by_name(db_session=db_session, name=search_filter_in.project.name)
+    search_filter = SearchFilter(**search_filter_in.dict(exclude={"project"}), project=project)
     db_session.add(search_filter)
     db_session.commit()
     return search_filter

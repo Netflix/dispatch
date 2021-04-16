@@ -24,6 +24,8 @@
         </v-col>
         <v-col cols="12" sm="10">
           <plugin-combobox
+            :project="project"
+            :type="type"
             @input="setPlugin({ plugin: $event, idx: idx })"
             label="Plugin"
             :value="plugin"
@@ -75,6 +77,14 @@ export default {
       default: function () {
         return []
       },
+    },
+    project: {
+      type: Object,
+      default: null,
+    },
+    type: {
+      String,
+      default: null,
     },
   },
 

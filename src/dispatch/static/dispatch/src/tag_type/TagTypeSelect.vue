@@ -20,8 +20,11 @@
 </template>
 
 <script>
-import TagTypeApi from "@/tag_type/api"
 import { cloneDeep } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import TagTypeApi from "@/tag_type/api"
+
 export default {
   name: "TagTypeSelect",
 
@@ -33,7 +36,7 @@ export default {
       },
     },
     project: {
-      type: String,
+      type: [Object],
       default: null,
     },
   },
@@ -56,13 +59,37 @@ export default {
     },
   },
 
-  created() {
-    this.error = null
-    this.loading = "error"
-    TagTypeApi.getAll({ itemsPerPage: 50, sortBy: ["name"], descending: [false] }).then(
-      (response) => {
+  methods: {
+    fetchData() {
+      this.error = null
+      this.loading = "error"
+      let filterOptions = {
+        sortBy: ["name"],
+        descending: [false],
+      }
+
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      }
+      TagTypeApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
+      })
+    },
+  },
+
+  created() {
+    this.fetchData()
+    this.$watch(
+      (vm) => [vm.project],
+      () => {
+        this.fetchData()
       }
     )
   },

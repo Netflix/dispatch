@@ -10,7 +10,7 @@
     chips
     clearable
     :loading="loading"
-    @update:search-input="getFilteredData({ q: $event })"
+    @update:search-input="getFilteredData()"
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -42,8 +42,11 @@
 </template>
 
 <script>
-import IncidentTypeApi from "@/incident_type/api"
 import { cloneDeep, debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import IncidentTypeApi from "@/incident_type/api"
+
 export default {
   name: "IncidentTypeComboBox",
   props: {
@@ -58,6 +61,10 @@ export default {
       default: function () {
         return "Incident Types"
       },
+    },
+    project: {
+      type: [Object],
+      default: null,
     },
   },
 
@@ -99,14 +106,31 @@ export default {
   methods: {
     loadMore() {
       this.numItems = this.numItems + 5
-      this.getFilteredData({ q: this.search, itemsPerPage: this.numItems })
+      this.getFilteredData()
     },
-    fetchData(filterOptions) {
+    fetchData() {
       this.error = null
       this.loading = "error"
+      let filterOptions = {
+        q: this.search,
+        sortBy: ["name"],
+        descending: [false],
+        itemsPerPage: this.numItems,
+      }
+
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      }
+
       IncidentTypeApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
-        this.total = response.data.total
+        this.loading = false
 
         if (this.items.length < this.total) {
           this.more = true
@@ -117,8 +141,8 @@ export default {
         this.loading = false
       })
     },
-    getFilteredData: debounce(function (options) {
-      this.fetchData(options)
+    getFilteredData: debounce(function () {
+      this.fetchData()
     }, 500),
   },
 }

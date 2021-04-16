@@ -32,6 +32,7 @@ class TagTypeUpdate(TagTypeBase):
 
 class TagTypeRead(TagTypeBase):
     id: int
+    project: ProjectRead
 
 
 class TagTypePagination(DispatchBase):

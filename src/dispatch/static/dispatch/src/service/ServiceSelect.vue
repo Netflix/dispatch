@@ -28,6 +28,7 @@ import { mapActions } from "vuex"
 import { cloneDeep } from "lodash"
 import { ValidationProvider } from "vee-validate"
 
+import SearchUtils from "@/search/utils"
 import ServiceApi from "@/service/api"
 import NewEditSheet from "@/service/NewEditSheet.vue"
 
@@ -54,7 +55,7 @@ export default {
       },
     },
     project: {
-      type: String,
+      type: [Object],
       default: null,
     },
   },
@@ -75,7 +76,7 @@ export default {
 
   watch: {
     search(val) {
-      val && val !== this.select && this.querySelections(val)
+      val && val !== this.select && this.fetchData()
     },
     value(val) {
       if (!val) return
@@ -100,23 +101,39 @@ export default {
       this.service = v
       this.items.push(v)
     },
-    querySelections(v) {
+    fetchData() {
+      this.error = null
       this.loading = "error"
-      // Simulated ajax query
-      ServiceApi.getAll({ q: v }).then((response) => {
+      let filterOptions = {
+        q: this.search,
+        sortBy: ["name"],
+        descending: [false],
+      }
+
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      }
+
+      ServiceApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
     },
   },
-
   created() {
-    this.error = null
-    this.loading = "error"
-    ServiceApi.getAll().then((response) => {
-      this.items = response.data.items
-      this.loading = false
-    })
+    this.fetchData()
+    this.$watch(
+      (vm) => [vm.project],
+      () => {
+        this.fetchData()
+      }
+    )
   },
 }
 </script>

@@ -9,7 +9,7 @@
         <v-btn small color="info" :to="{ name: 'status' }"> Active Incidents </v-btn>
       </v-app-bar>
       <report-receipt-card v-if="id" />
-      <report-submission-card project="project" v-else />
+      <report-submission-card v-else />
     </v-content>
   </v-app>
 </template>

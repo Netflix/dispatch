@@ -31,17 +31,27 @@
                     <v-list dense>
                       <v-list-item>
                         <v-list-item-content>
-                          <tag-filter-combobox v-model="filters.tags" label="Tags" />
+                          <tag-filter-combobox
+                            :project="project"
+                            v-model="filters.tags"
+                            label="Tags"
+                          />
                         </v-list-item-content>
                       </v-list-item>
                       <v-list-item>
                         <v-list-item-content>
-                          <incident-type-combobox v-model="filters.incident_type" />
+                          <incident-type-combobox
+                            :project="project"
+                            v-model="filters.incident_type"
+                          />
                         </v-list-item-content>
                       </v-list-item>
                       <v-list-item>
                         <v-list-item-content>
-                          <incident-priority-combobox v-model="filters.incident_priority" />
+                          <incident-priority-combobox
+                            :project="project"
+                            v-model="filters.incident_priority"
+                          />
                         </v-list-item-content>
                       </v-list-item>
                       <v-list-item>
@@ -195,6 +205,7 @@ export default {
         incident_priority: [],
         status: [],
         tag: [],
+        project: [],
       },
     }
   },
@@ -215,9 +226,11 @@ export default {
       "selected.description",
       "selected.expression",
       "selected.name",
+      "selected.project",
       "loading",
       "dialogs.showCreate",
     ]),
+    ...mapFields("route", ["query"]),
     expression_str: {
       get: function () {
         return JSON.stringify(this.expression, null, "\t") || "[]"
@@ -251,6 +264,9 @@ export default {
     },
   },
   created() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
     this.type = "incident"
     this.getPreviewData()
     this.$watch(

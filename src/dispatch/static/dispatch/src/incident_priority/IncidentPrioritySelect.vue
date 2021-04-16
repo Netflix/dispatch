@@ -58,27 +58,39 @@ export default {
     },
   },
 
-  created() {
-    this.error = null
-    this.loading = "error"
+  methods: {
+    fetchData() {
+      this.error = null
+      this.loading = "error"
 
-    let filterOptions = {
-      sortBy: ["view_order"],
-      descending: [false],
-    }
-
-    if (this.project) {
-      filterOptions = {
-        filters: {
-          project: [this.project],
-        },
+      let filterOptions = {
+        sortBy: ["view_order"],
+        descending: [false],
       }
-      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
-    }
-    IncidentPriorityApi.getAll(filterOptions).then((response) => {
-      this.items = response.data.items
-      this.loading = false
-    })
+
+      if (this.project) {
+        filterOptions = {
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      }
+      IncidentPriorityApi.getAll(filterOptions).then((response) => {
+        this.items = response.data.items
+        this.loading = false
+      })
+    },
+  },
+
+  created() {
+    this.fetchData()
+    this.$watch(
+      (vm) => [vm.project],
+      () => {
+        this.fetchData()
+      }
+    )
   },
 }
 </script>

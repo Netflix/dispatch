@@ -57,29 +57,41 @@ export default {
     },
   },
 
-  created() {
-    this.error = null
-    this.loading = "error"
-    let filterOptions = {
-      itemsPerPage: 50,
-      sortBy: ["name"],
-      descending: [false],
-    }
-
-    if (this.project) {
-      filterOptions = {
-        ...filterOptions,
-        filters: {
-          project: [this.project],
-        },
+  methods: {
+    fetchData() {
+      this.error = null
+      this.loading = "error"
+      let filterOptions = {
+        itemsPerPage: 50,
+        sortBy: ["name"],
+        descending: [false],
       }
-      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
-    }
 
-    IncidentTypeApi.getAll(filterOptions).then((response) => {
-      this.items = response.data.items
-      this.loading = false
-    })
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      }
+
+      IncidentTypeApi.getAll(filterOptions).then((response) => {
+        this.items = response.data.items
+        this.loading = false
+      })
+    },
+  },
+
+  created() {
+    this.fetchData()
+    this.$watch(
+      (vm) => [vm.project],
+      () => {
+        this.fetchData()
+      }
+    )
   },
 }
 </script>
