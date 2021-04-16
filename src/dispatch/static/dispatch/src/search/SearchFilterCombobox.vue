@@ -2,7 +2,7 @@
   <v-container>
     <v-row no-gutter>
       <v-combobox
-        v-model="terms"
+        v-model="searchFilters"
         :items="items"
         item-text="name"
         :search-input.sync="search"
@@ -47,9 +47,12 @@
 </template>
 
 <script>
-import SearchApi from "@/search/api"
 import { cloneDeep, debounce } from "lodash"
+
+import SearchApi from "@/search/api"
+import SearchUtils from "@/search/utils"
 import SearchFilterCreateDialog from "@/search/SearchFilterCreateDialog.vue"
+
 export default {
   name: "SearchFilterCombobox",
   props: {
@@ -62,6 +65,10 @@ export default {
     label: {
       type: String,
       default: "Search Filter",
+    },
+    project: {
+      type: [Object],
+      default: null,
     },
   },
 
@@ -77,7 +84,7 @@ export default {
   },
 
   computed: {
-    terms: {
+    searchFilters: {
       get() {
         return cloneDeep(this.value)
       },
@@ -97,10 +104,6 @@ export default {
     },
   },
 
-  created() {
-    this.fetchData({})
-  },
-
   watch: {
     createdFilter: function (newVal) {
       this.terms.append(newVal)
@@ -108,9 +111,26 @@ export default {
   },
 
   methods: {
-    fetchData(filterOptions) {
+    fetchData() {
       this.error = null
       this.loading = "error"
+      let filterOptions = {
+        q: this.search,
+        itemsPerPage: 50,
+        sortBy: ["name"],
+        descending: [false],
+      }
+
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      }
+
       SearchApi.getAllFilters(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
@@ -119,6 +139,16 @@ export default {
     getFilteredData: debounce(function (options) {
       this.fetchData(options)
     }, 500),
+  },
+
+  created() {
+    this.fetchData()
+    this.$watch(
+      (vm) => [vm.project],
+      () => {
+        this.fetchData()
+      }
+    )
   },
 }
 </script>

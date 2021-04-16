@@ -38,7 +38,6 @@
               <v-icon>mdi-code-json</v-icon>
             </v-list-item-action>
             <v-list-item-subtitle>
-              >
               <pre>{{ filter.expression }}</pre>
             </v-list-item-subtitle>
           </v-list-item>

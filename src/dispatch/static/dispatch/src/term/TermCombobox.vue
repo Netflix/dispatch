@@ -26,8 +26,11 @@
 </template>
 
 <script>
-import TermApi from "@/term/api"
 import { cloneDeep, debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import TermApi from "@/term/api"
+
 export default {
   name: "TermCombobox",
   props: {
@@ -42,9 +45,8 @@ export default {
       default: "Add Terms",
     },
     project: {
-      type: String,
-      required: false,
-      default: "",
+      type: [Object],
+      default: null,
     },
   },
   data() {
@@ -77,13 +79,23 @@ export default {
   },
 
   created() {
-    this.fetchData({})
+    this.fetchData()
   },
 
   methods: {
-    fetchData(filterOptions) {
+    fetchData() {
       this.error = null
       this.loading = "error"
+
+      let filterOptions = {
+        q: this.search,
+        filters: {
+          project: [this.project],
+        },
+      }
+
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+
       TermApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false

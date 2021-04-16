@@ -13,8 +13,11 @@
 </template>
 
 <script>
-import IncidentPriorityApi from "@/incident_priority/api"
 import { cloneDeep } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import IncidentPriorityApi from "@/incident_priority/api"
+
 export default {
   name: "IncidentPriorityMultiSelect",
   props: {
@@ -25,7 +28,7 @@ export default {
       },
     },
     project: {
-      type: String,
+      type: [Object],
       default: null,
     },
   },
@@ -51,7 +54,19 @@ export default {
   created() {
     this.error = null
     this.loading = "error"
-    IncidentPriorityApi.getAll().then((response) => {
+
+    let filterOptions = {
+      itemsPerPage: 50,
+      sortBy: ["name"],
+      descending: [false],
+      filters: {
+        project: [this.project],
+      },
+    }
+
+    filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+
+    IncidentPriorityApi.getAll(filterOptions).then((response) => {
       this.items = response.data.items
       this.loading = false
     })

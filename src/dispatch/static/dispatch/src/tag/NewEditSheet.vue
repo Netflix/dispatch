@@ -44,7 +44,7 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <tag-type-select v-model="tag_type" />
+                <tag-type-select :project="project" v-model="tag_type" />
               </v-flex>
               <v-flex xs12>
                 <ValidationProvider name="source" immediate>

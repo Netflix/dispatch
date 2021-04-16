@@ -42,7 +42,7 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <definition-combobox v-model="definitions" />
+                <definition-combobox :project="project" v-model="definitions" />
               </v-flex>
             </v-layout>
             <v-flex>

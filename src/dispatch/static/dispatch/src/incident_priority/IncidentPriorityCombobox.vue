@@ -11,7 +11,7 @@
     chips
     clearable
     :loading="loading"
-    @update:search-input="getFilteredData({ q: $event })"
+    @update:search-input="getFilteredData()"
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -28,8 +28,11 @@
 </template>
 
 <script>
-import IncidentPriorityApi from "@/incident_priority/api"
 import { cloneDeep, debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import IncidentPriorityApi from "@/incident_priority/api"
+
 export default {
   name: "IncidentPriorityComboBox",
   props: {
@@ -46,7 +49,7 @@ export default {
       },
     },
     project: {
-      type: String,
+      type: [Object],
       default: null,
     },
   },
@@ -80,22 +83,47 @@ export default {
     },
   },
 
-  created() {
-    this.fetchData({})
-  },
-
   methods: {
-    fetchData(filterOptions) {
+    fetchData() {
       this.error = null
       this.loading = "error"
+      let filterOptions = {
+        q: this.search,
+        sortBy: ["name"],
+        descending: [false],
+        itemsPerPage: this.numItems,
+      }
+
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      }
+
       IncidentPriorityApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
+
+        if (this.items.length < this.total) {
+          this.more = true
+        } else {
+          this.more = false
+        }
+
+        this.loading = false
       })
     },
-    getFilteredData: debounce(function (options) {
-      this.fetchData(options)
+    getFilteredData: debounce(function () {
+      this.fetchData()
     }, 500),
+  },
+
+  created() {
+    this.fetchData()
   },
 }
 </script>

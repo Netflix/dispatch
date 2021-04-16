@@ -1,7 +1,8 @@
-import TagApi from "@/tag/api"
-
 import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import TagApi from "@/tag/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -38,6 +39,9 @@ const state = {
       itemsPerPage: 10,
       sortBy: ["name"],
       descending: [false],
+      filters: {
+        project: [],
+      },
     },
     loading: false,
   },
@@ -50,7 +54,8 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    return TagApi.getAll(state.table.options)
+    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options })
+    return TagApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)

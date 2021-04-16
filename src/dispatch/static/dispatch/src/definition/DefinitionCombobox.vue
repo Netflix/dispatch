@@ -8,7 +8,7 @@
     multiple
     chips
     :loading="loading"
-    @update:search-input="getFilteredData({ q: $event })"
+    @update:search-input="getFilteredData()"
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -25,8 +25,11 @@
 </template>
 
 <script>
-import DefinitionApi from "@/definition/api"
 import { cloneDeep, debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import DefinitionApi from "@/definition/api"
+
 export default {
   name: "DefinitionCombobox",
   props: {
@@ -72,13 +75,23 @@ export default {
   },
 
   created() {
-    this.fetchData({})
+    this.fetchData()
   },
 
   methods: {
-    fetchData(filterOptions) {
+    fetchData() {
       this.error = null
       this.loading = "error"
+
+      let filterOptions = {
+        q: this.search,
+        filters: {
+          project: [this.project],
+        },
+      }
+
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+
       DefinitionApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false

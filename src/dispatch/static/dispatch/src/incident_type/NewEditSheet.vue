@@ -68,17 +68,25 @@
               </v-flex>
               <v-flex xs12>
                 <ValidationObserver disabled>
-                  <service-select label="Commander Service" v-model="commander_service" />
+                  <service-select
+                    :project="project"
+                    label="Commander Service"
+                    v-model="commander_service"
+                  />
                 </ValidationObserver>
               </v-flex>
               <v-flex xs12>
                 <ValidationObserver disabled>
-                  <service-select label="Liaison Service" v-model="liaison_service" />
+                  <service-select
+                    :project="project"
+                    label="Liaison Service"
+                    v-model="liaison_service"
+                  />
                 </ValidationObserver>
               </v-flex>
               <v-flex xs12>
                 <ValidationObserver disabled>
-                  <document-select v-model="template_document" />
+                  <document-select :project="project" v-model="template_document" />
                 </ValidationObserver>
               </v-flex>
               <v-flex xs 12>
@@ -98,6 +106,7 @@
               <v-flex xs12>
                 <plugin-metadata-input
                   @input="updatePluginMetadata({ data: $event })"
+                  :project="project"
                   v-model="plugin_metadata"
                 />
               </v-flex>

@@ -30,6 +30,7 @@ import { mapActions } from "vuex"
 import { cloneDeep } from "lodash"
 import { ValidationProvider } from "vee-validate"
 
+import SearchUtils from "@/search/utils"
 import DocumentApi from "@/document/api"
 import NewEditSheet from "@/document/NewEditSheet.vue"
 
@@ -44,7 +45,7 @@ export default {
       },
     },
     project: {
-      type: String,
+      type: [Object],
       default: null,
     },
   },
@@ -98,15 +99,39 @@ export default {
         this.loading = false
       })
     },
+    fetchData() {
+      this.error = null
+      this.loading = "error"
+      let filterOptions = {
+        sortBy: ["name"],
+        descending: [false],
+      }
+
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      }
+
+      DocumentApi.getAll(filterOptions).then((response) => {
+        this.items = response.data.items
+        this.loading = false
+      })
+    },
   },
 
   created() {
-    this.error = null
-    this.loading = "error"
-    DocumentApi.getAll().then((response) => {
-      this.items = response.data.items
-      this.loading = false
-    })
+    this.fetchData()
+    this.$watch(
+      (vm) => [vm.project],
+      () => {
+        this.fetchData()
+      }
+    )
   },
 }
 </script>

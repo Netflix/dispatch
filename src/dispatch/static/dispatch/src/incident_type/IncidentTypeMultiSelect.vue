@@ -13,8 +13,11 @@
 </template>
 
 <script>
-import IncidentTypeApi from "@/incident_type/api"
 import { cloneDeep } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import IncidentTypeApi from "@/incident_type/api"
+
 export default {
   name: "IncidentTypeMultiSelect",
 
@@ -30,6 +33,10 @@ export default {
       default: function () {
         return []
       },
+    },
+    project: {
+      type: [Object],
+      default: null,
     },
   },
 
@@ -55,10 +62,13 @@ export default {
     this.error = null
     this.loading = "error"
 
-    let params = {
+    let filterOptions = {
       itemsPerPage: 50,
       sortBy: ["name"],
       descending: [false],
+      filters: {
+        project: [this.project],
+      },
     }
 
     if (this.visibilities.length) {
@@ -72,10 +82,12 @@ export default {
         })
       })
 
-      params = { ...params, ...{ filter: filter } }
+      filterOptions = { ...filterOptions, ...{ filter: filter } }
     }
 
-    IncidentTypeApi.getAll(params).then((response) => {
+    filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+
+    IncidentTypeApi.getAll(filterOptions).then((response) => {
       this.items = response.data.items
       this.loading = false
     })

@@ -7,7 +7,7 @@
     hide-selected
     :label="label"
     :loading="loading"
-    @update:search-input="getFilteredData({ q: $event })"
+    @update:search-input="getFilteredData()"
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -54,7 +54,7 @@ export default {
       default: "Plugins",
     },
     project: {
-      type: Object,
+      type: [Object],
       default: null,
     },
   },
@@ -98,21 +98,19 @@ export default {
         itemsPerPage: this.numItems,
       })
     },
-    fetchData(filterOptions) {
+    fetchData() {
       this.error = null
       this.loading = "error"
 
-      if (this.project) {
-        let options = {
-          ...filterOptions,
-          filters: {
-            project: [this.project],
-            type: [this.type],
-          },
-        }
-
-        filterOptions = SearchUtils.createParametersFromTableOptions({ ...options })
+      let filterOptions = {
+        q: this.search,
+        filters: {
+          project: [this.project],
+          type: [this.type],
+        },
       }
+
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
       PluginApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items

@@ -81,6 +81,7 @@
               <v-flex xs12>
                 <search-filter-combobox
                   v-model="filters"
+                  :project="project"
                   label="Filters"
                   hint="Select one or more filters that will determine when notification is sent."
                 />
