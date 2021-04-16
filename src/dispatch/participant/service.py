@@ -116,7 +116,7 @@ def get_or_create(
         )
 
         individual_info = {}
-        contact_plugin = plugin_service.get_active(
+        contact_plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="contact"
         )
         if contact_plugin:

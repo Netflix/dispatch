@@ -30,7 +30,7 @@ def assign_incident_role(
     # default to reporter if we don't have an oncall plugin enabled
     assignee_email = reporter_email
 
-    oncall_plugin = plugin_service.get_active(
+    oncall_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
     )
     if role == ParticipantRoleType.incident_commander:

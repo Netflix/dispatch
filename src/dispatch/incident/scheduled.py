@@ -50,7 +50,7 @@ def auto_tagger(db_session):
     matcher = build_phrase_matcher("dispatch-tag", phrases)
 
     for incident in get_all(db_session=db_session).all():
-        plugin = plugin_service.get_active(
+        plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="storage"
         )
 

@@ -60,17 +60,19 @@ def create_task_reminders(db_session=None):
                 )
                 return
 
-            oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
+            oncall_plugin = plugin_service.get_active_instance(
+                db_session=db_session, plugin_type="oncall"
+            )
 
-            if oncall_plugin.slug != oncall_service.type:
+            if oncall_plugin.plugin.slug != oncall_service.type:
                 log.warning(
-                    f"Unable to resolve the oncall. Oncall plugin enabled not of type {oncall_plugin.slug}."
+                    f"Unable to resolve the oncall. Oncall plugin enabled not of type {oncall_plugin.plugin.slug}."
                 )
                 return
 
             if not oncall_plugin:
                 log.warning(
-                    f"Unable to resolve the oncall, INCIDENT_ONCALL_SERVICE_ID configured, but associated plugin ({oncall_plugin.slug}) is not enabled."
+                    f"Unable to resolve the oncall, INCIDENT_ONCALL_SERVICE_ID configured, but associated plugin ({oncall_pluginplugin..slug}) is not enabled."
                 )
                 contact_fullname = "Unknown"
                 contact_weblink = None
@@ -90,7 +92,7 @@ def create_task_reminders(db_session=None):
 def sync_tasks(db_session, incidents, notify: bool = False):
     """Syncs tasks and sends update notifications to incident channels."""
     for incident in incidents:
-        drive_task_plugin = plugin_service.get_active(
+        drive_task_plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="task"
         )
 

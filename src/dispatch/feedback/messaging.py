@@ -22,7 +22,7 @@ def send_incident_feedback_daily_report(
     Sends an incident feedback daily report to all
     incident commanders who received feedback.
     """
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
+    plugin = plugin_service.get_active_instance(db_session=db_session, plugin_type="email")
 
     if not plugin:
         log.warning("Incident feedback daily report not sent. Email plugin is not enabled.")

@@ -104,11 +104,7 @@
                 />
               </v-flex>
               <v-flex xs12>
-                <plugin-metadata-input
-                  @input="updatePluginMetadata({ data: $event })"
-                  :project="project"
-                  v-model="plugin_metadata"
-                />
+                <plugin-metadata-input :project="project" v-model="plugin_metadata" />
               </v-flex>
             </v-layout>
           </v-container>
@@ -174,9 +170,6 @@ export default {
 
   methods: {
     ...mapActions("incident_type", ["save", "closeCreateEdit"]),
-    updatePluginMetadata(event) {
-      this.plugin_metadata = event.data
-    },
   },
   created() {
     if (this.query.project) {

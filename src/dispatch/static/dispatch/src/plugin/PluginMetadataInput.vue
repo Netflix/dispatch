@@ -83,7 +83,7 @@ export default {
       default: null,
     },
     type: {
-      String,
+      type: String,
       default: null,
     },
   },

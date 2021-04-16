@@ -137,7 +137,7 @@ def create_executive_report(
     )
 
     # we create a new document for the executive report
-    storage_plugin = plugin_service.get_active(
+    storage_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="storage"
     )
     executive_report_document_name = f"{incident.name} - Executive Report - {current_date}"
@@ -160,7 +160,7 @@ def create_executive_report(
 
     event_service.log(
         db_session=db_session,
-        source=storage_plugin.title,
+        source=storage_plugin.plugin.title,
         description="Executive report document added to storage",
         incident_id=incident.id,
     )
@@ -189,7 +189,7 @@ def create_executive_report(
     )
 
     # we update the incident update document
-    document_plugin = plugin_service.get_active(
+    document_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="document"
     )
     document_plugin.instance.update(

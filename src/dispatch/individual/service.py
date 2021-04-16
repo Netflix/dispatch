@@ -15,7 +15,7 @@ from .models import IndividualContact, IndividualContactCreate, IndividualContac
 
 def resolve_user_by_email(email, db_session: SessionLocal):
     """Resolves a user's details given their email."""
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="contact")
+    plugin = plugin_service.get_active_instance(db_session=db_session, plugin_type="contact")
     return plugin.instance.get(email)
 
 
@@ -47,7 +47,7 @@ def get_or_create(
     contact = get_by_email(db_session=db_session, email=email)
 
     if not contact:
-        contact_plugin = plugin_service.get_active(
+        contact_plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="contact"
         )
         individual_info = {}

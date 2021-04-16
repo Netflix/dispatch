@@ -342,7 +342,7 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
 
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    contact_plugin = plugin_service.get_active(
+    contact_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="contact"
     )
 
