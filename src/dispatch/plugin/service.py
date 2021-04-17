@@ -112,7 +112,7 @@ def update_instance(
             )
             if len(enabled_plugins) == 1:
                 raise InvalidConfiguration(
-                    f"Cannot disable plugin: {plugin_instance.plugin.title}. It is required and no other plugins of type {plugin.type} are enabled."
+                    f"Cannot disable plugin: {plugin_instance.plugin.title}. It is required and no other plugins of type {plugin_instance.plugin.type} are enabled."
                 )
 
         if plugin_instance.plugin.type == OncallPlugin.type:

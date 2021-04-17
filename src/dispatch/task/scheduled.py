@@ -72,7 +72,7 @@ def create_task_reminders(db_session=None):
 
             if not oncall_plugin:
                 log.warning(
-                    f"Unable to resolve the oncall, INCIDENT_ONCALL_SERVICE_ID configured, but associated plugin ({oncall_pluginplugin..slug}) is not enabled."
+                    f"Unable to resolve the oncall, INCIDENT_ONCALL_SERVICE_ID configured, but associated plugin ({oncall_plugin.plugin.slug}) is not enabled."
                 )
                 contact_fullname = "Unknown"
                 contact_weblink = None
