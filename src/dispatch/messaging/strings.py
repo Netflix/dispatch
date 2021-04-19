@@ -24,6 +24,7 @@ class MessageType(str, Enum):
     incident_daily_report = "incident-daily-report"
     incident_executive_report = "incident-executive-report"
     incident_feedback_daily_report = "incident-feedback-daily-report"
+    incident_management_help_tips = "incident-management-help-tips"
     incident_notification = "incident-notification"
     incident_participant_suggested_reading = "incident-participant-suggested-reading"
     incident_participant_welcome = "incident-participant-welcome"
@@ -276,6 +277,16 @@ Also, please consider taking the following actions:
 
 INCIDENT_CLOSED_RATING_FEEDBACK_DESCRIPTION = """
 Thanks for participating in the {{name}} ("{{title}}") incident. We would appreciate if you could rate your experience and provide feedback."""
+
+INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE_DESCRIPTION = """
+Hey, I see you're the Incident Commander for {{name}} ("{{title}}"). Here are a few things to consider when managing the incident:
+\n • Keep the incident and its status up to date using the Slack `{{update_command}}` command.
+\n • Invite incident participants and team oncalls by mentioning them in the incident channel or using the Slack `{{engage_oncall_command}}` command.
+\n • Keep incident participants and stakeholders informed using the `{{tactical_report_command}}` and `{{executive_report_command}}` commands.
+\n • Get links to all incident resources including the Slack commands reference sheet and Security Incident Response FAQ by running the `{{list_resources_command}}` command.
+\n\n
+To find a Slack command, simply type `/` in the message field or click the lightning bolt icon to the left of the message field.
+"""
 
 INCIDENT_TYPE_CHANGE_DESCRIPTION = """
 The incident type has been changed from {{ incident_type_old }} to {{ incident_type_new }}.""".replace(
@@ -614,6 +625,14 @@ INCIDENT = [
     INCIDENT_TYPE,
     INCIDENT_PRIORITY,
     INCIDENT_COMMANDER,
+]
+
+
+INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE = [
+    {
+        "title": "{{name}} Incident - Management Help Tips",
+        "text": INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE_DESCRIPTION,
+    }
 ]
 
 
