@@ -743,7 +743,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         incident_id=incident.id,
     )
 
-    suggested_document_items = get_suggested_document_items(incident.id, db_session)
+    suggested_document_items = get_suggested_document_items(incident, db_session)
 
     for participant in incident.participants:
         # we announce the participant in the conversation
