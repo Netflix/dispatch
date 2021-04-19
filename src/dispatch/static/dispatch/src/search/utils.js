@@ -47,6 +47,10 @@ export default {
     forEach(filters, function (value, key) {
       let subFilter = []
       each(value, function (value) {
+        // filter null values
+        if (!value) {
+          return
+        }
         if (has(value, "id")) {
           subFilter.push({
             model: toPascalCase(key),

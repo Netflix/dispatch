@@ -1,7 +1,16 @@
 <template>
   <v-container>
     <v-row no-gutter>
-      <span class="subtitle-2">Workflow Parameters</span>
+      <span class="subtitle-2">Workflow Configuration</span>
+      <v-spacer />
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn small icon @click="addItem()" v-on="on">
+            <v-icon>add</v-icon>
+          </v-btn>
+        </template>
+        <span>Add Configuration Item</span>
+      </v-tooltip>
     </v-row>
     <span v-for="(param, idx) in parameters" :key="idx">
       <v-row align="center" dense>
@@ -31,11 +40,6 @@
         </v-col>
       </v-row>
     </span>
-    <v-row align="center" dense>
-      <v-col cols="12" sm="12">
-        <v-btn @click="addItem()"> Add Parameter </v-btn>
-      </v-col>
-    </v-row>
   </v-container>
 </template>
 

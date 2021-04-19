@@ -43,7 +43,7 @@ def send_tactical_report_to_conversation(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
 
@@ -74,7 +74,7 @@ def send_tactical_report_to_tactical_group(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="email"
     )
 
@@ -110,7 +110,7 @@ def send_executive_report_to_notifications_group(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="email"
     )
 
@@ -153,7 +153,7 @@ def send_incident_report_reminder(
         if now - last_reported_at < timedelta(hours=1):
             return
 
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not plugin:

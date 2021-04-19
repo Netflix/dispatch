@@ -5,12 +5,17 @@
         {{ priority }}
       </v-badge>
     </div>
-    <div v-if="priority == 'Medium'">
+    <div v-else-if="priority == 'Medium'">
       <v-badge bordered color="warning" dot left offset-x="-10" offset-y="12">
         {{ priority }}
       </v-badge>
     </div>
-    <div v-if="priority == 'High'">
+    <div v-else-if="priority == 'High'">
+      <v-badge bordered color="error" dot left offset-x="-10" offset-y="12">
+        {{ priority }}
+      </v-badge>
+    </div>
+    <div v-else>
       <v-badge bordered color="error" dot left offset-x="-10" offset-y="12">
         {{ priority }}
       </v-badge>

@@ -482,7 +482,7 @@ def build_update_notifications_group_blocks(incident: Incident, db_session: Sess
         "private_metadata": json.dumps({"incident_id": str(incident.id)}),
     }
 
-    group_plugin = plugin_service.get_active(
+    group_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
     )
     members = group_plugin.instance.list(incident.notifications_group.email)
@@ -547,7 +547,7 @@ def update_notifications_group_from_submitted_form(action: dict, db_session=None
     incident_id = action["view"]["private_metadata"]["incident_id"]
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    group_plugin = plugin_service.get_active(
+    group_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
     )
 

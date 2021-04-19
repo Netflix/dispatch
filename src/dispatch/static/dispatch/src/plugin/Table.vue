@@ -3,6 +3,7 @@
     <new-edit-sheet />
     <div class="headline">Plugins</div>
     <v-spacer />
+    <v-btn color="info" class="ml-2" @click="createEditShow()"> New </v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -37,11 +38,11 @@
               <template v-slot:item.enabled="{ item }">
                 <v-simple-checkbox v-model="item.enabled" disabled />
               </template>
-              <template v-slot:item.multiple="{ item }">
-                <v-simple-checkbox v-model="item.multiple" disabled />
+              <template v-slot:item.plugin.multiple="{ item }">
+                <v-simple-checkbox v-model="item.plugin.multiple" disabled />
               </template>
-              <template v-slot:item.required="{ item }">
-                <v-simple-checkbox v-model="item.required" disabled />
+              <template v-slot:item.plugin.required="{ item }">
+                <v-simple-checkbox v-model="item.plugin.required" disabled />
               </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
@@ -51,7 +52,7 @@
                     </v-btn>
                   </template>
                   <v-list>
-                    <v-list-item @click="editShow(item)">
+                    <v-list-item @click="createEditShow(item)">
                       <v-list-item-title>View / Edit</v-list-item-title>
                     </v-list-item>
                   </v-list>
@@ -68,7 +69,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import NewEditSheet from "@/plugin/editSheet.vue"
+import NewEditSheet from "@/plugin/NewEditSheet.vue"
 export default {
   name: "PluginTable",
 
@@ -78,14 +79,14 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Title", value: "title", sortable: true },
-        { text: "Slug", value: "slug", sortable: true },
-        { text: "Author", value: "author", sortable: true },
-        { text: "Version", value: "version", sortable: true },
+        { text: "Title", value: "plugin.title", sortable: true },
+        { text: "Slug", value: "plugin.slug", sortable: true },
+        { text: "Author", value: "plugin.author", sortable: true },
+        { text: "Version", value: "plugin.version", sortable: true },
         { text: "Enabled", value: "enabled", sortable: true },
-        { text: "Required", value: "required", sortable: true },
-        { text: "Multiple Allowed", value: "multiple", sortable: true },
-        { text: "Type", value: "type", sortable: true },
+        { text: "Required", value: "plugin.required", sortable: true },
+        { text: "Multiple Allowed", value: "plugin.multiple", sortable: true },
+        { text: "Type", value: "plugin.type", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
@@ -109,12 +110,12 @@ export default {
   created() {
     this.project = [{ name: this.query.project }]
 
-    this.getAll()
+    this.getAllInstances()
 
     this.$watch(
       (vm) => [vm.page],
       () => {
-        this.getAll()
+        this.getAllInstances()
       }
     )
 
@@ -122,13 +123,13 @@ export default {
       (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
       () => {
         this.page = 1
-        this.getAll()
+        this.getAllInstances()
       }
     )
   },
 
   methods: {
-    ...mapActions("plugin", ["getAll", "editShow"]),
+    ...mapActions("plugin", ["getAllInstances", "createEditShow"]),
   },
 }
 </script>

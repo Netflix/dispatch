@@ -140,13 +140,6 @@ extend("required", {
 export default {
   name: "IncidentPriorityNewEditSheet",
 
-  props: {
-    project: {
-      type: String,
-      default: null,
-    },
-  },
-
   components: {
     ValidationObserver,
     ValidationProvider,

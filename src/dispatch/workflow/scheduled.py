@@ -12,6 +12,7 @@ from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack.modals import workflow_service
 from dispatch.scheduler import scheduler
 from dispatch.incident import service as incident_service
+from dispatch.project import service as project_service
 from dispatch.incident.enums import IncidentStatus
 from .models import WorkflowInstanceStatus, WorkflowInstanceUpdate
 from .flows import send_workflow_notification
@@ -23,7 +24,7 @@ WORKFLOW_SYNC_INTERVAL = 30  # seconds
 
 def sync_workflows(db_session, incidents, notify: bool = False):
     """Performs workflow sync."""
-    p = plugin_service.get_active(db_session=db_session, plugin_type="workflow")
+    p = plugin_service.get_active_instance(db_session=db_session, plugin_type="workflow")
     if not p:
         log.warning("No workflow plugin is enabled.")
         return
@@ -93,14 +94,15 @@ def sync_workflows(db_session, incidents, notify: bool = False):
 def sync_active_stable_workflows(db_session=None):
     """Syncs incident workflows."""
     # we get all active and stable incidents
-    active_incidents = incident_service.get_all_by_status(
-        db_session=db_session, status=IncidentStatus.active
-    )
-    stable_incidents = incident_service.get_all_by_status(
-        db_session=db_session, status=IncidentStatus.stable
-    )
-    incidents = active_incidents + stable_incidents
-    sync_workflows(db_session, incidents, notify=True)
+    for project in project_service.get_all(db_session=db_session):
+        active_incidents = incident_service.get_all_by_status(
+            db_session=db_session, project_id=project.id, status=IncidentStatus.active
+        )
+        stable_incidents = incident_service.get_all_by_status(
+            db_session=db_session, project_id=project.id, status=IncidentStatus.stable
+        )
+        incidents = active_incidents + stable_incidents
+        sync_workflows(db_session, incidents, notify=True)
 
 
 @scheduler.add(every(1).day, name="incident-workflow-daily-sync")

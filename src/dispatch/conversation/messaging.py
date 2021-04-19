@@ -8,7 +8,7 @@ def send_feedack_to_user(
     """Sends feedack to the user using an ephemeral message."""
     blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": message}}]
 
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project_id, plugin_type="conversation"
     )
     plugin.instance.send_ephemeral(

@@ -86,10 +86,12 @@ def update(*, db_session, service: Service, service_in: ServiceUpdate) -> Servic
     )
 
     if service_in.is_active:  # user wants to enable the service
-        oncall_plugin = plugin_service.get_by_slug(db_session=db_session, slug=service_in.type)
-        if not oncall_plugin.enabled:
+        oncall_plugin_instance = plugin_service.get_active_instance_by_slug(
+            db_session=db_session, slug=service_in.type, project_id=service.project.id
+        )
+        if not oncall_plugin_instance.enabled:
             raise InvalidConfiguration(
-                f"Cannot enable service: {service.name}. Its associated plugin {oncall_plugin.title} is not enabled."
+                f"Cannot enable service: {service.name}. Its associated plugin {oncall_plugin_instance.plugin.title} is not enabled."
             )
 
     for field in service_data:
