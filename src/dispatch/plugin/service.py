@@ -98,7 +98,7 @@ def update_instance(
     if plugin_instance_in.enabled:  # user wants to enable the plugin
         if not plugin_instance.plugin.multiple:
             # we can't have multiple plugins of this type disable the currently enabled one
-            enabled_plugins = get_enabled_instance_by_type(
+            enabled_plugin_instances = get_enabled_instances_by_type(
                 db_session=db_session, plugin_type=plugin_instance.plugin.type
             )
             if enabled_plugins:
