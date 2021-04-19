@@ -18,6 +18,7 @@ from dispatch.messaging.strings import (
     INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION,
     INCIDENT_COMMANDER,
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
+    INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE,
     INCIDENT_NAME,
     INCIDENT_NAME_WITH_ENGAGEMENT,
     INCIDENT_NEW_ROLE_NOTIFICATION,
@@ -793,3 +794,53 @@ def send_incident_rating_feedback_message(incident: Incident, db_session: Sessio
         )
 
     log.debug("Incident rating and feedback message sent to all participants.")
+
+
+def send_incident_management_help_tips_message(incident: Incident, db_session: SessionLocal):
+    """
+    Sends a direct message to the incident commander
+    with help tips on how to manage the incident.
+    """
+    notification_text = "Incident Management Help Tips"
+    message_template = INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE
+
+    plugin = plugin_service.get_active(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
+    if not plugin:
+        log.warning(
+            "Incident management help tips message not sent, no conversation plugin enabled."
+        )
+        return
+
+    engage_oncall_command = plugin.instance.get_command_name(ConversationCommands.engage_oncall)
+    list_resources_command = plugin.instance.get_command_name(ConversationCommands.list_resources)
+    executive_report_command = plugin.instance.get_command_name(
+        ConversationCommands.executive_report
+    )
+    tactical_report_command = plugin.instance.get_command_name(ConversationCommands.tactical_report)
+    update_command = plugin.instance.get_command_name(ConversationCommands.update_incident)
+
+    items = [
+        {
+            "name": incident.name,
+            "title": incident.title,
+            "engage_oncall_command": engage_oncall_command,
+            "list_resources_command": list_resources_command,
+            "executive_report_command": executive_report_command,
+            "tactical_report_command": tactical_report_command,
+            "update_command": update_command,
+        }
+    ]
+
+    plugin.instance.send_direct(
+        incident.commander.individual.email,
+        notification_text,
+        message_template,
+        MessageType.incident_management_help_tips,
+        items=items,
+    )
+
+    log.debug(
+        f"Incident management help tips message sent to incident commander with email {incident.commander.individual.email}."
+    )

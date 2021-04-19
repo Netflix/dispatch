@@ -58,6 +58,7 @@ from .messaging import (
     send_incident_closed_information_review_reminder,
     send_incident_commander_readded_notification,
     send_incident_created_notifications,
+    send_incident_management_help_tips_message,
     send_incident_new_role_assigned_notification,
     send_incident_participant_announcement_message,
     send_incident_rating_feedback_message,
@@ -749,16 +750,16 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         # should protect ourselves from failures of any one participant
         try:
             send_incident_participant_announcement_message(
-                participant.individual.email, incident.id, db_session
+                participant.individual.email, incident, db_session
             )
 
             # we send the welcome messages to the participant
             send_incident_welcome_participant_messages(
-                participant.individual.email, incident.id, db_session
+                participant.individual.email, incident, db_session
             )
 
             send_incident_suggested_reading_messages(
-                incident.id, suggested_document_items, participant.individual.email, db_session
+                incident, suggested_document_items, participant.individual.email, db_session
             )
 
         except Exception as e:
@@ -770,6 +771,9 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         description="Participants announced and welcome messages sent",
         incident_id=incident.id,
     )
+
+    # we send a message to the incident commander with tips on how to manage the incident
+    send_incident_management_help_tips_message(incident, db_session)
 
 
 def incident_active_status_flow(incident: Incident, db_session=None):
@@ -1134,7 +1138,10 @@ def incident_assign_role_flow(
             )
 
     if assignee_role == ParticipantRoleType.incident_commander:
-        if incident.status != IncidentStatus.closed:
+        # we send a message to the incident commander with tips on how to manage the incident
+        send_incident_management_help_tips_message(incident, db_session)
+
+        if incident.status != IncidentStatus.closed.value:
             # we update the conversation topic
             set_conversation_topic(incident, db_session)
 
