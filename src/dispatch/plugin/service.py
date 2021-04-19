@@ -84,7 +84,9 @@ def get_active_instance_by_slug(
     return plugin
 
 
-def get_enabled_instance_by_type(*, db_session, plugin_type: str) -> List[Optional[PluginInstance]]:
+def get_enabled_instances_by_type(
+    *, db_session, plugin_type: str
+) -> List[Optional[PluginInstance]]:
     """Fetches all enabled plugins for a given type."""
     return (
         db_session.query(PluginInstance)
@@ -96,7 +98,7 @@ def get_enabled_instance_by_type(*, db_session, plugin_type: str) -> List[Option
 
 
 def create_instance(*, db_session, plugin_instance_in: PluginInstanceCreate) -> PluginInstance:
-    """Creates a new plugin."""
+    """Creates a new plugin instance."""
     project = project_service.get_by_name(
         db_session=db_session, name=plugin_instance_in.project.name
     )
@@ -112,28 +114,28 @@ def create_instance(*, db_session, plugin_instance_in: PluginInstanceCreate) -> 
 def update_instance(
     *, db_session, plugin_instance: PluginInstance, plugin_instance_in: PluginInstanceUpdate
 ) -> Plugin:
-    """Updates a plugin."""
+    """Updates a plugin instance."""
     plugin_data = jsonable_encoder(plugin_instance)
     update_data = plugin_instance_in.dict(skip_defaults=True)
 
     if plugin_instance_in.enabled:  # user wants to enable the plugin
         if not plugin_instance.plugin.multiple:
             # we can't have multiple plugins of this type disable the currently enabled one
-            enabled_plugins = get_enabled_instance_by_type(
+            enabled_plugin_instances = get_enabled_instances_by_type(
                 db_session=db_session, plugin_type=plugin_instance.plugin.type
             )
-            if enabled_plugins:
-                enabled_plugins[0].enabled = False
-                db_session.add(enabled_plugins[0])
+            if enabled_plugin_instances:
+                enabled_plugin_instances[0].enabled = False
+                db_session.add(enabled_plugin_instances[0])
 
     if not plugin_instance_in.enabled:  # user wants to disable the plugin
         if plugin_instance.plugin.required:
-            enabled_plugins = get_enabled_instance_by_type(
+            enabled_plugins = get_enabled_instances_by_type(
                 db_session=db_session, plugin_type=plugin_instance.plugin.type
             )
             if len(enabled_plugins) == 1:
                 raise InvalidConfiguration(
-                    f"Cannot disable plugin: {plugin_instance.plugin.title}. It is required and no other plugins of type {plugin_instance.plugin.type} are enabled."
+                    f"Cannot disable plugin instance: {plugin_instance.plugin.title}. It is required and no other plugin instances of type {plugin_instance.plugin.type} are enabled."
                 )
 
         if plugin_instance.plugin.type == OncallPlugin.type:
@@ -142,7 +144,7 @@ def update_instance(
             )
             if oncall_services:
                 raise InvalidConfiguration(
-                    f"Cannot disable plugin: {plugin_instance.plugin.title}. One or more oncall services depend on it. "
+                    f"Cannot disable plugin instance: {plugin_instance.plugin.title}. One or more oncall services depend on it. "
                 )
 
     for field in plugin_data:
@@ -155,6 +157,6 @@ def update_instance(
 
 
 def delete_instance(*, db_session, plugin_instance_id: int):
-    """Deletes a plugin."""
+    """Deletes a plugin instance."""
     db_session.query(PluginInstance).filter(PluginInstance.id == plugin_instance_id).delete()
     db_session.commit()
