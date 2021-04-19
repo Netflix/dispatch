@@ -11,7 +11,11 @@ from dispatch.conversation.enums import ConversationCommands
 from dispatch.database.core import SessionLocal, resolve_attr
 from dispatch.document import service as document_service
 from dispatch.incident.enums import IncidentStatus
+from dispatch.project.models import Project
 from dispatch.incident.models import Incident, IncidentRead
+from dispatch.incident_priority.models import IncidentPriority
+from dispatch.incident_type.models import IncidentType
+
 from dispatch.notification import service as notification_service
 from dispatch.messaging.strings import (
     INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION,
@@ -43,15 +47,21 @@ log = logging.getLogger(__name__)
 
 
 def get_suggested_documents(
-    db_session, project_id: int, incident_type: str, priority: str, description: str
+    db_session,
+    project: Project,
+    incident_type: IncidentType,
+    incident_priority: IncidentPriority,
+    description: str,
 ) -> list:
     """Get additional incident documents based on priority, type, and description."""
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=project_id, plugin_type="document-resolver"
+        db_session=db_session, project_id=project.id, plugin_type="document-resolver"
     )
     documents = []
     if plugin:
-        documents = plugin.instance.get(incident_type, priority, description, db_session=db_session)
+        documents = plugin.instance.get(
+            incident_type, incident_priority, description, project, db_session=db_session
+        )
     return documents
 
 
@@ -191,7 +201,7 @@ def get_suggested_document_items(incident: Incident, db_session: SessionLocal):
     """Create the suggested document item message."""
     suggested_documents = get_suggested_documents(
         db_session,
-        incident.project.id,
+        incident.project,
         incident.incident_type,
         incident.incident_priority,
         incident.description,
@@ -804,7 +814,7 @@ def send_incident_management_help_tips_message(incident: Incident, db_session: S
     notification_text = "Incident Management Help Tips"
     message_template = INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE
 
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not plugin:

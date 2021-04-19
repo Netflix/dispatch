@@ -13,6 +13,7 @@ from dispatch.models import (
     ServiceReadNested,
     TeamReadNested,
 )
+from dispatch.project.models import ProjectRead
 from dispatch.document.models import DocumentRead
 from dispatch.term.models import TermRead
 
@@ -123,6 +124,7 @@ class ContextBase(DispatchBase):
     incident_priorities: Optional[List[IncidentPriorityRead]] = []
     incident_types: Optional[List[IncidentTypeRead]] = []
     terms: Optional[List[TermRead]] = []
+    project: ProjectRead
 
 
 class RouteBase(DispatchBase):
