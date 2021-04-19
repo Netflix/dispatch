@@ -840,6 +840,7 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
         name=incident_review_document["name"],
         resource_id=incident_review_document["id"],
         resource_type=incident_review_document["resource_type"],
+        project=incident.project,
         weblink=incident_review_document["weblink"],
     )
     incident.documents.append(

@@ -169,6 +169,7 @@ def create_executive_report(
         name=executive_report_document["name"],
         resource_id=executive_report_document["id"],
         resource_type=executive_report_document["resource_type"],
+        project=incident.project,
         weblink=executive_report_document["weblink"],
     )
     executive_report.document = document_service.create(

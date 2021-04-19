@@ -258,6 +258,7 @@ export default {
       filter: JSON.stringify({
         and: [
           {
+            model: "PluginInstance",
             field: "enabled",
             op: "==",
             value: "true",

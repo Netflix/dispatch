@@ -21,6 +21,7 @@ from dispatch.document.service import get_by_incident_id_and_resource_type as ge
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.individual import service as individual_service
+from dispatch.project import service as project_service
 from dispatch.plugin import service as plugin_service
 from dispatch.scheduler import scheduler
 from dispatch.service import service as service_service
@@ -141,12 +142,13 @@ def daily_sync_task(db_session=None):
 @background_task
 def sync_active_stable_tasks(db_session=None):
     """Syncs incident tasks."""
-    # we get all active and stable incidents
-    active_incidents = incident_service.get_all_by_status(
-        db_session=db_session, status=IncidentStatus.active
-    )
-    stable_incidents = incident_service.get_all_by_status(
-        db_session=db_session, status=IncidentStatus.stable
-    )
-    incidents = active_incidents + stable_incidents
-    sync_tasks(db_session, incidents, notify=True)
+    for project in project_service.get_all(db_session=db_session):
+        # we get all active and stable incidents
+        active_incidents = incident_service.get_all_by_status(
+            db_session=db_session, project_id=project.id, status=IncidentStatus.active
+        )
+        stable_incidents = incident_service.get_all_by_status(
+            db_session=db_session, project_id=project.id, status=IncidentStatus.stable
+        )
+        incidents = active_incidents + stable_incidents
+        sync_tasks(db_session, incidents, notify=True)

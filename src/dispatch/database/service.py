@@ -7,7 +7,6 @@ from fastapi import Depends, Query
 
 from sqlalchemy import and_, not_, orm, func, desc
 from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
-from sqlalchemy_searchable import inspect_search_vectors
 
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user

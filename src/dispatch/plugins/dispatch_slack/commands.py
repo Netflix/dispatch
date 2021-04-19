@@ -416,20 +416,28 @@ def list_incidents(incident_id: int, command: dict = None, db_session=None):
     and closed incidents in the last 24 hours."""
     incidents = []
 
+    # scopes reply to the current incident's project
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
     # We fetch active incidents
     incidents = incident_service.get_all_by_status(
-        db_session=db_session, status=IncidentStatus.active.value
+        db_session=db_session, project_id=incident.project.id, status=IncidentStatus.active.value
     )
     # We fetch stable incidents
     incidents.extend(
         incident_service.get_all_by_status(
-            db_session=db_session, status=IncidentStatus.stable.value
+            db_session=db_session,
+            project_id=incident.project.id,
+            status=IncidentStatus.stable.value,
         )
     )
     # We fetch closed incidents in the last 24 hours
     incidents.extend(
         incident_service.get_all_last_x_hours_by_status(
-            db_session=db_session, status=IncidentStatus.closed.value, hours=24
+            db_session=db_session,
+            project_id=incident.project.id,
+            status=IncidentStatus.closed.value,
+            hours=24,
         )
     )
 
