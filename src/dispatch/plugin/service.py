@@ -75,7 +75,7 @@ def get_enabled_instances_by_type(*, db_session, plugin_type: str) -> List[Optio
 
 
 def create_instance(*, db_session, plugin_instance_in: PluginInstanceCreate) -> PluginInstance:
-    """Creates a new plugin."""
+    """Creates a new plugin instance."""
     project = project_service.get_by_name(
         db_session=db_session, name=plugin_instance_in.project.name
     )
