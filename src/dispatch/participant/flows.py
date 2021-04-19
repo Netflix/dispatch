@@ -65,7 +65,7 @@ def add_participant(
 def remove_participant(user_email: str, incident: Incident, db_session: SessionLocal):
     """Removes a participant."""
     # We get information about the individual
-    contact_plugin = plugin_service.get_active(
+    contact_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="contact"
     )
     individual_info = contact_plugin.instance.get(user_email)
@@ -113,7 +113,7 @@ def reactivate_participant(user_email: str, incident: Incident, db_session: Sess
     """Reactivates a participant."""
 
     # We get information about the individual
-    contact_plugin = plugin_service.get_active(
+    contact_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="contact"
     )
     individual_info = contact_plugin.instance.get(user_email)

@@ -5,10 +5,8 @@ from typing import List
 
 from fastapi import Depends, Query
 
-from sqlalchemy import and_, not_
-from sqlalchemy import orm
+from sqlalchemy import and_, not_, orm, func, desc
 from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
-from sqlalchemy_searchable import search as search_db
 
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
@@ -17,6 +15,7 @@ from dispatch.enums import Visibility
 from dispatch.feedback.models import Feedback
 from dispatch.task.models import Task
 from dispatch.project.models import Project
+from dispatch.plugin.models import Plugin, PluginInstance
 from dispatch.incident.models import Incident
 from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
@@ -68,10 +67,9 @@ def apply_model_specific_filters(model: Base, query: orm.Query, current_user: Di
 
 def apply_model_specific_joins(model: Base, query: orm.query):
     """Applies any model specific implicity joins."""
-    model_map = {Feedback: [Incident, Project], Task: [Incident, Project]}
+    model_map = {Feedback: [Incident, Project], Task: [Incident, Project], PluginInstance: [Plugin]}
 
     joined_models = model_map.get(model, [])
-    print(joined_models)
 
     for m in joined_models:
         query = query.join(m)
@@ -99,10 +97,21 @@ def composite_search(*, db_session, query_str: str, models: List[Base], current_
     return s.search(query=query)
 
 
-def search(*, db_session, query_str: str, model: str, sort=False):
+def search(*, db_session, search_query: str, model: str, sort=False):
     """Perform a search based on the query."""
-    q = db_session.query(get_class_by_tablename(model))
-    return search_db(q, query_str, sort=sort)
+    search_model = get_class_by_tablename(model)
+    query = db_session.query(search_model)
+
+    if not search_query.strip():
+        return query
+
+    vector = search_model.search_vector
+
+    query = query.filter(vector.op("@@")(func.tsq_parse(search_query)))
+    if sort:
+        query = query.order_by(desc(func.ts_rank_cd(vector, func.tsq_parse(search_query))))
+
+    return query.params(term=search_query)
 
 
 def create_sort_spec(model, sort_by, descending):
@@ -179,7 +188,7 @@ def search_filter_sort_paginate(
 
     if query_str:
         sort = False if sort_spec else True
-        query = search(db_session=db_session, query_str=query_str, model=model, sort=sort)
+        query = search(db_session=db_session, search_query=query_str, model=model, sort=sort)
 
     query = apply_model_specific_filters(model_cls, query, current_user)
     query = apply_filters(query, filter_spec)

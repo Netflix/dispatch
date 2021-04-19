@@ -6,6 +6,8 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
 from dispatch.models import DispatchBase
 
+from dispatch.organization.models import OrganizationRead
+
 
 class Project(Base):
     id = Column(Integer, primary_key=True)
@@ -26,7 +28,7 @@ class ProjectBase(DispatchBase):
 
 
 class ProjectCreate(ProjectBase):
-    pass
+    organization: OrganizationRead
 
 
 class ProjectUpdate(ProjectBase):

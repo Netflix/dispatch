@@ -113,7 +113,9 @@ def create(*, db_session, document_in: DocumentCreate) -> Document:
         incident_type_service.get_by_name(db_session=db_session, name=n.name)
         for n in document_in.incident_types
     ]
-    project = project_service.get_by_name(db_session=db_session, name=document_in.project.name)
+    project = None
+    if document_in.project:
+        project = project_service.get_by_name(db_session=db_session, name=document_in.project.name)
 
     # set the last reminder to now
     if document_in.evergreen:

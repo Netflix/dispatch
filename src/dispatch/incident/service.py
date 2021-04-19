@@ -30,7 +30,7 @@ def assign_incident_role(
     # default to reporter if we don't have an oncall plugin enabled
     assignee_email = reporter_email
 
-    oncall_plugin = plugin_service.get_active(
+    oncall_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
     )
     if role == ParticipantRoleType.incident_commander:
@@ -77,15 +77,22 @@ def get_all(*, db_session) -> List[Optional[Incident]]:
     return db_session.query(Incident)
 
 
-def get_all_by_status(*, db_session, status: str, skip=0, limit=100) -> List[Optional[Incident]]:
+def get_all_by_status(
+    *, db_session, status: str, project_id: int, skip=0, limit=100
+) -> List[Optional[Incident]]:
     """Returns all incidents based on the given status."""
     return (
-        db_session.query(Incident).filter(Incident.status == status).offset(skip).limit(limit).all()
+        db_session.query(Incident)
+        .filter(Incident.status == status)
+        .filter(Incident.project_id == project_id)
+        .offset(skip)
+        .limit(limit)
+        .all()
     )
 
 
 def get_all_last_x_hours_by_status(
-    *, db_session, status: str, hours: int, skip=0, limit=100
+    *, db_session, status: str, hours: int, project_id: int, skip=0, limit=100
 ) -> List[Optional[Incident]]:
     """Returns all incidents of a given status in the last x hours."""
     now = datetime.utcnow()
@@ -95,6 +102,7 @@ def get_all_last_x_hours_by_status(
             db_session.query(Incident)
             .filter(Incident.status == IncidentStatus.active.value)
             .filter(Incident.created_at >= now - timedelta(hours=hours))
+            .filter(Incident.project_id == project_id)
             .offset(skip)
             .limit(limit)
             .all()
@@ -105,6 +113,7 @@ def get_all_last_x_hours_by_status(
             db_session.query(Incident)
             .filter(Incident.status == IncidentStatus.stable.value)
             .filter(Incident.stable_at >= now - timedelta(hours=hours))
+            .filter(Incident.project_id == project_id)
             .offset(skip)
             .limit(limit)
             .all()
@@ -115,6 +124,7 @@ def get_all_last_x_hours_by_status(
             db_session.query(Incident)
             .filter(Incident.status == IncidentStatus.closed.value)
             .filter(Incident.closed_at >= now - timedelta(hours=hours))
+            .filter(Incident.project_id == project_id)
             .offset(skip)
             .limit(limit)
             .all()
@@ -122,12 +132,13 @@ def get_all_last_x_hours_by_status(
 
 
 def get_all_by_incident_type(
-    *, db_session, incident_type: str, skip=0, limit=100
+    *, db_session, incident_type: str, project_id: int, skip=0, limit=100
 ) -> List[Optional[Incident]]:
     """Returns all incidents with the given incident type."""
     return (
         db_session.query(Incident)
         .filter(Incident.incident_type.name == incident_type)
+        .filter(Incident.project_id == project_id)
         .offset(skip)
         .limit(limit)
         .all()

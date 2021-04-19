@@ -38,6 +38,11 @@
               loading-text="Loading... Please wait"
               show-select
             >
+              <template v-slot:item.project.name="{ item }">
+                <v-chip color="orange" text-color="white">
+                  {{ item.project.name }}
+                </v-chip>
+              </template>
               <template v-slot:item.incident_priority.name="{ item }">
                 <incident-priority :priority="item.incident_priority.name" />
               </template>
@@ -137,6 +142,7 @@ export default {
         { text: "Status", value: "status" },
         { text: "Type", value: "incident_type.name" },
         { text: "Priority", value: "incident_priority.name", width: "10%" },
+        { text: "Project", value: "project.name", sortable: true },
         { text: "Commander", value: "commander", sortable: false },
         { text: "Cost", value: "incident_costs", sortable: false },
         { text: "Reported At", value: "reported_at" },

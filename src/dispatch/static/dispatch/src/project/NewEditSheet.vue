@@ -95,13 +95,19 @@ export default {
       "selected.name",
       "selected.description",
       "selected.id",
+      "selected.organization",
       "selected.loading",
       "dialogs.showCreateEdit",
     ]),
+    ...mapFields("route", ["params"]),
   },
 
   methods: {
     ...mapActions("project", ["save", "closeCreateEdit"]),
+  },
+
+  created() {
+    this.organization = this.params.organization
   },
 }
 </script>

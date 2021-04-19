@@ -2,7 +2,7 @@
   <v-combobox
     v-model="plugin"
     :items="items"
-    item-text="slug"
+    item-text="title"
     :search-input.sync="search"
     hide-selected
     :label="label"
@@ -19,6 +19,20 @@
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
+    </template>
+    <template v-slot:item="data">
+      <v-list-item-content>
+        <v-list-item-title>
+          <div>
+            {{ data.item.title }}
+          </div>
+        </v-list-item-title>
+        <v-list-item-subtitle>
+          <div class="text-truncate">
+            {{ data.item.description }}
+          </div>
+        </v-list-item-subtitle>
+      </v-list-item-content>
     </template>
     <template v-slot:append-item>
       <v-list-item v-if="more" @click="loadMore()">
@@ -52,10 +66,6 @@ export default {
     label: {
       type: String,
       default: "Plugins",
-    },
-    project: {
-      type: [Object],
-      default: null,
     },
   },
   data() {
@@ -105,7 +115,6 @@ export default {
       let filterOptions = {
         q: this.search,
         filters: {
-          project: [this.project],
           type: [this.type],
         },
       }

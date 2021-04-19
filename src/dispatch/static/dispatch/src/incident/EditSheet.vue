@@ -6,14 +6,10 @@
           <v-list-item-content>
             <v-list-item-title class="title">
               {{ name }}
-
-              <v-chip class="ma-2" color="pink" label text-color="white">
-                <v-icon left> mdi-label </v-icon>
-                {{ project.name }}
-              </v-chip>
             </v-list-item-title>
             <v-list-item-subtitle> Reported - {{ reported_at | formatDate }} </v-list-item-subtitle>
           </v-list-item-content>
+          <v-spacer />
           <v-btn
             icon
             color="info"

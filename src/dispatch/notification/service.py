@@ -26,10 +26,12 @@ def get_all(*, db_session):
     return db_session.query(Notification)
 
 
-def get_all_enabled(*, db_session) -> Optional[List[Notification]]:
+def get_all_enabled(*, db_session, project_id: int) -> Optional[List[Notification]]:
     """Gets all enabled notifications."""
     return (
-        db_session.query(Notification).filter(Notification.enabled == True)  # noqa Flake8 E712
+        db_session.query(Notification)
+        .filter(Notification.enabled == True)  # noqa Flake8 E712
+        .filter(Notification.project_id == project_id)
     ).all()
 
 
@@ -90,7 +92,7 @@ def delete(*, db_session, notification_id: int):
 
 def send(*, db_session, project_id: int, notification: Notification, notification_params: dict):
     """Send a notification via plugin."""
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project_id, plugin_type=notification.type
     )
     if plugin:
@@ -111,7 +113,7 @@ def filter_and_send(
     *, db_session, incident: Incident, class_instance: Type[Base], notification_params: dict
 ):
     """Sends notifications."""
-    notifications = get_all_enabled(db_session=db_session)
+    notifications = get_all_enabled(db_session=db_session, project_id=incident.project.id)
     for notification in notifications:
         for search_filter in notification.filters:
             match = search_service.match(

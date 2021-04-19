@@ -46,7 +46,7 @@ def get_suggested_documents(
     db_session, project_id: int, incident_type: str, priority: str, description: str
 ) -> list:
     """Get additional incident documents based on priority, type, and description."""
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project_id, plugin_type="document-resolver"
     )
     documents = []
@@ -60,7 +60,7 @@ def send_welcome_ephemeral_message_to_participant(
 ):
     """Sends an ephemeral message to the participant."""
     # we load the incident instance
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not plugin:
@@ -119,7 +119,7 @@ def send_welcome_email_to_participant(
 ):
     """Sends a welcome email to the participant."""
     # we load the incident instance
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="email"
     )
     if not plugin:
@@ -217,7 +217,7 @@ def send_incident_suggested_reading_messages(
 ):
     """Sends a suggested reading message to a participant."""
     if items:
-        plugin = plugin_service.get_active(
+        plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
         )
         if not plugin:
@@ -323,7 +323,7 @@ def send_incident_update_notifications(
         incident_conversation_notification_template = notification_template.copy()
         incident_conversation_notification_template.insert(0, INCIDENT_NAME)
 
-        convo_plugin = plugin_service.get_active(
+        convo_plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
         )
         if convo_plugin:
@@ -396,7 +396,7 @@ def send_incident_participant_announcement_message(
     participant_email: str, incident: Incident, db_session: SessionLocal
 ):
     """Announces a participant in the conversation."""
-    convo_plugin = plugin_service.get_active(
+    convo_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not convo_plugin:
@@ -412,7 +412,7 @@ def send_incident_participant_announcement_message(
     )
 
     participant_info = {}
-    contact_plugin = plugin_service.get_active(
+    contact_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="contact"
     )
     if contact_plugin:
@@ -471,7 +471,7 @@ def send_incident_commander_readded_notification(incident: Incident, db_session:
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
 
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not plugin:
@@ -501,7 +501,7 @@ def send_incident_participant_has_role_ephemeral_message(
     """Sends an ephemeral message to the assigner to let them know that the assignee already has the role."""
     notification_text = "Incident Assign Role Notification"
 
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not plugin:
@@ -538,7 +538,7 @@ def send_incident_participant_role_not_assigned_ephemeral_message(
     """Sends an ephemeral message to the assigner to let them know that we were not able to assign the role."""
     notification_text = "Incident Assign Role Notification"
 
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not plugin:
@@ -577,7 +577,7 @@ def send_incident_new_role_assigned_notification(
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
 
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not plugin:
@@ -606,7 +606,7 @@ def send_incident_review_document_notification(
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
 
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not plugin:
@@ -628,7 +628,7 @@ def send_incident_resources_ephemeral_message_to_participant(
     user_id: str, incident: Incident, db_session: SessionLocal
 ):
     """Sends the list of incident resources to the participant via an ephemeral message."""
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not plugin:
@@ -686,7 +686,7 @@ def send_incident_close_reminder(incident: Incident, db_session: SessionLocal):
     message_text = "Incident Status Reminder"
     message_template = INCIDENT_STATUS_REMINDER
 
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not plugin:
@@ -725,7 +725,7 @@ def send_incident_closed_information_review_reminder(incident: Incident, db_sess
     message_text = "Incident Closed Information Review Reminder"
     message_template = INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION
 
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not plugin:
@@ -766,7 +766,7 @@ def send_incident_rating_feedback_message(incident: Incident, db_session: Sessio
     notification_text = "Incident Rating and Feedback"
     notification_template = INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION
 
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not plugin:

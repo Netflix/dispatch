@@ -118,7 +118,7 @@ def update_task_status(
 
     # we don't currently have a good way to get the correct file_id (we don't store a task <-> relationship)
     # lets try in both the incident doc and PIR doc
-    drive_task_plugin = plugin_service.get_active(
+    drive_task_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=task.incident.project.id, plugin_type="task"
     )
 

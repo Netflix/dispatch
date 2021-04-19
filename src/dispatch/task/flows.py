@@ -36,7 +36,7 @@ def group_tasks_by_assignee(tasks):
 def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact_weblink):
     """Contains the logic for incident task reminders."""
     # send email
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
+    plugin = plugin_service.get_active_instance(db_session=db_session, plugin_type="email")
     if not plugin:
         log.warning("Task reminder not sent. No email plugin enabled.")
         return
@@ -83,7 +83,7 @@ def send_task_notification(
     # we send a notification to the incident conversation
     notification_text = "Incident Notification"
     notification_type = "incident-notification"
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    plugin = plugin_service.get_active_instance(db_session=db_session, plugin_type="conversation")
     plugin.instance.send(
         conversation_id,
         notification_text,

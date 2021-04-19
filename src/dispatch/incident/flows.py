@@ -80,7 +80,7 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
     team_contacts = []
 
     if incident.visibility == Visibility.open.value:
-        plugin = plugin_service.get_active(
+        plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="participant"
         )
         if plugin:
@@ -93,7 +93,7 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
 
             event_service.log(
                 db_session=db_session,
-                source=plugin.title,
+                source=plugin.plugin.title,
                 description="Incident participants resolved",
                 incident_id=incident.id,
             )
@@ -103,7 +103,7 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
 
 def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     """Create an external ticket for tracking."""
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="ticket"
     )
     if plugin:
@@ -113,7 +113,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
 
         incident_type_plugin_metadata = incident_type_service.get_by_name(
             db_session=db_session, name=incident.incident_type.name
-        ).get_meta(plugin.slug)
+        ).get_meta(plugin.plugin.slug)
 
         ticket = plugin.instance.create(
             incident.id,
@@ -125,11 +125,11 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
             incident_type_plugin_metadata,
             db_session=db_session,
         )
-        ticket.update({"resource_type": plugin.slug})
+        ticket.update({"resource_type": plugin.plugin.slug})
 
         event_service.log(
             db_session=db_session,
-            source=plugin.title,
+            source=plugin.plugin.title,
             description="Ticket created",
             incident_id=incident.id,
         )
@@ -142,7 +142,7 @@ def update_external_incident_ticket(
     db_session: SessionLocal,
 ):
     """Update external incident ticket."""
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="ticket"
     )
     if not plugin:
@@ -156,7 +156,7 @@ def update_external_incident_ticket(
 
     incident_type_plugin_metadata = incident_type_service.get_by_name(
         db_session=db_session, name=incident.incident_type.name
-    ).get_meta(plugin.slug)
+    ).get_meta(plugin.plugin.slug)
 
     plugin.instance.update(
         incident.ticket.resource_id,
@@ -185,7 +185,7 @@ def create_participant_groups(
     db_session: SessionLocal,
 ):
     """Create external participant groups."""
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
     )
 
@@ -217,7 +217,7 @@ def create_participant_groups(
 
     event_service.log(
         db_session=db_session,
-        source=plugin.title,
+        source=plugin.plugin.title,
         description="Tactical and notification groups created",
         incident_id=incident.id,
     )
@@ -227,7 +227,7 @@ def create_participant_groups(
 
 def delete_participant_groups(incident: Incident, db_session: SessionLocal):
     """Deletes the external participant groups."""
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
     )
     plugin.instance.delete(email=incident.tactical_group.email)
@@ -235,7 +235,7 @@ def delete_participant_groups(incident: Incident, db_session: SessionLocal):
 
     event_service.log(
         db_session=db_session,
-        source=plugin.title,
+        source=plugin.plugin.title,
         description="Tactical and notification groups deleted",
         incident_id=incident.id,
     )
@@ -243,16 +243,16 @@ def delete_participant_groups(incident: Incident, db_session: SessionLocal):
 
 def create_conference(incident: Incident, participants: List[str], db_session: SessionLocal):
     """Create external conference room."""
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conference"
     )
     conference = plugin.instance.create(incident.name, participants=participants)
 
-    conference.update({"resource_type": plugin.slug, "resource_id": conference["id"]})
+    conference.update({"resource_type": plugin.plugin.slug, "resource_id": conference["id"]})
 
     event_service.log(
         db_session=db_session,
-        source=plugin.title,
+        source=plugin.plugin.title,
         description="Incident conference created",
         incident_id=incident.id,
     )
@@ -265,14 +265,14 @@ def delete_conference(incident: Incident, db_session: SessionLocal):
     conference = conference_service.get_by_incident_id(
         db_session=db_session, incident_id=incident.id
     )
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conference"
     )
     plugin.instance.delete(conference.conference_id)
 
     event_service.log(
         db_session=db_session,
-        source=plugin.title,
+        source=plugin.plugin.title,
         description="Incident conference deleted",
         incident_id=incident.id,
     )
@@ -282,19 +282,19 @@ def create_incident_storage(
     incident: Incident, participant_group_emails: List[str], db_session: SessionLocal
 ):
     """Create an external file store for incident storage."""
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="storage"
     )
     storage = plugin.instance.create_file(
         INCIDENT_STORAGE_FOLDER_ID, incident.name, participant_group_emails
     )
-    storage.update({"resource_type": plugin.slug, "resource_id": storage["id"]})
+    storage.update({"resource_type": plugin.plugin.slug, "resource_id": storage["id"]})
     return storage
 
 
 def create_collaboration_documents(incident: Incident, db_session: SessionLocal):
     """Create external collaboration document."""
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="storage"
     )
 
@@ -330,7 +330,7 @@ def create_collaboration_documents(incident: Incident, db_session: SessionLocal)
 
             event_service.log(
                 db_session=db_session,
-                source=plugin.title,
+                source=plugin.plugin.title,
                 description="Incident investigation document created",
                 incident_id=incident.id,
             )
@@ -354,7 +354,7 @@ def create_collaboration_documents(incident: Incident, db_session: SessionLocal)
             collab_documents.append(sheet)
             event_service.log(
                 db_session=db_session,
-                source=plugin.title,
+                source=plugin.plugin.title,
                 description="Incident investigation sheet created",
                 incident_id=incident.id,
             )
@@ -367,15 +367,15 @@ def create_collaboration_documents(incident: Incident, db_session: SessionLocal)
 
 def create_conversation(incident: Incident, db_session: SessionLocal):
     """Create external communication conversation."""
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     conversation = plugin.instance.create(incident.name)
-    conversation.update({"resource_type": plugin.slug, "resource_id": conversation["name"]})
+    conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["name"]})
 
     event_service.log(
         db_session=db_session,
-        source=plugin.title,
+        source=plugin.plugin.title,
         description="Incident conversation created",
         incident_id=incident.id,
     )
@@ -391,7 +391,7 @@ def set_conversation_topic(incident: Incident, db_session: SessionLocal):
         f"Priority: {incident.incident_priority.name} - "
         f"Status: {incident.status}"
     )
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
 
@@ -411,7 +411,7 @@ def add_participants_to_conversation(
     participant_emails: List[str], incident: Incident, db_session: SessionLocal
 ):
     """Adds one or more participants to the conversation."""
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
 
@@ -437,7 +437,7 @@ def add_participant_to_tactical_group(
         incident_id=incident.id,
         resource_type=INCIDENT_RESOURCE_TACTICAL_GROUP,
     )
-    plugin = plugin_service.get_active(
+    plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
     )
     if plugin:
@@ -506,7 +506,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         incident_id=incident.id,
     )
 
-    group_plugin = plugin_service.get_active(
+    group_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
     )
     if group_plugin:
@@ -549,7 +549,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             )
             log.exception(e)
 
-    storage_plugin = plugin_service.get_active(
+    storage_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="storage"
     )
     if storage_plugin:
@@ -617,7 +617,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             )
             log.exception(e)
 
-    conference_plugin = plugin_service.get_active(
+    conference_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conference"
     )
     if conference_plugin:
@@ -658,7 +658,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     # we create the conversation for real-time communications
 
-    conversation_plugin = plugin_service.get_active(
+    conversation_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if conversation_plugin:
@@ -703,7 +703,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     update_external_incident_ticket(incident, db_session)
 
     # we update the investigation document
-    document_plugin = plugin_service.get_active(
+    document_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="document"
     )
     if document_plugin:
@@ -779,7 +779,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 def incident_active_status_flow(incident: Incident, db_session=None):
     """Runs the incident active flow."""
     # we un-archive the conversation
-    convo_plugin = plugin_service.get_active(
+    convo_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if convo_plugin:
@@ -799,7 +799,7 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
         log.debug("Incident review document already created... skipping creation.")
         return
 
-    storage_plugin = plugin_service.get_active(
+    storage_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="storage"
     )
     if not storage_plugin:
@@ -835,7 +835,7 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
 
     event_service.log(
         db_session=db_session,
-        source=storage_plugin.title,
+        source=storage_plugin.plugin.title,
         description="Incident review document added to storage",
         incident_id=incident.id,
     )
@@ -844,6 +844,7 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
         name=incident_review_document["name"],
         resource_id=incident_review_document["id"],
         resource_type=incident_review_document["resource_type"],
+        project=incident.project,
         weblink=incident_review_document["weblink"],
     )
     incident.documents.append(
@@ -858,7 +859,7 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
     )
 
     # we update the incident review document
-    document_plugin = plugin_service.get_active(
+    document_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="document"
     )
     if document_plugin:
@@ -903,7 +904,7 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
     db_session.commit()
 
     # we archive the conversation
-    convo_plugin = plugin_service.get_active(
+    convo_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if convo_plugin:
@@ -913,7 +914,7 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
         # storage for incidents with restricted visibility is never opened
         if incident.visibility == Visibility.open.value:
             # add organization wide permission
-            storage_plugin = plugin_service.get_active(
+            storage_plugin = plugin_service.get_active_instance(
                 db_session=db_session, project_id=incident.project.id, plugin_type="storage"
             )
             if storage_plugin:
@@ -1059,7 +1060,7 @@ def incident_update_flow(
         )
 
     # we add the team distributions lists to the notifications group
-    group_plugin = plugin_service.get_active(
+    group_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
     )
     if group_plugin:
@@ -1112,7 +1113,7 @@ def incident_assign_role_flow(
 
     if assignee_role != ParticipantRoleType.participant:
         # we resolve the assigner and assignee's contact information
-        plugin = plugin_service.get_active(
+        plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="contact"
         )
 
@@ -1163,14 +1164,14 @@ def incident_engage_oncall_flow(
     )
 
     # we get the active oncall plugin
-    oncall_plugin = plugin_service.get_active(
+    oncall_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
     )
 
     if oncall_plugin:
-        if oncall_plugin.slug != oncall_service.type:
+        if oncall_plugin.plugin.slug != oncall_service.type:
             log.warning(
-                f"Unable to engage the oncall. Oncall plugin enabled not of type {oncall_plugin.slug}."
+                f"Unable to engage the oncall. Oncall plugin enabled not of type {oncall_plugin.plugin.slug}."
             )
             return None, None
     else:
@@ -1187,7 +1188,7 @@ def incident_engage_oncall_flow(
 
     event_service.log(
         db_session=db_session,
-        source=oncall_plugin.title,
+        source=oncall_plugin.plugin.title,
         description=f"{individual.name} engages oncall service {oncall_service.name}",
         incident_id=incident.id,
     )
@@ -1200,7 +1201,7 @@ def incident_engage_oncall_flow(
 
         event_service.log(
             db_session=db_session,
-            source=oncall_plugin.title,
+            source=oncall_plugin.plugin.title,
             description=f"{oncall_service.name} on-call paged",
             incident_id=incident.id,
         )

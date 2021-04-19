@@ -240,6 +240,12 @@ export default {
             op: "==",
             value: "dispatch-incident-faq",
           },
+          {
+            model: "Project",
+            field: "name",
+            op: "==",
+            value: this.project.name,
+          },
         ],
       }),
     }).then((response) => {
@@ -247,14 +253,21 @@ export default {
         this.incident_faq = response.data.items[0]
       }
     })
-    PluginApi.getAll({
+    PluginApi.getAllInstances({
       itemsPerPage: -1,
       filter: JSON.stringify({
         and: [
           {
+            model: "PluginInstance",
             field: "enabled",
             op: "==",
             value: "true",
+          },
+          {
+            model: "Project",
+            field: "name",
+            op: "==",
+            value: this.project.name,
           },
         ],
       }),
@@ -263,7 +276,7 @@ export default {
       let activeResourcePlugins = this.activeResourcePlugins
       forEach(Object.keys(activeResourcePlugins), function (value) {
         activeResourcePlugins[value] = find(data, function (o) {
-          return o.type === value
+          return o.plugin.type === value
         })
       })
     })

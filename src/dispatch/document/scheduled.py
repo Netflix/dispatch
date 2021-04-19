@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 @background_task
 def sync_document_terms(db_session=None):
     """Performs term extraction from known documents."""
-    p = plugin_service.get_active(db_session=db_session, plugin_type="storage")
+    p = plugin_service.get_active_instance(db_session=db_session, plugin_type="storage")
 
     if not p:
         log.warning("Tried to sync document terms but couldn't find any active storage plugins.")
@@ -65,7 +65,7 @@ def create_reminder(db_session: SessionLocal, owner_email: str, documents: List[
     """Contains the logic for document evergreen reminders."""
     # send email
     contact_fullname = contact_weblink = DISPATCH_HELP_EMAIL
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
+    plugin = plugin_service.get_active_instance(db_session=db_session, plugin_type="email")
     if not plugin:
         log.warning("Document reminder not sent, no email plugin enabled.")
         return

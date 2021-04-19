@@ -29,6 +29,9 @@
           />
         </ValidationProvider>
       </v-flex>
+      <v-flex xs12>
+        <project-select v-model="project" />
+      </v-flex>
       <v-flex xs6>
         <v-select
           v-model="status"
@@ -121,6 +124,7 @@
 import { mapFields } from "vuex-map-fields"
 import { ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
+import ProjectSelect from "@/project/ProjectSelect.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import DatePickerMenu from "@/components/DatePickerMenu.vue"
@@ -144,6 +148,7 @@ export default {
     ParticipantSelect,
     TagFilterCombobox,
     IncidentFilterCombobox,
+    ProjectSelect,
     TimePickerMenu,
     DatePickerMenu,
   },
