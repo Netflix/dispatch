@@ -64,7 +64,7 @@ def get_active_instance(
 
 
 def get_enabled_instance_by_type(*, db_session, plugin_type: str) -> List[Optional[PluginInstance]]:
-    """Fetches all enabled plugins for a given type."""
+    """Fetches all enabled plugin instances for a given type."""
     return (
         db_session.query(PluginInstance)
         .join(Plugin)
