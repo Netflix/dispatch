@@ -13,7 +13,7 @@ from .models import (
     PluginInstancePagination,
     PluginPagination,
 )
-from .service import get, get_instance, update_instance, create_instance
+from .service import get_instance, update_instance, create_instance
 
 
 router = APIRouter()
