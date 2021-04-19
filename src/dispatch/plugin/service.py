@@ -91,7 +91,7 @@ def create_instance(*, db_session, plugin_instance_in: PluginInstanceCreate) -> 
 def update_instance(
     *, db_session, plugin_instance: PluginInstance, plugin_instance_in: PluginInstanceUpdate
 ) -> Plugin:
-    """Updates a plugin."""
+    """Updates a plugin instance."""
     plugin_data = jsonable_encoder(plugin_instance)
     update_data = plugin_instance_in.dict(skip_defaults=True)
 
