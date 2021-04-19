@@ -742,23 +742,23 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         incident_id=incident.id,
     )
 
-    suggested_document_items = get_suggested_document_items(incident.id, db_session)
+    suggested_document_items = get_suggested_document_items(incident, db_session)
 
     for participant in incident.participants:
         # we announce the participant in the conversation
         # should protect ourselves from failures of any one participant
         try:
             send_incident_participant_announcement_message(
-                participant.individual.email, incident.id, db_session
+                participant.individual.email, incident, db_session
             )
 
             # we send the welcome messages to the participant
             send_incident_welcome_participant_messages(
-                participant.individual.email, incident.id, db_session
+                participant.individual.email, incident, db_session
             )
 
             send_incident_suggested_reading_messages(
-                incident.id, suggested_document_items, participant.individual.email, db_session
+                incident, suggested_document_items, participant.individual.email, db_session
             )
 
         except Exception as e:

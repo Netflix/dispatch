@@ -107,6 +107,8 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
+
+import SearchUtils from "@/search/utils"
 import IncidentPriorityMultiSelect from "@/incident_priority/IncidentPriorityMultiSelect.vue"
 import IncidentTypeMultiSelect from "@/incident_type/IncidentTypeMultiSelect.vue"
 import TermCombobox from "@/term/TermCombobox.vue"
@@ -167,7 +169,32 @@ export default {
       this.project = { name: this.query.project }
     }
     this.loading = "error"
-    PluginApi.getByType("oncall").then((response) => {
+
+    let filterOptions = {
+      itemsPerPage: -1,
+    }
+
+    if (this.project) {
+      filterOptions = {
+        ...filterOptions,
+        filters: {
+          project: [this.project],
+        },
+      }
+    }
+
+    let typeFilter = [
+      {
+        model: "Plugin",
+        field: "type",
+        op: "==",
+        value: "oncall",
+      },
+    ]
+
+    filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions }, typeFilter)
+
+    PluginApi.getAllInstances(filterOptions).then((response) => {
       this.loading = false
       this.oncall_plugins = response.data.items.map((p) => p.slug)
     })

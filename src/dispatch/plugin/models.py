@@ -1,6 +1,8 @@
 from typing import List, Optional
 
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.associationproxy import association_proxy
+
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy_utils import TSVectorType, JSONType
 
@@ -15,6 +17,10 @@ class PluginInstance(Base, ProjectMixin):
     enabled = Column(Boolean)
     configuration = Column(JSONType)
     plugin_id = Column(Integer, ForeignKey("plugin.id"))
+
+    # this is some magic that allows us to use the plugin search vectors
+    # against our plugin instances
+    search_vector = association_proxy("plugin", "search_vector")
 
     @property
     def instance(self):

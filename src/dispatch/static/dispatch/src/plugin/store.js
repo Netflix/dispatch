@@ -84,7 +84,7 @@ const actions = {
     if (!state.selected.id) {
       return PluginApi.createInstance(state.selected)
         .then(() => {
-          dispatch("closeEdit")
+          dispatch("closeCreateEdit")
           dispatch("getAllInstances")
           commit(
             "notification_backend/addBeNotification",
@@ -105,7 +105,7 @@ const actions = {
     } else {
       return PluginApi.updateInstance(state.selected.id, state.selected)
         .then(() => {
-          dispatch("closeEdit")
+          dispatch("closeCreateEdit")
           dispatch("getAllInstances")
           commit(
             "notification_backend/addBeNotification",
@@ -170,7 +170,10 @@ const mutations = {
     state.dialogs.showCreateEdit = value
   },
   RESET_SELECTED(state) {
-    state.selected = Object.assign(state.selected, getDefaultSelectedState())
+    // not reset project
+    let project = state.selected.project
+    state.selected = { ...getDefaultSelectedState() }
+    state.selected.project = project
   },
 }
 

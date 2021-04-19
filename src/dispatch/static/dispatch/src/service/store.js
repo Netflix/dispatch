@@ -172,7 +172,7 @@ const mutations = {
     state.dialogs.showRemove = value
   },
   RESET_SELECTED(state) {
-    state.selected = Object.assign(state.selected, getDefaultSelectedState())
+    state.selected = { ...getDefaultSelectedState() }
   },
 }
 
