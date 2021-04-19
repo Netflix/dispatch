@@ -134,6 +134,6 @@ def update_instance(
 
 
 def delete_instance(*, db_session, plugin_instance_id: int):
-    """Deletes a plugin."""
+    """Deletes a plugin instance."""
     db_session.query(PluginInstance).filter(PluginInstance.id == plugin_instance_id).delete()
     db_session.commit()
