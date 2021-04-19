@@ -72,7 +72,7 @@ def update_plugin_instance(
     plugin_instance_in: PluginInstanceUpdate,
 ):
     """
-    Update a plugin instnace.
+    Update a plugin instance.
     """
     plugin_instance = get_instance(db_session=db_session, plugin_instance_id=plugin_instance_id)
     if not plugin_instance:
