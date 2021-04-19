@@ -121,7 +121,7 @@ def update_instance(
             )
             if oncall_services:
                 raise InvalidConfiguration(
-                    f"Cannot disable plugin: {plugin_instance.plugin.title}. One or more oncall services depend on it. "
+                    f"Cannot disable plugin instance: {plugin_instance.plugin.title}. One or more oncall services depend on it. "
                 )
 
     for field in plugin_data:
