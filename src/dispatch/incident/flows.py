@@ -88,6 +88,7 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
                 incident.incident_type,
                 incident.incident_priority,
                 incident.description,
+                incident.project,
                 db_session=db_session,
             )
 
