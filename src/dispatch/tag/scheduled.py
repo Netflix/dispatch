@@ -32,7 +32,7 @@ def sync_tags(db_session=None):
         if not plugin:
             continue
 
-        log.debug(f"Getting tags via: {p.slug}")
+        log.debug(f"Getting tags via: {plugin.plugin.slug}")
         for t in plugin.instance.get():
             log.debug(f"Adding Tag. Tag: {t}")
 
