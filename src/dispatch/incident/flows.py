@@ -396,6 +396,10 @@ def set_conversation_topic(incident: Incident, db_session: SessionLocal):
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
 
+    if not incident.conversation:
+        log.warning("Conversation topic not sent because incident has no conversation.")
+        return
+
     try:
         plugin.instance.set_topic(incident.conversation.channel_id, conversation_topic)
     except Exception as e:

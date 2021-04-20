@@ -587,6 +587,10 @@ def send_incident_new_role_assigned_notification(
     notification_text = "Incident Notification"
     notification_type = MessageType.incident_notification
 
+    if not incident.conversation:
+        log.warning("Incident new role message not sent because incident has no conversation.")
+        return
+
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
