@@ -20,7 +20,7 @@ def test_get_all(session, project, incident_priorities):
     t_incident_priorities = get_all(
         db_session=session, project_id=incident_priorities[0].project.id
     ).all()
-    assert len(t_incident_priorities) > 1
+    assert len(t_incident_priorities) >= 1
 
 
 def test_create(session, project):
