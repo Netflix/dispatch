@@ -17,14 +17,16 @@ def test_get_by_name(session, incident_type):
 def test_get_by_slug(session, incident_type):
     from dispatch.incident_type.service import get_by_slug
 
-    t_incident_type = get_by_slug(db_session=session, slug=incident_type.slug)
+    t_incident_type = get_by_slug(
+        db_session=session, project_id=incident_type.project.id, slug=incident_type.slug
+    )
     assert t_incident_type.slug == incident_type.slug
 
 
-def test_get_all(session, incident_types):
+def test_get_all(session, project, incident_types):
     from dispatch.incident_type.service import get_all
 
-    t_incident_types = get_all(db_session=session).all()
+    t_incident_types = get_all(db_session=session, project_id=project.id).all()
     assert len(t_incident_types) > 1
 
 
