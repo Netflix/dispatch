@@ -2,6 +2,8 @@ from typing import List, Optional
 
 from sqlalchemy import Table, Column, Integer, String, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.schema import UniqueConstraint
+
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
@@ -32,8 +34,9 @@ definition_terms = Table(
 
 
 class Definition(Base, ProjectMixin):
+    __table_args__ = (UniqueConstraint("text", "project_id"),)
     id = Column(Integer, primary_key=True)
-    text = Column(String, unique=True)
+    text = Column(String)
     source = Column(String, default="dispatch")
     terms = relationship("Term", secondary=definition_terms, backref="definitions")
     teams = relationship("TeamContact", secondary=definition_teams)

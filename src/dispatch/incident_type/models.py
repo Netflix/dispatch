@@ -4,6 +4,8 @@ from pydantic import validator
 from sqlalchemy import event, Column, Boolean, ForeignKey, Integer, String, JSON
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import relationship, object_session
+from sqlalchemy.sql.schema import UniqueConstraint
+
 from sqlalchemy.sql.expression import true
 from sqlalchemy_utils import TSVectorType
 
@@ -15,8 +17,9 @@ from dispatch.project.models import ProjectRead
 
 
 class IncidentType(ProjectMixin, Base):
+    __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
+    name = Column(String)
     slug = Column(String)
     description = Column(String)
     exclude_from_metrics = Column(Boolean, default=False)

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
+from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
@@ -39,6 +40,8 @@ assoc_individual_contact_terms = Table(
 
 
 class IndividualContact(Base, ContactMixin, ProjectMixin):
+    __table_args__ = (UniqueConstraint("email", "project_id"),)
+
     id = Column(Integer, primary_key=True)
     name = Column(String)
     mobile_phone = Column(String)

@@ -2,6 +2,8 @@ from typing import List, Optional
 
 from pydantic import Field
 from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.sql.schema import UniqueConstraint
+
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import JSON
 from sqlalchemy_utils import TSVectorType
@@ -22,8 +24,10 @@ from dispatch.task.models import TaskRead
 
 
 class SearchFilter(Base, ProjectMixin):
+    __table_args__ = (UniqueConstraint("name", "project_id"),)
+
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
+    name = Column(String)
     description = Column(String)
     expression = Column(JSON)
     creator_id = Column(Integer, ForeignKey("dispatch_user.id"))

@@ -43,7 +43,7 @@ class ContactMixin(TimeStampMixin):
     is_active = Column(Boolean, default=True)
     is_external = Column(Boolean, default=False)
     contact_type = Column(String)
-    email = Column(String, unique=True)
+    email = Column(String)
     company = Column(String)
     notes = Column(String)
     owner = Column(String)

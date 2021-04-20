@@ -2,6 +2,7 @@ from typing import Optional, List
 
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
@@ -11,9 +12,11 @@ from dispatch.tag_type.models import TagTypeRead, TagTypeCreate, TagTypeUpdate
 
 
 class Tag(Base, TimeStampMixin, ProjectMixin):
+    __table_args__ = (UniqueConstraint("name", "project_id"),)
+
     # Columns
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
+    name = Column(String)
     description = Column(String)
     uri = Column(String)
     source = Column(String)
