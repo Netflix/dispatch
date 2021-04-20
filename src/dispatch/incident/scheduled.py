@@ -196,11 +196,16 @@ def daily_report(db_session=None):
 @background_task
 def close_incident_reminder(db_session=None):
     """Sends a reminder to the IC to close out their incident."""
-    incidents = get_all_by_status(db_session=db_session, status=IncidentStatus.stable)
+    for project in project_service.get_all(db_session=db_session):
+        incidents = get_all_by_status(
+            db_session=db_session, project_id=project.id, status=IncidentStatus.stable
+        )
 
-    for incident in incidents:
-        span = datetime.utcnow() - incident.stable_at
-        q, r = divmod(span.days, 7)  # only for incidents that have been stable longer than a week
-        if q >= 1 and r == 0:
-            if date.today().isoweekday() == 1:  # lets only send on mondays
-                send_incident_close_reminder(incident, db_session)
+        for incident in incidents:
+            span = datetime.utcnow() - incident.stable_at
+            q, r = divmod(
+                span.days, 7
+            )  # only for incidents that have been stable longer than a week
+            if q >= 1 and r == 0:
+                if date.today().isoweekday() == 1:  # lets only send on mondays
+                    send_incident_close_reminder(incident, db_session)
