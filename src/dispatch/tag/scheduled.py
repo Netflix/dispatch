@@ -10,6 +10,7 @@ from schedule import every
 
 from dispatch.decorators import background_task
 from dispatch.plugin import service as plugin_service
+from dispatch.project import service as project_service
 from dispatch.scheduler import scheduler
 from dispatch.incident import service as incident_service
 from dispatch.tag import service as tag_service
@@ -23,16 +24,20 @@ log = logging.getLogger(__name__)
 @background_task
 def sync_tags(db_session=None):
     """Syncs tags from external sources."""
-    for p in plugin_service.get_all(db_session=db_session):
-        if p.type != "tag":
+    for project in project_service.get_all(db_session=db_session):
+        plugin = plugin_service.get_active_instance(
+            db_session=db_session, plugin_type="tag", project_id=project.id
+        )
+
+        if not plugin:
             continue
 
-        log.debug(f"Getting tags via: {p.slug}")
-        for t in p.instance.get():
+        log.debug(f"Getting tags via: {plugin.plugin.slug}")
+        for t in plugin.instance.get():
             log.debug(f"Adding Tag. Tag: {t}")
 
             # we always use the plugin project when syncing
-            project = p.project.__dict__
+            project = project.__dict__
             t["tag_type"].update({"project": project})
             tag_in = TagCreate(**t, project=project)
             tag_service.get_or_create(db_session=db_session, tag_in=tag_in)
