@@ -13,9 +13,14 @@ def get(*, db_session, search_filter_id: int) -> Optional[SearchFilter]:
     return db_session.query(SearchFilter).filter(SearchFilter.id == search_filter_id).first()
 
 
-def get_by_name(*, db_session, name: str) -> Optional[SearchFilter]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SearchFilter]:
     """Gets a search filter by name."""
-    return db_session.query(SearchFilter).filter(SearchFilter.name == name).first()
+    return (
+        db_session.query(SearchFilter)
+        .filter(SearchFilter.name == name)
+        .filter(SearchFilter.project_id == project_id)
+        .first()
+    )
 
 
 def match(*, db_session, filter_spec: List[dict], class_instance: Base):

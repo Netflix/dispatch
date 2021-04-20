@@ -8,7 +8,9 @@ def test_get(session, incident_priority):
 def test_get_by_name(session, incident_priority):
     from dispatch.incident_priority.service import get_by_name
 
-    t_incident_priority = get_by_name(db_session=session, name=incident_priority.name)
+    t_incident_priority = get_by_name(
+        db_session=session, project_id=incident_priority.project.id, name=incident_priority.name
+    )
     assert t_incident_priority.name == incident_priority.name
 
 

@@ -23,9 +23,14 @@ def get_default(*, db_session):
     )
 
 
-def get_by_name(*, db_session, name: str) -> Optional[IncidentPriority]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Optional[IncidentPriority]:
     """Returns an incident priority based on the given priority name."""
-    return db_session.query(IncidentPriority).filter(IncidentPriority.name == name).one_or_none()
+    return (
+        db_session.query(IncidentPriority)
+        .filter(IncidentPriority.name == name)
+        .filter(IncidentPriority.project_id == project_id)
+        .one_or_none()
+    )
 
 
 def get_by_slug(*, db_session, slug: str) -> Optional[IncidentPriority]:

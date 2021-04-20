@@ -67,14 +67,19 @@ def get(*, db_session, incident_id: int) -> Optional[Incident]:
     return db_session.query(Incident).filter(Incident.id == incident_id).first()
 
 
-def get_by_name(*, db_session, incident_name: str) -> Optional[Incident]:
+def get_by_name(*, db_session, project_id: int, incident_name: str) -> Optional[Incident]:
     """Returns an incident based on the given name."""
-    return db_session.query(Incident).filter(Incident.name == incident_name).first()
+    return (
+        db_session.query(Incident)
+        .filter(Incident.name == incident_name)
+        .filter(Incident.project_id == project_id)
+        .first()
+    )
 
 
-def get_all(*, db_session) -> List[Optional[Incident]]:
+def get_all(*, db_session, project_id: int) -> List[Optional[Incident]]:
     """Returns all incidents."""
-    return db_session.query(Incident)
+    return db_session.query(Incident).filter(Incident.project_id == project_id)
 
 
 def get_all_by_status(
@@ -173,17 +178,19 @@ def create(
             raise Exception("No incident type specified and no default has been defined.")
     else:
         incident_type = incident_type_service.get_by_name(
-            db_session=db_session, name=incident_type["name"]
+            db_session=db_session, project_id=project.id, name=incident_type["name"]
         )
 
     # We get the incident priority by name
     if not incident_priority:
-        incident_priority = incident_priority_service.get_default(db_session=db_session)
+        incident_priority = incident_priority_service.get_default(
+            db_session=db_session, project_id=project.id
+        )
         if not incident_priority:
             raise Exception("No incident priority specified and no default has been defined.")
     else:
         incident_priority = incident_priority_service.get_by_name(
-            db_session=db_session, name=incident_priority["name"]
+            db_session=db_session, project_id=project.id, name=incident_priority["name"]
         )
 
     if not visibility:
@@ -229,11 +236,13 @@ def create(
 def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> Incident:
     """Updates an existing incident."""
     incident_priority = incident_priority_service.get_by_name(
-        db_session=db_session, name=incident_in.incident_priority.name
+        db_session=db_session,
+        project_id=incident.project.id,
+        name=incident_in.incident_priority.name,
     )
 
     incident_type = incident_type_service.get_by_name(
-        db_session=db_session, name=incident_in.incident_type.name
+        db_session=db_session, project_id=incident.project.id, name=incident_in.incident_type.name
     )
 
     tags = []

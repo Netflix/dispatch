@@ -113,7 +113,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
             title = incident.incident_type.name
 
         incident_type_plugin_metadata = incident_type_service.get_by_name(
-            db_session=db_session, name=incident.incident_type.name
+            db_session=db_session, project_id=incident.project.id, name=incident.incident_type.name
         ).get_meta(plugin.plugin.slug)
 
         ticket = plugin.instance.create(
@@ -156,7 +156,7 @@ def update_external_incident_ticket(
         title = description = incident.incident_type.name
 
     incident_type_plugin_metadata = incident_type_service.get_by_name(
-        db_session=db_session, name=incident.incident_type.name
+        db_session=db_session, project_id=incident.project.id, name=incident.incident_type.name
     ).get_meta(plugin.plugin.slug)
 
     plugin.instance.update(

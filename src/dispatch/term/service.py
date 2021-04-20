@@ -21,11 +21,11 @@ def get_all(*, db_session):
 
 
 def create(*, db_session, term_in: TermCreate) -> Term:
+    project = project_service.get_by_name(db_session=db_session, name=term_in.project.name)
     definitions = [
         definition_service.upsert(db_session=db_session, definition_in=d)
         for d in term_in.definitions
     ]
-    project = project_service.get_by_name(db_session=db_session, name=term_in.project.name)
     term = Term(
         **term_in.dict(exclude={"definitions", "project"}), project=project, definitions=definitions
     )

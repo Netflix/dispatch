@@ -9,6 +9,7 @@ from dispatch.incident_cost_type.models import (
     IncidentCostTypeRead,
 )
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
+from dispatch.project.models import ProjectRead
 
 
 # SQLAlchemy Model
@@ -30,6 +31,7 @@ class IncidentCostBase(DispatchBase):
 
 class IncidentCostCreate(IncidentCostBase):
     incident_cost_type: IncidentCostTypeCreate
+    project: ProjectRead
 
 
 class IncidentCostUpdate(IncidentCostBase):
