@@ -6,7 +6,7 @@ from starlette.config import environ
 
 # set test config
 environ["SECRET_PROVIDER"] = ""
-environ["DATABASE_CREDENTIALS"] = "postgres:dispatch"
+environ["DATABASE_CREDENTIALS"] = "dispatch:dispatch"
 environ["DATABASE_HOSTNAME"] = "localhost"
 environ["DISPATCH_HELP_EMAIL"] = "example@example.com"
 environ["DISPATCH_HELP_SLACK_CHANNEL"] = "help-me"

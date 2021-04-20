@@ -17,7 +17,9 @@ def test_get_by_name(session, incident_priority):
 def test_get_all(session, project, incident_priorities):
     from dispatch.incident_priority.service import get_all
 
-    t_incident_priorities = get_all(db_session=session, project_id=project.id).all()
+    t_incident_priorities = get_all(
+        db_session=session, project_id=incident_priorities[0].project.id
+    ).all()
     assert len(t_incident_priorities) > 1
 
 
