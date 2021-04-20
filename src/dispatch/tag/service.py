@@ -11,8 +11,13 @@ def get(*, db_session, tag_id: int) -> Optional[Tag]:
     return db_session.query(Tag).filter(Tag.id == tag_id).one_or_none()
 
 
-def get_by_name(*, db_session, name: str) -> Optional[Tag]:
-    return db_session.query(Tag).filter(Tag.name == name).one_or_none()
+def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Tag]:
+    return (
+        db_session.query(Tag)
+        .filter(Tag.name == name)
+        .filter(Tag.project_id == project_id)
+        .one_or_none()
+    )
 
 
 def get_all(*, db_session):
@@ -20,8 +25,10 @@ def get_all(*, db_session):
 
 
 def create(*, db_session, tag_in: TagCreate) -> Tag:
-    tag_type = tag_type_service.get_by_name(db_session=db_session, name=tag_in.tag_type.name)
     project = project_service.get_by_name(db_session=db_session, name=tag_in.project.name)
+    tag_type = tag_type_service.get_by_name(
+        db_session=db_session, project_id=project.id, name=tag_in.tag_type.name
+    )
     tag = Tag(**tag_in.dict(exclude={"tag_type", "project"}), project=project, tag_type=tag_type)
     db_session.add(tag)
     db_session.commit()
@@ -42,7 +49,9 @@ def update(*, db_session, tag: Tag, tag_in: TagUpdate) -> Tag:
     tag_data = jsonable_encoder(tag)
     update_data = tag_in.dict(skip_defaults=True, exclude={"tag_type"})
 
-    tag_type = tag_type_service.get_by_name(db_session=db_session, name=tag_in.tag_type.name)
+    tag_type = tag_type_service.get_by_name(
+        db_session=db_session, project_id=tag.project.id, name=tag_in.tag_type.name
+    )
 
     for field in tag_data:
         if field in update_data:

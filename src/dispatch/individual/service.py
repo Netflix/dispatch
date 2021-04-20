@@ -74,11 +74,13 @@ def create(*, db_session, individual_contact_in: IndividualContactCreate) -> Ind
         for t in individual_contact_in.terms
     ]
     incident_priorities = [
-        incident_priority_service.get_by_name(db_session=db_session, name=n.name)
+        incident_priority_service.get_by_name(
+            db_session=db_session, project_id=project.id, name=n.name
+        )
         for n in individual_contact_in.incident_priorities
     ]
     incident_types = [
-        incident_type_service.get_by_name(db_session=db_session, name=n.name)
+        incident_type_service.get_by_name(db_session=db_session, project_id=project.id, name=n.name)
         for n in individual_contact_in.incident_types
     ]
     contact = IndividualContact(
@@ -103,20 +105,26 @@ def update(
 ) -> IndividualContact:
     individual_contact_data = jsonable_encoder(individual_contact_in)
 
+    project = project_service.get_by_name(
+        db_session=db_session, name=individual_contact_in.project.name
+    )
+
     terms = [
         term_service.get_or_create(db_session=db_session, term_in=t)
         for t in individual_contact_in.terms
     ]
     incident_priorities = [
-        incident_priority_service.get_by_name(db_session=db_session, name=n.name)
+        incident_priority_service.get_by_name(
+            db_session=db_session, project_id=project.id, name=n.name
+        )
         for n in individual_contact_in.incident_priorities
     ]
     incident_types = [
-        incident_type_service.get_by_name(db_session=db_session, name=n.name)
+        incident_type_service.get_by_name(db_session=db_session, project_id=project.id, name=n.name)
         for n in individual_contact_in.incident_types
     ]
     update_data = individual_contact_in.dict(
-        skip_defaults=True, exclude={"terms", "incident_priorities", "incident_types"}
+        skip_defaults=True, exclude={"terms", "incident_priorities", "incident_types", "project"}
     )
 
     for field in individual_contact_data:
@@ -126,6 +134,7 @@ def update(
     individual_contact.terms = terms
     individual_contact.incident_types = incident_types
     individual_contact.incident_priorities = incident_priorities
+    individual_contact.project = project
     db_session.add(individual_contact)
     db_session.commit()
     return individual_contact

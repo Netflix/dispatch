@@ -15,24 +15,39 @@ def get(*, db_session, incident_type_id: int) -> Optional[IncidentType]:
     return db_session.query(IncidentType).filter(IncidentType.id == incident_type_id).one_or_none()
 
 
-def get_default(*, db_session):
+def get_default(*, db_session, project_id: int):
     """Returns the default incident type."""
-    return db_session.query(IncidentType).filter(IncidentType.default == true()).one_or_none()
+    return (
+        db_session.query(IncidentType)
+        .filter(IncidentType.default == true())
+        .filter(IncidentType.project_id == project_id)
+        .one_or_none()
+    )
 
 
-def get_by_name(*, db_session, name: str) -> Optional[IncidentType]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Optional[IncidentType]:
     """Returns an incident type based on the given type name."""
-    return db_session.query(IncidentType).filter(IncidentType.name == name).one_or_none()
+    return (
+        db_session.query(IncidentType)
+        .filter(IncidentType.name == name)
+        .filter(IncidentType.project_id == project_id)
+        .one_or_none()
+    )
 
 
-def get_by_slug(*, db_session, slug: str) -> Optional[IncidentType]:
+def get_by_slug(*, db_session, project_id: int, slug: str) -> Optional[IncidentType]:
     """Returns an incident type based on the given type slug."""
-    return db_session.query(IncidentType).filter(IncidentType.slug == slug).one_or_none()
+    return (
+        db_session.query(IncidentType)
+        .filter(IncidentType.slug == slug)
+        .filter(IncidentType.project_id == project_id)
+        .one_or_none()
+    )
 
 
-def get_all(*, db_session) -> List[Optional[IncidentType]]:
+def get_all(*, db_session, project_id: int) -> List[Optional[IncidentType]]:
     """Returns all incident types."""
-    return db_session.query(IncidentType)
+    return db_session.query(IncidentType).filter(IncidentType.project_id == project_id)
 
 
 def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:

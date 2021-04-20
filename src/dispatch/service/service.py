@@ -49,11 +49,13 @@ def create(*, db_session, service_in: ServiceCreate) -> Service:
     project = project_service.get_by_name(db_session=db_session, name=service_in.project.name)
     terms = [term_service.get_or_create(db_session=db_session, term_in=t) for t in service_in.terms]
     incident_priorities = [
-        incident_priority_service.get_by_name(db_session=db_session, name=n.name)
+        incident_priority_service.get_by_name(
+            db_session=db_session, project_id=project.id, name=n.name
+        )
         for n in service_in.incident_priorities
     ]
     incident_types = [
-        incident_type_service.get_by_name(db_session=db_session, name=n.name)
+        incident_type_service.get_by_name(db_session=db_session, project_id=project.id, name=n.name)
         for n in service_in.incident_types
     ]
     service = Service(
@@ -74,11 +76,15 @@ def update(*, db_session, service: Service, service_in: ServiceUpdate) -> Servic
 
     terms = [term_service.get_or_create(db_session=db_session, term_in=t) for t in service_in.terms]
     incident_priorities = [
-        incident_priority_service.get_by_name(db_session=db_session, name=n.name)
+        incident_priority_service.get_by_name(
+            db_session=db_session, project_id=service.project.id, name=n.name
+        )
         for n in service_in.incident_priorities
     ]
     incident_types = [
-        incident_type_service.get_by_name(db_session=db_session, name=n.name)
+        incident_type_service.get_by_name(
+            db_session=db_session, project_id=service.project.id, name=n.name
+        )
         for n in service_in.incident_types
     ]
     update_data = service_in.dict(

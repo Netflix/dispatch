@@ -32,13 +32,16 @@ def get_default(*, db_session) -> Optional[IncidentCostTypeRead]:
     )
 
 
-def get_by_name(*, db_session, incident_cost_type_name: str) -> Optional[IncidentCostTypeRead]:
+def get_by_name(
+    *, db_session, project_id: int, incident_cost_type_name: str
+) -> Optional[IncidentCostTypeRead]:
     """
     Gets an incident cost type by its name.
     """
     return (
         db_session.query(IncidentCostType)
         .filter(IncidentCostType.name == incident_cost_type_name)
+        .filter(IncidentCostType.project_id == project_id)
         .first()
     )
 

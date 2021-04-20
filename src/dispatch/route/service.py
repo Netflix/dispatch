@@ -113,11 +113,15 @@ def create_recommendation(
 
     if context:
         incident_priorities = [
-            incident_priority_service.get_by_name(db_session=db_session, name=n.name)
+            incident_priority_service.get_by_name(
+                db_session=db_session, project_id=context.project.id, name=n.name
+            )
             for n in context.incident_priorities
         ]
         incident_types = [
-            incident_type_service.get_by_name(db_session=db_session, name=n.name)
+            incident_type_service.get_by_name(
+                db_session=db_session, project_id=context.project.id, name=n.name
+            )
             for n in context.incident_types
         ]
 
