@@ -39,6 +39,14 @@ export default {
     )
   },
 
+  bulkDelete(incidents) {
+    return Promise.all(
+      incidents.map((incident) => {
+        return this.delete(incident.id)
+      })
+    )
+  },
+
   join(incidentId, payload) {
     return API.post(`/${resource}/${incidentId}/join`, payload)
   },
