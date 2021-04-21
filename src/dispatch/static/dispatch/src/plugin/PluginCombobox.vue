@@ -97,7 +97,7 @@ export default {
   },
 
   created() {
-    this.fetchData()
+    this.fetchData({})
   },
 
   methods: {
@@ -108,11 +108,12 @@ export default {
         itemsPerPage: this.numItems,
       })
     },
-    fetchData() {
+    fetchData(filterOptions) {
       this.error = null
       this.loading = "error"
 
-      let filterOptions = {
+      filterOptions = {
+        ...filterOptions,
         q: this.search,
         filters: {
           type: [this.type],
