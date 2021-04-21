@@ -141,7 +141,7 @@
                   <v-btn @click="closeCreateDialog()" text> Cancel </v-btn>
                   <v-btn
                     color="info"
-                    @click="save('incident')"
+                    @click="saveFilter()"
                     :loading="loading"
                     :disabled="invalid || !validated"
                   >
@@ -181,6 +181,13 @@ extend("required", {
 
 export default {
   name: "SearchFilterCreateDialog",
+  props: {
+    value: {
+      type: Object,
+      default: null,
+    },
+  },
+
   data() {
     return {
       editorOptions: {
@@ -246,9 +253,9 @@ export default {
 
     saveFilter() {
       // reset local data
-      Object.assign(this.$data, this.$options.data.apply(this))
-      this.save("incident")
-      this.$emit("input", this.selected)
+      this.save("incident").then((filter) => {
+        this.$emit("input", filter)
+      })
     },
 
     getPreviewData() {

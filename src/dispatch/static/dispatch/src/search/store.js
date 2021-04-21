@@ -82,7 +82,7 @@ const actions = {
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
       return SearchApi.create(state.selected)
-        .then(() => {
+        .then((resp) => {
           commit(
             "notification_backend/addBeNotification",
             { text: "Search filter created successfully.", type: "success" },
@@ -91,6 +91,7 @@ const actions = {
           commit("SET_SELECTED_LOADING", false)
           commit("SET_DIALOG_SHOW_CREATE", false)
           commit("RESET_SELECTED")
+          return resp.data
         })
         .catch((err) => {
           commit(
