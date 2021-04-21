@@ -12,7 +12,7 @@ from dispatch.database.core import Base
 from dispatch.models import DispatchBase, ProjectMixin
 
 from dispatch.project.models import ProjectRead
-from dispatch.incident.models import IncidentReadNested
+from dispatch.incident.models import IncidentRead
 from dispatch.tag.models import TagRead
 from dispatch.term.models import TermRead
 from dispatch.definition.models import DefinitionRead
@@ -75,7 +75,7 @@ class SearchRequest(SearchBase):
 
 class ContentResponse(DispatchBase):
     documents: Optional[List[DocumentRead]] = Field([], alias="Document")
-    incidents: Optional[List[IncidentReadNested]] = Field([], alias="Incident")
+    incidents: Optional[List[IncidentRead]] = Field([], alias="Incident")
     tasks: Optional[List[TaskRead]] = Field([], alias="Task")
     tags: Optional[List[TagRead]] = Field([], alias="Tag")
     terms: Optional[List[TermRead]] = Field([], alias="Term")

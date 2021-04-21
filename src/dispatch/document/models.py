@@ -110,6 +110,7 @@ class DocumentRead(DocumentBase):
     incident_priorities: Optional[List[IncidentPriorityRead]] = []
     incident_types: Optional[List[IncidentTypeRead]] = []
     terms: Optional[List[TermReadNested]] = []
+    project: Optional[ProjectRead]
 
     @validator("description", pre=True, always=True)
     def set_description(cls, v, values):

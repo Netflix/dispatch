@@ -13,6 +13,11 @@
       <template v-slot:item.reporter="{ item }">
         <incident-participant :participant="item.reporter" />
       </template>
+      <template v-slot:item.project.name="{ item }">
+        <v-chip color="orange" text-color="white">
+          {{ item.project.name }}
+        </v-chip>
+      </template>
       <template v-slot:item.reported_at="{ item }">
         {{ item.reported_at | formatDate }}
       </template>
@@ -56,7 +61,8 @@ export default {
         { text: "Title", value: "title", sortable: false },
         { text: "Status", value: "status" },
         { text: "Type", value: "incident_type.name" },
-        //{ text: "Priority", value: "incident_priority.name", width: "10%" },
+        { text: "Priority", value: "incident_priority.name", width: "10%" },
+        { text: "Project", value: "project.name", sortable: true },
         { text: "Commander", value: "commander", sortable: false },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
