@@ -1133,13 +1133,14 @@ def incident_assign_role_flow(
                 "weblink": None,
             }
 
-        if incident.status != IncidentStatus.closed:
+        if incident.status != IncidentStatus.closed.value:
             # we send a notification to the incident conversation
             send_incident_new_role_assigned_notification(
                 assigner_contact_info, assignee_contact_info, assignee_role, incident, db_session
             )
 
-    if assignee_role == ParticipantRoleType.incident_commander:
+
+    if assignee_role == ParticipantRoleType.incident_commander.value:
         # we send a message to the incident commander with tips on how to manage the incident
         send_incident_management_help_tips_message(incident, db_session)
 

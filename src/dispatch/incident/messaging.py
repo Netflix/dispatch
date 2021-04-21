@@ -591,7 +591,9 @@ def send_incident_new_role_assigned_notification(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not plugin:
-        log.warning("Incident new role message not sent because no conversation plugin is enabled.")
+        log.warning(
+            "Incident new role assignment message not sent. No conversation plugin is enabled."
+        )
         return
 
     plugin.instance.send(

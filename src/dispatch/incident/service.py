@@ -47,7 +47,7 @@ def assign_incident_role(
                         incident_description=incident.description,
                     )
 
-    elif role == ParticipantRoleType.liaison:
+    elif role == ParticipantRoleType.liaison.value:
         if incident.incident_type.liaison_service:
             service = incident.incident_type.liaison_service
             if oncall_plugin:

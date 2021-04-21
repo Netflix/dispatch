@@ -106,9 +106,9 @@ def create_incident(
         db_session=db_session, reporter_email=current_user.email, **incident_in.dict()
     )
 
-    if incident.status == IncidentStatus.stable:
+    if incident.status == IncidentStatus.stable.value:
         background_tasks.add_task(incident_create_stable_flow, incident_id=incident.id)
-    elif incident.status == IncidentStatus.closed:
+    elif incident.status == IncidentStatus.closed.value:
         background_tasks.add_task(incident_create_closed_flow, incident_id=incident.id)
     else:
         background_tasks.add_task(incident_create_flow, incident_id=incident.id)
@@ -151,7 +151,7 @@ def update_incident(
         current_user.email,
         incident_id=incident.id,
         assignee_email=incident_in.commander.individual.email,
-        assignee_role=ParticipantRoleType.incident_commander,
+        assignee_role=ParticipantRoleType.incident_commander.value,
     )
 
     # assign reporter
@@ -160,7 +160,7 @@ def update_incident(
         current_user.email,
         incident_id=incident.id,
         assignee_email=incident_in.reporter.individual.email,
-        assignee_role=ParticipantRoleType.reporter,
+        assignee_role=ParticipantRoleType.reporter.value,
     )
 
     return incident
