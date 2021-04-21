@@ -31,10 +31,15 @@ export default {
     delete options.filters
 
     if (!expression.length) {
-      return options
+      if (rawFilters.length) {
+        expression = { and: [...rawFilters] }
+        return { ...options, filter: JSON.stringify(expression) }
+      } else {
+        return options
+      }
     }
 
-    if (rawFilters) {
+    if (rawFilters.length) {
       expression = { and: [...rawFilters, ...expression] }
     } else {
       expression = { and: expression }
