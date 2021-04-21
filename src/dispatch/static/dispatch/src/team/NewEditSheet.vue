@@ -58,7 +58,7 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Company" rules="required" immediate>
+                <ValidationProvider name="Company" immediate>
                   <v-text-field
                     v-model="company"
                     slot-scope="{ errors, valid }"
@@ -67,7 +67,6 @@
                     :success="valid"
                     hint="The team's company."
                     clearable
-                    required
                   />
                 </ValidationProvider>
               </v-flex>
