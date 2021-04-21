@@ -397,7 +397,7 @@ def set_conversation_topic(incident: Incident, db_session: SessionLocal):
     )
 
     if not incident.conversation:
-        log.warning("Conversation topic not sent because incident has no conversation.")
+        log.warning("Conversation topic not set because incident has no conversation.")
         return
 
     try:
