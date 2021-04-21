@@ -300,6 +300,30 @@ const actions = {
         commit("SET_BULK_EDIT_LOADING", false)
       })
   },
+  deleteBulk({ commit, dispatch }) {
+    commit("SET_BULK_EDIT_LOADING", true)
+    return IncidentApi.bulkDelete(state.table.rows.selected)
+      .then(() => {
+        dispatch("getAll")
+        commit(
+          "notification_backend/addBeNotification",
+          { text: "Incident(s) deleted successfully.", type: "success" },
+          { root: true }
+        )
+        commit("SET_BULK_EDIT_LOADING", false)
+      })
+      .catch((err) => {
+        commit(
+          "notification_backend/addBeNotification",
+          {
+            text: "Incident(s) not deleted. Reason: " + err.response.data.detail,
+            type: "error",
+          },
+          { root: true }
+        )
+        commit("SET_BULK_EDIT_LOADING", false)
+      })
+  },
   deleteIncident({ commit, dispatch }) {
     return IncidentApi.delete(state.selected.id)
       .then(function () {

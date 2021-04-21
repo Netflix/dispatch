@@ -27,6 +27,12 @@
               Mark Closed
             </v-btn>
           </v-list-item-icon>
+          <v-list-item-icon>
+            <v-btn text color="primary" @click="deleteBulk()">
+              <v-icon color="primary">mdi-delete</v-icon>
+              Delete
+            </v-btn>
+          </v-list-item-icon>
         </v-list-item>
       </v-list>
     </v-card>
@@ -45,7 +51,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions("incident", ["saveBulk"]),
+    ...mapActions("incident", ["saveBulk", "deleteBulk"]),
   },
 }
 </script>
