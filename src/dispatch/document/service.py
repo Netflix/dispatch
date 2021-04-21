@@ -106,11 +106,15 @@ def create(*, db_session, document_in: DocumentCreate) -> Document:
         term_service.get_or_create(db_session=db_session, term_in=t) for t in document_in.terms
     ]
     incident_priorities = [
-        incident_priority_service.get_by_name(db_session=db_session, name=n.name)
+        incident_priority_service.get_by_name(
+            db_session=db_session, project_id=n.project.id, name=n.name
+        )
         for n in document_in.incident_priorities
     ]
     incident_types = [
-        incident_type_service.get_by_name(db_session=db_session, name=n.name)
+        incident_type_service.get_by_name(
+            db_session=db_session, project_id=n.project.id, name=n.name
+        )
         for n in document_in.incident_types
     ]
     project = None
@@ -164,11 +168,15 @@ def update(*, db_session, document: Document, document_in: DocumentUpdate) -> Do
         term_service.get_or_create(db_session=db_session, term_in=t) for t in document_in.terms
     ]
     incident_priorities = [
-        incident_priority_service.get_by_name(db_session=db_session, name=n.name)
+        incident_priority_service.get_by_name(
+            db_session=db_session, project_id=n.project.id, name=n.name
+        )
         for n in document_in.incident_priorities
     ]
     incident_types = [
-        incident_type_service.get_by_name(db_session=db_session, name=n.name)
+        incident_type_service.get_by_name(
+            db_session=db_session, project_id=n.project.id, name=n.name
+        )
         for n in document_in.incident_types
     ]
 
