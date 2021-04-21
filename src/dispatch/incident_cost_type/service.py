@@ -25,10 +25,13 @@ def get(*, db_session, incident_cost_type_id: int) -> Optional[IncidentCostTypeR
     )
 
 
-def get_default(*, db_session) -> Optional[IncidentCostTypeRead]:
+def get_default(*, db_session, project_id: int) -> Optional[IncidentCostTypeRead]:
     """Returns the default incident cost type."""
     return (
-        db_session.query(IncidentCostType).filter(IncidentCostType.default == true()).one_or_none()
+        db_session.query(IncidentCostType)
+        .filter(IncidentCostType.default == true())
+        .filter(IncidentCostType.project_id == project_id)
+        .one_or_none()
     )
 
 
