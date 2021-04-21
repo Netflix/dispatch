@@ -71,13 +71,30 @@
                 />
               </template>
               <template v-slot:item.resolve_by="{ item }">
-                {{ item.resolve_by | formatDate }}
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <span v-bind="attrs" v-on="on">{{ item.resolve_by | formatRelativeDate }}</span>
+                  </template>
+                  <span>{{ item.resolve_by | formatDate }}</span>
+                </v-tooltip>
               </template>
               <template v-slot:item.created_at="{ item }">
-                {{ item.created_at | formatDate }}
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
+                  </template>
+                  <span>{{ item.created_at | formatDate }}</span>
+                </v-tooltip>
               </template>
               <template v-slot:item.resolved_at="{ item }">
-                {{ item.resolved_at | formatDate }}
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <span v-bind="attrs" v-on="on">{{
+                      item.resolved_at | formatRelativeDate
+                    }}</span>
+                  </template>
+                  <span>{{ item.resolved_at | formatDate }}</span>
+                </v-tooltip>
               </template>
               <template v-slot:item.source="{ item }">
                 <a :href="item.weblink" target="_blank" style="text-decoration: none">

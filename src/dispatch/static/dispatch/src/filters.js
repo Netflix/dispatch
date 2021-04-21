@@ -1,9 +1,31 @@
 import Vue from "vue"
-import { parseISO, formatRelative } from "date-fns"
+import { parseISO, formatISO } from "date-fns"
+import enGB from "date-fns/locale/en-GB"
+import formatRelative from "date-fns/formatRelative"
+
+const formatRelativeLocale = {
+  lastWeek: "'Last' eeee",
+  yesterday: "'Yesterday'",
+  today: "'Today'",
+  tomorrow: "'Tomorrow'",
+  nextWeek: "'Next' eeee",
+  other: "yyyy/MM/dd",
+}
+
+const locale = {
+  ...enGB,
+  formatRelative: (token) => formatRelativeLocale[token],
+}
 
 Vue.filter("formatDate", function (value) {
   if (value) {
-    return formatRelative(parseISO(value), Date.now())
+    return formatISO(parseISO(value))
+  }
+})
+
+Vue.filter("formatRelativeDate", function (value) {
+  if (value) {
+    return formatRelative(parseISO(value), new Date(), { locale })
   }
 })
 

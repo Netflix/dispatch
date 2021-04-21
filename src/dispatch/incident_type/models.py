@@ -57,7 +57,10 @@ def _revoke_other_default(target, value, oldvalue, initiator):
 
     if value:
         previous_default = (
-            session.query(IncidentType).filter(IncidentType.default == true()).one_or_none()
+            session.query(IncidentType)
+            .filter(IncidentType.default == true())
+            .filter(IncidentType.project_id == target.project_id)
+            .one_or_none()
         )
 
         if previous_default:
