@@ -92,7 +92,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
             for p in self.participants:
                 for pr in p.participant_roles:
                     if (
-                        pr.role == ParticipantRoleType.incident_commander
+                        pr.role == ParticipantRoleType.incident_commander.value
                         and pr.renounced_at  # noqa
                         is None  # Column renounced_at will be null for the current incident commander
                     ):
@@ -103,7 +103,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
         return (
             select([Participant])
             .where(Participant.incident_id == cls.id)
-            .where(ParticipantRole.role == ParticipantRoleType.incident_commander)
+            .where(ParticipantRole.role == ParticipantRoleType.incident_commander.value)
             .where(ParticipantRole.renounced_at == None)  # noqa
         )
 
@@ -111,8 +111,12 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     def reporter(self):
         if self.participants:
             for p in self.participants:
-                for role in p.participant_roles:
-                    if role.role == ParticipantRoleType.reporter:
+                for pr in p.participant_roles:
+                    if (
+                        pr.role == ParticipantRoleType.reporter.value
+                        and pr.renounced_at  # noqa
+                        is None  # Column renounced_at will be null for the current reporter
+                    ):
                         return p
 
     @reporter.expression
@@ -120,7 +124,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
         return (
             select([Participant])
             .where(Participant.incident_id == cls.id)
-            .where(ParticipantRole.role == ParticipantRoleType.reporter)
+            .where(ParticipantRole.role == ParticipantRoleType.reporter.value)
             .where(ParticipantRole.renounced_at == None)  # noqa
         )
 
