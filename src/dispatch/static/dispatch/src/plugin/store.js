@@ -170,7 +170,7 @@ const mutations = {
     state.dialogs.showCreateEdit = value
   },
   RESET_SELECTED(state) {
-    // not reset project
+    // do not reset project
     let project = state.selected.project
     state.selected = { ...getDefaultSelectedState() }
     state.selected.project = project
