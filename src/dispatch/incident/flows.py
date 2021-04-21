@@ -387,7 +387,7 @@ def create_conversation(incident: Incident, db_session: SessionLocal):
 def set_conversation_topic(incident: Incident, db_session: SessionLocal):
     """Sets the conversation topic."""
     if not incident.conversation:
-        log.warning("Conversation topic not sent because incident has no conversation.")
+        log.warning("Conversation topic not set because incident has no conversation.")
         return
 
     conversation_topic = (
@@ -1142,7 +1142,6 @@ def incident_assign_role_flow(
             send_incident_new_role_assigned_notification(
                 assigner_contact_info, assignee_contact_info, assignee_role, incident, db_session
             )
-
 
     if assignee_role == ParticipantRoleType.incident_commander.value:
         # we send a message to the incident commander with tips on how to manage the incident

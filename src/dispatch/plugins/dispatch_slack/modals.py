@@ -226,14 +226,14 @@ def build_report_incident_blocks(channel_id: str, db_session: Session):
 
     modal_template = {
         "type": "modal",
-        "title": {"type": "plain_text", "text": "Security Incident Report"},
+        "title": {"type": "plain_text", "text": "Incident Report"},
         "blocks": [
             {
                 "type": "context",
                 "elements": [
                     {
                         "type": "mrkdwn",
-                        "text": "If you suspect a security incident and require help from security, "
+                        "text": "If you suspect an incident and require help, "
                         "please fill out the following to the best of your abilities.",
                     }
                 ],
