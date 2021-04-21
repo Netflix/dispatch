@@ -77,15 +77,22 @@ def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact
 
 
 def send_task_notification(
-    conversation_id, message_template, assignees, description, weblink, db_session: SessionLocal
+    incident,
+    message_template,
+    assignees,
+    description,
+    weblink,
+    db_session: SessionLocal,
 ):
     """Sends a task notification."""
     # we send a notification to the incident conversation
     notification_text = "Incident Notification"
     notification_type = "incident-notification"
-    plugin = plugin_service.get_active_instance(db_session=db_session, plugin_type="conversation")
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
     plugin.instance.send(
-        conversation_id,
+        incident.conversation.channel_id,
         notification_text,
         message_template,
         notification_type,
@@ -118,7 +125,7 @@ def create_or_update_task(
             if task.status == TaskStatus.resolved.value:
                 if existing_status != TaskStatus.resolved.value:
                     send_task_notification(
-                        incident.conversation.channel_id,
+                        incident,
                         INCIDENT_TASK_RESOLVED_NOTIFICATION,
                         task.assignees,
                         task.description,
@@ -133,7 +140,7 @@ def create_or_update_task(
 
         if notify:
             send_task_notification(
-                incident.conversation.channel_id,
+                incident,
                 INCIDENT_TASK_NEW_NOTIFICATION,
                 task.assignees,
                 task.description,
