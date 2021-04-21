@@ -59,7 +59,7 @@ def update(
 ) -> IncidentPriority:
     """Updates an incident priority."""
     incident_priority_data = jsonable_encoder(incident_priority)
-    update_data = incident_priority_in.dict(skip_defaults=True)
+    update_data = incident_priority_in.dict(skip_defaults=True, exclude={"project"})
 
     for field in incident_priority_data:
         if field in update_data:
