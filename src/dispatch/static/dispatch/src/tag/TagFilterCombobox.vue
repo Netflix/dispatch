@@ -10,6 +10,7 @@
     clearable
     chips
     :loading="loading"
+    no-filter
     @update:search-input="getFilteredData({ q: $event })"
   >
     <template v-slot:no-data>
@@ -22,6 +23,9 @@
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
+    </template>
+    <template v-slot:selection="data">
+      <v-chip> {{ data.item.tag_type.name }}/{{ data.item.name }} </v-chip>
     </template>
     <template v-slot:item="data">
       <template>
@@ -105,11 +109,11 @@ export default {
   },
 
   created() {
-    this.fetchData({ q: null })
+    this.fetchData({})
     this.$watch(
       (vm) => [vm.project],
       () => {
-        this.fetchData({ q: null })
+        this.fetchData({})
       }
     )
   },
@@ -138,14 +142,27 @@ export default {
       }
 
       if (this.project) {
-        let options = {
+        filterOptions = {
           ...filterOptions,
           filters: {
             project: [this.project],
           },
         }
-        filterOptions = SearchUtils.createParametersFromTableOptions({ ...options })
       }
+
+      let tagTypeFilter = {}
+      if (filterOptions.q) {
+        if (filterOptions.q.indexOf("/") != -1) {
+          let [tagType, query] = filterOptions.q.split("/")
+          filterOptions.q = query
+          tagTypeFilter = [{ model: "TagType", field: "name", op: "==", value: tagType }]
+        }
+      }
+
+      filterOptions = SearchUtils.createParametersFromTableOptions(
+        { ...filterOptions },
+        tagTypeFilter
+      )
 
       TagApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
