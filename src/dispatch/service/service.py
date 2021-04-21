@@ -3,6 +3,7 @@ from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 
 from dispatch.exceptions import InvalidConfiguration
+from dispatch.project import service as project_service
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.plugin import service as plugin_service
@@ -45,20 +46,24 @@ def get_all_by_type_and_status(
 
 def create(*, db_session, service_in: ServiceCreate) -> Service:
     """Creates a new service."""
+    project = project_service.get_by_name(db_session=db_session, name=service_in.project.name)
     terms = [term_service.get_or_create(db_session=db_session, term_in=t) for t in service_in.terms]
     incident_priorities = [
-        incident_priority_service.get_by_name(db_session=db_session, name=n.name)
+        incident_priority_service.get_by_name(
+            db_session=db_session, project_id=project.id, name=n.name
+        )
         for n in service_in.incident_priorities
     ]
     incident_types = [
-        incident_type_service.get_by_name(db_session=db_session, name=n.name)
+        incident_type_service.get_by_name(db_session=db_session, project_id=project.id, name=n.name)
         for n in service_in.incident_types
     ]
     service = Service(
-        **service_in.dict(exclude={"terms", "incident_priorities", "incident_types"}),
+        **service_in.dict(exclude={"terms", "incident_priorities", "incident_types", "project"}),
         incident_priorities=incident_priorities,
         incident_types=incident_types,
         terms=terms,
+        project=project,
     )
     db_session.add(service)
     db_session.commit()
@@ -71,11 +76,15 @@ def update(*, db_session, service: Service, service_in: ServiceUpdate) -> Servic
 
     terms = [term_service.get_or_create(db_session=db_session, term_in=t) for t in service_in.terms]
     incident_priorities = [
-        incident_priority_service.get_by_name(db_session=db_session, name=n.name)
+        incident_priority_service.get_by_name(
+            db_session=db_session, project_id=service.project.id, name=n.name
+        )
         for n in service_in.incident_priorities
     ]
     incident_types = [
-        incident_type_service.get_by_name(db_session=db_session, name=n.name)
+        incident_type_service.get_by_name(
+            db_session=db_session, project_id=service.project.id, name=n.name
+        )
         for n in service_in.incident_types
     ]
     update_data = service_in.dict(
@@ -83,10 +92,12 @@ def update(*, db_session, service: Service, service_in: ServiceUpdate) -> Servic
     )
 
     if service_in.is_active:  # user wants to enable the service
-        oncall_plugin = plugin_service.get_by_slug(db_session=db_session, slug=service_in.type)
-        if not oncall_plugin.enabled:
+        oncall_plugin_instance = plugin_service.get_active_instance_by_slug(
+            db_session=db_session, slug=service_in.type, project_id=service.project.id
+        )
+        if not oncall_plugin_instance.enabled:
             raise InvalidConfiguration(
-                f"Cannot enable service: {service.name}. Its associated plugin {oncall_plugin.title} is not enabled."
+                f"Cannot enable service: {service.name}. Its associated plugin {oncall_plugin_instance.plugin.title} is not enabled."
             )
 
     for field in service_data:

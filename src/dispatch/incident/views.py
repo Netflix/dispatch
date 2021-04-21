@@ -9,7 +9,6 @@ from starlette.requests import Request
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from dispatch.auth.permissions import (
-    AdminPermission,
     IncidentEditPermission,
     IncidentJoinPermission,
     PermissionsDependency,
@@ -20,7 +19,7 @@ from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import get_db
-from dispatch.database.service import search_filter_sort_paginate
+from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.incident.enums import IncidentStatus
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.report import flows as report_flows
@@ -50,47 +49,16 @@ def get_current_incident(*, db_session: Session = Depends(get_db), request: Requ
     return incident
 
 
-# TODO we should be able to harden GET params to bad data similar to the way
-# we do with POST data
 @router.get("/", summary="Retrieve a list of all incidents.")
 def get_incidents(
-    db_session: Session = Depends(get_db),
-    page: int = 1,
-    items_per_page: int = Query(5, alias="itemsPerPage"),
-    query_str: str = Query(None, alias="q"),
-    filter_spec: str = Query(None, alias="filter"),
-    sort_by: List[str] = Query([], alias="sortBy[]"),
-    descending: List[bool] = Query([], alias="descending[]"),
-    fields: List[str] = Query([], alias="fields[]"),
-    ops: List[str] = Query([], alias="ops[]"),
-    values: List[str] = Query([], alias="values[]"),
-    current_user: DispatchUser = Depends(get_current_user),
+    *,
+    common: dict = Depends(common_parameters),
     include: List[str] = Query([], alias="include[]"),
 ):
     """
     Retrieve a list of all incidents.
     """
-    if filter_spec:
-        filter_spec = json.loads(filter_spec)
-
-    pagination = search_filter_sort_paginate(
-        db_session=db_session,
-        model="Incident",
-        query_str=query_str,
-        filter_spec=filter_spec,
-        page=page,
-        items_per_page=items_per_page,
-        sort_by=sort_by,
-        descending=descending,
-        fields=fields,
-        values=values,
-        ops=ops,
-        join_attrs=[
-            ("tag", "tags"),
-        ],
-        user_role=current_user.role,
-        user_email=current_user.email,
-    )
+    pagination = search_filter_sort_paginate(model="Incident", **common)
 
     if include:
         # only allow two levels for now
@@ -272,7 +240,7 @@ def create_executive_report(
     "/{incident_id}",
     response_model=IncidentRead,
     summary="Delete an incident.",
-    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
 )
 def delete_incident(
     *,

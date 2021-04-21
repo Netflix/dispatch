@@ -1,14 +1,14 @@
 import { getField, updateField } from "vuex-map-fields"
 
 const state = {
-  notifications: []
+  notifications: [],
 }
 
 const getters = {
   getField,
   getBackendNotifications({ state }) {
     return state.notifications
-  }
+  },
 }
 
 const mutations = {
@@ -31,7 +31,7 @@ const mutations = {
   },
   setBeNotificationSeen(state, index) {
     state.notifications[index].show = false
-  }
+  },
 }
 
 const actions = {
@@ -46,7 +46,7 @@ const actions = {
   },
   removeAllBackendNotifications({ commit }) {
     commit("removeAllBeNotifications")
-  }
+  },
 }
 
 export default {
@@ -54,5 +54,5 @@ export default {
   state,
   getters,
   actions,
-  mutations
+  mutations,
 }

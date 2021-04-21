@@ -2,13 +2,11 @@
   <v-app>
     <v-content>
       <v-app-bar app flat class="v-bar--underline" color="background0">
-        <router-link to="/" tag="span">
+        <router-link to="/" style="text-decoration: none">
           <span class="button font-weight-bold">D I S P A T C H</span>
         </router-link>
         <v-spacer />
-        <v-btn small color="primary" to="/incidents/report">
-          Report Incident
-        </v-btn>
+        <v-btn small color="primary" :to="{ name: 'report' }"> Report Incident </v-btn>
       </v-app-bar>
       <v-card class="mx-auto ma-4" max-width="1000" flat outlined>
         <v-card-text>
@@ -27,28 +25,38 @@ export default {
   name: "IncidentStatus",
 
   components: {
-    IncidentSummaryTable
+    IncidentSummaryTable,
   },
 
   data() {
     return {
       items: [],
-      loading: false
+      loading: false,
     }
   },
 
-  mounted() {
+  created() {
     this.getActive()
   },
 
   methods: {
     getActive() {
       this.loading = "error"
-      IncidentApi.getAll({ fields: ["status"], ops: ["=="], values: ["Active"] }).then(response => {
+      IncidentApi.getAll({
+        filter: JSON.stringify({
+          and: [
+            {
+              field: "status",
+              op: "==",
+              value: "Active",
+            },
+          ],
+        }),
+      }).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
-    }
-  }
+    },
+  },
 }
 </script>

@@ -1,7 +1,7 @@
 <template>
   <v-app-bar clipped-left clipped-right app flat class="v-bar--underline" color="background0">
     <!--<v-app-bar-nav-icon @click="handleDrawerToggle" />-->
-    <router-link to="/" tag="span">
+    <router-link to="/" style="text-decoration: none">
       <span class="button font-weight-bold">D I S P A T C H</span>
     </router-link>
     <v-spacer />
@@ -20,7 +20,7 @@
       <v-tooltip v-if="!$vuetify.theme.dark" bottom>
         <template v-slot:activator="{ on }">
           <v-btn v-on="on" small icon @click="toggleDarkTheme">
-            <v-icon class="mr-1">mdi-moon-waxing-crescent</v-icon>
+            <v-icon class="mr-1"> mdi-moon-waxing-crescent </v-icon>
           </v-btn>
         </template>
         <span>Dark Mode On</span>
@@ -47,15 +47,15 @@
           <v-btn icon large text v-on="on">
             <v-avatar size="30px">
               <img
-                v-if="userInfo().thumbnailPhotoUrl"
-                :src="userInfo().thumbnailPhotoUrl"
-                :alt="userInfo().fullName"
+                v-if="currentUser().thumbnailPhotoUrl"
+                :src="currentUser().thumbnailPhotoUrl"
+                :alt="currentUser().fullName"
               />
-              <v-icon v-else>account_circle</v-icon>
+              <v-icon v-else> account_circle </v-icon>
             </v-avatar>
           </v-btn>
         </template>
-        <span>{{ userInfo().email }}</span>
+        <span>{{ currentUser().email }}</span>
       </v-tooltip>
       <!--
         <v-menu offset-y origin="center center" class="elelvation-1" :nudge-bottom="14" transition="scale-transition">
@@ -75,6 +75,7 @@
 import { mapActions, mapMutations, mapState } from "vuex"
 
 import Util from "@/util"
+
 export default {
   name: "AppToolbar",
   components: {},
@@ -85,8 +86,8 @@ export default {
       },
       get() {
         return this.$store.state.query
-      }
-    }
+      },
+    },
   },
   methods: {
     handleDrawerToggle() {
@@ -97,15 +98,15 @@ export default {
     },
     performSearch() {
       this.$store.dispatch("search/getResults", this.$store.state.query)
-      this.$router.push("/search")
+      this.$router.push({ name: "GlobalSearch" })
     },
     toggleDarkTheme() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark
     },
-    ...mapState("auth", ["userInfo"]),
+    ...mapState("auth", ["currentUser"]),
     ...mapActions("search", ["setQuery"]),
-    ...mapMutations("search", ["SET_QUERY"])
-  }
+    ...mapMutations("search", ["SET_QUERY"]),
+  },
 }
 </script>
 

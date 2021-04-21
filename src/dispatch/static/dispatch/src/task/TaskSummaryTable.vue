@@ -20,14 +20,23 @@
         {{ item.incident.incident_type.name }}
       </template>
       <template v-slot:item.assignees="{ item }">
-        <participant v-for="assignee in item.assignees" :key="assignee.id" :participant="assignee">
-        </participant>
+        <participant
+          v-for="assignee in item.assignees"
+          :key="assignee.id"
+          :participant="assignee"
+        />
       </template>
-      <template v-slot:item.resolve_by="{ item }">{{ item.resolve_by | formatDate }}</template>
-      <template v-slot:item.created_at="{ item }">{{ item.created_at | formatDate }}</template>
-      <template v-slot:item.resolved_at="{ item }">{{ item.resolved_at | formatDate }} </template>
+      <template v-slot:item.resolve_by="{ item }">
+        {{ item.resolve_by | formatDate }}
+      </template>
+      <template v-slot:item.created_at="{ item }">
+        {{ item.created_at | formatDate }}
+      </template>
+      <template v-slot:item.resolved_at="{ item }">
+        {{ item.resolved_at | formatDate }}
+      </template>
       <template v-slot:item.source="{ item }">
-        <a :href="item.weblink" target="_blank" style="text-decoration: none;">
+        <a :href="item.weblink" target="_blank" style="text-decoration: none">
           {{ item.source }}
           <v-icon small>open_in_new</v-icon>
         </a>
@@ -62,7 +71,7 @@ export default {
   components: {
     NewEditSheet,
     IncidentPriority,
-    Participant
+    Participant,
   },
   data() {
     return {
@@ -73,28 +82,28 @@ export default {
         { text: "Owner", value: "owner.individual_contact.name", sortable: false },
         { text: "Assignees", value: "assignees", sortable: false },
         { text: "Description", value: "description", sortable: false },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" }
-      ]
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+      ],
     }
   },
 
   props: {
     items: {
-      default: function() {
+      default: function () {
         return []
       },
-      type: Array
+      type: Array,
     },
     loading: {
-      default: function() {
+      default: function () {
         return false
       },
-      type: [String, Boolean]
-    }
+      type: [String, Boolean],
+    },
   },
 
   methods: {
-    ...mapActions("task", ["createEditShow", "removeShow"])
-  }
+    ...mapActions("task", ["createEditShow", "removeShow"]),
+  },
 }
 </script>

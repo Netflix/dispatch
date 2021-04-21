@@ -22,19 +22,19 @@ export default {
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return {}
-      }
+      },
     },
     loading: {
       type: [String, Boolean],
-      default: function() {
+      default: function () {
         return false
-      }
-    }
+      },
+    },
   },
   components: {
-    DashboardCard
+    DashboardCard,
   },
 
   computed: {
@@ -44,64 +44,64 @@ export default {
           height: 350,
           type: "heatmap",
           toolbar: {
-            show: false
-          }
+            show: false,
+          },
         },
         colors: DashboardUtils.defaultColorTheme(),
         responsive: [
           {
             options: {
               legend: {
-                position: "top"
-              }
-            }
-          }
+                position: "top",
+              },
+            },
+          },
         ],
         dataLabels: {
-          enabled: false
+          enabled: false,
         },
 
         xaxis: {
           categories: this.categoryData || [],
           title: {
-            text: "Month"
-          }
-        }
+            text: "Month",
+          },
+        },
       }
     },
     series() {
       let series = []
       let weekdays = this.weekdays
 
-      forEach(this.value, function(value) {
+      forEach(this.value, function (value) {
         let dayCounts = map(
-          countBy(value, function(item) {
+          countBy(value, function (item) {
             return parseISO(item.reported_at).toLocaleString("default", { weekday: "short" })
           }),
-          function(value, key) {
+          function (value, key) {
             return { name: key, data: [value] }
           }
         )
 
         // fill in any gaps
-        forEach(weekdays, function(weekday) {
+        forEach(weekdays, function (weekday) {
           let found = find(dayCounts, { name: weekday })
           if (!found) {
             dayCounts.push({ name: weekday, data: [0] })
           }
         })
 
-        let sortedDayCounts = sortBy(dayCounts, function(obj) {
+        let sortedDayCounts = sortBy(dayCounts, function (obj) {
           return weekdays.indexOf(obj.name)
         })
-        series = mergeWith(series, sortedDayCounts, function(objValue, srcValue) {
+        series = mergeWith(series, sortedDayCounts, function (objValue, srcValue) {
           if (isArray(objValue)) {
             return objValue.concat(srcValue)
           }
         })
       })
       // sort
-      series = sortBy(series, function(obj) {
+      series = sortBy(series, function (obj) {
         return weekdays.indexOf(obj.name)
       })
       return series
@@ -110,8 +110,8 @@ export default {
       return Object.keys(this.value)
     },
     weekdays() {
-      return [...Array(7).keys()].map(i => locale.localize.day(i, { width: "abbreviated" }))
-    }
-  }
+      return [...Array(7).keys()].map((i) => locale.localize.day(i, { width: "abbreviated" }))
+    },
+  },
 }
 </script>

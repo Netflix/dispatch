@@ -1,12 +1,9 @@
 from typing import List, Optional
-
 from fastapi.encoders import jsonable_encoder
-
-from sqlalchemy_searchable import search as search_db
 from sqlalchemy_filters import apply_filters
 
-from dispatch.common.utils.composite_search import CompositeSearch
 from dispatch.database.core import Base, get_class_by_tablename, get_table_name_by_class_instance
+from dispatch.project import service as project_service
 
 from .models import SearchFilter, SearchFilterCreate, SearchFilterUpdate
 
@@ -16,9 +13,14 @@ def get(*, db_session, search_filter_id: int) -> Optional[SearchFilter]:
     return db_session.query(SearchFilter).filter(SearchFilter.id == search_filter_id).first()
 
 
-def get_by_name(*, db_session, name: str) -> Optional[SearchFilter]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SearchFilter]:
     """Gets a search filter by name."""
-    return db_session.query(SearchFilter).filter(SearchFilter.name == name).first()
+    return (
+        db_session.query(SearchFilter)
+        .filter(SearchFilter.name == name)
+        .filter(SearchFilter.project_id == project_id)
+        .first()
+    )
 
 
 def match(*, db_session, filter_spec: List[dict], class_instance: Base):
@@ -50,7 +52,8 @@ def get_all(*, db_session):
 
 def create(*, db_session, search_filter_in: SearchFilterCreate) -> SearchFilter:
     """Creates a new search filter."""
-    search_filter = SearchFilter(**search_filter_in.dict())
+    project = project_service.get_by_name(db_session=db_session, name=search_filter_in.project.name)
+    search_filter = SearchFilter(**search_filter_in.dict(exclude={"project"}), project=project)
     db_session.add(search_filter)
     db_session.commit()
     return search_filter
@@ -97,16 +100,3 @@ def delete(*, db_session, search_filter_id: int):
     )
     db_session.delete(search_filter)
     db_session.commit()
-
-
-def composite_search(*, db_session, query_str: str, models: List[Base]):
-    """Perform a multi-table search based on the supplied query."""
-    s = CompositeSearch(db_session, models)
-    q = s.build_query(query_str, sort=True)
-    return s.search(query=q)
-
-
-def search(*, db_session, query_str: str, model: Base):
-    """Perform a search based on the query."""
-    q = db_session.query(model)
-    return search_db(q, query_str, sort=True)

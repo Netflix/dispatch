@@ -8,6 +8,8 @@ from starlette.status import HTTP_403_FORBIDDEN
 from dispatch.enums import UserRoles, Visibility
 from dispatch.auth.service import get_current_user
 from dispatch.incident import service as incident_service
+from dispatch.project import service as project_service
+from dispatch.organization import service as organization_service
 
 
 log = logging.getLogger(__name__)
@@ -83,14 +85,113 @@ class PermissionsDependency(object):
             permission_class(request=request)
 
 
-class AdminPermission(BasePermission):
+class OrganizationOwnerPermission(BasePermission):
     def has_required_permissions(
         self,
         request: Request,
     ) -> bool:
+        current_organization = organization_service.get_by_name(
+            db_session=request.state.db, name=request.path_params["organization"]
+        )
+
+        if not current_organization:
+            return
+
         current_user = get_current_user(db_session=request.state.db, request=request)
-        if current_user.role == UserRoles.admin:
-            return True
+
+        for user_org in current_user.organizations:
+            if user_org.organization.id == current_organization.id:
+                if user_org.role == UserRoles.owner:
+                    return True
+
+
+class OrganizationManagerPermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        current_organization = organization_service.get_by_name(
+            db_session=request.state.db, name=request.path_params["organization"]
+        )
+
+        if not current_organization:
+            return
+
+        current_user = get_current_user(db_session=request.state.db, request=request)
+
+        for user_org in current_user.organizations:
+            if user_org.organization.id == current_organization.id:
+                if user_org.role == UserRoles.manager:
+                    return True
+
+
+class SensitiveProjectActionPermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        return any_permission(
+            permissions=[
+                OrganizationOwnerPermission,
+                OrganizationManagerPermission,
+                ProjectAdminPermission,
+            ],
+            request=request,
+        )
+
+
+# TODO try to deteremine how to get access the async request body
+class ProjectAdminPermission(BasePermission):
+    async def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        return False
+
+
+#        current_project = None
+#        request_json = await request.json()
+#
+#        if request_json.get("project", {}).get("name"):
+#            current_project = project_service.get_by_name(
+#                db_session=request.state.db, name=request_json["project"]["name"]
+#            )
+#
+#        if not current_project:
+#            return
+#
+#        current_user = get_current_user(db_session=request.state.db, request=request)
+#
+#        for p in current_user.projects:
+#            if p.project_id == current_project.id:
+#                if p.role == UserRoles.admin:
+#                    return True
+
+
+class ProjectCreatePermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        return any_permission(
+            permissions=[OrganizationOwnerPermission, OrganizationManagerPermission],
+            request=request,
+        )
+
+
+class ProjectUpdatePermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        return any_permission(
+            permissions=[
+                OrganizationOwnerPermission,
+                OrganizationManagerPermission,
+                ProjectAdminPermission,
+            ],
+            request=request,
+        )
 
 
 class IncidentJoinPermission(BasePermission):
@@ -103,7 +204,7 @@ class IncidentJoinPermission(BasePermission):
         )
 
         if current_incident.visibility == Visibility.restricted:
-            return AdminPermission(request=request)
+            return ProjectAdminPermission(request=request)
 
         return True
 
@@ -123,7 +224,7 @@ class IncidentViewPermission(BasePermission):
         if current_incident.visibility == Visibility.restricted:
             return any_permission(
                 permissions=[
-                    AdminPermission,
+                    ProjectAdminPermission,
                     IncidentCommanderPermission,
                     IncidentReporterPermission,
                 ],
@@ -139,7 +240,7 @@ class IncidentEditPermission(BasePermission):
     ) -> bool:
         return any_permission(
             permissions=[
-                AdminPermission,
+                ProjectAdminPermission,
                 IncidentCommanderPermission,
                 IncidentReporterPermission,
             ],
@@ -174,7 +275,8 @@ class IncidentCommanderPermission(BasePermission):
             db_session=request.state.db, incident_id=request.path_params["incident_id"]
         )
         if not current_incident:
-            return False
+            return
 
-        if current_incident.commander.individual.email == current_user.email:
-            return True
+        if current_incident.commander:
+            if current_incident.commander.individual.email == current_user.email:
+                return True

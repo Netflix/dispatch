@@ -4,15 +4,18 @@ from pydantic import StrictBool
 from sqlalchemy import event, Column, Integer, String, Boolean
 from sqlalchemy.sql.expression import true
 from sqlalchemy.orm import object_session
+from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase
+from dispatch.models import DispatchBase, ProjectMixin
+from dispatch.project.models import ProjectRead
 
 
-class IncidentPriority(Base):
+class IncidentPriority(Base, ProjectMixin):
+    __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
+    name = Column(String)
     description = Column(String)
     page_commander = Column(Boolean, default=False)
 
@@ -51,6 +54,7 @@ class IncidentPriorityBase(DispatchBase):
     page_commander: Optional[StrictBool]
     tactical_report_reminder: Optional[int]
     executive_report_reminder: Optional[int]
+    project: Optional[ProjectRead]
     default: Optional[bool]
     view_order: Optional[int]
 

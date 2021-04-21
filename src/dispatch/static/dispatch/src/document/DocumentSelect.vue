@@ -30,6 +30,7 @@ import { mapActions } from "vuex"
 import { cloneDeep } from "lodash"
 import { ValidationProvider } from "vee-validate"
 
+import SearchUtils from "@/search/utils"
 import DocumentApi from "@/document/api"
 import NewEditSheet from "@/document/NewEditSheet.vue"
 
@@ -39,15 +40,19 @@ export default {
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return {}
-      }
-    }
+      },
+    },
+    project: {
+      type: [Object],
+      default: null,
+    },
   },
 
   components: {
     ValidationProvider,
-    NewEditSheet
+    NewEditSheet,
   },
 
   data() {
@@ -55,7 +60,7 @@ export default {
       loading: false,
       search: null,
       select: null,
-      items: []
+      items: [],
     }
   },
 
@@ -66,7 +71,7 @@ export default {
     value(val) {
       if (!val) return
       this.items.push(val)
-    }
+    },
   },
 
   computed: {
@@ -76,8 +81,8 @@ export default {
       },
       set(value) {
         this.$emit("input", value)
-      }
-    }
+      },
+    },
   },
 
   methods: {
@@ -89,20 +94,44 @@ export default {
     querySelections(v) {
       this.loading = "error"
       // Simulated ajax query
-      DocumentApi.getAll({ q: v }).then(response => {
+      DocumentApi.getAll({ q: v }).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
-    }
+    },
+    fetchData() {
+      this.error = null
+      this.loading = "error"
+      let filterOptions = {
+        sortBy: ["name"],
+        descending: [false],
+      }
+
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      }
+
+      DocumentApi.getAll(filterOptions).then((response) => {
+        this.items = response.data.items
+        this.loading = false
+      })
+    },
   },
 
-  mounted() {
-    this.error = null
-    this.loading = "error"
-    DocumentApi.getAll().then(response => {
-      this.items = response.data.items
-      this.loading = false
-    })
-  }
+  created() {
+    this.fetchData()
+    this.$watch(
+      (vm) => [vm.project],
+      () => {
+        this.fetchData()
+      }
+    )
+  },
 }
 </script>

@@ -3,6 +3,7 @@ from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql.expression import true
 
+from dispatch.project import service as project_service
 from .models import IncidentPriority, IncidentPriorityCreate, IncidentPriorityUpdate
 
 
@@ -15,31 +16,39 @@ def get(*, db_session, incident_priority_id: int) -> Optional[IncidentPriority]:
     )
 
 
-def get_default(*, db_session):
+def get_default(*, db_session, project_id: int):
     """Returns the current default incident_priority."""
     return (
-        db_session.query(IncidentPriority).filter(IncidentPriority.default == true()).one_or_none()
+        db_session.query(IncidentPriority)
+        .filter(IncidentPriority.default == true())
+        .filter(IncidentPriority.project_id == project_id)
+        .one_or_none()
     )
 
 
-def get_by_name(*, db_session, name: str) -> Optional[IncidentPriority]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Optional[IncidentPriority]:
     """Returns an incident priority based on the given priority name."""
-    return db_session.query(IncidentPriority).filter(IncidentPriority.name == name).one_or_none()
+    return (
+        db_session.query(IncidentPriority)
+        .filter(IncidentPriority.name == name)
+        .filter(IncidentPriority.project_id == project_id)
+        .one_or_none()
+    )
 
 
-def get_by_slug(*, db_session, slug: str) -> Optional[IncidentPriority]:
-    """Returns an incident priority based on the given type slug."""
-    return db_session.query(IncidentPriority).filter(IncidentPriority.slug == slug).one_or_none()
-
-
-def get_all(*, db_session) -> List[Optional[IncidentPriority]]:
+def get_all(*, db_session, project_id: int) -> List[Optional[IncidentPriority]]:
     """Returns all incident priorities."""
-    return db_session.query(IncidentPriority)
+    return db_session.query(IncidentPriority).filter(IncidentPriority.project_id == project_id)
 
 
 def create(*, db_session, incident_priority_in: IncidentPriorityCreate) -> IncidentPriority:
     """Creates an incident priority."""
-    incident_priority = IncidentPriority(**incident_priority_in.dict())
+    project = project_service.get_by_name(
+        db_session=db_session, name=incident_priority_in.project.name
+    )
+    incident_priority = IncidentPriority(
+        **incident_priority_in.dict(exclude={"project"}), project=project
+    )
     db_session.add(incident_priority)
     db_session.commit()
     return incident_priority

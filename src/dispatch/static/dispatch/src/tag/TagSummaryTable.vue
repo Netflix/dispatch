@@ -3,7 +3,7 @@
     <new-edit-sheet />
     <v-data-table :headers="headers" :items="items" hide-default-footer>
       <template v-slot:item.discoverable="{ item }">
-        <v-simple-checkbox v-model="item.discoverable" disabled></v-simple-checkbox>
+        <v-simple-checkbox v-model="item.discoverable" disabled />
       </template>
       <template v-slot:item.tag_type.name="{ item }">
         {{ item.tag_type.name }}
@@ -36,7 +36,7 @@ export default {
   name: "TagSummaryTable",
 
   components: {
-    NewEditSheet
+    NewEditSheet,
   },
   data() {
     return {
@@ -46,28 +46,28 @@ export default {
         { text: "Type", value: "tag_type.name", sortable: true },
         { text: "Source", value: "source", sortable: true },
         { text: "Discoverable", value: "discoverable", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" }
-      ]
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+      ],
     }
   },
 
   props: {
     items: {
-      default: function() {
+      default: function () {
         return []
       },
-      type: Array
+      type: Array,
     },
     loading: {
-      default: function() {
+      default: function () {
         return false
       },
-      type: [String, Boolean]
-    }
+      type: [String, Boolean],
+    },
   },
 
   methods: {
-    ...mapActions("tag", ["createEditShow", "removeShow"])
-  }
+    ...mapActions("tag", ["createEditShow", "removeShow"]),
+  },
 }
 </script>

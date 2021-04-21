@@ -20,5 +20,5 @@ export default {
 
   delete(incidentPriorityId) {
     return API.delete(`${resource}/${incidentPriorityId}`)
-  }
+  },
 }

@@ -27,8 +27,8 @@ const toggleFullScreen = () => {
   }
 }
 
-const mapValuesFlat = obj => {
-  return flatMap(obj, v => {
+const mapValuesFlat = (obj) => {
+  return flatMap(obj, (v) => {
     if (isPlainObject(v)) {
       return mapValuesFlat(v)
     }
@@ -36,14 +36,14 @@ const mapValuesFlat = obj => {
   })
 }
 
-const exportCSV = function(items, fileName) {
+const exportCSV = function (items, fileName) {
   let csvContent = "data:text/csv;charset=utf-8,"
   csvContent += [
     Object.keys(items[0]).join(","),
-    ...items.map(item => {
+    ...items.map((item) => {
       if (typeof item === "object") {
         return Object.values(item)
-          .map(value => {
+          .map((value) => {
             if (value === null) {
               return ""
             }
@@ -55,7 +55,7 @@ const exportCSV = function(items, fileName) {
           .join(",")
       }
       return ""
-    })
+    }),
   ]
     .join("\n")
     .replace(/(^\[)|(\]$)/gm, "")
@@ -69,5 +69,5 @@ const exportCSV = function(items, fileName) {
 
 export default {
   toggleFullScreen,
-  exportCSV
+  exportCSV,
 }

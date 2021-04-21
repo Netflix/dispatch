@@ -118,7 +118,9 @@ def update_task_status(
 
     # we don't currently have a good way to get the correct file_id (we don't store a task <-> relationship)
     # lets try in both the incident doc and PIR doc
-    drive_task_plugin = plugin_service.get_active(db_session=db_session, plugin_type="task")
+    drive_task_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=task.incident.project.id, plugin_type="task"
+    )
 
     try:
         file_id = task.incident.incident_document.resource_id
@@ -212,6 +214,7 @@ def handle_tactical_report_create(
     # we let the user know that the report has been sent to the tactical group
     send_feedack_to_user(
         incident.conversation.channel_id,
+        incident.project.id,
         user_id,
         f"The tactical report has been emailed to the incident tactical group ({incident.tactical_group.email}).",
         db_session,
@@ -245,6 +248,7 @@ def handle_executive_report_create(
     # we let the user know that the report has been created
     send_feedack_to_user(
         incident.conversation.channel_id,
+        incident.project.id,
         user_id,
         f"The executive report document has been created and can be found in the incident storage here: {executive_report.document.weblink}",
         db_session,
@@ -253,6 +257,7 @@ def handle_executive_report_create(
     # we let the user know that the report has been sent to the notifications group
     send_feedack_to_user(
         incident.conversation.channel_id,
+        incident.project.id,
         user_id,
         f"The executive report has been emailed to the incident notifications group ({incident.notifications_group.email}).",
         db_session,

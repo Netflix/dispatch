@@ -1,10 +1,9 @@
-from typing import List
-
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
-from dispatch.database.service import search_filter_sort_paginate
+from dispatch.database.service import search_filter_sort_paginate, common_parameters
+
 
 from .models import (
     FeedbackCreate,
@@ -19,32 +18,11 @@ router = APIRouter()
 
 
 @router.get("/", response_model=FeedbackPagination)
-def get_feedback_entries(
-    db_session: Session = Depends(get_db),
-    page: int = 1,
-    items_per_page: int = Query(5, alias="itemsPerPage"),
-    query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query([], alias="sortBy[]"),
-    descending: List[bool] = Query([], alias="descending[]"),
-    fields: List[str] = Query([], alias="fields[]"),
-    ops: List[str] = Query([], alias="ops[]"),
-    values: List[str] = Query([], alias="values[]"),
-):
+def get_feedback_entries(*, commons: dict = Depends(common_parameters)):
     """
     Get all feedback entries, or only those matching a given search term.
     """
-    return search_filter_sort_paginate(
-        db_session=db_session,
-        model="Feedback",
-        query_str=query_str,
-        page=page,
-        items_per_page=items_per_page,
-        sort_by=sort_by,
-        descending=descending,
-        fields=fields,
-        values=values,
-        ops=ops,
-    )
+    return search_filter_sort_paginate(model="Feedback", **commons)
 
 
 @router.get("/{feedback_id}", response_model=FeedbackRead)

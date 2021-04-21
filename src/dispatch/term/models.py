@@ -1,16 +1,19 @@
 from typing import List, Optional
 
 from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DefinitionNested, DefinitionReadNested, DispatchBase
+from dispatch.models import DefinitionNested, DefinitionReadNested, DispatchBase, ProjectMixin
+from dispatch.project.models import ProjectRead
 
 
 # SQLAlchemy models...
-class Term(Base):
+class Term(Base, ProjectMixin):
+    __table_args__ = (UniqueConstraint("text", "project_id"),)
     id = Column(Integer, primary_key=True)
-    text = Column(String, unique=True)
+    text = Column(String)
     discoverable = Column(Boolean, default=True)
     search_vector = Column(TSVectorType("text"))
 
@@ -24,6 +27,7 @@ class TermBase(DispatchBase):
 
 class TermCreate(TermBase):
     definitions: Optional[List[DefinitionNested]] = []
+    project: ProjectRead
 
 
 class TermUpdate(TermBase):

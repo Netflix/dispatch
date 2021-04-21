@@ -4,8 +4,7 @@
     <delete-dialog />
     <div class="headline">Workflows</div>
     <v-spacer />
-    <table-filter-dialog />
-    <v-btn color="info" class="ml-2" @click="createEditShow()">New</v-btn>
+    <v-btn color="info" class="ml-2" @click="createEditShow()"> New </v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -35,7 +34,7 @@
                 {{ item.plugin.title }}
               </template>
               <template v-slot:item.enabled="{ item }">
-                <v-simple-checkbox v-model="item.enabled" disabled></v-simple-checkbox>
+                <v-simple-checkbox v-model="item.enabled" disabled />
               </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
@@ -64,14 +63,12 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import DeleteDialog from "@/workflow/DeleteDialog.vue"
 import NewEditSheet from "@/workflow/NewEditSheet.vue"
-import TableFilterDialog from "@/workflow/TableFilterDialog.vue"
 export default {
   name: "WorkflowTable",
 
   components: {
-    TableFilterDialog,
     DeleteDialog,
-    NewEditSheet
+    NewEditSheet,
   },
   data() {
     return {
@@ -81,8 +78,8 @@ export default {
         { text: "Enabled", value: "enabled", sortable: true },
         { text: "ResourceId", value: "resource_id", sortable: true },
         { text: "Plugin", value: "plugin", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" }
-      ]
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+      ],
     }
   },
 
@@ -93,24 +90,28 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
+      "table.options.filters.project",
       "table.loading",
       "table.rows.items",
-      "table.rows.total"
-    ])
+      "table.rows.total",
+    ]),
+    ...mapFields("route", ["query"]),
   },
 
-  mounted() {
-    this.getAll({})
+  created() {
+    this.project = [{ name: this.query.project }]
+
+    this.getAll()
 
     this.$watch(
-      vm => [vm.page],
+      (vm) => [vm.page],
       () => {
         this.getAll()
       }
     )
 
     this.$watch(
-      vm => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
+      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
       () => {
         this.page = 1
         this.getAll()
@@ -119,7 +120,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("workflow", ["getAll", "createEditShow", "removeShow"])
-  }
+    ...mapActions("workflow", ["getAll", "createEditShow", "removeShow"]),
+  },
 }
 </script>

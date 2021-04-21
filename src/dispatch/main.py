@@ -17,7 +17,7 @@ import httpx
 from .api import api_router
 from .common.utils.cli import install_plugins, install_plugin_events
 from .config import STATIC_DIR
-from .database.core import SessionLocal
+from .database.core import engine, sessionmaker
 from .extensions import configure_extensions
 from .logging import configure_logging
 from .metrics import provider as metric_provider
@@ -71,7 +71,13 @@ async def default_page(request, call_next):
 async def db_session_middleware(request: Request, call_next):
     response = Response("Internal Server Error", status_code=500)
     try:
-        request.state.db = SessionLocal()
+        # add correct schema mapping depending on the request
+        session = sessionmaker(bind=engine)
+
+        if not session:
+            return response
+
+        request.state.db = session()
         response = await call_next(request)
     finally:
         request.state.db.close()

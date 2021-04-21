@@ -5,6 +5,7 @@ from starlette.testclient import TestClient
 from starlette.config import environ
 
 # set test config
+environ["SECRET_PROVIDER"] = ""
 environ["DATABASE_CREDENTIALS"] = "postgres:dispatch"
 environ["DATABASE_HOSTNAME"] = "localhost"
 environ["DISPATCH_HELP_EMAIL"] = "example@example.com"
@@ -36,6 +37,7 @@ from .factories import (
     IndividualContactFactory,
     ParticipantFactory,
     ParticipantRoleFactory,
+    ProjectFactory,
     RecommendationAccuracyFactory,
     RecommendationFactory,
     ServiceFactory,
@@ -80,9 +82,11 @@ def testapp():
 
 @pytest.fixture(scope="session", autouse=True)
 def db():
-    if database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
-        drop_database(str(config.SQLALCHEMY_DATABASE_URI))
-
+    try:
+        if database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
+            drop_database(str(config.SQLALCHEMY_DATABASE_URI))
+    except Exception:
+        pass
     create_database(str(config.SQLALCHEMY_DATABASE_URI))
     Base.metadata.create_all(engine)  # Create the tables.
     _db = SessionLocal()
@@ -311,6 +315,11 @@ def participant(session):
 @pytest.fixture
 def participants(session):
     return [ParticipantFactory(), ParticipantFactory()]
+
+
+@pytest.fixture
+def project(session):
+    return ProjectFactory()
 
 
 @pytest.fixture

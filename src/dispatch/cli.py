@@ -171,7 +171,12 @@ def sync_triggers():
         engine, "individual_contact", "search_vector", ["name", "title", "company", "notes"]
     )
     sync_trigger(engine, "notification", "search_vector", ["name", "description"])
-    sync_trigger(engine, "plugin", "search_vector", ["title"])
+    sync_trigger(
+        engine,
+        "plugin",
+        "search_vector",
+        ["title", "slug", "type", "description"],
+    )
     sync_trigger(engine, "report", "search_vector", ["details_raw"])
     sync_trigger(engine, "search_filter", "search_vector", ["name", "description"])
     sync_trigger(engine, "service", "search_vector", ["name"])
@@ -180,6 +185,9 @@ def sync_triggers():
     sync_trigger(engine, "team_contact", "search_vector", ["name", "company", "notes"])
     sync_trigger(engine, "term", "search_vector", ["text"])
     sync_trigger(engine, "workflow", "search_vector", ["name", "description"])
+    sync_trigger(engine, "dispatch_user", "search_vector", ["email"])
+    # sync_trigger(engine, "project", "search_vector", ["name", "description"])
+    # sync_trigger(engine, "organization", "search_vector", ["name", "description"])
 
 
 @dispatch_cli.group("user")
@@ -251,6 +259,13 @@ def database_trigger_sync():
 def init_database():
     """Initializes a new database."""
     from sqlalchemy_utils import create_database, database_exists
+    from dispatch.database.core import SessionLocal
+    from dispatch.organization.models import OrganizationCreate
+    from dispatch.organization import service as organization_service
+    from dispatch.project.models import ProjectCreate
+    from dispatch.project import service as project_service
+
+    db_session = SessionLocal()
 
     if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
         create_database(str(config.SQLALCHEMY_DATABASE_URI))
@@ -260,6 +275,30 @@ def init_database():
     alembic_command.stamp(alembic_cfg, "head")
 
     sync_triggers()
+
+    # create any required default values in database
+
+    # default organization
+    click.secho("Creating default organization...", fg="blue")
+    default_org = organization_service.get_or_create(
+        db_session=db_session,
+        organization_in=OrganizationCreate(
+            name="default",
+            default=True,
+            description="Default dispatch organization.",
+        ),
+    )
+    click.secho("Creating default project...", fg="blue")
+    project_service.get_or_create(
+        db_session=db_session,
+        project_in=ProjectCreate(
+            name="default",
+            default=True,
+            description="Default dispatch project.",
+            organization_id=default_org.id,
+        ),
+    )
+
     click.secho("Success.", fg="green")
 
 
@@ -535,9 +574,9 @@ def dispatch_scheduler():
     )  # noqa
     from .term.scheduled import sync_terms  # noqa
     from .workflow.scheduled import (
-        daily_sync_workflow,
-        sync_active_stable_workflows,
-    )  # noqa
+        daily_sync_workflow,  # noqa
+        sync_active_stable_workflows,  # noqa
+    )
 
 
 @dispatch_scheduler.command("list")

@@ -1,11 +1,9 @@
-from typing import List
-
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from dispatch.auth.permissions import AdminPermission, PermissionsDependency
 from dispatch.database.core import get_db
-from dispatch.database.service import search_filter_sort_paginate
+from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 
 from .models import (
     IncidentCostTypeCreate,
@@ -20,32 +18,11 @@ router = APIRouter()
 
 
 @router.get("/", response_model=IncidentCostTypePagination)
-def get_incident_cost_types(
-    db_session: Session = Depends(get_db),
-    page: int = 1,
-    items_per_page: int = Query(5, alias="itemsPerPage"),
-    query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query([], alias="sortBy[]"),
-    descending: List[bool] = Query([], alias="descending[]"),
-    fields: List[str] = Query([], alias="fields[]"),
-    ops: List[str] = Query([], alias="ops[]"),
-    values: List[str] = Query([], alias="values[]"),
-):
+def get_incident_cost_types(*, common: dict = Depends(common_parameters)):
     """
     Get all incident cost types, or only those matching a given search term.
     """
-    return search_filter_sort_paginate(
-        db_session=db_session,
-        model="IncidentCostType",
-        query_str=query_str,
-        page=page,
-        items_per_page=items_per_page,
-        sort_by=sort_by,
-        descending=descending,
-        fields=fields,
-        values=values,
-        ops=ops,
-    )
+    return search_filter_sort_paginate(model="IncidentCostType", **common)
 
 
 @router.get("/{incident_cost_type_id}", response_model=IncidentCostTypeRead)
@@ -61,7 +38,11 @@ def get_incident_cost_type(*, db_session: Session = Depends(get_db), incident_co
     return incident_cost_type
 
 
-@router.post("/", response_model=IncidentCostTypeRead)
+@router.post(
+    "/",
+    response_model=IncidentCostTypeRead,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def create_incident_cost_type(
     *, db_session: Session = Depends(get_db), incident_cost_type_in: IncidentCostTypeCreate
 ):
@@ -72,7 +53,11 @@ def create_incident_cost_type(
     return incident_cost_type
 
 
-@router.put("/{incident_cost_type_id}", response_model=IncidentCostTypeRead)
+@router.put(
+    "/{incident_cost_type_id}",
+    response_model=IncidentCostTypeRead,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def update_incident_cost_type(
     *,
     db_session: Session = Depends(get_db),
@@ -101,7 +86,10 @@ def update_incident_cost_type(
     return incident_cost_type
 
 
-@router.delete("/{incident_cost_type_id}")
+@router.delete(
+    "/{incident_cost_type_id}",
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def delete_incident_cost_type(*, db_session: Session = Depends(get_db), incident_cost_type_id: int):
     """
     Delete an incident cost type, returning only an HTTP 200 OK if successful.

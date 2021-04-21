@@ -26,21 +26,19 @@
     </template>
     <template v-slot:item="data">
       <v-list-item-content>
-        <v-list-item-title v-text="data.item.individual.name"></v-list-item-title>
-        <v-list-item-subtitle v-text="data.item.individual.email"></v-list-item-subtitle>
+        <v-list-item-title v-text="data.item.individual.name" />
+        <v-list-item-subtitle v-text="data.item.individual.email" />
       </v-list-item-content>
     </template>
     <template v-slot:selection="{ attr, on, item, selected }">
       <v-chip v-bind="attr" :input-value="selected" v-on="on">
-        <span v-text="item.individual.name"></span>
+        <span v-text="item.individual.name" />
       </v-chip>
     </template>
     <template v-slot:append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
-          <v-list-item-subtitle>
-            Load More
-          </v-list-item-subtitle>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
     </template>
@@ -55,16 +53,16 @@ export default {
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return null
-      }
+      },
     },
     label: {
       type: String,
-      default: function() {
+      default: function () {
         return "Participant"
-      }
-    }
+      },
+    },
   },
 
   data() {
@@ -73,7 +71,7 @@ export default {
       items: [],
       more: false,
       numItems: 5,
-      search: null
+      search: null,
     }
   },
 
@@ -84,8 +82,8 @@ export default {
       },
       set(value) {
         this.$emit("input", value)
-      }
-    }
+      },
+    },
   },
 
   created() {
@@ -99,8 +97,8 @@ export default {
     },
     fetchData(filterOptions) {
       this.loading = "error"
-      IndividualApi.getAll(filterOptions).then(response => {
-        this.items = response.data.items.map(function(x) {
+      IndividualApi.getAll(filterOptions).then((response) => {
+        this.items = response.data.items.map(function (x) {
           return { individual: x }
         })
         this.total = response.data.total
@@ -114,9 +112,9 @@ export default {
         this.loading = false
       })
     },
-    getFilteredData: debounce(function(options) {
+    getFilteredData: debounce(function (options) {
       this.fetchData(options)
-    }, 500)
-  }
+    }, 500),
+  },
 }
 </script>

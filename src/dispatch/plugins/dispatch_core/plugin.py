@@ -20,8 +20,10 @@ from starlette.requests import Request
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.incident_priority.models import IncidentPriority
 from dispatch.incident_type.models import IncidentType
+from dispatch.project.models import Project
 from dispatch.individual import service as individual_service
 from dispatch.plugins import dispatch_core as dispatch_plugin
+from dispatch.incident import service as incident_service
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.bases import (
     ParticipantPlugin,
@@ -142,12 +144,15 @@ class DispatchTicketPlugin(TicketPlugin):
         commander: str,
         reporter: str,
         plugin_metadata: dict,
+        db_session=None,
     ):
         """Creates a Dispatch ticket."""
-        resource_id = f"dispatch-{incident_id}"
+        incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+        resource_id = f"dispatch-{incident.project.name}-{incident.id}"
         return {
             "resource_id": resource_id,
-            "weblink": f"{DISPATCH_UI_URL}/incidents/{resource_id}",
+            "weblink": f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{resource_id}?project={incident.project.name}",
             "resource_type": "dispatch-internal-ticket",
         }
 
@@ -182,7 +187,12 @@ class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def get(
-        self, incident_type: str, incident_priority: str, incident_description: str, db_session=None
+        self,
+        incident_type: str,
+        incident_priority: str,
+        incident_description: str,
+        project: Project,
+        db_session=None,
     ):
         """Fetches documents from Dispatch."""
         route_in = {
@@ -191,6 +201,7 @@ class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
                 "incident_priorities": [incident_priority],
                 "incident_types": [incident_type],
                 "terms": [],
+                "project": project,
             },
         }
 
@@ -230,6 +241,7 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
         incident_type: IncidentType,
         incident_priority: IncidentPriority,
         incident_description: str,
+        project: Project,
         db_session=None,
     ):
         """Fetches participants from Dispatch."""
@@ -239,6 +251,7 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
                 "incident_priorities": [incident_priority],
                 "incident_types": [incident_type],
                 "terms": [],
+                "project": project,
             },
         }
 
@@ -249,12 +262,14 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
         individual_contacts = [(x, None) for x in recommendation.individual_contacts]
         # we need to resolve our service contacts to individuals
         for s in recommendation.service_contacts:
-            plugin = plugin_service.get_by_slug(db_session=db_session, slug=s.type)
+            plugin_instance = plugin_service.get_active_instance_by_slug(
+                db_session=db_session, slug=s.type, project_id=project.id
+            )
 
-            if plugin:
-                if plugin.enabled:
+            if plugin_instance:
+                if plugin_instance.enabled:
                     log.debug(f"Resolving service contact. ServiceContact: {s}")
-                    individual_email = plugin.instance.get(s.external_id)
+                    individual_email = plugin_instance.instance.get(s.external_id)
 
                     individual = individual_service.get_or_create(
                         db_session=db_session, email=individual_email

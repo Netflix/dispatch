@@ -36,23 +36,27 @@ export default {
   props: {
     value: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
+      },
     },
     label: {
       type: String,
-      default: function() {
+      default: function () {
         return "Individual"
-      }
-    }
+      },
+    },
+    project: {
+      type: String,
+      default: null,
+    },
   },
 
   data() {
     return {
       loading: false,
       items: [],
-      search: null
+      search: null,
     }
   },
 
@@ -63,18 +67,18 @@ export default {
       },
       set(value) {
         this.search = null
-        this._individuals = value.map(v => {
+        this._individuals = value.map((v) => {
           if (typeof v === "string") {
             v = {
-              name: v
+              name: v,
             }
             this.items.push(v)
           }
           return v
         })
         this.$emit("input", this._individuals)
-      }
-    }
+      },
+    },
   },
 
   created() {
@@ -85,14 +89,14 @@ export default {
     fetchData(filterOptions) {
       this.error = null
       this.loading = "error"
-      IndividualApi.getAll(filterOptions).then(response => {
+      IndividualApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
     },
-    getFilteredData: debounce(function(options) {
+    getFilteredData: debounce(function (options) {
       this.fetchData(options)
-    }, 500)
-  }
+    }, 500),
+  },
 }
 </script>

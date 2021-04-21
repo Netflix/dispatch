@@ -14,7 +14,9 @@
       no-filter
     >
       <template slot="append-outer">
-        <v-btn icon @click="createEditShow({})"><v-icon>add</v-icon></v-btn>
+        <v-btn icon @click="createEditShow({})">
+          <v-icon>add</v-icon>
+        </v-btn>
         <new-edit-sheet @new-service-created="addItem($event)" />
       </template>
     </v-autocomplete>
@@ -26,6 +28,7 @@ import { mapActions } from "vuex"
 import { cloneDeep } from "lodash"
 import { ValidationProvider } from "vee-validate"
 
+import SearchUtils from "@/search/utils"
 import ServiceApi from "@/service/api"
 import NewEditSheet from "@/service/NewEditSheet.vue"
 
@@ -35,27 +38,31 @@ export default {
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return {}
-      }
+      },
     },
     label: {
       type: String,
-      default: function() {
+      default: function () {
         return "Service"
-      }
+      },
     },
     hint: {
       type: String,
-      default: function() {
+      default: function () {
         return "Service to associate"
-      }
-    }
+      },
+    },
+    project: {
+      type: [Object],
+      default: null,
+    },
   },
 
   components: {
     ValidationProvider,
-    NewEditSheet
+    NewEditSheet,
   },
 
   data() {
@@ -63,18 +70,18 @@ export default {
       loading: false,
       search: null,
       select: null,
-      items: []
+      items: [],
     }
   },
 
   watch: {
     search(val) {
-      val && val !== this.select && this.querySelections(val)
+      val && val !== this.select && this.fetchData()
     },
     value(val) {
       if (!val) return
       this.items.push(val)
-    }
+    },
   },
 
   computed: {
@@ -84,8 +91,8 @@ export default {
       },
       set(value) {
         this.$emit("input", value)
-      }
-    }
+      },
+    },
   },
 
   methods: {
@@ -94,23 +101,39 @@ export default {
       this.service = v
       this.items.push(v)
     },
-    querySelections(v) {
+    fetchData() {
+      this.error = null
       this.loading = "error"
-      // Simulated ajax query
-      ServiceApi.getAll({ q: v }).then(response => {
+      let filterOptions = {
+        q: this.search,
+        sortBy: ["name"],
+        descending: [false],
+      }
+
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      }
+
+      ServiceApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
-    }
+    },
   },
-
-  mounted() {
-    this.error = null
-    this.loading = "error"
-    ServiceApi.getAll().then(response => {
-      this.items = response.data.items
-      this.loading = false
-    })
-  }
+  created() {
+    this.fetchData()
+    this.$watch(
+      (vm) => [vm.project],
+      () => {
+        this.fetchData()
+      }
+    )
+  },
 }
 </script>

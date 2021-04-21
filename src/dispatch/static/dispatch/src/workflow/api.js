@@ -21,5 +21,5 @@ export default {
 
   delete(workflowId) {
     return API.delete(`${resource}/${workflowId}`)
-  }
+  },
 }

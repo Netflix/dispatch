@@ -4,8 +4,8 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
-            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
+            <v-list-item-title v-else class="title"> New </v-list-item-title>
             <v-list-item-subtitle>Tag</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
@@ -44,7 +44,7 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <tag-type-select v-model="tag_type" />
+                <tag-type-select :project="project" v-model="tag_type" />
               </v-flex>
               <v-flex xs12>
                 <ValidationProvider name="source" immediate>
@@ -93,7 +93,7 @@
                   v-model="discoverable"
                   label="Discoverable"
                   hint="Is this tag a common word or is it eligible for auto-detection?"
-                ></v-checkbox>
+                />
               </v-flex>
             </v-layout>
           </v-container>
@@ -112,7 +112,7 @@ import TagTypeSelect from "@/tag_type/TagTypeSelect.vue"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
@@ -121,7 +121,7 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    TagTypeSelect
+    TagTypeSelect,
   },
 
   computed: {
@@ -132,14 +132,22 @@ export default {
       "selected.uri",
       "selected.description",
       "selected.source",
+      "selected.project",
       "selected.discoverable",
       "selected.loading",
-      "dialogs.showCreateEdit"
-    ])
+      "dialogs.showCreateEdit",
+    ]),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
-    ...mapActions("tag", ["save", "closeCreateEdit"])
-  }
+    ...mapActions("tag", ["save", "closeCreateEdit"]),
+  },
+
+  created() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
+  },
 }
 </script>

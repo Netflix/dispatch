@@ -1,11 +1,9 @@
 <template>
   <v-layout wrap>
-    <!-- <new&#45;edit&#45;sheet /> -->
     <delete-dialog />
     <div class="headline">Feedback</div>
     <v-spacer />
     <table-filter-dialog />
-    <!-- <v&#45;btn color="info" class="ml&#45;2" @click="createEditShow()">New</v&#45;btn> -->
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -34,9 +32,9 @@
               <template v-slot:item.participant="{ item }">
                 <participant :participant="item.participant" />
               </template>
-              <template v-slot:item.created_at="{ item }">{{
-                item.created_at | formatDate
-              }}</template>
+              <template v-slot:item.created_at="{ item }">
+                {{ item.created_at | formatDate }}
+              </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
                   <template v-slot:activator="{ on }">
@@ -45,9 +43,6 @@
                     </v-btn>
                   </template>
                   <v-list>
-                    <!-- <v&#45;list&#45;item @click="createEditShow(item)"> -->
-                    <!--   <v&#45;list&#45;item&#45;title>Edit</v&#45;list&#45;item&#45;title> -->
-                    <!-- </v&#45;list&#45;item> -->
                     <v-list-item @click="removeShow(item)">
                       <v-list-item-title>Delete</v-list-item-title>
                     </v-list-item>
@@ -65,8 +60,9 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+
+import RouterUtils from "@/router/utils"
 import DeleteDialog from "@/feedback/DeleteDialog.vue"
-// import NewEditSheet from "@/feedback/NewEditSheet.vue"
 import TableFilterDialog from "@/feedback/TableFilterDialog.vue"
 import Participant from "@/incident/Participant.vue"
 export default {
@@ -75,8 +71,7 @@ export default {
   components: {
     TableFilterDialog,
     DeleteDialog,
-    Participant
-    // NewEditSheet
+    Participant,
   },
   data() {
     return {
@@ -87,8 +82,8 @@ export default {
         { text: "Feedback", value: "feedback", sortable: true },
         { text: "Participant", value: "participant", sortable: true },
         { text: "Created At", value: "created_at", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" }
-      ]
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+      ],
     }
   },
 
@@ -99,28 +94,33 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
+      "table.options.filters",
       "table.options.filters.incident",
       "table.options.filters.rating",
       "table.options.filters.feedback",
       "table.options.filters.participant",
+      "table.options.filters.project",
       "table.loading",
       "table.rows.items",
-      "table.rows.total"
-    ])
+      "table.rows.total",
+    ]),
+    ...mapFields("route", ["query"]),
   },
 
-  mounted() {
-    this.getAll({})
+  created() {
+    console.log(this.filters)
+    this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.query) }
+    this.getAll()
 
     this.$watch(
-      vm => [vm.page],
+      (vm) => [vm.page],
       () => {
         this.getAll()
       }
     )
 
     this.$watch(
-      vm => [
+      (vm) => [
         vm.q,
         vm.itemsPerPage,
         vm.sortBy,
@@ -128,18 +128,20 @@ export default {
         vm.incident,
         vm.rating,
         vm.feedback,
-        vm.participant
+        vm.project,
+        vm.participant,
+        vm.project,
       ],
       () => {
         this.page = 1
+        RouterUtils.updateURLFilters(this.filters)
         this.getAll()
       }
     )
   },
 
   methods: {
-    ...mapActions("feedback", ["getAll", "removeShow"])
-    // ...mapActions("feedback", ["getAll", "createEditShow", "removeShow"])
-  }
+    ...mapActions("feedback", ["getAll", "removeShow"]),
+  },
 }
 </script>

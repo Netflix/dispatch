@@ -1,11 +1,11 @@
 <template>
   <v-dialog v-model="show" persistent max-width="500">
     <v-card>
-      <v-card-title class="headline">Refresh Required</v-card-title>
+      <v-card-title class="headline"> Refresh Required </v-card-title>
       <v-card-text>{{ message }}</v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="info" text @click="performRefresh()">Refresh</v-btn>
+        <v-btn color="info" text @click="performRefresh()"> Refresh </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -20,11 +20,11 @@ export default {
   },
 
   computed: {
-    ...mapFields("app", ["refresh.show", "refresh.message"])
+    ...mapFields("app", ["refresh.show", "refresh.message"]),
   },
 
   methods: {
-    ...mapActions("app", ["performRefresh"])
-  }
+    ...mapActions("app", ["performRefresh"]),
+  },
 }
 </script>

@@ -21,9 +21,7 @@
       </span>
     </div>
     <div v-else>
-      <p class="text-center">
-        No participant data available.
-      </p>
+      <p class="text-center">No participant data available.</p>
     </div>
   </div>
 </template>
@@ -34,20 +32,20 @@ import { mapFields } from "vuex-map-fields"
 export default {
   name: "IncidentParticipantsTab",
   computed: {
-    ...mapFields("incident", ["selected.participants"])
+    ...mapFields("incident", ["selected.participants"]),
   },
 
   filters: {
-    activeRoles: function(value) {
+    activeRoles: function (value) {
       return value
-        .map(function(v) {
+        .map(function (v) {
           if (!v.renounced_at) {
             return v.role
           }
         })
         .filter(Boolean)
         .join(", ")
-    }
-  }
+    },
+  },
 }
 </script>

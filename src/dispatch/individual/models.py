@@ -2,14 +2,16 @@ from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
+from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.incident_priority.models import IncidentPriorityCreate, IncidentPriorityRead
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead
+from dispatch.project.models import ProjectRead
 from dispatch.term.models import TermCreate
-from dispatch.models import ContactBase, ContactMixin, DispatchBase, TermReadNested
+from dispatch.models import ContactBase, ContactMixin, DispatchBase, ProjectMixin, TermReadNested
 
 # Association tables for many to many relationships
 assoc_individual_contact_incident_types = Table(
@@ -37,7 +39,9 @@ assoc_individual_contact_terms = Table(
 )
 
 
-class IndividualContact(ContactMixin, Base):
+class IndividualContact(Base, ContactMixin, ProjectMixin):
+    __table_args__ = (UniqueConstraint("email", "project_id"),)
+
     id = Column(Integer, primary_key=True)
     name = Column(String)
     mobile_phone = Column(String)
@@ -86,6 +90,7 @@ class IndividualContactCreate(IndividualContactBase):
     terms: Optional[List[TermCreate]] = []
     incident_priorities: Optional[List[IncidentPriorityCreate]] = []
     incident_types: Optional[List[IncidentTypeCreate]] = []
+    project: Optional[ProjectRead]
 
 
 class IndividualContactUpdate(IndividualContactBase):

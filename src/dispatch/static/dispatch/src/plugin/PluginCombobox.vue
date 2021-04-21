@@ -2,12 +2,12 @@
   <v-combobox
     v-model="plugin"
     :items="items"
-    item-text="slug"
+    item-text="title"
     :search-input.sync="search"
     hide-selected
     :label="label"
     :loading="loading"
-    @update:search-input="getFilteredData({ q: $event })"
+    @update:search-input="getFilteredData()"
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -20,12 +20,24 @@
         </v-list-item-content>
       </v-list-item>
     </template>
+    <template v-slot:item="data">
+      <v-list-item-content>
+        <v-list-item-title>
+          <div>
+            {{ data.item.title }}
+          </div>
+        </v-list-item-title>
+        <v-list-item-subtitle>
+          <div class="text-truncate">
+            {{ data.item.description }}
+          </div>
+        </v-list-item-subtitle>
+      </v-list-item-content>
+    </template>
     <template v-slot:append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
-          <v-list-item-subtitle>
-            Load More
-          </v-list-item-subtitle>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
     </template>
@@ -33,24 +45,28 @@
 </template>
 
 <script>
-import PluginApi from "@/plugin/api"
 import { cloneDeep, debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import PluginApi from "@/plugin/api"
+
 export default {
   name: "PluginCombobox",
   props: {
     value: {
-      type: Object,
-      default: function() {
-        return {}
-      }
+      type: [Object, String],
+      default: function () {
+        return null
+      },
     },
     type: {
-      type: String
+      type: String,
+      default: null,
     },
     label: {
       type: String,
-      defualt: "Plugins"
-    }
+      default: "Plugins",
+    },
   },
   data() {
     return {
@@ -58,7 +74,7 @@ export default {
       items: [],
       more: false,
       numItems: 5,
-      search: null
+      search: null,
     }
   },
 
@@ -71,17 +87,17 @@ export default {
         this.search = null
         if (typeof value === "string") {
           let v = {
-            slug: value
+            slug: value,
           }
           this.items.push(v)
         }
         this.$emit("input", value)
-      }
-    }
+      },
+    },
   },
 
   created() {
-    this.fetchData({})
+    this.fetchData()
   },
 
   methods: {
@@ -89,23 +105,23 @@ export default {
       this.numItems = this.numItems + 5
       this.getFilteredData({
         q: this.search,
-        itemsPerPage: this.numItems
+        itemsPerPage: this.numItems,
       })
     },
-    fetchData(filterOptions) {
+    fetchData() {
       this.error = null
       this.loading = "error"
 
-      if (this.type) {
-        // Add type filtering
-        Object.assign(filterOptions, {
-          "fields[]": "type",
-          "ops[]": "==",
-          "values[]": this.type
-        })
+      let filterOptions = {
+        q: this.search,
+        filters: {
+          type: [this.type],
+        },
       }
 
-      PluginApi.getAll(filterOptions).then(response => {
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+
+      PluginApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.total = response.data.total
 
@@ -118,9 +134,9 @@ export default {
         this.loading = false
       })
     },
-    getFilteredData: debounce(function(options) {
+    getFilteredData: debounce(function (options) {
       this.fetchData(options)
-    }, 500)
-  }
+    }, 500),
+  },
 }
 </script>

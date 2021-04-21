@@ -40,14 +40,16 @@ def send_tactical_report_to_conversation(
     incident_id: int, conditions: str, actions: str, needs: str, db_session: SessionLocal
 ):
     """Sends a tactical report to the conversation."""
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    # we load the incident instance
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
 
     if not plugin:
         log.warning("Tactical report not sent, no conversation plugin enabled.")
         return
-
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     plugin.instance.send(
         incident.conversation.channel_id,
@@ -69,14 +71,16 @@ def send_tactical_report_to_tactical_group(
     db_session: SessionLocal,
 ):
     """Sends a tactical report to the tactical group."""
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
+    # we load the incident instance
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="email"
+    )
 
     if not plugin:
         log.warning("Tactical report not sent. No email plugin enabled.")
         return
-
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     notification_text = "Tactical Report"
     plugin.instance.send(
@@ -103,14 +107,16 @@ def send_executive_report_to_notifications_group(
     db_session: SessionLocal,
 ):
     """Sends an executive report to the notifications group."""
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="email")
+    # we load the incident instance
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="email"
+    )
 
     if not plugin:
         log.warning("Executive report not sent. No email plugin enabled.")
         return
-
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     notification_text = "Executive Report"
     plugin.instance.send(
@@ -147,7 +153,9 @@ def send_incident_report_reminder(
         if now - last_reported_at < timedelta(hours=1):
             return
 
-    plugin = plugin_service.get_active(db_session=db_session, plugin_type="conversation")
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
     if not plugin:
         log.warning("Incident report reminder not sent, no conversation plugin enabled.")
         return

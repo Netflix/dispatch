@@ -50,11 +50,13 @@ def create_update_incident_dialog(incident_id: int, command: dict = None, db_ses
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     type_options = []
-    for t in incident_type_service.get_all(db_session=db_session):
+    for t in incident_type_service.get_all(db_session=db_session, project_id=incident.project.id):
         type_options.append({"label": t.name, "value": t.name})
 
     priority_options = []
-    for priority in incident_priority_service.get_all(db_session=db_session):
+    for priority in incident_priority_service.get_all(
+        db_session=db_session, project_id=incident.project.id
+    ):
         priority_options.append({"label": priority.name, "value": priority.name})
 
     status_options = []

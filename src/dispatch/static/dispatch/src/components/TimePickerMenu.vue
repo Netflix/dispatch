@@ -17,14 +17,9 @@
         prepend-icon="access_time"
         readonly
         v-on="on"
-      ></v-text-field>
+      />
     </template>
-    <v-time-picker
-      v-model="time"
-      color="info"
-      full-width
-      @click:minute="$refs.menu.save(time)"
-    ></v-time-picker>
+    <v-time-picker v-model="time" color="info" full-width @click:minute="$refs.menu.save(time)" />
   </v-menu>
 </template>
 
@@ -34,13 +29,14 @@ export default {
 
   props: {
     value: {
-      type: String
-    }
+      type: String,
+      default: null,
+    },
   },
 
   data() {
     return {
-      menu: false
+      menu: false,
     }
   },
 
@@ -59,8 +55,8 @@ export default {
           value = this.value.substring(0, 10) + "T" + value
         }
         this.$emit("input", value)
-      }
-    }
-  }
+      },
+    },
+  },
 }
 </script>

@@ -28,7 +28,7 @@
             </v-list-item-action>
           </v-list-item>
         </v-list>
-        <span v-for="(cost, index) in incident_costs" :key="index">
+        <span v-for="(cost, index) in incidentCosts" :key="index">
           <v-list>
             <v-list-item>
               <v-list-item-action>
@@ -50,22 +50,23 @@ export default {
   name: "IncidentCostCard",
 
   data: () => ({
-    menu: false
+    menu: false,
   }),
 
   props: {
-    incident_costs: {
-      type: Array
-    }
+    incidentCosts: {
+      type: Array,
+      default: null,
+    },
   },
 
   computed: {
-    totalCost: function() {
-      var total_cost = this.incident_costs.reduce(function(accumulator, item) {
+    totalCost: function () {
+      var totalCost = this.incidentCosts.reduce(function (accumulator, item) {
         return accumulator + item.amount
       }, 0)
-      return total_cost
-    }
-  }
+      return totalCost
+    },
+  },
 }
 </script>

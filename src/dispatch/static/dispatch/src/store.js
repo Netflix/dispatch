@@ -1,5 +1,6 @@
 import Vue from "vue"
 import Vuex from "vuex"
+import { getField } from "vuex-map-fields"
 
 import app from "@/app/store"
 import auth from "@/auth/store"
@@ -14,7 +15,6 @@ import individual from "@/individual/store"
 import notification from "@/notification/store"
 import notification_backend from "@/app/notificationStore"
 import plugin from "@/plugin/store"
-import route from "@/route/store"
 import search from "@/search/store"
 import service from "@/service/store"
 import tag from "@/tag/store"
@@ -22,6 +22,8 @@ import tag_type from "@/tag_type/store"
 import task from "@/task/store"
 import team from "@/team/store"
 import term from "@/term/store"
+import project from "@/project/store"
+import organization from "@/organization/store"
 import workflow from "@/workflow/store"
 
 Vue.use(Vuex)
@@ -41,7 +43,8 @@ export default new Vuex.Store({
     notification,
     notification_backend,
     plugin,
-    route,
+    project,
+    organization,
     search,
     service,
     tag,
@@ -49,7 +52,13 @@ export default new Vuex.Store({
     task,
     team,
     term,
-    workflow
+    workflow,
+    route: {
+      namespaced: true,
+      getters: {
+        getField,
+      },
+    },
   },
-  strict: process.env.NODE_ENV !== "production"
+  strict: process.env.NODE_ENV !== "production",
 })

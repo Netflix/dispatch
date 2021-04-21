@@ -21,32 +21,32 @@ export default {
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return {}
-      }
+      },
     },
     loading: {
       type: [String, Boolean],
-      default: function() {
+      default: function () {
         return false
-      }
-    }
+      },
+    },
   },
 
   components: {
-    DashboardCard
+    DashboardCard,
   },
 
   data() {
     return {
-      types: []
+      types: [],
     }
   },
 
-  created: function() {
-    IncidentTypeApi.getAll({ itemsPerPage: -1 }).then(response => {
+  created: function () {
+    IncidentTypeApi.getAll({ itemsPerPage: -1 }).then((response) => {
       this.types = map(
-        filter(response.data.items, function(item) {
+        filter(response.data.items, function (item) {
           return !item.exclude_from_metrics
         }),
         "name"
@@ -62,31 +62,31 @@ export default {
           height: 350,
           stacked: true,
           toolbar: {
-            show: false
-          }
+            show: false,
+          },
         },
         colors: DashboardUtils.defaultColorTheme(),
         responsive: [
           {
             options: {
               legend: {
-                position: "top"
-              }
-            }
-          }
+                position: "top",
+              },
+            },
+          },
         ],
         xaxis: {
           categories: this.categoryData || [],
           title: {
-            text: "Month"
-          }
+            text: "Month",
+          },
         },
         fill: {
-          opacity: 1
+          opacity: 1,
         },
         legend: {
-          position: "top"
-        }
+          position: "top",
+        },
       }
     },
     series() {
@@ -94,7 +94,7 @@ export default {
     },
     categoryData() {
       return Object.keys(this.value)
-    }
-  }
+    },
+  },
 }
 </script>

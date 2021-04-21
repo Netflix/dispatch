@@ -10,7 +10,7 @@
     chips
     clearable
     :loading="loading"
-    @update:search-input="getFilteredData({ q: $event })"
+    @update:search-input="getFilteredData()"
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -26,17 +26,15 @@
     <template v-slot:item="data">
       <template>
         <v-list-item-content>
-          <v-list-item-title v-text="data.item.name"></v-list-item-title>
-          <v-list-item-subtitle v-text="data.item.description"></v-list-item-subtitle>
+          <v-list-item-title v-text="data.item.name" />
+          <v-list-item-subtitle v-text="data.item.description" />
         </v-list-item-content>
       </template>
     </template>
     <template v-slot:append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
-          <v-list-item-subtitle>
-            Load More
-          </v-list-item-subtitle>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
     </template>
@@ -44,23 +42,30 @@
 </template>
 
 <script>
-import IncidentTypeApi from "@/incident_type/api"
 import { cloneDeep, debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import IncidentTypeApi from "@/incident_type/api"
+
 export default {
   name: "IncidentTypeComboBox",
   props: {
     value: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
+      },
     },
     label: {
       type: String,
-      default: function() {
+      default: function () {
         return "Incident Types"
-      }
-    }
+      },
+    },
+    project: {
+      type: [Object],
+      default: null,
+    },
   },
 
   data() {
@@ -69,7 +74,7 @@ export default {
       items: [],
       more: false,
       numItems: 5,
-      search: null
+      search: null,
     }
   },
 
@@ -80,18 +85,18 @@ export default {
       },
       set(value) {
         this.search = null
-        this._incidentTypes = value.map(v => {
+        this._incidentTypes = value.map((v) => {
           if (typeof v === "string") {
             v = {
-              name: v
+              name: v,
             }
             this.items.push(v)
           }
           return v
         })
         this.$emit("input", this._incidentTypes)
-      }
-    }
+      },
+    },
   },
 
   created() {
@@ -101,14 +106,31 @@ export default {
   methods: {
     loadMore() {
       this.numItems = this.numItems + 5
-      this.getFilteredData({ q: this.search, itemsPerPage: this.numItems })
+      this.getFilteredData()
     },
-    fetchData(filterOptions) {
+    fetchData() {
       this.error = null
       this.loading = "error"
-      IncidentTypeApi.getAll(filterOptions).then(response => {
+      let filterOptions = {
+        q: this.search,
+        sortBy: ["name"],
+        descending: [false],
+        itemsPerPage: this.numItems,
+      }
+
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      }
+
+      IncidentTypeApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
-        this.total = response.data.total
+        this.loading = false
 
         if (this.items.length < this.total) {
           this.more = true
@@ -119,9 +141,9 @@ export default {
         this.loading = false
       })
     },
-    getFilteredData: debounce(function(options) {
-      this.fetchData(options)
-    }, 500)
-  }
+    getFilteredData: debounce(function () {
+      this.fetchData()
+    }, 500),
+  },
 }
 </script>

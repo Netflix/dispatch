@@ -78,14 +78,16 @@ export default {
   name: "IncidentParticipant",
 
   data: () => ({
-    menu: false
+    menu: false,
   }),
 
   props: {
     participant: {
       type: Object,
-      required: false
-    }
-  }
+      default: function () {
+        return {}
+      },
+    },
+  },
 }
 </script>

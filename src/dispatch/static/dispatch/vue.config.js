@@ -1,4 +1,5 @@
 const path = require("path")
+const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin")
 const webpack = require("webpack")
 
 function resolve(dir) {
@@ -7,25 +8,30 @@ function resolve(dir) {
 
 // vue.config.js
 module.exports = {
+  chainWebpack: (config) => {
+    config.plugin("monaco-editor").use(MonacoWebpackPlugin, [
+      {
+        // Languages are loaded on demand at runtime
+        languages: ["json"],
+        features: ["find"],
+      },
+    ])
+    config.resolve.alias.set("@$", resolve("src")).set("@views", resolve("src/views"))
+  },
   configureWebpack: {
     plugins: [
       // Ignore all locale files of moment.js
-      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
+      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
     ],
-    devtool: "source-map"
+    devtool: "source-map",
   },
-
-  chainWebpack: config => {
-    config.resolve.alias.set("@$", resolve("src")).set("@views", resolve("src/views"))
-  },
-
   css: {
     loaderOptions: {
       less: {
         modifyVars: {},
-        javascriptEnabled: true
-      }
-    }
+        javascriptEnabled: true,
+      },
+    },
   },
 
   devServer: {
@@ -34,16 +40,16 @@ module.exports = {
       "^/api": {
         target: "http://localhost:8000",
         ws: false,
-        changeOrigin: true
-      }
+        changeOrigin: true,
+      },
     },
     historyApiFallback: true,
     overlay: {
       warnings: false,
-      errors: true
-    }
+      errors: true,
+    },
   },
 
   assetsDir: "static",
-  runtimeCompiler: true
+  runtimeCompiler: true,
 }

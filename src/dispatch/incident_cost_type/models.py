@@ -2,15 +2,15 @@ from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.sql.expression import true
 from sqlalchemy_utils import TSVectorType, JSONType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, TimeStampMixin
+from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
+from dispatch.project.models import ProjectRead
 
 
 # SQLAlchemy Model
-class IncidentCostType(Base, TimeStampMixin):
+class IncidentCostType(Base, TimeStampMixin, ProjectMixin):
     # columns
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -38,7 +38,7 @@ class IncidentCostTypeBase(DispatchBase):
 
 
 class IncidentCostTypeCreate(IncidentCostTypeBase):
-    pass
+    project: ProjectRead
 
 
 class IncidentCostTypeUpdate(IncidentCostTypeBase):

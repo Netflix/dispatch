@@ -1,7 +1,7 @@
 <template>
   <div v-if="items.length">
     <new-edit-sheet />
-    <v-divider></v-divider>
+    <v-divider />
     <v-list>
       <v-list-group prepend-icon="playlist_add_check" no-action color="info">
         <template v-slot:activator>
@@ -17,7 +17,7 @@
           @click="showNewEditSheet(item.content)"
         >
           <v-list-item-content>
-            <v-list-item-title v-text="item.content.description"></v-list-item-title>
+            <v-list-item-title v-text="item.content.description" />
             <v-list-item-subtitle>Description</v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
@@ -33,18 +33,18 @@ export default {
   name: "WorkflowList",
 
   components: {
-    NewEditSheet
+    NewEditSheet,
   },
 
   props: {
     items: {
       default: null,
-      type: Array
-    }
+      type: Array,
+    },
   },
 
   methods: {
-    ...mapActions("workflow", ["showNewEditSheet"])
-  }
+    ...mapActions("workflow", ["showNewEditSheet"]),
+  },
 }
 </script>

@@ -166,7 +166,9 @@ def update(*, db_session, task: Task, task_in: TaskUpdate, sync_external: bool =
     # if we have an external task plugin enabled, attempt to update the external resource as well
     # we don't currently have a good way to get the correct file_id (we don't store a task <-> relationship)
     # lets try in both the incident doc and PIR doc
-    drive_task_plugin = plugin_service.get_active(db_session=db_session, plugin_type="task")
+    drive_task_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=task.incident.project.id, plugin_type="task"
+    )
 
     if drive_task_plugin:
         if sync_external:

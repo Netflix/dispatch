@@ -8,5 +8,5 @@ function logout(next) {
 
 export default {
   login,
-  logout
+  logout,
 }

@@ -39,7 +39,9 @@ def create_incident_metric_query(
 ):
     """Fetches eligible incidents."""
     query = db_session.query(Incident).join(IncidentType).join(Incident.tags)
-    query = apply_filters(query, filter_spec)
+
+    if filter_spec:
+        query = apply_filters(query, filter_spec)
 
     if start_date:
         query = query.filter(

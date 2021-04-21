@@ -21,5 +21,5 @@ export default {
 
   delete(termId) {
     return API.delete(`${resource}/${termId}`)
-  }
+  },
 }

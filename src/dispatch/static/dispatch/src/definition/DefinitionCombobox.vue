@@ -8,7 +8,7 @@
     multiple
     chips
     :loading="loading"
-    @update:search-input="getFilteredData({ q: $event })"
+    @update:search-input="getFilteredData()"
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -25,24 +25,31 @@
 </template>
 
 <script>
-import DefinitionApi from "@/definition/api"
 import { cloneDeep, debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import DefinitionApi from "@/definition/api"
+
 export default {
   name: "DefinitionCombobox",
   props: {
     value: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
-    }
+      },
+    },
+    project: {
+      type: [Object],
+      default: null,
+    },
   },
 
   data() {
     return {
       loading: false,
       items: [],
-      search: null
+      search: null,
     }
   },
 
@@ -53,36 +60,46 @@ export default {
       },
       set(value) {
         this.search = null
-        this._definitions = value.map(v => {
+        this._definitions = value.map((v) => {
           if (typeof v === "string") {
             v = {
-              text: v
+              text: v,
             }
             this.items.push(v)
           }
           return v
         })
         this.$emit("input", this._definitions)
-      }
-    }
+      },
+    },
   },
 
   created() {
-    this.fetchData({})
+    this.fetchData()
   },
 
   methods: {
-    fetchData(filterOptions) {
+    fetchData() {
       this.error = null
       this.loading = "error"
-      DefinitionApi.getAll(filterOptions).then(response => {
+
+      let filterOptions = {
+        q: this.search,
+        filters: {
+          project: [this.project],
+        },
+      }
+
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+
+      DefinitionApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
     },
-    getFilteredData: debounce(function(options) {
+    getFilteredData: debounce(function (options) {
       this.fetchData(options)
-    }, 500)
-  }
+    }, 500),
+  },
 }
 </script>

@@ -19,26 +19,26 @@ export default {
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return {}
-      }
+      },
     },
     interval: {
       type: String,
-      default: function() {
+      default: function () {
         return "Month"
-      }
+      },
     },
     loading: {
       type: [String, Boolean],
-      default: function() {
+      default: function () {
         return false
-      }
-    }
+      },
+    },
   },
 
   components: {
-    DashboardCard
+    DashboardCard,
   },
 
   data() {
@@ -48,10 +48,10 @@ export default {
   computed: {
     series() {
       let series = { name: "Average Hours Active", data: [] }
-      forEach(this.value, function(value) {
+      forEach(this.value, function (value) {
         series.data.push(
           Math.round(
-            sumBy(value, function(item) {
+            sumBy(value, function (item) {
               let endTime = new Date().toISOString()
               if (item.resolved_at) {
                 endTime = item.resolved_at
@@ -70,34 +70,34 @@ export default {
           height: 350,
           type: "line",
           toolbar: {
-            show: false
-          }
+            show: false,
+          },
         },
         xaxis: {
           categories: Object.keys(this.value) || [],
           title: {
-            text: this.interval
-          }
+            text: this.interval,
+          },
         },
         dataLabels: {
-          enabled: true
+          enabled: true,
         },
         stroke: {
-          curve: "smooth"
+          curve: "smooth",
         },
         markers: {
-          size: 1
+          size: 1,
         },
         yaxis: {
           title: {
-            text: "Hours"
-          }
+            text: "Hours",
+          },
         },
         legend: {
-          position: "top"
-        }
+          position: "top",
+        },
       }
-    }
-  }
+    },
+  },
 }
 </script>

@@ -24,7 +24,7 @@ export var opts = {
         gray7: "#DEDEDE",
         gray8: "#F0F0F0",
         gray9: "#FAFAFA",
-        white: "#FFFFFF"
+        white: "#FFFFFF",
       },
       dark: {
         primary: "#E50914",
@@ -48,8 +48,8 @@ export var opts = {
         gray7: "#DEDEDE",
         gray8: "#F0F0F0",
         gray9: "#FAFAFA",
-        white: "#FFFFFF"
-      }
-    }
-  }
+        white: "#FFFFFF",
+      },
+    },
+  },
 }

@@ -1,7 +1,8 @@
-import IncidentPriorityApi from "@/incident_priority/api"
-
 import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import IncidentPriorityApi from "@/incident_priority/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -10,46 +11,51 @@ const getDefaultSelectedState = () => {
     page_commander: null,
     view_order: null,
     tactical_report_reminder: null,
+    project: null,
     executive_report_reminder: null,
     description: null,
     loading: false,
-    default: false
+    default: false,
   }
 }
 
 const state = {
   selected: {
-    ...getDefaultSelectedState()
+    ...getDefaultSelectedState(),
   },
   dialogs: {
     showCreateEdit: false,
-    showRemove: false
+    showRemove: false,
   },
   table: {
     rows: {
       items: [],
-      total: null
+      total: null,
     },
     options: {
       q: "",
       page: 1,
       itemsPerPage: 10,
       sortBy: ["view_order"],
-      descending: [false]
+      descending: [false],
+      filters: {
+        project: [],
+      },
     },
-    loading: false
-  }
+    loading: false,
+  },
 }
 
 const getters = {
-  getField
+  getField,
 }
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    return IncidentPriorityApi.getAll(state.table.options)
-      .then(response => {
+    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options })
+    return IncidentPriorityApi.getAll(params)
+      .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
       })
@@ -87,12 +93,12 @@ const actions = {
             { root: true }
           )
         })
-        .catch(err => {
+        .catch((err) => {
           commit(
             "notification_backend/addBeNotification",
             {
               text: "Incident priority not created. Reason: " + err.response.data.detail,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
@@ -108,12 +114,12 @@ const actions = {
             { root: true }
           )
         })
-        .catch(err => {
+        .catch((err) => {
           commit(
             "notification_backend/addBeNotification",
             {
               text: "Incident priority not updated. Reason: " + err.response.data.detail,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
@@ -122,7 +128,7 @@ const actions = {
   },
   remove({ commit, dispatch }) {
     return IncidentPriorityApi.delete(state.selected.id)
-      .then(function() {
+      .then(function () {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
@@ -131,17 +137,17 @@ const actions = {
           { root: true }
         )
       })
-      .catch(err => {
+      .catch((err) => {
         commit(
           "notification_backend/addBeNotification",
           {
             text: "Incident priority not deleted. Reason: " + err.response.data.detail,
-            type: "error"
+            type: "error",
           },
           { root: true }
         )
       })
-  }
+  },
 }
 
 const mutations = {
@@ -163,7 +169,7 @@ const mutations = {
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
-  }
+  },
 }
 
 export default {
@@ -171,5 +177,5 @@ export default {
   state,
   getters,
   actions,
-  mutations
+  mutations,
 }

@@ -4,7 +4,6 @@ from typing import List, Optional
 from dispatch.database.core import SessionLocal
 from dispatch.event import service as event_service
 from dispatch.incident_cost import service as incident_cost_service
-from dispatch.incident_cost.models import IncidentCostCreate
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.participant import flows as participant_flows
@@ -14,6 +13,7 @@ from dispatch.tag import service as tag_service
 from dispatch.tag.models import TagCreate
 from dispatch.term import service as term_service
 from dispatch.term.models import TermUpdate
+from dispatch.project import service as project_service
 
 from .enums import IncidentStatus
 from .models import Incident, IncidentUpdate
@@ -30,8 +30,10 @@ def assign_incident_role(
     # default to reporter if we don't have an oncall plugin enabled
     assignee_email = reporter_email
 
-    oncall_plugin = plugin_service.get_active(db_session=db_session, plugin_type="oncall")
-    if role == ParticipantRoleType.incident_commander.value:
+    oncall_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
+    )
+    if role == ParticipantRoleType.incident_commander:
         # default to reporter
         if incident.incident_type.commander_service:
             service = incident.incident_type.commander_service
@@ -54,7 +56,7 @@ def assign_incident_role(
     # Add a new participant (duplicate participants with different roles will be updated)
     participant_flows.add_participant(
         assignee_email,
-        incident.id,
+        incident,
         db_session,
         role=role,
     )
@@ -65,25 +67,37 @@ def get(*, db_session, incident_id: int) -> Optional[Incident]:
     return db_session.query(Incident).filter(Incident.id == incident_id).first()
 
 
-def get_by_name(*, db_session, incident_name: str) -> Optional[Incident]:
+def get_by_name(*, db_session, project_id: int, incident_name: str) -> Optional[Incident]:
     """Returns an incident based on the given name."""
-    return db_session.query(Incident).filter(Incident.name == incident_name).first()
+    return (
+        db_session.query(Incident)
+        .filter(Incident.name == incident_name)
+        .filter(Incident.project_id == project_id)
+        .first()
+    )
 
 
-def get_all(*, db_session) -> List[Optional[Incident]]:
+def get_all(*, db_session, project_id: int) -> List[Optional[Incident]]:
     """Returns all incidents."""
-    return db_session.query(Incident)
+    return db_session.query(Incident).filter(Incident.project_id == project_id)
 
 
-def get_all_by_status(*, db_session, status: str, skip=0, limit=100) -> List[Optional[Incident]]:
+def get_all_by_status(
+    *, db_session, status: str, project_id: int, skip=0, limit=100
+) -> List[Optional[Incident]]:
     """Returns all incidents based on the given status."""
     return (
-        db_session.query(Incident).filter(Incident.status == status).offset(skip).limit(limit).all()
+        db_session.query(Incident)
+        .filter(Incident.status == status)
+        .filter(Incident.project_id == project_id)
+        .offset(skip)
+        .limit(limit)
+        .all()
     )
 
 
 def get_all_last_x_hours_by_status(
-    *, db_session, status: str, hours: int, skip=0, limit=100
+    *, db_session, status: str, hours: int, project_id: int, skip=0, limit=100
 ) -> List[Optional[Incident]]:
     """Returns all incidents of a given status in the last x hours."""
     now = datetime.utcnow()
@@ -93,6 +107,7 @@ def get_all_last_x_hours_by_status(
             db_session.query(Incident)
             .filter(Incident.status == IncidentStatus.active.value)
             .filter(Incident.created_at >= now - timedelta(hours=hours))
+            .filter(Incident.project_id == project_id)
             .offset(skip)
             .limit(limit)
             .all()
@@ -103,6 +118,7 @@ def get_all_last_x_hours_by_status(
             db_session.query(Incident)
             .filter(Incident.status == IncidentStatus.stable.value)
             .filter(Incident.stable_at >= now - timedelta(hours=hours))
+            .filter(Incident.project_id == project_id)
             .offset(skip)
             .limit(limit)
             .all()
@@ -113,6 +129,7 @@ def get_all_last_x_hours_by_status(
             db_session.query(Incident)
             .filter(Incident.status == IncidentStatus.closed.value)
             .filter(Incident.closed_at >= now - timedelta(hours=hours))
+            .filter(Incident.project_id == project_id)
             .offset(skip)
             .limit(limit)
             .all()
@@ -120,12 +137,13 @@ def get_all_last_x_hours_by_status(
 
 
 def get_all_by_incident_type(
-    *, db_session, incident_type: str, skip=0, limit=100
+    *, db_session, incident_type: str, project_id: int, skip=0, limit=100
 ) -> List[Optional[Incident]]:
     """Returns all incidents with the given incident type."""
     return (
         db_session.query(Incident)
         .filter(Incident.incident_type.name == incident_type)
+        .filter(Incident.project_id == project_id)
         .offset(skip)
         .limit(limit)
         .all()
@@ -135,6 +153,7 @@ def get_all_by_incident_type(
 def create(
     *,
     db_session,
+    project: str,
     incident_priority: str,
     incident_type: str,
     reporter_email: str,
@@ -145,6 +164,13 @@ def create(
     visibility: str = None,
 ) -> Incident:
     """Creates a new incident."""
+    if not project:
+        project = project_service.get_default(db_session=db_session)
+        if not project:
+            raise Exception("No project specificed and no default has been defined.")
+    else:
+        project = project_service.get_by_name(db_session=db_session, name=project["name"])
+
     # We get the incident type by name
     if not incident_type:
         incident_type = incident_type_service.get_default(db_session=db_session)
@@ -152,17 +178,19 @@ def create(
             raise Exception("No incident type specified and no default has been defined.")
     else:
         incident_type = incident_type_service.get_by_name(
-            db_session=db_session, name=incident_type["name"]
+            db_session=db_session, project_id=project.id, name=incident_type["name"]
         )
 
     # We get the incident priority by name
     if not incident_priority:
-        incident_priority = incident_priority_service.get_default(db_session=db_session)
+        incident_priority = incident_priority_service.get_default(
+            db_session=db_session, project_id=project.id
+        )
         if not incident_priority:
             raise Exception("No incident priority specified and no default has been defined.")
     else:
         incident_priority = incident_priority_service.get_by_name(
-            db_session=db_session, name=incident_priority["name"]
+            db_session=db_session, project_id=project.id, name=incident_priority["name"]
         )
 
     if not visibility:
@@ -181,6 +209,7 @@ def create(
         incident_priority=incident_priority,
         visibility=visibility,
         tags=tag_objs,
+        project=project,
     )
     db_session.add(incident)
     db_session.commit()
@@ -207,11 +236,13 @@ def create(
 def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> Incident:
     """Updates an existing incident."""
     incident_priority = incident_priority_service.get_by_name(
-        db_session=db_session, name=incident_in.incident_priority.name
+        db_session=db_session,
+        project_id=incident.project.id,
+        name=incident_in.incident_priority.name,
     )
 
     incident_type = incident_type_service.get_by_name(
-        db_session=db_session, name=incident_in.incident_type.name
+        db_session=db_session, project_id=incident.project.id, name=incident_in.incident_type.name
     )
 
     tags = []
@@ -247,6 +278,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
             "tags",
             "terms",
             "visibility",
+            "project",
         },
     )
 

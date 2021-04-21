@@ -1,9 +1,17 @@
 import { DefaultLayout, DashboardLayout, BasicLayout } from "@/components/layouts"
+//import auth_store from "@/auth/store"
+
+const withPrefix = (prefix, routes) =>
+  routes.map((route) => {
+    route.path = prefix + route.path
+    return route
+  })
 
 export const publicRoute = [
   {
     path: "*",
-    component: () => import(/* webpackChunkName: "errors-404" */ "@/views/error/NotFound.vue")
+    meta: { title: "Dispatch" },
+    component: () => import(/* webpackChunkName: "errors-404" */ "@/views/error/NotFound.vue"),
   },
   {
     path: "/auth",
@@ -12,266 +20,316 @@ export const publicRoute = [
     children: [
       {
         path: "login",
-        name: "Login",
-        component: () => import(/* webpackChunkName: "auth-login" */ "@/auth/Login.vue")
+        name: "BasicLogin",
+        component: () => import(/* webpackChunkName: "auth-login" */ "@/auth/Login.vue"),
       },
       {
         path: "register",
-        name: "Register",
-        component: () => import(/* webpackChunkName: "auth-register" */ "@/auth/Register.vue")
-      }
-    ]
+        name: "BasicRegister",
+        component: () => import(/* webpackChunkName: "auth-register" */ "@/auth/Register.vue"),
+      },
+    ],
   },
   {
     path: "/404",
     name: "404",
     meta: { title: "Not Found" },
-    component: () => import(/* webpackChunkName: "errors-404" */ "@/views/error/NotFound.vue")
+    component: () => import(/* webpackChunkName: "errors-404" */ "@/views/error/NotFound.vue"),
   },
   {
     path: "/500",
     name: "500",
     meta: { title: "Server Error" },
-    component: () => import(/* webpackChunkName: "errors-500" */ "@/views/error/Error.vue")
-  }
+    component: () => import(/* webpackChunkName: "errors-500" */ "@/views/error/Error.vue"),
+  },
 ]
 
 // NOTE: The order in which routes are added to the list matters when evaluated. For example, /incidents/report will take precendence over /incidents/:name.
 export const protectedRoute = [
   {
     path: "/",
-    component: DefaultLayout,
-    meta: { title: "Dispatch", group: "incidents", icon: "", requiresAuth: true },
-    redirect: "/dashboard/incidents"
-  },
-  {
-    path: "/incidents/status",
-    meta: { title: "Status", icon: "", requiresAuth: true },
-    component: () => import(/* webpackChunkName: "incidents-status" */ "@/incident/Status.vue")
-  },
-
-  {
-    path: "/incidents/report",
-    meta: { title: "Report", icon: "", requiresAuth: true },
-    component: () => import(/* webpackChunkName: "incidents-report" */ "@/incident/ReportForm.vue")
-  },
-  {
-    path: "/incidents",
-    component: DefaultLayout,
-    meta: {
-      title: "Incidents",
-      icon: "view_compact",
-      group: "incidents",
-      requiresAuth: true,
-      showEditSheet: false
+    meta: { requiresAuth: true },
+    redirect: {
+      name: "IncidentOverview",
+      params: { organization: "default" },
     },
-    children: [
-      {
-        path: "",
-        name: "IncidentTable",
-        meta: { title: "List" },
-        component: () => import(/* webpackChunkName: "incident-table" */ "@/incident/Table.vue"),
-        children: [
+  },
+  ...withPrefix("/:organization/", [
+    {
+      path: "incidents/status",
+      name: "status",
+      meta: { title: "Incident Status", requiresAuth: true },
+      component: () => import(/* webpackChunkName: "incident-table" */ "@/incident/Status.vue"),
+    },
+    {
+      path: "incidents/report",
+      name: "report",
+      meta: { title: "Report", requiresAuth: true },
+      component: () =>
+        import(/* webpackChunkName: "incidents-report" */ "@/incident/ReportForm.vue"),
+    },
+    {
+      path: "incidents",
+      component: DefaultLayout,
+      name: "incidents",
+      meta: {
+        title: "Incidents",
+        icon: "mdi-file-multiple",
+        group: "incidents",
+        requiresAuth: true,
+        menu: true,
+        showEditSheet: false,
+      },
+      redirect: { name: "IncidentTable" },
+      children: [
+        {
+          path: "/:organization/incidents",
+          name: "IncidentTable",
+          meta: { title: "List" },
+          component: () => import(/* webpackChunkName: "incident-table" */ "@/incident/Table.vue"),
+          children: [
+            {
+              path: "/:organization/incidents/:name",
+              name: "IncidentTableEdit",
+              component: () =>
+                import(/* webpackChunkName: "incident-table" */ "@/incident/EditSheet.vue"),
+              props: true,
+              meta: {
+                showEditSheet: true,
+              },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: "tasks",
+      component: DefaultLayout,
+      name: "tasks",
+      meta: {
+        title: "Tasks",
+        icon: "mdi-calendar-check",
+        group: "tasks",
+        menu: true,
+        requiresAuth: true,
+      },
+      redirect: { name: "TaskTable" },
+      children: [
+        {
+          path: "/:organization/tasks",
+          name: "TaskTable",
+          meta: { title: "List" },
+          component: () => import(/* webpackChunkName: "task-table" */ "@/task/Table.vue"),
+        },
+      ],
+    },
+    {
+      path: "feedback",
+      component: DefaultLayout,
+      name: "feedback",
+      redirect: { name: "FeedbackTable" },
+      meta: {
+        title: "Feedback",
+        icon: "mdi-message-alert",
+        group: "feedback",
+        menu: true,
+        requiresAuth: true,
+      },
+      children: [
+        {
+          path: "/:organization/feedback",
+          name: "FeedbackTable",
+          meta: { title: "Feedback" },
+          component: () => import(/* webpackChunkName: "feedback-table" */ "@/feedback/Table.vue"),
+        },
+      ],
+    },
+    {
+      path: "dashboards",
+      component: DashboardLayout,
+      name: "dashboards",
+      redirect: { name: "IncidentOverview" },
+      meta: {
+        title: "Dashboards",
+        group: "dashboard",
+        icon: "mdi-monitor-dashboard",
+        menu: true,
+        requiresAuth: true,
+      },
+      children: [
+        {
+          path: "incidents",
+          name: "IncidentOverview",
+          meta: { title: "Incidents", group: "type" },
+          component: () =>
+            import(/* webpackChunkName: "incident-overview" */ "@/dashboard/IncidentOverview.vue"),
+        },
+        {
+          path: "tasks",
+          name: "TaskOverview",
+          meta: { title: "Tasks", group: "type" },
+          component: () =>
+            import(/* webpackChunkName: "task-overview" */ "@/dashboard/TaskOverview.vue"),
+        },
+      ],
+    },
+    {
+      path: "settings",
+      component: DefaultLayout,
+      name: "settings",
+      meta: {
+        title: "Settings",
+        icon: "mdi-cog",
+        group: "settings",
+        menu: true,
+        requiresAuth: true,
+      },
+      redirect: { name: "ProjectTable" },
+      children: [
+        {
+          path: "projects",
+          name: "ProjectTable",
+          meta: {
+            title: "Projects",
+            subMenu: "organization",
+            group: "organization",
+          },
+          component: () => import(/* webpackChunkName: "projects-table" */ "@/project/Table.vue"),
+        },
+        {
+          path: "users",
+          name: "UserTable",
+          meta: { title: "Users", subMenu: "organization", group: "organization" },
+          component: () => import(/* webpackChunkName: "users-table" */ "@/auth/Table.vue"),
+        },
+        {
+          path: "projects",
+          meta: {
+            title: "Project Settings",
+            group: "settings",
+          },
+          name: "ProjectSettings",
+          redirect: { name: "IncidentTypeTable" },
+        },
+        ...withPrefix("projects/", [
           {
-            path: ":name",
+            path: "incidentPriorities",
+            name: "IncidentPriorityTable",
+            meta: { title: "Incident Priorities", subMenu: "project", group: "incident" },
             component: () =>
-              import(/* webpackChunkName: "incident-table" */ "@/incident/EditSheet.vue"),
-            props: true,
-            meta: {
-              showEditSheet: true
-            }
-          }
-        ]
-      }
-    ]
-  },
-  {
-    path: "/tasks",
-    component: DefaultLayout,
-    meta: { title: "Tasks", icon: "view_compact", group: "tasks", requiresAuth: true },
-    children: [
-      {
-        path: "",
-        name: "TaskTable",
-        meta: { title: "List" },
-        component: () => import(/* webpackChunkName: "task-table" */ "@/task/Table.vue")
-      }
-    ]
-  },
-  {
-    path: "/feedback",
-    component: DefaultLayout,
-    meta: { title: "Feedback", icon: "view_compact", group: "feedback", requiresAuth: true },
-    children: [
-      {
-        path: "",
-        name: "FeedbackTable",
-        meta: { title: "Feedback" },
-        component: () => import(/* webpackChunkName: "feedback-table" */ "@/feedback/Table.vue")
-      }
-    ]
-  },
-  {
-    path: "/dashboard",
-    component: DashboardLayout,
-    redirect: "/dashboard/incidents",
-    meta: { title: "Dashboard", group: "dashboard", icon: "", requiresAuth: true },
-    children: [
-      {
-        path: "incidents",
-        name: "IncidentOverview",
-        meta: { title: "Incidents", hiddenInMenu: true },
-        props: route => ({
-          query: route.query
-        }),
-        component: () =>
-          import(/* webpackChunkName: "incident-overview" */ "@/dashboard/IncidentOverview.vue")
-      },
-      {
-        path: "tasks",
-        name: "TaskOverview",
-        meta: { title: "Tasks", hiddenInMenu: true },
-        props: route => ({
-          query: route.query
-        }),
-        component: () =>
-          import(/* webpackChunkName: "task-overview" */ "@/dashboard/TaskOverview.vue")
-      }
-    ]
-  },
-  {
-    path: "/configuration",
-    component: DefaultLayout,
-    meta: {
-      title: "Configuration",
-      icon: "view_compact",
-      group: "configuration",
-      requiresAuth: true
+              import(/* webpackChunkName: "-table" */ "@/incident_priority/Table.vue"),
+          },
+          {
+            path: "incidentTypes",
+            name: "IncidentTypeTable",
+            meta: { title: "Incident Types", subMenu: "project", group: "incident" },
+            component: () =>
+              import(/* webpackChunkName: "incident-type-table" */ "@/incident_type/Table.vue"),
+          },
+          {
+            path: "incidentCostTypes",
+            name: "IncidentCostTypesTable",
+            meta: { title: "Incident Cost Types", subMenu: "project", group: "incident" },
+            component: () =>
+              import(
+                /* webpackChunkName: "incident-cost-type-table" */ "@/incident_cost_type/Table.vue"
+              ),
+          },
+          {
+            path: "workflows",
+            name: "WorkflowTable",
+            meta: { title: "Workflows", subMenu: "project", group: "incident" },
+            component: () =>
+              import(/* webpackChunkName: "workflows-table" */ "@/workflow/Table.vue"),
+          },
+          {
+            path: "notifications",
+            name: "NotificationTable",
+            meta: { title: "Notifications", subMenu: "project", group: "incident" },
+            component: () =>
+              import(/* webpackChunkName: "notification-table" */ "@/notification/Table.vue"),
+          },
+          {
+            path: "plugins",
+            name: "PluginTable",
+            meta: { title: "Plugins", subMenu: "project", group: "incident" },
+            component: () => import(/* webpackChunkName: "plugin-table" */ "@/plugin/Table.vue"),
+          },
+          {
+            path: "services",
+            name: "ServiceTable",
+            meta: { title: "Services", subMenu: "project", group: "contact" },
+            component: () => import(/* webpackChunkName: "service-table" */ "@/service/Table.vue"),
+          },
+          {
+            path: "individuals",
+            name: "IndividualTable",
+            meta: { title: "Individuals", subMenu: "project", group: "contact" },
+            component: () =>
+              import(/* webpackChunkName: "individual-table" */ "@/individual/Table.vue"),
+          },
+          {
+            path: "teams",
+            name: "TeamTable",
+            meta: { title: "Teams", subMenu: "project", group: "contact" },
+            component: () => import(/* webpackChunkName: "team-table" */ "@/team/Table.vue"),
+          },
+          {
+            path: "tagTypes",
+            name: "TagTypeTable",
+            meta: { title: "Tag Types", subMenu: "project", group: "knowledge" },
+            component: () =>
+              import(/* webpackChunkName: "tag-type-table" */ "@/tag_type/Table.vue"),
+          },
+          {
+            path: "tags",
+            name: "TagTable",
+            meta: { title: "Tags", subMenu: "project", group: "knowledge" },
+            component: () => import(/* webpackChunkName: "tag-table" */ "@/tag/Table.vue"),
+          },
+          {
+            path: "documents",
+            name: "DocumentTable",
+            meta: { title: "Documents", subMenu: "project", group: "knowledge" },
+            component: () =>
+              import(/* webpackChunkName: "document-table" */ "@/document/Table.vue"),
+          },
+          {
+            path: "definitions",
+            name: "DefinitionTable",
+            meta: { title: "Definitions", subMenu: "project", group: "knowledge" },
+            component: () =>
+              import(/* webpackchunkname: "definition-table" */ "@/definition/Table.vue"),
+          },
+          {
+            path: "terms",
+            name: "TermTable",
+            meta: { title: "Terms", subMenu: "project", group: "knowledge" },
+            component: () => import(/* webpackChunkName: "term-table" */ "@/term/Table.vue"),
+          },
+        ]),
+      ],
     },
-    children: [
-      {
-        path: "/configuration/incidentCostTypes",
-        name: "IncidentCostTypeTable",
-        meta: { title: "Incident Cost Types" },
-        component: () =>
-          import(
-            /* webpackChunkName: "incident-cost-type-table" */ "@/incident_cost_type/Table.vue"
-          )
+    {
+      path: "search",
+      name: "GlobalSearch",
+      component: DefaultLayout,
+      meta: {
+        title: "Search",
+        icon: "view_compact",
+        group: "search",
+        noMenu: true,
+        requiresAuth: true,
       },
-      {
-        path: "/configuration/incidentPriorities",
-        name: "IncidentPriorityTable",
-        meta: { title: "Incident Priorities" },
-        component: () =>
-          import(/* webpackChunkName: "routing-table" */ "@/incident_priority/Table.vue")
-      },
-      {
-        path: "/configuration/incidentTypes",
-        name: "IncidentTypeTable",
-        meta: { title: "Incident Types" },
-        component: () =>
-          import(/* webpackChunkName: "incident-type-table" */ "@/incident_type/Table.vue")
-      },
-      {
-        path: "/configuration/notifications",
-        name: "NotificationTable",
-        meta: { title: "Notifications" },
-        component: () =>
-          import(/* webpackChunkName: "notification-table" */ "@/notification/Table.vue")
-      },
-      {
-        path: "/configuration/plugins",
-        name: "PluginTable",
-        meta: { title: "Plugins" },
-        component: () => import(/* webpackChunkName: "plugin-table" */ "@/plugin/Table.vue")
-      },
-      {
-        path: "/configuration/tagTypes",
-        name: "TagTypeTable",
-        meta: { title: "Tag Types" },
-        component: () => import(/* webpackChunkName: "tag-type-table" */ "@/tag_type/Table.vue")
-      },
-      {
-        path: "/configuration/users",
-        name: "UserTable",
-        meta: { title: "Users" },
-        component: () => import(/* webpackChunkName: "users-table" */ "@/auth/Table.vue")
-      },
-      {
-        path: "/configuration/workflows",
-        name: "WorkflowTable",
-        meta: { title: "Workflows" },
-        component: () => import(/* webpackChunkName: "workflows-table" */ "@/workflow/Table.vue")
-      }
-    ]
-  },
-  {
-    path: "/contact",
-    component: DefaultLayout,
-    meta: { title: "Contact", icon: "view_compact", group: "contact", requiresAuth: true },
-    children: [
-      {
-        path: "services",
-        name: "ServiceTable",
-        meta: { title: "Services" },
-        component: () => import(/* webpackChunkName: "service-table" */ "@/service/Table.vue")
-      },
-      {
-        path: "individuals",
-        name: "IndividualTable",
-        meta: { title: "Individuals" },
-        component: () => import(/* webpackChunkName: "individual-table" */ "@/individual/Table.vue")
-      },
-      {
-        path: "teams",
-        name: "TaamTable",
-        meta: { title: "Teams" },
-        component: () => import(/* webpackChunkName: "team-table" */ "@/team/Table.vue")
-      }
-    ]
-  },
-  {
-    path: "/knowledge",
-    component: DefaultLayout,
-    meta: { title: "Knowledge", icon: "view_compact", group: "knowledge", requiresAuth: true },
-    children: [
-      {
-        path: "tags",
-        name: "TagTable",
-        meta: { title: "Tags" },
-        component: () => import(/* webpackChunkName: "tag-table" */ "@/tag/Table.vue")
-      },
-      {
-        path: "documents",
-        name: "DocumentTable",
-        meta: { title: "Documents" },
-        component: () => import(/* webpackChunkName: "document-table" */ "@/document/Table.vue")
-      },
-      {
-        path: "definitions",
-        name: "DefinitionTable",
-        meta: { title: "Definitions" },
-        component: () => import(/* webpackchunkname: "definition-table" */ "@/definition/Table.vue")
-      },
-      {
-        path: "terms",
-        name: "TermTable",
-        meta: { title: "Terms" },
-        component: () => import(/* webpackChunkName: "term-table" */ "@/term/Table.vue")
-      }
-    ]
-  },
-  {
-    path: "/search",
-    component: DefaultLayout,
-    meta: { title: "Search", icon: "view_compact", group: "search", requiresAuth: true },
-    children: [
-      {
-        path: "/search",
-        name: "ResultList",
-        component: () =>
-          import(/* webpackChunkName: "search-result-list" */ "@/search/ResultList.vue")
-      }
-    ]
-  }
+      redirect: { name: "ResultList" },
+      children: [
+        {
+          path: "results",
+          name: "ResultList",
+          component: () =>
+            import(/* webpackChunkName: "search-result-list" */ "@/search/ResultList.vue"),
+        },
+      ],
+    },
+  ]),
 ]

@@ -7,7 +7,7 @@ from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import get_db
-from dispatch.database.service import search_filter_sort_paginate
+from dispatch.database.service import common_parameters, search_filter_sort_paginate
 
 from .models import TaskCreate, TaskUpdate, TaskRead, TaskPagination
 from .service import get, update, create, delete
@@ -17,40 +17,12 @@ router = APIRouter()
 
 @router.get("/", summary="Retrieve a list of all tasks.")
 def get_tasks(
-    db_session: Session = Depends(get_db),
-    page: int = 1,
-    items_per_page: int = Query(5, alias="itemsPerPage"),
-    query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query([], alias="sortBy[]"),
-    descending: List[bool] = Query([], alias="descending[]"),
-    fields: List[str] = Query([], alias="fields[]"),
-    ops: List[str] = Query([], alias="ops[]"),
-    values: List[str] = Query([], alias="values[]"),
-    include: List[str] = Query([], alias="include[]"),
+    *, include: List[str] = Query([], alias="include[]"), commons: dict = Depends(common_parameters)
 ):
     """
     Retrieve all tasks.
     """
-    pagination = search_filter_sort_paginate(
-        db_session=db_session,
-        model="Task",
-        query_str=query_str,
-        page=page,
-        items_per_page=items_per_page,
-        sort_by=sort_by,
-        descending=descending,
-        fields=fields,
-        values=values,
-        ops=ops,
-        join_attrs=[
-            ("incident", "incident"),
-            ("incident_type", "incident"),
-            ("incident_priority", "incident"),
-            ("tags", "tag"),
-            ("creator", "creator"),
-            ("owner", "owner"),
-        ],
-    )
+    pagination = search_filter_sort_paginate(model="Task", **commons)
 
     if include:
         # only allow two levels for now

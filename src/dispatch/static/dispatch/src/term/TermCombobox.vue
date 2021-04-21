@@ -26,27 +26,34 @@
 </template>
 
 <script>
-import TermApi from "@/term/api"
 import { cloneDeep, debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import TermApi from "@/term/api"
+
 export default {
   name: "TermCombobox",
   props: {
     value: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
+      },
     },
     label: {
       type: String,
-      default: "Add Terms"
-    }
+      default: "Add Terms",
+    },
+    project: {
+      type: [Object],
+      default: null,
+    },
   },
   data() {
     return {
       loading: false,
       items: [],
-      search: null
+      search: null,
     }
   },
 
@@ -57,36 +64,46 @@ export default {
       },
       set(value) {
         this.search = null
-        this._terms = value.map(v => {
+        this._terms = value.map((v) => {
           if (typeof v === "string") {
             v = {
-              text: v
+              text: v,
             }
             this.items.push(v)
           }
           return v
         })
         this.$emit("input", this._terms)
-      }
-    }
+      },
+    },
   },
 
   created() {
-    this.fetchData({})
+    this.fetchData()
   },
 
   methods: {
-    fetchData(filterOptions) {
+    fetchData() {
       this.error = null
       this.loading = "error"
-      TermApi.getAll(filterOptions).then(response => {
+
+      let filterOptions = {
+        q: this.search,
+        filters: {
+          project: [this.project],
+        },
+      }
+
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+
+      TermApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
     },
-    getFilteredData: debounce(function(options) {
+    getFilteredData: debounce(function (options) {
       this.fetchData(options)
-    }, 500)
-  }
+    }, 500),
+  },
 }
 </script>

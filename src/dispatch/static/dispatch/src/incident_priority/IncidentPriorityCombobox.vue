@@ -11,7 +11,7 @@
     chips
     clearable
     :loading="loading"
-    @update:search-input="getFilteredData({ q: $event })"
+    @update:search-input="getFilteredData()"
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -28,30 +28,37 @@
 </template>
 
 <script>
-import IncidentPriorityApi from "@/incident_priority/api"
 import { cloneDeep, debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import IncidentPriorityApi from "@/incident_priority/api"
+
 export default {
   name: "IncidentPriorityComboBox",
   props: {
     value: {
-      priority: Array,
-      default: function() {
+      type: Array,
+      default: function () {
         return []
-      }
+      },
     },
     label: {
-      priority: String,
-      default: function() {
+      type: String,
+      default: function () {
         return "Priorities"
-      }
-    }
+      },
+    },
+    project: {
+      type: [Object],
+      default: null,
+    },
   },
 
   data() {
     return {
       loading: false,
       items: [],
-      search: null
+      search: null,
     }
   },
 
@@ -62,36 +69,61 @@ export default {
       },
       set(value) {
         this.search = null
-        this._incidentPriorities = value.map(v => {
+        this._incidentPriorities = value.map((v) => {
           if (typeof v === "string") {
             v = {
-              name: v
+              name: v,
             }
             this.items.push(v)
           }
           return v
         })
         this.$emit("input", this._incidentPriorities)
-      }
-    }
-  },
-
-  created() {
-    this.fetchData({})
+      },
+    },
   },
 
   methods: {
-    fetchData(filterOptions) {
+    fetchData() {
       this.error = null
       this.loading = "error"
-      IncidentPriorityApi.getAll(filterOptions).then(response => {
+      let filterOptions = {
+        q: this.search,
+        sortBy: ["name"],
+        descending: [false],
+        itemsPerPage: this.numItems,
+      }
+
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      }
+
+      IncidentPriorityApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
+        this.loading = false
+
+        if (this.items.length < this.total) {
+          this.more = true
+        } else {
+          this.more = false
+        }
+
         this.loading = false
       })
     },
-    getFilteredData: debounce(function(options) {
-      this.fetchData(options)
-    }, 500)
-  }
+    getFilteredData: debounce(function () {
+      this.fetchData()
+    }, 500),
+  },
+
+  created() {
+    this.fetchData()
+  },
 }
 </script>

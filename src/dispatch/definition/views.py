@@ -2,35 +2,25 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
-from dispatch.database.service import paginate
-from dispatch.search.service import search
+from dispatch.database.service import common_parameters, search_filter_sort_paginate
 
 from .models import (
-    Definition,
     DefinitionCreate,
     DefinitionPagination,
     DefinitionRead,
     DefinitionUpdate,
 )
-from .service import create, delete, get, get_all, get_by_text, update
+from .service import create, delete, get, get_by_text, update
 
 router = APIRouter()
 
 
 @router.get("/", response_model=DefinitionPagination)
-def get_definitions(
-    db_session: Session = Depends(get_db), page: int = 1, itemsPerPage: int = 5, q: str = None
-):
+def get_definitions(*, common: dict = Depends(common_parameters)):
     """
     Get all definitions.
     """
-    if q:
-        query = search(db_session=db_session, query_str=q, model=Definition)
-    else:
-        query = get_all(db_session=db_session)
-
-    items, total = paginate(query=query, page=page, items_per_page=itemsPerPage)
-    return {"items": items, "total": total}
+    return search_filter_sort_paginate(model="Definition", **common)
 
 
 @router.get("/{definition_id}", response_model=DefinitionRead)

@@ -4,8 +4,8 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
-            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
+            <v-list-item-title v-else class="title"> New </v-list-item-title>
             <v-list-item-subtitle>Definition</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
@@ -42,7 +42,7 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <term-combobox v-model="terms" />
+                <term-combobox :project="project" v-model="terms" />
               </v-flex>
             </v-layout>
           </v-container>
@@ -61,7 +61,7 @@ import TermCombobox from "@/term/TermCombobox.vue"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
@@ -70,7 +70,7 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    TermCombobox
+    TermCombobox,
   },
 
   computed: {
@@ -78,13 +78,21 @@ export default {
       "selected.text",
       "selected.terms",
       "selected.id",
+      "selected.project",
       "selected.loading",
-      "dialogs.showCreateEdit"
-    ])
+      "dialogs.showCreateEdit",
+    ]),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
-    ...mapActions("definition", ["save", "closeCreateEdit"])
-  }
+    ...mapActions("definition", ["save", "closeCreateEdit"]),
+  },
+
+  created() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
+  },
 }
 </script>

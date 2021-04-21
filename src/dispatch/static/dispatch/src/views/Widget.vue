@@ -24,12 +24,12 @@ export default {
   components: {
     ProfileCard,
     MenuCard,
-    SettingCard
+    SettingCard,
   },
   data() {
     return {}
   },
   computed: {},
-  methods: {}
+  methods: {},
 }
 </script>

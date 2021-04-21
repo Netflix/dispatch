@@ -4,40 +4,46 @@
     :items="items"
     :menu-props="{ maxHeight: '400' }"
     item-text="name"
-    label="Add incident types"
+    label="Add Incident Types"
     multiple
     chips
     return-object
     :loading="loading"
-  >
-  </v-select>
+  />
 </template>
 
 <script>
-import IncidentTypeApi from "@/incident_type/api"
 import { cloneDeep } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import IncidentTypeApi from "@/incident_type/api"
+
 export default {
   name: "IncidentTypeMultiSelect",
 
   props: {
     value: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
+      },
     },
     visibilities: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
-    }
+      },
+    },
+    project: {
+      type: [Object],
+      default: null,
+    },
   },
 
   data() {
     return {
       loading: false,
-      items: []
+      items: [],
     }
   },
 
@@ -48,24 +54,43 @@ export default {
       },
       set(value) {
         this.$emit("input", value)
-      }
-    }
+      },
+    },
   },
 
   created() {
     this.error = null
     this.loading = "error"
-    IncidentTypeApi.getAll({
+
+    let filterOptions = {
       itemsPerPage: 50,
       sortBy: ["name"],
       descending: [false],
-      fields: ["visibility"],
-      ops: ["=="],
-      values: this.visibilities
-    }).then(response => {
+      filters: {
+        project: [this.project],
+      },
+    }
+
+    if (this.visibilities.length) {
+      let filter = { and: [] }
+
+      this.visibilities.forEach(function (item) {
+        filter.and.push({
+          field: "visibility",
+          op: "==",
+          value: item,
+        })
+      })
+
+      filterOptions = { ...filterOptions, ...{ filter: filter } }
+    }
+
+    filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+
+    IncidentTypeApi.getAll(filterOptions).then((response) => {
       this.items = response.data.items
       this.loading = false
     })
-  }
+  },
 }
 </script>

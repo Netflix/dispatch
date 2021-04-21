@@ -26,9 +26,9 @@ def get_terms(db_session, text: str) -> List[str]:
 
 def get_resources_from_incident_types(db_session, incident_types: List[IncidentTypeBase]) -> set:
     """Get all resources related to a specific incident type."""
-    incident_type_names = [i.name for i in incident_types]
+    incident_type_ids = [i.id for i in incident_types]
     incident_type_models = (
-        db_session.query(IncidentType).filter(IncidentType.name.in_(incident_type_names)).all()
+        db_session.query(IncidentType).filter(IncidentType.id.in_(incident_type_ids)).all()
     )
 
     return {
@@ -42,10 +42,10 @@ def get_resources_from_priorities(
     db_session, incident_priorities: List[IncidentPriorityBase]
 ) -> set:
     """Get all resources related to a specific priority."""
-    incident_priority_names = [i.name for i in incident_priorities]
+    incident_priority_ids = [i.id for i in incident_priorities]
     incident_priority_models = (
         db_session.query(IncidentPriority)
-        .filter(IncidentPriority.name.in_(incident_priority_names))
+        .filter(IncidentPriority.id.in_(incident_priority_ids))
         .all()
     )
 
@@ -71,7 +71,7 @@ def get_resources_from_context(db_session, context: ContextBase) -> set:
     )
 
     _, term_resources = (
-        get_resources_from_terms(db_session, terms=context.terms)
+        get_resources_from_terms(db_session, project_id=context.project_id, terms=context.terms)
         if context.terms
         else (None, set())
     )
@@ -79,12 +79,13 @@ def get_resources_from_context(db_session, context: ContextBase) -> set:
     return (incident_types_resources & priorities_resources) | term_resources
 
 
-def get_resources_from_terms(db_session, terms: List[str]):
+def get_resources_from_terms(db_session, project_id: int, terms: List[str]):
     """Fetch resources based solely on connected terms with the text."""
     # lookup extracted terms
     matched_terms = (
         db_session.query(Term)
         .filter(func.upper(Term.text).in_([func.upper(t) for t in terms]))
+        .filter(Term.project_id == project_id)
         .all()
     )
 
@@ -112,11 +113,15 @@ def create_recommendation(
 
     if context:
         incident_priorities = [
-            incident_priority_service.get_by_name(db_session=db_session, name=n.name)
+            incident_priority_service.get_by_name(
+                db_session=db_session, project_id=context.project.id, name=n.name
+            )
             for n in context.incident_priorities
         ]
         incident_types = [
-            incident_type_service.get_by_name(db_session=db_session, name=n.name)
+            incident_type_service.get_by_name(
+                db_session=db_session, project_id=context.project.id, name=n.name
+            )
             for n in context.incident_types
         ]
 
@@ -159,7 +164,7 @@ def get(*, db_session, route_in: RouteRequest) -> Dict[Any, Any]:
         # get terms from text (question, incident description, etc,.)
         text_terms = get_terms(db_session, text=route_in.text)
         resource_matched_terms, term_resources = get_resources_from_terms(
-            db_session=db_session, terms=text_terms
+            db_session=db_session, project_id=route_in.context.project.id, terms=text_terms
         )
 
         if route_in.context:

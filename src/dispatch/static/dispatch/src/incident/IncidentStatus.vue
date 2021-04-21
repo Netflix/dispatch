@@ -7,9 +7,7 @@
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
           <v-btn icon v-bind="attrs" v-on="on" @click="joinIncident(id)">
-            <v-icon>
-              mdi-account-plus
-            </v-icon>
+            <v-icon> mdi-account-plus </v-icon>
           </v-btn>
         </template>
         <span>Join Incident</span>
@@ -22,9 +20,7 @@
       <v-tooltip bottom>
         <template v-slot:activator="{ on, attrs }">
           <v-btn icon v-bind="attrs" v-on="on" @click="joinIncident(id)">
-            <v-icon>
-              mdi-account-plus
-            </v-icon>
+            <v-icon> mdi-account-plus </v-icon>
           </v-btn>
         </template>
         <span>Join Incident</span>
@@ -47,16 +43,16 @@ export default {
   props: {
     status: {
       type: String,
-      required: true
+      required: true,
     },
     id: {
       type: Number,
-      required: true
-    }
+      required: true,
+    },
   },
 
   methods: {
-    ...mapActions("incident", ["joinIncident"])
-  }
+    ...mapActions("incident", ["joinIncident"]),
+  },
 }
 </script>

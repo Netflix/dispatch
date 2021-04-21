@@ -3,6 +3,7 @@ from typing import Optional
 from fastapi.encoders import jsonable_encoder
 
 from dispatch.definition import service as definition_service
+from dispatch.project import service as project_service
 
 from .models import Term, TermCreate, TermUpdate
 
@@ -20,11 +21,14 @@ def get_all(*, db_session):
 
 
 def create(*, db_session, term_in: TermCreate) -> Term:
+    project = project_service.get_by_name(db_session=db_session, name=term_in.project.name)
     definitions = [
         definition_service.upsert(db_session=db_session, definition_in=d)
         for d in term_in.definitions
     ]
-    term = Term(**term_in.dict(exclude={"definitions"}), definitions=definitions)
+    term = Term(
+        **term_in.dict(exclude={"definitions", "project"}), project=project, definitions=definitions
+    )
     db_session.add(term)
     db_session.commit()
     return term

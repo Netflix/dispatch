@@ -26,17 +26,15 @@
     <template v-slot:item="data">
       <template>
         <v-list-item-content>
-          <v-list-item-title v-text="data.item.name"></v-list-item-title>
-          <v-list-item-subtitle v-text="data.item.tag_type.name"></v-list-item-subtitle>
+          <v-list-item-title v-text="data.item.name" />
+          <v-list-item-subtitle v-if="data.item.tag_type" v-text="data.item.tag_type.name" />
         </v-list-item-content>
       </template>
     </template>
     <template v-slot:append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
-          <v-list-item-subtitle>
-            Load More
-          </v-list-item-subtitle>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
     </template>
@@ -44,27 +42,36 @@
 </template>
 
 <script>
-import TagApi from "@/tag/api"
 import { cloneDeep, debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import TagApi from "@/tag/api"
+
 export default {
   name: "TagCombobox",
   props: {
     value: {
       type: Array,
-      default: function() {
+      default: function () {
         return []
-      }
+      },
     },
     label: {
       type: String,
-      default: "Add Tags"
+      default: "Add Tags",
     },
     model: {
-      type: String
+      type: String,
+      default: null,
     },
     modelId: {
-      type: Number
-    }
+      type: Number,
+      default: null,
+    },
+    project: {
+      type: Object,
+      default: null,
+    },
   },
   data() {
     return {
@@ -72,7 +79,7 @@ export default {
       items: [],
       more: false,
       numItems: 5,
-      search: null
+      search: null,
     }
   },
 
@@ -83,22 +90,28 @@ export default {
       },
       set(value) {
         this.search = null
-        this._tags = value.map(v => {
+        this._tags = value.map((v) => {
           if (typeof v === "string") {
             v = {
-              name: v
+              name: v,
             }
             this.items.push(v)
           }
           return v
         })
         this.$emit("input", this._tags)
-      }
-    }
+      },
+    },
   },
 
   created() {
     this.fetchData({ q: null })
+    this.$watch(
+      (vm) => [vm.project],
+      () => {
+        this.fetchData({ q: null })
+      }
+    )
   },
 
   methods: {
@@ -113,7 +126,7 @@ export default {
       // fetch recommendations model and ID are provided
       if (!filterOptions.q) {
         if (this.model && this.modelId) {
-          TagApi.getRecommendations(this.model, this.modelId).then(response => {
+          TagApi.getRecommendations(this.model, this.modelId).then((response) => {
             this.items = response.data.items
             this.total = response.data.total
             // we don't support more for suggestions (limited)
@@ -124,7 +137,17 @@ export default {
         }
       }
 
-      TagApi.getAll(filterOptions).then(response => {
+      if (this.project) {
+        let options = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...options })
+      }
+
+      TagApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.total = response.data.total
 
@@ -137,9 +160,9 @@ export default {
         this.loading = false
       })
     },
-    getFilteredData: debounce(function(options) {
+    getFilteredData: debounce(function (options) {
       this.fetchData(options)
-    }, 500)
-  }
+    }, 500),
+  },
 }
 </script>

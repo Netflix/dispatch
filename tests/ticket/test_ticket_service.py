@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_get_ticket(session, ticket):
     from dispatch.ticket.service import get
 
@@ -37,7 +34,11 @@ def test_create(session, incident_type, incident_priority, individual_contact):
     resource_type = "XXX"
     weblink = "https://example.com/"
 
-    ticket_in = TicketCreate(resource_id=resource_id, resource_type=resource_type, weblink=weblink)
+    ticket_in = TicketCreate(
+        resource_id=resource_id,
+        resource_type=resource_type,
+        weblink=weblink,
+    )
     ticket = create(db_session=session, ticket_in=ticket_in)
 
     assert ticket

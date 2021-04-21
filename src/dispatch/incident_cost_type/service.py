@@ -1,10 +1,10 @@
-from datetime import datetime
-
 from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 
 from sqlalchemy.sql.expression import true
+
+from dispatch.project import service as project_service
 
 from .models import (
     IncidentCostType,
@@ -32,13 +32,16 @@ def get_default(*, db_session) -> Optional[IncidentCostTypeRead]:
     )
 
 
-def get_by_name(*, db_session, incident_cost_type_name: str) -> Optional[IncidentCostTypeRead]:
+def get_by_name(
+    *, db_session, project_id: int, incident_cost_type_name: str
+) -> Optional[IncidentCostTypeRead]:
     """
     Gets an incident cost type by its name.
     """
     return (
         db_session.query(IncidentCostType)
         .filter(IncidentCostType.name == incident_cost_type_name)
+        .filter(IncidentCostType.project_id == project_id)
         .first()
     )
 
@@ -54,7 +57,12 @@ def create(*, db_session, incident_cost_type_in: IncidentCostTypeCreate) -> Inci
     """
     Creates a new incident cost type.
     """
-    incident_cost_type = IncidentCostType(**incident_cost_type_in.dict())
+    project = project_service.get_by_name(
+        db_session=db_session, name=incident_cost_type_in.project.name
+    )
+    incident_cost_type = IncidentCostType(
+        **incident_cost_type_in.dict(exclude={"project"}), project=project
+    )
     db_session.add(incident_cost_type)
     db_session.commit()
     return incident_cost_type

@@ -1,7 +1,9 @@
 <template>
   <v-dialog v-model="showCreate" persistent max-width="800px">
     <template v-slot:activator="{ on }">
-      <v-btn icon v-on="on"><v-icon>add</v-icon></v-btn>
+      <v-btn icon v-on="on">
+        <v-icon>add</v-icon>
+      </v-btn>
     </template>
     <v-card>
       <v-card-title>
@@ -9,19 +11,13 @@
       </v-card-title>
       <v-stepper v-model="step">
         <v-stepper-header>
-          <v-stepper-step :complete="step > 1" step="1" editable>
-            Filter
-          </v-stepper-step>
-          <v-divider></v-divider>
+          <v-stepper-step :complete="step > 1" step="1" editable> Filter </v-stepper-step>
+          <v-divider />
 
-          <v-stepper-step :complete="step > 2" step="2" editable>
-            Preview
-          </v-stepper-step>
-          <v-divider></v-divider>
+          <v-stepper-step :complete="step > 2" step="2" editable> Preview </v-stepper-step>
+          <v-divider />
 
-          <v-stepper-step step="3" editable>
-            Save
-          </v-stepper-step>
+          <v-stepper-step step="3" editable> Save </v-stepper-step>
         </v-stepper-header>
 
         <v-stepper-items>
@@ -35,17 +31,27 @@
                     <v-list dense>
                       <v-list-item>
                         <v-list-item-content>
-                          <tag-filter-combobox v-model="filters.tags" label="Tags" />
+                          <tag-filter-combobox
+                            :project="project"
+                            v-model="filters.tags"
+                            label="Tags"
+                          />
                         </v-list-item-content>
                       </v-list-item>
                       <v-list-item>
                         <v-list-item-content>
-                          <incident-type-combobox v-model="filters.incident_type" />
+                          <incident-type-combobox
+                            :project="project"
+                            v-model="filters.incident_type"
+                          />
                         </v-list-item-content>
                       </v-list-item>
                       <v-list-item>
                         <v-list-item-content>
-                          <incident-priority-combobox v-model="filters.incident_priority" />
+                          <incident-priority-combobox
+                            :project="project"
+                            v-model="filters.incident_priority"
+                          />
                         </v-list-item-content>
                       </v-list-item>
                       <v-list-item>
@@ -57,19 +63,19 @@
                   </v-tab-item>
                   <v-tab-item>
                     <div style="height: 400px">
-                      <advanced-editor v-model="expression"></advanced-editor>
+                      <MonacoEditor
+                        v-model="expression_str"
+                        :options="editorOptions"
+                        language="json"
+                      ></MonacoEditor>
                     </div>
                   </v-tab-item>
                 </v-tabs>
               </v-card-text>
               <v-card-actions>
-                <v-btn color="info" @click="step = 2">
-                  Continue
-                </v-btn>
-
-                <v-btn @click="closeCreateDialog()" text>
-                  Cancel
-                </v-btn>
+                <v-spacer />
+                <v-btn @click="closeCreateDialog()" text> Cancel </v-btn>
+                <v-btn color="info" @click="step = 2"> Continue </v-btn>
               </v-card-actions>
             </v-card>
           </v-stepper-content>
@@ -93,12 +99,9 @@
                 </v-data-table>
               </v-card-text>
               <v-card-actions>
-                <v-btn color="info" @click="step = 3" :loading="loading">
-                  Continue
-                </v-btn>
-                <v-btn @click="closeCreateDialog()" text>
-                  Cancel
-                </v-btn>
+                <v-spacer />
+                <v-btn @click="closeCreateDialog()" text> Cancel </v-btn>
+                <v-btn color="info" @click="step = 3" :loading="loading"> Continue </v-btn>
               </v-card-actions>
             </v-card>
           </v-stepper-content>
@@ -135,9 +138,7 @@
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
-                  <v-btn @click="closeCreateDialog()" text>
-                    Cancel
-                  </v-btn>
+                  <v-btn @click="closeCreateDialog()" text> Cancel </v-btn>
                   <v-btn
                     color="info"
                     @click="save('incident')"
@@ -162,6 +163,7 @@ import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
 import { mapActions } from "vuex"
+import MonacoEditor from "monaco-editor-vue"
 
 import IncidentApi from "@/incident/api"
 import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
@@ -170,37 +172,41 @@ import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
 import IncidentStatus from "@/incident/IncidentStatus.vue"
 import IncidentPriority from "@/incident/IncidentPriority.vue"
-import AdvancedEditor from "@/search/AdvancedEditor.vue"
 import SearchUtils from "@/search/utils"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
   name: "SearchFilterCreateDialog",
   data() {
     return {
+      editorOptions: {
+        automaticLayout: true,
+        renderValidationDecorations: "on",
+      },
       previewFields: [
         { text: "Name", value: "name", sortable: false },
         { text: "Title", value: "title", sortable: false },
         { text: "Status", value: "status", sortable: false },
         { text: "Incident Type", value: "incident_type.name", sortable: false },
-        { text: "Incident Priority", value: "incident_priority.name", sortable: false }
+        { text: "Incident Priority", value: "incident_priority.name", sortable: false },
       ],
       step: 1,
       previewRows: {
         items: [],
-        total: null
+        total: null,
       },
       previewRowsLoading: false,
       filters: {
-        incident_type: null,
-        incident_priority: null,
-        status: null,
-        tag: null
-      }
+        incident_type: [],
+        incident_priority: [],
+        status: [],
+        tag: [],
+        project: [],
+      },
     }
   },
   components: {
@@ -212,7 +218,7 @@ export default {
     IncidentStatusMultiSelect,
     IncidentStatus,
     IncidentPriority,
-    AdvancedEditor
+    MonacoEditor,
   },
   computed: {
     ...mapFields("search", [
@@ -220,9 +226,19 @@ export default {
       "selected.description",
       "selected.expression",
       "selected.name",
+      "selected.project",
       "loading",
-      "dialogs.showCreate"
-    ])
+      "dialogs.showCreate",
+    ]),
+    ...mapFields("route", ["query"]),
+    expression_str: {
+      get: function () {
+        return JSON.stringify(this.expression, null, "\t") || "[]"
+      },
+      set: function (newValue) {
+        this.expression = JSON.parse(newValue)
+      },
+    },
   },
 
   methods: {
@@ -236,29 +252,35 @@ export default {
     },
 
     getPreviewData() {
-      let params = { filter: JSON.stringify(this.expression) }
-      this.previewRowsLoading = "error"
-      return IncidentApi.getAll(params).then(response => {
+      let params = {}
+      if (this.expression) {
+        params = { filter: JSON.stringify(this.expression) }
+        this.previewRowsLoading = "error"
+      }
+      return IncidentApi.getAll(params).then((response) => {
         this.previewRows = response.data
         this.previewRowsLoading = false
       })
-    }
+    },
   },
-  mounted() {
+  created() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
     this.type = "incident"
     this.getPreviewData()
     this.$watch(
-      vm => [
+      (vm) => [
         vm.filters.incident_type,
         vm.filters.incident_priority,
         vm.filters.status,
-        vm.filters.tag
+        vm.filters.tag,
       ],
       () => {
         this.expression = SearchUtils.createFilterExpression(this.filters)
         this.getPreviewData()
       }
     )
-  }
+  },
 }
 </script>

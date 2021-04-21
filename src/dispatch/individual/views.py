@@ -1,11 +1,9 @@
-from typing import List
-
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from dispatch.auth.permissions import PermissionsDependency, AdminPermission
 from dispatch.database.core import get_db
-from dispatch.database.service import search_filter_sort_paginate
+from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.auth.permissions import PermissionsDependency, SensitiveProjectActionPermission
 
 from .models import (
     IndividualContactCreate,
@@ -19,32 +17,11 @@ router = APIRouter()
 
 
 @router.get("/", response_model=IndividualContactPagination)
-def get_individuals(
-    db_session: Session = Depends(get_db),
-    page: int = 1,
-    items_per_page: int = Query(5, alias="itemsPerPage"),
-    query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query([], alias="sortBy[]"),
-    descending: List[bool] = Query([], alias="descending[]"),
-    fields: List[str] = Query([], alias="fields[]"),
-    ops: List[str] = Query([], alias="ops[]"),
-    values: List[str] = Query([], alias="values[]"),
-):
+def get_individuals(*, common: dict = Depends(common_parameters)):
     """
     Retrieve individual contacts.
     """
-    return search_filter_sort_paginate(
-        db_session=db_session,
-        model="IndividualContact",
-        query_str=query_str,
-        page=page,
-        items_per_page=items_per_page,
-        sort_by=sort_by,
-        descending=descending,
-        fields=fields,
-        values=values,
-        ops=ops,
-    )
+    return search_filter_sort_paginate(model="IndividualContact", **common)
 
 
 @router.post("/", response_model=IndividualContactRead)
@@ -78,7 +55,7 @@ def get_individual(*, db_session: Session = Depends(get_db), individual_contact_
     "/{individual_contact_id}",
     response_model=IndividualContactRead,
     summary="Update an individuals contact information.",
-    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_individual(
     *,
@@ -103,9 +80,9 @@ def update_individual(
 @router.delete(
     "/{individual_contact_id}",
     summary="Delete an individual contact.",
-    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def delete_individual(*, db_session: Session = Depends(get_db), individual_contact_id: int):
+async def delete_individual(*, db_session: Session = Depends(get_db), individual_contact_id: int):
     """
     Delete a individual contact.
     """

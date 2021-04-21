@@ -4,8 +4,8 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
-            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
+            <v-list-item-title v-else class="title"> New </v-list-item-title>
             <v-list-item-subtitle>Incident Priority</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
@@ -109,14 +109,14 @@
                   v-model="default_incident_priority"
                   label="Default Incident Priority"
                   hint="Check if this incident priority should be the default."
-                ></v-checkbox>
+                />
               </v-flex>
               <v-flex>
                 <v-checkbox
                   v-model="page_commander"
                   label="Page Commander"
                   hint="Would you like Dispatch to page the incident commander on incident creation?"
-                ></v-checkbox>
+                />
               </v-flex>
             </v-layout>
           </v-container>
@@ -134,7 +134,7 @@ import { required } from "vee-validate/dist/rules"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
@@ -142,7 +142,7 @@ export default {
 
   components: {
     ValidationObserver,
-    ValidationProvider
+    ValidationProvider,
   },
 
   data() {
@@ -154,21 +154,29 @@ export default {
       "dialogs.showCreateEdit",
       "selected.description",
       "selected.id",
+      "selected.project",
       "selected.loading",
       "selected.name",
       "selected.view_order",
       "selected.page_commander",
       "selected.tactical_report_reminder",
       "selected.executive_report_reminder",
-      "selected.default"
+      "selected.default",
     ]),
     ...mapFields("incident_priority", {
-      default_incident_priority: "selected.default"
-    })
+      default_incident_priority: "selected.default",
+    }),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
-    ...mapActions("incident_priority", ["save", "closeCreateEdit"])
-  }
+    ...mapActions("incident_priority", ["save", "closeCreateEdit"]),
+  },
+
+  created() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
+  },
 }
 </script>

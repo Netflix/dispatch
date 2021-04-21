@@ -4,8 +4,8 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
-            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
+            <v-list-item-title v-else class="title"> New </v-list-item-title>
             <v-list-item-subtitle>Team</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
@@ -75,13 +75,17 @@
                 <span class="subtitle-2">Engagement</span>
               </v-flex>
               <v-flex xs12>
-                <term-combobox v-model="terms" />
+                <term-combobox :project="project" v-model="terms" />
               </v-flex>
               <v-flex xs12>
-                <incident-priority-multi-select v-model="incident_priorities" />
+                <incident-priority-multi-select :project="project" v-model="incident_priorities" />
               </v-flex>
               <v-flex>
-                <incident-type-multi-select v-model="incident_types" :visibilities="visibilities" />
+                <incident-type-multi-select
+                  :project="project"
+                  v-model="incident_types"
+                  :visibilities="visibilities"
+                />
               </v-flex>
             </v-layout>
           </v-container>
@@ -102,7 +106,7 @@ import TermCombobox from "@/term/TermCombobox.vue"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
@@ -110,7 +114,7 @@ export default {
 
   data() {
     return {
-      visibilities: ["Open"]
+      visibilities: ["Open"],
     }
   },
 
@@ -119,7 +123,7 @@ export default {
     ValidationProvider,
     IncidentPriorityMultiSelect,
     IncidentTypeMultiSelect,
-    TermCombobox
+    TermCombobox,
   },
 
   computed: {
@@ -130,14 +134,22 @@ export default {
       "selected.email",
       "selected.incident_priorities",
       "selected.incident_types",
+      "selected.project",
       "selected.id",
       "selected.loading",
-      "dialogs.showCreateEdit"
-    ])
+      "dialogs.showCreateEdit",
+    ]),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
-    ...mapActions("team", ["save", "closeCreateEdit"])
-  }
+    ...mapActions("team", ["save", "closeCreateEdit"]),
+  },
+
+  created() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
+  },
 }
 </script>

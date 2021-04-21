@@ -2,14 +2,16 @@ from typing import List, Optional
 
 from pydantic import Field
 from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.sql.schema import UniqueConstraint
+
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import JSON
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase
+from dispatch.models import DispatchBase, ProjectMixin
 
-
+from dispatch.project.models import ProjectRead
 from dispatch.incident.models import IncidentReadNested
 from dispatch.tag.models import TagRead
 from dispatch.term.models import TermRead
@@ -21,9 +23,11 @@ from dispatch.document.models import DocumentRead
 from dispatch.task.models import TaskRead
 
 
-class SearchFilter(Base):
+class SearchFilter(Base, ProjectMixin):
+    __table_args__ = (UniqueConstraint("name", "project_id"),)
+
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
+    name = Column(String)
     description = Column(String)
     expression = Column(JSON)
     creator_id = Column(Integer, ForeignKey("dispatch_user.id"))
@@ -44,7 +48,7 @@ class SearchFilterBase(DispatchBase):
 
 
 class SearchFilterCreate(SearchFilterBase):
-    pass
+    project: ProjectRead
 
 
 class SearchFilterUpdate(SearchFilterBase):

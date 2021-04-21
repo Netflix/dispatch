@@ -10,6 +10,7 @@ from dispatch.config import (
     INCIDENT_RESOURCE_INVESTIGATION_SHEET_TEMPLATE,
     INCIDENT_RESOURCE_INCIDENT_FAQ_DOCUMENT,
 )
+from dispatch.project import service as project_service
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.term import service as term_service
@@ -112,16 +113,20 @@ def create(*, db_session, document_in: DocumentCreate) -> Document:
         incident_type_service.get_by_name(db_session=db_session, name=n.name)
         for n in document_in.incident_types
     ]
+    project = None
+    if document_in.project:
+        project = project_service.get_by_name(db_session=db_session, name=document_in.project.name)
 
     # set the last reminder to now
     if document_in.evergreen:
         document_in.evergreen_last_reminder_at = datetime.utcnow()
 
     document = Document(
-        **document_in.dict(exclude={"terms", "incident_priorities", "incident_types"}),
+        **document_in.dict(exclude={"terms", "incident_priorities", "incident_types", "project"}),
         incident_priorities=incident_priorities,
         incident_types=incident_types,
         terms=terms,
+        project=project,
     )
 
     db_session.add(document)

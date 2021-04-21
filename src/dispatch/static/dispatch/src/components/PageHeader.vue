@@ -1,25 +1,5 @@
 <template>
-  <v-layout class="align-center layout px-4 pt-4 app--page-header">
-    <!--<v-breadcrumbs divider=">" :items="breadcrumbs">
-      <template v-slot:item="props">
-        <router-link
-          style="text-decoration: none; color: inherit;"
-          :to="props.item.href"
-          :class="[props.item.disabled && 'disabled']"
-        >
-          {{ props.item.text }}
-        </router-link>
-      </template>
-    </v-breadcrumbs>
-    <v-spacer />
-    <div class="page-header-right">
-      <v-btn icon @click="refresh">
-        <v-icon class="text--secondary">
-          refresh
-        </v-icon>
-      </v-btn>
-    </div>-->
-  </v-layout>
+  <v-layout class="align-center layout px-4 pt-4 app--page-header" />
 </template>
 
 <script>
@@ -27,13 +7,13 @@ export default {
   data() {
     return {
       title: "Home",
-      breadcrumbs: []
+      breadcrumbs: [],
     }
   },
   watch: {
-    "$route.path": function() {
+    "$route.path": function () {
       this.computeBreadcrumbs()
-    }
+    },
   },
   created() {
     this.computeBreadcrumbs()
@@ -47,20 +27,20 @@ export default {
         {
           text: "Home",
           href: "/",
-          disabled: false
-        }
+          disabled: false,
+        },
       ]
       let appends = []
-      appends = this.$route.matched.map(item => {
+      appends = this.$route.matched.map((item) => {
         return {
           text: item.meta.title || "",
           href: item.path || ">",
-          disabled: item.path === this.$route.path
+          disabled: item.path === this.$route.path,
         }
       })
       this.breadcrumbs = breadcrumbs.concat(appends)
-    }
-  }
+    },
+  },
 }
 </script>
 <style lang="stylus" scoped>

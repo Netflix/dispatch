@@ -11,8 +11,8 @@
     <template v-slot:item="data">
       <template>
         <v-list-item-content>
-          <v-list-item-title v-text="data.item.name"></v-list-item-title>
-          <v-list-item-subtitle v-text="data.item.description"></v-list-item-subtitle>
+          <v-list-item-title v-text="data.item.name" />
+          <v-list-item-subtitle v-text="data.item.description" />
         </v-list-item-content>
       </template>
     </template>
@@ -20,24 +20,31 @@
 </template>
 
 <script>
-import TagTypeApi from "@/tag_type/api"
 import { cloneDeep } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import TagTypeApi from "@/tag_type/api"
+
 export default {
   name: "TagTypeSelect",
 
   props: {
     value: {
       type: Object,
-      default: function() {
+      default: function () {
         return {}
-      }
-    }
+      },
+    },
+    project: {
+      type: [Object],
+      default: null,
+    },
   },
 
   data() {
     return {
       loading: false,
-      items: []
+      items: [],
     }
   },
 
@@ -48,19 +55,43 @@ export default {
       },
       set(value) {
         this.$emit("input", value)
+      },
+    },
+  },
+
+  methods: {
+    fetchData() {
+      this.error = null
+      this.loading = "error"
+      let filterOptions = {
+        sortBy: ["name"],
+        descending: [false],
       }
-    }
+
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      }
+      TagTypeApi.getAll(filterOptions).then((response) => {
+        this.items = response.data.items
+        this.loading = false
+      })
+    },
   },
 
   created() {
-    this.error = null
-    this.loading = "error"
-    TagTypeApi.getAll({ itemsPerPage: 50, sortBy: ["name"], descending: [false] }).then(
-      response => {
-        this.items = response.data.items
-        this.loading = false
+    this.fetchData()
+    this.$watch(
+      (vm) => [vm.project],
+      () => {
+        this.fetchData()
       }
     )
-  }
+  },
 }
 </script>

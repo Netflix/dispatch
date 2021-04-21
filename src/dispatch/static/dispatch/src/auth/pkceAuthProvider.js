@@ -23,7 +23,7 @@ function login(to, from, next) {
 
   const qsUtils = new BasicQueryStringUtils({ useHash: false })
   //const origParse = qsUtils.parse
-  qsUtils.parse = input => {
+  qsUtils.parse = (input) => {
     return qsUtils.parseQueryString(input.search)
   }
 
@@ -41,7 +41,7 @@ function login(to, from, next) {
     const p = new Promise(resolver)
     if (cfg === null) {
       AuthorizationServiceConfiguration.fetchFromIssuer(openIdConnectUrl, requestor)
-        .then(response => {
+        .then((response) => {
           cfg = response
           rslv(cfg)
         })
@@ -65,30 +65,30 @@ function login(to, from, next) {
         redirect_uri: request.redirectUri,
         grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
         code: response.code,
-        extras: { code_verifier: request.internal["code_verifier"] }
+        extras: { code_verifier: request.internal["code_verifier"] },
       })
-      getCfg().then(cfg => {
+      getCfg().then((cfg) => {
         tokenHandler
           .performTokenRequest(cfg, req)
-          .then(response => {
+          .then((response) => {
             // Redirect to the uri in session storage and then delete it from storage
             store.dispatch("auth/login", {
               token: response.accessToken,
-              redirectUri: localStorage.getItem("redirect_uri")
+              redirectUri: localStorage.getItem("redirect_uri"),
             })
             localStorage.removeItem("redirect_uri")
           })
-          .catch(e => {
+          .catch((e) => {
             console.error(e)
           })
       })
     }
   })
 
-  getCfg().then(cfg => {
+  getCfg().then((cfg) => {
     if (to.query.code && to.query.state) {
       authorizationHandler.completeAuthorizationRequestIfPossible()
-    } else if (to.matched.some(record => record.meta.requiresAuth)) {
+    } else if (to.matched.some((record) => record.meta.requiresAuth)) {
       // Test if we already have a valid access token
       // Set the redirect_uri to a single location and store the real redirect uri in session storage.
       // This enables easier enablement of SPA on providers like Okta where each route must be whitelisted.
@@ -104,7 +104,7 @@ function login(to, from, next) {
         scope: scope,
         response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
         state: undefined,
-        extras: {}
+        extras: {},
       })
       authorizationHandler.performAuthorizationRequest(cfg, request)
     } else {
@@ -114,5 +114,5 @@ function login(to, from, next) {
 }
 
 export default {
-  login
+  login,
 }

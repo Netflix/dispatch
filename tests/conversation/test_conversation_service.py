@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_get_conversation(session, conversation):
     from dispatch.conversation.service import get
 

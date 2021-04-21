@@ -2,86 +2,60 @@
   <v-container fluid grid-list-xl>
     <v-layout row wrap>
       <v-flex class="d-flex justify-start" lg6 sm6 xs12>
-        <v-btn color="info" @click="copyView">Share View</v-btn>
+        <v-btn color="info" @click="copyView"> Share View </v-btn>
       </v-flex>
       <v-flex class="d-flex justify-end" lg6 sm6 xs12>
-        <dialog-filter
-          v-bind="query"
-          @update="update"
-          @filterOptions="setFilterOptions"
-          @loading="setLoading"
-        />
+        <dialog-filter @update="update" @loading="setLoading" />
       </v-flex>
     </v-layout>
     <v-layout row wrap>
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="domain" :title="totalIncidents | toNumberString" supTitle="Incidents" />
+        <stat-widget icon="domain" :title="totalIncidents | toNumberString" sup-title="Incidents" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="attach_money" :title="totalCost | toUSD" supTitle="Total Cost" />
+        <stat-widget icon="attach_money" :title="totalCost | toUSD" sup-title="Total Cost" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="show_chart" :title="avgCost | toUSD" supTitle="Avg Cost" />
+        <stat-widget icon="show_chart" :title="avgCost | toUSD" sup-title="Avg Cost" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
         <stat-widget
           icon="watch_later"
           :title="totalHours | toNumberString"
-          supTitle="Total Hours"
+          sup-title="Total Hours"
         />
       </v-flex>
       <!-- Widgets Ends -->
       <!-- Statistics -->
       <v-flex lg6 sm6 xs12>
-        <incident-type-bar-chart-card
-          v-model="groupedItems"
-          :loading="loading"
-        ></incident-type-bar-chart-card>
+        <incident-type-bar-chart-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <v-flex lg6 sm6 xs12>
-        <incident-priority-bar-chart-card
-          v-model="groupedItems"
-          :loading="loading"
-        ></incident-priority-bar-chart-card>
+        <incident-priority-bar-chart-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <v-flex lg6 sm6 xs12>
-        <incident-heatmap-card v-model="groupedItems" :loading="loading"></incident-heatmap-card>
+        <incident-heatmap-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <v-flex lg6 sm6 xs12>
-        <incident-cost-bar-chart-card
-          v-model="groupedItems"
-          :loading="loading"
-        ></incident-cost-bar-chart-card>
+        <incident-cost-bar-chart-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <v-flex lg12 sm12 xs12>
-        <incident-forecast-card v-model="filterOptions"></incident-forecast-card>
+        <incident-forecast-card />
       </v-flex>
       <v-flex lg6 sm6 xs12>
-        <incident-active-time-card
-          v-model="groupedItems"
-          :loading="loading"
-        ></incident-active-time-card>
+        <incident-active-time-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <v-flex lg6 sm6 xs12>
-        <incident-resolve-time-card
-          v-model="groupedItems"
-          :loading="loading"
-        ></incident-resolve-time-card>
+        <incident-resolve-time-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <v-flex lg12 sm12 xs12>
-        <incident-primary-location-bar-chart-card
-          v-model="groupedItems"
-          :loading="loading"
-        ></incident-primary-location-bar-chart-card>
+        <incident-primary-location-bar-chart-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <v-flex lg12 sm12 xs12>
-        <incident-primary-team-bar-chart-card
-          v-model="groupedItems"
-          :loading="loading"
-        ></incident-primary-team-bar-chart-card>
+        <incident-primary-team-bar-chart-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <v-flex lg12 sm12 xs12>
-        <incident-tags-treemap-card v-model="items" :loading="loading"></incident-tags-treemap-card>
+        <incident-tags-treemap-card v-model="items" :loading="loading" />
       </v-flex>
       <!-- Statistics Ends -->
     </v-layout>
@@ -89,6 +63,7 @@
 </template>
 
 <script>
+import { mapFields } from "vuex-map-fields"
 import { groupBy, sumBy, filter } from "lodash"
 import differenceInHours from "date-fns/differenceInHours"
 import { parseISO } from "date-fns"
@@ -108,12 +83,6 @@ import IncidentTagsTreemapCard from "@/incident/IncidentTagsTreemapCard.vue"
 export default {
   name: "IncidentDashboard",
 
-  props: {
-    query: {
-      type: Object
-    }
-  },
-
   components: {
     DialogFilter,
     StatWidget,
@@ -126,69 +95,65 @@ export default {
     IncidentForecastCard,
     IncidentPrimaryLocationBarChartCard,
     IncidentPrimaryTeamBarChartCard,
-    IncidentTagsTreemapCard
+    IncidentTagsTreemapCard,
   },
 
   data() {
     return {
       tab: null,
       loading: "error",
-      filterOptions: {},
-      items: []
+      items: [],
     }
   },
 
   methods: {
     update(data) {
-      this.items = filter(data, function(item) {
+      this.items = filter(data, function (item) {
         return !item.incident_type.exclude_from_metrics && !item.duplicates.length
       })
-    },
-    setFilterOptions(options) {
-      this.filterOptions = options
     },
     setLoading(data) {
       this.loading = data
     },
-    copyView: function() {
+    copyView: function () {
       let store = this.$store
       this.$copyText(window.location).then(
-        function() {
+        function () {
           store.commit(
             "notification_backend/addBeNotification",
             {
-              text: "View copied to clipboard."
+              text: "View copied to clipboard.",
             },
             { root: true }
           )
         },
-        function() {
+        function () {
           store.commit(
             "notification_backend/addBeNotification",
             {
               text: "Failed to copy view to clipboard.",
-              color: "red"
+              color: "red",
             },
             { root: true }
           )
         }
       )
-    }
+    },
   },
 
   computed: {
     incidentsByYear() {
-      return groupBy(this.items, function(item) {
+      return groupBy(this.items, function (item) {
         return parseISO(item.reported_at).getYear()
       })
     },
     incidentsByMonth() {
-      return groupBy(this.items, function(item) {
+      return groupBy(this.items, function (item) {
         return parseISO(item.reported_at).toLocaleString("default", { month: "short" })
       })
     },
     incidentsByQuarter() {
-      return groupBy(this.items, function(item) {
+      return groupBy(this.items, function (item) {
         return "Q" + Math.floor(parseISO(item.reported_at).getMonth() + 3) / 3
       })
     },
@@ -205,14 +170,15 @@ export default {
       return this.totalCost / this.totalIncidents
     },
     totalHours() {
-      return sumBy(this.items, function(item) {
+      return sumBy(this.items, function (item) {
         let endTime = new Date().toISOString()
         if (item.stable_at) {
           endTime = item.stable_at
         }
         return differenceInHours(parseISO(endTime), parseISO(item.reported_at))
       })
-    }
-  }
+    },
+    ...mapFields("route", ["query.project"]),
+  },
 }
 </script>

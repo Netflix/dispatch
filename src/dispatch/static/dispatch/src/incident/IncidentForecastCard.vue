@@ -9,91 +9,88 @@
 </template>
 
 <script>
+import { mapFields } from "vuex-map-fields"
 import IncidentApi from "@/incident/api"
 import DashboardCard from "@/dashboard/DashboardCard.vue"
 import SearchUtils from "@/search/utils"
 
 export default {
   name: "IncidentForecastCard",
-  props: {
-    value: {
-      type: Object,
-      default: function() {
-        return {}
-      }
-    }
-  },
 
   components: {
-    DashboardCard
+    DashboardCard,
   },
 
   computed: {
+    ...mapFields("incident", ["table.options"]),
     chartOptions() {
       return {
         chart: {
           height: 350,
           type: "line",
           toolbar: {
-            show: false
-          }
+            show: false,
+          },
         },
         dataLabels: {
-          enabled: true
+          enabled: true,
         },
         stroke: {
-          curve: "smooth"
+          curve: "smooth",
         },
         tooltip: {
           x: {
-            format: "MMM yyyy"
-          }
+            format: "MMM yyyy",
+          },
         },
         markers: {
-          size: 1
+          size: 1,
         },
         xaxis: {
           categories: this.categories,
           type: "datetime",
-          tickAmount: 6
+          tickAmount: 6,
         },
         yaxis: {
           min: 0,
           title: {
-            text: "Incidents"
-          }
+            text: "Incidents",
+          },
         },
         legend: {
-          position: "top"
-        }
+          position: "top",
+        },
       }
-    }
+    },
   },
   data() {
     return {
       loading: false,
       series: [],
-      categories: []
+      categories: [],
     }
   },
 
   methods: {
     fetchData() {
       this.loading = "error"
-      let expression = SearchUtils.createFilterExpression(this.value)
-      let params = { filter: JSON.stringify(expression) }
-      IncidentApi.getMetricForecast(params).then(response => {
+      let params = SearchUtils.createParametersFromTableOptions({ ...this.options })
+      IncidentApi.getMetricForecast(params).then((response) => {
         this.loading = false
         this.series = response.data.series
         this.categories = response.data.categories
       })
-    }
+    },
   },
 
-  watch: {
-    value: function() {
-      this.fetchData()
-    }
-  }
+  created() {
+    this.fetchData()
+    this.$watch(
+      (vm) => [vm.options],
+      () => {
+        this.fetchData()
+      }
+    )
+  },
 }
 </script>

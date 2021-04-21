@@ -10,34 +10,40 @@ const getDefaultSelectedState = () => {
     loading: false,
     previewRows: {
       items: [],
-      total: null
+      total: null,
     },
     previewRowsLoading: false,
     step: 1,
     filters: {
-      incident_type: null,
-      incident_priority: null,
-      status: null,
-      tags: null
-    }
+      incident_type: [],
+      incident_priority: [],
+      status: [],
+      tag: [],
+      project: [],
+    },
   }
 }
 
 const state = {
-  results: [],
+  results: {
+    incidents: [],
+    tasks: [],
+    documents: [],
+    tags: [],
+  },
   query: "",
   models: [],
   dialogs: {
-    showCreate: false
+    showCreate: false,
   },
   loading: false,
   selected: {
-    ...getDefaultSelectedState()
-  }
+    ...getDefaultSelectedState(),
+  },
 }
 
 const getters = {
-  getField
+  getField,
 }
 
 const actions = {
@@ -50,16 +56,16 @@ const actions = {
   getResults({ commit, state }) {
     commit("SET_LOADING", false)
     return SearchApi.search(state.query, state.models)
-      .then(response => {
+      .then((response) => {
         commit("SET_RESULTS", response.data.results)
         commit("SET_LOADING", false)
       })
-      .catch(err => {
+      .catch((err) => {
         commit(
           "notification_backend/addBeNotification",
           {
             text: "Search Failed. Reason: " + err.response.data.detail,
-            color: "red"
+            color: "red",
           },
           { root: true }
         )
@@ -86,12 +92,12 @@ const actions = {
           commit("SET_DIALOG_SHOW_CREATE", false)
           commit("RESET_SELECTED")
         })
-        .catch(err => {
+        .catch((err) => {
           commit(
             "notification_backend/addBeNotification",
             {
               text: "Search Filter not saved. Reason: " + err.response.data.detail,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
@@ -107,19 +113,19 @@ const actions = {
           )
           commit("SET_SELECTED_LOADING", false)
         })
-        .catch(err => {
+        .catch((err) => {
           commit(
             "notification_backend/addBeNotification",
             {
               text: "Search filter not updated. Reason: " + err.response.data.detail,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
           commit("SET_SELECTED_LOADING", false)
         })
     }
-  }
+  },
 }
 
 const mutations = {
@@ -144,7 +150,7 @@ const mutations = {
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
-  }
+  },
 }
 
 export default {
@@ -152,5 +158,5 @@ export default {
   state,
   getters,
   actions,
-  mutations
+  mutations,
 }

@@ -8,8 +8,8 @@ Create Date: 2021-03-15 17:04:16.060713
 from alembic import op
 import sqlalchemy as sa
 
-from dispatch.incident_cost_type.models import IncidentCostTypeCreate
-from dispatch.incident_cost_type import service as incident_cost_type_service
+from dispatch.incident_cost_type.models import IncidentCostType
+
 
 # revision identifiers, used by Alembic.
 revision = "678b759299ff"
@@ -28,19 +28,17 @@ def upgrade():
     # ### end Alembic commands ###
 
     # we create a default incident cost type for response cost
-    bind = op.get_bind()
-    db_session = sa.orm.Session(bind=bind)
-
-    incident_cost_type_in = IncidentCostTypeCreate(
-        name="Response Cost",
-        description="Cost of responding to an incident. Also known as opportunity cost.",
-        details={},
-        default=True,
-        editable=False,
-    )
-
-    incident_cost_type_service.create(
-        db_session=db_session, incident_cost_type_in=incident_cost_type_in
+    op.bulk_insert(
+        IncidentCostType.__table__,
+        [
+            {
+                "name": "Response Cost",
+                "description": "Cost associated with handling an incident.",
+                "details": {},
+                "default": True,
+                "editable": False,
+            }
+        ],
     )
 
 

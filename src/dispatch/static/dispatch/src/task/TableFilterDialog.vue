@@ -2,29 +2,22 @@
   <v-dialog v-model="display" max-width="600px">
     <template v-slot:activator="{ on }">
       <v-badge :value="numFilters" bordered overlap color="info" :content="numFilters">
-        <v-btn color="secondary" v-on="on">Filter</v-btn>
+        <v-btn color="secondary" v-on="on"> Filter </v-btn>
       </v-badge>
     </template>
     <v-card>
       <v-card-title>
         <span class="headline">Column Filters</span>
       </v-card-title>
-      <v-list dense
-        ><!--
-        <v-list-item>
-          <v-list-item-content>
-            <individual-combobox v-model="creator" label="Creator"></individual-combobox>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item>
-          <v-list-item-content>
-            <individual-combobox v-model="assignee" label="Assignee"></individual-combobox>
-          </v-list-item-content>
-        </v-list-item>
-        -->
+      <v-list dense>
         <v-list-item>
           <v-list-item-content>
             <incident-combobox v-model="incident" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
+            <project-combobox v-model="project" label="Projects" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
@@ -50,23 +43,23 @@
 <script>
 import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
-//import IndividualCombobox from "@/individual/IndividualCombobox.vue"
 import IncidentCombobox from "@/incident/IncidentCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
+import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import TaskStatusMultiSelect from "@/task/TaskStatusMultiSelect.vue"
 export default {
   name: "TaskTableFilterDialog",
   components: {
-    //IndividualCombobox,
     IncidentCombobox,
     IncidentTypeCombobox,
     IncidentPriorityCombobox,
-    TaskStatusMultiSelect
+    ProjectCombobox,
+    TaskStatusMultiSelect,
   },
   data() {
     return {
-      display: false
+      display: false,
     }
   },
   computed: {
@@ -76,18 +69,20 @@ export default {
       "table.options.filters.incident_type",
       "table.options.filters.incident_priority",
       "table.options.filters.status",
-      "table.options.filters.incident"
+      "table.options.filters.project",
+      "table.options.filters.incident",
     ]),
-    numFilters: function() {
+    numFilters: function () {
       return sum([
         this.creator.length,
         this.assignee.length,
         this.incident_type.length,
         this.incident.length,
+        this.project.length,
         this.incident_priority.length,
-        this.status.length
+        this.status.length,
       ])
-    }
-  }
+    },
+  },
 }
 </script>

@@ -13,7 +13,9 @@
       <template v-slot:item.reporter="{ item }">
         <incident-participant :participant="item.reporter" />
       </template>
-      <template v-slot:item.reported_at="{ item }">{{ item.reported_at | formatDate }}</template>
+      <template v-slot:item.reported_at="{ item }">
+        {{ item.reported_at | formatDate }}
+      </template>
       <template v-slot:item.data-table-actions="{ item }">
         <v-menu bottom left>
           <template v-slot:activator="{ on }">
@@ -22,7 +24,7 @@
             </v-btn>
           </template>
           <v-list>
-            <v-list-item :to="`/incidents/${item.name}`">
+            <v-list-item :to="{ name: 'IncidentTableEdit', params: { name: item.name } }">
               <v-list-item-title>View / Edit</v-list-item-title>
             </v-list-item>
           </v-list>
@@ -44,7 +46,7 @@ export default {
   components: {
     IncidentPriority,
     IncidentStatus,
-    IncidentParticipant
+    IncidentParticipant,
   },
 
   data() {
@@ -56,28 +58,28 @@ export default {
         { text: "Type", value: "incident_type.name" },
         //{ text: "Priority", value: "incident_priority.name", width: "10%" },
         { text: "Commander", value: "commander", sortable: false },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" }
-      ]
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+      ],
     }
   },
 
   props: {
     items: {
-      default: function() {
+      default: function () {
         return []
       },
-      type: Array
+      type: Array,
     },
     loading: {
-      default: function() {
+      default: function () {
         return false
       },
-      type: [String, Boolean]
-    }
+      type: [String, Boolean],
+    },
   },
 
   methods: {
-    ...mapActions("incident", ["showEditSheet", "joinIncident"])
-  }
+    ...mapActions("incident", ["showEditSheet", "joinIncident"]),
+  },
 }
 </script>

@@ -1,13 +1,9 @@
-from typing import List
-
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from dispatch.auth.models import DispatchUser
-from dispatch.auth.permissions import AdminPermission, PermissionsDependency
-from dispatch.auth.service import get_current_user
 from dispatch.database.core import get_db
-from dispatch.database.service import search_filter_sort_paginate
+from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 
 from .models import IncidentTypeCreate, IncidentTypePagination, IncidentTypeRead, IncidentTypeUpdate
 from .service import create, get, update
@@ -17,40 +13,17 @@ router = APIRouter()
 
 
 @router.get("/", response_model=IncidentTypePagination, tags=["incident_types"])
-def get_incident_types(
-    db_session: Session = Depends(get_db),
-    page: int = 1,
-    items_per_page: int = Query(5, alias="itemsPerPage"),
-    query_str: str = Query(None, alias="q"),
-    sort_by: List[str] = Query([], alias="sortBy[]"),
-    descending: List[bool] = Query([], alias="descending[]"),
-    fields: List[str] = Query([], alias="fields[]"),
-    ops: List[str] = Query([], alias="ops[]"),
-    values: List[str] = Query([], alias="values[]"),
-    current_user: DispatchUser = Depends(get_current_user),
-):
+def get_incident_types(*, common: dict = Depends(common_parameters)):
     """
     Returns all incident types.
     """
-    return search_filter_sort_paginate(
-        db_session=db_session,
-        model="IncidentType",
-        query_str=query_str,
-        page=page,
-        items_per_page=items_per_page,
-        sort_by=sort_by,
-        descending=descending,
-        fields=fields,
-        values=values,
-        ops=ops,
-        user_role=current_user.role,
-    )
+    return search_filter_sort_paginate(model="IncidentType", **common)
 
 
 @router.post(
     "/",
     response_model=IncidentTypeRead,
-    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def create_incident_type(
     *,
@@ -67,7 +40,7 @@ def create_incident_type(
 @router.put(
     "/{incident_type_id}",
     response_model=IncidentTypeRead,
-    dependencies=[Depends(PermissionsDependency([AdminPermission]))],
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_incident_type(
     *,

@@ -30,12 +30,15 @@ def test_get_all(session, services):
     assert len(t_services) > 1
 
 
-def test_create(session):
+def test_create(session, project):
     from dispatch.service.service import create
     from dispatch.service.models import ServiceCreate
 
     name = "createName"
-    service_in = ServiceCreate(name=name)
+    service_in = ServiceCreate(
+        name=name,
+        project=project,
+    )
 
     service = create(db_session=session, service_in=service_in)
     assert name == service.name

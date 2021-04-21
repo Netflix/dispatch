@@ -8,9 +8,10 @@ from sqlalchemy.sql.schema import PrimaryKeyConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
+from dispatch.project.models import ProjectRead
 from dispatch.search.models import SearchFilterRead, SearchFilterUpdate
 
-from dispatch.models import DispatchBase, TimeStampMixin
+from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin
 
 
 class NotificationTypeEnum(str, Enum):
@@ -27,7 +28,7 @@ assoc_notification_filters = Table(
 )
 
 
-class Notification(Base, TimeStampMixin):
+class Notification(Base, TimeStampMixin, ProjectMixin):
     # Columns
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -55,6 +56,7 @@ class NotificationBase(DispatchBase):
 
 class NotificationCreate(NotificationBase):
     filters: Optional[List[SearchFilterRead]]
+    project: ProjectRead
 
 
 class NotificationUpdate(NotificationBase):

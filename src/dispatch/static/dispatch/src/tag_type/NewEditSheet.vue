@@ -4,8 +4,8 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
-            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
+            <v-list-item-title v-else class="title"> New </v-list-item-title>
             <v-list-item-subtitle>Tag Type</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
@@ -73,7 +73,7 @@ import { required } from "vee-validate/dist/rules"
 
 extend("required", {
   ...required,
-  message: "This field is required."
+  message: "This field is required.",
 })
 
 export default {
@@ -81,7 +81,7 @@ export default {
 
   components: {
     ValidationObserver,
-    ValidationProvider
+    ValidationProvider,
   },
 
   computed: {
@@ -89,16 +89,24 @@ export default {
       "dialogs.showCreateEdit",
       "selected.id",
       "selected.name",
+      "selected.project",
       "selected.description",
-      "selected.loading"
+      "selected.loading",
     ]),
     ...mapFields("tag_type", {
-      default_tag_type: "selected.default"
-    })
+      default_tag_type: "selected.default",
+    }),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
-    ...mapActions("tag_type", ["save", "closeCreateEdit"])
-  }
+    ...mapActions("tag_type", ["save", "closeCreateEdit"]),
+  },
+
+  created() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
+  },
 }
 </script>

@@ -4,9 +4,7 @@
       <router-view />
       <v-snackbar bottom right :value="updateExists" :timeout="0" color="info">
         An update is available
-        <v-btn text @click="refreshApp">
-          Update
-        </v-btn>
+        <v-btn text @click="refreshApp"> Update </v-btn>
       </v-snackbar>
     </div>
   </v-app>
@@ -19,7 +17,7 @@ export default {
   data() {
     return {}
   },
-  mixins: [update]
+  mixins: [update],
 }
 </script>
 

@@ -1,7 +1,8 @@
-import WorkflowApi from "@/workflow/api"
-
 import { getField, updateField } from "vuex-map-fields"
-import { debounce, forEach, each, has } from "lodash"
+import { debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import WorkflowApi from "@/workflow/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -9,64 +10,50 @@ const getDefaultSelectedState = () => {
     enabled: null,
     resource_id: null,
     parameters: [],
+    project: null,
+    plugin: null,
     name: null,
     id: null,
-    loading: false
+    loading: false,
   }
 }
 
 const state = {
   selected: {
-    ...getDefaultSelectedState()
+    ...getDefaultSelectedState(),
   },
   dialogs: {
     showCreateEdit: false,
-    showRemove: false
+    showRemove: false,
   },
   table: {
     rows: {
       items: [],
-      total: null
+      total: null,
     },
     options: {
-      filters: {},
       q: "",
       page: 1,
       itemsPerPage: 10,
-      descending: [false]
+      descending: [false],
+      filters: {
+        project: [],
+      },
     },
-    loading: false
-  }
+    loading: false,
+  },
 }
 
 const getters = {
-  getField
+  getField,
 }
 
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    let tableOptions = Object.assign({}, state.table.options)
-    delete tableOptions.filters
-
-    tableOptions.fields = []
-    tableOptions.ops = []
-    tableOptions.values = []
-
-    forEach(state.table.options.filters, function(value, key) {
-      each(value, function(value) {
-        if (has(value, "id")) {
-          tableOptions.fields.push(key + ".id")
-          tableOptions.values.push(value.id)
-        } else {
-          tableOptions.fields.push(key)
-          tableOptions.values.push(value)
-        }
-        tableOptions.ops.push("==")
-      })
-    })
-    return WorkflowApi.getAll(tableOptions)
-      .then(response => {
+    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options })
+    return WorkflowApi.getAll(params)
+      .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
       })
@@ -75,10 +62,10 @@ const actions = {
       })
   }, 200),
   createEditShow({ commit }, workflow) {
-    commit("SET_DIALOG_CREATE_EDIT", true)
     if (workflow) {
       commit("SET_SELECTED", workflow)
     }
+    commit("SET_DIALOG_CREATE_EDIT", true)
   },
   removeShow({ commit }, workflow) {
     commit("SET_DIALOG_DELETE", true)
@@ -104,12 +91,12 @@ const actions = {
             { root: true }
           )
         })
-        .catch(err => {
+        .catch((err) => {
           commit(
             "notification_backend/addBeNotification",
             {
               text: "Workflow not created. Reason: " + err.response.data.detail,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
@@ -125,12 +112,12 @@ const actions = {
             { root: true }
           )
         })
-        .catch(err => {
+        .catch((err) => {
           commit(
             "notification_backend/addBeNotification",
             {
               text: "Workflow not updated. Reason: " + err.response.data.detail,
-              type: "error"
+              type: "error",
             },
             { root: true }
           )
@@ -139,7 +126,7 @@ const actions = {
   },
   remove({ commit, dispatch }) {
     return WorkflowApi.delete(state.selected.id)
-      .then(function() {
+      .then(function () {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
@@ -148,17 +135,17 @@ const actions = {
           { root: true }
         )
       })
-      .catch(err => {
+      .catch((err) => {
         commit(
           "notification_backend/addBeNotification",
           {
             text: "Workflow not deleted. Reason: " + err.response.data.detail,
-            type: "error"
+            type: "error",
           },
           { root: true }
         )
       })
-  }
+  },
 }
 
 const mutations = {
@@ -180,7 +167,7 @@ const mutations = {
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
-  }
+  },
 }
 
 export default {
@@ -188,5 +175,5 @@ export default {
   state,
   getters,
   actions,
-  mutations
+  mutations,
 }

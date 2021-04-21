@@ -1,16 +1,18 @@
 from typing import List, Optional
 
 from sqlalchemy import Column, Integer, String
-
+from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, TimeStampMixin
+from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin
+from dispatch.project.models import ProjectRead
 
 
-class TagType(Base, TimeStampMixin):
+class TagType(Base, TimeStampMixin, ProjectMixin):
+    __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
+    name = Column(String)
     description = Column(String)
     search_vector = Column(TSVectorType("name"))
 
@@ -22,7 +24,7 @@ class TagTypeBase(DispatchBase):
 
 
 class TagTypeCreate(TagTypeBase):
-    pass
+    project: ProjectRead
 
 
 class TagTypeUpdate(TagTypeBase):
@@ -31,6 +33,7 @@ class TagTypeUpdate(TagTypeBase):
 
 class TagTypeRead(TagTypeBase):
     id: int
+    project: ProjectRead
 
 
 class TagTypePagination(DispatchBase):

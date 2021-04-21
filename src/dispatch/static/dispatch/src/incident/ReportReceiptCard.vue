@@ -10,7 +10,7 @@
       <v-list three-line>
         <v-list-group :value="true">
           <template v-slot:activator>
-            <v-list-item-title class="title">Incident Details</v-list-item-title>
+            <v-list-item-title class="title"> Incident Details </v-list-item-title>
           </template>
           <v-list-item-group>
             <v-list-item
@@ -45,6 +45,13 @@
             <v-divider />
             <v-list-item disabled>
               <v-list-item-content>
+                <v-list-item-title>Project</v-list-item-title>
+                <v-list-item-subtitle>{{ project.name }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
+            <v-list-item disabled>
+              <v-list-item-content>
                 <v-list-item-title>Type</v-list-item-title>
                 <v-list-item-subtitle>{{ incident_type.name }}</v-list-item-subtitle>
               </v-list-item-content>
@@ -69,7 +76,7 @@
       <v-list three-line v-if="!trackingOnly">
         <v-list-group :value="true">
           <template v-slot:activator>
-            <v-list-item-title class="title">Incident Resources</v-list-item-title>
+            <v-list-item-title class="title"> Incident Resources </v-list-item-title>
           </template>
           <span v-if="activeResourcePlugins.ticket">
             <v-list-item v-if="ticket" :href="ticket.weblink" target="_blank">
@@ -86,7 +93,7 @@
             <v-list-item v-else>
               <v-list-item-content>
                 <v-list-item-title>Creating incident ticket...</v-list-item-title>
-                <v-progress-linear indeterminate></v-progress-linear>
+                <v-progress-linear indeterminate />
               </v-list-item-content>
             </v-list-item>
             <v-divider />
@@ -106,7 +113,7 @@
             <v-list-item v-else>
               <v-list-item-content>
                 <v-list-item-title>Creating incident video conference...</v-list-item-title>
-                <v-progress-linear indeterminate></v-progress-linear>
+                <v-progress-linear indeterminate />
               </v-list-item-content>
             </v-list-item>
             <v-divider />
@@ -126,7 +133,7 @@
             <v-list-item v-else>
               <v-list-item-content>
                 <v-list-item-title>Creating incident conversation...</v-list-item-title>
-                <v-progress-linear indeterminate></v-progress-linear>
+                <v-progress-linear indeterminate />
               </v-list-item-content>
             </v-list-item>
             <v-divider />
@@ -146,7 +153,7 @@
             <v-list-item v-else>
               <v-list-item-content>
                 <v-list-item-title>Creating incident storage...</v-list-item-title>
-                <v-progress-linear indeterminate></v-progress-linear>
+                <v-progress-linear indeterminate />
               </v-list-item-content>
             </v-list-item>
             <v-divider />
@@ -171,7 +178,7 @@
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>Creating incident documents... </v-list-item-title>
-                    <v-progress-linear indeterminate></v-progress-linear>
+                    <v-progress-linear indeterminate />
                   </v-list-item-content>
                 </v-list-item>
               </span>
@@ -193,7 +200,7 @@
       </v-list>
       <v-container grid-list-md>
         <v-flex xs12>
-          <v-btn color="info" depressed @click="resetSelected()">Report another incident</v-btn>
+          <v-btn color="info" depressed @click="resetSelected()"> Report another incident </v-btn>
         </v-flex>
       </v-container>
     </v-card-text>
@@ -220,31 +227,56 @@ export default {
         ticket: null,
         storage: null,
         conversation: null,
-        conference: null
-      }
+        conference: null,
+      },
     }
   },
-  mounted() {
+  created() {
     DocumentApi.getAll({
-      "fields[]": "resource_type",
-      "ops[]": "==",
-      "values[]": "dispatch-incident-faq"
-    }).then(response => {
+      filter: JSON.stringify({
+        and: [
+          {
+            field: "resource_type",
+            op: "==",
+            value: "dispatch-incident-faq",
+          },
+          {
+            model: "Project",
+            field: "name",
+            op: "==",
+            value: this.project.name,
+          },
+        ],
+      }),
+    }).then((response) => {
       if (response.data.items.length) {
         this.incident_faq = response.data.items[0]
       }
     })
-    PluginApi.getAll({
+    PluginApi.getAllInstances({
       itemsPerPage: -1,
-      "fields[]": "enabled",
-      "ops[]": "==",
-      "values[]": "true"
-    }).then(response => {
+      filter: JSON.stringify({
+        and: [
+          {
+            model: "PluginInstance",
+            field: "enabled",
+            op: "==",
+            value: "true",
+          },
+          {
+            model: "Project",
+            field: "name",
+            op: "==",
+            value: this.project.name,
+          },
+        ],
+      }),
+    }).then((response) => {
       let data = response.data.items
       let activeResourcePlugins = this.activeResourcePlugins
-      forEach(Object.keys(activeResourcePlugins), function(value) {
-        activeResourcePlugins[value] = find(data, function(o) {
-          return o.type === value
+      forEach(Object.keys(activeResourcePlugins), function (value) {
+        activeResourcePlugins[value] = find(data, function (o) {
+          return o.plugin.type === value
         })
       })
     })
@@ -262,15 +294,16 @@ export default {
       "selected.visibility",
       "selected.storage",
       "selected.documents",
+      "selected.project",
       "selected.trackingOnly",
       "selected.loading",
       "selected.ticket",
-      "selected.id"
-    ])
+      "selected.id",
+    ]),
   },
 
   methods: {
-    ...mapActions("incident", ["report", "get", "resetSelected"])
-  }
+    ...mapActions("incident", ["report", "get", "resetSelected"]),
+  },
 }
 </script>

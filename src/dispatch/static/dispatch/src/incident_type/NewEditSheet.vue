@@ -4,8 +4,8 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
-            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
+            <v-list-item-title v-else class="title"> New </v-list-item-title>
             <v-list-item-subtitle>Incident Type</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
@@ -68,17 +68,25 @@
               </v-flex>
               <v-flex xs12>
                 <ValidationObserver disabled>
-                  <service-select label="Commander Service" v-model="commander_service" />
+                  <service-select
+                    :project="project"
+                    label="Commander Service"
+                    v-model="commander_service"
+                  />
                 </ValidationObserver>
               </v-flex>
               <v-flex xs12>
                 <ValidationObserver disabled>
-                  <service-select label="Liaison Service" v-model="liaison_service" />
+                  <service-select
+                    :project="project"
+                    label="Liaison Service"
+                    v-model="liaison_service"
+                  />
                 </ValidationObserver>
               </v-flex>
               <v-flex xs12>
                 <ValidationObserver disabled>
-                  <document-select v-model="template_document" />
+                  <document-select :project="project" v-model="template_document" />
                 </ValidationObserver>
               </v-flex>
               <v-flex xs 12>
@@ -86,20 +94,17 @@
                   v-model="exclude_from_metrics"
                   label="Exclude From Metrics"
                   hint="Check if this incident type should be excluded from all metrics."
-                ></v-checkbox>
+                />
               </v-flex>
               <v-flex xs12>
                 <v-checkbox
                   v-model="default_incident_type"
                   label="Default Incident Type"
                   hint="Check this if this incident type should be the default."
-                ></v-checkbox>
+                />
               </v-flex>
               <v-flex xs12>
-                <plugin-metadata-input
-                  @input="updatePluginMetadata({ data: $event })"
-                  v-model="plugin_metadata"
-                />
+                <plugin-metadata-input :project="project" v-model="plugin_metadata" />
               </v-flex>
             </v-layout>
           </v-container>
@@ -120,7 +125,7 @@ import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
@@ -131,12 +136,12 @@ export default {
     ValidationProvider,
     PluginMetadataInput,
     ServiceSelect,
-    DocumentSelect
+    DocumentSelect,
   },
 
   data() {
     return {
-      visibilities: ["Open", "Restricted"]
+      visibilities: ["Open", "Restricted"],
     }
   },
 
@@ -147,6 +152,7 @@ export default {
       "selected.liaison_service",
       "selected.description",
       "selected.id",
+      "selected.project",
       "selected.loading",
       "selected.name",
       "selected.slug",
@@ -154,18 +160,21 @@ export default {
       "selected.visibility",
       "selected.plugin_metadata",
       "selected.exclude_from_metrics",
-      "selected.default"
+      "selected.default",
     ]),
     ...mapFields("incident_type", {
-      default_incident_type: "selected.default"
-    })
+      default_incident_type: "selected.default",
+    }),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
     ...mapActions("incident_type", ["save", "closeCreateEdit"]),
-    updatePluginMetadata(event) {
-      this.plugin_metadata = event.data
+  },
+  created() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
     }
-  }
+  },
 }
 </script>

@@ -4,8 +4,8 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
-            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
+            <v-list-item-title v-else class="title"> New </v-list-item-title>
             <v-list-item-subtitle>Service</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn icon color="info" :disabled="invalid || !validated" @click="save()">
@@ -62,7 +62,7 @@
                     :error-messages="errors"
                     hint="Oncall plugin to use."
                     :success="valid"
-                  ></v-select>
+                  />
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
@@ -86,13 +86,13 @@
                 <span class="subtitle-2">Engagement</span>
               </v-flex>
               <v-flex xs12>
-                <term-combobox v-model="terms" />
+                <term-combobox :project="project" v-model="terms" />
               </v-flex>
               <v-flex xs12>
-                <incident-priority-multi-select v-model="incident_priorities" />
+                <incident-priority-multi-select :project="project" v-model="incident_priorities" />
               </v-flex>
               <v-flex>
-                <incident-type-multi-select v-model="incident_types" />
+                <incident-type-multi-select :project="project" v-model="incident_types" />
               </v-flex>
             </v-layout>
           </v-container>
@@ -107,6 +107,8 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
+
+import SearchUtils from "@/search/utils"
 import IncidentPriorityMultiSelect from "@/incident_priority/IncidentPriorityMultiSelect.vue"
 import IncidentTypeMultiSelect from "@/incident_type/IncidentTypeMultiSelect.vue"
 import TermCombobox from "@/term/TermCombobox.vue"
@@ -114,7 +116,7 @@ import PluginApi from "@/plugin/api"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
@@ -125,7 +127,7 @@ export default {
     ValidationProvider,
     IncidentPriorityMultiSelect,
     IncidentTypeMultiSelect,
-    TermCombobox
+    TermCombobox,
   },
 
   computed: {
@@ -136,36 +138,66 @@ export default {
       "selected.incident_priorities",
       "selected.incident_types",
       "selected.id",
+      "selected.project",
       "selected.description",
       "selected.external_id",
       "selected.is_active",
       "selected.loading",
-      "dialogs.showCreateEdit"
-    ])
+      "dialogs.showCreateEdit",
+    ]),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
     ...mapActions("service", ["closeCreateEdit"]),
     save() {
       const self = this
-      this.$store.dispatch("service/save").then(function(data) {
+      this.$store.dispatch("service/save").then(function (data) {
         self.$emit("new-service-created", data)
       })
-    }
+    },
   },
 
   data() {
     return {
-      oncall_plugins: null
+      oncall_plugins: null,
     }
   },
 
-  mounted() {
+  created() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
     this.loading = "error"
-    PluginApi.getByType("oncall").then(response => {
+
+    let filterOptions = {
+      itemsPerPage: -1,
+    }
+
+    if (this.project) {
+      filterOptions = {
+        ...filterOptions,
+        filters: {
+          project: [this.project],
+        },
+      }
+    }
+
+    let typeFilter = [
+      {
+        model: "Plugin",
+        field: "type",
+        op: "==",
+        value: "oncall",
+      },
+    ]
+
+    filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions }, typeFilter)
+
+    PluginApi.getAllInstances(filterOptions).then((response) => {
       this.loading = false
-      this.oncall_plugins = response.data.items.map(p => p.slug)
+      this.oncall_plugins = response.data.items.map((p) => p.slug)
     })
-  }
+  },
 }
 </script>

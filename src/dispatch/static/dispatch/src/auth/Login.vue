@@ -1,9 +1,7 @@
 <template>
   <ValidationObserver v-slot="{ invalid, validated }">
     <v-card class="mx-auto ma-4" max-width="600" flat outlined :loading="loading">
-      <v-card-title>
-        Login
-      </v-card-title>
+      <v-card-title> Login </v-card-title>
       <v-card-text>
         <v-container>
           <v-row>
@@ -15,7 +13,7 @@
                   slot-scope="{ errors, valid }"
                   :error-messages="errors"
                   :success="valid"
-                ></v-text-field>
+                />
               </ValidationProvider>
             </v-col>
             <v-col cols="12" md="12">
@@ -27,7 +25,7 @@
                   slot-scope="{ errors, valid }"
                   :error-messages="errors"
                   :success="valid"
-                ></v-text-field>
+                />
               </ValidationProvider>
             </v-col>
           </v-row>
@@ -36,10 +34,10 @@
       <v-card-actions>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-subtitle
-              >Don't have a account?
-              <router-link to="/auth/register">Register</router-link></v-list-item-subtitle
-            >
+            <v-list-item-subtitle>
+              Don't have a account?
+              <router-link to="/auth/register"> Register </router-link>
+            </v-list-item-subtitle>
           </v-list-item-content>
           <v-row align="center" justify="end">
             <v-btn
@@ -47,9 +45,10 @@
               :loading="loading"
               :disabled="invalid || !validated"
               @click="basicLogin({ email: email, password: password })"
-              >Login
+            >
+              Login
               <template v-slot:loader>
-                <v-progress-linear indeterminate color="white"></v-progress-linear>
+                <v-progress-linear indeterminate color="white" />
               </template>
             </v-btn>
           </v-row>
@@ -69,26 +68,26 @@ extend("email", email)
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
   components: {
     ValidationProvider,
-    ValidationObserver
+    ValidationObserver,
   },
   data() {
     return {
       email: "",
-      password: ""
+      password: "",
     }
   },
   computed: {
-    ...mapFields("auth", ["loading"])
+    ...mapFields("auth", ["loading"]),
   },
   methods: {
-    ...mapActions("auth", ["basicLogin"])
-  }
+    ...mapActions("auth", ["basicLogin"]),
+  },
 }
 </script>
 

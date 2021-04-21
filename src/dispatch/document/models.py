@@ -12,14 +12,21 @@ from sqlalchemy import (
     Boolean,
     DateTime,
 )
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.incident_priority.models import IncidentPriorityCreate, IncidentPriorityRead
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead
 from dispatch.messaging.strings import INCIDENT_DOCUMENT_DESCRIPTIONS
-from dispatch.models import DispatchBase, ResourceMixin, TermNested, TermReadNested, TimeStampMixin
+from dispatch.models import (
+    DispatchBase,
+    ProjectMixin,
+    ResourceMixin,
+    TermNested,
+    TermReadNested,
+)
+from dispatch.project.models import ProjectRead
 
 # Association tables for many to many relationships
 assoc_document_incident_priorities = Table(
@@ -47,12 +54,13 @@ assoc_document_terms = Table(
 )
 
 
-class Document(Base, ResourceMixin, TimeStampMixin):
+class Document(ProjectMixin, ResourceMixin, Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
     report_id = Column(Integer, ForeignKey("report.id"))
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
+
     incident_priorities = relationship(
         "IncidentPriority", secondary=assoc_document_incident_priorities, backref="documents"
     )
@@ -88,6 +96,7 @@ class DocumentCreate(DocumentBase):
     terms: Optional[List[TermNested]] = []
     incident_priorities: Optional[List[IncidentPriorityCreate]] = []
     incident_types: Optional[List[IncidentTypeCreate]] = []
+    project: Optional[ProjectRead]
 
 
 class DocumentUpdate(DocumentBase):

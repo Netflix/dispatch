@@ -7,14 +7,14 @@ import pkceAuthProvider from "@/auth/pkceAuthProvider"
 import basicAuthProvider from "@/auth/basicAuthProvider"
 import customAuthProvider from "@/auth/customAuthProvider"
 
-const routes = publicRoute.concat(protectedRoute)
+const routes = protectedRoute.concat(publicRoute)
 
 Vue.use(Router)
 
 const router = new Router({
   mode: "history",
   linkActiveClass: "active",
-  routes: routes
+  routes: routes,
 })
 
 const authProviderSlug =
@@ -23,8 +23,8 @@ const authProviderSlug =
 // router guards
 router.beforeEach((to, from, next) => {
   store.dispatch("app/setLoading", true)
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!store.state.auth.status.loggedIn) {
+  if (to.matched.some((record) => record.meta.requiresAuth)) {
+    if (!store.state.auth.currentUser.loggedIn) {
       if (authProviderSlug === "dispatch-auth-provider-pkce") {
         pkceAuthProvider.login(to, from, next)
       } else if (authProviderSlug === "dispatch-auth-provider-basic") {
@@ -34,10 +34,6 @@ router.beforeEach((to, from, next) => {
         customAuthProvider.login(to, from, next)
       }
     } else {
-      // get user info from the server if we don't already have it
-      if (!store.state.auth.userInfo) {
-        store.dispatch("auth/getUserInfo")
-      }
       next()
     }
   } else {
@@ -45,7 +41,24 @@ router.beforeEach((to, from, next) => {
   }
 })
 
-router.afterEach(function() {
+function hasQueryParams(route) {
+  return !!Object.keys(route.query).length
+}
+
+router.beforeEach((to, from, next) => {
+  // We only want to automatically copy params when we are navigating
+  // "project" subMenu's
+  if (to.meta.subMenu === "project") {
+    if (!hasQueryParams(to) && hasQueryParams(from)) {
+      next({ name: to.name, query: from.query })
+    } else {
+      next()
+    }
+  }
+  next()
+})
+
+router.afterEach(function () {
   store.dispatch("app/setLoading", false)
 })
 

@@ -4,7 +4,7 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title class="title">New</v-list-item-title>
+            <v-list-item-title class="title"> New </v-list-item-title>
           </v-list-item-content>
           <v-btn
             icon
@@ -21,7 +21,7 @@
         </v-list-item>
       </template>
       <v-tabs color="primary" v-model="tab">
-        <v-tab key="details">Details</v-tab>
+        <v-tab key="details"> Details </v-tab>
       </v-tabs>
       <v-tabs-items v-model="tab">
         <incident-details-tab />
@@ -42,12 +42,12 @@ export default {
 
   components: {
     ValidationObserver,
-    IncidentDetailsTab
+    IncidentDetailsTab,
   },
 
   data() {
     return {
-      tab: null
+      tab: null,
     }
   },
 
@@ -57,12 +57,12 @@ export default {
       "selected.name",
       "selected.reported_at",
       "selected.loading",
-      "dialogs.showNewSheet"
-    ])
+      "dialogs.showNewSheet",
+    ]),
   },
 
   methods: {
-    ...mapActions("incident", ["save", "closeNewSheet"])
-  }
+    ...mapActions("incident", ["save", "closeNewSheet"]),
+  },
 }
 </script>

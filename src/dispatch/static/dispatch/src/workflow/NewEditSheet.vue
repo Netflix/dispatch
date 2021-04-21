@@ -4,8 +4,8 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title v-if="id" class="title">Edit</v-list-item-title>
-            <v-list-item-title v-else class="title">New</v-list-item-title>
+            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
+            <v-list-item-title v-else class="title"> New </v-list-item-title>
             <v-list-item-subtitle>Workflow</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
@@ -71,9 +71,9 @@
               </v-flex>
               <v-flex xs12>
                 <plugin-combobox
-                  @input="setPlugin({ plugin: $event })"
-                  :value="plugin"
+                  v-model="plugin"
                   type="workflow"
+                  :project="project"
                   label="Plugin"
                 />
               </v-flex>
@@ -85,10 +85,7 @@
                 />
               </v-flex>
               <v-flex xs12>
-                <workflow-parameters-input
-                  @input="setParameters({ parameters: $event })"
-                  :value="parameters"
-                />
+                <workflow-parameters-input v-model="parameters" />
               </v-flex>
             </v-layout>
           </v-container>
@@ -109,7 +106,7 @@ import WorkflowParametersInput from "@/workflow/WorkflowParametersInput"
 
 extend("required", {
   ...required,
-  message: "This field is required"
+  message: "This field is required",
 })
 
 export default {
@@ -119,11 +116,7 @@ export default {
     ValidationObserver,
     ValidationProvider,
     PluginCombobox,
-    WorkflowParametersInput
-  },
-
-  data() {
-    return {}
+    WorkflowParametersInput,
   },
 
   computed: {
@@ -135,19 +128,19 @@ export default {
       "selected.parameters",
       "selected.id",
       "selected.plugin",
+      "selected.project",
       "selected.loading",
-      "dialogs.showCreateEdit"
-    ])
+      "dialogs.showCreateEdit",
+    ]),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
     ...mapActions("workflow", ["save", "closeCreateEdit"]),
-    setPlugin(event) {
-      this.plugin = event.plugin
-    },
-    setParameters(event) {
-      this.parameters = event.parameters
-    }
-  }
+  },
+
+  created() {
+    this.project = { name: this.query.project }
+  },
 }
 </script>

@@ -3,7 +3,7 @@
     <new-edit-sheet />
     <div class="headline">Incident Priorities</div>
     <v-spacer />
-    <v-btn color="info" class="mb-2" @click="createEditShow()">New</v-btn>
+    <v-btn color="info" class="mb-2" @click="createEditShow()"> New </v-btn>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -30,7 +30,7 @@
               loading-text="Loading... Please wait"
             >
               <template v-slot:item.page_commander="{ item }">
-                <v-simple-checkbox v-model="item.page_commander" disabled></v-simple-checkbox>
+                <v-simple-checkbox v-model="item.page_commander" disabled />
               </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
@@ -62,7 +62,7 @@ export default {
   name: "IncidentPriorityTable",
 
   components: {
-    NewEditSheet
+    NewEditSheet,
   },
   data() {
     return {
@@ -73,8 +73,8 @@ export default {
         { text: "Tactical Report Reminder", value: "tactical_report_reminder", sortable: true },
         { text: "Executive Report Reminder", value: "executive_report_reminder", sortable: true },
         { text: "View Order", value: "view_order", sortable: true },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" }
-      ]
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
+      ],
     }
   },
 
@@ -85,24 +85,21 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
+      "table.options.filters.project",
       "table.loading",
       "table.rows.items",
-      "table.rows.total"
-    ])
+      "table.rows.total",
+    ]),
+    ...mapFields("route", ["query"]),
   },
 
-  mounted() {
-    this.getAll({})
+  created() {
+    this.project = [{ name: this.query.project }]
+
+    this.getAll()
 
     this.$watch(
-      vm => [vm.page],
-      () => {
-        this.getAll()
-      }
-    )
-
-    this.$watch(
-      vm => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
+      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
       () => {
         this.page = 1
         this.getAll()
@@ -111,7 +108,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident_priority", ["getAll", "createEditShow", "removeShow"])
-  }
+    ...mapActions("incident_priority", ["getAll", "createEditShow", "removeShow"]),
+  },
 }
 </script>
