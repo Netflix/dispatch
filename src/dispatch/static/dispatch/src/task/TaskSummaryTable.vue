@@ -7,6 +7,11 @@
           {{ item.description }}
         </div>
       </template>
+      <template v-slot:item.project.name="{ item }">
+        <v-chip color="orange" text-color="white">
+          {{ item.project.name }}
+        </v-chip>
+      </template>
       <template v-slot:item.incident_priority.name="{ item }">
         <incident-priority :priority="item.incident.incident_priority.name" />
       </template>
@@ -82,6 +87,7 @@ export default {
         { text: "Owner", value: "owner.individual_contact.name", sortable: false },
         { text: "Assignees", value: "assignees", sortable: false },
         { text: "Description", value: "description", sortable: false },
+        { text: "Project", value: "project.name", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }

@@ -5,6 +5,11 @@
       <template v-slot:item.discoverable="{ item }">
         <v-simple-checkbox v-model="item.discoverable" disabled />
       </template>
+      <template v-slot:item.project.name="{ item }">
+        <v-chip color="orange" text-color="white">
+          {{ item.project.name }}
+        </v-chip>
+      </template>
       <template v-slot:item.tag_type.name="{ item }">
         {{ item.tag_type.name }}
       </template>
@@ -45,6 +50,7 @@ export default {
         { text: "Description", value: "description", sortable: false },
         { text: "Type", value: "tag_type.name", sortable: true },
         { text: "Source", value: "source", sortable: true },
+        { text: "Project", value: "project.name", sortable: true },
         { text: "Discoverable", value: "discoverable", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],

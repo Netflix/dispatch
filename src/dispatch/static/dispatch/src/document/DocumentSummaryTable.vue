@@ -8,6 +8,11 @@
           <v-icon small>open_in_new</v-icon>
         </a>
       </template>
+      <template v-slot:item.project.name="{ item }">
+        <v-chip color="orange" text-color="white">
+          {{ item.project.name }}
+        </v-chip>
+      </template>
       <template v-slot:item.data-table-actions="{ item }">
         <v-menu bottom left>
           <template v-slot:activator="{ on }">
@@ -43,6 +48,7 @@ export default {
       headers: [
         { text: "Name", value: "name", sortable: false },
         { text: "Description", value: "description", sortable: false },
+        { text: "Project", value: "project.name", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }

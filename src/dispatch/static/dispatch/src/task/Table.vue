@@ -39,6 +39,11 @@
                   {{ item.description }}
                 </div>
               </template>
+              <template v-slot:item.project.name="{ item }">
+                <v-chip color="orange" text-color="white">
+                  {{ item.project.name }}
+                </v-chip>
+              </template>
               <template v-slot:item.incident_priority.name="{ item }">
                 <incident-priority :priority="item.incident.incident_priority.name" />
               </template>
@@ -163,6 +168,7 @@ export default {
         { text: "Description", value: "description", sortable: false },
         { text: "Source", value: "source", sortable: true },
         { text: "Tickets", value: "tickets", sortable: false },
+        { text: "Project", value: "project.name", sortable: true },
         { text: "Due By", value: "resolve_by", sortable: true },
         { text: "Created At", value: "created_at", sortable: true },
         { text: "Resolved At", value: "resolved_at", sortable: true },
