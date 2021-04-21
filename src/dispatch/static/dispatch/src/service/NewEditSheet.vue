@@ -196,7 +196,7 @@ export default {
 
     PluginApi.getAllInstances(filterOptions).then((response) => {
       this.loading = false
-      this.oncall_plugins = response.data.items.map((p) => p.slug)
+      this.oncall_plugins = response.data.items.map((p) => p.plugin.slug)
     })
   },
 }
