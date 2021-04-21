@@ -37,7 +37,12 @@
                 <v-simple-checkbox v-model="item.enabled" disabled />
               </template>
               <template v-slot:item.created_at="{ item }">
-                {{ item.created_at | formatDate }}
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
+                  </template>
+                  <span>{{ item.created_at | formatDate }}</span>
+                </v-tooltip>
               </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>

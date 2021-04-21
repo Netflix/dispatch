@@ -106,7 +106,8 @@ export default {
 
   watch: {
     createdFilter: function (newVal) {
-      this.terms.append(newVal)
+      this.items.push(newVal)
+      this.searchFilters = [newVal]
     },
   },
 
