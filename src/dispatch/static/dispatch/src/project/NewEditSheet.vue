@@ -107,7 +107,7 @@ export default {
   },
 
   created() {
-    this.organization = this.params.organization
+    this.organization = { name: this.params.organization }
   },
 }
 </script>
