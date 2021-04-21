@@ -1,7 +1,7 @@
 <template>
   <v-card class="mx-auto ma-4" max-width="600" flat outlined>
     <v-card-text>
-      <p class="display-2 text--primary">Security Incident Report</p>
+      <p class="display-2 text--primary">Incident Report</p>
       <p>
         This page will be populated with incident resources as they are created (if available). If
         you have any questions, please feel free to review the Frequently Asked Questions (FAQ)
@@ -16,7 +16,7 @@
             <v-list-item
               :href="commander.individual.weblink"
               target="_blank"
-              title="The Incident Commander maintains all necessary context, and drives the incident to resolution."
+              title="The Incident Commander is responsible for maintaining all necessary context and driving the incident to resolution."
             >
               <v-list-item-content>
                 <v-list-item-title>Commander</v-list-item-title>

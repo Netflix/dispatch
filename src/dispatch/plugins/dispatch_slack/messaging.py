@@ -111,14 +111,14 @@ INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
 }
 
 INCIDENT_CONVERSATION_COMMAND_RUN_IN_NONINCIDENT_CONVERSATION = """
-Looks like you tried to run `{{command}}` in an non-incident conversation.
+I see you tried to run `{{command}}` in an non-incident conversation.
 Incident-specifc commands can only be run in incident conversations.""".replace(
     "\n", " "
 ).strip()
 
 INCIDENT_CONVERSATION_COMMAND_RUN_BY_NON_PRIVILEGED_USER = """
-Looks like you tried to run `{{command}}`.
-This is a sensitive command and cannot be run with the role you are currently assigned""".replace(
+I see you tried to run `{{command}}`.
+This is a sensitive command and cannot be run with the incident role you are currently assigned.""".replace(
     "\n", " "
 ).strip()
 

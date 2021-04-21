@@ -4,7 +4,7 @@
       <v-card-text>
         <p class="display-1 text--primary">Report Incident</p>
         <p>
-          If you suspect a incident and require help, please fill out the following to the best of
+          If you suspect an incident and require help, please fill out the following to the best of
           your abilities.
         </p>
         <v-form>
