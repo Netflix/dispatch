@@ -86,13 +86,12 @@
                 <span class="subtitle-2">Engagement</span>
               </v-flex>
               <v-flex xs12>
-                <term-combobox :project="project" v-model="terms" />
-              </v-flex>
-              <v-flex xs12>
-                <incident-priority-multi-select :project="project" v-model="incident_priorities" />
-              </v-flex>
-              <v-flex>
-                <incident-type-multi-select :project="project" v-model="incident_types" />
+                <search-filter-combobox
+                  v-model="filters"
+                  :project="project"
+                  label="Filters"
+                  hint="Select one or more filters that will determine when a service is engaged."
+                />
               </v-flex>
             </v-layout>
           </v-container>
@@ -108,10 +107,8 @@ import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
+import SearchFilterCombobox from "@/search/SearchFilterCombobox.vue"
 import SearchUtils from "@/search/utils"
-import IncidentPriorityMultiSelect from "@/incident_priority/IncidentPriorityMultiSelect.vue"
-import IncidentTypeMultiSelect from "@/incident_type/IncidentTypeMultiSelect.vue"
-import TermCombobox from "@/term/TermCombobox.vue"
 import PluginApi from "@/plugin/api"
 
 extend("required", {
@@ -125,19 +122,15 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    IncidentPriorityMultiSelect,
-    IncidentTypeMultiSelect,
-    TermCombobox,
+    SearchFilterCombobox,
   },
 
   computed: {
     ...mapFields("service", [
       "selected.name",
-      "selected.terms",
       "selected.type",
-      "selected.incident_priorities",
-      "selected.incident_types",
       "selected.id",
+      "selected.filters",
       "selected.project",
       "selected.description",
       "selected.external_id",

@@ -7,9 +7,7 @@ import SearchUtils from "@/search/utils"
 const getDefaultSelectedState = () => {
   return {
     name: null,
-    terms: [],
-    incident_priorities: [],
-    incident_types: [],
+    filters: null,
     id: null,
     created_at: null,
     updated_at: null,
