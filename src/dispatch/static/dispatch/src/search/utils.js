@@ -31,7 +31,7 @@ export default {
     delete options.filters
 
     if (!expression.length) {
-      if (rawFilters.length) {
+      if (rawFilters != null && typeof rawFilters[Symbol.iterator] === "function") {
         expression = { and: [...rawFilters] }
         return { ...options, filter: JSON.stringify(expression) }
       } else {
@@ -39,7 +39,7 @@ export default {
       }
     }
 
-    if (rawFilters) {
+    if (rawFilters != null && typeof rawFilters[Symbol.iterator] === "function") {
       expression = { and: [...rawFilters, ...expression] }
     } else {
       expression = { and: expression }
