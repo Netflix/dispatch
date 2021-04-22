@@ -85,10 +85,7 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
         )
         if plugin:
             individual_contacts, team_contacts = plugin.instance.get(
-                incident.incident_type,
-                incident.incident_priority,
-                incident.description,
-                incident.project,
+                incident,
                 db_session=db_session,
             )
 

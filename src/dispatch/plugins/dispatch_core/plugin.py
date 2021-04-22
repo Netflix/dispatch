@@ -18,12 +18,15 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 from starlette.requests import Request
 
 from dispatch.config import DISPATCH_UI_URL
-from dispatch.incident_priority.models import IncidentPriority
-from dispatch.incident_type.models import IncidentType
-from dispatch.project.models import Project
+from dispatch.incident.models import Incident
+from dispatch.individual.models import IndividualContact
+from dispatch.document.models import Document
+from dispatch.team.models import TeamContact
+from dispatch.incident_type.models import Service
 from dispatch.individual import service as individual_service
 from dispatch.plugins import dispatch_core as dispatch_plugin
 from dispatch.incident import service as incident_service
+from dispatch.team import service as team_service
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.bases import (
     ParticipantPlugin,
@@ -34,7 +37,6 @@ from dispatch.plugins.bases import (
 )
 
 from dispatch.route import service as route_service
-from dispatch.route.models import RouteRequest
 
 from dispatch.config import (
     DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS,
@@ -188,25 +190,13 @@ class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
 
     def get(
         self,
-        incident_type: str,
-        incident_priority: str,
-        incident_description: str,
-        project: Project,
+        incident: Incident,
         db_session=None,
     ):
         """Fetches documents from Dispatch."""
-        route_in = {
-            "text": incident_description,
-            "context": {
-                "incident_priorities": [incident_priority],
-                "incident_types": [incident_type],
-                "terms": [],
-                "project": project,
-            },
-        }
-
-        route_in = RouteRequest(**route_in)
-        recommendation = route_service.get(db_session=db_session, route_in=route_in)
+        recommendation = route_service.get(
+            db_session=db_session, incident=incident, models=[Document]
+        )
         return recommendation.documents
 
 
@@ -238,52 +228,61 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
 
     def get(
         self,
-        incident_type: IncidentType,
-        incident_priority: IncidentPriority,
-        incident_description: str,
-        project: Project,
+        incident: Incident,
         db_session=None,
     ):
         """Fetches participants from Dispatch."""
-        route_in = {
-            "text": incident_description,
-            "context": {
-                "incident_priorities": [incident_priority],
-                "incident_types": [incident_type],
-                "terms": [],
-                "project": project,
-            },
-        }
-
-        route_in = RouteRequest(**route_in)
-        recommendation = route_service.get(db_session=db_session, route_in=route_in)
+        models = [IndividualContact, Service, TeamContact]
+        recommendation = route_service.get(db_session=db_session, incidnet=incident, models=models)
 
         log.debug(f"Recommendation: {recommendation}")
-        individual_contacts = [(x, None) for x in recommendation.individual_contacts]
-        # we need to resolve our service contacts to individuals
-        for s in recommendation.service_contacts:
-            plugin_instance = plugin_service.get_active_instance_by_slug(
-                db_session=db_session, slug=s.type, project_id=project.id
-            )
 
-            if plugin_instance:
-                if plugin_instance.enabled:
-                    log.debug(f"Resolving service contact. ServiceContact: {s}")
-                    individual_email = plugin_instance.instance.get(s.external_id)
-
-                    individual = individual_service.get_or_create(
-                        db_session=db_session, email=individual_email
-                    )
-                    individual_contacts.append((individual, s))
-                    recommendation.individual_contacts.append(individual)
-                else:
-                    log.warning(
-                        f"Skipping service contact. Service: {s.name} Reason: Associated service plugin not enabled."
-                    )
-            else:
-                log.warning(
-                    f"Skipping service contact. Service: {s.name} Reason: Associated service plugin not found."
+        individual_contacts = []
+        team_contacts = []
+        for match in recommendation.matches:
+            if match.resource_type == "individual_contact":
+                individual = individual_service.get_or_create(
+                    db_session=db_session, email=match.resource_state["email"]
                 )
 
+                individual_contacts.append(individual)
+
+            if match.resource_type == "team_contact":
+                team = team_service.get_or_create(
+                    db_session=db_session, email=match.resource_state["email"]
+                )
+                team_contacts.append(team)
+
+            # we need to do more work when we have a service
+            if match.resource_type == "service":
+                plugin_instance = plugin_service.get_active_instance_by_slug(
+                    db_session=db_session,
+                    slug=match.resource_state["type"],
+                    project_id=incident.project.id,
+                )
+
+                if plugin_instance:
+                    if plugin_instance.enabled:
+                        log.debug(
+                            f"Resolving service contact. ServiceContact: {match.resource_state}"
+                        )
+                        individual_email = plugin_instance.instance.get(
+                            match.resource_state["external_id"]
+                        )
+
+                        individual = individual_service.get_or_create(
+                            db_session=db_session, email=individual_email
+                        )
+
+                        individual_contacts.append(individual)
+                    else:
+                        log.warning(
+                            f"Skipping service contact. Service: {match.resource_state['name']} Reason: Associated service plugin not enabled."
+                        )
+                else:
+                    log.warning(
+                        f"Skipping service contact. Service: {match.resource_state['name']} Reason: Associated service plugin not found."
+                    )
+
         db_session.commit()
-        return list(individual_contacts), list(recommendation.team_contacts)
+        return individual_contacts, team_contacts

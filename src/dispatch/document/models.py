@@ -16,41 +16,24 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.incident_priority.models import IncidentPriorityCreate, IncidentPriorityRead
-from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead
+
 from dispatch.messaging.strings import INCIDENT_DOCUMENT_DESCRIPTIONS
 from dispatch.models import (
     DispatchBase,
     ProjectMixin,
     ResourceMixin,
-    TermNested,
-    TermReadNested,
 )
+
+from dispatch.search_filter.models import SearchFilterRead
 from dispatch.project.models import ProjectRead
 
 # Association tables for many to many relationships
-assoc_document_incident_priorities = Table(
-    "document_incident_priority",
+assoc_document_filters = Table(
+    "assoc_document_filters",
     Base.metadata,
-    Column("incident_priority_id", Integer, ForeignKey("incident_priority.id")),
-    Column("document_id", Integer, ForeignKey("document.id")),
-    PrimaryKeyConstraint("incident_priority_id", "document_id"),
-)
-
-assoc_document_incident_types = Table(
-    "document_incident_type",
-    Base.metadata,
-    Column("incident_type_id", Integer, ForeignKey("incident_type.id")),
-    Column("document_id", Integer, ForeignKey("document.id")),
-    PrimaryKeyConstraint("incident_type_id", "document_id"),
-)
-
-assoc_document_terms = Table(
-    "document_terms",
-    Base.metadata,
-    Column("term_id", Integer, ForeignKey("term.id", ondelete="CASCADE")),
     Column("document_id", Integer, ForeignKey("document.id", ondelete="CASCADE")),
-    PrimaryKeyConstraint("term_id", "document_id"),
+    Column("search_filter_id", Integer, ForeignKey("search_filter.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("document_id", "search_filter_id"),
 )
 
 
@@ -61,13 +44,7 @@ class Document(ProjectMixin, ResourceMixin, Base):
     report_id = Column(Integer, ForeignKey("report.id"))
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
 
-    incident_priorities = relationship(
-        "IncidentPriority", secondary=assoc_document_incident_priorities, backref="documents"
-    )
-    incident_types = relationship(
-        "IncidentType", secondary=assoc_document_incident_types, backref="documents"
-    )
-    terms = relationship("Term", secondary=assoc_document_terms, backref="documents")
+    filters = relationship("SearchFilter", secondary=assoc_document_filters, backref="documents")
 
     evergreen = Column(Boolean)
     evergreen_owner = Column(String)
@@ -93,23 +70,17 @@ class DocumentBase(DispatchBase):
 
 
 class DocumentCreate(DocumentBase):
-    terms: Optional[List[TermNested]] = []
-    incident_priorities: Optional[List[IncidentPriorityCreate]] = []
-    incident_types: Optional[List[IncidentTypeCreate]] = []
+    filters: Optional[List[SearchFilterRead]]
     project: Optional[ProjectRead]
 
 
 class DocumentUpdate(DocumentBase):
-    terms: Optional[List[TermNested]] = []
-    incident_priorities: Optional[List[IncidentPriorityCreate]] = []
-    incident_types: Optional[List[IncidentTypeCreate]] = []
+    filters: Optional[List[SearchFilterRead]]
 
 
 class DocumentRead(DocumentBase):
     id: int
-    incident_priorities: Optional[List[IncidentPriorityRead]] = []
-    incident_types: Optional[List[IncidentTypeRead]] = []
-    terms: Optional[List[TermReadNested]] = []
+    filters: Optional[List[SearchFilterRead]]
     project: Optional[ProjectRead]
 
     @validator("description", pre=True, always=True)
