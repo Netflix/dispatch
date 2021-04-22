@@ -132,7 +132,3 @@ class IndividualReadNested(ContactBase):
 
 class TeamReadNested(ContactBase):
     pass
-
-
-class PolicyReadNested(DispatchBase):
-    pass

@@ -8,16 +8,18 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.project.models import ProjectRead
-from dispatch.search.models import SearchFilterRead
+from dispatch.search_filter.models import SearchFilterRead
 from dispatch.models import ContactBase, ContactMixin, DispatchBase, ProjectMixin
 
 # Association tables for many to many relationships
 assoc_individual_filters = Table(
     "assoc_individual_filters",
     Base.metadata,
-    Column("individual_id", Integer, ForeignKey("individual.id", ondelete="CASCADE")),
+    Column(
+        "individual_contact_id", Integer, ForeignKey("individual_contact.id", ondelete="CASCADE")
+    ),
     Column("search_filter_id", Integer, ForeignKey("search_filter.id", ondelete="CASCADE")),
-    PrimaryKeyConstraint("individual_id", "search_filter_id"),
+    PrimaryKeyConstraint("individual_contact_id", "search_filter_id"),
 )
 
 

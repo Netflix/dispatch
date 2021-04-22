@@ -9,7 +9,7 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
 from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin
 from dispatch.project.models import ProjectRead
-from dispatch.search.models import SearchFilterRead
+from dispatch.search_filter.models import SearchFilterRead
 
 
 # Association tables for many to many relationships

@@ -8,7 +8,7 @@ from dispatch.database.core import Base
 from dispatch.incident.models import Incident
 from dispatch.project import service as project_service
 from dispatch.plugin import service as plugin_service
-from dispatch.search import service as search_service
+from dispatch.search_filter import service as search_filter_service
 
 from .models import Notification, NotificationCreate, NotificationUpdate
 
@@ -40,7 +40,7 @@ def create(*, db_session, notification_in: NotificationCreate) -> Notification:
     filters = []
     if notification_in.filters:
         filters = [
-            search_service.get(db_session=db_session, search_filter_id=f.id)
+            search_filter_service.get(db_session=db_session, search_filter_id=f.id)
             for f in notification_in.filters
         ]
 
@@ -62,7 +62,7 @@ def update(
     notification_data = jsonable_encoder(notification)
 
     filters = [
-        search_service.get(db_session=db_session, search_filter_id=f.id)
+        search_filter_service.get(db_session=db_session, search_filter_id=f.id)
         for f in notification_in.filters
     ]
 
@@ -116,7 +116,7 @@ def filter_and_send(
     notifications = get_all_enabled(db_session=db_session, project_id=incident.project.id)
     for notification in notifications:
         for search_filter in notification.filters:
-            match = search_service.match(
+            match = search_filter_service.match(
                 db_session=db_session,
                 filter_spec=search_filter.expression,
                 class_instance=class_instance,

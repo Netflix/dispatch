@@ -3,7 +3,7 @@ from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 
 from dispatch.project import service as project_service
-from dispatch.search import service as search_service
+from dispatch.search_filter import service as search_filter_service
 
 from .models import TeamContact, TeamContactCreate, TeamContactUpdate
 
@@ -33,7 +33,7 @@ def get_or_create(*, db_session, email: str, **kwargs) -> TeamContact:
 def create(*, db_session, team_contact_in: TeamContactCreate) -> TeamContact:
     project = project_service.get_by_name(db_session=db_session, name=team_contact_in.project.name)
     filters = [
-        search_service.get(db_session=db_session, search_filter_id=f.id)
+        search_filter_service.get(db_session=db_session, search_filter_id=f.id)
         for f in team_contact_in.filters
     ]
 
@@ -66,7 +66,7 @@ def update(
     )
 
     filters = [
-        search_service.get(db_session=db_session, search_filter_id=f.id)
+        search_filter_service.get(db_session=db_session, search_filter_id=f.id)
         for f in team_contact_in.filters
     ]
 

@@ -4,7 +4,7 @@ from fastapi.encoders import jsonable_encoder
 
 from dispatch.exceptions import InvalidConfiguration
 from dispatch.project import service as project_service
-from dispatch.search import service as search_service
+from dispatch.search_filter import service as search_filter_service
 from dispatch.plugin import service as plugin_service
 
 from .models import Service, ServiceCreate, ServiceUpdate
@@ -81,7 +81,8 @@ def create(*, db_session, service_in: ServiceCreate) -> Service:
     project = project_service.get_by_name(db_session=db_session, name=service_in.project.name)
 
     filters = [
-        search_service.get(db_session=db_session, search_filter_id=f.id) for f in service_in.filters
+        search_filter_service.get(db_session=db_session, search_filter_id=f.id)
+        for f in service_in.filters
     ]
 
     service = Service(
@@ -101,7 +102,8 @@ def update(*, db_session, service: Service, service_in: ServiceUpdate) -> Servic
     update_data = service_in.dict(skip_defaults=True, exclude={"filters"})
 
     filters = [
-        search_service.get(db_session=db_session, search_filter_id=f.id) for f in service_in.filters
+        search_filter_service.get(db_session=db_session, search_filter_id=f.id)
+        for f in service_in.filters
     ]
 
     if service_in.is_active:  # user wants to enable the service

@@ -5,7 +5,7 @@ from dispatch.database.core import SessionLocal
 
 from dispatch.incident.models import Incident
 from dispatch.project import service as project_service
-from dispatch.search import service as search_service
+from dispatch.search_filter import service as search_filter_service
 from dispatch.plugin import service as plugin_service
 
 from .models import IndividualContact, IndividualContactCreate, IndividualContactUpdate
@@ -69,7 +69,7 @@ def create(*, db_session, individual_contact_in: IndividualContactCreate) -> Ind
     )
 
     filters = [
-        search_service.get(db_session=db_session, search_filter_id=f.id)
+        search_filter_service.get(db_session=db_session, search_filter_id=f.id)
         for f in individual_contact_in.filters
     ]
 
@@ -98,7 +98,7 @@ def update(
     )
 
     filters = [
-        search_service.get(db_session=db_session, search_filter_id=f.id)
+        search_filter_service.get(db_session=db_session, search_filter_id=f.id)
         for f in individual_contact_in.filters
     ]
 
