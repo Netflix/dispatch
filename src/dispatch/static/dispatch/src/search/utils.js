@@ -39,7 +39,7 @@ export default {
       }
     }
 
-    if (rawFilters.length) {
+    if (rawFilters) {
       expression = { and: [...rawFilters, ...expression] }
     } else {
       expression = { and: expression }
