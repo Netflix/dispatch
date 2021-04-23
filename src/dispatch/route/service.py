@@ -4,8 +4,7 @@ from typing import Any, List
 from dispatch.search_filter import service as search_filter_service
 
 from dispatch.incident.models import Incident
-
-from .models import Recommendation, RecommendationMatch
+from dispatch.route.models import Recommendation, RecommendationMatch
 
 log = logging.getLogger(__name__)
 

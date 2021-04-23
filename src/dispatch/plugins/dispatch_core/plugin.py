@@ -36,7 +36,6 @@ from dispatch.plugins.bases import (
     ContactPlugin,
 )
 
-from dispatch.route import service as route_service
 
 from dispatch.config import (
     DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS,
@@ -194,6 +193,8 @@ class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
         db_session=None,
     ):
         """Fetches documents from Dispatch."""
+        from dispatch.route import service as route_service
+
         recommendation = route_service.get(
             db_session=db_session, incident=incident, models=[Document]
         )
@@ -232,6 +233,8 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
         db_session=None,
     ):
         """Fetches participants from Dispatch."""
+        from dispatch.route import service as route_service
+
         models = [IndividualContact, Service, TeamContact]
         recommendation = route_service.get(db_session=db_session, incidnet=incident, models=models)
 

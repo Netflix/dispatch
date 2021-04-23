@@ -1,4 +1,7 @@
-"""Refactors recommendations to use search filter expressions
+"""Refactors recommendations to use search filter expressions.
+
+We only create tables and migrate date, we leave existing data
+to be dropped in a future revision to help prevent data loss.
 
 Revision ID: efe949b0fe55
 Revises: 87400096f4cc
@@ -8,6 +11,11 @@ Create Date: 2021-04-22 11:19:07.315701
 from alembic import op
 import sqlalchemy as sa
 import sqlalchemy_utils
+from sqlalchemy.orm import Session
+
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
 
 
 # revision identifiers, used by Alembic.
@@ -17,46 +25,302 @@ branch_labels = None
 depends_on = None
 
 
+class Project(Base):
+    __tablename__ = "project"
+    id = sa.Column(sa.Integer, primary_key=True)
+
+
+class SearchFilter(Base):
+    __tablename__ = "search_filter"
+    id = sa.Column(sa.Integer, primary_key=True)
+    project_id = sa.Column(sa.Integer, sa.ForeignKey("project.id"))
+    name = sa.Column(sa.String)
+    expression = sa.Column(sa.JSON)
+    type = sa.Column(sa.String)
+
+
+assoc_document_filters = sa.Table(
+    "assoc_document_filters",
+    Base.metadata,
+    sa.Column("document_id", sa.Integer, sa.ForeignKey("document.id", ondelete="CASCADE")),
+    sa.Column(
+        "search_filter_id", sa.Integer, sa.ForeignKey("search_filter.id", ondelete="CASCADE")
+    ),
+)
+
+# Association tables for many to many relationships
+assoc_document_incident_priorities = sa.Table(
+    "document_incident_priority",
+    Base.metadata,
+    sa.Column("incident_priority_id", sa.Integer, sa.ForeignKey("incident_priority.id")),
+    sa.Column("document_id", sa.Integer, sa.ForeignKey("document.id")),
+    sa.PrimaryKeyConstraint("incident_priority_id", "document_id"),
+)
+
+assoc_document_incident_types = sa.Table(
+    "document_incident_type",
+    Base.metadata,
+    sa.Column("incident_type_id", sa.Integer, sa.ForeignKey("incident_type.id")),
+    sa.Column("document_id", sa.Integer, sa.ForeignKey("document.id")),
+    sa.PrimaryKeyConstraint("incident_type_id", "document_id"),
+)
+
+assoc_document_terms = sa.Table(
+    "document_terms",
+    Base.metadata,
+    sa.Column("term_id", sa.Integer, sa.ForeignKey("term.id", ondelete="CASCADE")),
+    sa.Column("document_id", sa.Integer, sa.ForeignKey("document.id", ondelete="CASCADE")),
+    sa.PrimaryKeyConstraint("term_id", "document_id"),
+)
+
+
+class IncidentType(Base):
+    __tablename__ = "incident_type"
+    id = sa.Column(sa.Integer, primary_key=True)
+
+
+class IncidentPriority(Base):
+    __tablename__ = "incident_priority"
+    id = sa.Column(sa.Integer, primary_key=True)
+
+
+class Term(Base):
+    __tablename__ = "term"
+    id = sa.Column(sa.Integer, primary_key=True)
+
+
+class Document(Base):
+    __tablename__ = "document"
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.String)
+    project_id = sa.Column(sa.Integer, sa.ForeignKey("project.id"))
+
+    filters = sa.orm.relationship(
+        "SearchFilter", secondary=assoc_document_filters, backref="documents"
+    )
+    incident_priorities = sa.orm.relationship(
+        "IncidentPriority", secondary=assoc_document_incident_priorities, backref="documents"
+    )
+    incident_types = sa.orm.relationship(
+        "IncidentType", secondary=assoc_document_incident_types, backref="documents"
+    )
+    terms = sa.orm.relationship("Term", secondary=assoc_document_terms, backref="documents")
+
+
+assoc_individual_contact_filters = sa.Table(
+    "assoc_individual_contact_filters",
+    Base.metadata,
+    sa.Column(
+        "individual_contact_id",
+        sa.Integer,
+        sa.ForeignKey("individual_contact.id", ondelete="CASCADE"),
+    ),
+    sa.Column(
+        "search_filter_id", sa.Integer, sa.ForeignKey("search_filter.id", ondelete="CASCADE")
+    ),
+)
+
+assoc_individual_contact_incident_types = sa.Table(
+    "assoc_individual_contact_incident_type",
+    Base.metadata,
+    sa.Column("incident_type_id", sa.Integer, sa.ForeignKey("incident_type.id")),
+    sa.Column("individual_contact_id", sa.Integer, sa.ForeignKey("individual_contact.id")),
+    sa.PrimaryKeyConstraint("incident_type_id", "individual_contact_id"),
+)
+
+assoc_individual_contact_incident_priorities = sa.Table(
+    "assoc_individual_contact_incident_priority",
+    Base.metadata,
+    sa.Column("incident_priority_id", sa.Integer, sa.ForeignKey("incident_priority.id")),
+    sa.Column("individual_contact_id", sa.Integer, sa.ForeignKey("individual_contact.id")),
+    sa.PrimaryKeyConstraint("incident_priority_id", "individual_contact_id"),
+)
+
+assoc_individual_contact_terms = sa.Table(
+    "assoc_individual_contact_terms",
+    Base.metadata,
+    sa.Column("term_id", sa.Integer, sa.ForeignKey("term.id")),
+    sa.Column("individual_contact_id", sa.ForeignKey("individual_contact.id")),
+    sa.PrimaryKeyConstraint("term_id", "individual_contact_id"),
+)
+
+
+class IndividualContact(Base):
+    __tablename__ = "individual_contact"
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.String)
+    project_id = sa.Column(sa.Integer, sa.ForeignKey("project.id"))
+    filters = sa.orm.relationship(
+        "SearchFilter", secondary=assoc_individual_contact_filters, backref="individuals"
+    )
+    incident_types = sa.orm.relationship(
+        "IncidentType", secondary=assoc_individual_contact_incident_types, backref="individuals"
+    )
+    incident_priorities = sa.orm.relationship(
+        "IncidentPriority",
+        secondary=assoc_individual_contact_incident_priorities,
+        backref="individuals",
+    )
+    terms = sa.orm.relationship(
+        "Term", secondary=assoc_individual_contact_terms, backref="individuals"
+    )
+
+
+assoc_team_contact_filters = sa.Table(
+    "assoc_team_contact_filters",
+    Base.metadata,
+    sa.Column(
+        "team_contact_id",
+        sa.Integer,
+        sa.ForeignKey("team_contact.id", ondelete="CASCADE"),
+    ),
+    sa.Column(
+        "search_filter_id", sa.Integer, sa.ForeignKey("search_filter.id", ondelete="CASCADE")
+    ),
+)
+
+assoc_team_contact_incident_priorities = sa.Table(
+    "team_contact_incident_priority",
+    Base.metadata,
+    sa.Column("incident_priority_id", sa.Integer, sa.ForeignKey("incident_priority.id")),
+    sa.Column("team_contact_id", sa.Integer, sa.ForeignKey("team_contact.id")),
+    sa.PrimaryKeyConstraint("incident_priority_id", "team_contact_id"),
+)
+
+assoc_team_contact_incident_types = sa.Table(
+    "team_contact_incident_type",
+    Base.metadata,
+    sa.Column("incident_type_id", sa.Integer, sa.ForeignKey("incident_type.id")),
+    sa.Column("team_contact_id", sa.Integer, sa.ForeignKey("team_contact.id")),
+    sa.PrimaryKeyConstraint("incident_type_id", "team_contact_id"),
+)
+
+
+assoc_team_contact_terms = sa.Table(
+    "team_contact_terms",
+    Base.metadata,
+    sa.Column("term_id", sa.Integer, sa.ForeignKey("term.id")),
+    sa.Column("team_contact_id", sa.ForeignKey("team_contact.id")),
+    sa.PrimaryKeyConstraint("term_id", "team_contact_id"),
+)
+
+
+class TeamContact(Base):
+    __tablename__ = "team_contact"
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.String)
+    project_id = sa.Column(sa.Integer, sa.ForeignKey("project.id"))
+    filters = sa.orm.relationship(
+        "SearchFilter", secondary=assoc_team_contact_filters, backref="teams"
+    )
+    incident_priorities = sa.orm.relationship(
+        "IncidentPriority", secondary=assoc_team_contact_incident_priorities, backref="teams"
+    )
+    incident_types = sa.orm.relationship(
+        "IncidentType", secondary=assoc_team_contact_incident_types, backref="teams"
+    )
+    terms = sa.orm.relationship("Term", secondary=assoc_team_contact_terms, backref="teams")
+
+
+# Association tables for many to many relationships
+assoc_service_incident_priorities = sa.Table(
+    "service_incident_priority",
+    Base.metadata,
+    sa.Column("incident_priority_id", sa.Integer, sa.ForeignKey("incident_priority.id")),
+    sa.Column("service_id", sa.Integer, sa.ForeignKey("service.id")),
+    sa.PrimaryKeyConstraint("incident_priority_id", "service_id"),
+)
+
+assoc_service_incident_types = sa.Table(
+    "service_incident_type",
+    Base.metadata,
+    sa.Column("incident_type_id", sa.Integer, sa.ForeignKey("incident_type.id")),
+    sa.Column("service_id", sa.Integer, sa.ForeignKey("service.id")),
+    sa.PrimaryKeyConstraint("incident_type_id", "service_id"),
+)
+
+assoc_service_terms = sa.Table(
+    "service_terms",
+    Base.metadata,
+    sa.Column("term_id", sa.Integer, sa.ForeignKey("term.id")),
+    sa.Column("service_id", sa.Integer, sa.ForeignKey("service.id")),
+    sa.PrimaryKeyConstraint("term_id", "service_id"),
+)
+
+
+assoc_service_filters = sa.Table(
+    "assoc_service_filters",
+    Base.metadata,
+    sa.Column("service_id", sa.Integer, sa.ForeignKey("service.id", ondelete="CASCADE")),
+    sa.Column(
+        "search_filter_id", sa.Integer, sa.ForeignKey("search_filter.id", ondelete="CASCADE")
+    ),
+)
+
+
+class Service(Base):
+    __tablename__ = "service"
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.String)
+    project_id = sa.Column(sa.Integer, sa.ForeignKey("project.id"))
+    filters = sa.orm.relationship(
+        "SearchFilter", secondary=assoc_service_filters, backref="services"
+    )
+    incident_priorities = sa.orm.relationship(
+        "IncidentPriority", secondary=assoc_service_incident_priorities, backref="services"
+    )
+    incident_types = sa.orm.relationship(
+        "IncidentType", secondary=assoc_service_incident_types, backref="services"
+    )
+    terms = sa.orm.relationship("Term", secondary=assoc_service_terms, backref="services")
+
+
 # setup models needed for migration
-def engagement_models_to_search_filter(models):
-    filters = []
-    for model in models:
-        for service in model.services:
-            service_filter = {"or": []}
-            service_filter["or"].append(
-                {"model": "Service", "field": "id", "op": "==", "value": service.id}
-            )
+def engagement_models_to_search_filter(model):
+    expression = {"and": []}
+    term_filter = {"or": []}
+    for term in model.terms:
+        term_filter["or"].append({"model": "Term", "field": "id", "op": "==", "value": term.id})
 
-        for term in model.terms:
-            term_filter = {"or": []}
-            term_filter["or"].append({"model": "Term", "field": "id", "op": "==", "value": term.id})
+    if term_filter["or"]:
+        expression["and"].append(term_filter)
 
-        for incident_type in model.incident_types:
-            incident_type_filter = {"or": []}
-            incident_type_filter["or"].append(
-                {"model": "IncidentType", "field": "id", "op": "==", "value": incident_type.id}
-            )
-
-        for incident_priority in model.incident_priority:
-            incident_priority_filter = {"or": []}
-            incident_priority_filter["or"].append(
-                {
-                    "model": "IncidentPriority",
-                    "field": "id",
-                    "op": "==",
-                    "value": incident_priority.id,
-                }
-            )
-
-        filters.append(
-            {"and": [service_filter, term_filter, incident_type_filter, incident_priority_filter]}
+    incident_type_filter = {"or": []}
+    for incident_type in model.incident_types:
+        incident_type_filter["or"].append(
+            {"model": "IncidentType", "field": "id", "op": "==", "value": incident_type.id}
         )
 
-    return filters
+    if incident_type_filter["or"]:
+        expression["and"].append(incident_type_filter)
+
+    incident_priority_filter = {"or": []}
+    for incident_priority in model.incident_priorities:
+        incident_priority_filter["or"].append(
+            {
+                "model": "IncidentPriority",
+                "field": "id",
+                "op": "==",
+                "value": incident_priority.id,
+            }
+        )
+
+    if incident_priority_filter["or"]:
+        expression["and"].append(incident_priority_filter)
+
+    return SearchFilter(
+        name=f"Migrated - {model.name}",
+        project_id=model.project_id,
+        expression=expression,
+        type="incident",
+    )
 
 
 def upgrade():
     # ### commands auto generated by Alembic - please adjust! ###
+    bind = op.get_bind()
+    session = Session(bind=bind)
+
     op.create_table(
         "recommendation_match",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -87,7 +351,7 @@ def upgrade():
         sa.PrimaryKeyConstraint("service_id", "search_filter_id"),
     )
     op.create_table(
-        "assoc_team_filters",
+        "assoc_team_contact_filters",
         sa.Column("team_contact_id", sa.Integer(), nullable=False),
         sa.Column("search_filter_id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(["search_filter_id"], ["search_filter.id"], ondelete="CASCADE"),
@@ -95,7 +359,7 @@ def upgrade():
         sa.PrimaryKeyConstraint("team_contact_id", "search_filter_id"),
     )
     op.create_table(
-        "assoc_individual_filters",
+        "assoc_individual_contact_filters",
         sa.Column("individual_contact_id", sa.Integer(), nullable=False),
         sa.Column("search_filter_id", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
@@ -105,369 +369,44 @@ def upgrade():
         sa.PrimaryKeyConstraint("individual_contact_id", "search_filter_id"),
     )
 
-    op.drop_table("service_terms")
-    op.drop_table("recommendation_incident_priorities")
-    op.drop_table("service_incident_priority")
-    op.drop_table("document_terms")
-    op.drop_table("assoc_individual_contact_incident_priority")
-    op.drop_table("recommendation_individual_contacts")
-    op.drop_table("team_contact_incident_priority")
-    op.drop_table("recommendation_incident_types")
-    op.drop_table("recommendation_documents")
-    op.drop_table("team_contact_incident_type")
-    op.drop_table("recommendation_services")
-    op.drop_table("recommendation_accuracy")
-    op.drop_table("recommendation_team_contacts")
-    op.drop_table("document_incident_priority")
-    op.drop_table("document_incident_type")
-    op.drop_table("recommendation_terms")
-    op.drop_table("assoc_individual_contact_terms")
-    op.drop_table("assoc_individual_contact_incident_type")
-    op.drop_table("team_contact_terms")
-    op.drop_table("service_incident_type")
     op.add_column("recommendation", sa.Column("created_at", sa.DateTime(), nullable=True))
     op.add_column("recommendation", sa.Column("incident_id", sa.Integer(), nullable=True))
     op.create_foreign_key(None, "recommendation", "incident", ["incident_id"], ["id"])
-    op.drop_column("recommendation", "text")
+
+    # migrate the data
+
+    # documents
+    for d in session.query(Document).all():
+        if any([d.incident_priorities, d.incident_types, d.terms]):
+            filters = engagement_models_to_search_filter(d)
+            d.filters = [filters]
+            session.add(d)
+
+    # individuals
+    for i in session.query(IndividualContact).all():
+        if any([i.incident_priorities, i.incident_types, i.terms]):
+            filters = engagement_models_to_search_filter(i)
+            i.filters = [filters]
+            session.add(i)
+
+    # teams
+    for t in session.query(TeamContact).all():
+        if any([t.incident_priorities, t.incident_types, t.terms]):
+            filters = engagement_models_to_search_filter(t)
+            t.filters = [filters]
+            session.add(t)
+
+    # services
+    for s in session.query(Service).all():
+        if any([s.incident_priorities, s.incident_types, s.terms]):
+            filters = engagement_models_to_search_filter(s)
+            s.filters = [filters]
+            session.add(s)
+
+    session.flush()
+
     # ### end Alembic commands ###
 
 
 def downgrade():
-    # ### commands auto generated by Alembic - please adjust! ###
-    op.add_column(
-        "recommendation", sa.Column("text", sa.VARCHAR(), autoincrement=False, nullable=True)
-    )
-    op.drop_constraint(None, "recommendation", type_="foreignkey")
-    op.drop_column("recommendation", "incident_id")
-    op.drop_column("recommendation", "created_at")
-    op.create_table(
-        "service_incident_type",
-        sa.Column("incident_type_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("service_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["incident_type_id"],
-            ["incident_type.id"],
-            name="service_incident_type_incident_type_id_fkey",
-        ),
-        sa.ForeignKeyConstraint(
-            ["service_id"], ["service.id"], name="service_incident_type_service_id_fkey"
-        ),
-        sa.PrimaryKeyConstraint(
-            "incident_type_id", "service_id", name="service_incident_type_pkey"
-        ),
-    )
-    op.create_table(
-        "team_contact_terms",
-        sa.Column("term_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("team_contact_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["team_contact_id"], ["team_contact.id"], name="team_contact_terms_team_contact_id_fkey"
-        ),
-        sa.ForeignKeyConstraint(["term_id"], ["term.id"], name="team_contact_terms_term_id_fkey"),
-        sa.PrimaryKeyConstraint("term_id", "team_contact_id", name="team_contact_terms_pkey"),
-    )
-    op.create_table(
-        "assoc_individual_contact_incident_type",
-        sa.Column("incident_type_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("individual_contact_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["incident_type_id"],
-            ["incident_type.id"],
-            name="assoc_individual_contact_incident_type_incident_type_id_fkey",
-        ),
-        sa.ForeignKeyConstraint(
-            ["individual_contact_id"],
-            ["individual_contact.id"],
-            name="assoc_individual_contact_incident_ty_individual_contact_id_fkey",
-        ),
-        sa.PrimaryKeyConstraint(
-            "incident_type_id",
-            "individual_contact_id",
-            name="assoc_individual_contact_incident_type_pkey",
-        ),
-    )
-    op.create_table(
-        "assoc_individual_contact_terms",
-        sa.Column("term_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("individual_contact_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["individual_contact_id"],
-            ["individual_contact.id"],
-            name="assoc_individual_contact_terms_individual_contact_id_fkey",
-        ),
-        sa.ForeignKeyConstraint(
-            ["term_id"], ["term.id"], name="assoc_individual_contact_terms_term_id_fkey"
-        ),
-        sa.PrimaryKeyConstraint(
-            "term_id", "individual_contact_id", name="assoc_individual_contact_terms_pkey"
-        ),
-    )
-    op.create_table(
-        "recommendation_terms",
-        sa.Column("term_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("recommendation_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["recommendation_id"],
-            ["recommendation.id"],
-            name="recommendation_terms_recommendation_id_fkey",
-        ),
-        sa.ForeignKeyConstraint(["term_id"], ["term.id"], name="recommendation_terms_term_id_fkey"),
-        sa.PrimaryKeyConstraint("term_id", "recommendation_id", name="recommendation_terms_pkey"),
-    )
-    op.create_table(
-        "document_incident_type",
-        sa.Column("incident_type_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("document_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["document_id"], ["document.id"], name="document_incident_type_document_id_fkey"
-        ),
-        sa.ForeignKeyConstraint(
-            ["incident_type_id"],
-            ["incident_type.id"],
-            name="document_incident_type_incident_type_id_fkey",
-        ),
-        sa.PrimaryKeyConstraint(
-            "incident_type_id", "document_id", name="document_incident_type_pkey"
-        ),
-    )
-    op.create_table(
-        "document_incident_priority",
-        sa.Column("incident_priority_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("document_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["document_id"], ["document.id"], name="document_incident_priority_document_id_fkey"
-        ),
-        sa.ForeignKeyConstraint(
-            ["incident_priority_id"],
-            ["incident_priority.id"],
-            name="document_incident_priority_incident_priority_id_fkey",
-        ),
-        sa.PrimaryKeyConstraint(
-            "incident_priority_id", "document_id", name="document_incident_priority_pkey"
-        ),
-    )
-    op.create_table(
-        "recommendation_team_contacts",
-        sa.Column("team_contact_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("recommendation_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["recommendation_id"],
-            ["recommendation.id"],
-            name="recommendation_team_contacts_recommendation_id_fkey",
-        ),
-        sa.ForeignKeyConstraint(
-            ["team_contact_id"],
-            ["team_contact.id"],
-            name="recommendation_team_contacts_team_contact_id_fkey",
-        ),
-        sa.PrimaryKeyConstraint(
-            "team_contact_id", "recommendation_id", name="recommendation_team_contacts_pkey"
-        ),
-    )
-    op.create_table(
-        "recommendation_accuracy",
-        sa.Column("id", sa.INTEGER(), autoincrement=True, nullable=False),
-        sa.Column("recommendation_id", sa.INTEGER(), autoincrement=False, nullable=True),
-        sa.Column("correct", sa.BOOLEAN(), autoincrement=False, nullable=True),
-        sa.Column("resource_id", sa.INTEGER(), autoincrement=False, nullable=True),
-        sa.Column("resource_type", sa.VARCHAR(), autoincrement=False, nullable=True),
-        sa.ForeignKeyConstraint(
-            ["recommendation_id"],
-            ["recommendation.id"],
-            name="recommendation_accuracy_recommendation_id_fkey",
-        ),
-        sa.PrimaryKeyConstraint("id", name="recommendation_accuracy_pkey"),
-    )
-    op.create_table(
-        "recommendation_services",
-        sa.Column("service_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("recommendation_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["recommendation_id"],
-            ["recommendation.id"],
-            name="recommendation_services_recommendation_id_fkey",
-        ),
-        sa.ForeignKeyConstraint(
-            ["service_id"], ["service.id"], name="recommendation_services_service_id_fkey"
-        ),
-        sa.PrimaryKeyConstraint(
-            "service_id", "recommendation_id", name="recommendation_services_pkey"
-        ),
-    )
-    op.create_table(
-        "team_contact_incident_type",
-        sa.Column("incident_type_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("team_contact_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["incident_type_id"],
-            ["incident_type.id"],
-            name="team_contact_incident_type_incident_type_id_fkey",
-        ),
-        sa.ForeignKeyConstraint(
-            ["team_contact_id"],
-            ["team_contact.id"],
-            name="team_contact_incident_type_team_contact_id_fkey",
-        ),
-        sa.PrimaryKeyConstraint(
-            "incident_type_id", "team_contact_id", name="team_contact_incident_type_pkey"
-        ),
-    )
-    op.create_table(
-        "recommendation_documents",
-        sa.Column("document_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("recommendation_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["document_id"], ["document.id"], name="recommendation_documents_document_id_fkey"
-        ),
-        sa.ForeignKeyConstraint(
-            ["recommendation_id"],
-            ["recommendation.id"],
-            name="recommendation_documents_recommendation_id_fkey",
-        ),
-        sa.PrimaryKeyConstraint(
-            "document_id", "recommendation_id", name="recommendation_documents_pkey"
-        ),
-    )
-    op.create_table(
-        "recommendation_incident_types",
-        sa.Column("incident_type_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("recommendation_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["incident_type_id"],
-            ["incident_type.id"],
-            name="recommendation_incident_types_incident_type_id_fkey",
-        ),
-        sa.ForeignKeyConstraint(
-            ["recommendation_id"],
-            ["recommendation.id"],
-            name="recommendation_incident_types_recommendation_id_fkey",
-        ),
-        sa.PrimaryKeyConstraint(
-            "incident_type_id", "recommendation_id", name="recommendation_incident_types_pkey"
-        ),
-    )
-    op.create_table(
-        "team_contact_incident_priority",
-        sa.Column("incident_priority_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("team_contact_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["incident_priority_id"],
-            ["incident_priority.id"],
-            name="team_contact_incident_priority_incident_priority_id_fkey",
-        ),
-        sa.ForeignKeyConstraint(
-            ["team_contact_id"],
-            ["team_contact.id"],
-            name="team_contact_incident_priority_team_contact_id_fkey",
-        ),
-        sa.PrimaryKeyConstraint(
-            "incident_priority_id", "team_contact_id", name="team_contact_incident_priority_pkey"
-        ),
-    )
-    op.create_table(
-        "recommendation_individual_contacts",
-        sa.Column("individual_contact_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("recommendation_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["individual_contact_id"],
-            ["individual_contact.id"],
-            name="recommendation_individual_contacts_individual_contact_id_fkey",
-        ),
-        sa.ForeignKeyConstraint(
-            ["recommendation_id"],
-            ["recommendation.id"],
-            name="recommendation_individual_contacts_recommendation_id_fkey",
-        ),
-        sa.PrimaryKeyConstraint(
-            "individual_contact_id",
-            "recommendation_id",
-            name="recommendation_individual_contacts_pkey",
-        ),
-    )
-    op.create_table(
-        "assoc_individual_contact_incident_priority",
-        sa.Column("incident_priority_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("individual_contact_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["incident_priority_id"],
-            ["incident_priority.id"],
-            name="assoc_individual_contact_incident_pri_incident_priority_id_fkey",
-        ),
-        sa.ForeignKeyConstraint(
-            ["individual_contact_id"],
-            ["individual_contact.id"],
-            name="assoc_individual_contact_incident_pr_individual_contact_id_fkey",
-        ),
-        sa.PrimaryKeyConstraint(
-            "incident_priority_id",
-            "individual_contact_id",
-            name="assoc_individual_contact_incident_priority_pkey",
-        ),
-    )
-    op.create_table(
-        "document_terms",
-        sa.Column("term_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("document_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["document_id"],
-            ["document.id"],
-            name="document_terms_document_id_fkey",
-            ondelete="CASCADE",
-        ),
-        sa.ForeignKeyConstraint(
-            ["term_id"], ["term.id"], name="document_terms_term_id_fkey", ondelete="CASCADE"
-        ),
-        sa.PrimaryKeyConstraint("term_id", "document_id", name="document_terms_pkey"),
-    )
-    op.create_table(
-        "service_incident_priority",
-        sa.Column("incident_priority_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("service_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["incident_priority_id"],
-            ["incident_priority.id"],
-            name="service_incident_priority_incident_priority_id_fkey",
-        ),
-        sa.ForeignKeyConstraint(
-            ["service_id"], ["service.id"], name="service_incident_priority_service_id_fkey"
-        ),
-        sa.PrimaryKeyConstraint(
-            "incident_priority_id", "service_id", name="service_incident_priority_pkey"
-        ),
-    )
-    op.create_table(
-        "recommendation_incident_priorities",
-        sa.Column("incident_priority_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("recommendation_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["incident_priority_id"],
-            ["incident_priority.id"],
-            name="recommendation_incident_priorities_incident_priority_id_fkey",
-        ),
-        sa.ForeignKeyConstraint(
-            ["recommendation_id"],
-            ["recommendation.id"],
-            name="recommendation_incident_priorities_recommendation_id_fkey",
-        ),
-        sa.PrimaryKeyConstraint(
-            "incident_priority_id",
-            "recommendation_id",
-            name="recommendation_incident_priorities_pkey",
-        ),
-    )
-    op.create_table(
-        "service_terms",
-        sa.Column("term_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.Column("service_id", sa.INTEGER(), autoincrement=False, nullable=False),
-        sa.ForeignKeyConstraint(
-            ["service_id"], ["service.id"], name="service_terms_service_id_fkey"
-        ),
-        sa.ForeignKeyConstraint(["term_id"], ["term.id"], name="service_terms_term_id_fkey"),
-        sa.PrimaryKeyConstraint("term_id", "service_id", name="service_terms_pkey"),
-    )
-    op.drop_table("assoc_individual_filters")
-    op.drop_table("assoc_team_filters")
-    op.drop_table("assoc_service_filters")
-    op.drop_table("assoc_document_filters")
-    op.drop_table("recommendation_match")
-    # ### end Alembic commands ###
+    pass

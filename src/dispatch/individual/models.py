@@ -13,7 +13,7 @@ from dispatch.models import ContactBase, ContactMixin, DispatchBase, ProjectMixi
 
 # Association tables for many to many relationships
 assoc_individual_filters = Table(
-    "assoc_individual_filters",
+    "assoc_individual_contact_filters",
     Base.metadata,
     Column(
         "individual_contact_id", Integer, ForeignKey("individual_contact.id", ondelete="CASCADE")

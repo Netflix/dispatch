@@ -22,7 +22,7 @@ assoc_team_contact_incidents = Table(
 )
 
 assoc_team_filters = Table(
-    "assoc_team_filters",
+    "assoc_team_contact_filters",
     Base.metadata,
     Column("team_contact_id", Integer, ForeignKey("team_contact.id", ondelete="CASCADE")),
     Column("search_filter_id", Integer, ForeignKey("search_filter.id", ondelete="CASCADE")),
