@@ -27,8 +27,12 @@
     <template v-slot:item="data">
       <template>
         <v-list-item-content>
-          <v-list-item-title v-text="data.item.name" />
-          <v-list-item-subtitle v-text="data.item.description" />
+          <v-list-item-title>
+            {{ data.item.name }}
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            {{ data.item.project.name }} - {{ data.item.description }}
+          </v-list-item-subtitle>
         </v-list-item-content>
       </template>
     </template>
