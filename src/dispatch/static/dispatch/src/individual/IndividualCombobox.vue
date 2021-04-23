@@ -92,7 +92,7 @@ export default {
   },
 
   created() {
-    this.fetchData({})
+    this.fetchData()
   },
 
   methods: {
@@ -100,7 +100,7 @@ export default {
       this.numItems = this.numItems + 5
       this.fetchData()
     },
-    fetchData(filterOptions) {
+    fetchData() {
       this.error = null
       this.loading = "error"
 
@@ -124,8 +124,8 @@ export default {
         this.loading = false
       })
     },
-    getFilteredData: debounce(function (options) {
-      this.fetchData(options)
+    getFilteredData: debounce(function () {
+      this.fetchData()
     }, 500),
   },
 }

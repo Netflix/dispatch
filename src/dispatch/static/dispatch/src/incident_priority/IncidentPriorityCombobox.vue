@@ -25,6 +25,14 @@
         </v-list-item-content>
       </v-list-item>
     </template>
+    <template v-slot:item="data">
+      <template>
+        <v-list-item-content>
+          <v-list-item-title v-text="data.item.name" />
+          <v-list-item-subtitle v-text="data.item.description" />
+        </v-list-item-content>
+      </template>
+    </template>
     <template v-slot:append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
@@ -66,6 +74,8 @@ export default {
     return {
       loading: false,
       items: [],
+      more: false,
+      numItems: 5,
       search: null,
     }
   },
@@ -121,6 +131,7 @@ export default {
         this.total = response.data.total
         this.loading = false
 
+        console.log(this.items, this.total)
         if (this.items.length < this.total) {
           this.more = true
         } else {
