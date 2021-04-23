@@ -16,6 +16,7 @@ warnings.filterwarnings("ignore", message="int_from_bytes is deprecated")
 try:
     from dispatch.organization.models import Organization  # noqa lgtm[py/unused-import]
     from dispatch.project.models import Project  # noqa lgtm[py/unused-import]
+    from dispatch.route.models import Recommendation  # noqa lgtm[py/unused-import]
     from dispatch.conference.models import Conference  # noqa lgtm[py/unused-import]
     from dispatch.conversation.models import Conversation  # noqa lgtm[py/unused-import]
     from dispatch.definition.models import Definition  # noqa lgtm[py/unused-import]
@@ -34,7 +35,6 @@ try:
     from dispatch.participant_role.models import ParticipantRole  # noqa lgtm[py/unused-import]
     from dispatch.plugin.models import Plugin  # noqa lgtm[py/unused-import]
     from dispatch.report.models import Report  # noqa lgtm[py/unused-import]
-    from dispatch.route.models import Recommendation  # noqa lgtm[py/unused-import]
     from dispatch.service.models import Service  # noqa lgtm[py/unused-import]
     from dispatch.storage.models import Storage  # noqa lgtm[py/unused-import]
     from dispatch.tag.models import Tag  # noqa lgtm[py/unused-import]
@@ -45,7 +45,7 @@ try:
     from dispatch.ticket.models import Ticket  # noqa lgtm[py/unused-import]
     from dispatch.workflow.models import Workflow  # noqa lgtm[py/unused-import]
     from dispatch.search_filter.models import SearchFilter  # noqa lgtm[py/unused-impot]
-except Exception:
+except Exception as e:
     pass
 
 

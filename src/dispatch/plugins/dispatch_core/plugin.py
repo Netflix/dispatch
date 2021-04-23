@@ -22,12 +22,14 @@ from dispatch.incident.models import Incident
 from dispatch.individual.models import IndividualContact
 from dispatch.document.models import Document
 from dispatch.team.models import TeamContact
-from dispatch.incident_type.models import Service
+from dispatch.service.models import Service
 from dispatch.individual import service as individual_service
 from dispatch.plugins import dispatch_core as dispatch_plugin
 from dispatch.incident import service as incident_service
 from dispatch.team import service as team_service
 from dispatch.plugin import service as plugin_service
+from dispatch.route import service as route_service
+
 from dispatch.plugins.bases import (
     ParticipantPlugin,
     DocumentResolverPlugin,
@@ -233,10 +235,8 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
         db_session=None,
     ):
         """Fetches participants from Dispatch."""
-        from dispatch.route import service as route_service
-
         models = [IndividualContact, Service, TeamContact]
-        recommendation = route_service.get(db_session=db_session, incidnet=incident, models=models)
+        recommendation = route_service.get(db_session=db_session, incident=incident, models=models)
 
         log.debug(f"Recommendation: {recommendation}")
 

@@ -236,7 +236,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     )
     tags = relationship("Tag", secondary=assoc_incident_tags, backref="incidents")
     tasks = relationship("Task", backref="incident", cascade="all, delete-orphan")
-    terms = relationship("Term", secondary=assoc_incident_terms, backref="incidents")
+    terms = relationship("Term", secondary=assoc_incident_terms, backref="incidents", lazy="joined")
     ticket = relationship("Ticket", uselist=False, backref="incident", cascade="all, delete-orphan")
     workflow_instances = relationship(
         "WorkflowInstance", backref="incident", cascade="all, delete-orphan"

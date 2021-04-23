@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List, Optional
 from datetime import datetime
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, DateTime, String
@@ -23,14 +23,19 @@ class RecommendationMatch(Base):
 class Recommendation(Base):
     id = Column(Integer, primary_key=True)
     incident_id = Column(Integer, ForeignKey("incident.id"))
-    matches = relationship("RecommendationMatch")
-
     created_at = Column(DateTime, default=datetime.utcnow)
+    matches = relationship("RecommendationMatch")
 
 
 # Pydantic models...
+class RecommendationMatchBase(DispatchBase):
+    correct = bool
+    resource_type = str
+    resource_state = dict
+
+
 class RecommendationBase(DispatchBase):
-    matches = List[Any]
+    matches = Optional[List[RecommendationMatchBase]]
 
 
 class RouteBase(DispatchBase):

@@ -62,6 +62,7 @@ class DispatchBase(BaseModel):
     class Config:
         orm_mode = True
         validate_assignment = True
+        arbitrary_types_allowed = True
 
 
 class ContactBase(DispatchBase):
