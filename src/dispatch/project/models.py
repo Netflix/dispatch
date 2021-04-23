@@ -23,8 +23,10 @@ class Project(Base):
 
 
 class ProjectBase(DispatchBase):
+    id: Optional[int]
     name: str
     description: Optional[str]
+    default: bool = False
 
 
 class ProjectCreate(ProjectBase):
