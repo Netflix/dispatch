@@ -277,26 +277,26 @@ class Service(Base):
 
 # setup models needed for migration
 def engagement_models_to_search_filter(model):
-    expression = {"and": []}
-    term_filter = {"or": []}
+    expression = []
+    term_filter = []
     for term in model.terms:
-        term_filter["or"].append({"model": "Term", "field": "id", "op": "==", "value": term.id})
+        term_filter.append({"model": "Term", "field": "id", "op": "==", "value": term.id})
 
-    if term_filter["or"]:
-        expression["and"].append(term_filter)
+    if term_filter:
+        expression.append({"or": term_filter})
 
-    incident_type_filter = {"or": []}
+    incident_type_filter = []
     for incident_type in model.incident_types:
-        incident_type_filter["or"].append(
+        incident_type_filter.append(
             {"model": "IncidentType", "field": "id", "op": "==", "value": incident_type.id}
         )
 
-    if incident_type_filter["or"]:
-        expression["and"].append(incident_type_filter)
+    if incident_type_filter:
+        expression.append({"or": incident_type_filter})
 
-    incident_priority_filter = {"or": []}
+    incident_priority_filter = []
     for incident_priority in model.incident_priorities:
-        incident_priority_filter["or"].append(
+        incident_priority_filter.append(
             {
                 "model": "IncidentPriority",
                 "field": "id",
@@ -305,13 +305,13 @@ def engagement_models_to_search_filter(model):
             }
         )
 
-    if incident_priority_filter["or"]:
-        expression["and"].append(incident_priority_filter)
+    if incident_priority_filter:
+        expression.append({"or": incident_priority_filter})
 
     return SearchFilter(
         name=f"Migrated - {model.name}",
         project_id=model.project_id,
-        expression=expression,
+        expression=[{"and": expression}],
         type="incident",
     )
 

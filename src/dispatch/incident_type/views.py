@@ -12,7 +12,7 @@ from .service import create, get, update
 router = APIRouter()
 
 
-@router.get("/", response_model=IncidentTypePagination, tags=["incident_types"])
+@router.get("", response_model=IncidentTypePagination, tags=["incident_types"])
 def get_incident_types(*, common: dict = Depends(common_parameters)):
     """
     Returns all incident types.
@@ -21,7 +21,7 @@ def get_incident_types(*, common: dict = Depends(common_parameters)):
 
 
 @router.post(
-    "/",
+    "",
     response_model=IncidentTypeRead,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )

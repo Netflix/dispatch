@@ -19,7 +19,7 @@ from .service import get_instance, update_instance, create_instance
 router = APIRouter()
 
 
-@router.get("/", response_model=PluginPagination)
+@router.get("", response_model=PluginPagination)
 def get_plugins(*, common: dict = Depends(common_parameters)):
     """
     Get all plugins.

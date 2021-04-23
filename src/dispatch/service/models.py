@@ -68,7 +68,7 @@ class ServiceUpdate(ServiceBase):
 
 class ServiceRead(ServiceBase):
     id: int
-    filters: Optional[List[SearchFilterRead]]
+    filters: Optional[List[SearchFilterRead]] = []
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

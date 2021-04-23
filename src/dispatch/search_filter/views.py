@@ -16,7 +16,7 @@ from .service import create, delete, get, update
 router = APIRouter()
 
 
-@router.get("/", response_model=SearchFilterPagination)
+@router.get("", response_model=SearchFilterPagination)
 def get_filters(*, common: dict = Depends(common_parameters)):
     """
     Retrieve filters.
@@ -24,7 +24,7 @@ def get_filters(*, common: dict = Depends(common_parameters)):
     return search_filter_sort_paginate(model="SearchFilter", **common)
 
 
-@router.post("/", response_model=SearchFilterRead)
+@router.post("", response_model=SearchFilterRead)
 def create_search_filter(
     *, db_session: Session = Depends(get_db), search_filter_in: SearchFilterCreate
 ):

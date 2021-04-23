@@ -71,7 +71,16 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <span class="subtitle-2">Engagement</span>
+                <span class="subtitle-2"
+                  >Engagement
+                  <v-tooltip max-width="250px" bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                    </template>
+                    This team will be automatically engaged for any incident matching the following
+                    filters.
+                  </v-tooltip>
+                </span>
               </v-flex>
               <v-flex xs12>
                 <search-filter-combobox

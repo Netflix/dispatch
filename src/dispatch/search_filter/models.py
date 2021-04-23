@@ -31,7 +31,7 @@ class SearchFilter(Base, ProjectMixin):
 
 # Pydantic models...
 class SearchFilterBase(DispatchBase):
-    expression: List[dict]
+    expression: Optional[List[dict]] = []
     name: Optional[str]
     type: Optional[str]
     description: Optional[str]

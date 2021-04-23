@@ -15,7 +15,7 @@ from .service import create, delete, get, update
 router = APIRouter()
 
 
-@router.get("/", response_model=TagTypePagination)
+@router.get("", response_model=TagTypePagination)
 def get_tag_types(*, common: dict = Depends(common_parameters)):
     """
     Get all tag types, or only those matching a given search term.
@@ -34,7 +34,7 @@ def get_tag_type(*, db_session: Session = Depends(get_db), tag_type_id: str):
     return tag_type
 
 
-@router.post("/", response_model=TagTypeRead)
+@router.post("", response_model=TagTypeRead)
 def create_tag_type(*, db_session: Session = Depends(get_db), tag_type_in: TagTypeCreate):
     """
     Create a new tag type.

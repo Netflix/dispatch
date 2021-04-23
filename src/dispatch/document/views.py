@@ -10,7 +10,7 @@ from .service import create, delete, get, update
 router = APIRouter()
 
 
-@router.get("/", response_model=DocumentPagination)
+@router.get("", response_model=DocumentPagination)
 def get_documents(*, common: dict = Depends(common_parameters)):
     """
     Get all documents.
@@ -29,7 +29,7 @@ def get_document(*, db_session: Session = Depends(get_db), document_id: int):
     return document
 
 
-@router.post("/", response_model=DocumentCreate)
+@router.post("", response_model=DocumentCreate)
 def create_document(*, db_session: Session = Depends(get_db), document_in: DocumentCreate):
     """
     Create a new document.

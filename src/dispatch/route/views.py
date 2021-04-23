@@ -9,7 +9,7 @@ from .service import get
 router = APIRouter()
 
 
-@router.post("/", response_model=RouteResponse)
+@router.post("", response_model=RouteResponse)
 def route(*, db_session: Session = Depends(get_db), route_in: RouteRequest):
     """
     Determine the correct entities to dispatch.

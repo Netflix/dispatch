@@ -10,7 +10,7 @@ from .service import create, delete, get, update
 router = APIRouter()
 
 
-@router.get("/", response_model=WorkflowPagination)
+@router.get("", response_model=WorkflowPagination)
 def get_workflows(*, common: dict = Depends(common_parameters)):
     """
     Get all workflows.
@@ -29,7 +29,7 @@ def get_workflow(*, db_session: Session = Depends(get_db), workflow_id: int):
     return workflow
 
 
-@router.post("/", response_model=WorkflowCreate)
+@router.post("", response_model=WorkflowCreate)
 def create_workflow(*, db_session: Session = Depends(get_db), workflow_in: WorkflowCreate):
     """
     Create a new workflow.

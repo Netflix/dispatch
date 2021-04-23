@@ -12,7 +12,7 @@ from .service import get, create, update, delete, get_by_external_id_and_project
 router = APIRouter()
 
 
-@router.get("/", response_model=ServicePagination)
+@router.get("", response_model=ServicePagination)
 def get_services(*, common: dict = Depends(common_parameters)):
     """
     Retrieve all services.
@@ -20,7 +20,7 @@ def get_services(*, common: dict = Depends(common_parameters)):
     return search_filter_sort_paginate(model="Service", **common)
 
 
-@router.post("/", response_model=ServiceRead)
+@router.post("", response_model=ServiceRead)
 def create_service(
     *,
     db_session: Session = Depends(get_db),
