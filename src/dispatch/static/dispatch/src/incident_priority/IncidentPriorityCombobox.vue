@@ -10,6 +10,7 @@
     multiple
     chips
     clearable
+    no-filter
     :loading="loading"
     @update:search-input="getFilteredData()"
   >
@@ -21,6 +22,13 @@
             <strong>{{ search }}</strong
             >".
           </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
+    <template v-slot:append-item>
+      <v-list-item v-if="more" @click="loadMore()">
+        <v-list-item-content>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
     </template>
@@ -84,6 +92,10 @@ export default {
   },
 
   methods: {
+    loadMore() {
+      this.numItems = this.numItems + 5
+      this.fetchData()
+    },
     fetchData() {
       this.error = null
       this.loading = "error"
@@ -106,6 +118,7 @@ export default {
 
       IncidentPriorityApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
+        this.total = response.data.total
         this.loading = false
 
         if (this.items.length < this.total) {

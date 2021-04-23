@@ -7,6 +7,7 @@
     label="Add definitions"
     multiple
     chips
+    no-filter
     :loading="loading"
     @update:search-input="getFilteredData()"
   >
@@ -18,6 +19,13 @@
             <strong>{{ search }}</strong
             >". Press <kbd>enter</kbd> to create a new one
           </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
+    <template v-slot:append-item>
+      <v-list-item v-if="more" @click="loadMore()">
+        <v-list-item-content>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
     </template>
@@ -49,6 +57,8 @@ export default {
     return {
       loading: false,
       items: [],
+      more: false,
+      numItems: 5,
       search: null,
     }
   },
@@ -79,6 +89,10 @@ export default {
   },
 
   methods: {
+    loadMore() {
+      this.numItems = this.numItems + 5
+      this.fetchData()
+    },
     fetchData() {
       this.error = null
       this.loading = "error"
@@ -94,6 +108,14 @@ export default {
 
       DefinitionApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
+        this.total = response.data.total
+
+        if (this.items.length < this.total) {
+          this.more = true
+        } else {
+          this.more = false
+        }
+
         this.loading = false
       })
     },

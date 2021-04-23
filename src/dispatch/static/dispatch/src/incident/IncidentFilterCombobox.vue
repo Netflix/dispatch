@@ -11,7 +11,7 @@
     chips
     no-filter
     :loading="loading"
-    @update:search-input="getFilteredData({ q: $event })"
+    @update:search-input="getFilteredData()"
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -43,8 +43,11 @@
 </template>
 
 <script>
-import IncidentApi from "@/incident/api"
 import { cloneDeep, debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import IncidentApi from "@/incident/api"
+
 export default {
   name: "IncidentFilterCombobox",
   props: {
@@ -91,17 +94,34 @@ export default {
   },
 
   created() {
-    this.fetchData({})
+    this.fetchData()
   },
 
   methods: {
     loadMore() {
       this.numItems = this.numItems + 5
-      this.getFilteredData({ q: this.search, itemsPerPage: this.numItems })
+      this.fetchData()
     },
-    fetchData(filterOptions) {
+    fetchData() {
       this.error = null
       this.loading = "error"
+
+      let filterOptions = {
+        q: this.search,
+        sortBy: ["name"],
+        descending: [false],
+        itemsPerPage: this.numItems,
+      }
+
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      }
       IncidentApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.total = response.data.total
@@ -115,8 +135,8 @@ export default {
         this.loading = false
       })
     },
-    getFilteredData: debounce(function (options) {
-      this.fetchData(options)
+    getFilteredData: debounce(function () {
+      this.fetchData()
     }, 500),
   },
 }

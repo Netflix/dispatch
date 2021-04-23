@@ -11,7 +11,7 @@
     chips
     :loading="loading"
     no-filter
-    @update:search-input="getFilteredData({ q: $event })"
+    @update:search-input="getFilteredData()"
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -113,7 +113,7 @@ export default {
     this.$watch(
       (vm) => [vm.project],
       () => {
-        this.fetchData({})
+        this.fetchData()
       }
     )
   },
@@ -121,14 +121,14 @@ export default {
   methods: {
     loadMore() {
       this.numItems = this.numItems + 5
-      this.getFilteredData({ q: this.search, itemsPerPage: this.numItems })
+      this.fetchData()
     },
-    fetchData(filterOptions) {
+    fetchData() {
       this.error = null
       this.loading = "error"
 
       // fetch recommendations model and ID are provided
-      if (!filterOptions.q) {
+      if (!this.search) {
         if (this.model && this.modelId) {
           TagApi.getRecommendations(this.model, this.modelId).then((response) => {
             this.items = response.data.items
@@ -139,6 +139,11 @@ export default {
           })
           return
         }
+      }
+
+      let filterOptions = {
+        q: this.search,
+        itemsPerPage: this.numItems,
       }
 
       if (this.project) {
@@ -177,8 +182,8 @@ export default {
         this.loading = false
       })
     },
-    getFilteredData: debounce(function (options) {
-      this.fetchData(options)
+    getFilteredData: debounce(function () {
+      this.fetchData()
     }, 500),
   },
 }
