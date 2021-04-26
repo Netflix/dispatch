@@ -11,7 +11,11 @@
     <template v-slot:item="data">
       <v-list-item-content>
         <v-list-item-title v-text="data.item.name" />
-        <v-list-item-subtitle v-text="data.item.description" />
+        <v-list-item-subtitle
+          style="width: 200px"
+          class="text-truncate"
+          v-text="data.item.description"
+        />
       </v-list-item-content>
     </template>
   </v-select>
