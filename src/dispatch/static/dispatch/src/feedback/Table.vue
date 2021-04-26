@@ -113,7 +113,6 @@ export default {
   },
 
   created() {
-    console.log(this.filters)
     this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.query) }
     this.getAll()
 

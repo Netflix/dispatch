@@ -30,7 +30,7 @@
           <v-list-item-title>
             {{ data.item.name }}
           </v-list-item-title>
-          <v-list-item-subtitle>
+          <v-list-item-subtitle style="width: 200px" class="text-truncate">
             {{ data.item.project.name }} - {{ data.item.description }}
           </v-list-item-subtitle>
         </v-list-item-content>
