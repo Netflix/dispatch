@@ -37,7 +37,6 @@ def sync_tags(db_session=None):
             log.debug(f"Adding Tag. Tag: {t}")
 
             # we always use the plugin project when syncing
-            project = project.__dict__
             t["tag_type"].update({"project": project})
             tag_in = TagCreate(**t, project=project)
             tag_service.get_or_create(db_session=db_session, tag_in=tag_in)
@@ -48,7 +47,8 @@ def sync_tags(db_session=None):
 def build_tag_models(db_session=None):
     """Builds the intensive tag recommendation models."""
     # incident model
-    incidents = incident_service.get_all(db_session=db_session).all()
-    log.debug("Starting to build the incident/tag model...")
-    build_model(incidents, "incident")
-    log.debug("Successfully built the incident/tag model.")
+    for project in project_service.get_all(db_session=db_session):
+        incidents = incident_service.get_all(db_session=db_session, project_id=project.id).all()
+        log.debug("Starting to build the incident/tag model...")
+        build_model(incidents, "incident")
+        log.debug("Successfully built the incident/tag model.")

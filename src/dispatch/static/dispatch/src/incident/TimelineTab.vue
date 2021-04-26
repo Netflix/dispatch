@@ -37,7 +37,7 @@
             </div>
           </v-col>
           <v-col class="text-right" cols="5">
-            {{ event.started_at | formatDate }}
+            {{ event.started_at | formatRelativeDate }}
           </v-col>
         </v-row>
       </v-timeline-item>
