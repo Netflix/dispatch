@@ -41,6 +41,9 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
+                <project-select v-model="project" />
+              </v-flex>
+              <v-flex xs12>
                 <v-select
                   v-model="status"
                   label="Status"
@@ -128,6 +131,7 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import ProjectSelect from "@/project/ProjectSelect.vue"
 import IncidentSelect from "@/incident/IncidentSelect.vue"
 import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import AssigneeCombobox from "@/task/AssigneeCombobox.vue"
@@ -149,6 +153,7 @@ export default {
     IncidentSelect,
     AssigneeCombobox,
     ParticipantSelect,
+    ProjectSelect,
     TimePickerMenu,
     DatePickerMenu,
   },
@@ -166,6 +171,7 @@ export default {
       "selected.assignees",
       "selected.description",
       "selected.creator",
+      "selected.project",
       "selected.resolved_at",
       "selected.resolve_by",
       "selected.incident",
@@ -177,6 +183,12 @@ export default {
 
   methods: {
     ...mapActions("task", ["save", "closeCreateEdit"]),
+  },
+
+  created() {
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
   },
 }
 </script>

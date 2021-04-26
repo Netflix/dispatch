@@ -114,14 +114,6 @@ def upgrade():
     # Create organization table
     Organization.__table__.create(bind)
 
-    op.create_index(
-        "ix_organization_search_vector",
-        "organization",
-        ["search_vector"],
-        unique=False,
-        postgresql_using="gin",
-    )
-
     default_org = Organization(
         name="default", default=True, description="Default dispatch organization."
     )

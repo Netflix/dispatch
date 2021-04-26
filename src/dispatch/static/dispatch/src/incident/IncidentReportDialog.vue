@@ -12,7 +12,7 @@
         <v-card-text>
           <div class="title text--primary">Last Tactical Report</div>
           <div v-if="item.last_tactical_report">
-            <p>As of {{ item.last_tactical_report.created_at | formatDate }}</p>
+            <p>As of {{ item.last_tactical_report.created_at | formatRelativeDate }}</p>
             <p class="subtitle-1 text--primary">Conditions</p>
             <div>{{ item.last_tactical_report.details.conditions }}</div>
             <p class="subtitle-1 text--primary">Actions</p>
@@ -27,7 +27,7 @@
         <v-card-text>
           <div class="title text--primary">Last Executive Report</div>
           <div v-if="item.last_executive_report">
-            <p>As of {{ item.last_executive_report.created_at | formatDate }}</p>
+            <p>As of {{ item.last_executive_report.created_at | formatRelativeDate }}</p>
             <p class="subtitle-1 text--primary">Current Status</p>
             <div>{{ item.last_executive_report.details.current_status }}</div>
             <p class="subtitle-1 text--primary">Overview</p>

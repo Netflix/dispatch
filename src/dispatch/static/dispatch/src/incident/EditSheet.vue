@@ -7,7 +7,9 @@
             <v-list-item-title class="title">
               {{ name }}
             </v-list-item-title>
-            <v-list-item-subtitle> Reported - {{ reported_at | formatDate }} </v-list-item-subtitle>
+            <v-list-item-subtitle>
+              Reported - {{ reported_at | formatRelativeDate }}
+            </v-list-item-subtitle>
           </v-list-item-content>
           <v-spacer />
           <v-btn
