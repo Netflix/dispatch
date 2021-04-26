@@ -15,6 +15,7 @@ const getDefaultSelectedState = () => {
     incident: null,
     status: null,
     priority: null,
+    project: null,
     source: null,
     id: null,
     loading: false,
