@@ -234,7 +234,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     storage = relationship(
         "Storage", uselist=False, backref="incident", cascade="all, delete-orphan"
     )
-    tags = relationship("Tag", secondary=assoc_incident_tags, backref="incidents", lazy="joined")
+    tags = relationship("Tag", secondary=assoc_incident_tags, backref="incidents")
     tasks = relationship("Task", backref="incident", cascade="all, delete-orphan")
     terms = relationship("Term", secondary=assoc_incident_terms, backref="incidents")
     ticket = relationship("Ticket", uselist=False, backref="incident", cascade="all, delete-orphan")

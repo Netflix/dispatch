@@ -17,7 +17,7 @@ class ProjectMixin(object):
 
     @declared_attr
     def project(cls):  # noqa
-        return relationship("Project", lazy="joined")
+        return relationship("Project")
 
 
 class TimeStampMixin(object):

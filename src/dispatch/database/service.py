@@ -5,7 +5,7 @@ from typing import List
 
 from fastapi import Depends, Query
 
-from sqlalchemy import and_, not_, orm, func, desc
+from sqlalchemy import or_, orm, func, desc
 from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
 
 from dispatch.auth.models import DispatchUser
@@ -29,18 +29,18 @@ log = logging.getLogger(__file__)
 
 def restricted_incident_filter(query: orm.Query, current_user: DispatchUser):
     """Adds additional incident filters to query (usually for permissions)."""
-    return (
+    query = (
         query.join(Participant, Incident.id == Participant.incident_id)
         .join(IndividualContact)
         .filter(
-            not_(
-                and_(
-                    Incident.visibility == Visibility.restricted.value,
-                    IndividualContact.email != current_user.email,
-                )
+            or_(
+                Incident.visibility == Visibility.open.value,
+                IndividualContact.email == current_user.email,
             )
         )
+        .distinct()
     )
+    return query
 
 
 def restricted_incident_type_filter(query: orm.Query, current_user: DispatchUser):
