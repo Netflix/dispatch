@@ -168,6 +168,7 @@ class JiraTicketPlugin(TicketPlugin):
         commander_email: str,
         reporter_email: str,
         incident_type_plugin_metadata: dict = {},
+        db_session=None,
     ):
         """Creates a Jira issue."""
         client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))

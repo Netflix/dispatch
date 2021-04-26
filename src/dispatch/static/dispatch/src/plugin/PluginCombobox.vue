@@ -112,7 +112,7 @@ export default {
 
       let filterOptions = {
         q: this.search,
-        sortBy: ["name"],
+        sortBy: ["slug"],
         descending: [false],
         itemsPerPage: this.numItems,
         filters: {
