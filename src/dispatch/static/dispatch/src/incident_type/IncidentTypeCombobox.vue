@@ -9,6 +9,7 @@
     multiple
     chips
     clearable
+    no-filter
     :loading="loading"
     @update:search-input="getFilteredData()"
   >
@@ -26,8 +27,12 @@
     <template v-slot:item="data">
       <template>
         <v-list-item-content>
-          <v-list-item-title v-text="data.item.name" />
-          <v-list-item-subtitle v-text="data.item.description" />
+          <v-list-item-title>
+            {{ data.item.name }}
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            {{ data.item.project.name }} - {{ data.item.description }}
+          </v-list-item-subtitle>
         </v-list-item-content>
       </template>
     </template>
@@ -100,13 +105,13 @@ export default {
   },
 
   created() {
-    this.fetchData({})
+    this.fetchData()
   },
 
   methods: {
     loadMore() {
       this.numItems = this.numItems + 5
-      this.getFilteredData()
+      this.fetchData()
     },
     fetchData() {
       this.error = null
@@ -130,6 +135,7 @@ export default {
 
       IncidentTypeApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
+        this.total = response.data.total
         this.loading = false
 
         if (this.items.length < this.total) {
@@ -137,7 +143,6 @@ export default {
         } else {
           this.more = false
         }
-
         this.loading = false
       })
     },

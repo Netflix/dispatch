@@ -6,6 +6,7 @@
     :search-input.sync="search"
     hide-selected
     :label="label"
+    no-filter
     :loading="loading"
     @update:search-input="getFilteredData()"
   >
@@ -93,10 +94,6 @@ export default {
   methods: {
     loadMore() {
       this.numItems = this.numItems + 5
-      this.getFilteredData({
-        q: this.search,
-        itemsPerPage: this.numItems,
-      })
     },
     fetchData() {
       this.error = null
@@ -104,6 +101,7 @@ export default {
 
       let filterOptions = {
         q: this.search,
+        itemsPerPage: this.numItems,
         filters: {
           project: [this.project],
           type: [this.type],

@@ -6,6 +6,7 @@
     :search-input.sync="search"
     hide-selected
     :label="label"
+    no-filter
     :loading="loading"
     @update:search-input="getFilteredData()"
   >
@@ -97,24 +98,23 @@ export default {
   },
 
   created() {
-    this.fetchData({})
+    this.fetchData()
   },
 
   methods: {
     loadMore() {
       this.numItems = this.numItems + 5
-      this.getFilteredData({
-        q: this.search,
-        itemsPerPage: this.numItems,
-      })
+      this.fetchData()
     },
-    fetchData(filterOptions) {
+    fetchData() {
       this.error = null
       this.loading = "error"
 
-      filterOptions = {
-        ...filterOptions,
+      let filterOptions = {
         q: this.search,
+        sortBy: ["name"],
+        descending: [false],
+        itemsPerPage: this.numItems,
         filters: {
           type: [this.type],
         },
@@ -135,8 +135,8 @@ export default {
         this.loading = false
       })
     },
-    getFilteredData: debounce(function (options) {
-      this.fetchData(options)
+    getFilteredData: debounce(function () {
+      this.fetchData()
     }, 500),
   },
 }

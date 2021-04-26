@@ -11,8 +11,9 @@
     close
     chips
     clearable
+    no-filter
     :loading="loading"
-    @update:search-input="fetchData({ q: $event })"
+    @update:search-input="fetchData()"
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -25,12 +26,22 @@
         </v-list-item-content>
       </v-list-item>
     </template>
+    <template v-slot:append-item>
+      <v-list-item v-if="more" @click="loadMore()">
+        <v-list-item-content>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
   </v-combobox>
 </template>
 
 <script>
-import IndividualApi from "@/individual/api"
 import { cloneDeep, debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import IndividualApi from "@/individual/api"
+
 export default {
   name: "IndividualComboBox",
   props: {
@@ -56,6 +67,8 @@ export default {
     return {
       loading: false,
       items: [],
+      more: false,
+      numItems: 5,
       search: null,
     }
   },
@@ -82,20 +95,40 @@ export default {
   },
 
   created() {
-    this.fetchData({})
+    this.fetchData()
   },
 
   methods: {
-    fetchData(filterOptions) {
+    loadMore() {
+      this.numItems = this.numItems + 5
+      this.fetchData()
+    },
+    fetchData() {
       this.error = null
       this.loading = "error"
+
+      let filterOptions = {
+        q: this.search,
+        itemsPerPage: this.numItems,
+      }
+
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+
       IndividualApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
+        this.total = response.data.total
+
+        if (this.items.length < this.total) {
+          this.more = true
+        } else {
+          this.more = false
+        }
+
         this.loading = false
       })
     },
-    getFilteredData: debounce(function (options) {
-      this.fetchData(options)
+    getFilteredData: debounce(function () {
+      this.fetchData()
     }, 500),
   },
 }
