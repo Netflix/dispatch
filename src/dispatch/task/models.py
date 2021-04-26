@@ -21,6 +21,7 @@ from dispatch.database.core import Base
 from dispatch.config import INCIDENT_RESOURCE_INCIDENT_TASK
 from dispatch.models import DispatchBase, ResourceMixin
 
+from dispatch.project.models import ProjectRead
 from dispatch.incident.models import IncidentReadNested
 from dispatch.ticket.models import TicketRead
 from dispatch.participant.models import ParticipantRead, ParticipantUpdate
@@ -124,6 +125,7 @@ class TaskBase(DispatchBase):
     weblink: Optional[str]
     incident: Optional[IncidentReadNested]
     resource_id: Optional[str]
+    project: Optional[ProjectRead]
 
 
 class TaskCreate(TaskBase):
