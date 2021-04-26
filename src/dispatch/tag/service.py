@@ -20,8 +20,8 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Tag]:
     )
 
 
-def get_all(*, db_session):
-    return db_session.query(Tag)
+def get_all(*, db_session, project_id: int):
+    return db_session.query(Tag).filter(Tag.project_id == project_id)
 
 
 def create(*, db_session, tag_in: TagCreate) -> Tag:
