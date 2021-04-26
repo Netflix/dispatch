@@ -46,6 +46,7 @@ export default {
         filter: JSON.stringify({
           and: [
             {
+              model: "Incident",
               field: "status",
               op: "==",
               value: "Active",
