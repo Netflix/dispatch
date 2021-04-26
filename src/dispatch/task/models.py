@@ -125,7 +125,6 @@ class TaskBase(DispatchBase):
     weblink: Optional[str]
     incident: Optional[IncidentReadNested]
     resource_id: Optional[str]
-    project: Optional[ProjectRead]
 
 
 class TaskCreate(TaskBase):
@@ -143,6 +142,7 @@ class TaskUpdate(TaskBase):
 
 class TaskRead(TaskBase):
     id: int
+    project: Optional[ProjectRead]
 
 
 class TaskPagination(DispatchBase):
