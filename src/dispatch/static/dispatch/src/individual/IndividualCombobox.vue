@@ -37,8 +37,11 @@
 </template>
 
 <script>
-import IndividualApi from "@/individual/api"
 import { cloneDeep, debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import IndividualApi from "@/individual/api"
+
 export default {
   name: "IndividualComboBox",
   props: {
