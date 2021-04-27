@@ -5,8 +5,6 @@ description: >-
   documentation.
 ---
 
-# App
-
 ## First Install
 
 Dispatch uses the same configuration system as [Starlette](https://www.starlette.io/config/).
