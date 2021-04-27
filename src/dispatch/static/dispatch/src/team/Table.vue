@@ -85,13 +85,16 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
+      "table.options.filters.project",
       "table.loading",
       "table.rows.items",
       "table.rows.total",
     ]),
+    ...mapFields("route", ["query"]),
   },
 
   created() {
+    this.project = [{ name: this.query.project }]
     this.getAll()
 
     this.$watch(

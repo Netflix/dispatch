@@ -88,11 +88,13 @@ const actions = {
     commit("RESET_SELECTED")
   },
   save({ commit, dispatch }) {
+    commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
       return DocumentApi.create(state.selected)
         .then(function (resp) {
           dispatch("closeCreateEdit")
           dispatch("getAll")
+          commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
             { text: "Document created successfully.", type: "success" },
@@ -101,6 +103,7 @@ const actions = {
           return resp.data
         })
         .catch((err) => {
+          commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
             {
@@ -113,6 +116,7 @@ const actions = {
     } else {
       return DocumentApi.update(state.selected.id, state.selected)
         .then(() => {
+          commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(

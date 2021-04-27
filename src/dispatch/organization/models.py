@@ -21,8 +21,10 @@ class Organization(Base):
 
 
 class OrganizationBase(DispatchBase):
+    id: Optional[int]
     name: str
     description: Optional[str]
+    default: bool
 
 
 class OrganizationCreate(OrganizationBase):

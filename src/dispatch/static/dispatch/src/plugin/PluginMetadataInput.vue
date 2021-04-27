@@ -23,7 +23,7 @@
           </v-tooltip>
         </v-col>
         <v-col cols="12" sm="10">
-          <plugin-combobox
+          <plugin-instance-combobox
             :project="project"
             :type="type"
             @input="setPlugin({ plugin: $event, idx: idx })"
@@ -63,12 +63,12 @@
 </template>
 
 <script>
-import PluginCombobox from "@/plugin/PluginCombobox.vue"
+import PluginInstanceCombobox from "@/plugin/PluginInstanceCombobox.vue"
 export default {
   name: "PluginMetadataInput",
 
   components: {
-    PluginCombobox,
+    PluginInstanceCombobox,
   },
 
   props: {

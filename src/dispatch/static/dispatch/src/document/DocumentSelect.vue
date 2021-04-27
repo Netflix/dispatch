@@ -66,7 +66,7 @@ export default {
 
   watch: {
     search(val) {
-      val && val !== this.select && this.querySelections(val)
+      val && val !== this.select && this.fetchData()
     },
     value(val) {
       if (!val) return
@@ -90,14 +90,6 @@ export default {
     addItem(value) {
       this.document = value
       this.items.push(value)
-    },
-    querySelections(v) {
-      this.loading = "error"
-      // Simulated ajax query
-      DocumentApi.getAll({ q: v }).then((response) => {
-        this.items = response.data.items
-        this.loading = false
-      })
     },
     fetchData() {
       this.error = null

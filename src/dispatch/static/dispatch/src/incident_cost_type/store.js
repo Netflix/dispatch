@@ -81,11 +81,13 @@ const actions = {
     commit("RESET_SELECTED")
   },
   save({ commit, dispatch }) {
+    commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
       return IncidentCostTypeApi.create(state.selected)
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
+          commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
             { text: "Incident cost type created successfully.", type: "success" },
@@ -93,6 +95,7 @@ const actions = {
           )
         })
         .catch((err) => {
+          commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
             {
@@ -107,6 +110,7 @@ const actions = {
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
+          commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
             { text: "Incident cost type updated successfully.", type: "success" },
@@ -114,6 +118,7 @@ const actions = {
           )
         })
         .catch((err) => {
+          commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
             {
@@ -128,6 +133,7 @@ const actions = {
   remove({ commit, dispatch }) {
     return IncidentCostTypeApi.delete(state.selected.id)
       .then(function () {
+        commit("SET_SELECTED_LOADING", false)
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
@@ -137,6 +143,7 @@ const actions = {
         )
       })
       .catch((err) => {
+        commit("SET_SELECTED_LOADING", false)
         commit(
           "notification_backend/addBeNotification",
           {
@@ -153,6 +160,9 @@ const mutations = {
   updateField,
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
+  },
+  SET_SELECTED_LOADING(state, value) {
+    state.selected.loading = value
   },
   SET_TABLE_LOADING(state, value) {
     state.table.loading = value
