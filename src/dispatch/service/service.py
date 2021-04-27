@@ -22,6 +22,32 @@ def get_by_external_id(*, db_session, external_id: str) -> Optional[Service]:
     return db_session.query(Service).filter(Service.external_id == external_id).first()
 
 
+def get_by_external_id_and_project_id(
+    *, db_session, external_id: str, project_id: int
+) -> Optional[Service]:
+    """Gets a service by external id (e.g. PagerDuty service id) and project id."""
+    return (
+        db_session.query(Service)
+        .filter(Service.project_id == project_id)
+        .filter(Service.external_id == external_id)
+        .first()
+    )
+
+
+def get_by_external_id_and_project_name(
+    *, db_session, external_id: str, project_name: str
+) -> Optional[Service]:
+    """Gets a service by external id (e.g. PagerDuty service id) and project name."""
+    project = project_service.get_by_name(db_session=db_session, name=project_name)
+
+    return (
+        db_session.query(Service)
+        .filter(Service.project_id == project.id)
+        .filter(Service.external_id == external_id)
+        .first()
+    )
+
+
 def get_all(*, db_session):
     """Gets all services."""
     return db_session.query(Service)
