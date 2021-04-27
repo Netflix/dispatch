@@ -2,7 +2,7 @@
   <v-combobox
     v-model="plugin"
     :items="items"
-    item-text="slug"
+    item-text="plugin.slug"
     :search-input.sync="search"
     hide-selected
     :label="label"
@@ -21,6 +21,20 @@
         </v-list-item-content>
       </v-list-item>
     </template>
+    <template v-slot:item="data">
+      <v-list-item-content>
+        <v-list-item-title>
+          <div>
+            {{ data.item.plugin.title }}
+          </div>
+        </v-list-item-title>
+        <v-list-item-subtitle>
+          <div style="width: 200px" class="text-truncate">
+            {{ data.item.plugin.description }}
+          </div>
+        </v-list-item-subtitle>
+      </v-list-item-content>
+    </template>
     <template v-slot:append-item>
       <v-list-item v-if="more" @click="loadMore()">
         <v-list-item-content>
@@ -34,17 +48,14 @@
 <script>
 import { cloneDeep, debounce } from "lodash"
 
-import SearchUtils from "@/search/utils"
 import PluginApi from "@/plugin/api"
 
 export default {
   name: "PluginCombobox",
   props: {
     value: {
-      type: [Object, String],
-      default: function () {
-        return null
-      },
+      type: [Object],
+      default: null,
     },
     type: {
       type: String,
@@ -101,16 +112,32 @@ export default {
 
       let filterOptions = {
         q: this.search,
+        sortBy: ["slug"],
         itemsPerPage: this.numItems,
-        filters: {
-          project: [this.project],
-          type: [this.type],
-        },
+        filters: JSON.stringify({
+          and: [
+            {
+              model: "Plugin",
+              field: "type",
+              op: "==",
+              value: this.type,
+            },
+            {
+              model: "Plugin",
+              field: "enabled",
+              op: "==",
+            },
+            {
+              model: "Project",
+              field: "name",
+              op: "==",
+              value: this.project.name,
+            },
+          ],
+        }),
       }
 
-      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
-
-      PluginApi.getAll(filterOptions).then((response) => {
+      PluginApi.getAllInstances(filterOptions).then((response) => {
         this.items = response.data.items
         this.total = response.data.total
 

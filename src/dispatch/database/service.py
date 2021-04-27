@@ -187,7 +187,7 @@ def search_filter_sort_paginate(
     query = apply_model_specific_joins(model_cls, query)
 
     if query_str:
-        sort = False if sort_spec else True
+        sort = False if sort_by else True
         query = search(db_session=db_session, search_query=query_str, model=model, sort=sort)
 
     query = apply_model_specific_filters(model_cls, query, current_user)

@@ -72,9 +72,11 @@ const actions = {
     commit("RESET_SELECTED")
   },
   save({ commit, dispatch }) {
+    commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
       return ProjectApi.create(state.selected)
         .then(() => {
+          commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
@@ -84,6 +86,7 @@ const actions = {
           )
         })
         .catch((err) => {
+          commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
             {
@@ -96,6 +99,7 @@ const actions = {
     } else {
       return ProjectApi.update(state.selected.id, state.selected)
         .then(() => {
+          commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
@@ -105,6 +109,7 @@ const actions = {
           )
         })
         .catch((err) => {
+          commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
             {
@@ -144,6 +149,9 @@ const mutations = {
   updateField,
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
+  },
+  SET_SELECTED_LOADING(state, value) {
+    state.selected.loading = value
   },
   SET_TABLE_LOADING(state, value) {
     state.table.loading = value

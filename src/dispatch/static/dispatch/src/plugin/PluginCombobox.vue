@@ -55,10 +55,8 @@ export default {
   name: "PluginCombobox",
   props: {
     value: {
-      type: [Object, String],
-      default: function () {
-        return null
-      },
+      type: [Object],
+      default: null,
     },
     type: {
       type: String,
