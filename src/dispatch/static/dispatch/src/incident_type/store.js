@@ -14,6 +14,7 @@ const getDefaultSelectedState = () => {
     commander_service: null,
     liaison_service: null,
     template_document: null,
+    loading: false,
     plugin_metadata: [],
     exclude_from_metrics: null,
     default: false,
@@ -84,11 +85,13 @@ const actions = {
     commit("RESET_SELECTED")
   },
   save({ commit, state, dispatch }) {
+    commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
       return IncidentTypeApi.create(state.selected)
         .then(() => {
           dispatch("closeCreateEdit")
           dispatch("getAll")
+          commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
             { text: "Incident type created successfully.", type: "success" },
@@ -96,6 +99,7 @@ const actions = {
           )
         })
         .catch((err) => {
+          commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
             {
@@ -108,6 +112,7 @@ const actions = {
     } else {
       return IncidentTypeApi.update(state.selected.id, state.selected)
         .then(() => {
+          commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
@@ -117,6 +122,7 @@ const actions = {
           )
         })
         .catch((err) => {
+          commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
             {
@@ -156,6 +162,9 @@ const mutations = {
   updateField,
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
+  },
+  SET_SELECTED_LOADING(state, value) {
+    state.selected.loading = value
   },
   SET_TABLE_LOADING(state, value) {
     state.table.loading = value
