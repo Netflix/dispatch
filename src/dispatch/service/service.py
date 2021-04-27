@@ -22,6 +22,29 @@ def get_by_external_id(*, db_session, external_id: str) -> Optional[Service]:
     return db_session.query(Service).filter(Service.external_id == external_id).first()
 
 
+def get_by_external_id_and_project_id(
+    *, db_session, external_id: str, project_id: int
+) -> Optional[Service]:
+    """Gets a service by external id (e.g. PagerDuty service id) and project id."""
+    return (
+        db_session.query(Service)
+        .filter(Service.project_id == project_id)
+        .filter(Service.external_id == external_id)
+        .first()
+    )
+
+
+def get_by_external_id_and_project_name(
+    *, db_session, external_id: str, project_name: str
+) -> Optional[Service]:
+    """Gets a service by external id (e.g. PagerDuty service id) and project name."""
+    project = project_service.get_by_name(db_session=db_session, name=project_name)
+    service = get_by_external_id_and_project_id(
+        db_session=db_session, external_id=external_id, project_id=project.id
+    )
+    return service
+
+
 def get_all(*, db_session):
     """Gets all services."""
     return db_session.query(Service)
@@ -35,12 +58,23 @@ def get_all_by_status(*, db_session, is_active: bool):
 def get_all_by_type_and_status(
     *, db_session, service_type: str, is_active: bool
 ) -> List[Optional[Service]]:
-    """Gets a service by type and status."""
+    """Gets services by type and status."""
     return (
         db_session.query(Service)
         .filter(Service.type == service_type)
         .filter(Service.is_active.is_(is_active))
         .all()
+    )
+
+
+def get_all_by_project_id_and_status(
+    *, db_session, project_id: id, is_active: bool
+) -> List[Optional[Service]]:
+    """Gets services by project id and status."""
+    return (
+        db_session.query(Service)
+        .filter(Service.project_id == project_id)
+        .filter(Service.is_active.is_(is_active))
     )
 
 

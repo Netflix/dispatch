@@ -1164,8 +1164,8 @@ def incident_engage_oncall_flow(
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # we resolve the oncall service
-    oncall_service = service_service.get_by_external_id(
-        db_session=db_session, external_id=oncall_service_id
+    oncall_service = service_service.get_by_external_id_and_project_id(
+        db_session=db_session, external_id=oncall_service_id, project_id=incident.project.id
     )
 
     # we get the active oncall plugin
