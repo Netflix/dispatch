@@ -35,8 +35,9 @@ def create(*, db_session, project_in: ProjectCreate) -> Project:
     )
     project = Project(
         **project_in.dict(exclude={"organization"}),
-        organization=organization,
+        organization_id=organization.id,
     )
+
     db_session.add(project)
     db_session.commit()
     return project
@@ -46,7 +47,7 @@ def get_or_create(*, db_session, project_in: ProjectCreate) -> Project:
     if project_in.id:
         q = db_session.query(Project).filter(Project.id == project_in.id)
     else:
-        q = db_session.query(Project).filter_by(**project_in.dict(exclude={"id"}))
+        q = db_session.query(Project).filter_by(**project_in.dict(exclude={"id", "organization"}))
 
     instance = q.first()
     if instance:

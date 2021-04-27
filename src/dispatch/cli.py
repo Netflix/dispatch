@@ -295,7 +295,7 @@ def init_database():
             name="default",
             default=True,
             description="Default dispatch project.",
-            organization_id=default_org.id,
+            organization=default_org,
         ),
     )
 

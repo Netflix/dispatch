@@ -24,6 +24,8 @@ from dispatch.config import (
 from dispatch.organization import service as organization_service
 from dispatch.project import service as project_service
 
+from dispatch.enums import UserRoles
+
 from .models import (
     DispatchUser,
     DispatchUserOrganization,
@@ -63,14 +65,20 @@ def create(*, db_session, user_in: UserRegister) -> DispatchUser:
 
     # add the user to the default organization
     db_session.add(
-        DispatchUserOrganization(dispatch_user_id=user.id, organization_id=default_org.id)
+        DispatchUserOrganization(
+            dispatch_user_id=user.id, organization_id=default_org.id, role=UserRoles.member.value
+        )
     )
 
     # get the default project
     default_project = project_service.get_default(db_session=db_session)
 
     # add the user to the default project
-    db_session.add(DispatchUserProject(dispatch_user_id=user.id, project_id=default_project.id))
+    db_session.add(
+        DispatchUserProject(
+            dispatch_user_id=user.id, project_id=default_project.id, role=UserRoles.member.value
+        )
+    )
 
     db_session.commit()
     return user
