@@ -2,7 +2,7 @@
   <v-combobox
     v-model="plugin"
     :items="items"
-    item-text="title"
+    item-text="slug"
     :search-input.sync="search"
     hide-selected
     :label="label"
