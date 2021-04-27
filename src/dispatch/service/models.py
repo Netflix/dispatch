@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.orm import backref, relationship
+from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
@@ -52,6 +53,7 @@ assoc_service_terms = Table(
 
 # SQLAlchemy models...
 class Service(Base, TimeStampMixin, ProjectMixin):
+    __table_args__ = (UniqueConstraint("external_id", "project_id"),)
     id = Column(Integer, primary_key=True)
     is_active = Column(Boolean, default=True)
     name = Column(String)
