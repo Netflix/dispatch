@@ -39,13 +39,10 @@ def get_by_external_id_and_project_name(
 ) -> Optional[Service]:
     """Gets a service by external id (e.g. PagerDuty service id) and project name."""
     project = project_service.get_by_name(db_session=db_session, name=project_name)
-
-    return (
-        db_session.query(Service)
-        .filter(Service.project_id == project.id)
-        .filter(Service.external_id == external_id)
-        .first()
+    service = get_by_external_id_and_project_id(
+        db_session=db_session, external_id=external_id, project_id=project.id
     )
+    return service
 
 
 def get_all(*, db_session):
