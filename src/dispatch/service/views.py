@@ -37,7 +37,6 @@ def create_service(
     """
     Create a new service.
     """
-    print(service_in)
     service = get_by_external_id_and_project_name(
         db_session=db_session,
         external_id=service_in.external_id,
