@@ -111,5 +111,6 @@ def sync_active_stable_workflows(db_session=None):
 @background_task
 def daily_sync_workflow(db_session=None):
     """Syncs all incident workflows daily."""
-    incidents = incident_service.get_all(db_session=db_session).all()
-    sync_workflows(db_session, incidents, notify=False)
+    for project in project_service.get_all(db_session=db_session):
+        incidents = incident_service.get_all(db_session=db_session, project_id=project.id).all()
+        sync_workflows(db_session, incidents, notify=False)
