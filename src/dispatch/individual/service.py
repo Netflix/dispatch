@@ -58,7 +58,7 @@ def get_or_create(
         kwargs["email"] = individual_info.get("email", email)
         kwargs["name"] = individual_info.get("fullname", "Unknown")
         kwargs["weblink"] = individual_info.get("weblink", "Unknown")
-        individual_contact_in = IndividualContactCreate(**kwargs)
+        individual_contact_in = IndividualContactCreate(**kwargs, project=incident.project)
         contact = create(db_session=db_session, individual_contact_in=individual_contact_in)
 
     return contact
