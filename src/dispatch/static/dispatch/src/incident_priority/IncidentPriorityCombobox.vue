@@ -31,7 +31,7 @@
           <v-list-item-title>
             {{ data.item.name }}
           </v-list-item-title>
-          <v-list-item-subtitle>
+          <v-list-item-subtitle style="width: 200px" class="text-truncate">
             {{ data.item.project.name }} - {{ data.item.description }}
           </v-list-item-subtitle>
         </v-list-item-content>
@@ -135,7 +135,6 @@ export default {
         this.total = response.data.total
         this.loading = false
 
-        console.log(this.items, this.total)
         if (this.items.length < this.total) {
           this.more = true
         } else {

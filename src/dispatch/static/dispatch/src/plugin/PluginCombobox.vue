@@ -29,7 +29,7 @@
           </div>
         </v-list-item-title>
         <v-list-item-subtitle>
-          <div class="text-truncate">
+          <div style="width: 200px" class="text-truncate">
             {{ data.item.description }}
           </div>
         </v-list-item-subtitle>
@@ -112,7 +112,7 @@ export default {
 
       let filterOptions = {
         q: this.search,
-        sortBy: ["name"],
+        sortBy: ["slug"],
         descending: [false],
         itemsPerPage: this.numItems,
         filters: {
