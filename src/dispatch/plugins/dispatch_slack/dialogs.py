@@ -125,7 +125,11 @@ def create_update_incident_dialog(incident_id: int, command: dict = None, db_ses
 @background_task
 def create_engage_oncall_dialog(incident_id: int, command: dict = None, db_session=None):
     """Creates a dialog to engage an oncall person."""
-    oncall_services = service_service.get_all_by_status(db_session=db_session, is_active=True)
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    oncall_services = service_service.get_all_by_project_id_and_status(
+        db_session=db_session, project_id=incident.project.id, is_active=True
+    )
 
     if not oncall_services.count():
         blocks = [
@@ -141,7 +145,7 @@ def create_engage_oncall_dialog(incident_id: int, command: dict = None, db_sessi
             slack_client,
             command["channel_id"],
             command["user_id"],
-            "No Oncall Services Defined",
+            "No oncall services defined",
             blocks=blocks,
         )
         return
