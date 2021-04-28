@@ -1299,7 +1299,7 @@ def incident_remove_participant_flow(
         send_incident_commander_readded_notification(incident, db_session)
     else:
         # we remove the participant from the incident
-        participant_flows.remove_participant(user_email, incident_id, db_session)
+        participant_flows.remove_participant(user_email, incident, db_session)
 
 
 @background_task
