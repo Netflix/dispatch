@@ -30,11 +30,11 @@ def calculate_incidents_response_cost(db_session=None):
         response_cost_type = incident_cost_type_service.get_default(
             db_session=db_session, project_id=project.id
         )
-        if not response_cost_type:
+        if response_cost_type is None:
             log.warning(
-                "A default cost type for response cost does not exist. Response costs won't be calculated."
+                f"A default cost type for response cost does not exist in the {project.name} project. Response costs won't be calculated."
             )
-            return
+            continue
 
         # we want to update the response cost of all incidents, all the time
         incidents = incident_service.get_all(db_session=db_session, project_id=project.id)
@@ -47,7 +47,7 @@ def calculate_incidents_response_cost(db_session=None):
                     incident_cost_type_id=response_cost_type.id,
                 )
 
-                if not incident_response_cost:
+                if incident_response_cost is None:
                     # we create the response cost if it doesn't exist
                     incident_cost_type = IncidentCostTypeCreate.from_orm(response_cost_type)
                     incident_cost_in = IncidentCostCreate(
