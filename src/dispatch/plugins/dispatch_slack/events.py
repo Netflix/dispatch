@@ -160,8 +160,8 @@ def is_business_hours(commander_tz: str):
 @background_task
 def after_hours(user_email: str, incident_id: int, event: EventEnvelope = None, db_session=None):
     """Notifies the user that this incident is current in after hours mode."""
-    # we want to ignore user joined messages
-    if event.event.subtype == "group_join":
+    # we ignore user channel and group join messages
+    if event.event.subtype in ["channel_join", "group_join"]:
         return
 
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)

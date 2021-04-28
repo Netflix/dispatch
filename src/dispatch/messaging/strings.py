@@ -284,7 +284,7 @@ Hey, I see you're the Incident Commander for {{name}} ("{{title}}"). Here are a 
 \n • Invite incident participants and team oncalls by mentioning them in the incident channel or using the Slack `{{engage_oncall_command}}` command.
 \n • Keep incident participants and stakeholders informed using the `{{tactical_report_command}}` and `{{executive_report_command}}` commands.
 \n • Get links to all incident resources including the Slack commands reference sheet and Security Incident Response FAQ by running the `{{list_resources_command}}` command.
-\n\n
+\n
 To find a Slack command, simply type `/` in the message field or click the lightning bolt icon to the left of the message field.
 """
 
