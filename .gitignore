@@ -209,3 +209,5 @@ docker/.env
 
 # exclude data dump files
 *.dump
+
+.gitconfig
