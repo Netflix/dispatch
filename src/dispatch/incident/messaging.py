@@ -11,10 +11,7 @@ from dispatch.conversation.enums import ConversationCommands
 from dispatch.database.core import SessionLocal, resolve_attr
 from dispatch.document import service as document_service
 from dispatch.incident.enums import IncidentStatus
-from dispatch.project.models import Project
 from dispatch.incident.models import Incident, IncidentRead
-from dispatch.incident_priority.models import IncidentPriority
-from dispatch.incident_type.models import IncidentType
 
 from dispatch.notification import service as notification_service
 from dispatch.messaging.strings import (

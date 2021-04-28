@@ -45,7 +45,7 @@ try:
     from dispatch.ticket.models import Ticket  # noqa lgtm[py/unused-import]
     from dispatch.workflow.models import Workflow  # noqa lgtm[py/unused-import]
     from dispatch.search_filter.models import SearchFilter  # noqa lgtm[py/unused-impot]
-except Exception as e:
+except Exception:
     pass
 
 
