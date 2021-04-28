@@ -67,12 +67,13 @@ def upgrade():
 
     # migrate current plugin configuration to it's own instance
     for p in session.query(Plugin).all():
+        configuration = p.configuration if p.configuration else {}
         session.add(
             PluginInstance(
                 project_id=p.project_id,
                 plugin_id=p.id,
                 enabled=p.enabled,
-                configuration=p.configuration,
+                configuration=configuration,
             )
         )
     session.flush()
