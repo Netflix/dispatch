@@ -18,7 +18,7 @@
         no-filter
         v-model="searchFilters"
       >
-        <template v-slot:selection="{ attr, on, item, selected }">
+        <template v-slot:selection="{ attr, item, selected }">
           <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
             <template v-slot:activator="{ on }">
               <v-chip v-bind="attr" :input-value="selected" pill v-on="on">
