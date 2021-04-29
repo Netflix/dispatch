@@ -162,6 +162,16 @@ export default {
     if (this.query.incident_priority) {
       this.incident_priority = { name: this.query.incident_priority }
     }
+
+    if (this.query.tag) {
+      if (Array.isArray(this.query.tag)) {
+        this.tags = this.query.tag.map(function (t) {
+          return { name: t }
+        })
+      } else {
+        this.tags = [{ name: this.query.tag }]
+      }
+    }
   },
 }
 </script>

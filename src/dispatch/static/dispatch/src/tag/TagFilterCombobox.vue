@@ -25,7 +25,9 @@
       </v-list-item>
     </template>
     <template v-slot:selection="data">
-      <v-chip> {{ data.item.tag_type.name }}/{{ data.item.name }} </v-chip>
+      <v-chip>
+        <span v-if="data.item.tag_type"> {{ data.item.tag_type.name }}/ </span>{{ data.item.name }}
+      </v-chip>
     </template>
     <template v-slot:item="data">
       <template>
@@ -109,7 +111,7 @@ export default {
   },
 
   created() {
-    this.fetchData({})
+    this.fetchData()
     this.$watch(
       (vm) => [vm.project],
       () => {
