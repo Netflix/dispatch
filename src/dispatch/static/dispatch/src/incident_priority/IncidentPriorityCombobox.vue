@@ -1,18 +1,17 @@
 <template>
   <v-combobox
-    v-model="incidentPriority"
     :items="items"
-    item-text="name"
-    :search-input.sync="search"
-    :menu-props="{ maxHeight: '400' }"
-    hide-selected
     :label="label"
-    multiple
+    :loading="loading"
+    :search-input.sync="search"
+    @update:search-input="getFilteredData()"
     chips
     clearable
+    deletable-chips
+    hide-selected
+    multiple
     no-filter
-    :loading="loading"
-    @update:search-input="getFilteredData()"
+    v-model="incidentPriority"
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -25,17 +24,18 @@
         </v-list-item-content>
       </v-list-item>
     </template>
+    <template v-slot:selection="{ item, index }">
+      <v-chip close @click:close="value.splice(index, 1)">
+        <span v-if="item.project.name"> {{ item.project.name }}/ </span>{{ item.name }}
+      </v-chip>
+    </template>
     <template v-slot:item="data">
-      <template>
-        <v-list-item-content>
-          <v-list-item-title>
-            {{ data.item.name }}
-          </v-list-item-title>
-          <v-list-item-subtitle style="width: 200px" class="text-truncate">
-            {{ data.item.project.name }} - {{ data.item.description }}
-          </v-list-item-subtitle>
-        </v-list-item-content>
-      </template>
+      <v-list-item-content>
+        <v-list-item-title> {{ data.item.name }} ({{ data.item.project.name }}) </v-list-item-title>
+        <v-list-item-subtitle style="width: 200px" class="text-truncate">
+          {{ data.item.description }}
+        </v-list-item-subtitle>
+      </v-list-item-content>
     </template>
     <template v-slot:append-item>
       <v-list-item v-if="more" @click="loadMore()">

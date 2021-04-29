@@ -71,7 +71,8 @@ export default {
             value: value.name,
           })
         } else {
-          subFilter.push({ field: key, op: "==", value: value })
+          // TODO support other models
+          subFilter.push({ model: "Incident", field: key, op: "==", value: value })
         }
       })
       if (subFilter.length > 0) {

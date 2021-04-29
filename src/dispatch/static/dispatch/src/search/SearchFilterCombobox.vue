@@ -2,20 +2,21 @@
   <v-container>
     <v-row no-gutter>
       <v-combobox
-        v-model="searchFilters"
         :items="items"
-        item-text="name"
-        :search-input.sync="search"
-        :menu-props="{ maxHeight: '400' }"
-        hide-selected
         :label="label"
+        :loading="loading"
+        :menu-props="{ maxHeight: '400' }"
+        :search-input.sync="search"
+        @update:search-input="getFilteredData({ q: $event })"
         chips
-        close
         clearable
+        close
+        deletable-chips
+        hide-selected
+        item-text="name"
         multiple
         no-filter
-        :loading="loading"
-        @update:search-input="getFilteredData({ q: $event })"
+        v-model="searchFilters"
       >
         <template v-slot:selection="{ attr, on, item, selected }">
           <v-chip v-bind="attr" :input-value="selected" v-on="on">

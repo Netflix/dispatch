@@ -1,18 +1,19 @@
 <template>
   <v-combobox
-    label="Members"
-    :items="value.suggestedMembers"
-    chips
-    multiple
-    clearable
+    deletable-chips
     :allow-overflow="false"
+    :items="value.suggestedMembers"
     :loading="isLoading"
-    item-text="content.name"
     :return-object="true"
     :search-input.sync="search"
-    no-filter
     @input="addMembers($event)"
     @update:search-input="setFilterOptions({ q: $event })"
+    chips
+    clearable
+    item-text="content.name"
+    label="Members"
+    multiple
+    no-filter
   >
     <template v-slot:no-data>
       <v-list-item>

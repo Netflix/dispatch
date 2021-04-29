@@ -1,13 +1,13 @@
 <template>
   <v-combobox
-    v-model="individual"
     :items="items"
-    item-text="name"
-    :search-input.sync="search"
-    :menu-props="{ maxHeight: '400' }"
     :label="label"
     :loading="loading"
+    :menu-props="{ maxHeight: '400' }"
+    :search-input.sync="search"
     @update:search-input="fetchData({ q: $event })"
+    item-text="name"
+    v-model="individual"
   >
     <template v-slot:no-data>
       <v-list-item>

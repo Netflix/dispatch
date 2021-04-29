@@ -1,18 +1,19 @@
 <template>
   <v-combobox
-    v-model="incident"
     :items="items"
-    item-text="name"
-    :search-input.sync="search"
-    :menu-props="{ maxHeight: '400' }"
-    hide-selected
     :label="label"
-    multiple
-    chips
-    close
-    clearable
     :loading="loading"
+    :menu-props="{ maxHeight: '400' }"
+    :search-input.sync="search"
     @update:search-input="fetchData({ q: $event })"
+    chips
+    clearable
+    close
+    deletable-chips
+    hide-selected
+    item-text="name"
+    multiple
+    v-model="incident"
   >
     <template v-slot:selection="{ attr, on, item, selected }">
       <v-chip v-bind="attr" :input-value="selected" v-on="on">

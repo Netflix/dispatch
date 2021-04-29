@@ -1,15 +1,16 @@
 <template>
   <v-combobox
-    v-model="definitions"
     :items="items"
+    :loading="loading"
     :search-input.sync="search"
+    @update:search-input="getFilteredData()"
+    chips
+    deletable-chips
     hide-selected
     label="Add definitions"
     multiple
-    chips
     no-filter
-    :loading="loading"
-    @update:search-input="getFilteredData()"
+    v-model="definitions"
   >
     <template v-slot:no-data>
       <v-list-item>
