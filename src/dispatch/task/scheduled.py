@@ -40,54 +40,60 @@ log = logging.getLogger(__name__)
 @background_task
 def create_task_reminders(db_session=None):
     """Creates multiple task reminders."""
-    tasks = task_service.get_overdue_tasks(db_session=db_session)
-    log.debug(f"New tasks that need reminders. NumTasks: {len(tasks)}")
+    for project in project_service.get_all(db_session=db_session):
+        tasks = task_service.get_overdue_tasks(db_session=db_session, project_id=project.id)
+        log.debug(f"New tasks that need reminders. NumTasks: {len(tasks)}")
 
-    # let's only remind for active incidents for now
-    tasks = [t for t in tasks if t.incident.status == IncidentStatus.active]
+        # let's only remind for active incidents for now
+        tasks = [t for t in tasks if t.incident.status == IncidentStatus.active]
 
-    if tasks:
-        contact_fullname = contact_weblink = DISPATCH_HELP_EMAIL
+        if tasks:
+            contact_fullname = contact_weblink = DISPATCH_HELP_EMAIL
 
-        # NOTE INCIDENT_ONCALL_SERVICE_ID is optional
-        if INCIDENT_ONCALL_SERVICE_ID:
-            oncall_service = service_service.get_by_external_id(
-                db_session=db_session, external_id=INCIDENT_ONCALL_SERVICE_ID
-            )
-
-            if not oncall_service:
-                log.warning(
-                    "INCIDENT_ONCALL_SERVICE_ID configured in the .env file, but not found in the database. Did you create the oncall service in the UI?"
+            # NOTE INCIDENT_ONCALL_SERVICE_ID is optional
+            if INCIDENT_ONCALL_SERVICE_ID:
+                oncall_service = service_service.get_by_external_id(
+                    db_session=db_session, external_id=INCIDENT_ONCALL_SERVICE_ID
                 )
-                return
 
-            oncall_plugin = plugin_service.get_active_instance(
-                db_session=db_session, plugin_type="oncall"
-            )
+                if not oncall_service:
+                    log.warning(
+                        "INCIDENT_ONCALL_SERVICE_ID configured in the .env file, but not found in the database. Did you create the oncall service in the UI?"
+                    )
+                    return
 
-            if oncall_plugin.plugin.slug != oncall_service.type:
-                log.warning(
-                    f"Unable to resolve the oncall. Oncall plugin enabled not of type {oncall_plugin.plugin.slug}."
+                oncall_plugin = plugin_service.get_active_instance(
+                    db_session=db_session, project_id=project.id, plugin_type="oncall"
                 )
-                return
 
-            if not oncall_plugin:
-                log.warning(
-                    f"Unable to resolve the oncall, INCIDENT_ONCALL_SERVICE_ID configured, but associated plugin ({oncall_plugin.plugin.slug}) is not enabled."
-                )
-                contact_fullname = "Unknown"
-                contact_weblink = None
-            else:
-                oncall_email = oncall_plugin.instance.get(service_id=INCIDENT_ONCALL_SERVICE_ID)
-                oncall_individual = individual_service.resolve_user_by_email(
-                    oncall_email, db_session
-                )
-                contact_fullname = oncall_individual["fullname"]
-                contact_weblink = oncall_individual["weblink"]
+                if not oncall_plugin:
+                    log.warning(
+                        f"Unable to resolve oncall. No oncall plugin is enabled. Project: {project.name}"
+                    )
 
-        grouped_tasks = group_tasks_by_assignee(tasks)
-        for assignee, tasks in grouped_tasks.items():
-            create_reminder(db_session, assignee, tasks, contact_fullname, contact_weblink)
+                if oncall_plugin.plugin.slug != oncall_service.type:
+                    log.warning(
+                        f"Unable to resolve the oncall. Oncall plugin enabled not of type {oncall_plugin.plugin.slug}."
+                    )
+                    return
+
+                if not oncall_plugin:
+                    log.warning(
+                        f"Unable to resolve the oncall, INCIDENT_ONCALL_SERVICE_ID configured, but associated plugin ({oncall_plugin.plugin.slug}) is not enabled."
+                    )
+                    contact_fullname = "Unknown"
+                    contact_weblink = None
+                else:
+                    oncall_email = oncall_plugin.instance.get(service_id=INCIDENT_ONCALL_SERVICE_ID)
+                    oncall_individual = individual_service.resolve_user_by_email(
+                        oncall_email, db_session
+                    )
+                    contact_fullname = oncall_individual["fullname"]
+                    contact_weblink = oncall_individual["weblink"]
+
+            grouped_tasks = group_tasks_by_assignee(tasks)
+            for assignee, tasks in grouped_tasks.items():
+                create_reminder(db_session, assignee, tasks, contact_fullname, contact_weblink)
 
 
 def sync_tasks(db_session, incidents, notify: bool = False):
