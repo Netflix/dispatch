@@ -35,6 +35,25 @@ export default {
         filters.window = { ...filters.window, ...{ [key]: value } }
         return
       }
+
+      if (["status"].includes(key)) {
+        if (typeof value === "string" || value instanceof String) {
+          if (has(filters, key)) {
+            filters[key].push(value)
+          } else {
+            filters[key] = [value]
+          }
+        } else {
+          each(value, function (item) {
+            if (has(filters, key)) {
+              filters[key].push(item)
+            } else {
+              filters[key] = [item]
+            }
+          })
+        }
+        return
+      }
       if (typeof value === "string" || value instanceof String) {
         if (has(filters, key)) {
           filters[key].push({ name: value })

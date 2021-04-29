@@ -1,17 +1,18 @@
 <template>
   <v-combobox
-    v-model="incidentType"
     :items="items"
-    item-text="name"
-    :search-input.sync="search"
-    hide-selected
     :label="label"
-    multiple
+    :loading="loading"
+    :search-input.sync="search"
+    @update:search-input="getFilteredData()"
     chips
     clearable
+    deletable-chips
+    hide-selected
+    item-text="name"
+    multiple
     no-filter
-    :loading="loading"
-    @update:search-input="getFilteredData()"
+    v-model="incidentType"
   >
     <template v-slot:no-data>
       <v-list-item>

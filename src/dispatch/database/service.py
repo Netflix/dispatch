@@ -68,16 +68,16 @@ def apply_model_specific_filters(model: Base, query: orm.Query, current_user: Di
 def apply_model_specific_joins(model: Base, query: orm.query):
     """Applies any model specific implicity joins."""
     model_map = {
-        Feedback: [Incident, Project],
-        Task: [Incident, Project],
-        PluginInstance: [Plugin],
-        Incident: [Incident.tags],
+        Feedback: [(Incident, False), (Project, False)],
+        Task: [(Incident, False), (Project, False)],
+        PluginInstance: [(Plugin, False)],
+        Incident: [(Incident.tags, True)],
     }
 
     joined_models = model_map.get(model, [])
 
-    for m in joined_models:
-        query = query.join(m)
+    for model, is_outer in joined_models:
+        query = query.join(model, isouter=is_outer)
 
     return query
 

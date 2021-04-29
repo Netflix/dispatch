@@ -1,19 +1,20 @@
 <template>
   <v-combobox
-    v-model="individual"
     :items="items"
-    item-text="name"
-    :search-input.sync="search"
-    :menu-props="{ maxHeight: '400' }"
-    hide-selected
     :label="label"
-    multiple
-    close
+    :loading="loading"
+    :menu-props="{ maxHeight: '400' }"
+    :search-input.sync="search"
+    @update:search-input="fetchData()"
     chips
     clearable
+    close
+    deletable-chips
+    hide-selected
+    item-text="name"
+    multiple
     no-filter
-    :loading="loading"
-    @update:search-input="fetchData()"
+    v-model="individual"
   >
     <template v-slot:no-data>
       <v-list-item>

@@ -1,17 +1,17 @@
 <template>
   <v-combobox
-    v-model="tags"
     :items="items"
-    item-text="name"
-    :search-input.sync="search"
-    hide-selected
     :label="label"
-    multiple
-    clearable
-    chips
     :loading="loading"
-    no-filter
+    :search-input.sync="search"
     @update:search-input="getFilteredData()"
+    chips
+    clearable
+    hide-selected
+    item-text="name"
+    multiple
+    no-filter
+    v-model="tags"
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -24,18 +24,16 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-    <template v-slot:selection="data">
-      <v-chip>
-        <span v-if="data.item.tag_type"> {{ data.item.tag_type.name }}/ </span>{{ data.item.name }}
+    <template v-slot:selection="{ item, index }">
+      <v-chip close @click:close="value.splice(index, 1)">
+        <span v-if="item.tag_type"> {{ item.tag_type.name }}/ </span>{{ item.name }}
       </v-chip>
     </template>
     <template v-slot:item="data">
-      <template>
-        <v-list-item-content>
-          <v-list-item-title v-text="data.item.name" />
-          <v-list-item-subtitle v-if="data.item.tag_type" v-text="data.item.tag_type.name" />
-        </v-list-item-content>
-      </template>
+      <v-list-item-content>
+        <v-list-item-title v-text="data.item.name" />
+        <v-list-item-subtitle v-if="data.item.tag_type" v-text="data.item.tag_type.name" />
+      </v-list-item-content>
     </template>
     <template v-slot:append-item>
       <v-list-item v-if="more" @click="loadMore()">
