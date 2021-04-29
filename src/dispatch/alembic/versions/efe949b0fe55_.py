@@ -4,7 +4,7 @@ We only create tables and migrate date, we leave existing data
 to be dropped in a future revision to help prevent data loss.
 
 Revision ID: efe949b0fe55
-Revises: 87400096f4cc
+Revises: 90ddc69b8300
 Create Date: 2021-04-22 11:19:07.315701
 
 """
@@ -20,7 +20,7 @@ Base = declarative_base()
 
 # revision identifiers, used by Alembic.
 revision = "efe949b0fe55"
-down_revision = "87400096f4cc"
+down_revision = "90ddc69b8300"
 branch_labels = None
 depends_on = None
 
@@ -375,35 +375,16 @@ def upgrade():
 
     # migrate the data
 
-    # documents
-    for d in session.query(Document).all():
-        if any([d.incident_priorities, d.incident_types, d.terms]):
-            filters = engagement_models_to_search_filter(d)
-            d.filters = [filters]
-            session.add(d)
+    for model in [Document, IndividualContact, TeamContact, Service]:
+        for x in session.query(model).all():
+            if any([x.incident_priorities, x.incident_types, x.terms]):
+                filter_name = f"Migrated - {x.name}"
+                if not session.query(SearchFilter).filter(SearchFilter.name == filter_name).one_or_none():
+                    f = engagement_models_to_search_filter(x)
+                    x.filters.append(f)
+                session.add(x)
 
-    # individuals
-    for i in session.query(IndividualContact).all():
-        if any([i.incident_priorities, i.incident_types, i.terms]):
-            filters = engagement_models_to_search_filter(i)
-            i.filters = [filters]
-            session.add(i)
-
-    # teams
-    for t in session.query(TeamContact).all():
-        if any([t.incident_priorities, t.incident_types, t.terms]):
-            filters = engagement_models_to_search_filter(t)
-            t.filters = [filters]
-            session.add(t)
-
-    # services
-    for s in session.query(Service).all():
-        if any([s.incident_priorities, s.incident_types, s.terms]):
-            filters = engagement_models_to_search_filter(s)
-            s.filters = [filters]
-            session.add(s)
-
-    session.flush()
+            session.commit()
 
     # ### end Alembic commands ###
 
