@@ -21,7 +21,7 @@ from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
 from dispatch.participant.models import Participant
 from dispatch.participant_role.models import ParticipantRole
-from dispatch.route.models import Recommendation, RecommendationAccuracy
+from dispatch.route.models import Recommendation, RecommendationMatch
 from dispatch.service.models import Service
 from dispatch.report.models import Report
 from dispatch.storage.models import Storage
@@ -372,16 +372,17 @@ class ParticipantFactory(BaseFactory):
                 self.status_reports.append(report)
 
 
-class RecommendationAccuracyFactory(BaseFactory):
+class RecommendationMatchFactory(BaseFactory):
     """Recommendation Accuracy Factory."""
 
     correct = True
     resource_type = ""
+    resource_state = {}
 
     class Meta:
         """Factory Configuration."""
 
-        model = RecommendationAccuracy
+        model = RecommendationMatch
 
     @post_generation
     def recommendation(self, create, extracted, **kwargs):
@@ -395,76 +396,12 @@ class RecommendationAccuracyFactory(BaseFactory):
 class RecommendationFactory(BaseFactory):
     """Recommendation Factory."""
 
-    text = FuzzyText()
-    accuracy = SubFactory(RecommendationAccuracy)
+    matches = [SubFactory(RecommendationMatch)]
 
     class Meta:
         """Factory Configuration."""
 
         model = Recommendation
-
-    @post_generation
-    def incident_priorities(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for priority in extracted:
-                self.incident_priorities.append(priority)
-
-    @post_generation
-    def incident_types(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for incident_type in extracted:
-                self.incident_types.append(incident_type)
-
-    @post_generation
-    def matched_terms(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for term in extracted:
-                self.matched_terms.append(term)
-
-    @post_generation
-    def documents(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for document in extracted:
-                self.documents.append(document)
-
-    @post_generation
-    def team_contacts(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for team_contact in extracted:
-                self.team_contacts.append(team_contact)
-
-    @post_generation
-    def service_contacts(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for service_contact in extracted:
-                self.service_contacts.append(service_contact)
-
-    @post_generation
-    def individual_contacts(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for individual_contact in extracted:
-                self.individual_contacts.append(individual_contact)
 
 
 class ServiceFactory(TimeStampBaseFactory):
