@@ -1,6 +1,7 @@
 import logging
 from typing import Any, List
 
+from dispatch.database.core import get_table_name_by_class_instance
 from dispatch.search_filter import service as search_filter_service
 
 from dispatch.incident.models import Incident
@@ -14,17 +15,17 @@ def get_resource_matches(
 ) -> List[RecommendationMatch]:
     """Fetches all matching model entities for the given incident."""
     # get all entities with an associated filter
+    model_cls, model_state = model
     resources = (
-        db_session.query(model)
-        .filter(model.project_id == incident.project_id)
-        .filter(model.filters.any())
+        db_session.query(model_cls)
+        .filter(model_cls.project_id == incident.project_id)
+        .filter(model_cls.filters.any())
         .all()
     )
 
     matched_resources = []
     for resource in resources:
         for f in resource.filters:
-            print(f.expression)
             match = search_filter_service.match(
                 db_session=db_session,
                 filter_spec=f.expression,
@@ -32,7 +33,14 @@ def get_resource_matches(
             )
 
             if match:
-                matched_resources.append(RecommendationMatch(resource=resource))
+                matched_resources.append(
+                    RecommendationMatch(
+                        resource_state=model_state(**resource.__dict__).dict(
+                            exclude={"created_at", "updated_at"}
+                        ),
+                        resource_type=model_cls.__name__,
+                    )
+                )
                 break
 
     return matched_resources

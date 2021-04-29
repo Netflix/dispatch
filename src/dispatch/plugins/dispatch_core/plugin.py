@@ -19,10 +19,10 @@ from starlette.requests import Request
 
 from dispatch.config import DISPATCH_UI_URL
 from dispatch.incident.models import Incident
-from dispatch.individual.models import IndividualContact
-from dispatch.document.models import Document
-from dispatch.team.models import TeamContact
-from dispatch.service.models import Service
+from dispatch.individual.models import IndividualContact, IndividualContactRead
+from dispatch.document.models import Document, DocumentRead
+from dispatch.team.models import TeamContact, TeamContactRead
+from dispatch.service.models import Service, ServiceRead
 from dispatch.individual import service as individual_service
 from dispatch.plugins import dispatch_core as dispatch_plugin
 from dispatch.incident import service as incident_service
@@ -195,10 +195,8 @@ class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
         db_session=None,
     ):
         """Fetches documents from Dispatch."""
-        from dispatch.route import service as route_service
-
         recommendation = route_service.get(
-            db_session=db_session, incident=incident, models=[Document]
+            db_session=db_session, incident=incident, models=[(Document, DocumentRead)]
         )
         return recommendation.documents
 
@@ -235,7 +233,11 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
         db_session=None,
     ):
         """Fetches participants from Dispatch."""
-        models = [IndividualContact, Service, TeamContact]
+        models = [
+            (IndividualContact, IndividualContactRead),
+            (Service, ServiceRead),
+            (TeamContact, TeamContactRead),
+        ]
         recommendation = route_service.get(db_session=db_session, incident=incident, models=models)
 
         log.debug(f"Recommendation: {recommendation}")
@@ -243,21 +245,21 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
         individual_contacts = []
         team_contacts = []
         for match in recommendation.matches:
-            if match.resource_type == "individual_contact":
+            if match.resource_type == IndividualContact.__name__:
                 individual = individual_service.get_or_create(
                     db_session=db_session, email=match.resource_state["email"]
                 )
 
                 individual_contacts.append(individual)
 
-            if match.resource_type == "team_contact":
+            if match.resource_type == TeamContact.__name__:
                 team = team_service.get_or_create(
                     db_session=db_session, email=match.resource_state["email"]
                 )
                 team_contacts.append(team)
 
             # we need to do more work when we have a service
-            if match.resource_type == "service":
+            if match.resource_type == Service.__name__:
                 plugin_instance = plugin_service.get_active_instance_by_slug(
                     db_session=db_session,
                     slug=match.resource_state["type"],
