@@ -87,7 +87,7 @@
                   v-model="filters"
                   :project="project"
                   label="Filters"
-                  hint="Select one or more filters that will determine when notification is sent."
+                  hint="Select one or more filters that will determine when a team is engaged."
                 />
               </v-flex>
             </v-layout>
