@@ -1054,7 +1054,7 @@ def incident_update_flow(
     # add new folks to the incident if appropriate
     # we only have to do this for teams as new members will be added to tactical
     # groups on incident join
-    if incident.status != IncidentStatus.closed:
+    if incident.status != IncidentStatus.closed.value:
         individual_participants, team_participants = get_incident_participants(incident, db_session)
 
         for individual, service_id in individual_participants:
