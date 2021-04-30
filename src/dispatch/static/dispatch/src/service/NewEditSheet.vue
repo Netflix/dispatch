@@ -89,7 +89,7 @@
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                     </template>
-                    This service will be used to automatically engage participants for any incident
+                    This service will be used to automatically engage services for any incident
                     matching the following filters.
                   </v-tooltip>
                 </span>
