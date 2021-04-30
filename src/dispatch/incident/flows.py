@@ -1257,7 +1257,7 @@ def incident_add_or_reactivate_participant_flow(
     else:
         # we add the participant to the incident
         participant = participant_flows.add_participant(
-            user_email, incident, db_session, service=service, role=role
+            user_email, incident, db_session, service_id=service_id, role=role
         )
 
         # we add the participant to the tactical group
