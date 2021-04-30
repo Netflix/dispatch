@@ -1216,7 +1216,7 @@ def incident_engage_oncall_flow(
 def incident_add_or_reactivate_participant_flow(
     user_email: str,
     incident_id: int,
-    service_id: Service = None,
+    service_id: int = None,
     role: ParticipantRoleType = None,
     event: dict = None,
     db_session=None,
