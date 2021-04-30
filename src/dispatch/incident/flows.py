@@ -1227,7 +1227,7 @@ def incident_add_or_reactivate_participant_flow(
     if service_id:
         # we need to ensure that we don't add another member of a service if one
         # already exists (e.g. overlapping oncalls, we assume they will hand-off if necessary)
-        participant = participant_service.get_by_incident_id_and_service(
+        participant = participant_service.get_by_incident_id_and_service_id(
             incident_id=incident_id, service_id=service_id, db_session=db_session
         )
         if participant:

@@ -1,7 +1,6 @@
 import logging
 from typing import Any, List
 
-from dispatch.database.core import get_table_name_by_class_instance
 from dispatch.search_filter import service as search_filter_service
 
 from dispatch.incident.models import Incident

@@ -48,9 +48,11 @@ def get_suggested_documents(db_session, incident: Incident) -> list:
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="document-resolver"
     )
+
     documents = []
     if plugin:
         documents = plugin.instance.get(incident=incident, db_session=db_session)
+
     return documents
 
 
