@@ -140,8 +140,9 @@ def sync_tasks(db_session, incidents, notify: bool = False):
 @background_task
 def daily_sync_task(db_session=None):
     """Syncs all incident tasks daily."""
-    incidents = incident_service.get_all(db_session=db_session).all()
-    sync_tasks(db_session, incidents, notify=False)
+    for project in project_service.get_all(db_session=db_session):
+        incidents = incident_service.get_all(db_session=db_session, project_id=project.id).all()
+        sync_tasks(db_session, incidents, notify=False)
 
 
 @scheduler.add(every(TASK_SYNC_INTERVAL).seconds, name="incident-task-sync")
