@@ -2,9 +2,7 @@
 
 Dispatch allows you to define incident types. Incident types bucket or categorize your incidents and map various other Dispatch resources (e.g., services and individuals) to these types.
 
-To create a new incident type navigate to: `Dispatch > Incident Types > New`
-
-![](../../.gitbook/assets/admin-ui-incident-types.png)
+![](../../../.gitbook/assets/admin-ui-incident-types.png)
 
 **Name:** The name of the incident type presented to the user.
 

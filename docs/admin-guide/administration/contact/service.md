@@ -2,9 +2,7 @@
 
 Like `Teams`, there are often groups of individuals (teams) responsible for an application or service that need to be involved in an incident. However, in these circumstances, we don't want to engage the _whole_ team. We only want to engage the individual that is on-call for the service. `Services` allow Dispatch to resolve these individuals via third-party on-call services (e.g., PagerDuty, OpsGenie).
 
-To create a new on-call service, navigate to: `Dispatch > Services > New`
-
-![](../../.gitbook/assets/admin-ui-contacts-services.png)
+![](../../../.gitbook/assets/admin-ui-contacts-services.png)
 
 **Name:** Name of the service.
 

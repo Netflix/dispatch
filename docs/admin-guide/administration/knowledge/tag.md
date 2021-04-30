@@ -2,9 +2,7 @@
 
 Within Dispatch, tags are a flexible piece of metadata. They can be manually attached to incidents or automatically discovered based on incident data.
 
-To create a new tag navigate to: `Dispatch > Tags > New`
-
-![](../../.gitbook/assets/admin-ui-knowledge-tags.png)
+![](../../../.gitbook/assets/admin-ui-knowledge-tags.png)
 
 **Name:** The tag string itself, or what you would expect to be in incident data.
 

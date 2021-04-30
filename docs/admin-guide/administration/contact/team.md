@@ -2,9 +2,7 @@
 
 Like `Individuals`, there are often groups of individuals (teams) that need to be engaged and notified during an incident. Dispatch manages those groups \(typically, team distribution lists\), providing a centralized data store for that contact data.
 
-To create a new team contact navigate to: `Dispatch > Teams > New`
-
-![](../../.gitbook/assets/admin-ui-contacts-teams.png)
+![](../../../.gitbook/assets/admin-ui-contacts-teams.png)
 
 **Name:** Name of the team.
 

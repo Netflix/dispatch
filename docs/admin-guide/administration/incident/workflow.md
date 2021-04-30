@@ -2,9 +2,7 @@
 
 Workflows allow you to extend Dispatch, invoking your response automation. Dispatch does not currently include the ability to author workflows directly. Instead, the workflow functionality allows for existing workflows to be invoked from Dispatch. We rely on external workflow orchestration tools to execute those workflows, with Dispatch keeping track of resulting artifacts and workflow status.
 
-To create a new incident workflow, navigate to: `Dispatch > Workflows > New`.
-
-![](../../.gitbook/assets/admin-ui-incident-workflows.png)
+![](../../../.gitbook/assets/admin-ui-incident-workflows.png)
 
 **Name:** The name you wish to present to the user.
 

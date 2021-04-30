@@ -1,12 +1,10 @@
 ## Documents
 
-To create a new document navigate to: `Dispatch > Documents > New`
-
-![](../../.gitbook/assets/admin-ui-knowledge-documents.png)
-
 Documents are links to external sources \(Web Pages, Google Documents, etc.,\). These documents can be associated with terms, incident types, and incident priorities, allowing these documents to be recommended reading for incident participants.
 
 If you use the Google Drive plugin, Dispatch will copy a Google document associated with an incident type into a folder. Make sure you specify the correct Google Docs ID for the `ID` field.
+
+![](../../../.gitbook/assets/admin-ui-knowledge-documents.png)
 
 **Name:** Name of the document.
 

@@ -4,9 +4,7 @@ In Dispatch, Individuals are either internal or external people identifiers. Typ
 
 It's common for incident response teams to maintain a list of contacts and run books to specify whom to contactd when an incident occurs. Dispatch handles this for incident response teams by pulling the right individuals directly into an incident. By assigning terms, incident types, or incident priorities to individuals, Dispatch can instantly add them to the incident \(if internal\) or suggest reaching out to them \(if external\).
 
-To create a new individual contact, navigate to: `Dispatch > Individuals > New`.
-
-![](../../.gitbook/assets/admin-ui-contacts-individuals.png)
+![](../../../.gitbook/assets/admin-ui-contacts-individuals.png)
 
 **Name:** Name of the individual.
 

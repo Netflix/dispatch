@@ -2,9 +2,7 @@
 
 In addition to incident types, Dispatch allows you to specify the incident's _priority_.
 
-To create a new incident priority, navigate to: `Dispatch > Incident Priorities > New`
-
-![](../../.gitbook/assets/admin-ui-incident-priorities.png)
+![](../../../.gitbook/assets/admin-ui-incident-priorities.png)
 
 **Name:** The name of the incident priority presented to the user.
 
