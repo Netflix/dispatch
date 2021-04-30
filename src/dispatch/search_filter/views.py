@@ -66,6 +66,6 @@ def delete_filter(*, db_session: Session = Depends(get_db), search_filter_id: in
     """
     search_filter = get(db_session=db_session, search_filter_id=search_filter_id)
     if not search_filter:
-        raise HTTPException(status_code=404, detail="A search_filter with this id does not exist.")
+        raise HTTPException(status_code=404, detail="A search filter with this id does not exist.")
 
     delete(db_session=db_session, search_filter_id=search_filter_id)
