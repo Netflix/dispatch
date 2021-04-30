@@ -34,16 +34,10 @@ class IndividualContact(Base, ContactMixin, ProjectMixin):
     weblink = Column(String)
     external_id = Column(String)
 
-    # this is a self referential relationship lets punt on this for now.
-    # relationship_owner_id = Column(Integer, ForeignKey("individual_contact.id"))
-    # relationship_owner = relationship("IndividualContact", backref="individual_contacts")
     events = relationship("Event", backref="individual")
-
     filters = relationship(
         "SearchFilter", secondary=assoc_individual_filters, backref="individuals"
     )
-
-    # participant = relationship("Participant", lazy="subquery", backref="individual")
     team_contact_id = Column(Integer, ForeignKey("team_contact.id"))
     team_contact = relationship("TeamContact", backref="individuals")
 
