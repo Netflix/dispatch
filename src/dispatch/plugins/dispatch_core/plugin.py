@@ -23,6 +23,7 @@ from dispatch.individual.models import IndividualContact, IndividualContactRead
 from dispatch.document.models import Document, DocumentRead
 from dispatch.team.models import TeamContact, TeamContactRead
 from dispatch.service.models import Service, ServiceRead
+from dispatch.service import service as service_service
 from dispatch.individual import service as individual_service
 from dispatch.plugins import dispatch_core as dispatch_plugin
 from dispatch.incident import service as incident_service
@@ -245,18 +246,18 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
         individual_contacts = []
         team_contacts = []
         for match in recommendation.matches:
-            if match.resource_type == IndividualContact.__name__:
-                individual = individual_service.get_or_create(
-                    db_session=db_session, email=match.resource_state["email"]
-                )
-
-                individual_contacts.append(individual)
-
             if match.resource_type == TeamContact.__name__:
                 team = team_service.get_or_create(
                     db_session=db_session, email=match.resource_state["email"]
                 )
                 team_contacts.append(team)
+
+            if match.resource_type == IndividualContact.__name__:
+                individual = individual_service.get_or_create(
+                    db_session=db_session, email=match.resource_state["email"]
+                )
+
+                individual_contacts.append((individual, None))
 
             # we need to do more work when we have a service
             if match.resource_type == Service.__name__:
@@ -279,7 +280,11 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
                             db_session=db_session, email=individual_email
                         )
 
-                        individual_contacts.append(individual)
+                        service = service_service.get(
+                            db_session=db_session, service_id=match.resource_state["id"]
+                        )
+
+                        individual_contacts.append((individual, service))
                     else:
                         log.warning(
                             f"Skipping service contact. Service: {match.resource_state['name']} Reason: Associated service plugin not enabled."

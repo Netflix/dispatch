@@ -1054,20 +1054,21 @@ def incident_update_flow(
     # add new folks to the incident if appropriate
     # we only have to do this for teams as new members will be added to tactical
     # groups on incident join
-    individual_participants, team_participants = get_incident_participants(incident, db_session)
+    if incident.status != IncidentStatus.closed:
+        individual_participants, team_participants = get_incident_participants(incident, db_session)
 
-    for individual, service in individual_participants:
-        incident_add_or_reactivate_participant_flow(
-            individual.email, incident.id, service=service, db_session=db_session
+        for individual, service in individual_participants:
+            incident_add_or_reactivate_participant_flow(
+                individual.email, incident.id, service=service, db_session=db_session
+            )
+
+        # we add the team distributions lists to the notifications group
+        group_plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
         )
-
-    # we add the team distributions lists to the notifications group
-    group_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
-    )
-    if group_plugin:
-        team_participant_emails = [x.email for x in team_participants]
-        group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
+        if group_plugin:
+            team_participant_emails = [x.email for x in team_participants]
+            group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
 
     if notify:
         send_incident_update_notifications(incident, previous_incident, db_session)
