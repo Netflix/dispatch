@@ -280,11 +280,7 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
                             db_session=db_session, email=individual_email
                         )
 
-                        service = service_service.get(
-                            db_session=db_session, service_id=match.resource_state["id"]
-                        )
-
-                        individual_contacts.append((individual, service))
+                        individual_contacts.append((individual, match.resource_state["id"]))
                     else:
                         log.warning(
                             f"Skipping service contact. Service: {match.resource_state['name']} Reason: Associated service plugin not enabled."

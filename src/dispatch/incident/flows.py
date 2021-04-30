@@ -496,9 +496,9 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     individual_participants, team_participants = get_incident_participants(incident, db_session)
 
-    for individual, service in individual_participants:
+    for individual, service_id in individual_participants:
         incident_add_or_reactivate_participant_flow(
-            individual.email, incident.id, service=service, db_session=db_session
+            individual.email, incident.id, service_id=service_id, db_session=db_session
         )
 
     event_service.log(
@@ -1057,9 +1057,9 @@ def incident_update_flow(
     if incident.status != IncidentStatus.closed:
         individual_participants, team_participants = get_incident_participants(incident, db_session)
 
-        for individual, service in individual_participants:
+        for individual, service_id in individual_participants:
             incident_add_or_reactivate_participant_flow(
-                individual.email, incident.id, service=service, db_session=db_session
+                individual.email, incident.id, service_id=service_id, db_session=db_session
             )
 
         # we add the team distributions lists to the notifications group
@@ -1216,7 +1216,7 @@ def incident_engage_oncall_flow(
 def incident_add_or_reactivate_participant_flow(
     user_email: str,
     incident_id: int,
-    service: Service = None,
+    service_id: Service = None,
     role: ParticipantRoleType = None,
     event: dict = None,
     db_session=None,
@@ -1224,11 +1224,11 @@ def incident_add_or_reactivate_participant_flow(
     """Runs the add or reactivate incident participant flow."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    if service:
+    if service_id:
         # we need to ensure that we don't add another member of a service if one
         # already exists (e.g. overlapping oncalls, we assume they will hand-off if necessary)
         participant = participant_service.get_by_incident_id_and_service(
-            incident_id=incident_id, service_id=service.id, db_session=db_session
+            incident_id=incident_id, service_id=service_id, db_session=db_session
         )
         if participant:
             log.debug("Skipping resolved participant, service member already engaged.")
