@@ -52,7 +52,7 @@ def update_search_filter(
     """
     search_filter = get(db_session=db_session, search_filter_id=search_filter_id)
     if not search_filter:
-        raise HTTPException(status_code=404, detail="A search_filter with this id does not exist.")
+        raise HTTPException(status_code=404, detail="A search filter with this id does not exist.")
     search_filter = update(
         db_session=db_session, search_filter=search_filter, search_filter_in=search_filter_in
     )
