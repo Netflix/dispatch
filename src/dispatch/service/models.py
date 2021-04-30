@@ -58,12 +58,12 @@ class ServiceBase(DispatchBase):
 
 
 class ServiceCreate(ServiceBase):
-    filters: Optional[List[SearchFilterRead]]
+    filters: Optional[List[SearchFilterRead]] = []
     project: ProjectRead
 
 
 class ServiceUpdate(ServiceBase):
-    filters: Optional[List[SearchFilterRead]]
+    filters: Optional[List[SearchFilterRead]] = []
 
 
 class ServiceRead(ServiceBase):

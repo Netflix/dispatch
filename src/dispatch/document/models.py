@@ -70,7 +70,7 @@ class DocumentBase(DispatchBase):
 
 
 class DocumentCreate(DocumentBase):
-    filters: Optional[List[SearchFilterRead]]
+    filters: Optional[List[SearchFilterRead]] = []
     project: Optional[ProjectRead]
 
 
@@ -80,7 +80,7 @@ class DocumentUpdate(DocumentBase):
 
 class DocumentRead(DocumentBase):
     id: int
-    filters: Optional[List[SearchFilterRead]]
+    filters: Optional[List[SearchFilterRead]] = []
     project: Optional[ProjectRead]
 
     @validator("description", pre=True, always=True)

@@ -74,9 +74,7 @@ def create(*, db_session, individual_contact_in: IndividualContactCreate) -> Ind
     ]
 
     contact = IndividualContact(
-        **individual_contact_in.dict(
-            exclude={"terms", "incident_priorities", "incident_types", "project"}
-        ),
+        **individual_contact_in.dict(exclude={"project", "filters"}),
         filters=filters,
         project=project,
     )
