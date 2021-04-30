@@ -145,35 +145,19 @@ def update(*, db_session, document: Document, document_in: DocumentUpdate) -> Do
         if not document.evergreen:
             document_in.evergreen_last_reminder_at = datetime.utcnow()
 
-    document_data = jsonable_encoder(document)
-    update_data = document_in.dict(
-        skip_defaults=True, exclude={"terms", "incident_priorities", "incident_types"}
-    )
+    filters = [
+        search_filter_service.get(db_session=db_session, search_filter_id=f.id)
+        for f in document_in.filters
+    ]
 
-    terms = [
-        term_service.get_or_create(db_session=db_session, term_in=t) for t in document_in.terms
-    ]
-    incident_priorities = [
-        incident_priority_service.get_by_name(
-            db_session=db_session, project_id=n.project.id, name=n.name
-        )
-        for n in document_in.incident_priorities
-    ]
-    incident_types = [
-        incident_type_service.get_by_name(
-            db_session=db_session, project_id=n.project.id, name=n.name
-        )
-        for n in document_in.incident_types
-    ]
+    document_data = jsonable_encoder(document)
+    update_data = document_in.dict(skip_defaults=True, exclude={"filters"})
 
     for field in document_data:
         if field in update_data:
             setattr(document, field, update_data[field])
 
-    document.terms = terms
-    document.incident_priorities = incident_priorities
-    document.incident_types = incident_types
-
+    document.filters = filters
     db_session.add(document)
     db_session.commit()
     return document
