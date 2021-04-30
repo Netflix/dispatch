@@ -67,17 +67,17 @@ class IndividualContactBase(ContactBase):
 
 
 class IndividualContactCreate(IndividualContactBase):
-    filters: Optional[List[SearchFilterRead]]
+    filters: Optional[List[SearchFilterRead]] = []
     project: Optional[ProjectRead]
 
 
 class IndividualContactUpdate(IndividualContactBase):
-    filters: Optional[List[SearchFilterRead]]
+    filters: Optional[List[SearchFilterRead]] = []
 
 
 class IndividualContactRead(IndividualContactBase):
     id: int
-    filters: Optional[List[SearchFilterRead]]
+    filters: Optional[List[SearchFilterRead]] = []
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

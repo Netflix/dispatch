@@ -38,9 +38,7 @@ def create(*, db_session, team_contact_in: TeamContactCreate) -> TeamContact:
     ]
 
     team = TeamContact(
-        **team_contact_in.dict(
-            exclude={"terms", "incident_priorities", "incident_types", "project"}
-        ),
+        **team_contact_in.dict(exclude={"project", "filters"}),
         filters=filters,
         project=project,
     )
@@ -61,9 +59,7 @@ def update(
 ) -> TeamContact:
     team_contact_data = jsonable_encoder(team_contact)
 
-    update_data = team_contact_in.dict(
-        skip_defaults=True, exclude={"terms", "incident_priorities", "incident_types"}
-    )
+    update_data = team_contact_in.dict(skip_defaults=True, exclude={"filter"})
 
     filters = [
         search_filter_service.get(db_session=db_session, search_filter_id=f.id)

@@ -93,10 +93,6 @@ def update(
 ) -> IndividualContact:
     individual_contact_data = jsonable_encoder(individual_contact_in)
 
-    project = project_service.get_by_name(
-        db_session=db_session, name=individual_contact_in.project.name
-    )
-
     filters = [
         search_filter_service.get(db_session=db_session, search_filter_id=f.id)
         for f in individual_contact_in.filters
@@ -109,7 +105,6 @@ def update(
             setattr(individual_contact, field, update_data[field])
 
     individual_contact.filters = filters
-    individual_contact.project = project
     db_session.add(individual_contact)
     db_session.commit()
     return individual_contact

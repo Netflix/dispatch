@@ -11,9 +11,7 @@ from dispatch.config import (
     INCIDENT_RESOURCE_INCIDENT_FAQ_DOCUMENT,
 )
 from dispatch.project import service as project_service
-from dispatch.incident_priority import service as incident_priority_service
-from dispatch.incident_type import service as incident_type_service
-from dispatch.term import service as term_service
+from dispatch.search_filter import service as search_filter_service
 
 from .models import Document, DocumentCreate, DocumentUpdate
 
@@ -102,34 +100,22 @@ def get_all(*, db_session) -> List[Optional[Document]]:
 
 def create(*, db_session, document_in: DocumentCreate) -> Document:
     """Creates a new document."""
-    terms = [
-        term_service.get_or_create(db_session=db_session, term_in=t) for t in document_in.terms
-    ]
-    incident_priorities = [
-        incident_priority_service.get_by_name(
-            db_session=db_session, project_id=n.project.id, name=n.name
-        )
-        for n in document_in.incident_priorities
-    ]
-    incident_types = [
-        incident_type_service.get_by_name(
-            db_session=db_session, project_id=n.project.id, name=n.name
-        )
-        for n in document_in.incident_types
-    ]
     project = None
     if document_in.project:
         project = project_service.get_by_name(db_session=db_session, name=document_in.project.name)
+
+    filters = [
+        search_filter_service.get(db_session=db_session, search_filter_id=f.id)
+        for f in document_in.filters
+    ]
 
     # set the last reminder to now
     if document_in.evergreen:
         document_in.evergreen_last_reminder_at = datetime.utcnow()
 
     document = Document(
-        **document_in.dict(exclude={"terms", "incident_priorities", "incident_types", "project"}),
-        incident_priorities=incident_priorities,
-        incident_types=incident_types,
-        terms=terms,
+        **document_in.dict(exclude={"project", "filters"}),
+        filters=filters,
         project=project,
     )
 

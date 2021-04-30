@@ -10,6 +10,7 @@ from dispatch.database.core import Base
 from dispatch.incident_priority.models import IncidentPriorityCreate, IncidentPriorityRead
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead
 from dispatch.project.models import ProjectRead
+from dispatch.search_filter.models import SearchFilterRead
 from dispatch.term.models import TermCreate
 from dispatch.models import ContactBase, ContactMixin, DispatchBase, TermReadNested, ProjectMixin
 
@@ -50,23 +51,17 @@ class TeamContactBase(ContactBase):
 
 
 class TeamContactCreate(TeamContactBase):
-    terms: Optional[List[TermCreate]] = []
-    incident_priorities: Optional[List[IncidentPriorityCreate]] = []
-    incident_types: Optional[List[IncidentTypeCreate]] = []
+    filters: Optional[List[SearchFilterRead]] = []
     project: ProjectRead
 
 
 class TeamContactUpdate(TeamContactBase):
-    terms: Optional[List[TermCreate]] = []
-    incident_priorities: Optional[List[IncidentPriorityCreate]] = []
-    incident_types: Optional[List[IncidentTypeCreate]] = []
+    filters: Optional[List[SearchFilterRead]] = []
 
 
 class TeamContactRead(TeamContactBase):
     id: int
-    incident_priorities: Optional[List[IncidentPriorityRead]] = []
-    incident_types: Optional[List[IncidentTypeRead]] = []
-    terms: Optional[List[TermReadNested]] = []
+    filters: Optional[List[SearchFilterRead]] = []
     created_at: datetime
     updated_at: datetime
 
