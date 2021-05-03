@@ -10,7 +10,7 @@ from .service import create, delete, get, get_by_text, update
 router = APIRouter()
 
 
-@router.get("/", response_model=TermPagination)
+@router.get("", response_model=TermPagination)
 def get_terms(*, common: dict = Depends(common_parameters)):
     """
     Retrieve all terms.
@@ -18,7 +18,7 @@ def get_terms(*, common: dict = Depends(common_parameters)):
     return search_filter_sort_paginate(model="Term", **common)
 
 
-@router.post("/", response_model=TermRead)
+@router.post("", response_model=TermRead)
 def create_term(*, db_session: Session = Depends(get_db), term_in: TermCreate):
     """
     Create a new term.

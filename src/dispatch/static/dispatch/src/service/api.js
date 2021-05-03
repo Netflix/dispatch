@@ -4,7 +4,7 @@ const resource = "/services"
 
 export default {
   getAll(options) {
-    return API.get(`${resource}/`, { params: { ...options } })
+    return API.get(`${resource}`, { params: { ...options } })
   },
 
   get(serviceId) {
@@ -12,7 +12,7 @@ export default {
   },
 
   create(payload) {
-    return API.post(`${resource}/`, payload)
+    return API.post(`${resource}`, payload)
   },
 
   update(serviceId, payload) {

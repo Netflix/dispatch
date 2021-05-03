@@ -4,7 +4,7 @@ const resource = "/documents"
 
 export default {
   getAll(options) {
-    return API.get(`${resource}/`, { params: { ...options } })
+    return API.get(`${resource}`, { params: { ...options } })
   },
 
   get(documentId) {
@@ -12,7 +12,7 @@ export default {
   },
 
   create(payload) {
-    return API.post(`${resource}/`, payload)
+    return API.post(`${resource}`, payload)
   },
 
   update(documentId, payload) {

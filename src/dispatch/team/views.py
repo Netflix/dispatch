@@ -15,7 +15,7 @@ from .service import create, delete, get, get_by_email, update
 router = APIRouter()
 
 
-@router.get("/", response_model=TeamPagination)
+@router.get("", response_model=TeamPagination)
 def get_teams(*, common: dict = Depends(common_parameters)):
     """
     Get all team contacts.
@@ -23,7 +23,7 @@ def get_teams(*, common: dict = Depends(common_parameters)):
     return search_filter_sort_paginate(model="TeamContact", **common)
 
 
-@router.post("/", response_model=TeamContactRead)
+@router.post("", response_model=TeamContactRead)
 def create_team(*, db_session: Session = Depends(get_db), team_contact_in: TeamContactCreate):
     """
     Create a new team contact.

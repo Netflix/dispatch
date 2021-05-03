@@ -4,7 +4,7 @@ const resource = "/incident_cost_types"
 
 export default {
   getAll(options) {
-    return API.get(`${resource}/`, { params: { ...options } })
+    return API.get(`${resource}`, { params: { ...options } })
   },
 
   get(incidentCostTypeId) {
@@ -12,7 +12,7 @@ export default {
   },
 
   create(payload) {
-    return API.post(`${resource}/`, payload)
+    return API.post(`${resource}`, payload)
   },
 
   update(incidentCostTypeId, payload) {

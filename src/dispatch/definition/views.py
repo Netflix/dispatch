@@ -15,7 +15,7 @@ from .service import create, delete, get, get_by_text, update
 router = APIRouter()
 
 
-@router.get("/", response_model=DefinitionPagination)
+@router.get("", response_model=DefinitionPagination)
 def get_definitions(*, common: dict = Depends(common_parameters)):
     """
     Get all definitions.
@@ -34,7 +34,7 @@ def get_definition(*, db_session: Session = Depends(get_db), definition_id: int)
     return definition
 
 
-@router.post("/", response_model=DefinitionRead)
+@router.post("", response_model=DefinitionRead)
 def create_definition(*, db_session: Session = Depends(get_db), definition_in: DefinitionCreate):
     """
     Create a new definition.

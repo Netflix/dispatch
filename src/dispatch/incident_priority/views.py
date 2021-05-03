@@ -17,7 +17,7 @@ from .service import create, get, update
 router = APIRouter()
 
 
-@router.get("/", response_model=IncidentPriorityPagination, tags=["incident_priorities"])
+@router.get("", response_model=IncidentPriorityPagination, tags=["incident_priorities"])
 def get_incident_priorities(*, common: dict = Depends(common_parameters)):
     """
     Returns all incident priorities.
@@ -26,7 +26,7 @@ def get_incident_priorities(*, common: dict = Depends(common_parameters)):
 
 
 @router.post(
-    "/",
+    "",
     response_model=IncidentPriorityRead,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )

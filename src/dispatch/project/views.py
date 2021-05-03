@@ -21,7 +21,7 @@ from .service import create, delete, get, get_by_name, update
 router = APIRouter()
 
 
-@router.get("/", response_model=ProjectPagination)
+@router.get("", response_model=ProjectPagination)
 def get_projects(common: dict = Depends(common_parameters)):
     """
     Get all projects.
@@ -30,7 +30,7 @@ def get_projects(common: dict = Depends(common_parameters)):
 
 
 @router.post(
-    "/",
+    "",
     response_model=ProjectRead,
     summary="Create a new project.",
     dependencies=[Depends(PermissionsDependency([ProjectCreatePermission]))],

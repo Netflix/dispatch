@@ -18,10 +18,48 @@
         no-filter
         v-model="searchFilters"
       >
-        <template v-slot:selection="{ attr, on, item, selected }">
-          <v-chip v-bind="attr" :input-value="selected" v-on="on">
-            <span v-text="item.name" />
-          </v-chip>
+        <template v-slot:selection="{ attr, item, selected }">
+          <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
+            <template v-slot:activator="{ on }">
+              <v-chip v-bind="attr" :input-value="selected" pill v-on="on">
+                {{ item.name }}
+              </v-chip>
+            </template>
+            <v-card>
+              <v-list dark>
+                <v-list-item>
+                  <v-list-item-avatar color="teal">
+                    <span class="white--text">{{ item.name | initials }}</span>
+                  </v-list-item-avatar>
+                  <v-list-item-content>
+                    <v-list-item-title>{{ item.name }}</v-list-item-title>
+                    <v-list-item-subtitle>{{ item.type }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                  <v-list-item-action>
+                    <v-btn icon @click="menu = false">
+                      <v-icon>mdi-close-circle</v-icon>
+                    </v-btn>
+                  </v-list-item-action>
+                </v-list-item>
+              </v-list>
+              <v-list>
+                <v-list-item>
+                  <v-list-item-action>
+                    <v-icon>mdi-text-box</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-subtitle>{{ item.description }}</v-list-item-subtitle>
+                </v-list-item>
+                <v-list-item v-if="item.expression">
+                  <v-list-item-action>
+                    <v-icon>mdi-code-json</v-icon>
+                  </v-list-item-action>
+                  <v-list-item-subtitle>
+                    <pre>{{ item.expression }}</pre>
+                  </v-list-item-subtitle>
+                </v-list-item>
+              </v-list>
+            </v-card>
+          </v-menu>
         </template>
         <template v-slot:item="{ item }">
           <v-list-item-content>

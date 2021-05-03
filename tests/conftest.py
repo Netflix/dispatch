@@ -38,7 +38,7 @@ from .factories import (
     ParticipantFactory,
     ParticipantRoleFactory,
     ProjectFactory,
-    RecommendationAccuracyFactory,
+    RecommendationMatchFactory,
     RecommendationFactory,
     ServiceFactory,
     ReportFactory,
@@ -324,7 +324,7 @@ def project(session):
 
 @pytest.fixture
 def recommendation_accuracy(session):
-    return RecommendationAccuracyFactory()
+    return RecommendationMatchFactory()
 
 
 @pytest.fixture

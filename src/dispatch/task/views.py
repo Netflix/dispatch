@@ -15,7 +15,7 @@ from .service import get, update, create, delete
 router = APIRouter()
 
 
-@router.get("/", summary="Retrieve a list of all tasks.")
+@router.get("", summary="Retrieve a list of all tasks.")
 def get_tasks(
     *, include: List[str] = Query([], alias="include[]"), commons: dict = Depends(common_parameters)
 ):
@@ -39,7 +39,7 @@ def get_tasks(
     return TaskPagination(**pagination).dict()
 
 
-@router.post("/", response_model=TaskRead, tags=["tasks"])
+@router.post("", response_model=TaskRead, tags=["tasks"])
 def create_task(
     *,
     db_session: Session = Depends(get_db),

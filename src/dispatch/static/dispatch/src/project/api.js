@@ -4,7 +4,7 @@ const resource = "projects"
 
 export default {
   getAll(options) {
-    return API.get(`/${resource}/`, {
+    return API.get(`/${resource}`, {
       params: { ...options },
     })
   },
@@ -14,7 +14,7 @@ export default {
   },
 
   create(payload) {
-    return API.post(`/${resource}/`, payload)
+    return API.post(`/${resource}`, payload)
   },
 
   update(projectId, payload) {

@@ -17,7 +17,7 @@ from .service import create, delete, get, update
 router = APIRouter()
 
 
-@router.get("/", response_model=IncidentCostPagination)
+@router.get("", response_model=IncidentCostPagination)
 def get_incident_costs(*, common: dict = Depends(common_parameters)):
     """
     Get all incident costs, or only those matching a given search term.
@@ -37,7 +37,7 @@ def get_incident_cost(*, db_session: Session = Depends(get_db), incident_cost_id
 
 
 @router.post(
-    "/",
+    "",
     response_model=IncidentCostRead,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )

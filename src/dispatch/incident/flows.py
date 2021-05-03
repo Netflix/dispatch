@@ -85,10 +85,7 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
         )
         if plugin:
             individual_contacts, team_contacts = plugin.instance.get(
-                incident.incident_type,
-                incident.incident_priority,
-                incident.description,
-                incident.project,
+                incident,
                 db_session=db_session,
             )
 
@@ -499,9 +496,9 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     individual_participants, team_participants = get_incident_participants(incident, db_session)
 
-    for individual, service in individual_participants:
+    for individual, service_id in individual_participants:
         incident_add_or_reactivate_participant_flow(
-            individual.email, incident.id, service=service, db_session=db_session
+            individual.email, incident.id, service_id=service_id, db_session=db_session
         )
 
     event_service.log(
@@ -1057,20 +1054,21 @@ def incident_update_flow(
     # add new folks to the incident if appropriate
     # we only have to do this for teams as new members will be added to tactical
     # groups on incident join
-    individual_participants, team_participants = get_incident_participants(incident, db_session)
+    if incident.status != IncidentStatus.closed.value:
+        individual_participants, team_participants = get_incident_participants(incident, db_session)
 
-    for individual, service in individual_participants:
-        incident_add_or_reactivate_participant_flow(
-            individual.email, incident.id, service=service, db_session=db_session
+        for individual, service_id in individual_participants:
+            incident_add_or_reactivate_participant_flow(
+                individual.email, incident.id, service_id=service_id, db_session=db_session
+            )
+
+        # we add the team distributions lists to the notifications group
+        group_plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
         )
-
-    # we add the team distributions lists to the notifications group
-    group_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
-    )
-    if group_plugin:
-        team_participant_emails = [x.email for x in team_participants]
-        group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
+        if group_plugin:
+            team_participant_emails = [x.email for x in team_participants]
+            group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
 
     if notify:
         send_incident_update_notifications(incident, previous_incident, db_session)
@@ -1218,7 +1216,7 @@ def incident_engage_oncall_flow(
 def incident_add_or_reactivate_participant_flow(
     user_email: str,
     incident_id: int,
-    service: Service = None,
+    service_id: int = None,
     role: ParticipantRoleType = None,
     event: dict = None,
     db_session=None,
@@ -1226,11 +1224,11 @@ def incident_add_or_reactivate_participant_flow(
     """Runs the add or reactivate incident participant flow."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    if service:
+    if service_id:
         # we need to ensure that we don't add another member of a service if one
         # already exists (e.g. overlapping oncalls, we assume they will hand-off if necessary)
-        participant = participant_service.get_by_incident_id_and_service(
-            incident_id=incident_id, service_id=service.id, db_session=db_session
+        participant = participant_service.get_by_incident_id_and_service_id(
+            incident_id=incident_id, service_id=service_id, db_session=db_session
         )
         if participant:
             log.debug("Skipping resolved participant, service member already engaged.")
@@ -1259,7 +1257,7 @@ def incident_add_or_reactivate_participant_flow(
     else:
         # we add the participant to the incident
         participant = participant_flows.add_participant(
-            user_email, incident, db_session, service=service, role=role
+            user_email, incident, db_session, service_id=service_id, role=role
         )
 
         # we add the participant to the tactical group

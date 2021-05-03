@@ -21,7 +21,7 @@ auth_router = APIRouter()
 user_router = APIRouter()
 
 
-@user_router.get("/", response_model=UserPagination)
+@user_router.get("", response_model=UserPagination)
 def get_users(*, common: dict = Depends(common_parameters)):
     """
     Get all users.

@@ -17,7 +17,7 @@ from .service import create, delete, get, update
 router = APIRouter()
 
 
-@router.get("/", response_model=NotificationPagination)
+@router.get("", response_model=NotificationPagination)
 def get_notifications(*, common: dict = Depends(common_parameters)):
     """
     Get all notifications, or only those matching a given search term.
@@ -37,7 +37,7 @@ def get_notification(*, db_session: Session = Depends(get_db), notification_id: 
 
 
 @router.post(
-    "/",
+    "",
     response_model=NotificationRead,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )

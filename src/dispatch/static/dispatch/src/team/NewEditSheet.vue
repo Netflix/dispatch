@@ -71,19 +71,23 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <span class="subtitle-2">Engagement</span>
+                <span class="subtitle-2"
+                  >Engagement
+                  <v-tooltip max-width="250px" bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                    </template>
+                    This team will be automatically engaged for any incident matching the following
+                    filters.
+                  </v-tooltip>
+                </span>
               </v-flex>
               <v-flex xs12>
-                <term-combobox :project="project" v-model="terms" />
-              </v-flex>
-              <v-flex xs12>
-                <incident-priority-multi-select :project="project" v-model="incident_priorities" />
-              </v-flex>
-              <v-flex>
-                <incident-type-multi-select
+                <search-filter-combobox
+                  v-model="filters"
                   :project="project"
-                  v-model="incident_types"
-                  :visibilities="visibilities"
+                  label="Filters"
+                  hint="Select one or more filters that will determine when a team is engaged."
                 />
               </v-flex>
             </v-layout>
@@ -99,9 +103,7 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
-import IncidentPriorityMultiSelect from "@/incident_priority/IncidentPriorityMultiSelect.vue"
-import IncidentTypeMultiSelect from "@/incident_type/IncidentTypeMultiSelect.vue"
-import TermCombobox from "@/term/TermCombobox.vue"
+import SearchFilterCombobox from "@/search/SearchFilterCombobox.vue"
 
 extend("required", {
   ...required,
@@ -120,19 +122,15 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    IncidentPriorityMultiSelect,
-    IncidentTypeMultiSelect,
-    TermCombobox,
+    SearchFilterCombobox,
   },
 
   computed: {
     ...mapFields("team", [
       "selected.name",
-      "selected.terms",
       "selected.company",
       "selected.email",
-      "selected.incident_priorities",
-      "selected.incident_types",
+      "selected.filters",
       "selected.project",
       "selected.id",
       "selected.loading",
