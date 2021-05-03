@@ -6,7 +6,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 
 from dispatch.database.core import Base
 from dispatch.messaging.strings import INCIDENT_CONFERENCE_DESCRIPTION
-from dispatch.models import DispatchBase, ResourceMixin
+from dispatch.models import ResourceBase, ResourceMixin
 
 
 class Conference(Base, ResourceMixin):
@@ -17,10 +17,7 @@ class Conference(Base, ResourceMixin):
 
 
 # Pydantic models...
-class ConferenceBase(DispatchBase):
-    resource_id: Optional[str]
-    resource_type: Optional[str]
-    weblink: Optional[str]
+class ConferenceBase(ResourceBase):
     conference_id: Optional[str]
     conference_challenge: Optional[str]
 

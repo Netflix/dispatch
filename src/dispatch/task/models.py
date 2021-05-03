@@ -19,7 +19,7 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.config import INCIDENT_RESOURCE_INCIDENT_TASK
-from dispatch.models import DispatchBase, ResourceMixin
+from dispatch.models import DispatchBase, ResourceBase, ResourceMixin
 
 from dispatch.project.models import ProjectRead
 from dispatch.incident.models import IncidentReadNested
@@ -109,30 +109,29 @@ class Task(Base, ResourceMixin):
 
 
 # Pydantic models
-class TaskBase(DispatchBase):
-    creator: Optional[ParticipantRead]
-    owner: Optional[ParticipantRead]
-    created_at: Optional[datetime]
-    resolved_at: Optional[datetime]
-    resolve_by: Optional[datetime]
-    updated_at: Optional[datetime]
-    status: TaskStatus = TaskStatus.open
+class TaskBase(ResourceBase):
     assignees: List[Optional[ParticipantRead]] = []
-    source: Optional[str]
-    priority: Optional[str]
+    created_at: Optional[datetime]
+    creator: Optional[ParticipantRead]
     description: Optional[str]
-    tickets: Optional[List[TicketRead]] = []
-    weblink: Optional[str]
     incident: Optional[IncidentReadNested]
+    owner: Optional[ParticipantRead]
+    priority: Optional[str]
+    resolve_by: Optional[datetime]
+    resolved_at: Optional[datetime]
     resource_id: Optional[str]
+    source: Optional[str]
+    status: TaskStatus = TaskStatus.open
+    tickets: Optional[List[TicketRead]] = []
+    updated_at: Optional[datetime]
 
 
 class TaskCreate(TaskBase):
-    status: TaskStatus = TaskStatus.open
     assignees: List[Optional[ParticipantUpdate]] = []
-    owner: Optional[ParticipantUpdate]
     creator: Optional[ParticipantUpdate]
+    owner: Optional[ParticipantUpdate]
     resource_type: Optional[str] = INCIDENT_RESOURCE_INCIDENT_TASK
+    status: TaskStatus = TaskStatus.open
 
 
 class TaskUpdate(TaskBase):

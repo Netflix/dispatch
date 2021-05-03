@@ -20,6 +20,7 @@ from dispatch.database.core import Base
 from dispatch.messaging.strings import INCIDENT_DOCUMENT_DESCRIPTIONS
 from dispatch.models import (
     DispatchBase,
+    ResourceBase,
     ProjectMixin,
     ResourceMixin,
 )
@@ -55,11 +56,8 @@ class Document(ProjectMixin, ResourceMixin, Base):
 
 
 # Pydantic models...
-class DocumentBase(DispatchBase):
-    resource_type: Optional[str]
-    resource_id: Optional[str]
+class DocumentBase(ResourceBase):
     description: Optional[str]
-    weblink: str
     name: str
     evergreen: Optional[bool] = False
     evergreen_reminder_interval: Optional[int] = 90

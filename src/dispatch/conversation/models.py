@@ -6,7 +6,7 @@ from sqlalchemy import Column, String, Integer, ForeignKey
 
 from dispatch.database.core import Base
 from dispatch.messaging.strings import INCIDENT_CONVERSATION_DESCRIPTION
-from dispatch.models import DispatchBase, ResourceMixin
+from dispatch.models import ResourceBase, ResourceMixin
 
 
 class Conversation(Base, ResourceMixin):
@@ -16,10 +16,7 @@ class Conversation(Base, ResourceMixin):
 
 
 # Pydantic models...
-class ConversationBase(DispatchBase):
-    resource_id: Optional[str]
-    resource_type: Optional[str]
-    weblink: Optional[str]
+class ConversationBase(ResourceBase):
     channel_id: Optional[str]
 
 

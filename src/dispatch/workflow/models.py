@@ -11,7 +11,7 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.document.models import DocumentCreate
-from dispatch.models import DispatchBase, ResourceMixin, TimeStampMixin, ProjectMixin
+from dispatch.models import DispatchBase, ResourceBase, ResourceMixin, TimeStampMixin, ProjectMixin
 from dispatch.participant.models import ParticipantRead
 from dispatch.plugin.models import PluginRead
 from dispatch.project.models import ProjectRead
@@ -138,22 +138,19 @@ class WorkflowPagination(DispatchBase):
     items: List[WorkflowRead] = []
 
 
-class WorkflowInstanceBase(DispatchBase):
-    resource_type: Optional[str]
-    resource_id: Optional[str]
-    weblink: Optional[str]
-    status: Optional[WorkflowInstanceStatus]
-    parameters: Optional[List[dict]] = []
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    run_reason: Optional[str]
+class WorkflowInstanceBase(ResourceBase):
     artifacts: Optional[List[DocumentCreate]] = []
+    created_at: Optional[datetime] = None
+    parameters: Optional[List[dict]] = []
+    run_reason: Optional[str]
+    status: Optional[WorkflowInstanceStatus]
+    updated_at: Optional[datetime] = None
 
 
 class WorkflowInstanceCreate(WorkflowInstanceBase):
-    workflow: dict  # TODO define a required ID
-    incident: dict  # TODO define a required ID
     creator: dict  # TODO define a required email
+    incident: dict  # TODO define a required ID
+    workflow: dict  # TODO define a required ID
 
 
 class WorkflowInstanceUpdate(WorkflowInstanceBase):
