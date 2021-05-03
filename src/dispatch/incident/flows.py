@@ -441,7 +441,7 @@ def add_participant_to_tactical_group(
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
     )
-    if plugin:
+    if plugin and tactical_group:
         plugin.instance.add(tactical_group.email, [user_email])
 
 

@@ -35,7 +35,7 @@ def get_resource_matches(
                 matched_resources.append(
                     RecommendationMatch(
                         resource_state=model_state(**resource.__dict__).dict(
-                            exclude={"created_at", "updated_at"}
+                            exclude={"created_at", "last_reminder_at", "updated_at"}
                         ),
                         resource_type=model_cls.__name__,
                     )
