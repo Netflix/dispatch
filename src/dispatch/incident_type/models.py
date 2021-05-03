@@ -9,7 +9,7 @@ from sqlalchemy.event import listen
 
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database.core import Base, ensure_unique_default
+from dispatch.database.core import Base, ensure_unique_default_per_project
 from dispatch.enums import Visibility
 from dispatch.models import DispatchBase, ProjectMixin
 from dispatch.plugin.models import PluginMetadata
@@ -48,7 +48,7 @@ class IncidentType(ProjectMixin, Base):
                 return m
 
 
-listen(IncidentType.default, "set", ensure_unique_default)
+listen(IncidentType.default, "set", ensure_unique_default_per_project)
 
 
 class Document(DispatchBase):

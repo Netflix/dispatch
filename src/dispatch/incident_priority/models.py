@@ -6,7 +6,7 @@ from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy.event import listen
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database.core import Base, ensure_unique_default
+from dispatch.database.core import Base, ensure_unique_default_per_project
 from dispatch.models import DispatchBase, ProjectMixin
 from dispatch.project.models import ProjectRead
 
@@ -30,7 +30,7 @@ class IncidentPriority(Base, ProjectMixin):
     search_vector = Column(TSVectorType("name", "description"))
 
 
-listen(IncidentPriority.default, "set", ensure_unique_default)
+listen(IncidentPriority.default, "set", ensure_unique_default_per_project)
 
 
 # Pydantic models...

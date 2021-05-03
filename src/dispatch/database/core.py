@@ -68,7 +68,7 @@ def get_table_name_by_class_instance(class_instance: Base) -> str:
     return class_instance._sa_instance_state.mapper.mapped_table.name
 
 
-def ensure_unique_default(target, value, oldvalue, initiator):
+def ensure_unique_default_per_project(target, value, oldvalue, initiator):
     """Ensures that only one row in table is specified as the default."""
     session = object_session(target)
     if session is None:
