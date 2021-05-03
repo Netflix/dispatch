@@ -32,9 +32,11 @@ iniconfig==1.1.1
     # via pytest
 ipython-genutils==0.2.0
     # via traitlets
-ipython==7.22.0
+ipython==7.23.0
     # via -r requirements-dev.in
 jedi==0.18.0
+    # via ipython
+matplotlib-inline==0.1.2
     # via ipython
 mccabe==0.6.1
     # via flake8
@@ -82,7 +84,9 @@ toml==0.10.2
     #   pytest
     #   vulture
 traitlets==5.0.5
-    # via ipython
+    # via
+    #   ipython
+    #   matplotlib-inline
 vulture==2.3
     # via -r requirements-dev.in
 wcwidth==0.2.5
