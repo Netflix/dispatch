@@ -1,13 +1,12 @@
 from typing import List, Optional
 from pydantic import StrictBool
 
-from sqlalchemy import event, Column, Integer, String, Boolean
-from sqlalchemy.sql.expression import true
-from sqlalchemy.orm import object_session
+from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.schema import UniqueConstraint
+from sqlalchemy.event import listen
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database.core import Base
+from dispatch.database.core import Base, ensure_unique_default_per_project
 from dispatch.models import DispatchBase, ProjectMixin
 from dispatch.project.models import ProjectRead
 
@@ -31,23 +30,7 @@ class IncidentPriority(Base, ProjectMixin):
     search_vector = Column(TSVectorType("name", "description"))
 
 
-@event.listens_for(IncidentPriority.default, "set")
-def _revoke_other_default(target, value, oldvalue, initiator):
-    """Removes the previous default when a new one is set."""
-    session = object_session(target)
-    if session is None:
-        return
-
-    if value:
-        previous_default = (
-            session.query(IncidentPriority)
-            .filter(IncidentPriority.default == true())
-            .filter(IncidentPriority.project_id == target.project_id)
-            .one_or_none()
-        )
-        if previous_default:
-            previous_default.default = False
-            session.commit()
+listen(IncidentPriority.default, "set", ensure_unique_default_per_project)
 
 
 # Pydantic models...

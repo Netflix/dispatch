@@ -1,15 +1,15 @@
 from typing import List, Optional
 from pydantic import validator
 
-from sqlalchemy import event, Column, Boolean, ForeignKey, Integer, String, JSON
+from sqlalchemy import Column, Boolean, ForeignKey, Integer, String, JSON
 from sqlalchemy.ext.hybrid import hybrid_method
-from sqlalchemy.orm import relationship, object_session
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
+from sqlalchemy.event import listen
 
-from sqlalchemy.sql.expression import true
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.database.core import Base
+from dispatch.database.core import Base, ensure_unique_default_per_project
 from dispatch.enums import Visibility
 from dispatch.models import DispatchBase, ProjectMixin
 from dispatch.plugin.models import PluginMetadata
@@ -48,24 +48,7 @@ class IncidentType(ProjectMixin, Base):
                 return m
 
 
-@event.listens_for(IncidentType.default, "set")
-def _revoke_other_default(target, value, oldvalue, initiator):
-    """Removes the previous default when a new one is set."""
-    session = object_session(target)
-    if session is None:
-        return
-
-    if value:
-        previous_default = (
-            session.query(IncidentType)
-            .filter(IncidentType.default == true())
-            .filter(IncidentType.project_id == target.project_id)
-            .one_or_none()
-        )
-
-        if previous_default:
-            previous_default.default = False
-            session.commit()
+listen(IncidentType.default, "set", ensure_unique_default_per_project)
 
 
 class Document(DispatchBase):

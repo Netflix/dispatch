@@ -4,8 +4,10 @@ from typing import Any
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, object_session
+from sqlalchemy.sql.expression import true
 from sqlalchemy_searchable import make_searchable
+from sqlalchemy_utils import get_mapper
 from starlette.requests import Request
 
 from dispatch.config import SQLALCHEMY_DATABASE_URI
@@ -64,3 +66,25 @@ def get_class_by_tablename(table_fullname: str) -> Any:
 def get_table_name_by_class_instance(class_instance: Base) -> str:
     """Returns the name of the table for a given class instance."""
     return class_instance._sa_instance_state.mapper.mapped_table.name
+
+
+def ensure_unique_default_per_project(target, value, oldvalue, initiator):
+    """Ensures that only one row in table is specified as the default."""
+    session = object_session(target)
+    if session is None:
+        return
+
+    mapped_cls = get_mapper(target)
+
+    if value:
+        previous_default = (
+            session.query(mapped_cls)
+            .filter(mapped_cls.columns.default == true())
+            .filter(mapped_cls.columns.project_id == target.project_id)
+            .one_or_none()
+        )
+        if previous_default:
+            # we want exclude updating the current default
+            if previous_default.id != target.id:
+                previous_default.default = False
+                session.commit()
