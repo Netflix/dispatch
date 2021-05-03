@@ -29,7 +29,10 @@ def add_participant(
         db_session=db_session, incident=incident, email=user_email
     )
 
-    service = service_service.get(db_session=db_session, service_id=service_id)
+    if service_id:
+        service = service_service.get(db_session=db_session, service_id=service_id)
+    else:
+        service = None
 
     # We create a role for the participant
     participant_role_in = ParticipantRoleCreate(role=role)
