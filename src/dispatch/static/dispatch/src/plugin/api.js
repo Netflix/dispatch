@@ -4,7 +4,7 @@ const resource = "plugins"
 
 export default {
   getAll(options) {
-    return API.get(`/${resource}/`, {
+    return API.get(`/${resource}`, {
       params: { ...options },
     })
   },

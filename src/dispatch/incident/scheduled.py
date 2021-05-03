@@ -23,7 +23,7 @@ from dispatch.notification import service as notification_service
 from dispatch.plugin import service as plugin_service
 from dispatch.scheduler import scheduler
 from dispatch.project import service as project_service
-from dispatch.search import service as search_service
+from dispatch.search_filter import service as search_filter_service
 from dispatch.tag import service as tag_service
 from dispatch.tag.models import Tag
 
@@ -118,7 +118,7 @@ def daily_report(db_session=None):
         for incident in incidents:
             for notification in notifications:
                 for search_filter in notification.filters:
-                    match = search_service.match(
+                    match = search_filter_service.match(
                         db_session=db_session,
                         filter_spec=search_filter.expression,
                         class_instance=incident,

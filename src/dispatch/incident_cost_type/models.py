@@ -2,9 +2,11 @@ from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.event import listen
+
 from sqlalchemy_utils import TSVectorType, JSONType
 
-from dispatch.database.core import Base
+from dispatch.database.core import Base, ensure_unique_default_per_project
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.project.models import ProjectRead
 
@@ -24,6 +26,9 @@ class IncidentCostType(Base, TimeStampMixin, ProjectMixin):
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})
     )
+
+
+listen(IncidentCostType.default, "set", ensure_unique_default_per_project)
 
 
 # Pydantic Models

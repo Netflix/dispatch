@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, ResourceMixin
+from dispatch.models import ResourceBase, ResourceMixin
 
 
 class Group(Base, ResourceMixin):
@@ -12,12 +12,9 @@ class Group(Base, ResourceMixin):
 
 
 # Pydantic models...
-class GroupBase(DispatchBase):
+class GroupBase(ResourceBase):
     name: str
     email: str
-    resource_id: str
-    resource_type: str
-    weblink: str
 
 
 class GroupCreate(GroupBase):

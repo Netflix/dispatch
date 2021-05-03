@@ -21,6 +21,7 @@ from dispatch.plugin.views import router as plugin_router
 
 # from dispatch.route.views import router as route_router
 from dispatch.search.views import router as search_router
+from dispatch.search_filter.views import router as search_filter_router
 from dispatch.service.views import router as service_router
 from dispatch.tag.views import router as tag_router
 from dispatch.tag_type.views import router as tag_type_router
@@ -72,6 +73,9 @@ authenticated_api_router.include_router(term_router, prefix="/{organization}/ter
 authenticated_api_router.include_router(task_router, prefix="/{organization}/tasks", tags=["tasks"])
 authenticated_api_router.include_router(
     search_router, prefix="/{organization}/search", tags=["search"]
+)
+authenticated_api_router.include_router(
+    search_filter_router, prefix="/{organization}/search/filters", tags=["search_filters"]
 )
 authenticated_api_router.include_router(
     incident_router, prefix="/{organization}/incidents", tags=["incidents"]

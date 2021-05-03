@@ -49,7 +49,7 @@ def get_current_incident(*, db_session: Session = Depends(get_db), request: Requ
     return incident
 
 
-@router.get("/", summary="Retrieve a list of all incidents.")
+@router.get("", summary="Retrieve a list of all incidents.")
 def get_incidents(
     *,
     common: dict = Depends(common_parameters),
@@ -91,7 +91,7 @@ def get_incident(
     return current_incident
 
 
-@router.post("/", response_model=IncidentRead, summary="Create a new incident.")
+@router.post("", response_model=IncidentRead, summary="Create a new incident.")
 def create_incident(
     *,
     db_session: Session = Depends(get_db),

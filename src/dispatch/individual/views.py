@@ -16,7 +16,7 @@ from .service import create, delete, get, get_by_email, update
 router = APIRouter()
 
 
-@router.get("/", response_model=IndividualContactPagination)
+@router.get("", response_model=IndividualContactPagination)
 def get_individuals(*, common: dict = Depends(common_parameters)):
     """
     Retrieve individual contacts.
@@ -24,7 +24,7 @@ def get_individuals(*, common: dict = Depends(common_parameters)):
     return search_filter_sort_paginate(model="IndividualContact", **common)
 
 
-@router.post("/", response_model=IndividualContactRead)
+@router.post("", response_model=IndividualContactRead)
 def create_individual(
     *, db_session: Session = Depends(get_db), individual_contact_in: IndividualContactCreate
 ):

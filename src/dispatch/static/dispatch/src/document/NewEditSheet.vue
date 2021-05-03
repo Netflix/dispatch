@@ -98,16 +98,24 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <span class="subtitle-2">Engagement</span>
+                <span class="subtitle-2"
+                  >Engagement
+                  <v-tooltip max-width="250px" bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                    </template>
+                    This document will be automatically suggessted for any incident matching the
+                    following filters.
+                  </v-tooltip>
+                </span>
               </v-flex>
               <v-flex xs12>
-                <term-combobox :project="project" v-model="terms" />
-              </v-flex>
-              <v-flex xs12>
-                <incident-priority-multi-select :project="project" v-model="incident_priorities" />
-              </v-flex>
-              <v-flex>
-                <incident-type-multi-select :project="project" v-model="incident_types" />
+                <search-filter-combobox
+                  v-model="filters"
+                  :project="project"
+                  label="Filters"
+                  hint="Select one or more filters that will determine when this document will be recommended."
+                />
               </v-flex>
               <v-flex xs12>
                 <span class="subtitle-2">Evergreen</span>
@@ -161,9 +169,8 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
-import IncidentPriorityMultiSelect from "@/incident_priority/IncidentPriorityMultiSelect.vue"
-import IncidentTypeMultiSelect from "@/incident_type/IncidentTypeMultiSelect.vue"
-import TermCombobox from "@/term/TermCombobox.vue"
+
+import SearchFilterCombobox from "@/search/SearchFilterCombobox.vue"
 
 extend("required", {
   ...required,
@@ -176,25 +183,21 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    IncidentPriorityMultiSelect,
-    IncidentTypeMultiSelect,
-    TermCombobox,
+    SearchFilterCombobox,
   },
 
   computed: {
     ...mapFields("document", [
       "selected.name",
       "selected.description",
-      "selected.terms",
       "selected.resource_type",
       "selected.weblink",
       "selected.resource_id",
-      "selected.incident_priorities",
-      "selected.incident_types",
       "selected.evergreen_owner",
       "selected.evergreen",
       "selected.evergreen_reminder_interval",
       "selected.project",
+      "selected.filters",
       "selected.id",
       "selected.loading",
       "dialogs.showCreateEdit",

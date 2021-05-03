@@ -17,7 +17,7 @@ from .service import create, delete, get, update
 router = APIRouter()
 
 
-@router.get("/", response_model=FeedbackPagination)
+@router.get("", response_model=FeedbackPagination)
 def get_feedback_entries(*, commons: dict = Depends(common_parameters)):
     """
     Get all feedback entries, or only those matching a given search term.
@@ -36,7 +36,7 @@ def get_feedback(*, db_session: Session = Depends(get_db), feedback_id: int):
     return feedback
 
 
-@router.post("/", response_model=FeedbackRead)
+@router.post("", response_model=FeedbackRead)
 def create_feedback(*, db_session: Session = Depends(get_db), feedback_in: FeedbackCreate):
     """
     Create a new feedback entry.

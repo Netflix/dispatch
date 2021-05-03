@@ -33,6 +33,7 @@ def install_plugins():
             logger.error(
                 "Something went wrong with creating plugin rows, is the database setup correctly?"
             )
+            logger.error(f"Failed to load plugin {ep.name}:{traceback.format_exc()}")
         except KeyError as e:
             logger.info(f"Failed to load plugin {ep.name} due to missing configuration items. {e}")
         except Exception:

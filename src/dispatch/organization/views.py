@@ -22,7 +22,7 @@ from .service import create, delete, get, get_by_name, update
 router = APIRouter()
 
 
-@router.get("/", response_model=OrganizationPagination)
+@router.get("", response_model=OrganizationPagination)
 def get_organizations(common: dict = Depends(common_parameters)):
     """
     Get all organizations.
@@ -31,7 +31,7 @@ def get_organizations(common: dict = Depends(common_parameters)):
 
 
 @router.post(
-    "/",
+    "",
     response_model=OrganizationRead,
     dependencies=[Depends(PermissionsDependency([OrganizationOwnerPermission]))],
 )

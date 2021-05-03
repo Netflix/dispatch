@@ -23,7 +23,7 @@ class PagerDutyOncallPlugin(OncallPlugin):
     title = "PagerDuty Plugin - Oncall Management"
     slug = "pagerduty-oncall"
     author = "Netflix"
-    author_url = "https://github.com/Netflix/dispatch"
+    author_url = "https://github.com/Netflix/dispatch.git"
     description = "Uses PagerDuty to resolve and page oncall teams."
     version = pagerduty_oncall_plugin.__version__
 

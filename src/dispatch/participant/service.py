@@ -65,7 +65,7 @@ def get_by_incident_id_and_email(
     )
 
 
-def get_by_incident_id_and_service(
+def get_by_incident_id_and_service_id(
     *, db_session, incident_id: int, service_id: int
 ) -> Optional[Participant]:
     """

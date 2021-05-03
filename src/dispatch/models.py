@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel
+import validators
+from pydantic import BaseModel, validator
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, event, ForeignKey
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
@@ -62,6 +63,19 @@ class DispatchBase(BaseModel):
     class Config:
         orm_mode = True
         validate_assignment = True
+        arbitrary_types_allowed = True
+
+
+class ResourceBase(DispatchBase):
+    resource_type: Optional[str] = None
+    resource_id: Optional[str] = None
+    weblink: Optional[str] = None
+
+    @validator("weblink")
+    def sanitize_weblink(cls, v):
+        if validators.url(v):
+            return v
+        raise ValueError("Weblink must be a valid url.")
 
 
 class ContactBase(DispatchBase):
@@ -131,8 +145,4 @@ class IndividualReadNested(ContactBase):
 
 
 class TeamReadNested(ContactBase):
-    pass
-
-
-class PolicyReadNested(DispatchBase):
     pass
