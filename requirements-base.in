@@ -1,10 +1,11 @@
 SQLAlchemy-Searchable
-aiohttp
 aiofiles
+aiohttp
 alembic
 arrow
 bcrypt
 cachetools==3.1.1  # NOTE pinning for google-auth
+chardet==3.0.4
 click
 email-validator
 emails
@@ -13,6 +14,7 @@ google-api-python-client
 google-auth-oauthlib
 h11==0.9.0 # NOTE pinning due to uvicorn
 httpx
+idna==2.10
 jinja2
 jira
 joblib
@@ -27,16 +29,14 @@ python-jose
 python-multipart
 pytz
 requests
-idna==2.10
-chardet==3.0.4
 schedule
 sentry-asgi
 sentry-sdk
 sh
 slack_sdk
 spacy==2.3.5
-sqlalchemy>=1.3.7,<1.4.0  # NOTE temporarily until https://github.com/kvesteri/sqlalchemy-utils/issues/505 is fixed
 sqlalchemy-filters
+sqlalchemy>=1.3.7,<1.4.0  # NOTE temporarily until https://github.com/kvesteri/sqlalchemy-utils/issues/505 is fixed
 statsmodels
 tabulate
 tenacity

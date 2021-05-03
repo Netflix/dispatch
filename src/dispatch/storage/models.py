@@ -6,7 +6,7 @@ from sqlalchemy import Column, Integer, ForeignKey
 
 from dispatch.database.core import Base
 from dispatch.messaging.strings import INCIDENT_STORAGE_DESCRIPTION
-from dispatch.models import DispatchBase, ResourceMixin
+from dispatch.models import ResourceBase, ResourceMixin
 
 
 class Storage(Base, ResourceMixin):
@@ -15,10 +15,8 @@ class Storage(Base, ResourceMixin):
 
 
 # Pydantic models...
-class StorageBase(DispatchBase):
-    resource_id: Optional[str]
-    resource_type: Optional[str]
-    weblink: Optional[str]
+class StorageBase(ResourceBase):
+    pass
 
 
 class StorageCreate(StorageBase):
