@@ -7,12 +7,9 @@ from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.incident_priority.models import IncidentPriorityCreate, IncidentPriorityRead
-from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead
 from dispatch.project.models import ProjectRead
 from dispatch.search_filter.models import SearchFilterRead
-from dispatch.term.models import TermCreate
-from dispatch.models import ContactBase, ContactMixin, DispatchBase, TermReadNested, ProjectMixin
+from dispatch.models import ContactBase, ContactMixin, DispatchBase, ProjectMixin
 
 assoc_team_contact_incidents = Table(
     "team_contact_incident",
