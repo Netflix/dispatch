@@ -48,7 +48,6 @@ from dispatch.plugin import service as plugin_service
 from dispatch.report.enums import ReportTypes
 from dispatch.report.messaging import send_incident_report_reminder
 from dispatch.service import service as service_service
-from dispatch.service.models import Service
 from dispatch.storage import service as storage_service
 from dispatch.ticket import service as ticket_service
 from dispatch.ticket.models import TicketCreate
