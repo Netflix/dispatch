@@ -1,4 +1,6 @@
-![Create Incident Flow](https://lh6.googleusercontent.com/_NM9lqCbtuovA1uNpPIkviYiWJcXNIAodIUGUe_Xe9KklUeAMgE1IU2S-kWS-tD4Cv9xQ2A1-7_gYh81znjlBf5FW2WRYNJygVPRCbMHZ5x9jwROj1bkZ5a0nx4oyrm9jq1Np2l1)
+---
+description: How do I use Dispatch?
+---
 
 There are two _main_ personas within Dispatch: an incident commander and an incident participant.
 
@@ -6,4 +8,4 @@ The incident commander is responsible for driving an incident to resolution. The
 
 Incident participants are subject matter experts (SMEs) brought into the incident to help resolve tasks or answer the incident commander's questions.
 
-Below you will find more information about how each of these personas interacts with Dispatch.
+Next you will find more information about how each of these personas interacts with Dispatch.
