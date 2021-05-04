@@ -8,7 +8,7 @@ Within Dispatch, tags are a flexible piece of metadata. They can be manually att
 
 **Description:** A short description of the tag (if applicable).
 
-**Type:** The _type_ of the tag and is used to disambiguate or categorize. These are defined either by a plugin syncing tags from external sources (e.g., application names) or are user-definable.
+**Type:** The type of the tag that will be used to disambiguate or categorize this tag from other tags. Tag types can be defined by users or plugins that syncing tags from external sources (e.g., application names).
 
 **Source:** Where the tag originated. For tags created via the UI, Dispatch is the default source.
 
