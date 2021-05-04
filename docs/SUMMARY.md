@@ -10,6 +10,7 @@
   - [Incident](admin-guide/administration/incident/README.md)
     - [Incident Prioritites](admin-guide/administration/incident/incident-priority.md)
     - [Incident Types](admin-guide/administration/incident/incident-type.md)
+    - [Incident Cost Types](admin-guide/administration/incident/incident-cost-type.md)
     - [Workflows](admin-guide/administration/incident/workflow.md)
     - [Notifications](admin-guide/administration/incident/notification.md)
     - [Plugins](admin-guide/administration/plugins/README.md)
