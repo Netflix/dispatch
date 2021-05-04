@@ -4,9 +4,9 @@ description: Overview of the Dispatch projects.
 
 # Projects
 
-Every incident within Dispatch is tied to a project. The project, and it's resources/configuration determines how the incident is run. This allows multiple teams to use Dispatch in different ways.
+Every incident within Dispatch is tied to a project. The project and its resources/configuration determine how the incident is run. This allows multiple teams to use Dispatch in different ways.
 
-From having their own IncidentTypes and IncidentPriorities to providing the team with a view of their of their incident metrics. Projects drive this scoping of incidents.
+From having their own incident types and priorities to providing the team with a view of their incident metrics. Projects drive this scoping of incidents.
 
 ### When should I create a new project vs using an existing one?
 
