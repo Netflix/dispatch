@@ -23,7 +23,6 @@ from dispatch.individual.models import IndividualContact, IndividualContactRead
 from dispatch.document.models import Document, DocumentRead
 from dispatch.team.models import TeamContact, TeamContactRead
 from dispatch.service.models import Service, ServiceRead
-from dispatch.service import service as service_service
 from dispatch.individual import service as individual_service
 from dispatch.plugins import dispatch_core as dispatch_plugin
 from dispatch.incident import service as incident_service
@@ -199,7 +198,7 @@ class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
         recommendation = route_service.get(
             db_session=db_session, incident=incident, models=[(Document, DocumentRead)]
         )
-        return recommendation.documents
+        return recommendation.matches
 
 
 class DispatchContactPlugin(ContactPlugin):

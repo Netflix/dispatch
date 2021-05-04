@@ -2,18 +2,19 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 
 from dispatch.database.core import SessionLocal
+
 from dispatch.event import service as event_service
 from dispatch.incident_cost import service as incident_cost_service
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
-from dispatch.participant import flows as participant_flows
 from dispatch.participant_role.models import ParticipantRoleType
-from dispatch.plugin import service as plugin_service
 from dispatch.tag import service as tag_service
 from dispatch.tag.models import TagCreate
 from dispatch.term import service as term_service
 from dispatch.term.models import TermUpdate
 from dispatch.project import service as project_service
+from dispatch.plugin import service as plugin_service
+from dispatch.participant import flows as participant_flows
 
 from .enums import IncidentStatus
 from .models import Incident, IncidentUpdate
@@ -33,10 +34,12 @@ def assign_incident_role(
     oncall_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
     )
+    service_id = None
     if role == ParticipantRoleType.incident_commander:
         # default to reporter
         if incident.incident_type.commander_service:
             service = incident.incident_type.commander_service
+            service_id = service.id
             if oncall_plugin:
                 assignee_email = oncall_plugin.instance.get(service_id=service.external_id)
                 if incident.incident_priority.page_commander:
@@ -50,6 +53,7 @@ def assign_incident_role(
     elif role == ParticipantRoleType.liaison.value:
         if incident.incident_type.liaison_service:
             service = incident.incident_type.liaison_service
+            service_id = service.id
             if oncall_plugin:
                 assignee_email = oncall_plugin.instance.get(service_id=service.external_id)
 
@@ -58,6 +62,7 @@ def assign_incident_role(
         assignee_email,
         incident,
         db_session,
+        service_id=service_id,
         role=role,
     )
 

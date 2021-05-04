@@ -189,7 +189,7 @@ def create_participant_groups(
     group_name = f"{incident.name}"
     notification_group_name = f"{group_name}-notifications"
 
-    direct_participant_emails = [x.email for x in direct_participants]
+    direct_participant_emails = [x.email for x, _ in direct_participants]
     tactical_group = plugin.instance.create(
         group_name, direct_participant_emails
     )  # add participants to core group
@@ -495,28 +495,12 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
     individual_participants, team_participants = get_incident_participants(incident, db_session)
 
-    for individual, service_id in individual_participants:
-        incident_add_or_reactivate_participant_flow(
-            individual.email, incident.id, service_id=service_id, db_session=db_session
-        )
-
-    event_service.log(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description="Incident participants added to incident",
-        incident_id=incident.id,
-    )
-
     group_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
     )
     if group_plugin:
         tactical_group = None
         notification_group = None
-
-        # we create the participant groups (tactical and notification)
-        individual_participants = [x.individual for x in incident.participants]
-        participant_emails = [x.individual.email for x in incident.participants]
 
         try:
             tactical_group, notification_group = create_participant_groups(
@@ -563,6 +547,8 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
                 storage = create_incident_storage(incident, group_emails, db_session)
             else:
+                participant_emails = [x.email for x in individual_participants]
+
                 # we don't have a group so add participants directly
                 storage = create_incident_storage(incident, participant_emails, db_session)
 
@@ -623,13 +609,13 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     )
     if conference_plugin:
         try:
-            participants = participant_emails
+            participant_emails = [x.email for x, _ in individual_participants]
 
             if group_plugin and tactical_group:
                 # we use the tactical group email if the group plugin is enabled
-                participants = [tactical_group["email"]]
+                participant_emails = [tactical_group["email"]]
 
-            conference = create_conference(incident, participants, db_session)
+            conference = create_conference(incident, participant_emails, db_session)
 
             conference_in = ConferenceCreate(
                 resource_id=conference["resource_id"],
@@ -682,6 +668,9 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
                 description="Conversation added to incident",
                 incident_id=incident.id,
             )
+
+            # we set the conversation topic
+            set_conversation_topic(incident, db_session)
         except Exception as e:
             event_service.log(
                 db_session=db_session,
@@ -690,15 +679,6 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
                 incident_id=incident.id,
             )
             log.exception(e)
-
-        # we add participants to the conversation
-        add_participants_to_conversation(participant_emails, incident, db_session)
-
-        # we set the conversation topic
-        set_conversation_topic(incident, db_session)
-
-    db_session.add(incident)
-    db_session.commit()
 
     # we update the incident ticket
     update_external_incident_ticket(incident, db_session)
@@ -735,6 +715,41 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
                 )
                 log.exception(e)
 
+    # we defer this setup until after resources have been created
+    for user_email in set(
+        [incident.commander.individual.email, incident.reporter.individual.email]
+    ):
+        # we add the participant to the tactical group
+        add_participant_to_tactical_group(user_email, incident, db_session)
+
+        # we add the participant to the conversation
+        add_participants_to_conversation([user_email], incident, db_session)
+
+        # we announce the participant in the conversation
+        send_incident_participant_announcement_message(user_email, incident, db_session)
+
+        # we send the welcome messages to the participant
+        send_incident_welcome_participant_messages(user_email, incident, db_session)
+
+        # we send a suggested reading message to the participant
+        suggested_document_items = get_suggested_document_items(incident, db_session)
+        send_incident_suggested_reading_messages(
+            incident, suggested_document_items, user_email, db_session
+        )
+
+    # wait until all resource are created before adding suggested participants
+    for individual, service_id in individual_participants:
+        incident_add_or_reactivate_participant_flow(
+            individual.email, incident.id, service_id=service_id, db_session=db_session
+        )
+
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Incident participants added to incident",
+        incident_id=incident.id,
+    )
+
     send_incident_created_notifications(incident, db_session)
 
     event_service.log(
@@ -744,37 +759,11 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
         incident_id=incident.id,
     )
 
-    suggested_document_items = get_suggested_document_items(incident, db_session)
-
-    for participant in incident.participants:
-        # we announce the participant in the conversation
-        # should protect ourselves from failures of any one participant
-        try:
-            send_incident_participant_announcement_message(
-                participant.individual.email, incident, db_session
-            )
-
-            # we send the welcome messages to the participant
-            send_incident_welcome_participant_messages(
-                participant.individual.email, incident, db_session
-            )
-
-            send_incident_suggested_reading_messages(
-                incident, suggested_document_items, participant.individual.email, db_session
-            )
-
-        except Exception as e:
-            log.exception(e)
-
-    event_service.log(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description="Participants announced and welcome messages sent",
-        incident_id=incident.id,
-    )
-
     # we send a message to the incident commander with tips on how to manage the incident
     send_incident_management_help_tips_message(incident, db_session)
+
+    db_session.add(incident)
+    db_session.commit()
 
 
 def incident_active_status_flow(incident: Incident, db_session=None):
@@ -1257,6 +1246,10 @@ def incident_add_or_reactivate_participant_flow(
         # we add the participant to the incident
         participant = participant_flows.add_participant(
             user_email, incident, db_session, service_id=service_id, role=role
+        )
+
+        send_incident_participant_announcement_message(
+            participant.individual.email, incident, db_session
         )
 
         # we add the participant to the tactical group

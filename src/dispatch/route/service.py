@@ -1,4 +1,5 @@
 import logging
+import json
 from typing import Any, List
 
 from dispatch.search_filter import service as search_filter_service
@@ -34,9 +35,7 @@ def get_resource_matches(
             if match:
                 matched_resources.append(
                     RecommendationMatch(
-                        resource_state=model_state(**resource.__dict__).dict(
-                            exclude={"created_at", "last_reminder_at", "updated_at"}
-                        ),
+                        resource_state=json.loads(model_state(**resource.__dict__).json()),
                         resource_type=model_cls.__name__,
                     )
                 )

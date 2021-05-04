@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <notification-snackbars-wrapper />
-    <v-content>
+    <v-main>
       <v-app-bar app flat class="v-bar--underline" color="background0">
         <router-link to="/" style="text-decoration: none">
           <span class="button font-weight-bold">D I S P A T C H</span>
@@ -10,7 +10,7 @@
       <v-card flat>
         <router-view :key="$route.path" />
       </v-card>
-    </v-content>
+    </v-main>
   </v-app>
 </template>
 

@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-content>
+    <v-main>
       <v-app-bar app flat class="v-bar--underline" color="background0">
         <router-link to="/" style="text-decoration: none">
           <span class="button font-weight-bold">D I S P A T C H</span>
@@ -10,7 +10,7 @@
       </v-app-bar>
       <report-receipt-card v-if="id" />
       <report-submission-card v-else />
-    </v-content>
+    </v-main>
   </v-app>
 </template>
 

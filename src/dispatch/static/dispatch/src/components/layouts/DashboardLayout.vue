@@ -5,13 +5,13 @@
     <app-drawer />
     <notification-snackbars-wrapper />
     <refresh />
-    <v-content>
+    <v-main>
       <!-- Page Header -->
       <page-header />
       <div class="page-wrapper">
         <router-view />
       </div>
-    </v-content>
+    </v-main>
   </v-app>
 </template>
 

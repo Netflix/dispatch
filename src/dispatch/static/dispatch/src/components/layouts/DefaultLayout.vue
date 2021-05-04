@@ -6,7 +6,7 @@
     <notification-snackbars-wrapper />
 
     <refresh />
-    <v-content>
+    <v-main>
       <!-- Page Header -->
       <page-header />
       <div class="page-wrapper">
@@ -14,7 +14,7 @@
           <router-view />
         </v-container>
       </div>
-    </v-content>
+    </v-main>
     <!-- Go to top -->
   </v-app>
 </template>
