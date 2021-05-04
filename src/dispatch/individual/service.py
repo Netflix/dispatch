@@ -42,24 +42,38 @@ def get_or_create(
     *, db_session, email: str, incident: Incident = None, **kwargs
 ) -> IndividualContact:
     """Gets or creates an individual."""
-    contact = get_by_email(db_session=db_session, email=email)
+    # we fetch the individual contact from the database
+    individual_contact = get_by_email(db_session=db_session, email=email)
 
-    if not contact:
-        contact_plugin = plugin_service.get_active_instance(
-            db_session=db_session, project_id=incident.project.id, plugin_type="contact"
-        )
-        individual_info = {}
+    # we try to fetch the individual's contact information using the contact plugin
+    contact_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="contact"
+    )
 
-        if contact_plugin:
-            individual_info = contact_plugin.instance.get(email, db_session=db_session)
+    individual_info = {}
+    if contact_plugin:
+        individual_info = contact_plugin.instance.get(email, db_session=db_session)
 
-        kwargs["email"] = individual_info.get("email", email)
-        kwargs["name"] = individual_info.get("fullname", "Unknown")
-        kwargs["weblink"] = individual_info.get("weblink", "Unknown")
+    kwargs["email"] = individual_info.get("email", email)
+    kwargs["name"] = individual_info.get("fullname", "Unknown")
+    kwargs["weblink"] = individual_info.get("weblink", "Unknown")
+
+    if not individual_contact:
+        # we create a new contact
         individual_contact_in = IndividualContactCreate(**kwargs, project=incident.project)
-        contact = create(db_session=db_session, individual_contact_in=individual_contact_in)
+        individual_contact = create(
+            db_session=db_session, individual_contact_in=individual_contact_in
+        )
+    else:
+        # we update the existing contact
+        individual_contact_in = IndividualContactUpdate(**kwargs, project=incident.project)
+        individual_contact = update(
+            db_session=db_session,
+            individual_contact=individual_contact,
+            individual_contact_in=individual_contact_in,
+        )
 
-    return contact
+    return individual_contact
 
 
 def create(*, db_session, individual_contact_in: IndividualContactCreate) -> IndividualContact:
