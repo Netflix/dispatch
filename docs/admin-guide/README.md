@@ -1,3 +1,3 @@
 # Administration Guide
 
-The following articals
+Below you should find everything you need to administer your Dispatch installation.
