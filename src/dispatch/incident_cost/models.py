@@ -35,7 +35,7 @@ class IncidentCostCreate(IncidentCostBase):
 
 
 class IncidentCostUpdate(IncidentCostBase):
-    id: Optional[int]
+    id: Optional[int] = None
     incident_cost_type: IncidentCostTypeRead
 
 

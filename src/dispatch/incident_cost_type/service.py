@@ -14,7 +14,7 @@ from .models import (
 )
 
 
-def get(*, db_session, incident_cost_type_id: int) -> Optional[IncidentCostTypeRead]:
+def get(*, db_session, incident_cost_type_id: int) -> Optional[IncidentCostType]:
     """
     Gets an incident cost type by its id.
     """
@@ -25,7 +25,7 @@ def get(*, db_session, incident_cost_type_id: int) -> Optional[IncidentCostTypeR
     )
 
 
-def get_default(*, db_session, project_id: int) -> Optional[IncidentCostTypeRead]:
+def get_default(*, db_session, project_id: int) -> Optional[IncidentCostType]:
     """Returns the default incident cost type."""
     return (
         db_session.query(IncidentCostType)
@@ -37,7 +37,7 @@ def get_default(*, db_session, project_id: int) -> Optional[IncidentCostTypeRead
 
 def get_by_name(
     *, db_session, project_id: int, incident_cost_type_name: str
-) -> Optional[IncidentCostTypeRead]:
+) -> Optional[IncidentCostType]:
     """
     Gets an incident cost type by its name.
     """
