@@ -10,7 +10,7 @@ attrs==20.3.0
     # via pytest
 backcall==0.2.0
     # via ipython
-black==21.4b2
+black==21.5b0
     # via -r requirements-dev.in
 click==7.1.2
     # via black
