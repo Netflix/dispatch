@@ -68,7 +68,7 @@ pygments==2.8.1
     # via ipython
 pyparsing==2.4.7
     # via packaging
-pytest==6.2.3
+pytest==6.2.4
     # via -r requirements-dev.in
 python-dateutil==2.8.1
     # via faker
