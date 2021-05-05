@@ -165,7 +165,7 @@ patsy==0.5.1
     # via statsmodels
 pbr==5.5.1
     # via jira
-pdpyras==4.1.4
+pdpyras==4.2.0
     # via -r requirements-base.in
 plac==1.1.3
     # via
