@@ -8,7 +8,7 @@ from dispatch.individual.models import IndividualContact
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
 from dispatch.plugin import service as plugin_service
-from dispatch.service.models import Service
+from dispatch.service import service as service_service
 
 
 from .models import Participant, ParticipantCreate, ParticipantUpdate
@@ -96,7 +96,7 @@ def get_or_create(
     db_session,
     incident_id: int,
     individual_id: int,
-    service: Service,
+    service_id: int,
     participant_roles: List[ParticipantRoleType],
 ) -> Participant:
     """Gets an existing participant object or creates a new one."""
@@ -128,12 +128,19 @@ def get_or_create(
         team = individual_info.get("team", "Unknown")
         department = individual_info.get("department", "Unknown")
         participant_in = ParticipantCreate(
-            participant_roles=participant_roles, team=team, department=department, location=location
+            participant_roles=participant_roles,
+            team=team,
+            department=department,
+            location=location,
         )
+
+        if service_id:
+            participant_in.service = {"id": service_id}
+
         participant = create(db_session=db_session, participant_in=participant_in)
-        participant.service = service
     else:
         participant.participant_roles += participant_roles
+        participant.service_id = service_id
 
     return participant
 
@@ -147,8 +154,14 @@ def create(*, db_session, participant_in: ParticipantCreate) -> Participant:
         for participant_role in participant_in.participant_roles
     ]
 
+    service = None
+    if participant_in.service:
+        service = service_service.get(db_session=db_session, service_id=participant_in.service.id)
+
     participant = Participant(
-        **participant_in.dict(exclude={"participant_roles"}), participant_roles=participant_roles
+        **participant_in.dict(exclude={"participant_roles", "service"}),
+        service=service,
+        participant_roles=participant_roles,
     )
 
     db_session.add(participant)

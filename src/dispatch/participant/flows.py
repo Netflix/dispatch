@@ -6,7 +6,6 @@ from dispatch.event import service as event_service
 from dispatch.individual import service as individual_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType, ParticipantRoleCreate
-from dispatch.service import service as service_service
 from dispatch.plugin import service as plugin_service
 
 from .service import get_or_create, get_by_incident_id_and_email
@@ -28,12 +27,7 @@ def add_participant(
     individual = individual_service.get_or_create(
         db_session=db_session, incident=incident, email=user_email
     )
-
-    if service_id:
-        service = service_service.get(db_session=db_session, service_id=service_id)
-    else:
-        service = None
-
+    
     # We create a role for the participant
     participant_role_in = ParticipantRoleCreate(role=role)
 
@@ -46,7 +40,7 @@ def add_participant(
         db_session=db_session,
         incident_id=incident.id,
         individual_id=individual.id,
-        service=service,
+        service_id=service_id,
         participant_roles=[participant_role],
     )
 

@@ -51,7 +51,11 @@ def get_suggested_documents(db_session, incident: Incident) -> list:
 
     documents = []
     if plugin:
-        documents = plugin.instance.get(incident=incident, db_session=db_session)
+        matches = plugin.instance.get(incident=incident, db_session=db_session)
+
+        for m in matches:
+            document = document_service.get(db_session=db_session, document_id=m.resource_state["id"])
+            documents.append(document)
 
     return documents
 

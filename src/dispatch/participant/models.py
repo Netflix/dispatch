@@ -13,6 +13,7 @@ from dispatch.participant_role.models import (
     ParticipantRoleRead,
     ParticipantRole,
 )
+from dispatch.service.models import ServiceRead
 
 
 class Participant(Base):
@@ -36,6 +37,7 @@ class Participant(Base):
     # relationships
     feedback = relationship("Feedback", backref="participant")
     service_id = Column(Integer, ForeignKey("service.id", ondelete="CASCADE"))
+    service = relationship("Service", backref="participant")
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     individual = relationship("IndividualContact", lazy="subquery", backref="participant")
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
@@ -93,6 +95,7 @@ class ParticipantCreate(ParticipantBase):
     location: Optional[str]
     team: Optional[str]
     department: Optional[str]
+    service: Optional[ServiceRead]
 
 
 class ParticipantUpdate(ParticipantBase):
