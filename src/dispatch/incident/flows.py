@@ -737,7 +737,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
             incident, suggested_document_items, user_email, db_session
         )
 
-    # wait until all resource are created before adding suggested participants
+    # wait until all resources are created before adding suggested participants
     for individual, service_id in individual_participants:
         incident_add_or_reactivate_participant_flow(
             individual.email, incident.id, service_id=service_id, db_session=db_session
