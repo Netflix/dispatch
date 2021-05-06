@@ -31,6 +31,7 @@ from dispatch.workflow.models import Workflow, WorkflowInstanceCreate
 
 from .messaging import create_incident_reported_confirmation_message
 from .service import get_user_profile_by_email, get_user_email
+from .decorators import slack_background_task
 
 
 slack_client = dispatch_slack_service.create_slack_client()
@@ -94,9 +95,13 @@ def handle_modal_action(action: dict, background_tasks: BackgroundTasks):
     view_data["private_metadata"] = json.loads(view_data["private_metadata"])
 
     action_id = view_data["callback_id"]
+    incident_id = view_data["private_metadata"].get("incident_id")
+    channel_id = view_data["private_metadata"].get("channel_id")
+    user_id = action["user"]["id"]
+    user_email = action["user"]["email"]
 
     for f in action_functions(action_id):
-        background_tasks.add_task(f, action)
+        background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, action)
 
 
 def action_functions(action_id: str):
@@ -159,8 +164,15 @@ def parse_submitted_form(view_data: dict):
     return parsed_data
 
 
-@background_task
-def report_incident_from_submitted_form(action: dict, db_session: Session = None):
+@slack_background_task
+def report_incident_from_submitted_form(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    action: dict,
+    db_session: Session = None,
+):
     submitted_form = action.get("view")
     parsed_form_data = parse_submitted_form(submitted_form)
 
@@ -177,8 +189,6 @@ def report_incident_from_submitted_form(action: dict, db_session: Session = None
         incident_priority=requested_form_incident_priority.get("value"),
     )
 
-    user_id = action["user"]["id"]
-    channel_id = submitted_form.get("private_metadata")["channel_id"]
     dispatch_slack_service.send_ephemeral_message(
         client=slack_client,
         conversation_id=channel_id,
@@ -188,7 +198,6 @@ def report_incident_from_submitted_form(action: dict, db_session: Session = None
     )
 
     # Create the incident
-    user_email = action["user"]["email"]
     incident = incident_service.create(
         db_session=db_session,
         title=requested_form_title,
@@ -293,10 +302,16 @@ def build_report_incident_blocks(channel_id: str, db_session: Session):
     return modal_template
 
 
-@background_task
-def create_report_incident_modal(incident_id: int, command: dict = None, db_session=None):
+@slack_background_task
+def create_report_incident_modal(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    command: dict = None,
+    db_session=None,
+):
     """Creates a modal for reporting an incident."""
-    channel_id = command.get("channel_id")
     trigger_id = command.get("trigger_id")
 
     modal_create_template = build_report_incident_blocks(
@@ -402,8 +417,10 @@ def build_update_participant_blocks(incident: Incident, participant: Participant
     return modal_template
 
 
-@background_task
-def update_participant_from_submitted_form(action: dict, db_session=None):
+@slack_background_task
+def update_participant_from_submitted_form(
+    user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
+):
     """Saves form data."""
     submitted_form = action.get("view")
 
@@ -421,12 +438,12 @@ def update_participant_from_submitted_form(action: dict, db_session=None):
     )
 
 
-@background_task
-def update_update_participant_modal(action: dict, db_session=None):
+@slack_background_task
+def update_update_participant_modal(
+    user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
+):
     """Pushes an updated view to the update participant modal."""
     trigger_id = action["trigger_id"]
-    incident_id = action["view"]["private_metadata"]["incident_id"]
-
     participant_id = action["actions"][0]["selected_option"]["value"]
 
     selected_participant = participant_service.get(
@@ -446,8 +463,10 @@ def update_update_participant_modal(action: dict, db_session=None):
     )
 
 
-@background_task
-def create_update_participant_modal(incident_id: int, command: dict, db_session=None):
+@slack_background_task
+def create_update_participant_modal(
+    user_id: str, user_email: str, channel_id: str, incident_id: int, command: dict, db_session=None
+):
     """Creates a modal for updating a participant."""
     trigger_id = command["trigger_id"]
 
@@ -510,8 +529,10 @@ def build_update_notifications_group_blocks(incident: Incident, db_session: Sess
     return modal_template
 
 
-@background_task
-def create_update_notifications_group_modal(incident_id: int, command: dict, db_session=None):
+@slack_background_task
+def create_update_notifications_group_modal(
+    user_id: str, user_email: str, channel_id: str, incident_id: int, command: dict, db_session=None
+):
     """Creates a modal for editing members of the notifications group."""
     trigger_id = command["trigger_id"]
 
@@ -526,8 +547,10 @@ def create_update_notifications_group_modal(incident_id: int, command: dict, db_
     )
 
 
-@background_task
-def update_notifications_group_from_submitted_form(action: dict, db_session=None):
+@slack_background_task
+def update_notifications_group_from_submitted_form(
+    user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
+):
     """Updates notifications group based on submitted form data."""
     submitted_form = action.get("view")
     parsed_form_data = parse_submitted_form(submitted_form)
@@ -544,7 +567,6 @@ def update_notifications_group_from_submitted_form(action: dict, db_session=None
     members_added = list(set(updated_members) - set(current_members))
     members_removed = list(set(current_members) - set(updated_members))
 
-    incident_id = action["view"]["private_metadata"]["incident_id"]
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     group_plugin = plugin_service.get_active_instance(
@@ -553,6 +575,13 @@ def update_notifications_group_from_submitted_form(action: dict, db_session=None
 
     group_plugin.instance.add(incident.notifications_group.email, members_added)
     group_plugin.instance.remove(incident.notifications_group.email, members_removed)
+
+    dispatch_slack_service.send_ephemeral_message(
+        client=slack_client,
+        conversation_id=channel_id,
+        user_id=user_id,
+        text="You have successfully updated the notifications group.",
+    )
 
 
 def build_add_timeline_event_blocks(incident: Incident):
@@ -677,11 +706,11 @@ def create_add_timeline_event_modal(incident_id: int, command: dict, db_session=
     )
 
 
-@background_task
-def add_timeline_event_from_submitted_form(action: dict, db_session=None):
+@slack_background_task
+def add_timeline_event_from_submitted_form(
+    user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
+):
     """Adds event to incident timeline based on submitted form data."""
-    user_email = action["user"]["email"]
-
     submitted_form = action.get("view")
     parsed_form_data = parse_submitted_form(submitted_form)
 
@@ -690,8 +719,6 @@ def add_timeline_event_from_submitted_form(action: dict, db_session=None):
     event_minute = parsed_form_data.get(AddTimelineEventBlockFields.minute)["value"]
     event_timezone_selection = parsed_form_data.get(AddTimelineEventBlockFields.timezone)["value"]
     event_description = parsed_form_data.get(AddTimelineEventBlockFields.description)
-
-    incident_id = action["view"]["private_metadata"]["incident_id"]
 
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident_id, email=user_email
@@ -713,6 +740,13 @@ def add_timeline_event_from_submitted_form(action: dict, db_session=None):
         description=f'"{event_description}," said {participant.individual.name}',
         incident_id=incident_id,
         individual_id=participant.individual.id,
+    )
+
+    dispatch_slack_service.send_ephemeral_message(
+        client=slack_client,
+        conversation_id=channel_id,
+        user_id=user_id,
+        text="Event sucessfully added to timeline.",
     )
 
 
@@ -831,8 +865,10 @@ def create_run_workflow_modal(incident_id: int, command: dict = None, db_session
         )
 
 
-@background_task
-def update_workflow_modal(action: dict, db_session=None):
+@slack_background_task
+def update_workflow_modal(
+    user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
+):
     """Pushes an updated view to the run workflow modal."""
     trigger_id = action["trigger_id"]
     incident_id = action["view"]["private_metadata"]["incident_id"]
@@ -902,8 +938,10 @@ def update_workflow_modal(action: dict, db_session=None):
     )
 
 
-@background_task
-def run_workflow_submitted_form(action: dict, db_session=None):
+@slack_background_task
+def run_workflow_submitted_form(
+    user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
+):
     """Runs an external flow."""
     submitted_form = action.get("view")
     parsed_form_data = parse_submitted_form(submitted_form)
@@ -918,7 +956,6 @@ def run_workflow_submitted_form(action: dict, db_session=None):
             named_params.append({"key": key, "value": value})
 
     workflow_id = parsed_form_data.get(RunWorkflowBlockFields.workflow_select)["value"]
-    incident_id = action["view"]["private_metadata"]["incident_id"]
     run_reason = parsed_form_data.get(RunWorkflowBlockFields.run_reason)
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     workflow = workflow_service.get(db_session=db_session, workflow_id=workflow_id)
@@ -1033,7 +1070,7 @@ def build_rating_feedback_blocks(incident: Incident):
     return modal_template
 
 
-@background_task
+@slack_background_task
 def create_rating_feedback_modal(
     user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
 ):
@@ -1053,13 +1090,13 @@ def create_rating_feedback_modal(
         )
 
 
-@background_task
-def rating_feedback_from_submitted_form(action: dict, db_session=None):
+@slack_background_task
+def rating_feedback_from_submitted_form(
+    user_id: str, user_email: str, channel_id: str, incident_id: int, action: dict, db_session=None
+):
     """Adds rating and feeback to incident based on submitted form data."""
-    incident_id = action["view"]["private_metadata"]["incident_id"]
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    user_email = action["user"]["email"]
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident_id, email=user_email
     )
@@ -1082,3 +1119,9 @@ def rating_feedback_from_submitted_form(action: dict, db_session=None):
 
     db_session.add(incident)
     db_session.commit()
+
+    dispatch_slack_service.send_message(
+        client=slack_client,
+        conversation_id=user_id,
+        text="Thank you for your feedback!",
+    )
