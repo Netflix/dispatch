@@ -8,7 +8,6 @@ from fastapi.encoders import jsonable_encoder
 
 from dispatch.config import ANNUAL_COST_EMPLOYEE, BUSINESS_HOURS_YEAR
 from dispatch.database.core import SessionLocal
-from dispatch.project import service as project_service
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident_cost_type import service as incident_cost_type_service

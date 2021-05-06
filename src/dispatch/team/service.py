@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
+from dispatch.incident.models import Incident
 
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
@@ -12,19 +13,24 @@ def get(*, db_session, team_contact_id: int) -> Optional[TeamContact]:
     return db_session.query(TeamContact).filter(TeamContact.id == team_contact_id).first()
 
 
-def get_by_email(*, db_session, email: str) -> Optional[TeamContact]:
-    return db_session.query(TeamContact).filter(TeamContact.email == email).first()
+def get_by_email(*, db_session, email: str, project_id: int) -> Optional[TeamContact]:
+    return (
+        db_session.query(TeamContact)
+        .filter(TeamContact.email == email)
+        .filter(TeamContact.project_id == project_id)
+        .first()
+    )
 
 
 def get_all(*, db_session) -> List[Optional[TeamContact]]:
     return db_session.query(TeamContact)
 
 
-def get_or_create(*, db_session, email: str, **kwargs) -> TeamContact:
-    contact = get_by_email(db_session=db_session, email=email)
+def get_or_create(*, db_session, email: str, incident: Incident = None, **kwargs) -> TeamContact:
+    contact = get_by_email(db_session=db_session, email=email, project_id=incident.project.id)
 
     if not contact:
-        team_contact = TeamContactCreate(email=email, **kwargs)
+        team_contact = TeamContactCreate(email=email, project=incident.project, **kwargs)
         contact = create(db_session=db_session, team_contact_in=team_contact)
 
     return contact

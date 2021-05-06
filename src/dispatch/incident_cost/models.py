@@ -30,7 +30,7 @@ class IncidentCostBase(DispatchBase):
 
 
 class IncidentCostCreate(IncidentCostBase):
-    incident_cost_type: IncidentCostTypeCreate
+    incident_cost_type: IncidentCostTypeRead
     project: ProjectRead
 
 

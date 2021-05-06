@@ -9,7 +9,6 @@ from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.database.core import resolve_attr
 from dispatch.decorators import background_task
 from dispatch.enums import Visibility
-from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.participant import service as participant_service
@@ -19,6 +18,9 @@ from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.task import service as task_service
 from dispatch.task.models import TaskStatus, Task
+
+
+from dispatch.incident.messaging import send_incident_resources_ephemeral_message_to_participant
 
 from .config import (
     SLACK_APP_USER_SLUG,
@@ -39,6 +41,8 @@ from .config import (
     SLACK_COMMAND_RUN_WORKFLOW_SLUG,
     SLACK_COMMAND_LIST_WORKFLOWS_SLUG,
 )
+
+from .decorators import slack_background_task
 
 from .modals import (
     create_add_timeline_event_modal,
@@ -63,8 +67,8 @@ from .messaging import (
     create_command_run_by_non_privileged_user_message,
 )
 
+
 log = logging.getLogger(__name__)
-slack_client = dispatch_slack_service.create_slack_client()
 
 
 def base64_encode(input: str):
@@ -122,7 +126,7 @@ def command_functions(command: str):
         SLACK_COMMAND_LIST_INCIDENTS_SLUG: [list_incidents],
         SLACK_COMMAND_LIST_MY_TASKS_SLUG: [list_my_tasks],
         SLACK_COMMAND_LIST_PARTICIPANTS_SLUG: [list_participants],
-        SLACK_COMMAND_LIST_RESOURCES_SLUG: [incident_flows.incident_list_resources_flow],
+        SLACK_COMMAND_LIST_RESOURCES_SLUG: [list_resources],
         SLACK_COMMAND_LIST_TASKS_SLUG: [list_tasks],
         SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [create_executive_report_dialog],
         SLACK_COMMAND_REPORT_INCIDENT_SLUG: [create_report_incident_modal],
@@ -210,29 +214,64 @@ async def handle_slack_command(*, db_session, client, request, background_tasks)
         return create_command_run_by_non_privileged_user_message(command)
 
     for f in command_functions(command):
-        background_tasks.add_task(f, incident_id, command=request)
+        background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, command=request)
 
     return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(command, f"Running... Command: {command}")
 
 
-@background_task
-def list_my_tasks(incident_id: int, command: dict = None, db_session=None):
-    """Returns the list of incident tasks to the user as an ephemeral message."""
-    user_email = dispatch_slack_service.get_user_email(slack_client, command["user_id"])
-    list_tasks(
-        incident_id=incident_id,
-        command=command,
-        db_session=db_session,
-        by_creator=user_email,
-        by_assignee=user_email,
-    )
-
-
-@background_task
-def list_tasks(
+@slack_background_task
+def list_resources(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
     incident_id: int,
     command: dict = None,
     db_session=None,
+    slack_client=None,
+):
+    """Runs the list incident resources flow."""
+    # we load the incident instance
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    # we send the list of resources to the participant
+    send_incident_resources_ephemeral_message_to_participant(
+        command["user_id"], incident, db_session
+    )
+
+
+@slack_background_task
+def list_my_tasks(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    command: dict = None,
+    db_session=None,
+    slack_client=None,
+):
+    """Returns the list of incident tasks to the user as an ephemeral message."""
+    list_tasks(
+        user_id=user_id,
+        user_email=user_email,
+        channel_id=channel_id,
+        incident_id=incident_id,
+        command=command,
+        by_creator=user_email,
+        by_assignee=user_email,
+        db_session=None,
+        slack_client=None,
+    )
+
+
+@slack_background_task
+def list_tasks(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    command: dict = None,
+    db_session=None,
+    slack_client=None,
     by_creator: str = None,
     by_assignee: str = None,
 ):
@@ -282,15 +321,23 @@ def list_tasks(
 
     dispatch_slack_service.send_ephemeral_message(
         slack_client,
-        command["channel_id"],
-        command["user_id"],
+        channel_id,
+        user_id,
         "Incident Task List",
         blocks=blocks,
     )
 
 
-@background_task
-def list_workflows(incident_id: int, command: dict = None, db_session=None):
+@slack_background_task
+def list_workflows(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    command: dict = None,
+    db_session=None,
+    slack_client=None,
+):
     """Returns the list of incident workflows to the user as an ephemeral message."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
@@ -321,15 +368,23 @@ def list_workflows(incident_id: int, command: dict = None, db_session=None):
 
     dispatch_slack_service.send_ephemeral_message(
         slack_client,
-        command["channel_id"],
-        command["user_id"],
+        channel_id,
+        user_id,
         "Incident Workflow List",
         blocks=blocks,
     )
 
 
-@background_task
-def list_participants(incident_id: int, command: dict = None, db_session=None):
+@slack_background_task
+def list_participants(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    command: dict = None,
+    db_session=None,
+    slack_client=None,
+):
     """Returns the list of incident participants to the user as an ephemeral message."""
     blocks = []
     blocks.append(
@@ -403,15 +458,23 @@ def list_participants(incident_id: int, command: dict = None, db_session=None):
 
     dispatch_slack_service.send_ephemeral_message(
         slack_client,
-        command["channel_id"],
-        command["user_id"],
+        channel_id,
+        user_id,
         "Incident Participant List",
         blocks=blocks,
     )
 
 
 @background_task
-def list_incidents(incident_id: int, command: dict = None, db_session=None):
+def list_incidents(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    command: dict = None,
+    db_session=None,
+    slack_client=None,
+):
     """Returns the list of current active and stable incidents,
     and closed incidents in the last 24 hours."""
     incidents = []
@@ -470,8 +533,8 @@ def list_incidents(incident_id: int, command: dict = None, db_session=None):
 
     dispatch_slack_service.send_ephemeral_message(
         slack_client,
-        command["channel_id"],
-        command["user_id"],
+        channel_id,
+        user_id,
         "Incident List",
         blocks=blocks,
     )

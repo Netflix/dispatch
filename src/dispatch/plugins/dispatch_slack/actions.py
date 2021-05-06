@@ -161,6 +161,10 @@ def handle_update_incident_action(
     incident_service.update(db_session=db_session, incident=incident, incident_in=incident_in)
     incident_flows.incident_update_flow(user_email, incident_id, existing_incident, notify)
 
+    dispatch_slack_service.send_ephemeral_message(
+        slack_client, channel_id, user_id, "You have sucessfully updated the incident."
+    )
+
 
 @slack_background_task
 def handle_engage_oncall_action(
