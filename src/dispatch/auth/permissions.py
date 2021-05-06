@@ -8,7 +8,6 @@ from starlette.status import HTTP_403_FORBIDDEN
 from dispatch.enums import UserRoles, Visibility
 from dispatch.auth.service import get_current_user
 from dispatch.incident import service as incident_service
-from dispatch.project import service as project_service
 from dispatch.organization import service as organization_service
 
 
