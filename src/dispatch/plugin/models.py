@@ -37,7 +37,6 @@ class Plugin(Base):
     author = Column(String)
     author_url = Column(String)
     type = Column(String)
-    required = Column(Boolean)
     multiple = Column(Boolean)
     workflows = relationship("Workflow", backref="plugin")
     instances = relationship("PluginInstance", backref="plugin")
