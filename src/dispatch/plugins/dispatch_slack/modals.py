@@ -1120,9 +1120,8 @@ def rating_feedback_from_submitted_form(
     db_session.add(incident)
     db_session.commit()
 
-    dispatch_slack_service.send_ephemeral_message(
+    dispatch_slack_service.send_message(
         client=slack_client,
-        conversation_id=channel_id,
-        user_id=user_id,
+        conversation_id=user_id,
         text="Thank you for your feedback!",
     )
