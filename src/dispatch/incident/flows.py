@@ -1248,9 +1248,6 @@ def incident_add_or_reactivate_participant_flow(
             user_email, incident, db_session, service_id=service_id, role=role
         )
 
-        send_incident_participant_announcement_message(
-            participant.individual.email, incident, db_session
-        )
 
         # we add the participant to the tactical group
         add_participant_to_tactical_group(user_email, incident, db_session)
