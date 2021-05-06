@@ -28,9 +28,11 @@ def create_team(*, db_session: Session = Depends(get_db), team_contact_in: TeamC
     """
     Create a new team contact.
     """
-    team = get_by_email(db_session=db_session, email=team_contact_in.email)
+    team = get_by_email(
+        db_session=db_session, email=team_contact_in.email, project_id=team_contact_in.project.id
+    )
     if team:
-        raise HTTPException(status_code=400, detail="The team with this email already exists.")
+        raise HTTPException(status_code=400, detail="A team with this email already exists.")
     team = create(db_session=db_session, team_contact_in=team_contact_in)
     return team
 

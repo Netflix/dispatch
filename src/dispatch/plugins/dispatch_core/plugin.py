@@ -247,13 +247,13 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
         for match in recommendation.matches:
             if match.resource_type == TeamContact.__name__:
                 team = team_service.get_or_create(
-                    db_session=db_session, email=match.resource_state["email"]
+                    db_session=db_session, email=match.resource_state["email"], incident=incident
                 )
                 team_contacts.append(team)
 
             if match.resource_type == IndividualContact.__name__:
                 individual = individual_service.get_or_create(
-                    db_session=db_session, email=match.resource_state["email"]
+                    db_session=db_session, email=match.resource_state["email"], incident=incident
                 )
 
                 individual_contacts.append((individual, None))
@@ -276,7 +276,7 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
                         )
 
                         individual = individual_service.get_or_create(
-                            db_session=db_session, email=individual_email
+                            db_session=db_session, email=individual_email, incident=incident
                         )
 
                         individual_contacts.append((individual, match.resource_state["id"]))

@@ -61,7 +61,6 @@ from .messaging import (
     send_incident_new_role_assigned_notification,
     send_incident_participant_announcement_message,
     send_incident_rating_feedback_message,
-    send_incident_resources_ephemeral_message_to_participant,
     send_incident_review_document_notification,
     send_incident_suggested_reading_messages,
     send_incident_update_notifications,
@@ -1248,7 +1247,6 @@ def incident_add_or_reactivate_participant_flow(
             user_email, incident, db_session, service_id=service_id, role=role
         )
 
-
         # we add the participant to the tactical group
         add_participant_to_tactical_group(user_email, incident, db_session)
 
@@ -1287,15 +1285,3 @@ def incident_remove_participant_flow(
     else:
         # we remove the participant from the incident
         participant_flows.remove_participant(user_email, incident, db_session)
-
-
-@background_task
-def incident_list_resources_flow(incident_id: int, command: Optional[dict] = None, db_session=None):
-    """Runs the list incident resources flow."""
-    # we load the incident instance
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-    # we send the list of resources to the participant
-    send_incident_resources_ephemeral_message_to_participant(
-        command["user_id"], incident, db_session
-    )
