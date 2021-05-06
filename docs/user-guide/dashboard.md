@@ -33,4 +33,5 @@ Dispatch has the ability to do some _simple_ forecasting. It looks at prior inci
 This works okay for small incident loads but becomes better with more incidents. If there isn't enough data to make a reasonable forecast one will not be displayed in the UI.
 
 An example forecast:
+
 ![](../.gitbook/assets/admin-ui-dashboard-forecast.png)
