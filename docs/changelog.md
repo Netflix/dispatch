@@ -8,9 +8,6 @@ description: Short description of changes.
 Dispatch uses the [calver](https://calver.org/) version schema.
 {% endhint %}
 
-## 2020.02.14
+See the the "released" page on the application repository for more information about changes:
 
-### Added
-
-* Initial release
-
+[Releases](https://github.com/Netflix/dispatch/releases)
