@@ -129,15 +129,6 @@ def update_instance(
                 db_session.add(enabled_plugin_instances[0])
 
     if not plugin_instance_in.enabled:  # user wants to disable the plugin
-        if plugin_instance.plugin.required:
-            enabled_plugins = get_enabled_instances_by_type(
-                db_session=db_session, plugin_type=plugin_instance.plugin.type
-            )
-            if len(enabled_plugins) == 1:
-                raise InvalidConfiguration(
-                    f"Cannot disable plugin instance: {plugin_instance.plugin.title}. It is required and no other plugin instances of type {plugin_instance.plugin.type} are enabled."
-                )
-
         if plugin_instance.plugin.type == OncallPlugin.type:
             oncall_services = service_service.get_all_by_type_and_status(
                 db_session=db_session, service_type=plugin_instance.plugin.slug, is_active=True
