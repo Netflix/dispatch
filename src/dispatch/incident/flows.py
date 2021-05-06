@@ -547,7 +547,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
 
                 storage = create_incident_storage(incident, group_emails, db_session)
             else:
-                participant_emails = [x.email for x in individual_participants]
+                participant_emails = [x.email for x, _ in individual_participants]
 
                 # we don't have a group so add participants directly
                 storage = create_incident_storage(incident, participant_emails, db_session)
