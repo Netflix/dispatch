@@ -32,6 +32,9 @@
               <template v-slot:item.default="{ item }">
                 <v-simple-checkbox v-model="item.default" disabled />
               </template>
+              <template v-slot:item.enabled="{ item }">
+                <v-simple-checkbox v-model="item.enabled" disabled />
+              </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
                   <template v-slot:activator="{ on }">
@@ -74,6 +77,7 @@ export default {
         { text: "Commander Service", value: "commander_service.name", sortable: false },
         { text: "Liaison Service", value: "liaison_service.name", sortable: false },
         { text: "Document", value: "template_document.name", sortable: false },
+        { text: "Enabled", value: "enabled", sortable: true },
         { text: "Default", value: "default", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],

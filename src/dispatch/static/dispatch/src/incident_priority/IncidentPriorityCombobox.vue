@@ -125,6 +125,7 @@ export default {
           ...filterOptions,
           filters: {
             project: [this.project],
+            enabled: [true],
           },
         }
         filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })

@@ -21,6 +21,8 @@ class IncidentPriority(Base, ProjectMixin):
     # number of hours after which reports should be sent.
     tactical_report_reminder = Column(Integer, default=24, server_default="24")
     executive_report_reminder = Column(Integer, default=24, server_default="24")
+
+    enabled = Column(Boolean, default=True)
     default = Column(Boolean, default=False)
 
     # This column is used to control how priorities should be displayed.
@@ -42,6 +44,7 @@ class IncidentPriorityBase(DispatchBase):
     executive_report_reminder: Optional[int]
     project: Optional[ProjectRead]
     default: Optional[bool]
+    enabled: Optional[bool]
     view_order: Optional[int]
 
 

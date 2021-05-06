@@ -23,6 +23,8 @@ class IncidentType(ProjectMixin, Base):
     slug = Column(String)
     description = Column(String)
     exclude_from_metrics = Column(Boolean, default=False)
+
+    enabled = Column(Boolean, default=True)
     default = Column(Boolean, default=False)
     visibility = Column(String, default=Visibility.open.value)
     plugin_metadata = Column(JSON, default=[])
@@ -72,54 +74,29 @@ class Service(DispatchBase):
 class IncidentTypeBase(DispatchBase):
     name: str
     description: Optional[str]
-
-
-class IncidentTypeCreate(IncidentTypeBase):
+    enabled: Optional[bool]
     template_document: Optional[Document]
     commander_service: Optional[Service]
     liaison_service: Optional[Service]
-    plugin_metadata: List[PluginMetadata] = []
     exclude_from_metrics: Optional[bool] = False
     default: Optional[bool] = False
     project: Optional[ProjectRead]
+    plugin_metadata: List[PluginMetadata] = []
 
     @validator("plugin_metadata", pre=True)
     def replace_none_with_empty_list(cls, value):
         return [] if value is None else value
+
+
+class IncidentTypeCreate(IncidentTypeBase):
+    pass
 
 
 class IncidentTypeUpdate(IncidentTypeBase):
     id: int
-    visibility: Optional[Visibility]
-    template_document: Optional[Document]
-    commander_service: Optional[Service]
-    liaison_service: Optional[Service]
-    plugin_metadata: List[PluginMetadata] = []
-    exclude_from_metrics: Optional[bool] = False
-    default: Optional[bool] = False
-
-    @validator("plugin_metadata", pre=True)
-    def replace_none_with_empty_list(cls, value):
-        return [] if value is None else value
 
 
 class IncidentTypeRead(IncidentTypeBase):
-    id: int
-    visibility: Optional[Visibility]
-    template_document: Optional[Document]
-    commander_service: Optional[Service]
-    liaison_service: Optional[Service]
-    plugin_metadata: List[PluginMetadata] = []
-    exclude_from_metrics: Optional[bool] = False
-    default: Optional[bool] = False
-    project: ProjectRead
-
-    @validator("plugin_metadata", pre=True)
-    def replace_none_with_empty_list(cls, value):
-        return [] if value is None else value
-
-
-class IncidentTypeNested(IncidentTypeBase):
     id: int
 
 

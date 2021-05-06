@@ -26,7 +26,6 @@
 <script>
 import { cloneDeep } from "lodash"
 
-import SearchUtils from "@/search/utils"
 import IncidentPriorityApi from "@/incident_priority/api"
 
 export default {
@@ -70,16 +69,23 @@ export default {
       let filterOptions = {
         sortBy: ["view_order"],
         descending: [false],
+        filters: JSON.stringify({
+          and: [
+            {
+              model: "IncidentPriority",
+              field: "enabled",
+              op: "==",
+            },
+            {
+              model: "Project",
+              field: "name",
+              op: "==",
+              value: this.project.name,
+            },
+          ],
+        }),
       }
 
-      if (this.project) {
-        filterOptions = {
-          filters: {
-            project: [this.project],
-          },
-        }
-        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
-      }
       IncidentPriorityApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false

@@ -13,6 +13,7 @@ const getDefaultSelectedState = () => {
     tactical_report_reminder: null,
     project: null,
     executive_report_reminder: null,
+    enabled: false,
     description: null,
     loading: false,
     default: false,
