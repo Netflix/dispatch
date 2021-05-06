@@ -1,6 +1,0 @@
----
-description: Plugin Configurations
----
-
-# Plugins
-

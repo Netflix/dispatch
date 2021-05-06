@@ -226,7 +226,6 @@ Title                             Slug                            Version     Ty
 Dispatch - Document Resolver      dispatch-document-resolver      0.1.0       document-resolver  Kevin Glisson  Uses dispatch itself to resolve incident documents.
 Dispatch - Participants           dispatch-participants           0.1.0       participant        Kevin Glisson  Uses dispatch itself to determine participants.
 Google Docs - Document            google-docs-document            0.1.0       document           Kevin Glisson  Uses google docs to manage document contents.
-Google Gmail - Conversation       google-gmail-conversation       0.1.0       conversation       Kevin Glisson  Uses gmail to facilitate conversations.
 Google Group - Participant Group  google-group-participant-group  0.1.0       participant_group  Kevin Glisson  Uses Google Groups to help manage participant membership.
 ...
 ```

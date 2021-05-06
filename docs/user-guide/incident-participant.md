@@ -8,7 +8,7 @@ description: What to expect as an incident participant.
 
 Dispatch attempts to make reporting incidents as easy as possible. Dispatch provides a dedicated incident report form that users throughout the organization can submit to engage incident-related resources.
 
-Located at: `https://<your-dispatch-domain>/incidents/report`
+Located at: `https://<your-dispatch-domain>/default/incidents/report`
 
 ![](../.gitbook/assets/admin-ui-incident-report.png)
 
