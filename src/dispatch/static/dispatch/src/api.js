@@ -26,10 +26,12 @@ instance.interceptors.request.use(
 )
 
 instance.interceptors.request.use(function (config) {
-  let currentOrganization = store.state.route.params.organization || null
+  if (!config.url.includes("organization")) {
+    let currentOrganization = store.state.route.params.organization || null
 
-  if (currentOrganization) {
-    config.url = `${currentOrganization}${config.url}`
+    if (currentOrganization) {
+      config.url = `${currentOrganization}${config.url}`
+    }
   }
   return config
 })

@@ -4,8 +4,11 @@
       <v-icon>mdi-chevron-right</v-icon>
     </template>
     <template v-slot:item="{ item }">
-      <v-breadcrumbs-item v-if="item.select">
+      <v-breadcrumbs-item v-if="item.projectSelect">
         <project-menu-select v-model="project" />
+      </v-breadcrumbs-item>
+      <v-breadcrumbs-item v-else-if="item.organizationSelect">
+        <organization-menu-select v-model="localOrganization" />
       </v-breadcrumbs-item>
       <v-breadcrumbs-item v-else :to="item.to" :disabled="item.disabled">
         {{ item.text | capitalize }}
@@ -18,6 +21,7 @@
 import { mapFields } from "vuex-map-fields"
 
 import ProjectMenuSelect from "@/project/ProjectMenuSelect.vue"
+import OrganizationMenuSelect from "@/organization/OrganizationMenuSelect.vue"
 
 export default {
   name: "SettingsBreadCrumbs",
@@ -29,10 +33,17 @@ export default {
         return []
       },
     },
+    organization: {
+      type: Array,
+      default: function () {
+        return []
+      },
+    },
   },
 
   components: {
     ProjectMenuSelect,
+    OrganizationMenuSelect,
   },
 
   computed: {
@@ -44,6 +55,14 @@ export default {
         this.$emit("input", [value])
       },
     },
+    localOrganization: {
+      get() {
+        return this.value[0]
+      },
+      set(value) {
+        this.$emit("organization", [value])
+      },
+    },
     crumbs() {
       return [
         {
@@ -51,13 +70,10 @@ export default {
           disabled: false,
         },
         {
-          text: this.params.organization,
-          disabled: false,
+          organizationSelect: true,
         },
         {
-          text: this.query.project,
-          disabled: false,
-          select: true,
+          projectSelect: true,
         },
         {
           text: this.meta.title,
