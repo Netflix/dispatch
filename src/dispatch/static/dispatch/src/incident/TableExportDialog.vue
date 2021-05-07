@@ -127,6 +127,7 @@ export default {
         { text: "Status", value: "status", sortable: false },
         { text: "Total Cost", value: "total_cost", sortable: false },
         { text: "Visibility", value: "visibility", sortable: false },
+        { text: "Description", value: "description", sortable: false },
         { text: "Incident Type", value: "incident_type.name", sortable: false },
         { text: "Incident Priority", value: "incident_priority.name", sortable: false },
         { text: "Reporter", value: "reporter.individual.email", sortable: false },
