@@ -57,6 +57,9 @@
                   />
                 </ValidationProvider>
               </v-flex>
+              <v-flex xs12>
+                <color-picker-input v-model="color"></color-picker-input>
+              </v-flex>
             </v-layout>
           </v-container>
         </v-card-text>
@@ -70,6 +73,7 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
+import ColorPickerInput from "@/project/ColorPickerInput.vue"
 
 extend("required", {
   ...required,
@@ -77,7 +81,7 @@ extend("required", {
 })
 
 export default {
-  name: "ServiceNewEditSheet",
+  name: "ProjectNewEditSheet",
 
   data() {
     return {
@@ -88,6 +92,7 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
+    ColorPickerInput,
   },
 
   computed: {
@@ -97,6 +102,7 @@ export default {
       "selected.id",
       "selected.organization",
       "selected.loading",
+      "selected.color",
       "dialogs.showCreateEdit",
     ]),
     ...mapFields("route", ["params"]),
