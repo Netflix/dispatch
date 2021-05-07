@@ -2,9 +2,14 @@
   <v-layout wrap>
     <new-edit-sheet />
     <delete-dialog />
-    <div class="headline">Notifications</div>
-    <v-spacer />
-    <v-btn color="info" class="ml-2" @click="createEditShow()"> New </v-btn>
+    <v-row align="center" justify="space-between">
+      <v-col class="grow">
+        <settings-breadcrumbs v-model="project" />
+      </v-col>
+      <v-col class="shrink">
+        <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
+      </v-col>
+    </v-row>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -72,9 +77,12 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+
+import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 import DeleteDialog from "@/notification/DeleteDialog.vue"
 import NewEditSheet from "@/notification/NewEditSheet.vue"
 import SearchFilter from "@/search/SearchFilter.vue"
+
 export default {
   name: "NotificationTable",
 
@@ -82,6 +90,7 @@ export default {
     DeleteDialog,
     NewEditSheet,
     SearchFilter,
+    SettingsBreadcrumbs,
   },
   data() {
     return {
@@ -126,9 +135,10 @@ export default {
     )
 
     this.$watch(
-      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
+      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project],
       () => {
         this.page = 1
+        this.$router.push({ query: { project: this.project[0].name } })
         this.getAll()
       }
     )

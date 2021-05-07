@@ -1,9 +1,14 @@
 <template>
   <v-layout wrap>
     <new-edit-sheet />
-    <div class="headline">Incident Types</div>
-    <v-spacer />
-    <v-btn color="info" class="mb-2" @click="createEditShow()"> New </v-btn>
+    <v-row align="center" justify="space-between">
+      <v-col class="grow">
+        <settings-breadcrumbs v-model="project" />
+      </v-col>
+      <v-col class="shrink">
+        <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
+      </v-col>
+    </v-row>
     <v-flex xs12>
       <v-layout column>
         <v-flex>
@@ -60,6 +65,8 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+
+import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 import NewEditSheet from "@/incident_type/NewEditSheet.vue"
 
 export default {
@@ -67,6 +74,7 @@ export default {
 
   components: {
     NewEditSheet,
+    SettingsBreadcrumbs,
   },
   data() {
     return {
@@ -112,9 +120,10 @@ export default {
     )
 
     this.$watch(
-      (vm) => [vm.q, vm.page, vm.itemsPerPage, vm.sortBy, vm.descending],
+      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project],
       () => {
         this.page = 1
+        this.$router.push({ query: { project: this.project[0].name } })
         this.getAll()
       }
     )

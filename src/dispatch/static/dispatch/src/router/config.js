@@ -213,18 +213,18 @@ export const protectedRoute = [
         },
         ...withPrefix("projects/", [
           {
-            path: "incidentPriorities",
-            name: "IncidentPriorityTable",
-            meta: { title: "Incident Priorities", subMenu: "project", group: "incident" },
-            component: () =>
-              import(/* webpackChunkName: "-table" */ "@/incident_priority/Table.vue"),
-          },
-          {
             path: "incidentTypes",
             name: "IncidentTypeTable",
             meta: { title: "Incident Types", subMenu: "project", group: "incident" },
             component: () =>
               import(/* webpackChunkName: "incident-type-table" */ "@/incident_type/Table.vue"),
+          },
+          {
+            path: "incidentPriorities",
+            name: "IncidentPriorityTable",
+            meta: { title: "Incident Priorities", subMenu: "project", group: "incident" },
+            component: () =>
+              import(/* webpackChunkName: "-table" */ "@/incident_priority/Table.vue"),
           },
           {
             path: "incidentCostTypes",
