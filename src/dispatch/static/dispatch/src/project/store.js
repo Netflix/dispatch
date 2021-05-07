@@ -9,6 +9,7 @@ const getDefaultSelectedState = () => {
     id: null,
     description: null,
     organization: null,
+    color: undefined,
     loading: false,
   }
 }
