@@ -102,9 +102,12 @@ def create_incident(
     """
     Create a new incident.
     """
-    incident = create(
-        db_session=db_session, reporter_email=current_user.email, **incident_in.dict()
-    )
+    try:
+        incident = create(
+            db_session=db_session, reporter_email=current_user.email, **incident_in.dict()
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=e)
 
     if incident.status == IncidentStatus.stable.value:
         background_tasks.add_task(incident_create_stable_flow, incident_id=incident.id)
@@ -136,7 +139,10 @@ def update_incident(
     previous_incident = IncidentRead.from_orm(current_incident)
 
     # NOTE: Order matters we have to get the previous state for change detection
-    incident = update(db_session=db_session, incident=current_incident, incident_in=incident_in)
+    try:
+        incident = update(db_session=db_session, incident=current_incident, incident_in=incident_in)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=e)
 
     background_tasks.add_task(
         incident_update_flow,

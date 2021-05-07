@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql.expression import true
+from dispatch.incident.models import Incident
 
 from dispatch.project import service as project_service
 from dispatch.document import service as document_service
@@ -48,6 +49,15 @@ def get_by_slug(*, db_session, project_id: int, slug: str) -> Optional[IncidentT
 def get_all(*, db_session, project_id: int) -> List[Optional[IncidentType]]:
     """Returns all incident types."""
     return db_session.query(IncidentType).filter(IncidentType.project_id == project_id)
+
+
+def get_all_enabled(*, db_session, project_id: int) -> List[Optional[IncidentType]]:
+    """Returns all enabled incident types."""
+    return (
+        db_session.query(IncidentType)
+        .filter(IncidentType.project_id == project_id)
+        .filter(IncidentType.enabled == true())
+    )
 
 
 def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:

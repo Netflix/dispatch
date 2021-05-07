@@ -41,6 +41,15 @@ def get_all(*, db_session, project_id: int) -> List[Optional[IncidentPriority]]:
     return db_session.query(IncidentPriority).filter(IncidentPriority.project_id == project_id)
 
 
+def get_all_enabled(*, db_session, project_id: int) -> List[Optional[IncidentPriority]]:
+    """Returns all enabled incident priorities."""
+    return (
+        db_session.query(IncidentPriority)
+        .filter(IncidentPriority.project_id == project_id)
+        .filter(IncidentPriority.enabled == true())
+    )
+
+
 def create(*, db_session, incident_priority_in: IncidentPriorityCreate) -> IncidentPriority:
     """Creates an incident priority."""
     project = project_service.get_by_name(

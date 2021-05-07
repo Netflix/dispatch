@@ -85,7 +85,19 @@ export default {
       filterOptions = { ...filterOptions, ...{ filter: filter } }
     }
 
-    filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+    let enabledFilter = [
+      {
+        model: "IncidentType",
+        field: "enabled",
+        op: "==",
+        value: "true",
+      },
+    ]
+
+    filterOptions = SearchUtils.createParametersFromTableOptions(
+      { ...filterOptions },
+      enabledFilter
+    )
 
     IncidentTypeApi.getAll(filterOptions).then((response) => {
       this.items = response.data.items
