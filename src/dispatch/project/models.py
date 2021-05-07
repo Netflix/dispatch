@@ -14,6 +14,7 @@ class Project(Base):
     name = Column(String)
     description = Column(String)
     default = Column(Boolean, default=False)
+    color = Column(String)
 
     organization_id = Column(Integer, ForeignKey("organization.id"))
 
@@ -27,6 +28,7 @@ class ProjectBase(DispatchBase):
     name: str
     description: Optional[str]
     default: bool = False
+    color: Optional[str]
 
 
 class ProjectCreate(ProjectBase):
