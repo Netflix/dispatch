@@ -3,7 +3,7 @@
     <new-edit-sheet />
     <v-row align="center" justify="space-between">
       <v-col class="grow">
-        <settings-breadcrumbs v-model="project" />
+        <settings-breadcrumbs v-model="project" :organization="organization" />
       </v-col>
       <v-col class="shrink">
         <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
@@ -107,7 +107,7 @@ export default {
       "table.rows.items",
       "table.rows.total",
     ]),
-    ...mapFields("route", ["query"]),
+    ...mapFields("route", ["query", "params"]),
   },
 
   created() {
