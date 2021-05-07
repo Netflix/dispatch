@@ -2,7 +2,6 @@ from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql.expression import true
-from dispatch.incident.models import Incident
 
 from dispatch.project import service as project_service
 from dispatch.document import service as document_service
