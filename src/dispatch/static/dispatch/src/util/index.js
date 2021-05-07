@@ -1,4 +1,8 @@
-import { flatMap, isPlainObject } from "lodash"
+import { Parser } from "json2csv"
+
+const {
+  transforms: { flatten },
+} = require("json2csv")
 
 const toggleFullScreen = () => {
   let doc = window.document
@@ -27,40 +31,11 @@ const toggleFullScreen = () => {
   }
 }
 
-const mapValuesFlat = (obj) => {
-  return flatMap(obj, (v) => {
-    if (isPlainObject(v)) {
-      return mapValuesFlat(v)
-    }
-    return v
-  })
-}
-
 const exportCSV = function (items, fileName) {
-  let csvContent = "data:text/csv;charset=utf-8,"
-  csvContent += [
-    Object.keys(items[0]).join(","),
-    ...items.map((item) => {
-      if (typeof item === "object") {
-        return Object.values(item)
-          .map((value) => {
-            if (value === null) {
-              return ""
-            }
-            if (typeof value === "object") {
-              return mapValuesFlat(value).join("|")
-            }
-            return value
-          })
-          .join(",")
-      }
-      return ""
-    }),
-  ]
-    .join("\n")
-    .replace(/(^\[)|(\]$)/gm, "")
-
-  const data = encodeURI(csvContent)
+  const opts = { transforms: [flatten()] }
+  const parser = new Parser(opts)
+  const csv = parser.parse(items)
+  const data = encodeURI("data:text/csv;charset=utf-8," + csv)
   const link = document.createElement("a")
   link.setAttribute("href", data)
   link.setAttribute("download", fileName)
