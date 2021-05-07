@@ -126,6 +126,7 @@ export default {
               model: "Plugin",
               field: "enabled",
               op: "==",
+              value: "true",
             },
             {
               model: "Project",

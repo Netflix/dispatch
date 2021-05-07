@@ -104,6 +104,13 @@
                 />
               </v-flex>
               <v-flex xs12>
+                <v-checkbox
+                  v-model="enabled"
+                  label="Enabled"
+                  hint="Determines whether this incident type is availible for new incidents."
+                />
+              </v-flex>
+              <v-flex xs12>
                 <plugin-metadata-input :project="project" v-model="plugin_metadata" />
               </v-flex>
             </v-layout>
@@ -158,6 +165,7 @@ export default {
       "selected.slug",
       "selected.template_document",
       "selected.visibility",
+      "selected.enabled",
       "selected.plugin_metadata",
       "selected.exclude_from_metrics",
       "selected.default",

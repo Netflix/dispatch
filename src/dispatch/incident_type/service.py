@@ -50,6 +50,15 @@ def get_all(*, db_session, project_id: int) -> List[Optional[IncidentType]]:
     return db_session.query(IncidentType).filter(IncidentType.project_id == project_id)
 
 
+def get_all_enabled(*, db_session, project_id: int) -> List[Optional[IncidentType]]:
+    """Returns all enabled incident types."""
+    return (
+        db_session.query(IncidentType)
+        .filter(IncidentType.project_id == project_id)
+        .filter(IncidentType.enabled == true())
+    )
+
+
 def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
     """Creates an incident type."""
     project = project_service.get_by_name(db_session=db_session, name=incident_type_in.project.name)

@@ -127,8 +127,21 @@ export default {
             project: [this.project],
           },
         }
-        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
       }
+
+      let enabledFilter = [
+        {
+          model: "IncidentPriority",
+          field: "enabled",
+          op: "==",
+          value: "true",
+        },
+      ]
+
+      filterOptions = SearchUtils.createParametersFromTableOptions(
+        { ...filterOptions },
+        enabledFilter
+      )
 
       IncidentPriorityApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items

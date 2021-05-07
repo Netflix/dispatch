@@ -62,7 +62,6 @@ class IPlugin(local):
     enabled: bool = False
     can_disable: bool = True
     multiple: bool = False
-    required: bool = False
 
     def validate_options(self, options: dict) -> Any:
         """

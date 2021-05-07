@@ -64,7 +64,6 @@ class PluginRead(PluginBase):
     author: str
     author_url: str
     type: str
-    required: bool
     multiple: bool
     description: Optional[str]
 

@@ -35,6 +35,9 @@
               <template v-slot:item.default="{ item }">
                 <v-simple-checkbox v-model="item.default" disabled />
               </template>
+              <template v-slot:item.enabled="{ item }">
+                <v-simple-checkbox v-model="item.enabled" disabled />
+              </template>
               <template v-slot:item.data-table-actions="{ item }">
                 <v-menu bottom left>
                   <template v-slot:activator="{ on }">
@@ -74,6 +77,7 @@ export default {
         { text: "Description", value: "description", sortable: false },
         { text: "Page Commander", value: "page_commander", sortable: true },
         { text: "Default", value: "default", sortable: true },
+        { text: "Enabled", value: "enabled", sortable: true },
         { text: "Tactical Report Reminder", value: "tactical_report_reminder", sortable: true },
         { text: "Executive Report Reminder", value: "executive_report_reminder", sortable: true },
         { text: "View Order", value: "view_order", sortable: true },
