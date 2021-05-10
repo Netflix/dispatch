@@ -1,4 +1,4 @@
-FROM python:3.8-slim-buster as sdist
+FROM python:3.9.5-slim-buster as sdist
 
 LABEL maintainer="oss@netflix.com"
 LABEL org.opencontainers.image.title="Dispatch PyPI Wheel"
