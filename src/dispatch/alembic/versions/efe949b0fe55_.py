@@ -36,6 +36,7 @@ class SearchFilter(Base):
     project_id = sa.Column(sa.Integer, sa.ForeignKey("project.id"))
     name = sa.Column(sa.String)
     expression = sa.Column(sa.JSON)
+    description = sa.Column(sa.String)
     type = sa.Column(sa.String)
 
 
@@ -309,9 +310,10 @@ def engagement_models_to_search_filter(model):
         expression.append({"or": incident_priority_filter})
 
     return SearchFilter(
-        name=f"Migrated - {model.name}",
+        name=model.name,
         project_id=model.project_id,
         expression=[{"and": expression}],
+        description="Filter automatically created during dispatch filter migration",
         type="incident",
     )
 
@@ -374,14 +376,20 @@ def upgrade():
     op.create_foreign_key(None, "recommendation", "incident", ["incident_id"], ["id"])
 
     # migrate the data
-
     for model in [Document, IndividualContact, TeamContact, Service]:
         for x in session.query(model).all():
             if any([x.incident_priorities, x.incident_types, x.terms]):
-                filter_name = f"Migrated - {x.name}"
-                if not session.query(SearchFilter).filter(SearchFilter.name == filter_name).one_or_none():
-                    f = engagement_models_to_search_filter(x)
+                f = engagement_models_to_search_filter(x)
+
+                existing_filter = (
+                    session.query(SearchFilter).filter(SearchFilter.name == f.name).one_or_none()
+                )
+
+                if not existing_filter:
                     x.filters.append(f)
+                else:
+                    x.filters.append(existing_filter)
+
                 session.add(x)
 
             session.commit()
