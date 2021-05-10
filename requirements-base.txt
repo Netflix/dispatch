@@ -75,7 +75,7 @@ email-validator==1.1.2
     # via -r requirements-base.in
 emails==0.6
     # via -r requirements-base.in
-fastapi==0.63.0
+fastapi==0.64.0
     # via -r requirements-base.in
 google-api-core==1.26.1
     # via google-api-python-client
