@@ -34,6 +34,11 @@
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
+                  <tag-type-filter-combobox v-model="tag_type" label="Tag Types" />
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-content>
                   <incident-type-combobox v-model="incident_type" />
                 </v-list-item-content>
               </v-list-item>
@@ -102,6 +107,7 @@ import SearchUtils from "@/search/utils"
 import IncidentApi from "@/incident/api"
 import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
@@ -151,6 +157,7 @@ export default {
   },
   components: {
     TagFilterCombobox,
+    TagTypeFilterCombobox,
     IncidentTypeCombobox,
     IncidentPriorityCombobox,
     ProjectCombobox,
@@ -164,6 +171,7 @@ export default {
       "table.options.filters.incident_priority",
       "table.options.filters.project",
       "table.options.filters.status",
+      "table.options.filters.tag_type",
       "table.options.filters.tag",
       "table.options",
       "table.rows.items",
@@ -203,7 +211,7 @@ export default {
   },
   created() {
     this.$watch(
-      (vm) => [vm.incident_type, vm.incident_priority, vm.status, vm.project, vm.tag],
+      (vm) => [vm.incident_type, vm.incident_priority, vm.status, vm.project, vm.tag, vm.tag_type],
       () => {
         this.getPreviewData()
       }
