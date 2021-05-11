@@ -12,6 +12,7 @@ class IncidentSlackViewBlockId(str, Enum):
     description = "description_field"
     type = "incident_type_field"
     priority = "incident_priority_field"
+    tags = "tags_select_field"
 
 
 class NewIncidentSubmission(str, Enum):

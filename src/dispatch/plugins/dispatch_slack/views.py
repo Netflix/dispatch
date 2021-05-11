@@ -22,6 +22,7 @@ from .actions import handle_slack_action
 from .commands import handle_slack_command
 from .config import SLACK_SIGNING_SECRET
 from .events import handle_slack_event, EventEnvelope
+from .modals import handle_slack_menu
 
 
 router = APIRouter()
@@ -167,4 +168,36 @@ async def handle_action(
         client=slack_async_client,
         request=request,
         background_tasks=background_tasks,
+    )
+
+
+@router.post("/slack/menu")
+async def handle_menu(
+    request: Request,
+    response: Response,
+    x_slack_request_timestamp: int = Header(None),
+    x_slack_signature: str = Header(None),
+    db_session: Session = Depends(get_db),
+):
+    """Handle all incoming Slack actions."""
+    raw_request_body = bytes.decode(await request.body())
+    request_body_form = await request.form()
+    request = json.loads(request_body_form.get("payload"))
+
+    # We verify the timestamp
+    verify_timestamp(x_slack_request_timestamp)
+
+    # We verify the signature
+    verify_signature(raw_request_body, x_slack_request_timestamp, x_slack_signature)
+
+    # We add the user-agent string to the response headers
+    response.headers["X-Slack-Powered-By"] = create_ua_string()
+
+    # We create an async Slack client
+    slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
+
+    return await handle_slack_menu(
+        db_session=db_session,
+        client=slack_async_client,
+        request=request,
     )
