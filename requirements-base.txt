@@ -75,7 +75,7 @@ email-validator==1.1.2
     # via -r requirements-base.in
 emails==0.6
     # via -r requirements-base.in
-fastapi==0.64.0
+fastapi==0.65.0
     # via -r requirements-base.in
 google-api-core==1.26.1
     # via google-api-python-client
@@ -302,7 +302,7 @@ srsly==1.0.5
     # via
     #   spacy
     #   thinc
-starlette==0.13.6
+starlette==0.14.2
     # via fastapi
 statsmodels==0.12.2
     # via -r requirements-base.in
