@@ -9,7 +9,7 @@ from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.tag import service as tag_service
-from dispatch.tag.models import TagUpdate
+from dispatch.tag.models import TagUpdate, TagCreate
 from dispatch.term import service as term_service
 from dispatch.term.models import TermUpdate
 from dispatch.project import service as project_service
