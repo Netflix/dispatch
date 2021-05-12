@@ -75,7 +75,7 @@ email-validator==1.1.2
     # via -r requirements-base.in
 emails==0.6
     # via -r requirements-base.in
-fastapi==0.65.0
+fastapi==0.65.1
     # via -r requirements-base.in
 google-api-core==1.26.1
     # via google-api-python-client
@@ -195,7 +195,7 @@ pyasn1==0.4.8
     #   rsa
 pycparser==2.20
     # via cffi
-pydantic==1.8.1
+pydantic==1.8.2
     # via fastapi
 pyjwt==2.0.1
     # via oauthlib
