@@ -102,21 +102,20 @@ def composite_search(*, db_session, query_str: str, models: List[Base], current_
     return s.search(query=query)
 
 
-def search(*, db_session, search_query: str, model: str, sort=False):
+def search(*, query_str: str, query: Query, model: str, sort=False):
     """Perform a search based on the query."""
     search_model = get_class_by_tablename(model)
-    query = db_session.query(search_model)
 
-    if not search_query.strip():
+    if not query_str.strip():
         return query
 
     vector = search_model.search_vector
 
-    query = query.filter(vector.op("@@")(func.tsq_parse(search_query)))
+    query = query.filter(vector.op("@@")(func.tsq_parse(query_str)))
     if sort:
-        query = query.order_by(desc(func.ts_rank_cd(vector, func.tsq_parse(search_query))))
+        query = query.order_by(desc(func.ts_rank_cd(vector, func.tsq_parse(query_str))))
 
-    return query.params(term=search_query)
+    return query.params(term=query_str)
 
 
 def create_sort_spec(model, sort_by, descending):
@@ -193,7 +192,7 @@ def search_filter_sort_paginate(
 
     if query_str:
         sort = False if sort_by else True
-        query = search(db_session=db_session, search_query=query_str, model=model, sort=sort)
+        query = search(query_str=query_str, query=query, model=model, sort=sort)
 
     query = apply_model_specific_filters(model_cls, query, current_user)
 

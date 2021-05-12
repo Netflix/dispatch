@@ -83,6 +83,7 @@ const state = {
         status: [],
         tag: [],
         project: [],
+        tag_type: [],
       },
       q: "",
       page: 1,
