@@ -24,4 +24,4 @@ Add the following env vars to your `.env` file.
 
 Go to /services on your Web server running Dispatch and add a new service. Select type `pagerduty-oncall` and add your PagerDuty Service ID in the external id field.
 
-![](../../.gitbook/assets/pagerduty-service-setup.png)
+![](../../../../.gitbook/assets/pagerduty-service-setup.png)
