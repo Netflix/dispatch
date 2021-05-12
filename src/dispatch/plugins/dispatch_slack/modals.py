@@ -657,7 +657,7 @@ def create_update_incident_modal(
                 "elements": [
                     {
                         "type": "mrkdwn",
-                        "text": "Use this form to edit the details of incident.",
+                        "text": "Use this form to update the details of the incident.",
                     }
                 ],
             },
