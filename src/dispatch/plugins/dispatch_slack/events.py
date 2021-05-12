@@ -85,7 +85,7 @@ def event_functions(event: EventEnvelope):
     """Interprets the events and routes it the appropriate function."""
     event_mappings = {
         "member_joined_channel": [member_joined_channel],
-        "member_left_channel": [incident_flows.incident_remove_participant_flow],
+        "member_left_channel": [member_left_channel],
         "message": [after_hours, ban_threads_warning],
         "message.groups": [],
         "message.im": [],
@@ -236,6 +236,17 @@ def member_joined_channel(
 
         db_session.add(participant)
         db_session.commit()
+
+
+@background_task
+def member_left_channel(
+    user_email: str,
+    incident_id: int,
+    event: EventEnvelope,
+    db_session=None,
+):
+    """Handles the member_left_channel Slack event."""
+    incident_flows.incident_remove_participant_flow(user_email, incident_id, db_session=db_session)
 
 
 @background_task

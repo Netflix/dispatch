@@ -97,6 +97,34 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
     return individual_contacts, team_contacts
 
 
+def reactivate_incident_participants(incident: Incident, db_session: SessionLocal):
+    """Reactivates all incident participants."""
+    for participant in incident.participants:
+        incident_add_or_reactivate_participant_flow(
+            participant.individual.email, incident.id, db_session=db_session
+        )
+
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Incident participants reactivated",
+        incident_id=incident.id,
+    )
+
+
+def inactivate_incident_participants(incident: Incident, db_session: SessionLocal):
+    """Inactivates all incident participants."""
+    for participant in incident.participants:
+        participant_flows.inactivate_participant(participant.individual.email, incident, db_session)
+
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Incident participants inactivated",
+        incident_id=incident.id,
+    )
+
+
 def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     """Create an external ticket for tracking."""
     plugin = plugin_service.get_active_instance(
@@ -444,6 +472,23 @@ def add_participant_to_tactical_group(
         plugin.instance.add(tactical_group.email, [user_email])
 
 
+def remove_participant_from_tactical_group(
+    user_email: str, incident: Incident, db_session: SessionLocal
+):
+    """Removes participant from the tactical group."""
+    # we get the tactical group
+    tactical_group = group_service.get_by_incident_id_and_resource_type(
+        db_session=db_session,
+        incident_id=incident.id,
+        resource_type=INCIDENT_RESOURCE_TACTICAL_GROUP,
+    )
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
+    )
+    if plugin and tactical_group:
+        plugin.instance.remove(tactical_group.email, [user_email])
+
+
 @background_task
 def incident_create_stable_flow(*, incident_id: int, checkpoint: str = None, db_session=None):
     """Creates all resources necessary when an incident is created as 'stable'."""
@@ -456,6 +501,9 @@ def incident_create_stable_flow(*, incident_id: int, checkpoint: str = None, db_
 def incident_create_closed_flow(*, incident_id: int, checkpoint: str = None, db_session=None):
     """Creates all resources necessary when an incident is created as 'closed'."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    # we inactivate all participants
+    inactivate_incident_participants(incident, db_session)
 
     # we set the stable and close times to the reported time
     incident.stable_at = incident.closed_at = incident.reported_at
@@ -885,6 +933,9 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
 
 def incident_closed_status_flow(incident: Incident, db_session=None):
     """Runs the incident closed flow."""
+    # we inactivate all participants
+    inactivate_incident_participants(incident, db_session)
+
     # we set the closed time
     incident.closed_at = datetime.utcnow()
 
@@ -995,6 +1046,7 @@ def status_flow_dispatcher(
         if previous_status == IncidentStatus.closed:
             # re-activate incident
             incident_active_status_flow(incident=incident, db_session=db_session)
+            reactivate_incident_participants(incident=incident, db_session=db_session)
             send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
         elif previous_status == IncidentStatus.stable:
             send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
@@ -1006,6 +1058,7 @@ def status_flow_dispatcher(
         elif previous_status == IncidentStatus.closed:
             incident_active_status_flow(incident=incident, db_session=db_session)
             incident_stable_status_flow(incident=incident, db_session=db_session)
+            reactivate_incident_participants(incident=incident, db_session=db_session)
         send_incident_report_reminder(incident, ReportTypes.tactical_report, db_session)
 
     # we currently have a closed incident
@@ -1226,13 +1279,19 @@ def incident_add_or_reactivate_participant_flow(
     )
 
     if participant:
-        if participant.is_active:
-            log.debug(f"{user_email} is already an active participant.")
+        if participant.current_roles:
+            # the participant is an active incident participant
+            log.debug(
+                f"Participant with email {user_email} is already active. Skipping reactivation..."
+            )
         else:
             # we reactivate the participant
             reactivated = participant_flows.reactivate_participant(user_email, incident, db_session)
 
             if reactivated:
+                # we add the participant to the tactical group
+                add_participant_to_tactical_group(user_email, incident, db_session)
+
                 # we add the participant to the conversation
                 add_participants_to_conversation([user_email], incident, db_session)
 
@@ -1284,4 +1343,7 @@ def incident_remove_participant_flow(
         send_incident_commander_readded_notification(incident, db_session)
     else:
         # we remove the participant from the incident
-        participant_flows.remove_participant(user_email, incident, db_session)
+        participant_flows.inactivate_participant(user_email, incident, db_session, explicit=True)
+
+        # we remove the participant to the tactical group
+        remove_participant_from_tactical_group(user_email, incident, db_session)

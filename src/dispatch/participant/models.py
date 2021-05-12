@@ -19,19 +19,15 @@ from dispatch.service.models import ServiceRead
 class Participant(Base):
     # columns
     id = Column(Integer, primary_key=True)
-    is_active = Column(Boolean, default=True)  # TODO(mvilanova): make it a hybrid property
-    active_at = Column(
-        DateTime, default=datetime.utcnow
-    )  # TODO(mvilanova): make it a hybrid property
-    inactive_at = Column(DateTime)  # TODO(mvilanova): make it a hybrid property
     team = Column(String)
     department = Column(String)
+    location = Column(String)
     added_by_id = Column(Integer, ForeignKey("participant.id"))
     added_by = relationship(
         "Participant", backref=backref("added_participant"), remote_side=[id], post_update=True
     )
     added_reason = Column(String)
-    location = Column(String)
+    removed_explicitly = Column(Boolean, default=False)
     after_hours_notification = Column(Boolean, default=False)
 
     # relationships
@@ -67,21 +63,6 @@ class Participant(Base):
             .where(ParticipantRole.renounced_at == None)  # noqa
         )
 
-    @staticmethod
-    def _active_at(mapper, connection, target):
-        if target.is_active:
-            target.inactive_at = None
-
-    @staticmethod
-    def _inactive_at(mapper, connection, target):
-        if not target.is_active:
-            target.inactive_at = datetime.utcnow()
-
-    @classmethod
-    def __declare_last__(cls):
-        event.listen(cls, "before_update", cls._active_at)
-        event.listen(cls, "before_update", cls._inactive_at)
-
 
 class ParticipantBase(DispatchBase):
     location: Optional[str]
@@ -106,8 +87,6 @@ class ParticipantRead(ParticipantBase):
     id: int
     participant_roles: Optional[List[ParticipantRoleRead]] = []
     individual: Optional[IndividualReadNested]
-    active_at: Optional[datetime] = None
-    inactive_at: Optional[datetime] = None
 
 
 class ParticipantPagination(DispatchBase):
