@@ -758,7 +758,7 @@ def create_update_incident_modal(
             },
         ],
         "close": {"type": "plain_text", "text": "Cancel"},
-        "submit": {"type": "plain_text", "text": "Submit"},
+        "submit": {"type": "plain_text", "text": "Update"},
         "callback_id": UpdateIncidentCallbacks.submit_form,
         "private_metadata": json.dumps(
             {
