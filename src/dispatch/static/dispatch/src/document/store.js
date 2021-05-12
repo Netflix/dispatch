@@ -12,7 +12,7 @@ const getDefaultSelectedState = () => {
     weblink: null,
     description: null,
     id: null,
-    filters: null,
+    filters: [],
     project: null,
     evergreen: null,
     evergreen_owner: null,
