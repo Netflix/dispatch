@@ -117,7 +117,6 @@ def install_plugins(force):
                 author_url=p.author_url,
                 multiple=p.multiple,
                 description=p.description,
-                enabled=p.enabled,
             )
             db_session.add(record)
 
