@@ -5,10 +5,15 @@ from typing import List
 
 from datetime import datetime
 from enum import Enum
-from fastapi import BackgroundTasks
-from sqlalchemy.orm import Session
-from dispatch.database.core import SessionLocal
+from starlette.requests import Request
 
+from fastapi import BackgroundTasks
+
+from sqlalchemy.orm import Session
+from slack_sdk.web.client import WebClient
+
+from dispatch.database.core import SessionLocal
+from dispatch.database.service import search_filter_sort_paginate
 from dispatch.event import service as event_service
 from dispatch.feedback import service as feedback_service
 from dispatch.feedback.enums import FeedbackRating
@@ -17,6 +22,7 @@ from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus, IncidentSlackViewBlockId, NewIncidentSubmission
 from dispatch.incident.models import Incident
+from dispatch.incident.models import IncidentUpdate, IncidentRead
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.messaging.strings import INCIDENT_WORKFLOW_CREATED_NOTIFICATION
@@ -34,6 +40,23 @@ from .decorators import slack_background_task
 
 
 log = logging.getLogger(__name__)
+
+
+class Menus(str, Enum):
+    tags = "tags_menu"
+
+
+class UpdateIncidentBlockFields(str, Enum):
+    tags = "update_incident_tags"
+    status = "update_incident_status"
+    description = "update_incident_description"
+    title = "update_incident_title"
+    incident_type = "update_incident_type"
+    incident_priority = "update_incident_priority"
+
+
+class UpdateIncidentCallbacks(str, Enum):
+    submit_form = "update_incident_submit_form"
 
 
 class UpdateParticipantBlockFields(str, Enum):
@@ -87,6 +110,87 @@ class IncidentRatingFeedbackCallbacks(str, Enum):
     submit_form = "rating_feedback_submit_form"
 
 
+async def handle_slack_menu(*, db_session: SessionLocal, client: WebClient, request: Request):
+    """Handles slack menu message."""
+    # We resolve the user's email
+    user_id = request["user"]["id"]
+    user_email = await dispatch_slack_service.get_user_email_async(client, user_id)
+
+    request["user"]["email"] = user_email
+
+    # When there are no exceptions within the dialog submission, your app must respond with 200 OK with an empty body.
+    view_data = request["view"]
+    view_data["private_metadata"] = json.loads(view_data["private_metadata"])
+    query_str = request["value"]
+
+    incident_id = view_data["private_metadata"].get("incident_id")
+    channel_id = view_data["private_metadata"].get("channel_id")
+    action_id = request["action_id"]
+
+    f = menu_functions(action_id)
+    return f(db_session, user_id, user_email, channel_id, incident_id, query_str, request)
+
+
+def menu_functions(action_id: str):
+    """Handles all menu requests."""
+    menu_mappings = {Menus.tags: get_tags}
+
+    for key in menu_mappings.keys():
+        if key in action_id:
+            return menu_mappings[key]
+
+    raise Exception(f"No menu function found. actionId: {action_id}")
+
+
+def get_tags(
+    db_session: SessionLocal,
+    user_id: int,
+    user_email: str,
+    channel_id: str,
+    incident_id: str,
+    query_str: str,
+    request: Request,
+):
+    """Fetches tags based on the current query."""
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    # scope to current incident project
+    filter_spec = {
+        "and": [{"model": "Project", "op": "==", "field": "id", "value": incident.project.id}]
+    }
+
+    # attempt to filter by tag type
+    if "/" in query_str:
+        tag_type, tag_name = query_str.split("/")
+
+        filter_spec["and"].append(
+            {"model": "TagType", "op": "==", "field": "name", "value": tag_type}
+        )
+
+        if not len(tag_name):
+            query_str = None
+
+        tags = search_filter_sort_paginate(
+            db_session=db_session, model="Tag", query_str=query_str, filter_spec=filter_spec
+        )
+    else:
+        tags = search_filter_sort_paginate(
+            db_session=db_session, model="Tag", query_str=query_str, filter_spec=filter_spec
+        )
+
+    options = []
+    for t in tags["items"]:
+        options.append(
+            {
+                "text": {"type": "plain_text", "text": f"{t.tag_type.name}/{t.name}"},
+                "value": str(
+                    t.id
+                ),  # NOTE slack doesn't not accept int's as values (fails silently)
+            }
+        )
+
+    return {"options": options}
+
+
 def handle_modal_action(action: dict, background_tasks: BackgroundTasks):
     """Handles all modal actions."""
     view_data = action["view"]
@@ -109,11 +213,10 @@ def action_functions(action_id: str):
         AddTimelineEventCallbacks.submit_form: [add_timeline_event_from_submitted_form],
         NewIncidentSubmission.form_slack_view: [report_incident_from_submitted_form],
         UpdateParticipantCallbacks.submit_form: [update_participant_from_submitted_form],
-        UpdateParticipantCallbacks.update_view: [update_update_participant_modal],
+        UpdateIncidentCallbacks.submit_form: [update_incident_from_submitted_form],
         UpdateNotificationsGroupCallbacks.submit_form: [
             update_notifications_group_from_submitted_form
         ],
-        RunWorkflowCallbacks.update_view: [update_workflow_modal],
         RunWorkflowCallbacks.submit_form: [run_workflow_submitted_form],
         IncidentRatingFeedbackCallbacks.submit_form: [rating_feedback_from_submitted_form],
     }
@@ -130,6 +233,7 @@ def parse_submitted_form(view_data: dict):
     parsed_data = {}
     state_elem = view_data.get("state")
     state_values = state_elem.get("values")
+
     for state in state_values:
         state_key_value_pair = state_values[state]
 
@@ -148,13 +252,13 @@ def parse_submitted_form(view_data: dict):
                 value = ""
 
                 if elem_key_value_pair.get("selected_options"):
-                    name = elem_key_value_pair.get("selected_options")[0].get("text").get("text")
-                    value = elem_key_value_pair.get("selected_options")[0].get("value")
+                    options = []
+                    for selected in elem_key_value_pair["selected_options"]:
+                        name = selected.get("text").get("text")
+                        value = selected.get("value")
+                        options.append({"name": name, "value": value})
 
-                parsed_data[state] = {
-                    "name": name,
-                    "value": value,
-                }
+                    parsed_data[state] = options
             elif elem_key_value_pair.get("selected_date"):
                 parsed_data[state] = elem_key_value_pair.get("selected_date")
             else:
@@ -482,6 +586,227 @@ def update_update_participant_modal(
         trigger_id=trigger_id,
         view_id=action["view"]["id"],
         modal=modal_update_template,
+    )
+
+
+@slack_background_task
+def create_update_incident_modal(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    command: dict = None,
+    db_session=None,
+    slack_client=None,
+):
+    """Creates a dialog for updating incident information."""
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    type_options = []
+    for t in incident_type_service.get_all_enabled(
+        db_session=db_session, project_id=incident.project.id
+    ):
+        type_options.append(
+            {
+                "text": {
+                    "type": "plain_text",
+                    "text": t.name,
+                    "emoji": False,
+                },
+                "value": t.name,
+            }
+        )
+
+    priority_options = []
+    for priority in incident_priority_service.get_all_enabled(
+        db_session=db_session, project_id=incident.project.id
+    ):
+        priority_options.append(
+            {
+                "text": {"type": "plain_text", "text": priority.name, "emoji": False},
+                "value": priority.name,
+            }
+        )
+
+    status_options = []
+    for status in IncidentStatus:
+        status_options.append(
+            {
+                "text": {"type": "plain_text", "text": status.value, "emoji": False},
+                "value": status.value,
+            }
+        )
+
+    selected_tags = []
+    for t in incident.tags:
+        selected_tags.append(
+            {
+                "text": {"type": "plain_text", "text": f"{t.tag_type.name}/{t.name}"},
+                "value": str(
+                    t.id
+                ),  # NOTE slack doesn't not accept int's as values (fails silently)
+            }
+        )
+
+    modal = {
+        "type": "modal",
+        "title": {"type": "plain_text", "text": "Update Incident"},
+        "blocks": [
+            {
+                "type": "context",
+                "elements": [
+                    {
+                        "type": "mrkdwn",
+                        "text": "Use this form to update the details of the incident.",
+                    }
+                ],
+            },
+            {
+                "type": "input",
+                "block_id": UpdateIncidentBlockFields.title,
+                "element": {
+                    "type": "plain_text_input",
+                    "multiline": False,
+                    "initial_value": incident.title or "",
+                },
+                "label": {"type": "plain_text", "text": "Title"},
+            },
+            {
+                "type": "input",
+                "block_id": UpdateIncidentBlockFields.description,
+                "element": {
+                    "type": "plain_text_input",
+                    "multiline": True,
+                    "initial_value": incident.description or "",
+                },
+                "label": {"type": "plain_text", "text": "Description"},
+            },
+            {
+                "type": "section",
+                "block_id": UpdateIncidentBlockFields.incident_type,
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "*Type*",
+                },
+                "accessory": {
+                    "type": "static_select",
+                    "placeholder": {"type": "plain_text", "text": "Select type"},
+                    "initial_option": {
+                        "text": {
+                            "type": "plain_text",
+                            "text": incident.incident_type.name,
+                            "emoji": False,
+                        },
+                        "value": incident.incident_type.name,
+                    },
+                    "options": type_options,
+                },
+            },
+            {
+                "type": "section",
+                "block_id": UpdateIncidentBlockFields.incident_priority,
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "*Priority*",
+                },
+                "accessory": {
+                    "type": "static_select",
+                    "placeholder": {"type": "plain_text", "text": "Select priority"},
+                    "initial_option": {
+                        "text": {
+                            "type": "plain_text",
+                            "text": incident.incident_priority.name,
+                            "emoji": False,
+                        },
+                        "value": incident.incident_priority.name,
+                    },
+                    "options": priority_options,
+                },
+            },
+            {
+                "type": "section",
+                "block_id": UpdateIncidentBlockFields.status,
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "*Status*",
+                },
+                "accessory": {
+                    "type": "static_select",
+                    "placeholder": {"type": "plain_text", "text": "Select status"},
+                    "initial_option": {
+                        "text": {
+                            "type": "plain_text",
+                            "text": incident.status,
+                            "emoji": False,
+                        },
+                        "value": incident.status,
+                    },
+                    "options": status_options,
+                },
+            },
+            {
+                "type": "section",
+                "block_id": UpdateIncidentBlockFields.tags,
+                "text": {"type": "mrkdwn", "text": "*Tags*"},
+                "accessory": {
+                    "initial_options": selected_tags,
+                    "action_id": Menus.tags,
+                    "type": "multi_external_select",
+                    "placeholder": {"type": "plain_text", "text": "Select related tags"},
+                    "min_query_length": 3,
+                },
+            },
+        ],
+        "close": {"type": "plain_text", "text": "Cancel"},
+        "submit": {"type": "plain_text", "text": "Update"},
+        "callback_id": UpdateIncidentCallbacks.submit_form,
+        "private_metadata": json.dumps(
+            {
+                "incident_id": str(incident.id),
+                "channel_id": str(incident.conversation.channel_id),
+            }
+        ),
+    }
+
+    dispatch_slack_service.open_modal_with_user(
+        client=slack_client, trigger_id=command["trigger_id"], modal=modal
+    )
+
+
+@slack_background_task
+def update_incident_from_submitted_form(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    action: dict,
+    db_session=None,
+    slack_client=None,
+):
+    """Massages slack dialog data into something that Dispatch can use."""
+    submitted_form = action.get("view")
+    parsed_form_data = parse_submitted_form(submitted_form)
+
+    tags = []
+    for t in parsed_form_data.get("update_incident_tags", []):
+        tags.append({"id": t["value"]})
+
+    incident_in = IncidentUpdate(
+        title=parsed_form_data.get("update_incident_title"),
+        description=parsed_form_data.get("update_incident_description"),
+        incident_type={"name": parsed_form_data.get("update_incident_type")["value"]},
+        incident_priority={"name": parsed_form_data.get("update_incident_priority")["value"]},
+        status=parsed_form_data.get("update_incident_status")["value"],
+        tags=tags,
+    )
+
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    existing_incident = IncidentRead.from_orm(incident)
+    incident_service.update(db_session=db_session, incident=incident, incident_in=incident_in)
+    incident_flows.incident_update_flow(user_email, incident_id, existing_incident)
+
+    dispatch_slack_service.send_ephemeral_message(
+        slack_client, channel_id, user_id, "You have sucessfully updated the incident."
     )
 
 
