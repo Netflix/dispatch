@@ -46,11 +46,7 @@
         <template v-slot:activator="{ on }">
           <v-btn icon large text v-on="on">
             <v-avatar size="30px">
-              <img
-                v-if="currentUser().thumbnailPhotoUrl"
-                :src="currentUser().thumbnailPhotoUrl"
-                :alt="currentUser().fullName"
-              />
+              <img v-if="userAvatarUrl" :src="userAvatarUrl()" :alt="currentUser().fullName" />
               <v-icon v-else> account_circle </v-icon>
             </v-avatar>
           </v-btn>
@@ -103,7 +99,7 @@ export default {
     toggleDarkTheme() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark
     },
-    ...mapState("auth", ["currentUser"]),
+    ...mapState("auth", ["currentUser", "userAvatarUrl"]),
     ...mapActions("search", ["setQuery"]),
     ...mapMutations("search", ["SET_QUERY"]),
   },
