@@ -219,12 +219,15 @@ def member_joined_channel(
         # we update the participant's metadata
         if not dispatch_slack_service.is_user(event.event.inviter):
             # we default to the incident commander when we don't know how the user was added
-            participant.added_by = participant_service.get_by_incident_id_and_role(
+            added_by_participant = participant_service.get_by_incident_id_and_role(
                 db_session=db_session,
                 incident_id=incident_id,
                 role=ParticipantRoleType.incident_commander,
             )
-            participant.added_reason = "User was automatically added by Dispatch."
+            participant.added_by = added_by_participant
+            participant.added_reason = (
+                f"Participant added by {added_by_participant.individual.name}"
+            )
 
         else:
             inviter_email = get_user_email(client=slack_client, user_id=event.event.inviter)

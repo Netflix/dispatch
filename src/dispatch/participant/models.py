@@ -19,8 +19,6 @@ from dispatch.service.models import ServiceRead
 class Participant(Base):
     # columns
     id = Column(Integer, primary_key=True)
-    is_active = Column(Boolean, default=True)
-    is_removed = Column(Boolean, default=False)
     team = Column(String)
     department = Column(String)
     location = Column(String)

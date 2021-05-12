@@ -60,9 +60,31 @@ def add_participant(
     return participant
 
 
-def inactivate_participant(
-    user_email: str, incident: Incident, db_session: SessionLocal, explicit: bool = False
-):
+def remove_participant(user_email: str, incident: Incident, db_session: SessionLocal):
+    """Removes a participant."""
+    inactivated = inactivate_participant(user_email, incident, db_session)
+
+    if inactivated:
+        participant = get_by_incident_id_and_email(
+            db_session=db_session, incident_id=incident.id, email=user_email
+        )
+
+        log.debug(f"Removing {participant.individual.name} from {incident.name} incident...")
+
+        participant.service = None
+
+        db_session.add(participant)
+        db_session.commit()
+
+        event_service.log(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"{participant.individual.name} removed",
+            incident_id=incident.id,
+        )
+
+
+def inactivate_participant(user_email: str, incident: Incident, db_session: SessionLocal):
     """Inactivates a participant."""
     participant = get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident.id, email=user_email
@@ -70,7 +92,7 @@ def inactivate_participant(
 
     if not participant:
         log.debug(
-            f"Can't inactivate participant with {user_email} email. They're not an active participant of {incident.name} incident."
+            f"Can't inactivate participant with {user_email} email. They're not a participant of {incident.name} incident."
         )
         return False
 
@@ -83,11 +105,6 @@ def inactivate_participant(
         participant_role_service.renounce_role(
             db_session=db_session, participant_role=participant_active_role
         )
-
-    participant.removed_explicitly = explicit
-
-    db_session.add(participant)
-    db_session.commit()
 
     event_service.log(
         db_session=db_session,
@@ -109,15 +126,13 @@ def reactivate_participant(user_email: str, incident: Incident, db_session: Sess
         log.debug(f"{user_email} is not an inactive participant of {incident.name} incident.")
         return False
 
-    if participant.removed_explicitly:
-        log.debug(f"{user_email} was explicitly removed from {incident.name} incident.")
-        return False
-
     log.debug(f"Reactivating {participant.individual.name} on {incident.name} incident...")
 
+    # we get the last active role
     participant_role = participant_role_service.get_last_active_role(
         db_session=db_session, participant_id=participant.id
     )
+    # we create a new role based on the last active role
     participant_role_in = ParticipantRoleCreate(role=participant_role.role)
     participant_role = participant_role_service.create(
         db_session=db_session, participant_role_in=participant_role_in

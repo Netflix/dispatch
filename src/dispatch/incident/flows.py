@@ -766,23 +766,7 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     for user_email in set(
         [incident.commander.individual.email, incident.reporter.individual.email]
     ):
-        # we add the participant to the tactical group
-        add_participant_to_tactical_group(user_email, incident, db_session)
-
-        # we add the participant to the conversation
-        add_participants_to_conversation([user_email], incident, db_session)
-
-        # we announce the participant in the conversation
-        send_incident_participant_announcement_message(user_email, incident, db_session)
-
-        # we send the welcome messages to the participant
-        send_incident_welcome_participant_messages(user_email, incident, db_session)
-
-        # we send a suggested reading message to the participant
-        suggested_document_items = get_suggested_document_items(incident, db_session)
-        send_incident_suggested_reading_messages(
-            incident, suggested_document_items, user_email, db_session
-        )
+        incident_add_or_reactivate_participant_flow(user_email, incident.id, db_session=db_session)
 
     # wait until all resources are created before adding suggested participants
     for individual, service_id in individual_participants:
@@ -1122,16 +1106,8 @@ def incident_assign_role_flow(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    # we get the participant object for the assignee
-    assignee_participant = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=incident.id, email=assignee_email
-    )
-
-    if not assignee_participant:
-        # The assignee is not a participant. We add them to the incident
-        incident_add_or_reactivate_participant_flow(
-            assignee_email, incident.id, db_session=db_session
-        )
+    # we add the assignee to the incident if they're not a participant
+    incident_add_or_reactivate_participant_flow(assignee_email, incident.id, db_session=db_session)
 
     # we run the participant assign role flow
     result = participant_role_flows.assign_role_flow(
@@ -1154,15 +1130,19 @@ def incident_assign_role_flow(
         # )
         return
 
-    if assignee_role != ParticipantRoleType.participant:
+    if assignee_role != ParticipantRoleType.participant.value:
         # we resolve the assigner and assignee's contact information
-        plugin = plugin_service.get_active_instance(
+        contact_plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="contact"
         )
 
-        if plugin:
-            assigner_contact_info = plugin.instance.get(assigner_email, db_session=db_session)
-            assignee_contact_info = plugin.instance.get(assignee_email, db_session=db_session)
+        if contact_plugin:
+            assigner_contact_info = contact_plugin.instance.get(
+                assigner_email, db_session=db_session
+            )
+            assignee_contact_info = contact_plugin.instance.get(
+                assignee_email, db_session=db_session
+            )
         else:
             assigner_contact_info = {
                 "email": assigner_email,
@@ -1223,11 +1203,16 @@ def incident_engage_oncall_flow(
 
     oncall_email = oncall_plugin.instance.get(service_id=oncall_service_id)
 
-    # we add the oncall to the incident
-    incident_add_or_reactivate_participant_flow(oncall_email, incident.id, db_session=db_session)
+    # we attempt to add the oncall to the incident
+    participant = incident_add_or_reactivate_participant_flow(
+        oncall_email, incident.id, service_id=oncall_service_id, db_session=db_session
+    )
 
-    # we load the individual
-    individual = individual_service.get_by_email(db_session=db_session, email=oncall_email)
+    if participant.individual.email != oncall_email:
+        # we already have the oncall for the service in the incident
+        return None, oncall_service
+
+    individual = individual_service.get_by_email(db_session=db_session, email=user_email)
 
     event_service.log(
         db_session=db_session,
@@ -1249,7 +1234,7 @@ def incident_engage_oncall_flow(
             incident_id=incident.id,
         )
 
-    return individual, oncall_service
+    return participant.individual, oncall_service
 
 
 @background_task
@@ -1261,7 +1246,7 @@ def incident_add_or_reactivate_participant_flow(
     event: dict = None,
     db_session=None,
 ) -> Participant:
-    """Runs the add or reactivate incident participant flow."""
+    """Runs the incidnet add participant flow."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     if service_id:
@@ -1272,57 +1257,39 @@ def incident_add_or_reactivate_participant_flow(
         )
         if participant:
             log.debug("Skipping resolved participant, service member already engaged.")
-            return
+            return participant
 
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident.id, email=user_email
     )
 
-    if participant:
-        if participant.current_roles:
-            # the participant is an active incident participant
-            log.debug(
-                f"Participant with email {user_email} is already active. Skipping reactivation..."
-            )
-        else:
-            # we reactivate the participant
-            reactivated = participant_flows.reactivate_participant(user_email, incident, db_session)
-
-            if reactivated:
-                # we add the participant to the tactical group
-                add_participant_to_tactical_group(user_email, incident, db_session)
-
-                # we add the participant to the conversation
-                add_participants_to_conversation([user_email], incident, db_session)
-
-                # we announce the participant in the conversation
-                send_incident_participant_announcement_message(user_email, incident, db_session)
-
-                # we send the welcome messages to the participant
-                send_incident_welcome_participant_messages(user_email, incident, db_session)
-    else:
+    if not participant:
         # we add the participant to the incident
         participant = participant_flows.add_participant(
             user_email, incident, db_session, service_id=service_id, role=role
         )
+    else:
+        if not participant.current_roles:
+            # we reactivate the participant
+            participant_flows.reactivate_participant(user_email, incident, db_session)
 
-        # we add the participant to the tactical group
-        add_participant_to_tactical_group(user_email, incident, db_session)
+    # we add the participant to the tactical group
+    add_participant_to_tactical_group(user_email, incident, db_session)
 
-        # we add the participant to the conversation
-        add_participants_to_conversation([user_email], incident, db_session)
+    # we add the participant to the conversation
+    add_participants_to_conversation([user_email], incident, db_session)
 
-        # we announce the participant in the conversation
-        send_incident_participant_announcement_message(user_email, incident, db_session)
+    # we announce the participant in the conversation
+    send_incident_participant_announcement_message(user_email, incident, db_session)
 
-        # we send the welcome messages to the participant
-        send_incident_welcome_participant_messages(user_email, incident, db_session)
+    # we send the welcome messages to the participant
+    send_incident_welcome_participant_messages(user_email, incident, db_session)
 
-        # we send a suggested reading message to the participant
-        suggested_document_items = get_suggested_document_items(incident, db_session)
-        send_incident_suggested_reading_messages(
-            incident, suggested_document_items, user_email, db_session
-        )
+    # we send a suggested reading message to the participant
+    suggested_document_items = get_suggested_document_items(incident, db_session)
+    send_incident_suggested_reading_messages(
+        incident, suggested_document_items, user_email, db_session
+    )
 
     return participant
 
@@ -1332,18 +1299,17 @@ def incident_remove_participant_flow(
     user_email: str, incident_id: int, event: dict = None, db_session=None
 ):
     """Runs the remove participant flow."""
-    # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     if user_email == incident.commander.individual.email:
-        # we add the incident commander to the conversation again
+        # we add the incident commander back to the conversation
         add_participants_to_conversation([user_email], incident, db_session)
 
         # we send a notification to the channel
         send_incident_commander_readded_notification(incident, db_session)
     else:
         # we remove the participant from the incident
-        participant_flows.inactivate_participant(user_email, incident, db_session, explicit=True)
+        participant_flows.remove_participant(user_email, incident, db_session)
 
         # we remove the participant to the tactical group
         remove_participant_from_tactical_group(user_email, incident, db_session)
