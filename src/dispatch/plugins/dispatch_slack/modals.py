@@ -786,7 +786,6 @@ def update_incident_from_submitted_form(
     """Massages slack dialog data into something that Dispatch can use."""
     submitted_form = action.get("view")
     parsed_form_data = parse_submitted_form(submitted_form)
-    print(parsed_form_data)
 
     tags = []
     for t in parsed_form_data.get("update_incident_tags", []):
