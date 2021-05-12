@@ -10,7 +10,7 @@ const getDefaultSelectedState = () => {
     type: null,
     external_id: null,
     is_active: null,
-    filters: null,
+    filters: [],
     description: null,
     id: null,
     project: null,

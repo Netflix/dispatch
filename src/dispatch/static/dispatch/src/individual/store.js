@@ -12,7 +12,7 @@ const getDefaultSelectedState = () => {
     notes: null,
     title: null,
     external_id: null,
-    filters: null,
+    filters: [],
     is_external: null,
     is_active: null,
     project: null,
