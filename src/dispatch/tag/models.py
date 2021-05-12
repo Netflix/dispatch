@@ -31,7 +31,7 @@ class Tag(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic models
 class TagBase(DispatchBase):
-    name: str
+    name: Optional[str]
     source: Optional[str]
     uri: Optional[str]
     discoverable: Optional[bool] = True
@@ -44,8 +44,8 @@ class TagCreate(TagBase):
 
 
 class TagUpdate(TagBase):
-    id: int
-    tag_type: TagTypeUpdate
+    id: Optional[int]
+    tag_type: Optional[TagTypeUpdate]
 
 
 class TagRead(TagBase):

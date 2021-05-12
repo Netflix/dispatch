@@ -75,7 +75,7 @@ email-validator==1.1.2
     # via -r requirements-base.in
 emails==0.6
     # via -r requirements-base.in
-fastapi==0.65.0
+fastapi==0.65.1
     # via -r requirements-base.in
 google-api-core==1.26.1
     # via google-api-python-client
@@ -114,7 +114,7 @@ idna==2.10
     #   requests
     #   rfc3986
     #   yarl
-jinja2==2.11.3
+jinja2==3.0.0
     # via -r requirements-base.in
 jira==2.0.0
     # via -r requirements-base.in
@@ -126,7 +126,7 @@ lxml==4.6.3
     #   premailer
 mako==1.1.4
     # via alembic
-markupsafe==1.1.1
+markupsafe==2.0.0
     # via
     #   jinja2
     #   mako
@@ -195,7 +195,7 @@ pyasn1==0.4.8
     #   rsa
 pycparser==2.20
     # via cffi
-pydantic==1.8.1
+pydantic==1.8.2
     # via fastapi
 pyjwt==2.0.1
     # via oauthlib

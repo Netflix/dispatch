@@ -253,6 +253,11 @@ const getters = {
       state.currentUser.organizations[0]
     )
   },
+  userAvatarURL: (state) => {
+    if (state.currentUser.userId) {
+      return `${window.location.protocol}//${window.location.host}/avatar/${state.currentUser.userId}/${state.currentUser.userId}.json`
+    }
+  },
 }
 
 export default {
