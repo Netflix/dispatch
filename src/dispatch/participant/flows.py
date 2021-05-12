@@ -27,7 +27,7 @@ def add_participant(
     individual = individual_service.get_or_create(
         db_session=db_session, incident=incident, email=user_email
     )
-    
+
     # We create a role for the participant
     participant_role_in = ParticipantRoleCreate(role=role)
 

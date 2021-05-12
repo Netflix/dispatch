@@ -195,7 +195,10 @@ def search_filter_sort_paginate(
         query = search(query_str=query_str, query=query, model=model, sort=sort)
 
     query = apply_model_specific_filters(model_cls, query, current_user)
-    query = apply_filters(query, filter_spec)
+
+    if filter_spec:
+        query = apply_filters(query, filter_spec)
+
     query = apply_sort(query, sort_spec)
 
     if items_per_page == -1:

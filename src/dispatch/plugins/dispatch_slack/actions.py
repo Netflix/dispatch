@@ -1,4 +1,5 @@
 import base64
+import json
 from fastapi import BackgroundTasks
 
 from dispatch.conversation import service as conversation_service
@@ -8,7 +9,6 @@ from dispatch.database.core import SessionLocal
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
-from dispatch.incident.models import IncidentUpdate, IncidentRead
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.report import flows as report_flows
@@ -21,10 +21,16 @@ from .config import (
     SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
     SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
     SLACK_COMMAND_REPORT_TACTICAL_SLUG,
-    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
 )
 
-from .modals import create_rating_feedback_modal, handle_modal_action
+from .modals import (
+    create_rating_feedback_modal,
+    update_update_participant_modal,
+    update_workflow_modal,
+    handle_modal_action,
+    UpdateParticipantCallbacks,
+    RunWorkflowCallbacks,
+)
 from .service import get_user_email
 from .decorators import slack_background_task
 
@@ -44,12 +50,11 @@ async def handle_slack_action(*, db_session, client, request, background_tasks):
 
     # When there are no exceptions within the dialog submission, your app must respond with 200 OK with an empty body.
     response_body = {}
-    if request.get("view"):
+    if request["type"] == "view_submission":
         handle_modal_action(request, background_tasks)
-        if request["type"] == "view_submission":
-            # For modals we set "response_action" to "clear" to close all views in the modal.
-            # An empty body is currently not working.
-            response_body = {"response_action": "clear"}
+        # For modals we set "response_action" to "clear" to close all views in the modal.
+        # An empty body is currently not working.
+        response_body = {"response_action": "clear"}
     elif request["type"] == "dialog_submission":
         handle_dialog_action(request, background_tasks, db_session=db_session)
     elif request["type"] == "block_actions":
@@ -132,38 +137,6 @@ def update_task_status(
     status = "resolved" if task.status == TaskStatus.open else "re-opened"
     message = f"Task successfully {status}."
     dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
-
-
-@slack_background_task
-def handle_update_incident_action(
-    user_id: str,
-    user_email: str,
-    channel_id: str,
-    incident_id: int,
-    action: dict,
-    db_session=None,
-    slack_client=None,
-):
-    """Massages slack dialog data into something that Dispatch can use."""
-    submission = action["submission"]
-    notify = True if submission["notify"] == "Yes" else False
-    incident_in = IncidentUpdate(
-        title=submission["title"],
-        description=submission["description"],
-        incident_type={"name": submission["type"]},
-        incident_priority={"name": submission["priority"]},
-        status=submission["status"],
-        visibility=submission["visibility"],
-    )
-
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-    existing_incident = IncidentRead.from_orm(incident)
-    incident_service.update(db_session=db_session, incident=incident, incident_in=incident_in)
-    incident_flows.incident_update_flow(user_email, incident_id, existing_incident, notify)
-
-    dispatch_slack_service.send_ephemeral_message(
-        slack_client, channel_id, user_id, "You have sucessfully updated the incident."
-    )
 
 
 @slack_background_task
@@ -292,7 +265,6 @@ def dialog_action_functions(action: str):
         SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [handle_engage_oncall_action],
         SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [handle_executive_report_create],
         SLACK_COMMAND_REPORT_TACTICAL_SLUG: [handle_tactical_report_create],
-        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [handle_update_incident_action],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc
@@ -314,6 +286,8 @@ def block_action_functions(action: str):
         "ConversationButtonActions.update_task_status": [
             update_task_status,
         ],
+        UpdateParticipantCallbacks.update_view: [update_update_participant_modal],
+        RunWorkflowCallbacks.update_view: [update_workflow_modal],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc
@@ -342,12 +316,15 @@ def handle_dialog_action(action: dict, background_tasks: BackgroundTasks, db_ses
 
 def handle_block_action(action: dict, background_tasks: BackgroundTasks):
     """Handles a standalone block action."""
+    view_data = action["view"]
+    view_data["private_metadata"] = json.loads(view_data["private_metadata"])
 
+    incident_id = view_data["private_metadata"].get("incident_id")
+    channel_id = view_data["private_metadata"].get("channel_id")
     action_id = action["actions"][0]["block_id"]
-    incident_id = action["actions"][0]["value"]
+
     user_id = action["user"]["id"]
     user_email = action["user"]["email"]
-    channel_id = action["container"]["channel_id"]
 
     for f in block_action_functions(action_id):
         background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, action)

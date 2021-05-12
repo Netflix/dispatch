@@ -47,6 +47,7 @@ from .decorators import slack_background_task
 from .modals import (
     create_add_timeline_event_modal,
     create_report_incident_modal,
+    create_update_incident_modal,
     create_update_notifications_group_modal,
     create_update_participant_modal,
     create_run_workflow_modal,
@@ -57,7 +58,6 @@ from .dialogs import (
     create_engage_oncall_dialog,
     create_executive_report_dialog,
     create_tactical_report_dialog,
-    create_update_incident_dialog,
 )
 
 from .messaging import (
@@ -131,9 +131,9 @@ def command_functions(command: str):
         SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [create_executive_report_dialog],
         SLACK_COMMAND_REPORT_INCIDENT_SLUG: [create_report_incident_modal],
         SLACK_COMMAND_REPORT_TACTICAL_SLUG: [create_tactical_report_dialog],
-        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_dialog],
         SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG: [create_update_notifications_group_modal],
         SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG: [create_update_participant_modal],
+        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_modal],
         SLACK_COMMAND_RUN_WORKFLOW_SLUG: [create_run_workflow_modal],
         SLACK_COMMAND_LIST_WORKFLOWS_SLUG: [list_workflows],
     }
