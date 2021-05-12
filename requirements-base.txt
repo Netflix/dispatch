@@ -114,7 +114,7 @@ idna==2.10
     #   requests
     #   rfc3986
     #   yarl
-jinja2==2.11.3
+jinja2==3.0.0
     # via -r requirements-base.in
 jira==2.0.0
     # via -r requirements-base.in
@@ -126,7 +126,7 @@ lxml==4.6.3
     #   premailer
 mako==1.1.4
     # via alembic
-markupsafe==1.1.1
+markupsafe==2.0.0
     # via
     #   jinja2
     #   mako
