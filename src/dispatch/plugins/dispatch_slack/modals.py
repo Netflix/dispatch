@@ -650,7 +650,7 @@ def create_update_incident_modal(
 
     modal = {
         "type": "modal",
-        "title": {"type": "plain_text", "text": "Edit Incident"},
+        "title": {"type": "plain_text", "text": "Update Incident"},
         "blocks": [
             {
                 "type": "context",
