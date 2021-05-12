@@ -13,7 +13,7 @@ const getDefaultSelectedState = () => {
     target: null,
     project: null,
     enabled: null,
-    filters: null,
+    filters: [],
     loading: false,
   }
 }
