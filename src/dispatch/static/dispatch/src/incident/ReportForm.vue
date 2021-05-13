@@ -8,6 +8,7 @@
         <v-spacer />
         <v-btn small color="info" :to="{ name: 'status' }"> Active Incidents </v-btn>
       </v-app-bar>
+      <organization-banner />
       <report-receipt-card v-if="id" />
       <report-submission-card v-else />
     </v-main>
@@ -18,6 +19,7 @@
 import { mapFields } from "vuex-map-fields"
 import ReportSubmissionCard from "@/incident/ReportSubmissionCard.vue"
 import ReportReceiptCard from "@/incident/ReportReceiptCard.vue"
+import OrganizationBanner from "@/organization/OrganizationBanner.vue"
 
 export default {
   name: "ReportForm",
@@ -32,6 +34,7 @@ export default {
   components: {
     ReportSubmissionCard,
     ReportReceiptCard,
+    OrganizationBanner,
   },
   data() {
     return {}
