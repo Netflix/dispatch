@@ -44,44 +44,33 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Email" rules="required" immediate>
-                  <v-text-field
-                    v-model="email"
-                    slot-scope="{ errors, valid }"
-                    label="Email"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="The organization's email."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
+                <span class="subtitle-2"
+                  >Banner
+                  <v-tooltip max-width="250px" bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                    </template>
+                    Controls the per-organization bannering options.
+                  </v-tooltip>
+                </span>
+              </v-flex>
+              <v-flex xs 12>
+                <v-checkbox
+                  v-model="banner_enabled"
+                  label="Enabled"
+                  hint="Determines if this organization should display an informational banner."
+                />
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Company" rules="required" immediate>
-                  <v-text-field
-                    v-model="company"
-                    slot-scope="{ errors, valid }"
-                    label="Company"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="The organization's company."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <span class="subtitle-2">Engagement</span>
-              </v-flex>
-              <v-flex xs12>
-                <term-combobox v-model="terms" />
-              </v-flex>
-              <v-flex xs12>
-                <incident-priority-multi-select v-model="incident_priorities" />
-              </v-flex>
-              <v-flex>
-                <incident-type-multi-select v-model="incident_types" :visibilities="visibilities" />
+                <v-text-field
+                  v-model="banner_text"
+                  label="Text"
+                  :error-messages="errors"
+                  :success="valid"
+                  hint="Text to display in banner"
+                  clearable
+                  required
+                />
               </v-flex>
             </v-layout>
           </v-container>
