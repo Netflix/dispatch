@@ -20,7 +20,7 @@ class ParticipantRole(Base):
     id = Column(Integer, primary_key=True)
     assumed_at = Column(DateTime, default=datetime.utcnow)
     renounced_at = Column(DateTime)
-    role = Column(String, default=ParticipantRoleType.participant)
+    role = Column(String, default=ParticipantRoleType.participant.value)
     participant_id = Column(Integer, ForeignKey("participant.id", ondelete="CASCADE"))
 
 
