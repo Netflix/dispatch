@@ -1,0 +1,231 @@
+import logging
+from typing import List
+from sqlalchemy.orm import Session
+
+from dispatch.incident.models import Incident
+from dispatch.incident_priority import service as incident_priority_service
+from dispatch.incident_priority.models import IncidentPriority
+from dispatch.incident_type import service as incident_type_service
+from dispatch.incident_type.models import IncidentType
+from dispatch.tag.models import Tag
+from dispatch.participant.models import Participant
+from dispatch.project import service as project_service
+
+from .enums import IncidentBlockId, ReportIncidentCallbackId, UpdateParticipantBlockId
+
+
+log = logging.getLogger(__name__)
+
+
+def option_from_template(text: str, value: str):
+    """Helper function which generates the option block for modals / views"""
+    return {"text": {"type": "plain_text", "text": str(text), "emoji": True}, "value": str(value)}
+
+
+def incident_type_select_block(
+    db_session: Session, initial_option: IncidentType = None, project_id: int = None
+):
+    """Builds the incident type select block."""
+    incident_type_options = []
+    for incident_type in incident_type_service.get_all_enabled(
+        db_session=db_session, project_id=project_id
+    ):
+        incident_type_options.append(
+            option_from_template(text=incident_type.name, value=incident_type.id)
+        )
+    block = {
+        "block_id": IncidentBlockId.type,
+        "type": "input",
+        "label": {"type": "plain_text", "text": "Type"},
+        "element": {
+            "type": "static_select",
+            "placeholder": {"type": "plain_text", "text": "Select Type"},
+            "options": incident_type_options,
+        },
+    }
+
+    if initial_option:
+        block["element"].update(
+            {
+                "initial_option": option_from_template(
+                    text=initial_option.name, value=initial_option.id
+                )
+            }
+        )
+
+    return block
+
+
+def incident_priority_select_block(
+    db_session: Session, initial_option: IncidentPriority = None, project_id: int = None
+):
+    """Builds the incident priority select block."""
+    incident_priority_options = []
+    for incident_priority in incident_priority_service.get_all_enabled(
+        db_session=db_session, project_id=project_id
+    ):
+        incident_priority_options.append(
+            option_from_template(text=incident_priority.name, value=incident_priority.id)
+        )
+
+    block = {
+        "block_id": IncidentBlockId.priority,
+        "type": "input",
+        "label": {"type": "plain_text", "text": "Priority", "emoji": True},
+        "element": {
+            "type": "static_select",
+            "placeholder": {"type": "plain_text", "text": "Select Priority"},
+            "options": incident_priority_options,
+        },
+    }
+
+    if initial_option:
+        block["element"].update(
+            {
+                "initial_option": option_from_template(
+                    text=initial_option.name, value=initial_option.id
+                )
+            }
+        )
+
+    return block
+
+
+def project_select_block(db_session: Session):
+    """Builds incident project select block."""
+    project_options = []
+    for project in project_service.get_all(db_session=db_session):
+        project_options.append(option_from_template(text=project.name, value=project.id))
+
+    return {
+        "block_id": IncidentBlockId.project,
+        "type": "input",
+        "label": {
+            "text": "Project",
+            "type": "plain_text",
+        },
+        "dispatch_action": True,
+        "element": {
+            "type": "static_select",
+            "placeholder": {"type": "plain_text", "text": "Select Project"},
+            "options": project_options,
+            "action_id": ReportIncidentCallbackId.update_view,
+        },
+    }
+
+
+def tag_multi_select_block(
+    initial_options: List[Tag] = None,
+):
+    """Builds the incident tag multi select block."""
+    block = {
+        "block_id": IncidentBlockId.tags,
+        "type": "input",
+        "label": {"type": "plain_text", "text": "Tags"},
+        "element": {
+            "type": "multi_external_select",
+            "placeholder": {"type": "plain_text", "text": "Select related tags"},
+            "min_query_length": 3,
+        },
+    }
+
+    if initial_options:
+        block["element"].update(
+            {
+                "initial_options": [
+                    option_from_template(text=f"{t.tag_type.name}/{t.name}", value=t.id)
+                    for t in initial_options
+                ]
+            }
+        )
+
+    return block
+
+
+def title_input_block(initial_value: str = None):
+    """Builds a valid incident title input."""
+    block = {
+        "block_id": IncidentBlockId.title,
+        "type": "input",
+        "label": {"type": "plain_text", "text": "Title"},
+        "element": {
+            "type": "plain_text_input",
+            "placeholder": {
+                "type": "plain_text",
+                "text": "A brief explanatory title. You can change this later.",
+            },
+        },
+    }
+
+    if initial_value:
+        block["element"].update({"initial_value": initial_value})
+
+    return block
+
+
+def description_input_block(initial_value: str = None):
+    """Builds a valid incident description input."""
+    block = {
+        "block_id": IncidentBlockId.description,
+        "type": "input",
+        "label": {"type": "plain_text", "text": "Description"},
+        "element": {
+            "type": "plain_text_input",
+            "placeholder": {
+                "type": "plain_text",
+                "text": "A summary of what you know so far. It's all right if this is incomplete.",
+            },
+            "multiline": True,
+        },
+    }
+
+    if initial_value:
+        block["element"].update({"initial_value": initial_value})
+
+    return block
+
+
+def participants_select_block(incident: Incident, participant: Participant = None):
+    """Builds a static select with all current participants."""
+    selected_option = None
+    participant_options = []
+    for p in incident.participants:
+        current_option = {
+            "text": {"type": "plain_text", "text": p.individual.name},
+            "value": str(p.id),
+        }
+
+        participant_options.append(current_option)
+
+        if participant:
+            if p.id == participant.id:
+                selected_option = current_option
+
+    if participant:
+        select_block = {
+            "block_id": UpdateParticipantBlockId.participant,
+            "type": "input",
+            "element": {
+                "type": "static_select",
+                "placeholder": {"type": "plain_text", "text": "Select Participant"},
+                "options": participant_options,
+                "initial_option": selected_option,
+                "action_id": UpdateParticipantBlockId.participant,
+            },
+            "label": {"type": "plain_text", "text": "Participant"},
+        }
+
+    else:
+        select_block = {
+            "block_id": UpdateParticipantBlockId.participant,
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "static_select",
+                    "placeholder": {"type": "plain_text", "text": "Select Participant"},
+                    "options": participant_options,
+                }
+            ],
+        }
+
+    return select_block

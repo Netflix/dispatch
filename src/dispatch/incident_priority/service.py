@@ -36,18 +36,22 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[IncidentP
     )
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[IncidentPriority]]:
+def get_all(*, db_session, project_id: int = None) -> List[Optional[IncidentPriority]]:
     """Returns all incident priorities."""
-    return db_session.query(IncidentPriority).filter(IncidentPriority.project_id == project_id)
+    if project_id:
+        return db_session.query(IncidentPriority).filter(IncidentPriority.project_id == project_id)
+    return db_session.query(IncidentPriority)
 
 
-def get_all_enabled(*, db_session, project_id: int) -> List[Optional[IncidentPriority]]:
+def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[IncidentPriority]]:
     """Returns all enabled incident priorities."""
-    return (
-        db_session.query(IncidentPriority)
-        .filter(IncidentPriority.project_id == project_id)
-        .filter(IncidentPriority.enabled == true())
-    )
+    if project_id:
+        return (
+            db_session.query(IncidentPriority)
+            .filter(IncidentPriority.project_id == project_id)
+            .filter(IncidentPriority.enabled == true())
+        )
+    return db_session.query(IncidentPriority).filter(IncidentPriority.enabled == true())
 
 
 def create(*, db_session, incident_priority_in: IncidentPriorityCreate) -> IncidentPriority:

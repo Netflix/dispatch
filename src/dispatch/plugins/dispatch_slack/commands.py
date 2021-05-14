@@ -44,14 +44,15 @@ from .config import (
 
 from .decorators import slack_background_task
 
-from .modals import (
+from .modals.incident.handlers import (
     create_add_timeline_event_modal,
     create_report_incident_modal,
     create_update_incident_modal,
     create_update_notifications_group_modal,
     create_update_participant_modal,
-    create_run_workflow_modal,
 )
+
+from .modals.workflow.handlers import create_run_workflow_modal
 
 from .dialogs import (
     create_assign_role_dialog,
