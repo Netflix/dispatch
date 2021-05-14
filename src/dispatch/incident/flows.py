@@ -766,7 +766,23 @@ def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session
     for user_email in set(
         [incident.commander.individual.email, incident.reporter.individual.email]
     ):
-        incident_add_or_reactivate_participant_flow(user_email, incident.id, db_session=db_session)
+        # we add the participant to the tactical group
+        add_participant_to_tactical_group(user_email, incident, db_session)
+
+        # we add the participant to the conversation
+        add_participants_to_conversation([user_email], incident, db_session)
+
+        # we announce the participant in the conversation
+        send_incident_participant_announcement_message(user_email, incident, db_session)
+
+        # we send the welcome messages to the participant
+        send_incident_welcome_participant_messages(user_email, incident, db_session)
+
+        # we send a suggested reading message to the participant
+        suggested_document_items = get_suggested_document_items(incident, db_session)
+        send_incident_suggested_reading_messages(
+            incident, suggested_document_items, user_email, db_session
+        )
 
     # wait until all resources are created before adding suggested participants
     for individual, service_id in individual_participants:
