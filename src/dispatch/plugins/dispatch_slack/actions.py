@@ -150,11 +150,11 @@ def handle_engage_oncall_action(
     slack_client=None,
 ):
     """Adds and pages based on the oncall modal."""
-    oncall_service_id = action["submission"]["oncall_service_id"]
+    oncall_service_external_id = action["submission"]["oncall_service_external_id"]
     page = action["submission"]["page"]
 
     oncall_individual, oncall_service = incident_flows.incident_engage_oncall_flow(
-        user_email, incident_id, oncall_service_id, page=page, db_session=db_session
+        user_email, incident_id, oncall_service_external_id, page=page, db_session=db_session
     )
 
     if not oncall_individual and not oncall_service:

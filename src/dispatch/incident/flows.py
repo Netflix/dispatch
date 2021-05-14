@@ -1182,7 +1182,7 @@ def incident_assign_role_flow(
 
 @background_task
 def incident_engage_oncall_flow(
-    user_email: str, incident_id: int, oncall_service_id: str, page=None, db_session=None
+    user_email: str, incident_id: int, oncall_service_external_id: str, page=None, db_session=None
 ):
     """Runs the incident engage oncall flow."""
     # we load the incident instance
@@ -1190,7 +1190,9 @@ def incident_engage_oncall_flow(
 
     # we resolve the oncall service
     oncall_service = service_service.get_by_external_id_and_project_id(
-        db_session=db_session, external_id=oncall_service_id, project_id=incident.project.id
+        db_session=db_session,
+        external_id=oncall_service_external_id,
+        project_id=incident.project.id,
     )
 
     # we get the active oncall plugin
@@ -1208,11 +1210,11 @@ def incident_engage_oncall_flow(
         log.warning("Unable to engage the oncall. No oncall plugins enabled.")
         return None, None
 
-    oncall_email = oncall_plugin.instance.get(service_id=oncall_service_id)
+    oncall_email = oncall_plugin.instance.get(service_id=oncall_service_external_id)
 
     # we attempt to add the oncall to the incident
     participant = incident_add_or_reactivate_participant_flow(
-        oncall_email, incident.id, service_id=oncall_service_id, db_session=db_session
+        oncall_email, incident.id, service_id=oncall_service.id, db_session=db_session
     )
 
     if participant.individual.email != oncall_email:
@@ -1231,7 +1233,7 @@ def incident_engage_oncall_flow(
     if page == "Yes":
         # we page the oncall
         oncall_plugin.instance.page(
-            oncall_service_id, incident.name, incident.title, incident.description
+            oncall_service_external_id, incident.name, incident.title, incident.description
         )
 
         event_service.log(
