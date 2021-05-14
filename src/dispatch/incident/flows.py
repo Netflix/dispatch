@@ -1246,7 +1246,7 @@ def incident_add_or_reactivate_participant_flow(
     event: dict = None,
     db_session=None,
 ) -> Participant:
-    """Runs the incidnet add participant flow."""
+    """Runs the incident add or reactivate participant flow."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     if service_id:
