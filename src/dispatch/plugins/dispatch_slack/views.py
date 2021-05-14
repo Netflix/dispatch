@@ -22,7 +22,7 @@ from .actions import handle_slack_action
 from .commands import handle_slack_command
 from .config import SLACK_SIGNING_SECRET
 from .events import handle_slack_event, EventEnvelope
-from .modals import handle_slack_menu
+from .menus import handle_slack_menu
 
 
 router = APIRouter()

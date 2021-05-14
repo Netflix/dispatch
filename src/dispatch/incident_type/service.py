@@ -45,18 +45,22 @@ def get_by_slug(*, db_session, project_id: int, slug: str) -> Optional[IncidentT
     )
 
 
-def get_all(*, db_session, project_id: int) -> List[Optional[IncidentType]]:
+def get_all(*, db_session, project_id: int = None) -> List[Optional[IncidentType]]:
     """Returns all incident types."""
-    return db_session.query(IncidentType).filter(IncidentType.project_id == project_id)
+    if project_id:
+        return db_session.query(IncidentType).filter(IncidentType.project_id == project_id)
+    return db_session.query(IncidentType)
 
 
-def get_all_enabled(*, db_session, project_id: int) -> List[Optional[IncidentType]]:
+def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[IncidentType]]:
     """Returns all enabled incident types."""
-    return (
-        db_session.query(IncidentType)
-        .filter(IncidentType.project_id == project_id)
-        .filter(IncidentType.enabled == true())
-    )
+    if project_id:
+        return (
+            db_session.query(IncidentType)
+            .filter(IncidentType.project_id == project_id)
+            .filter(IncidentType.enabled == true())
+        )
+    return db_session.query(IncidentType).filter(IncidentType.enabled == true())
 
 
 def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
