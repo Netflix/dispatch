@@ -402,7 +402,7 @@ def list_participants(
     )
 
     for participant in participants:
-        if participant.is_active:
+        if participant.current_roles:
             participant_email = participant.individual.email
             participant_info = contact_plugin.instance.get(participant_email)
             participant_name = participant_info["fullname"]
