@@ -1229,11 +1229,11 @@ def incident_engage_oncall_flow(
     oncall_email = oncall_plugin.instance.get(service_id=oncall_service_external_id)
 
     # we attempt to add the oncall to the incident
-    participant = incident_add_or_reactivate_participant_flow(
+    oncall_participant_added = incident_add_or_reactivate_participant_flow(
         oncall_email, incident.id, service_id=oncall_service.id, db_session=db_session
     )
 
-    if participant.individual.email != oncall_email:
+    if not oncall_participant_added:
         # we already have the oncall for the service in the incident
         return None, oncall_service
 
@@ -1259,7 +1259,7 @@ def incident_engage_oncall_flow(
             incident_id=incident.id,
         )
 
-    return participant.individual, oncall_service
+    return oncall_participant_added.individual, oncall_service
 
 
 @background_task
@@ -1282,7 +1282,7 @@ def incident_add_or_reactivate_participant_flow(
         )
         if participant:
             log.debug("Skipping resolved participant, service member already engaged.")
-            return participant
+            return
 
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident.id, email=user_email
