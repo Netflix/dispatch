@@ -166,7 +166,7 @@ def handle_engage_oncall_action(
         )
 
     if oncall_individual and oncall_service:
-        message = f"You have successfully engaged {oncall_individual.name} from oncall rotation {oncall_service.name}."
+        message = f"You have successfully engaged {oncall_individual.name} from the {oncall_service.name} oncall rotation."
 
     dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
 
