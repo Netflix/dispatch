@@ -1279,6 +1279,8 @@ def incident_add_or_reactivate_participant_flow(
         if not participant.current_roles:
             # we reactivate the participant
             participant_flows.reactivate_participant(user_email, incident, db_session)
+        else:
+            return participant
 
     # we add the participant to the tactical group
     add_participant_to_tactical_group(user_email, incident, db_session)
