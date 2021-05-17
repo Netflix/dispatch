@@ -9,7 +9,6 @@ from dispatch.incident_priority.models import IncidentPriority
 from dispatch.incident_type import service as incident_type_service
 from dispatch.incident_type.models import IncidentType
 from dispatch.tag.models import Tag
-from dispatch.participant.models import Participant, ParticipantUpdate
 from dispatch.project import service as project_service
 
 from .enums import (
