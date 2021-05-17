@@ -1,6 +1,7 @@
 import logging
 from typing import List
 from sqlalchemy.orm import Session
+from dispatch.incident.enums import IncidentStatus
 
 from dispatch.incident.models import Incident
 from dispatch.incident_priority import service as incident_priority_service
@@ -22,6 +23,27 @@ def option_from_template(text: str, value: str):
     return {"text": {"type": "plain_text", "text": str(text), "emoji": True}, "value": str(value)}
 
 
+def status_select_block(initial_option: str = None):
+    """Builds a incident status select block"""
+    status_options = [option_from_template(text=x.value, value=x.value) for x in IncidentStatus]
+    block = {
+        "block_id": IncidentBlockId.status,
+        "type": "input",
+        "label": {"type": "plain_text", "text": "Status"},
+        "element": {
+            "type": "static_select",
+            "placeholder": {"type": "plain_text", "text": "Select Type"},
+            "options": status_options,
+        },
+    }
+    if initial_option:
+        block["element"].update(
+            {"initial_option": option_from_template(text=initial_option, value=initial_option)}
+        )
+
+    return block
+
+
 def incident_type_select_block(
     db_session: Session, initial_option: IncidentType = None, project_id: int = None
 ):
@@ -31,7 +53,7 @@ def incident_type_select_block(
         db_session=db_session, project_id=project_id
     ):
         incident_type_options.append(
-            option_from_template(text=incident_type.name, value=incident_type.id)
+            option_from_template(text=incident_type.name, value=incident_type.name)
         )
     block = {
         "block_id": IncidentBlockId.type,
@@ -48,7 +70,7 @@ def incident_type_select_block(
         block["element"].update(
             {
                 "initial_option": option_from_template(
-                    text=initial_option.name, value=initial_option.id
+                    text=initial_option.name, value=initial_option.name
                 )
             }
         )
@@ -65,7 +87,7 @@ def incident_priority_select_block(
         db_session=db_session, project_id=project_id
     ):
         incident_priority_options.append(
-            option_from_template(text=incident_priority.name, value=incident_priority.id)
+            option_from_template(text=incident_priority.name, value=incident_priority.name)
         )
 
     block = {
@@ -83,7 +105,7 @@ def incident_priority_select_block(
         block["element"].update(
             {
                 "initial_option": option_from_template(
-                    text=initial_option.name, value=initial_option.id
+                    text=initial_option.name, value=initial_option.name
                 )
             }
         )
@@ -91,13 +113,13 @@ def incident_priority_select_block(
     return block
 
 
-def project_select_block(db_session: Session):
+def project_select_block(db_session: Session, initial_option: dict = None):
     """Builds incident project select block."""
     project_options = []
     for project in project_service.get_all(db_session=db_session):
-        project_options.append(option_from_template(text=project.name, value=project.id))
+        project_options.append(option_from_template(text=project.name, value=project.name))
 
-    return {
+    block = {
         "block_id": IncidentBlockId.project,
         "type": "input",
         "label": {
@@ -113,6 +135,16 @@ def project_select_block(db_session: Session):
         },
     }
 
+    if initial_option:
+        block["element"].update(
+            {
+                "initial_option": option_from_template(
+                    text=initial_option.name, value=initial_option.name
+                )
+            }
+        )
+    return block
+
 
 def tag_multi_select_block(
     initial_options: List[Tag] = None,
@@ -121,8 +153,10 @@ def tag_multi_select_block(
     block = {
         "block_id": IncidentBlockId.tags,
         "type": "input",
+        "optional": True,
         "label": {"type": "plain_text", "text": "Tags"},
         "element": {
+            "action_id": IncidentBlockId.tags,
             "type": "multi_external_select",
             "placeholder": {"type": "plain_text", "text": "Select related tags"},
             "min_query_length": 3,

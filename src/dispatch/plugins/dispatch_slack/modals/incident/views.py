@@ -4,6 +4,7 @@ from dispatch.database.core import SessionLocal
 from dispatch.incident.models import Incident
 from dispatch.incident import service as incident_service
 from dispatch.participant.models import Participant
+from dispatch.project import service as project_service
 
 from dispatch.plugin import service as plugin_service
 
@@ -19,17 +20,19 @@ from .enums import (
     AddTimelineEventBlockId,
 )
 from .fields import (
+    option_from_template,
     title_input_block,
     description_input_block,
     project_select_block,
     participants_select_block,
+    status_select_block,
     incident_priority_select_block,
     incident_type_select_block,
     tag_multi_select_block,
 )
 
 
-def update_incident(db_session: SessionLocal, channel_id: str, project_id: int = None):
+def update_incident(db_session: SessionLocal, channel_id: str, incident_id: int = None):
     """Builds all blocks required for the reporting incident modal."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
@@ -48,13 +51,16 @@ def update_incident(db_session: SessionLocal, channel_id: str, project_id: int =
             },
             title_input_block(initial_value=incident.title),
             description_input_block(initial_value=incident.description),
+            status_select_block(initial_option=incident.status),
             incident_type_select_block(
-                db_session=db_session, initial_option=incident.incident_type, project_id=project_id
+                db_session=db_session,
+                initial_option=incident.incident_type,
+                project_id=incident.project.id,
             ),
             incident_priority_select_block(
                 db_session=db_session,
                 initial_option=incident.incident_priority,
-                project_id=project_id,
+                project_id=incident.project.id,
             ),
             tag_multi_select_block(initial_options=incident.tags),
         ],
@@ -67,8 +73,15 @@ def update_incident(db_session: SessionLocal, channel_id: str, project_id: int =
     return modal_template
 
 
-def report_incident(db_session: SessionLocal, channel_id: str, project_id: int = None):
+def report_incident(
+    db_session: SessionLocal,
+    channel_id: str,
+    project_name: str = None,
+    title: str = None,
+    description: str = None,
+):
     """Builds all blocks required for the reporting incident modal."""
+    project = project_service.get_by_name(db_session=db_session, name=project_name)
     modal_template = {
         "type": "modal",
         "title": {"type": "plain_text", "text": "Incident Report"},
@@ -83,22 +96,22 @@ def report_incident(db_session: SessionLocal, channel_id: str, project_id: int =
                     }
                 ],
             },
-            title_input_block(),
-            description_input_block(),
-            project_select_block(db_session=db_session),
+            title_input_block(initial_value=title),
+            description_input_block(initial_value=description),
+            project_select_block(db_session=db_session, initial_option=project),
         ],
         "close": {"type": "plain_text", "text": "Cancel"},
         "submit": {"type": "plain_text", "text": "Submit"},
-        "callback_id": ReportIncidentCallbackId.submit_form,
+        "callback_id": ReportIncidentCallbackId.update_view,
         "private_metadata": json.dumps({"channel_id": str(channel_id)}),
     }
 
     # switch from update to submit when we have a project
-    if project_id:
-        modal_template["callback_id"] = ReportIncidentCallbackId.update_view
+    if project:
+        modal_template["callback_id"] = ReportIncidentCallbackId.submit_form
         modal_template["blocks"] += [
-            incident_type_select_block(db_session=db_session, project_id=project_id),
-            incident_priority_select_block(db_session=db_session, project_id=project_id),
+            incident_type_select_block(db_session=db_session, project_id=project.id),
+            incident_priority_select_block(db_session=db_session, project_id=project.id),
             tag_multi_select_block(),
         ]
 
