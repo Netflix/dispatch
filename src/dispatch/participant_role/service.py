@@ -26,7 +26,7 @@ def get_last_active_role(
     participant_id: int,
 ) -> Optional[ParticipantRole]:
     """
-    Returns the last active participant role.
+    Returns the participant's last active role.
     """
     return (
         db_session.query(ParticipantRole)
