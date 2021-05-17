@@ -1,10 +1,10 @@
+from os import initgroups
 import pytz
 from datetime import datetime
 from dispatch.database.core import SessionLocal
 from dispatch.incident import service as incident_service
-from dispatch.incident.enums import IncidentStatus
 from dispatch.incident import flows as incident_flows
-from dispatch.incident.models import IncidentUpdate, IncidentRead
+from dispatch.incident.models import IncidentUpdate, IncidentRead, IncidentCreate
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.plugin import service as plugin_service
@@ -37,52 +37,19 @@ from .views import (
 
 
 @slack_background_task
-def report_incident_from_submitted_form(
+def create_report_incident_modal(
     user_id: str,
     user_email: str,
     channel_id: str,
     incident_id: int,
-    action: dict,
-    db_session: SessionLocal = None,
+    command: dict = None,
+    db_session=None,
     slack_client=None,
 ):
-    submitted_form = action.get("view")
-    parsed_form_data = parse_submitted_form(submitted_form)
-
-    requested_form_title = parsed_form_data.get(IncidentBlockId.title)
-    requested_form_description = parsed_form_data.get(IncidentBlockId.description)
-    requested_form_incident_type = parsed_form_data.get(IncidentBlockId.type)
-    requested_form_incident_priority = parsed_form_data.get(IncidentBlockId.priority)
-
-    # Send a confirmation to the user
-    blocks = create_incident_reported_confirmation_message(
-        title=requested_form_title,
-        description=requested_form_description,
-        incident_type=requested_form_incident_type.get("value"),
-        incident_priority=requested_form_incident_priority.get("value"),
-    )
-
-    send_ephemeral_message(
-        client=slack_client,
-        conversation_id=channel_id,
-        user_id=user_id,
-        text="",
-        blocks=blocks,
-    )
-
-    # Create the incident
-    incident = incident_service.create(
-        db_session=db_session,
-        title=requested_form_title,
-        status=IncidentStatus.active,
-        description=requested_form_description,
-        incident_type=requested_form_incident_type,
-        incident_priority=requested_form_incident_priority,
-        reporter_email=user_email,
-        tags=[],  # The modal does not currently support tags
-    )
-
-    incident_flows.incident_create_flow(incident_id=incident.id)
+    """Creates a modal for reporting an incident."""
+    trigger_id = command.get("trigger_id")
+    modal_create_template = report_incident(channel_id=channel_id, db_session=db_session)
+    open_modal_with_user(client=slack_client, trigger_id=trigger_id, modal=modal_create_template)
 
 
 @slack_background_task
@@ -97,10 +64,17 @@ def update_report_incident_modal(
 ):
     """Creates a modal for reporting an incident."""
     trigger_id = action["trigger_id"]
-    project_id = action["actions"][0]["selected_option"]["value"]
 
+    submitted_form = action.get("view")
+    parsed_form_data = parse_submitted_form(submitted_form)
+
+    # we must pass existing values if they exist
     modal_update_template = report_incident(
-        db_session=db_session, channel_id=channel_id, project_id=int(project_id)
+        db_session=db_session,
+        channel_id=channel_id,
+        title=parsed_form_data[IncidentBlockId.title],
+        description=parsed_form_data[IncidentBlockId.description],
+        project_name=parsed_form_data[IncidentBlockId.project]["value"],
     )
 
     update_modal_with_user(
@@ -112,21 +86,53 @@ def update_report_incident_modal(
 
 
 @slack_background_task
-def create_report_incident_modal(
+def report_incident_from_submitted_form(
     user_id: str,
     user_email: str,
     channel_id: str,
     incident_id: int,
-    command: dict = None,
-    db_session=None,
+    action: dict,
+    db_session: SessionLocal = None,
     slack_client=None,
 ):
-    """Creates a modal for reporting an incident."""
-    trigger_id = command.get("trigger_id")
+    submitted_form = action.get("view")
+    parsed_form_data = parse_submitted_form(submitted_form)
 
-    modal_create_template = report_incident(channel_id=channel_id, db_session=db_session)
+    # Send a confirmation to the user
+    blocks = create_incident_reported_confirmation_message(
+        title=parsed_form_data[IncidentBlockId.title],
+        description=parsed_form_data[IncidentBlockId.description],
+        incident_type=parsed_form_data[IncidentBlockId.type]["value"],
+        incident_priority=parsed_form_data[IncidentBlockId.priority]["value"],
+    )
 
-    open_modal_with_user(client=slack_client, trigger_id=trigger_id, modal=modal_create_template)
+    send_ephemeral_message(
+        client=slack_client,
+        conversation_id=channel_id,
+        user_id=user_id,
+        text="",
+        blocks=blocks,
+    )
+
+    tags = []
+    for t in parsed_form_data.get(IncidentBlockId.tags, []):
+        tags.append({"id": t["value"]})
+
+    incident_in = IncidentCreate(
+        title=parsed_form_data[IncidentBlockId.title],
+        description=parsed_form_data[IncidentBlockId.description],
+        incident_type={"name": parsed_form_data[IncidentBlockId.type]["value"]},
+        incident_priority={"name": parsed_form_data[IncidentBlockId.priority]["value"]},
+        project={"name": parsed_form_data[IncidentBlockId.project]["value"]},
+        tags=tags,
+    )
+
+    # Create the incident
+    incident = incident_service.create(
+        db_session=db_session, reporter_email=user_email, **incident_in.dict()
+    )
+
+    incident_flows.incident_create_flow(incident_id=incident.id)
 
 
 @slack_background_task
@@ -222,15 +228,15 @@ def update_incident_from_submitted_form(
     parsed_form_data = parse_submitted_form(submitted_form)
 
     tags = []
-    for t in parsed_form_data.get("update_incident_tags", []):
+    for t in parsed_form_data.get(IncidentBlockId.tags, []):
         tags.append({"id": t["value"]})
 
     incident_in = IncidentUpdate(
-        title=parsed_form_data.get("update_incident_title"),
-        description=parsed_form_data.get("update_incident_description"),
-        incident_type={"name": parsed_form_data.get("update_incident_type")["value"]},
-        incident_priority={"name": parsed_form_data.get("update_incident_priority")["value"]},
-        status=parsed_form_data.get("update_incident_status")["value"],
+        title=parsed_form_data[IncidentBlockId.title],
+        description=parsed_form_data[IncidentBlockId.description],
+        incident_type={"name": parsed_form_data[IncidentBlockId.type]["value"]},
+        incident_priority={"name": parsed_form_data[IncidentBlockId.priority]["value"]},
+        status=parsed_form_data[IncidentBlockId.status]["value"],
         tags=tags,
     )
 

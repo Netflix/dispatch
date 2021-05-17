@@ -9,12 +9,9 @@ from dispatch.database.core import SessionLocal
 from dispatch.database.service import search_filter_sort_paginate
 from dispatch.incident import service as incident_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.plugins.dispatch_slack.modals.incident.enums import IncidentBlockId
 
 log = logging.getLogger(__name__)
-
-
-class Menus(str, Enum):
-    tags = "tags_menu"
 
 
 async def handle_slack_menu(*, db_session: SessionLocal, client: WebClient, request: Request):
@@ -40,7 +37,7 @@ async def handle_slack_menu(*, db_session: SessionLocal, client: WebClient, requ
 
 def menu_functions(action_id: str):
     """Handles all menu requests."""
-    menu_mappings = {Menus.tags: get_tags}
+    menu_mappings = {IncidentBlockId.tags: get_tags}
 
     for key in menu_mappings.keys():
         if key in action_id:

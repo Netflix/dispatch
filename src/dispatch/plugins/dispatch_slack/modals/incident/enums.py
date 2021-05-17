@@ -9,6 +9,7 @@ class IncidentBlockId(str, Enum):
     priority = "incident_priority_field"
     tags = "tags_select_field"
     project = "project_field"
+    status = "status_field"
 
 
 # report incident
