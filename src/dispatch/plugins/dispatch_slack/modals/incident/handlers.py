@@ -1,4 +1,3 @@
-from os import initgroups
 import pytz
 from datetime import datetime
 from dispatch.database.core import SessionLocal
@@ -36,6 +35,7 @@ from .views import (
 )
 
 
+# report incident
 @slack_background_task
 def create_report_incident_modal(
     user_id: str,
@@ -135,69 +135,7 @@ def report_incident_from_submitted_form(
     incident_flows.incident_create_flow(incident_id=incident.id)
 
 
-@slack_background_task
-def update_participant_from_submitted_form(
-    user_id: str,
-    user_email: str,
-    channel_id: str,
-    incident_id: int,
-    action: dict,
-    db_session=None,
-    slack_client=None,
-):
-    """Saves form data."""
-    submitted_form = action.get("view")
-
-    parsed_form_data = parse_submitted_form(submitted_form)
-
-    added_reason = parsed_form_data.get(UpdateParticipantBlockId.reason_added)
-    participant_id = int(parsed_form_data.get(UpdateParticipantBlockId.participant)["value"])
-    selected_participant = participant_service.get(
-        db_session=db_session, participant_id=participant_id
-    )
-    participant_service.update(
-        db_session=db_session,
-        participant=selected_participant,
-        participant_in=ParticipantUpdate(added_reason=added_reason),
-    )
-
-    send_ephemeral_message(
-        client=slack_client,
-        conversation_id=channel_id,
-        user_id=user_id,
-        text="You have successfully updated the participant.",
-    )
-
-
-@slack_background_task
-def update_update_participant_modal(
-    user_id: str,
-    user_email: str,
-    channel_id: str,
-    incident_id: int,
-    action: dict,
-    db_session=None,
-    slack_client=None,
-):
-    """Pushes an updated view to the update participant modal."""
-    trigger_id = action["trigger_id"]
-    participant_id = action["actions"][0]["selected_option"]["value"]
-
-    selected_participant = participant_service.get(
-        db_session=db_session, participant_id=participant_id
-    )
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
-    modal_update_template = update_participant(incident=incident, participant=selected_participant)
-
-    update_modal_with_user(
-        client=slack_client,
-        trigger_id=trigger_id,
-        view_id=action["view"]["id"],
-        modal=modal_update_template,
-    )
-
-
+# update incident
 @slack_background_task
 def create_update_incident_modal(
     user_id: str,
@@ -250,6 +188,7 @@ def update_incident_from_submitted_form(
     )
 
 
+# update participant
 @slack_background_task
 def create_update_participant_modal(
     user_id: str,
@@ -262,14 +201,78 @@ def create_update_participant_modal(
 ):
     """Creates a modal for updating a participant."""
     trigger_id = command["trigger_id"]
-
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
     modal_create_template = update_participant(incident=incident)
-
     open_modal_with_user(client=slack_client, trigger_id=trigger_id, modal=modal_create_template)
 
 
+@slack_background_task
+def update_update_participant_modal(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    action: dict,
+    db_session=None,
+    slack_client=None,
+):
+    """Pushes an updated view to the update participant modal."""
+    trigger_id = action["trigger_id"]
+
+    submitted_form = action.get("view")
+    parsed_form_data = parse_submitted_form(submitted_form)
+
+    participant_id = parsed_form_data[UpdateParticipantBlockId.participant]["value"]
+
+    selected_participant = participant_service.get(
+        db_session=db_session, participant_id=participant_id
+    )
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    modal_update_template = update_participant(incident=incident, participant=selected_participant)
+
+    update_modal_with_user(
+        client=slack_client,
+        trigger_id=trigger_id,
+        view_id=action["view"]["id"],
+        modal=modal_update_template,
+    )
+
+
+@slack_background_task
+def update_participant_from_submitted_form(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    action: dict,
+    db_session=None,
+    slack_client=None,
+):
+    """Saves form data."""
+    submitted_form = action.get("view")
+
+    parsed_form_data = parse_submitted_form(submitted_form)
+
+    added_reason = parsed_form_data.get(UpdateParticipantBlockId.reason_added)
+    participant_id = int(parsed_form_data.get(UpdateParticipantBlockId.participant)["value"])
+    selected_participant = participant_service.get(
+        db_session=db_session, participant_id=participant_id
+    )
+    participant_service.update(
+        db_session=db_session,
+        participant=selected_participant,
+        participant_in=ParticipantUpdate(added_reason=added_reason),
+    )
+
+    send_ephemeral_message(
+        client=slack_client,
+        conversation_id=channel_id,
+        user_id=user_id,
+        text="You have successfully updated the participant.",
+    )
+
+
+# update notification group
 @slack_background_task
 def create_update_notifications_group_modal(
     user_id: str,
@@ -333,6 +336,7 @@ def update_notifications_group_from_submitted_form(
     )
 
 
+# add event
 @slack_background_task
 def create_add_timeline_event_modal(
     user_id: str,
@@ -345,11 +349,8 @@ def create_add_timeline_event_modal(
 ):
     """Creates a modal for adding events to the incident timeline."""
     trigger_id = command["trigger_id"]
-
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-
     modal_create_template = add_timeline_event(incident=incident)
-
     open_modal_with_user(client=slack_client, trigger_id=trigger_id, modal=modal_create_template)
 
 
