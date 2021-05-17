@@ -11,6 +11,7 @@ from collections import defaultdict
 from datetime import datetime
 
 from dispatch.database.core import SessionLocal
+from dispatch.incident.enums import IncidentStatus
 from dispatch.messaging.strings import (
     INCIDENT_TASK_REMINDER,
     INCIDENT_TASK_NEW_NOTIFICATION,
@@ -133,6 +134,10 @@ def create_or_update_task(
                         db_session,
                     )
     else:
+        # we don't attempt to create new tasks if the incident is currently closed
+        if incident.status == IncidentStatus.closed.value:
+            return
+
         task = task_service.create(
             db_session=db_session,
             task_in=TaskCreate(**task, incident=incident),
