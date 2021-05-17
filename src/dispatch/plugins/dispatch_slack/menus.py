@@ -1,6 +1,5 @@
 import json
 import logging
-from enum import Enum
 
 from starlette.requests import Request
 from slack_sdk.web.client import WebClient
