@@ -162,7 +162,7 @@ def handle_engage_oncall_action(
 
     if not oncall_individual and oncall_service:
         message = (
-            f"The oncall for the {oncall_service.name} rotation is already in the conversation."
+            f"A member of {oncall_service.name} is already in the conversation."
         )
 
     if oncall_individual and oncall_service:
