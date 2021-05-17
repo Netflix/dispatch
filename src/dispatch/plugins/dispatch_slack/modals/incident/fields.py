@@ -9,10 +9,15 @@ from dispatch.incident_priority.models import IncidentPriority
 from dispatch.incident_type import service as incident_type_service
 from dispatch.incident_type.models import IncidentType
 from dispatch.tag.models import Tag
-from dispatch.participant.models import Participant
+from dispatch.participant.models import Participant, ParticipantUpdate
 from dispatch.project import service as project_service
 
-from .enums import IncidentBlockId, ReportIncidentCallbackId, UpdateParticipantBlockId
+from .enums import (
+    IncidentBlockId,
+    ReportIncidentCallbackId,
+    UpdateParticipantBlockId,
+    UpdateParticipantCallbackId,
+)
 
 
 log = logging.getLogger(__name__)
@@ -122,11 +127,11 @@ def project_select_block(db_session: Session, initial_option: dict = None):
     block = {
         "block_id": IncidentBlockId.project,
         "type": "input",
+        "dispatch_action": True,
         "label": {
             "text": "Project",
             "type": "plain_text",
         },
-        "dispatch_action": True,
         "element": {
             "type": "static_select",
             "placeholder": {"type": "plain_text", "text": "Select Project"},
@@ -219,47 +224,32 @@ def description_input_block(initial_value: str = None):
     return block
 
 
-def participants_select_block(incident: Incident, participant: Participant = None):
+def participants_select_block(incident: Incident, initial_option: Participant = None):
     """Builds a static select with all current participants."""
-    selected_option = None
     participant_options = []
     for p in incident.participants:
-        current_option = {
-            "text": {"type": "plain_text", "text": p.individual.name},
-            "value": str(p.id),
-        }
+        participant_options.append(option_from_template(text=p.individual.name, value=p.id))
 
-        participant_options.append(current_option)
+    block = {
+        "block_id": UpdateParticipantBlockId.participant,
+        "type": "input",
+        "dispatch_action": True,
+        "label": {"type": "plain_text", "text": "Participant"},
+        "element": {
+            "type": "static_select",
+            "placeholder": {"type": "plain_text", "text": "Select Participant"},
+            "options": participant_options,
+            "action_id": UpdateParticipantCallbackId.update_view,
+        },
+    }
 
-        if participant:
-            if p.id == participant.id:
-                selected_option = current_option
+    if initial_option:
+        block["element"].update(
+            {
+                "initial_option": option_from_template(
+                    text=initial_option.individual.name, value=initial_option.id
+                )
+            }
+        )
 
-    if participant:
-        select_block = {
-            "block_id": UpdateParticipantBlockId.participant,
-            "type": "input",
-            "element": {
-                "type": "static_select",
-                "placeholder": {"type": "plain_text", "text": "Select Participant"},
-                "options": participant_options,
-                "initial_option": selected_option,
-                "action_id": UpdateParticipantBlockId.participant,
-            },
-            "label": {"type": "plain_text", "text": "Participant"},
-        }
-
-    else:
-        select_block = {
-            "block_id": UpdateParticipantBlockId.participant,
-            "type": "actions",
-            "elements": [
-                {
-                    "type": "static_select",
-                    "placeholder": {"type": "plain_text", "text": "Select Participant"},
-                    "options": participant_options,
-                }
-            ],
-        }
-
-    return select_block
+    return block

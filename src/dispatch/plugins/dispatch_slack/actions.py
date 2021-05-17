@@ -169,8 +169,6 @@ def handle_block_action(action: dict, background_tasks: BackgroundTasks):
     channel_id = view_data["private_metadata"].get("channel_id")
     action_id = action["actions"][0]["action_id"]
 
-    print(json.dumps(action["actions"]))
-
     user_id = action["user"]["id"]
     user_email = action["user"]["email"]
 

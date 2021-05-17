@@ -133,6 +133,7 @@ def update_participant(incident: Incident, participant: Participant = None):
                     }
                 ],
             },
+            participants_select_block(incident=incident, initial_option=participant),
         ],
         "close": {"type": "plain_text", "text": "Cancel"},
         "submit": {"type": "plain_text", "text": "Submit"},
@@ -141,9 +142,6 @@ def update_participant(incident: Incident, participant: Participant = None):
             {"incident_id": str(incident.id), "channel_id": str(incident.conversation.channel_id)}
         ),
     }
-
-    select_block = participants_select_block(incident=incident, participant=participant)
-    modal_template["blocks"].append(select_block)
 
     # we need to show the reason if we're updating
     if participant:
