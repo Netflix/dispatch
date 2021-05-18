@@ -111,9 +111,9 @@ def check_command_restrictions(
     )
 
     # if any required role is active, allow command
-    for current_role in participant.current_roles:
+    for active_role in participant.active_roles:
         for allowed_role in command_permissons[command]:
-            if current_role.role == allowed_role:
+            if active_role.role == allowed_role:
                 return True
 
 
@@ -402,7 +402,7 @@ def list_participants(
     )
 
     for participant in participants:
-        if participant.current_roles:
+        if participant.active_roles:
             participant_email = participant.individual.email
             participant_info = contact_plugin.instance.get(participant_email)
             participant_name = participant_info["fullname"]

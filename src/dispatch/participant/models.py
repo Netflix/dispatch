@@ -46,7 +46,7 @@ class Participant(Base):
     owned_tasks = relationship("Task", backref="owner", primaryjoin="Participant.id==Task.owner_id")
 
     @hybrid_property
-    def current_roles(self):
+    def active_roles(self):
         roles = []
         if self.participant_roles:
             for pr in self.participant_roles:
@@ -54,8 +54,8 @@ class Participant(Base):
                     roles.append(pr)
         return roles
 
-    @current_roles.expression
-    def current_roles(cls):
+    @active_roles.expression
+    def active_roles(cls):
         return (
             select([Participant])
             .where(Participant.incident_id == cls.id)

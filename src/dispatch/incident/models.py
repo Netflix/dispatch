@@ -88,8 +88,8 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
 
     @hybrid_property
     def commander(self):
+        commander = None
         if self.participants:
-            commander = None
             most_recent_assumed_at = self.created_at
             for p in self.participants:
                 for pr in p.participant_roles:
@@ -97,7 +97,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
                         if pr.assumed_at > most_recent_assumed_at:
                             most_recent_assumed_at = pr.assumed_at
                             commander = p
-            return commander
+        return commander
 
     @commander.expression
     def commander(cls):
@@ -111,8 +111,8 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
 
     @hybrid_property
     def reporter(self):
+        reporter = None
         if self.participants:
-            reporter = None
             most_recent_assumed_at = self.created_at
             for p in self.participants:
                 for pr in p.participant_roles:
@@ -120,7 +120,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
                         if pr.assumed_at > most_recent_assumed_at:
                             most_recent_assumed_at = pr.assumed_at
                             reporter = p
-            return reporter
+        return reporter
 
     @reporter.expression
     def reporter(cls):
