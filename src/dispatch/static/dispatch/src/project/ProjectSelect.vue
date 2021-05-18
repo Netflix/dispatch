@@ -65,16 +65,6 @@ export default {
       descending: [false],
     }
 
-    if (this.project) {
-      filterOptions = {
-        ...filterOptions,
-        filters: {
-          project: [this.project],
-        },
-      }
-      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
-    }
-
     ProjectApi.getAll(filterOptions).then((response) => {
       this.items = response.data.items
       this.loading = false
