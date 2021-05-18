@@ -1,5 +1,6 @@
 import json
 import logging
+from urllib import parse
 
 from starlette.requests import Request
 from slack_sdk.web.client import WebClient
@@ -8,6 +9,7 @@ from dispatch.database.core import SessionLocal
 from dispatch.database.service import search_filter_sort_paginate
 from dispatch.incident import service as incident_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.plugins.dispatch_slack.modals.common import parse_submitted_form
 from dispatch.plugins.dispatch_slack.modals.incident.enums import IncidentBlockId
 
 log = logging.getLogger(__name__)
@@ -64,15 +66,24 @@ def get_tags(
             "and": [{"model": "Project", "op": "==", "field": "id", "value": incident.project.id}]
         }
 
-    # look for project data
+    submitted_form = request.get("view")
+    parsed_form_data = parse_submitted_form(submitted_form)
+    project = parsed_form_data.get(IncidentBlockId.project)
+
+    if project:
+        filter_spec = {
+            "and": [{"model": "Project", "op": "==", "field": "name", "value": project["value"]}]
+        }
 
     # attempt to filter by tag type
     if "/" in query_str:
         tag_type, tag_name = query_str.split("/")
+        type_filter = {"model": "TagType", "op": "==", "field": "name", "value": tag_type}
 
-        filter_spec["and"].append(
-            {"model": "TagType", "op": "==", "field": "name", "value": tag_type}
-        )
+        if filter_spec.get("and"):
+            filter_spec["and"].append(type_filter)
+        else:
+            filter_spec = {"and": [type_filter]}
 
         if not len(tag_name):
             query_str = None
