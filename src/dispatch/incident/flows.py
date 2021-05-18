@@ -1266,7 +1266,7 @@ def incident_engage_oncall_flow(
 def incident_add_or_reactivate_participant_flow(
     user_email: str,
     incident_id: int,
-    service_id: int = None,
+    service_id: int = 0,
     role: ParticipantRoleType = None,
     event: dict = None,
     db_session=None,
@@ -1280,6 +1280,7 @@ def incident_add_or_reactivate_participant_flow(
         participant = participant_service.get_by_incident_id_and_service_id(
             incident_id=incident_id, service_id=service_id, db_session=db_session
         )
+
         if participant:
             log.debug("Skipping resolved participant, service member already engaged.")
             return
