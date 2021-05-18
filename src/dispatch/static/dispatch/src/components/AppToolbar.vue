@@ -42,17 +42,34 @@
         </template>
         <span>Fullscreen</span>
       </v-tooltip>
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
+      <v-menu bottom left transition="scale-transition" origin="top right">
+        <template v-slot:activator="{ on, attrs }">
           <v-btn icon large text v-on="on">
             <v-avatar size="30px">
-              <img v-if="userAvatarUrl" :src="userAvatarUrl()" :alt="currentUser().fullName" />
-              <v-icon v-else> account_circle </v-icon>
+              <v-icon> account_circle </v-icon>
             </v-avatar>
           </v-btn>
         </template>
-        <span>{{ currentUser().email }}</span>
-      </v-tooltip>
+        <v-card width="300">
+          <v-list>
+            <v-list-item class="px-2">
+              <v-list-item-content>
+                <v-list-item-avatar>
+                  <v-icon> account_circle </v-icon>
+                </v-list-item-avatar>
+                <v-list-item-title class="title"> Kevin Glisson </v-list-item-title>
+                <v-list-item-subtitle> {{ currentUser().email }} </v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+
+            <v-divider></v-divider>
+
+            <v-list-item v-for="(item, i) in items" :key="i" link>
+              <v-list-item-title>{{ item.title }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-card>
+      </v-menu>
       <!--
         <v-menu offset-y origin="center center" class="elelvation-1" :nudge-bottom="14" transition="scale-transition">
         <v-btn icon text slot="activator">
@@ -74,6 +91,14 @@ import Util from "@/util"
 
 export default {
   name: "AppToolbar",
+  data: () => ({
+    items: [
+      { title: "Click Me" },
+      { title: "Click Me" },
+      { title: "Click Me" },
+      { title: "Click Me 2" },
+    ],
+  }),
   components: {},
   computed: {
     queryString: {
