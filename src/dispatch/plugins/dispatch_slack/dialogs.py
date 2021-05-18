@@ -100,7 +100,7 @@ def create_engage_oncall_dialog(
             {
                 "label": "Oncall Service",
                 "type": "select",
-                "name": "oncall_service_id",
+                "name": "oncall_service_external_id",
                 "options": oncall_service_options,
             },
             {

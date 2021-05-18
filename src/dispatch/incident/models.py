@@ -88,15 +88,16 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
 
     @hybrid_property
     def commander(self):
+        commander = None
         if self.participants:
+            most_recent_assumed_at = self.created_at
             for p in self.participants:
                 for pr in p.participant_roles:
-                    if (
-                        pr.role == ParticipantRoleType.incident_commander.value
-                        and pr.renounced_at  # noqa
-                        is None  # Column renounced_at will be null for the current incident commander
-                    ):
-                        return p
+                    if pr.role == ParticipantRoleType.incident_commander.value:
+                        if pr.assumed_at > most_recent_assumed_at:
+                            most_recent_assumed_at = pr.assumed_at
+                            commander = p
+        return commander
 
     @commander.expression
     def commander(cls):
@@ -104,20 +105,22 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
             select([Participant])
             .where(Participant.incident_id == cls.id)
             .where(ParticipantRole.role == ParticipantRoleType.incident_commander.value)
-            .where(ParticipantRole.renounced_at == None)  # noqa
+            .order_by(ParticipantRole.assumed_at.desc())
+            .first()
         )
 
     @hybrid_property
     def reporter(self):
+        reporter = None
         if self.participants:
+            most_recent_assumed_at = self.created_at
             for p in self.participants:
                 for pr in p.participant_roles:
-                    if (
-                        pr.role == ParticipantRoleType.reporter.value
-                        and pr.renounced_at  # noqa
-                        is None  # Column renounced_at will be null for the current reporter
-                    ):
-                        return p
+                    if pr.role == ParticipantRoleType.reporter.value:
+                        if pr.assumed_at > most_recent_assumed_at:
+                            most_recent_assumed_at = pr.assumed_at
+                            reporter = p
+        return reporter
 
     @reporter.expression
     def reporter(cls):
@@ -125,7 +128,8 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
             select([Participant])
             .where(Participant.incident_id == cls.id)
             .where(ParticipantRole.role == ParticipantRoleType.reporter.value)
-            .where(ParticipantRole.renounced_at == None)  # noqa
+            .order_by(ParticipantRole.assumed_at.desc())
+            .first()
         )
 
     @hybrid_property

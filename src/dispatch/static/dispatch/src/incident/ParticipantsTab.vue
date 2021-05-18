@@ -5,7 +5,9 @@
         <v-list-item :href="participant.individual.weblink" target="_blank">
           <v-list-item-content>
             <v-list-item-title>
-              {{ participant.individual.name }} ({{ participant.participant_roles | activeRoles }})
+              {{ participant.individual.name }} ({{
+                participant.participant_roles | commaSeparatedRoles
+              }})
             </v-list-item-title>
             <v-list-item-subtitle>
               {{ participant.team }} - {{ participant.location }}
@@ -36,14 +38,11 @@ export default {
   },
 
   filters: {
-    activeRoles: function (value) {
+    commaSeparatedRoles: function (value) {
       return value
         .map(function (v) {
-          if (!v.renounced_at) {
-            return v.role
-          }
+          return v.role
         })
-        .filter(Boolean)
         .join(", ")
     },
   },

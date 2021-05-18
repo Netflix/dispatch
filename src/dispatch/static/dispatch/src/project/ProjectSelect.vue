@@ -23,8 +23,6 @@
 
 <script>
 import { cloneDeep } from "lodash"
-
-import SearchUtils from "@/search/utils"
 import ProjectApi from "@/project/api"
 
 export default {

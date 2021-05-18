@@ -29,6 +29,7 @@ export default {
   props: {
     value: {
       type: String,
+      default: "#1976D2FF",
     },
     label: {
       type: String,

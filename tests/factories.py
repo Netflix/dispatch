@@ -320,10 +320,6 @@ class ParticipantRoleFactory(BaseFactory):
 class ParticipantFactory(BaseFactory):
     """Participant Factory."""
 
-    is_active = True
-    active_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
-    inactive_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
-
     class Meta:
         """Factory Configuration."""
 
