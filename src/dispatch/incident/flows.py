@@ -1072,7 +1072,7 @@ def status_flow_dispatcher(
     event_service.log(
         db_session=db_session,
         source="Dispatch Core App",
-        description=f"The incident status has been changed from {previous_status} to {current_status}.",
+        description=f"The incident status has been changed from {previous_status} to {current_status}",
         incident_id=incident.id,
     )
 

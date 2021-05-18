@@ -78,7 +78,7 @@ def remove_participant(user_email: str, incident: Incident, db_session: SessionL
         event_service.log(
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"{participant.individual.name} removed",
+            description=f"{participant.individual.name} has been removed",
             incident_id=incident.id,
         )
 
@@ -108,7 +108,7 @@ def inactivate_participant(user_email: str, incident: Incident, db_session: Sess
     event_service.log(
         db_session=db_session,
         source="Dispatch Core App",
-        description=f"{participant.individual.name} inactivated",
+        description=f"{participant.individual.name} has been inactivated",
         incident_id=incident.id,
     )
 
@@ -144,7 +144,7 @@ def reactivate_participant(user_email: str, incident: Incident, db_session: Sess
     event_service.log(
         db_session=db_session,
         source="Dispatch Core App",
-        description=f"{participant.individual.name} reactivated",
+        description=f"{participant.individual.name} has been reactivated",
         incident_id=incident.id,
     )
 
