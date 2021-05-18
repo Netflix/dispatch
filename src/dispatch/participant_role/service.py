@@ -30,7 +30,7 @@ def get_last_active_role(
     """
     return (
         db_session.query(ParticipantRole)
-        .filter(ParticipantRole.particpant_id == participant_id)
+        .filter(ParticipantRole.participant_id == participant_id)
         .order_by(ParticipantRole.renounced_at.desc())
         .first()
     )
