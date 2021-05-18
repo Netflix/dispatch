@@ -1,8 +1,7 @@
 from datetime import datetime
+from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
-
-from typing import List, Optional
 
 from dispatch.participant import service as participant_service
 
@@ -21,9 +20,20 @@ def get(*, db_session, participant_role_id: int) -> Optional[ParticipantRole]:
     )
 
 
-def get_all(*, db_session):
-    """Returns all participant roles."""
-    return db_session.query(ParticipantRole)
+def get_last_active_role(
+    *,
+    db_session,
+    participant_id: int,
+) -> Optional[ParticipantRole]:
+    """
+    Returns the participant's last active role.
+    """
+    return (
+        db_session.query(ParticipantRole)
+        .filter(ParticipantRole.participant_id == participant_id)
+        .order_by(ParticipantRole.renounced_at.desc())
+        .first()
+    )
 
 
 def get_all_active_roles(*, db_session, participant_id: int) -> List[Optional[ParticipantRole]]:
@@ -33,6 +43,11 @@ def get_all_active_roles(*, db_session, participant_id: int) -> List[Optional[Pa
         .filter(ParticipantRole.participant_id == participant_id)
         .filter(ParticipantRole.renounced_at.is_(None))
     )
+
+
+def get_all(*, db_session):
+    """Returns all participant roles."""
+    return db_session.query(ParticipantRole)
 
 
 def add_role(

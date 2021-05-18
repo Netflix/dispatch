@@ -150,17 +150,24 @@ def handle_engage_oncall_action(
     slack_client=None,
 ):
     """Adds and pages based on the oncall modal."""
-    oncall_service_id = action["submission"]["oncall_service_id"]
+    oncall_service_external_id = action["submission"]["oncall_service_external_id"]
     page = action["submission"]["page"]
 
     oncall_individual, oncall_service = incident_flows.incident_engage_oncall_flow(
-        user_email, incident_id, oncall_service_id, page=page, db_session=db_session
+        user_email, incident_id, oncall_service_external_id, page=page, db_session=db_session
     )
 
-    if not oncall_service or not oncall_individual:
+    if not oncall_individual and not oncall_service:
         message = "Could not engage oncall. Oncall service plugin not enabled."
-    else:
-        message = f"You have successfully engaged {oncall_individual.name} from oncall rotation {oncall_service.name}."
+
+    if not oncall_individual and oncall_service:
+        message = (
+            f"A member of {oncall_service.name} is already in the conversation."
+        )
+
+    if oncall_individual and oncall_service:
+        message = f"You have successfully engaged {oncall_individual.name} from the {oncall_service.name} oncall rotation."
+
     dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
 
 

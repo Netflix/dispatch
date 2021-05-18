@@ -6,7 +6,7 @@ from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContact
 from dispatch.participant_role import service as participant_role_service
-from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
+from dispatch.participant_role.models import ParticipantRole, ParticipantRoleCreate
 from dispatch.plugin import service as plugin_service
 from dispatch.service import service as service_service
 
@@ -97,7 +97,7 @@ def get_or_create(
     incident_id: int,
     individual_id: int,
     service_id: int,
-    participant_roles: List[ParticipantRoleType],
+    participant_roles: List[ParticipantRoleCreate],
 ) -> Participant:
     """Gets an existing participant object or creates a new one."""
     participant = (
@@ -127,6 +127,7 @@ def get_or_create(
         location = individual_info.get("location", "Unknown")
         team = individual_info.get("team", "Unknown")
         department = individual_info.get("department", "Unknown")
+
         participant_in = ParticipantCreate(
             participant_roles=participant_roles,
             team=team,

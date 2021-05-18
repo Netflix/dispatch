@@ -23,8 +23,6 @@
 
 <script>
 import { cloneDeep } from "lodash"
-
-import SearchUtils from "@/search/utils"
 import ProjectApi from "@/project/api"
 
 export default {
@@ -64,16 +62,6 @@ export default {
       itemsPerPage: 50,
       sortBy: ["name"],
       descending: [false],
-    }
-
-    if (this.project) {
-      filterOptions = {
-        ...filterOptions,
-        filters: {
-          project: [this.project],
-        },
-      }
-      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
     }
 
     ProjectApi.getAll(filterOptions).then((response) => {
