@@ -6,7 +6,7 @@
           <v-list-item-content>
             <v-list-item-title>
               {{ participant.individual.name }} ({{
-                participant.active_roles | commaSeparatedRoles
+                participant.participant_roles | commaSeparatedRoles
               }})
             </v-list-item-title>
             <v-list-item-subtitle>
