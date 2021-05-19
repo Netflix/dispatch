@@ -114,7 +114,7 @@ idna==2.10
     #   requests
     #   rfc3986
     #   yarl
-jinja2==3.0.0
+jinja2==3.0.1
     # via -r requirements-base.in
 jira==2.0.0
     # via -r requirements-base.in
