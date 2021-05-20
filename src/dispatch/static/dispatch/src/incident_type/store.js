@@ -162,7 +162,7 @@ const actions = {
 const mutations = {
   updateField,
   SET_SELECTED(state, value) {
-    state.selected = Object.assign(state.selected, value)
+    state.selected = value
   },
   SET_SELECTED_LOADING(state, value) {
     state.selected.loading = value
