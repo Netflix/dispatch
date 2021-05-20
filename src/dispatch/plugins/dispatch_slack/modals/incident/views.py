@@ -128,7 +128,7 @@ def update_participant(incident: Incident, participant: Participant = None):
                 "elements": [
                     {
                         "type": "mrkdwn",
-                        "text": "Use this form to edit why a particpant was added to this incident.",
+                        "text": "Use this form to update why a participant was added to this incident.",
                     }
                 ],
             },
