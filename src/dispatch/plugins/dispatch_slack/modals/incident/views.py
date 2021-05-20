@@ -32,7 +32,7 @@ from .fields import (
 
 
 def update_incident(db_session: SessionLocal, channel_id: str, incident_id: int = None):
-    """Builds all blocks required for the reporting incident modal."""
+    """Builds all blocks required for the update incident modal."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     modal_template = {
