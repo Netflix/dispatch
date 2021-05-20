@@ -7,6 +7,9 @@ const getDefaultSelectedState = () => {
   return {
     name: null,
     description: [],
+    banner_enabled: false,
+    banner_text: null,
+    banner_color: null,
     id: null,
     loading: false,
   }
@@ -17,7 +20,7 @@ const state = {
     ...getDefaultSelectedState(),
   },
   dialogs: {
-    showCreate: false,
+    showCreateEdit: false,
   },
 }
 
@@ -37,21 +40,21 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 200),
-  showCreateDialog({ commit }, organization) {
-    commit("SET_DIALOG_CREATE", true)
+  showCreateEditDialog({ commit }, organization) {
+    commit("SET_DIALOG_CREATE_EDIT", true)
     if (organization) {
       commit("SET_SELECTED", organization)
     }
   },
-  closeCreateDialog({ commit }) {
-    commit("SET_DIALOG_CREATE", false)
+  closeCreateEditDialog({ commit }) {
+    commit("SET_DIALOG_CREATE_EDIT", false)
     commit("RESET_SELECTED")
   },
   save({ commit, dispatch }) {
     if (!state.selected.id) {
       return OrganizationApi.create(state.selected)
         .then(() => {
-          dispatch("closeCreateDialog")
+          dispatch("closeCreateEditDialog")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
@@ -72,7 +75,7 @@ const actions = {
     } else {
       return OrganizationApi.update(state.selected.id, state.selected)
         .then(() => {
-          dispatch("closeCreateDialog")
+          dispatch("closeCreateEditDialog")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
@@ -99,8 +102,8 @@ const mutations = {
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
   },
-  SET_DIALOG_CREATE(state, value) {
-    state.dialogs.showCreate = value
+  SET_DIALOG_CREATE_EDIT(state, value) {
+    state.dialogs.showCreateEdit = value
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
