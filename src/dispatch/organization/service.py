@@ -3,6 +3,9 @@ from typing import List, Optional
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql.expression import true
 
+from dispatch.enums import UserRoles
+from dispatch.auth.models import DispatchUser, DispatchUserOrganization
+
 from .models import Organization, OrganizationCreate, OrganizationUpdate
 
 
@@ -63,4 +66,20 @@ def update(
 def delete(*, db_session, organization_id: int):
     organization = db_session.query(Organization).filter(Organization.id == organization_id).first()
     db_session.delete(organization)
+    db_session.commit()
+
+
+def add_user(
+    *,
+    db_session,
+    user: DispatchUser,
+    organization: Organization,
+    role: UserRoles = UserRoles.member,
+):
+    """Adds the user to the organization."""
+    db_session.add(
+        DispatchUserOrganization(
+            dispatch_user_id=user.id, organization_id=organization.id, role=role.value
+        )
+    )
     db_session.commit()
