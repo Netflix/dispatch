@@ -1,6 +1,6 @@
 <template>
   <v-app-bar clipped-left clipped-right app flat class="v-bar--underline" color="background0">
-    <organization-create-dialog />
+    <organization-create-edit-dialog />
     <!--<v-app-bar-nav-icon @click="handleDrawerToggle" />-->
     <router-link to="/" style="text-decoration: none">
       <span class="button font-weight-bold">D I S P A T C H</span>
@@ -51,7 +51,7 @@
             </v-avatar>
           </v-btn>
         </template>
-        <v-card width="300">
+        <v-card width="400">
           <v-list>
             <v-list-item class="px-2">
               <v-list-item-avatar>
@@ -66,18 +66,34 @@
 
             <v-divider></v-divider>
             <v-subheader>Organizations</v-subheader>
-            <v-list-item
-              v-for="(item, i) in organizations"
-              :key="i"
-              @click="switchOrganizations(item.name)"
-            >
+            <v-list-item v-for="(item, i) in organizations" :key="i">
               <v-list-item-content>
                 <v-list-item-title>{{ item.name }}</v-list-item-title>
                 <v-list-item-subtitle>{{ item.description }}</v-list-item-subtitle>
               </v-list-item-content>
+              <v-list-item-action>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on }">
+                    <v-btn icon v-on="on" @click="showCreateEditDialog(item)"
+                      ><v-icon>mdi-pencil-outline</v-icon></v-btn
+                    >
+                  </template>
+                  <span>Edit Organization</span>
+                </v-tooltip>
+              </v-list-item-action>
+              <v-list-item-action>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on }">
+                    <v-btn @click="switchOrganizations(item.name)" icon v-on="on"
+                      ><v-icon>mdi-swap-horizontal</v-icon></v-btn
+                    >
+                  </template>
+                  <span>Switch Organization</span>
+                </v-tooltip>
+              </v-list-item-action>
             </v-list-item>
           </v-list>
-          <v-list-item @click="showCreateDialog()">
+          <v-list-item @click="showCreateEditDialog()">
             <v-list-item-avatar>
               <v-icon size="30px">mdi-plus</v-icon>
             </v-list-item-avatar>
@@ -106,7 +122,7 @@ import { mapActions, mapMutations, mapState } from "vuex"
 
 import Util from "@/util"
 import OrganizationApi from "@/organization/api"
-import OrganizationCreateDialog from "@/organization/CreateDialog.vue"
+import OrganizationCreateEditDialog from "@/organization/CreateEditDialog.vue"
 
 export default {
   name: "AppToolbar",
@@ -114,7 +130,7 @@ export default {
     organizations: [],
   }),
   components: {
-    OrganizationCreateDialog,
+    OrganizationCreateEditDialog,
   },
   computed: {
     queryString: {
@@ -146,7 +162,7 @@ export default {
     },
     ...mapState("auth", ["currentUser", "userAvatarUrl"]),
     ...mapActions("search", ["setQuery"]),
-    ...mapActions("organization", ["showCreateDialog"]),
+    ...mapActions("organization", ["showCreateEditDialog"]),
     ...mapMutations("search", ["SET_QUERY"]),
   },
 
