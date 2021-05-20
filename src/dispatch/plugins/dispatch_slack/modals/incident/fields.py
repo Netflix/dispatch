@@ -119,7 +119,7 @@ def incident_priority_select_block(
 
 
 def project_select_block(db_session: Session, initial_option: dict = None):
-    """Builds incident project select block."""
+    """Builds the incident project select block."""
     project_options = []
     for project in project_service.get_all(db_session=db_session):
         project_options.append(option_from_template(text=project.name, value=project.name))
