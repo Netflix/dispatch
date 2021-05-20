@@ -9,7 +9,7 @@ from dispatch.messaging.strings import (
 )
 
 from dispatch.plugin import service as plugin_service
-from dispatch.plugins.dispatch_slack.modals import workflow_service
+from dispatch.workflow import service as workflow_service
 from dispatch.scheduler import scheduler
 from dispatch.incident import service as incident_service
 from dispatch.project import service as project_service
