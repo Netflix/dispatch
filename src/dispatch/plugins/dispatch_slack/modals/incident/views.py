@@ -121,7 +121,7 @@ def update_participant(incident: Incident, participant: Participant = None):
     """Builds all blocks required for updating the participant modal."""
     modal_template = {
         "type": "modal",
-        "title": {"type": "plain_text", "text": "Edit Participant"},
+        "title": {"type": "plain_text", "text": "Update Participant"},
         "blocks": [
             {
                 "type": "context",
