@@ -1,11 +1,10 @@
 import json
-from dispatch.database.core import SessionLocal
 
+from dispatch.database.core import SessionLocal
 from dispatch.incident.models import Incident
 from dispatch.incident import service as incident_service
 from dispatch.participant.models import Participant
 from dispatch.project import service as project_service
-
 from dispatch.plugin import service as plugin_service
 
 
