@@ -232,7 +232,7 @@ def add_timeline_event(incident: Incident):
             },
         ],
         "close": {"type": "plain_text", "text": "Cancel"},
-        "submit": {"type": "plain_text", "text": "Add"},
+        "submit": {"type": "plain_text", "text": "Submit"},
         "callback_id": AddTimelineEventCallbackId.submit_form,
         "private_metadata": json.dumps(
             {"incident_id": str(incident.id), "channel_id": str(incident.conversation.channel_id)}
