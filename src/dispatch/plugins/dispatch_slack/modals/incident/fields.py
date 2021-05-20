@@ -37,7 +37,7 @@ def status_select_block(initial_option: str = None):
         "label": {"type": "plain_text", "text": "Status"},
         "element": {
             "type": "static_select",
-            "placeholder": {"type": "plain_text", "text": "Select Type"},
+            "placeholder": {"type": "plain_text", "text": "Select Status"},
             "options": status_options,
         },
     }
