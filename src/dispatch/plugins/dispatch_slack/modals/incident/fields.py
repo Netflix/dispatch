@@ -29,7 +29,7 @@ def option_from_template(text: str, value: str):
 
 
 def status_select_block(initial_option: str = None):
-    """Builds a incident status select block"""
+    """Builds the incident status select block"""
     status_options = [option_from_template(text=x.value, value=x.value) for x in IncidentStatus]
     block = {
         "block_id": IncidentBlockId.status,
