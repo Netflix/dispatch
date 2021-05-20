@@ -23,14 +23,33 @@ from .config import (
     SLACK_COMMAND_REPORT_TACTICAL_SLUG,
 )
 
-from .modals import (
+from .modals.feedback.views import RatingFeedbackCallbackId
+from .modals.feedback.handlers import (
+    rating_feedback_from_submitted_form,
     create_rating_feedback_modal,
-    update_update_participant_modal,
-    update_workflow_modal,
-    handle_modal_action,
-    UpdateParticipantCallbacks,
-    RunWorkflowCallbacks,
 )
+
+from .modals.workflow.views import RunWorkflowCallbackId
+from .modals.workflow.handlers import run_workflow_submitted_form, update_workflow_modal
+
+from .modals.incident.handlers import (
+    report_incident_from_submitted_form,
+    add_timeline_event_from_submitted_form,
+    update_incident_from_submitted_form,
+    update_notifications_group_from_submitted_form,
+    update_participant_from_submitted_form,
+    update_report_incident_modal,
+    update_update_participant_modal,
+)
+
+from .modals.incident.enums import (
+    AddTimelineEventCallbackId,
+    UpdateIncidentCallbackId,
+    ReportIncidentCallbackId,
+    UpdateParticipantCallbackId,
+    UpdateNotificationsGroupCallbackId,
+)
+
 from .service import get_user_email
 from .decorators import slack_background_task
 
@@ -38,6 +57,43 @@ from .decorators import slack_background_task
 def base64_decode(input: str):
     """Returns a b64 decoded string."""
     return base64.b64decode(input.encode("ascii")).decode("ascii")
+
+
+def handle_modal_action(action: dict, background_tasks: BackgroundTasks):
+    """Handles all modal actions."""
+    view_data = action["view"]
+    view_data["private_metadata"] = json.loads(view_data["private_metadata"])
+
+    action_id = view_data["callback_id"]
+    incident_id = view_data["private_metadata"].get("incident_id")
+
+    channel_id = view_data["private_metadata"].get("channel_id")
+    user_id = action["user"]["id"]
+    user_email = action["user"]["email"]
+
+    for f in action_functions(action_id):
+        background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, action)
+
+
+def action_functions(action_id: str):
+    """Determines which function needs to be run."""
+    action_mappings = {
+        AddTimelineEventCallbackId.submit_form: [add_timeline_event_from_submitted_form],
+        ReportIncidentCallbackId.submit_form: [report_incident_from_submitted_form],
+        UpdateParticipantCallbackId.submit_form: [update_participant_from_submitted_form],
+        UpdateIncidentCallbackId.submit_form: [update_incident_from_submitted_form],
+        UpdateNotificationsGroupCallbackId.submit_form: [
+            update_notifications_group_from_submitted_form
+        ],
+        RunWorkflowCallbackId.submit_form: [run_workflow_submitted_form],
+        RatingFeedbackCallbackId.submit_form: [rating_feedback_from_submitted_form],
+    }
+
+    # this allows for unique action blocks e.g. invite-user or invite-user-1, etc
+    for key in action_mappings.keys():
+        if key in action_id:
+            return action_mappings[key]
+    return []
 
 
 async def handle_slack_action(*, db_session, client, request, background_tasks):
@@ -61,6 +117,63 @@ async def handle_slack_action(*, db_session, client, request, background_tasks):
         handle_block_action(request, background_tasks)
 
     return response_body
+
+
+def block_action_functions(action: str):
+    """Interprets the action and routes it to the appropriate function."""
+    action_mappings = {
+        ConversationButtonActions.invite_user.value: [add_user_to_conversation],
+        ConversationButtonActions.provide_feedback.value: [create_rating_feedback_modal],
+        ConversationButtonActions.update_task_status.value: [update_task_status],
+        # Note these are temporary for backward compatibility of block ids and should be remove in a future release
+        "ConversationButtonActions.invite_user": [add_user_to_conversation],
+        "ConversationButtonActions.provide_feedback": [create_rating_feedback_modal],
+        "ConversationButtonActions.update_task_status": [
+            update_task_status,
+        ],
+        UpdateParticipantCallbackId.update_view: [update_update_participant_modal],
+        ReportIncidentCallbackId.update_view: [update_report_incident_modal],
+        RunWorkflowCallbackId.update_view: [update_workflow_modal],
+    }
+
+    # this allows for unique action blocks e.g. invite-user or invite-user-1, etc
+    for key in action_mappings.keys():
+        if key in action:
+            return action_mappings[key]
+    return []
+
+
+def handle_dialog_action(action: dict, background_tasks: BackgroundTasks, db_session: SessionLocal):
+    """Handles all dialog actions."""
+    channel_id = action["channel"]["id"]
+    conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
+        db_session=db_session, channel_id=channel_id
+    )
+    incident_id = conversation.incident_id
+
+    user_id = action["user"]["id"]
+    user_email = action["user"]["email"]
+
+    action_id = action["callback_id"]
+
+    for f in dialog_action_functions(action_id):
+        background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, action)
+
+
+def handle_block_action(action: dict, background_tasks: BackgroundTasks):
+    """Handles a standalone block action."""
+    view_data = action["view"]
+    view_data["private_metadata"] = json.loads(view_data["private_metadata"])
+
+    incident_id = view_data["private_metadata"].get("incident_id")
+    channel_id = view_data["private_metadata"].get("channel_id")
+    action_id = action["actions"][0]["action_id"]
+
+    user_id = action["user"]["id"]
+    user_email = action["user"]["email"]
+
+    for f in block_action_functions(action_id):
+        background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, action)
 
 
 @slack_background_task
@@ -279,59 +392,3 @@ def dialog_action_functions(action: str):
         if key in action:
             return action_mappings[key]
     return []
-
-
-def block_action_functions(action: str):
-    """Interprets the action and routes it to the appropriate function."""
-    action_mappings = {
-        ConversationButtonActions.invite_user.value: [add_user_to_conversation],
-        ConversationButtonActions.provide_feedback.value: [create_rating_feedback_modal],
-        ConversationButtonActions.update_task_status.value: [update_task_status],
-        # Note these are temporary for backward compatibility of block ids and should be remove in a future release
-        "ConversationButtonActions.invite_user": [add_user_to_conversation],
-        "ConversationButtonActions.provide_feedback": [create_rating_feedback_modal],
-        "ConversationButtonActions.update_task_status": [
-            update_task_status,
-        ],
-        UpdateParticipantCallbacks.update_view: [update_update_participant_modal],
-        RunWorkflowCallbacks.update_view: [update_workflow_modal],
-    }
-
-    # this allows for unique action blocks e.g. invite-user or invite-user-1, etc
-    for key in action_mappings.keys():
-        if key in action:
-            return action_mappings[key]
-    return []
-
-
-def handle_dialog_action(action: dict, background_tasks: BackgroundTasks, db_session: SessionLocal):
-    """Handles all dialog actions."""
-    channel_id = action["channel"]["id"]
-    conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
-        db_session=db_session, channel_id=channel_id
-    )
-    incident_id = conversation.incident_id
-
-    user_id = action["user"]["id"]
-    user_email = action["user"]["email"]
-
-    action_id = action["callback_id"]
-
-    for f in dialog_action_functions(action_id):
-        background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, action)
-
-
-def handle_block_action(action: dict, background_tasks: BackgroundTasks):
-    """Handles a standalone block action."""
-    view_data = action["view"]
-    view_data["private_metadata"] = json.loads(view_data["private_metadata"])
-
-    incident_id = view_data["private_metadata"].get("incident_id")
-    channel_id = view_data["private_metadata"].get("channel_id")
-    action_id = action["actions"][0]["block_id"]
-
-    user_id = action["user"]["id"]
-    user_email = action["user"]["email"]
-
-    for f in block_action_functions(action_id):
-        background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, action)
