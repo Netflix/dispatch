@@ -466,7 +466,7 @@ def list_participants(
     )
 
 
-@background_task
+@slack_background_task
 def list_incidents(
     user_id: str,
     user_email: str,
