@@ -180,7 +180,7 @@ def update_notifications_group(incident: Incident, db_session: SessionLocal):
             },
         ],
         "close": {"type": "plain_text", "text": "Cancel"},
-        "submit": {"type": "plain_text", "text": "Update"},
+        "submit": {"type": "plain_text", "text": "Submit"},
         "callback_id": UpdateNotificationsGroupCallbackId.submit_form,
         "private_metadata": json.dumps(
             {"incident_id": str(incident.id), "channel_id": incident.conversation.channel_id}
