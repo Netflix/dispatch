@@ -9,7 +9,7 @@
         </a>
       </template>
       <template v-slot:item.project.name="{ item }">
-        <v-chip :color="item.project.color" text-color="white">
+        <v-chip small :color="item.project.color" text-color="white">
           {{ item.project.name }}
         </v-chip>
       </template>
