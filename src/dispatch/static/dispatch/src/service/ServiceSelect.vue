@@ -1,6 +1,6 @@
 <template>
   <ValidationProvider name="service" immediate>
-    <v-autocomplete
+    <v-combobox
       v-model="service"
       :items="items"
       :search-input.sync="search"
@@ -19,7 +19,7 @@
         </v-btn>
         <new-edit-sheet @new-service-created="addItem($event)" />
       </template>
-    </v-autocomplete>
+    </v-combobox>
   </ValidationProvider>
 </template>
 
