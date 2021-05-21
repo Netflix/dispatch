@@ -1297,7 +1297,9 @@ def incident_add_or_reactivate_participant_flow(
     else:
         if not participant.active_roles:
             # we reactivate the participant
-            participant_flows.reactivate_participant(user_email, incident, db_session)
+            participant_flows.reactivate_participant(
+                user_email, incident, db_session, service_id=service_id
+            )
         else:
             return participant
 
