@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.database.core import resolve_attr
-from dispatch.decorators import background_task
 from dispatch.enums import Visibility
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
