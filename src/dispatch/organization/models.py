@@ -13,6 +13,10 @@ class Organization(Base):
     name = Column(String)
     default = Column(Boolean)
     description = Column(String)
+    banner_enabled = Column(Boolean)
+    banner_color = Column(String)
+    banner_text = Column(String)
+
     projects = relationship("Project", backref="organization")
 
     search_vector = Column(
@@ -25,6 +29,9 @@ class OrganizationBase(DispatchBase):
     name: str
     description: Optional[str]
     default: Optional[bool]
+    banner_enabled: Optional[bool]
+    banner_color: Optional[str]
+    banner_text: Optional[str]
 
 
 class OrganizationCreate(OrganizationBase):

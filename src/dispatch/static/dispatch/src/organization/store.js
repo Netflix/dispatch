@@ -1,7 +1,7 @@
 import OrganizationApi from "@/organization/api"
 
 import { getField, updateField } from "vuex-map-fields"
-import { debounce } from "lodash"
+import router from "@/router/"
 
 const getDefaultSelectedState = () => {
   return {
@@ -29,17 +29,6 @@ const getters = {
 }
 
 const actions = {
-  getAll: debounce(({ commit, state }) => {
-    commit("SET_TABLE_LOADING", "primary")
-    return OrganizationApi.getAll(state.table.options)
-      .then((response) => {
-        commit("SET_TABLE_LOADING", false)
-        commit("SET_TABLE_ROWS", response.data)
-      })
-      .catch(() => {
-        commit("SET_TABLE_LOADING", false)
-      })
-  }, 200),
   showCreateEditDialog({ commit }, organization) {
     commit("SET_DIALOG_CREATE_EDIT", true)
     if (organization) {
@@ -55,7 +44,7 @@ const actions = {
       return OrganizationApi.create(state.selected)
         .then(() => {
           dispatch("closeCreateEditDialog")
-          dispatch("getAll")
+          router.go(router.currentRoute)
           commit(
             "notification_backend/addBeNotification",
             { text: "Organization created successfully.", type: "success" },
@@ -76,7 +65,7 @@ const actions = {
       return OrganizationApi.update(state.selected.id, state.selected)
         .then(() => {
           dispatch("closeCreateEditDialog")
-          dispatch("getAll")
+          router.go(router.currentRoute)
           commit(
             "notification_backend/addBeNotification",
             { text: "Organization updated successfully.", type: "success" },
@@ -84,6 +73,7 @@ const actions = {
           )
         })
         .catch((err) => {
+          console.log(err)
           commit(
             "notification_backend/addBeNotification",
             {

@@ -89,9 +89,15 @@ class OrganizationOwnerPermission(BasePermission):
         self,
         request: Request,
     ) -> bool:
-        current_organization = organization_service.get_by_name(
-            db_session=request.state.db, name=request.path_params["organization"]
-        )
+        current_organization = None
+        if request.path_params.get("organization"):
+            current_organization = organization_service.get_by_name(
+                db_session=request.state.db, name=request.path_params["organization"]
+            )
+        elif request.path_params.get("organization_id"):
+            current_organization = organization_service.get(
+                db_session=request.state.db, organization_id=request.path_params["organization_id"]
+            )
 
         if not current_organization:
             return
