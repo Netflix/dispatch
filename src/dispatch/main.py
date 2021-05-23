@@ -3,13 +3,13 @@ import logging
 from tabulate import tabulate
 from os import path
 
-# from starlette.middleware.gzip import GZipMiddleware
 from fastapi import FastAPI
 from sentry_asgi import SentryMiddleware
 from starlette.applications import Starlette
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import FileResponse, Response, StreamingResponse
+from starlette.routing import compile_path
 from starlette.staticfiles import StaticFiles
 import httpx
 
@@ -77,7 +77,24 @@ async def db_session_middleware(request: Request, call_next):
         if not session:
             return response
 
-        request.state.db = session()
+        session_obj = session()
+
+        # starlette does not fill in the the params object until after the request, we do it manually
+        path_params = {}
+        for r in api_router.routes:
+            path_regex, path_format, param_converters = compile_path(r.path)
+            # remove the /api/v1 for matching
+            path = f"/{request['path'].strip('/api/v1')}"
+            match = path_regex.match(path)
+            if match:
+                path_params = match.groupdict()
+
+        # if this call is organization specific set the correct search path
+        organization_name = path_params.get("organization")
+        if organization_name:
+            session_obj.execute(f"SET search_path to {organization_name}")
+
+        request.state.db = session_obj
         response = await call_next(request)
     finally:
         request.state.db.close()
