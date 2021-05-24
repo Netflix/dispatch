@@ -27,13 +27,8 @@ def add_participant(
         db_session=db_session, incident=incident, email=user_email
     )
 
-    # We create a role for the participant
-    participant_role_in = ParticipantRoleCreate(role=role)
-    participant_role = participant_role_service.create(
-        db_session=db_session, participant_role_in=participant_role_in
-    )
-
     # We get or create a new participant
+    participant_role = ParticipantRoleCreate(role=role)
     participant = get_or_create(
         db_session=db_session,
         incident_id=incident.id,
@@ -46,6 +41,7 @@ def add_participant(
     incident.participants.append(participant)
 
     # We add and commit the changes
+    db_session.add(participant)
     db_session.add(individual)
     db_session.add(incident)
     db_session.commit()
