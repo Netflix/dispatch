@@ -140,7 +140,12 @@ def get_or_create(
 
         participant = create(db_session=db_session, participant_in=participant_in)
     else:
-        participant.participant_roles += participant_roles
+        for participant_role in participant_roles:
+            participant.participant_roles.append(
+                participant_role_service.create(
+                    db_session=db_session, participant_role_in=participant_role
+                )
+            )
         participant.service_id = service_id
 
     return participant
