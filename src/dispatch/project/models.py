@@ -16,7 +16,7 @@ class Project(Base):
     default = Column(Boolean, default=False)
     color = Column(String)
 
-    organization_id = Column(Integer, ForeignKey("organization.id"))
+    organization_id = Column(Integer, ForeignKey("dispatch.organization.id"))
 
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})

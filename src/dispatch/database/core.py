@@ -6,14 +6,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import sessionmaker, object_session
 from sqlalchemy.sql.expression import true
-from sqlalchemy_searchable import make_searchable
 from sqlalchemy_utils import get_mapper
 from starlette.requests import Request
 
-from dispatch.config import SQLALCHEMY_DATABASE_URI
+from dispatch import config
+from dispatch.search.fulltext import make_searchable
 
 
-engine = create_engine(str(SQLALCHEMY_DATABASE_URI))
+engine = create_engine(str(config.SQLALCHEMY_DATABASE_URI))
 SessionLocal = sessionmaker(bind=engine)
 
 
@@ -55,12 +55,24 @@ def get_model_name_by_tablename(table_fullname: str) -> str:
 
 def get_class_by_tablename(table_fullname: str) -> Any:
     """Return class reference mapped to table."""
+
+    def _find_class(name):
+        for c in Base._decl_class_registry.values():
+            if hasattr(c, "__table__"):
+                if c.__table__.fullname.lower() == name.lower():
+                    return c
+
     mapped_name = resolve_table_name(table_fullname)
-    for c in Base._decl_class_registry.values():
-        if hasattr(c, "__table__"):
-            if c.__table__.fullname.lower() == mapped_name.lower():
-                return c
-    raise Exception(f"Incorrect tablename '{mapped_name}'. Check the name of your model.")
+    mapped_class = _find_class(mapped_name)
+
+    # try looking in the 'dispatch' schema
+    if not mapped_class:
+        mapped_class = _find_class(f"dispatch.{mapped_name}")
+
+    if not mapped_class:
+        raise Exception(f"Incorrect tablename '{mapped_name}'. Check the name of your model.")
+
+    return mapped_class
 
 
 def get_table_name_by_class_instance(class_instance: Base) -> str:

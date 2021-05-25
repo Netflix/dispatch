@@ -71,14 +71,6 @@ async def default_page(request, call_next):
 async def db_session_middleware(request: Request, call_next):
     response = Response("Internal Server Error", status_code=500)
     try:
-        # add correct schema mapping depending on the request
-        session = sessionmaker(bind=engine)
-
-        if not session:
-            return response
-
-        session_obj = session()
-
         # starlette does not fill in the the params object until after the request, we do it manually
         path_params = {}
         for r in api_router.routes:
@@ -92,9 +84,18 @@ async def db_session_middleware(request: Request, call_next):
         # if this call is organization specific set the correct search path
         organization_name = path_params.get("organization")
         if organization_name:
-            session_obj.execute(f"SET search_path to {organization_name}")
+            # add correct schema mapping depending on the request
+            schema_engine = engine.execution_options(
+                schema_translate_map={None: f"dispatch_organization_{organization_name}"}
+            )
+            session = sessionmaker(bind=schema_engine)
+        else:
+            session = sessionmaker(bind=engine)
 
-        request.state.db = session_obj
+        if not session:
+            return response
+
+        request.state.db = session()
         response = await call_next(request)
     finally:
         request.state.db.close()

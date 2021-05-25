@@ -4,7 +4,7 @@
       <v-card>
         <v-card-title>
           <span class="headline" v-if="id">Edit Organization</span>
-          <span class="headline" v-else="id">Create a New Organization</span>
+          <span class="headline" v-else>Create a New Organization</span>
         </v-card-title>
         <v-card-text>
           Organizations represent the top level in your hierarchy. You'll be able to bundle a
@@ -67,6 +67,17 @@
           <v-spacer />
           <v-btn text @click="closeCreateEditDialog()"> Cancel </v-btn>
           <v-btn
+            v-if="id"
+            color="info"
+            text
+            @click="save()"
+            :loading="loading"
+            :disabled="invalid || !validated"
+          >
+            Update
+          </v-btn>
+          <v-btn
+            v-else
             color="info"
             text
             @click="save()"

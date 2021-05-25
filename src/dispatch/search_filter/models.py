@@ -20,7 +20,7 @@ class SearchFilter(Base, ProjectMixin):
     name = Column(String)
     description = Column(String)
     expression = Column(JSON)
-    creator_id = Column(Integer, ForeignKey("dispatch_user.id"))
+    creator_id = Column(Integer, ForeignKey("dispatch.dispatch_user.id"))
     creator = relationship("DispatchUser", backref="search_filters")
     type = Column(String)
 

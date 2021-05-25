@@ -3,6 +3,7 @@ import os
 import sys
 
 import click
+from sqlalchemy.orm.session import Session
 import uvicorn
 import asyncio
 from alembic import command as alembic_command
@@ -13,7 +14,8 @@ from dispatch import __version__, config
 from dispatch.enums import UserRoles
 
 from .main import *  # noqa
-from .database.core import Base, engine
+from .database.core import Base, SessionLocal, engine
+from .database.manage import init_database
 from .exceptions import DispatchException
 from .plugins.base import plugins
 from .scheduler import scheduler
@@ -152,39 +154,6 @@ def uninstall_plugins(plugins):
         plugin_service.delete(db_session=db_session, plugin_id=plugin.id)
 
 
-def sync_triggers():
-    from sqlalchemy_searchable import sync_trigger
-
-    sync_trigger(engine, "definition", "search_vector", ["text"])
-    sync_trigger(engine, "dispatch_user", "search_vector", ["email"])
-    sync_trigger(engine, "document", "search_vector", ["name"])
-    sync_trigger(engine, "incident", "search_vector", ["name", "title", "description"])
-    sync_trigger(engine, "incident_cost_type", "search_vector", ["name", "description"])
-    sync_trigger(engine, "incident_priority", "search_vector", ["name", "description"])
-    sync_trigger(engine, "incident_type", "search_vector", ["name", "description"])
-    sync_trigger(
-        engine, "individual_contact", "search_vector", ["name", "title", "company", "notes"]
-    )
-    sync_trigger(engine, "notification", "search_vector", ["name", "description"])
-    sync_trigger(
-        engine,
-        "plugin",
-        "search_vector",
-        ["title", "slug", "type", "description"],
-    )
-    sync_trigger(engine, "report", "search_vector", ["details_raw"])
-    sync_trigger(engine, "search_filter", "search_vector", ["name", "description"])
-    sync_trigger(engine, "service", "search_vector", ["name"])
-    sync_trigger(engine, "tag", "search_vector", ["name"])
-    sync_trigger(engine, "task", "search_vector", ["description"])
-    sync_trigger(engine, "team_contact", "search_vector", ["name", "company", "notes"])
-    sync_trigger(engine, "term", "search_vector", ["text"])
-    sync_trigger(engine, "workflow", "search_vector", ["name", "description"])
-    sync_trigger(engine, "dispatch_user", "search_vector", ["email"])
-    # sync_trigger(engine, "project", "search_vector", ["name", "description"])
-    # sync_trigger(engine, "organization", "search_vector", ["name", "description"])
-
-
 @dispatch_cli.group("user")
 def dispatch_user():
     """Container for all user commands."""
@@ -250,58 +219,11 @@ def dispatch_database():
     pass
 
 
-@dispatch_database.command("sync-triggers")
-def database_trigger_sync():
-    """Ensures that all database triggers have been installed."""
-    sync_triggers()
-
-    click.secho("Success.", fg="green")
-
-
 @dispatch_database.command("init")
-def init_database():
+def database_init():
     """Initializes a new database."""
-    from sqlalchemy_utils import create_database, database_exists
-    from dispatch.database.core import SessionLocal
-    from dispatch.organization.models import OrganizationCreate
-    from dispatch.organization import service as organization_service
-    from dispatch.project.models import ProjectCreate
-    from dispatch.project import service as project_service
-
-    db_session = SessionLocal()
-
-    if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
-        create_database(str(config.SQLALCHEMY_DATABASE_URI))
-    Base.metadata.create_all(engine)
-    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-    alembic_cfg = AlembicConfig(alembic_path)
-    alembic_command.stamp(alembic_cfg, "head")
-
-    sync_triggers()
-
-    # create any required default values in database
-
-    # default organization
-    click.secho("Creating default organization...", fg="blue")
-    default_org = organization_service.get_or_create(
-        db_session=db_session,
-        organization_in=OrganizationCreate(
-            name="default",
-            default=True,
-            description="Default dispatch organization.",
-        ),
-    )
-    click.secho("Creating default project...", fg="blue")
-    project_service.get_or_create(
-        db_session=db_session,
-        project_in=ProjectCreate(
-            name="default",
-            default=True,
-            description="Default dispatch project.",
-            organization=default_org,
-        ),
-    )
-
+    click.echo("Initializing new database...")
+    init_database()
     click.secho("Success.", fg="green")
 
 

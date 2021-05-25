@@ -37,7 +37,7 @@ Adding other objects::
 from collections import defaultdict
 from sqlalchemy.sql.expression import literal
 
-from sqlalchemy_searchable import inspect_search_vectors, search
+from . import inspect_search_vectors, search
 
 
 class CompositeSearch(object):
