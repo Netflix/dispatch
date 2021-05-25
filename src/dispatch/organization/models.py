@@ -1,7 +1,6 @@
 from typing import List, Optional
 
 from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
@@ -9,6 +8,8 @@ from dispatch.models import DispatchBase
 
 
 class Organization(Base):
+    __table_args__ = {"schema": "dispatch"}
+
     id = Column(Integer, primary_key=True)
     name = Column(String)
     default = Column(Boolean)
@@ -16,8 +17,6 @@ class Organization(Base):
     banner_enabled = Column(Boolean)
     banner_color = Column(String)
     banner_text = Column(String)
-
-    projects = relationship("Project", backref="organization")
 
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})

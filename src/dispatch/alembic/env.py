@@ -42,7 +42,7 @@ def run_migrations_online():
 
         print()
         print("-" * 80)
-        print("Migrating schema 'public'\n")
+        print("Migrating schema 'dispatch'\n")
 
         with context.begin_transaction():
             context.run_migrations()
@@ -53,11 +53,11 @@ def run_migrations_online():
 
             # attempt to migrate all project tenant schemas
             for schema in tenant_schemas:
-                if schema.startswith("organiation."):
+                if schema.startswith("dispatch_organization."):
                     print()
                     print("-" * 80)
-                    print(f"Migrating schema {schema}\n")
-                    connection.execute(f'set search_path to "{schema}", public')
+                    print(f"Migrating schema '{schema}'\n")
+                    connection.execute(f'set search_path to "{schema}", dispatch')
                     with context.begin_transaction():
                         context.run_migrations()
         finally:

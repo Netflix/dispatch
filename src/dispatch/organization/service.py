@@ -2,6 +2,7 @@ from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql.expression import true
+from dispatch.database.manage import init_schema
 
 from dispatch.enums import UserRoles
 from dispatch.auth.models import DispatchUser, DispatchUserOrganization
@@ -31,6 +32,7 @@ def create(*, db_session, organization_in: OrganizationCreate) -> Organization:
     )
     db_session.add(organization)
     db_session.commit()
+    init_schema(organization=organization, schema_name=organization.name)
     return organization
 
 

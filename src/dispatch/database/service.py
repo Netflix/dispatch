@@ -8,9 +8,10 @@ from fastapi import Depends, Query
 from sqlalchemy import or_, orm, func, desc
 from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
 
+
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
-from dispatch.common.utils.composite_search import CompositeSearch
+from dispatch.search.fulltext.composite_search import CompositeSearch
 from dispatch.enums import Visibility
 from dispatch.feedback.models import Feedback
 from dispatch.task.models import Task
@@ -21,7 +22,13 @@ from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
 from dispatch.participant.models import Participant
 
-from .core import Base, get_class_by_tablename, get_model_name_by_tablename, get_db
+
+from .core import (
+    Base,
+    get_class_by_tablename,
+    get_model_name_by_tablename,
+    get_db,
+)
 
 
 log = logging.getLogger(__file__)

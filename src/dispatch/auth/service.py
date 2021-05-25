@@ -116,7 +116,7 @@ def create(*, db_session, user_in: UserRegister) -> DispatchUser:
     password = bytes(user_in.password, "utf-8")
 
     # create the user
-    user = DispatchUser(**user_in.dict(exclude={"password"}), password=password)
+    user = DispatchUser(**user_in.dict(exclude={"password", "organizations"}), password=password)
     db_session.add(user)
 
     # get the default organization
