@@ -10,8 +10,6 @@
   </v-banner>
 </template>
 <script>
-import { mapFields } from "vuex-map-fields"
-
 import SearchUtils from "@/search/utils"
 import OrganizationApi from "@/organization/api"
 
