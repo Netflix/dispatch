@@ -53,7 +53,7 @@ def run_migrations_online():
 
             # attempt to migrate all project tenant schemas
             for schema in tenant_schemas:
-                if schema.startswith("dispatch_organization."):
+                if schema.startswith("dispatch_organization_"):
                     print()
                     print("-" * 80)
                     print(f"Migrating schema '{schema}'\n")
