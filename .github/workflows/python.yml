@@ -3,7 +3,15 @@ name: Python Lint and Test
 on: pull_request
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - uses: psf/black@stable
+
   build:
+    needs: lint
     runs-on: ubuntu-latest
 
     services:
@@ -32,10 +40,6 @@ jobs:
           export DISPATCH_LIGHT_BUILD=1
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
-
-      - name: Run Black
-        run: |
-          black .
 
       - name: Run Flake8
         run: |

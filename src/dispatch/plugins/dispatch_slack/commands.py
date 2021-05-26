@@ -7,20 +7,18 @@ from sqlalchemy.orm import Session
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.database.core import resolve_attr
-from dispatch.decorators import background_task
 from dispatch.enums import Visibility
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
+from dispatch.incident.messaging import send_incident_resources_ephemeral_message_to_participant
 from dispatch.participant import service as participant_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.project import service as project_service
 from dispatch.task import service as task_service
 from dispatch.task.models import TaskStatus, Task
-
-
-from dispatch.incident.messaging import send_incident_resources_ephemeral_message_to_participant
 
 from .config import (
     SLACK_APP_USER_SLUG,
@@ -44,16 +42,6 @@ from .config import (
 
 from .decorators import slack_background_task
 
-from .modals.incident.handlers import (
-    create_add_timeline_event_modal,
-    create_report_incident_modal,
-    create_update_incident_modal,
-    create_update_notifications_group_modal,
-    create_update_participant_modal,
-)
-
-from .modals.workflow.handlers import create_run_workflow_modal
-
 from .dialogs import (
     create_assign_role_dialog,
     create_engage_oncall_dialog,
@@ -67,6 +55,16 @@ from .messaging import (
     create_command_run_in_nonincident_conversation_message,
     create_command_run_by_non_privileged_user_message,
 )
+
+from .modals.incident.handlers import (
+    create_add_timeline_event_modal,
+    create_report_incident_modal,
+    create_update_incident_modal,
+    create_update_notifications_group_modal,
+    create_update_participant_modal,
+)
+
+from .modals.workflow.handlers import create_run_workflow_modal
 
 
 log = logging.getLogger(__name__)
@@ -478,39 +476,50 @@ def list_incidents(
 ):
     """Returns the list of current active and stable incidents,
     and closed incidents in the last 24 hours."""
+    projects = []
     incidents = []
 
     # scopes reply to the current incident's project
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    # We fetch active incidents
-    incidents = incident_service.get_all_by_status(
-        db_session=db_session, project_id=incident.project.id, status=IncidentStatus.active.value
-    )
-    # We fetch stable incidents
-    incidents.extend(
-        incident_service.get_all_by_status(
-            db_session=db_session,
-            project_id=incident.project.id,
-            status=IncidentStatus.stable.value,
+    if incident:
+        # command was run in an incident conversation
+        projects.append(incident.project)
+    else:
+        # command was run in a non-incident conversation
+        projects = project_service.get_all(db_session=db_session)
+
+    for project in projects:
+        # we fetch active incidents
+        incidents.extend(
+            incident_service.get_all_by_status(
+                db_session=db_session, project_id=project.id, status=IncidentStatus.active.value
+            )
         )
-    )
-    # We fetch closed incidents in the last 24 hours
-    incidents.extend(
-        incident_service.get_all_last_x_hours_by_status(
-            db_session=db_session,
-            project_id=incident.project.id,
-            status=IncidentStatus.closed.value,
-            hours=24,
+        # We fetch stable incidents
+        incidents.extend(
+            incident_service.get_all_by_status(
+                db_session=db_session,
+                project_id=project.id,
+                status=IncidentStatus.stable.value,
+            )
         )
-    )
+        # We fetch closed incidents in the last 24 hours
+        incidents.extend(
+            incident_service.get_all_last_x_hours_by_status(
+                db_session=db_session,
+                project_id=project.id,
+                status=IncidentStatus.closed.value,
+                hours=24,
+            )
+        )
 
     blocks = []
     blocks.append({"type": "header", "text": {"type": "plain_text", "text": "List of Incidents"}})
 
     if incidents:
         for incident in incidents:
-            if incident.visibility == Visibility.open:
+            if incident.visibility == Visibility.open.value:
                 ticket_weblink = resolve_attr(incident, "ticket.weblink")
                 try:
                     blocks.append(
@@ -524,7 +533,8 @@ def list_incidents(
                                     f"*Type*: {incident.incident_type.name}\n"
                                     f"*Priority*: {incident.incident_priority.name}\n"
                                     f"*Status*: {incident.status}\n"
-                                    f"*Incident Commander*: <{incident.commander.individual.weblink}|{incident.commander.individual.name}>"
+                                    f"*Incident Commander*: <{incident.commander.individual.weblink}|{incident.commander.individual.name}>\n"
+                                    f"*Project*: {incident.project.name}"
                                 ),
                             },
                         }

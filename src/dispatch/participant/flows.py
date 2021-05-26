@@ -6,6 +6,7 @@ from dispatch.incident.models import Incident
 from dispatch.individual import service as individual_service
 from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType, ParticipantRoleCreate
+from dispatch.service import service as service_service
 
 from .service import get_or_create, get_by_incident_id_and_email
 
@@ -26,13 +27,8 @@ def add_participant(
         db_session=db_session, incident=incident, email=user_email
     )
 
-    # We create a role for the participant
-    participant_role_in = ParticipantRoleCreate(role=role)
-    participant_role = participant_role_service.create(
-        db_session=db_session, participant_role_in=participant_role_in
-    )
-
     # We get or create a new participant
+    participant_role = ParticipantRoleCreate(role=role)
     participant = get_or_create(
         db_session=db_session,
         incident_id=incident.id,
@@ -45,6 +41,7 @@ def add_participant(
     incident.participants.append(participant)
 
     # We add and commit the changes
+    db_session.add(participant)
     db_session.add(individual)
     db_session.add(incident)
     db_session.commit()
@@ -115,7 +112,9 @@ def inactivate_participant(user_email: str, incident: Incident, db_session: Sess
     return True
 
 
-def reactivate_participant(user_email: str, incident: Incident, db_session: SessionLocal):
+def reactivate_participant(
+    user_email: str, incident: Incident, db_session: SessionLocal, service_id: int = None
+):
     """Reactivates a participant."""
     participant = get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident.id, email=user_email
@@ -137,6 +136,10 @@ def reactivate_participant(user_email: str, incident: Incident, db_session: Sess
         db_session=db_session, participant_role_in=participant_role_in
     )
     participant.participant_roles.append(participant_role)
+
+    if service_id:
+        service = service_service.get(db_session=db_session, service_id=service_id)
+        participant.service = service
 
     db_session.add(participant)
     db_session.commit()
