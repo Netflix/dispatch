@@ -10,7 +10,7 @@ from sqlalchemy.orm import relationship
 
 # SQLAlchemy models...
 class ProjectMixin(object):
-    """ Project mixin"""
+    """Project mixin"""
 
     @declared_attr
     def project_id(cls):  # noqa
@@ -22,7 +22,7 @@ class ProjectMixin(object):
 
 
 class TimeStampMixin(object):
-    """ Timestamping mixin"""
+    """Timestamping mixin"""
 
     created_at = Column(DateTime, default=datetime.utcnow)
     created_at._creation_order = 9998
@@ -39,7 +39,7 @@ class TimeStampMixin(object):
 
 
 class ContactMixin(TimeStampMixin):
-    """ Contact mixin"""
+    """Contact mixin"""
 
     is_active = Column(Boolean, default=True)
     is_external = Column(Boolean, default=False)
