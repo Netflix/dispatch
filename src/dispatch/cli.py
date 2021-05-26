@@ -3,7 +3,6 @@ import os
 import sys
 
 import click
-from sqlalchemy.orm.session import Session
 import uvicorn
 import asyncio
 from alembic import command as alembic_command
@@ -14,7 +13,7 @@ from dispatch import __version__, config
 from dispatch.enums import UserRoles
 
 from .main import *  # noqa
-from .database.core import Base, SessionLocal, engine
+from .database.core import Base, engine
 from .database.manage import init_database
 from .exceptions import DispatchException
 from .plugins.base import plugins
@@ -361,7 +360,6 @@ def upgrade_database(tag, sql, revision):
             alembic_command.stamp(alembic_cfg, "head")
         else:
             alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
-    sync_triggers()
     click.secho("Success.", fg="green")
 
 
