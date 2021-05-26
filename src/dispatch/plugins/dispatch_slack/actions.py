@@ -162,12 +162,18 @@ def handle_dialog_action(action: dict, background_tasks: BackgroundTasks, db_ses
 
 def handle_block_action(action: dict, background_tasks: BackgroundTasks):
     """Handles a standalone block action."""
-    view_data = action["view"]
-    view_data["private_metadata"] = json.loads(view_data["private_metadata"])
+    # TODO (kglisson) align our use of action_ids and block_ids
+    if action.get("view"):
+        view_data = action["view"]
+        view_data["private_metadata"] = json.loads(view_data["private_metadata"])
 
-    incident_id = view_data["private_metadata"].get("incident_id")
-    channel_id = view_data["private_metadata"].get("channel_id")
-    action_id = action["actions"][0]["action_id"]
+        incident_id = view_data["private_metadata"].get("incident_id")
+        channel_id = view_data["private_metadata"].get("channel_id")
+        action_id = action["actions"][0]["action_id"]
+    else:
+        incident_id = action["actions"][0]["value"]
+        channel_id = action["channel"]["id"]
+        action_id = action["actions"][0]["block_id"]
 
     user_id = action["user"]["id"]
     user_email = action["user"]["email"]
@@ -274,9 +280,7 @@ def handle_engage_oncall_action(
         message = "Could not engage oncall. Oncall service plugin not enabled."
 
     if not oncall_individual and oncall_service:
-        message = (
-            f"A member of {oncall_service.name} is already in the conversation."
-        )
+        message = f"A member of {oncall_service.name} is already in the conversation."
 
     if oncall_individual and oncall_service:
         message = f"You have successfully engaged {oncall_individual.name} from the {oncall_service.name} oncall rotation."

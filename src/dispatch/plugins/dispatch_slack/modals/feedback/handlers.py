@@ -30,7 +30,9 @@ def create_rating_feedback_modal(
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     if not incident:
-        message = "Sorry, you cannot submit feedback about this incident. The incident does not exist."
+        message = (
+            "Sorry, you cannot submit feedback about this incident. The incident does not exist."
+        )
         send_ephemeral_message(slack_client, channel_id, user_id, message)
     else:
         modal_create_template = rating_feedback_view(incident=incident)
@@ -61,15 +63,15 @@ def rating_feedback_from_submitted_form(
     parsed_form_data = parse_submitted_form(submitted_form)
 
     feedback = parsed_form_data.get(RatingFeedbackBlockId.feedback)
-    rating = parsed_form_data.get(RatingFeedbackBlockId.rating)["value"]
-    anonymous = parsed_form_data.get(RatingFeedbackBlockId.anonymous)["value"]
+    rating = parsed_form_data.get(RatingFeedbackBlockId.rating, {}).get("value")
 
     feedback_in = FeedbackCreate(rating=rating, feedback=feedback, project=incident.project)
     feedback = feedback_service.create(db_session=db_session, feedback_in=feedback_in)
 
     incident.feedback.append(feedback)
 
-    if anonymous == "":
+    # we only really care if this exists, if it doesn't then flag is false
+    if not parsed_form_data.get(RatingFeedbackBlockId.anonymous):
         participant.feedback.append(feedback)
         db_session.add(participant)
 
