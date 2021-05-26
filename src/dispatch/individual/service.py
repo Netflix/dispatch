@@ -82,16 +82,18 @@ def create(*, db_session, individual_contact_in: IndividualContactCreate) -> Ind
         db_session=db_session, name=individual_contact_in.project.name
     )
 
-    filters = [
-        search_filter_service.get(db_session=db_session, search_filter_id=f.id)
-        for f in individual_contact_in.filters
-    ]
-
     contact = IndividualContact(
         **individual_contact_in.dict(exclude={"project", "filters"}),
-        filters=filters,
         project=project,
     )
+
+    if individual_contact_in.filters is not None:
+        filters = [
+            search_filter_service.get(db_session=db_session, search_filter_id=f.id)
+            for f in individual_contact_in.filters
+        ]
+        contact.filters = filters
+
     db_session.add(contact)
     db_session.commit()
     return contact
@@ -105,10 +107,12 @@ def update(
 ) -> IndividualContact:
     individual_contact_data = jsonable_encoder(individual_contact_in)
 
-    filters = [
-        search_filter_service.get(db_session=db_session, search_filter_id=f.id)
-        for f in individual_contact_in.filters
-    ]
+    if individual_contact_in.filters is not None:
+        filters = [
+            search_filter_service.get(db_session=db_session, search_filter_id=f.id)
+            for f in individual_contact_in.filters
+        ]
+        individual_contact.filters = filters
 
     update_data = individual_contact_in.dict(skip_defaults=True, exclude={"filters"})
 
@@ -116,7 +120,6 @@ def update(
         if field in update_data:
             setattr(individual_contact, field, update_data[field])
 
-    individual_contact.filters = filters
     db_session.add(individual_contact)
     db_session.commit()
     return individual_contact

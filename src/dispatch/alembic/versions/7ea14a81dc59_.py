@@ -34,7 +34,7 @@ class UserRoles(str, Enum):
 
 
 class TimeStampMixin(object):
-    """ Timestamping mixin"""
+    """Timestamping mixin"""
 
     created_at = sa.Column(sa.DateTime, default=datetime.utcnow)
     created_at._creation_order = 9998

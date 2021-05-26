@@ -274,9 +274,7 @@ def handle_engage_oncall_action(
         message = "Could not engage oncall. Oncall service plugin not enabled."
 
     if not oncall_individual and oncall_service:
-        message = (
-            f"A member of {oncall_service.name} is already in the conversation."
-        )
+        message = f"A member of {oncall_service.name} is already in the conversation."
 
     if oncall_individual and oncall_service:
         message = f"You have successfully engaged {oncall_individual.name} from the {oncall_service.name} oncall rotation."
