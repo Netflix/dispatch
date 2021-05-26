@@ -13,7 +13,7 @@ from dispatch import __version__, config
 from dispatch.enums import UserRoles
 
 from .main import *  # noqa
-from .database.core import Base, engine
+from .database.core import engine
 from .database.manage import init_database
 from .exceptions import DispatchException
 from .plugins.base import plugins
@@ -329,6 +329,13 @@ def drop_database(yes):
         click.secho("Success.", fg="green")
 
 
+core_script_path = os.path.join(os.path.dirname(__file__), "database", "revisions", "core")
+tenant_script_path = os.path.join(os.path.dirname(__file__), "database", "revisions", "tenant")
+migration_script_path = os.path.join(
+    os.path.dirname(__file__), "database", "revisions", "multi-tenant-migration.sql"
+)
+
+
 @dispatch_database.command("upgrade")
 @click.option(
     "--tag", default=None, help="Arbitrary 'tag' name - can be used by custom env.py scripts."
@@ -347,19 +354,24 @@ def upgrade_database(tag, sql, revision):
 
     alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
     alembic_cfg = AlembicConfig(alembic_path)
+
     if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
         create_database(str(config.SQLALCHEMY_DATABASE_URI))
-        Base.metadata.create_all(engine)
-        alembic_command.stamp(alembic_cfg, "head")
+        init_database()
     else:
         conn = engine.connect()
         context = MigrationContext.configure(conn)
         current_rev = context.get_current_revision()
-        if not current_rev:
-            Base.metadata.create_all(engine)
-            alembic_command.stamp(alembic_cfg, "head")
+
+        # detect if we need to convert to a multi-tenant schema structure
+        if current_rev == "ec00175489a1":
+            click.secho("Detected single tenant database, converting to multi-tenant...")
+            conn.execute(open(migration_script_path).read())
         else:
-            alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
+            for path in [core_script_path, tenant_script_path]:
+                alembic_cfg.set_main_option("script_location", path)
+                alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
+
     click.secho("Success.", fg="green")
 
 
@@ -431,9 +443,6 @@ def stamp_database(revision, tag, sql):
 
 
 @dispatch_database.command("revision")
-@click.option(
-    "-d", "--directory", default=None, help=('migration script directory (default is "migrations")')
-)
 @click.option("-m", "--message", default=None, help="Revision message")
 @click.option(
     "--autogenerate",
@@ -463,23 +472,24 @@ def stamp_database(revision, tag, sql):
 @click.option(
     "--rev-id", default=None, help=("Specify a hardcoded revision id instead of generating " "one")
 )
-def revision_database(
-    directory, message, autogenerate, sql, head, splice, branch_label, version_path, rev_id
-):
+def revision_database(message, autogenerate, sql, head, splice, branch_label, version_path, rev_id):
     """Create new database revision."""
     alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
     alembic_cfg = AlembicConfig(alembic_path)
-    alembic_command.revision(
-        alembic_cfg,
-        message,
-        autogenerate=autogenerate,
-        sql=sql,
-        head=head,
-        splice=splice,
-        branch_label=branch_label,
-        version_path=version_path,
-        rev_id=rev_id,
-    )
+
+    for path in [core_script_path, tenant_script_path]:
+        alembic_cfg.set_main_option("script_location", path)
+        alembic_command.revision(
+            alembic_cfg,
+            message,
+            autogenerate=autogenerate,
+            sql=sql,
+            head=head,
+            splice=splice,
+            branch_label=branch_label,
+            version_path=version_path,
+            rev_id=rev_id,
+        )
 
 
 @dispatch_cli.group("scheduler")
