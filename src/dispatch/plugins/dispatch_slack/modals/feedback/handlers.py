@@ -30,7 +30,9 @@ def create_rating_feedback_modal(
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     if not incident:
-        message = "Sorry, you cannot submit feedback about this incident. The incident does not exist."
+        message = (
+            "Sorry, you cannot submit feedback about this incident. The incident does not exist."
+        )
         send_ephemeral_message(slack_client, channel_id, user_id, message)
     else:
         modal_create_template = rating_feedback_view(incident=incident)
