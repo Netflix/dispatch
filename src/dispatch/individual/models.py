@@ -61,12 +61,12 @@ class IndividualContactBase(ContactBase):
 
 
 class IndividualContactCreate(IndividualContactBase):
-    filters: Optional[List[SearchFilterRead]] = []
+    filters: Optional[List[SearchFilterRead]]
     project: Optional[ProjectRead]
 
 
 class IndividualContactUpdate(IndividualContactBase):
-    filters: Optional[List[SearchFilterRead]] = []
+    filters: Optional[List[SearchFilterRead]]
 
 
 class IndividualContactRead(IndividualContactBase):
