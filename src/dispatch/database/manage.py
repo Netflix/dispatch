@@ -32,13 +32,23 @@ from .enums import DISPATCH_ORGANIZATION_SCHEMA_PREFIX
 log = logging.getLogger(__file__)
 
 
-def get_dispatch_tables():
+def version_schema(script_location: str):
+    """Applies alembic versioning to schema."""
+    alembic_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "alembic.ini"
+    )
+    alembic_cfg = AlembicConfig(alembic_path)
+    alembic_cfg.set_main_option("script_location", script_location)
+    alembic_command.stamp(alembic_cfg, "head")
+
+
+def get_core_tables():
     """Fetches tables are belong to the 'dispatch' schema."""
-    dispatch_tables = []
+    core_tables = []
     for _, table in Base.metadata.tables.items():
         if table.schema == "dispatch":
-            dispatch_tables.append(table)
-    return dispatch_tables
+            core_tables.append(table)
+    return core_tables
 
 
 def get_tenant_tables():
@@ -59,14 +69,11 @@ def init_database():
     if not engine.dialect.has_schema(engine, schema_name):
         engine.execute(CreateSchema(schema_name))
 
-    tables = get_dispatch_tables()
+    tables = get_core_tables()
     Base.metadata.create_all(engine, tables=tables)
 
-    alembic_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "alembic.ini"
-    )
-    alembic_cfg = AlembicConfig(alembic_path)
-    alembic_command.stamp(alembic_cfg, "head")
+    core_script_path = os.path.join(os.path.dirname(__file__), "revisions", "core")
+    version_schema(script_location=core_script_path)
 
     sync_triggers(tables)
     init_schema(schema_name="default")
@@ -86,12 +93,9 @@ def init_schema(schema_name: str, organization: Organization = None):
 
     Base.metadata.create_all(engine, tables=tables)
 
-    # put the schema under version control
-    # alembic_path = os.path.join(
-    #    os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "alembic.ini"
-    # )
-    # alembic_cfg = AlembicConfig(alembic_path)
-    # alembic_command.stamp(alembic_cfg, "head")
+    # put schema under version control
+    tenant_script_path = os.path.join(os.path.dirname(__file__), "revisions", "tenant")
+    version_schema(script_location=tenant_script_path)
 
     sync_triggers(tables)
 
