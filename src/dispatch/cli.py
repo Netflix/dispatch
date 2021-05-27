@@ -196,16 +196,21 @@ def dispatch_user():
 @dispatch_user.command("update")
 @click.argument("email")
 @click.option(
+    "--project",
+    "-p",
+    help="Project to assign the role.",
+)
+@click.option(
     "--role",
     "-r",
     type=click.Choice(UserRoles),
     help="Role to be assigned to the user.",
 )
-def update_user(email: str, role: str):
+def update_user(email: str, role: str, project: str):
     """Updates a user's roles."""
     from dispatch.database.core import SessionLocal
     from dispatch.auth import service as user_service
-    from dispatch.auth.models import UserUpdate
+    from dispatch.auth.models import UserUpdate, UserProject
 
     db_session = SessionLocal()
     user = user_service.get_by_email(email=email, db_session=db_session)
@@ -213,7 +218,10 @@ def update_user(email: str, role: str):
         click.secho(f"No user found. Email: {email}", fg="red")
         return
 
-    user_service.update(user=user, user_in=UserUpdate(id=user.id, role=role), db_session=db_session)
+    project = UserProject(role=role, project={"name": project})
+    user_service.update(
+        user=user, user_in=UserUpdate(id=user.id, projects=[project]), db_session=db_session
+    )
     click.secho("User successfully updated.", fg="green")
 
 

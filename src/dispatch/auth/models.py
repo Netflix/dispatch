@@ -150,6 +150,9 @@ class UserUpdate(DispatchBase):
     id: int
     password: Optional[str]
 
+    projects: Optional[List[UserProject]]
+    organization: Optional[List[UserOrganization]]
+
     @validator("password", pre=True, always=True)
     def hash(cls, v):
         return hash_password(str(v))
