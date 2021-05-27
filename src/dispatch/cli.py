@@ -347,8 +347,8 @@ migration_script_path = os.path.join(
 @click.option("--revision", nargs=1, default="head", help="Revision identifier.")
 def upgrade_database(tag, sql, revision):
     """Upgrades database schema to newest version."""
+    from sqlalchemy import inspect
     from sqlalchemy_utils import database_exists, create_database
-    from alembic.migration import MigrationContext
 
     alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
     alembic_cfg = AlembicConfig(alembic_path)
@@ -358,11 +358,10 @@ def upgrade_database(tag, sql, revision):
         init_database()
     else:
         conn = engine.connect()
-        context = MigrationContext.configure(conn)
-        current_rev = context.get_current_revision()
 
         # detect if we need to convert to a multi-tenant schema structure
-        if current_rev == "ec00175489a1":
+        schema_names = inspect(engine).get_schema_names()
+        if "dispatch" not in schema_names:
             click.secho("Detected single tenant database, converting to multi-tenant...")
             conn.execute(open(migration_script_path).read())
         else:
