@@ -2,7 +2,6 @@ import pytz
 from datetime import datetime
 
 from dispatch.database.core import SessionLocal
-from dispatch.enums import Visibility
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
