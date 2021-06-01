@@ -82,13 +82,8 @@ def testapp():
 
 @pytest.fixture(scope="session", autouse=True)
 def db():
-    try:
-        if database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
-            drop_database(str(config.SQLALCHEMY_DATABASE_URI))
-    except Exception:
-        pass
-    create_database(str(config.SQLALCHEMY_DATABASE_URI))
-    Base.metadata.create_all(engine)  # Create the tables.
+    from dispatch.database.manage import init_database
+    init_database()
     _db = SessionLocal()
     yield _db
     drop_database(str(config.SQLALCHEMY_DATABASE_URI))
