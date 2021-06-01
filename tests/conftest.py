@@ -22,7 +22,8 @@ environ["METRIC_PROVIDERS"] = ""  # TODO move this to the default
 environ["STATIC_DIR"] = ""  # we don't need static files for tests
 
 from dispatch import config
-from dispatch.database.core import Base, engine, SessionLocal
+from dispatch.database.core import SessionLocal
+from dispatch.database.manage import init_database
 
 from .factories import (
     ConferenceFactory,
@@ -82,8 +83,6 @@ def testapp():
 
 @pytest.fixture(scope="session", autouse=True)
 def db():
-    from dispatch.database.manage import init_database
-
     init_database()
     _db = SessionLocal()
     yield _db
