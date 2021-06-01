@@ -1,6 +1,6 @@
 import pytest
 
-from sqlalchemy_utils import create_database, database_exists, drop_database
+from sqlalchemy_utils import drop_database
 from starlette.testclient import TestClient
 from starlette.config import environ
 
@@ -22,10 +22,11 @@ environ["METRIC_PROVIDERS"] = ""  # TODO move this to the default
 environ["STATIC_DIR"] = ""  # we don't need static files for tests
 
 from dispatch import config
-from dispatch.database.core import SessionLocal
 from dispatch.database.manage import init_database
+from dispatch.database.core import SessionLocal
 
 from .factories import (
+    OrganizationFactory,
     ConferenceFactory,
     ConversationFactory,
     DefinitionFactory,
@@ -83,8 +84,8 @@ def testapp():
 
 @pytest.fixture(scope="session", autouse=True)
 def db():
-    init_database()
     _db = SessionLocal()
+    init_database(db_session=_db)
     yield _db
     drop_database(str(config.SQLALCHEMY_DATABASE_URI))
 
@@ -310,6 +311,11 @@ def participant(session):
 @pytest.fixture
 def participants(session):
     return [ParticipantFactory(), ParticipantFactory()]
+
+
+@pytest.fixture
+def organization(session):
+    return OrganizationFactory()
 
 
 @pytest.fixture

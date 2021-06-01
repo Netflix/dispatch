@@ -7,6 +7,7 @@ from dispatch.database.manage import init_schema
 from dispatch.enums import UserRoles
 from dispatch.auth.models import DispatchUser, DispatchUserOrganization
 
+
 from .models import Organization, OrganizationCreate, OrganizationUpdate
 
 
@@ -32,7 +33,7 @@ def create(*, db_session, organization_in: OrganizationCreate) -> Organization:
     )
     db_session.add(organization)
     db_session.commit()
-    init_schema(organization=organization, schema_name=organization.name)
+    init_schema(db_session=db_session, organization=organization)
     return organization
 
 
