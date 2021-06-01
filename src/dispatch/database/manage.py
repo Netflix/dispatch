@@ -16,13 +16,11 @@ from alembic.config import Config as AlembicConfig
 
 from dispatch import config
 from dispatch.project.models import ProjectCreate
-from dispatch.organization.models import Organization, OrganizationCreate
-from dispatch.organization import service as organization_service
+from dispatch.organization.models import Organization
 from dispatch.project import service as project_service
 
 from .core import (
     Base,
-    SessionLocal,
     engine,
 )
 
@@ -60,7 +58,7 @@ def get_tenant_tables():
     return tenant_tables
 
 
-def init_database():
+def init_database(*, db_session):
     """Initializes a the database."""
     if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
         create_database(str(config.SQLALCHEMY_DATABASE_URI))
@@ -76,13 +74,24 @@ def init_database():
     version_schema(script_location=core_script_path)
 
     sync_triggers(tables)
-    init_schema(schema_name="default")
+
+    # default organization
+    organization = Organization(
+        name="default",
+        default=True,
+        description="Default dispatch organization.",
+    )
+
+    db_session.add(organization)
+    db_session.commit()
+
+    init_schema(db_session=db_session, organization=organization)
 
 
-def init_schema(schema_name: str, organization: Organization = None):
+def init_schema(*, db_session, organization: Organization):
     """Initializing a new schema."""
 
-    schema_name = f"{DISPATCH_ORGANIZATION_SCHEMA_PREFIX}_{schema_name}"
+    schema_name = f"{DISPATCH_ORGANIZATION_SCHEMA_PREFIX}_{organization.name}"
     if not engine.dialect.has_schema(engine, schema_name):
         engine.execute(CreateSchema(schema_name))
 
@@ -98,19 +107,6 @@ def init_schema(schema_name: str, organization: Organization = None):
     version_schema(script_location=tenant_script_path)
 
     sync_triggers(tables)
-
-    db_session = SessionLocal()
-
-    if not organization:
-        # default organization
-        organization = organization_service.get_or_create(
-            db_session=db_session,
-            organization_in=OrganizationCreate(
-                name="default",
-                default=True,
-                description="Default dispatch organization.",
-            ),
-        )
 
     # create any required default values in schema here
     #
