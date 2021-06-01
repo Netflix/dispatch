@@ -2,6 +2,7 @@ import pytz
 from datetime import datetime
 
 from dispatch.database.core import SessionLocal
+from dispatch.enums import Visibility
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
@@ -181,6 +182,10 @@ def update_incident_from_submitted_form(
 
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     existing_incident = IncidentRead.from_orm(incident)
+
+    # we don't allow visibility to be set in slack so we copy it over
+    incident_in.visibility = incident.visibility
+
     updated_incident = incident_service.update(
         db_session=db_session, incident=incident, incident_in=incident_in
     )
