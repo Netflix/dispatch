@@ -4,7 +4,7 @@ const resource = "users"
 
 export default {
   getAll(options) {
-    return API.get(`/${resource}/`, { params: { ...options } })
+    return API.get(`/${resource}`, { params: { ...options } })
   },
   get(userId) {
     return API.get(`/${resource}/${userId}`)
