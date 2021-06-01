@@ -1,14 +1,15 @@
 import pytz
 from datetime import datetime
+
 from dispatch.database.core import SessionLocal
-from dispatch.incident import service as incident_service
+from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
+from dispatch.incident import service as incident_service
+from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentUpdate, IncidentRead, IncidentCreate
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.plugin import service as plugin_service
-from dispatch.event import service as event_service
-
 
 from dispatch.plugins.dispatch_slack.decorators import slack_background_task
 from dispatch.plugins.dispatch_slack.messaging import create_incident_reported_confirmation_message
@@ -180,12 +181,15 @@ def update_incident_from_submitted_form(
 
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     existing_incident = IncidentRead.from_orm(incident)
-    incident_service.update(db_session=db_session, incident=incident, incident_in=incident_in)
+    updated_incident = incident_service.update(
+        db_session=db_session, incident=incident, incident_in=incident_in
+    )
     incident_flows.incident_update_flow(user_email, incident_id, existing_incident)
 
-    send_ephemeral_message(
-        slack_client, channel_id, user_id, "You have sucessfully updated the incident."
-    )
+    if updated_incident.status != IncidentStatus.closed.value:
+        send_ephemeral_message(
+            slack_client, channel_id, user_id, "You have sucessfully updated the incident."
+        )
 
 
 # update participant
