@@ -22,7 +22,7 @@ devtools==0.6.1
     # via -r requirements-dev.in
 factory-boy==3.2.0
     # via -r requirements-dev.in
-faker==8.2.1
+faker==8.4.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -32,7 +32,7 @@ iniconfig==1.1.1
     # via pytest
 ipython-genutils==0.2.0
     # via traitlets
-ipython==7.23.1
+ipython==7.24.0
     # via -r requirements-dev.in
 jedi==0.18.0
     # via ipython

@@ -8,7 +8,7 @@ aiofiles==0.7.0
     # via -r requirements-base.in
 aiohttp==3.7.4.post0
     # via -r requirements-base.in
-alembic==1.6.4
+alembic==1.6.5
     # via -r requirements-base.in
 arrow==1.1.0
     # via -r requirements-base.in
@@ -79,7 +79,7 @@ fastapi==0.65.1
     # via -r requirements-base.in
 google-api-core==1.26.1
     # via google-api-python-client
-google-api-python-client==2.5.0
+google-api-python-client==2.6.0
     # via -r requirements-base.in
 google-auth-httplib2==0.1.0
     # via google-api-python-client
