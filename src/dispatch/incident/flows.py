@@ -1030,7 +1030,7 @@ def conversation_topic_dispatcher(
         )
 
     if conversation_topic_change:
-        if incident.status != IncidentStatus.closed:
+        if incident.status != IncidentStatus.closed.value:
             set_conversation_topic(incident, db_session)
 
 
