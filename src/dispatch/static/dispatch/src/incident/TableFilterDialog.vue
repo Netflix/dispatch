@@ -17,17 +17,7 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <tag-filter-combobox v-model="tag" label="Tags" />
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item>
-          <v-list-item-content>
-            <tag-type-filter-combobox v-model="tag_type" label="Tag Types" />
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item>
-          <v-list-item-content>
-            <incident-type-combobox v-model="incident_type" />
+            <incident-status-multi-select v-model="status" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
@@ -37,7 +27,17 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-status-multi-select v-model="status" />
+            <incident-type-combobox v-model="incident_type" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
+            <tag-filter-combobox v-model="tag" label="Tags" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
+            <tag-type-filter-combobox v-model="tag_type" label="Tag Types" />
           </v-list-item-content>
         </v-list-item>
       </v-list>

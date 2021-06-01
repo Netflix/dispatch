@@ -73,6 +73,7 @@ class Service(DispatchBase):
 # Pydantic models...
 class IncidentTypeBase(DispatchBase):
     name: str
+    visibility: Optional[str]
     description: Optional[str]
     enabled: Optional[bool]
     template_document: Optional[Document]

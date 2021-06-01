@@ -30,6 +30,8 @@ from .models import (
     DispatchUser,
     DispatchUserOrganization,
     DispatchUserProject,
+    UserOrganization,
+    UserProject,
     UserRegister,
     UserUpdate,
 )
@@ -49,6 +51,63 @@ def get(*, db_session, user_id: int) -> Optional[DispatchUser]:
 def get_by_email(*, db_session, email: str) -> Optional[DispatchUser]:
     """Returns a user object based on user email."""
     return db_session.query(DispatchUser).filter(DispatchUser.email == email).one_or_none()
+
+
+def create_or_update_project_role(*, db_session, user: DispatchUser, role_in: UserProject):
+    """Creates a new project role or updates an existing role."""
+    if not role_in.project.id:
+        project = project_service.get_by_name(db_session=db_session, name=role_in.project.name)
+        project_id = project.id
+    else:
+        project_id = role_in.project.id
+
+    project_role = (
+        db_session.query(DispatchUserProject)
+        .filter(
+            DispatchUserProject.dispatch_user_id == user.id,
+        )
+        .filter(DispatchUserProject.project_id == project_id)
+        .one_or_none()
+    )
+
+    if not project_role:
+        return DispatchUserProject(
+            project_id=project_id,
+            role=role_in.role,
+        )
+    project_role.role = role_in.role
+    return project_role
+
+
+def create_or_update_organization_role(
+    *, db_session, user: DispatchUser, role_in: UserOrganization
+):
+    """Creates a new organization role or updates an existing role."""
+    if not role_in.organization.id:
+        organization = organization_service.get_by_name(
+            db_session=db_session, name=role_in.organization.name
+        )
+        organization_id = organization.id
+    else:
+        organization_id = role_in.organization.id
+
+    organization_role = (
+        db_session.query(DispatchUserOrganization)
+        .filter(
+            DispatchUserOrganization.dispatch_user_id == user.id,
+        )
+        .filter(DispatchUserOrganization.organization_id == organization_id)
+        .one_or_none()
+    )
+
+    if not organization_role:
+        return DispatchUserOrganization(
+            organization_id=organization.id,
+            role=role_in.role,
+        )
+
+    organization_role.role = role_in
+    return organization_role
 
 
 def create(*, db_session, user_in: UserRegister) -> DispatchUser:
@@ -105,6 +164,23 @@ def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUs
     if user_in.password:
         password = bytes(user_in.password, "utf-8")
         user.password = password
+
+    if user_in.projects:
+        roles = []
+        for role in user_in.projects:
+            roles.append(
+                create_or_update_project_role(db_session=db_session, user=user, role_in=role)
+            )
+        user.projects = roles
+
+    if user_in.organization:
+        roles = []
+        for role in user_in.organizations:
+            roles.append(
+                create_or_update_organization_role(db_session=db_session, user=user, role_in=role)
+            )
+        user.organizations = roles
+
     db_session.add(user)
     db_session.commit()
     return user

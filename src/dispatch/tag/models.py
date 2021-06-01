@@ -23,7 +23,7 @@ class Tag(Base, TimeStampMixin, ProjectMixin):
     discoverable = Column(Boolean, default=True)
 
     # Relationships
-    tag_type_id = Column(Integer, ForeignKey("tag_type.id"))
+    tag_type_id = Column(Integer, ForeignKey("tag_type.id"), nullable=False)
     tag_type = relationship("TagType", backref="tag")
 
     search_vector = Column(TSVectorType("name"))
