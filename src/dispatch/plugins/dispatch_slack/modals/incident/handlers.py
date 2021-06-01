@@ -181,6 +181,10 @@ def update_incident_from_submitted_form(
 
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     existing_incident = IncidentRead.from_orm(incident)
+
+    # we don't allow visibility to be set in slack so we copy it over
+    incident_in.visibility = incident.visibility
+
     updated_incident = incident_service.update(
         db_session=db_session, incident=incident, incident_in=incident_in
     )
