@@ -11,17 +11,18 @@
         <v-stepper-header>
           <v-stepper-step :complete="e1 > 1" step="1" editable> Filter Data </v-stepper-step>
           <v-divider />
-
           <v-stepper-step :complete="e1 > 2" step="2" editable> Select Fields </v-stepper-step>
-
           <v-divider />
-
           <v-stepper-step step="3" editable> Preview </v-stepper-step>
         </v-stepper-header>
-
         <v-stepper-items>
           <v-stepper-content step="1">
             <v-list dense>
+              <v-list-item>
+                <v-list-item-content>
+                  <incident-window-input v-model="reported_at" label="Reported At" />
+                </v-list-item-content>
+              </v-list-item>
               <v-list-item>
                 <v-list-item-content>
                   <project-combobox v-model="project" label="Projects" />
@@ -53,11 +54,10 @@
                 </v-list-item-content>
               </v-list-item>
             </v-list>
-            <v-btn color="info" @click="e1 = 2"> Continue </v-btn>
-
+            <v-spacer />
             <v-btn @click="closeExport()" text> Cancel </v-btn>
+            <v-btn color="info" @click="e1 = 2"> Continue </v-btn>
           </v-stepper-content>
-
           <v-stepper-content step="2">
             <v-autocomplete
               v-model="selectedFields"
@@ -67,11 +67,10 @@
               chips
               return-object
             />
-            <v-btn color="info" @click="e1 = 3"> Continue </v-btn>
-
+            <v-spacer />
             <v-btn @click="closeExport()" text> Cancel </v-btn>
+            <v-btn color="info" @click="e1 = 3"> Continue </v-btn>
           </v-stepper-content>
-
           <v-stepper-content step="3">
             <v-data-table
               hide-default-footer
@@ -86,11 +85,11 @@
                 <incident-status :status="item.status" :id="item.id" />
               </template>
             </v-data-table>
+            <v-spacer />
+            <v-btn @click="closeExport()" text> Cancel </v-btn>
             <v-badge :value="total" overlap color="info" bordered :content="total">
               <v-btn color="info" @click="exportToCSV()" :loading="exportLoading"> Export </v-btn>
             </v-badge>
-
-            <v-btn @click="closeExport()" text> Cancel </v-btn>
           </v-stepper-content>
         </v-stepper-items>
       </v-stepper>
@@ -105,6 +104,7 @@ import Util from "@/util"
 import SearchUtils from "@/search/utils"
 
 import IncidentApi from "@/incident/api"
+import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
 import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
@@ -164,6 +164,7 @@ export default {
     IncidentStatusMultiSelect,
     IncidentStatus,
     IncidentPriority,
+    IncidentWindowInput,
   },
   computed: {
     ...mapFields("incident", [
@@ -173,6 +174,7 @@ export default {
       "table.options.filters.status",
       "table.options.filters.tag_type",
       "table.options.filters.tag",
+      "table.options.filters.reported_at",
       "table.options",
       "table.rows.items",
       "table.rows.total",
@@ -211,7 +213,15 @@ export default {
   },
   created() {
     this.$watch(
-      (vm) => [vm.incident_type, vm.incident_priority, vm.status, vm.project, vm.tag, vm.tag_type],
+      (vm) => [
+        vm.incident_type,
+        vm.incident_priority,
+        vm.status,
+        vm.project,
+        vm.tag,
+        vm.tag_type,
+        vm.reported_at,
+      ],
       () => {
         this.getPreviewData()
       }

@@ -51,30 +51,42 @@ export default {
     let filterExpression = []
     forEach(filters, function (value, key) {
       let subFilter = []
-      each(value, function (value) {
-        // filter null values
-        if (!value) {
-          return
-        }
-        if (has(value, "id")) {
+      // Handle time windows
+      if (has(value, "start")) {
+        if (value.start) {
           subFilter.push({
-            model: toPascalCase(key),
-            field: "id",
-            op: "==",
-            value: value.id,
+            and: [
+              { model: "Incident", field: key, op: ">=", value: value.start },
+              { model: "Incident", field: key, op: "<=", value: value.end },
+            ],
           })
-        } else if (has(value, "name")) {
-          subFilter.push({
-            model: toPascalCase(key),
-            field: "name",
-            op: "==",
-            value: value.name,
-          })
-        } else {
-          // TODO support other models
-          subFilter.push({ model: "Incident", field: key, op: "==", value: value })
         }
-      })
+      } else {
+        each(value, function (value) {
+          // filter null values
+          if (!value) {
+            return
+          }
+          if (has(value, "id")) {
+            subFilter.push({
+              model: toPascalCase(key),
+              field: "id",
+              op: "==",
+              value: value.id,
+            })
+          } else if (has(value, "name")) {
+            subFilter.push({
+              model: toPascalCase(key),
+              field: "name",
+              op: "==",
+              value: value.name,
+            })
+          } else {
+            // TODO support other models
+            subFilter.push({ model: "Incident", field: key, op: "==", value: value })
+          }
+        })
+      }
       if (subFilter.length > 0) {
         filterExpression.push({ or: subFilter })
       }
