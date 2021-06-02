@@ -12,6 +12,11 @@
       <v-list dense>
         <v-list-item>
           <v-list-item-content>
+            <incident-window-input v-model="reported_at" label="Reported At" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
             <project-combobox v-model="project" label="Projects" />
           </v-list-item-content>
         </v-list-item>
@@ -54,6 +59,7 @@ import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
+import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
 
 export default {
   name: "IncidentTableFilterDialog",
@@ -65,6 +71,7 @@ export default {
     TagTypeFilterCombobox,
     ProjectCombobox,
     IncidentStatusMultiSelect,
+    IncidentWindowInput,
   },
 
   data() {
@@ -76,6 +83,7 @@ export default {
   computed: {
     ...mapFields("incident", [
       "table.options.filters.commander",
+      "table.options.filters.reported_at",
       "table.options.filters.reporter",
       "table.options.filters.incident_type",
       "table.options.filters.incident_priority",

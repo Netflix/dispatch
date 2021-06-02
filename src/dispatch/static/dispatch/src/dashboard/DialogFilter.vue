@@ -12,52 +12,7 @@
       <v-list dense>
         <v-list-item>
           <v-list-item-content>
-            <v-col cols="12" sm="6" md="6">
-              <v-menu
-                v-model="menuStart"
-                :close-on-content-click="false"
-                transition="scale-transition"
-                offset-y
-                min-width="auto"
-              >
-                <template v-slot:activator="{ on, attrs }">
-                  <v-text-field
-                    v-model="filters.window.start"
-                    label="Reported After"
-                    prepend-icon="mdi-calendar"
-                    v-bind="attrs"
-                    v-on="on"
-                  ></v-text-field>
-                </template>
-                <v-date-picker
-                  v-model="filters.window.start"
-                  @input="menuStart = false"
-                ></v-date-picker>
-              </v-menu>
-            </v-col>
-            <v-col cols="12" sm="6" md="6">
-              <v-menu
-                v-model="menuEnd"
-                :close-on-content-click="false"
-                transition="scale-transition"
-                offset-y
-                min-width="auto"
-              >
-                <template v-slot:activator="{ on, attrs }">
-                  <v-text-field
-                    v-model="filters.window.end"
-                    label="Reported Before"
-                    prepend-icon="mdi-calendar"
-                    v-bind="attrs"
-                    v-on="on"
-                  ></v-text-field>
-                </template>
-                <v-date-picker
-                  v-model="filters.window.end"
-                  @input="menuEnd = false"
-                ></v-date-picker>
-              </v-menu>
-            </v-col>
+            <incident-window-input v-model="filters.reported_at" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
@@ -87,28 +42,16 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
-import subMonths from "date-fns/subMonths"
 import { sum } from "lodash"
 
 import RouterUtils from "@/router/utils"
 import SearchUtils from "@/search/utils"
 import IncidentApi from "@/incident/api"
+import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
-
-let defaultStart = function () {
-  let now = new Date()
-  let today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  return subMonths(today, 6).toISOString().substr(0, 10)
-}
-
-let defaultEnd = function () {
-  let now = new Date()
-  let today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  return today.toISOString().substr(0, 10)
-}
 
 export default {
   name: "IncidentOverviewFilterBar",
@@ -124,10 +67,7 @@ export default {
         incident_priority: [],
         status: [],
         tag: [],
-        window: {
-          start: defaultStart(),
-          end: defaultEnd(),
-        },
+        reported_at: {},
       },
     }
   },
@@ -148,32 +88,14 @@ export default {
 
   methods: {
     fetchData() {
-      let windowFilter = [
-        {
-          model: "Incident",
-          field: "reported_at",
-          op: ">=",
-          value: this.filters.window.start,
-        },
-        {
-          model: "Incident",
-          field: "reported_at",
-          op: "<=",
-          value: this.filters.window.end,
-        },
-      ]
-
-      let localFilters = { ...this.filters }
-      delete localFilters.window
-
       let filterOptions = {
         itemsPerPage: -1,
         descending: [false],
         sortBy: ["reported_at"],
-        filters: localFilters,
+        filters: { ...this.filters },
       }
 
-      filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions, windowFilter)
+      filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
 
       this.$emit("loading", "error")
       this.$emit("filterOptions", filterOptions)
@@ -189,6 +111,7 @@ export default {
     IncidentTypeCombobox,
     IncidentPriorityCombobox,
     ProjectCombobox,
+    IncidentWindowInput,
   },
 
   created() {
@@ -196,8 +119,8 @@ export default {
     this.fetchData()
     this.$watch(
       (vm) => [
-        vm.filters.window.start,
-        vm.filters.window.end,
+        vm.filters.reported_at.start,
+        vm.filters.reported_at.end,
         vm.filters.tag,
         vm.filters.incident_priority,
         vm.filters.incident_type,

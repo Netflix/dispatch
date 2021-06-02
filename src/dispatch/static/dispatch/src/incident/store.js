@@ -84,6 +84,10 @@ const state = {
         tag: [],
         project: [],
         tag_type: [],
+        reported_at: {
+          start: null,
+          end: null,
+        },
       },
       q: "",
       page: 1,

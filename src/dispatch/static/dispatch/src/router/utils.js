@@ -6,8 +6,13 @@ export default {
   serializeFilters(filters) {
     let flatFilters = {}
     forEach(filters, function (value, key) {
-      if (key === "window") {
-        flatFilters = { ...flatFilters, ...value }
+      console.log(value, key)
+
+      // handle filter windows
+      if (has(value, "start")) {
+        let startKey = `${key}.start`
+        let endKey = `${key}.end`
+        flatFilters = { ...flatFilters, ...{ [startKey]: value.start, [endKey]: value.end } }
         return
       }
       each(value, function (item) {
@@ -31,11 +36,23 @@ export default {
   deserializeFilters(query) {
     let filters = {}
     forEach(query, function (value, key) {
-      if (["start", "end"].includes(key)) {
-        filters.window = { ...filters.window, ...{ [key]: value } }
+      let parts = key.split(".")
+
+      if (parts.length > 1) {
+        let root = parts[0]
+        if (!filters[root]) {
+          filters[root] = { start: null, end: null }
+        }
+
+        if (key.includes("start")) {
+          filters[root]["start"] = value
+        }
+
+        if (key.includes("end")) {
+          filters[root]["end"] = value
+        }
         return
       }
-
       if (["status"].includes(key)) {
         if (typeof value === "string" || value instanceof String) {
           if (has(filters, key)) {
