@@ -81,7 +81,7 @@ fastapi==0.65.1
     # via -r requirements-base.in
 google-api-core==1.26.1
     # via google-api-python-client
-google-api-python-client==2.6.0
+google-api-python-client==2.7.0
     # via -r requirements-base.in
 google-auth-httplib2==0.1.0
     # via google-api-python-client
