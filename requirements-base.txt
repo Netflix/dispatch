@@ -12,6 +12,8 @@ alembic==1.6.5
     # via -r requirements-base.in
 arrow==1.1.0
     # via -r requirements-base.in
+asgiref==3.3.4
+    # via uvicorn
 async-timeout==3.0.1
     # via aiohttp
 attrs==20.3.0
@@ -327,7 +329,7 @@ urllib3==1.26.5
     #   pdpyras
     #   requests
     #   sentry-sdk
-uvicorn==0.13.4
+uvicorn==0.14.0
     # via -r requirements-base.in
 validators==0.18.2
     # via sqlalchemy-searchable
