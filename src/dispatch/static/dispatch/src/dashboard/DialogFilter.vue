@@ -42,6 +42,7 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
+import subMonths from "date-fns/subMonths"
 import { sum } from "lodash"
 
 import RouterUtils from "@/router/utils"
@@ -52,6 +53,11 @@ import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
+
+let today = function () {
+  let now = new Date()
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate())
+}
 
 export default {
   name: "IncidentOverviewFilterBar",
@@ -67,7 +73,10 @@ export default {
         incident_priority: [],
         status: [],
         tag: [],
-        reported_at: {},
+        reported_at: {
+          start: subMonths(today(), 6).toISOString().substr(0, 10),
+          end: today().toISOString().substr(0, 10),
+        },
       },
     }
   },
