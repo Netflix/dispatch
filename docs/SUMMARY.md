@@ -34,6 +34,8 @@
     - [Definitions](admin-guide/administration/knowledge/definition.md)
     - [Terms](admin-guide/administration/knowledge/term.md)
   - [CLI](admin-guide/administration/cli.md)
+  - [Server](admin-guide/administration/server.md)
+  - [User](admin-guide/administration/user.md)
 - [Contributing](contributing/README.md)
   - [Environment](contributing/environment.md)
   - [Core](contributing/core.md)
