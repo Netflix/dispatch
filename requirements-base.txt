@@ -48,7 +48,7 @@ chardet==3.0.4
     #   aiohttp
     #   emails
     #   requests
-click==7.1.2
+click==8.0.1
     # via
     #   -r requirements-base.in
     #   uvicorn

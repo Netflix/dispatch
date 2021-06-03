@@ -12,7 +12,7 @@ backcall==0.2.0
     # via ipython
 black==21.5b2
     # via -r requirements-dev.in
-click==7.1.2
+click==8.0.1
     # via black
 coverage==5.5
     # via -r requirements-dev.in
