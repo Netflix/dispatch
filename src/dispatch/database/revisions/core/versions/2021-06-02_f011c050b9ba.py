@@ -1,14 +1,14 @@
-"""Initial tenant revision
+"""Initial core revision
 
-Revision ID: ec00175489a1
+Revision ID: f011c050b9ba
 Revises:
-Create Date: 2021-05-26 14:29:14.609785
+Create Date: 2021-06-02 14:09:15.220737
 
 """
 
 # revision identifiers, used by Alembic.
-revision = "ec00175489a1"
-down_revision = None
+revision = "f011c050b9ba"
+down_revision = ""
 branch_labels = None
 depends_on = None
 

@@ -29,13 +29,6 @@ def is_core_table(object, name, type_, reflected, compare_to):
     return False
 
 
-def is_core_schema(name, type_, parent_names):
-    if type_ == "schema":
-        if name == "dispatch":
-            return True
-    return False
-
-
 def run_migrations_online():
     """Run migrations in 'online' mode.
 
@@ -50,12 +43,9 @@ def run_migrations_online():
     print("Migrating dispatch core schema...\n")
     # migrate common tables
     with connectable.connect() as connection:
-        connection.execute("set search_path to dispatch")
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            include_schemas=True,
-            include_name=is_core_schema,
             include_object=is_core_table,
         )
 

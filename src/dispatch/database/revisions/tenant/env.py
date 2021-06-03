@@ -1,7 +1,7 @@
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool, inspect
+from sqlalchemy import engine_from_config, pool
 
 
 from dispatch.config import SQLALCHEMY_DATABASE_URI
@@ -43,6 +43,12 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
+    # this prevents empty revisions from being generated
+    def process_revision_directives(context, revision, directives):
+        script = directives[0]
+        if script.upgrade_ops.is_empty():
+            directives[:] = []
+
     connectable = engine_from_config(
         config.get_section(config.config_ini_section), prefix="sqlalchemy.", poolclass=pool.NullPool
     )
@@ -54,8 +60,8 @@ def run_migrations_online():
             connection=connection,
             target_metadata=target_metadata,
             include_schemas=True,
-            include_name=is_tenant_schema,
             include_object=is_tenant_table,
+            process_revision_directives=process_revision_directives,
         )
 
 
