@@ -382,7 +382,10 @@ def merge_revisions(revisions, message):
     """Combines two revisions."""
     alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
     alembic_cfg = AlembicConfig(alembic_path)
-    alembic_command.merge(alembic_cfg, revisions, message=message)
+    # TODO support per schema merge
+    for path in [core_script_path, tenant_script_path]:
+        alembic_cfg.set_main_option("script_location", path)
+        alembic_command.merge(alembic_cfg, revisions, message=message)
 
 
 @dispatch_database.command("heads")
@@ -390,7 +393,9 @@ def head_database():
     """Shows the heads of the database."""
     alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
     alembic_cfg = AlembicConfig(alembic_path)
-    alembic_command.heads(alembic_cfg)
+    for path in [core_script_path, tenant_script_path]:
+        alembic_cfg.set_main_option("script_location", path)
+        alembic_command.heads(alembic_cfg)
 
 
 @dispatch_database.command("history")
@@ -398,7 +403,9 @@ def history_database():
     """Shows the history of the database."""
     alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
     alembic_cfg = AlembicConfig(alembic_path)
-    alembic_command.history(alembic_cfg)
+    for path in [core_script_path, tenant_script_path]:
+        alembic_cfg.set_main_option("script_location", path)
+        alembic_command.history(alembic_cfg)
 
 
 @dispatch_database.command("downgrade")

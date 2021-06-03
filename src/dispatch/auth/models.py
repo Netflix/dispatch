@@ -81,8 +81,8 @@ class DispatchUser(Base, TimeStampMixin):
 class DispatchUserOrganization(Base, TimeStampMixin):
     __table_args__ = {"schema": "dispatch"}
     id = Column("id", Integer, primary_key=True)
-    dispatch_user_id = Column(Integer, ForeignKey("dispatch.dispatch_user.id"))
-    organization_id = Column(Integer, ForeignKey("dispatch.organization.id"))
+    dispatch_user_id = Column(Integer, ForeignKey("dispatch_user.id"))
+    organization_id = Column(Integer, ForeignKey("organization.id"))
     organization = relationship(Organization)
     role = Column(String)
     dispatch_user = relationship(DispatchUser, backref="organizations")
@@ -90,7 +90,7 @@ class DispatchUserOrganization(Base, TimeStampMixin):
 
 class DispatchUserProject(Base, TimeStampMixin):
     id = Column("id", Integer, primary_key=True)
-    dispatch_user_id = Column(Integer, ForeignKey("dispatch.dispatch_user.id"))
+    dispatch_user_id = Column(Integer, ForeignKey("dispatch_user.id"))
     project_id = Column(Integer, ForeignKey("project.id"))
     project = relationship(Project)
     role = Column(String, nullable=False, default=UserRoles.member)
