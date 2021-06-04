@@ -39,6 +39,7 @@ class TagBase(DispatchBase):
 
 
 class TagCreate(TagBase):
+    id: Optional[int]
     tag_type: TagTypeCreate
     project: ProjectRead
 
