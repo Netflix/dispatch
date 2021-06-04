@@ -279,7 +279,7 @@ six==1.15.0
     #   sqlalchemy-utils
     #   tenacity
     #   validators
-slack-sdk==3.5.1
+slack_sdk==3.6.0
     # via -r requirements-base.in
 sniffio==1.2.0
     # via
