@@ -26,14 +26,17 @@
     </template>
     <template v-slot:selection="{ item, index }">
       <v-chip close @click:close="value.splice(index, 1)">
-        <span v-if="item.tag_type"> {{ item.project.name }}/{{ item.tag_type.name }}/ </span
+        <span v-if="item.tag_type"
+          ><span v-if="!project">{{ item.project.name }}/</span>{{ item.tag_type.name }}/ </span
         >{{ item.name }}
       </v-chip>
     </template>
     <template v-slot:item="data">
       <v-list-item-content>
         <v-list-item-title>
-          {{ data.item.project.name }}/{{ data.item.tag_type.name }}/{{ data.item.name }}
+          <span v-if="!project">{{ data.item.project.name }}/</span>{{ data.item.tag_type.name }}/{{
+            data.item.name
+          }}
         </v-list-item-title>
         <v-list-item-subtitle style="width: 200px" class="text-truncate">
           {{ data.item.description }}
