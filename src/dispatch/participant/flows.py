@@ -19,7 +19,7 @@ def add_participant(
     incident: Incident,
     db_session: SessionLocal,
     service_id: int = None,
-    role: ParticipantRoleType = None,
+    role: ParticipantRoleType = ParticipantRoleType.participant.value,
 ):
     """Adds a participant."""
     # We get or create a new individual
