@@ -331,13 +331,6 @@ def drop_database(yes):
         click.secho("Success.", fg="green")
 
 
-core_script_path = os.path.join(os.path.dirname(__file__), "database", "revisions", "core")
-tenant_script_path = os.path.join(os.path.dirname(__file__), "database", "revisions", "tenant")
-migration_script_path = os.path.join(
-    os.path.dirname(__file__), "database", "revisions", "multi-tenant-migration.sql"
-)
-
-
 @dispatch_database.command("upgrade")
 @click.option(
     "--tag", default=None, help="Arbitrary 'tag' name - can be used by custom env.py scripts."
@@ -349,13 +342,13 @@ migration_script_path = os.path.join(
     help="Don't emit SQL to database - dump to standard output instead.",
 )
 @click.option("--revision", nargs=1, default="head", help="Revision identifier.")
-def upgrade_database(tag, sql, revision):
+@click.option("--revision-type", type=click.Choice(["core", "tenant"]))
+def upgrade_database(tag, sql, revision, revision_type):
     """Upgrades database schema to newest version."""
     from sqlalchemy import inspect
     from sqlalchemy_utils import database_exists, create_database
 
-    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-    alembic_cfg = AlembicConfig(alembic_path)
+    alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
 
     if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
         create_database(str(config.SQLALCHEMY_DATABASE_URI))
@@ -367,9 +360,19 @@ def upgrade_database(tag, sql, revision):
         schema_names = inspect(engine).get_schema_names()
         if "dispatch" not in schema_names:
             click.secho("Detected single tenant database, converting to multi-tenant...")
-            conn.execute(open(migration_script_path).read())
+            conn.execute(open(config.ALEMBIC_MULTI_TENANT_MIGRATION_PATH).read())
+
+        if revision_type:
+            if revision_type == "core":
+                path = config.ALEMBIC_CORE_REVISION_PATH
+
+            elif revision_type == "tenant":
+                path = config.ALEMBIC_TENANT_REVISION_PATH
+
+            alembic_cfg.set_main_option("script_location", path)
+            alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
         else:
-            for path in [core_script_path, tenant_script_path]:
+            for path in [config.ALEMBIC_CORE_REVISION_PATH, config.ALEMBIC_TENANT_REVISION_PATH]:
                 alembic_cfg.set_main_option("script_location", path)
                 alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
 
@@ -378,35 +381,49 @@ def upgrade_database(tag, sql, revision):
 
 @dispatch_database.command("merge")
 @click.argument("revisions", nargs=-1)
+@click.option("--revision-type", type=click.Choice(["core", "tenant"]), default="core")
 @click.option("--message")
-def merge_revisions(revisions, message):
+def merge_revisions(revisions, revision_type, message):
     """Combines two revisions."""
-    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-    alembic_cfg = AlembicConfig(alembic_path)
-    # TODO support per schema merge
-    for path in [core_script_path, tenant_script_path]:
-        alembic_cfg.set_main_option("script_location", path)
-        alembic_command.merge(alembic_cfg, revisions, message=message)
+    alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
+    if revision_type == "core":
+        path = config.ALEMBIC_CORE_REVISION_PATH
+
+    elif revision_type == "tenant":
+        path = config.ALEMBIC_TENANT_REVISION_PATH
+
+    alembic_cfg.set_main_option("script_location", path)
+    alembic_command.merge(alembic_cfg, revisions, message=message)
 
 
 @dispatch_database.command("heads")
-def head_database():
+@click.option("--revision-type", type=click.Choice(["core", "tenant"]), default="core")
+def head_database(revision_type):
     """Shows the heads of the database."""
-    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-    alembic_cfg = AlembicConfig(alembic_path)
-    for path in [core_script_path, tenant_script_path]:
-        alembic_cfg.set_main_option("script_location", path)
-        alembic_command.heads(alembic_cfg)
+    alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
+    if revision_type == "core":
+        path = config.ALEMBIC_CORE_REVISION_PATH
+
+    elif revision_type == "tenant":
+        path = config.ALEMBIC_TENANT_REVISION_PATH
+
+    alembic_cfg.set_main_option("script_location", path)
+    alembic_command.heads(alembic_cfg)
 
 
 @dispatch_database.command("history")
-def history_database():
+@click.option("--revision-type", type=click.Choice(["core", "tenant"]), default="core")
+def history_database(revision_type):
     """Shows the history of the database."""
-    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-    alembic_cfg = AlembicConfig(alembic_path)
-    for path in [core_script_path, tenant_script_path]:
-        alembic_cfg.set_main_option("script_location", path)
-        alembic_command.history(alembic_cfg)
+    alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
+    if revision_type == "core":
+        path = config.ALEMBIC_CORE_REVISION_PATH
+
+    elif revision_type == "tenant":
+        path = config.ALEMBIC_TENANT_REVISION_PATH
+
+    alembic_cfg.set_main_option("script_location", path)
+    alembic_command.history(alembic_cfg)
 
 
 @dispatch_database.command("downgrade")
@@ -420,20 +437,27 @@ def history_database():
     help="Don't emit SQL to database - dump to standard output instead.",
 )
 @click.option("--revision", nargs=1, default="head", help="Revision identifier.")
-def downgrade_database(tag, sql, revision):
+@click.option("--revision-type", type=click.Choice(["core", "tenant"]), default="core")
+def downgrade_database(tag, sql, revision, revision_type):
     """Downgrades database schema to next newest version."""
-    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-    alembic_cfg = AlembicConfig(alembic_path)
-
     if sql and revision == "-1":
         revision = "head:-1"
 
+    alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
+    if revision_type == "core":
+        path = config.ALEMBIC_CORE_REVISION_PATH
+
+    elif revision_type == "tenant":
+        path = config.ALEMBIC_TENANT_REVISION_PATH
+
+    alembic_cfg.set_main_option("script_location", path)
     alembic_command.downgrade(alembic_cfg, revision, sql=sql, tag=tag)
     click.secho("Success.", fg="green")
 
 
 @dispatch_database.command("stamp")
 @click.argument("revision", nargs=1, default="head")
+@click.option("--revision-type", type=click.Choice(["core", "tenant"]), default="core")
 @click.option(
     "--tag", default=None, help="Arbitrary 'tag' name - can be used by custom env.py scripts."
 )
@@ -443,10 +467,17 @@ def downgrade_database(tag, sql, revision):
     default=False,
     help="Don't emit SQL to database - dump to standard output instead.",
 )
-def stamp_database(revision, tag, sql):
+def stamp_database(revision, revision_type, tag, sql):
     """Forces the database to a given revision."""
-    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-    alembic_cfg = AlembicConfig(alembic_path)
+    alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
+
+    if revision_type == "core":
+        path = config.ALEMBIC_CORE_REVISION_PATH
+
+    elif revision_type == "tenant":
+        path = config.ALEMBIC_TENANT_REVISION_PATH
+
+    alembic_cfg.set_main_option("script_location", path)
     alembic_command.stamp(alembic_cfg, revision, sql=sql, tag=tag)
 
 
@@ -460,6 +491,7 @@ def stamp_database(revision, tag, sql):
         "operations, based on comparison of database to model"
     ),
 )
+@click.option("--revision-type", type=click.Choice(["core", "tenant"]))
 @click.option(
     "--sql", is_flag=True, help=("Don't emit SQL to database - dump to standard output " "instead")
 )
@@ -480,14 +512,20 @@ def stamp_database(revision, tag, sql):
 @click.option(
     "--rev-id", default=None, help=("Specify a hardcoded revision id instead of generating " "one")
 )
-def revision_database(message, autogenerate, sql, head, splice, branch_label, version_path, rev_id):
+def revision_database(
+    message, autogenerate, revision_type, sql, head, splice, branch_label, version_path, rev_id
+):
     """Create new database revision."""
-    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-    alembic_cfg = AlembicConfig(alembic_path)
+    alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
 
-    for path in [tenant_script_path, core_script_path]:
+    if revision_type:
+        if revision_type == "core":
+            path = config.ALEMBIC_CORE_REVISION_PATH
+        elif revision_type == "tenant":
+            path = config.ALEMBIC_TENANT_REVISION_PATH
+
         alembic_cfg.set_main_option("script_location", path)
-        alembic_cfg.cmd_opts = types.SimpleNamespace(autogenerate=True)
+        alembic_cfg.cmd_opts = types.SimpleNamespace(cmd="revision")
         alembic_command.revision(
             alembic_cfg,
             message,
@@ -499,6 +537,24 @@ def revision_database(message, autogenerate, sql, head, splice, branch_label, ve
             version_path=version_path,
             rev_id=rev_id,
         )
+    else:
+        for path in [
+            config.ALEMBIC_CORE_REVISION_PATH,
+            config.ALEMBIC_TENANT_REVISION_PATH,
+        ]:
+            alembic_cfg.set_main_option("script_location", path)
+            alembic_cfg.cmd_opts = types.SimpleNamespace(cmd="revision")
+            alembic_command.revision(
+                alembic_cfg,
+                message,
+                autogenerate=autogenerate,
+                sql=sql,
+                head=head,
+                splice=splice,
+                branch_label=branch_label,
+                version_path=version_path,
+                rev_id=rev_id,
+            )
 
 
 @dispatch_cli.group("scheduler")

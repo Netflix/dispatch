@@ -20,7 +20,7 @@ class Report(Base):
     type = Column(String, nullable=False, server_default=ReportTypes.tactical_report)
 
     # relationships
-    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
+    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE", use_alter=True))
     participant_id = Column(Integer, ForeignKey("participant.id"))
     document = relationship("Document", uselist=False, backref="report")
 

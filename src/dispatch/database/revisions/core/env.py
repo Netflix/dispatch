@@ -18,20 +18,13 @@ fileConfig(config.config_file_name)
 
 config.set_main_option("sqlalchemy.url", str(SQLALCHEMY_DATABASE_URI))
 
-
 target_metadata = Base.metadata  # noqa
 
 
 def include_object(object, name, type_, reflected, compare_to):
     if type_ == "table":
-        return object.schema
-    else:
-        return True
-
-
-def include_name(name, type_, parent_names):
-    if type_ == "schema":
-        return name in [None, "dispatch"]
+        if object.schema:
+            return True
     else:
         return True
 
@@ -45,10 +38,9 @@ def run_migrations_online():
     """
     # don't create empty revisions
     def process_revision_directives(context, revision, directives):
-        if config.cmd_opts.autogenerate:
-            script = directives[0]
-            if script.upgrade_ops.is_empty():
-                directives[:] = []
+        script = directives[0]
+        if script.upgrade_ops.is_empty():
+            directives[:] = []
 
     connectable = engine_from_config(
         config.get_section(config.config_ini_section), prefix="sqlalchemy.", poolclass=pool.NullPool
@@ -57,12 +49,13 @@ def run_migrations_online():
     print("Migrating dispatch core schema...\n")
     # migrate common tables
     with connectable.connect() as connection:
+        connection.execute('set search_path to "dispatch"')
+        connection.dialect.default_schema_name = "dispatch"
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
             include_schemas=True,
             include_object=include_object,
-            include_name=include_name,
             process_revision_directives=process_revision_directives,
         )
 

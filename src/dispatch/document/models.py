@@ -43,7 +43,7 @@ class Document(ProjectMixin, ResourceMixin, Base):
     name = Column(String)
     description = Column(String)
     report_id = Column(Integer, ForeignKey("report.id"))
-    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
+    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE", use_alter=True))
 
     filters = relationship("SearchFilter", secondary=assoc_document_filters, backref="documents")
 

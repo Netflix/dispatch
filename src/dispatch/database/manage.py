@@ -24,6 +24,7 @@ from .core import (
     engine,
 )
 
+
 from .enums import DISPATCH_ORGANIZATION_SCHEMA_PREFIX
 
 
@@ -32,10 +33,7 @@ log = logging.getLogger(__file__)
 
 def version_schema(script_location: str):
     """Applies alembic versioning to schema."""
-    alembic_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "alembic.ini"
-    )
-    alembic_cfg = AlembicConfig(alembic_path)
+    alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
     alembic_cfg.set_main_option("script_location", script_location)
     alembic_command.stamp(alembic_cfg, "head")
 
@@ -70,8 +68,7 @@ def init_database(*, db_session):
     tables = get_core_tables()
     Base.metadata.create_all(engine, tables=tables)
 
-    core_script_path = os.path.join(os.path.dirname(__file__), "revisions", "core")
-    version_schema(script_location=core_script_path)
+    version_schema(script_location=config.ALEMBIC_CORE_REVISION_PATH)
 
     sync_triggers(tables)
 
@@ -103,8 +100,7 @@ def init_schema(*, db_session, organization: Organization):
     Base.metadata.create_all(engine, tables=tables)
 
     # put schema under version control
-    tenant_script_path = os.path.join(os.path.dirname(__file__), "revisions", "tenant")
-    version_schema(script_location=tenant_script_path)
+    version_schema(script_location=config.ALEMBIC_TENANT_REVISION_PATH)
 
     sync_triggers(tables)
 
