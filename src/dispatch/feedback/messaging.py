@@ -16,13 +16,14 @@ log = logging.getLogger(__name__)
 
 
 def send_incident_feedback_daily_report(
-    commander_email: str, feedback: List[Feedback], db_session: SessionLocal
+    commander_email: str, feedback: List[Feedback], project_id: int, db_session: SessionLocal
 ):
     """
-    Sends an incident feedback daily report to all
-    incident commanders who received feedback.
+    Sends an incident feedback daily report to all incident commanders who received feedback.
     """
-    plugin = plugin_service.get_active_instance(db_session=db_session, plugin_type="email")
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=project_id, plugin_type="email"
+    )
 
     if not plugin:
         log.warning("Incident feedback daily report not sent. Email plugin is not enabled.")
