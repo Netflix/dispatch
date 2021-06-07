@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import types
 
 import click
 import uvicorn
@@ -484,8 +485,9 @@ def revision_database(message, autogenerate, sql, head, splice, branch_label, ve
     alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
     alembic_cfg = AlembicConfig(alembic_path)
 
-    for path in [core_script_path]:
+    for path in [tenant_script_path, core_script_path]:
         alembic_cfg.set_main_option("script_location", path)
+        alembic_cfg.cmd_opts = types.SimpleNamespace(autogenerate=True)
         alembic_command.revision(
             alembic_cfg,
             message,

@@ -22,18 +22,18 @@ config.set_main_option("sqlalchemy.url", str(SQLALCHEMY_DATABASE_URI))
 target_metadata = Base.metadata  # noqa
 
 
-def is_core_table(object, name, type_, reflected, compare_to):
+def include_object(object, name, type_, reflected, compare_to):
     if type_ == "table":
-        if object.schema == "dispatch":
-            return True
-    return False
+        return object.schema
+    else:
+        return True
 
 
-def is_core_schema(name, type_, parent_names):
+def include_name(name, type_, parent_names):
     if type_ == "schema":
-        if name == "dispatch":
-            return True
-    return False
+        return name in [None, "dispatch"]
+    else:
+        return True
 
 
 def run_migrations_online():
@@ -43,6 +43,13 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
+    # don't create empty revisions
+    def process_revision_directives(context, revision, directives):
+        if config.cmd_opts.autogenerate:
+            script = directives[0]
+            if script.upgrade_ops.is_empty():
+                directives[:] = []
+
     connectable = engine_from_config(
         config.get_section(config.config_ini_section), prefix="sqlalchemy.", poolclass=pool.NullPool
     )
@@ -54,8 +61,9 @@ def run_migrations_online():
             connection=connection,
             target_metadata=target_metadata,
             include_schemas=True,
-            include_object=is_core_table,
-            include_name=is_core_schema,
+            include_object=include_object,
+            include_name=include_name,
+            process_revision_directives=process_revision_directives,
         )
 
         with context.begin_transaction():

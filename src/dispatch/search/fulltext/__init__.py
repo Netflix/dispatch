@@ -244,7 +244,7 @@ class SearchManager:
         return [column for column in table.c if isinstance(column.type, TSVectorType)]
 
     def append_index(self, cls, column):
-        sa.Index("_".join(("ix", column.table.name, column.name)), column, postgresql_using="gin")
+        sa.Index("_".join((column.table.name, column.name, "idx")), column, postgresql_using="gin")
 
     def process_mapper(self, mapper, cls):
         columns = self.inspect_columns(mapper.persist_selectable)
