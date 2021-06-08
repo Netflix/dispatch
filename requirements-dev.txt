@@ -12,7 +12,7 @@ backcall==0.2.0
     # via ipython
 black==21.5b2
     # via -r requirements-dev.in
-click==7.1.2
+click==8.0.1
     # via black
 coverage==5.5
     # via -r requirements-dev.in
@@ -22,7 +22,7 @@ devtools==0.6.1
     # via -r requirements-dev.in
 factory-boy==3.2.0
     # via -r requirements-dev.in
-faker==8.4.0
+faker==8.6.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -32,7 +32,7 @@ iniconfig==1.1.1
     # via pytest
 ipython-genutils==0.2.0
     # via traitlets
-ipython==7.24.0
+ipython==7.24.1
     # via -r requirements-dev.in
 jedi==0.18.0
     # via ipython

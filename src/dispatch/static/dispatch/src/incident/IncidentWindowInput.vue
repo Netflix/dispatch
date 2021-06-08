@@ -130,7 +130,6 @@ export default {
     },
     window: {
       get() {
-        console.log(Object.keys(this.value))
         if (Object.keys(this.value).length > 1) {
           return cloneDeep(this.value)
         }
