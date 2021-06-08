@@ -60,7 +60,7 @@ def init_database(*, db_session):
     if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
         create_database(str(config.SQLALCHEMY_DATABASE_URI))
 
-    schema_name = "dispatch"
+    schema_name = "dispatch_core"
     if not engine.dialect.has_schema(engine, schema_name):
         engine.execute(CreateSchema(schema_name))
 
