@@ -49,6 +49,7 @@ def run_migrations_online():
         script = directives[0]
         if script.upgrade_ops.is_empty():
             directives[:] = []
+            print("No changes found skipping revision creation.")
 
     connectable = engine_from_config(
         config.get_section(config.config_ini_section), prefix="sqlalchemy.", poolclass=pool.NullPool
@@ -58,7 +59,7 @@ def run_migrations_online():
         # get the schema names
         for schema in get_tenant_schemas(connection):
             print(f"Migrating {schema}...")
-            connection.execute(f'set search_path to "{schema}", dispatch')
+            connection.execute(f'set search_path to "{schema}", dispatch_core')
             connection.dialect.default_schema_name = schema
 
             context.configure(
@@ -72,8 +73,9 @@ def run_migrations_online():
             with context.begin_transaction():
                 context.run_migrations()
 
-            if context.config.cmd_opts.cmd == "revision":
-                break
+            if context.config.cmd_opts:
+                if context.config.cmd_opts.cmd == "revision":
+                    break
 
 
 if context.is_offline_mode():

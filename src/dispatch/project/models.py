@@ -6,7 +6,7 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
 from dispatch.models import DispatchBase
 
-from dispatch.organization.models import OrganizationCreate
+from dispatch.organization.models import Organization, OrganizationCreate
 
 
 class Project(Base):
@@ -16,7 +16,7 @@ class Project(Base):
     default = Column(Boolean, default=False)
     color = Column(String)
 
-    organization_id = Column(Integer, ForeignKey("dispatch.organization.id"))
+    organization_id = Column(Integer, ForeignKey(Organization.id))
 
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})

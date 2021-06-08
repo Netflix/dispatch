@@ -8,7 +8,7 @@ from dispatch.models import DispatchBase
 
 
 class Organization(Base):
-    __table_args__ = {"schema": "dispatch"}
+    __table_args__ = {"schema": "dispatch_core"}
 
     id = Column(Integer, primary_key=True)
     name = Column(String)

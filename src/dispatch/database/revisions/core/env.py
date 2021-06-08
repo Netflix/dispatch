@@ -20,10 +20,12 @@ config.set_main_option("sqlalchemy.url", str(SQLALCHEMY_DATABASE_URI))
 
 target_metadata = Base.metadata  # noqa
 
+CORE_SCHEMA_NAME = "dispatch_core"
+
 
 def include_object(object, name, type_, reflected, compare_to):
     if type_ == "table":
-        if object.schema:
+        if object.schema == CORE_SCHEMA_NAME:
             return True
     else:
         return True
@@ -41,16 +43,17 @@ def run_migrations_online():
         script = directives[0]
         if script.upgrade_ops.is_empty():
             directives[:] = []
+            print("No changes found skipping revision creation.")
 
     connectable = engine_from_config(
         config.get_section(config.config_ini_section), prefix="sqlalchemy.", poolclass=pool.NullPool
     )
 
-    print("Migrating dispatch core schema...\n")
+    print("Migrating dispatch core schema...")
     # migrate common tables
     with connectable.connect() as connection:
-        connection.execute('set search_path to "dispatch"')
-        connection.dialect.default_schema_name = "dispatch"
+        connection.execute(f'set search_path to "{CORE_SCHEMA_NAME}"')
+        connection.dialect.default_schema_name = CORE_SCHEMA_NAME
         context.configure(
             connection=connection,
             target_metadata=target_metadata,

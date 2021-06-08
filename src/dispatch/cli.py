@@ -358,7 +358,7 @@ def upgrade_database(tag, sql, revision, revision_type):
 
         # detect if we need to convert to a multi-tenant schema structure
         schema_names = inspect(engine).get_schema_names()
-        if "dispatch" not in schema_names:
+        if "dispatch_core" not in schema_names:
             click.secho("Detected single tenant database, converting to multi-tenant...")
             conn.execute(open(config.ALEMBIC_MULTI_TENANT_MIGRATION_PATH).read())
 

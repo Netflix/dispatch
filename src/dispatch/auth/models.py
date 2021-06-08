@@ -48,7 +48,7 @@ def hash_password(password: str):
 
 
 class DispatchUser(Base, TimeStampMixin):
-    __table_args__ = {"schema": "dispatch"}
+    __table_args__ = {"schema": "dispatch_core"}
 
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True)
@@ -79,7 +79,7 @@ class DispatchUser(Base, TimeStampMixin):
 
 
 class DispatchUserOrganization(Base, TimeStampMixin):
-    __table_args__ = {"schema": "dispatch"}
+    __table_args__ = {"schema": "dispatch_core"}
     id = Column("id", Integer, primary_key=True)
     dispatch_user_id = Column(Integer, ForeignKey(DispatchUser.id))
     organization_id = Column(Integer, ForeignKey(Organization.id))
