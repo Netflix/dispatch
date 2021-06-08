@@ -72,9 +72,9 @@ function login(to, from, next) {
           .performTokenRequest(cfg, req)
           .then((response) => {
             // Redirect to the uri in session storage and then delete it from storage
-            store.dispatch("auth/login", {
-              token: response.accessToken,
-              redirectUri: localStorage.getItem("redirect_uri"),
+            store.commit("SET_USER_LOGIN", response.accessToken)
+            store.dispatch("loginRedirect", localStorage.getItem("redirect_uri")).then(() => {
+              store.dispatch("createExpirationCheck")
             })
             localStorage.removeItem("redirect_uri")
           })
