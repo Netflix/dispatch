@@ -38,10 +38,10 @@ def version_schema(script_location: str):
 
 
 def get_core_tables():
-    """Fetches tables are belong to the 'dispatch' schema."""
+    """Fetches tables are belong to the 'dispatch_core' schema."""
     core_tables = []
     for _, table in Base.metadata.tables.items():
-        if table.schema == "dispatch":
+        if table.schema == "dispatch_core":
             core_tables.append(table)
     return core_tables
 
