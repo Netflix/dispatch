@@ -5,8 +5,7 @@ https://github.com/kvesteri/sqlalchemy-searchable/blob/master/sqlalchemy_searcha
 import os
 from functools import reduce
 
-import sqlalchemy as sa
-from sqlalchemy import event
+from sqlalchemy import event, inspect, func, desc, text, MetaData, Table, Index, orm
 from sqlalchemy.dialects.postgresql.base import RESERVED_WORDS
 from sqlalchemy.schema import DDL
 from sqlalchemy_utils import TSVectorType
@@ -33,7 +32,7 @@ class SearchQueryMixin(object):
 def inspect_search_vectors(entity):
     return [
         getattr(entity, key).property.columns[0]
-        for key, column in sa.inspect(entity).columns.items()
+        for key, column in inspect(entity).columns.items()
         if isinstance(column.type, TSVectorType)
     ]
 
@@ -58,9 +57,9 @@ def search(query, search_query, vector=None, regconfig=None, sort=False):
     if regconfig is None:
         regconfig = search_manager.options["regconfig"]
 
-    query = query.filter(vector.op("@@")(sa.func.tsq_parse(regconfig, search_query)))
+    query = query.filter(vector.op("@@")(func.tsq_parse(regconfig, search_query)))
     if sort:
-        query = query.order_by(sa.desc(sa.func.ts_rank_cd(vector, sa.func.tsq_parse(search_query))))
+        query = query.order_by(desc(func.ts_rank_cd(vector, func.tsq_parse(search_query))))
 
     return query.params(term=search_query)
 
@@ -118,18 +117,18 @@ class SQLConstruct(object):
     def column_vector(self, column):
         if column.name in RESERVED_WORDS:
             column.name = quote_identifier(column.name)
-        value = sa.text("NEW.{column}".format(column=column.name))
+        value = text("NEW.{column}".format(column=column.name))
         try:
             vectorizer_func = vectorizer[column]
         except KeyError:
             pass
         else:
             value = vectorizer_func(value)
-        value = sa.func.coalesce(value, sa.text("''"))
-        value = sa.func.to_tsvector(self.options["regconfig"], value)
+        value = func.coalesce(value, text("''"))
+        value = func.to_tsvector(self.options["regconfig"], value)
         if column.name in self.options["weights"]:
             weight = self.options["weights"][column.name]
-            value = sa.func.setweight(value, weight)
+            value = func.setweight(value, weight)
         return value
 
     @property
@@ -244,7 +243,7 @@ class SearchManager:
         return [column for column in table.c if isinstance(column.type, TSVectorType)]
 
     def append_index(self, cls, column):
-        sa.Index("_".join((column.table.name, column.name, "idx")), column, postgresql_using="gin")
+        Index("_".join((column.table.name, column.name, "idx")), column, postgresql_using="gin")
 
     def process_mapper(self, mapper, cls):
         columns = self.inspect_columns(mapper.persist_selectable)
@@ -379,8 +378,8 @@ def sync_trigger(conn, table_name, tsvector_column, indexed_columns, metadata=No
     :param options: Dictionary of configuration options
     """
     if metadata is None:
-        metadata = sa.MetaData()
-    table = sa.Table(table_name, metadata, autoload=True, autoload_with=conn)
+        metadata = MetaData()
+    table = Table(table_name, metadata, autoload=True, autoload_with=conn)
     params = dict(
         tsvector_column=getattr(table.c, tsvector_column),
         indexed_columns=indexed_columns,
@@ -396,7 +395,7 @@ def sync_trigger(conn, table_name, tsvector_column, indexed_columns, metadata=No
     for class_ in classes:
         sql = class_(**params)
         conn.execute(str(sql), **sql.params)
-    update_sql = table.update().values({indexed_columns[0]: sa.text(indexed_columns[0])})
+    update_sql = table.update().values({indexed_columns[0]: text(indexed_columns[0])})
     conn.execute(update_sql)
 
 
@@ -430,8 +429,8 @@ def drop_trigger(conn, table_name, tsvector_column, metadata=None, options=None)
     :param options: Dictionary of configuration options
     """
     if metadata is None:
-        metadata = sa.MetaData()
-    table = sa.Table(table_name, metadata, autoload=True, autoload_with=conn)
+        metadata = MetaData()
+    table = Table(table_name, metadata, autoload=True, autoload_with=conn)
     params = dict(tsvector_column=getattr(table.c, tsvector_column), options=options, conn=conn)
     classes = [
         DropSearchTriggerSQL,
@@ -449,14 +448,14 @@ with open(os.path.join(path, "expressions.sql")) as file:
     sql_expressions = DDL(file.read())
 
 
-def make_searchable(metadata, mapper=sa.orm.mapper, manager=search_manager, options={}):
+def make_searchable(metadata, mapper=orm.mapper, manager=search_manager, options={}):
     manager.options.update(options)
     event.listen(mapper, "instrument_class", manager.process_mapper)
     # event.listen(mapper, "after_configured", manager.attach_ddl_listeners)
     event.listen(metadata, "before_create", sql_expressions)
 
 
-def remove_listeners(metadata, manager=search_manager, mapper=sa.orm.mapper):
+def remove_listeners(metadata, manager=search_manager, mapper=orm.mapper):
     event.remove(mapper, "instrument_class", manager.process_mapper)
     # event.remove(mapper, "after_configured", manager.attach_ddl_listeners)
     manager.remove_listeners()
