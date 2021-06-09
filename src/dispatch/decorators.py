@@ -6,7 +6,10 @@ from typing import Any, List
 
 from dispatch.metrics import provider as metrics_provider
 
-from .database.core import SessionLocal
+from .database.core import SessionLocal, engine, sessionmaker
+
+from dispatch.organization import service as organization_service
+from dispatch.project import service as project_service
 
 log = logging.getLogger(__name__)
 
@@ -14,6 +17,41 @@ log = logging.getLogger(__name__)
 def fullname(o):
     module = inspect.getmodule(o)
     return f"{module.__name__}.{o.__qualname__}"
+
+
+def scheduled_project_task(func):
+    """Decorator that sets up a background task function with
+    a database session and exception tracking.
+
+    Each task is executed in a specific project context.
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        db_session = SessionLocal()
+        metrics_provider.counter("function.call.counter", tags={"function": fullname(func)})
+        start = time.perf_counter()
+
+        # iterate for all schema
+        for organization in organization_service.get_all(db_session=db_session):
+            schema_engine = engine.execution_options(
+                schema_translate_map={None: f"dispatch_organization_{organization.slug}"}
+            )
+            schema_session = sessionmaker(bind=schema_engine)()
+            kwargs["db_session"] = schema_session
+            for project in project_service.get_all(db_session=schema_session):
+                kwargs["project"] = project
+                try:
+                    func(*args, **kwargs)
+                except Exception as e:
+                    log.exception(e)
+            schema_session.close()
+        elapsed_time = time.perf_counter() - start
+        metrics_provider.timer(
+            "function.elapsed.time", value=elapsed_time, tags={"function": fullname(func)}
+        )
+
+    return wrapper
 
 
 def background_task(func):

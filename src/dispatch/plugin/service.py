@@ -46,7 +46,7 @@ def get_active_instance(
     *, db_session, plugin_type: str, project_id=None
 ) -> Optional[PluginInstance]:
     """Fetches the current active plugin for the given type."""
-    plugin = (
+    return (
         db_session.query(PluginInstance)
         .join(Plugin)
         .filter(Plugin.type == plugin_type)
@@ -55,19 +55,12 @@ def get_active_instance(
         .one_or_none()
     )
 
-    if not plugin:
-        log.error(
-            f"Attempted to fetch active plugin, but none were found. PluginType: {plugin_type} ProjectId: {project_id}"
-        )
-
-    return plugin
-
 
 def get_active_instance_by_slug(
     *, db_session, slug: str, project_id=None
 ) -> Optional[PluginInstance]:
     """Fetches the current active plugin for the given type."""
-    plugin = (
+    return (
         db_session.query(PluginInstance)
         .join(Plugin)
         .filter(Plugin.slug == slug)
@@ -75,13 +68,6 @@ def get_active_instance_by_slug(
         .filter(PluginInstance.enabled == True)  # noqa
         .one_or_none()
     )
-
-    if not plugin:
-        log.error(
-            f"Attempted to fetch active plugin, but none were found. PluginSlug: {slug} ProjectId: {project_id}"
-        )
-
-    return plugin
 
 
 def get_enabled_instances_by_type(

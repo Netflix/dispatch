@@ -9,7 +9,8 @@ from sqlalchemy import func
 from dispatch.database.core import SessionLocal
 from dispatch.config import DISPATCH_HELP_EMAIL
 from dispatch.messaging.strings import DOCUMENT_EVERGREEN_REMINDER
-from dispatch.decorators import background_task
+from dispatch.decorators import scheduled_project_task
+from dispatch.project.models import Project
 from dispatch.plugin import service as plugin_service
 from dispatch.route import service as route_service
 from dispatch.scheduler import scheduler
@@ -22,13 +23,15 @@ log = logging.getLogger(__name__)
 
 
 @scheduler.add(every(1).day, name="document-term-sync")
-@background_task
-def sync_document_terms(db_session=None):
+@scheduled_project_task
+def sync_document_terms(db_session: SessionLocal, project: Project):
     """Performs term extraction from known documents."""
-    p = plugin_service.get_active_instance(db_session=db_session, plugin_type="storage")
+    p = plugin_service.get_active_instance(
+        db_session=db_session, plugin_type="storage", project_id=project.id
+    )
 
     if not p:
-        log.warning("Tried to sync document terms but couldn't find any active storage plugins.")
+        log.debug("Tried to sync document terms but couldn't find any active storage plugins.")
         return
 
     documents = get_all(db_session=db_session)
@@ -61,11 +64,15 @@ def sync_document_terms(db_session=None):
             log.exception(e)
 
 
-def create_reminder(db_session: SessionLocal, owner_email: str, documents: List[Document]):
+def create_reminder(
+    db_session: SessionLocal, project: Project, owner_email: str, documents: List[Document]
+):
     """Contains the logic for document evergreen reminders."""
     # send email
     contact_fullname = contact_weblink = DISPATCH_HELP_EMAIL
-    plugin = plugin_service.get_active_instance(db_session=db_session, plugin_type="email")
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, plugin_type="email", project_id=project.id
+    )
     if not plugin:
         log.warning("Document reminder not sent, no email plugin enabled.")
         return
@@ -111,13 +118,13 @@ def group_documents_by_owner(documents):
 
 
 @scheduler.add(every(1).day.at("18:00"), name="document-evergreen-reminder")
-@background_task
-def create_evergreen_reminders(db_session=None):
+@scheduled_project_task
+def create_evergreen_reminders(db_session: SessionLocal, project: Project):
     """Sends reminders for documents that have evergreen enabled."""
-    documents = get_overdue_evergreen_documents(db_session=db_session)
+    documents = get_overdue_evergreen_documents(db_session=db_session, project_id=project.id)
     log.debug(f"Documents that need reminders. NumDocuments: {len(documents)}")
 
     if documents:
         grouped_documents = group_documents_by_owner(documents)
         for owner, documents in grouped_documents.items():
-            create_reminder(db_session, owner, documents)
+            create_reminder(db_session, project, owner, documents)

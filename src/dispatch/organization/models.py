@@ -12,6 +12,7 @@ class Organization(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    slug = Column(String)
     default = Column(Boolean)
     description = Column(String)
     banner_enabled = Column(Boolean)

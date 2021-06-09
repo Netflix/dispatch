@@ -1,10 +1,11 @@
 import logging
 
 from schedule import every
+from dispatch.database.core import SessionLocal
 
 from dispatch.incident import service as incident_service
-from dispatch.decorators import background_task
-from dispatch.project import service as project_service
+from dispatch.decorators import scheduled_project_task
+from dispatch.project.models import Project
 from dispatch.incident_cost.models import IncidentCostCreate
 from dispatch.incident_cost_type.models import IncidentCostTypeRead
 from dispatch.incident_cost_type import service as incident_cost_type_service
@@ -21,59 +22,58 @@ log = logging.getLogger(__name__)
 
 
 @scheduler.add(every(5).minutes, name="calculate-incidents-response-cost")
-@background_task
-def calculate_incidents_response_cost(db_session=None):
+@scheduled_project_task
+def calculate_incidents_response_cost(db_session: SessionLocal, project: Project):
     """
     Calculates and saves the response cost for all incidents.
     """
-    for project in project_service.get_all(db_session=db_session):
-        response_cost_type = incident_cost_type_service.get_default(
-            db_session=db_session, project_id=project.id
+    response_cost_type = incident_cost_type_service.get_default(
+        db_session=db_session, project_id=project.id
+    )
+    if response_cost_type is None:
+        log.warning(
+            f"A default cost type for response cost does not exist in the {project.name} project. Response costs won't be calculated."
         )
-        if response_cost_type is None:
-            log.warning(
-                f"A default cost type for response cost does not exist in the {project.name} project. Response costs won't be calculated."
+        return
+
+    # we want to update the response cost of all incidents, all the time
+    incidents = incident_service.get_all(db_session=db_session, project_id=project.id)
+    for incident in incidents:
+        try:
+            # we get the response cost for the given incident
+            incident_response_cost = get_by_incident_id_and_incident_cost_type_id(
+                db_session=db_session,
+                incident_id=incident.id,
+                incident_cost_type_id=response_cost_type.id,
             )
-            continue
 
-        # we want to update the response cost of all incidents, all the time
-        incidents = incident_service.get_all(db_session=db_session, project_id=project.id)
-        for incident in incidents:
-            try:
-                # we get the response cost for the given incident
-                incident_response_cost = get_by_incident_id_and_incident_cost_type_id(
-                    db_session=db_session,
-                    incident_id=incident.id,
-                    incident_cost_type_id=response_cost_type.id,
+            if incident_response_cost is None:
+                # we create the response cost if it doesn't exist
+                incident_cost_type = IncidentCostTypeRead.from_orm(response_cost_type)
+                incident_cost_in = IncidentCostCreate(
+                    incident_cost_type=incident_cost_type, project=project
+                )
+                incident_response_cost = create(
+                    db_session=db_session, incident_cost_in=incident_cost_in
                 )
 
-                if incident_response_cost is None:
-                    # we create the response cost if it doesn't exist
-                    incident_cost_type = IncidentCostTypeRead.from_orm(response_cost_type)
-                    incident_cost_in = IncidentCostCreate(
-                        incident_cost_type=incident_cost_type, project=project
-                    )
-                    incident_response_cost = create(
-                        db_session=db_session, incident_cost_in=incident_cost_in
-                    )
+            # we calculate the response cost amount
+            amount = calculate_incident_response_cost(incident.id, db_session)
 
-                # we calculate the response cost amount
-                amount = calculate_incident_response_cost(incident.id, db_session)
+            # we don't need to update the cost amount if it hasn't changed
+            if incident_response_cost.amount == amount:
+                continue
 
-                # we don't need to update the cost amount if it hasn't changed
-                if incident_response_cost.amount == amount:
-                    continue
+            # we save the new incident cost amount
+            incident_response_cost.amount = amount
+            incident.incident_costs.append(incident_response_cost)
+            db_session.add(incident)
+            db_session.commit()
 
-                # we save the new incident cost amount
-                incident_response_cost.amount = amount
-                incident.incident_costs.append(incident_response_cost)
-                db_session.add(incident)
-                db_session.commit()
+            log.debug(
+                f"Response cost amount for {incident.name} incident has been updated in the database."
+            )
 
-                log.debug(
-                    f"Response cost amount for {incident.name} incident has been updated in the database."
-                )
-
-            except Exception as e:
-                # we shouldn't fail to update all incidents when one fails
-                log.exception(e)
+        except Exception as e:
+            # we shouldn't fail to update all incidents when one fails
+            log.exception(e)
