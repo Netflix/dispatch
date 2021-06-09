@@ -83,9 +83,9 @@ def get_overdue_evergreen_documents(*, db_session, project_id) -> List[Optional[
     """Returns all documents that have need had a recent evergreen notification."""
     documents = (
         db_session.query(Document)
-        .filter(Document.evergreen == True)
+        .filter(Document.evergreen == True)  # noqa
         .filter(Document.project_id == project_id)
-    ).all()  # noqa
+    ).all()
     overdue_documents = []
     now = datetime.utcnow()
 

@@ -119,7 +119,10 @@ def create(*, db_session, user_in: UserRegister) -> DispatchUser:
     user = DispatchUser(
         **user_in.dict(exclude={"password", "organizations", "projects"}), password=password
     )
+
     db_session.add(user)
+    db_session.commit()
+    print("-------", user.id)
 
     # get the default organization
     default_org = organization_service.get_default(db_session=db_session)
@@ -134,7 +137,7 @@ def create(*, db_session, user_in: UserRegister) -> DispatchUser:
 
     # add the user to the default project
     user.projects.append(DispatchUserProject(project=default_project, role=UserRoles.member.value))
-
+    db_session.add(user)
     db_session.commit()
     return user
 
