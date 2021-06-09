@@ -116,28 +116,24 @@ def create(*, db_session, user_in: UserRegister) -> DispatchUser:
     password = bytes(user_in.password, "utf-8")
 
     # create the user
-    user = DispatchUser(**user_in.dict(exclude={"password", "organizations"}), password=password)
+    user = DispatchUser(
+        **user_in.dict(exclude={"password", "organizations", "projects"}), password=password
+    )
     db_session.add(user)
 
     # get the default organization
     default_org = organization_service.get_default(db_session=db_session)
 
     # add the user to the default organization
-    db_session.add(
-        DispatchUserOrganization(
-            dispatch_user_id=user.id, organization_id=default_org.id, role=UserRoles.member.value
-        )
+    user.organizations.append(
+        DispatchUserOrganization(organization=default_org, role=UserRoles.member.value)
     )
 
     # get the default project
     default_project = project_service.get_default(db_session=db_session)
 
     # add the user to the default project
-    db_session.add(
-        DispatchUserProject(
-            dispatch_user_id=user.id, project_id=default_project.id, role=UserRoles.member.value
-        )
-    )
+    user.projects.append(DispatchUserProject(project=default_project, role=UserRoles.member.value))
 
     db_session.commit()
     return user

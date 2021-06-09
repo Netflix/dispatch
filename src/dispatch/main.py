@@ -86,7 +86,9 @@ async def db_session_middleware(request: Request, call_next):
         if organization_name:
             # add correct schema mapping depending on the request
             schema_engine = engine.execution_options(
-                schema_translate_map={None: f"dispatch_organization_{organization_name}"}
+                schema_translate_map={
+                    None: f"dispatch_organization_{organization_name}",
+                }
             )
             session = sessionmaker(bind=schema_engine)
         else:
