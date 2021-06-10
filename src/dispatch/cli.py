@@ -6,6 +6,7 @@ import types
 import click
 import uvicorn
 import asyncio
+import sqlalchemy
 from alembic import command as alembic_command
 from alembic.config import Config as AlembicConfig
 from tabulate import tabulate
@@ -360,7 +361,7 @@ def upgrade_database(tag, sql, revision, revision_type):
         schema_names = inspect(engine).get_schema_names()
         if "dispatch_core" not in schema_names:
             click.secho("Detected single tenant database, converting to multi-tenant...")
-            conn.execute(open(config.ALEMBIC_MULTI_TENANT_MIGRATION_PATH).read())
+            conn.execute(sqlalchemy.text(open(config.ALEMBIC_MULTI_TENANT_MIGRATION_PATH).read()))
 
         if revision_type:
             if revision_type == "core":

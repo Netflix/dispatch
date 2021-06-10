@@ -6,6 +6,7 @@ from sqlalchemy import engine_from_config, pool, inspect
 
 from dispatch.config import SQLALCHEMY_DATABASE_URI
 from dispatch.database.core import Base
+from dispatch.database.manage import get_tenant_tables, sync_triggers
 
 
 # this is the Alembic Config object, which provides

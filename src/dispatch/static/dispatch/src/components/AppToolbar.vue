@@ -84,7 +84,7 @@
               <v-list-item-action>
                 <v-tooltip bottom>
                   <template v-slot:activator="{ on }">
-                    <v-btn @click="switchOrganizations(item.name)" icon v-on="on"
+                    <v-btn @click="switchOrganizations(item.slug)" icon v-on="on"
                       ><v-icon>mdi-swap-horizontal</v-icon></v-btn
                     >
                   </template>
@@ -156,8 +156,8 @@ export default {
     toggleDarkTheme() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark
     },
-    switchOrganizations(name) {
-      this.$router.replace({ params: { organization: name } })
+    switchOrganizations(slug) {
+      this.$router.replace({ params: { organization: slug } })
       this.$router.go(this.$router.currentRoute)
     },
     ...mapState("auth", ["currentUser", "userAvatarUrl"]),

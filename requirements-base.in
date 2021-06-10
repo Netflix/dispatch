@@ -26,6 +26,7 @@ pyparsing
 python-dateutil
 python-jose
 python-multipart
+python-slugify
 pytz
 requests
 schedule

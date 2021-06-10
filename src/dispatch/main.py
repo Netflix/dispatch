@@ -82,12 +82,12 @@ async def db_session_middleware(request: Request, call_next):
                 path_params = match.groupdict()
 
         # if this call is organization specific set the correct search path
-        organization_name = path_params.get("organization")
-        if organization_name:
+        organization_slug = path_params.get("organization")
+        if organization_slug:
             # add correct schema mapping depending on the request
             schema_engine = engine.execution_options(
                 schema_translate_map={
-                    None: f"dispatch_organization_{organization_name}",
+                    None: f"dispatch_organization_{organization_slug}",
                 }
             )
             session = sessionmaker(bind=schema_engine)

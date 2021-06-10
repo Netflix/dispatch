@@ -10,4 +10,4 @@ def configure_logging():
     else:
         logging.basicConfig(level=LOG_LEVEL)
 
-    logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
+    # logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)

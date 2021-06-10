@@ -1,5 +1,8 @@
+from slugify import slugify
+
 from typing import List, Optional
 
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy_utils import TSVectorType
 
@@ -12,12 +15,15 @@ class Organization(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    # slug = Column(String)
     default = Column(Boolean)
     description = Column(String)
     banner_enabled = Column(Boolean)
     banner_color = Column(String)
     banner_text = Column(String)
+
+    @hybrid_property
+    def slug(self, name):
+        return slugify(name)
 
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})
@@ -44,6 +50,7 @@ class OrganizationUpdate(OrganizationBase):
 
 class OrganizationRead(OrganizationBase):
     id: int
+    slug: str
 
 
 class OrganizationPagination(DispatchBase):

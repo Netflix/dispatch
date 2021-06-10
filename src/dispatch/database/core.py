@@ -65,9 +65,9 @@ def get_class_by_tablename(table_fullname: str) -> Any:
     mapped_name = resolve_table_name(table_fullname)
     mapped_class = _find_class(mapped_name)
 
-    # try looking in the 'dispatch' schema
+    # try looking in the 'dispatch_core' schema
     if not mapped_class:
-        mapped_class = _find_class(f"dispatch.{mapped_name}")
+        mapped_class = _find_class(f"dispatch_core.{mapped_name}")
 
     if not mapped_class:
         raise Exception(f"Incorrect tablename '{mapped_name}'. Check the name of your model.")

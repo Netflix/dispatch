@@ -1,6 +1,7 @@
 import logging
 import psycopg2
 
+import sqlalchemy
 from sqlalchemy import text
 from sqlalchemy.schema import CreateSchema
 
@@ -87,7 +88,7 @@ def init_database(*, db_session):
 def init_schema(*, db_session, organization: Organization):
     """Initializing a new schema."""
 
-    schema_name = f"{DISPATCH_ORGANIZATION_SCHEMA_PREFIX}_{organization.name}"
+    schema_name = f"{DISPATCH_ORGANIZATION_SCHEMA_PREFIX}_{organization.slug}"
     if not engine.dialect.has_schema(engine, schema_name):
         engine.execute(CreateSchema(schema_name))
 
@@ -135,10 +136,7 @@ def sync_triggers(tables):
                     ]
                     for class_ in classes:
                         sql = class_(**params)
-                        try:
-                            engine.execute(str(sql), **sql.params)
-                        except psycopg2.errors.DuplicateFunction:
-                            pass
+                        engine.execute(str(sql), **sql.params)
 
                     update_sql = table.update().values(
                         {column.type.columns[0]: text(column.type.columns[0])}
