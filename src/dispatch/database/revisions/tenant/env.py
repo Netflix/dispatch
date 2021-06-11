@@ -6,7 +6,7 @@ from sqlalchemy import engine_from_config, pool, inspect
 
 from dispatch.config import SQLALCHEMY_DATABASE_URI
 from dispatch.database.core import Base
-from dispatch.database.manage import get_tenant_tables, sync_triggers
+from dispatch.database.manage import get_tenant_tables, setup_fulltext_search
 
 
 # this is the Alembic Config object, which provides
@@ -60,7 +60,7 @@ def run_migrations_online():
         # get the schema names
         for schema in get_tenant_schemas(connection):
             print(f"Migrating {schema}...")
-            connection.execute(f'set search_path to "{schema}", dispatch_core')
+            connection.execute(f'set search_path to "{schema}"')
             connection.dialect.default_schema_name = schema
 
             context.configure(
@@ -77,6 +77,8 @@ def run_migrations_online():
             if context.config.cmd_opts:
                 if context.config.cmd_opts.cmd == "revision":
                     break
+
+            setup_fulltext_search(connection, get_tenant_tables())
 
 
 if context.is_offline_mode():

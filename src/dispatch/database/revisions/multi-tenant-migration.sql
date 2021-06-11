@@ -71,6 +71,7 @@ END;
 
 $$ LANGUAGE plpgsql VOLATILE;
 
+
 select clone_schema('public', 'dispatch_core');
 select clone_schema('public', 'dispatch_organization_default');
 

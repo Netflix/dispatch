@@ -90,9 +90,14 @@ async def db_session_middleware(request: Request, call_next):
                     None: f"dispatch_organization_{organization_slug}",
                 }
             )
-            session = sessionmaker(bind=schema_engine)
         else:
-            session = sessionmaker(bind=engine)
+            # add correct schema mapping depending on the request
+            schema_engine = engine.execution_options(
+                schema_translate_map={
+                    None: "dispatch_organization_default",
+                }
+            )
+        session = sessionmaker(bind=schema_engine)
 
         if not session:
             return response

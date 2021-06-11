@@ -22,8 +22,8 @@ class Organization(Base):
     banner_text = Column(String)
 
     @hybrid_property
-    def slug(self, name):
-        return slugify(name)
+    def slug(self):
+        return slugify(self.name)
 
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})

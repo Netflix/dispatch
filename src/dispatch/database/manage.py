@@ -1,13 +1,14 @@
+import os
 import logging
-import psycopg2
-
-import sqlalchemy
 from sqlalchemy import text
 from sqlalchemy.schema import CreateSchema
 
+from dispatch.search import fulltext
 from dispatch.search.fulltext import (
     CreateSearchFunctionSQL,
     CreateSearchTriggerSQL,
+    DropSearchFunctionSQL,
+    DropSearchTriggerSQL,
 )
 from sqlalchemy_utils import create_database, database_exists
 
@@ -69,8 +70,9 @@ def init_database(*, db_session):
     Base.metadata.create_all(engine, tables=tables)
 
     version_schema(script_location=config.ALEMBIC_CORE_REVISION_PATH)
+    setup_fulltext_search(db_session, tables)
 
-    sync_triggers(tables)
+    # setup an required database functions
 
     # default organization
     organization = Organization(
@@ -100,9 +102,8 @@ def init_schema(*, db_session, organization: Organization):
     Base.metadata.create_all(engine, tables=tables)
 
     # put schema under version control
-    version_schema(script_location=config.ALEMBIC_TENANT_REVISION_PATH)
-
-    sync_triggers(tables)
+    # version_schema(script_location=config.ALEMBIC_TENANT_REVISION_PATH)
+    setup_fulltext_search(db_session, tables)
 
     # create any required default values in schema here
     #
@@ -118,8 +119,14 @@ def init_schema(*, db_session, organization: Organization):
     )
 
 
-def sync_triggers(tables):
-    """Syncs any required table triggers."""
+def setup_fulltext_search(connection, tables):
+    """Syncs any required fulltext table triggers/functions."""
+    # parsing functions
+    function_path = os.path.join(
+        os.path.dirname(os.path.abspath(fulltext.__file__)), "expressions.sql"
+    )
+    connection.execute(text(open(function_path).read()))
+
     for table in tables:
         for column in table.columns:
             if column.name.endswith("search_vector"):
@@ -128,20 +135,22 @@ def sync_triggers(tables):
                         tsvector_column=getattr(table.c, "search_vector"),
                         indexed_columns=column.type.columns,
                         options=None,
-                        conn=engine,
+                        conn=connection,
                     )
                     classes = [
+                        DropSearchTriggerSQL,
+                        DropSearchFunctionSQL,
                         CreateSearchFunctionSQL,
                         CreateSearchTriggerSQL,
                     ]
                     for class_ in classes:
                         sql = class_(**params)
-                        engine.execute(str(sql), **sql.params)
+                        connection.execute(text(str(sql)), **sql.params)
 
                     update_sql = table.update().values(
                         {column.type.columns[0]: text(column.type.columns[0])}
                     )
-                    engine.execute(update_sql)
+                    connection.execute(update_sql)
                 else:
                     log.warning(
                         f"Column search_vector defined but no index columns found. Table: {table.name}"

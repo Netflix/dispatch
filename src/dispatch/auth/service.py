@@ -122,7 +122,6 @@ def create(*, db_session, user_in: UserRegister) -> DispatchUser:
 
     db_session.add(user)
     db_session.commit()
-    print("-------", user.id)
 
     # get the default organization
     default_org = organization_service.get_default(db_session=db_session)

@@ -73,7 +73,6 @@ const actions = {
           )
         })
         .catch((err) => {
-          console.log(err)
           commit(
             "notification_backend/addBeNotification",
             {
