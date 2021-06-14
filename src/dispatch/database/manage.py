@@ -100,7 +100,6 @@ def init_schema(*, organization: Organization):
 
     # set the schema for table creation
     tables = get_tenant_tables()
-    tables.append(AlembicVersion)
 
     schema_engine = engine.execution_options(
         schema_translate_map={
