@@ -12,23 +12,8 @@ from dispatch.plugins.base import plugins
 from dispatch.project.models import ProjectRead
 
 
-class PluginInstance(Base, ProjectMixin):
-    id = Column(Integer, primary_key=True)
-    enabled = Column(Boolean)
-    configuration = Column(JSONType)
-    plugin_id = Column(Integer, ForeignKey("plugin.id"))
-
-    # this is some magic that allows us to use the plugin search vectors
-    # against our plugin instances
-    search_vector = association_proxy("plugin", "search_vector")
-
-    @property
-    def instance(self):
-        """Fetches a plugin instance that matches this record."""
-        return plugins.get(self.plugin.slug)
-
-
 class Plugin(Base):
+    __table_args__ = {"schema": "dispatch_core"}
     id = Column(Integer, primary_key=True)
     title = Column(String)
     slug = Column(String, unique=True)
@@ -38,8 +23,6 @@ class Plugin(Base):
     author_url = Column(String)
     type = Column(String)
     multiple = Column(Boolean)
-    workflows = relationship("Workflow", backref="plugin")
-    instances = relationship("PluginInstance", backref="plugin")
 
     search_vector = Column(
         TSVectorType(
@@ -50,6 +33,23 @@ class Plugin(Base):
             weights={"title": "A", "slug": "B", "type": "C", "description": "C"},
         )
     )
+
+
+class PluginInstance(Base, ProjectMixin):
+    id = Column(Integer, primary_key=True)
+    enabled = Column(Boolean)
+    configuration = Column(JSONType)
+    plugin_id = Column(Integer, ForeignKey(Plugin.id))
+    plugin = relationship(Plugin, backref="instances")
+
+    # this is some magic that allows us to use the plugin search vectors
+    # against our plugin instances
+    search_vector = association_proxy(Plugin, "search_vector")
+
+    @property
+    def instance(self):
+        """Fetches a plugin instance that matches this record."""
+        return plugins.get(self.plugin.slug)
 
 
 # Pydantic models...

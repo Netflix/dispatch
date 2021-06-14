@@ -157,7 +157,7 @@ export default {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark
     },
     switchOrganizations(slug) {
-      this.$router.replace({ params: { organization: slug } })
+      this.$router.push({ params: { organization: slug } })
       this.$router.go(this.$router.currentRoute)
     },
     ...mapState("auth", ["currentUser", "userAvatarUrl"]),

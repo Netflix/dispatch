@@ -1,14 +1,12 @@
 import os
 import logging
-from sqlalchemy import text
+from sqlalchemy import text, String
 from sqlalchemy.schema import CreateSchema
+from sqlalchemy.sql.schema import Column
 
 from dispatch.search import fulltext
 from dispatch.search.fulltext import (
-    CreateSearchFunctionSQL,
-    CreateSearchTriggerSQL,
-    DropSearchFunctionSQL,
-    DropSearchTriggerSQL,
+    sync_trigger,
 )
 from sqlalchemy_utils import create_database, database_exists
 
@@ -20,10 +18,7 @@ from dispatch.project.models import ProjectCreate
 from dispatch.organization.models import Organization
 from dispatch.project import service as project_service
 
-from .core import (
-    Base,
-    engine,
-)
+from .core import Base, engine, sessionmaker
 
 
 from .enums import DISPATCH_ORGANIZATION_SCHEMA_PREFIX
@@ -34,6 +29,8 @@ log = logging.getLogger(__file__)
 
 def version_schema(script_location: str):
     """Applies alembic versioning to schema."""
+
+    # add it to alembic table
     alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
     alembic_cfg.set_main_option("script_location", script_location)
     alembic_command.stamp(alembic_cfg, "head")
@@ -57,7 +54,7 @@ def get_tenant_tables():
     return tenant_tables
 
 
-def init_database(*, db_session):
+def init_database():
     """Initializes a the database."""
     if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
         create_database(str(config.SQLALCHEMY_DATABASE_URI))
@@ -67,12 +64,19 @@ def init_database(*, db_session):
         engine.execute(CreateSchema(schema_name))
 
     tables = get_core_tables()
-    Base.metadata.create_all(engine, tables=tables)
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            "dispatch_core sessionmaker": "dispatch_core",
+        }
+    )
+    Base.metadata.create_all(schema_engine, tables=tables)
 
     version_schema(script_location=config.ALEMBIC_CORE_REVISION_PATH)
-    setup_fulltext_search(db_session, tables)
+    setup_fulltext_search(schema_engine, tables)
 
     # setup an required database functions
+    session = sessionmaker(bind=schema_engine)
+    db_session = session()
 
     # default organization
     organization = Organization(
@@ -84,10 +88,10 @@ def init_database(*, db_session):
     db_session.add(organization)
     db_session.commit()
 
-    init_schema(db_session=db_session, organization=organization)
+    init_schema(organization=organization)
 
 
-def init_schema(*, db_session, organization: Organization):
+def init_schema(*, organization: Organization):
     """Initializing a new schema."""
 
     schema_name = f"{DISPATCH_ORGANIZATION_SCHEMA_PREFIX}_{organization.slug}"
@@ -96,14 +100,22 @@ def init_schema(*, db_session, organization: Organization):
 
     # set the schema for table creation
     tables = get_tenant_tables()
-    for t in tables:
-        t.schema = schema_name
+    tables.append(AlembicVersion)
 
-    Base.metadata.create_all(engine, tables=tables)
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: schema_name,
+        }
+    )
+
+    Base.metadata.create_all(schema_engine, tables=tables)
 
     # put schema under version control
-    # version_schema(script_location=config.ALEMBIC_TENANT_REVISION_PATH)
-    setup_fulltext_search(db_session, tables)
+    version_schema(script_location=config.ALEMBIC_TENANT_REVISION_PATH)
+    setup_fulltext_search(schema_engine, tables)
+
+    session = sessionmaker(bind=schema_engine)
+    db_session = session()
 
     # create any required default values in schema here
     #
@@ -128,30 +140,22 @@ def setup_fulltext_search(connection, tables):
     connection.execute(text(open(function_path).read()))
 
     for table in tables:
+        table_triggers = []
         for column in table.columns:
             if column.name.endswith("search_vector"):
                 if hasattr(column.type, "columns"):
-                    params = dict(
-                        tsvector_column=getattr(table.c, "search_vector"),
-                        indexed_columns=column.type.columns,
-                        options=None,
-                        conn=connection,
+                    table_triggers.append(
+                        {
+                            "conn": connection,
+                            "table_name": table.name,
+                            "tsvector_column": "search_vector",
+                            "indexed_columns": column.type.columns,
+                        }
                     )
-                    classes = [
-                        DropSearchTriggerSQL,
-                        DropSearchFunctionSQL,
-                        CreateSearchFunctionSQL,
-                        CreateSearchTriggerSQL,
-                    ]
-                    for class_ in classes:
-                        sql = class_(**params)
-                        connection.execute(text(str(sql)), **sql.params)
-
-                    update_sql = table.update().values(
-                        {column.type.columns[0]: text(column.type.columns[0])}
-                    )
-                    connection.execute(update_sql)
                 else:
                     log.warning(
                         f"Column search_vector defined but no index columns found. Table: {table.name}"
                     )
+
+        for trigger in table_triggers:
+            sync_trigger(**trigger)

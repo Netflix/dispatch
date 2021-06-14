@@ -85,7 +85,7 @@ def testapp():
 @pytest.fixture(scope="session", autouse=True)
 def db():
     _db = SessionLocal()
-    init_database(db_session=_db)
+    init_database()
     yield _db
     drop_database(str(config.SQLALCHEMY_DATABASE_URI))
 

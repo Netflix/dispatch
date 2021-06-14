@@ -79,6 +79,7 @@ select clone_schema('public', 'dispatch_organization_default');
 drop table dispatch_organization_default.dispatch_user;
 drop table dispatch_organization_default.organization;
 drop table dispatch_organization_default.dispatch_user_organization;
+drop table dispatch_organization_default.plugin;
 
 drop table dispatch_core.assoc_document_filters;
 drop table dispatch_core.assoc_incident_tags;
@@ -112,7 +113,6 @@ drop table dispatch_core.individual_contact;
 drop table dispatch_core.notification;
 drop table dispatch_core.participant;
 drop table dispatch_core.participant_role;
-drop table dispatch_core.plugin;
 drop table dispatch_core.plugin_instance;
 drop table dispatch_core.project;
 drop table dispatch_core.recommendation;

@@ -223,11 +223,8 @@ def dispatch_database():
 @dispatch_database.command("init")
 def database_init():
     """Initializes a new database."""
-    from dispatch.database.core import SessionLocal
-
     click.echo("Initializing new database...")
-    db_session = SessionLocal()
-    init_database(db_session=db_session)
+    init_database()
     click.secho("Success.", fg="green")
 
 

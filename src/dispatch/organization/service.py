@@ -33,7 +33,7 @@ def create(*, db_session, organization_in: OrganizationCreate) -> Organization:
     )
     db_session.add(organization)
     db_session.commit()
-    init_schema(db_session=db_session, organization=organization)
+    init_schema(organization=organization)
     return organization
 
 
