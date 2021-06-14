@@ -65,6 +65,8 @@ cymem==2.0.5
     #   preshed
     #   spacy
     #   thinc
+decorator==5.0.9
+    # via validators
 defusedxml==0.7.1
     # via jira
 dnspython==2.1.0
@@ -277,6 +279,7 @@ six==1.15.0
     #   sqlalchemy-filters
     #   sqlalchemy-utils
     #   tenacity
+    #   validators
 slack-sdk==3.6.0
     # via -r requirements-base.in
 sniffio==1.2.0
@@ -327,6 +330,8 @@ urllib3==1.26.5
     #   requests
     #   sentry-sdk
 uvicorn==0.14.0
+    # via -r requirements-base.in
+validators==0.18.2
     # via -r requirements-base.in
 wasabi==0.8.2
     # via

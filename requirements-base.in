@@ -41,4 +41,5 @@ sqlalchemy  # NOTE temporarily until https://github.com/kvesteri/sqlalchemy-util
 statsmodels
 tabulate
 tenacity
+validators
 uvicorn
