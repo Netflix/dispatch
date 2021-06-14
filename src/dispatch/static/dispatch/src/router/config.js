@@ -42,6 +42,11 @@ export const publicRoute = [
     meta: { title: "Server Error" },
     component: () => import(/* webpackChunkName: "errors-500" */ "@/views/error/Error.vue"),
   },
+  {
+    path: "/implicit/callback",
+    name: "PKCEImplicityCallback",
+    meta: { requiresAuth: true },
+  },
 ]
 
 // NOTE: The order in which routes are added to the list matters when evaluated. For example, /incidents/report will take precendence over /incidents/:name.

@@ -9,5 +9,3 @@ def configure_logging():
         logging.basicConfig(level=LOG_LEVEL, format=LOGFORMAT)
     else:
         logging.basicConfig(level=LOG_LEVEL)
-
-    # logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
