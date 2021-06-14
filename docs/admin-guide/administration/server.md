@@ -116,10 +116,11 @@ For this plugin to work with your OIDC setup, you may need to set
 `DISPATCH_JWT_AUDIENCE` and `DISPATCH_PKCE_DONT_VERIFY_AT_HASH`.
 {% endhint %}
 
-#### `DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWK` \['default': true\]
+#### `DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS`
 
 > Used by Dispatch's authentication backend to pull the JSON Web Key Set \(JWKS\) public key from the specified provider.
 > This will likely be the `jwks_uri` URL from your OIDC provider.
+> This is required when using the `dispatch-auth-provider-pkce` auth provider.
 
 #### `DISPATCH_PKCE_DONT_VERIFY_AT_HASH` \['default': false\]
 
