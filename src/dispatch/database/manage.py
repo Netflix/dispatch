@@ -66,7 +66,7 @@ def init_database():
     tables = get_core_tables()
     schema_engine = engine.execution_options(
         schema_translate_map={
-            "dispatch_core sessionmaker": "dispatch_core",
+            "dispatch_core": "dispatch_core",
         }
     )
     Base.metadata.create_all(schema_engine, tables=tables)
