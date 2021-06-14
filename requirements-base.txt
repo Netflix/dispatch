@@ -73,7 +73,7 @@ dnspython==2.1.0
     # via email-validator
 ecdsa==0.14.1
     # via python-jose
-email-validator==1.1.2
+email-validator==1.1.3
     # via -r requirements-base.in
 emails==0.6
     # via -r requirements-base.in
@@ -81,7 +81,7 @@ fastapi==0.65.1
     # via -r requirements-base.in
 google-api-core==1.26.1
     # via google-api-python-client
-google-api-python-client==2.8.0
+google-api-python-client==2.9.0
     # via -r requirements-base.in
 google-auth-httplib2==0.1.0
     # via google-api-python-client
