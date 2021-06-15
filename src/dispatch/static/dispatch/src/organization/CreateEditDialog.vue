@@ -124,7 +124,7 @@ export default {
       "selected.banner_text",
       "selected.banner_color",
       "selected.banner_enabled",
-      "loading",
+      "selected.loading",
       "dialogs.showCreateEdit",
     ]),
   },

@@ -148,6 +148,14 @@ def daily_sync_task(db_session: SessionLocal, project: Project):
 @scheduled_project_task
 def sync_active_stable_tasks(db_session: SessionLocal, project: Project):
     """Syncs incident tasks."""
+    task_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=project.id, plugin_type="task"
+    )
+
+    if not task_plugin:
+        log.warning(f"Skipping task sync no task plugin enabled. ProjectId: {project.id}")
+        return
+
     # we get all active and stable incidents
     active_incidents = incident_service.get_all_by_status(
         db_session=db_session, project_id=project.id, status=IncidentStatus.active
@@ -155,5 +163,6 @@ def sync_active_stable_tasks(db_session: SessionLocal, project: Project):
     stable_incidents = incident_service.get_all_by_status(
         db_session=db_session, project_id=project.id, status=IncidentStatus.stable
     )
+
     incidents = active_incidents + stable_incidents
-    sync_tasks(db_session, incidents, notify=True)
+    sync_tasks(db_session, task_plugin, incidents, notify=True)

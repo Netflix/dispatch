@@ -15,7 +15,7 @@ config = context.config
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
-fileConfig(config.config_file_name)
+fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 config.set_main_option("sqlalchemy.url", SQLALCHEMY_DATABASE_URI)
 
@@ -74,11 +74,10 @@ def run_migrations_online():
             with context.begin_transaction():
                 context.run_migrations()
 
+            setup_fulltext_search(connection, get_tenant_tables())
             if context.config.cmd_opts:
                 if context.config.cmd_opts.cmd == "revision":
                     break
-
-            setup_fulltext_search(connection, get_tenant_tables())
 
 
 if context.is_offline_mode():
