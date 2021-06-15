@@ -350,7 +350,7 @@ def upgrade_database(tag, sql, revision, revision_type):
 
     if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
         click.secho("Found no database to upgrade, initializing new database...")
-        init_database()
+        init_database(engine)
     else:
         conn = engine.connect()
 
