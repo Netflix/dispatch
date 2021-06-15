@@ -14,7 +14,6 @@ from dispatch.organization.models import Organization, OrganizationCreate
 class Project(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    slug = Column(String)
     description = Column(String)
     default = Column(Boolean, default=False)
     color = Column(String)
