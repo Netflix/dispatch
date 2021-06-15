@@ -2,6 +2,8 @@ from typing import List, Optional
 
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql.expression import true
+from dispatch.database.core import engine
+
 from dispatch.database.manage import init_schema
 
 from dispatch.enums import UserRoles
@@ -33,7 +35,7 @@ def create(*, db_session, organization_in: OrganizationCreate) -> Organization:
     )
     db_session.add(organization)
     db_session.commit()
-    init_schema(engine=db_session.get_bind(), organization=organization)
+    init_schema(engine=engine, organization=organization)
     return organization
 
 
