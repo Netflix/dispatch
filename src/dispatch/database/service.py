@@ -11,6 +11,7 @@ from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
 
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
+from dispatch.organization.models import Organization
 from dispatch.search.fulltext.composite_search import CompositeSearch
 from dispatch.enums import Visibility
 from dispatch.feedback.models import Feedback
@@ -79,6 +80,7 @@ def apply_model_specific_joins(model: Base, query: orm.query):
         Task: [(Incident, False), (Project, False)],
         PluginInstance: [(Plugin, False)],
         Incident: [(Incident.tags, True), (Incident.terms, True)],
+        DispatchUser: [(DispatchUser.organizations, True)],
     }
 
     joined_models = model_map.get(model, [])

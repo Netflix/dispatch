@@ -1,6 +1,12 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.orm import Session
-from dispatch.auth.permissions import OrganizationOwnerPermission, PermissionsDependency
+from dispatch.auth.permissions import (
+    OrganizationManagerPermission,
+    OrganizationOwnerPermission,
+    OrganizationMemberPermission,
+    OrganizationAdminPermission,
+    PermissionsDependency,
+)
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
@@ -21,11 +27,29 @@ auth_router = APIRouter()
 user_router = APIRouter()
 
 
-@user_router.get("", response_model=UserPagination)
-def get_users(*, common: dict = Depends(common_parameters)):
+@user_router.get(
+    "",
+    dependencies=[
+        Depends(
+            PermissionsDependency(
+                [
+                    OrganizationMemberPermission,
+                    OrganizationOwnerPermission,
+                    OrganizationManagerPermission,
+                    OrganizationAdminPermission,
+                ]
+            )
+        )
+    ],
+    response_model=UserPagination,
+)
+def get_users(*, organization: str, common: dict = Depends(common_parameters)):
     """
     Get all users.
     """
+    common["filter_spec"] = {
+        "and": [{"model": "Organization", "op": "==", "field": "name", "value": organization}]
+    }
     return search_filter_sort_paginate(model="DispatchUser", **common)
 
 
@@ -85,11 +109,12 @@ def login_user(
 @auth_router.post("/register", response_model=UserRegisterResponse)
 def register_user(
     user_in: UserRegister,
+    organization: str,
     db_session: Session = Depends(get_db),
 ):
     user = get_by_email(db_session=db_session, email=user_in.email)
     if not user:
-        user = create(db_session=db_session, user_in=user_in)
+        user = create(db_session=db_session, organization=organization, user_in=user_in)
     else:
         raise HTTPException(status_code=400, detail="User with that email address exists.")
 

@@ -162,7 +162,7 @@ export default {
 
   data() {
     return {
-      oncall_plugins: null,
+      oncall_plugins: [],
     }
   },
 
