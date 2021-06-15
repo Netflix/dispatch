@@ -74,11 +74,12 @@ def get_tag_recommendations(*, db_session: Session = Depends(get_db), model_name
     """
     model_object = get_class_by_tablename(model_name)
     model = db_session.query(model_object).filter(model_object.id == id).one_or_none()
+    project_name = model.project.name
 
     if not model:
         raise HTTPException(
             status_code=404, detail=f"No model found. ModelName: {model_name} Id: {id}"
         )
 
-    tags = get_recommendations(db_session, [t.id for t in model.tags], model_name)
+    tags = get_recommendations(db_session, [t.id for t in model.tags], project_name, model_name)
     return {"items": tags, "total": len(tags)}

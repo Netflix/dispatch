@@ -3,8 +3,6 @@ from sqlalchemy.sql.expression import true
 
 from fastapi.encoders import jsonable_encoder
 
-from dispatch.organization import service as organization_service
-
 from .models import Project, ProjectCreate, ProjectUpdate
 
 
@@ -30,6 +28,8 @@ def get_all(*, db_session) -> List[Optional[Project]]:
 
 def create(*, db_session, project_in: ProjectCreate) -> Project:
     """Creates a project."""
+    from dispatch.organization import service as organization_service
+
     organization = organization_service.get_by_name(
         db_session=db_session, name=project_in.organization.name
     )

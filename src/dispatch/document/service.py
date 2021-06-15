@@ -79,9 +79,13 @@ def get_incident_investigation_sheet_template(*, db_session):
 
 
 # TODO this could also be done with an sql query if we end up with lots of docs
-def get_overdue_evergreen_documents(*, db_session) -> List[Optional[Document]]:
+def get_overdue_evergreen_documents(*, db_session, project_id) -> List[Optional[Document]]:
     """Returns all documents that have need had a recent evergreen notification."""
-    documents = (db_session.query(Document).filter(Document.evergreen == True)).all()  # noqa
+    documents = (
+        db_session.query(Document)
+        .filter(Document.evergreen == True)  # noqa
+        .filter(Document.project_id == project_id)
+    ).all()
     overdue_documents = []
     now = datetime.utcnow()
 

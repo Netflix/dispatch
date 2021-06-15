@@ -48,6 +48,8 @@ def hash_password(password: str):
 
 
 class DispatchUser(Base, TimeStampMixin):
+    __table_args__ = {"schema": "dispatch_core"}
+
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True)
     password = Column(Binary, nullable=False)
@@ -77,21 +79,24 @@ class DispatchUser(Base, TimeStampMixin):
 
 
 class DispatchUserOrganization(Base, TimeStampMixin):
-    id = Column("id", Integer, primary_key=True)
-    dispatch_user_id = Column(Integer, ForeignKey("dispatch_user.id"))
-    organization_id = Column(Integer, ForeignKey("organization.id"))
-    organization = relationship(Organization)
-    role = Column(String)
+    __table_args__ = {"schema": "dispatch_core"}
+    dispatch_user_id = Column(Integer, ForeignKey(DispatchUser.id), primary_key=True)
     dispatch_user = relationship(DispatchUser, backref="organizations")
+
+    organization_id = Column(Integer, ForeignKey(Organization.id), primary_key=True)
+    organization = relationship(Organization, backref="users")
+
+    role = Column(String, default=UserRoles.member)
 
 
 class DispatchUserProject(Base, TimeStampMixin):
-    id = Column("id", Integer, primary_key=True)
-    dispatch_user_id = Column(Integer, ForeignKey("dispatch_user.id"))
-    project_id = Column(Integer, ForeignKey("project.id"))
-    project = relationship(Project)
-    role = Column(String, nullable=False, default=UserRoles.member)
+    dispatch_user_id = Column(Integer, ForeignKey(DispatchUser.id), primary_key=True)
     dispatch_user = relationship(DispatchUser, backref="projects")
+
+    project_id = Column(Integer, ForeignKey(Project.id), primary_key=True)
+    project = relationship(Project, backref="users")
+
+    role = Column(String, nullable=False, default=UserRoles.member)
 
 
 class UserProject(DispatchBase):

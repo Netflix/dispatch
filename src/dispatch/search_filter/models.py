@@ -10,6 +10,8 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
 from dispatch.models import DispatchBase, ProjectMixin
 
+from dispatch.auth.models import DispatchUser
+
 from dispatch.project.models import ProjectRead
 
 
@@ -20,7 +22,7 @@ class SearchFilter(Base, ProjectMixin):
     name = Column(String)
     description = Column(String)
     expression = Column(JSON)
-    creator_id = Column(Integer, ForeignKey("dispatch_user.id"))
+    creator_id = Column(Integer, ForeignKey(DispatchUser.id))
     creator = relationship("DispatchUser", backref="search_filters")
     type = Column(String)
 

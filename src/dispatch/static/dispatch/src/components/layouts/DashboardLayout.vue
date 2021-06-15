@@ -6,8 +6,7 @@
     <notification-snackbars-wrapper />
     <refresh />
     <v-main>
-      <!-- Page Header -->
-      <page-header />
+      <organization-banner />
       <div class="page-wrapper">
         <router-view />
       </div>
@@ -18,9 +17,9 @@
 <script>
 import AppDrawer from "@/components/AppDrawer"
 import AppToolbar from "@/components/AppToolbar"
-import PageHeader from "@/components/PageHeader"
 import Refresh from "@/components/Refresh.vue"
 import NotificationSnackbarsWrapper from "@/components/NotificationSnackbarsWrapper.vue"
+import OrganizationBanner from "@/organization/OrganizationBanner.vue"
 
 export default {
   name: "DashboardLayout",
@@ -33,8 +32,8 @@ export default {
   components: {
     AppDrawer,
     AppToolbar,
-    PageHeader,
     Refresh,
+    OrganizationBanner,
     NotificationSnackbarsWrapper,
   },
 

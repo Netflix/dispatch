@@ -3,13 +3,13 @@ import logging
 from tabulate import tabulate
 from os import path
 
-# from starlette.middleware.gzip import GZipMiddleware
 from fastapi import FastAPI
 from sentry_asgi import SentryMiddleware
 from starlette.applications import Starlette
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import FileResponse, Response, StreamingResponse
+from starlette.routing import compile_path
 from starlette.staticfiles import StaticFiles
 import httpx
 
@@ -71,8 +71,33 @@ async def default_page(request, call_next):
 async def db_session_middleware(request: Request, call_next):
     response = Response("Internal Server Error", status_code=500)
     try:
-        # add correct schema mapping depending on the request
-        session = sessionmaker(bind=engine)
+        # starlette does not fill in the the params object until after the request, we do it manually
+        path_params = {}
+        for r in api_router.routes:
+            path_regex, path_format, param_converters = compile_path(r.path)
+            # remove the /api/v1 for matching
+            path = f"/{request['path'].strip('/api/v1')}"
+            match = path_regex.match(path)
+            if match:
+                path_params = match.groupdict()
+
+        # if this call is organization specific set the correct search path
+        organization_slug = path_params.get("organization")
+        if organization_slug:
+            # add correct schema mapping depending on the request
+            schema_engine = engine.execution_options(
+                schema_translate_map={
+                    None: f"dispatch_organization_{organization_slug}",
+                }
+            )
+        else:
+            # add correct schema mapping depending on the request
+            schema_engine = engine.execution_options(
+                schema_translate_map={
+                    None: "dispatch_organization_default",
+                }
+            )
+        session = sessionmaker(bind=schema_engine)
 
         if not session:
             return response

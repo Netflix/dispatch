@@ -183,6 +183,7 @@ def run_workflow_submitted_form(
     workflow.plugin.instance.run(workflow.resource_id, params)
 
     send_workflow_notification(
+        incident.project.id,
         incident.conversation.channel_id,
         INCIDENT_WORKFLOW_CREATED_NOTIFICATION,
         db_session,

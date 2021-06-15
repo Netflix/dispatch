@@ -13,7 +13,7 @@ from dispatch.database.core import Base
 from dispatch.document.models import DocumentCreate
 from dispatch.models import DispatchBase, ResourceBase, ResourceMixin, TimeStampMixin, ProjectMixin
 from dispatch.participant.models import ParticipantRead
-from dispatch.plugin.models import PluginRead
+from dispatch.plugin.models import Plugin, PluginRead
 from dispatch.project.models import ProjectRead
 
 
@@ -66,7 +66,8 @@ class Workflow(Base, ProjectMixin, TimeStampMixin):
     enabled = Column(Boolean, default=True)
     parameters = Column(JSON, default=[])
     resource_id = Column(String)
-    plugin_id = Column(Integer, ForeignKey("plugin.id"))
+    plugin_id = Column(Integer, ForeignKey(Plugin.id))
+    plugin = relationship(Plugin, backref="workflows")
     instances = relationship("WorkflowInstance", backref="workflow")
     incident_priorities = relationship(
         "IncidentPriority", secondary=assoc_workflow_incident_priorities, backref="workflows"

@@ -33,7 +33,7 @@ class Participant(Base):
     feedback = relationship("Feedback", backref="participant")
     service_id = Column(Integer, ForeignKey("service.id", ondelete="CASCADE"))
     service = relationship("Service", backref="participant")
-    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
+    incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE", use_alter=True))
     individual = relationship("IndividualContact", lazy="subquery", backref="participant")
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
     participant_roles = relationship(

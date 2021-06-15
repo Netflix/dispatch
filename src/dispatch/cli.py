@@ -1,10 +1,12 @@
 import logging
 import os
 import sys
+import types
 
 import click
 import uvicorn
 import asyncio
+import sqlalchemy
 from alembic import command as alembic_command
 from alembic.config import Config as AlembicConfig
 from tabulate import tabulate
@@ -13,7 +15,8 @@ from dispatch import __version__, config
 from dispatch.enums import UserRoles
 
 from .main import *  # noqa
-from .database.core import Base, engine
+from .database.core import engine
+from .database.manage import init_database
 from .exceptions import DispatchException
 from .plugins.base import plugins
 from .scheduler import scheduler
@@ -152,39 +155,6 @@ def uninstall_plugins(plugins):
         plugin_service.delete(db_session=db_session, plugin_id=plugin.id)
 
 
-def sync_triggers():
-    from sqlalchemy_searchable import sync_trigger
-
-    sync_trigger(engine, "definition", "search_vector", ["text"])
-    sync_trigger(engine, "dispatch_user", "search_vector", ["email"])
-    sync_trigger(engine, "document", "search_vector", ["name"])
-    sync_trigger(engine, "incident", "search_vector", ["name", "title", "description"])
-    sync_trigger(engine, "incident_cost_type", "search_vector", ["name", "description"])
-    sync_trigger(engine, "incident_priority", "search_vector", ["name", "description"])
-    sync_trigger(engine, "incident_type", "search_vector", ["name", "description"])
-    sync_trigger(
-        engine, "individual_contact", "search_vector", ["name", "title", "company", "notes"]
-    )
-    sync_trigger(engine, "notification", "search_vector", ["name", "description"])
-    sync_trigger(
-        engine,
-        "plugin",
-        "search_vector",
-        ["title", "slug", "type", "description"],
-    )
-    sync_trigger(engine, "report", "search_vector", ["details_raw"])
-    sync_trigger(engine, "search_filter", "search_vector", ["name", "description"])
-    sync_trigger(engine, "service", "search_vector", ["name"])
-    sync_trigger(engine, "tag", "search_vector", ["name"])
-    sync_trigger(engine, "task", "search_vector", ["description"])
-    sync_trigger(engine, "team_contact", "search_vector", ["name", "company", "notes"])
-    sync_trigger(engine, "term", "search_vector", ["text"])
-    sync_trigger(engine, "workflow", "search_vector", ["name", "description"])
-    sync_trigger(engine, "dispatch_user", "search_vector", ["email"])
-    # sync_trigger(engine, "project", "search_vector", ["name", "description"])
-    # sync_trigger(engine, "organization", "search_vector", ["name", "description"])
-
-
 @dispatch_cli.group("user")
 def dispatch_user():
     """Container for all user commands."""
@@ -250,58 +220,11 @@ def dispatch_database():
     pass
 
 
-@dispatch_database.command("sync-triggers")
-def database_trigger_sync():
-    """Ensures that all database triggers have been installed."""
-    sync_triggers()
-
-    click.secho("Success.", fg="green")
-
-
 @dispatch_database.command("init")
-def init_database():
+def database_init():
     """Initializes a new database."""
-    from sqlalchemy_utils import create_database, database_exists
-    from dispatch.database.core import SessionLocal
-    from dispatch.organization.models import OrganizationCreate
-    from dispatch.organization import service as organization_service
-    from dispatch.project.models import ProjectCreate
-    from dispatch.project import service as project_service
-
-    db_session = SessionLocal()
-
-    if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
-        create_database(str(config.SQLALCHEMY_DATABASE_URI))
-    Base.metadata.create_all(engine)
-    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-    alembic_cfg = AlembicConfig(alembic_path)
-    alembic_command.stamp(alembic_cfg, "head")
-
-    sync_triggers()
-
-    # create any required default values in database
-
-    # default organization
-    click.secho("Creating default organization...", fg="blue")
-    default_org = organization_service.get_or_create(
-        db_session=db_session,
-        organization_in=OrganizationCreate(
-            name="default",
-            default=True,
-            description="Default dispatch organization.",
-        ),
-    )
-    click.secho("Creating default project...", fg="blue")
-    project_service.get_or_create(
-        db_session=db_session,
-        project_in=ProjectCreate(
-            name="default",
-            default=True,
-            description="Default dispatch project.",
-            organization=default_org,
-        ),
-    )
-
+    click.echo("Initializing new database...")
+    init_database(engine)
     click.secho("Success.", fg="green")
 
 
@@ -417,53 +340,87 @@ def drop_database(yes):
     help="Don't emit SQL to database - dump to standard output instead.",
 )
 @click.option("--revision", nargs=1, default="head", help="Revision identifier.")
-def upgrade_database(tag, sql, revision):
+@click.option("--revision-type", type=click.Choice(["core", "tenant"]))
+def upgrade_database(tag, sql, revision, revision_type):
     """Upgrades database schema to newest version."""
-    from sqlalchemy_utils import database_exists, create_database
-    from alembic.migration import MigrationContext
+    from sqlalchemy import inspect
+    from sqlalchemy_utils import database_exists
 
-    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-    alembic_cfg = AlembicConfig(alembic_path)
+    alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
+
     if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
-        create_database(str(config.SQLALCHEMY_DATABASE_URI))
-        Base.metadata.create_all(engine)
-        alembic_command.stamp(alembic_cfg, "head")
+        click.secho("Found no database to upgrade, initializing new database...")
+        init_database()
     else:
         conn = engine.connect()
-        context = MigrationContext.configure(conn)
-        current_rev = context.get_current_revision()
-        if not current_rev:
-            Base.metadata.create_all(engine)
-            alembic_command.stamp(alembic_cfg, "head")
-        else:
+
+        # detect if we need to convert to a multi-tenant schema structure
+        schema_names = inspect(engine).get_schema_names()
+        if "dispatch_core" not in schema_names:
+            click.secho("Detected single tenant database, converting to multi-tenant...")
+            conn.execute(sqlalchemy.text(open(config.ALEMBIC_MULTI_TENANT_MIGRATION_PATH).read()))
+
+        if revision_type:
+            if revision_type == "core":
+                path = config.ALEMBIC_CORE_REVISION_PATH
+
+            elif revision_type == "tenant":
+                path = config.ALEMBIC_TENANT_REVISION_PATH
+
+            alembic_cfg.set_main_option("script_location", path)
             alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
-    sync_triggers()
+        else:
+            for path in [config.ALEMBIC_CORE_REVISION_PATH, config.ALEMBIC_TENANT_REVISION_PATH]:
+                alembic_cfg.set_main_option("script_location", path)
+                alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
+
     click.secho("Success.", fg="green")
 
 
 @dispatch_database.command("merge")
 @click.argument("revisions", nargs=-1)
+@click.option("--revision-type", type=click.Choice(["core", "tenant"]), default="core")
 @click.option("--message")
-def merge_revisions(revisions, message):
+def merge_revisions(revisions, revision_type, message):
     """Combines two revisions."""
-    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-    alembic_cfg = AlembicConfig(alembic_path)
+    alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
+    if revision_type == "core":
+        path = config.ALEMBIC_CORE_REVISION_PATH
+
+    elif revision_type == "tenant":
+        path = config.ALEMBIC_TENANT_REVISION_PATH
+
+    alembic_cfg.set_main_option("script_location", path)
     alembic_command.merge(alembic_cfg, revisions, message=message)
 
 
 @dispatch_database.command("heads")
-def head_database():
+@click.option("--revision-type", type=click.Choice(["core", "tenant"]), default="core")
+def head_database(revision_type):
     """Shows the heads of the database."""
-    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-    alembic_cfg = AlembicConfig(alembic_path)
+    alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
+    if revision_type == "core":
+        path = config.ALEMBIC_CORE_REVISION_PATH
+
+    elif revision_type == "tenant":
+        path = config.ALEMBIC_TENANT_REVISION_PATH
+
+    alembic_cfg.set_main_option("script_location", path)
     alembic_command.heads(alembic_cfg)
 
 
 @dispatch_database.command("history")
-def history_database():
+@click.option("--revision-type", type=click.Choice(["core", "tenant"]), default="core")
+def history_database(revision_type):
     """Shows the history of the database."""
-    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-    alembic_cfg = AlembicConfig(alembic_path)
+    alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
+    if revision_type == "core":
+        path = config.ALEMBIC_CORE_REVISION_PATH
+
+    elif revision_type == "tenant":
+        path = config.ALEMBIC_TENANT_REVISION_PATH
+
+    alembic_cfg.set_main_option("script_location", path)
     alembic_command.history(alembic_cfg)
 
 
@@ -478,20 +435,27 @@ def history_database():
     help="Don't emit SQL to database - dump to standard output instead.",
 )
 @click.option("--revision", nargs=1, default="head", help="Revision identifier.")
-def downgrade_database(tag, sql, revision):
+@click.option("--revision-type", type=click.Choice(["core", "tenant"]), default="core")
+def downgrade_database(tag, sql, revision, revision_type):
     """Downgrades database schema to next newest version."""
-    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-    alembic_cfg = AlembicConfig(alembic_path)
-
     if sql and revision == "-1":
         revision = "head:-1"
 
+    alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
+    if revision_type == "core":
+        path = config.ALEMBIC_CORE_REVISION_PATH
+
+    elif revision_type == "tenant":
+        path = config.ALEMBIC_TENANT_REVISION_PATH
+
+    alembic_cfg.set_main_option("script_location", path)
     alembic_command.downgrade(alembic_cfg, revision, sql=sql, tag=tag)
     click.secho("Success.", fg="green")
 
 
 @dispatch_database.command("stamp")
 @click.argument("revision", nargs=1, default="head")
+@click.option("--revision-type", type=click.Choice(["core", "tenant"]), default="core")
 @click.option(
     "--tag", default=None, help="Arbitrary 'tag' name - can be used by custom env.py scripts."
 )
@@ -501,17 +465,21 @@ def downgrade_database(tag, sql, revision):
     default=False,
     help="Don't emit SQL to database - dump to standard output instead.",
 )
-def stamp_database(revision, tag, sql):
+def stamp_database(revision, revision_type, tag, sql):
     """Forces the database to a given revision."""
-    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-    alembic_cfg = AlembicConfig(alembic_path)
+    alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
+
+    if revision_type == "core":
+        path = config.ALEMBIC_CORE_REVISION_PATH
+
+    elif revision_type == "tenant":
+        path = config.ALEMBIC_TENANT_REVISION_PATH
+
+    alembic_cfg.set_main_option("script_location", path)
     alembic_command.stamp(alembic_cfg, revision, sql=sql, tag=tag)
 
 
 @dispatch_database.command("revision")
-@click.option(
-    "-d", "--directory", default=None, help=('migration script directory (default is "migrations")')
-)
 @click.option("-m", "--message", default=None, help="Revision message")
 @click.option(
     "--autogenerate",
@@ -521,6 +489,7 @@ def stamp_database(revision, tag, sql):
         "operations, based on comparison of database to model"
     ),
 )
+@click.option("--revision-type", type=click.Choice(["core", "tenant"]))
 @click.option(
     "--sql", is_flag=True, help=("Don't emit SQL to database - dump to standard output " "instead")
 )
@@ -542,22 +511,48 @@ def stamp_database(revision, tag, sql):
     "--rev-id", default=None, help=("Specify a hardcoded revision id instead of generating " "one")
 )
 def revision_database(
-    directory, message, autogenerate, sql, head, splice, branch_label, version_path, rev_id
+    message, autogenerate, revision_type, sql, head, splice, branch_label, version_path, rev_id
 ):
     """Create new database revision."""
-    alembic_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "alembic.ini")
-    alembic_cfg = AlembicConfig(alembic_path)
-    alembic_command.revision(
-        alembic_cfg,
-        message,
-        autogenerate=autogenerate,
-        sql=sql,
-        head=head,
-        splice=splice,
-        branch_label=branch_label,
-        version_path=version_path,
-        rev_id=rev_id,
-    )
+    alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
+
+    if revision_type:
+        if revision_type == "core":
+            path = config.ALEMBIC_CORE_REVISION_PATH
+        elif revision_type == "tenant":
+            path = config.ALEMBIC_TENANT_REVISION_PATH
+
+        alembic_cfg.set_main_option("script_location", path)
+        alembic_cfg.cmd_opts = types.SimpleNamespace(cmd="revision")
+        alembic_command.revision(
+            alembic_cfg,
+            message,
+            autogenerate=autogenerate,
+            sql=sql,
+            head=head,
+            splice=splice,
+            branch_label=branch_label,
+            version_path=version_path,
+            rev_id=rev_id,
+        )
+    else:
+        for path in [
+            config.ALEMBIC_CORE_REVISION_PATH,
+            config.ALEMBIC_TENANT_REVISION_PATH,
+        ]:
+            alembic_cfg.set_main_option("script_location", path)
+            alembic_cfg.cmd_opts = types.SimpleNamespace(cmd="revision")
+            alembic_command.revision(
+                alembic_cfg,
+                message,
+                autogenerate=autogenerate,
+                sql=sql,
+                head=head,
+                splice=splice,
+                branch_label=branch_label,
+                version_path=version_path,
+                rev_id=rev_id,
+            )
 
 
 @dispatch_cli.group("scheduler")

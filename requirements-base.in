@@ -1,4 +1,3 @@
-SQLAlchemy-Searchable
 aiofiles
 aiohttp
 alembic
@@ -27,6 +26,7 @@ pyparsing
 python-dateutil
 python-jose
 python-multipart
+python-slugify
 pytz
 requests
 schedule
@@ -36,8 +36,10 @@ sh
 slack_sdk
 spacy==2.3.5
 sqlalchemy-filters
-sqlalchemy>=1.3.7,<1.4.0  # NOTE temporarily until https://github.com/kvesteri/sqlalchemy-utils/issues/505 is fixed
+sqlalchemy-utils
+sqlalchemy  # NOTE temporarily until https://github.com/kvesteri/sqlalchemy-utils/issues/505 is fixed
 statsmodels
 tabulate
 tenacity
+validators
 uvicorn

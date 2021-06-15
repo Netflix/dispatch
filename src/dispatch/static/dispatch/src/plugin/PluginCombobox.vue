@@ -115,7 +115,7 @@ export default {
         descending: [false],
         itemsPerPage: this.numItems,
         filters: {
-          type: [this.type],
+          plugin: [{ model: "Plugin", field: "type", value: this.type }],
         },
       }
 

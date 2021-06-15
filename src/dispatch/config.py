@@ -168,6 +168,23 @@ DATABASE_NAME = config("DATABASE_NAME", default="dispatch")
 DATABASE_PORT = config("DATABASE_PORT", default="5432")
 SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{_DATABASE_CREDENTIAL_USER}:{_QUOTED_DATABASE_PASSWORD}@{DATABASE_HOSTNAME}:{DATABASE_PORT}/{DATABASE_NAME}"
 
+ALEMBIC_CORE_REVISION_PATH = config(
+    "ALEMBIC_CORE_REVISION_PATH",
+    default=f"{os.path.dirname(os.path.realpath(__file__))}/database/revisions/core",
+)
+ALEMBIC_TENANT_REVISION_PATH = config(
+    "ALEMBIC_TENANT_REVISION_PATH",
+    default=f"{os.path.dirname(os.path.realpath(__file__))}/database/revisions/tenant",
+)
+ALEMBIC_INI_PATH = config(
+    "ALEMBIC_INI_PATH",
+    default=f"{os.path.dirname(os.path.realpath(__file__))}/alembic.ini",
+)
+ALEMBIC_MULTI_TENANT_MIGRATION_PATH = config(
+    "ALEMBIC_MULTI_TENANT_MIGRATION_PATH",
+    default=f"{os.path.dirname(os.path.realpath(__file__))}/database/revisions/multi-tenant-migration.sql",
+)
+
 # incident resources
 INCIDENT_STORAGE_FOLDER_ID = config("INCIDENT_STORAGE_FOLDER_ID", default=None)
 
