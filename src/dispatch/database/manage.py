@@ -1,8 +1,7 @@
 import os
 import logging
-from sqlalchemy import text, String
+from sqlalchemy import text
 from sqlalchemy.schema import CreateSchema
-from sqlalchemy.sql.schema import Column
 
 from dispatch.search import fulltext
 from dispatch.search.fulltext import (
@@ -18,7 +17,7 @@ from dispatch.project.models import ProjectCreate
 from dispatch.organization.models import Organization
 from dispatch.project import service as project_service
 
-from .core import Base, engine, sessionmaker
+from .core import Base, sessionmaker
 
 
 from .enums import DISPATCH_ORGANIZATION_SCHEMA_PREFIX
@@ -54,28 +53,25 @@ def get_tenant_tables():
     return tenant_tables
 
 
-def init_database():
+def init_database(engine):
     """Initializes a the database."""
     if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
         create_database(str(config.SQLALCHEMY_DATABASE_URI))
 
     schema_name = "dispatch_core"
     if not engine.dialect.has_schema(engine, schema_name):
-        engine.execute(CreateSchema(schema_name))
+        with engine.connect() as connection:
+            connection.execute(CreateSchema(schema_name))
 
     tables = get_core_tables()
-    schema_engine = engine.execution_options(
-        schema_translate_map={
-            "dispatch_core": "dispatch_core",
-        }
-    )
-    Base.metadata.create_all(schema_engine, tables=tables)
+
+    Base.metadata.create_all(engine, tables=tables)
 
     version_schema(script_location=config.ALEMBIC_CORE_REVISION_PATH)
-    setup_fulltext_search(schema_engine, tables)
+    setup_fulltext_search(engine, tables)
 
     # setup an required database functions
-    session = sessionmaker(bind=schema_engine)
+    session = sessionmaker(bind=engine)
     db_session = session()
 
     # default organization
@@ -88,15 +84,16 @@ def init_database():
     db_session.add(organization)
     db_session.commit()
 
-    init_schema(organization=organization)
+    init_schema(engine=engine, organization=organization)
 
 
-def init_schema(*, organization: Organization):
+def init_schema(*, engine, organization: Organization):
     """Initializing a new schema."""
 
     schema_name = f"{DISPATCH_ORGANIZATION_SCHEMA_PREFIX}_{organization.slug}"
     if not engine.dialect.has_schema(engine, schema_name):
-        engine.execute(CreateSchema(schema_name))
+        with engine.connect() as connection:
+            connection.execute(CreateSchema(schema_name))
 
     # set the schema for table creation
     tables = get_tenant_tables()
@@ -111,7 +108,14 @@ def init_schema(*, organization: Organization):
 
     # put schema under version control
     version_schema(script_location=config.ALEMBIC_TENANT_REVISION_PATH)
-    setup_fulltext_search(schema_engine, tables)
+
+    with engine.connect() as connection:
+        # we need to map this for full text search as it uses sql literal strings
+        # and schema translate map does not apply
+        for t in tables:
+            t.schema = schema_name
+
+        setup_fulltext_search(connection, tables)
 
     session = sessionmaker(bind=schema_engine)
     db_session = session()
@@ -146,7 +150,7 @@ def setup_fulltext_search(connection, tables):
                     table_triggers.append(
                         {
                             "conn": connection,
-                            "table_name": table.name,
+                            "table": table,
                             "tsvector_column": "search_vector",
                             "indexed_columns": column.type.columns,
                         }

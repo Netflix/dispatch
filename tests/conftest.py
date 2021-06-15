@@ -6,7 +6,7 @@ from starlette.config import environ
 
 # set test config
 environ["SECRET_PROVIDER"] = ""
-environ["DATABASE_CREDENTIALS"] = "postgres:dispatch"
+environ["DATABASE_CREDENTIALS"] = "dispatch:dispatch"
 environ["DATABASE_HOSTNAME"] = "localhost"
 environ["DISPATCH_HELP_EMAIL"] = "example@example.com"
 environ["DISPATCH_HELP_SLACK_CHANNEL"] = "help-me"
@@ -23,7 +23,7 @@ environ["STATIC_DIR"] = ""  # we don't need static files for tests
 
 from dispatch import config
 from dispatch.database.manage import init_database
-from dispatch.database.core import SessionLocal
+from dispatch.database.core import engine, sessionmaker
 
 from .factories import (
     OrganizationFactory,
@@ -84,8 +84,15 @@ def testapp():
 
 @pytest.fixture(scope="session", autouse=True)
 def db():
-    _db = SessionLocal()
-    init_database()
+    init_database(engine)
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: "dispatch_organization_default",
+            "dispatch_core": "dispatch_core",
+        }
+    )
+    session = sessionmaker(bind=schema_engine)
+    _db = session()
     yield _db
     drop_database(str(config.SQLALCHEMY_DATABASE_URI))
 

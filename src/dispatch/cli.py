@@ -224,7 +224,7 @@ def dispatch_database():
 def database_init():
     """Initializes a new database."""
     click.echo("Initializing new database...")
-    init_database()
+    init_database(engine)
     click.secho("Success.", fg="green")
 
 
@@ -344,12 +344,12 @@ def drop_database(yes):
 def upgrade_database(tag, sql, revision, revision_type):
     """Upgrades database schema to newest version."""
     from sqlalchemy import inspect
-    from sqlalchemy_utils import database_exists, create_database
+    from sqlalchemy_utils import database_exists
 
     alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
 
     if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
-        create_database(str(config.SQLALCHEMY_DATABASE_URI))
+        click.secho("Found no database to upgrade, initializing new database...")
         init_database()
     else:
         conn = engine.connect()

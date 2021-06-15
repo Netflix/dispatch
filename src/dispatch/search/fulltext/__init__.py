@@ -289,7 +289,7 @@ class SearchManager:
 search_manager = SearchManager()
 
 
-def sync_trigger(conn, table_name, tsvector_column, indexed_columns, metadata=None, options=None):
+def sync_trigger(conn, table, tsvector_column, indexed_columns, metadata=None, options=None):
     """
     Synchronizes search trigger and trigger function for given table and given
     search index column. Internally this function executes the following SQL
@@ -369,7 +369,7 @@ def sync_trigger(conn, table_name, tsvector_column, indexed_columns, metadata=No
         # ... same for downgrade
 
     :param conn: SQLAlchemy Connection object
-    :param table_name: name of the table to apply search trigger syncing
+    :param table: table to apply search trigger syncing
     :param tsvector_column:
         TSVector typed column which is used as the search index column
     :param indexed_columns:
@@ -382,7 +382,6 @@ def sync_trigger(conn, table_name, tsvector_column, indexed_columns, metadata=No
     """
     if metadata is None:
         metadata = MetaData()
-    table = Table(table_name, metadata, autoload=True, autoload_with=conn)
     params = dict(
         tsvector_column=getattr(table.c, tsvector_column),
         indexed_columns=indexed_columns,
