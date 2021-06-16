@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 111fd6746910
+Revision ID: 0ab4f8f54bfa
 Revises: f011c050b9ba
-Create Date: 2021-06-14 09:46:38.125195
+Create Date: 2021-06-15 16:11:19.703274
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "111fd6746910"
+revision = "0ab4f8f54bfa"
 down_revision = "f011c050b9ba"
 branch_labels = None
 depends_on = None
@@ -37,8 +37,8 @@ def upgrade():
     op.create_foreign_key(
         None,
         "dispatch_user_organization",
-        "organization",
-        ["organization_id"],
+        "dispatch_user",
+        ["dispatch_user_id"],
         ["id"],
         source_schema="dispatch_core",
         referent_schema="dispatch_core",
@@ -46,8 +46,8 @@ def upgrade():
     op.create_foreign_key(
         None,
         "dispatch_user_organization",
-        "dispatch_user",
-        ["dispatch_user_id"],
+        "organization",
+        ["organization_id"],
         ["id"],
         source_schema="dispatch_core",
         referent_schema="dispatch_core",

@@ -190,12 +190,12 @@ class CreateSearchTriggerSQL(SQLConstruct):
 
 class DropSearchFunctionSQL(SQLConstruct):
     def __str__(self):
-        return "DROP FUNCTION IF EXISTS %s() CASCADE" % self.search_function_name
+        return "DROP FUNCTION IF EXISTS %s()" % self.search_function_name
 
 
 class DropSearchTriggerSQL(SQLConstruct):
     def __str__(self):
-        return "DROP TRIGGER IF EXISTS %s ON %s CASCADE" % (
+        return "DROP TRIGGER IF EXISTS %s ON %s" % (
             self.search_trigger_name,
             self.table_name,
         )

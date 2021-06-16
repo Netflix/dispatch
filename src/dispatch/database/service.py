@@ -79,6 +79,7 @@ def apply_model_specific_joins(model: Base, query: orm.query):
         Task: [(Incident, False), (Project, False)],
         PluginInstance: [(Plugin, False)],
         Incident: [(Incident.tags, True), (Incident.terms, True)],
+        DispatchUser: [(DispatchUser.organizations, True)],
     }
 
     joined_models = model_map.get(model, [])

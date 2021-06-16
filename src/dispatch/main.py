@@ -92,6 +92,7 @@ async def db_session_middleware(request: Request, call_next):
             )
         else:
             # add correct schema mapping depending on the request
+            # can we set some default here?
             schema_engine = engine.execution_options(
                 schema_translate_map={
                     None: "dispatch_organization_default",

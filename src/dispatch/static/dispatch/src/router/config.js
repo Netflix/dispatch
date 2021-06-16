@@ -14,7 +14,7 @@ export const publicRoute = [
     component: () => import(/* webpackChunkName: "errors-404" */ "@/views/error/NotFound.vue"),
   },
   {
-    path: "/auth",
+    path: "/:organization/auth/",
     component: BasicLayout,
     meta: { title: "Auth", icon: "view_compact", group: "auth" },
     children: [
@@ -202,10 +202,11 @@ export const protectedRoute = [
           component: () => import(/* webpackChunkName: "projects-table" */ "@/project/Table.vue"),
         },
         {
-          path: "users",
-          name: "UserTable",
-          meta: { title: "Users", subMenu: "organization", group: "organization" },
-          component: () => import(/* webpackChunkName: "users-table" */ "@/auth/Table.vue"),
+          path: "members",
+          name: "OrganizationMemberTable",
+          meta: { title: "Members", subMenu: "organization", group: "organization" },
+          component: () =>
+            import(/* webpackChunkName: "users-table" */ "@/auth/OrganizationMemberTable.vue"),
         },
         {
           path: "projects",

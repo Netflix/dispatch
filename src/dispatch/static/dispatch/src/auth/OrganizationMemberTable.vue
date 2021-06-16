@@ -1,7 +1,7 @@
 <template>
   <v-layout wrap>
     <new-edit-sheet />
-    <div class="headline">Users</div>
+    <div class="headline">Organization Members</div>
     <v-spacer />
     <v-flex xs12>
       <v-layout column>
@@ -53,9 +53,9 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import NewEditSheet from "@/auth/editSheet.vue"
+import NewEditSheet from "@/auth/OrganizationMemberEdit.vue"
 export default {
-  name: "UserTable",
+  name: "OrganizationUserTable",
 
   components: {
     NewEditSheet,

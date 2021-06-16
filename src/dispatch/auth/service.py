@@ -110,7 +110,7 @@ def create_or_update_organization_role(
     return organization_role
 
 
-def create(*, db_session, user_in: UserRegister) -> DispatchUser:
+def create(*, db_session, organization: str, user_in: UserRegister) -> DispatchUser:
     """Creates a new dispatch user."""
     # pydantic forces a string password, but we really want bytes
     password = bytes(user_in.password, "utf-8")
@@ -120,15 +120,12 @@ def create(*, db_session, user_in: UserRegister) -> DispatchUser:
         **user_in.dict(exclude={"password", "organizations", "projects"}), password=password
     )
 
-    db_session.add(user)
-    db_session.commit()
-
     # get the default organization
-    default_org = organization_service.get_default(db_session=db_session)
+    org = organization_service.get_by_name(db_session=db_session, name=organization)
 
     # add the user to the default organization
     user.organizations.append(
-        DispatchUserOrganization(organization=default_org, role=UserRoles.member.value)
+        DispatchUserOrganization(organization=org, role=UserRoles.member.value)
     )
 
     # get the default project
@@ -199,4 +196,4 @@ def get_current_user(*, db_session: Session = Depends(get_db), request: Request)
         )
         raise credentials_exception
 
-    return get_or_create(db_session=db_session, user_in=UserRegister(email=user_email))
+    return get_by_email(db_session=db_session, email=user_email)

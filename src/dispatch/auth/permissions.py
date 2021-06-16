@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from fastapi import HTTPException
 from starlette.requests import Request
 from starlette.status import HTTP_403_FORBIDDEN
+from dispatch.auth.models import UserOrganization
 
 from dispatch.enums import UserRoles, Visibility
 from dispatch.auth.service import get_current_user
@@ -56,6 +57,32 @@ def any_permission(permissions: list, request: Request):
     return False
 
 
+def check_organization_role(request, role):
+    current_organization = None
+    if request.path_params.get("organization"):
+        current_organization = organization_service.get_by_name(
+            db_session=request.state.db, name=request.path_params["organization"]
+        )
+    elif request.path_params.get("organization_id"):
+        current_organization = organization_service.get(
+            db_session=request.state.db, organization_id=request.path_params["organization_id"]
+        )
+
+    current_organization = organization_service.get_by_name(
+        db_session=request.state.db, name=request.path_params["organization"]
+    )
+
+    if not current_organization:
+        return
+
+    current_user = get_current_user(db_session=request.state.db, request=request)
+
+    for user_org in current_user.organizations:
+        if user_org.organization.id == current_organization.id:
+            if user_org.role == role:
+                return True
+
+
 class PermissionsDependency(object):
     """
     Permission dependency that is used to define and check all the permission
@@ -89,25 +116,7 @@ class OrganizationOwnerPermission(BasePermission):
         self,
         request: Request,
     ) -> bool:
-        current_organization = None
-        if request.path_params.get("organization"):
-            current_organization = organization_service.get_by_name(
-                db_session=request.state.db, name=request.path_params["organization"]
-            )
-        elif request.path_params.get("organization_id"):
-            current_organization = organization_service.get(
-                db_session=request.state.db, organization_id=request.path_params["organization_id"]
-            )
-
-        if not current_organization:
-            return
-
-        current_user = get_current_user(db_session=request.state.db, request=request)
-
-        for user_org in current_user.organizations:
-            if user_org.organization.id == current_organization.id:
-                if user_org.role == UserRoles.owner:
-                    return True
+        return check_organization_role(request, UserRoles.admin)
 
 
 class OrganizationManagerPermission(BasePermission):
@@ -115,19 +124,23 @@ class OrganizationManagerPermission(BasePermission):
         self,
         request: Request,
     ) -> bool:
-        current_organization = organization_service.get_by_name(
-            db_session=request.state.db, name=request.path_params["organization"]
-        )
+        return check_organization_role(request, UserRoles.manager)
 
-        if not current_organization:
-            return
 
-        current_user = get_current_user(db_session=request.state.db, request=request)
+class OrganizationMemberPermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        return check_organization_role(request, UserOrganization.member)
 
-        for user_org in current_user.organizations:
-            if user_org.organization.id == current_organization.id:
-                if user_org.role == UserRoles.manager:
-                    return True
+
+class OrganizationAdminPermission(BasePermission):
+    def has_required_permissions(
+        self,
+        request: Request,
+    ) -> bool:
+        return check_organization_role(request, UserOrganization.admin)
 
 
 class SensitiveProjectActionPermission(BasePermission):
