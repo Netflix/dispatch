@@ -95,6 +95,8 @@ google-auth==1.28.0
     #   google-auth-oauthlib
 googleapis-common-protos==1.53.0
     # via google-api-core
+greenlet==1.1.0
+    # via sqlalchemy
 h11==0.9.0
     # via
     #   -r requirements-base.in
@@ -280,7 +282,7 @@ six==1.15.0
     #   sqlalchemy-utils
     #   tenacity
     #   validators
-slack_sdk==3.7.0
+slack-sdk==3.7.0
     # via -r requirements-base.in
 sniffio==1.2.0
     # via
@@ -292,7 +294,7 @@ sqlalchemy-filters==0.12.0
     # via -r requirements-base.in
 sqlalchemy-utils==0.37.7
     # via -r requirements-base.in
-sqlalchemy==1.3.24
+sqlalchemy==1.4.18
     # via
     #   -r requirements-base.in
     #   alembic
