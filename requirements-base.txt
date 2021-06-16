@@ -290,7 +290,7 @@ spacy==2.3.5
     # via -r requirements-base.in
 sqlalchemy-filters==0.12.0
     # via -r requirements-base.in
-sqlalchemy-utils==0.37.6
+sqlalchemy-utils==0.37.7
     # via -r requirements-base.in
 sqlalchemy==1.3.24
     # via
