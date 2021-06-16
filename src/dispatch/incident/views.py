@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import List
 
 import calendar
@@ -36,6 +37,8 @@ from .flows import (
 from .metrics import make_forecast, create_incident_metric_query
 from .models import Incident, IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
 from .service import create, delete, get, update
+
+log = logging.getLogger(__name__)
 
 
 router = APIRouter()
@@ -107,6 +110,7 @@ def create_incident(
             db_session=db_session, reporter_email=current_user.email, **incident_in.dict()
         )
     except Exception as e:
+        log.exception(e)
         raise HTTPException(status_code=400, detail=str(e))
 
     if incident.status == IncidentStatus.stable.value:
@@ -142,6 +146,7 @@ def update_incident(
     try:
         incident = update(db_session=db_session, incident=current_incident, incident_in=incident_in)
     except Exception as e:
+        log.exception(e)
         raise HTTPException(status_code=400, detail=str(e))
 
     background_tasks.add_task(
