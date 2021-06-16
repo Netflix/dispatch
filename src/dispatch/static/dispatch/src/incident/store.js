@@ -249,7 +249,7 @@ const actions = {
           commit(
             "notification_backend/addBeNotification",
             {
-              text: "Incident not updated. Reason: " + err.response.data.detail,
+              text: "Incident not created. Reason: " + err.response.data.detail,
               type: "error",
             },
             { root: true }
