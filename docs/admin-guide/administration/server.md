@@ -136,6 +136,11 @@ For this plugin to work with your OIDC setup, you may need to set
 
 > The client id to send to the OpenID Connect endpoint.
 
+#### `VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_USE_ID_TOKEN` \['default': false\]
+
+> Use `id_token` instead of default `access_token`. [Details](https://developer.okta.com/docs/reference/api/oidc/#tokens-and-claims)
+> Depends on the identity provider.
+
 ### Persistence
 
 #### `DATABASE_HOSTNAME`
