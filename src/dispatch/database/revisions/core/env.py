@@ -1,9 +1,7 @@
-from logging.config import fileConfig
-
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-
+from dispatch.logging import logging
 from dispatch.config import SQLALCHEMY_DATABASE_URI
 from dispatch.database.core import Base
 from dispatch.database.manage import setup_fulltext_search, get_core_tables
@@ -14,7 +12,7 @@ config = context.config
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
-fileConfig(config.config_file_name, disable_existing_loggers=False)
+log = logging.getLogger(__name__)
 
 
 config.set_main_option("sqlalchemy.url", str(SQLALCHEMY_DATABASE_URI))
@@ -44,13 +42,13 @@ def run_migrations_online():
         script = directives[0]
         if script.upgrade_ops.is_empty():
             directives[:] = []
-            print("No changes found skipping revision creation.")
+            log.info("No changes found skipping revision creation.")
 
     connectable = engine_from_config(
         config.get_section(config.config_ini_section), prefix="sqlalchemy.", poolclass=pool.NullPool
     )
 
-    print("Migrating dispatch core schema...")
+    log.info("Migrating dispatch core schema...")
     # migrate common tables
     with connectable.connect() as connection:
         connection.execute(f'set search_path to "{CORE_SCHEMA_NAME}"')
@@ -70,6 +68,6 @@ def run_migrations_online():
 
 
 if context.is_offline_mode():
-    print("Can't run migrations offline")
+    log.info("Can't run migrations offline")
 else:
     run_migrations_online()
