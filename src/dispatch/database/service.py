@@ -11,7 +11,6 @@ from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
 
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
-from dispatch.organization.models import Organization
 from dispatch.search.fulltext.composite_search import CompositeSearch
 from dispatch.enums import Visibility
 from dispatch.feedback.models import Feedback
