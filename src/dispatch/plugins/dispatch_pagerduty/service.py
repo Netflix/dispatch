@@ -16,7 +16,12 @@ def get_oncall_email(client, service: dict) -> str:
         },  # params
     )
 
-    user_id = list(oncalls)[0]["user"]["id"]
+    if list(oncalls):
+        user_id = list(oncalls)[0]["user"]["id"]
+    else:
+        raise Exception(
+            f"No users could be found for this pagerduty escalation policy ({escalation_policy_id}). Is there a schedule associated?"
+        )
     user = client.rget(f"/users/{user_id}")
 
     return user["email"]
