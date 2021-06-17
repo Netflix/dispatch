@@ -36,7 +36,7 @@
           <v-list-item-content>
             <v-list-item-subtitle>
               Don't have a account?
-              <router-link to="/auth/register"> Register </router-link>
+              <router-link :to="{ name: 'BasicRegister' }"> Register </router-link>
             </v-list-item-subtitle>
           </v-list-item-content>
           <v-row align="center" justify="end">

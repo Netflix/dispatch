@@ -11,7 +11,7 @@ const getDefaultSelectedState = () => {
     email: null,
     loading: false,
     projects: null,
-    organizations: null,
+    role: null,
   }
 }
 
@@ -21,7 +21,7 @@ const state = {
     token: null,
     email: "",
     projects: [],
-    organizations: [],
+    role: null,
   },
   selected: {
     ...getDefaultSelectedState(),
@@ -144,15 +144,13 @@ const actions = {
     }
     router.push({ path: redirectUrl.pathname, query: queryMap })
   },
-  basicLogin({ commit, getters }, payload) {
+  basicLogin({ commit }, payload) {
     commit("SET_BASIC_LOGIN_LOADING", true)
     UserApi.login(payload.email, payload.password)
       .then(function (res) {
         commit("SET_USER_LOGIN", res.data.token)
         router.push({
           name: "IncidentOverview",
-          params: { organization: getters.defaultOrganization.organization.name },
-          query: { project: getters.defaultProject.project.name },
         })
       })
       .catch((err) => {
@@ -164,14 +162,12 @@ const actions = {
       })
     commit("SET_BASIC_LOGIN_LOADING", false)
   },
-  register({ commit, getters }, payload) {
+  register({ commit }, payload) {
     UserApi.register(payload.email, payload.password)
       .then(function (res) {
         commit("SET_USER_LOGIN", res.data.token)
         router.push({
           name: "IncidentOverview",
-          params: { organization: getters.defaultOrganization.organization.name },
-          query: { project: getters.defaultProject.project.name },
         })
       })
       .catch((err) => {
@@ -242,17 +238,6 @@ const mutations = {
 
 const getters = {
   getField,
-  defaultProject: (state) => {
-    return (
-      state.currentUser.projects.find((project) => project.default) || state.currentUser.projects[0]
-    )
-  },
-  defaultOrganization: (state) => {
-    return (
-      state.currentUser.organizations.find((organization) => organization.default) ||
-      state.currentUser.organizations[0]
-    )
-  },
   userAvatarURL: (state) => {
     if (state.currentUser.userId) {
       return `${window.location.protocol}//${window.location.host}/avatar/${state.currentUser.userId}/${state.currentUser.userId}.json`

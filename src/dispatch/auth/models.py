@@ -66,16 +66,14 @@ class DispatchUser(Base, TimeStampMixin):
         data = {
             "exp": exp,
             "email": self.email,
-            "projects": [UserProject.from_orm(p).dict() for p in self.projects],
-            "organizations": [UserOrganization.from_orm(o).dict() for o in self.organizations],
         }
         return jwt.encode(data, DISPATCH_JWT_SECRET, algorithm=DISPATCH_JWT_ALG)
 
-    def get_project_role(self, project_name):
-        """Gets the users role for a given project."""
-        for p in self.projects:
-            if p.name == project_name:
-                return p.role
+    def get_organization_role(self, organization_name):
+        """Gets the users role for a given organization."""
+        for o in self.organizations:
+            if o.organization.name == organization_name:
+                return o.role
 
 
 class DispatchUserOrganization(Base, TimeStampMixin):
@@ -114,7 +112,6 @@ class UserOrganization(DispatchBase):
 class UserBase(DispatchBase):
     email: str
     projects: Optional[List[UserProject]] = []
-    organizations: Optional[List[UserOrganization]] = []
 
     @validator("email")
     def email_required(cls, v):
@@ -149,14 +146,15 @@ class UserLoginResponse(DispatchBase):
 
 class UserRead(UserBase):
     id: int
+    role: Optional[str]
 
 
 class UserUpdate(DispatchBase):
     id: int
     password: Optional[str]
-
     projects: Optional[List[UserProject]]
-    organization: Optional[List[UserOrganization]]
+    organizations: Optional[List[UserOrganization]]
+    role: Optional[str]
 
     @validator("password", pre=True, always=True)
     def hash(cls, v):

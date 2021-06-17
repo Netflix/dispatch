@@ -106,7 +106,7 @@ def create_or_update_organization_role(
             role=role_in.role,
         )
 
-    organization_role.role = role_in
+    organization_role.role = role_in.role
     return organization_role
 
 
@@ -160,21 +160,13 @@ def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUs
         password = bytes(user_in.password, "utf-8")
         user.password = password
 
-    if user_in.projects:
+    if user_in.organizations:
         roles = []
-        for role in user_in.projects:
-            roles.append(
-                create_or_update_project_role(db_session=db_session, user=user, role_in=role)
-            )
-        user.projects = roles
 
-    if user_in.organization:
-        roles = []
         for role in user_in.organizations:
             roles.append(
                 create_or_update_organization_role(db_session=db_session, user=user, role_in=role)
             )
-        user.organizations = roles
 
     db_session.add(user)
     db_session.commit()
@@ -196,4 +188,10 @@ def get_current_user(*, db_session: Session = Depends(get_db), request: Request)
         )
         raise credentials_exception
 
-    return get_by_email(db_session=db_session, email=user_email)
+    current_user = get_by_email(db_session=db_session, email=user_email)
+    if not current_user:
+        log.exception(
+            f"Unable to determine user email based on configured auth provider or no default auth user email defined. Provider: {DISPATCH_AUTHENTICATION_PROVIDER_SLUG}"
+        )
+        raise credentials_exception
+    return current_user

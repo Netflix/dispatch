@@ -65,6 +65,7 @@ export default {
     return {
       headers: [
         { text: "Email", value: "email", sortable: true },
+        { text: "Role", value: "role", sortable: false },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }

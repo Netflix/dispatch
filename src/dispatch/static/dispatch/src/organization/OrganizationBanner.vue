@@ -1,13 +1,13 @@
 <template>
-  <v-banner
+  <v-system-bar
     v-if="currentOrganization.banner_enabled"
-    class="mb-6"
     :color="currentOrganization.banner_color"
-    single-line
+    height="64px"
+    app
   >
-    <v-icon slot="icon" color="white" size="36"> mdi-information-outline </v-icon>
-    {{ currentOrganization.banner_text }}
-  </v-banner>
+    <v-icon color="white" size="36"> mdi-information-outline </v-icon>
+    <span class="white--text">{{ currentOrganization.banner_text }}</span>
+  </v-system-bar>
 </template>
 <script>
 import SearchUtils from "@/search/utils"
