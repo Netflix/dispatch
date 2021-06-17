@@ -171,7 +171,6 @@ async def handle_menu(
     response: Response,
     x_slack_request_timestamp: int = Header(None),
     x_slack_signature: str = Header(None),
-    db_session: Session = Depends(get_db),
 ):
     """Handle all incoming Slack actions."""
     raw_request_body = bytes.decode(await request.body())
@@ -191,7 +190,6 @@ async def handle_menu(
     slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
 
     return await handle_slack_menu(
-        db_session=db_session,
         client=slack_async_client,
         request=request,
     )

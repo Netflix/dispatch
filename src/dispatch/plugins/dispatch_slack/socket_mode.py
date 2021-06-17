@@ -33,12 +33,10 @@ async def run_websocket_process():
     )
 
     async def process(client: SocketModeClient, req: SocketModeRequest):
-        db_session = SessionLocal()
         background_tasks = BackgroundTasks()
 
         if req.type == "events_api":
             response = await handle_slack_event(
-                db_session=db_session,
                 client=client.web_client,
                 event=EventEnvelope(**req.payload),
                 background_tasks=background_tasks,
@@ -46,7 +44,6 @@ async def run_websocket_process():
 
         if req.type == "slash_commands":
             response = await handle_slack_command(
-                db_session=db_session,
                 client=client.web_client,
                 request=req.payload,
                 background_tasks=background_tasks,
@@ -54,7 +51,6 @@ async def run_websocket_process():
 
         if req.type == "interactive":
             response = await handle_slack_action(
-                db_session=db_session,
                 client=client.web_client,
                 request=req.payload,
                 background_tasks=background_tasks,

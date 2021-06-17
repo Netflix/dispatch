@@ -11,10 +11,12 @@ from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.modals.common import parse_submitted_form
 from dispatch.plugins.dispatch_slack.modals.incident.enums import IncidentBlockId
 
+from .decorators import get_organization_from_channel_id
+
 log = logging.getLogger(__name__)
 
 
-async def handle_slack_menu(*, db_session: SessionLocal, client: WebClient, request: Request):
+async def handle_slack_menu(*, client: WebClient, request: Request):
     """Handles slack menu message."""
     # We resolve the user's email
     user_id = request["user"]["id"]
@@ -30,6 +32,8 @@ async def handle_slack_menu(*, db_session: SessionLocal, client: WebClient, requ
     incident_id = view_data["private_metadata"].get("incident_id")
     channel_id = view_data["private_metadata"].get("channel_id")
     action_id = request["action_id"]
+
+    db_session = get_organization_from_channel_id(channel_id=channel_id)
 
     f = menu_functions(action_id)
     return f(db_session, user_id, user_email, channel_id, incident_id, query_str, request)
