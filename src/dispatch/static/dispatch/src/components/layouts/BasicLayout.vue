@@ -2,8 +2,9 @@
   <v-app>
     <notification-snackbars-wrapper />
     <v-main>
+      <organization-banner />
       <v-app-bar app flat class="v-bar--underline" color="background0">
-        <router-link to="/" style="text-decoration: none">
+        <router-link :to="{ name: 'IncidentOverview' }" style="text-decoration: none">
           <span class="button font-weight-bold">D I S P A T C H</span>
         </router-link>
       </v-app-bar>
@@ -16,9 +17,12 @@
 
 <script>
 import NotificationSnackbarsWrapper from "@/components/NotificationSnackbarsWrapper.vue"
+import OrganizationBanner from "@/organization/OrganizationBanner.vue"
+
 export default {
   components: {
     NotificationSnackbarsWrapper,
+    OrganizationBanner,
   },
   data: () => ({}),
 

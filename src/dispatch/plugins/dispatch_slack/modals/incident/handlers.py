@@ -133,7 +133,7 @@ def report_incident_from_submitted_form(
         db_session=db_session, reporter_email=user_email, **incident_in.dict()
     )
 
-    incident_flows.incident_create_flow(incident_id=incident.id)
+    incident_flows.incident_create_flow(incident_id=incident.id, db_session=db_session)
 
 
 # update incident
@@ -188,7 +188,9 @@ def update_incident_from_submitted_form(
     updated_incident = incident_service.update(
         db_session=db_session, incident=incident, incident_in=incident_in
     )
-    incident_flows.incident_update_flow(user_email, incident_id, existing_incident)
+    incident_flows.incident_update_flow(
+        user_email, incident_id, existing_incident, db_session=db_session
+    )
 
     if updated_incident.status != IncidentStatus.closed.value:
         send_ephemeral_message(

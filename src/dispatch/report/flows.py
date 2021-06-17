@@ -27,7 +27,10 @@ log = logging.getLogger(__name__)
 
 @background_task
 def create_tactical_report(
-    user_email: str, incident_id: int, tactical_report_in: TacticalReportCreate, db_session=None
+    user_email: str,
+    incident_id: int,
+    tactical_report_in: TacticalReportCreate,
+    db_session=None,
 ):
     """Creates and sends a new tactical report to a conversation."""
     conditions = tactical_report_in.conditions
@@ -78,6 +81,7 @@ def create_executive_report(
     user_email: str,
     incident_id: int,
     executive_report_in: ExecutiveReportCreate,
+    organization_slug: str = None,
     db_session=None,
 ):
     """Creates an executive report."""
