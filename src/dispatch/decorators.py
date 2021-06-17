@@ -66,9 +66,18 @@ def background_task(func):
     def wrapper(*args, **kwargs):
         background = False
         if not kwargs.get("db_session"):
-            db_session = SessionLocal()
+            if not kwargs.get("organization_slug"):
+                raise Exception("If not db_session is supplied organization slug must be provided.")
+
+            schema_engine = engine.execution_options(
+                schema_translate_map={
+                    None: f"dispatch_organization_{kwargs['organization_slug']}",
+                }
+            )
+            db_session = sessionmaker(bind=schema_engine)
+
             background = True
-            kwargs["db_session"] = db_session
+            kwargs["db_session"] = db_session()
         try:
             metrics_provider.counter("function.call.counter", tags={"function": fullname(func)})
             start = time.perf_counter()

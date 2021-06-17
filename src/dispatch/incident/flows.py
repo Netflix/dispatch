@@ -443,16 +443,17 @@ def add_participants_to_conversation(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
 
-    try:
-        plugin.instance.add(incident.conversation.channel_id, participant_emails)
-    except Exception as e:
-        event_service.log(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=f"Adding participant(s) to incident conversation failed. Reason: {e}",
-            incident_id=incident.id,
-        )
-        log.exception(e)
+    if plugin:
+        try:
+            plugin.instance.add(incident.conversation.channel_id, participant_emails)
+        except Exception as e:
+            event_service.log(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Adding participant(s) to incident conversation failed. Reason: {e}",
+                incident_id=incident.id,
+            )
+            log.exception(e)
 
 
 def add_participant_to_tactical_group(
@@ -490,7 +491,9 @@ def remove_participant_from_tactical_group(
 
 
 @background_task
-def incident_create_stable_flow(*, incident_id: int, checkpoint: str = None, db_session=None):
+def incident_create_stable_flow(
+    *, incident_id: int, checkpoint: str = None, organization_slug: str = None, db_session=None
+):
     """Creates all resources necessary when an incident is created as 'stable'."""
     incident_create_flow(incident_id=incident_id, db_session=db_session)
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
@@ -498,7 +501,9 @@ def incident_create_stable_flow(*, incident_id: int, checkpoint: str = None, db_
 
 
 @background_task
-def incident_create_closed_flow(*, incident_id: int, checkpoint: str = None, db_session=None):
+def incident_create_closed_flow(
+    *, incident_id: int, checkpoint: str = None, organization_slug: str = None, db_session=None
+):
     """Creates all resources necessary when an incident is created as 'closed'."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
@@ -526,9 +531,12 @@ def incident_create_closed_flow(*, incident_id: int, checkpoint: str = None, db_
 # Then checking for the existence of those resources before creating them for
 # this incident.
 @background_task
-def incident_create_flow(*, incident_id: int, checkpoint: str = None, db_session=None):
+def incident_create_flow(
+    *, organization_slug: str, incident_id: int, checkpoint: str = None, db_session=None
+):
     """Creates all resources required for new incidents."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    print(incident_id, incident)
 
     # create the incident ticket
     ticket = create_incident_ticket(incident, db_session)
@@ -1079,7 +1087,12 @@ def status_flow_dispatcher(
 
 @background_task
 def incident_update_flow(
-    user_email: str, incident_id: int, previous_incident: IncidentRead, notify=True, db_session=None
+    user_email: str,
+    incident_id: int,
+    previous_incident: IncidentRead,
+    notify=True,
+    organization_slug: str = None,
+    db_session=None,
 ):
     """Runs the incident update flow."""
     # we load the incident instance
@@ -1123,7 +1136,12 @@ def incident_update_flow(
 
 @background_task
 def incident_assign_role_flow(
-    assigner_email: str, incident_id: int, assignee_email: str, assignee_role: str, db_session=None
+    assigner_email: str,
+    incident_id: int,
+    assignee_email: str,
+    assignee_role: str,
+    organization_slug: str = None,
+    db_session=None,
 ):
     """Runs the incident participant role assignment flow."""
     # we load the incident instance
@@ -1198,7 +1216,12 @@ def incident_assign_role_flow(
 
 @background_task
 def incident_engage_oncall_flow(
-    user_email: str, incident_id: int, oncall_service_external_id: str, page=None, db_session=None
+    user_email: str,
+    incident_id: int,
+    oncall_service_external_id: str,
+    page=None,
+    organization_slug: str = None,
+    db_session=None,
 ):
     """Runs the incident engage oncall flow."""
     # we load the incident instance
@@ -1268,6 +1291,7 @@ def incident_add_or_reactivate_participant_flow(
     incident_id: int,
     service_id: int = 0,
     event: dict = None,
+    organization_slug: str = None,
     db_session=None,
 ) -> Participant:
     """Runs the incident add or reactivate participant flow."""
@@ -1325,7 +1349,11 @@ def incident_add_or_reactivate_participant_flow(
 
 @background_task
 def incident_remove_participant_flow(
-    user_email: str, incident_id: int, event: dict = None, db_session=None
+    user_email: str,
+    incident_id: int,
+    event: dict = None,
+    organization_slug: str = None,
+    db_session=None,
 ):
     """Runs the remove participant flow."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)

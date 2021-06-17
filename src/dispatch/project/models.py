@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
@@ -19,6 +20,7 @@ class Project(Base):
     color = Column(String)
 
     organization_id = Column(Integer, ForeignKey(Organization.id))
+    organization = relationship("Organization")
 
     @hybrid_property
     def slug(self):

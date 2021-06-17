@@ -213,7 +213,14 @@ async def handle_slack_command(*, db_session, client, request, background_tasks)
         return create_command_run_by_non_privileged_user_message(command)
 
     for f in command_functions(command):
-        background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, command=request)
+        background_tasks.add_task(
+            f,
+            user_id,
+            user_email,
+            channel_id,
+            incident_id,
+            command=request,
+        )
 
     return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(command, f"Running... Command: {command}")
 

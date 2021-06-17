@@ -120,9 +120,6 @@ def update(
         if field in update_data:
             setattr(individual_contact, field, update_data[field])
 
-    if filters:
-        individual_contact.filters = filters
-
     db_session.add(individual_contact)
     db_session.commit()
     return individual_contact

@@ -20,7 +20,11 @@
             >
               <v-list-item-content>
                 <v-list-item-title>Commander</v-list-item-title>
-                <v-list-item-subtitle>{{ commander.individual.name }}</v-list-item-subtitle>
+                <v-list-item-subtitle
+                  >{{ commander.individual.name }} ({{
+                    commander.individual.email
+                  }})</v-list-item-subtitle
+                >
               </v-list-item-content>
               <v-list-item-action>
                 <v-list-item-icon>
