@@ -31,9 +31,13 @@ def get_organization_from_channel_id(channel_id: str) -> str:
         )
 
         scoped_db_session = sessionmaker(bind=schema_engine)()
-        conversation = conversation_service.get_by_channel_id(db_session, channel_id=channel_id)
+        conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
+            db_session=scoped_db_session, channel_id=channel_id
+        )
         if conversation:
             return scoped_db_session
+
+        scoped_db_session.close()
 
 
 def fullname(o):
@@ -54,10 +58,8 @@ def slack_background_task(func):
         background = False
 
         if not kwargs.get("db_session"):
-            if not kwargs.get("channel_id"):
-                raise Exception("channel_id must be provided if no db_session is provided")
 
-            scoped_db_session = get_organization_from_channel_id(channel_id=kwargs["channel_id"])
+            scoped_db_session = get_organization_from_channel_id(channel_id=args[2])
 
             if not scoped_db_session:
                 raise Exception(

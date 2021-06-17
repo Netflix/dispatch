@@ -19,6 +19,7 @@ from .config import (
     SLACK_BAN_THREADS,
 )
 from .service import get_user_email
+from .decorators import get_organization_from_channel_id
 
 slack_client = dispatch_slack_service.create_slack_client()
 
@@ -94,12 +95,14 @@ def event_functions(event: EventEnvelope):
     return event_mappings.get(event.event.type, [])
 
 
-async def handle_slack_event(*, db_session, client, event, background_tasks):
+async def handle_slack_event(*, client, event, background_tasks):
     """Handles slack event message."""
     user_id = event.event.user
     channel_id = get_channel_id_from_event(event)
 
     if user_id and channel_id:
+        db_session = get_organization_from_channel_id(channel_id=channel_id)
+
         conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
             db_session=db_session, channel_id=channel_id
         )

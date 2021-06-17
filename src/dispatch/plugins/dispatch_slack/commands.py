@@ -40,7 +40,7 @@ from .config import (
     SLACK_COMMAND_LIST_WORKFLOWS_SLUG,
 )
 
-from .decorators import slack_background_task
+from .decorators import get_organization_from_channel_id, slack_background_task
 
 from .dialogs import (
     create_assign_role_dialog,
@@ -159,21 +159,16 @@ def filter_tasks_by_assignee_and_creator(tasks: List[Task], by_assignee: str, by
     return filtered_tasks
 
 
-async def handle_slack_command(*, db_session, client, request, background_tasks):
+async def handle_slack_command(*, client, request, background_tasks):
     """Handles slack command message."""
     # We fetch conversation by channel id
     channel_id = request.get("channel_id")
-    conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
-        db_session=db_session, channel_id=channel_id
-    )
 
+    db_session = get_organization_from_channel_id(channel_id=channel_id)
     # We get the name of command that was run
     command = request.get("command")
 
-    incident_id = 0
-    if conversation:
-        incident_id = conversation.incident_id
-    else:
+    if not db_session:
         if command not in [SLACK_COMMAND_REPORT_INCIDENT_SLUG, SLACK_COMMAND_LIST_INCIDENTS_SLUG]:
             # We let the user know that incident-specific commands
             # can only be run in incident conversations
@@ -202,12 +197,19 @@ async def handle_slack_command(*, db_session, client, request, background_tasks)
                 command, public_conversations
             )
 
+    conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
+        db_session=db_session, channel_id=channel_id
+    )
+
     user_id = request.get("user_id")
     user_email = await dispatch_slack_service.get_user_email_async(client, user_id)
 
     # some commands are sensitive and we only let non-participants execute them
     allowed = check_command_restrictions(
-        command=command, user_email=user_email, incident_id=incident_id, db_session=db_session
+        command=command,
+        user_email=user_email,
+        incident_id=conversation.incident.id,
+        db_session=db_session,
     )
     if not allowed:
         return create_command_run_by_non_privileged_user_message(command)
@@ -218,7 +220,7 @@ async def handle_slack_command(*, db_session, client, request, background_tasks)
             user_id,
             user_email,
             channel_id,
-            incident_id,
+            conversation.incident.id,
             command=request,
         )
 
@@ -410,12 +412,12 @@ def list_participants(
     for participant in participants:
         if participant.active_roles:
             participant_email = participant.individual.email
-            participant_info = contact_plugin.instance.get(participant_email)
-            participant_name = participant_info["fullname"]
-            participant_team = participant_info["team"]
-            participant_department = participant_info["department"]
-            participant_location = participant_info["location"]
-            participant_weblink = participant_info["weblink"]
+            participant_info = contact_plugin.instance.get(participant_email, db_session=db_session)
+            participant_name = participant_info.get("fullname", participant.individual.email)
+            participant_team = participant_info.get("team", "Unknown")
+            participant_department = participant_info.get("department", "Unknown")
+            participant_location = participant_info.get("location", "Unknown")
+            participant_weblink = participant_info.get("weblink")
             participant_avatar_url = dispatch_slack_service.get_user_avatar_url(
                 slack_client, participant_email
             )
@@ -433,12 +435,13 @@ def list_participants(
             for role in participant_active_roles:
                 participant_roles.append(role.role)
 
+            # TODO we should make this more resilient to missing data (kglisson)
             block = {
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
                     "text": (
-                        f"*Name:* <{participant_weblink}|{participant_name}>\n"
+                        f"*Name:* <{participant_weblink}|{participant_name} ({participant_email})>\n"
                         f"*Team*: {participant_team}, {participant_department}\n"
                         f"*Location*: {participant_location}\n"
                         f"*Incident Role(s)*: {(', ').join(participant_roles)}\n"

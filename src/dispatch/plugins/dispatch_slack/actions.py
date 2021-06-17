@@ -5,7 +5,6 @@ from fastapi import BackgroundTasks
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.conversation.messaging import send_feedack_to_user
-from dispatch.database.core import SessionLocal
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
@@ -51,7 +50,7 @@ from .modals.incident.enums import (
 )
 
 from .service import get_user_email
-from .decorators import slack_background_task
+from .decorators import slack_background_task, get_organization_from_channel_id
 
 
 def base64_decode(input: str):
@@ -96,7 +95,7 @@ def action_functions(action_id: str):
     return []
 
 
-async def handle_slack_action(*, db_session, client, request, background_tasks):
+async def handle_slack_action(*, client, request, background_tasks):
     """Handles slack action message."""
     # We resolve the user's email
     user_id = request["user"]["id"]
@@ -112,7 +111,7 @@ async def handle_slack_action(*, db_session, client, request, background_tasks):
         # An empty body is currently not working.
         response_body = {"response_action": "clear"}
     elif request["type"] == "dialog_submission":
-        handle_dialog_action(request, background_tasks, db_session=db_session)
+        handle_dialog_action(request, background_tasks)
     elif request["type"] == "block_actions":
         handle_block_action(request, background_tasks)
 
@@ -143,9 +142,11 @@ def block_action_functions(action: str):
     return []
 
 
-def handle_dialog_action(action: dict, background_tasks: BackgroundTasks, db_session: SessionLocal):
+def handle_dialog_action(action: dict, background_tasks: BackgroundTasks):
     """Handles all dialog actions."""
     channel_id = action["channel"]["id"]
+    db_session = get_organization_from_channel_id(channel_id=channel_id)
+
     conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
         db_session=db_session, channel_id=channel_id
     )

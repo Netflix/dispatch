@@ -152,7 +152,9 @@ class DispatchTicketPlugin(TicketPlugin):
         """Creates a Dispatch ticket."""
         incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-        resource_id = f"dispatch-{incident.project.name}-{incident.id}"
+        resource_id = (
+            f"dispatch-{incident.project.organization.slug}-{incident.project.slug}-{incident.id}"
+        )
         return {
             "resource_id": resource_id,
             "weblink": f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{resource_id}?project={incident.project.name}",

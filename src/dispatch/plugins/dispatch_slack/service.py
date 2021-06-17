@@ -9,8 +9,6 @@ from typing import Any, Dict, List, Optional
 
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
 
-from dispatch.organization.service import get_all
-
 from .config import (
     SLACK_APP_USER_SLUG,
     SLACK_API_BOT_TOKEN,
@@ -21,11 +19,6 @@ log = logging.getLogger(__name__)
 
 
 class NoConversationFoundException(Exception):
-    pass
-
-
-def get_bot_organization(bot_id: str):
-    """Iterates through all organizations looking for the configured bot."""
     pass
 
 
