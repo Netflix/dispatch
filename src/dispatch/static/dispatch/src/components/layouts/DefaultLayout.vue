@@ -1,13 +1,13 @@
 <template>
   <v-app id="dispatch">
     <!--<loading />-->
+    <organization-banner />
     <app-toolbar />
     <app-drawer />
     <notification-snackbars-wrapper />
 
     <refresh />
     <v-main>
-      <organization-banner />
       <div class="page-wrapper">
         <v-container pa-4 grid-list-lg>
           <router-view />

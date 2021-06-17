@@ -277,7 +277,9 @@ def upgrade():
     op.drop_constraint(
         "incident_type_commander_service_id_fkey", "incident_type", type_="foreignkey"
     )
-    op.drop_constraint("incident_type_liason_service_id_fkey", "incident_type", type_="foreignkey")
+    op.execute(
+        "ALTER TABLE incident_type DROP CONSTRAINT IF EXISTS incident_type_liason_service_id_fkey"
+    )
     op.create_foreign_key(None, "incident_type", "service", ["commander_service_id"], ["id"])
     op.create_foreign_key(None, "incident_type", "document", ["template_document_id"], ["id"])
     op.create_foreign_key(None, "incident_type", "service", ["liaison_service_id"], ["id"])

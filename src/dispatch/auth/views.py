@@ -1,18 +1,18 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.orm import Session
 from dispatch.auth.permissions import (
-    OrganizationManagerPermission,
     OrganizationOwnerPermission,
     OrganizationMemberPermission,
-    OrganizationAdminPermission,
     PermissionsDependency,
 )
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.organization.models import OrganizationRead
 
 from .models import (
     UserLogin,
+    UserOrganization,
     UserRegister,
     UserRead,
     UserUpdate,
@@ -34,9 +34,6 @@ user_router = APIRouter()
             PermissionsDependency(
                 [
                     OrganizationMemberPermission,
-                    OrganizationOwnerPermission,
-                    OrganizationManagerPermission,
-                    OrganizationAdminPermission,
                 ]
             )
         )
@@ -50,7 +47,21 @@ def get_users(*, organization: str, common: dict = Depends(common_parameters)):
     common["filter_spec"] = {
         "and": [{"model": "Organization", "op": "==", "field": "name", "value": organization}]
     }
-    return search_filter_sort_paginate(model="DispatchUser", **common)
+    items = search_filter_sort_paginate(model="DispatchUser", **common)
+
+    # filtered users
+    return {
+        "total": items["total"],
+        "items": [
+            {
+                "id": u.id,
+                "email": u.email,
+                "projects": u.projects,
+                "role": u.get_organization_role(organization),
+            }
+            for u in items["items"]
+        ],
+    }
 
 
 @user_router.get("/{user_id}", response_model=UserRead)
@@ -61,6 +72,7 @@ def get_user(*, db_session: Session = Depends(get_db), user_id: int):
     user = get(db_session=db_session, user_id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="The user with this id does not exist.")
+
     return user
 
 
@@ -81,6 +93,7 @@ def update_user(
     *,
     db_session: Session = Depends(get_db),
     user_id: int,
+    organization: str,
     user_in: UserUpdate,
 ):
     """
@@ -90,9 +103,12 @@ def update_user(
     if not user:
         raise HTTPException(status_code=404, detail="The user with this id does not exist.")
 
-    user = update(db_session=db_session, user=user, user_in=user_in)
+    # add organization information
+    user_in.organizations = [
+        UserOrganization(role=user_in.role, organization=OrganizationRead(name=organization))
+    ]
 
-    return user
+    return update(db_session=db_session, user=user, user_in=user_in)
 
 
 @auth_router.post("/login", response_model=UserLoginResponse)

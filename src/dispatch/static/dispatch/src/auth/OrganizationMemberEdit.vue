@@ -89,7 +89,7 @@ export default {
     ...mapFields("auth", [
       "selected.email",
       "selected.projects",
-      "selected.organizations",
+      "selected.role",
       "selected.id",
       "selected.loading",
       "dialogs.showEdit",

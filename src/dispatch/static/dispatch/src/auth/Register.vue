@@ -35,7 +35,7 @@
         <v-list-item two-line>
           <v-list-item-content>
             <v-list-item-subtitle>
-              Have a account? <router-link to="/auth/login"> Login </router-link>
+              Have a account? <router-link :to="{ name: 'BasicLogin' }"> Login </router-link>
             </v-list-item-subtitle>
           </v-list-item-content>
           <v-row align="center" justify="end">

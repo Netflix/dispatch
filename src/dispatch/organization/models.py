@@ -49,8 +49,8 @@ class OrganizationUpdate(OrganizationBase):
 
 
 class OrganizationRead(OrganizationBase):
-    id: int
-    slug: str
+    id: Optional[int]
+    slug: Optional[str]
 
 
 class OrganizationPagination(DispatchBase):
