@@ -531,7 +531,9 @@ def incident_create_closed_flow(
 # Then checking for the existence of those resources before creating them for
 # this incident.
 @background_task
-def incident_create_flow(*, organization_slug: str, incident_id: int, checkpoint: str = None, db_session=None):
+def incident_create_flow(
+    *, organization_slug: str, incident_id: int, checkpoint: str = None, db_session=None
+):
     """Creates all resources required for new incidents."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
