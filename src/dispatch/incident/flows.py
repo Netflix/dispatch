@@ -340,24 +340,30 @@ def create_collaboration_documents(incident: Incident, db_session: SessionLocal)
             )
             plugin.instance.move_file(incident.storage.resource_id, document["id"])
 
-            # TODO this logic should probably be pushed down into the plugins i.e. making them return
-            # the fields we expect instead of re-mapping. (kglisson)
-            document.update(
-                {
-                    "name": document_name,
-                    "resource_type": INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
-                    "resource_id": document["id"],
-                }
+        # create a blank document if no template is defined
+        else:
+            document = plugin.instance.create_file(
+                incident.storage.resource_id, document_name, file_type="document"
             )
 
-            collab_documents.append(document)
+        # TODO this logic should probably be pushed down into the plugins i.e. making them return
+        # the fields we expect instead of re-mapping. (kglisson)
+        document.update(
+            {
+                "name": document_name,
+                "resource_type": INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
+                "resource_id": document["id"],
+            }
+        )
 
-            event_service.log(
-                db_session=db_session,
-                source=plugin.plugin.title,
-                description="Incident investigation document created",
-                incident_id=incident.id,
-            )
+        collab_documents.append(document)
+
+        event_service.log(
+            db_session=db_session,
+            source=plugin.plugin.title,
+            description="Incident investigation document created",
+            incident_id=incident.id,
+        )
 
         sheet = None
         template = document_service.get_incident_investigation_sheet_template(db_session=db_session)
