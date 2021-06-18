@@ -308,7 +308,7 @@ INCIDENT_NAME_WITH_ENGAGEMENT = {
     "title_link": "{{ticket_weblink}}",
     "text": INCIDENT_NOTIFICATION_PURPOSES_FYI,
     "button_text": "Join Incident",
-    "button_value": "{{incident_id}}",
+    "button_value": "{{organization_slug}}-{{incident_id}}",
     "button_action": ConversationButtonActions.invite_user.value,
 }
 
@@ -584,7 +584,7 @@ INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION = [
         "title_link": "{{ticket_weblink}}",
         "text": INCIDENT_CLOSED_RATING_FEEDBACK_DESCRIPTION,
         "button_text": "Provide Feeback",
-        "button_value": "{{incident_id}}",
+        "button_value": "{{organization_slug}}-{{incident_id}}",
         "button_action": ConversationButtonActions.provide_feedback.value,
     }
 ]

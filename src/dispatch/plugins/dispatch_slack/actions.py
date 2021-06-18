@@ -172,7 +172,7 @@ def handle_block_action(action: dict, background_tasks: BackgroundTasks):
         channel_id = view_data["private_metadata"].get("channel_id")
         action_id = action["actions"][0]["action_id"]
     else:
-        incident_id = action["actions"][0]["value"]
+        organization_slug, incident_id = action["actions"][0]["value"].split("-")
         channel_id = action["channel"]["id"]
         action_id = action["actions"][0]["block_id"]
 
@@ -180,7 +180,15 @@ def handle_block_action(action: dict, background_tasks: BackgroundTasks):
     user_email = action["user"]["email"]
 
     for f in block_action_functions(action_id):
-        background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, action)
+        background_tasks.add_task(
+            f,
+            user_id,
+            user_email,
+            channel_id,
+            incident_id,
+            action,
+            organization_slug=organization_slug,
+        )
 
 
 @slack_background_task
@@ -380,7 +388,9 @@ def handle_assign_role_action(
     assignee_user_id = action["submission"]["participant"]
     assignee_role = action["submission"]["role"]
     assignee_email = get_user_email(client=slack_client, user_id=assignee_user_id)
-    incident_flows.incident_assign_role_flow(user_email, incident_id, assignee_email, assignee_role)
+    incident_flows.incident_assign_role_flow(
+        user_email, incident_id, assignee_email, assignee_role, db_session=db_session
+    )
 
 
 def dialog_action_functions(action: str):
