@@ -18,15 +18,15 @@ from dispatch.tag import service as tag_service
 log = logging.getLogger(__name__)
 
 
-def save_model(dataframe: DataFrame, project_name: str, model_name: str):
+def save_model(dataframe: DataFrame, organization_slug: str, project_slug: str, model_name: str):
     """Saves a correlation dataframe to disk."""
-    file_name = f"{tempfile.gettempdir()}/{project_name}/{model_name}.pkl"
+    file_name = f"{tempfile.gettempdir()}/{organization_slug}/{project_slug}/{model_name}.pkl"
     dataframe.to_pickle(file_name)
 
 
-def load_model(project_name: str, model_name: str):
+def load_model(organization_slug: str, project_slug: str, model_name: str):
     """Loads a correlation dataframe from disk."""
-    file_name = f"{tempfile.gettempdir()}/{project_name}/{model_name}.pkl"
+    file_name = f"{tempfile.gettempdir()}/{organization_slug}/{project_slug}/{model_name}.pkl"
     return pd.read_pickle(file_name)
 
 
@@ -139,15 +139,16 @@ def find_highest_correlations(correlated_dataframe, recommendations):
 def get_recommendations(
     db_session: SessionLocal,
     tag_ids: List[str],
-    project_name: str,
+    organization_slug: str,
+    project_slug: str,
     model_name: str,
     recommendations: int = 5,
 ):
     """Get recommendations based on current tag."""
     try:
-        correlation_dataframe = load_model(project_name, model_name)
+        correlation_dataframe = load_model(organization_slug, project_slug, model_name)
     except FileNotFoundError:
-        log.warning(f"No model file found. ProjectName: {project_name} ModelName: {model_name}")
+        log.warning(f"No model file found. ProjectName: {project_slug} ModelName: {model_name}")
         return []
 
     recommendations_dataframe = pd.DataFrame()
@@ -172,8 +173,8 @@ def get_recommendations(
     return tags
 
 
-def build_model(items: List[Any], project_name: str, model_name: str):
+def build_model(items: List[Any], organization_slug: str, project_slug: str, model_name: str):
     """Builds the correlation dataframe for items."""
     boolean_dataframe = create_boolean_dataframe(items)
     correlation_dataframe = create_correlation_dataframe(boolean_dataframe)
-    save_model(correlation_dataframe, project_name, model_name)
+    save_model(correlation_dataframe, organization_slug, project_slug, model_name)
