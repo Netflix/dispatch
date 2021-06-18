@@ -164,6 +164,7 @@ def handle_dialog_action(action: dict, background_tasks: BackgroundTasks):
 def handle_block_action(action: dict, background_tasks: BackgroundTasks):
     """Handles a standalone block action."""
     # TODO (kglisson) align our use of action_ids and block_ids
+    organization_slug = None
     if action.get("view"):
         view_data = action["view"]
         view_data["private_metadata"] = json.loads(view_data["private_metadata"])
