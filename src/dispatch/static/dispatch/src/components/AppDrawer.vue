@@ -46,7 +46,7 @@
           <v-list-item
             v-for="(route, subIndex) in subRoutes"
             :key="subIndex"
-            :to="{ name: route.name }"
+            :to="{ name: route.name, query: childrenQueryParams }"
           >
             <v-list-item-content>
               <v-list-item-title>{{ route.meta.title }}</v-list-item-title>
@@ -119,6 +119,9 @@ export default {
       return this.$router.options.routes.filter((route) =>
         "menu" in route.meta ? route.meta.menu : false
       )
+    },
+    childrenQueryParams() {
+      return this.$router.currentRoute.query
     },
     showChildPane() {
       return Object.values(this.children)[0].length > 1
