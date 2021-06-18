@@ -30,6 +30,8 @@ def create(*, db_session, tag_in: TagCreate) -> Tag:
         db_session=db_session, project_id=project.id, name=tag_in.tag_type.name
     )
     tag = Tag(**tag_in.dict(exclude={"tag_type", "project"}), project=project, tag_type=tag_type)
+    tag.tag_type = tag_type
+    tag.project = project
     db_session.add(tag)
     db_session.commit()
     return tag
