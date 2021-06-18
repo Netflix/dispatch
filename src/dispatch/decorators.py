@@ -50,6 +50,7 @@ def scheduled_project_task(func):
         metrics_provider.timer(
             "function.elapsed.time", value=elapsed_time, tags={"function": fullname(func)}
         )
+        db_session.close()
 
     return wrapper
 
