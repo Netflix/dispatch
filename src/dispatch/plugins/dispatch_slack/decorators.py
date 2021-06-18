@@ -58,13 +58,24 @@ def slack_background_task(func):
         background = False
 
         if not kwargs.get("db_session"):
+            channel_id = args[2]
 
-            scoped_db_session = get_organization_from_channel_id(channel_id=args[2])
-
-            if not scoped_db_session:
-                raise Exception(
-                    f"Could not find an organization associated with channel_id. ChannelId: {kwargs['channel_id']}"
+            # slug passed directly is prefered over just having a channel_id
+            organization_slug = kwargs.pop("organization_slug", None)
+            if not organization_slug:
+                scoped_db_session = get_organization_from_channel_id(channel_id=channel_id)
+                if not scoped_db_session:
+                    raise Exception(
+                        f"Could not find an organization associated with channel_id. ChannelId: {channel_id}"
+                    )
+            else:
+                schema_engine = engine.execution_options(
+                    schema_translate_map={
+                        None: f"dispatch_organization_{organization_slug}",
+                    }
                 )
+
+                scoped_db_session = sessionmaker(bind=schema_engine)()
 
             background = True
             kwargs["db_session"] = scoped_db_session

@@ -268,6 +268,7 @@ def send_incident_created_notifications(incident: Incident, db_session: SessionL
         "contact_fullname": incident.commander.individual.name,
         "contact_weblink": incident.commander.individual.weblink,
         "incident_id": incident.id,
+        "organization_slug": incident.project.organization.slug,
     }
 
     faq_doc = document_service.get_incident_faq_document(db_session=db_session)
@@ -371,6 +372,7 @@ def send_incident_update_notifications(
         "incident_status_old": previous_incident.status.value,
         "incident_type_new": incident.incident_type.name,
         "incident_type_old": previous_incident.incident_type.name,
+        "organization_slug": incident.organization.project.slug,
         "name": incident.name,
         "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
         "title": incident.title,
@@ -785,6 +787,7 @@ def send_incident_rating_feedback_message(incident: Incident, db_session: Sessio
     items = [
         {
             "incident_id": incident.id,
+            "organization_slug": incident.project.organization.slug,
             "name": incident.name,
             "title": incident.title,
             "ticket_weblink": incident.ticket.weblink,

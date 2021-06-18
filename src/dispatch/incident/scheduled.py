@@ -156,7 +156,7 @@ def daily_report(db_session: SessionLocal, project: Project):
                         item.update(
                             {
                                 "button_text": "Join Incident",
-                                "button_value": str(incident.id),
+                                "button_value": f"{incident.project.organization.slug}-{incident.id}",
                                 "button_action": f"{ConversationButtonActions.invite_user.value}-{incident.status}-{idx}",
                             }
                         )
