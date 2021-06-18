@@ -31,7 +31,7 @@ def sync_terms(db_session: SessionLocal, project: Project):
         log.warning(f"Skipping term sync no term plugin enabled. ProjectId: {project.id}")
         return
 
-    for t in term_plugin.get():
+    for t in term_plugin.instance.get():
         log.debug(f"Adding Term. Term: {t}")
         term_in = TermCreate(**t)
         term = term_service.get_by_text(db_session=db_session, text=term_in.text)
