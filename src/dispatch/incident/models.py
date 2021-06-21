@@ -73,7 +73,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
     status = Column(String, default=IncidentStatus.active.value)
-    visibility = Column(String, default=Visibility.open)
+    visibility = Column(String, default=Visibility.open, nullable=False)
 
     # auto generated
     reported_at = Column(DateTime, default=datetime.utcnow)
