@@ -8,13 +8,14 @@ from sqlalchemy import func
 
 from dispatch.database.core import SessionLocal
 from dispatch.config import DISPATCH_HELP_EMAIL
+from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.messaging.strings import DOCUMENT_EVERGREEN_REMINDER
 from dispatch.decorators import scheduled_project_task
 from dispatch.project.models import Project
 from dispatch.plugin import service as plugin_service
-from dispatch.route import service as route_service
 from dispatch.scheduler import scheduler
 from dispatch.term.models import Term
+from dispatch.term import service as term_service
 
 from .service import get_all, get_overdue_evergreen_documents
 from .models import Document
@@ -34,6 +35,13 @@ def sync_document_terms(db_session: SessionLocal, project: Project):
         log.debug("Tried to sync document terms but couldn't find any active storage plugins.")
         return
 
+    terms = term_service.get_all(db_session=db_session, project_id=project.id).all()
+    log.debug(f"Fetched {len(terms)} terms from database.")
+
+    term_strings = [t.name.lower() for t in terms if t.discoverable]
+    phrases = build_term_vocab(term_strings)
+    matcher = build_phrase_matcher("dispatch-term", phrases)
+
     documents = get_all(db_session=db_session)
     for doc in documents:
         log.debug(f"Processing document. Name: {doc.name}")
@@ -45,7 +53,7 @@ def sync_document_terms(db_session: SessionLocal, project: Project):
                 mime_type = "text/plain"
 
             doc_text = p.instance.get(doc.resource_id, mime_type)
-            extracted_terms = route_service.get_terms(db_session=db_session, text=doc_text)
+            extracted_terms = list(set(extract_terms_from_text(doc_text, matcher)))
 
             matched_terms = (
                 db_session.query(Term)

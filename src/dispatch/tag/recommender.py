@@ -20,13 +20,13 @@ log = logging.getLogger(__name__)
 
 def save_model(dataframe: DataFrame, organization_slug: str, project_slug: str, model_name: str):
     """Saves a correlation dataframe to disk."""
-    file_name = f"{tempfile.gettempdir()}/{organization_slug}/{project_slug}/{model_name}.pkl"
+    file_name = f"{tempfile.gettempdir()}/{organization_slug}-{project_slug}-{model_name}.pkl"
     dataframe.to_pickle(file_name)
 
 
 def load_model(organization_slug: str, project_slug: str, model_name: str):
     """Loads a correlation dataframe from disk."""
-    file_name = f"{tempfile.gettempdir()}/{organization_slug}/{project_slug}/{model_name}.pkl"
+    file_name = f"{tempfile.gettempdir()}/{organization_slug}-{project_slug}-{model_name}.pkl"
     return pd.read_pickle(file_name)
 
 
