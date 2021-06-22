@@ -27,3 +27,15 @@ class UserRoles(str, Enum):
     manager = "Manager"
     admin = "Admin"
     member = "Member"
+
+
+class DocumentResourceTypes(str, Enum):
+    faq = "dispatch-incident-faq-document"
+    conversation = "dispatch-conversation-reference-document"
+
+
+class DocumentResourceTemplateTypes(str, Enum):
+    executive = "dispatch-executive-report-document-template"
+    review = "dispatch-incident-review-document-template"
+    tracking = "dispatch-incident-sheet-template"
+    incident = "dispatch-incident-document-template"

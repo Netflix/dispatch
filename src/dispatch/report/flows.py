@@ -85,7 +85,6 @@ def create_executive_report(
     db_session=None,
 ):
     """Creates an executive report."""
-    report_template = document_service.get_executive_report_template(db_session=db_session)
 
     current_date = date.today().strftime("%B %d, %Y")
 
@@ -95,6 +94,10 @@ def create_executive_report(
 
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    report_template = document_service.get_executive_report_template(
+        db_session=db_session, project_id=incident.project_id
+    )
 
     if not report_template:
         raise InvalidConfiguration("No executive report template defined.")

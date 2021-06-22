@@ -366,7 +366,9 @@ def create_collaboration_documents(incident: Incident, db_session: SessionLocal)
         )
 
         sheet = None
-        template = document_service.get_incident_investigation_sheet_template(db_session=db_session)
+        template = document_service.get_incident_investigation_sheet_template(
+            db_session=db_session, project_id=incident.project_id
+        )
         if template:
             sheet_name = f"{incident.name} - Incident Tracking Sheet"
             sheet = plugin.instance.copy_file(
@@ -858,7 +860,9 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
 
     # we create a copy of the incident review document template and we move it to the incident storage
     incident_review_document_name = f"{incident.name} - Post Incident Review Document"
-    template = document_service.get_incident_review_template(db_session=db_session)
+    template = document_service.get_incident_review_template(
+        db_session=db_session, project_id=incident.project_id
+    )
 
     # incident review document is optional
     if not template:

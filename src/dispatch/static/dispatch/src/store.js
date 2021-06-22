@@ -25,6 +25,8 @@ import term from "@/term/store"
 import project from "@/project/store"
 import organization from "@/organization/store"
 import workflow from "@/workflow/store"
+import template from "@/document/template/store"
+import runbook from "@/document/runbook/store"
 
 Vue.use(Vuex)
 
@@ -50,9 +52,11 @@ export default new Vuex.Store({
     tag,
     tag_type,
     task,
+    template,
     team,
     term,
     workflow,
+    runbook,
     route: {
       namespaced: true,
       getters: {

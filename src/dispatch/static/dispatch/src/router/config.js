@@ -262,6 +262,15 @@ export const protectedRoute = [
             component: () => import(/* webpackChunkName: "plugin-table" */ "@/plugin/Table.vue"),
           },
           {
+            path: "templates",
+            name: "TemplateTable",
+            meta: { title: "Templates", subMenu: "project", group: "incident" },
+            component: () =>
+              import(
+                /* webpackChunkName: "plugin-table" */ "@/document/template/TemplateTable.vue"
+              ),
+          },
+          {
             path: "services",
             name: "ServiceTable",
             meta: { title: "Services", subMenu: "project", group: "contact" },
@@ -294,11 +303,11 @@ export const protectedRoute = [
             component: () => import(/* webpackChunkName: "tag-table" */ "@/tag/Table.vue"),
           },
           {
-            path: "documents",
-            name: "DocumentTable",
-            meta: { title: "Documents", subMenu: "project", group: "knowledge" },
+            path: "runbooks",
+            name: "RunbookTable",
+            meta: { title: "Runbooks", subMenu: "project", group: "knowledge" },
             component: () =>
-              import(/* webpackChunkName: "document-table" */ "@/document/Table.vue"),
+              import(/* webpackChunkName: "plugin-table" */ "@/document/runbook/RunbookTable.vue"),
           },
           {
             path: "definitions",

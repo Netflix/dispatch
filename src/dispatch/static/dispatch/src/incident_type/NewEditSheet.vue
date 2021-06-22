@@ -86,7 +86,12 @@
               </v-flex>
               <v-flex xs12>
                 <ValidationObserver disabled>
-                  <document-select :project="project" v-model="template_document" />
+                  <template-select
+                    :project="project"
+                    label="Incident Document Template"
+                    v-model="template_document"
+                    resourceType="dispatch-incident-document-template"
+                  />
                 </ValidationObserver>
               </v-flex>
               <v-flex xs 12>
@@ -127,7 +132,7 @@ import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 import ServiceSelect from "@/service/ServiceSelect.vue"
-import DocumentSelect from "@/document/DocumentSelect.vue"
+import TemplateSelect from "@/document/template/TemplateSelect.vue"
 import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
 
 extend("required", {
@@ -143,7 +148,7 @@ export default {
     ValidationProvider,
     PluginMetadataInput,
     ServiceSelect,
-    DocumentSelect,
+    TemplateSelect,
   },
 
   data() {
