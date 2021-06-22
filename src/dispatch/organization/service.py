@@ -25,6 +25,10 @@ def get_by_name(*, db_session, name: str) -> Optional[Organization]:
     return db_session.query(Organization).filter(Organization.name == name).one_or_none()
 
 
+def get_by_slug(*, db_session, slug: str) -> Optional[Organization]:
+    return db_session.query(Organization).filter(Organization.slug == slug).one_or_none()
+
+
 def get_all(*, db_session) -> List[Optional[Organization]]:
     return db_session.query(Organization)
 

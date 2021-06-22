@@ -120,8 +120,7 @@ def create(*, db_session, organization: str, user_in: UserRegister) -> DispatchU
         **user_in.dict(exclude={"password", "organizations", "projects"}), password=password
     )
 
-    # get the default organization
-    org = organization_service.get_by_name(db_session=db_session, name=organization)
+    org = organization_service.get_by_slug(db_session=db_session, slug=organization)
 
     # add the user to the default organization
     user.organizations.append(
@@ -138,10 +137,10 @@ def create(*, db_session, organization: str, user_in: UserRegister) -> DispatchU
     return user
 
 
-def get_or_create(*, db_session, user_in: UserRegister) -> DispatchUser:
+def get_or_create(*, db_session, organization: str, user_in: UserRegister) -> DispatchUser:
     """Gets an existing user or creates a new one."""
     try:
-        return create(db_session=db_session, user_in=user_in)
+        return create(db_session=db_session, organization=organization, user_in=user_in)
     except IntegrityError:
         db_session.rollback()
         return get_by_email(db_session=db_session, email=user_in.email)
@@ -173,7 +172,12 @@ def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUs
     return user
 
 
-def get_current_user(*, db_session: Session = Depends(get_db), request: Request) -> DispatchUser:
+def get_current_user(
+    *,
+    db_session: Session = Depends(get_db),
+    organization: str = Depends(get_organziation),
+    request: Request,
+) -> DispatchUser:
     """Attempts to get the current user depending on the configured authentication provider."""
     if DISPATCH_AUTHENTICATION_PROVIDER_SLUG:
         auth_plugin = plugins.get(DISPATCH_AUTHENTICATION_PROVIDER_SLUG)
@@ -188,10 +192,8 @@ def get_current_user(*, db_session: Session = Depends(get_db), request: Request)
         )
         raise credentials_exception
 
-    current_user = get_by_email(db_session=db_session, email=user_email)
-    if not current_user:
-        log.exception(
-            f"Unable to determine user email based on configured auth provider or no default auth user email defined. Provider: {DISPATCH_AUTHENTICATION_PROVIDER_SLUG}"
-        )
-        raise credentials_exception
-    return current_user
+    return get_or_create(
+        db_session=db_session,
+        organization=organization,
+        user_in=UserRegister(email=user_email),
+    )

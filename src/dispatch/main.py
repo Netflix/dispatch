@@ -9,7 +9,6 @@ from starlette.applications import Starlette
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import FileResponse, Response, StreamingResponse
-from starlette.routing import compile_path
 from starlette.staticfiles import StaticFiles
 import httpx
 
@@ -39,6 +38,19 @@ frontend = Starlette()
 
 # we create the Web API framework
 api = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+
+
+def get_path_params_from_request(request: Request) -> str:
+    """Fetches the organization from the request path."""
+    path_params = {}
+    for r in api_router.routes:
+        path_regex, path_format, param_converters = compile_path(r.path)
+        # remove the /api/v1 for matching
+        path = f"/{request['path'].strip('/api/v1')}"
+        match = path_regex.match(path)
+        if match:
+            path_params = match.groupdict()
+    return path_params
 
 
 def get_path_template(request: Request) -> str:
@@ -71,16 +83,7 @@ async def default_page(request, call_next):
 async def db_session_middleware(request: Request, call_next):
     response = Response("Internal Server Error", status_code=500)
     try:
-        # starlette does not fill in the the params object until after the request, we do it manually
-        path_params = {}
-        for r in api_router.routes:
-            path_regex, path_format, param_converters = compile_path(r.path)
-            # remove the /api/v1 for matching
-            path = f"/{request['path'].strip('/api/v1')}"
-            match = path_regex.match(path)
-            if match:
-                path_params = match.groupdict()
-
+        path_params = get_path_params_from_request(request)
         # if this call is organization specific set the correct search path
         organization_slug = path_params.get("organization")
         if organization_slug:
