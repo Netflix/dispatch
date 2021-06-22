@@ -22,6 +22,7 @@ This means you can let Dispatch focus on creating resources, assembling particip
 ## Project resources
 
 - [Dispatch Blog Post](https://medium.com/@NetflixTechBlog/introducing-dispatch-da4b8a2a8072)
+- Dispatch Talks: [FIRST 2021](https://www.youtube.com/watch?v=_HYShHaVUGg&ab_channel=FIRST), [Slack Frontiers 2020](https://slack.com/intl/pt-br/blog/collaboration/engineers-netflix-pagerduty-slack), [BSidesSF 2020](https://www.youtube.com/watch?v=49eYH46ujIU&t=25s)
 - [Source Code](https://github.com/netflix/dispatch)
 - [Issue tracker](https://github.com/netflix/dispatch/issues)
 - [Docker](https://github.com/Netflix/dispatch-docker)
