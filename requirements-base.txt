@@ -159,7 +159,7 @@ oauthlib[signedtoken]==3.1.0
     #   requests-oauthlib
 packaging==20.9
     # via google-api-core
-pandas==1.2.4
+pandas==1.2.5
     # via
     #   -r requirements-base.in
     #   statsmodels
