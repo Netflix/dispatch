@@ -47,7 +47,7 @@ def run_workflow_view(
     workflow_options = []
     for w in workflows:
         # don't show disable workflows or workflows with disabled plugins
-        if not w.plugin.enabled or not w.enabled:
+        if not w.plugin.instance.enabled or not w.enabled:
             continue
 
         current_option = {
