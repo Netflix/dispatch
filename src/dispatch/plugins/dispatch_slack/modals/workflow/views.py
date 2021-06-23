@@ -92,6 +92,7 @@ def run_workflow_view(
                         "text": "Select Workflow",
                     },
                     "options": workflow_options,
+                    "action_id": RunWorkflowBlockId.workflow_select,
                 }
             ],
         }

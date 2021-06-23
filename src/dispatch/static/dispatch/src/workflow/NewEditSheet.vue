@@ -30,7 +30,7 @@
                 <span class="subtitle-2">Details</span>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="name" immediate>
+                <ValidationProvider name="name" rules="required" immediate>
                   <v-text-field
                     v-model="name"
                     slot-scope="{ errors, valid }"
@@ -43,7 +43,7 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="resourceId" immediate>
+                <ValidationProvider name="resourceId" rules="required" immediate>
                   <v-text-field
                     v-model="resource_id"
                     slot-scope="{ errors, valid }"
@@ -56,7 +56,7 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="description" immediate>
+                <ValidationProvider name="description" rules="required" immediate>
                   <v-textarea
                     v-model="description"
                     slot-scope="{ errors, valid }"
@@ -70,8 +70,8 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <plugin-combobox
-                  v-model="plugin"
+                <plugin-instance-combobox
+                  v-model="plugin_instance"
                   type="workflow"
                   :project="project"
                   label="Plugin"
@@ -101,7 +101,7 @@ import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
-import PluginCombobox from "@/plugin/PluginCombobox"
+import PluginInstanceCombobox from "@/plugin/PluginInstanceCombobox"
 import WorkflowParametersInput from "@/workflow/WorkflowParametersInput"
 
 extend("required", {
@@ -115,7 +115,7 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    PluginCombobox,
+    PluginInstanceCombobox,
     WorkflowParametersInput,
   },
 
@@ -127,7 +127,7 @@ export default {
       "selected.resource_id",
       "selected.parameters",
       "selected.id",
-      "selected.plugin",
+      "selected.plugin_instance",
       "selected.project",
       "selected.loading",
       "dialogs.showCreateEdit",

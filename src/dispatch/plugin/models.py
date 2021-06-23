@@ -44,7 +44,7 @@ class PluginInstance(Base, ProjectMixin):
 
     # this is some magic that allows us to use the plugin search vectors
     # against our plugin instances
-    search_vector = association_proxy(Plugin, "search_vector")
+    search_vector = association_proxy("plugin", "search_vector")
 
     @property
     def instance(self):

@@ -35,8 +35,8 @@
               :sort-by.sync="sortBy"
               :sort-desc.sync="descending"
             >
-              <template v-slot:item.plugin="{ item }">
-                {{ item.plugin.title }}
+              <template v-slot:item.plugin_instance="{ item }">
+                {{ item.plugin_instance.plugin.title }}
               </template>
               <template v-slot:item.enabled="{ item }">
                 <v-simple-checkbox v-model="item.enabled" disabled />
@@ -86,7 +86,7 @@ export default {
         { text: "Description", value: "description", sortable: false },
         { text: "Enabled", value: "enabled", sortable: true },
         { text: "ResourceId", value: "resource_id", sortable: true },
-        { text: "Plugin", value: "plugin", sortable: true },
+        { text: "Plugin", value: "plugin_instance", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
