@@ -66,7 +66,7 @@ class BasePermission(ABC):
         if not organization:
             raise HTTPException(status_code=self.status_code, detail=self.error_msg)
 
-        user = get_current_user(db_session=request.state.db, request=request)
+        user = get_current_user(request=request)
 
         if not user:
             raise HTTPException(status_code=self.status_code, detail=self.error_msg)
@@ -258,7 +258,7 @@ class IncidentReporterPermission(BasePermission):
         self,
         request: Request,
     ) -> bool:
-        current_user = get_current_user(db_session=request.state.db, request=request)
+        current_user = get_current_user(request=request)
         current_incident = incident_service.get(
             db_session=request.state.db, incident_id=request.path_params["incident_id"]
         )
@@ -275,7 +275,7 @@ class IncidentCommanderPermission(BasePermission):
         self,
         request: Request,
     ) -> bool:
-        current_user = get_current_user(db_session=request.state.db, request=request)
+        current_user = get_current_user(request=request)
         current_incident = incident_service.get(
             db_session=request.state.db, incident_id=request.path_params["incident_id"]
         )
