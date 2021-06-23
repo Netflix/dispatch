@@ -43,6 +43,7 @@ frontend = Starlette()
 # we create the Web API framework
 api = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
+
 def get_path_params_from_request(request: Request) -> str:
     path_params = {}
     for r in api_router.routes:
