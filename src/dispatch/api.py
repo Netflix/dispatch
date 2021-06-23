@@ -2,8 +2,6 @@ from fastapi import APIRouter, Depends
 from fastapi.openapi.docs import get_redoc_html
 from fastapi.openapi.utils import get_openapi
 from starlette.responses import JSONResponse
-from starlette.routing import compile_path
-from starlette.requests import Request
 
 from dispatch.auth.service import get_current_user
 from dispatch.auth.views import user_router, auth_router

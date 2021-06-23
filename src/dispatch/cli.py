@@ -626,11 +626,7 @@ def show_routes():
 
     table = []
     for r in api_router.routes:
-        auth = False
-        for d in r.dependencies:
-            if d.dependency.__name__ == "get_current_user":  # TODO this is fragile
-                auth = True
-        table.append([r.path, auth, ",".join(r.methods)])
+        table.append([r.path, ",".join(r.methods)])
 
     click.secho(tabulate(table, headers=["Path", "Authenticated", "Methods"]), fg="blue")
 

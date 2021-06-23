@@ -7,14 +7,12 @@
 import logging
 from typing import Optional
 
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
 
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from dispatch.database.core import get_db
 
 from dispatch.plugins.base import plugins
 from dispatch.config import (
@@ -38,7 +36,7 @@ from .models import (
 
 log = logging.getLogger(__name__)
 
-credentials_exception = HTTPException(
+InvalidCredentialException = HTTPException(
     status_code=HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"
 )
 
@@ -172,13 +170,9 @@ def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUs
     return user
 
 
-def get_current_user(
-    *,
-    db_session: Session = Depends(get_db),
-    organization: str = Depends(get_organziation),
-    request: Request,
-) -> DispatchUser:
+def get_current_user(request: Request) -> DispatchUser:
     """Attempts to get the current user depending on the configured authentication provider."""
+
     if DISPATCH_AUTHENTICATION_PROVIDER_SLUG:
         auth_plugin = plugins.get(DISPATCH_AUTHENTICATION_PROVIDER_SLUG)
         user_email = auth_plugin.get_current_user(request)
@@ -190,10 +184,10 @@ def get_current_user(
         log.exception(
             f"Unable to determine user email based on configured auth provider or no default auth user email defined. Provider: {DISPATCH_AUTHENTICATION_PROVIDER_SLUG}"
         )
-        raise credentials_exception
+        raise InvalidCredentialException
 
     return get_or_create(
-        db_session=db_session,
-        organization=organization,
+        db_session=request.state.db,
+        organization=request.state.organization,
         user_in=UserRegister(email=user_email),
     )
