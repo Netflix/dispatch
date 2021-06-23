@@ -13,7 +13,7 @@ from dispatch.database.core import Base
 from dispatch.document.models import DocumentCreate
 from dispatch.models import DispatchBase, ResourceBase, ResourceMixin, TimeStampMixin, ProjectMixin
 from dispatch.participant.models import ParticipantRead
-from dispatch.plugin.models import PluginInstance, PluginRead
+from dispatch.plugin.models import PluginInstance, PluginInstanceRead
 from dispatch.project.models import ProjectRead
 
 
@@ -103,7 +103,7 @@ class WorkflowInstance(Base, ResourceMixin):
 class WorkflowBase(DispatchBase):
     name: str
     resource_id: str
-    plugin: Optional[PluginRead]
+    plugin_instance: Optional[PluginInstanceRead]
     parameters: Optional[List[dict]] = []
     enabled: Optional[bool]
     description: Optional[str]

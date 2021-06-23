@@ -114,7 +114,7 @@ export default {
         q: this.search,
         sortBy: ["slug"],
         itemsPerPage: this.numItems,
-        filters: JSON.stringify({
+        filter: JSON.stringify({
           and: [
             {
               model: "Plugin",
@@ -123,7 +123,7 @@ export default {
               value: this.type,
             },
             {
-              model: "Plugin",
+              model: "PluginInstance",
               field: "enabled",
               op: "==",
               value: "true",

@@ -38,10 +38,12 @@ def get_enabled(*, db_session) -> List[Optional[Workflow]]:
 def create(*, db_session, workflow_in: WorkflowCreate) -> Workflow:
     """Creates a new workflow."""
     project = project_service.get_by_name(db_session=db_session, name=workflow_in.project.name)
-    plugin = plugin_service.get(db_session=db_session, plugin_id=workflow_in.plugin.id)
+    plugin_instance = plugin_service.get_instance(
+        db_session=db_session, plugin_instance_id=workflow_in.plugin_instance.id
+    )
     workflow = Workflow(
-        **workflow_in.dict(exclude={"plugin", "project"}),
-        plugin_instance=plugin,
+        **workflow_in.dict(exclude={"plugin_instance", "project"}),
+        plugin_instance=plugin_instance,
         project=project,
     )
 
@@ -59,8 +61,10 @@ def update(*, db_session, workflow: Workflow, workflow_in: WorkflowUpdate) -> Wo
         if field in update_data:
             setattr(workflow, field, update_data[field])
 
-    plugin = plugin_service.get(db_session=db_session, plugin_id=workflow_in.plugin.id)
-    workflow.plugin_instance = plugin
+    plugin_instance = plugin_service.get_instance(
+        db_session=db_session, plugin_instance_id=workflow_in.plugin_instance.id
+    )
+    workflow.plugin_instance = plugin_instance
 
     db_session.add(workflow)
     db_session.commit()

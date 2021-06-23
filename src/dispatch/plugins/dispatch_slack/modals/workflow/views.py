@@ -46,7 +46,7 @@ def run_workflow_view(
     selected_option = None
     workflow_options = []
     for w in workflows:
-        # don't show disable workflows or workflows with disabled plugins
+        # don't show disabled workflows or workflows with disabled plugins
         if not w.plugin_instance.enabled or not w.enabled:
             continue
 
@@ -92,6 +92,7 @@ def run_workflow_view(
                         "text": "Select Workflow",
                     },
                     "options": workflow_options,
+                    "action_id": RunWorkflowBlockId.workflow_select,
                 }
             ],
         }

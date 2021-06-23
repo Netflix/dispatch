@@ -28,7 +28,7 @@ from .modals.feedback.handlers import (
     create_rating_feedback_modal,
 )
 
-from .modals.workflow.views import RunWorkflowCallbackId
+from .modals.workflow.views import RunWorkflowBlockId, RunWorkflowCallbackId
 from .modals.workflow.handlers import run_workflow_submitted_form, update_workflow_modal
 
 from .modals.incident.handlers import (
@@ -133,6 +133,7 @@ def block_action_functions(action: str):
         UpdateParticipantCallbackId.update_view: [update_update_participant_modal],
         ReportIncidentCallbackId.update_view: [update_report_incident_modal],
         RunWorkflowCallbackId.update_view: [update_workflow_modal],
+        RunWorkflowBlockId.workflow_select: [update_workflow_modal],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc

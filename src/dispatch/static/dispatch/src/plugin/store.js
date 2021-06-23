@@ -10,7 +10,7 @@ const getDefaultSelectedState = () => {
     enabled: null,
     configuration: [],
     project: null,
-    plugin: null,
+    plugin_instance: null,
     loading: false,
   }
 }
