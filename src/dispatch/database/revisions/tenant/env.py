@@ -5,7 +5,6 @@ from sqlalchemy import engine_from_config, pool, inspect
 from dispatch.logging import logging
 from dispatch.config import SQLALCHEMY_DATABASE_URI
 from dispatch.database.core import Base
-from dispatch.database.manage import get_tenant_tables, setup_fulltext_search
 
 
 # this is the Alembic Config object, which provides
@@ -73,7 +72,6 @@ def run_migrations_online():
             with context.begin_transaction():
                 context.run_migrations()
 
-            setup_fulltext_search(connection, get_tenant_tables())
             if context.config.cmd_opts:
                 if context.config.cmd_opts.cmd == "revision":
                     break
