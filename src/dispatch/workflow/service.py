@@ -41,7 +41,7 @@ def create(*, db_session, workflow_in: WorkflowCreate) -> Workflow:
     plugin = plugin_service.get(db_session=db_session, plugin_id=workflow_in.plugin.id)
     workflow = Workflow(
         **workflow_in.dict(exclude={"plugin", "project"}),
-        plugin=plugin,
+        plugin_instance=plugin,
         project=project,
     )
 
@@ -60,7 +60,7 @@ def update(*, db_session, workflow: Workflow, workflow_in: WorkflowUpdate) -> Wo
             setattr(workflow, field, update_data[field])
 
     plugin = plugin_service.get(db_session=db_session, plugin_id=workflow_in.plugin.id)
-    workflow.plugin = plugin
+    workflow.plugin_instance = plugin
 
     db_session.add(workflow)
     db_session.commit()
