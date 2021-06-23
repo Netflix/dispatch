@@ -81,7 +81,7 @@ def get_me(
     req: Request,
     db_session: Session = Depends(get_db),
 ):
-    return get_current_user(db_session=db_session, request=req)
+    return get_current_user(request=req)
 
 
 @user_router.put(
