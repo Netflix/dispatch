@@ -10,9 +10,9 @@ from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
 
 
 from dispatch.auth.models import DispatchUser
-from dispatch.auth.service import get_current_user
+from dispatch.auth.service import get_current_user, get_current_role
 from dispatch.search.fulltext.composite_search import CompositeSearch
-from dispatch.enums import Visibility
+from dispatch.enums import UserRoles, Visibility
 from dispatch.feedback.models import Feedback
 from dispatch.task.models import Task
 from dispatch.project.models import Project
@@ -34,8 +34,12 @@ from .core import (
 log = logging.getLogger(__file__)
 
 
-def restricted_incident_filter(query: orm.Query, current_user: DispatchUser):
+def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, role: UserRoles):
     """Adds additional incident filters to query (usually for permissions)."""
+    # owners can see restricted incidents
+    if role == UserRoles.owner:
+        return query
+
     query = (
         query.join(Participant, Incident.id == Participant.incident_id)
         .join(IndividualContact)
@@ -57,7 +61,9 @@ def restricted_incident_type_filter(query: orm.Query, current_user: DispatchUser
     return query
 
 
-def apply_model_specific_filters(model: Base, query: orm.Query, current_user: DispatchUser):
+def apply_model_specific_filters(
+    model: Base, query: orm.Query, current_user: DispatchUser, role: UserRoles
+):
     """Applies any model specific filter as it pertains to the given user."""
     model_map = {
         Incident: [restricted_incident_filter],
@@ -67,7 +73,7 @@ def apply_model_specific_filters(model: Base, query: orm.Query, current_user: Di
     filters = model_map.get(model, [])
 
     for f in filters:
-        query = f(query, current_user)
+        query = f(query, current_user, role)
 
     return query
 
@@ -164,6 +170,7 @@ def common_parameters(
     sort_by: List[str] = Query([], alias="sortBy[]"),
     descending: List[bool] = Query([], alias="descending[]"),
     current_user: DispatchUser = Depends(get_current_user),
+    role: UserRoles = Depends(get_current_role),
 ):
     if filter_spec:
         filter_spec = json.loads(filter_spec)
@@ -177,6 +184,7 @@ def common_parameters(
         "sort_by": sort_by,
         "descending": descending,
         "current_user": current_user,
+        "role": role,
     }
 
 
@@ -190,6 +198,7 @@ def search_filter_sort_paginate(
     sort_by: List[str] = None,
     descending: List[bool] = None,
     current_user: DispatchUser = None,
+    role: UserRoles = UserRoles.member,
 ):
     """Common functionality for searching, filtering, sorting, and pagination."""
     model_cls = get_class_by_tablename(model)
@@ -202,7 +211,7 @@ def search_filter_sort_paginate(
         sort = False if sort_by else True
         query = search(query_str=query_str, query=query, model=model, sort=sort)
 
-    query = apply_model_specific_filters(model_cls, query, current_user)
+    query = apply_model_specific_filters(model_cls, query, current_user, role)
 
     if filter_spec:
         query = apply_filters(query, filter_spec)
