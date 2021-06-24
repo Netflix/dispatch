@@ -7,7 +7,7 @@
 import logging
 from typing import Optional
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
 from fastapi.encoders import jsonable_encoder
 from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
@@ -191,3 +191,10 @@ def get_current_user(request: Request) -> DispatchUser:
         organization=request.state.organization,
         user_in=UserRegister(email=user_email),
     )
+
+
+def get_current_role(
+    request: Request, current_user: DispatchUser = Depends(get_current_user)
+) -> UserRoles:
+    """Attempts to get the current user depending on the configured authentication provider."""
+    return current_user.get_organization_role(organization_name=request.state.organization)
