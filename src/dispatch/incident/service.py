@@ -161,7 +161,7 @@ def create(
     project: str,
     incident_priority: str,
     incident_type: str,
-    reporter_email: str,
+    reporter: dict,
     title: str,
     status: str,
     description: str,
@@ -233,13 +233,13 @@ def create(
     )
 
     # Add other incident roles (e.g. commander and liaison)
-    assign_incident_role(db_session, incident, reporter_email, ParticipantRoleType.reporter)
+    assign_incident_role(db_session, incident, reporter["email"], ParticipantRoleType.reporter)
 
     assign_incident_role(
-        db_session, incident, reporter_email, ParticipantRoleType.incident_commander
+        db_session, incident, reporter["email"], ParticipantRoleType.incident_commander
     )
 
-    assign_incident_role(db_session, incident, reporter_email, ParticipantRoleType.liaison)
+    assign_incident_role(db_session, incident, reporter["email"], ParticipantRoleType.liaison)
 
     return incident
 

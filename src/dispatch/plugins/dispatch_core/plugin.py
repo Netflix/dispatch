@@ -29,6 +29,7 @@ from dispatch.incident import service as incident_service
 from dispatch.team import service as team_service
 from dispatch.plugin import service as plugin_service
 from dispatch.route import service as route_service
+from dispatch.service import service as service_service
 
 from dispatch.plugins.bases import (
     ParticipantPlugin,
@@ -273,15 +274,22 @@ class DispatchParticipantResolverPlugin(ParticipantPlugin):
                         log.debug(
                             f"Resolving service contact. ServiceContact: {match.resource_state}"
                         )
-                        individual_email = plugin_instance.instance.get(
-                            match.resource_state["external_id"]
+                        # ensure that service is enabled
+                        service = service_service.get_by_external_id_and_project_id(
+                            db_session=db_session,
+                            external_id=match.resource_state["external_id"],
+                            project_id=incident.project_id,
                         )
+                        if service.is_active:
+                            individual_email = plugin_instance.instance.get(
+                                match.resource_state["external_id"]
+                            )
 
-                        individual = individual_service.get_or_create(
-                            db_session=db_session, email=individual_email, incident=incident
-                        )
+                            individual = individual_service.get_or_create(
+                                db_session=db_session, email=individual_email, incident=incident
+                            )
 
-                        individual_contacts.append((individual, match.resource_state["id"]))
+                            individual_contacts.append((individual, match.resource_state["id"]))
                     else:
                         log.warning(
                             f"Skipping service contact. Service: {match.resource_state['name']} Reason: Associated service plugin not enabled."
