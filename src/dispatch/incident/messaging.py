@@ -372,7 +372,7 @@ def send_incident_update_notifications(
         "incident_status_old": previous_incident.status.value,
         "incident_type_new": incident.incident_type.name,
         "incident_type_old": previous_incident.incident_type.name,
-        "organization_slug": incident.organization.project.slug,
+        "organization_slug": incident.project.organization.slug,
         "name": incident.name,
         "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
         "title": incident.title,
