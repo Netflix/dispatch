@@ -8,11 +8,15 @@
       </v-row>
       <v-row>
         <v-col>
-          <v-card outlined elevation="0">
+          <v-card
+            outlined
+            elevation="0"
+            @click.stop="createEditShow({ resource_type: resourceTypes.incident })"
+          >
             <div class="d-flex flex-no-wrap justify-space-between">
               <div>
                 <v-card-title class="text-h5">Incident</v-card-title>
-                <v-card-subtitle>Create a new incident template</v-card-subtitle>
+                <v-card-subtitle>Create a new incident runbook</v-card-subtitle>
               </div>
               <v-avatar class="ma-3" tile>
                 <v-icon x-large>mdi-file-document-edit-outline</v-icon>
@@ -21,40 +25,18 @@
           </v-card>
         </v-col>
         <v-col>
-          <v-card outlined elevation="0">
+          <v-card
+            outlined
+            elevation="0"
+            @click.stop="createEditShow({ resource_type: resourceTypes.investigation })"
+          >
             <div class="d-flex flex-no-wrap justify-space-between">
               <div>
-                <v-card-title class="text-h5">Tracking</v-card-title>
-                <v-card-subtitle>Create a new tracking template</v-card-subtitle>
+                <v-card-title class="text-h5">Investigation</v-card-title>
+                <v-card-subtitle>Create a new investigation runbook</v-card-subtitle>
               </div>
               <v-avatar class="ma-3" tile>
                 <v-icon x-large>mdi-file-document-multiple-outline</v-icon>
-              </v-avatar>
-            </div>
-          </v-card>
-        </v-col>
-        <v-col>
-          <v-card outlined elevation="0">
-            <div class="d-flex flex-no-wrap justify-space-between">
-              <div>
-                <v-card-title class="text-h5">Executive</v-card-title>
-                <v-card-subtitle>Create a new executive report template</v-card-subtitle>
-              </div>
-              <v-avatar class="ma-3" tile>
-                <v-icon x-large>mdi-text-box-check-outline</v-icon>
-              </v-avatar>
-            </div>
-          </v-card>
-        </v-col>
-        <v-col>
-          <v-card outlined elevation="0">
-            <div class="d-flex flex-no-wrap justify-space-between">
-              <div>
-                <v-card-title class="text-h5">Review</v-card-title>
-                <v-card-subtitle>Create a new incident review template</v-card-subtitle>
-              </div>
-              <v-avatar class="ma-3" tile>
-                <v-icon x-large>mdi-text-box-search-outline</v-icon>
               </v-avatar>
             </div>
           </v-card>
@@ -128,7 +110,7 @@ import DocumentApi from "@/document/api"
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 
 export default {
-  name: "TemplateConfiguration",
+  name: "RunbookConfiguration",
 
   components: {
     SettingsBreadcrumbs,
@@ -140,19 +122,12 @@ export default {
         { text: "Description", value: "description", sortable: false },
         { text: "Type", value: "resource_type", sortable: true },
         { text: "Evergreen", value: "evergreen", sortable: true, width: "10%" },
-        {
-          text: "Evergreen Interval (days)",
-          value: "evergreen_reminder_interval",
-          sortable: false,
-          width: "10%",
-        },
-        { text: "Evergreen Owner", value: "evergreen_owner", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },
   computed: {
-    ...mapFields("document", [
+    ...mapFields("runbook", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
@@ -202,19 +177,13 @@ export default {
               model: "Document",
               field: "resource_type",
               op: "==",
-              value: "dispatch-incident-review-document-template",
+              value: "dispatch-incident-runbook",
             },
             {
               model: "Document",
               field: "resource_type",
               op: "==",
-              value: "dispatch-executive-report-document-template",
-            },
-            {
-              model: "Document",
-              field: "resource_type",
-              op: "==",
-              value: "dispatch-incident-sheet",
+              value: "dispatch-alert-runbook",
             },
             {
               model: "Project",
@@ -242,7 +211,7 @@ export default {
     getFilteredData: debounce(function (options) {
       this.fetchData(options)
     }, 500),
-    ...mapActions("document", ["getAll", "createEditShow", "removeShow"]),
+    ...mapActions("runbook", ["getAll", "createEditShow", "removeShow"]),
   },
 }
 </script>
