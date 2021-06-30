@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 # event, we use the unique channel id to determine which organization the
 # event belongs to.
 def get_organization_from_channel_id(channel_id: str) -> str:
-    """Iterate all organizations looking for a relevant  channel_id."""
+    """Iterate all organizations looking for a relevant channel_id."""
     db_session = SessionLocal()
     organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
     db_session.close()
