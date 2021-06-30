@@ -58,7 +58,7 @@ const actions = {
       commit("SET_TABLE_LOADING", false)
       commit("SET_TABLE_ROWS", response.data)
     })
-  }, 200),
+  }, 500),
   createEditShow({ commit }, feedback) {
     commit("SET_DIALOG_CREATE_EDIT", true)
     if (feedback) {
