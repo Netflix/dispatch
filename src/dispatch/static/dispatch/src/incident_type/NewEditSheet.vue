@@ -90,7 +90,7 @@
                     :project="project"
                     label="Incident Document Template"
                     v-model="template_document"
-                    resourceType="dispatch-incident-document-template"
+                    resource-type="dispatch-incident-document-template"
                   />
                 </ValidationObserver>
               </v-flex>
