@@ -171,11 +171,13 @@ def dispatch_user():
 @click.option(
     "--organization",
     "-o",
+    required=True,
     help="Organization to set role for.",
 )
 @click.option(
     "--role",
     "-r",
+    required=True,
     type=click.Choice(UserRoles),
     help="Role to be assigned to the user.",
 )
