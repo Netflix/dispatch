@@ -90,7 +90,7 @@ export default {
     removeMember(payload) {
       this.$emit("removeMember", payload)
     },
-    setFilterOptions: debounce(function () {}, 200),
+    setFilterOptions: debounce(function () {}, 500),
   },
 }
 </script>

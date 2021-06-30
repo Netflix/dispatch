@@ -60,7 +60,7 @@ const actions = {
       .catch(() => {
         commit("SET_TABLE_LOADING", false)
       })
-  }, 200),
+  }, 500),
   createEditShow({ commit }, workflow) {
     if (workflow) {
       commit("SET_SELECTED", workflow)
