@@ -16,7 +16,12 @@ from dispatch.enums import UserRoles
 
 from .main import *  # noqa
 from .database.core import engine
-from .database.manage import init_database
+from .database.manage import (
+    get_core_tables,
+    get_tenant_tables,
+    init_database,
+    setup_fulltext_search,
+)
 from .exceptions import DispatchException
 from .plugins.base import plugins
 from .scheduler import scheduler
@@ -361,6 +366,17 @@ def upgrade_database(tag, sql, revision, revision_type):
         if "dispatch_core" not in schema_names:
             click.secho("Detected single tenant database, converting to multi-tenant...")
             conn.execute(sqlalchemy.text(open(config.ALEMBIC_MULTI_TENANT_MIGRATION_PATH).read()))
+
+            # init initial triggers
+            conn.execute("set search_path to dispatch_core")
+            setup_fulltext_search(conn, get_core_tables())
+
+            tenant_tables = get_tenant_tables()
+            for t in tenant_tables:
+                t.schema = "dispatch_organization_default"
+
+            conn.execute("set search_path to dispatch_organization_default")
+            setup_fulltext_search(conn, tenant_tables)
 
         if revision_type:
             if revision_type == "core":
