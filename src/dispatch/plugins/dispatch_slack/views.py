@@ -7,14 +7,11 @@ import sys
 
 from time import time
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException
-
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, BackgroundTasks, Header, HTTPException
 
 from starlette.requests import Request
 from starlette.responses import Response
 
-from dispatch.database.core import get_db
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from . import __version__
