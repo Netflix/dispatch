@@ -178,7 +178,9 @@ def create(
 
     # We get the incident type by name
     if not incident_type:
-        incident_type = incident_type_service.get_default(db_session=db_session)
+        incident_type = incident_type_service.get_default(
+            db_session=db_session, project_id=project.id
+        )
         if not incident_type:
             raise Exception("No incident type specified and no default has been defined.")
     else:
