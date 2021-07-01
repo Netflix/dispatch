@@ -276,7 +276,7 @@ export const protectedRoute = [
             meta: { title: "References", subMenu: "project", group: "incident" },
             component: () =>
               import(
-                /* webpackChunkName: "plugin-table" */ "@/document/reference/ReferenceTable.vue"
+                /* webpackChunkName: "reference-table" */ "@/document/reference/ReferenceTable.vue"
               ),
           },
           {
