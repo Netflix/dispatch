@@ -179,7 +179,6 @@ class JiraTicketPlugin(TicketPlugin):
             incident_type_plugin_metadata
         )
 
-        # should we move to project keys?
         project = client.project(project_id)
         assignee = get_user_field(client, commander_email, project.key)
         reporter = get_user_field(client, reporter_email, project.key)
