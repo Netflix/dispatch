@@ -50,10 +50,12 @@ def get_email_username(email: str) -> str:
     return email
 
 
-def get_user_field(client: JIRA, user_email) -> dict:
+def get_user_field(client: JIRA, user_email: str, project_key: str) -> dict:
     """Returns correct Jira user field based on Jira hosting type."""
     if JIRA_HOSTING_TYPE == "Server":
-        user = client.search_users(user_email, maxResults=1)[0]
+        user = client.search_allowed_users_for_issue(
+            user_email, projectKey=project_key, maxResults=1
+        )[0]
         return {"name": user.name}
     if JIRA_HOSTING_TYPE == "Cloud":
         username = get_email_username(user_email)
@@ -173,12 +175,14 @@ class JiraTicketPlugin(TicketPlugin):
         """Creates a Jira issue."""
         client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
 
-        assignee = get_user_field(client, commander_email)
-        reporter = get_user_field(client, reporter_email)
-
         project_id, issue_type_name = process_incident_type_plugin_metadata(
             incident_type_plugin_metadata
         )
+
+        # should we move to project keys?
+        project = client.project(project_id)
+        assignee = get_user_field(client, commander_email, project.key)
+        reporter = get_user_field(client, reporter_email, project.key)
 
         issue_fields = {
             "project": {"id": project_id},
@@ -210,12 +214,13 @@ class JiraTicketPlugin(TicketPlugin):
         """Updates Jira issue fields."""
         client = JIRA(str(JIRA_API_URL), basic_auth=(JIRA_USERNAME, str(JIRA_PASSWORD)))
 
-        assignee = get_user_field(client, commander_email)
-        reporter = get_user_field(client, reporter_email)
-
         commander_username = get_email_username(commander_email)
 
         issue = client.issue(ticket_id)
+
+        assignee = get_user_field(client, commander_email, project_key=issue.fields.project.key)
+        reporter = get_user_field(client, reporter_email, project_key=issue.fields.project.key)
+
         issue_fields = create_issue_fields(
             title=title,
             description=description,
