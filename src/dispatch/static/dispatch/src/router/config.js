@@ -316,7 +316,7 @@ export const protectedRoute = [
             name: "RunbookTable",
             meta: { title: "Runbooks", subMenu: "project", group: "knowledge" },
             component: () =>
-              import(/* webpackChunkName: "plugin-table" */ "@/document/runbook/RunbookTable.vue"),
+              import(/* webpackChunkName: "runbooks-table" */ "@/document/runbook/RunbookTable.vue"),
           },
           {
             path: "definitions",
