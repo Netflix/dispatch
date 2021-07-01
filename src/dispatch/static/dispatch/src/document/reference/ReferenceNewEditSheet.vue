@@ -146,8 +146,6 @@ import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
-import InfoWidget from "@/components/InfoWidget.vue"
-
 extend("required", {
   ...required,
   message: "This field is required",
@@ -159,7 +157,6 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    InfoWidget,
   },
 
   computed: {

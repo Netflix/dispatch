@@ -23,30 +23,18 @@ const getDefaultSelectedState = () => {
   }
 }
 
-export const templateDocumentTypes = [
+export const referenceDocumentTypes = [
   {
-    resource_type: "dispatch-incident-document-template",
-    title: "Incident",
-    description: "Create a new incident template",
+    resource_type: "dispatch-faq-reference-document",
+    title: "FAQ",
+    description: "Create a new FAQ reference document",
     icon: "mdi-file-document-edit-outline",
   },
   {
-    resource_type: "dispatch-executive-report-document-template",
-    title: "Executive",
-    description: "Create a new executive template",
+    resource_type: "dispatch-conversation-reference-document",
+    title: "Conversation",
+    description: "Create a new conversation reference document",
     icon: "mdi-text-box-check-outline",
-  },
-  {
-    resource_type: "dispatch-incident-review-document-template",
-    title: "Review",
-    description: "Create a new incident review template",
-    icon: "mdi-text-box-search-outline",
-  },
-  {
-    resource_type: "dispatch-incident-tracking-template",
-    title: "Tracking",
-    description: "Create a new tracking template",
-    icon: "mdi-file-document-multiple-outline",
   },
 ]
 
@@ -71,7 +59,7 @@ const state = {
       descending: [false],
       filters: {
         project: [],
-        resource_type: templateDocumentTypes.map((item) => {
+        resource_type: referenceDocumentTypes.map((item) => {
           return {
             model: "Document",
             field: "resource_type",

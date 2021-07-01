@@ -1,6 +1,6 @@
 <template>
   <v-layout wrap>
-    <template-new-edit-sheet />
+    <reference-new-edit-sheet />
     <delete-dialog />
     <v-container>
       <v-row align="center" justify="space-between">
@@ -9,7 +9,7 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col v-for="document in templateDocumentTypes" :key="document.resource_type">
+        <v-col v-for="document in referenceDocumentTypes" :key="document.resource_type">
           <v-card
             outlined
             elevation="0"
@@ -92,21 +92,21 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
-import TemplateNewEditSheet from "@/document/template/TemplateNewEditSheet.vue"
-import DeleteDialog from "@/document/template/DeleteDialog.vue"
-import { templateDocumentTypes } from "@/document/template/store.js"
+import ReferenceNewEditSheet from "@/document/reference/ReferenceNewEditSheet.vue"
+import DeleteDialog from "@/document/reference/DeleteDialog.vue"
+import { referenceDocumentTypes } from "@/document/reference/store.js"
 
 export default {
-  name: "TemplateConfiguration",
+  name: "ReferenceConfiguration",
 
   components: {
     SettingsBreadcrumbs,
-    TemplateNewEditSheet,
+    ReferenceNewEditSheet,
     DeleteDialog,
   },
   data() {
     return {
-      templateDocumentTypes: templateDocumentTypes,
+      referenceDocumentTypes: referenceDocumentTypes,
       headers: [
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
@@ -117,7 +117,7 @@ export default {
     }
   },
   computed: {
-    ...mapFields("template", [
+    ...mapFields("reference", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
@@ -155,12 +155,12 @@ export default {
 
   methods: {
     getResourceTitle(resource_type) {
-      const found = templateDocumentTypes.find((item) => {
+      const found = referenceDocumentTypes.find((item) => {
         return item.resource_type === resource_type
       })
       return found ? found.title : ""
     },
-    ...mapActions("template", ["getAll", "createEditShow", "removeShow"]),
+    ...mapActions("reference", ["getAll", "createEditShow", "removeShow"]),
   },
 }
 </script>

@@ -49,7 +49,7 @@ class DocumentResourceTypes(str, Enum):
 
 
 class DocumentResourceReferenceTypes(str, Enum):
-    faq = "dispatch-incident-faq-document"
+    faq = "dispatch-incident-reference-faq-document"
     conversation = "dispatch-conversation-reference-document"
 
     def __str__(self) -> str:

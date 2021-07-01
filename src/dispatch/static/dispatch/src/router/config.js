@@ -271,6 +271,15 @@ export const protectedRoute = [
               ),
           },
           {
+            path: "references",
+            name: "ReferenceTable",
+            meta: { title: "References", subMenu: "project", group: "incident" },
+            component: () =>
+              import(
+                /* webpackChunkName: "plugin-table" */ "@/document/reference/ReferenceTable.vue"
+              ),
+          },
+          {
             path: "services",
             name: "ServiceTable",
             meta: { title: "Services", subMenu: "project", group: "contact" },

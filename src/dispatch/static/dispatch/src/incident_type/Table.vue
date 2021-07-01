@@ -84,7 +84,7 @@ export default {
         { text: "Visibility", value: "visibility", sortable: false },
         { text: "Commander Service", value: "commander_service.name", sortable: false },
         { text: "Liaison Service", value: "liaison_service.name", sortable: false },
-        { text: "Incident Document", value: "template_document.name", sortable: false },
+        { text: "Incident Document", value: "incident_template_document.name", sortable: false },
         { text: "Enabled", value: "enabled", sortable: true },
         { text: "Default", value: "default", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },

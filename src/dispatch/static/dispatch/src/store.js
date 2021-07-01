@@ -27,6 +27,7 @@ import organization from "@/organization/store"
 import workflow from "@/workflow/store"
 import template from "@/document/template/store"
 import runbook from "@/document/runbook/store"
+import reference from "@/document/reference/store"
 
 Vue.use(Vuex)
 
@@ -57,6 +58,7 @@ export default new Vuex.Store({
     term,
     workflow,
     runbook,
+    reference,
     route: {
       namespaced: true,
       getters: {
