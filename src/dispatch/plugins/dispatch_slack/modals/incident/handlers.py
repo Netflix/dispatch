@@ -7,6 +7,7 @@ from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentUpdate, IncidentRead, IncidentCreate
+from dispatch.individual.models import IndividualContactCreate
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.plugin import service as plugin_service
@@ -125,13 +126,12 @@ def report_incident_from_submitted_form(
         incident_type={"name": parsed_form_data[IncidentBlockId.type]["value"]},
         incident_priority={"name": parsed_form_data[IncidentBlockId.priority]["value"]},
         project={"name": parsed_form_data[IncidentBlockId.project]["value"]},
+        reporter=IndividualContactCreate(email=user_email),
         tags=tags,
     )
 
     # Create the incident
-    incident = incident_service.create(
-        db_session=db_session, reporter_email=user_email, **incident_in.dict()
-    )
+    incident = incident_service.create(db_session=db_session, **incident_in.dict())
 
     incident_flows.incident_create_flow(incident_id=incident.id, db_session=db_session)
 

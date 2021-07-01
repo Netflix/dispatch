@@ -174,7 +174,14 @@ def handle_block_action(action: dict, background_tasks: BackgroundTasks):
         channel_id = view_data["private_metadata"].get("channel_id")
         action_id = action["actions"][0]["action_id"]
     else:
-        organization_slug, incident_id = action["actions"][0]["value"].split("-")
+        # maintain support for old block actions that were created before organization's split
+        actions = action["actions"][0]["value"].split("-")
+        if len(actions) == 2:
+            organization_slug, incident_id = actions
+        else:
+            organization_slug = "default"
+            incident_id = actions[0]
+
         channel_id = action["channel"]["id"]
         action_id = action["actions"][0]["block_id"]
 

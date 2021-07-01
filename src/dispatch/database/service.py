@@ -36,22 +36,19 @@ log = logging.getLogger(__file__)
 
 def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, role: UserRoles):
     """Adds additional incident filters to query (usually for permissions)."""
-    # owners can see restricted incidents
-    if role == UserRoles.owner:
-        return query
-
-    query = (
-        query.join(Participant, Incident.id == Participant.incident_id)
-        .join(IndividualContact)
-        .filter(
-            or_(
-                Incident.visibility == Visibility.open,
-                IndividualContact.email == current_user.email,
+    if role != UserRoles.owner:
+        # We don't allow users that are not owners to see restricted incidents
+        query = (
+            query.join(Participant, Incident.id == Participant.incident_id)
+            .join(IndividualContact)
+            .filter(
+                or_(
+                    Incident.visibility == Visibility.open.value,
+                    IndividualContact.email == current_user.email,
+                )
             )
         )
-        .distinct()
-    )
-    return query
+    return query.distinct()
 
 
 def restricted_incident_type_filter(query: orm.Query, current_user: DispatchUser):

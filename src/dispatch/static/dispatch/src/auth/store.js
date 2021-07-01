@@ -53,7 +53,7 @@ const actions = {
       commit("SET_TABLE_LOADING", false)
       commit("SET_TABLE_ROWS", response.data)
     })
-  }, 200),
+  }, 500),
   editShow({ commit }, plugin) {
     commit("SET_DIALOG_EDIT", true)
     if (plugin) {

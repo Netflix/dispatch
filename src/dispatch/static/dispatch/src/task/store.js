@@ -75,7 +75,7 @@ const actions = {
       .catch(() => {
         commit("SET_TABLE_LOADING", false)
       })
-  }, 200),
+  }, 500),
   createEditShow({ commit }, task) {
     commit("SET_DIALOG_CREATE_EDIT", true)
     if (task) {
