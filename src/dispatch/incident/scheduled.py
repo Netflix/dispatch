@@ -157,7 +157,7 @@ def daily_report(db_session: SessionLocal, project: Project):
                             {
                                 "button_text": "Join Incident",
                                 "button_value": f"{incident.project.organization.slug}-{incident.id}",
-                                "button_action": f"{ConversationButtonActions.invite_user }-{incident.status}-{idx}",
+                                "button_action": f"{ConversationButtonActions.invite_user}-{incident.status}-{idx}",
                             }
                         )
 
