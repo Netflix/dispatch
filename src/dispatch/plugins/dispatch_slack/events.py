@@ -1,4 +1,5 @@
 import arrow
+import logging
 import datetime
 
 from typing import List
@@ -19,6 +20,8 @@ from .config import (
 )
 from .service import get_user_email
 from .decorators import slack_background_task, get_organization_from_channel_id
+
+log = logging.getLogger(__name__)
 
 
 class EventBodyItem(BaseModel):
@@ -99,6 +102,11 @@ async def handle_slack_event(*, client, event, background_tasks):
 
     if user_id and channel_id:
         db_session = get_organization_from_channel_id(channel_id=channel_id)
+        if not db_session:
+            log.info(
+                f"Unable to determine organization associated with channel id. ChannelId: {channel_id}"
+            )
+            return {"ok": ""}
 
         conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
             db_session=db_session, channel_id=channel_id
