@@ -29,7 +29,7 @@ def get_by_incident_id_and_resource_type(
 
 
 def get_incident_faq_document(*, db_session, project_id: int):
-    """Fetches incident faq docment."""
+    """Fetches incident faq document."""
     return (
         db_session.query(Document).filter(
             Document.resource_type == DocumentResourceTypes.faq,
