@@ -2,7 +2,7 @@ import logging
 
 from datetime import date
 
-from dispatch.config import INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT
+from dispatch.enums import DocumentResourceTemplateTypes
 from dispatch.decorators import background_task
 from dispatch.document import service as document_service
 from dispatch.document.models import DocumentCreate
@@ -153,7 +153,7 @@ def create_executive_report(
     executive_report_document.update(
         {
             "name": executive_report_document_name,
-            "resource_type": INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT,
+            "resource_type": DocumentResourceTemplateTypes.executive,
         }
     )
 

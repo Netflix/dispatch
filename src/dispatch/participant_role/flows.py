@@ -55,7 +55,7 @@ def assign_role_flow(
             add_role(
                 db_session=db_session,
                 participant_id=participant_with_assignee_role.id,
-                participant_role=ParticipantRoleType.participant.value,
+                participant_role=ParticipantRoleType.participant,
             )
 
         log.debug(
@@ -68,7 +68,7 @@ def assign_role_flow(
             db_session=db_session, participant_id=assignee_participant.id
         )
         for participant_active_role in participant_active_roles:
-            if participant_active_role.role == ParticipantRoleType.participant.value:
+            if participant_active_role.role == ParticipantRoleType.participant:
                 renounce_role(db_session=db_session, participant_role=participant_active_role)
                 break
 

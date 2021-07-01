@@ -8,14 +8,7 @@ from typing import List
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.incident.enums import IncidentStatus
 
-from dispatch.config import (
-    INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT,
-    INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
-    INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
-    INCIDENT_RESOURCE_INVESTIGATION_SHEET,
-)
-
-from dispatch.enums import DocumentResourceTypes
+from dispatch.enums import DocumentResourceTypes, DocumentResourceReferenceTypes
 
 
 class MessageType(str, Enum):
@@ -37,9 +30,9 @@ class MessageType(str, Enum):
 
 
 INCIDENT_STATUS_DESCRIPTIONS = {
-    IncidentStatus.active.value: "This incident is under active investigation.",
-    IncidentStatus.stable.value: "This incident is stable, the bulk of the investigation has been completed or most of the risk has been mitigated.",
-    IncidentStatus.closed.value: "This no longer requires additional involvement, long term incident action items have been assigned to their respective owners.",
+    IncidentStatus.active: "This incident is under active investigation.",
+    IncidentStatus.stable: "This incident is stable, the bulk of the investigation has been completed or most of the risk has been mitigated.",
+    IncidentStatus.closed: "This no longer requires additional involvement, long term incident action items have been assigned to their respective owners.",
 }
 
 INCIDENT_TASK_REMINDER_DESCRIPTION = """
@@ -159,12 +152,12 @@ This is a document that contains an executive report about the incident.""".repl
 ).strip()
 
 INCIDENT_DOCUMENT_DESCRIPTIONS = {
-    DocumentResourceTypes.conversation: INCIDENT_CONVERSATION_REFERENCE_DOCUMENT_DESCRIPTION,
-    DocumentResourceTypes.faq: INCIDENT_FAQ_DOCUMENT_DESCRIPTION,
-    INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT: INCIDENT_EXECUTIVE_REPORT_DOCUMENT_DESCRIPTION,
-    INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT: INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,
-    INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT: INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,
-    INCIDENT_RESOURCE_INVESTIGATION_SHEET: INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
+    DocumentResourceReferenceTypes.conversation: INCIDENT_CONVERSATION_REFERENCE_DOCUMENT_DESCRIPTION,
+    DocumentResourceReferenceTypes.faq: INCIDENT_FAQ_DOCUMENT_DESCRIPTION,
+    DocumentResourceTypes.executive: INCIDENT_EXECUTIVE_REPORT_DOCUMENT_DESCRIPTION,
+    DocumentResourceTypes.review: INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,
+    DocumentResourceTypes.incident: INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,
+    DocumentResourceTypes.tracking: INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
 }
 
 INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION = """
@@ -309,7 +302,7 @@ INCIDENT_NAME_WITH_ENGAGEMENT = {
     "text": INCIDENT_NOTIFICATION_PURPOSES_FYI,
     "button_text": "Join Incident",
     "button_value": "{{organization_slug}}-{{incident_id}}",
-    "button_action": ConversationButtonActions.invite_user.value,
+    "button_action": ConversationButtonActions.invite_user,
 }
 
 INCIDENT_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION = {
@@ -585,7 +578,7 @@ INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION = [
         "text": INCIDENT_CLOSED_RATING_FEEDBACK_DESCRIPTION,
         "button_text": "Provide Feeback",
         "button_value": "{{organization_slug}}-{{incident_id}}",
-        "button_action": ConversationButtonActions.provide_feedback.value,
+        "button_action": ConversationButtonActions.provide_feedback,
     }
 ]
 

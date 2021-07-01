@@ -212,18 +212,6 @@ INCIDENT_RESOURCE_TACTICAL_GROUP = config(
 INCIDENT_RESOURCE_NOTIFICATIONS_GROUP = config(
     "INCIDENT_RESOURCE_NOTIFICATIONS_GROUP", default="google-group-participant-notifications-group"
 )
-INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT = config(
-    "INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT", default="dispatch-incident-document"
-)
-INCIDENT_RESOURCE_INVESTIGATION_SHEET = config(
-    "INCIDENT_RESOURCE_INVESTIGATION_SHEET", default="dispatch-incident-sheet"
-)
-INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT = config(
-    "INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT", default="dispatch-incident-review-document"
-)
-INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT = config(
-    "INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT", default="dispatch-executive-report-document"
-)
 INCIDENT_RESOURCE_INCIDENT_TASK = config(
     "INCIDENT_RESOURCE_INCIDENT_TASK", default="google-docs-incident-task"
 )

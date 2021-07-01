@@ -45,7 +45,7 @@ def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, rol
         .join(IndividualContact)
         .filter(
             or_(
-                Incident.visibility == Visibility.open.value,
+                Incident.visibility == Visibility.open,
                 IndividualContact.email == current_user.email,
             )
         )
@@ -57,7 +57,7 @@ def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, rol
 def restricted_incident_type_filter(query: orm.Query, current_user: DispatchUser):
     """Adds additional incident type filters to query (usually for permissions)."""
     if current_user:
-        query = query.filter(IncidentType.visibility == Visibility.open.value)
+        query = query.filter(IncidentType.visibility == Visibility.open)
     return query
 
 

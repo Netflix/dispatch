@@ -18,11 +18,11 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.config import (
-    INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
-    INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
     INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
     INCIDENT_RESOURCE_TACTICAL_GROUP,
 )
+
+from dispatch.enums import DocumentResourceTypes
 from dispatch.conference.models import ConferenceRead
 from dispatch.conversation.models import ConversationRead
 from dispatch.database.core import Base
@@ -72,7 +72,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     name = Column(String)
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
-    status = Column(String, default=IncidentStatus.active.value)
+    status = Column(String, default=IncidentStatus.active)
     visibility = Column(String, default=Visibility.open, nullable=False)
 
     # auto generated
@@ -93,7 +93,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
             most_recent_assumed_at = self.created_at
             for p in self.participants:
                 for pr in p.participant_roles:
-                    if pr.role == ParticipantRoleType.incident_commander.value:
+                    if pr.role == ParticipantRoleType.incident_commander:
                         if pr.assumed_at > most_recent_assumed_at:
                             most_recent_assumed_at = pr.assumed_at
                             commander = p
@@ -104,7 +104,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
         return (
             select([Participant])
             .where(Participant.incident_id == cls.id)
-            .where(ParticipantRole.role == ParticipantRoleType.incident_commander.value)
+            .where(ParticipantRole.role == ParticipantRoleType.incident_commander)
             .order_by(ParticipantRole.assumed_at.desc())
             .first()
         )
@@ -116,7 +116,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
             most_recent_assumed_at = self.created_at
             for p in self.participants:
                 for pr in p.participant_roles:
-                    if pr.role == ParticipantRoleType.reporter.value:
+                    if pr.role == ParticipantRoleType.reporter:
                         if pr.assumed_at > most_recent_assumed_at:
                             most_recent_assumed_at = pr.assumed_at
                             reporter = p
@@ -127,7 +127,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
         return (
             select([Participant])
             .where(Participant.incident_id == cls.id)
-            .where(ParticipantRole.role == ParticipantRoleType.reporter.value)
+            .where(ParticipantRole.role == ParticipantRoleType.reporter)
             .order_by(ParticipantRole.assumed_at.desc())
             .first()
         )
@@ -150,14 +150,14 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     def incident_document(self):
         if self.documents:
             for d in self.documents:
-                if d.resource_type == INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT:
+                if d.resource_type == DocumentResourceTypes.incident:
                     return d
 
     @hybrid_property
     def incident_review_document(self):
         if self.documents:
             for d in self.documents:
-                if d.resource_type == INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT:
+                if d.resource_type == DocumentResourceTypes.review:
                     return d
 
     @hybrid_property

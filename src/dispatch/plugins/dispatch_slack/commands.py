@@ -290,14 +290,14 @@ def list_tasks(
         blocks.append(
             {
                 "type": "section",
-                "text": {"type": "mrkdwn", "text": f"*{status.value} Incident Tasks*"},
+                "text": {"type": "mrkdwn", "text": f"*{status} Incident Tasks*"},
             }
         )
-        button_text = "Resolve" if status.value == TaskStatus.open else "Re-open"
-        action_type = "resolve" if status.value == TaskStatus.open else "reopen"
+        button_text = "Resolve" if status == TaskStatus.open else "Re-open"
+        action_type = "resolve" if status == TaskStatus.open else "reopen"
 
         tasks = task_service.get_all_by_incident_id_and_status(
-            db_session=db_session, incident_id=incident_id, status=status.value
+            db_session=db_session, incident_id=incident_id, status=status
         )
 
         if by_creator or by_assignee:
@@ -317,7 +317,7 @@ def list_tasks(
                             f"*Assignees:* {', '.join(assignees)}"
                         ),
                     },
-                    "block_id": f"{ConversationButtonActions.update_task_status.value}-{task.status}-{idx}",
+                    "block_id": f"{ConversationButtonActions.update_task_status}-{task.status}-{idx}",
                     "accessory": {
                         "type": "button",
                         "text": {"type": "plain_text", "text": button_text},
@@ -503,7 +503,7 @@ def list_incidents(
         # we fetch active incidents
         incidents.extend(
             incident_service.get_all_by_status(
-                db_session=db_session, project_id=project.id, status=IncidentStatus.active.value
+                db_session=db_session, project_id=project.id, status=IncidentStatus.active
             )
         )
         # We fetch stable incidents
@@ -511,7 +511,7 @@ def list_incidents(
             incident_service.get_all_by_status(
                 db_session=db_session,
                 project_id=project.id,
-                status=IncidentStatus.stable.value,
+                status=IncidentStatus.stable,
             )
         )
         # We fetch closed incidents in the last 24 hours
@@ -519,7 +519,7 @@ def list_incidents(
             incident_service.get_all_last_x_hours_by_status(
                 db_session=db_session,
                 project_id=project.id,
-                status=IncidentStatus.closed.value,
+                status=IncidentStatus.closed,
                 hours=24,
             )
         )
@@ -529,7 +529,7 @@ def list_incidents(
 
     if incidents:
         for incident in incidents:
-            if incident.visibility == Visibility.open.value:
+            if incident.visibility == Visibility.open:
                 ticket_weblink = resolve_attr(incident, "ticket.weblink")
                 try:
                     blocks.append(

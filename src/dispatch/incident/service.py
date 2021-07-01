@@ -50,7 +50,7 @@ def assign_incident_role(
                         incident_description=incident.description,
                     )
 
-    elif role == ParticipantRoleType.liaison.value:
+    elif role == ParticipantRoleType.liaison:
         if incident.incident_type.liaison_service:
             service = incident.incident_type.liaison_service
             service_id = service.id
@@ -107,10 +107,10 @@ def get_all_last_x_hours_by_status(
     """Returns all incidents of a given status in the last x hours."""
     now = datetime.utcnow()
 
-    if status == IncidentStatus.active.value:
+    if status == IncidentStatus.active:
         return (
             db_session.query(Incident)
-            .filter(Incident.status == IncidentStatus.active.value)
+            .filter(Incident.status == IncidentStatus.active)
             .filter(Incident.created_at >= now - timedelta(hours=hours))
             .filter(Incident.project_id == project_id)
             .offset(skip)
@@ -118,10 +118,10 @@ def get_all_last_x_hours_by_status(
             .all()
         )
 
-    if status == IncidentStatus.stable.value:
+    if status == IncidentStatus.stable:
         return (
             db_session.query(Incident)
-            .filter(Incident.status == IncidentStatus.stable.value)
+            .filter(Incident.status == IncidentStatus.stable)
             .filter(Incident.stable_at >= now - timedelta(hours=hours))
             .filter(Incident.project_id == project_id)
             .offset(skip)
@@ -129,10 +129,10 @@ def get_all_last_x_hours_by_status(
             .all()
         )
 
-    if status == IncidentStatus.closed.value:
+    if status == IncidentStatus.closed:
         return (
             db_session.query(Incident)
-            .filter(Incident.status == IncidentStatus.closed.value)
+            .filter(Incident.status == IncidentStatus.closed)
             .filter(Incident.closed_at >= now - timedelta(hours=hours))
             .filter(Incident.project_id == project_id)
             .offset(skip)

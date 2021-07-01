@@ -192,7 +192,7 @@ def update_incident_from_submitted_form(
         user_email, incident_id, existing_incident, db_session=db_session
     )
 
-    if updated_incident.status != IncidentStatus.closed.value:
+    if updated_incident.status != IncidentStatus.closed:
         send_ephemeral_message(
             slack_client, channel_id, user_id, "You have sucessfully updated the incident."
         )

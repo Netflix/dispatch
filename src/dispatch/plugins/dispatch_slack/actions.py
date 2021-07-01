@@ -121,9 +121,9 @@ async def handle_slack_action(*, client, request, background_tasks):
 def block_action_functions(action: str):
     """Interprets the action and routes it to the appropriate function."""
     action_mappings = {
-        ConversationButtonActions.invite_user.value: [add_user_to_conversation],
-        ConversationButtonActions.provide_feedback.value: [create_rating_feedback_modal],
-        ConversationButtonActions.update_task_status.value: [update_task_status],
+        ConversationButtonActions.invite_user: [add_user_to_conversation],
+        ConversationButtonActions.provide_feedback: [create_rating_feedback_modal],
+        ConversationButtonActions.update_task_status: [update_task_status],
         # Note these are temporary for backward compatibility of block ids and should be remove in a future release
         "ConversationButtonActions.invite_user": [add_user_to_conversation],
         "ConversationButtonActions.provide_feedback": [create_rating_feedback_modal],

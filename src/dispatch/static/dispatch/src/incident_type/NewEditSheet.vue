@@ -88,9 +88,39 @@
                 <ValidationObserver disabled>
                   <template-select
                     :project="project"
-                    label="Incident Document Template"
-                    v-model="template_document"
+                    label="Incident Template"
+                    v-model="incident_template_document"
                     resource-type="dispatch-incident-document-template"
+                  />
+                </ValidationObserver>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationObserver disabled>
+                  <template-select
+                    :project="project"
+                    label="Executive Template"
+                    v-model="executive_template_document"
+                    resource-type="dispatch-executive-report-document-template"
+                  />
+                </ValidationObserver>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationObserver disabled>
+                  <template-select
+                    :project="project"
+                    label="Review Template"
+                    v-model="review_template_document"
+                    resource-type="dispatch-incident-review-document-template"
+                  />
+                </ValidationObserver>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationObserver disabled>
+                  <template-select
+                    :project="project"
+                    label="Tracking Template"
+                    v-model="tracking_template_document"
+                    resource-type="dispatch-incident-tracking-template"
                   />
                 </ValidationObserver>
               </v-flex>
@@ -168,7 +198,10 @@ export default {
       "selected.loading",
       "selected.name",
       "selected.slug",
-      "selected.template_document",
+      "selected.incident_template_document",
+      "selected.tracking_template_document",
+      "selected.review_template_document",
+      "selected.executive_template_document",
       "selected.visibility",
       "selected.enabled",
       "selected.plugin_metadata",
