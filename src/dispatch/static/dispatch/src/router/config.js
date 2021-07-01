@@ -267,7 +267,7 @@ export const protectedRoute = [
             meta: { title: "Templates", subMenu: "project", group: "incident" },
             component: () =>
               import(
-                /* webpackChunkName: "plugin-table" */ "@/document/template/TemplateTable.vue"
+                /* webpackChunkName: "template-table" */ "@/document/template/TemplateTable.vue"
               ),
           },
           {
