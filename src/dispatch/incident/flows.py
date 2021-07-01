@@ -10,7 +10,7 @@
 import logging
 
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any, List
 
 from dispatch.config import (
     INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,

@@ -23,6 +23,33 @@ const getDefaultSelectedState = () => {
   }
 }
 
+export const templateDocumentTypes = [
+  {
+    resource_type: "dispatch-incident-document-template",
+    title: "Incident",
+    description: "Create a new incident template",
+    icon: "mdi-file-document-edit-outline",
+  },
+  {
+    resource_type: "dispatch-executive-report-document-template",
+    title: "Executive",
+    description: "Create a new executive template",
+    icon: "mdi-text-box-check-outline",
+  },
+  {
+    resource_type: "dispatch-incident-review-document-template",
+    title: "Review",
+    description: "Create a new incident review template",
+    icon: "mdi-text-box-search-outline",
+  },
+  {
+    resource_type: "dispatch-incident-tracking-template",
+    title: "Tracking",
+    description: "Create a new tracking template",
+    icon: "mdi-file-document-multiple-outline",
+  },
+]
+
 const state = {
   selected: {
     ...getDefaultSelectedState(),
@@ -44,6 +71,13 @@ const state = {
       descending: [false],
       filters: {
         project: [],
+        resource_type: templateDocumentTypes.map((item) => {
+          return {
+            model: "Document",
+            field: "resource_type",
+            value: item.resource_type,
+          }
+        }),
       },
     },
     loading: false,
@@ -57,7 +91,21 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options })
+
+    let documentTypes = []
+    for (const key in state.resourceTypes) {
+      documentTypes.push({
+        model: "Document",
+        field: "resource_type",
+        op: "==",
+        value: key,
+      })
+    }
+
+    let params = SearchUtils.createParametersFromTableOptions(
+      { ...state.table.options },
+      documentTypes
+    )
     return DocumentApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)

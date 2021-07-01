@@ -1,5 +1,7 @@
 <template>
   <v-layout wrap>
+    <runbook-new-edit-sheet />
+    <delete-dialog />
     <v-container>
       <v-row align="center" justify="space-between">
         <v-col class="grow">
@@ -7,36 +9,19 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col>
+        <v-col v-for="document in runbookDocumentTypes" v-bind:key="document.resource_type">
           <v-card
             outlined
             elevation="0"
-            @click.stop="createEditShow({ resource_type: resourceTypes.incident })"
+            @click.stop="createEditShow({ resource_type: document.resource_type })"
           >
             <div class="d-flex flex-no-wrap justify-space-between">
               <div>
-                <v-card-title class="text-h5">Incident</v-card-title>
-                <v-card-subtitle>Create a new incident runbook</v-card-subtitle>
+                <v-card-title class="text-h5">{{ document.title }}</v-card-title>
+                <v-card-subtitle>{{ document.description }}</v-card-subtitle>
               </div>
               <v-avatar class="ma-3" tile>
-                <v-icon x-large>mdi-file-document-edit-outline</v-icon>
-              </v-avatar>
-            </div>
-          </v-card>
-        </v-col>
-        <v-col>
-          <v-card
-            outlined
-            elevation="0"
-            @click.stop="createEditShow({ resource_type: resourceTypes.investigation })"
-          >
-            <div class="d-flex flex-no-wrap justify-space-between">
-              <div>
-                <v-card-title class="text-h5">Investigation</v-card-title>
-                <v-card-subtitle>Create a new investigation runbook</v-card-subtitle>
-              </div>
-              <v-avatar class="ma-3" tile>
-                <v-icon x-large>mdi-file-document-multiple-outline</v-icon>
+                <v-icon x-large>{{ document.icon }}</v-icon>
               </v-avatar>
             </div>
           </v-card>
@@ -64,6 +49,9 @@
           :loading="loading"
           loading-text="Loading... Please wait"
         >
+          <template v-slot:item.resource_type="{ item }">
+            {{ getResourceTitle(item.resource_type) }}
+          </template>
           <template v-slot:item.evergreen="{ item }">
             <v-simple-checkbox v-model="item.evergreen" disabled />
           </template>
@@ -103,20 +91,22 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
-import { debounce } from "lodash"
-
-import DocumentApi from "@/document/api"
-
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
+import RunbookNewEditSheet from "@/document/runbook/RunbookNewEditSheet.vue"
+import DeleteDialog from "@/document/runbook/DeleteDialog.vue"
+import { runbookDocumentTypes } from "@/document/runbook/store.js"
 
 export default {
   name: "RunbookConfiguration",
 
   components: {
     SettingsBreadcrumbs,
+    RunbookNewEditSheet,
+    DeleteDialog,
   },
   data() {
     return {
+      runbookDocumentTypes: runbookDocumentTypes,
       headers: [
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
@@ -143,12 +133,12 @@ export default {
   created() {
     this.project = [{ name: this.query.project }]
 
-    this.fetchData()
+    this.getAll()
 
     this.$watch(
       (vm) => [vm.page],
       () => {
-        this.fetchData()
+        this.getAll()
       }
     )
 
@@ -157,60 +147,18 @@ export default {
       () => {
         this.page = 1
         this.$router.push({ query: { project: this.project[0].name } })
-        this.fetchData()
+        this.getAll()
       }
     )
   },
 
   methods: {
-    fetchData() {
-      this.error = null
-      this.loading = "error"
-
-      let filterOptions = {
-        q: this.search,
-        sortBy: ["slug"],
-        itemsPerPage: this.numItems,
-        filters: JSON.stringify({
-          or: [
-            {
-              model: "Document",
-              field: "resource_type",
-              op: "==",
-              value: "dispatch-incident-runbook",
-            },
-            {
-              model: "Document",
-              field: "resource_type",
-              op: "==",
-              value: "dispatch-alert-runbook",
-            },
-            {
-              model: "Project",
-              field: "name",
-              op: "==",
-              value: this.project.name,
-            },
-          ],
-        }),
-      }
-
-      DocumentApi.getAll(filterOptions).then((response) => {
-        this.items = response.data.items
-        this.total = response.data.total
-
-        if (this.items.length < this.total) {
-          this.more = true
-        } else {
-          this.more = false
-        }
-
-        this.loading = false
+    getResourceTitle(resource_type) {
+      const found = runbookDocumentTypes.find((item) => {
+        return item.resource_type === resource_type
       })
+      return found ? found.title : ""
     },
-    getFilteredData: debounce(function (options) {
-      this.fetchData(options)
-    }, 500),
     ...mapActions("runbook", ["getAll", "createEditShow", "removeShow"]),
   },
 }

@@ -23,6 +23,21 @@ const getDefaultSelectedState = () => {
   }
 }
 
+export const runbookDocumentTypes = [
+  {
+    resource_type: "dispatch-incident-runbook",
+    title: "Incident",
+    description: "Create a new incident runbook",
+    icon: "mdi-file-document-edit-outline",
+  },
+  {
+    resource_type: "dispatch-investigation-runbook",
+    title: "Investigation",
+    description: "Create a new investigation runbook",
+    icon: "mdi-file-document-multiple-outline",
+  },
+]
+
 const state = {
   selected: {
     ...getDefaultSelectedState(),
@@ -44,6 +59,13 @@ const state = {
       descending: [false],
       filters: {
         project: [],
+        resource_type: runbookDocumentTypes.map((item) => {
+          return {
+            model: "Document",
+            field: "resource_type",
+            value: item.resource_type,
+          }
+        }),
       },
     },
     loading: false,
