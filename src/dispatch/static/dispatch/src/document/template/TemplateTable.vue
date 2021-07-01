@@ -9,7 +9,7 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col v-for="document in templateDocumentTypes" v-bind:key="document.resource_type">
+        <v-col v-for="document in templateDocumentTypes" :key="document.resource_type">
           <v-card
             outlined
             elevation="0"

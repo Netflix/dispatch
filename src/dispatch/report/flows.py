@@ -95,11 +95,7 @@ def create_executive_report(
     # we load the incident instance
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    report_template = document_service.get_executive_report_template(
-        db_session=db_session, project_id=incident.project_id
-    )
-
-    if not report_template:
+    if not incident.incident_type.executive_template_document:
         raise InvalidConfiguration("No executive report template defined.")
 
     # we fetch all previous executive reports
@@ -150,7 +146,7 @@ def create_executive_report(
     executive_report_document_name = f"{incident.name} - Executive Report - {current_date}"
     executive_report_document = storage_plugin.instance.copy_file(
         folder_id=incident.storage.resource_id,
-        file_id=report_template.resource_id,
+        file_id=incident.incident_type.executive_template_document.resource_id,
         name=executive_report_document_name,
     )
 

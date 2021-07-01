@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from fastapi.encoders import jsonable_encoder
 
-from dispatch.enums import DocumentResourceTemplateTypes, DocumentResourceTypes
+from dispatch.enums import DocumentResourceTypes
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
 
@@ -43,36 +43,6 @@ def get_conversation_reference_document(*, db_session, project_id: int):
     return (
         db_session.query(Document).filter(
             Document.resource_type == DocumentResourceTypes.conversation,
-            Document.project_id == project_id,
-        )
-    ).one_or_none()
-
-
-def get_executive_report_template(*, db_session, project_id: int):
-    """Fetches executive report template document."""
-    return (
-        db_session.query(Document).filter(
-            Document.resource_type == DocumentResourceTemplateTypes.executive,
-            Document.project_id == project_id,
-        )
-    ).one_or_none()
-
-
-def get_incident_review_template(*, db_session, project_id: int):
-    """Fetches incident review template document."""
-    return (
-        db_session.query(Document).filter(
-            Document.resource_type == DocumentResourceTemplateTypes.review,
-            Document.project_id == project_id,
-        )
-    ).one_or_none()
-
-
-def get_incident_investigation_sheet_template(*, db_session, project_id: int):
-    """Fetches incident investigation template sheet."""
-    return (
-        db_session.query(Document).filter(
-            Document.resource_type == DocumentResourceTemplateTypes.tracking,
             Document.project_id == project_id,
         )
     ).one_or_none()
