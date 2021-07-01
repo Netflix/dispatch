@@ -309,6 +309,7 @@ def ban_threads_warning(
         # value, when they differ the latter is a reply to the former.
         message = "Please refrain from using threads in incident related channels. Threads make it harder for incident participants to maintain context."
         dispatch_slack_service.send_ephemeral_message(
+            slack_client,
             channel_id,
             user_id,
             message,
