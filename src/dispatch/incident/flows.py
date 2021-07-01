@@ -861,7 +861,7 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
 
     # incident review document is optional
     if not incident.incident_type.review_template_document:
-        log.warning("No incident review template specificed.")
+        log.warning("No incident review template specified.")
         return
 
     incident_review_document = storage_plugin.instance.copy_file(
