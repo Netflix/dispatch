@@ -1,4 +1,6 @@
 <template>
+<span>
+  <incidents-drill-down-sheet :show="show" :items="items" />
   <dashboard-card
     :loading="loading"
     type="bar"
@@ -6,6 +8,7 @@
     :series="series"
     title="Priorities"
   />
+</span>
 </template>
 
 <script>
@@ -13,6 +16,7 @@ import { map, sortBy } from "lodash"
 import DashboardCard from "@/dashboard/DashboardCard.vue"
 import DashboardUtils from "@/dashboard/utils"
 import IncidentPriorityApi from "@/incident_priority/api"
+import IncidentsDrillDownSheet from '@/dashboard/IncidentsDrillDownSheet.vue'
 export default {
   name: "IncidentPriorityBarChartCard",
 
@@ -33,11 +37,14 @@ export default {
 
   components: {
     DashboardCard,
+    IncidentsDrillDownSheet,
   },
 
   data() {
     return {
       priorities: [],
+      items: [],
+      show: false,
     }
   },
 
@@ -62,6 +69,13 @@ export default {
           toolbar: {
             show: false,
           },
+          events: {
+            dataPointSelection:  (event, chartContext, config) => {
+              var data = config.w.config.series[config.seriesIndex].data[config.dataPointIndex];
+              this.items = data.items
+              this.show = true
+            }
+          }
         },
         responsive: [
           {

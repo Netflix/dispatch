@@ -3,13 +3,15 @@ import { at, countBy, isArray, mergeWith, forEach, map, find } from "lodash"
 export default {
   createCountedSeriesData(items, itemKey, allKeys) {
     let series = []
-    forEach(items, function (value) {
+    forEach(items, function (value, key) {
+      let item = value
+      let grouping = key
       let typeCounts = map(
         countBy(value, function (item) {
           return at(item, itemKey)
         }),
         function (value, key) {
-          return { name: key, data: [value] }
+          return { name: key, data: [{y: value, x: grouping, items: item}] }
         }
       )
 
@@ -18,7 +20,7 @@ export default {
         forEach(allKeys, function (type) {
           let found = find(typeCounts, { name: type })
           if (!found) {
-            typeCounts.push({ name: type, data: [0] })
+            typeCounts.push({ name: type, data: [{y: 0, x: grouping, items: item}] })
           }
         })
       }
