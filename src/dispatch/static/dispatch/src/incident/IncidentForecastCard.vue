@@ -28,9 +28,6 @@ export default {
         chart: {
           height: 350,
           type: "line",
-          toolbar: {
-            show: false,
-          },
         },
         dataLabels: {
           enabled: true,
