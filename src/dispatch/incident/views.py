@@ -16,13 +16,14 @@ from dispatch.auth.permissions import (
     IncidentViewPermission,
 )
 
+from dispatch.models import IndividualReadNested
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.incident.enums import IncidentStatus
-from dispatch.individual.models import IndividualContactCreate
+from dispatch.participant.models import ParticipantUpdate
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.report import flows as report_flows
 from dispatch.report.models import TacticalReportCreate, ExecutiveReportCreate
@@ -108,7 +109,9 @@ def create_incident(
     Create a new incident.
     """
     if not incident_in.reporter:
-        incident_in.reporter = IndividualContactCreate(email=current_user.email)
+        incident_in.reporter = ParticipantUpdate(
+            individual=IndividualReadNested(email=current_user.email)
+        )
     try:
         incident = create(db_session=db_session, **incident_in.dict())
     except Exception as e:
