@@ -250,6 +250,7 @@ def create(
         db_session, incident, reporter["individual"]["email"], ParticipantRoleType.liaison
     )
 
+
     return incident
 
 
