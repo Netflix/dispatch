@@ -288,7 +288,7 @@ class IncidentReadNested(IncidentBase):
 class IncidentCreate(IncidentBase):
     incident_priority: Optional[IncidentPriorityCreate]
     incident_type: Optional[IncidentTypeCreate]
-    reporter: Optional[ParticipantRead]
+    reporter: Optional[ParticipantUpdate]
     tags: Optional[List[Any]] = []  # any until we figure out circular imports
     project: ProjectRead
 
