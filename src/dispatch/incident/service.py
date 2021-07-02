@@ -235,13 +235,20 @@ def create(
     )
 
     # Add other incident roles (e.g. commander and liaison)
-    assign_incident_role(db_session, incident, reporter["individual"]["email"], ParticipantRoleType.reporter)
-
     assign_incident_role(
-        db_session, incident, reporter["individual"]["email"], ParticipantRoleType.incident_commander
+        db_session, incident, reporter["individual"]["email"], ParticipantRoleType.reporter
     )
 
-    assign_incident_role(db_session, incident, reporter["individual"]["email"], ParticipantRoleType.liaison)
+    assign_incident_role(
+        db_session,
+        incident,
+        reporter["individual"]["email"],
+        ParticipantRoleType.incident_commander,
+    )
+
+    assign_incident_role(
+        db_session, incident, reporter["individual"]["email"], ParticipantRoleType.liaison
+    )
 
     return incident
 
