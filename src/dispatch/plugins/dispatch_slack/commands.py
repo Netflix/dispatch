@@ -266,8 +266,8 @@ def list_my_tasks(
         command=command,
         by_creator=user_email,
         by_assignee=user_email,
-        db_session=None,
-        slack_client=None,
+        db_session=db_session,
+        slack_client=slack_client,
     )
 
 

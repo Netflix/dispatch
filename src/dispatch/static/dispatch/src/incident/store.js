@@ -120,7 +120,7 @@ const actions = {
       .catch(() => {
         commit("SET_TABLE_LOADING", false)
       })
-  }, 200),
+  }, 500),
   get({ commit, state }) {
     return IncidentApi.get(state.selected.id).then((response) => {
       commit("SET_SELECTED", response.data)

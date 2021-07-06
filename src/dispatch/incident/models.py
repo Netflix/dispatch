@@ -36,6 +36,7 @@ from dispatch.incident_priority.models import (
     IncidentPriorityRead,
 )
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
+from dispatch.individual.models import IndividualContactCreate
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.participant.models import Participant, ParticipantRead, ParticipantUpdate
 from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
@@ -287,6 +288,7 @@ class IncidentReadNested(IncidentBase):
 class IncidentCreate(IncidentBase):
     incident_priority: Optional[IncidentPriorityCreate]
     incident_type: Optional[IncidentTypeCreate]
+    reporter: Optional[ParticipantUpdate]
     tags: Optional[List[Any]] = []  # any until we figure out circular imports
     project: ProjectRead
 

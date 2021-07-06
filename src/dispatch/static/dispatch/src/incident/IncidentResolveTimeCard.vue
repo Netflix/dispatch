@@ -48,7 +48,7 @@ export default {
   // TODO convert to reported_at
   computed: {
     series() {
-      let series = { name: "Average Days Closed", data: [] }
+      let series = { name: "Average Hours Until Closed", data: [] }
       forEach(this.value, function (value) {
         series.data.push(
           Math.round(

@@ -57,7 +57,7 @@ const actions = {
       .catch(() => {
         commit("SET_TABLE_LOADING", false)
       })
-  }, 200),
+  }, 500),
   getAllInstances: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
     let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options })
@@ -69,7 +69,7 @@ const actions = {
       .catch(() => {
         commit("SET_TABLE_LOADING", false)
       })
-  }, 200),
+  }, 500),
   createEditShow({ commit }, plugin) {
     commit("SET_DIALOG_EDIT", true)
     if (plugin) {
