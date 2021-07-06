@@ -95,6 +95,8 @@ google-auth-oauthlib==0.4.4
     # via -r requirements-base.in
 googleapis-common-protos==1.53.0
     # via google-api-core
+greenlet==1.1.0
+    # via sqlalchemy
 h11==0.9.0
     # via
     #   -r requirements-base.in
@@ -159,7 +161,7 @@ oauthlib[signedtoken]==3.1.0
     #   requests-oauthlib
 packaging==20.9
     # via google-api-core
-pandas==1.2.5
+pandas==1.3.0
     # via
     #   -r requirements-base.in
     #   statsmodels
@@ -167,7 +169,7 @@ patsy==0.5.1
     # via statsmodels
 pbr==5.5.1
     # via jira
-pdpyras==4.2.1
+pdpyras==4.3.0
     # via -r requirements-base.in
 plac==1.1.3
     # via
@@ -288,7 +290,7 @@ sniffio==1.2.0
     #   httpx
 spacy==2.3.5
     # via -r requirements-base.in
-sqlalchemy==1.3.24
+sqlalchemy==1.4.20
     # via
     #   -r requirements-base.in
     #   alembic
