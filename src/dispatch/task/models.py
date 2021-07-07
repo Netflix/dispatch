@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from enum import Enum
 from typing import List, Optional
 
 from sqlalchemy import (
