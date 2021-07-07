@@ -113,13 +113,8 @@ def create_or_update_task(
     )
 
     if existing_task:
-        # we don't attempt to update a task if both the existing and current tasks are resolved
-        if existing_task.status == TaskStatus.resolved and task["status"] == TaskStatus.resolved:
-            return
-
         # we save the existing task status before we attempt to update the record
         existing_status = existing_task.status
-
         task = task_service.update(
             db_session=db_session,
             task=existing_task,
