@@ -18,8 +18,9 @@ from dispatch.messaging.strings import (
     INCIDENT_TASK_RESOLVED_NOTIFICATION,
 )
 from dispatch.plugin import service as plugin_service
-from dispatch.task.models import TaskStatus, TaskCreate, TaskUpdate
 from dispatch.task import service as task_service
+from dispatch.task.enums import TaskStatus
+from dispatch.task.models import TaskCreate, TaskUpdate
 
 
 log = logging.getLogger(__name__)
@@ -112,8 +113,13 @@ def create_or_update_task(
     )
 
     if existing_task:
-        # save the status before we attempt to update the record
+        # we don't attempt to update a task if both the existing and current tasks are resolved
+        if existing_task.status == TaskStatus.resolved and task["status"] == TaskStatus.resolved:
+            return
+
+        # we save the existing task status before we attempt to update the record
         existing_status = existing_task.status
+
         task = task_service.update(
             db_session=db_session,
             task=existing_task,

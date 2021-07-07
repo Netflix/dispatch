@@ -49,6 +49,7 @@ from dispatch.report.enums import ReportTypes
 from dispatch.report.messaging import send_incident_report_reminder
 from dispatch.service import service as service_service
 from dispatch.storage import service as storage_service
+from dispatch.task.enums import TaskStatus
 from dispatch.ticket import service as ticket_service
 from dispatch.ticket.models import TicketCreate
 
@@ -1317,19 +1318,19 @@ def incident_add_or_reactivate_participant_flow(
         db_session=db_session, incident_id=incident.id, email=user_email
     )
 
-    if not participant:
+    if participant:
+        if participant.active_roles:
+            return participant
+
+        # we reactivate the participant
+        participant_flows.reactivate_participant(
+            user_email, incident, db_session, service_id=service_id
+        )
+    else:
         # we add the participant to the incident
         participant = participant_flows.add_participant(
             user_email, incident, db_session, service_id=service_id
         )
-    else:
-        if not participant.active_roles:
-            # we reactivate the participant
-            participant_flows.reactivate_participant(
-                user_email, incident, db_session, service_id=service_id
-            )
-        else:
-            return participant
 
     # we add the participant to the tactical group
     add_participant_to_tactical_group(user_email, incident, db_session)
@@ -1363,15 +1364,32 @@ def incident_remove_participant_flow(
     """Runs the remove participant flow."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
+    participant = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=incident.id, email=user_email
+    )
+
+    for task in incident.tasks:
+        if task.status == TaskStatus.open:
+            if task.owner == participant or participant in task.assignees:
+                # we add the participant back to the conversation
+                add_participants_to_conversation([user_email], incident, db_session)
+
+                # we ask the participant to resolve or re-assign their tasks before leaving the incident
+                send_incident_commander_readded_notification(incident, db_session)
+
+                return
+
     if user_email == incident.commander.individual.email:
         # we add the incident commander back to the conversation
         add_participants_to_conversation([user_email], incident, db_session)
 
         # we send a notification to the channel
         send_incident_commander_readded_notification(incident, db_session)
-    else:
-        # we remove the participant from the incident
-        participant_flows.remove_participant(user_email, incident, db_session)
 
-        # we remove the participant to the tactical group
-        remove_participant_from_tactical_group(user_email, incident, db_session)
+        return
+
+    # we remove the participant from the incident
+    participant_flows.remove_participant(user_email, incident, db_session)
+
+    # we remove the participant to the tactical group
+    remove_participant_from_tactical_group(user_email, incident, db_session)

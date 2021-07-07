@@ -13,7 +13,7 @@ from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.report import flows as report_flows
 from dispatch.report.models import ExecutiveReportCreate, TacticalReportCreate
 from dispatch.task import service as task_service
-from dispatch.task.models import TaskStatus
+from dispatch.task.enums import TaskStatus
 
 from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,

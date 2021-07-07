@@ -9,7 +9,7 @@ import re
 import logging
 from typing import Any, List, Dict
 
-from dispatch.task.models import TaskStatus
+from dispatch.task.enums import TaskStatus
 from dispatch.plugins.dispatch_google.config import GOOGLE_DOMAIN
 
 from .drive import get_file, list_comments

@@ -26,22 +26,7 @@ from dispatch.incident.models import IncidentReadNested
 from dispatch.ticket.models import TicketRead
 from dispatch.participant.models import ParticipantRead, ParticipantUpdate
 
-
-# SQLAlchemy models
-class TaskStatus(str, Enum):
-    open = "Open"
-    resolved = "Resolved"
-
-
-class TaskSource(str, Enum):
-    incident = "Incident"
-    post_incident_review = "Post Incident Review"
-
-
-class TaskPriority(str, Enum):
-    low = "Low"
-    medium = "Medium"
-    high = "High"
+from .enums import TaskSource, TaskStatus, TaskPriority
 
 
 def default_resolution_time(context):
@@ -54,6 +39,7 @@ def default_resolution_time(context):
     return datetime.utcnow() + timedelta(days=1)
 
 
+# SQLAlchemy models
 assoc_task_assignees = Table(
     "task_assignees",
     Base.metadata,
