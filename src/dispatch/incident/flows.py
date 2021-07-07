@@ -1375,7 +1375,7 @@ def incident_remove_participant_flow(
                 add_participants_to_conversation([user_email], incident, db_session)
 
                 # we ask the participant to resolve or re-assign their tasks before leaving the incident
-                send_incident_commander_readded_notification(incident, db_session)
+                # TODO(mvilanova): add function call
 
                 return
 
