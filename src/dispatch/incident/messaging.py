@@ -25,6 +25,7 @@ from dispatch.messaging.strings import (
     INCIDENT_NEW_ROLE_NOTIFICATION,
     INCIDENT_NOTIFICATION,
     INCIDENT_NOTIFICATION_COMMON,
+    INCIDENT_OPEN_TASKS_MESSAGE,
     INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM,
     INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
     INCIDENT_PRIORITY_CHANGE,
@@ -403,7 +404,9 @@ def send_incident_participant_announcement_message(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not convo_plugin:
-        log.warning("Incident participant annoucement not sent, no conversation plugin enabled.")
+        log.warning(
+            "Incident participant announcement message not sent. No conversation plugin enabled."
+        )
         return
 
     notification_text = "New Incident Participant"
@@ -854,3 +857,31 @@ def send_incident_management_help_tips_message(incident: Incident, db_session: S
     log.debug(
         f"Incident management help tips message sent to incident commander with email {incident.commander.individual.email}."
     )
+
+
+def send_incident_open_tasks_ephemeral_message(
+    participant_email: str, incident: Incident, db_session: SessionLocal
+):
+    """
+    Sends an ephemeral message to the participant asking them to resolve or re-assign
+    their open tasks before leaving the incident.
+    """
+    convo_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
+    )
+    if not convo_plugin:
+        log.warning("Incident open tasks message not sent. No conversation plugin enabled.")
+        return
+
+    notification_text = ("Open Incident Tasks",)
+    notification_type = MessageType.incident_open_tasks
+
+    convo_plugin.instance.send_ephemeral(
+        incident.conversation.channel_id,
+        participant_email,
+        notification_text,
+        [INCIDENT_OPEN_TASKS_MESSAGE],
+        notification_type,
+    )
+
+    log.debug(f"Open incident tasks message sent to {participant_email}.")

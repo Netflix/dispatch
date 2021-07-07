@@ -60,6 +60,7 @@ from .messaging import (
     send_incident_created_notifications,
     send_incident_management_help_tips_message,
     send_incident_new_role_assigned_notification,
+    send_incident_open_tasks_ephemeral_message,
     send_incident_participant_announcement_message,
     send_incident_rating_feedback_message,
     send_incident_review_document_notification,
@@ -1375,7 +1376,7 @@ def incident_remove_participant_flow(
                 add_participants_to_conversation([user_email], incident, db_session)
 
                 # we ask the participant to resolve or re-assign their tasks before leaving the incident
-                # TODO(mvilanova): add function call
+                send_incident_open_tasks_ephemeral_message(user_email, incident, db_session)
 
                 return
 
