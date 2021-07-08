@@ -38,8 +38,8 @@
             <v-date-picker
               color="primary"
               no-title
-              v-bind:value="window.start"
-              v-on:input="setWindowStart($event)"
+              :value="window.start"
+              @:input="setWindowStart($event)"
             ></v-date-picker>
           </v-col>
           <v-col>
@@ -47,8 +47,8 @@
             <v-date-picker
               color="primary"
               no-title
-              v-bind:value="window.end"
-              v-on:input="setWindowEnd($event)"
+              :value="window.end"
+              @:input="setWindowEnd($event)"
             ></v-date-picker>
           </v-col>
         </v-row>
