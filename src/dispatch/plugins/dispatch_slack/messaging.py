@@ -200,52 +200,22 @@ def create_incident_reported_confirmation_message(
 def get_template(message_type: MessageType):
     """Fetches the correct template based on message type."""
     template_map = {
-        MessageType.incident_executive_report: (default_notification, None),
-        MessageType.incident_notification: (default_notification, None),
-        MessageType.incident_participant_welcome: (default_notification, None),
-        MessageType.incident_resources_message: (default_notification, None),
-        MessageType.incident_tactical_report: (default_notification, None),
-        MessageType.incident_participant_suggested_reading: (
-            default_notification,
-            INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
-        ),
-        MessageType.incident_task_reminder: (
-            default_notification,
-            INCIDENT_TASK_REMINDER_DESCRIPTION,
-        ),
         MessageType.document_evergreen_reminder: (
             default_notification,
             DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
         ),
-        MessageType.incident_status_reminder: (
+        MessageType.incident_participant_suggested_reading: (
             default_notification,
-            None,
+            INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
         ),
         MessageType.incident_task_list: (default_notification, INCIDENT_TASK_LIST_DESCRIPTION),
-        MessageType.incident_closed_information_review_reminder: (
+        MessageType.incident_task_reminder: (
             default_notification,
-            None,
-        ),
-        MessageType.incident_rating_feedback: (
-            default_notification,
-            None,
-        ),
-        MessageType.incident_daily_report: (
-            default_notification,
-            None,
-        ),
-        MessageType.incident_management_help_tips: (
-            default_notification,
-            None,
+            INCIDENT_TASK_REMINDER_DESCRIPTION,
         ),
     }
 
-    template_func, description = template_map.get(message_type, (None, None))
-
-    if not template_func:
-        raise Exception(f"Unable to determine template. MessageType: {message_type}")
-
-    return template_func, description
+    return template_map.get(message_type, (default_notification, None))
 
 
 def format_default_text(item: dict):
