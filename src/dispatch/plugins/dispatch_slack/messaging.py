@@ -11,6 +11,7 @@ from jinja2 import Template
 from dispatch.messaging.strings import (
     DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
     INCIDENT_DAILY_REPORT_DESCRIPTION,
+    INCIDENT_OPEN_TASKS_DESCRIPTION,
     INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
     INCIDENT_TASK_LIST_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
@@ -208,6 +209,7 @@ def get_template(message_type: MessageType):
             default_notification,
             INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
         ),
+        MessageType.incident_open_tasks: (default_notification, INCIDENT_OPEN_TASKS_DESCRIPTION),
         MessageType.incident_task_list: (default_notification, INCIDENT_TASK_LIST_DESCRIPTION),
         MessageType.incident_task_reminder: (
             default_notification,
@@ -295,12 +297,13 @@ def create_message_blocks(
         blocks += template_func(rendered_items)
 
     blocks_grouped = []
-    if items[0].get("items_grouped"):
-        for item in items[0]["items_grouped"]:
-            rendered_items_grouped = render_message_template(
-                items[0]["items_grouped_template"], **item
-            )
-            blocks_grouped += template_func(rendered_items_grouped)
+    if items:
+        if items[0].get("items_grouped"):
+            for item in items[0]["items_grouped"]:
+                rendered_items_grouped = render_message_template(
+                    items[0]["items_grouped_template"], **item
+                )
+                blocks_grouped += template_func(rendered_items_grouped)
 
     return blocks + blocks_grouped
 

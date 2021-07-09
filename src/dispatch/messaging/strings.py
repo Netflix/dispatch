@@ -641,14 +641,6 @@ INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE = [
 ]
 
 
-INCIDENT_OPEN_TASKS_MESSAGE = [
-    {
-        "title": "Open Incident Tasks",
-        "text": INCIDENT_OPEN_TASKS_DESCRIPTION,
-    }
-]
-
-
 def render_message_template(message_template: List[dict], **kwargs):
     """Renders the jinja data included in the template itself."""
     data = []
