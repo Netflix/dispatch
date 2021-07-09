@@ -1097,7 +1097,6 @@ def incident_update_flow(
     user_email: str,
     incident_id: int,
     previous_incident: IncidentRead,
-    notify=True,
     organization_slug: str = None,
     db_session=None,
 ):
@@ -1137,8 +1136,7 @@ def incident_update_flow(
             team_participant_emails = [x.email for x in team_participants]
             group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
 
-    if notify:
-        send_incident_update_notifications(incident, previous_incident, db_session)
+    send_incident_update_notifications(incident, previous_incident, db_session)
 
 
 @background_task
