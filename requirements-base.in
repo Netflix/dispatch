@@ -35,11 +35,11 @@ sentry-sdk
 sh
 slack_sdk
 spacy==2.3.5
+sqlalchemy  # NOTE temporarily until https://github.com/kvesteri/sqlalchemy-utils/issues/505 is fixed
 sqlalchemy-filters
 sqlalchemy-utils
-sqlalchemy  # NOTE temporarily until https://github.com/kvesteri/sqlalchemy-utils/issues/505 is fixed
 statsmodels
 tabulate
 tenacity
-validators
 uvicorn
+validators
