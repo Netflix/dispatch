@@ -1084,12 +1084,13 @@ def status_flow_dispatcher(
         elif previous_status == IncidentStatus.stable:
             incident_closed_status_flow(incident=incident, db_session=db_session)
 
-    event_service.log(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description=f"The incident status has been changed from {previous_status} to {current_status}",
-        incident_id=incident.id,
-    )
+    if previous_status != current_status:
+        event_service.log(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"The incident status has been changed from {previous_status} to {current_status}",
+            incident_id=incident.id,
+        )
 
 
 @background_task
