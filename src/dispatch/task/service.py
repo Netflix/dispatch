@@ -136,23 +136,22 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
 
 def update(*, db_session, task: Task, task_in: TaskUpdate, sync_external: bool = True) -> Task:
     """Update an existing task."""
-    # ensure we add assignee as participant if they are not one already
-    assignees = []
-    for i in task_in.assignees:
-        assignees.append(
-            incident_flows.incident_add_or_reactivate_participant_flow(
-                db_session=db_session,
-                incident_id=task.incident.id,
-                user_email=i.individual.email,
+    # we add the assignees of the task to the incident if the status of the task is open
+    if task_in.status == TaskStatus.open:
+        assignees = []
+        for i in task_in.assignees:
+            assignees.append(
+                incident_flows.incident_add_or_reactivate_participant_flow(
+                    db_session=db_session,
+                    incident_id=task.incident.id,
+                    user_email=i.individual.email,
+                )
             )
-        )
+        task.assignees = assignees
 
-    task.assignees = assignees
-
-    # we add owner as a participant if they are not one already
+    # we add the owner of the task to the incident if the status of the task is open
     if task_in.owner:
-        # don't reactive participants if the tasks is already resolved
-        if task_in.status != TaskStatus.resolved:
+        if task_in.status == TaskStatus.open:
             task.owner = incident_flows.incident_add_or_reactivate_participant_flow(
                 db_session=db_session,
                 incident_id=task.incident.id,

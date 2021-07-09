@@ -26,6 +26,7 @@ class MessageType(str, Enum):
     incident_feedback_daily_report = "incident-feedback-daily-report"
     incident_management_help_tips = "incident-management-help-tips"
     incident_notification = "incident-notification"
+    incident_open_tasks = "incident-open-tasks"
     incident_participant_suggested_reading = "incident-participant-suggested-reading"
     incident_participant_welcome = "incident-participant-welcome"
     incident_rating_feedback = "incident-rating-feedback"
@@ -41,15 +42,6 @@ INCIDENT_STATUS_DESCRIPTIONS = {
     IncidentStatus.stable.value: "This incident is stable, the bulk of the investigation has been completed or most of the risk has been mitigated.",
     IncidentStatus.closed.value: "This no longer requires additional involvement, long term incident action items have been assigned to their respective owners.",
 }
-
-INCIDENT_TASK_REMINDER_DESCRIPTION = """
-You are assigned to the following incident tasks.
-This is a reminder that these tasks have passed their due date.
-Please review and update them as appropriate. Resolving them will stop the reminders.""".replace(
-    "\n", " "
-).strip()
-
-INCIDENT_TASK_LIST_DESCRIPTION = """The following are open incident tasks."""
 
 DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION = """
 You are the owner of the following incident documents.
@@ -240,6 +232,19 @@ The following incident task has been created in the incident document.\n\n*Descr
 
 INCIDENT_TASK_RESOLVED_DESCRIPTION = """
 The following incident task has been resolved in the incident document.\n\n*Description:* {{task_description}}\n\n*Assignees:* {{task_assignees|join(',')}}"""
+
+INCIDENT_TASK_REMINDER_DESCRIPTION = """
+You are assigned to the following incident tasks.
+This is a reminder that these tasks have passed their due date.
+Please review and update them as appropriate. Resolving them will stop the reminders.""".replace(
+    "\n", " "
+).strip()
+
+INCIDENT_TASK_LIST_DESCRIPTION = """The following are open incident tasks."""
+
+INCIDENT_OPEN_TASKS_DESCRIPTION = (
+    """Please resolve or re-assign your open incident tasks before leaving the incident channel."""
+)
 
 INCIDENT_WORKFLOW_CREATED_DESCRIPTION = """
 A new workflow instance has been created.
