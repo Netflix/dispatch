@@ -100,7 +100,7 @@ def db():
     drop_database(str(config.SQLALCHEMY_DATABASE_URI))
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def session(db):
     """
     Creates a new database session with (with working transaction)
@@ -118,7 +118,7 @@ def client(testapp, session, client):
 
 @pytest.fixture(scope="session")
 def server(testapp, session):
-    proc = Process(target=uvicorn.run(testapp), args=(), daemon=True)
+    proc = Process(target=uvicorn.run(testapp, port=9999), args=(), daemon=True)
     proc.start()
     yield
     proc.kill()
