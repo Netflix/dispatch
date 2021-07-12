@@ -27,6 +27,9 @@ class UserTypes(str, Enum):
     domain = "domain"
     anyone = "anyone"
 
+    def __str__(self) -> str:
+        return str.__str__(self)
+
 
 class Roles(str, Enum):
     owner = "owner"
@@ -35,6 +38,9 @@ class Roles(str, Enum):
     writer = "writer"
     commenter = "commenter"
     reader = "reader"
+
+    def __str__(self) -> str:
+        return str.__str__(self)
 
 
 def paginated(data_key):
@@ -178,7 +184,7 @@ def create_file(
     parent_id: str,
     name: str,
     members: List[str],
-    role: Roles = Roles.writer.value,
+    role: Roles = Roles.writer,
     file_type: str = "folder",
 ):
     """Creates a new folder with the specified parents."""

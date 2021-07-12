@@ -3,13 +3,7 @@ from datetime import datetime, timedelta
 
 from fastapi.encoders import jsonable_encoder
 
-from dispatch.config import (
-    INCIDENT_RESOURCE_CONVERSATION_REFERENCE_DOCUMENT,
-    INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT_TEMPLATE,
-    INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT_TEMPLATE,
-    INCIDENT_RESOURCE_INVESTIGATION_SHEET_TEMPLATE,
-    INCIDENT_RESOURCE_INCIDENT_FAQ_DOCUMENT,
-)
+from dispatch.enums import DocumentResourceTypes
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
 
@@ -22,58 +16,34 @@ def get(*, db_session, document_id: int) -> Optional[Document]:
 
 
 def get_by_incident_id_and_resource_type(
-    *, db_session, incident_id: int, resource_type: str
+    *, db_session, incident_id: int, project_id: int, resource_type: str
 ) -> Optional[Document]:
     """Returns a document based on the given incident and id and document resource type."""
     return (
         db_session.query(Document)
         .filter(Document.incident_id == incident_id)
+        .filter(Document.project_id == project_id)
         .filter(Document.resource_type == resource_type)
         .one_or_none()
     )
 
 
-def get_conversation_reference_document(*, db_session):
+def get_incident_faq_document(*, db_session, project_id: int):
+    """Fetches incident faq document."""
+    return (
+        db_session.query(Document).filter(
+            Document.resource_type == DocumentResourceTypes.faq,
+            Document.project_id == project_id,
+        )
+    ).one_or_none()
+
+
+def get_conversation_reference_document(*, db_session, project_id: int):
     """Fetches conversation reference document."""
     return (
         db_session.query(Document).filter(
-            Document.resource_type == INCIDENT_RESOURCE_CONVERSATION_REFERENCE_DOCUMENT
-        )
-    ).one_or_none()
-
-
-def get_executive_report_template(*, db_session):
-    """Fetches executive report template document."""
-    return (
-        db_session.query(Document).filter(
-            Document.resource_type == INCIDENT_RESOURCE_EXECUTIVE_REPORT_DOCUMENT_TEMPLATE
-        )
-    ).one_or_none()
-
-
-def get_incident_review_template(*, db_session):
-    """Fetches incident review template document."""
-    return (
-        db_session.query(Document).filter(
-            Document.resource_type == INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT_TEMPLATE
-        )
-    ).one_or_none()
-
-
-def get_incident_faq_document(*, db_session):
-    """Fetches incident faq docment."""
-    return (
-        db_session.query(Document).filter(
-            Document.resource_type == INCIDENT_RESOURCE_INCIDENT_FAQ_DOCUMENT
-        )
-    ).one_or_none()
-
-
-def get_incident_investigation_sheet_template(*, db_session):
-    """Fetches incident investigation template sheet."""
-    return (
-        db_session.query(Document).filter(
-            Document.resource_type == INCIDENT_RESOURCE_INVESTIGATION_SHEET_TEMPLATE
+            Document.resource_type == DocumentResourceTypes.conversation,
+            Document.project_id == project_id,
         )
     ).one_or_none()
 

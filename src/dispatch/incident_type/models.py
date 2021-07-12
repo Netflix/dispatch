@@ -26,11 +26,26 @@ class IncidentType(ProjectMixin, Base):
 
     enabled = Column(Boolean, default=True)
     default = Column(Boolean, default=False)
-    visibility = Column(String, default=Visibility.open.value)
+    visibility = Column(String, default=Visibility.open)
     plugin_metadata = Column(JSON, default=[])
 
-    template_document_id = Column(Integer, ForeignKey("document.id"))
-    template_document = relationship("Document")
+    incident_template_document_id = Column(Integer, ForeignKey("document.id"))
+    incident_template_document = relationship(
+        "Document", foreign_keys=[incident_template_document_id]
+    )
+
+    executive_template_document_id = Column(Integer, ForeignKey("document.id"))
+    executive_template_document = relationship(
+        "Document", foreign_keys=[executive_template_document_id]
+    )
+
+    review_template_document_id = Column(Integer, ForeignKey("document.id"))
+    review_template_document = relationship("Document", foreign_keys=[review_template_document_id])
+
+    tracking_template_document_id = Column(Integer, ForeignKey("document.id"))
+    tracking_template_document = relationship(
+        "Document", foreign_keys=[tracking_template_document_id]
+    )
 
     commander_service_id = Column(Integer, ForeignKey("service.id"))
     commander_service = relationship("Service", foreign_keys=[commander_service_id])
@@ -76,7 +91,10 @@ class IncidentTypeBase(DispatchBase):
     visibility: Optional[str]
     description: Optional[str]
     enabled: Optional[bool]
-    template_document: Optional[Document]
+    incident_template_document: Optional[Document]
+    executive_template_document: Optional[Document]
+    review_template_document: Optional[Document]
+    tracking_template_document: Optional[Document]
     commander_service: Optional[Service]
     liaison_service: Optional[Service]
     exclude_from_metrics: Optional[bool] = False

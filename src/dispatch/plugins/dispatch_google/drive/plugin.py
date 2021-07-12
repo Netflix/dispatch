@@ -71,7 +71,7 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         parent_id: str,
         name: str,
         participants: List[str] = [],
-        role: str = Roles.writer.value,
+        role: str = Roles.writer,
         file_type: str = "folder",
     ):
         """Creates a new file in existing Google Drive."""

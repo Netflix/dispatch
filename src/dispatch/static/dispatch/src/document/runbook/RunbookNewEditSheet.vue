@@ -6,7 +6,7 @@
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
             <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Document</v-list-item-subtitle>
+            <v-list-item-subtitle>Runbook</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
             icon
@@ -37,7 +37,7 @@
                     :error-messages="errors"
                     :success="valid"
                     label="Name"
-                    hint="A name for your document."
+                    hint="A name for your runbook."
                     clearable
                     required
                   />
@@ -51,7 +51,7 @@
                     label="Description"
                     :error-messages="errors"
                     :success="valid"
-                    hint="A description for your document."
+                    hint="A description for your runbook."
                     clearable
                     required
                   />
@@ -65,7 +65,7 @@
                     label="Weblink"
                     :error-messages="errors"
                     :success="valid"
-                    hint="A weblink for the document."
+                    hint="A weblink for the runbook."
                     clearable
                     required
                   />
@@ -79,20 +79,7 @@
                     label="External Id"
                     :error-messages="errors"
                     :success="valid"
-                    hint="External identifier for document. Used for API integration (e.g. Google doc file id). Typically is the unique id in the weblink."
-                    clearable
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="Resource Type" immediate>
-                  <v-text-field
-                    v-model="resource_type"
-                    slot-scope="{ errors, valid }"
-                    label="Type"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="The type of resource document."
+                    hint="External identifier for runbook. Used for API integration (e.g. Google doc file id). Typically is the unique id in the weblink."
                     clearable
                   />
                 </ValidationProvider>
@@ -104,7 +91,7 @@
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                     </template>
-                    This document will be automatically suggessted for any incident matching the
+                    This runbook will be automatically suggested for any incident matching the
                     following filters.
                   </v-tooltip>
                 </span>
@@ -114,7 +101,7 @@
                   v-model="filters"
                   :project="project"
                   label="Filters"
-                  hint="Select one or more filters that will determine when this document will be recommended."
+                  hint="Select one or more filters that will determine when this runbook will be recommended."
                 />
               </v-flex>
               <v-flex xs12>
@@ -123,7 +110,7 @@
               <v-flex xs12>
                 <v-checkbox
                   v-model="evergreen"
-                  hint="Enabling evergreen will send periodic reminders to the owner to update this document."
+                  hint="Enabling evergreen will send periodic reminders to the owner to update this runbook."
                   label="Enabled"
                 />
               </v-flex>
@@ -135,7 +122,7 @@
                     label="Owner"
                     :error-messages="errors"
                     :success="valid"
-                    hint="Owner of this document."
+                    hint="Owner of this runbook."
                     clearable
                   />
                 </ValidationProvider>
@@ -149,7 +136,7 @@
                     :error-messages="errors"
                     :success="valid"
                     type="number"
-                    hint="Number of days that should elapse between reminders sent to the document owner."
+                    hint="Number of days that should elapse between reminders sent to the runbook owner."
                     placeholder="90"
                     clearable
                     min="1"
@@ -187,7 +174,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("document", [
+    ...mapFields("runbook", [
       "selected.name",
       "selected.description",
       "selected.resource_type",
@@ -206,11 +193,11 @@ export default {
   },
 
   methods: {
-    ...mapActions("document", ["closeCreateEdit"]),
+    ...mapActions("runbook", ["closeCreateEdit"]),
     save() {
       const self = this
-      this.$store.dispatch("document/save").then(function (data) {
-        self.$emit("new-document-created", data)
+      this.$store.dispatch("runbook/save").then(function (data) {
+        self.$emit("new-runbook-created", data)
       })
     },
   },

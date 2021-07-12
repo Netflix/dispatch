@@ -10,7 +10,7 @@ const devConfigPromise = require("../../build/webpack.dev.conf")
 let server
 
 devConfigPromise
-  .then(devConfig => {
+  .then((devConfig) => {
     const devServerOptions = devConfig.devServer
     const compiler = webpack(webpackConfig)
     server = new DevServer(compiler, devServerOptions)
@@ -37,12 +37,12 @@ devConfigPromise
     const spawn = require("cross-spawn")
     const runner = spawn("./node_modules/.bin/nightwatch", opts, { stdio: "inherit" })
 
-    runner.on("exit", function(code) {
+    runner.on("exit", function (code) {
       server.close()
       process.exit(code)
     })
 
-    runner.on(false, function(err) {
+    runner.on(false, function (err) {
       server.close()
       throw err
     })

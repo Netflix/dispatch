@@ -97,12 +97,14 @@ def send_welcome_ephemeral_message_to_participant(
         "conference_challenge": resolve_attr(incident, "conference.conference_challenge"),
     }
 
-    faq_doc = document_service.get_incident_faq_document(db_session=db_session)
+    faq_doc = document_service.get_incident_faq_document(
+        db_session=db_session, project_id=incident.project_id
+    )
     if faq_doc:
         message_kwargs.update({"faq_weblink": faq_doc.weblink})
 
     conversation_reference = document_service.get_conversation_reference_document(
-        db_session=db_session
+        db_session=db_session, project_id=incident.project_id
     )
     if conversation_reference:
         message_kwargs.update(
@@ -157,12 +159,14 @@ def send_welcome_email_to_participant(
         "contact_weblink": incident.commander.individual.weblink,
     }
 
-    faq_doc = document_service.get_incident_faq_document(db_session=db_session)
+    faq_doc = document_service.get_incident_faq_document(
+        db_session=db_session, project_id=incident.project_id
+    )
     if faq_doc:
         message_kwargs.update({"faq_weblink": faq_doc.weblink})
 
     conversation_reference = document_service.get_conversation_reference_document(
-        db_session=db_session
+        db_session=db_session, project_id=incident.project_id
     )
     if conversation_reference:
         message_kwargs.update(
@@ -271,7 +275,9 @@ def send_incident_created_notifications(incident: Incident, db_session: SessionL
         "organization_slug": incident.project.organization.slug,
     }
 
-    faq_doc = document_service.get_incident_faq_document(db_session=db_session)
+    faq_doc = document_service.get_incident_faq_document(
+        db_session=db_session, project_id=incident.project_id
+    )
     if faq_doc:
         notification_kwargs.update({"faq_weblink": faq_doc.weblink})
 
@@ -340,7 +346,7 @@ def send_incident_update_notifications(
                 incident_priority_new=incident.incident_priority.name,
                 incident_priority_old=previous_incident.incident_priority.name,
                 incident_status_new=incident.status,
-                incident_status_old=previous_incident.status.value,
+                incident_status_old=previous_incident.status,
                 incident_type_new=incident.incident_type.name,
                 incident_type_old=previous_incident.incident_type.name,
                 name=incident.name,
@@ -369,7 +375,7 @@ def send_incident_update_notifications(
         "incident_priority_new": incident.incident_priority.name,
         "incident_priority_old": previous_incident.incident_priority.name,
         "incident_status_new": incident.status,
-        "incident_status_old": previous_incident.status.value,
+        "incident_status_old": previous_incident.status,
         "incident_type_new": incident.incident_type.name,
         "incident_type_old": previous_incident.incident_type.name,
         "organization_slug": incident.project.organization.slug,
@@ -667,12 +673,14 @@ def send_incident_resources_ephemeral_message_to_participant(
             {"review_document_weblink": incident.incident_review_document.weblink}
         )
 
-    faq_doc = document_service.get_incident_faq_document(db_session=db_session)
+    faq_doc = document_service.get_incident_faq_document(
+        db_session=db_session, project_id=incident.project_id
+    )
     if faq_doc:
         message_kwargs.update({"faq_weblink": faq_doc.weblink})
 
     conversation_reference = document_service.get_conversation_reference_document(
-        db_session=db_session
+        db_session=db_session, project_id=incident.project_id
     )
     if conversation_reference:
         message_kwargs.update(

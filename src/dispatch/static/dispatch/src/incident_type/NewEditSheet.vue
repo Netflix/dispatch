@@ -86,7 +86,42 @@
               </v-flex>
               <v-flex xs12>
                 <ValidationObserver disabled>
-                  <document-select :project="project" v-model="template_document" />
+                  <template-select
+                    :project="project"
+                    label="Incident Template"
+                    v-model="incident_template_document"
+                    resource-type="dispatch-incident-document-template"
+                  />
+                </ValidationObserver>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationObserver disabled>
+                  <template-select
+                    :project="project"
+                    label="Executive Template"
+                    v-model="executive_template_document"
+                    resource-type="dispatch-executive-report-document-template"
+                  />
+                </ValidationObserver>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationObserver disabled>
+                  <template-select
+                    :project="project"
+                    label="Review Template"
+                    v-model="review_template_document"
+                    resource-type="dispatch-incident-review-document-template"
+                  />
+                </ValidationObserver>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationObserver disabled>
+                  <template-select
+                    :project="project"
+                    label="Tracking Template"
+                    v-model="tracking_template_document"
+                    resource-type="dispatch-incident-tracking-template"
+                  />
                 </ValidationObserver>
               </v-flex>
               <v-flex xs 12>
@@ -127,7 +162,7 @@ import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 import ServiceSelect from "@/service/ServiceSelect.vue"
-import DocumentSelect from "@/document/DocumentSelect.vue"
+import TemplateSelect from "@/document/template/TemplateSelect.vue"
 import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
 
 extend("required", {
@@ -143,7 +178,7 @@ export default {
     ValidationProvider,
     PluginMetadataInput,
     ServiceSelect,
-    DocumentSelect,
+    TemplateSelect,
   },
 
   data() {
@@ -163,7 +198,10 @@ export default {
       "selected.loading",
       "selected.name",
       "selected.slug",
-      "selected.template_document",
+      "selected.incident_template_document",
+      "selected.tracking_template_document",
+      "selected.review_template_document",
+      "selected.executive_template_document",
       "selected.visibility",
       "selected.enabled",
       "selected.plugin_metadata",

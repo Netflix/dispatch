@@ -2,29 +2,41 @@ import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import IncidentTypeApi from "@/incident_type/api"
+import DocumentApi from "@/document/api"
 
 const getDefaultSelectedState = () => {
   return {
-    id: null,
-    slug: null,
     name: null,
+    resource_type: null,
+    resource_id: null,
+    weblink: null,
     description: null,
-    visibility: null,
-    commander_service: null,
-    liaison_service: null,
-    incident_template_document: null,
-    tracking_template_document: null,
-    review_template_document: null,
-    executive_template_document: null,
-    loading: false,
-    plugin_metadata: [],
-    exclude_from_metrics: null,
-    enabled: false,
-    default: false,
+    id: null,
+    filters: [],
     project: null,
+    evergreen: null,
+    evergreen_owner: null,
+    evergreen_reminder_interval: null,
+    created_at: null,
+    updated_at: null,
+    loading: false,
   }
 }
+
+export const referenceDocumentTypes = [
+  {
+    resource_type: "dispatch-faq-reference-document",
+    title: "FAQ",
+    description: "Create a new FAQ reference document",
+    icon: "mdi-file-document-edit-outline",
+  },
+  {
+    resource_type: "dispatch-conversation-reference-document",
+    title: "Conversation",
+    description: "Create a new conversation reference document",
+    icon: "mdi-text-box-check-outline",
+  },
+]
 
 const state = {
   selected: {
@@ -44,9 +56,16 @@ const state = {
       page: 1,
       itemsPerPage: 10,
       sortBy: ["name"],
-      descending: [true],
+      descending: [false],
       filters: {
         project: [],
+        resource_type: referenceDocumentTypes.map((item) => {
+          return {
+            model: "Document",
+            field: "resource_type",
+            value: item.resource_type,
+          }
+        }),
       },
     },
     loading: false,
@@ -60,8 +79,22 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options })
-    return IncidentTypeApi.getAll(params)
+
+    let documentTypes = []
+    for (const key in state.resourceTypes) {
+      documentTypes.push({
+        model: "Document",
+        field: "resource_type",
+        op: "==",
+        value: key,
+      })
+    }
+
+    let params = SearchUtils.createParametersFromTableOptions(
+      { ...state.table.options },
+      documentTypes
+    )
+    return DocumentApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
@@ -69,16 +102,16 @@ const actions = {
       .catch(() => {
         commit("SET_TABLE_LOADING", false)
       })
-  }, 500),
-  createEditShow({ commit }, incidentType) {
+  }, 200),
+  createEditShow({ commit }, template) {
     commit("SET_DIALOG_CREATE_EDIT", true)
-    if (incidentType) {
-      commit("SET_SELECTED", incidentType)
+    if (template) {
+      commit("SET_SELECTED", template)
     }
   },
-  removeShow({ commit }, incidentType) {
+  removeShow({ commit }, document) {
     commit("SET_DIALOG_DELETE", true)
-    commit("SET_SELECTED", incidentType)
+    commit("SET_SELECTED", document)
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
@@ -88,49 +121,49 @@ const actions = {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
   },
-  save({ commit, state, dispatch }) {
+  save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
-      return IncidentTypeApi.create(state.selected)
-        .then(() => {
+      return DocumentApi.create(state.selected)
+        .then(function (resp) {
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
-            { text: "Incident type created successfully.", type: "success" },
+            { text: "Document created successfully.", type: "success" },
             { root: true }
           )
+          return resp.data
         })
         .catch((err) => {
           commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
             {
-              text: "Incident type not created. Reason: " + err.response.data.detail,
+              text: "Document not created. Reason: " + err.response.data.detail,
               type: "error",
             },
             { root: true }
           )
         })
     } else {
-      return IncidentTypeApi.update(state.selected.id, state.selected)
+      return DocumentApi.update(state.selected.id, state.selected)
         .then(() => {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Incident type updated successfully.", type: "success" },
+            { text: "Document updated successfully.", type: "success" },
             { root: true }
           )
         })
         .catch((err) => {
-          commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
             {
-              text: "Incident type not updated. Reason: " + err.response.data.detail,
+              text: "Document not updated. Reason: " + err.response.data.detail,
               type: "error",
             },
             { root: true }
@@ -139,13 +172,13 @@ const actions = {
     }
   },
   remove({ commit, dispatch }) {
-    return IncidentTypeApi.delete(state.selected.id)
+    return DocumentApi.delete(state.selected.id)
       .then(function () {
         dispatch("closeRemove")
         dispatch("getAll")
         commit(
           "notification_backend/addBeNotification",
-          { text: "Incident type deleted successfully.", type: "success" },
+          { text: "Document deleted successfully.", type: "success" },
           { root: true }
         )
       })
@@ -153,7 +186,7 @@ const actions = {
         commit(
           "notification_backend/addBeNotification",
           {
-            text: "Incident type not deleted. Reason: " + err.response.data.detail,
+            text: "Document not deleted. Reason: " + err.response.data.detail,
             type: "error",
           },
           { root: true }
@@ -165,10 +198,7 @@ const actions = {
 const mutations = {
   updateField,
   SET_SELECTED(state, value) {
-    state.selected = value
-  },
-  SET_SELECTED_LOADING(state, value) {
-    state.selected.loading = value
+    state.selected = Object.assign(state.selected, value)
   },
   SET_TABLE_LOADING(state, value) {
     state.table.loading = value

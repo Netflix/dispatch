@@ -142,7 +142,7 @@ def send_incident_report_reminder(
     incident: Incident, report_type: ReportTypes, db_session: SessionLocal
 ):
     """Sends a direct message to the incident commander indicating that they should complete a report."""
-    message_text = f"Incident {report_type.value} Reminder"
+    message_text = f"Incident {report_type} Reminder"
     message_template = INCIDENT_REPORT_REMINDER
     command_name, message_type = get_report_reminder_settings(report_type)
 
@@ -167,7 +167,7 @@ def send_incident_report_reminder(
         {
             "command": report_command,
             "name": incident.name,
-            "report_type": report_type.value,
+            "report_type": report_type,
             "ticket_weblink": ticket_weblink,
             "title": incident.title,
         }

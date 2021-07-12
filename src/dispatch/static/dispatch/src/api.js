@@ -52,7 +52,7 @@ instance.interceptors.response.use(
         store.commit(
           "notification_backend/addBeNotification",
           {
-            text: "Something has gone very wrong, please retry or let your admin know that you received this error.",
+            text: "Something has gone wrong, please retry or let your admin know that you received this error.",
             type: "error",
           },
           { root: true }

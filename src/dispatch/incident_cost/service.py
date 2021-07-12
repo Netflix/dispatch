@@ -152,7 +152,7 @@ def calculate_incident_response_cost(
 
             participant_role_assumed_at = participant_role.assumed_at
 
-            if incident.status == IncidentStatus.active.value:
+            if incident.status == IncidentStatus.active:
                 # the incident is still active. we use the current time
                 participant_role_renounced_at = datetime.utcnow()
             else:

@@ -2,11 +2,11 @@
   <v-dialog v-model="showRemove" persistent max-width="800px">
     <v-card>
       <v-card-title>
-        <span class="headline">Delete Document?</span>
+        <span class="headline">Delete Runbook?</span>
       </v-card-title>
       <v-card-text>
         <v-container grid-list-md>
-          <v-layout wrap> Are you sure you would like to delete this document? </v-layout>
+          <v-layout wrap> Are you sure you would like to delete this runbook? </v-layout>
         </v-container>
       </v-card-text>
       <v-card-actions>
@@ -22,16 +22,16 @@
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 export default {
-  name: "DocumentDeleteDialog",
+  name: "RunbookDeleteDialog",
   data() {
     return {}
   },
   computed: {
-    ...mapFields("document", ["dialogs.showRemove"]),
+    ...mapFields("runbook", ["dialogs.showRemove"]),
   },
 
   methods: {
-    ...mapActions("document", ["remove", "closeRemove"]),
+    ...mapActions("runbook", ["remove", "closeRemove"]),
   },
 }
 </script>

@@ -1,7 +1,7 @@
 <template>
-  <ValidationProvider name="document" immediate>
+  <ValidationProvider name="reference" immediate>
     <v-autocomplete
-      v-model="document"
+      v-model="reference"
       :items="items"
       :search-input.sync="search"
       :menu-props="{ maxHeight: '400' }"
@@ -9,17 +9,18 @@
       :error-messages="errors"
       :success="valid"
       item-text="name"
-      label="Document"
+      :label="label"
       placeholder="Start typing to search"
       return-object
       :loading="loading"
       no-filter
     >
-      <template slot="append-outer">
+      <reference slot="append-outer">
         <v-btn icon @click="createEditShow({})">
           <v-icon>add</v-icon>
         </v-btn>
-      </template>
+        <new-edit-sheet @new-document-created="addItem($event)" />
+      </reference>
     </v-autocomplete>
   </ValidationProvider>
 </template>
@@ -29,11 +30,11 @@ import { mapActions } from "vuex"
 import { cloneDeep } from "lodash"
 import { ValidationProvider } from "vee-validate"
 
-import SearchUtils from "@/search/utils"
 import DocumentApi from "@/document/api"
+import NewEditSheet from "@/document/reference/TemplateNewEditSheet.vue"
 
 export default {
-  name: "DocumentSelect",
+  name: "TemplateSelect",
 
   props: {
     value: {
@@ -42,14 +43,23 @@ export default {
         return {}
       },
     },
+    resourceType: {
+      type: String,
+      default: "",
+    },
     project: {
       type: [Object],
       default: null,
+    },
+    label: {
+      type: String,
+      default: "Template",
     },
   },
 
   components: {
     ValidationProvider,
+    NewEditSheet,
   },
 
   data() {
@@ -72,7 +82,7 @@ export default {
   },
 
   computed: {
-    document: {
+    reference: {
       get() {
         return cloneDeep(this.value)
       },
@@ -83,7 +93,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("document", ["createEditShow"]),
+    ...mapActions("reference", ["createEditShow"]),
     addItem(value) {
       this.document = value
       this.items.push(value)
@@ -92,18 +102,25 @@ export default {
       this.error = null
       this.loading = "error"
       let filterOptions = {
+        q: this.search,
         sortBy: ["name"],
-        descending: [false],
-      }
-
-      if (this.project) {
-        filterOptions = {
-          ...filterOptions,
-          filters: {
-            project: [this.project],
-          },
-        }
-        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+        itemsPerPage: this.itemsPerPage,
+        filter: JSON.stringify({
+          and: [
+            {
+              model: "Project",
+              field: "name",
+              op: "==",
+              value: this.project.name,
+            },
+            {
+              model: "Document",
+              field: "resource_type",
+              op: "==",
+              value: this.resourceType,
+            },
+          ],
+        }),
       }
 
       DocumentApi.getAll(filterOptions).then((response) => {
