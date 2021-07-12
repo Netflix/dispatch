@@ -8,7 +8,7 @@ from jose import jwt
 from typing import Optional
 from pydantic import validator
 
-from sqlalchemy import Column, String, Binary, Integer
+from sqlalchemy import Column, String, LargeBinary, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy_utils import TSVectorType
@@ -52,7 +52,7 @@ class DispatchUser(Base, TimeStampMixin):
 
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True)
-    password = Column(Binary, nullable=False)
+    password = Column(LargeBinary, nullable=False)
 
     search_vector = Column(TSVectorType("email", weights={"email": "A"}))
 

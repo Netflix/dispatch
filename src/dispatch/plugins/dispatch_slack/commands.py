@@ -18,7 +18,8 @@ from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.project import service as project_service
 from dispatch.task import service as task_service
-from dispatch.task.models import TaskStatus, Task
+from dispatch.task.enums import TaskStatus
+from dispatch.task.models import Task
 
 from .config import (
     SLACK_APP_USER_SLUG,
@@ -266,8 +267,8 @@ def list_my_tasks(
         command=command,
         by_creator=user_email,
         by_assignee=user_email,
-        db_session=None,
-        slack_client=None,
+        db_session=db_session,
+        slack_client=slack_client,
     )
 
 
