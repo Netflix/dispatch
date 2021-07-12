@@ -70,9 +70,6 @@ export default {
         chart: {
           height: 350,
           type: "line",
-          toolbar: {
-            show: false,
-          },
         },
         xaxis: {
           categories: Object.keys(this.value) || [],

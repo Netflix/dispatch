@@ -14,7 +14,6 @@ import { map, filter } from "lodash"
 import IncidentTypeApi from "@/incident_type/api"
 import DashboardCard from "@/dashboard/DashboardCard.vue"
 import DashboardUtils from "@/dashboard/utils"
-
 export default {
   name: "IncidentBarChartCard",
 
@@ -61,8 +60,11 @@ export default {
           type: "bar",
           height: 350,
           stacked: true,
-          toolbar: {
-            show: false,
+          events: {
+            dataPointSelection: (event, chartContext, config) => {
+              var data = config.w.config.series[config.seriesIndex].data[config.dataPointIndex]
+              this.$emit("detailsSelected", data.items)
+            },
           },
         },
         colors: DashboardUtils.defaultColorTheme(),
