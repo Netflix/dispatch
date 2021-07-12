@@ -1370,7 +1370,7 @@ def incident_remove_participant_flow(
 
     for task in incident.tasks:
         if task.status == TaskStatus.open:
-            if task.owner == participant or participant in task.assignees:
+            if task.owner == participant:
                 # we add the participant back to the conversation
                 add_participants_to_conversation([user_email], incident, db_session)
 

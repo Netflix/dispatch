@@ -25,6 +25,7 @@ from dispatch.messaging.strings import (
     INCIDENT_NEW_ROLE_NOTIFICATION,
     INCIDENT_NOTIFICATION,
     INCIDENT_NOTIFICATION_COMMON,
+    INCIDENT_OPEN_TASKS,
     INCIDENT_PARTICIPANT_SUGGESTED_READING_ITEM,
     INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
     INCIDENT_PRIORITY_CHANGE,
@@ -872,11 +873,21 @@ def send_incident_open_tasks_ephemeral_message(
         log.warning("Incident open tasks message not sent. No conversation plugin enabled.")
         return
 
+    notification_text = "Open Incident Tasks"
+    notification_type = MessageType.incident_open_tasks
+    message_template = INCIDENT_OPEN_TASKS
+    message_kwargs = {
+        "title": notification_text,
+        "dispatch_ui_url": f"{DISPATCH_UI_URL}/{incident.project.organization.name}/tasks",
+    }
+
     convo_plugin.instance.send_ephemeral(
         incident.conversation.channel_id,
         participant_email,
-        "Open Incident Tasks",
-        notification_type=MessageType.incident_open_tasks,
+        notification_text,
+        message_template,
+        notification_type,
+        **message_kwargs,
     )
 
     log.debug(f"Open incident tasks message sent to {participant_email}.")

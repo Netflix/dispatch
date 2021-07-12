@@ -209,7 +209,6 @@ def get_template(message_type: MessageType):
             default_notification,
             INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
         ),
-        MessageType.incident_open_tasks: (default_notification, INCIDENT_OPEN_TASKS_DESCRIPTION),
         MessageType.incident_task_list: (default_notification, INCIDENT_TASK_LIST_DESCRIPTION),
         MessageType.incident_task_reminder: (
             default_notification,
