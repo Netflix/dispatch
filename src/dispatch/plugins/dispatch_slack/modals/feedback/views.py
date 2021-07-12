@@ -42,7 +42,7 @@ def rating_feedback_view(incident: Incident):
     rating_picker_options = []
     for rating in FeedbackRating:
         rating_picker_options.append(
-            {"text": {"type": "plain_text", "text": rating.value}, "value": rating.value}
+            {"text": {"type": "plain_text", "text": rating}, "value": rating}
         )
 
     rating_picker_block = {

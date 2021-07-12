@@ -28,7 +28,7 @@ def create_assign_role_dialog(
     role_options = []
     for role in ParticipantRoleType:
         if role != ParticipantRoleType.participant:
-            role_options.append({"label": role.value, "value": role.value})
+            role_options.append({"label": role, "value": role})
 
     dialog = {
         "callback_id": command["command"],

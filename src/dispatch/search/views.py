@@ -21,7 +21,7 @@ def search(
     *,
     common: dict = Depends(common_parameters),
     type: List[str] = [
-        v.value for v in SearchTypes
+        v for v in SearchTypes
     ],  # hack for pydantic enum json generation see: https://github.com/samuelcolvin/pydantic/pull/1749
 ):
     """
@@ -47,7 +47,7 @@ def search(
 
     filtered_incidents = []
     for incident in results["Incident"]:
-        if incident.project in admin_projects or incident.visibility == Visibility.open.value:
+        if incident.project in admin_projects or incident.visibility == Visibility.open:
             filtered_incidents.append(incident)
 
     results["Incident"] = filtered_incidents

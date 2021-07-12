@@ -121,15 +121,13 @@ def create(*, db_session, organization: str, user_in: UserRegister) -> DispatchU
     org = organization_service.get_by_slug(db_session=db_session, slug=organization)
 
     # add the user to the default organization
-    user.organizations.append(
-        DispatchUserOrganization(organization=org, role=UserRoles.member.value)
-    )
+    user.organizations.append(DispatchUserOrganization(organization=org, role=UserRoles.member))
 
     # get the default project
     default_project = project_service.get_default(db_session=db_session)
 
     # add the user to the default project
-    user.projects.append(DispatchUserProject(project=default_project, role=UserRoles.member.value))
+    user.projects.append(DispatchUserProject(project=default_project, role=UserRoles.member))
     db_session.add(user)
     db_session.commit()
     return user

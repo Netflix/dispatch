@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import { countBy, isArray, mergeWith, forEach, map, find, sortBy } from "lodash"
+import { groupBy, isArray, mergeWith, forEach, map, find, sortBy } from "lodash"
 import { parseISO } from "date-fns"
 import locale from "date-fns/esm/locale/en-US"
 
@@ -43,8 +43,11 @@ export default {
         chart: {
           height: 350,
           type: "heatmap",
-          toolbar: {
-            show: false,
+          events: {
+            dataPointSelection: (event, chartContext, config) => {
+              var data = config.w.config.series[config.seriesIndex].data[config.dataPointIndex]
+              this.$emit("detailsSelected", data.items)
+            },
           },
         },
         colors: DashboardUtils.defaultColorTheme(),
@@ -73,13 +76,14 @@ export default {
       let series = []
       let weekdays = this.weekdays
 
-      forEach(this.value, function (value) {
+      forEach(this.value, function (value, key) {
+        let grouping = key
         let dayCounts = map(
-          countBy(value, function (item) {
+          groupBy(value, function (item) {
             return parseISO(item.reported_at).toLocaleString("default", { weekday: "short" })
           }),
           function (value, key) {
-            return { name: key, data: [value] }
+            return { name: key, data: [{ y: value.length, x: grouping, items: value }] }
           }
         )
 
@@ -87,7 +91,7 @@ export default {
         forEach(weekdays, function (weekday) {
           let found = find(dayCounts, { name: weekday })
           if (!found) {
-            dayCounts.push({ name: weekday, data: [0] })
+            dayCounts.push({ name: weekday, data: [{ y: 0, x: grouping, items: [] }] })
           }
         })
 

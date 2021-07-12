@@ -88,7 +88,7 @@ def add_user(
     """Adds the user to the organization."""
     db_session.add(
         DispatchUserOrganization(
-            dispatch_user_id=user.id, organization_id=organization.id, role=role.value
+            dispatch_user_id=user.id, organization_id=organization.id, role=role
         )
     )
     db_session.commit()

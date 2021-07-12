@@ -196,10 +196,6 @@ Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispa
 
 > Controls the resource type to use for incident tasks.
 
-#### `INCIDENT_RESOURCE_FAQ_DOCUMENT` \[default: 'google-docs-faq-document'\]
-
-> Controls the resource type to use for the incident faq document.
-
 #### `INCIDENT_RESOURCE_TACTICAL_GROUP` \[default: 'google-group-participant-tactical-group'\]
 
 > Controls the resource type to use for tactical groups.
@@ -207,15 +203,3 @@ Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispa
 #### `INCIDENT_RESOURCE_NOTIFICATIONS_GROUP` \[default: 'google-group-participant-notification-group'\]
 
 > Controls the resource type to use for notification groups.
-
-#### `INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT` \[default: 'google-docs-investigation-document'\]
-
-> Controls the resource type to use for the investigation document.
-
-#### `INCIDENT_RESOURCE_INVESTIGATION_SHEET` \[default: 'google-docs-investigation-sheet'\]
-
-> Controls the resource type to use for the investigation sheet.
-
-#### `INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT` \[default: 'google-docs-incident-review-document'\]
-
-> Controls the resource type to use for the incident review document.

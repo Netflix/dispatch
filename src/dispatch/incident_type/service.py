@@ -67,15 +67,42 @@ def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
     """Creates an incident type."""
     project = project_service.get_by_name(db_session=db_session, name=incident_type_in.project.name)
     incident_type = IncidentType(
-        **incident_type_in.dict(exclude={"commander_service", "template_document", "project"}),
+        **incident_type_in.dict(
+            exclude={
+                "commander_service",
+                "incident_template_document",
+                "executive_template_document",
+                "tracking_template_document",
+                "review_template_document",
+                "project",
+            }
+        ),
         project=project,
     )
 
-    if incident_type_in.template_document:
-        template_document = document_service.get(
-            db_session=db_session, document_id=incident_type_in.template_document.id
+    if incident_type_in.incident_template_document:
+        incident_template_document = document_service.get(
+            db_session=db_session, document_id=incident_type_in.incident_template_document.id
         )
-        incident_type.template_document = template_document
+        incident_type.incident_template_document = incident_template_document
+
+    if incident_type_in.executive_template_document:
+        executive_template_document = document_service.get(
+            db_session=db_session, document_id=incident_type_in.executive_template_document.id
+        )
+        incident_type.executive_template_document = executive_template_document
+
+    if incident_type_in.review_template_document:
+        review_template_document = document_service.get(
+            db_session=db_session, document_id=incident_type_in.review_template_document.id
+        )
+        incident_type.review_template_document = review_template_document
+
+    if incident_type_in.tracking_template_document:
+        tracking_template_document = document_service.get(
+            db_session=db_session, document_id=incident_type_in.tracking_template_document.id
+        )
+        incident_type.tracking_template_document = tracking_template_document
 
     if incident_type_in.commander_service:
         commander_service = service_service.get(
@@ -98,11 +125,29 @@ def update(
     *, db_session, incident_type: IncidentType, incident_type_in: IncidentTypeUpdate
 ) -> IncidentType:
     """Updates an incident type."""
-    if incident_type_in.template_document:
-        template_document = document_service.get(
-            db_session=db_session, document_id=incident_type_in.template_document.id
+    if incident_type_in.incident_template_document:
+        incident_template_document = document_service.get(
+            db_session=db_session, document_id=incident_type_in.incident_template_document.id
         )
-        incident_type.template_document = template_document
+        incident_type.incident_template_document = incident_template_document
+
+    if incident_type_in.executive_template_document:
+        executive_template_document = document_service.get(
+            db_session=db_session, document_id=incident_type_in.executive_template_document.id
+        )
+        incident_type.executive_template_document = executive_template_document
+
+    if incident_type_in.review_template_document:
+        review_template_document = document_service.get(
+            db_session=db_session, document_id=incident_type_in.review_template_document.id
+        )
+        incident_type.review_template_document = review_template_document
+
+    if incident_type_in.tracking_template_document:
+        tracking_template_document = document_service.get(
+            db_session=db_session, document_id=incident_type_in.tracking_template_document.id
+        )
+        incident_type.tracking_template_document = tracking_template_document
 
     if incident_type_in.commander_service:
         commander_service = service_service.get(
@@ -119,7 +164,15 @@ def update(
     incident_type_data = jsonable_encoder(incident_type)
 
     update_data = incident_type_in.dict(
-        skip_defaults=True, exclude={"commander_service", "liaison_service", "template_document"}
+        skip_defaults=True,
+        exclude={
+            "commander_service",
+            "liaison_service",
+            "incident_template_document",
+            "executive_template_document",
+            "tracking_template_document",
+            "review_template_document",
+        },
     )
 
     for field in incident_type_data:
