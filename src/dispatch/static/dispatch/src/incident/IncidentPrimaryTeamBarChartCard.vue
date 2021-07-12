@@ -35,10 +35,6 @@ export default {
     DashboardCard,
   },
 
-  data() {
-    return {}
-  },
-
   computed: {
     chartOptions() {
       return {
@@ -46,8 +42,11 @@ export default {
           type: "bar",
           height: 350,
           stacked: true,
-          toolbar: {
-            show: false,
+          events: {
+            dataPointSelection: (event, chartContext, config) => {
+              var data = config.w.config.series[config.seriesIndex].data[config.dataPointIndex]
+              this.$emit("detailsSelected", data.items)
+            },
           },
         },
         colors: DashboardUtils.defaultColorTheme(),

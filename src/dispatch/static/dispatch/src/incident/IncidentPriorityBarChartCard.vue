@@ -13,6 +13,7 @@ import { map, sortBy } from "lodash"
 import DashboardCard from "@/dashboard/DashboardCard.vue"
 import DashboardUtils from "@/dashboard/utils"
 import IncidentPriorityApi from "@/incident_priority/api"
+
 export default {
   name: "IncidentPriorityBarChartCard",
 
@@ -59,8 +60,11 @@ export default {
           type: "bar",
           height: 350,
           stacked: true,
-          toolbar: {
-            show: false,
+          events: {
+            dataPointSelection: (event, chartContext, config) => {
+              var data = config.w.config.series[config.seriesIndex].data[config.dataPointIndex]
+              this.$emit("detailsSelected", data.items)
+            },
           },
         },
         responsive: [

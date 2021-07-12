@@ -1,5 +1,10 @@
 <template>
   <v-container fluid grid-list-xl>
+    <incidents-drill-down-sheet
+      :show="showDrillDown"
+      :items="detailItems"
+      @close="showDrillDown = false"
+    />
     <v-layout row wrap>
       <v-flex class="d-flex justify-start" lg6 sm6 xs12>
         <v-btn color="info" @click="copyView"> Share View </v-btn>
@@ -28,13 +33,25 @@
       <!-- Widgets Ends -->
       <!-- Statistics -->
       <v-flex lg6 sm6 xs12>
-        <incident-type-bar-chart-card v-model="groupedItems" :loading="loading" />
+        <incident-type-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+          @detailsSelected="detailsSelected($event)"
+        />
       </v-flex>
       <v-flex lg6 sm6 xs12>
-        <incident-priority-bar-chart-card v-model="groupedItems" :loading="loading" />
+        <incident-priority-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+          @detailsSelected="detailsSelected($event)"
+        />
       </v-flex>
       <v-flex lg6 sm6 xs12>
-        <incident-heatmap-card v-model="groupedItems" :loading="loading" />
+        <incident-heatmap-card
+          v-model="groupedItems"
+          :loading="loading"
+          @detailsSelected="detailsSelected($event)"
+        />
       </v-flex>
       <v-flex lg6 sm6 xs12>
         <incident-cost-bar-chart-card v-model="groupedItems" :loading="loading" />
@@ -49,13 +66,25 @@
         <incident-resolve-time-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <v-flex lg12 sm12 xs12>
-        <incident-primary-location-bar-chart-card v-model="groupedItems" :loading="loading" />
+        <incident-primary-location-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+          @detailsSelected="detailsSelected($event)"
+        />
       </v-flex>
       <v-flex lg12 sm12 xs12>
-        <incident-primary-team-bar-chart-card v-model="groupedItems" :loading="loading" />
+        <incident-primary-team-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+          @detailsSelected="detailsSelected($event)"
+        />
       </v-flex>
       <v-flex lg12 sm12 xs12>
-        <incident-tags-treemap-card v-model="items" :loading="loading" />
+        <incident-tags-treemap-card
+          v-model="items"
+          :loading="loading"
+          @detailsSelected="detailsSelected($event)"
+        />
       </v-flex>
       <!-- Statistics Ends -->
     </v-layout>
@@ -80,6 +109,8 @@ import IncidentHeatmapCard from "@/incident/IncidentHeatmapCard.vue"
 import IncidentPrimaryLocationBarChartCard from "@/incident/IncidentPrimaryLocationBarChartCard.vue"
 import IncidentPrimaryTeamBarChartCard from "@/incident/IncidentPrimaryTeamBarChartCard.vue"
 import IncidentTagsTreemapCard from "@/incident/IncidentTagsTreemapCard.vue"
+import IncidentsDrillDownSheet from "@/dashboard/IncidentsDrillDownSheet.vue"
+
 export default {
   name: "IncidentDashboard",
 
@@ -96,6 +127,7 @@ export default {
     IncidentPrimaryLocationBarChartCard,
     IncidentPrimaryTeamBarChartCard,
     IncidentTagsTreemapCard,
+    IncidentsDrillDownSheet,
   },
 
   data() {
@@ -103,6 +135,8 @@ export default {
       tab: null,
       loading: "error",
       items: [],
+      detailItems: [],
+      showDrillDown: false,
     }
   },
 
@@ -111,6 +145,10 @@ export default {
       this.items = filter(data, function (item) {
         return !item.incident_type.exclude_from_metrics && !item.duplicates.length
       })
+    },
+    detailsSelected(event) {
+      this.detailItems = event
+      this.showDrillDown = true
     },
     setLoading(data) {
       this.loading = data
