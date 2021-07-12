@@ -13,7 +13,7 @@ from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.report import flows as report_flows
 from dispatch.report.models import ExecutiveReportCreate, TacticalReportCreate
 from dispatch.task import service as task_service
-from dispatch.task.models import TaskStatus
+from dispatch.task.enums import TaskStatus
 
 from .config import (
     SLACK_COMMAND_ASSIGN_ROLE_SLUG,
@@ -213,16 +213,16 @@ def add_user_to_conversation(
     """Adds a user to a conversation."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     if not incident:
-        message = "Sorry, we cannot add you to this incident it does not exist."
+        message = "Sorry, we cannot add you to this incident. It does not exist."
         dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
     elif incident.status == IncidentStatus.closed:
-        message = f"Sorry, we cannot add you to a closed incident. Please reach out to the incident commander ({incident.commander.individual.name}) for details."
+        message = f"Sorry, we cannot add you to a closed incident. Please, reach out to the incident commander ({incident.commander.individual.name}) for details."
         dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
     else:
         dispatch_slack_service.add_users_to_conversation(
             slack_client, incident.conversation.channel_id, [user_id]
         )
-        message = f"Success! We've added you to incident {incident.name}. Please check your side bar for the new channel."
+        message = f"Success! We've added you to incident {incident.name}. Please, check your sidebar for the new incident channel."
         dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
 
 
