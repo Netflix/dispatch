@@ -882,7 +882,7 @@ def send_incident_open_tasks_ephemeral_message(
         return
 
     notification_text = "Open Incident Tasks"
-    notification_type = MessageType.incident_open_tasks
+    message_type = MessageType.incident_open_tasks
     message_template = INCIDENT_OPEN_TASKS
     message_kwargs = {
         "title": notification_text,
@@ -894,7 +894,7 @@ def send_incident_open_tasks_ephemeral_message(
         participant_email,
         notification_text,
         message_template,
-        notification_type,
+        message_type,
         **message_kwargs,
     )
 
