@@ -4,5 +4,7 @@ devtools
 factory-boy
 faker
 flake8
+playwright
 pytest
+pytest-playwright
 vulture

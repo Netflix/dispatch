@@ -1,4 +1,7 @@
 import pytest
+from multiprocessing import Process
+
+import uvicorn
 
 from sqlalchemy_utils import drop_database
 from starlette.testclient import TestClient
@@ -76,8 +79,8 @@ def testapp():
     from dispatch.plugins.base import unregister, plugins
     from dispatch.main import app
 
-    for p in plugins.all():
-        unregister(p)
+    # for p in plugins.all():
+    #    unregister(p)
 
     yield app
 
@@ -108,9 +111,17 @@ def session(db):
     db.rollback()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def client(testapp, session, client):
     yield TestClient(testapp)
+
+
+@pytest.fixture(scope="session")
+def server(testapp, session):
+    proc = Process(target=uvicorn.run(testapp), args=(), daemon=True)
+    proc.start()
+    yield
+    proc.kill()
 
 
 @pytest.fixture
