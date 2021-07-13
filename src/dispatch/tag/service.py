@@ -26,9 +26,7 @@ def get_all(*, db_session, project_id: int):
 
 def create(*, db_session, tag_in: TagCreate) -> Tag:
     project = project_service.get_by_name(db_session=db_session, name=tag_in.project.name)
-    tag_type = tag_type_service.get_by_name(
-        db_session=db_session, project_id=project.id, name=tag_in.tag_type.name
-    )
+    tag_type = tag_type_service.get_or_create(db_session=db_session, tag_type_in=tag_in.tag_type)
     tag = Tag(**tag_in.dict(exclude={"tag_type", "project"}), project=project, tag_type=tag_type)
     tag.tag_type = tag_type
     tag.project = project
