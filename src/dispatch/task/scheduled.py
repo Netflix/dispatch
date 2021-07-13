@@ -17,7 +17,7 @@ from dispatch.config import (
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import scheduled_project_task
 from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
-from dispatch.enums import DocumentResourceReferenceTypes
+from dispatch.enums import DocumentResourceTypes
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.individual import service as individual_service
@@ -99,8 +99,8 @@ def sync_tasks(db_session, task_plugin, incidents, notify: bool = False):
     """Syncs tasks and sends update notifications to incident channels."""
     for incident in incidents:
         for doc_type in [
-            DocumentResourceReferenceTypes.review,
-            DocumentResourceReferenceTypes.incident,
+            DocumentResourceTypes.review,
+            DocumentResourceTypes.incident,
         ]:
             try:
                 # we get the document object
