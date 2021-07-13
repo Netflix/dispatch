@@ -69,6 +69,10 @@ def get_tickets(replies: List[dict]):
     return tickets
 
 
+def get_(client: Any, file_id: str):
+    """Fetches all comment activity for a given file. Uses the activity stream find and dispatch tasks."""
+
+
 # NOTE We have to use `displayName` instead of `emailAddress` because it's
 # not visible to us. We should ask rcerda about why that might be.
 def list_tasks(client: Any, file_id: str):
