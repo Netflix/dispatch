@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from fastapi.encoders import jsonable_encoder
 
-from dispatch.enums import DocumentResourceTypes
+from dispatch.enums import DocumentResourceReferenceTypes
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
 
@@ -32,7 +32,7 @@ def get_incident_faq_document(*, db_session, project_id: int):
     """Fetches incident faq document."""
     return (
         db_session.query(Document).filter(
-            Document.resource_type == DocumentResourceTypes.faq,
+            Document.resource_type == DocumentResourceReferenceTypes.faq,
             Document.project_id == project_id,
         )
     ).one_or_none()
@@ -42,7 +42,7 @@ def get_conversation_reference_document(*, db_session, project_id: int):
     """Fetches conversation reference document."""
     return (
         db_session.query(Document).filter(
-            Document.resource_type == DocumentResourceTypes.conversation,
+            Document.resource_type == DocumentResourceReferenceTypes.conversation,
             Document.project_id == project_id,
         )
     ).one_or_none()
