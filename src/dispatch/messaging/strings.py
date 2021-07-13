@@ -235,9 +235,12 @@ Please review and update them as appropriate. Resolving them will stop the remin
 
 INCIDENT_TASK_LIST_DESCRIPTION = """The following are open incident tasks."""
 
-INCIDENT_OPEN_TASKS_DESCRIPTION = (
-    """Please resolve or re-assign your open incident tasks before leaving the incident channel."""
-)
+INCIDENT_OPEN_TASKS_DESCRIPTION = """
+Please resolve or transfer ownership of all the open incident tasks owned by you directly in the incident documents or using the <{{dispatch_ui_url}}|Dispatch Web UI>,
+then wait about 30 seconds for Dispatch to update the tasks before leaving the incident channel.
+""".replace(
+    "\n", " "
+).strip()
 
 INCIDENT_WORKFLOW_CREATED_DESCRIPTION = """
 A new workflow instance has been created.
@@ -630,6 +633,13 @@ INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE = [
     {
         "title": "{{name}} Incident - Management Help Tips",
         "text": INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE_DESCRIPTION,
+    }
+]
+
+INCIDENT_OPEN_TASKS = [
+    {
+        "title": "{{title}}",
+        "text": INCIDENT_OPEN_TASKS_DESCRIPTION,
     }
 ]
 
