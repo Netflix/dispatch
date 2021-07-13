@@ -69,8 +69,9 @@ def get_tickets(replies: List[dict]):
     return tickets
 
 
-def get_(client: Any, file_id: str):
-    """Fetches all comment activity for a given file. Uses the activity stream find and dispatch tasks."""
+def get_activity(client: Any, file_id: str):
+    """Fetches all comment activity for a given file. Uses the activity stream find and sync tasks."""
+
 
 
 # NOTE We have to use `displayName` instead of `emailAddress` because it's
