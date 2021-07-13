@@ -333,10 +333,10 @@ def create_collaboration_documents(incident: Incident, db_session: SessionLocal)
     if plugin:
         # TODO can we make move and copy in one api call? (kglisson)
         # NOTE: make template documents optional
-        if incident.incident_type.template_document:
+        if incident.incident_type.incident_template_document:
             document = plugin.instance.copy_file(
                 incident.storage.resource_id,
-                incident.incident_type.template_document.resource_id,
+                incident.incident_type.incident_template_document.resource_id,
                 document_name,
             )
             plugin.instance.move_file(incident.storage.resource_id, document["id"])
