@@ -1,5 +1,5 @@
-import base64
 import json
+from pydantic import ValidationError
 from fastapi import BackgroundTasks
 
 from dispatch.conversation import service as conversation_service
@@ -49,13 +49,10 @@ from .modals.incident.enums import (
     UpdateNotificationsGroupCallbackId,
 )
 
+from .models import ButtonValue, TaskButton
+
 from .service import get_user_email
 from .decorators import slack_background_task, get_organization_from_channel_id
-
-
-def base64_decode(input: str):
-    """Returns a b64 decoded string."""
-    return base64.b64decode(input.encode("ascii")).decode("ascii")
 
 
 def handle_modal_action(action: dict, background_tasks: BackgroundTasks):
@@ -174,13 +171,18 @@ def handle_block_action(action: dict, background_tasks: BackgroundTasks):
         channel_id = view_data["private_metadata"].get("channel_id")
         action_id = action["actions"][0]["action_id"]
     else:
-        # maintain support for old block actions that were created before organization's split
-        actions = action["actions"][0]["value"].split("-")
-        if len(actions) == 2:
-            organization_slug, incident_id = actions
-        else:
-            organization_slug = "default"
-            incident_id = actions[0]
+        try:
+            button = ButtonValue.parse_raw(action["actions"][0]["value"])
+            organization_slug = button.organization_slug
+            incident_id = button.incident_id
+        except ValidationError:
+            # maintain support for old block actions that were created before organization's split
+            actions = action["actions"][0]["value"].split("-")
+            if len(actions) == 2:
+                organization_slug, incident_id = actions
+            else:
+                organization_slug = "default"
+                incident_id = actions[0]
 
         channel_id = action["channel"]["id"]
         action_id = action["actions"][0]["block_id"]
@@ -237,15 +239,14 @@ def update_task_status(
     slack_client=None,
 ):
     """Updates a task based on user input."""
-    action_type, external_task_id_b64 = action["actions"][0]["value"].split("-")
-    external_task_id = base64_decode(external_task_id_b64)
+    button = TaskButton.parse_raw(action["actions"][0]["value"])
 
     resolve = True
-    if action_type == "reopen":
+    if button.action_type == "reopen":
         resolve = False
 
     # we only update the external task allowing syncing to care of propagation to dispatch
-    task = task_service.get_by_resource_id(db_session=db_session, resource_id=external_task_id)
+    task = task_service.get_by_resource_id(db_session=db_session, resource_id=button.resource_id)
 
     # avoid external calls if we are already in the desired state
     if resolve and task.status == TaskStatus.resolved:
@@ -266,10 +267,10 @@ def update_task_status(
 
     try:
         file_id = task.incident.incident_document.resource_id
-        drive_task_plugin.instance.update(file_id, external_task_id, resolved=resolve)
+        drive_task_plugin.instance.update(file_id, button.resource_id, resolved=resolve)
     except Exception:
         file_id = task.incident.incident_review_document.resource_id
-        drive_task_plugin.instance.update(file_id, external_task_id, resolved=resolve)
+        drive_task_plugin.instance.update(file_id, button.resource_id, resolved=resolve)
 
     status = "resolved" if task.status == TaskStatus.open else "re-opened"
     message = f"Task successfully {status}."
