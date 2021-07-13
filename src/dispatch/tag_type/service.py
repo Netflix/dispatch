@@ -46,7 +46,11 @@ def get_or_create(*, db_session, tag_type_in: TagTypeCreate) -> TagType:
     """
     Gets or creates a new tag type.
     """
-    q = db_session.query(TagType).filter_by(**tag_type_in.dict())
+    q = (
+        db_session.query(TagType)
+        .filter(TagType.name == tag_type_in.name)
+        .filter(TagType.project_id == tag_type_in.project.id)
+    )
 
     instance = q.first()
     if instance:
