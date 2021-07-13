@@ -81,6 +81,7 @@ def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact
 def send_task_notification(
     incident,
     message_template,
+    creator,
     assignees,
     description,
     weblink,
@@ -98,6 +99,7 @@ def send_task_notification(
         notification_text,
         message_template,
         notification_type,
+        creator=creator.individual.email,
         task_assignees=[x.individual.email for x in assignees],
         task_description=description,
         task_weblink=weblink,
@@ -129,6 +131,7 @@ def create_or_update_task(
                     send_task_notification(
                         incident,
                         INCIDENT_TASK_RESOLVED_NOTIFICATION,
+                        task.creator,
                         task.assignees,
                         task.description,
                         task.weblink,
@@ -148,6 +151,7 @@ def create_or_update_task(
             send_task_notification(
                 incident,
                 INCIDENT_TASK_NEW_NOTIFICATION,
+                task.creator,
                 task.assignees,
                 task.description,
                 task.weblink,
