@@ -18,21 +18,16 @@ from .drive import get_file, list_comments
 log = logging.getLogger(__name__)
 
 
-def get_assignees(comment: Dict) -> List[str]:
-    """Gets assignees from comment."""
+def get_assignees(content: str) -> List[str]:
+    """Gets assignees from comment's content."""
     regex = r"[+@]([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)"
-
-    content = comment["content"]
-    if comment.get("replies"):
-        content = comment["replies"][-1]["content"]
-
     matches = re.findall(regex, content)
     return list(matches)
 
 
-def parse_comment(comment: Dict) -> Dict:
+def parse_comment_content(content: str) -> Dict:
     """Parses a comment's content into its various parts."""
-    assignees = get_assignees(comment)
+    assignees = get_assignees(content)
     return {"assignees": assignees}
 
 
@@ -52,7 +47,7 @@ def get_task_status(task: dict):
 
 def filter_comments(comments: List[Any]):
     """Filters comments for tasks."""
-    return [c for c in comments if parse_comment(c)["assignees"]]
+    return [c for c in comments if parse_comment_content(c["content"])["assignees"]]
 
 
 def find_urls(text: str) -> List[str]:
@@ -88,7 +83,7 @@ def list_tasks(client: Any, file_id: str):
     tasks = []
     for t in task_comments:
         status = get_task_status(t)
-        assignees = [{"individual": {"email": x}} for x in get_assignees(t)]
+        assignees = [{"individual": {"email": x}} for x in get_assignees(t["content"])]
         description = t.get("quotedFileContent", {}).get("value", "")
         tickets = get_tickets(t["replies"])
 

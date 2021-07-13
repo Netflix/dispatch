@@ -126,8 +126,8 @@ def create_or_update_task(
 
         if notify:
             # determine if task was previously resolved
-            if task.status == TaskStatus.resolved.value:
-                if existing_status != TaskStatus.resolved.value:
+            if task.status == TaskStatus.resolved:
+                if existing_status != TaskStatus.resolved:
                     send_task_notification(
                         incident,
                         INCIDENT_TASK_RESOLVED_NOTIFICATION,
@@ -139,7 +139,7 @@ def create_or_update_task(
                     )
     else:
         # we don't attempt to create new tasks if the incident is currently closed
-        if incident.status == IncidentStatus.closed.value:
+        if incident.status == IncidentStatus.closed:
             return
 
         task = task_service.create(

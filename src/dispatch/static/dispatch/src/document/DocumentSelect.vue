@@ -19,7 +19,6 @@
         <v-btn icon @click="createEditShow({})">
           <v-icon>add</v-icon>
         </v-btn>
-        <new-edit-sheet @new-document-created="addItem($event)" />
       </template>
     </v-autocomplete>
   </ValidationProvider>
@@ -32,7 +31,6 @@ import { ValidationProvider } from "vee-validate"
 
 import SearchUtils from "@/search/utils"
 import DocumentApi from "@/document/api"
-import NewEditSheet from "@/document/NewEditSheet.vue"
 
 export default {
   name: "DocumentSelect",
@@ -52,7 +50,6 @@ export default {
 
   components: {
     ValidationProvider,
-    NewEditSheet,
   },
 
   data() {

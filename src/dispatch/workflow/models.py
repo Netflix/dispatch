@@ -24,6 +24,9 @@ class WorkflowInstanceStatus(str, Enum):
     completed = "completed"
     failed = "failed"
 
+    def __str__(self) -> str:
+        return str.__str__(self)
+
 
 # Association tables for many to many relationships
 assoc_workflow_instances_artifacts = Table(

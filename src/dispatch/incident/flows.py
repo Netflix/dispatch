@@ -10,17 +10,16 @@
 import logging
 
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any, List
 
 from dispatch.config import (
-    INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
-    INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
-    INCIDENT_RESOURCE_INVESTIGATION_SHEET,
     INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
     INCIDENT_RESOURCE_TACTICAL_GROUP,
     INCIDENT_STORAGE_FOLDER_ID,
     INCIDENT_STORAGE_OPEN_ON_CLOSE,
 )
+
+from dispatch.enums import DocumentResourceTypes
 
 from dispatch.conference import service as conference_service
 from dispatch.conference.models import ConferenceCreate
@@ -79,7 +78,7 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
     individual_contacts = []
     team_contacts = []
 
-    if incident.visibility == Visibility.open.value:
+    if incident.visibility == Visibility.open:
         plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="participant"
         )
@@ -134,7 +133,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     )
     if plugin:
         title = incident.title
-        if incident.visibility == Visibility.restricted.value:
+        if incident.visibility == Visibility.restricted:
             title = incident.incident_type.name
 
         incident_type_plugin_metadata = incident_type_service.get_by_name(
@@ -177,7 +176,7 @@ def update_external_incident_ticket(
 
     title = incident.title
     description = incident.description
-    if incident.visibility == Visibility.restricted.value:
+    if incident.visibility == Visibility.restricted:
         title = description = incident.incident_type.name
 
     incident_type_plugin_metadata = incident_type_service.get_by_name(
@@ -334,10 +333,10 @@ def create_collaboration_documents(incident: Incident, db_session: SessionLocal)
     if plugin:
         # TODO can we make move and copy in one api call? (kglisson)
         # NOTE: make template documents optional
-        if incident.incident_type.template_document:
+        if incident.incident_type.incident_template_document:
             document = plugin.instance.copy_file(
                 incident.storage.resource_id,
-                incident.incident_type.template_document.resource_id,
+                incident.incident_type.incident_template_document.resource_id,
                 document_name,
             )
             plugin.instance.move_file(incident.storage.resource_id, document["id"])
@@ -353,7 +352,7 @@ def create_collaboration_documents(incident: Incident, db_session: SessionLocal)
         document.update(
             {
                 "name": document_name,
-                "resource_type": INCIDENT_RESOURCE_INVESTIGATION_DOCUMENT,
+                "resource_type": DocumentResourceTypes.incident,
                 "resource_id": document["id"],
             }
         )
@@ -368,18 +367,19 @@ def create_collaboration_documents(incident: Incident, db_session: SessionLocal)
         )
 
         sheet = None
-        template = document_service.get_incident_investigation_sheet_template(db_session=db_session)
-        if template:
+        if incident.incident_type.tracking_template_document:
             sheet_name = f"{incident.name} - Incident Tracking Sheet"
             sheet = plugin.instance.copy_file(
-                incident.storage.resource_id, template.resource_id, sheet_name
+                incident.storage.resource_id,
+                incident.incident_type.tracking_template_document.resource_id,
+                sheet_name,
             )
             plugin.instance.move_file(incident.storage.resource_id, sheet["id"])
 
             sheet.update(
                 {
                     "name": sheet_name,
-                    "resource_type": INCIDENT_RESOURCE_INVESTIGATION_SHEET,
+                    "resource_type": DocumentResourceTypes.tracking,
                     "resource_id": sheet["id"],
                 }
             )
@@ -860,23 +860,22 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
 
     # we create a copy of the incident review document template and we move it to the incident storage
     incident_review_document_name = f"{incident.name} - Post Incident Review Document"
-    template = document_service.get_incident_review_template(db_session=db_session)
 
     # incident review document is optional
-    if not template:
-        log.warning("No incident review template specificed.")
+    if not incident.incident_type.review_template_document:
+        log.warning("No incident review template specified.")
         return
 
     incident_review_document = storage_plugin.instance.copy_file(
         folder_id=incident.storage.resource_id,
-        file_id=template.resource_id,
+        file_id=incident.incident_type.review_template_document.resource_id,
         name=incident_review_document_name,
     )
 
     incident_review_document.update(
         {
             "name": incident_review_document_name,
-            "resource_type": INCIDENT_RESOURCE_INCIDENT_REVIEW_DOCUMENT,
+            "resource_type": DocumentResourceTypes.review,
         }
     )
 
@@ -967,7 +966,7 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
 
     if INCIDENT_STORAGE_OPEN_ON_CLOSE:
         # storage for incidents with restricted visibility is never opened
-        if incident.visibility == Visibility.open.value:
+        if incident.visibility == Visibility.open:
             # add organization wide permission
             storage_plugin = plugin_service.get_active_instance(
                 db_session=db_session, project_id=incident.project.id, plugin_type="storage"
@@ -1033,7 +1032,7 @@ def conversation_topic_dispatcher(
             individual_id=individual.id,
         )
 
-    if previous_incident.status.value != incident.status:
+    if previous_incident.status != incident.status:
         conversation_topic_change = True
 
         event_service.log(
@@ -1045,7 +1044,7 @@ def conversation_topic_dispatcher(
         )
 
     if conversation_topic_change:
-        if incident.status != IncidentStatus.closed.value:
+        if incident.status != IncidentStatus.closed:
             set_conversation_topic(incident, db_session)
 
 
@@ -1110,7 +1109,7 @@ def incident_update_flow(
 
     # run whatever flows we need
     status_flow_dispatcher(
-        incident, incident.status, previous_incident.status.value, db_session=db_session
+        incident, incident.status, previous_incident.status, db_session=db_session
     )
 
     conversation_topic_dispatcher(incident, previous_incident, individual, db_session=db_session)
@@ -1121,7 +1120,7 @@ def incident_update_flow(
     # add new folks to the incident if appropriate
     # we only have to do this for teams as new members will be added to tactical
     # groups on incident join
-    if incident.status == IncidentStatus.active.value:
+    if incident.status == IncidentStatus.active:
         individual_participants, team_participants = get_incident_participants(incident, db_session)
 
         for individual, service_id in individual_participants:
@@ -1177,7 +1176,7 @@ def incident_assign_role_flow(
         # )
         return
 
-    if assignee_role != ParticipantRoleType.participant.value:
+    if assignee_role != ParticipantRoleType.participant:
         # we resolve the assigner and assignee's contact information
         contact_plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="contact"
@@ -1202,17 +1201,17 @@ def incident_assign_role_flow(
                 "weblink": None,
             }
 
-        if incident.status != IncidentStatus.closed.value:
+        if incident.status != IncidentStatus.closed:
             # we send a notification to the incident conversation
             send_incident_new_role_assigned_notification(
                 assigner_contact_info, assignee_contact_info, assignee_role, incident, db_session
             )
 
-    if assignee_role == ParticipantRoleType.incident_commander.value:
+    if assignee_role == ParticipantRoleType.incident_commander:
         # we send a message to the incident commander with tips on how to manage the incident
         send_incident_management_help_tips_message(incident, db_session)
 
-        if incident.status != IncidentStatus.closed.value:
+        if incident.status != IncidentStatus.closed:
             # we update the conversation topic
             set_conversation_topic(incident, db_session)
 
@@ -1370,7 +1369,7 @@ def incident_remove_participant_flow(
 
     for task in incident.tasks:
         if task.status == TaskStatus.open:
-            if task.owner == participant or participant in task.assignees:
+            if task.owner == participant:
                 # we add the participant back to the conversation
                 add_participants_to_conversation([user_email], incident, db_session)
 

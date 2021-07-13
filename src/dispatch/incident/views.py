@@ -118,11 +118,11 @@ def create_incident(
         log.exception(e)
         raise HTTPException(status_code=400, detail=str(e))
 
-    if incident.status == IncidentStatus.stable.value:
+    if incident.status == IncidentStatus.stable:
         background_tasks.add_task(
             incident_create_stable_flow, incident_id=incident.id, organization_slug=organization
         )
-    elif incident.status == IncidentStatus.closed.value:
+    elif incident.status == IncidentStatus.closed:
         background_tasks.add_task(
             incident_create_closed_flow, incident_id=incident.id, organization_slug=organization
         )
@@ -175,7 +175,7 @@ def update_incident(
         current_user.email,
         incident_id=incident.id,
         assignee_email=incident_in.commander.individual.email,
-        assignee_role=ParticipantRoleType.incident_commander.value,
+        assignee_role=ParticipantRoleType.incident_commander,
         organization_slug=organization,
     )
 
@@ -185,7 +185,7 @@ def update_incident(
         current_user.email,
         incident_id=incident.id,
         assignee_email=incident_in.reporter.individual.email,
-        assignee_role=ParticipantRoleType.reporter.value,
+        assignee_role=ParticipantRoleType.reporter,
         organization_slug=organization,
     )
 

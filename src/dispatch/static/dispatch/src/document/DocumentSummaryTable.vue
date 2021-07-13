@@ -1,6 +1,5 @@
 <template>
   <div>
-    <new-edit-sheet />
     <v-data-table :headers="headers" :items="items" hide-default-footer>
       <template v-slot:item.name="{ item }">
         <a :href="item.weblink" target="_blank" style="text-decoration: none">
@@ -36,13 +35,10 @@
 
 <script>
 import { mapActions } from "vuex"
-import NewEditSheet from "@/document/NewEditSheet.vue"
 export default {
   name: "DocumentSummaryTable",
 
-  components: {
-    NewEditSheet,
-  },
+  components: {},
   data() {
     return {
       headers: [

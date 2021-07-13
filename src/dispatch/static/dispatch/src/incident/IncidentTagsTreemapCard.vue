@@ -41,23 +41,14 @@ export default {
         chart: {
           type: "treemap",
           height: 350,
-          toolbar: {
-            show: false,
+          events: {
+            dataPointSelection: (event, chartContext, config) => {
+              var data = config.w.config.series[config.seriesIndex].data[config.dataPointIndex]
+              this.$emit("detailsSelected", data.items)
+            },
           },
         },
         colors: DashboardUtils.defaultColorTheme(),
-        responsive: [
-          {
-            options: {
-              legend: {
-                position: "top",
-              },
-            },
-          },
-        ],
-        legend: {
-          position: "top",
-        },
       }
     },
     series() {
@@ -75,7 +66,7 @@ export default {
         function (value, key) {
           let tagCount = countBy(value, "name")
           let data = sortBy(
-            Object.keys(tagCount).map((key) => ({ x: key, y: tagCount[key] })),
+            Object.keys(tagCount).map((key) => ({ x: key, y: tagCount[key], items: value })),
             ["y"]
           )
           tagSeries.push({ name: key, data: data })

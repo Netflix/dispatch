@@ -126,7 +126,7 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
     event_service.log(
         db_session=db_session,
         source="Dispatch Core App",
-        description="New incident task created",
+        description=f"New incident task created by {creator.individual.name}",
         details={"weblink": task.weblink},
         incident_id=incident.id,
     )

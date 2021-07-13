@@ -15,12 +15,15 @@ class ParticipantRoleType(str, Enum):
     participant = "Participant"
     reporter = "Reporter"
 
+    def __str__(self) -> str:
+        return str.__str__(self)
+
 
 class ParticipantRole(Base):
     id = Column(Integer, primary_key=True)
     assumed_at = Column(DateTime, default=datetime.utcnow)
     renounced_at = Column(DateTime)
-    role = Column(String, default=ParticipantRoleType.participant.value)
+    role = Column(String, default=ParticipantRoleType.participant)
     participant_id = Column(Integer, ForeignKey("participant.id", ondelete="CASCADE"))
 
 

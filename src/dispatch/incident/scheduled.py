@@ -92,18 +92,18 @@ def daily_report(db_session: SessionLocal, project: Project):
     """
     # we fetch all active, stable and closed incidents
     active_incidents = get_all_by_status(
-        db_session=db_session, project_id=project.id, status=IncidentStatus.active.value
+        db_session=db_session, project_id=project.id, status=IncidentStatus.active
     )
     stable_incidents = get_all_last_x_hours_by_status(
         db_session=db_session,
         project_id=project.id,
-        status=IncidentStatus.stable.value,
+        status=IncidentStatus.stable,
         hours=24,
     )
     closed_incidents = get_all_last_x_hours_by_status(
         db_session=db_session,
         project_id=project.id,
-        status=IncidentStatus.closed.value,
+        status=IncidentStatus.closed,
         hours=24,
     )
     incidents = active_incidents + stable_incidents + closed_incidents
@@ -152,12 +152,12 @@ def daily_report(db_session: SessionLocal, project: Project):
                         "type_description": incident.incident_type.description,
                     }
 
-                    if incident.status != IncidentStatus.closed.value:
+                    if incident.status != IncidentStatus.closed:
                         item.update(
                             {
                                 "button_text": "Join Incident",
                                 "button_value": f"{incident.project.organization.slug}-{incident.id}",
-                                "button_action": f"{ConversationButtonActions.invite_user.value}-{incident.status}-{idx}",
+                                "button_action": f"{ConversationButtonActions.invite_user}-{incident.status}-{idx}",
                             }
                         )
 

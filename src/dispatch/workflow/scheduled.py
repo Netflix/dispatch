@@ -28,7 +28,7 @@ def sync_workflows(db_session, project, workflow_plugin, incidents, notify: bool
     for incident in incidents:
         for instance in incident.workflow_instances:
             # once an instance is complete we don't update it any more
-            if instance.status == WorkflowInstanceStatus.completed.value:
+            if instance.status == WorkflowInstanceStatus.completed:
                 continue
 
             log.debug(
@@ -58,7 +58,7 @@ def sync_workflows(db_session, project, workflow_plugin, incidents, notify: bool
 
             if notify:
                 if instance_status_old != instance.status:
-                    if instance.status == WorkflowInstanceStatus.completed.value:
+                    if instance.status == WorkflowInstanceStatus.completed:
                         send_workflow_notification(
                             project.id,
                             incident.conversation.channel_id,
