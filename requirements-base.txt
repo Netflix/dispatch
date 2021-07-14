@@ -47,7 +47,8 @@ chardet==3.0.4
     #   -r requirements-base.in
     #   aiohttp
     #   emails
-    #   requests
+charset-normalizer==2.0.1
+    # via requests
 click==8.0.1
     # via
     #   -r requirements-base.in
@@ -226,7 +227,7 @@ pytz==2021.1
     #   -r requirements-base.in
     #   google-api-core
     #   pandas
-requests==2.25.1
+requests==2.26.0
     # via
     #   -r requirements-base.in
     #   emails
