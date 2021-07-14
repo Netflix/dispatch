@@ -16,6 +16,7 @@ from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.plugins.dispatch_slack.models import TaskButton
 from dispatch.project import service as project_service
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
@@ -307,6 +308,13 @@ def list_tasks(
         for idx, task in enumerate(tasks):
             assignees = [f"<{a.individual.weblink}|{a.individual.name}>" for a in task.assignees]
 
+            task_button = TaskButton(
+                organization_slug=task.project.organization.slug,
+                action_type=action_type,
+                incident_id=incident_id,
+                resource_id=task.resource_id,
+            )
+
             blocks.append(
                 {
                     "type": "section",
@@ -322,7 +330,7 @@ def list_tasks(
                     "accessory": {
                         "type": "button",
                         "text": {"type": "plain_text", "text": button_text},
-                        "value": f"{action_type}-{base64_encode(task.resource_id)}",
+                        "value": task_button.json(),
                     },
                 }
             )
