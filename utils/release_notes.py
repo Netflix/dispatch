@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Python script to generate releases notes using the GitHub CLI (gh).
 
