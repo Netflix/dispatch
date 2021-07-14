@@ -1333,20 +1333,21 @@ def incident_add_or_reactivate_participant_flow(
     # we add the participant to the tactical group
     add_participant_to_tactical_group(user_email, incident, db_session)
 
-    # we add the participant to the conversation
-    add_participants_to_conversation([user_email], incident, db_session)
+    if incident.status != IncidentStatus.closed:
+        # we add the participant to the conversation
+        add_participants_to_conversation([user_email], incident, db_session)
 
-    # we announce the participant in the conversation
-    send_incident_participant_announcement_message(user_email, incident, db_session)
+        # we announce the participant in the conversation
+        send_incident_participant_announcement_message(user_email, incident, db_session)
 
-    # we send the welcome messages to the participant
-    send_incident_welcome_participant_messages(user_email, incident, db_session)
+        # we send the welcome messages to the participant
+        send_incident_welcome_participant_messages(user_email, incident, db_session)
 
-    # we send a suggested reading message to the participant
-    suggested_document_items = get_suggested_document_items(incident, db_session)
-    send_incident_suggested_reading_messages(
-        incident, suggested_document_items, user_email, db_session
-    )
+        # we send a suggested reading message to the participant
+        suggested_document_items = get_suggested_document_items(incident, db_session)
+        send_incident_suggested_reading_messages(
+            incident, suggested_document_items, user_email, db_session
+        )
 
     return participant
 
