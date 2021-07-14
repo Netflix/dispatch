@@ -10,6 +10,7 @@ import io
 import json
 import logging
 import tempfile
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, List
 
@@ -38,6 +39,13 @@ class Roles(str, Enum):
     writer = "writer"
     commenter = "commenter"
     reader = "reader"
+
+    def __str__(self) -> str:
+        return str.__str__(self)
+
+
+class Activity(str, Enum):
+    comment = "COMMENT"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -144,6 +152,23 @@ def get_file(client: Any, file_id: str):
     )
 
 
+@paginated("activities")
+def get_activity(
+    client: Any, file_id: str, activity: Activity = Activity.comment, lookback: int = 60
+):
+    """Fetches file activity."""
+    lookback_time = datetime.now(timezone.utc) - timedelta(seconds=lookback)
+    activity_filter = (
+        f"time >= {lookback_time.isoformat()} AND detail.action_detail_case: {activity}"
+    )
+    return make_call(
+        client.activity(),
+        "query",
+        itemName=f"items/{file_id}",
+        filter=activity_filter,
+    )
+
+
 #  TODO add retry
 def download_file(client: Any, file_id: str):
     """Downloads a file."""
@@ -233,6 +258,16 @@ def list_team_drives(client, **kwargs):
 def list_comments(client: Any, file_id: str, **kwargs):
     """Lists all available comments on file."""
     return make_call(client.comments(), "list", fileId=file_id, fields="*", **kwargs)
+
+
+def get_comment(client: Any, file_id: str, comment_id: str, **kwargs):
+    """Gets a specific comment."""
+    return make_call(client.comments(), "get", fileId=file_id, commentId=comment_id, **kwargs)
+
+
+def get_person(client: Any, person_id: str, **kwargs):
+    """Gets a person's metadata given their people id."""
+    return make_call(client.people(), "get", resourceName=person_id, **kwargs)
 
 
 def add_reply(

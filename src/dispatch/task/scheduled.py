@@ -95,7 +95,7 @@ def create_task_reminders(db_session: SessionLocal, project: Project):
             create_reminder(db_session, assignee, tasks, contact_fullname, contact_weblink)
 
 
-def sync_tasks(db_session, task_plugin, incidents, notify: bool = False):
+def sync_tasks(db_session, task_plugin, incidents, lookback: int = 60, notify: bool = False):
     """Syncs tasks and sends update notifications to incident channels."""
     for incident in incidents:
         for doc_type in [
@@ -113,13 +113,13 @@ def sync_tasks(db_session, task_plugin, incidents, notify: bool = False):
                     break
 
                 # we get the list of tasks in the document
-                tasks = task_plugin.instance.list(file_id=document.resource_id)
+                tasks = task_plugin.instance.list(file_id=document.resource_id, lookback=lookback)
 
                 for task in tasks:
                     # we get the task information
                     try:
                         create_or_update_task(
-                            db_session, incident, task["task"], notify=notify, sync_external=False
+                            db_session, incident, task, notify=notify, sync_external=False
                         )
                     except Exception as e:
                         log.exception(e)
@@ -140,7 +140,8 @@ def daily_sync_task(db_session: SessionLocal, project: Project):
         log.warning(f"Skipping task sync no task plugin enabled. ProjectId: {project.id}")
         return
 
-    sync_tasks(db_session, task_plugin, incidents, notify=False)
+    lookback = 60 * 60 * 24  # 24hrs
+    sync_tasks(db_session, task_plugin, incidents, lookback=lookback, notify=False)
 
 
 @scheduler.add(every(TASK_SYNC_INTERVAL).seconds, name="incident-task-sync")
@@ -164,4 +165,4 @@ def sync_active_stable_tasks(db_session: SessionLocal, project: Project):
     )
 
     incidents = active_incidents + stable_incidents
-    sync_tasks(db_session, task_plugin, incidents, notify=True)
+    sync_tasks(db_session, task_plugin, incidents, lookback=TASK_SYNC_INTERVAL, notify=True)

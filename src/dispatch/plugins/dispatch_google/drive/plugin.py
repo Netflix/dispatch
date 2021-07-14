@@ -19,7 +19,7 @@ from .drive import (
     add_domain_permission,
     add_reply,
 )
-from .task import list_tasks
+from .task import get_task_activity
 
 
 @apply(timer, exclude=["__init__"])
@@ -130,7 +130,7 @@ class GoogleDriveTaskPlugin(TaskPlugin):
         client = get_service("drive", "v3", self.scopes)
         return add_reply(client, file_id, task_id, content, resolved)
 
-    def list(self, file_id: str, **kwargs):
+    def list(self, file_id: str, lookback: int = 60, **kwargs):
         """Lists all available tasks."""
         client = get_service("drive", "v3", self.scopes)
-        return list_tasks(client, file_id)
+        return get_task_activity(client, file_id, lookback)
