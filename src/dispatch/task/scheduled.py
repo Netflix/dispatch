@@ -16,8 +16,6 @@ from dispatch.config import (
 )
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import scheduled_project_task
-from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
-from dispatch.enums import DocumentResourceTypes
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.individual import service as individual_service
@@ -98,16 +96,12 @@ def create_task_reminders(db_session: SessionLocal, project: Project):
 def sync_tasks(db_session, task_plugin, incidents, lookback: int = 60, notify: bool = False):
     """Syncs tasks and sends update notifications to incident channels."""
     for incident in incidents:
-        for doc_type in [
-            DocumentResourceTypes.review,
-            DocumentResourceTypes.incident,
+
+        for document in [
+            incident.incident_document,
+            incident.incident_review_document,
         ]:
             try:
-                # we get the document object
-                document = get_document(
-                    db_session=db_session, incident_id=incident.id, resource_type=doc_type
-                )
-
                 if not document:
                     # the document may have not been created yet (e.g. incident review document)
                     break

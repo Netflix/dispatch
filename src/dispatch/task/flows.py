@@ -99,7 +99,7 @@ def send_task_notification(
         notification_text,
         message_template,
         notification_type,
-        creator=creator.individual.email,
+        task_creator=creator.individual.email,
         task_assignees=[x.individual.email for x in assignees],
         task_description=description,
         task_weblink=weblink,
