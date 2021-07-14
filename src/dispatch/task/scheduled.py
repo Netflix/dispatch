@@ -16,8 +16,6 @@ from dispatch.config import (
 )
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import scheduled_project_task
-from dispatch.document.service import get_by_incident_id_and_resource_type as get_document
-from dispatch.enums import DocumentResourceTypes
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.individual import service as individual_service
