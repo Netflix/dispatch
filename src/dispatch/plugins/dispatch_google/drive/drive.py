@@ -162,10 +162,7 @@ def get_activity(
         f"time >= {lookback_time.isoformat()} AND detail.action_detail_case: {activity}"
     )
     return make_call(
-        client.activity(),
-        "query",
-        itemName=f"items/{file_id}",
-        filter=activity_filter,
+        client.activity(), "query", body={"filter": activity_filter, "itemName": f"items/{file_id}"}
     )
 
 
@@ -267,7 +264,9 @@ def get_comment(client: Any, file_id: str, comment_id: str, **kwargs):
 
 def get_person(client: Any, person_id: str, **kwargs):
     """Gets a person's metadata given their people id."""
-    return make_call(client.people(), "get", resourceName=person_id, **kwargs)
+    return make_call(
+        client.people(), "get", resourceName=person_id, personFields="emailAddresses", **kwargs
+    )
 
 
 def add_reply(

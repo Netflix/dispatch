@@ -98,33 +98,25 @@ def create_task_reminders(db_session: SessionLocal, project: Project):
 def sync_tasks(db_session, task_plugin, incidents, lookback: int = 60, notify: bool = False):
     """Syncs tasks and sends update notifications to incident channels."""
     for incident in incidents:
-        for doc_type in [
-            DocumentResourceTypes.review,
-            DocumentResourceTypes.incident,
+        for document in [
+            incident.incident_document,
+            incident.incident_review_document,
         ]:
-            try:
-                # we get the document object
-                document = get_document(
-                    db_session=db_session, incident_id=incident.id, resource_type=doc_type
-                )
+            if not document:
+                # the document may have not been created yet (e.g. incident review document)
+                break
 
-                if not document:
-                    # the document may have not been created yet (e.g. incident review document)
-                    break
+            # we get the list of tasks in the document
+            tasks = task_plugin.instance.list(file_id=document.resource_id, lookback=lookback)
 
-                # we get the list of tasks in the document
-                tasks = task_plugin.instance.list(file_id=document.resource_id, lookback=lookback)
-
-                for task in tasks:
-                    # we get the task information
-                    try:
-                        create_or_update_task(
-                            db_session, incident, task, notify=notify, sync_external=False
-                        )
-                    except Exception as e:
-                        log.exception(e)
-            except Exception as e:
-                log.exception(e)
+            for task in tasks:
+                # we get the task information
+                try:
+                    create_or_update_task(
+                        db_session, incident, task, notify=notify, sync_external=False
+                    )
+                except Exception as e:
+                    log.exception(e)
 
 
 @scheduler.add(every(1).day, name="incident-daily-task-sync")

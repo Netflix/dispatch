@@ -127,10 +127,12 @@ class GoogleDriveTaskPlugin(TaskPlugin):
 
     def update(self, file_id: str, task_id: str, content: str = None, resolved: bool = False):
         """Updates an existing task."""
-        client = get_service("drive", "v3", self.scopes)
+        client = get_service("drive", "v3", ["https://www.googleapis.com/auth/drive"])
         return add_reply(client, file_id, task_id, content, resolved)
 
     def list(self, file_id: str, lookback: int = 60, **kwargs):
         """Lists all available tasks."""
-        client = get_service("drive", "v3", self.scopes)
+        client = get_service(
+            "driveactivity", "v2", ["https://www.googleapis.com/auth/drive.activity.readonly"]
+        )
         return get_task_activity(client, file_id, lookback)

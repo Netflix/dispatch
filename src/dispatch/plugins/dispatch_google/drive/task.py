@@ -18,12 +18,12 @@ from .drive import get_activity, get_comment, get_person
 log = logging.getLogger(__name__)
 
 
-class CommentTypes(Enum, str):
+class CommentTypes(str, Enum):
     assignment = "assignment"
     post = "post"
 
 
-class PostSubTypes(Enum, str):
+class PostSubTypes(str, Enum):
     subtype_unspecified = "SUBTYPE_UNSPECIFIED"
     added = "ADDED"
     deleted = "DELETED"
@@ -33,7 +33,7 @@ class PostSubTypes(Enum, str):
     reopened = "REOPENED"
 
 
-class AssignmentSubTypes(Enum, str):
+class AssignmentSubTypes(str, Enum):
     subtype_unspecified = "SUBTYPE_UNSPECIFIED"
     added = "ADDED"
     deleted = "DELETED"
