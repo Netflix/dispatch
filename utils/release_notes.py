@@ -22,7 +22,7 @@ def release_notes(pull_request_number):
 
     dispatch_pr_url = "https://github.com/Netflix/dispatch/pull/"
     exclude_authors = ["dependabot"]
-    gh_command = 'gh pr list -s closed --json "title,author,number" -L 250'
+    gh_command = 'gh pr list -s merged --json "title,author,number" -L 250'
 
     stream = os.popen(gh_command)
     pull_requests = json.loads(stream.read())
@@ -38,7 +38,7 @@ def release_notes(pull_request_number):
         if author in exclude_authors:
             continue
 
-        print(f"* {title} by @{author} ([#{number}]({dispatch_pr_url}{number}))")
+        print(f"* {title} ([#{number}]({dispatch_pr_url}{number})) by @{author}")
 
 
 if __name__ == "__main__":
