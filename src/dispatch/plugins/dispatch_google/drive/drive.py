@@ -67,6 +67,9 @@ def paginated(data_key):
                     kwargs["fields"] = ",".join(fields)
 
                 response = func(*args, **kwargs)
+                if not response.get(data_key):
+                    break
+
                 results += response.get(data_key)
 
                 # stop if we hit an empty string
@@ -159,7 +162,7 @@ def get_activity(
     """Fetches file activity."""
     lookback_time = datetime.now(timezone.utc) - timedelta(seconds=lookback)
     activity_filter = (
-        f"time >= {lookback_time.isoformat()} AND detail.action_detail_case: {activity}"
+        f"time >= {int(lookback_time.timestamp() * 1000)} AND detail.action_detail_case: {activity}"
     )
     return make_call(
         client.activity(), "query", body={"filter": activity_filter, "itemName": f"items/{file_id}"}
@@ -259,7 +262,9 @@ def list_comments(client: Any, file_id: str, **kwargs):
 
 def get_comment(client: Any, file_id: str, comment_id: str, **kwargs):
     """Gets a specific comment."""
-    return make_call(client.comments(), "get", fileId=file_id, commentId=comment_id, **kwargs)
+    return make_call(
+        client.comments(), "get", fileId=file_id, commentId=comment_id, fields="*", **kwargs
+    )
 
 
 def get_person(client: Any, person_id: str, **kwargs):

@@ -72,9 +72,11 @@ def get_user_email(client: Any, person_id: str) -> str:
     return person_data["emailAddresses"][0]["value"]
 
 
-def get_task_activity(client: Any, file_id: str, lookback: int = 60):
+def get_task_activity(
+    activity_client: Any, comment_client: Any, people_client: Any, file_id: str, lookback: int = 60
+):
     """Gets a files comment activity and filters for task related events."""
-    activities = get_activity(client, file_id, lookback)
+    activities = get_activity(activity_client, file_id, lookback=lookback)
 
     tasks = []
     for a in activities:
@@ -89,7 +91,7 @@ def get_task_activity(client: Any, file_id: str, lookback: int = 60):
             if subtype == AssignmentSubTypes.added:
                 # we need to fetch the comment data
                 comment_id = a["targets"][0]["fileComment"]["legacyCommentId"]
-                comment = get_comment(client, file_id, comment_id)
+                comment = get_comment(comment_client, file_id, comment_id)
 
                 task["description"] = comment["content"]
 
@@ -97,11 +99,13 @@ def get_task_activity(client: Any, file_id: str, lookback: int = 60):
 
                 # we assume the person doing the assignment to be the creator of the task
                 creator_person_id = a["actors"]["user"]["knownUser"]["personName"]
-                task["creator"] = get_user_email(client, creator_person_id)
+                task["creator"] = get_user_email(people_client, creator_person_id)
 
                 # we only associate the current assignee event if multiple of people are mentioned (NOTE: should we also associated other mentions?)
-                assignee_person_id = a["assignedUser"]["knownUser"]["personName"]
-                task["assignees"] = [get_user_email(client, assignee_person_id)]
+                assignee_person_id = a["primaryActionDetail"]["comment"][CommentTypes.assignment][
+                    "assignedUser"
+                ]["knownUser"]["personName"]
+                task["assignees"] = [get_user_email(people_client, assignee_person_id)]
 
                 # this is when the user was assigned (making it into a task, not when the inital comment was created)
                 task["created_at"] = a["timestamp"]
@@ -112,7 +116,7 @@ def get_task_activity(client: Any, file_id: str, lookback: int = 60):
             elif subtype == AssignmentSubTypes.reply_added:
                 # check to see if there are any linked tickets
                 comment_id = a["targets"][0]["fileComment"]["legacyCommentId"]
-                comment = get_comment(client, file_id, comment_id)
+                comment = get_comment(comment_client, file_id, comment_id)
                 task["tickets"] = get_tickets(comment["replies"])
 
             elif subtype == AssignmentSubTypes.deleted:
@@ -122,10 +126,16 @@ def get_task_activity(client: Any, file_id: str, lookback: int = 60):
                 task["status"] = TaskStatus.resolved
 
             elif subtype == AssignmentSubTypes.reassigned:
-                assignee_person_id = a["assignedUser"]["knownUser"]["personName"]
-                task["assignees"] = [get_user_email(client, assignee_person_id)]
+                from pprint import pprint
+
+                pprint(a)
+                assignee_person_id = a["primaryActionDetail"]["comment"][CommentTypes.assignment][
+                    "assignedUser"
+                ]["knownUser"]["personName"]
+                task["assignees"] = [get_user_email(people_client, assignee_person_id)]
 
             elif subtype == AssignmentSubTypes.reopened:
                 task["status"] = TaskStatus.open
 
             tasks.append(task)
+    return tasks

@@ -132,7 +132,11 @@ class GoogleDriveTaskPlugin(TaskPlugin):
 
     def list(self, file_id: str, lookback: int = 60, **kwargs):
         """Lists all available tasks."""
-        client = get_service(
+        activity_client = get_service(
             "driveactivity", "v2", ["https://www.googleapis.com/auth/drive.activity.readonly"]
         )
-        return get_task_activity(client, file_id, lookback)
+        comment_client = get_service("drive", "v3", ["https://www.googleapis.com/auth/drive"])
+        people_client = get_service(
+            "people", "v1", ["https://www.googleapis.com/auth/contacts.readonly"]
+        )
+        return get_task_activity(activity_client, comment_client, people_client, file_id, lookback)
