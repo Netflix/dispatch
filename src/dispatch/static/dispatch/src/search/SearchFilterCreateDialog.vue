@@ -40,6 +40,15 @@
                       </v-list-item>
                       <v-list-item>
                         <v-list-item-content>
+                          <tag-type-filter-combobox
+                            :project="project"
+                            v-model="filters.tag_type"
+                            label="Tag Types"
+                          />
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
                           <incident-type-combobox
                             :project="project"
                             v-model="filters.incident_type"
@@ -170,6 +179,7 @@ import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
+import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 import IncidentStatus from "@/incident/IncidentStatus.vue"
 import IncidentPriority from "@/incident/IncidentPriority.vue"
 import SearchUtils from "@/search/utils"
@@ -213,6 +223,7 @@ export default {
         status: [],
         tag: [],
         project: [],
+        tag_type: [],
       },
     }
   },
@@ -222,6 +233,7 @@ export default {
     TagFilterCombobox,
     IncidentTypeCombobox,
     IncidentPriorityCombobox,
+    TagTypeFilterCombobox,
     IncidentStatusMultiSelect,
     IncidentStatus,
     IncidentPriority,
@@ -282,6 +294,7 @@ export default {
         vm.filters.incident_priority,
         vm.filters.status,
         vm.filters.tag,
+        vm.filters.tag_type,
       ],
       () => {
         this.expression = SearchUtils.createFilterExpression(this.filters)
