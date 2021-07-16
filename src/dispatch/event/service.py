@@ -25,44 +25,11 @@ def get(*, db_session, event_id: int) -> Optional[Event]:
     return db_session.query(Event).filter(Event.id == event_id).one_or_none()
 
 
-def get_by_uuid(*, db_session, uuid: UUID) -> Optional[Event]:
-    """
-    Get an event by uuid.
-    """
-    return db_session.query(Event).filter(Event.uuid == uuid).one_or_none()
-
-
 def get_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Event]]:
     """
     Get events by incident id.
     """
     return db_session.query(Event).filter(Event.incident_id == incident_id)
-
-
-def get_by_incident_id_and_source(
-    *, db_session, incident_id: int, source: str
-) -> List[Optional[Event]]:
-    """
-    Get events by incident id and source.
-    """
-    return (
-        db_session.query(Event)
-        .filter(Event.incident_id == incident_id)
-        .filter(Event.source == source)
-    )
-
-
-def get_by_incident_id_and_individual_id(
-    *, db_session, incident_id: int, individual_id: int
-) -> List[Optional[Event]]:
-    """
-    Get events by incident id and individual id.
-    """
-    return (
-        db_session.query(Event)
-        .filter(Event.incident_id == incident_id)
-        .filter(Event.source == individual_id)
-    )
 
 
 def get_all(*, db_session) -> List[Optional[Event]]:

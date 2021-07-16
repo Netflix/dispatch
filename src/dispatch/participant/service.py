@@ -21,19 +21,6 @@ def get(*, db_session, participant_id: int) -> Optional[Participant]:
     return db_session.query(Participant).filter(Participant.id == participant_id).first()
 
 
-def get_by_individual_contact_id(
-    *, db_session, individual_contact_id: int
-) -> Optional[Participant]:
-    """
-    Get a participant by individual contact id.
-    """
-    return (
-        db_session.query(Participant)
-        .filter(Participant.individual_contact_id == individual_contact_id)
-        .first()
-    )
-
-
 def get_by_incident_id_and_role(
     *, db_session, incident_id: int, role: str
 ) -> Optional[Participant]:

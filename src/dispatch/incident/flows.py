@@ -250,22 +250,6 @@ def create_participant_groups(
     return tactical_group, notification_group
 
 
-def delete_participant_groups(incident: Incident, db_session: SessionLocal):
-    """Deletes the external participant groups."""
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
-    )
-    plugin.instance.delete(email=incident.tactical_group.email)
-    plugin.instance.delete(email=incident.notifications_group.email)
-
-    event_service.log(
-        db_session=db_session,
-        source=plugin.plugin.title,
-        description="Tactical and notification groups deleted",
-        incident_id=incident.id,
-    )
-
-
 def create_conference(incident: Incident, participants: List[str], db_session: SessionLocal):
     """Create external conference room."""
     plugin = plugin_service.get_active_instance(
@@ -283,24 +267,6 @@ def create_conference(incident: Incident, participants: List[str], db_session: S
     )
 
     return conference
-
-
-def delete_conference(incident: Incident, db_session: SessionLocal):
-    """Deletes the conference."""
-    conference = conference_service.get_by_incident_id(
-        db_session=db_session, incident_id=incident.id
-    )
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="conference"
-    )
-    plugin.instance.delete(conference.conference_id)
-
-    event_service.log(
-        db_session=db_session,
-        source=plugin.plugin.title,
-        description="Incident conference deleted",
-        incident_id=incident.id,
-    )
 
 
 def create_incident_storage(
@@ -499,7 +465,7 @@ def remove_participant_from_tactical_group(
 
 @background_task
 def incident_create_stable_flow(
-    *, incident_id: int, checkpoint: str = None, organization_slug: str = None, db_session=None
+    *, incident_id: int, organization_slug: str = None, db_session=None
 ):
     """Creates all resources necessary when an incident is created as 'stable'."""
     incident_create_flow(incident_id=incident_id, db_session=db_session)
@@ -509,7 +475,7 @@ def incident_create_stable_flow(
 
 @background_task
 def incident_create_closed_flow(
-    *, incident_id: int, checkpoint: str = None, organization_slug: str = None, db_session=None
+    *, incident_id: int, organization_slug: str = None, db_session=None
 ):
     """Creates all resources necessary when an incident is created as 'closed'."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
@@ -533,14 +499,8 @@ def incident_create_closed_flow(
     db_session.commit()
 
 
-# TODO create some ability to checkpoint
-# We could use the model itself as the checkpoint, commiting resources as we go
-# Then checking for the existence of those resources before creating them for
-# this incident.
 @background_task
-def incident_create_flow(
-    *, organization_slug: str, incident_id: int, checkpoint: str = None, db_session=None
-):
+def incident_create_flow(*, organization_slug: str, incident_id: int, db_session=None):
     """Creates all resources required for new incidents."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 

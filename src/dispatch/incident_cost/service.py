@@ -27,17 +27,6 @@ def get(*, db_session, incident_cost_id: int) -> Optional[IncidentCost]:
     return db_session.query(IncidentCost).filter(IncidentCost.id == incident_cost_id).one_or_none()
 
 
-def get_by_incident_cost_type_id(
-    *, db_session, incident_cost_type_id: int
-) -> List[Optional[IncidentCost]]:
-    """
-    Gets incident costs by incident cost type id.
-    """
-    return db_session.query(IncidentCost).filter(
-        IncidentCost.incident_cost_type_id == incident_cost_type_id
-    )
-
-
 def get_by_incident_id(*, db_session, incident_id: int) -> List[Optional[IncidentCost]]:
     """
     Gets incident costs by incident id.

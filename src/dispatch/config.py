@@ -89,7 +89,6 @@ ENV_TAGS = get_env_tags(ENV_TAG_LIST)
 
 DISPATCH_UI_URL = config("DISPATCH_UI_URL", default="http://localhost:8000 ")
 DISPATCH_HELP_EMAIL = config("DISPATCH_HELP_EMAIL", default="help@example.com")
-DISPATCH_HELP_SLACK_CHANNEL = config("DISPATCH_HELP_SLACK_CHANNEL", default="#general")
 
 # authentication
 DISPATCH_AUTHENTICATION_PROVIDER_SLUG = config(

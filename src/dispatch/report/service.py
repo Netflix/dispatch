@@ -41,13 +41,6 @@ def get_all_by_incident_id_and_type(
     )
 
 
-def get_all_by_type(*, db_session, report_type: ReportTypes) -> List[Optional[Report]]:
-    """
-    Get all reports by type.
-    """
-    return db_session.query(Report).filter(Report.type == report_type)
-
-
 def get_all(*, db_session) -> List[Optional[Report]]:
     """
     Get all reports.

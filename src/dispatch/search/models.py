@@ -4,15 +4,15 @@ from pydantic import Field
 
 from dispatch.models import DispatchBase
 
-from dispatch.incident.models import IncidentRead
-from dispatch.tag.models import TagRead
-from dispatch.term.models import TermRead
 from dispatch.definition.models import DefinitionRead
-from dispatch.individual.models import IndividualContactRead
-from dispatch.team.models import TeamContactRead
-from dispatch.service.models import ServiceRead
 from dispatch.document.models import DocumentRead
+from dispatch.incident.models import IncidentRead
+from dispatch.individual.models import IndividualContactRead
+from dispatch.service.models import ServiceRead
+from dispatch.tag.models import TagRead
 from dispatch.task.models import TaskRead
+from dispatch.team.models import TeamContactRead
+from dispatch.term.models import TermRead
 
 
 # Pydantic models...
