@@ -25,7 +25,7 @@ const getDefaultSelectedState = () => {
 
 export const referenceDocumentTypes = [
   {
-    resource_type: "dispatch-faq-reference-document",
+    resource_type: "",
     title: "FAQ",
     description: "Create a new FAQ reference document",
     icon: "mdi-file-document-edit-outline",
