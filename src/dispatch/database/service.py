@@ -11,16 +11,16 @@ from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
 
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user, get_current_role
-from dispatch.search.fulltext.composite_search import CompositeSearch
 from dispatch.enums import UserRoles, Visibility
 from dispatch.feedback.models import Feedback
-from dispatch.task.models import Task
-from dispatch.project.models import Project
-from dispatch.plugin.models import Plugin, PluginInstance
 from dispatch.incident.models import Incident
 from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
 from dispatch.participant.models import Participant
+from dispatch.plugin.models import Plugin, PluginInstance
+from dispatch.project.models import Project
+from dispatch.search.fulltext.composite_search import CompositeSearch
+from dispatch.task.models import Task
 
 
 from .core import (
@@ -43,7 +43,7 @@ def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, rol
             .join(IndividualContact)
             .filter(
                 or_(
-                    Incident.visibility == Visibility.open.value,
+                    Incident.visibility == Visibility.open,
                     IndividualContact.email == current_user.email,
                 )
             )
