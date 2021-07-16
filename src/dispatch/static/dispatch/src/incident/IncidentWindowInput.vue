@@ -34,7 +34,7 @@
             </v-list>
           </v-col>
           <v-col>
-            <v-text-field v-model="window.start" prepend-icon="mdi-calendar"></v-text-field>
+            <v-text-field :value="windowStartFormatted" prepend-icon="mdi-calendar"></v-text-field>
             <v-date-picker
               color="primary"
               no-title
@@ -43,7 +43,7 @@
             ></v-date-picker>
           </v-col>
           <v-col>
-            <v-text-field v-model="window.end" prepend-icon="mdi-calendar"></v-text-field>
+            <v-text-field v-model="windowEndFormatted" prepend-icon="mdi-calendar"></v-text-field>
             <v-date-picker
               color="primary"
               no-title
@@ -126,44 +126,62 @@ export default {
 
   computed: {
     windowRange: function () {
-      return `${this.window.start || ""} ~ ${this.window.end || ""}`
+      return `${this.windowStartFormatted} ~ ${this.windowEndFormatted}`
     },
     window: {
       get() {
         if (Object.keys(this.value).length > 1) {
           return cloneDeep(this.value)
         }
+        let start = subMonths(today(), 6).setHours(0, 0, 0, 0)
+        let end = today().setHours(23, 59, 59, 999)
         return {
-          start: subMonths(today(), 6).toISOString().substr(0, 10),
-          end: today().toISOString().substr(0, 10),
+          start: start.toISOString(),
+          end: end.toISOString(),
         }
       },
       set(value) {
         this.$emit("input", value)
       },
     },
+    windowStartFormatted() {
+      if (this.window.start) {
+        return this.window.start.substr(0, 10)
+      }
+      return ""
+    },
+    windowEndFormatted() {
+      if (this.window.end) {
+        return this.window.end.substr(0, 10)
+      }
+      return ""
+    },
   },
 
   methods: {
     setWindowRange: function (range) {
+      range.start.setHours(0, 0, 0, 0)
+      range.end.setHours(23, 59, 59, 999)
       this.window = {
-        start: range.start.toISOString().substr(0, 10),
-        end: range.end.toISOString().substr(0, 10),
+        start: range.start.toISOString(),
+        end: range.end.toISOString(),
       }
     },
     clearWindowRange: function () {
       this.window = {}
     },
     setWindowStart: function (start) {
+      start.setHours(0, 0, 0, 0)
       this.window = {
-        start: start,
-        end: this.window.end,
+        start: start.toISOString(),
+        end: this.window.end.toISOString(),
       }
     },
     setWindowEnd: function (end) {
+      end.setHours(23, 59, 59, 999)
       this.window = {
-        start: this.window.start,
-        end: end,
+        start: this.window.start.toISOString(),
+        end: end.toISOString(),
       }
     },
   },
