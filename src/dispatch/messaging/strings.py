@@ -1,5 +1,4 @@
 import copy
-from enum import Enum
 
 from jinja2 import Template
 
@@ -8,10 +7,10 @@ from typing import List
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.incident.enums import IncidentStatus
 
-from dispatch.enums import DocumentResourceTypes, DocumentResourceReferenceTypes
+from dispatch.enums import DispatchEnum, DocumentResourceTypes, DocumentResourceReferenceTypes
 
 
-class MessageType(str, Enum):
+class MessageType(DispatchEnum):
     document_evergreen_reminder = "document-evergreen-reminder"
     incident_closed_information_review_reminder = "incident-closed-information-review-reminder"
     incident_daily_report = "incident-daily-report"

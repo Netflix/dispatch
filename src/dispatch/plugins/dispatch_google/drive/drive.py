@@ -10,37 +10,32 @@ import io
 import json
 import logging
 import tempfile
-from enum import Enum
 from typing import Any, List
 
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
+from dispatch.enums import DispatchEnum
+
 
 log = logging.getLogger(__name__)
 
 
-class UserTypes(str, Enum):
+class UserTypes(DispatchEnum):
     user = "user"
     group = "group"
     domain = "domain"
     anyone = "anyone"
 
-    def __str__(self) -> str:
-        return str.__str__(self)
 
-
-class Roles(str, Enum):
+class Roles(DispatchEnum):
     owner = "owner"
     organizer = "organizer"
     file_organizer = "fileOrganizer"
     writer = "writer"
     commenter = "commenter"
     reader = "reader"
-
-    def __str__(self) -> str:
-        return str.__str__(self)
 
 
 def paginated(data_key):
