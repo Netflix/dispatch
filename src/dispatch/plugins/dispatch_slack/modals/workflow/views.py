@@ -1,18 +1,18 @@
 import json
-from enum import Enum
 from typing import List
 
+from dispatch.enums import DispatchEnum
 from dispatch.incident.models import Incident
 from dispatch.workflow.models import Workflow
 
 
-class RunWorkflowBlockId(str, Enum):
+class RunWorkflowBlockId(DispatchEnum):
     workflow_select = "run_workflow_select"
     run_reason = "run_workflow_run_reason"
     param = "run_workflow_param"
 
 
-class RunWorkflowCallbackId(str, Enum):
+class RunWorkflowCallbackId(DispatchEnum):
     submit_form = "run_workflow_submit_form"
     update_view = "run_workflow_update_view"
 
