@@ -107,11 +107,6 @@ def delete_group(client: Any, group_key: str, **kwargs):
     return make_call(client.groups(), "delete", groupKey=group_key, **kwargs)
 
 
-def list_groups(client: Any, **kwargs):
-    """Lists all google groups available."""
-    return make_call(client.groups(), "list", **kwargs)
-
-
 @apply(timer, exclude=["__init__"])
 @apply(counter, exclude=["__init__"])
 class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):

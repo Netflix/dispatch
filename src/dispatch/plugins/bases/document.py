@@ -24,6 +24,3 @@ class DocumentPlugin(Plugin):
 
     def delete(self, key, **kwargs):
         raise NotImplementedError
-
-    def move(self, key, **kwargs):
-        raise NotImplementedError

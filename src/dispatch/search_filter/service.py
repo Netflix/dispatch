@@ -78,24 +78,6 @@ def update(
     return search_filter
 
 
-def create_or_update(*, db_session, search_filter_in: SearchFilterCreate) -> SearchFilter:
-    """Creates or updates a search filter."""
-    update_data = search_filter_in.dict(skip_defaults=True)
-
-    q = db_session.query(SearchFilter)
-    for attr, value in update_data.items():
-        q = q.filter(getattr(SearchFilter, attr) == value)
-
-    instance = q.first()
-
-    if instance:
-        return update(
-            db_session=db_session, search_filter=instance, search_filter_in=search_filter_in
-        )
-
-    return create(db_session=db_session, search_filter_in=search_filter_in)
-
-
 def delete(*, db_session, search_filter_id: int):
     """Deletes a search filter."""
     search_filter = (

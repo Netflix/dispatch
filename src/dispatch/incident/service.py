@@ -141,20 +141,6 @@ def get_all_last_x_hours_by_status(
         )
 
 
-def get_all_by_incident_type(
-    *, db_session, incident_type: str, project_id: int, skip=0, limit=100
-) -> List[Optional[Incident]]:
-    """Returns all incidents with the given incident type."""
-    return (
-        db_session.query(Incident)
-        .filter(Incident.incident_type.name == incident_type)
-        .filter(Incident.project_id == project_id)
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
-
-
 def create(
     *,
     db_session,

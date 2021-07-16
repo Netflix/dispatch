@@ -102,17 +102,3 @@ def render_html(template):
             log.error(process.stderr.decode("utf-8"))
             raise Exception("MJML template processing failed.")
         return process.stdout.decode("utf-8")
-
-
-def preview_email(name, html_message):
-    """Helper function to preview your email."""
-    with open(name, "wb") as fp:
-        fp.write(html_message.encode("utf-8"))
-
-    if platform.system() == "Linux":
-        cwd = os.getcwd()
-        print(f"file:/{cwd}/{name}")
-    else:
-        print(
-            rf"/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome {name}"
-        )  # noqa: W605

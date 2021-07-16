@@ -93,14 +93,6 @@ def apply_model_specific_joins(model: Base, query: orm.query):
     return query
 
 
-def paginate(query: orm.Query, page: int, items_per_page: int):
-    # Never pass a negative OFFSET value to SQL.
-    offset_adj = 0 if page <= 0 else page - 1
-    items = query.limit(items_per_page).offset(offset_adj * items_per_page).all()
-    total = query.order_by(None).count()
-    return items, total
-
-
 def composite_search(*, db_session, query_str: str, models: List[Base], current_user: DispatchUser):
     """Perform a multi-table search based on the supplied query."""
     s = CompositeSearch(db_session, models)
