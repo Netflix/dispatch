@@ -1,17 +1,15 @@
 <template>
   <ValidationProvider name="template" immediate>
-    <v-autocomplete
+    <v-combobox
       v-model="template"
       :items="items"
       :search-input.sync="search"
       :menu-props="{ maxHeight: '400' }"
-      slot-scope="{ errors, valid }"
-      :error-messages="errors"
-      :success="valid"
       item-text="name"
       :label="label"
       placeholder="Start typing to search"
       return-object
+      :hint="hint"
       :loading="loading"
       no-filter
     >
@@ -21,7 +19,7 @@
         </v-btn>
         <new-edit-sheet @new-document-created="addItem($event)" />
       </template>
-    </v-autocomplete>
+    </v-combobox>
   </ValidationProvider>
 </template>
 
@@ -54,6 +52,12 @@ export default {
     label: {
       type: String,
       default: "Template",
+    },
+    hint: {
+      type: String,
+      default: function () {
+        return "Template to associate"
+      },
     },
   },
 
