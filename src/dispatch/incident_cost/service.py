@@ -21,25 +21,19 @@ SECONDS_IN_HOUR = 3600
 
 
 def get(*, db_session, incident_cost_id: int) -> Optional[IncidentCost]:
-    """
-    Gets an incident cost by its id.
-    """
+    """Gets an incident cost by its id."""
     return db_session.query(IncidentCost).filter(IncidentCost.id == incident_cost_id).one_or_none()
 
 
 def get_by_incident_id(*, db_session, incident_id: int) -> List[Optional[IncidentCost]]:
-    """
-    Gets incident costs by incident id.
-    """
+    """Gets incident costs by incident id."""
     return db_session.query(IncidentCost).filter(IncidentCost.incident_id == incident_id)
 
 
 def get_by_incident_id_and_incident_cost_type_id(
     *, db_session, incident_id: int, incident_cost_type_id: int
 ) -> List[Optional[IncidentCost]]:
-    """
-    Gets incident costs by incident id and incident cost type id.
-    """
+    """Gets incident costs by incident id and incident cost type id."""
     return (
         db_session.query(IncidentCost)
         .filter(IncidentCost.incident_id == incident_id)
@@ -49,9 +43,7 @@ def get_by_incident_id_and_incident_cost_type_id(
 
 
 def get_all(*, db_session) -> List[Optional[IncidentCost]]:
-    """
-    Gets all incident costs.
-    """
+    """Gets all incident costs."""
     return db_session.query(IncidentCost)
 
 
@@ -66,9 +58,7 @@ def get_or_create(*, db_session, incident_cost_in: IncidentCostCreate) -> Incide
 
 
 def create(*, db_session, incident_cost_in: IncidentCostCreate) -> IncidentCost:
-    """
-    Creates a new incident cost.
-    """
+    """Creates a new incident cost."""
     incident_cost_type = incident_cost_type_service.get(
         db_session=db_session, incident_cost_type_id=incident_cost_in.incident_cost_type.id
     )
@@ -86,9 +76,7 @@ def create(*, db_session, incident_cost_in: IncidentCostCreate) -> IncidentCost:
 def update(
     *, db_session, incident_cost: IncidentCost, incident_cost_in: IncidentCostUpdate
 ) -> IncidentCost:
-    """
-    Updates an incident cost.
-    """
+    """Updates an incident cost."""
     incident_cost_data = jsonable_encoder(incident_cost)
     update_data = incident_cost_in.dict(skip_defaults=True)
 
@@ -102,17 +90,13 @@ def update(
 
 
 def delete(*, db_session, incident_cost_id: int):
-    """
-    Deletes an existing incident cost.
-    """
+    """Deletes an existing incident cost."""
     db_session.query(IncidentCost).filter(IncidentCost.id == incident_cost_id).delete()
     db_session.commit()
 
 
 def get_engagement_multiplier(participant_role: str):
-    """
-    Returns an engagement multiplier for a given incident role.
-    """
+    """Returns an engagement multiplier for a given incident role."""
     engagement_mappings = {
         ParticipantRoleType.incident_commander: 1,
         ParticipantRoleType.scribe: 0.75,
@@ -127,9 +111,7 @@ def get_engagement_multiplier(participant_role: str):
 def calculate_incident_response_cost(
     incident_id: int, db_session: SessionLocal, incident_review=True
 ):
-    """
-    Calculates the response cost of a given incident.
-    """
+    """Calculates the response cost of a given incident."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     participants_total_response_time_seconds = 0

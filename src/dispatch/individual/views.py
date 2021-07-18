@@ -18,9 +18,7 @@ router = APIRouter()
 
 @router.get("", response_model=IndividualContactPagination)
 def get_individuals(*, common: dict = Depends(common_parameters)):
-    """
-    Retrieve individual contacts.
-    """
+    """Retrieve individual contacts."""
     return search_filter_sort_paginate(model="IndividualContact", **common)
 
 
@@ -28,9 +26,7 @@ def get_individuals(*, common: dict = Depends(common_parameters)):
 def create_individual(
     *, db_session: Session = Depends(get_db), individual_contact_in: IndividualContactCreate
 ):
-    """
-    Create a new individual contact.
-    """
+    """Create a new individual contact."""
     individual = get_by_email(db_session=db_session, email=individual_contact_in.email)
     if individual:
         raise HTTPException(
@@ -42,9 +38,7 @@ def create_individual(
 
 @router.get("/{individual_contact_id}", response_model=IndividualContactRead)
 def get_individual(*, db_session: Session = Depends(get_db), individual_contact_id: int):
-    """
-    Get a individual contact.
-    """
+    """Get a individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
         raise HTTPException(status_code=404, detail="The individual with this id does not exist.")
@@ -63,9 +57,7 @@ def update_individual(
     individual_contact_id: int,
     individual_contact_in: IndividualContactUpdate,
 ):
-    """
-    Update a individual contact.
-    """
+    """Update a individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
         raise HTTPException(status_code=404, detail="The individual with this id does not exist.")
@@ -83,9 +75,7 @@ def update_individual(
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 async def delete_individual(*, db_session: Session = Depends(get_db), individual_contact_id: int):
-    """
-    Delete a individual contact.
-    """
+    """Delete a individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
         raise HTTPException(status_code=404, detail="The individual with this id does not exist.")

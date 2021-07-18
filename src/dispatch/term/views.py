@@ -12,17 +12,13 @@ router = APIRouter()
 
 @router.get("", response_model=TermPagination)
 def get_terms(*, common: dict = Depends(common_parameters)):
-    """
-    Retrieve all terms.
-    """
+    """Retrieve all terms."""
     return search_filter_sort_paginate(model="Term", **common)
 
 
 @router.post("", response_model=TermRead)
 def create_term(*, db_session: Session = Depends(get_db), term_in: TermCreate):
-    """
-    Create a new term.
-    """
+    """Create a new term."""
     term = get_by_text(db_session=db_session, text=term_in.text)
     if term:
         raise HTTPException(
@@ -34,9 +30,7 @@ def create_term(*, db_session: Session = Depends(get_db), term_in: TermCreate):
 
 @router.get("/{term_id}", response_model=TermRead)
 def get_term(*, db_session: Session = Depends(get_db), term_id: int):
-    """
-    Update a term.
-    """
+    """Update a term."""
     term = get(db_session=db_session, term_id=term_id)
     if not term:
         raise HTTPException(status_code=404, detail="The term with this id does not exist.")
@@ -45,9 +39,7 @@ def get_term(*, db_session: Session = Depends(get_db), term_id: int):
 
 @router.put("/{term_id}", response_model=TermRead)
 def update_term(*, db_session: Session = Depends(get_db), term_id: int, term_in: TermUpdate):
-    """
-    Update a term.
-    """
+    """Update a term."""
     term = get(db_session=db_session, term_id=term_id)
     if not term:
         raise HTTPException(status_code=404, detail="The term with this id does not exist.")
@@ -57,9 +49,7 @@ def update_term(*, db_session: Session = Depends(get_db), term_id: int, term_in:
 
 @router.delete("/{term_id}", response_model=TermRead)
 def delete_term(*, db_session: Session = Depends(get_db), term_id: int):
-    """
-    Update a term.
-    """
+    """Update a term."""
     term = get(db_session=db_session, term_id=term_id)
     if not term:
         raise HTTPException(status_code=404, detail="The term with this id does not exist.")

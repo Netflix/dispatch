@@ -17,17 +17,13 @@ router = APIRouter()
 
 @router.get("", response_model=TeamPagination)
 def get_teams(*, common: dict = Depends(common_parameters)):
-    """
-    Get all team contacts.
-    """
+    """Get all team contacts."""
     return search_filter_sort_paginate(model="TeamContact", **common)
 
 
 @router.post("", response_model=TeamContactRead)
 def create_team(*, db_session: Session = Depends(get_db), team_contact_in: TeamContactCreate):
-    """
-    Create a new team contact.
-    """
+    """Create a new team contact."""
     team = get_by_email(
         db_session=db_session, email=team_contact_in.email, project_id=team_contact_in.project.id
     )
@@ -39,9 +35,7 @@ def create_team(*, db_session: Session = Depends(get_db), team_contact_in: TeamC
 
 @router.get("/{team_id}", response_model=TeamContactRead)
 def get_team(*, db_session: Session = Depends(get_db), team_contact_id: int):
-    """
-    Get a team contact.
-    """
+    """Get a team contact."""
     team = get(db_session=db_session, team_contact_id=team_contact_id)
     if not team:
         raise HTTPException(status_code=404, detail="The team with this id does not exist.")
@@ -55,9 +49,7 @@ def update_team(
     team_contact_id: int,
     team_contact_in: TeamContactUpdate,
 ):
-    """
-    Update a team contact.
-    """
+    """Update a team contact."""
     team = get(db_session=db_session, team_contact_id=team_contact_id)
     if not team:
         raise HTTPException(status_code=404, detail="The team with this id does not exist.")
@@ -67,9 +59,7 @@ def update_team(
 
 @router.delete("/{team_contact_id}", response_model=TeamContactRead)
 def delete_team(*, db_session: Session = Depends(get_db), team_contact_id: int):
-    """
-    Delete a team contact.
-    """
+    """Delete a team contact."""
     team = get(db_session=db_session, team_contact_id=team_contact_id)
     if not team:
         raise HTTPException(status_code=404, detail="The team with this id does not exist.")

@@ -14,9 +14,7 @@ from .models import (
 
 
 def get(*, db_session, incident_cost_type_id: int) -> Optional[IncidentCostType]:
-    """
-    Gets an incident cost type by its id.
-    """
+    """Gets an incident cost type by its id."""
     return (
         db_session.query(IncidentCostType)
         .filter(IncidentCostType.id == incident_cost_type_id)
@@ -37,9 +35,7 @@ def get_default(*, db_session, project_id: int) -> Optional[IncidentCostType]:
 def get_by_name(
     *, db_session, project_id: int, incident_cost_type_name: str
 ) -> Optional[IncidentCostType]:
-    """
-    Gets an incident cost type by its name.
-    """
+    """Gets an incident cost type by its name."""
     return (
         db_session.query(IncidentCostType)
         .filter(IncidentCostType.name == incident_cost_type_name)
@@ -49,16 +45,12 @@ def get_by_name(
 
 
 def get_all(*, db_session) -> List[Optional[IncidentCostType]]:
-    """
-    Gets all incident cost types.
-    """
+    """Gets all incident cost types."""
     return db_session.query(IncidentCostType)
 
 
 def create(*, db_session, incident_cost_type_in: IncidentCostTypeCreate) -> IncidentCostType:
-    """
-    Creates a new incident cost type.
-    """
+    """Creates a new incident cost type."""
     project = project_service.get_by_name(
         db_session=db_session, name=incident_cost_type_in.project.name
     )
@@ -76,9 +68,7 @@ def update(
     incident_cost_type: IncidentCostType,
     incident_cost_type_in: IncidentCostTypeUpdate,
 ) -> IncidentCostType:
-    """
-    Updates an incident cost type.
-    """
+    """Updates an incident cost type."""
     incident_cost_data = jsonable_encoder(incident_cost_type)
     update_data = incident_cost_type_in.dict(skip_defaults=True)
 
@@ -92,8 +82,6 @@ def update(
 
 
 def delete(*, db_session, incident_cost_type_id: int):
-    """
-    Deletes an existing incident cost type.
-    """
+    """Deletes an existing incident cost type."""
     db_session.query(IncidentCostType).filter(IncidentCostType.id == incident_cost_type_id).delete()
     db_session.commit()
