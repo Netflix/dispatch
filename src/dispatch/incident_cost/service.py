@@ -26,7 +26,7 @@ def get(*, db_session, incident_cost_id: int) -> Optional[IncidentCost]:
 
 
 def get_by_incident_id(*, db_session, incident_id: int) -> List[Optional[IncidentCost]]:
-    """Gets incident costs by incident id."""
+    """Gets incident costs by their incident id."""
     return db_session.query(IncidentCost).filter(IncidentCost.incident_id == incident_id)
 
 
