@@ -33,7 +33,7 @@ def get_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Inciden
 def get_by_incident_id_and_incident_cost_type_id(
     *, db_session, incident_id: int, incident_cost_type_id: int
 ) -> List[Optional[IncidentCost]]:
-    """Gets incident costs by incident id and incident cost type id."""
+    """Gets incident costs by their incident id and incident cost type id."""
     return (
         db_session.query(IncidentCost)
         .filter(IncidentCost.incident_id == incident_id)
