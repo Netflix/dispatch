@@ -24,9 +24,7 @@ def search(
         v for v in SearchTypes
     ],  # hack for pydantic enum json generation see: https://github.com/samuelcolvin/pydantic/pull/1749
 ):
-    """
-    Perform a search.
-    """
+    """Perform a search."""
     if common["query_str"]:
         models = [get_class_by_tablename(t) for t in type]
         results = composite_search(

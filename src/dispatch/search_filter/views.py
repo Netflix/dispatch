@@ -18,9 +18,7 @@ router = APIRouter()
 
 @router.get("", response_model=SearchFilterPagination)
 def get_filters(*, common: dict = Depends(common_parameters)):
-    """
-    Retrieve filters.
-    """
+    """Retrieve filters."""
     return search_filter_sort_paginate(model="SearchFilter", **common)
 
 
@@ -28,9 +26,7 @@ def get_filters(*, common: dict = Depends(common_parameters)):
 def create_search_filter(
     *, db_session: Session = Depends(get_db), search_filter_in: SearchFilterCreate
 ):
-    """
-    Create a new filter.
-    """
+    """Create a new filter."""
     try:
         search_filter = create(db_session=db_session, search_filter_in=search_filter_in)
         return search_filter
@@ -47,9 +43,7 @@ def update_search_filter(
     search_filter_id: int,
     search_filter_in: SearchFilterUpdate,
 ):
-    """
-    Update a search filter.
-    """
+    """Update a search filter."""
     search_filter = get(db_session=db_session, search_filter_id=search_filter_id)
     if not search_filter:
         raise HTTPException(status_code=404, detail="A search filter with this id does not exist.")
@@ -61,9 +55,7 @@ def update_search_filter(
 
 @router.delete("/{search_filter_id}")
 def delete_filter(*, db_session: Session = Depends(get_db), search_filter_id: int):
-    """
-    Delete a search filter.
-    """
+    """Delete a search filter."""
     search_filter = get(db_session=db_session, search_filter_id=search_filter_id)
     if not search_filter:
         raise HTTPException(status_code=404, detail="A search filter with this id does not exist.")
