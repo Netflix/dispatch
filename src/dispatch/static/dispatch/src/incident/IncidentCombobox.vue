@@ -8,11 +8,11 @@
     @update:search-input="fetchData({ q: $event })"
     chips
     clearable
-    close
     deletable-chips
     hide-selected
     item-text="name"
     multiple
+    no-filter
     v-model="incident"
   >
     <template v-slot:selection="{ attr, on, item, selected }">
@@ -23,7 +23,7 @@
     <template v-slot:item="{ item }">
       <v-list-item-content>
         <v-list-item-title v-text="item.name" />
-        <v-list-item-subtitle v-text="item.title" />
+        <v-list-item-subtitle style="width: 200px" class="text-truncate" v-text="item.title" />
       </v-list-item-content>
     </template>
     <template v-slot:no-data>

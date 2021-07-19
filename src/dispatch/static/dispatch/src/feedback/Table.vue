@@ -30,7 +30,7 @@
               loading-text="Loading... Please wait"
             >
               <template v-slot:item.participant="{ item }">
-                <participant :participant="item.participant" />
+                <participant v-if="item.participant" :participant="item.participant" />
               </template>
               <template v-slot:item.created_at="{ item }">
                 <v-tooltip bottom>
@@ -134,7 +134,6 @@ export default {
         vm.feedback,
         vm.project,
         vm.participant,
-        vm.project,
       ],
       () => {
         this.page = 1
