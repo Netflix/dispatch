@@ -1,13 +1,9 @@
+from typing import List, Optional
+from uuid import uuid4
 import datetime
 import logging
 
-from uuid import uuid4
-
-from typing import List, Optional
-
 from fastapi.encoders import jsonable_encoder
-
-from sqlalchemy.dialects.postgresql import UUID
 
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service

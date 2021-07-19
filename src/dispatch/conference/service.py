@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional
 
 from .models import Conference, ConferenceCreate
 
