@@ -58,7 +58,7 @@ def update_incident_cost_type(
     incident_cost_type_id: int,
     incident_cost_type_in: IncidentCostTypeUpdate,
 ):
-    """Update an incident cost type by id."""
+    """Update an incident cost type by its id."""
     incident_cost_type = get(db_session=db_session, incident_cost_type_id=incident_cost_type_id)
     if not incident_cost_type:
         raise HTTPException(
