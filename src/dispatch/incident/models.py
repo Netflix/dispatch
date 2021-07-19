@@ -36,7 +36,6 @@ from dispatch.incident_priority.models import (
     IncidentPriorityRead,
 )
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
-from dispatch.individual.models import IndividualContactCreate
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.participant.models import Participant, ParticipantRead, ParticipantUpdate
 from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
@@ -239,9 +238,13 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     storage = relationship(
         "Storage", uselist=False, backref="incident", cascade="all, delete-orphan"
     )
-    tags = relationship("Tag", secondary=assoc_incident_tags, backref="incidents")
+    tags = relationship(
+        "Tag",
+        secondary=assoc_incident_tags,
+        backref="incidents",
+    )
     tasks = relationship("Task", backref="incident", cascade="all, delete-orphan")
-    terms = relationship("Term", secondary=assoc_incident_terms, backref="incidents", lazy="joined")
+    terms = relationship("Term", secondary=assoc_incident_terms, backref="incidents")
     ticket = relationship("Ticket", uselist=False, backref="incident", cascade="all, delete-orphan")
     workflow_instances = relationship(
         "WorkflowInstance", backref="incident", cascade="all, delete-orphan"
