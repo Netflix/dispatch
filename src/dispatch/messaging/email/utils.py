@@ -1,8 +1,7 @@
-import os
 import logging
+import os
 import subprocess
 import tempfile
-import platform
 
 from dispatch.config import MJML_PATH
 
