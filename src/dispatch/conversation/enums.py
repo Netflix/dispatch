@@ -1,7 +1,7 @@
-from enum import Enum
+from dispatch.enums import DispatchEnum
 
 
-class ConversationCommands(str, Enum):
+class ConversationCommands(DispatchEnum):
     assign_role = "assign-role"
     update_incident = "update-incident"
     engage_oncall = "engage-oncall"
@@ -13,7 +13,7 @@ class ConversationCommands(str, Enum):
     tactical_report = "tactical-report"
 
 
-class ConversationButtonActions(str, Enum):
+class ConversationButtonActions(DispatchEnum):
     invite_user = "invite-user"
     provide_feedback = "provide-feedback"
     update_task_status = "update-task-status"

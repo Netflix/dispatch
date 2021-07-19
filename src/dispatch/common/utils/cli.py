@@ -38,8 +38,3 @@ def install_plugins():
             logger.info(f"Failed to load plugin {ep.name} due to missing configuration items. {e}")
         except Exception:
             logger.error(f"Failed to load plugin {ep.name}:{traceback.format_exc()}")
-
-
-def get_plugin_properties(json_schema):
-    for _, v in json_schema["definitions"].items():
-        return v["properties"]

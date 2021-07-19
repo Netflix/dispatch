@@ -26,9 +26,7 @@ router = APIRouter()
 
 @router.get("", response_model=OrganizationPagination)
 def get_organizations(common: dict = Depends(common_parameters)):
-    """
-    Get all organizations.
-    """
+    """Get all organizations."""
     return search_filter_sort_paginate(model="Organization", **common)
 
 
@@ -42,9 +40,7 @@ def create_organization(
     organization_in: OrganizationCreate,
     current_user: DispatchUser = Depends(get_current_user),
 ):
-    """
-    Create a new organization.
-    """
+    """Create a new organization."""
     organization = get_by_name(db_session=db_session, name=organization_in.name)
     if organization:
         raise HTTPException(
@@ -62,9 +58,7 @@ def create_organization(
 
 @router.get("/{organization_id}", response_model=OrganizationRead)
 def get_organization(*, db_session: Session = Depends(get_db), organization_id: int):
-    """
-    Get a organization.
-    """
+    """Get an organization."""
     organization = get(db_session=db_session, organization_id=organization_id)
     if not organization:
         raise HTTPException(status_code=404, detail="An organization with this id does not exist.")
@@ -82,9 +76,7 @@ def update_organization(
     organization_id: int,
     organization_in: OrganizationUpdate,
 ):
-    """
-    Update a organization.
-    """
+    """Update an organization."""
     organization = get(db_session=db_session, organization_id=organization_id)
     if not organization:
         raise HTTPException(status_code=404, detail="An organization with this id does not exist.")
@@ -100,9 +92,7 @@ def update_organization(
     dependencies=[Depends(PermissionsDependency([OrganizationOwnerPermission]))],
 )
 def delete_organization(*, db_session: Session = Depends(get_db), organization_id: int):
-    """
-    Delete an organization.
-    """
+    """Delete an organization."""
     organization = get(db_session=db_session, organization_id=organization_id)
     if not organization:
         raise HTTPException(status_code=404, detail="An organization with this id does not exist.")

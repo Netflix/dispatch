@@ -12,13 +12,6 @@ def get(*, db_session, conversation_id: int) -> Optional[Conversation]:
     return db_session.query(Conversation).filter(Conversation.id == conversation_id).one_or_none()
 
 
-def get_by_channel_id(db_session, channel_id: str) -> Optional[Conversation]:
-    """Fetch a conversation by its `channel_id`."""
-    return (
-        db_session.query(Conversation).filter(Conversation.channel_id == channel_id).one_or_none()
-    )
-
-
 def get_by_channel_id_ignoring_channel_type(db_session, channel_id: str) -> Optional[Conversation]:
     """Fetch a conversation by its `channel_id` ignoring the channel type
     and update the channel id in the database if the channel type has changed."""

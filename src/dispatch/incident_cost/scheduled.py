@@ -24,9 +24,7 @@ log = logging.getLogger(__name__)
 @scheduler.add(every(5).minutes, name="calculate-incidents-response-cost")
 @scheduled_project_task
 def calculate_incidents_response_cost(db_session: SessionLocal, project: Project):
-    """
-    Calculates and saves the response cost for all incidents.
-    """
+    """Calculates and saves the response cost for all incidents."""
     response_cost_type = incident_cost_type_service.get_default(
         db_session=db_session, project_id=project.id
     )

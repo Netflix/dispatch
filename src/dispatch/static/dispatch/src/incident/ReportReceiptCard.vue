@@ -189,17 +189,6 @@
               <v-divider />
             </span>
           </span>
-          <v-list-item v-if="incident_faq" :href="incident_faq.weblink" target="_blank">
-            <v-list-item-content>
-              <v-list-item-title>Incident FAQ</v-list-item-title>
-              <v-list-item-subtitle>{{ incident_faq.description }}</v-list-item-subtitle>
-            </v-list-item-content>
-            <v-list-item-action>
-              <v-list-item-icon>
-                <v-icon>open_in_new</v-icon>
-              </v-list-item-icon>
-            </v-list-item-action>
-          </v-list-item>
         </v-list-group>
       </v-list>
       <v-container grid-list-md>
@@ -215,7 +204,6 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { forEach, find } from "lodash"
-import DocumentApi from "@/document/api"
 import PluginApi from "@/plugin/api"
 
 export default {
@@ -225,7 +213,6 @@ export default {
   data() {
     return {
       isSubmitted: false,
-      incident_faq: null,
       activeResourcePlugins: {
         document: null,
         ticket: null,
@@ -236,27 +223,6 @@ export default {
     }
   },
   created() {
-    DocumentApi.getAll({
-      filter: JSON.stringify({
-        and: [
-          {
-            field: "resource_type",
-            op: "==",
-            value: "dispatch-incident-faq",
-          },
-          {
-            model: "Project",
-            field: "name",
-            op: "==",
-            value: this.project.name,
-          },
-        ],
-      }),
-    }).then((response) => {
-      if (response.data.items.length) {
-        this.incident_faq = response.data.items[0]
-      }
-    })
     PluginApi.getAllInstances({
       itemsPerPage: -1,
       filter: JSON.stringify({

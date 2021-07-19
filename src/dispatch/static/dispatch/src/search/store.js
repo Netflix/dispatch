@@ -19,6 +19,7 @@ const getDefaultSelectedState = () => {
       incident_priority: [],
       status: [],
       tag: [],
+      tag_type: [],
       project: [],
     },
   }

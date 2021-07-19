@@ -1,6 +1,6 @@
-from enum import Enum
+from dispatch.enums import DispatchEnum
 
 
-class ReportTypes(str, Enum):
+class ReportTypes(DispatchEnum):
     tactical_report = "Tactical Report"
     executive_report = "Executive Report"

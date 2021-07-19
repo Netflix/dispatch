@@ -30,63 +30,6 @@ def replace_text(client: Any, document_id: str, replacements: List[str]):
     return client.batchUpdate(documentId=document_id, body=body).execute()
 
 
-def insert_into_table(
-    client: Any, document_id: str, table_index: int, cell_index: int, rows: List[dict]
-):
-    """Inserts rows and text into a table in an existing document."""
-    # We insert as many rows as we need using the insertTableRow object.
-    requests = []
-    for _ in range(0, len(rows) - 1):
-        requests.append(
-            {
-                "insertTableRow": {
-                    "tableCellLocation": {
-                        "tableStartLocation": {"index": table_index},
-                        "rowIndex": 1,
-                        "columnIndex": 1,
-                    },
-                    "insertBelow": "true",
-                }
-            }
-        )
-
-    # We insert the text into the table cells using the insertText object.
-    index = cell_index  # set index to first empty cell
-    for row in rows:
-        for _, value in row.items():
-            requests.append({"insertText": {"location": {"index": index}, "text": str(value)}})
-            index += len(str(value)) + 2  # set index to next cell
-        index += 1  # set index to new row
-
-    body = {"requests": requests}
-    return client.batchUpdate(documentId=document_id, body=body).execute()
-
-
-def insert_incident_data(client: Any, document_id: str, index: int, incident_data: List[dict]):
-    """Inserts incident data in an existing document."""
-    requests = []
-    for data in incident_data:
-        key = data["key"]
-        title = data["title"]
-        summary = remove_control_characters(data["summary"])
-        requests.append({"insertText": {"location": {"index": index}, "text": f"{key}: {title}\n"}})
-        requests.append(
-            {
-                "updateTextStyle": {
-                    "range": {"startIndex": index, "endIndex": index + len(f"{key}: {title}")},
-                    "textStyle": {"bold": True},
-                    "fields": "bold",
-                }
-            }
-        )
-        index += len(f"{key}: {title}\n")
-        requests.append({"insertText": {"location": {"index": index}, "text": f"{summary}\n\n"}})
-        index += len(f"{summary}\n\n")
-
-    body = {"requests": requests}
-    return client.batchUpdate(documentId=document_id, body=body).execute()
-
-
 @apply(timer, exclude=["__init__"])
 @apply(counter, exclude=["__init__"])
 class GoogleDocsDocumentPlugin(DocumentPlugin):

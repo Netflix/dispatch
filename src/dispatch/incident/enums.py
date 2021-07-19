@@ -1,10 +1,7 @@
-from enum import Enum
+from dispatch.enums import DispatchEnum
 
 
-class IncidentStatus(str, Enum):
+class IncidentStatus(DispatchEnum):
     active = "Active"
     stable = "Stable"
     closed = "Closed"
-
-    def __str__(self) -> str:
-        return str.__str__(self)

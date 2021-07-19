@@ -18,10 +18,6 @@ from .config import (
 log = logging.getLogger(__name__)
 
 
-class NoConversationFoundException(Exception):
-    pass
-
-
 def create_slack_client(run_async: bool = False):
     """Creates a Slack Web API client."""
     if not run_async:
@@ -274,11 +270,6 @@ def set_conversation_topic(client: Any, conversation_id: str, topic: str):
     return make_call(client, "conversations.setTopic", channel=conversation_id, topic=topic)
 
 
-def set_conversation_purpose(client: Any, conversation_id: str, purpose: str):
-    """Sets the purpose of the specified conversation."""
-    return make_call(client, "conversations.setPurpose", channel=conversation_id, purpose=purpose)
-
-
 def create_conversation(client: Any, name: str, is_private: bool = False):
     """Make a new Slack conversation."""
     response = make_call(
@@ -294,11 +285,6 @@ def create_conversation(client: Any, name: str, is_private: bool = False):
         "name": response["name"],
         "weblink": f"https://slack.com/app_redirect?channel={response['id']}",
     }
-
-
-def close_conversation(client: Any, conversation_id):
-    """Closes an existing conversation."""
-    return make_call(client, "conversations.close", channel=conversation_id)
 
 
 def archive_conversation(client: Any, conversation_id: str):
@@ -374,20 +360,9 @@ def send_ephemeral_message(
     return {"id": response["channel"], "timestamp": response["ts"]}
 
 
-# TODO what about pagination?
-def list_pins(client: Any, conversation_id: str):
-    """Lists all pins for conversation."""
-    return make_call(client, "pins.list", channel=conversation_id)
-
-
 def add_pin(client: Any, conversation_id: str, timestamp: str):
     """Adds a pin to a conversation."""
     return make_call(client, "pins.add", channel=conversation_id, timestamp=timestamp)
-
-
-def remove_pin(client: Any, conversation_id: str, timestamp: str):
-    """Removed pin from conversation."""
-    return make_call(client, "pins.remove", channel=conversation_id, timestamp=timestamp)
 
 
 def message_filter(message):

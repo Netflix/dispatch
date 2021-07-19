@@ -11,13 +11,6 @@ def test_get_event(session, event):
     assert t_event.id == event.id
 
 
-def test_get_by_uuid(session, event):
-    from dispatch.event.service import get_by_uuid
-
-    t_event = get_by_uuid(db_session=session, uuid=event.uuid)
-    assert t_event.uuid == event.uuid
-
-
 def test_get_by_incident_id(session, event):
     from dispatch.event.service import get_by_incident_id
 

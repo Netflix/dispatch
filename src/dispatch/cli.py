@@ -34,11 +34,6 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 log = logging.getLogger(__name__)
 
 
-def abort_if_false(ctx, param, value):
-    if not value:
-        ctx.abort()
-
-
 @click.group()
 @click.version_option(version=__version__)
 def dispatch_cli():
@@ -54,7 +49,7 @@ def plugins_group():
 
 @plugins_group.command("list")
 def list_plugins():
-    """Shows all available plugins"""
+    """Shows all available plugins."""
     from dispatch.database.core import SessionLocal
     from dispatch.plugin import service as plugin_service
 
@@ -129,7 +124,7 @@ def install_plugins(force):
         if force:
             click.secho(f"Updating plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
             # we only update values that should change
-            record.tile = p.title
+            record.title = p.title
             record.version = p.version
             record.author = p.author
             record.author_url = p.author_url

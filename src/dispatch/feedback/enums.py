@@ -1,7 +1,7 @@
-from enum import Enum
+from dispatch.enums import DispatchEnum
 
 
-class FeedbackRating(str, Enum):
+class FeedbackRating(DispatchEnum):
     very_satisfied = "Very satisfied"
     somewhat_satisfied = "Somewhat satisfied"
     neither_satisfied_nor_dissatisfied = "Neither satisfied nor dissatisfied"
