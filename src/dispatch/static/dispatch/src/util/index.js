@@ -35,7 +35,7 @@ const exportCSV = function (items, fileName) {
   const opts = { transforms: [flatten()] }
   const parser = new Parser(opts)
   const csv = parser.parse(items)
-  const data = encodeURI("data:text/csv;charset=utf-8," + csv)
+  const data = "data:text/csv;charset=utf-8," + encodeURIComponent(csv)
   const link = document.createElement("a")
   link.setAttribute("href", data)
   link.setAttribute("download", fileName)
