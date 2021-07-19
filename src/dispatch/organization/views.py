@@ -76,7 +76,7 @@ def update_organization(
     organization_id: int,
     organization_in: OrganizationUpdate,
 ):
-    """Update a organization."""
+    """Update an organization."""
     organization = get(db_session=db_session, organization_id=organization_id)
     if not organization:
         raise HTTPException(status_code=404, detail="An organization with this id does not exist.")
