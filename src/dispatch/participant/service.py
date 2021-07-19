@@ -15,7 +15,7 @@ from .models import Participant, ParticipantCreate, ParticipantUpdate
 
 
 def get(*, db_session, participant_id: int) -> Optional[Participant]:
-    """Get a participant by id."""
+    """Get a participant by its id."""
     return db_session.query(Participant).filter(Participant.id == participant_id).first()
 
 
