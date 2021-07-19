@@ -56,7 +56,7 @@ def update_incident_cost(
     incident_cost_id: int,
     incident_cost_in: IncidentCostUpdate,
 ):
-    """Update an incident cost by id."""
+    """Update an incident cost by its id."""
     incident_cost = get(db_session=db_session, incident_cost_id=incident_cost_id)
     if not incident_cost:
         raise HTTPException(status_code=404, detail="An incident cost with this id does not exist.")
