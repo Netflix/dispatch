@@ -56,7 +56,7 @@ def update_notification(
     notification_id: int,
     notification_in: NotificationUpdate,
 ):
-    """Update a notification by id."""
+    """Update a notification by its id."""
     notification = get(db_session=db_session, notification_id=notification_id)
     if not notification:
         raise HTTPException(status_code=404, detail="A notification with this id does not exist.")
