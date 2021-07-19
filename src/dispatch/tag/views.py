@@ -50,7 +50,7 @@ def update_tag(*, db_session: Session = Depends(get_db), tag_id: int, tag_in: Ta
 
 @router.delete("/{tag_id}")
 def delete_tag(*, db_session: Session = Depends(get_db), tag_id: int):
-    """Delete an tag, returning only an HTTP 200 OK if successful."""
+    """Delete a tag, returning only an HTTP 200 OK if successful."""
     tag = get(db_session=db_session, tag_id=tag_id)
     if not tag:
         raise HTTPException(status_code=404, detail="An tag with this ID does not exist.")
