@@ -40,7 +40,7 @@ def create_tag(*, db_session: Session = Depends(get_db), tag_in: TagCreate):
 
 @router.put("/{tag_id}", response_model=TagRead)
 def update_tag(*, db_session: Session = Depends(get_db), tag_id: int, tag_in: TagUpdate):
-    """Given its unique ID, update details of an tag."""
+    """Update a tag."""
     tag = get(db_session=db_session, tag_id=tag_id)
     if not tag:
         raise HTTPException(status_code=404, detail="An tag with this ID does not exist.")
