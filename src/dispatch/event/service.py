@@ -68,7 +68,7 @@ def log(
     ended_at: datetime = None,
     details: dict = None,
 ) -> Event:
-    """Logs an event"""
+    """Logs an event."""
     uuid = uuid4()
 
     if not started_at:
