@@ -52,7 +52,7 @@ def update(*, db_session, event: Event, event_in: EventUpdate) -> Event:
 
 
 def delete(*, db_session, event_id: int):
-    """Deletes an event"""
+    """Deletes an event."""
     event = db_session.query(Event).filter(Event.id == event_id).first()
     db_session.delete(event)
     db_session.commit()
