@@ -30,7 +30,7 @@ def create_term(*, db_session: Session = Depends(get_db), term_in: TermCreate):
 
 @router.get("/{term_id}", response_model=TermRead)
 def get_term(*, db_session: Session = Depends(get_db), term_id: int):
-    """Update a term."""
+    """Get a term."""
     term = get(db_session=db_session, term_id=term_id)
     if not term:
         raise HTTPException(status_code=404, detail="The term with this id does not exist.")
