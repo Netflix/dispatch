@@ -58,7 +58,7 @@ def create_organization(
 
 @router.get("/{organization_id}", response_model=OrganizationRead)
 def get_organization(*, db_session: Session = Depends(get_db), organization_id: int):
-    """Get a organization."""
+    """Get an organization."""
     organization = get(db_session=db_session, organization_id=organization_id)
     if not organization:
         raise HTTPException(status_code=404, detail="An organization with this id does not exist.")
