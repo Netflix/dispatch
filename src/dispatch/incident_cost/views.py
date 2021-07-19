@@ -25,7 +25,7 @@ def get_incident_costs(*, common: dict = Depends(common_parameters)):
 
 @router.get("/{incident_cost_id}", response_model=IncidentCostRead)
 def get_incident_cost(*, db_session: Session = Depends(get_db), incident_cost_id: int):
-    """Get an incident cost by id."""
+    """Get an incident cost by its id."""
     incident_cost = get(db_session=db_session, incident_cost_id=incident_cost_id)
     if not incident_cost:
         raise HTTPException(status_code=404, detail="An incident cost with this id does not exist.")
