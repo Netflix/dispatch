@@ -75,7 +75,7 @@ def update_individual(
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 async def delete_individual(*, db_session: Session = Depends(get_db), individual_contact_id: int):
-    """Delete a individual contact."""
+    """Delete an individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
         raise HTTPException(status_code=404, detail="The individual with this id does not exist.")
