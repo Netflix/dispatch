@@ -15,18 +15,14 @@ from .models import Participant, ParticipantCreate, ParticipantUpdate
 
 
 def get(*, db_session, participant_id: int) -> Optional[Participant]:
-    """
-    Get a participant by id.
-    """
+    """Get a participant by its id."""
     return db_session.query(Participant).filter(Participant.id == participant_id).first()
 
 
 def get_by_incident_id_and_role(
     *, db_session, incident_id: int, role: str
 ) -> Optional[Participant]:
-    """
-    Get a participant by incident id and role name.
-    """
+    """Get a participant by incident id and role name."""
     return (
         db_session.query(Participant)
         .filter(Participant.incident_id == incident_id)
@@ -40,9 +36,7 @@ def get_by_incident_id_and_role(
 def get_by_incident_id_and_email(
     *, db_session, incident_id: int, email: str
 ) -> Optional[Participant]:
-    """
-    Get a participant by incident id and email.
-    """
+    """Get a participant by incident id and email."""
     return (
         db_session.query(Participant)
         .filter(Participant.incident_id == incident_id)
@@ -55,9 +49,7 @@ def get_by_incident_id_and_email(
 def get_by_incident_id_and_service_id(
     *, db_session, incident_id: int, service_id: int
 ) -> Optional[Participant]:
-    """
-    Get participant by incident and service id.
-    """
+    """Get participant by incident and service id."""
     return (
         db_session.query(Participant)
         .filter(Participant.incident_id == incident_id)
@@ -67,9 +59,7 @@ def get_by_incident_id_and_service_id(
 
 
 def get_all(*, db_session) -> List[Optional[Participant]]:
-    """
-    Get all participants.
-    """
+    """Get all participants."""
     return db_session.query(Participant)
 
 
@@ -139,9 +129,7 @@ def get_or_create(
 
 
 def create(*, db_session, participant_in: ParticipantCreate) -> Participant:
-    """
-    Create a new participant.
-    """
+    """Create a new participant."""
     participant_roles = [
         participant_role_service.create(db_session=db_session, participant_role_in=participant_role)
         for participant_role in participant_in.participant_roles
@@ -163,9 +151,7 @@ def create(*, db_session, participant_in: ParticipantCreate) -> Participant:
 
 
 def create_all(*, db_session, participants_in: List[ParticipantCreate]) -> List[Participant]:
-    """
-    Create a list of participants.
-    """
+    """Create a list of participants."""
     participants = [Participant(**t.dict()) for t in participants_in]
     db_session.bulk_save_objects(participants)
     db_session.commit()
@@ -175,9 +161,7 @@ def create_all(*, db_session, participants_in: List[ParticipantCreate]) -> List[
 def update(
     *, db_session, participant: Participant, participant_in: ParticipantUpdate
 ) -> Participant:
-    """
-    Updates a participant.
-    """
+    """Updates a participant."""
     participant_data = jsonable_encoder(participant)
 
     update_data = participant_in.dict(skip_defaults=True)
@@ -192,9 +176,7 @@ def update(
 
 
 def delete(*, db_session, participant_id: int):
-    """
-    Deletes a participant.
-    """
+    """Deletes a participant."""
     participant = db_session.query(Participant).filter(Participant.id == participant_id).first()
     db_session.delete(participant)
     db_session.commit()

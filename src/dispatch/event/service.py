@@ -15,30 +15,22 @@ logger = logging.getLogger(__name__)
 
 
 def get(*, db_session, event_id: int) -> Optional[Event]:
-    """
-    Get an event by id.
-    """
+    """Get an event by id."""
     return db_session.query(Event).filter(Event.id == event_id).one_or_none()
 
 
 def get_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Event]]:
-    """
-    Get events by incident id.
-    """
+    """Get events by incident id."""
     return db_session.query(Event).filter(Event.incident_id == incident_id)
 
 
 def get_all(*, db_session) -> List[Optional[Event]]:
-    """
-    Get all events.
-    """
+    """Get all events."""
     return db_session.query(Event)
 
 
 def create(*, db_session, event_in: EventCreate) -> Event:
-    """
-    Create a new event.
-    """
+    """Create a new event."""
     event = Event(**event_in.dict())
     db_session.add(event)
     db_session.commit()
@@ -46,9 +38,7 @@ def create(*, db_session, event_in: EventCreate) -> Event:
 
 
 def update(*, db_session, event: Event, event_in: EventUpdate) -> Event:
-    """
-    Updates an event.
-    """
+    """Updates an event."""
     event_data = jsonable_encoder(event)
     update_data = event_in.dict(skip_defaults=True)
 
@@ -62,9 +52,7 @@ def update(*, db_session, event: Event, event_in: EventUpdate) -> Event:
 
 
 def delete(*, db_session, event_id: int):
-    """
-    Deletes an event
-    """
+    """Deletes an event."""
     event = db_session.query(Event).filter(Event.id == event_id).first()
     db_session.delete(event)
     db_session.commit()
@@ -80,9 +68,7 @@ def log(
     ended_at: datetime = None,
     details: dict = None,
 ) -> Event:
-    """
-    Logs an event
-    """
+    """Logs an event."""
     uuid = uuid4()
 
     if not started_at:

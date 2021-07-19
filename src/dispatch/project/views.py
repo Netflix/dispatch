@@ -23,9 +23,7 @@ router = APIRouter()
 
 @router.get("", response_model=ProjectPagination)
 def get_projects(common: dict = Depends(common_parameters)):
-    """
-    Get all projects.
-    """
+    """Get all projects."""
     return search_filter_sort_paginate(model="Project", **common)
 
 
@@ -36,9 +34,7 @@ def get_projects(common: dict = Depends(common_parameters)):
     dependencies=[Depends(PermissionsDependency([ProjectCreatePermission]))],
 )
 def create_project(*, db_session: Session = Depends(get_db), project_in: ProjectCreate):
-    """
-    Create a new project.
-    """
+    """Create a new project."""
     project = get_by_name(db_session=db_session, name=project_in.name)
     if project:
         raise HTTPException(status_code=400, detail="A project with this name already exists.")
@@ -52,9 +48,7 @@ def create_project(*, db_session: Session = Depends(get_db), project_in: Project
     summary="Get a project.",
 )
 def get_project(*, db_session: Session = Depends(get_db), project_id: int):
-    """
-    Get a project.
-    """
+    """Get a project."""
     project = get(db_session=db_session, project_id=project_id)
     if not project:
         raise HTTPException(status_code=404, detail="A project with this id does not exist.")
@@ -72,9 +66,7 @@ def update_project(
     project_id: int,
     project_in: ProjectUpdate,
 ):
-    """
-    Update a project.
-    """
+    """Update a project."""
     project = get(db_session=db_session, project_id=project_id)
     if not project:
         raise HTTPException(status_code=404, detail="A project with this id does not exist.")
@@ -88,9 +80,7 @@ def update_project(
     dependencies=[Depends(PermissionsDependency([ProjectUpdatePermission]))],
 )
 def delete_project(*, db_session: Session = Depends(get_db), project_id: int):
-    """
-    Delete a project.
-    """
+    """Delete a project."""
     project = get(db_session=db_session, project_id=project_id)
     if not project:
         raise HTTPException(status_code=404, detail="A project with this id does not exist.")

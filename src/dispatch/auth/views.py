@@ -41,9 +41,7 @@ user_router = APIRouter()
     response_model=UserPagination,
 )
 def get_users(*, organization: str, common: dict = Depends(common_parameters)):
-    """
-    Get all users.
-    """
+    """Get all users."""
     common["filter_spec"] = {
         "and": [{"model": "Organization", "op": "==", "field": "name", "value": organization}]
     }
@@ -66,9 +64,7 @@ def get_users(*, organization: str, common: dict = Depends(common_parameters)):
 
 @user_router.get("/{user_id}", response_model=UserRead)
 def get_user(*, db_session: Session = Depends(get_db), user_id: int):
-    """
-    Get a user.
-    """
+    """Get a user."""
     user = get(db_session=db_session, user_id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="The user with this id does not exist.")
@@ -96,9 +92,7 @@ def update_user(
     organization: str,
     user_in: UserUpdate,
 ):
-    """
-    Update a user.
-    """
+    """Update a user."""
     user = get(db_session=db_session, user_id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="The user with this id does not exist.")

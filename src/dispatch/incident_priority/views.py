@@ -19,9 +19,7 @@ router = APIRouter()
 
 @router.get("", response_model=IncidentPriorityPagination, tags=["incident_priorities"])
 def get_incident_priorities(*, common: dict = Depends(common_parameters)):
-    """
-    Returns all incident priorities.
-    """
+    """Returns all incident priorities."""
     return search_filter_sort_paginate(model="IncidentPriority", **common)
 
 
@@ -35,9 +33,7 @@ def create_incident_priority(
     db_session: Session = Depends(get_db),
     incident_priority_in: IncidentPriorityCreate,
 ):
-    """
-    Create a new incident priority.
-    """
+    """Create a new incident priority."""
     incident_priority = create(db_session=db_session, incident_priority_in=incident_priority_in)
     return incident_priority
 
@@ -53,9 +49,7 @@ def update_incident_priority(
     incident_priority_id: int,
     incident_priority_in: IncidentPriorityUpdate,
 ):
-    """
-    Update an existing incident priority.
-    """
+    """Update an existing incident priority."""
     incident_priority = get(db_session=db_session, incident_priority_id=incident_priority_id)
     if not incident_priority:
         raise HTTPException(
@@ -72,9 +66,7 @@ def update_incident_priority(
 
 @router.get("/{incident_priority_id}", response_model=IncidentPriorityRead)
 def get_incident_priority(*, db_session: Session = Depends(get_db), incident_priority_id: int):
-    """
-    Get an incident priority.
-    """
+    """Get an incident priority."""
     incident_priority = get(db_session=db_session, incident_priority_id=incident_priority_id)
     if not incident_priority:
         raise HTTPException(
