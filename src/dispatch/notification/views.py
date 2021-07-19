@@ -25,7 +25,7 @@ def get_notifications(*, common: dict = Depends(common_parameters)):
 
 @router.get("/{notification_id}", response_model=NotificationRead)
 def get_notification(*, db_session: Session = Depends(get_db), notification_id: int):
-    """Get a notification by id."""
+    """Get a notification by its id."""
     notification = get(db_session=db_session, notification_id=notification_id)
     if not notification:
         raise HTTPException(status_code=404, detail="A notification with this id does not exist.")
