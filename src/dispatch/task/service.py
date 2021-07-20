@@ -87,7 +87,6 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
         if assignee:
             assignees.append(assignee)
 
-    creator_email = None
     if not task_in.creator:
         creator_email = task_in.owner.individual.email
     else:
@@ -140,16 +139,18 @@ def update(*, db_session, task: Task, task_in: TaskUpdate, sync_external: bool =
     """Update an existing task."""
     # we add the assignees of the task to the incident if the status of the task is open
     if task_in.status == TaskStatus.open:
-        assignees = []
-        for i in task_in.assignees:
-            assignees.append(
-                incident_flows.incident_add_or_reactivate_participant_flow(
-                    db_session=db_session,
-                    incident_id=task.incident.id,
-                    user_email=i.individual.email,
+        # we don't allow a task to be unassigned
+        if task_in.assignees:
+            assignees = []
+            for i in task_in.assignees:
+                assignees.append(
+                    incident_flows.incident_add_or_reactivate_participant_flow(
+                        db_session=db_session,
+                        incident_id=task.incident.id,
+                        user_email=i.individual.email,
+                    )
                 )
-            )
-        task.assignees = assignees
+            task.assignees = assignees
 
     # we add the owner of the task to the incident if the status of the task is open
     if task_in.owner:

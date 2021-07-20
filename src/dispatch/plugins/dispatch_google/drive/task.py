@@ -14,6 +14,7 @@ from dispatch.task.enums import TaskStatus
 from enum import Enum
 
 from .drive import get_activity, get_comment, get_person
+from dispatch.plugins.dispatch_google.config import GOOGLE_USER_OVERRIDE
 
 log = logging.getLogger(__name__)
 
@@ -68,7 +69,10 @@ def get_user_email(client: Any, person_id: str) -> str:
     # fetch the email from the people api
     person_data = get_person(client, person_id)
 
-    # do we want to handle multiple addresses?
+    # this is required due to issues with cross domain lookups (mainly used for testing)
+    if GOOGLE_USER_OVERRIDE:
+        return GOOGLE_USER_OVERRIDE
+
     return person_data["emailAddresses"][0]["value"]
 
 
@@ -79,33 +83,37 @@ def get_task_activity(
     activities = get_activity(activity_client, file_id, lookback=lookback)
 
     tasks = []
-    for a in activities:
+    for a in sorted(activities, key=lambda time: time["timestamp"]):
         # process an assignment activity
         if a["primaryActionDetail"]["comment"].get(CommentTypes.assignment):
             subtype = a["primaryActionDetail"]["comment"][CommentTypes.assignment]["subtype"]
-            comment_id = a["targets"][0]["fileComment"]["legacyCommentId"]
+            discussion_id = a["targets"][0]["fileComment"]["legacyDiscussionId"]
 
-            task = {"resource_id": comment_id}
+            task = {"resource_id": discussion_id}
 
             # we create a new task when comment has an assignment added to it
             if subtype == AssignmentSubTypes.added:
                 # we need to fetch the comment data
-                comment_id = a["targets"][0]["fileComment"]["legacyCommentId"]
-                comment = get_comment(comment_client, file_id, comment_id)
+                discussion_id = a["targets"][0]["fileComment"]["legacyDiscussionId"]
+                comment = get_comment(comment_client, file_id, discussion_id)
 
                 task["description"] = comment["content"]
 
                 task["tickets"] = get_tickets(comment["replies"])
 
                 # we assume the person doing the assignment to be the creator of the task
-                creator_person_id = a["actors"]["user"]["knownUser"]["personName"]
-                task["creator"] = get_user_email(people_client, creator_person_id)
+                creator_person_id = a["actors"][0]["user"]["knownUser"]["personName"]
+                task["creator"] = {
+                    "individual": {"email": get_user_email(people_client, creator_person_id)}
+                }
 
                 # we only associate the current assignee event if multiple of people are mentioned (NOTE: should we also associated other mentions?)
                 assignee_person_id = a["primaryActionDetail"]["comment"][CommentTypes.assignment][
                     "assignedUser"
                 ]["knownUser"]["personName"]
-                task["assignees"] = [get_user_email(people_client, assignee_person_id)]
+                task["assignees"] = [
+                    {"individual": {"email": get_user_email(people_client, assignee_person_id)}}
+                ]
 
                 # this is when the user was assigned (making it into a task, not when the inital comment was created)
                 task["created_at"] = a["timestamp"]
@@ -115,7 +123,7 @@ def get_task_activity(
 
             elif subtype == AssignmentSubTypes.reply_added:
                 # check to see if there are any linked tickets
-                comment_id = a["targets"][0]["fileComment"]["legacyCommentId"]
+                comment_id = a["targets"][0]["fileComment"]["legacyDiscussionId"]
                 comment = get_comment(comment_client, file_id, comment_id)
                 task["tickets"] = get_tickets(comment["replies"])
 
@@ -126,13 +134,12 @@ def get_task_activity(
                 task["status"] = TaskStatus.resolved
 
             elif subtype == AssignmentSubTypes.reassigned:
-                from pprint import pprint
-
-                pprint(a)
                 assignee_person_id = a["primaryActionDetail"]["comment"][CommentTypes.assignment][
                     "assignedUser"
                 ]["knownUser"]["personName"]
-                task["assignees"] = [get_user_email(people_client, assignee_person_id)]
+                task["assignees"] = [
+                    {"individual": {"email": get_user_email(people_client, assignee_person_id)}}
+                ]
 
             elif subtype == AssignmentSubTypes.reopened:
                 task["status"] = TaskStatus.open

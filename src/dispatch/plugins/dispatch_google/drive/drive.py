@@ -270,7 +270,11 @@ def get_comment(client: Any, file_id: str, comment_id: str, **kwargs):
 def get_person(client: Any, person_id: str, **kwargs):
     """Gets a person's metadata given their people id."""
     return make_call(
-        client.people(), "get", resourceName=person_id, personFields="emailAddresses", **kwargs
+        client.people(),
+        "get",
+        resourceName=person_id,
+        personFields="emailAddresses",
+        **kwargs,
     )
 
 
