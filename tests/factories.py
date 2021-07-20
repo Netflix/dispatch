@@ -3,9 +3,11 @@ import uuid
 from pytz import UTC
 from datetime import datetime
 
+from faker import Faker
+
 from factory import Sequence, post_generation, SubFactory, LazyAttribute
 from factory.alchemy import SQLAlchemyModelFactory
-from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime
+from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime, FuzzyInteger
 
 from dispatch.database.core import SessionLocal
 
@@ -18,6 +20,8 @@ from dispatch.event.models import Event
 from dispatch.feedback.models import Feedback
 from dispatch.group.models import Group
 from dispatch.incident.models import Incident
+from dispatch.incident_cost.models import IncidentCost
+from dispatch.incident_cost_type.models import IncidentCostType
 from dispatch.incident_priority.models import IncidentPriority
 from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
@@ -680,3 +684,46 @@ class FeedbackFactory(BaseFactory):
 
         if extracted:
             self.participant_id = extracted.id
+
+
+class IncidentCostFactory(BaseFactory):
+    """Incident Cost Factory."""
+
+    amount = FuzzyInteger(low=0, high=10000)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = IncidentCost
+
+    @post_generation
+    def incident(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.incident_id = extracted.id
+
+    @post_generation
+    def incident_cost_type(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.incident_cost_type_id = extracted.id
+
+
+class IncidentCostTypeFactory(BaseFactory):
+    """Incident Cost Type Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    category = FuzzyText()
+    details = {}
+    default = Faker().pybool()
+    editable = Faker().pybool()
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = IncidentCostType
