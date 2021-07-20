@@ -139,6 +139,7 @@ def get_activity(
         client.activity(), "query", body={"filter": activity_filter, "itemName": f"items/{file_id}"}
     )
 
+
 def download_google_document(client: Any, file_id: str, mime_type: str = "text/plain"):
     """Downloads a Google document."""
     request = client.files().export_media(fileId=file_id, mimeType=mime_type)
