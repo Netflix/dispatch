@@ -74,6 +74,8 @@ Then, create a Developer API key \(APIs & Services &gt; Credentials &gt; Create 
 Enable the following APIs \(APIs and Services &gt; Library\):
 
 - Google Drive API
+- Google Drive Activity API
+- Google People API
 - Google Docs API
 - Google Calendar API
 - Gmail API
@@ -85,6 +87,8 @@ Specify the following scopes:
 ```text
 https://www.googleapis.com/auth/documents
 https://www.googleapis.com/auth/drive
+https://www.googleapis.com/auth/directory.readonly
+https://www.googleapis.com/auth/drive.activity.readonly
 https://mail.google.com/
 https://www.googleapis.com/auth/admin.directory.group
 https://www.googleapis.com/auth/apps.groups.settings
