@@ -96,6 +96,8 @@ google-auth-oauthlib==0.4.4
     # via -r requirements-base.in
 googleapis-common-protos==1.53.0
     # via google-api-core
+greenlet==1.1.0
+    # via sqlalchemy
 h11==0.9.0
     # via
     #   -r requirements-base.in
@@ -288,7 +290,7 @@ sniffio==1.2.0
     #   httpx
 spacy==2.3.5
     # via -r requirements-base.in
-sqlalchemy==1.3.24
+sqlalchemy==1.4.21
     # via
     #   -r requirements-base.in
     #   alembic

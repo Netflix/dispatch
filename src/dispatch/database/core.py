@@ -3,10 +3,11 @@ import functools
 from typing import Any
 
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import sessionmaker, object_session
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import sessionmaker, object_session, declarative_base
 from sqlalchemy.sql.expression import true
 from sqlalchemy_utils import get_mapper
+
 from starlette.requests import Request
 
 from dispatch import config
@@ -57,7 +58,7 @@ def get_class_by_tablename(table_fullname: str) -> Any:
     """Return class reference mapped to table."""
 
     def _find_class(name):
-        for c in Base._decl_class_registry.values():
+        for c in Base.registry._class_registry.values():
             if hasattr(c, "__table__"):
                 if c.__table__.fullname.lower() == name.lower():
                     return c
