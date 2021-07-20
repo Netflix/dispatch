@@ -67,11 +67,21 @@ def test_create(session):
 
 @pytest.mark.skip
 def test_update(session, event):
-    from dispatch.event.event import update
+    from dispatch.event.service import update
     from dispatch.event.models import EventUpdate
 
-    source = "Source Updated"
-    event_in = EventUpdate(source=source)
+    uuid = uuid4()
+    started_at = datetime.datetime.now()
+    ended_at = datetime.datetime.now()
+    source = "Dispatch event source updated"
+    description = "Dispatch event description"
+    event_in = EventUpdate(
+        uuid=uuid,
+        started_at=started_at,
+        ended_at=ended_at,
+        source=source,
+        description=description,
+    )
     event = update(db_session=session, event=event, event_in=event_in)
     assert event.source == source
 
