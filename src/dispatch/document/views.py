@@ -12,17 +12,13 @@ router = APIRouter()
 
 @router.get("", response_model=DocumentPagination)
 def get_documents(*, common: dict = Depends(common_parameters)):
-    """
-    Get all documents.
-    """
+    """Get all documents."""
     return search_filter_sort_paginate(model="Document", **common)
 
 
 @router.get("/{document_id}", response_model=DocumentRead)
 def get_document(*, db_session: Session = Depends(get_db), document_id: int):
-    """
-    Update a document.
-    """
+    """Update a document."""
     document = get(db_session=db_session, document_id=document_id)
     if not document:
         raise HTTPException(status_code=404, detail="The document with this id does not exist.")
@@ -31,9 +27,7 @@ def get_document(*, db_session: Session = Depends(get_db), document_id: int):
 
 @router.post("", response_model=DocumentCreate)
 def create_document(*, db_session: Session = Depends(get_db), document_in: DocumentCreate):
-    """
-    Create a new document.
-    """
+    """Create a new document."""
     document = create(db_session=db_session, document_in=document_in)
     return document
 
@@ -42,9 +36,7 @@ def create_document(*, db_session: Session = Depends(get_db), document_in: Docum
 def update_document(
     *, db_session: Session = Depends(get_db), document_id: int, document_in: DocumentUpdate
 ):
-    """
-    Update a document.
-    """
+    """Update a document."""
     document = get(db_session=db_session, document_id=document_id)
     if not document:
         raise HTTPException(status_code=404, detail="The document with this id does not exist.")
@@ -54,9 +46,7 @@ def update_document(
 
 @router.delete("/{document_id}")
 def delete_document(*, db_session: Session = Depends(get_db), document_id: int):
-    """
-    Delete a document.
-    """
+    """Delete a document."""
     document = get(db_session=db_session, document_id=document_id)
     if not document:
         raise HTTPException(status_code=404, detail="The document with this id does not exist.")

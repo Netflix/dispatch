@@ -21,25 +21,19 @@ router = APIRouter()
 
 @router.get("", response_model=PluginPagination)
 def get_plugins(*, common: dict = Depends(common_parameters)):
-    """
-    Get all plugins.
-    """
+    """Get all plugins."""
     return search_filter_sort_paginate(model="Plugin", **common)
 
 
 @router.get("/instances", response_model=PluginInstancePagination)
 def get_plugin_instances(*, common: dict = Depends(common_parameters)):
-    """
-    Get all plugin instances.
-    """
+    """Get all plugin instances."""
     return search_filter_sort_paginate(model="PluginInstance", **common)
 
 
 @router.get("/instances/{plugin_instance_id}", response_model=PluginInstanceRead)
 def get_plugin_instance(*, db_session: Session = Depends(get_db), plugin_instance_id: int):
-    """
-    Get a plugin instance.
-    """
+    """Get a plugin instance."""
     plugin = get_instance(db_session=db_session, plugin_instance_id=plugin_instance_id)
     if not plugin:
         raise HTTPException(
@@ -56,9 +50,7 @@ def get_plugin_instance(*, db_session: Session = Depends(get_db), plugin_instanc
 def create_plugin_instance(
     *, db_session: Session = Depends(get_db), plugin_instance_in: PluginInstanceCreate
 ):
-    """
-    Create a new plugin instance.
-    """
+    """Create a new plugin instance."""
     return create_instance(db_session=db_session, plugin_instance_in=plugin_instance_in)
 
 
@@ -73,9 +65,7 @@ def update_plugin_instance(
     plugin_instance_id: int,
     plugin_instance_in: PluginInstanceUpdate,
 ):
-    """
-    Update a plugin instance.
-    """
+    """Update a plugin instance."""
     plugin_instance = get_instance(db_session=db_session, plugin_instance_id=plugin_instance_id)
     if not plugin_instance:
         raise HTTPException(

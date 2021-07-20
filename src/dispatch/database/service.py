@@ -7,20 +7,21 @@ from fastapi import Depends, Query
 
 from sqlalchemy import or_, orm, func, desc
 from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
+from sqlalchemy_filters.filters import build_filters, get_named_models
+from sqlalchemy_filters.models import get_query_models
 
 
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user, get_current_role
-from dispatch.search.fulltext.composite_search import CompositeSearch
 from dispatch.enums import UserRoles, Visibility
+from dispatch.incident.models import Incident
 from dispatch.feedback.models import Feedback
 from dispatch.task.models import Task
-from dispatch.project.models import Project
 from dispatch.plugin.models import Plugin, PluginInstance
-from dispatch.incident.models import Incident
 from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
 from dispatch.participant.models import Participant
+from dispatch.search.fulltext.composite_search import CompositeSearch
 
 
 from .core import (
@@ -43,7 +44,7 @@ def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, rol
             .join(IndividualContact)
             .filter(
                 or_(
-                    Incident.visibility == Visibility.open.value,
+                    Incident.visibility == Visibility.open,
                     IndividualContact.email == current_user.email,
                 )
             )
@@ -75,30 +76,33 @@ def apply_model_specific_filters(
     return query
 
 
-def apply_model_specific_joins(model: Base, query: orm.query):
+def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query):
     """Applies any model specific implicity joins."""
+    # this is required because by default sqlalchemy-filter's auto-join
+    # knows nothing about how to join many-many relationships.
     model_map = {
-        Feedback: [(Incident, False), (Project, False)],
-        Task: [(Incident, False), (Project, False)],
-        PluginInstance: [(Plugin, False)],
-        Incident: [(Incident.tags, True), (Incident.terms, True)],
-        DispatchUser: [(DispatchUser.organizations, True)],
+        (Feedback, "Project"): (Incident, False),
+        (Feedback, "Incident"): (Incident, False),
+        (Task, "Project"): (Incident, False),
+        (Task, "Incident"): (Incident, False),
+        (Task, "IncidentPriority"): (Incident, False),
+        (Task, "IncidentType"): (Incident, False),
+        (PluginInstance, "Plugin"): (Plugin, False),
+        (DispatchUser, "Organization"): (DispatchUser.organizations, True),
+        (Incident, "Tag"): (Incident.tags, True),
+        (Incident, "TagType"): (Incident.tags, True),
+        (Incident, "Terms"): (Incident.terms, True),
     }
+    filters = build_filters(filter_spec)
+    filter_models = get_named_models(filters)
 
-    joined_models = model_map.get(model, [])
-
-    for model, is_outer in joined_models:
-        query = query.join(model, isouter=is_outer)
+    for filter_model in filter_models:
+        if model_map.get((model, filter_model)):
+            joined_model, is_outer = model_map[(model, filter_model)]
+            if joined_model not in get_query_models(query).values():
+                query = query.join(joined_model, isouter=is_outer)
 
     return query
-
-
-def paginate(query: orm.Query, page: int, items_per_page: int):
-    # Never pass a negative OFFSET value to SQL.
-    offset_adj = 0 if page <= 0 else page - 1
-    items = query.limit(items_per_page).offset(offset_adj * items_per_page).all()
-    total = query.order_by(None).count()
-    return items, total
 
 
 def composite_search(*, db_session, query_str: str, models: List[Base], current_user: DispatchUser):
@@ -202,7 +206,6 @@ def search_filter_sort_paginate(
     sort_spec = create_sort_spec(model, sort_by, descending)
 
     query = db_session.query(model_cls)
-    query = apply_model_specific_joins(model_cls, query)
 
     if query_str:
         sort = False if sort_by else True
@@ -211,6 +214,7 @@ def search_filter_sort_paginate(
     query = apply_model_specific_filters(model_cls, query, current_user, role)
 
     if filter_spec:
+        query = apply_filter_specific_joins(model_cls, filter_spec, query)
         query = apply_filters(query, filter_spec)
 
     query = apply_sort(query, sort_spec)

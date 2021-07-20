@@ -14,9 +14,7 @@ router = APIRouter()
 
 @router.get("", response_model=IncidentTypePagination, tags=["incident_types"])
 def get_incident_types(*, common: dict = Depends(common_parameters)):
-    """
-    Returns all incident types.
-    """
+    """Returns all incident types."""
     return search_filter_sort_paginate(model="IncidentType", **common)
 
 
@@ -30,9 +28,7 @@ def create_incident_type(
     db_session: Session = Depends(get_db),
     incident_type_in: IncidentTypeCreate,
 ):
-    """
-    Create a new incident type.
-    """
+    """Create a new incident type."""
     incident_type = create(db_session=db_session, incident_type_in=incident_type_in)
     return incident_type
 
@@ -48,9 +44,7 @@ def update_incident_type(
     incident_type_id: int,
     incident_type_in: IncidentTypeUpdate,
 ):
-    """
-    Update an existing incident type.
-    """
+    """Update an existing incident type."""
     incident_type = get(db_session=db_session, incident_type_id=incident_type_id)
     if not incident_type:
         raise HTTPException(
@@ -65,9 +59,7 @@ def update_incident_type(
 
 @router.get("/{incident_type_id}", response_model=IncidentTypeRead)
 def get_incident_type(*, db_session: Session = Depends(get_db), incident_type_id: int):
-    """
-    Get an incident type.
-    """
+    """Get an incident type."""
     incident_type = get(db_session=db_session, incident_type_id=incident_type_id)
     if not incident_type:
         raise HTTPException(

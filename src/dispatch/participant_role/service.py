@@ -25,9 +25,7 @@ def get_last_active_role(
     db_session,
     participant_id: int,
 ) -> Optional[ParticipantRole]:
-    """
-    Returns the participant's last active role.
-    """
+    """Returns the participant's last active role."""
     return (
         db_session.query(ParticipantRole)
         .filter(ParticipantRole.participant_id == participant_id)
@@ -82,9 +80,7 @@ def create(*, db_session, participant_role_in: ParticipantRoleCreate) -> Partici
 def update(
     *, db_session, participant_role: ParticipantRole, participant_role_in: ParticipantRoleUpdate
 ) -> ParticipantRole:
-    """
-    Updates a participant role.
-    """
+    """Updates a participant role."""
     participant_role_data = jsonable_encoder(participant_role)
 
     update_data = participant_role_in.dict(skip_defaults=True)
@@ -99,9 +95,7 @@ def update(
 
 
 def delete(*, db_session, participant_role_id: int):
-    """
-    Deletes a participant role.
-    """
+    """Deletes a participant role."""
     participant_role = (
         db_session.query(ParticipantRole).filter(ParticipantRole.id == participant_role_id).first()
     )

@@ -28,21 +28,19 @@ from .config import (
     SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
     SLACK_COMMAND_LIST_RESOURCES_SLUG,
     SLACK_COMMAND_LIST_TASKS_SLUG,
+    SLACK_COMMAND_LIST_WORKFLOWS_SLUG,
     SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
     SLACK_COMMAND_REPORT_INCIDENT_SLUG,
     SLACK_COMMAND_REPORT_TACTICAL_SLUG,
+    SLACK_COMMAND_RUN_WORKFLOW_SLUG,
     SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
     SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG,
     SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG,
-    SLACK_COMMAND_RUN_WORKFLOW_SLUG,
-    SLACK_COMMAND_LIST_WORKFLOWS_SLUG,
 )
 
 
 log = logging.getLogger(__name__)
 
-
-INCIDENT_CONVERSATION_TACTICAL_REPORT_SUGGESTION = f"Consider providing a tactical report using the `{SLACK_COMMAND_REPORT_TACTICAL_SLUG}` command."
 
 INCIDENT_CONVERSATION_COMMAND_MESSAGE = {
     SLACK_COMMAND_RUN_WORKFLOW_SLUG: {
@@ -305,15 +303,3 @@ def create_message_blocks(
                 blocks_grouped += template_func(rendered_items_grouped)
 
     return blocks + blocks_grouped
-
-
-def slack_preview(message, block=None):
-    """Helper function that will generate a preview link to see what your slack message will look like."""
-    from urllib.parse import quote_plus
-    import json
-
-    message = quote_plus(json.dumps(message))
-    if block:
-        print(f"https://api.slack.com/tools/block-kit-builder?blocks={message}")
-    else:
-        print(f"https://api.slack.com/docs/messages/builder?msg={message}")

@@ -1,5 +1,4 @@
 import copy
-from enum import Enum
 
 from jinja2 import Template
 
@@ -8,10 +7,10 @@ from typing import List
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.incident.enums import IncidentStatus
 
-from dispatch.enums import DocumentResourceTypes, DocumentResourceReferenceTypes
+from dispatch.enums import DispatchEnum, DocumentResourceTypes, DocumentResourceReferenceTypes
 
 
-class MessageType(str, Enum):
+class MessageType(DispatchEnum):
     document_evergreen_reminder = "document-evergreen-reminder"
     incident_closed_information_review_reminder = "incident-closed-information-review-reminder"
     incident_daily_report = "incident-daily-report"
@@ -160,12 +159,6 @@ incident Slack channel.""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_WELCOME_CONVERSATION_COPY = """
-This is the incident conversation. Please pull in any
-individuals you feel may be able to help resolve this incident.""".replace(
-    "\n", " "
-).strip()
-
 INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION = """
 Dispatch thinks the following documents might be
 relevant to this incident.""".replace(
@@ -174,28 +167,6 @@ relevant to this incident.""".replace(
 
 INCIDENT_NOTIFICATION_PURPOSES_FYI = """
 This message is for notification purposes only.""".replace(
-    "\n", " "
-).strip()
-
-INCIDENT_CAN_REPORT_REMINDER = """
-It's time to send a new CAN report. Go to the Demisto UI and run the
-CAN Report playbook from the Playground Work Plan.""".replace(
-    "\n", " "
-).strip()
-
-INCIDENT_VULNERABILITY_DESCRIPTION = """
-We are tracking the details of the vulnerability that led to this incident
-in the VUL Jira issue linked above.""".replace(
-    "\n", " "
-).strip()
-
-INCIDENT_STABLE_DESCRIPTION = """
-The risk has been contained and the incident marked as stable.""".replace(
-    "\n", " "
-).strip()
-
-INCIDENT_CLOSED_DESCRIPTION = """
-The incident has been resolved and marked as closed.""".replace(
     "\n", " "
 ).strip()
 
@@ -383,12 +354,6 @@ INCIDENT_INVESTIGATION_DOCUMENT = {
     "title": "Investigation Document",
     "title_link": "{{document_weblink}}",
     "text": INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,
-}
-
-INCIDENT_INVESTIGATION_SHEET = {
-    "title": "Investigation Sheet",
-    "title_link": "{{sheet_weblink}}",
-    "text": INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
 }
 
 INCIDENT_REVIEW_DOCUMENT = {

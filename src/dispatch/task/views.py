@@ -19,9 +19,7 @@ router = APIRouter()
 def get_tasks(
     *, include: List[str] = Query([], alias="include[]"), commons: dict = Depends(common_parameters)
 ):
-    """
-    Retrieve all tasks.
-    """
+    """Retrieve all tasks."""
     pagination = search_filter_sort_paginate(model="Task", **commons)
 
     if include:
@@ -46,9 +44,7 @@ def create_task(
     task_in: TaskCreate,
     current_user: DispatchUser = Depends(get_current_user),
 ):
-    """
-    Creates a new task.
-    """
+    """Creates a new task."""
     task_in.creator = {"individual": {"email": current_user.email}}
     task = create(db_session=db_session, task_in=task_in)
     return task
@@ -56,9 +52,7 @@ def create_task(
 
 @router.put("/{task_id}", response_model=TaskRead, tags=["tasks"])
 def update_task(*, db_session: Session = Depends(get_db), task_id: int, task_in: TaskUpdate):
-    """
-    Updates an existing task.
-    """
+    """Updates an existing task."""
     task = get(db_session=db_session, task_id=task_id)
     if not task:
         raise HTTPException(status_code=404, detail="A task with this id does not exist.")
@@ -68,9 +62,7 @@ def update_task(*, db_session: Session = Depends(get_db), task_id: int, task_in:
 
 @router.delete("/{task_id}", response_model=TaskRead, tags=["tasks"])
 def delete_task(*, db_session: Session = Depends(get_db), task_id: int):
-    """
-    Deletes an existing task.
-    """
+    """Deletes an existing task."""
     task = get(db_session=db_session, task_id=task_id)
     if not task:
         raise HTTPException(status_code=404, detail="A task with this id does not exist.")

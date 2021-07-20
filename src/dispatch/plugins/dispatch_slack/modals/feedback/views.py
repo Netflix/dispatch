@@ -1,17 +1,17 @@
 import json
-from enum import Enum
 
+from dispatch.enums import DispatchEnum
 from dispatch.incident.models import Incident
 from dispatch.feedback.enums import FeedbackRating
 
 
-class RatingFeedbackBlockId(str, Enum):
+class RatingFeedbackBlockId(DispatchEnum):
     anonymous = "anonymous_field"
     feedback = "feedback_field"
     rating = "rating_field"
 
 
-class RatingFeedbackCallbackId(str, Enum):
+class RatingFeedbackCallbackId(DispatchEnum):
     submit_form = "rating_feedback_submit_form"
 
 

@@ -1,17 +1,17 @@
-from enum import Enum
+from dispatch.enums import DispatchEnum
 
 
-class TaskStatus(str, Enum):
+class TaskStatus(DispatchEnum):
     open = "Open"
     resolved = "Resolved"
 
 
-class TaskSource(str, Enum):
+class TaskSource(DispatchEnum):
     incident = "Incident"
     post_incident_review = "Post Incident Review"
 
 
-class TaskPriority(str, Enum):
+class TaskPriority(DispatchEnum):
     low = "Low"
     medium = "Medium"
     high = "High"

@@ -1,5 +1,4 @@
 from datetime import datetime
-from enum import Enum
 from typing import Optional, List
 
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table
@@ -8,13 +7,14 @@ from sqlalchemy.sql.schema import PrimaryKeyConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
+from dispatch.enums import DispatchEnum
 from dispatch.project.models import ProjectRead
 from dispatch.search_filter.models import SearchFilterRead, SearchFilterUpdate
 
 from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin
 
 
-class NotificationTypeEnum(str, Enum):
+class NotificationTypeEnum(DispatchEnum):
     conversation = "conversation"
     email = "email"
 

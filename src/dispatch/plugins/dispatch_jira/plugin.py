@@ -78,9 +78,7 @@ def get_user_field(client: JIRA, user_email) -> dict:
 
 
 def process_incident_type_plugin_metadata(plugin_metadata: dict):
-    """
-    Processes the given incident type plugin metadata.
-    """
+    """Processes the given incident type plugin metadata."""
     project_id = JIRA_PROJECT_ID
     issue_type_name = JIRA_ISSUE_TYPE_NAME
     if plugin_metadata:

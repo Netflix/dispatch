@@ -33,27 +33,23 @@ from .config import (
 from .views import router as slack_event_router
 from .messaging import create_message_blocks
 from .service import (
-    create_slack_client,
     add_users_to_conversation,
     archive_conversation,
-    unarchive_conversation,
+    chunks,
     create_conversation,
+    create_slack_client,
     get_conversation_by_name,
     get_user_avatar_url,
-    get_user_email,
     get_user_info_by_id,
     get_user_profile_by_email,
-    get_user_username,
     list_conversation_messages,
     list_conversations,
     message_filter,
-    open_dialog_with_user,
-    open_modal_with_user,
     resolve_user,
     send_ephemeral_message,
     send_message,
     set_conversation_topic,
-    chunks,
+    unarchive_conversation,
 )
 
 
@@ -150,10 +146,6 @@ class SlackConversationPlugin(ConversationPlugin):
         participants = [resolve_user(self.client, p)["id"] for p in participants]
         return add_users_to_conversation(self.client, conversation_id, participants)
 
-    def open_dialog(self, trigger_id: str, dialog: dict):
-        """Opens a dialog with a user."""
-        return open_dialog_with_user(self.client, trigger_id, dialog)
-
     def archive(self, conversation_id: str):
         """Archives conversation."""
         return archive_conversation(self.client, conversation_id)
@@ -161,14 +153,6 @@ class SlackConversationPlugin(ConversationPlugin):
     def unarchive(self, conversation_id: str):
         """Unarchives conversation."""
         return unarchive_conversation(self.client, conversation_id)
-
-    def get_participant_username(self, participant_id: str):
-        """Gets the participant's username."""
-        return get_user_username(self.client, participant_id)
-
-    def get_participant_email(self, participant_id: str):
-        """Gets the participant's email."""
-        return get_user_email(self.client, participant_id)
 
     def get_participant_avatar_url(self, participant_id: str):
         """Gets the participant's avatar url."""
@@ -181,10 +165,6 @@ class SlackConversationPlugin(ConversationPlugin):
     def get_command_name(self, command: str):
         """Gets the command name."""
         return command_mappings.get(command, [])
-
-    def open_modal(self, trigger_id: str, modal: dict):
-        """Opens a modal with a user."""
-        return open_modal_with_user(client=self.client, trigger_id=trigger_id, modal=modal)
 
 
 @apply(counter, exclude=["__init__"])

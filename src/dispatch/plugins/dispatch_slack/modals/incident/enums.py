@@ -1,8 +1,8 @@
-from enum import Enum
+from dispatch.enums import DispatchEnum
 
 
 # report + update blocks
-class IncidentBlockId(str, Enum):
+class IncidentBlockId(DispatchEnum):
     title = "title_field"
     description = "description_field"
     type = "incident_type_field"
@@ -13,38 +13,38 @@ class IncidentBlockId(str, Enum):
 
 
 # report incident
-class ReportIncidentCallbackId(str, Enum):
+class ReportIncidentCallbackId(DispatchEnum):
     submit_form = "report_incident_submit_form"
     update_view = "report_incident_update_view"
 
 
 # update incident
-class UpdateIncidentCallbackId(str, Enum):
+class UpdateIncidentCallbackId(DispatchEnum):
     submit_form = "update_incident_submit_form"
 
 
 # update participant
-class UpdateParticipantBlockId(str, Enum):
+class UpdateParticipantBlockId(DispatchEnum):
     reason_added = "reason_added_field"
     participant = "selected_participant_field"
 
 
-class UpdateParticipantCallbackId(str, Enum):
+class UpdateParticipantCallbackId(DispatchEnum):
     submit_form = "update_participant_submit_form"
     update_view = "update_participant_update_view"
 
 
 # update notification
-class UpdateNotificationsGroupBlockId(str, Enum):
+class UpdateNotificationsGroupBlockId(DispatchEnum):
     update_members = "update_members_field"
 
 
-class UpdateNotificationsGroupCallbackId(str, Enum):
+class UpdateNotificationsGroupCallbackId(DispatchEnum):
     submit_form = "update_notifications_group_submit_form"
 
 
 # add timeline
-class AddTimelineEventBlockId(str, Enum):
+class AddTimelineEventBlockId(DispatchEnum):
     date = "date_field"
     hour = "hour_field"
     minute = "minute_field"
@@ -52,5 +52,5 @@ class AddTimelineEventBlockId(str, Enum):
     description = "description_field"
 
 
-class AddTimelineEventCallbackId(str, Enum):
+class AddTimelineEventCallbackId(DispatchEnum):
     submit_form = "add_timeline_event_submit_form"

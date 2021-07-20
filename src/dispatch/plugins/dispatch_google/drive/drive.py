@@ -9,30 +9,28 @@ import functools
 import io
 import json
 import logging
-import tempfile
-from datetime import datetime, timedelta, timezone
-from enum import Enum
 from typing import Any, List
 
+from datetime import datetime, timedelta, timezone
+
 from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
+from googleapiclient.http import MediaIoBaseDownload
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+
+from dispatch.enums import DispatchEnum
 
 
 log = logging.getLogger(__name__)
 
 
-class UserTypes(str, Enum):
+class UserTypes(DispatchEnum):
     user = "user"
     group = "group"
     domain = "domain"
     anyone = "anyone"
 
-    def __str__(self) -> str:
-        return str.__str__(self)
 
-
-class Roles(str, Enum):
+class Roles(DispatchEnum):
     owner = "owner"
     organizer = "organizer"
     file_organizer = "fileOrganizer"
@@ -40,15 +38,9 @@ class Roles(str, Enum):
     commenter = "commenter"
     reader = "reader"
 
-    def __str__(self) -> str:
-        return str.__str__(self)
 
-
-class Activity(str, Enum):
+class Activity(DispatchEnum):
     comment = "COMMENT"
-
-    def __str__(self) -> str:
-        return str.__str__(self)
 
 
 def paginated(data_key):
@@ -123,27 +115,6 @@ def upload_chunk(request: Any):
 
 
 #  TODO add retry
-def upload_file(client: Any, path: str, name: str, mimetype: str):
-    """Uploads a file."""
-    media = MediaFileUpload(path, mimetype=mimetype, resumable=True)
-
-    try:
-        request = client.files().create(media_body=media, body={"name": name})
-        response = None
-
-        while not response:
-            _, response = upload_chunk(request)
-        return response
-    except HttpError as e:
-        if e.resp.status in [404]:
-            # Start the upload all over again.
-            raise TryAgain
-        else:
-            raise Exception(
-                f"Failed to upload file. Name: {name} Path: {path} MIMEType: {mimetype}"
-            )
-
-
 def get_file(client: Any, file_id: str):
     """Gets a file's metadata."""
     return make_call(
@@ -167,24 +138,6 @@ def get_activity(
     return make_call(
         client.activity(), "query", body={"filter": activity_filter, "itemName": f"items/{file_id}"}
     )
-
-
-#  TODO add retry
-def download_file(client: Any, file_id: str):
-    """Downloads a file."""
-    request = client.files().get_media(fileId=file_id)
-    fp = tempfile.NamedTemporaryFile()
-    downloader = MediaIoBaseDownload(fp, request)
-
-    response = False
-    try:
-        while not response:
-            _, response = downloader.next_chunk()
-        return fp
-    except HttpError:
-        # Do not retry. Log the error and fail.
-        raise Exception(f"Failed to download file. Id: {file_id}")
-
 
 def download_google_document(client: Any, file_id: str, mime_type: str = "text/plain"):
     """Downloads a Google document."""
@@ -246,12 +199,6 @@ def list_files(client: any, team_drive_id: str, q: str = None, **kwargs):
         q=q,
         **kwargs,
     )
-
-
-@paginated("teamDrives")
-def list_team_drives(client, **kwargs):
-    """Lists all available team drives."""
-    return make_call(client.teamdrives(), "list", **kwargs)
 
 
 @paginated("comments")
@@ -388,8 +335,3 @@ def move_file(client: Any, folder_id: str, file_id: str):
         fields="id, name, parents, webViewLink",
         supportsAllDrives=True,
     )
-
-
-def list_permissions(client: Any, **kwargs):
-    """List all permissions for file."""
-    return make_call(client.files(), "list", **kwargs)

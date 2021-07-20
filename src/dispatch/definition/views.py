@@ -17,17 +17,13 @@ router = APIRouter()
 
 @router.get("", response_model=DefinitionPagination)
 def get_definitions(*, common: dict = Depends(common_parameters)):
-    """
-    Get all definitions.
-    """
+    """Get all definitions."""
     return search_filter_sort_paginate(model="Definition", **common)
 
 
 @router.get("/{definition_id}", response_model=DefinitionRead)
 def get_definition(*, db_session: Session = Depends(get_db), definition_id: int):
-    """
-    Update a definition.
-    """
+    """Update a definition."""
     definition = get(db_session=db_session, definition_id=definition_id)
     if not definition:
         raise HTTPException(status_code=404, detail="The definition with this id does not exist.")
@@ -36,9 +32,7 @@ def get_definition(*, db_session: Session = Depends(get_db), definition_id: int)
 
 @router.post("", response_model=DefinitionRead)
 def create_definition(*, db_session: Session = Depends(get_db), definition_in: DefinitionCreate):
-    """
-    Create a new definition.
-    """
+    """Create a new definition."""
     definition = get_by_text(db_session=db_session, text=definition_in.text)
     if definition:
         raise HTTPException(
@@ -53,9 +47,7 @@ def create_definition(*, db_session: Session = Depends(get_db), definition_in: D
 def update_definition(
     *, db_session: Session = Depends(get_db), definition_id: int, definition_in: DefinitionUpdate
 ):
-    """
-    Update a definition.
-    """
+    """Update a definition."""
     definition = get(db_session=db_session, definition_id=definition_id)
     if not definition:
         raise HTTPException(status_code=404, detail="The definition with this id does not exist.")
@@ -65,9 +57,7 @@ def update_definition(
 
 @router.delete("/{definition_id}")
 def delete_definition(*, db_session: Session = Depends(get_db), definition_id: int):
-    """
-    Delete a definition.
-    """
+    """Delete a definition."""
     definition = get(db_session=db_session, definition_id=definition_id)
     if not definition:
         raise HTTPException(status_code=404, detail="The definition with this id does not exist.")

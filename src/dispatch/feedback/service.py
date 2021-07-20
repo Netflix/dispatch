@@ -18,15 +18,6 @@ def get_all(*, db_session):
     return db_session.query(Feedback)
 
 
-def get_all_last_x_hours(*, db_session, hours: int = 24) -> List[Optional[Feedback]]:
-    """Returns all feedback provided in the last x hours. Defaults to 24 hours."""
-    return (
-        db_session.query(Feedback)
-        .filter(Feedback.created_at >= datetime.utcnow() - timedelta(hours=hours))
-        .all()
-    )
-
-
 def get_all_last_x_hours_by_project_id(
     *, db_session, hours: int = 24, project_id: int
 ) -> List[Optional[Feedback]]:

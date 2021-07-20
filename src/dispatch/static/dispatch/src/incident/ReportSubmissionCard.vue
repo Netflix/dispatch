@@ -7,6 +7,14 @@
           If you suspect an incident and require help, please fill out the following to the best of
           your abilities.
         </p>
+        <p v-if="project_faq">
+          Unsure if your in the right place or have additional questions? Checkout this project's
+          incident FAQ document:
+          <a :href="project_faq.weblink" target="_blank" style="text-decoration: none">
+            {{ project_faq.name }}
+            <v-icon small>open_in_new</v-icon>
+          </a>
+        </p>
         <v-form>
           <v-container grid-list-md>
             <v-layout wrap>
@@ -101,6 +109,7 @@ import { required } from "vee-validate/dist/rules"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
+import DocumentApi from "@/document/api"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 
 extend("required", {
@@ -122,6 +131,7 @@ export default {
   data() {
     return {
       isSubmitted: false,
+      project_faq: null,
     }
   },
   computed: {
@@ -147,6 +157,29 @@ export default {
   },
 
   methods: {
+    getFAQ() {
+      DocumentApi.getAll({
+        filter: JSON.stringify({
+          and: [
+            {
+              field: "resource_type",
+              op: "==",
+              value: "dispatch-faq-reference-document",
+            },
+            {
+              model: "Project",
+              field: "name",
+              op: "==",
+              value: this.project.name,
+            },
+          ],
+        }),
+      }).then((response) => {
+        if (response.data.items.length) {
+          this.project_faq = response.data.items[0]
+        }
+      })
+    },
     ...mapActions("incident", ["report", "get", "resetSelected"]),
   },
 
@@ -162,6 +195,13 @@ export default {
     if (this.query.incident_priority) {
       this.incident_priority = { name: this.query.incident_priority }
     }
+
+    this.$watch(
+      (vm) => [vm.project],
+      () => {
+        this.getFAQ()
+      }
+    )
 
     if (this.query.tag) {
       if (Array.isArray(this.query.tag)) {

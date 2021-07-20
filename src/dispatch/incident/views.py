@@ -60,9 +60,7 @@ def get_incidents(
     common: dict = Depends(common_parameters),
     include: List[str] = Query([], alias="include[]"),
 ):
-    """
-    Retrieve a list of all incidents.
-    """
+    """Retrieve a list of all incidents."""
     pagination = search_filter_sort_paginate(model="Incident", **common)
 
     if include:
@@ -90,9 +88,7 @@ def get_incident(
     db_session: Session = Depends(get_db),
     current_incident: Incident = Depends(get_current_incident),
 ):
-    """
-    Retrieve details about a specific incident.
-    """
+    """Retrieve details about a specific incident."""
     return current_incident
 
 
@@ -105,9 +101,7 @@ def create_incident(
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
-    """
-    Create a new incident.
-    """
+    """Create a new incident."""
     if not incident_in.reporter:
         incident_in.reporter = ParticipantUpdate(
             individual=IndividualReadNested(email=current_user.email)
@@ -149,9 +143,7 @@ def update_incident(
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
-    """
-    Update an individual incident.
-    """
+    """Update an individual incident."""
     previous_incident = IncidentRead.from_orm(current_incident)
 
     # NOTE: Order matters we have to get the previous state for change detection
@@ -205,9 +197,7 @@ def join_incident(
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
-    """
-    Join an individual incident.
-    """
+    """Join an individual incident."""
     background_tasks.add_task(
         incident_add_or_reactivate_participant_flow,
         current_user.email,
@@ -230,9 +220,7 @@ def create_tactical_report(
     current_incident: Incident = Depends(get_current_incident),
     background_tasks: BackgroundTasks,
 ):
-    """
-    Creates a new tactical report.
-    """
+    """Creates a new tactical report."""
     background_tasks.add_task(
         report_flows.create_tactical_report,
         user_email=current_user.email,
@@ -256,9 +244,7 @@ def create_executive_report(
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
-    """
-    Creates a new executive report.
-    """
+    """Creates a new executive report."""
     background_tasks.add_task(
         report_flows.create_executive_report,
         user_email=current_user.email,
@@ -279,9 +265,7 @@ def delete_incident(
     db_session: Session = Depends(get_db),
     current_incident: Incident = Depends(get_current_incident),
 ):
-    """
-    Delete an individual incident.
-    """
+    """Delete an individual incident."""
     delete(db_session=db_session, incident_id=current_incident.id)
 
 
@@ -300,9 +284,7 @@ def get_incident_forecast(
     db_session: Session = Depends(get_db),
     filter_spec: str = Query(None, alias="filter"),
 ):
-    """
-    Get incident forecast data.
-    """
+    """Get incident forecast data."""
     categories = []
     predicted = []
     actual = []
