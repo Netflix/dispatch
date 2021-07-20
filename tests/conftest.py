@@ -26,24 +26,25 @@ from dispatch.database.manage import init_database
 from dispatch.database.core import engine, sessionmaker
 
 from .factories import (
-    OrganizationFactory,
     ConferenceFactory,
     ConversationFactory,
     DefinitionFactory,
     DocumentFactory,
     EventFactory,
+    FeedbackFactory,
     GroupFactory,
     IncidentFactory,
     IncidentPriorityFactory,
     IncidentTypeFactory,
     IndividualContactFactory,
+    OrganizationFactory,
     ParticipantFactory,
     ParticipantRoleFactory,
     ProjectFactory,
-    RecommendationMatchFactory,
     RecommendationFactory,
-    ServiceFactory,
+    RecommendationMatchFactory,
     ReportFactory,
+    ServiceFactory,
     StorageFactory,
     TagFactory,
     TaskFactory,
@@ -398,3 +399,13 @@ def event(session):
 @pytest.fixture
 def events(session):
     return [EventFactory(), EventFactory()]
+
+
+@pytest.fixture
+def feedback(session):
+    return FeedbackFactory()
+
+
+@pytest.fixture
+def feedbacks(session):
+    return [FeedbackFactory(), FeedbackFactory()]

@@ -9,30 +9,31 @@ from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime
 
 from dispatch.database.core import SessionLocal
 
+from dispatch.auth.models import DispatchUser  # noqa
 from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
 from dispatch.definition.models import Definition
 from dispatch.document.models import Document
 from dispatch.event.models import Event
+from dispatch.feedback.models import Feedback
 from dispatch.group.models import Group
 from dispatch.incident.models import Incident
 from dispatch.incident_priority.models import IncidentPriority
 from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
+from dispatch.organization.models import Organization
 from dispatch.participant.models import Participant
 from dispatch.participant_role.models import ParticipantRole
+from dispatch.project.models import Project
+from dispatch.report.models import Report
 from dispatch.route.models import Recommendation, RecommendationMatch
 from dispatch.service.models import Service
-from dispatch.report.models import Report
 from dispatch.storage.models import Storage
 from dispatch.tag.models import Tag
 from dispatch.task.models import Task
 from dispatch.team.models import TeamContact
 from dispatch.term.models import Term
 from dispatch.ticket.models import Ticket
-from dispatch.auth.models import DispatchUser  # noqa
-from dispatch.project.models import Project
-from dispatch.organization.models import Organization
 
 
 class BaseFactory(SQLAlchemyModelFactory):
@@ -650,3 +651,32 @@ class ConferenceFactory(ResourceBaseFactory):
 
     class Meta:
         model = Conference
+
+
+class FeedbackFactory(BaseFactory):
+    """Feedback Factory."""
+
+    created_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
+    rating = FuzzyText()
+    feedback = FuzzyText()
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Feedback
+
+    @post_generation
+    def incident(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.incident_id = extracted.id
+
+    @post_generation
+    def participant(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.participant_id = extracted.id
