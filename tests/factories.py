@@ -63,6 +63,11 @@ class OrganizationFactory(BaseFactory):
     """Organization Factory."""
 
     name = Sequence(lambda n: f"organization{n}")
+    description = FuzzyText()
+    default = Faker().pybool()
+    banner_enabled = Faker().pybool()
+    banner_color = FuzzyText()
+    banner_text = FuzzyText()
 
     class Meta:
         """Factory Configuration."""
@@ -74,14 +79,18 @@ class OrganizationFactory(BaseFactory):
         if not create:
             return
 
-        for project in extracted:
-            self.projects.append(project)
+        if extracted:
+            for project in extracted:
+                self.projects.append(project)
 
 
 class ProjectFactory(BaseFactory):
     """Project Factory."""
 
     name = Sequence(lambda n: f"project{n}")
+    description = FuzzyText()
+    default = Faker().pybool()
+    color = FuzzyText()
 
     class Meta:
         """Factory Configuration."""
@@ -655,6 +664,8 @@ class ConferenceFactory(ResourceBaseFactory):
     incident = SubFactory(IncidentFactory)
 
     class Meta:
+        """Factory Configuration."""
+
         model = Conference
 
 
