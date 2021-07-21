@@ -21,7 +21,7 @@ def test_create(session, project):
 
     name = "name"
     description = "description"
-    expression = {}
+    expression = [{}]
     type = "type"
 
     search_filter_in = SearchFilterCreate(

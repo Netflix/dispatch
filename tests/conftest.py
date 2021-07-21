@@ -329,8 +329,18 @@ def organization(session):
 
 
 @pytest.fixture
+def organizations(session):
+    return [OrganizationFactory(), OrganizationFactory()]
+
+
+@pytest.fixture
 def project(session):
     return ProjectFactory()
+
+
+@pytest.fixture
+def projects(session):
+    return [ProjectFactory(), ProjectFactory()]
 
 
 @pytest.fixture
