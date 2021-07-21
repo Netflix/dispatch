@@ -25,6 +25,7 @@ from dispatch.incident_cost_type.models import IncidentCostType
 from dispatch.incident_priority.models import IncidentPriority
 from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
+from dispatch.notification.models import Notification
 from dispatch.organization.models import Organization
 from dispatch.participant.models import Participant
 from dispatch.participant_role.models import ParticipantRole
@@ -727,3 +728,18 @@ class IncidentCostTypeFactory(BaseFactory):
         """Factory Configuration."""
 
         model = IncidentCostType
+
+
+class NotificationFactory(BaseFactory):
+    """Incident Cost Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    type = FuzzyChoice(["email", "conversation"])
+    target = FuzzyText()
+    enabled = Faker().pybool()
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Notification
