@@ -37,6 +37,7 @@ from .factories import (
     IncidentPriorityFactory,
     IncidentTypeFactory,
     IndividualContactFactory,
+    NotificationFactory,
     OrganizationFactory,
     ParticipantFactory,
     ParticipantRoleFactory,
@@ -429,3 +430,13 @@ def incident_cost_type(session):
 @pytest.fixture
 def incident_cost_types(session):
     return [IncidentCostTypeFactory(), IncidentCostTypeFactory()]
+
+
+@pytest.fixture
+def notification(session):
+    return NotificationFactory()
+
+
+@pytest.fixture
+def notifications(session):
+    return [NotificationFactory(), NotificationFactory()]
