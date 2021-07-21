@@ -45,6 +45,7 @@ from .factories import (
     RecommendationFactory,
     RecommendationMatchFactory,
     ReportFactory,
+    SearchFilterFactory,
     ServiceFactory,
     StorageFactory,
     TagFactory,
@@ -450,3 +451,13 @@ def notification(session):
 @pytest.fixture
 def notifications(session):
     return [NotificationFactory(), NotificationFactory()]
+
+
+@pytest.fixture
+def search_filter(session):
+    return SearchFilterFactory()
+
+
+@pytest.fixture
+def search_filters(session):
+    return [SearchFilterFactory(), SearchFilterFactory()]

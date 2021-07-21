@@ -32,6 +32,7 @@ from dispatch.participant_role.models import ParticipantRole
 from dispatch.project.models import Project
 from dispatch.report.models import Report
 from dispatch.route.models import Recommendation, RecommendationMatch
+from dispatch.search_filter.models import SearchFilter
 from dispatch.service.models import Service
 from dispatch.storage.models import Storage
 from dispatch.tag.models import Tag
@@ -754,3 +755,34 @@ class NotificationFactory(BaseFactory):
         """Factory Configuration."""
 
         model = Notification
+
+    @post_generation
+    def search_filters(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for search_filter in extracted:
+                self.search_filters.append(search_filter)
+
+
+class SearchFilterFactory(BaseFactory):
+    """Search Filter Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    expression = [{}]
+    type = FuzzyText()
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = SearchFilter
+
+    @post_generation
+    def creator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.creator_id = extracted.id
