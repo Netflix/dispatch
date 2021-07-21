@@ -23,8 +23,8 @@ def test_create(session):
     description = "description"
     default = True
     banner_enabled = True
-    banner_color = "banner color"
-    banner_text = "banner text"
+    banner_color = "red"
+    banner_text = "banner"
 
     organization_in = OrganizationCreate(
         name=name,
