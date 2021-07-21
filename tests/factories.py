@@ -743,3 +743,34 @@ class NotificationFactory(BaseFactory):
         """Factory Configuration."""
 
         model = Notification
+
+    @post_generation
+    def search_filters(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for search_filter in extracted:
+                self.search_filters.append(search_filter)
+
+
+class SearchFilterFactory(BaseFactory):
+    """Search Filter Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    expression = {}
+    type = FuzzyText()
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Notification
+
+    @post_generation
+    def creator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.creator_id = extracted.id
