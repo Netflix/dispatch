@@ -32,6 +32,7 @@ from dispatch.participant_role.models import ParticipantRole
 from dispatch.project.models import Project
 from dispatch.report.models import Report
 from dispatch.route.models import Recommendation, RecommendationMatch
+from dispatch.search_filter.models import SearchFilter
 from dispatch.service.models import Service
 from dispatch.storage.models import Storage
 from dispatch.tag.models import Tag
@@ -776,7 +777,7 @@ class SearchFilterFactory(BaseFactory):
     class Meta:
         """Factory Configuration."""
 
-        model = Notification
+        model = SearchFilter
 
     @post_generation
     def creator(self, create, extracted, **kwargs):
