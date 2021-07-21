@@ -731,7 +731,7 @@ class IncidentCostTypeFactory(BaseFactory):
 
 
 class NotificationFactory(BaseFactory):
-    """Incident Cost Factory."""
+    """Notification Factory."""
 
     name = FuzzyText()
     description = FuzzyText()
