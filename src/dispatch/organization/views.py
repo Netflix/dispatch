@@ -22,7 +22,7 @@ from .models import (
     OrganizationUpdate,
     OrganizationPagination,
 )
-from .service import create, delete, get, update, add_user
+from .service import create, get, update, add_user
 
 router = APIRouter()
 

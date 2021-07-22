@@ -8,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 from pydantic.types import constr
 
 from starlette.requests import Request
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from dispatch.auth.permissions import (
     IncidentEditPermission,

@@ -52,8 +52,9 @@ hypothesis-graphql==0.5.0
     # via schemathesis
 hypothesis-jsonschema==0.20.1
     # via schemathesis
-idna==3.2
+idna==2.10
     # via
+    #   -r requirements-dev.in
     #   anyio
     #   requests
     #   yarl

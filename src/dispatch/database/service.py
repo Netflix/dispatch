@@ -2,7 +2,7 @@ import logging
 import json
 
 from typing import List
-from pydantic.types import Json, PositiveInt
+from pydantic.types import Json
 
 from fastapi import Depends, Query
 

@@ -90,7 +90,6 @@ async def default_page(request: Request, call_next):
 
 @api.middleware("http")
 async def db_session_middleware(request: Request, call_next):
-    response = Response("Internal Server Error", status_code=500)
     path_params = get_path_params_from_request(request)
 
     # if this call is organization specific set the correct search path
