@@ -146,11 +146,7 @@ def update_incident(
     previous_incident = IncidentRead.from_orm(current_incident)
 
     # NOTE: Order matters we have to get the previous state for change detection
-    try:
-        incident = update(db_session=db_session, incident=current_incident, incident_in=incident_in)
-    except Exception as e:
-        log.exception(e)
-        raise HTTPException(status_code=400, detail=str(e))
+    incident = update(db_session=db_session, incident=current_incident, incident_in=incident_in)
 
     background_tasks.add_task(
         incident_update_flow,

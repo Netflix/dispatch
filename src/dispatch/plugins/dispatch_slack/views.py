@@ -23,7 +23,7 @@ from .menus import handle_slack_menu
 
 
 router = APIRouter()
-slack_client = dispatch_slack_service.create_slack_client()
+
 log = logging.getLogger(__name__)
 
 

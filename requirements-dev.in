@@ -6,5 +6,3 @@ faker
 flake8
 pytest
 vulture
-schemathesis
-idna==2.10

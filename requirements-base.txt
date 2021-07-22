@@ -17,7 +17,13 @@ asgiref==3.3.4
 async-timeout==3.0.1
     # via aiohttp
 attrs==20.3.0
-    # via aiohttp
+    # via
+    #   aiohttp
+    #   hypothesis
+    #   hypothesis-graphql
+    #   jsonschema
+    #   pytest
+    #   schemathesis
 bcrypt==3.2.0
     # via -r requirements-base.in
 blis==0.7.4
@@ -52,7 +58,10 @@ charset-normalizer==2.0.1
 click==7.1.2
     # via
     #   -r requirements-base.in
+    #   schemathesis
     #   uvicorn
+colorama==0.4.4
+    # via schemathesis
 cryptography==3.4.6
     # via oauthlib
 cssselect==1.1.0
@@ -61,6 +70,8 @@ cssutils==2.2.0
     # via
     #   emails
     #   premailer
+curlify==2.2.1
+    # via schemathesis
 cymem==2.0.5
     # via
     #   preshed
@@ -96,6 +107,8 @@ google-auth-oauthlib==0.4.4
     # via -r requirements-base.in
 googleapis-common-protos==1.53.0
     # via google-api-core
+graphql-core==3.1.5
+    # via hypothesis-graphql
 h11==0.9.0
     # via
     #   -r requirements-base.in
@@ -110,19 +123,35 @@ httplib2==0.19.0
     #   oauth2client
 httpx==0.18.1
     # via -r requirements-base.in
+hypothesis==6.14.3
+    # via
+    #   hypothesis-graphql
+    #   hypothesis-jsonschema
+    #   schemathesis
+hypothesis-graphql==0.5.0
+    # via schemathesis
+hypothesis-jsonschema==0.20.1
+    # via schemathesis
 idna==2.10
     # via
-    #   -r requirements-base.in
     #   email-validator
     #   requests
     #   rfc3986
     #   yarl
+iniconfig==1.1.1
+    # via pytest
 jinja2==3.0.1
     # via -r requirements-base.in
 jira==2.0.0
     # via -r requirements-base.in
 joblib==1.0.1
     # via -r requirements-base.in
+jsonschema==3.2.0
+    # via
+    #   hypothesis-jsonschema
+    #   schemathesis
+junit-xml==1.9
+    # via schemathesis
 lxml==4.6.3
     # via
     #   emails
@@ -159,7 +188,9 @@ oauthlib[signedtoken]==3.1.0
     #   jira
     #   requests-oauthlib
 packaging==20.9
-    # via google-api-core
+    # via
+    #   google-api-core
+    #   pytest
 pandas==1.3.0
     # via
     #   -r requirements-base.in
@@ -174,6 +205,8 @@ plac==1.1.3
     # via
     #   spacy
     #   thinc
+pluggy==0.13.1
+    # via pytest
 premailer==3.7.0
     # via emails
 preshed==3.0.5
@@ -186,6 +219,8 @@ protobuf==3.15.6
     #   googleapis-common-protos
 psycopg2-binary==2.9.1
     # via -r requirements-base.in
+py==1.10.0
+    # via pytest
 pyasn1==0.4.8
     # via
     #   oauth2client
@@ -207,6 +242,14 @@ pyparsing==2.4.7
     #   -r requirements-base.in
     #   httplib2
     #   packaging
+pyrsistent==0.18.0
+    # via jsonschema
+pytest==6.2.4
+    # via
+    #   pytest-subtests
+    #   schemathesis
+pytest-subtests==0.5.0
+    # via schemathesis
 python-dateutil==2.8.2
     # via
     #   -r requirements-base.in
@@ -227,9 +270,12 @@ pytz==2021.1
     #   -r requirements-base.in
     #   google-api-core
     #   pandas
+pyyaml==5.4.1
+    # via schemathesis
 requests==2.26.0
     # via
     #   -r requirements-base.in
+    #   curlify
     #   emails
     #   google-api-core
     #   jira
@@ -237,6 +283,7 @@ requests==2.26.0
     #   premailer
     #   requests-oauthlib
     #   requests-toolbelt
+    #   schemathesis
     #   spacy
 requests-oauthlib==1.3.0
     # via
@@ -252,6 +299,8 @@ rsa==4.7.2
     #   oauth2client
     #   python-jose
 schedule==1.1.0
+    # via -r requirements-base.in
+schemathesis==3.9.6
     # via -r requirements-base.in
 scipy==1.6.1
     # via statsmodels
@@ -272,6 +321,8 @@ six==1.15.0
     #   google-auth
     #   google-auth-httplib2
     #   jira
+    #   jsonschema
+    #   junit-xml
     #   oauth2client
     #   patsy
     #   protobuf
@@ -286,6 +337,8 @@ sniffio==1.2.0
     # via
     #   httpcore
     #   httpx
+sortedcontainers==2.4.0
+    # via hypothesis
 spacy==2.3.5
     # via -r requirements-base.in
 sqlalchemy==1.3.24
@@ -303,7 +356,9 @@ srsly==1.0.5
     #   spacy
     #   thinc
 starlette==0.14.2
-    # via fastapi
+    # via
+    #   fastapi
+    #   schemathesis
 statsmodels==0.12.2
     # via -r requirements-base.in
 tabulate==0.8.9
@@ -314,6 +369,8 @@ text-unidecode==1.3
     # via python-slugify
 thinc==7.4.5
     # via spacy
+toml==0.10.2
+    # via pytest
 tqdm==4.59.0
     # via
     #   spacy
@@ -322,6 +379,7 @@ typing-extensions==3.7.4.3
     # via
     #   aiohttp
     #   pydantic
+    #   schemathesis
 uritemplate==3.0.1
     # via google-api-python-client
 urllib3==1.26.5
@@ -337,8 +395,12 @@ wasabi==0.8.2
     # via
     #   spacy
     #   thinc
+werkzeug==2.0.1
+    # via schemathesis
 yarl==1.6.3
-    # via aiohttp
+    # via
+    #   aiohttp
+    #   schemathesis
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
