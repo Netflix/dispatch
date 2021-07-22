@@ -251,11 +251,40 @@ class DocumentFactory(ResourceBaseFactory):
 
     name = Sequence(lambda n: f"document{n}")
     description = FuzzyText()
+    evergreen = Faker().pybool()
+    evergreen_owner = FuzzyText()
+    evergreen_reminder_interval = FuzzyInteger(low=0, high=100)
+    evergreen_last_reminder_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
 
     class Meta:
         """Factory Configuration."""
 
         model = Document
+
+    @post_generation
+    def incident(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.incident_id = extracted.id
+
+    @post_generation
+    def report(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.report_id = extracted.id
+
+    @post_generation
+    def filters(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for filter in extracted:
+                self.filters.append(filter)
 
 
 class GroupFactory(ResourceBaseFactory):
@@ -474,6 +503,7 @@ class ReportFactory(BaseFactory):
     details = FuzzyText()
     details_raw = FuzzyText()
     type = FuzzyChoice(["Tactical Report", "Executive Report"])
+    document = SubFactory(DocumentFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -758,13 +788,13 @@ class NotificationFactory(BaseFactory):
         model = Notification
 
     @post_generation
-    def search_filters(self, create, extracted, **kwargs):
+    def filters(self, create, extracted, **kwargs):
         if not create:
             return
 
         if extracted:
-            for search_filter in extracted:
-                self.search_filters.append(search_filter)
+            for filter in extracted:
+                self.filters.append(filter)
 
 
 class SearchFilterFactory(BaseFactory):

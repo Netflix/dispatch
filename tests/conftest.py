@@ -371,6 +371,11 @@ def report(session):
 
 
 @pytest.fixture
+def reports(session):
+    return [ReportFactory(), ReportFactory()]
+
+
+@pytest.fixture
 def storage(session):
     return StorageFactory()
 
