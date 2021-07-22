@@ -41,6 +41,8 @@ from .factories import (
     OrganizationFactory,
     ParticipantFactory,
     ParticipantRoleFactory,
+    PluginFactory,
+    PluginInstanceFactory,
     ProjectFactory,
     RecommendationFactory,
     RecommendationMatchFactory,
@@ -466,3 +468,18 @@ def search_filter(session):
 @pytest.fixture
 def search_filters(session):
     return [SearchFilterFactory(), SearchFilterFactory()]
+
+
+@pytest.fixture
+def plugin(session):
+    return PluginFactory()
+
+
+@pytest.fixture
+def plugins(session):
+    return [PluginFactory(), PluginFactory()]
+
+
+@pytest.fixture
+def plugin_instance(session):
+    return PluginInstanceFactory()

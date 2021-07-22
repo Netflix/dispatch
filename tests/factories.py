@@ -29,6 +29,7 @@ from dispatch.notification.models import Notification
 from dispatch.organization.models import Organization
 from dispatch.participant.models import Participant
 from dispatch.participant_role.models import ParticipantRole
+from dispatch.plugin.models import Plugin, PluginInstance
 from dispatch.project.models import Project
 from dispatch.report.models import Report
 from dispatch.route.models import Recommendation, RecommendationMatch
@@ -816,3 +817,41 @@ class SearchFilterFactory(BaseFactory):
 
         if extracted:
             self.creator_id = extracted.id
+
+
+class PluginFactory(BaseFactory):
+    """Plugin Factory."""
+
+    title = FuzzyText()
+    slug = FuzzyText()
+    description = FuzzyText()
+    version = FuzzyText()
+    author = FuzzyText()
+    author_url = FuzzyText()
+    type = FuzzyText()
+    multiple = Faker().pybool()
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Plugin
+
+
+class PluginInstanceFactory(BaseFactory):
+    """PluginInstance Factory."""
+
+    enabled = Faker().pybool()
+    configuration = {}
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = PluginInstance
+
+    @post_generation
+    def plugin(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.plugin_id = extracted.id
