@@ -4,7 +4,9 @@ from dispatch.main import app
 
 schemathesis.fixups.install(["fast_api"])
 
-schema = schemathesis.from_asgi("/api/v1/docs/openapi.json", app, base_url="/api/v1")
+schema = schemathesis.from_asgi(
+    "/api/v1/docs/openapi.json", app, base_url="http://127.0.0.1/api/v1"
+)
 
 
 @schema.parametrize()
