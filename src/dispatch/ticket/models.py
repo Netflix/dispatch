@@ -1,6 +1,7 @@
 from pydantic import validator
 
 from typing import Optional
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import Column, Integer, ForeignKey
 
@@ -37,4 +38,4 @@ class TicketRead(TicketBase):
 
 
 class TicketNested(TicketBase):
-    id: int
+    id: PrimaryKey

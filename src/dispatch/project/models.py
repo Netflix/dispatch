@@ -7,7 +7,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase
+from dispatch.models import DispatchBase, PrimaryKey
 
 from dispatch.organization.models import Organization, OrganizationCreate
 
@@ -32,7 +32,7 @@ class Project(Base):
 
 
 class ProjectBase(DispatchBase):
-    id: Optional[int]
+    id: Optional[PrimaryKey]
     name: str
     description: Optional[str]
     default: bool = False
@@ -48,7 +48,7 @@ class ProjectUpdate(ProjectBase):
 
 
 class ProjectRead(ProjectBase):
-    id: Optional[int]
+    id: Optional[PrimaryKey]
 
 
 class ProjectPagination(DispatchBase):

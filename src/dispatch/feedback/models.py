@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Optional, List
 
+from dispatch.models import PrimaryKey
+
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -40,11 +42,11 @@ class FeedbackCreate(FeedbackBase):
 
 
 class FeedbackUpdate(FeedbackBase):
-    id: int
+    id: PrimaryKey
 
 
 class FeedbackRead(FeedbackBase):
-    id: int
+    id: PrimaryKey
 
 
 class FeedbackPagination(DispatchBase):

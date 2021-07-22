@@ -1,4 +1,5 @@
 from typing import List, Optional
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import Table, Column, Integer, String, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
@@ -59,7 +60,7 @@ class DefinitionUpdate(DefinitionBase):
 
 
 class DefinitionRead(DefinitionBase):
-    id: int
+    id: PrimaryKey
     terms: Optional[List[TermReadNested]]
 
 

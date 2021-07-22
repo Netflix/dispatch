@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from pydantic import validator
+from dispatch.models import PrimaryKey
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -77,7 +78,7 @@ class DocumentUpdate(DocumentBase):
 
 
 class DocumentRead(DocumentBase):
-    id: int
+    id: PrimaryKey
     filters: Optional[List[SearchFilterRead]] = []
     project: Optional[ProjectRead]
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
@@ -40,8 +40,14 @@ def create_service(
     )
     if service:
         raise HTTPException(
-            status_code=400,
-            detail=f"A service with this identifier ({service_in.external_id}) already exists.",
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": f"A service with this identifier ({service_in.external_id}) already exists.",
+                    "loc": ["external_id"],
+                    "type": "Exists",
+                }
+            ],
         )
     service = create(db_session=db_session, service_in=service_in)
     return service
@@ -54,12 +60,17 @@ def update_service(
     """Update an existing service."""
     service = get(db_session=db_session, service_id=service_id)
     if not service:
-        raise HTTPException(status_code=404, detail="A service with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A service with this id does not exist."}]
+        )
 
     try:
         service = update(db_session=db_session, service=service, service_in=service_in)
     except InvalidConfiguration as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"msg": str(e), "loc": ["configuration"], "type": "InvalidConfiguration"},
+        )
 
     return service
 
@@ -69,7 +80,9 @@ def get_service(*, db_session: Session = Depends(get_db), service_id: int):
     """Get a single service."""
     service = get(db_session=db_session, service_id=service_id)
     if not service:
-        raise HTTPException(status_code=404, detail="A service with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A service with this id does not exist."}]
+        )
     return service
 
 
@@ -78,5 +91,7 @@ def delete_service(*, db_session: Session = Depends(get_db), service_id: int):
     """Delete a single service."""
     service = get(db_session=db_session, service_id=service_id)
     if not service:
-        raise HTTPException(status_code=404, detail="A service with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A service with this id does not exist."}]
+        )
     delete(db_session=db_session, service_id=service_id)

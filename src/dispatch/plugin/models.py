@@ -1,4 +1,5 @@
 from typing import List, Optional
+from dispatch.models import PrimaryKey
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -58,7 +59,7 @@ class PluginBase(DispatchBase):
 
 
 class PluginRead(PluginBase):
-    id: int
+    id: PrimaryKey
     title: str
     slug: str
     author: str
@@ -69,7 +70,7 @@ class PluginRead(PluginBase):
 
 
 class PluginInstanceRead(PluginBase):
-    id: int
+    id: PrimaryKey
     enabled: Optional[bool]
     configuration: Optional[dict]
     plugin: PluginRead
@@ -84,7 +85,7 @@ class PluginInstanceCreate(PluginBase):
 
 
 class PluginInstanceUpdate(PluginBase):
-    id: int
+    id: PrimaryKey
     enabled: Optional[bool]
     configuration: Optional[dict]
 

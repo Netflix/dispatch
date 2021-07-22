@@ -1,11 +1,11 @@
 from typing import List, Optional
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import Column, ForeignKey, Integer, Numeric
 from sqlalchemy.orm import relationship
 
 from dispatch.database.core import Base
 from dispatch.incident_cost_type.models import (
-    IncidentCostTypeCreate,
     IncidentCostTypeRead,
 )
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
@@ -40,12 +40,12 @@ class IncidentCostUpdate(IncidentCostBase):
 
 
 class IncidentCostRead(IncidentCostBase):
-    id: int
+    id: PrimaryKey
     incident_cost_type: IncidentCostTypeRead
 
 
 class IncidentCostNested(IncidentCostBase):
-    id: int
+    id: PrimaryKey
 
 
 class IncidentCostPagination(DispatchBase):

@@ -6,3 +6,4 @@ faker
 flake8
 pytest
 vulture
+schemathesis

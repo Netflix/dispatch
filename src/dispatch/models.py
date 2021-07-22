@@ -1,11 +1,15 @@
 from datetime import datetime
 from typing import List, Optional
+from pydantic.types import conint
 
 import validators
 from pydantic import BaseModel, validator
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, event, ForeignKey
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
+
+# pydantic type that limits the range of primary keys
+PrimaryKey = conint(gt=0, lt=2147483647)
 
 
 # SQLAlchemy models...
@@ -97,14 +101,14 @@ class PluginOptionModel(DispatchBase):
 
 # self referential models
 class TermNested(DispatchBase):
-    id: Optional[int]
+    id: Optional[PrimaryKey]
     text: str
     # disabling this for now as recursive models break swagger api gen
     # definitions: Optional[List["DefinitionNested"]] = []
 
 
 class DefinitionNested(DispatchBase):
-    id: Optional[int]
+    id: Optional[PrimaryKey]
     text: str
     terms: Optional[List["TermNested"]] = []
 
@@ -122,12 +126,12 @@ class TeamNested(DispatchBase):
 
 
 class TermReadNested(DispatchBase):
-    id: int
+    id: PrimaryKey
     text: str
 
 
 class DefinitionReadNested(DispatchBase):
-    id: int
+    id: PrimaryKey
     text: str
 
 
@@ -139,7 +143,7 @@ class ServiceReadNested(DispatchBase):
 
 
 class IndividualReadNested(ContactBase):
-    id: Optional[int]
+    id: Optional[PrimaryKey]
     title: Optional[str] = None
     external_id: Optional[str]
     weblink: Optional[str]

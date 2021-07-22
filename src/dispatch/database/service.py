@@ -2,6 +2,7 @@ import logging
 import json
 
 from typing import List
+from pydantic.types import Json, PositiveInt
 
 from fastapi import Depends, Query
 
@@ -164,18 +165,15 @@ def get_all(*, db_session, model):
 
 def common_parameters(
     db_session: orm.Session = Depends(get_db),
-    page: int = 1,
-    items_per_page: int = Query(5, alias="itemsPerPage"),
+    page: int = Query(1, gt=0),
+    items_per_page: int = Query(5, alias="itemsPerPage", gt=0),
     query_str: str = Query(None, alias="q"),
-    filter_spec: str = Query([], alias="filter"),
+    filter_spec: Json = Query([], alias="filter"),
     sort_by: List[str] = Query([], alias="sortBy[]"),
     descending: List[bool] = Query([], alias="descending[]"),
     current_user: DispatchUser = Depends(get_current_user),
     role: UserRoles = Depends(get_current_role),
 ):
-    if filter_spec:
-        filter_spec = json.loads(filter_spec)
-
     return {
         "db_session": db_session,
         "page": page,

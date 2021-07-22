@@ -55,7 +55,9 @@ def update_task(*, db_session: Session = Depends(get_db), task_id: int, task_in:
     """Updates an existing task."""
     task = get(db_session=db_session, task_id=task_id)
     if not task:
-        raise HTTPException(status_code=404, detail="A task with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A task with this id does not exist."}]
+        )
     task = update(db_session=db_session, task=task, task_in=task_in)
     return task
 
@@ -65,6 +67,8 @@ def delete_task(*, db_session: Session = Depends(get_db), task_id: int):
     """Deletes an existing task."""
     task = get(db_session=db_session, task_id=task_id)
     if not task:
-        raise HTTPException(status_code=404, detail="A task with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A task with this id does not exist."}]
+        )
     delete(db_session=db_session, task_id=task_id)
     return task

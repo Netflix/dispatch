@@ -26,7 +26,9 @@ def get_tag_type(*, db_session: Session = Depends(get_db), tag_type_id: str):
     """Get a tag type by its id."""
     tag_type = get(db_session=db_session, tag_type_id=tag_type_id)
     if not tag_type:
-        raise HTTPException(status_code=404, detail="A tag type with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A tag type with this id does not exist."}]
+        )
     return tag_type
 
 
@@ -44,7 +46,9 @@ def update_tag_type(
     """Update a tag type."""
     tag_type = get(db_session=db_session, tag_type_id=tag_type_id)
     if not tag_type:
-        raise HTTPException(status_code=404, detail="A tag type with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A tag type with this id does not exist."}]
+        )
     tag_type = update(db_session=db_session, tag_type=tag_type, tag_type_in=tag_type_in)
     return tag_type
 
@@ -54,5 +58,7 @@ def delete_tag_type(*, db_session: Session = Depends(get_db), tag_type_id: int):
     """Delete a tag type."""
     tag_type = get(db_session=db_session, tag_type_id=tag_type_id)
     if not tag_type:
-        raise HTTPException(status_code=404, detail="A tag type with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A tag type with this id does not exist."}]
+        )
     delete(db_session=db_session, tag_type_id=tag_type_id)

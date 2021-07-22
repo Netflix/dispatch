@@ -28,7 +28,9 @@ def get_notification(*, db_session: Session = Depends(get_db), notification_id: 
     """Get a notification by its id."""
     notification = get(db_session=db_session, notification_id=notification_id)
     if not notification:
-        raise HTTPException(status_code=404, detail="A notification with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A notification with this id does not exist."}]
+        )
     return notification
 
 
@@ -59,7 +61,9 @@ def update_notification(
     """Update a notification by its id."""
     notification = get(db_session=db_session, notification_id=notification_id)
     if not notification:
-        raise HTTPException(status_code=404, detail="A notification with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A notification with this id does not exist."}]
+        )
     notification = update(
         db_session=db_session, notification=notification, notification_in=notification_in
     )
@@ -74,5 +78,7 @@ def delete_notification(*, db_session: Session = Depends(get_db), notification_i
     """Delete a notification, returning only an HTTP 200 OK if successful."""
     notification = get(db_session=db_session, notification_id=notification_id)
     if not notification:
-        raise HTTPException(status_code=404, detail="A notification with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A notification with this id does not exist."}]
+        )
     delete(db_session=db_session, notification_id=notification_id)

@@ -44,7 +44,7 @@ class BasePermission(ABC):
 
     """
 
-    error_msg = "Forbidden."
+    error_msg = [{"msg": "Forbidden."}]
     status_code = HTTP_403_FORBIDDEN
     role = None
 

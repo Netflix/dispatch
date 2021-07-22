@@ -1,4 +1,5 @@
 from typing import List, Optional
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -28,11 +29,11 @@ class TagTypeCreate(TagTypeBase):
 
 
 class TagTypeUpdate(TagTypeBase):
-    id: int
+    id: PrimaryKey
 
 
 class TagTypeRead(TagTypeBase):
-    id: int
+    id: PrimaryKey
     project: ProjectRead
 
 

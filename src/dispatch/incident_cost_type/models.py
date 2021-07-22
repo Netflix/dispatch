@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.event import listen
@@ -47,15 +48,15 @@ class IncidentCostTypeCreate(IncidentCostTypeBase):
 
 
 class IncidentCostTypeUpdate(IncidentCostTypeBase):
-    id: int
+    id: PrimaryKey
 
 
 class IncidentCostTypeRead(IncidentCostTypeBase):
-    id: int
+    id: PrimaryKey
 
 
 class IncidentCostTypeNested(IncidentCostTypeBase):
-    id: int
+    id: PrimaryKey
 
 
 class IncidentCostTypePagination(DispatchBase):

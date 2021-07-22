@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
@@ -28,7 +28,16 @@ def create_team(*, db_session: Session = Depends(get_db), team_contact_in: TeamC
         db_session=db_session, email=team_contact_in.email, project_id=team_contact_in.project.id
     )
     if team:
-        raise HTTPException(status_code=400, detail="A team with this email already exists.")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": "A team with this email already exists.",
+                    "loc": ["email"],
+                    "type": "Exists",
+                }
+            ],
+        )
     team = create(db_session=db_session, team_contact_in=team_contact_in)
     return team
 
@@ -38,7 +47,9 @@ def get_team(*, db_session: Session = Depends(get_db), team_contact_id: int):
     """Get a team contact."""
     team = get(db_session=db_session, team_contact_id=team_contact_id)
     if not team:
-        raise HTTPException(status_code=404, detail="The team with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "The team with this id does not exist."}]
+        )
     return team
 
 
@@ -52,7 +63,9 @@ def update_team(
     """Update a team contact."""
     team = get(db_session=db_session, team_contact_id=team_contact_id)
     if not team:
-        raise HTTPException(status_code=404, detail="The team with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "The team with this id does not exist."}]
+        )
     team = update(db_session=db_session, team_contact=team, team_contact_in=team_contact_in)
     return team
 
@@ -62,7 +75,9 @@ def delete_team(*, db_session: Session = Depends(get_db), team_contact_id: int):
     """Delete a team contact."""
     team = get(db_session=db_session, team_contact_id=team_contact_id)
     if not team:
-        raise HTTPException(status_code=404, detail="The team with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "The team with this id does not exist."}]
+        )
 
     delete(db_session=db_session, team_contact_id=team_contact_id)
     return team

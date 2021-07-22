@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
@@ -30,7 +30,14 @@ def create_individual(
     individual = get_by_email(db_session=db_session, email=individual_contact_in.email)
     if individual:
         raise HTTPException(
-            status_code=400, detail="The individual with this email already exists."
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": "The individual with this email already exists.",
+                    "loc": ["email"],
+                    "type": "Exists",
+                }
+            ],
         )
     individual = create(db_session=db_session, individual_contact_in=individual_contact_in)
     return individual
@@ -41,7 +48,9 @@ def get_individual(*, db_session: Session = Depends(get_db), individual_contact_
     """Get an individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
-        raise HTTPException(status_code=404, detail="The individual with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "The individual with this id does not exist."}]
+        )
     return individual
 
 
@@ -60,7 +69,9 @@ def update_individual(
     """Update an individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
-        raise HTTPException(status_code=404, detail="The individual with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "The individual with this id does not exist."}]
+        )
     individual = update(
         db_session=db_session,
         individual_contact=individual,
@@ -78,6 +89,8 @@ async def delete_individual(*, db_session: Session = Depends(get_db), individual
     """Delete an individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
-        raise HTTPException(status_code=404, detail="The individual with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "The individual with this id does not exist."}]
+        )
 
     delete(db_session=db_session, individual_contact_id=individual_contact_id)

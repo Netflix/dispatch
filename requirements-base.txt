@@ -49,7 +49,7 @@ chardet==3.0.4
     #   emails
 charset-normalizer==2.0.1
     # via requests
-click==8.0.1
+click==7.1.2
     # via
     #   -r requirements-base.in
     #   uvicorn

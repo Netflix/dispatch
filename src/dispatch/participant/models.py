@@ -1,6 +1,5 @@
-from datetime import datetime
-
 from typing import Optional, List
+from dispatch.models import PrimaryKey
 
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, Boolean, String, Integer, ForeignKey, select
@@ -83,7 +82,7 @@ class ParticipantUpdate(ParticipantBase):
 
 
 class ParticipantRead(ParticipantBase):
-    id: int
+    id: PrimaryKey
     participant_roles: Optional[List[ParticipantRoleRead]] = []
     individual: Optional[IndividualReadNested]
 

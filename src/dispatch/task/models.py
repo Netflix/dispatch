@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import (
     Boolean,
@@ -125,7 +126,7 @@ class TaskUpdate(TaskBase):
 
 
 class TaskRead(TaskBase):
-    id: int
+    id: PrimaryKey
     project: Optional[ProjectRead]
 
 

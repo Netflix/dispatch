@@ -32,7 +32,7 @@ def create_search_filter(
         return search_filter
     except IntegrityError:
         raise HTTPException(
-            status_code=409, detail="A search filter already exists with this name."
+            status_code=409, detail=[{"msg": "A search filter already exists with this name."}]
         )
 
 
@@ -46,7 +46,9 @@ def update_search_filter(
     """Update a search filter."""
     search_filter = get(db_session=db_session, search_filter_id=search_filter_id)
     if not search_filter:
-        raise HTTPException(status_code=404, detail="A search filter with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A search filter with this id does not exist."}]
+        )
     search_filter = update(
         db_session=db_session, search_filter=search_filter, search_filter_in=search_filter_in
     )
@@ -58,6 +60,8 @@ def delete_filter(*, db_session: Session = Depends(get_db), search_filter_id: in
     """Delete a search filter."""
     search_filter = get(db_session=db_session, search_filter_id=search_filter_id)
     if not search_filter:
-        raise HTTPException(status_code=404, detail="A search filter with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A search filter with this id does not exist."}]
+        )
 
     delete(db_session=db_session, search_filter_id=search_filter_id)

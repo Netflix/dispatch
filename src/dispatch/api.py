@@ -1,6 +1,9 @@
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends
 from fastapi.openapi.docs import get_redoc_html
 from fastapi.openapi.utils import get_openapi
+from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
 from dispatch.auth.service import get_current_user
@@ -32,8 +35,24 @@ from dispatch.workflow.views import router as workflow_router
 
 from .config import DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 
+
+class ErrorMessage(BaseModel):
+    msg: str
+
+
+class ErrorResponse(BaseModel):
+    detail: Optional[List[ErrorMessage]]
+
+
 api_router = APIRouter(
-    default_response_class=JSONResponse
+    default_response_class=JSONResponse,
+    responses={
+        400: {"model": ErrorResponse},
+        401: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
 )  # WARNING: Don't use this unless you want unauthenticated routes
 authenticated_api_router = APIRouter()
 

@@ -1,4 +1,5 @@
 from typing import Optional, List
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
@@ -39,18 +40,18 @@ class TagBase(DispatchBase):
 
 
 class TagCreate(TagBase):
-    id: Optional[int]
+    id: Optional[PrimaryKey]
     tag_type: TagTypeCreate
     project: ProjectRead
 
 
 class TagUpdate(TagBase):
-    id: Optional[int]
+    id: Optional[PrimaryKey]
     tag_type: Optional[TagTypeUpdate]
 
 
 class TagRead(TagBase):
-    id: int
+    id: PrimaryKey
     tag_type: Optional[TagTypeRead]
     project: ProjectRead
 

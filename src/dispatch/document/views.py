@@ -21,7 +21,9 @@ def get_document(*, db_session: Session = Depends(get_db), document_id: int):
     """Update a document."""
     document = get(db_session=db_session, document_id=document_id)
     if not document:
-        raise HTTPException(status_code=404, detail="The document with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "The document with this id does not exist."}]
+        )
     return document
 
 
@@ -39,7 +41,9 @@ def update_document(
     """Update a document."""
     document = get(db_session=db_session, document_id=document_id)
     if not document:
-        raise HTTPException(status_code=404, detail="The document with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "The document with this id does not exist."}]
+        )
     document = update(db_session=db_session, document=document, document_in=document_in)
     return document
 
@@ -49,5 +53,7 @@ def delete_document(*, db_session: Session = Depends(get_db), document_id: int):
     """Delete a document."""
     document = get(db_session=db_session, document_id=document_id)
     if not document:
-        raise HTTPException(status_code=404, detail="The document with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "The document with this id does not exist."}]
+        )
     delete(db_session=db_session, document_id=document_id)

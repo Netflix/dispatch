@@ -27,7 +27,7 @@ def get_tag(*, db_session: Session = Depends(get_db), tag_id: str):
     """Given its unique ID, retrieve details about a single tag."""
     tag = get(db_session=db_session, tag_id=tag_id)
     if not tag:
-        raise HTTPException(status_code=404, detail="The requested tag does not exist.")
+        raise HTTPException(status_code=404, detail=[{"msg": "The requested tag does not exist."}])
     return tag
 
 
@@ -43,7 +43,9 @@ def update_tag(*, db_session: Session = Depends(get_db), tag_id: int, tag_in: Ta
     """Update a tag."""
     tag = get(db_session=db_session, tag_id=tag_id)
     if not tag:
-        raise HTTPException(status_code=404, detail="An tag with this ID does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "An tag with this ID does not exist."}]
+        )
     tag = update(db_session=db_session, tag=tag, tag_in=tag_in)
     return tag
 
@@ -53,7 +55,9 @@ def delete_tag(*, db_session: Session = Depends(get_db), tag_id: int):
     """Delete a tag, returning only an HTTP 200 OK if successful."""
     tag = get(db_session=db_session, tag_id=tag_id)
     if not tag:
-        raise HTTPException(status_code=404, detail="An tag with this ID does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "An tag with this ID does not exist."}]
+        )
     delete(db_session=db_session, tag_id=tag_id)
 
 
@@ -67,7 +71,7 @@ def get_tag_recommendations(*, db_session: Session = Depends(get_db), model_name
 
     if not model:
         raise HTTPException(
-            status_code=404, detail=f"No model found. ModelName: {model_name} Id: {id}"
+            status_code=404, detail=[{"msg": f"No model found. ModelName: {model_name} Id: {id}"}]
         )
 
     tags = get_recommendations(

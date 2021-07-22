@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.orm import relationship
@@ -67,14 +68,14 @@ class ServiceUpdate(ServiceBase):
 
 
 class ServiceRead(ServiceBase):
-    id: int
+    id: PrimaryKey
     filters: Optional[List[SearchFilterRead]] = []
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
 
 class ServiceNested(ServiceBase):
-    id: int
+    id: PrimaryKey
 
 
 class ServicePagination(DispatchBase):

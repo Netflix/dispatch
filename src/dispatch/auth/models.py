@@ -7,6 +7,8 @@ import bcrypt
 from jose import jwt
 from typing import Optional
 from pydantic import validator
+from pydantic.networks import EmailStr
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import Column, String, LargeBinary, Integer
 from sqlalchemy.orm import relationship
@@ -110,7 +112,7 @@ class UserOrganization(DispatchBase):
 
 
 class UserBase(DispatchBase):
-    email: str
+    email: EmailStr
     projects: Optional[List[UserProject]] = []
 
     @validator("email")
@@ -145,12 +147,12 @@ class UserLoginResponse(DispatchBase):
 
 
 class UserRead(UserBase):
-    id: int
+    id: PrimaryKey
     role: Optional[str]
 
 
 class UserUpdate(DispatchBase):
-    id: int
+    id: PrimaryKey
     password: Optional[str]
     projects: Optional[List[UserProject]]
     organizations: Optional[List[UserOrganization]]

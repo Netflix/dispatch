@@ -10,7 +10,7 @@ from time import time
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException
 
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import JSONResponse, Response
 
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
@@ -56,23 +56,25 @@ def verify_signature(request_data, timestamp: int, signature: str):
     slack_signing_secret = bytes(str(SLACK_SIGNING_SECRET), "utf-8")
     h = hmac.new(slack_signing_secret, req, hashlib.sha256).hexdigest()
     if not hmac.compare_digest(f"v0={h}", signature):
-        raise HTTPException(status_code=403, detail="Invalid request signature")
+        raise HTTPException(status_code=403, detail=[{"msg": "Invalid request signature"}])
 
 
 def verify_timestamp(timestamp: int):
     """Verifies that the timestamp does not differ from local time by more than five minutes."""
     if abs(time() - timestamp) > 60 * 5:
-        raise HTTPException(status_code=403, detail="Invalid request timestamp")
+        raise HTTPException(status_code=403, detail=[{"msg": "Invalid request timestamp"}])
 
 
-@router.post("/slack/event")
+@router.post(
+    "/slack/event",
+)
 async def handle_event(
     event: EventEnvelope,
     request: Request,
     response: Response,
     background_tasks: BackgroundTasks,
-    x_slack_request_timestamp: int = Header(None),
-    x_slack_signature: str = Header(None),
+    x_slack_request_timestamp: int = Header(...),
+    x_slack_signature: str = Header(...),
 ):
     """Handle all incoming Slack events."""
     raw_request_body = bytes.decode(await request.body())
@@ -88,24 +90,28 @@ async def handle_event(
 
     # Echo the URL verification challenge code back to Slack
     if event.challenge:
-        return {"challenge": event.challenge}
+        return JSONResponse(content={"challenge": event.challenge})
 
     slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
 
-    return await handle_slack_event(
+    body = await handle_slack_event(
         client=slack_async_client,
         event=event,
         background_tasks=background_tasks,
     )
 
+    return JSONResponse(content=body)
 
-@router.post("/slack/command")
+
+@router.post(
+    "/slack/command",
+)
 async def handle_command(
     request: Request,
     response: Response,
     background_tasks: BackgroundTasks,
-    x_slack_request_timestamp: int = Header(None),
-    x_slack_signature: str = Header(None),
+    x_slack_request_timestamp: int = Header(...),
+    x_slack_signature: str = Header(...),
 ):
     """Handle all incoming Slack commands."""
     raw_request_body = bytes.decode(await request.body())
@@ -123,25 +129,32 @@ async def handle_command(
 
     slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
 
-    return await handle_slack_command(
+    body = await handle_slack_command(
         client=slack_async_client,
         request=request,
         background_tasks=background_tasks,
     )
 
+    return JSONResponse(content=body)
 
-@router.post("/slack/action")
+
+@router.post(
+    "/slack/action",
+)
 async def handle_action(
     request: Request,
     response: Response,
     background_tasks: BackgroundTasks,
-    x_slack_request_timestamp: int = Header(None),
-    x_slack_signature: str = Header(None),
+    x_slack_request_timestamp: int = Header(...),
+    x_slack_signature: str = Header(...),
 ):
     """Handle all incoming Slack actions."""
     raw_request_body = bytes.decode(await request.body())
     request_body_form = await request.form()
-    request = json.loads(request_body_form.get("payload"))
+    try:
+        request = json.loads(request_body_form.get("payload"))
+    except Exception:
+        raise HTTPException(status_code=400, detail=[{"msg": "Bad Request"}])
 
     # We verify the timestamp
     verify_timestamp(x_slack_request_timestamp)
@@ -155,24 +168,30 @@ async def handle_action(
     # We create an async Slack client
     slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
 
-    return await handle_slack_action(
+    body = await handle_slack_action(
         client=slack_async_client,
         request=request,
         background_tasks=background_tasks,
     )
+    return JSONResponse(content=body)
 
 
-@router.post("/slack/menu")
+@router.post(
+    "/slack/menu",
+)
 async def handle_menu(
     request: Request,
     response: Response,
-    x_slack_request_timestamp: int = Header(None),
-    x_slack_signature: str = Header(None),
+    x_slack_request_timestamp: int = Header(...),
+    x_slack_signature: str = Header(...),
 ):
     """Handle all incoming Slack actions."""
     raw_request_body = bytes.decode(await request.body())
     request_body_form = await request.form()
-    request = json.loads(request_body_form.get("payload"))
+    try:
+        request = json.loads(request_body_form.get("payload"))
+    except Exception:
+        raise HTTPException(status_code=400, detail=[{"msg": "Bad Request"}])
 
     # We verify the timestamp
     verify_timestamp(x_slack_request_timestamp)
@@ -186,7 +205,8 @@ async def handle_menu(
     # We create an async Slack client
     slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
 
-    return await handle_slack_menu(
+    body = await handle_slack_menu(
         client=slack_async_client,
         request=request,
     )
+    return JSONResponse(content=body)

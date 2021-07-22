@@ -1,5 +1,6 @@
 from typing import List, Optional
 from pydantic import StrictBool
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -57,7 +58,7 @@ class IncidentPriorityUpdate(IncidentPriorityBase):
 
 
 class IncidentPriorityRead(IncidentPriorityBase):
-    id: int
+    id: PrimaryKey
 
 
 class IncidentPriorityPagination(DispatchBase):

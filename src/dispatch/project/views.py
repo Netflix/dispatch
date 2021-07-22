@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from dispatch.auth.permissions import (
@@ -37,7 +37,16 @@ def create_project(*, db_session: Session = Depends(get_db), project_in: Project
     """Create a new project."""
     project = get_by_name(db_session=db_session, name=project_in.name)
     if project:
-        raise HTTPException(status_code=400, detail="A project with this name already exists.")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": "A project with this name already exists.",
+                    "loc": ["name"],
+                    "type": "Exists",
+                }
+            ],
+        )
     project = create(db_session=db_session, project_in=project_in)
     return project
 
@@ -51,7 +60,9 @@ def get_project(*, db_session: Session = Depends(get_db), project_id: int):
     """Get a project."""
     project = get(db_session=db_session, project_id=project_id)
     if not project:
-        raise HTTPException(status_code=404, detail="A project with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A project with this id does not exist."}]
+        )
     return project
 
 
@@ -69,7 +80,9 @@ def update_project(
     """Update a project."""
     project = get(db_session=db_session, project_id=project_id)
     if not project:
-        raise HTTPException(status_code=404, detail="A project with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A project with this id does not exist."}]
+        )
     project = update(db_session=db_session, project=project, project_in=project_in)
     return project
 
@@ -83,7 +96,9 @@ def delete_project(*, db_session: Session = Depends(get_db), project_id: int):
     """Delete a project."""
     project = get(db_session=db_session, project_id=project_id)
     if not project:
-        raise HTTPException(status_code=404, detail="A project with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A project with this id does not exist."}]
+        )
 
     delete(db_session=db_session, project_id=project_id)
     return project

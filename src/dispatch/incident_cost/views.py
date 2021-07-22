@@ -28,7 +28,9 @@ def get_incident_cost(*, db_session: Session = Depends(get_db), incident_cost_id
     """Get an incident cost by its id."""
     incident_cost = get(db_session=db_session, incident_cost_id=incident_cost_id)
     if not incident_cost:
-        raise HTTPException(status_code=404, detail="An incident cost with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "An incident cost with this id does not exist."}]
+        )
     return incident_cost
 
 
@@ -59,7 +61,9 @@ def update_incident_cost(
     """Update an incident cost by its id."""
     incident_cost = get(db_session=db_session, incident_cost_id=incident_cost_id)
     if not incident_cost:
-        raise HTTPException(status_code=404, detail="An incident cost with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "An incident cost with this id does not exist."}]
+        )
     incident_cost = update(
         db_session=db_session,
         incident_cost=incident_cost,
@@ -76,5 +80,7 @@ def delete_incident_cost(*, db_session: Session = Depends(get_db), incident_cost
     """Delete an incident cost, returning only an HTTP 200 OK if successful."""
     incident_cost = get(db_session=db_session, incident_cost_id=incident_cost_id)
     if not incident_cost:
-        raise HTTPException(status_code=404, detail="An incident cost with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "An incident cost with this id does not exist."}]
+        )
     delete(db_session=db_session, incident_cost_id=incident_cost_id)

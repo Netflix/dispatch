@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -70,7 +71,7 @@ class IndividualContactUpdate(IndividualContactBase):
 
 
 class IndividualContactRead(IndividualContactBase):
-    id: int
+    id: PrimaryKey
     filters: Optional[List[SearchFilterRead]] = []
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

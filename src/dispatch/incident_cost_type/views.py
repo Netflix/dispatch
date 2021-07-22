@@ -29,7 +29,7 @@ def get_incident_cost_type(*, db_session: Session = Depends(get_db), incident_co
     incident_cost_type = get(db_session=db_session, incident_cost_type_id=incident_cost_type_id)
     if not incident_cost_type:
         raise HTTPException(
-            status_code=404, detail="An incident cost type with this id does not exist."
+            status_code=404, detail=[{"msg": "An incident cost type with this id does not exist."}]
         )
     return incident_cost_type
 
@@ -62,12 +62,13 @@ def update_incident_cost_type(
     incident_cost_type = get(db_session=db_session, incident_cost_type_id=incident_cost_type_id)
     if not incident_cost_type:
         raise HTTPException(
-            status_code=404, detail="An incident cost type with this id does not exist."
+            status_code=404, detail=[{"msg": "An incident cost type with this id does not exist."}]
         )
 
     if not incident_cost_type.editable:
         raise HTTPException(
-            status_code=301, detail="You are not allowed to update this incident cost type."
+            status_code=301,
+            detail=[{"msg": "You are not allowed to update this incident cost type."}],
         )
 
     incident_cost_type = update(
@@ -88,12 +89,13 @@ def delete_incident_cost_type(*, db_session: Session = Depends(get_db), incident
 
     if not incident_cost_type:
         raise HTTPException(
-            status_code=404, detail="An incident cost type with this id does not exist."
+            status_code=404, detail=[{"msg": "An incident cost type with this id does not exist."}]
         )
 
     if not incident_cost_type.editable:
         raise HTTPException(
-            status_code=301, detail="You are not allowed to delete this incident cost type."
+            status_code=301,
+            detail=[{"msg": "You are not allowed to delete this incident cost type."}],
         )
 
     delete(db_session=db_session, incident_cost_type_id=incident_cost_type_id)

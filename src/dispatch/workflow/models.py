@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from pydantic import validator
+from dispatch.models import PrimaryKey
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, ForeignKey, Integer, String, JSON, Table
 from sqlalchemy.sql.schema import PrimaryKeyConstraint
@@ -116,11 +117,11 @@ class WorkflowCreate(WorkflowBase):
 
 
 class WorkflowUpdate(WorkflowBase):
-    id: int
+    id: PrimaryKey
 
 
 class WorkflowRead(WorkflowBase):
-    id: int
+    id: PrimaryKey
 
     @validator("description", pre=True, always=True)
     def set_description(cls, v, values):
@@ -159,7 +160,7 @@ class WorkflowInstanceUpdate(WorkflowInstanceBase):
 
 
 class WorkflowInstanceRead(WorkflowInstanceBase):
-    id: int
+    id: PrimaryKey
     workflow: WorkflowRead
     creator: ParticipantRead
 

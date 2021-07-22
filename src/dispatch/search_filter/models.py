@@ -1,4 +1,5 @@
 from typing import List, Optional
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -44,11 +45,11 @@ class SearchFilterCreate(SearchFilterBase):
 
 
 class SearchFilterUpdate(SearchFilterBase):
-    id: int
+    id: PrimaryKey
 
 
 class SearchFilterRead(SearchFilterBase):
-    id: int
+    id: PrimaryKey
 
 
 class SearchFilterPagination(DispatchBase):

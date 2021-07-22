@@ -1,4 +1,5 @@
 from typing import List, Optional
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -35,7 +36,7 @@ class TermUpdate(TermBase):
 
 
 class TermRead(TermBase):
-    id: int
+    id: PrimaryKey
     definitions: Optional[List[DefinitionReadNested]] = []
 
 

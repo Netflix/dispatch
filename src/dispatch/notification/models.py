@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
@@ -64,7 +65,7 @@ class NotificationUpdate(NotificationBase):
 
 
 class NotificationRead(NotificationBase):
-    id: int
+    id: PrimaryKey
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     filters: Optional[List[SearchFilterRead]]

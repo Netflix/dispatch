@@ -1,11 +1,14 @@
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Request, HTTPException, status
 from sqlalchemy.orm import Session
+
 from dispatch.auth.permissions import (
     OrganizationOwnerPermission,
     OrganizationMemberPermission,
     PermissionsDependency,
 )
 
+from dispatch.models import PrimaryKey
+from dispatch.organization.models import constrained_organization_str
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.organization.models import OrganizationRead
@@ -40,7 +43,9 @@ user_router = APIRouter()
     ],
     response_model=UserPagination,
 )
-def get_users(*, organization: str, common: dict = Depends(common_parameters)):
+def get_users(
+    *, organization: constrained_organization_str, common: dict = Depends(common_parameters)
+):
     """Get all users."""
     common["filter_spec"] = {
         "and": [{"model": "Organization", "op": "==", "field": "name", "value": organization}]
@@ -67,7 +72,9 @@ def get_user(*, db_session: Session = Depends(get_db), user_id: int):
     """Get a user."""
     user = get(db_session=db_session, user_id=user_id)
     if not user:
-        raise HTTPException(status_code=404, detail="The user with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "The user with this id does not exist."}]
+        )
 
     return user
 
@@ -88,14 +95,16 @@ def get_me(
 def update_user(
     *,
     db_session: Session = Depends(get_db),
-    user_id: int,
-    organization: str,
+    user_id: PrimaryKey,
+    organization: constrained_organization_str,
     user_in: UserUpdate,
 ):
     """Update a user."""
     user = get(db_session=db_session, user_id=user_id)
     if not user:
-        raise HTTPException(status_code=404, detail="The user with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "The user with this id does not exist."}]
+        )
 
     # add organization information
     user_in.organizations = [
@@ -113,19 +122,37 @@ def login_user(
     user = get_by_email(db_session=db_session, email=user_in.email)
     if user and user.check_password(user_in.password):
         return {"token": user.token}
-    raise HTTPException(status_code=400, detail="Invalid username or password")
+    raise HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        detail=[
+            {
+                "msg": "Invalid username or password",
+                "loc": ["username"],
+                "type": "BadUsernamePassword",
+            }
+        ],
+    )
 
 
 @auth_router.post("/register", response_model=UserRegisterResponse)
 def register_user(
     user_in: UserRegister,
-    organization: str,
+    organization: constrained_organization_str,
     db_session: Session = Depends(get_db),
 ):
     user = get_by_email(db_session=db_session, email=user_in.email)
     if not user:
         user = create(db_session=db_session, organization=organization, user_in=user_in)
     else:
-        raise HTTPException(status_code=400, detail="User with that email address exists.")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": "User with that email address exists.",
+                    "loc": ["email"],
+                    "type": "UserExists",
+                }
+            ],
+        )
 
     return user

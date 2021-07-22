@@ -5,9 +5,10 @@ from typing import List
 import calendar
 from datetime import date
 from dateutil.relativedelta import relativedelta
+from pydantic.types import constr
 
 from starlette.requests import Request
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from dispatch.auth.permissions import (
     IncidentEditPermission,
@@ -50,7 +51,9 @@ def get_current_incident(*, db_session: Session = Depends(get_db), request: Requ
     """Fetches incident or returns a 404."""
     incident = get(db_session=db_session, incident_id=request.path_params["incident_id"])
     if not incident:
-        raise HTTPException(status_code=404, detail="The requested incident does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "The requested incident does not exist."}]
+        )
     return incident
 
 
@@ -96,7 +99,7 @@ def get_incident(
 def create_incident(
     *,
     db_session: Session = Depends(get_db),
-    organization: str,
+    organization: constr(strip_whitespace=True),
     incident_in: IncidentCreate,
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
@@ -106,11 +109,7 @@ def create_incident(
         incident_in.reporter = ParticipantUpdate(
             individual=IndividualReadNested(email=current_user.email)
         )
-    try:
-        incident = create(db_session=db_session, **incident_in.dict())
-    except Exception as e:
-        log.exception(e)
-        raise HTTPException(status_code=400, detail=str(e))
+    incident = create(db_session=db_session, **incident_in.dict())
 
     if incident.status == IncidentStatus.stable:
         background_tasks.add_task(
@@ -138,7 +137,7 @@ def update_incident(
     *,
     db_session: Session = Depends(get_db),
     current_incident: Incident = Depends(get_current_incident),
-    organization: str,
+    organization: constr(strip_whitespace=True),
     incident_in: IncidentUpdate,
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
@@ -192,7 +191,7 @@ def update_incident(
 def join_incident(
     *,
     db_session: Session = Depends(get_db),
-    organization: str,
+    organization: constr(strip_whitespace=True),
     current_incident: Incident = Depends(get_current_incident),
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
@@ -214,7 +213,7 @@ def join_incident(
 def create_tactical_report(
     *,
     db_session: Session = Depends(get_db),
-    organization: str,
+    organization: constr(strip_whitespace=True),
     tactical_report_in: TacticalReportCreate,
     current_user: DispatchUser = Depends(get_current_user),
     current_incident: Incident = Depends(get_current_incident),
@@ -238,7 +237,7 @@ def create_tactical_report(
 def create_executive_report(
     *,
     db_session: Session = Depends(get_db),
-    organization: str,
+    organization: constr(strip_whitespace=True),
     current_incident: Incident = Depends(get_current_incident),
     executive_report_in: ExecutiveReportCreate,
     current_user: DispatchUser = Depends(get_current_user),

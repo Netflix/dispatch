@@ -21,7 +21,9 @@ def get_workflow(*, db_session: Session = Depends(get_db), workflow_id: int):
     """Get a workflow."""
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:
-        raise HTTPException(status_code=404, detail="A workflow with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A workflow with this id does not exist."}]
+        )
     return workflow
 
 
@@ -39,7 +41,9 @@ def update_workflow(
     """Update a workflow."""
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:
-        raise HTTPException(status_code=404, detail="A workflow with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A workflow with this id does not exist."}]
+        )
     workflow = update(db_session=db_session, workflow=workflow, workflow_in=workflow_in)
     return workflow
 
@@ -49,5 +53,7 @@ def delete_workflow(*, db_session: Session = Depends(get_db), workflow_id: int):
     """Delete a workflow."""
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:
-        raise HTTPException(status_code=404, detail="A workflow with this id does not exist.")
+        raise HTTPException(
+            status_code=404, detail=[{"msg": "A workflow with this id does not exist."}]
+        )
     delete(db_session=db_session, workflow_id=workflow_id)

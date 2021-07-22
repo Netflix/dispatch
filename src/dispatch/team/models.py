@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.orm import relationship
@@ -57,7 +58,7 @@ class TeamContactUpdate(TeamContactBase):
 
 
 class TeamContactRead(TeamContactBase):
-    id: int
+    id: PrimaryKey
     filters: Optional[List[SearchFilterRead]] = []
     created_at: datetime
     updated_at: datetime
