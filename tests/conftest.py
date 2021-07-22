@@ -37,13 +37,17 @@ from .factories import (
     IncidentPriorityFactory,
     IncidentTypeFactory,
     IndividualContactFactory,
+    NotificationFactory,
     OrganizationFactory,
     ParticipantFactory,
     ParticipantRoleFactory,
+    PluginFactory,
+    PluginInstanceFactory,
     ProjectFactory,
     RecommendationFactory,
     RecommendationMatchFactory,
     ReportFactory,
+    SearchFilterFactory,
     ServiceFactory,
     StorageFactory,
     TagFactory,
@@ -327,8 +331,18 @@ def organization(session):
 
 
 @pytest.fixture
+def organizations(session):
+    return [OrganizationFactory(), OrganizationFactory()]
+
+
+@pytest.fixture
 def project(session):
     return ProjectFactory()
+
+
+@pytest.fixture
+def projects(session):
+    return [ProjectFactory(), ProjectFactory()]
 
 
 @pytest.fixture
@@ -429,3 +443,38 @@ def incident_cost_type(session):
 @pytest.fixture
 def incident_cost_types(session):
     return [IncidentCostTypeFactory(), IncidentCostTypeFactory()]
+
+
+@pytest.fixture
+def notification(session):
+    return NotificationFactory()
+
+
+@pytest.fixture
+def notifications(session):
+    return [NotificationFactory(), NotificationFactory()]
+
+
+@pytest.fixture
+def search_filter(session):
+    return SearchFilterFactory()
+
+
+@pytest.fixture
+def search_filters(session):
+    return [SearchFilterFactory(), SearchFilterFactory()]
+
+
+@pytest.fixture
+def plugin(session):
+    return PluginFactory()
+
+
+@pytest.fixture
+def plugins(session):
+    return [PluginFactory(), PluginFactory()]
+
+
+@pytest.fixture
+def plugin_instance(session):
+    return PluginInstanceFactory()
