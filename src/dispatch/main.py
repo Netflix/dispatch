@@ -160,6 +160,7 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
 
         method = request.method
         tags = {"method": method, "endpoint": path_template}
+        print(request.method)
 
         try:
             return await call_next(request)

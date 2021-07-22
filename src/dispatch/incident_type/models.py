@@ -88,7 +88,7 @@ class Service(DispatchBase):
 
 # Pydantic models...
 class IncidentTypeBase(DispatchBase):
-    name: PrimaryKey
+    name: str
     visibility: Optional[str]
     description: Optional[str]
     enabled: Optional[bool]
