@@ -25,12 +25,15 @@ from dispatch.incident_cost_type.models import IncidentCostType
 from dispatch.incident_priority.models import IncidentPriority
 from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
+from dispatch.notification.models import Notification
 from dispatch.organization.models import Organization
 from dispatch.participant.models import Participant
 from dispatch.participant_role.models import ParticipantRole
+from dispatch.plugin.models import Plugin, PluginInstance
 from dispatch.project.models import Project
 from dispatch.report.models import Report
 from dispatch.route.models import Recommendation, RecommendationMatch
+from dispatch.search_filter.models import SearchFilter
 from dispatch.service.models import Service
 from dispatch.storage.models import Storage
 from dispatch.tag.models import Tag
@@ -62,6 +65,11 @@ class OrganizationFactory(BaseFactory):
     """Organization Factory."""
 
     name = Sequence(lambda n: f"organization{n}")
+    description = FuzzyText()
+    default = Faker().pybool()
+    banner_enabled = Faker().pybool()
+    banner_color = FuzzyText()
+    banner_text = FuzzyText()
 
     class Meta:
         """Factory Configuration."""
@@ -73,14 +81,18 @@ class OrganizationFactory(BaseFactory):
         if not create:
             return
 
-        for project in extracted:
-            self.projects.append(project)
+        if extracted:
+            for project in extracted:
+                self.projects.append(project)
 
 
 class ProjectFactory(BaseFactory):
     """Project Factory."""
 
     name = Sequence(lambda n: f"project{n}")
+    description = FuzzyText()
+    default = Faker().pybool()
+    color = FuzzyText()
 
     class Meta:
         """Factory Configuration."""
@@ -654,6 +666,8 @@ class ConferenceFactory(ResourceBaseFactory):
     incident = SubFactory(IncidentFactory)
 
     class Meta:
+        """Factory Configuration."""
+
         model = Conference
 
 
@@ -727,3 +741,87 @@ class IncidentCostTypeFactory(BaseFactory):
         """Factory Configuration."""
 
         model = IncidentCostType
+
+
+class NotificationFactory(BaseFactory):
+    """Notification Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    type = FuzzyChoice(["email", "conversation"])
+    target = FuzzyText()
+    enabled = Faker().pybool()
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Notification
+
+    @post_generation
+    def search_filters(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for search_filter in extracted:
+                self.search_filters.append(search_filter)
+
+
+class SearchFilterFactory(BaseFactory):
+    """Search Filter Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    expression = [{}]
+    type = FuzzyText()
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = SearchFilter
+
+    @post_generation
+    def creator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.creator_id = extracted.id
+
+
+class PluginFactory(BaseFactory):
+    """Plugin Factory."""
+
+    title = FuzzyText()
+    slug = FuzzyText()
+    description = FuzzyText()
+    version = FuzzyText()
+    author = FuzzyText()
+    author_url = FuzzyText()
+    type = FuzzyText()
+    multiple = Faker().pybool()
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Plugin
+
+
+class PluginInstanceFactory(BaseFactory):
+    """PluginInstance Factory."""
+
+    enabled = Faker().pybool()
+    configuration = {}
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = PluginInstance
+
+    @post_generation
+    def plugin(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.plugin_id = extracted.id
