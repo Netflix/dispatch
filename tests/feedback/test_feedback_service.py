@@ -1,7 +1,7 @@
 import pytest
 
 
-def test_get_feedback(session, feedback):
+def test_get(session, feedback):
     from dispatch.feedback.service import get
 
     t_feedback = get(db_session=session, feedback_id=feedback.id)

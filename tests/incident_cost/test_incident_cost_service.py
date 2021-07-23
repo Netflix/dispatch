@@ -1,7 +1,7 @@
 import pytest
 
 
-def test_get_incident_cost(session, incident_cost):
+def test_get(session, incident_cost):
     from dispatch.incident_cost.service import get
 
     t_incident_cost = get(db_session=session, incident_cost_id=incident_cost.id)
