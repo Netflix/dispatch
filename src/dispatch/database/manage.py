@@ -77,7 +77,7 @@ def init_database(engine):
     # default organization
     organization = Organization(
         name="default",
-        slug="defualt",
+        slug="default",
         default=True,
         description="Default dispatch organization.",
     )

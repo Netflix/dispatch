@@ -3,7 +3,6 @@ import logging
 from os import path
 
 from fastapi import FastAPI, HTTPException, status
-from fastapi import exceptions
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
@@ -84,26 +83,6 @@ def get_path_template(request: Request) -> str:
     return ".".join(request.url.path.split("/")[1:4])
 
 
-@frontend.middleware("http")
-async def default_page(request: Request, call_next):
-    response = await call_next(request)
-    if response.status_code == 404:
-        if STATIC_DIR:
-            return FileResponse(path.join(STATIC_DIR, "index.html"))
-        else:
-            async with httpx.AsyncClient() as client:
-                remote_resp = await client.get(
-                    str(request.url.replace(port=8080)), headers=dict(request.headers)
-                )
-                return StreamingResponse(
-                    remote_resp.aiter_bytes(),
-                    headers=remote_resp.headers,
-                    status_code=remote_resp.status_code,
-                    media_type=remote_resp.headers.get("content-type"),
-                )
-    return response
-
-
 @api.middleware("http")
 async def db_session_middleware(request: Request, call_next):
     path_params = get_path_params_from_request(request)
@@ -176,7 +155,6 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
 
         method = request.method
         tags = {"method": method, "endpoint": path_template}
-        print(request.method)
 
         try:
             return await call_next(request)

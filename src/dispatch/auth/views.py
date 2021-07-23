@@ -80,6 +80,7 @@ def get_user(*, db_session: Session = Depends(get_db), user_id: int):
 @auth_router.get("/me", response_model=UserRead)
 def get_me(
     req: Request,
+    organization: OrganizationSlug,
     db_session: Session = Depends(get_db),
 ):
     return get_current_user(request=req)
@@ -116,6 +117,7 @@ def update_user(
 @auth_router.post("/login", response_model=UserLoginResponse)
 def login_user(
     user_in: UserLogin,
+    organization: OrganizationSlug,
     db_session: Session = Depends(get_db),
 ):
     user = get_by_email(db_session=db_session, email=user_in.email)

@@ -28,7 +28,7 @@ def upgrade():
     results = res.fetchall()
 
     for r in results:
-        slug = slugify([1], seperator="_")
+        slug = slugify([1], separator="_")
         conn.execute(f"update dispatch_core.organization set slug = {slug} where id = {r[0]} ")
 
     # ### end Alembic commands ###

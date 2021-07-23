@@ -10,15 +10,7 @@ from sqlalchemy.orm import relationship
 
 # pydantic type that limits the range of primary keys
 PrimaryKey = conint(gt=0, lt=2147483647)
-OrganizationSlug = constr(
-    regex=r"""^
-  [a-z0-9]+   # One or more repetition of given characters
-  (?:         # A non-capture group.
-    -           # A hyphen
-    [a-z0-9]+   # One or more repetition of given characters
-  )*          # Zero or more repetition of previous group
- $"""
-)
+OrganizationSlug = constr(regex="^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 # SQLAlchemy models...

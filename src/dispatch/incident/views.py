@@ -5,7 +5,6 @@ from typing import List
 import calendar
 from datetime import date
 from dateutil.relativedelta import relativedelta
-from pydantic.types import constr
 
 from starlette.requests import Request
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
