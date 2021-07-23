@@ -51,6 +51,7 @@ from .factories import (
     ServiceFactory,
     StorageFactory,
     TagFactory,
+    TagTypeFactory,
     TaskFactory,
     TeamContactFactory,
     TermFactory,
@@ -236,8 +237,18 @@ def ticket_plugin():
 
 
 @pytest.fixture
-def Tag(session):
+def tag(session):
     return TagFactory()
+
+
+@pytest.fixture
+def tag_type(session):
+    return TagTypeFactory()
+
+
+@pytest.fixture
+def tag_types(session):
+    return [TagTypeFactory(), TagTypeFactory()]
 
 
 @pytest.fixture
