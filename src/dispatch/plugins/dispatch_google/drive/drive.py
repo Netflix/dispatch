@@ -5,11 +5,13 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from typing import Any, List
 import functools
 import io
 import json
 import logging
+from typing import Any, List
+
+from datetime import datetime, timedelta, timezone
 
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
@@ -37,6 +39,10 @@ class Roles(DispatchEnum):
     reader = "reader"
 
 
+class Activity(DispatchEnum):
+    comment = "COMMENT"
+
+
 def paginated(data_key):
     def decorator(func):
         @functools.wraps(func)
@@ -53,6 +59,9 @@ def paginated(data_key):
                     kwargs["fields"] = ",".join(fields)
 
                 response = func(*args, **kwargs)
+                if not response.get(data_key):
+                    break
+
                 results += response.get(data_key)
 
                 # stop if we hit an empty string
@@ -114,6 +123,20 @@ def get_file(client: Any, file_id: str):
         fileId=file_id,
         fields="id, name, parents, webViewLink",
         supportsAllDrives=True,
+    )
+
+
+@paginated("activities")
+def get_activity(
+    client: Any, file_id: str, activity: Activity = Activity.comment, lookback: int = 60
+):
+    """Fetches file activity."""
+    lookback_time = datetime.now(timezone.utc) - timedelta(seconds=lookback)
+    activity_filter = (
+        f"time >= {int(lookback_time.timestamp() * 1000)} AND detail.action_detail_case: {activity}"
+    )
+    return make_call(
+        client.activity(), "query", body={"filter": activity_filter, "itemName": f"items/{file_id}"}
     )
 
 
@@ -183,6 +206,24 @@ def list_files(client: any, team_drive_id: str, q: str = None, **kwargs):
 def list_comments(client: Any, file_id: str, **kwargs):
     """Lists all available comments on file."""
     return make_call(client.comments(), "list", fileId=file_id, fields="*", **kwargs)
+
+
+def get_comment(client: Any, file_id: str, comment_id: str, **kwargs):
+    """Gets a specific comment."""
+    return make_call(
+        client.comments(), "get", fileId=file_id, commentId=comment_id, fields="*", **kwargs
+    )
+
+
+def get_person(client: Any, person_id: str, **kwargs):
+    """Gets a person's metadata given their people id."""
+    return make_call(
+        client.people(),
+        "get",
+        resourceName=person_id,
+        personFields="emailAddresses",
+        **kwargs,
+    )
 
 
 def add_reply(
