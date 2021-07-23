@@ -1,7 +1,7 @@
 import pytest
 
 
-def test_get_report(session, report):
+def test_get(session, report):
     from dispatch.report.service import get
 
     t_report = get(db_session=session, report_id=report.id)

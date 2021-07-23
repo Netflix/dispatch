@@ -37,6 +37,7 @@ from dispatch.search_filter.models import SearchFilter
 from dispatch.service.models import Service
 from dispatch.storage.models import Storage
 from dispatch.tag.models import Tag
+from dispatch.tag_type.models import TagType
 from dispatch.task.models import Task
 from dispatch.team.models import TeamContact
 from dispatch.term.models import Term
@@ -182,12 +183,28 @@ class ContactBaseFactory(TimeStampBaseFactory):
                 self.terms.append(term)
 
 
+class TagTypeFactory(BaseFactory):
+    """Tag Type Factory."""
+
+    name = Sequence(lambda n: f"tag{n}")
+    description = FuzzyText()
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = TagType
+
+
 class TagFactory(BaseFactory):
     """Tag Factory."""
 
-    name = Sequence(lambda n: f"app{n}")
-    uri = "https://example.com"
-    uri_source = "foobar"
+    name = Sequence(lambda n: f"tag{n}")
+    uri = Sequence(lambda n: f"https://example.com/{n}")
+    source = "foobar"
+    discoverable = Faker().pybool()
+    tag_type = SubFactory(TagTypeFactory)
+    project = SubFactory(ProjectFactory)
 
     class Meta:
         """Factory Configuration."""

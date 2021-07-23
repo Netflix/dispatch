@@ -1,7 +1,7 @@
 import pytest
 
 
-def test_get_search_filter(session, search_filter):
+def test_get(session, search_filter):
     from dispatch.search_filter.service import get
 
     t_search_filter = get(db_session=session, search_filter_id=search_filter.id)

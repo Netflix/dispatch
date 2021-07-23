@@ -1,14 +1,14 @@
 import pytest
 
 
-def test_get_plugin(session, plugin):
+def test_get(session, plugin):
     from dispatch.plugin.service import get
 
     t_plugin = get(db_session=session, plugin_id=plugin.id)
     assert t_plugin.id == plugin.id
 
 
-def test_get_plugin_instance(session, plugin_instance):
+def test_get_instance(session, plugin_instance):
     from dispatch.plugin.service import get_instance
 
     t_plugin_instance = get_instance(db_session=session, plugin_instance_id=plugin_instance.id)

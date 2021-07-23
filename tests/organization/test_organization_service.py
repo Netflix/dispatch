@@ -1,7 +1,7 @@
 import pytest
 
 
-def test_get_organization(session, organization):
+def test_get(session, organization):
     from dispatch.organization.service import get
 
     t_organization = get(db_session=session, organization_id=organization.id)

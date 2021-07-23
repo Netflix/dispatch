@@ -1,7 +1,7 @@
 import pytest
 
 
-def test_get_notification(session, notification):
+def test_get(session, notification):
     from dispatch.notification.service import get
 
     t_notification = get(db_session=session, notification_id=notification.id)

@@ -1,4 +1,40 @@
-def test_conference_create(session):
+def test_get(session, conference):
+    from dispatch.conference.service import get
+
+    test_conference = get(db_session=session, conference_id=conference.id)
+    assert test_conference.id == conference.id
+    assert test_conference.conference_challenge == conference.conference_challenge
+
+
+def test_get_by_resource_id(session, conference):
+    from dispatch.conference.service import get_by_resource_id
+
+    test_conference = get_by_resource_id(db_session=session, resource_id=conference.resource_id)
+
+    assert test_conference.resource_id == conference.resource_id
+    assert test_conference.conference_challenge == conference.conference_challenge
+
+
+def test_get_by_incident_id(session, conference):
+    from dispatch.conference.service import get_by_incident_id
+
+    test_conference = get_by_incident_id(db_session=session, incident_id=conference.incident.id)
+
+    assert test_conference.incident.id == conference.incident.id
+    assert test_conference.conference_challenge == conference.conference_challenge
+
+
+def test_get_all(session, conferences):
+    """The test should not rely on the conferences created earlier, to pass.
+    Therefore, we pass "conferences" as an argument, to manually create several in the DB.
+    """
+    from dispatch.conference.service import get_all
+
+    test_conferences = get_all(db_session=session).all()
+    assert len(test_conferences) > 1
+
+
+def test_create(session):
     from dispatch.conference.service import create
     from dispatch.conference.models import ConferenceCreate
 
@@ -22,41 +58,3 @@ def test_conference_create(session):
     assert conference.weblink == "https://www.example.com"
     assert conference.conference_id == "12345"
     assert conference.conference_challenge == "a0v0a0v9a"
-
-
-def test_conference_get(session, conference):
-    from dispatch.conference.service import get
-
-    test_conference = get(db_session=session, conference_id=conference.id)
-    assert test_conference.id == conference.id
-    assert test_conference.conference_challenge == conference.conference_challenge
-
-
-def test_conference_get_by_resource_id(session, conference):
-    from dispatch.conference.service import get_by_resource_id
-
-    test_conference = get_by_resource_id(db_session=session, resource_id=conference.resource_id)
-
-    assert test_conference.resource_id == conference.resource_id
-    assert test_conference.conference_challenge == conference.conference_challenge
-
-
-def test_conference_get_by_incident_id(session, conference):
-    from dispatch.conference.service import get_by_incident_id
-
-    test_conference = get_by_incident_id(db_session=session, incident_id=conference.incident.id)
-
-    assert test_conference.incident.id == conference.incident.id
-    assert test_conference.conference_challenge == conference.conference_challenge
-
-
-def test_conference_get_all(session, conferences):
-    """The test should not rely on the conferences created earlier, to pass.
-    Therefore, we pass "conferences" as an argument, to manually create several in the DB.
-    """
-
-    from dispatch.conference.service import get_all
-
-    test_conferences = get_all(db_session=session).all()
-
-    assert len(test_conferences) > 1
