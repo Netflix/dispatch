@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
@@ -53,7 +53,8 @@ def update_incident_priority(
     incident_priority = get(db_session=db_session, incident_priority_id=incident_priority_id)
     if not incident_priority:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The incident priority with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The incident priority with this id does not exist."}],
         )
 
     incident_priority = update(
@@ -70,6 +71,7 @@ def get_incident_priority(*, db_session: Session = Depends(get_db), incident_pri
     incident_priority = get(db_session=db_session, incident_priority_id=incident_priority_id)
     if not incident_priority:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The incident priority with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The incident priority with this id does not exist."}],
         )
     return incident_priority

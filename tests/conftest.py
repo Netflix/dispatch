@@ -87,7 +87,7 @@ def testapp():
     yield app
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def db():
     init_database(engine)
     schema_engine = engine.execution_options(

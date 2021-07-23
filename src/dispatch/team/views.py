@@ -42,13 +42,14 @@ def create_team(*, db_session: Session = Depends(get_db), team_contact_in: TeamC
     return team
 
 
-@router.get("/{team_id}", response_model=TeamContactRead)
+@router.get("/{team_contact_id}", response_model=TeamContactRead)
 def get_team(*, db_session: Session = Depends(get_db), team_contact_id: int):
     """Get a team contact."""
     team = get(db_session=db_session, team_contact_id=team_contact_id)
     if not team:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The team with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The team with this id does not exist."}],
         )
     return team
 
@@ -64,7 +65,8 @@ def update_team(
     team = get(db_session=db_session, team_contact_id=team_contact_id)
     if not team:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The team with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The team with this id does not exist."}],
         )
     team = update(db_session=db_session, team_contact=team, team_contact_in=team_contact_in)
     return team
@@ -76,7 +78,8 @@ def delete_team(*, db_session: Session = Depends(get_db), team_contact_id: int):
     team = get(db_session=db_session, team_contact_id=team_contact_id)
     if not team:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The team with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The team with this id does not exist."}],
         )
 
     delete(db_session=db_session, team_contact_id=team_contact_id)

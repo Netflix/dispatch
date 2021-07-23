@@ -61,7 +61,8 @@ def update_service(
     service = get(db_session=db_session, service_id=service_id)
     if not service:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A service with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A service with this id does not exist."}],
         )
 
     try:
@@ -81,7 +82,8 @@ def get_service(*, db_session: Session = Depends(get_db), service_id: int):
     service = get(db_session=db_session, service_id=service_id)
     if not service:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A service with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A service with this id does not exist."}],
         )
     return service
 
@@ -92,6 +94,7 @@ def delete_service(*, db_session: Session = Depends(get_db), service_id: int):
     service = get(db_session=db_session, service_id=service_id)
     if not service:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A service with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A service with this id does not exist."}],
         )
     delete(db_session=db_session, service_id=service_id)

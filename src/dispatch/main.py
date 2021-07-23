@@ -3,13 +3,13 @@ import logging
 from os import path
 
 from fastapi import FastAPI, HTTPException, status
+from fastapi import exceptions
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 
 from sentry_asgi import SentryMiddleware
 from sqlalchemy import inspect
-from starlette.applications import Starlette
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.routing import compile_path
@@ -40,14 +40,30 @@ configure_logging()
 # we configure the extensions such as Sentry
 configure_extensions()
 
+
+async def not_found(request, exc):
+    return JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND, content={"detail": [{"msg": "Not Found."}]}
+    )
+
+
+exception_handlers = {404: not_found}
+
 # we create the ASGI for the app
-app = Starlette()
+app = FastAPI(exception_handlers=exception_handlers)
 
 # we create the ASGI for the frontend
-frontend = Starlette()
+frontend = FastAPI()
 
 # we create the Web API framework
-api = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+api = FastAPI(
+    title="Dispatch",
+    description="Welcome to Dispatch's API documentation! Here you will able to discover all of the ways you can interact with the Dispatch API.",
+    root_path="/api/v1",
+    docs_url=None,
+    openapi_url="/docs/openapi.json",
+    redoc_url="/docs",
+)
 
 
 def get_path_params_from_request(request: Request) -> str:
@@ -213,11 +229,11 @@ install_plugins()
 install_plugin_events(api_router)
 
 # we add all API routes to the Web API framework
-api.include_router(api_router, prefix="/v1")
+api.include_router(api_router)
 
 # we mount the frontend and app
 if STATIC_DIR:
     frontend.mount("/", StaticFiles(directory=STATIC_DIR), name="app")
 
-app.mount("/api", app=api)
+app.mount("/api/v1", app=api)
 app.mount("/", app=frontend)

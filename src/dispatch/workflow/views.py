@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
@@ -22,7 +22,8 @@ def get_workflow(*, db_session: Session = Depends(get_db), workflow_id: int):
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A workflow with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A workflow with this id does not exist."}],
         )
     return workflow
 
@@ -42,7 +43,8 @@ def update_workflow(
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A workflow with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A workflow with this id does not exist."}],
         )
     workflow = update(db_session=db_session, workflow=workflow, workflow_in=workflow_in)
     return workflow
@@ -54,6 +56,7 @@ def delete_workflow(*, db_session: Session = Depends(get_db), workflow_id: int):
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A workflow with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A workflow with this id does not exist."}],
         )
     delete(db_session=db_session, workflow_id=workflow_id)

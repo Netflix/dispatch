@@ -27,7 +27,8 @@ def get_definition(*, db_session: Session = Depends(get_db), definition_id: int)
     definition = get(db_session=db_session, definition_id=definition_id)
     if not definition:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The definition with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The definition with this id does not exist."}],
         )
     return definition
 
@@ -59,7 +60,8 @@ def update_definition(
     definition = get(db_session=db_session, definition_id=definition_id)
     if not definition:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The definition with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The definition with this id does not exist."}],
         )
     definition = update(db_session=db_session, definition=definition, definition_in=definition_in)
     return definition
@@ -71,6 +73,7 @@ def delete_definition(*, db_session: Session = Depends(get_db), definition_id: i
     definition = get(db_session=db_session, definition_id=definition_id)
     if not definition:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The definition with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The definition with this id does not exist."}],
         )
     delete(db_session=db_session, definition_id=definition_id)

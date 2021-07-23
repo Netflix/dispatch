@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
@@ -29,7 +29,8 @@ def get_notification(*, db_session: Session = Depends(get_db), notification_id: 
     notification = get(db_session=db_session, notification_id=notification_id)
     if not notification:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A notification with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A notification with this id does not exist."}],
         )
     return notification
 
@@ -62,7 +63,8 @@ def update_notification(
     notification = get(db_session=db_session, notification_id=notification_id)
     if not notification:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A notification with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A notification with this id does not exist."}],
         )
     notification = update(
         db_session=db_session, notification=notification, notification_in=notification_in
@@ -79,6 +81,7 @@ def delete_notification(*, db_session: Session = Depends(get_db), notification_i
     notification = get(db_session=db_session, notification_id=notification_id)
     if not notification:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A notification with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A notification with this id does not exist."}],
         )
     delete(db_session=db_session, notification_id=notification_id)

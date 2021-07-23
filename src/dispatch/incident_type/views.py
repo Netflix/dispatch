@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
@@ -48,7 +48,8 @@ def update_incident_type(
     incident_type = get(db_session=db_session, incident_type_id=incident_type_id)
     if not incident_type:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The incident type with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The incident type with this id does not exist."}],
         )
 
     incident_type = update(
@@ -63,6 +64,7 @@ def get_incident_type(*, db_session: Session = Depends(get_db), incident_type_id
     incident_type = get(db_session=db_session, incident_type_id=incident_type_id)
     if not incident_type:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The incident type with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The incident type with this id does not exist."}],
         )
     return incident_type

@@ -8,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 from pydantic.types import constr
 
 from starlette.requests import Request
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from dispatch.auth.permissions import (
     IncidentEditPermission,
@@ -17,7 +17,7 @@ from dispatch.auth.permissions import (
     IncidentViewPermission,
 )
 
-from dispatch.models import IndividualReadNested
+from dispatch.models import IndividualReadNested, OrganizationSlug, PrimaryKey
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.common.utils.views import create_pydantic_include
@@ -52,7 +52,8 @@ def get_current_incident(*, db_session: Session = Depends(get_db), request: Requ
     incident = get(db_session=db_session, incident_id=request.path_params["incident_id"])
     if not incident:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The requested incident does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The requested incident does not exist."}],
         )
     return incident
 
@@ -88,6 +89,7 @@ def get_incidents(
 )
 def get_incident(
     *,
+    incident_id: PrimaryKey,
     db_session: Session = Depends(get_db),
     current_incident: Incident = Depends(get_current_incident),
 ):
@@ -99,7 +101,7 @@ def get_incident(
 def create_incident(
     *,
     db_session: Session = Depends(get_db),
-    organization: constr(strip_whitespace=True),
+    organization: OrganizationSlug,
     incident_in: IncidentCreate,
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
@@ -137,7 +139,8 @@ def update_incident(
     *,
     db_session: Session = Depends(get_db),
     current_incident: Incident = Depends(get_current_incident),
-    organization: constr(strip_whitespace=True),
+    organization: OrganizationSlug,
+    incident_id: PrimaryKey,
     incident_in: IncidentUpdate,
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
@@ -187,7 +190,8 @@ def update_incident(
 def join_incident(
     *,
     db_session: Session = Depends(get_db),
-    organization: constr(strip_whitespace=True),
+    organization: OrganizationSlug,
+    incident_id: PrimaryKey,
     current_incident: Incident = Depends(get_current_incident),
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
@@ -209,7 +213,8 @@ def join_incident(
 def create_tactical_report(
     *,
     db_session: Session = Depends(get_db),
-    organization: constr(strip_whitespace=True),
+    organization: OrganizationSlug,
+    incident_id: PrimaryKey,
     tactical_report_in: TacticalReportCreate,
     current_user: DispatchUser = Depends(get_current_user),
     current_incident: Incident = Depends(get_current_incident),
@@ -233,7 +238,8 @@ def create_tactical_report(
 def create_executive_report(
     *,
     db_session: Session = Depends(get_db),
-    organization: constr(strip_whitespace=True),
+    organization: OrganizationSlug,
+    incident_id: PrimaryKey,
     current_incident: Incident = Depends(get_current_incident),
     executive_report_in: ExecutiveReportCreate,
     current_user: DispatchUser = Depends(get_current_user),
@@ -257,6 +263,7 @@ def create_executive_report(
 )
 def delete_incident(
     *,
+    incident_id: PrimaryKey,
     db_session: Session = Depends(get_db),
     current_incident: Incident = Depends(get_current_incident),
 ):

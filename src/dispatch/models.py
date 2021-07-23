@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
-from pydantic.types import conint
+from pydantic.types import conint, constr
 
 import validators
 from pydantic import BaseModel, validator
@@ -10,6 +10,15 @@ from sqlalchemy.orm import relationship
 
 # pydantic type that limits the range of primary keys
 PrimaryKey = conint(gt=0, lt=2147483647)
+OrganizationSlug = constr(
+    regex=r"""^
+  [a-z0-9]+   # One or more repetition of given characters
+  (?:         # A non-capture group.
+    -           # A hyphen
+    [a-z0-9]+   # One or more repetition of given characters
+  )*          # Zero or more repetition of previous group
+ $"""
+)
 
 
 # SQLAlchemy models...

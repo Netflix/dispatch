@@ -49,7 +49,8 @@ def get_individual(*, db_session: Session = Depends(get_db), individual_contact_
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The individual with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The individual with this id does not exist."}],
         )
     return individual
 
@@ -70,7 +71,8 @@ def update_individual(
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The individual with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The individual with this id does not exist."}],
         )
     individual = update(
         db_session=db_session,
@@ -90,7 +92,8 @@ async def delete_individual(*, db_session: Session = Depends(get_db), individual
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The individual with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The individual with this id does not exist."}],
         )
 
     delete(db_session=db_session, individual_contact_id=individual_contact_id)

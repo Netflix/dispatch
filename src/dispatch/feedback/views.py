@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
@@ -29,7 +29,8 @@ def get_feedback(*, db_session: Session = Depends(get_db), feedback_id: int):
     feedback = get(db_session=db_session, feedback_id=feedback_id)
     if not feedback:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A feedback entry with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A feedback entry with this id does not exist."}],
         )
     return feedback
 
@@ -49,7 +50,8 @@ def update_feedback(
     feedback = get(db_session=db_session, feedback_id=feedback_id)
     if not feedback:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A feedback entry with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A feedback entry with this id does not exist."}],
         )
     feedback = update(db_session=db_session, feedback=feedback, feedback_in=feedback_in)
     return feedback
@@ -61,6 +63,7 @@ def delete_feedback(*, db_session: Session = Depends(get_db), feedback_id: int):
     feedback = get(db_session=db_session, feedback_id=feedback_id)
     if not feedback:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A feedback entry with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A feedback entry with this id does not exist."}],
         )
     delete(db_session=db_session, feedback_id=feedback_id)

@@ -61,7 +61,8 @@ def get_project(*, db_session: Session = Depends(get_db), project_id: int):
     project = get(db_session=db_session, project_id=project_id)
     if not project:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A project with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A project with this id does not exist."}],
         )
     return project
 
@@ -81,7 +82,8 @@ def update_project(
     project = get(db_session=db_session, project_id=project_id)
     if not project:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A project with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A project with this id does not exist."}],
         )
     project = update(db_session=db_session, project=project, project_in=project_in)
     return project
@@ -97,7 +99,8 @@ def delete_project(*, db_session: Session = Depends(get_db), project_id: int):
     project = get(db_session=db_session, project_id=project_id)
     if not project:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A project with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A project with this id does not exist."}],
         )
 
     delete(db_session=db_session, project_id=project_id)

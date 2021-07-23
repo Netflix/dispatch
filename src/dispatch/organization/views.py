@@ -72,7 +72,8 @@ def get_organization(*, db_session: Session = Depends(get_db), organization_id: 
     organization = get(db_session=db_session, organization_id=organization_id)
     if not organization:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "An organization with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "An organization with this id does not exist."}],
         )
     return organization
 
@@ -92,7 +93,8 @@ def update_organization(
     organization = get(db_session=db_session, organization_id=organization_id)
     if not organization:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "An organization with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "An organization with this id does not exist."}],
         )
     organization = update(
         db_session=db_session, organization=organization, organization_in=organization_in
@@ -111,7 +113,7 @@ def update_organization(
 #    organization = get(db_session=db_session, organization_id=organization_id)
 #    if not organization:
 #        raise HTTPException(
-#            status_code=404, detail=[{"msg": "An organization with this id does not exist."}]
+#            status_code=status.HTTP_404_NOT_FOUND, detail=[{"msg": "An organization with this id does not exist."}]
 #        )
 #
 #    delete(db_session=db_session, organization_id=organization_id)

@@ -37,7 +37,8 @@ def get_plugin_instance(*, db_session: Session = Depends(get_db), plugin_instanc
     plugin = get_instance(db_session=db_session, plugin_instance_id=plugin_instance_id)
     if not plugin:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A plugin instance with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A plugin instance with this id does not exist."}],
         )
     return plugin
 
@@ -69,7 +70,8 @@ def update_plugin_instance(
     plugin_instance = get_instance(db_session=db_session, plugin_instance_id=plugin_instance_id)
     if not plugin_instance:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "A plugin instance with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A plugin instance with this id does not exist."}],
         )
 
     try:

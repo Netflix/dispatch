@@ -7,8 +7,7 @@ from dispatch.auth.permissions import (
     PermissionsDependency,
 )
 
-from dispatch.models import PrimaryKey
-from dispatch.organization.models import constrained_organization_str
+from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.organization.models import OrganizationRead
@@ -43,9 +42,7 @@ user_router = APIRouter()
     ],
     response_model=UserPagination,
 )
-def get_users(
-    *, organization: constrained_organization_str, common: dict = Depends(common_parameters)
-):
+def get_users(*, organization: OrganizationSlug, common: dict = Depends(common_parameters)):
     """Get all users."""
     common["filter_spec"] = {
         "and": [{"model": "Organization", "op": "==", "field": "name", "value": organization}]
@@ -73,7 +70,8 @@ def get_user(*, db_session: Session = Depends(get_db), user_id: int):
     user = get(db_session=db_session, user_id=user_id)
     if not user:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The user with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The user with this id does not exist."}],
         )
 
     return user
@@ -96,14 +94,15 @@ def update_user(
     *,
     db_session: Session = Depends(get_db),
     user_id: PrimaryKey,
-    organization: constrained_organization_str,
+    organization: OrganizationSlug,
     user_in: UserUpdate,
 ):
     """Update a user."""
     user = get(db_session=db_session, user_id=user_id)
     if not user:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The user with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The user with this id does not exist."}],
         )
 
     # add organization information
@@ -137,7 +136,7 @@ def login_user(
 @auth_router.post("/register", response_model=UserRegisterResponse)
 def register_user(
     user_in: UserRegister,
-    organization: constrained_organization_str,
+    organization: OrganizationSlug,
     db_session: Session = Depends(get_db),
 ):
     user = get_by_email(db_session=db_session, email=user_in.email)

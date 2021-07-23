@@ -37,13 +37,12 @@ def generate_slug(target, value, oldvalue, initiator):
 
 listen(Organization.name, "set", generate_slug)
 
-
-constrained_organization_str = constr(regex=r"[\w\s]+")
+OrganizationName = constr(regex=r"[\w\s]+")
 
 
 class OrganizationBase(DispatchBase):
     id: Optional[PrimaryKey]
-    name: constrained_organization_str
+    name: OrganizationName
     description: Optional[str] = Field(None, nullable=True)
     default: Optional[bool] = Field(None, nullable=True)
     banner_enabled: Optional[bool] = Field(None, nullable=True)

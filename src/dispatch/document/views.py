@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
@@ -22,7 +22,8 @@ def get_document(*, db_session: Session = Depends(get_db), document_id: int):
     document = get(db_session=db_session, document_id=document_id)
     if not document:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The document with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The document with this id does not exist."}],
         )
     return document
 
@@ -42,7 +43,8 @@ def update_document(
     document = get(db_session=db_session, document_id=document_id)
     if not document:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The document with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The document with this id does not exist."}],
         )
     document = update(db_session=db_session, document=document, document_in=document_in)
     return document
@@ -54,6 +56,7 @@ def delete_document(*, db_session: Session = Depends(get_db), document_id: int):
     document = get(db_session=db_session, document_id=document_id)
     if not document:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "The document with this id does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The document with this id does not exist."}],
         )
     delete(db_session=db_session, document_id=document_id)

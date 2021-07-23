@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db, get_class_by_tablename
@@ -27,7 +27,10 @@ def get_tag(*, db_session: Session = Depends(get_db), tag_id: str):
     """Given its unique ID, retrieve details about a single tag."""
     tag = get(db_session=db_session, tag_id=tag_id)
     if not tag:
-        raise HTTPException(status_code=404, detail=[{"msg": "The requested tag does not exist."}])
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The requested tag does not exist."}],
+        )
     return tag
 
 
@@ -44,7 +47,8 @@ def update_tag(*, db_session: Session = Depends(get_db), tag_id: int, tag_in: Ta
     tag = get(db_session=db_session, tag_id=tag_id)
     if not tag:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "An tag with this ID does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "An tag with this ID does not exist."}],
         )
     tag = update(db_session=db_session, tag=tag, tag_in=tag_in)
     return tag
@@ -56,7 +60,8 @@ def delete_tag(*, db_session: Session = Depends(get_db), tag_id: int):
     tag = get(db_session=db_session, tag_id=tag_id)
     if not tag:
         raise HTTPException(
-            status_code=404, detail=[{"msg": "An tag with this ID does not exist."}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "An tag with this ID does not exist."}],
         )
     delete(db_session=db_session, tag_id=tag_id)
 
@@ -71,7 +76,8 @@ def get_tag_recommendations(*, db_session: Session = Depends(get_db), model_name
 
     if not model:
         raise HTTPException(
-            status_code=404, detail=[{"msg": f"No model found. ModelName: {model_name} Id: {id}"}]
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": f"No model found. ModelName: {model_name} Id: {id}"}],
         )
 
     tags = get_recommendations(
