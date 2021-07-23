@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import bcrypt
 from jose import jwt
 from typing import Optional
-from pydantic import validator
+from pydantic import validator, Field
 from pydantic.networks import EmailStr
 from dispatch.models import PrimaryKey
 
@@ -108,7 +108,7 @@ class UserProject(DispatchBase):
 class UserOrganization(DispatchBase):
     organization: OrganizationRead
     default: Optional[bool] = False
-    role: Optional[str]
+    role: Optional[str] = Field(None, nullable=True)
 
 
 class UserBase(DispatchBase):
@@ -148,7 +148,7 @@ class UserLoginResponse(DispatchBase):
 
 class UserRead(UserBase):
     id: PrimaryKey
-    role: Optional[str]
+    role: Optional[str] = Field(None, nullable=True)
 
 
 class UserUpdate(DispatchBase):
@@ -156,7 +156,7 @@ class UserUpdate(DispatchBase):
     password: Optional[str]
     projects: Optional[List[UserProject]]
     organizations: Optional[List[UserOrganization]]
-    role: Optional[str]
+    role: Optional[str] = Field(None, nullable=True)
 
     @validator("password", pre=True, always=True)
     def hash(cls, v):
@@ -164,7 +164,7 @@ class UserUpdate(DispatchBase):
 
 
 class UserRegisterResponse(DispatchBase):
-    token: Optional[str]
+    token: Optional[str] = Field(None, nullable=True)
 
 
 class UserPagination(DispatchBase):

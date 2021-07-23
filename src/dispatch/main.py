@@ -1,6 +1,5 @@
 import time
 import logging
-from os import path
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.responses import JSONResponse
@@ -15,9 +14,8 @@ from starlette.routing import compile_path
 
 from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
 
-from starlette.responses import FileResponse, Response, StreamingResponse
+from starlette.responses import Response
 from starlette.staticfiles import StaticFiles
-import httpx
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from .api import api_router
