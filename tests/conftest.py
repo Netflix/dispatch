@@ -381,6 +381,11 @@ def storage(session):
 
 
 @pytest.fixture
+def storages(session):
+    return [StorageFactory(), StorageFactory()]
+
+
+@pytest.fixture
 def task(session):
     return TaskFactory()
 

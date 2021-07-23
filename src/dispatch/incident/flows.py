@@ -48,6 +48,7 @@ from dispatch.report.enums import ReportTypes
 from dispatch.report.messaging import send_incident_report_reminder
 from dispatch.service import service as service_service
 from dispatch.storage import service as storage_service
+from dispatch.storage.models import StorageCreate
 from dispatch.task.enums import TaskStatus
 from dispatch.ticket import service as ticket_service
 from dispatch.ticket.models import TicketCreate
@@ -573,11 +574,15 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                 # we don't have a group so add participants directly
                 storage = create_incident_storage(incident, participant_emails, db_session)
 
-            incident.storage = storage_service.create(
-                db_session=db_session,
+            storage_in = StorageCreate(
                 resource_id=storage["resource_id"],
                 resource_type=storage["resource_type"],
                 weblink=storage["weblink"],
+            )
+
+            incident.storage = storage_service.create(
+                db_session=db_session,
+                storage_in=storage_in,
             )
 
             event_service.log(
