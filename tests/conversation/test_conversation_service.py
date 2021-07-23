@@ -1,4 +1,4 @@
-def test_get_conversation(session, conversation):
+def test_get(session, conversation):
     from dispatch.conversation.service import get
 
     t_conversation = get(db_session=session, conversation_id=conversation.id)

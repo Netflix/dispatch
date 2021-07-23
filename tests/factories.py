@@ -37,6 +37,7 @@ from dispatch.search_filter.models import SearchFilter
 from dispatch.service.models import Service
 from dispatch.storage.models import Storage
 from dispatch.tag.models import Tag
+from dispatch.tag_type.models import TagType
 from dispatch.task.models import Task
 from dispatch.team.models import TeamContact
 from dispatch.term.models import Term
@@ -182,12 +183,28 @@ class ContactBaseFactory(TimeStampBaseFactory):
                 self.terms.append(term)
 
 
+class TagTypeFactory(BaseFactory):
+    """Tag Type Factory."""
+
+    name = Sequence(lambda n: f"tag{n}")
+    description = FuzzyText()
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = TagType
+
+
 class TagFactory(BaseFactory):
     """Tag Factory."""
 
-    name = Sequence(lambda n: f"app{n}")
-    uri = "https://example.com"
-    uri_source = "foobar"
+    name = Sequence(lambda n: f"tag{n}")
+    uri = Sequence(lambda n: f"https://example.com/{n}")
+    source = "foobar"
+    discoverable = Faker().pybool()
+    tag_type = SubFactory(TagTypeFactory)
+    project = SubFactory(ProjectFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -251,11 +268,40 @@ class DocumentFactory(ResourceBaseFactory):
 
     name = Sequence(lambda n: f"document{n}")
     description = FuzzyText()
+    evergreen = Faker().pybool()
+    evergreen_owner = FuzzyText()
+    evergreen_reminder_interval = FuzzyInteger(low=0, high=100)
+    evergreen_last_reminder_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
 
     class Meta:
         """Factory Configuration."""
 
         model = Document
+
+    @post_generation
+    def incident(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.incident_id = extracted.id
+
+    @post_generation
+    def report(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.report_id = extracted.id
+
+    @post_generation
+    def filters(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for filter in extracted:
+                self.filters.append(filter)
 
 
 class GroupFactory(ResourceBaseFactory):
@@ -474,6 +520,7 @@ class ReportFactory(BaseFactory):
     details = FuzzyText()
     details_raw = FuzzyText()
     type = FuzzyChoice(["Tactical Report", "Executive Report"])
+    document = SubFactory(DocumentFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -504,6 +551,18 @@ class StorageFactory(ResourceBaseFactory):
         """Factory Configuration"""
 
         model = Storage
+
+    resource_id = Sequence(lambda n: f"resource_id{n}")
+    resource_type = Sequence(lambda n: f"resource_type{n}")
+    weblink = Sequence(lambda n: f"https://www.example.com/{n}")
+
+    @post_generation
+    def incident(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.incident_id = extracted.id
 
 
 class TaskFactory(ResourceBaseFactory):
@@ -758,13 +817,13 @@ class NotificationFactory(BaseFactory):
         model = Notification
 
     @post_generation
-    def search_filters(self, create, extracted, **kwargs):
+    def filters(self, create, extracted, **kwargs):
         if not create:
             return
 
         if extracted:
-            for search_filter in extracted:
-                self.search_filters.append(search_filter)
+            for filter in extracted:
+                self.filters.append(filter)
 
 
 class SearchFilterFactory(BaseFactory):

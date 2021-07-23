@@ -1,7 +1,7 @@
 import pytest
 
 
-def test_get_project(session, project):
+def test_get(session, project):
     from dispatch.project.service import get
 
     t_project = get(db_session=session, project_id=project.id)

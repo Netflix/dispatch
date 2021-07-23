@@ -1,6 +1,7 @@
 from typing import Optional
 
-from .models import Storage
+
+from .models import Storage, StorageCreate
 
 
 def get(*, db_session, storage_id: int) -> Optional[Storage]:
@@ -18,9 +19,9 @@ def get_all(*, db_session):
     return db_session.query(Storage)
 
 
-def create(*, db_session, **kwargs) -> Storage:
+def create(*, db_session, storage_in: StorageCreate) -> Storage:
     """Create a new storage."""
-    storage = Storage(**kwargs)
+    storage = Storage(**storage_in.dict())
     db_session.add(storage)
     db_session.commit()
     return storage

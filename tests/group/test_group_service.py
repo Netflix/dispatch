@@ -1,7 +1,7 @@
 import pytest
 
 
-def test_get_group(session, group):
+def test_get(session, group):
     from dispatch.group.service import get
 
     t_group = get(db_session=session, group_id=group.id)
