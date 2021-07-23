@@ -535,6 +535,18 @@ class StorageFactory(ResourceBaseFactory):
 
         model = Storage
 
+    resource_id = Sequence(lambda n: f"resource_id{n}")
+    resource_type = Sequence(lambda n: f"resource_type{n}")
+    weblink = Sequence(lambda n: f"https://www.example.com/{n}")
+
+    @post_generation
+    def incident(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.incident_id = extracted.id
+
 
 class TaskFactory(ResourceBaseFactory):
     """Task Factory."""

@@ -1,4 +1,4 @@
-def test_get_document(session, document):
+def test_get(session, document):
     from dispatch.document.service import get
 
     t_document = get(db_session=session, document_id=document.id)

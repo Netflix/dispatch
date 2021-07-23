@@ -4,7 +4,7 @@ import pytest
 from uuid import uuid4
 
 
-def test_get_event(session, event):
+def test_get(session, event):
     from dispatch.event.service import get
 
     t_event = get(db_session=session, event_id=event.id)
