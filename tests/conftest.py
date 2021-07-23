@@ -407,6 +407,11 @@ def team_contact(session):
 
 
 @pytest.fixture
+def team_contacts(session):
+    return [TeamContactFactory(), TeamContactFactory()]
+
+
+@pytest.fixture
 def term(session):
     return TermFactory()
 
