@@ -3,9 +3,11 @@ import uuid
 from pytz import UTC
 from datetime import datetime
 
+from faker import Faker
+
 from factory import Sequence, post_generation, SubFactory, LazyAttribute
 from factory.alchemy import SQLAlchemyModelFactory
-from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime
+from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime, FuzzyInteger
 
 from dispatch.database.core import SessionLocal
 
@@ -18,15 +20,20 @@ from dispatch.event.models import Event
 from dispatch.feedback.models import Feedback
 from dispatch.group.models import Group
 from dispatch.incident.models import Incident
+from dispatch.incident_cost.models import IncidentCost
+from dispatch.incident_cost_type.models import IncidentCostType
 from dispatch.incident_priority.models import IncidentPriority
 from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
+from dispatch.notification.models import Notification
 from dispatch.organization.models import Organization
 from dispatch.participant.models import Participant
 from dispatch.participant_role.models import ParticipantRole
+from dispatch.plugin.models import Plugin, PluginInstance
 from dispatch.project.models import Project
 from dispatch.report.models import Report
 from dispatch.route.models import Recommendation, RecommendationMatch
+from dispatch.search_filter.models import SearchFilter
 from dispatch.service.models import Service
 from dispatch.storage.models import Storage
 from dispatch.tag.models import Tag
@@ -58,6 +65,11 @@ class OrganizationFactory(BaseFactory):
     """Organization Factory."""
 
     name = Sequence(lambda n: f"organization{n}")
+    description = FuzzyText()
+    default = Faker().pybool()
+    banner_enabled = Faker().pybool()
+    banner_color = FuzzyText()
+    banner_text = FuzzyText()
 
     class Meta:
         """Factory Configuration."""
@@ -69,14 +81,18 @@ class OrganizationFactory(BaseFactory):
         if not create:
             return
 
-        for project in extracted:
-            self.projects.append(project)
+        if extracted:
+            for project in extracted:
+                self.projects.append(project)
 
 
 class ProjectFactory(BaseFactory):
     """Project Factory."""
 
     name = Sequence(lambda n: f"project{n}")
+    description = FuzzyText()
+    default = Faker().pybool()
+    color = FuzzyText()
 
     class Meta:
         """Factory Configuration."""
@@ -235,11 +251,40 @@ class DocumentFactory(ResourceBaseFactory):
 
     name = Sequence(lambda n: f"document{n}")
     description = FuzzyText()
+    evergreen = Faker().pybool()
+    evergreen_owner = FuzzyText()
+    evergreen_reminder_interval = FuzzyInteger(low=0, high=100)
+    evergreen_last_reminder_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
 
     class Meta:
         """Factory Configuration."""
 
         model = Document
+
+    @post_generation
+    def incident(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.incident_id = extracted.id
+
+    @post_generation
+    def report(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.report_id = extracted.id
+
+    @post_generation
+    def filters(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for filter in extracted:
+                self.filters.append(filter)
 
 
 class GroupFactory(ResourceBaseFactory):
@@ -458,6 +503,7 @@ class ReportFactory(BaseFactory):
     details = FuzzyText()
     details_raw = FuzzyText()
     type = FuzzyChoice(["Tactical Report", "Executive Report"])
+    document = SubFactory(DocumentFactory)
 
     class Meta:
         """Factory Configuration."""
@@ -650,6 +696,8 @@ class ConferenceFactory(ResourceBaseFactory):
     incident = SubFactory(IncidentFactory)
 
     class Meta:
+        """Factory Configuration."""
+
         model = Conference
 
 
@@ -680,3 +728,130 @@ class FeedbackFactory(BaseFactory):
 
         if extracted:
             self.participant_id = extracted.id
+
+
+class IncidentCostFactory(BaseFactory):
+    """Incident Cost Factory."""
+
+    amount = FuzzyInteger(low=0, high=10000)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = IncidentCost
+
+    @post_generation
+    def incident(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.incident_id = extracted.id
+
+    @post_generation
+    def incident_cost_type(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.incident_cost_type_id = extracted.id
+
+
+class IncidentCostTypeFactory(BaseFactory):
+    """Incident Cost Type Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    category = FuzzyText()
+    details = {}
+    default = Faker().pybool()
+    editable = Faker().pybool()
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = IncidentCostType
+
+
+class NotificationFactory(BaseFactory):
+    """Notification Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    type = FuzzyChoice(["email", "conversation"])
+    target = FuzzyText()
+    enabled = Faker().pybool()
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Notification
+
+    @post_generation
+    def filters(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for filter in extracted:
+                self.filters.append(filter)
+
+
+class SearchFilterFactory(BaseFactory):
+    """Search Filter Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    expression = [{}]
+    type = FuzzyText()
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = SearchFilter
+
+    @post_generation
+    def creator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.creator_id = extracted.id
+
+
+class PluginFactory(BaseFactory):
+    """Plugin Factory."""
+
+    title = FuzzyText()
+    slug = FuzzyText()
+    description = FuzzyText()
+    version = FuzzyText()
+    author = FuzzyText()
+    author_url = FuzzyText()
+    type = FuzzyText()
+    multiple = Faker().pybool()
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Plugin
+
+
+class PluginInstanceFactory(BaseFactory):
+    """PluginInstance Factory."""
+
+    enabled = Faker().pybool()
+    configuration = {}
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = PluginInstance
+
+    @post_generation
+    def plugin(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.plugin_id = extracted.id

@@ -5,25 +5,23 @@ from starlette.testclient import TestClient
 from starlette.config import environ
 
 # set test config
-environ["SECRET_PROVIDER"] = ""
 environ["DATABASE_CREDENTIALS"] = "postgres:dispatch"
 environ["DATABASE_HOSTNAME"] = "localhost"
+environ["DISPATCH_AUTHENTICATION_PROVIDER_SLUG"] = ""  # disable authentication for tests
 environ["DISPATCH_HELP_EMAIL"] = "example@example.com"
 environ["DISPATCH_HELP_SLACK_CHANNEL"] = "help-me"
 environ["DISPATCH_UI_URL"] = "https://example.com"
-environ["SLACK_APP_USER_SLUG"] = "XXX"
-environ["INCIDENT_NOTIFICATION_CONVERSATIONS"] = "sirt-dev-test-notify"
-environ["INCIDENT_NOTIFICATION_DISTRIBUTION_LISTS"] = "sirt-dev-test-notify@example.com"
+environ["ENV"] = "pytest"
 environ["INCIDENT_STORAGE_FOLDER_ID"] = "XXX"
 environ["JWKS_URL"] = "example.com"
-environ["ENV"] = "pytest"
-environ["DISPATCH_AUTHENTICATION_PROVIDER_SLUG"] = ""  # disable authentication for tests
 environ["METRIC_PROVIDERS"] = ""  # TODO move this to the default
+environ["SECRET_PROVIDER"] = ""
+environ["SLACK_APP_USER_SLUG"] = "XXX"
 environ["STATIC_DIR"] = ""  # we don't need static files for tests
 
 from dispatch import config
-from dispatch.database.manage import init_database
 from dispatch.database.core import engine, sessionmaker
+from dispatch.database.manage import init_database
 
 from .factories import (
     ConferenceFactory,
@@ -33,17 +31,23 @@ from .factories import (
     EventFactory,
     FeedbackFactory,
     GroupFactory,
+    IncidentCostFactory,
+    IncidentCostTypeFactory,
     IncidentFactory,
     IncidentPriorityFactory,
     IncidentTypeFactory,
     IndividualContactFactory,
+    NotificationFactory,
     OrganizationFactory,
     ParticipantFactory,
     ParticipantRoleFactory,
+    PluginFactory,
+    PluginInstanceFactory,
     ProjectFactory,
     RecommendationFactory,
     RecommendationMatchFactory,
     ReportFactory,
+    SearchFilterFactory,
     ServiceFactory,
     StorageFactory,
     TagFactory,
@@ -327,8 +331,18 @@ def organization(session):
 
 
 @pytest.fixture
+def organizations(session):
+    return [OrganizationFactory(), OrganizationFactory()]
+
+
+@pytest.fixture
 def project(session):
     return ProjectFactory()
+
+
+@pytest.fixture
+def projects(session):
+    return [ProjectFactory(), ProjectFactory()]
 
 
 @pytest.fixture
@@ -354,6 +368,11 @@ def services(session):
 @pytest.fixture
 def report(session):
     return ReportFactory()
+
+
+@pytest.fixture
+def reports(session):
+    return [ReportFactory(), ReportFactory()]
 
 
 @pytest.fixture
@@ -409,3 +428,58 @@ def feedback(session):
 @pytest.fixture
 def feedbacks(session):
     return [FeedbackFactory(), FeedbackFactory()]
+
+
+@pytest.fixture
+def incident_cost(session):
+    return IncidentCostFactory()
+
+
+@pytest.fixture
+def incident_costs(session):
+    return [IncidentCostFactory(), IncidentCostFactory()]
+
+
+@pytest.fixture
+def incident_cost_type(session):
+    return IncidentCostTypeFactory()
+
+
+@pytest.fixture
+def incident_cost_types(session):
+    return [IncidentCostTypeFactory(), IncidentCostTypeFactory()]
+
+
+@pytest.fixture
+def notification(session):
+    return NotificationFactory()
+
+
+@pytest.fixture
+def notifications(session):
+    return [NotificationFactory(), NotificationFactory()]
+
+
+@pytest.fixture
+def search_filter(session):
+    return SearchFilterFactory()
+
+
+@pytest.fixture
+def search_filters(session):
+    return [SearchFilterFactory(), SearchFilterFactory()]
+
+
+@pytest.fixture
+def plugin(session):
+    return PluginFactory()
+
+
+@pytest.fixture
+def plugins(session):
+    return [PluginFactory(), PluginFactory()]
+
+
+@pytest.fixture
+def plugin_instance(session):
+    return PluginInstanceFactory()

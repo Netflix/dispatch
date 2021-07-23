@@ -99,9 +99,9 @@ def create_instance(*, db_session, plugin_instance_in: PluginInstanceCreate) -> 
 
 def update_instance(
     *, db_session, plugin_instance: PluginInstance, plugin_instance_in: PluginInstanceUpdate
-) -> Plugin:
+) -> PluginInstance:
     """Updates a plugin instance."""
-    plugin_data = jsonable_encoder(plugin_instance)
+    plugin_instance_data = jsonable_encoder(plugin_instance)
     update_data = plugin_instance_in.dict(skip_defaults=True)
 
     if plugin_instance_in.enabled:  # user wants to enable the plugin
@@ -124,7 +124,7 @@ def update_instance(
                     f"Cannot disable plugin instance: {plugin_instance.plugin.title}. One or more oncall services depend on it. "
                 )
 
-    for field in plugin_data:
+    for field in plugin_instance_data:
         if field in update_data:
             setattr(plugin_instance, field, update_data[field])
 
