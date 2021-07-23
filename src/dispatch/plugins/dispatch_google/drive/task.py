@@ -8,46 +8,41 @@
 """
 import re
 import logging
-from typing import Any, List, Dict
+from typing import Any, List
 
 from dispatch.task.enums import TaskStatus
-from dispatch.plugins.dispatch_google.config import GOOGLE_DOMAIN
+from enum import Enum
 
-from .drive import get_file, list_comments
+from .drive import get_activity, get_comment, get_person
+from dispatch.plugins.dispatch_google.config import GOOGLE_USER_OVERRIDE
 
 log = logging.getLogger(__name__)
 
 
-def get_assignees(content: str) -> List[str]:
-    """Gets assignees from comment's content."""
-    regex = r"[+@]([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)"
-    matches = re.findall(regex, content)
-    return list(matches)
+class CommentTypes(str, Enum):
+    assignment = "assignment"
+    post = "post"
 
 
-def parse_comment_content(content: str) -> Dict:
-    """Parses a comment's content into its various parts."""
-    assignees = get_assignees(content)
-    return {"assignees": assignees}
+class PostSubTypes(str, Enum):
+    subtype_unspecified = "SUBTYPE_UNSPECIFIED"
+    added = "ADDED"
+    deleted = "DELETED"
+    reply_added = "REPLY_ADDED"
+    reply_deleted = "REPLY_DELETED"
+    resolved = "RESOLVED"
+    reopened = "REOPENED"
 
 
-def get_task_status(task: dict):
-    """Gets the current status from a task."""
-    status = {"status": TaskStatus.open, "resolved_at": None, "resolved_by": None}
-
-    if task.get("resolved"):
-        for r in task["replies"]:
-            if r.get("action") == "resolve":
-                status["resolved_by"] = r["author"]["displayName"]
-                status["resolved_at"] = r["createdTime"]
-                status["status"] = TaskStatus.resolved
-
-    return status
-
-
-def filter_comments(comments: List[Any]):
-    """Filters comments for tasks."""
-    return [c for c in comments if parse_comment_content(c["content"])["assignees"]]
+class AssignmentSubTypes(str, Enum):
+    subtype_unspecified = "SUBTYPE_UNSPECIFIED"
+    added = "ADDED"
+    deleted = "DELETED"
+    reply_added = "REPLY_ADDED"
+    reply_deleted = "REPLY_DELETED"
+    resolved = "RESOLVED"
+    reopened = "REOPENED"
+    reassigned = "REASSIGNED"
 
 
 def find_urls(text: str) -> List[str]:
@@ -69,55 +64,85 @@ def get_tickets(replies: List[dict]):
     return tickets
 
 
-# NOTE We have to use `displayName` instead of `emailAddress` because it's
-# not visible to us. We should ask rcerda about why that might be.
-def list_tasks(client: Any, file_id: str):
-    """Returns all tasks in file."""
-    doc = get_file(client, file_id)
+def get_user_email(client: Any, person_id: str) -> str:
+    """Resolves the email address for the actor of the activity."""
+    # fetch the email from the people api
+    person_data = get_person(client, person_id)
 
-    document_meta = {"document": {"id": file_id, "name": doc["name"]}}
+    # this is required due to issues with cross domain lookups (mainly used for testing)
+    if GOOGLE_USER_OVERRIDE:
+        return GOOGLE_USER_OVERRIDE
 
-    all_comments = list_comments(client, file_id)
-    task_comments = filter_comments(all_comments)
+    return person_data["emailAddresses"][0]["value"]
+
+
+def get_task_activity(
+    activity_client: Any, comment_client: Any, people_client: Any, file_id: str, lookback: int = 60
+):
+    """Gets a files comment activity and filters for task related events."""
+    activities = get_activity(activity_client, file_id, lookback=lookback)
 
     tasks = []
-    for t in task_comments:
-        status = get_task_status(t)
-        assignees = [{"individual": {"email": x}} for x in get_assignees(t["content"])]
-        description = t.get("quotedFileContent", {}).get("value", "")
-        tickets = get_tickets(t["replies"])
+    for a in sorted(activities, key=lambda time: time["timestamp"]):
+        # process an assignment activity
+        if a["primaryActionDetail"]["comment"].get(CommentTypes.assignment):
+            subtype = a["primaryActionDetail"]["comment"][CommentTypes.assignment]["subtype"]
+            discussion_id = a["targets"][0]["fileComment"]["legacyDiscussionId"]
 
-        task_meta = {
-            "task": {
-                "resource_id": t["id"],
-                "description": description,
-                "created_at": t["createdTime"],
-                "assignees": assignees,
-                "tickets": tickets,
-                "weblink": f'https://docs.google.com/a/{GOOGLE_DOMAIN}/document/d/{file_id}/edit?disco={t["id"]}',
-            }
-        }
+            task = {"resource_id": discussion_id}
 
-        # this is a dirty hack because google doesn't return emailAddresses for comments
-        # complete with conflicting docs
-        # https://developers.google.com/drive/api/v2/reference/comments#resource
-        from dispatch.database.core import SessionLocal
-        from dispatch.individual.models import IndividualContact
+            # we create a new task when comment has an assignment added to it
+            if subtype == AssignmentSubTypes.added:
+                # we need to fetch the comment data
+                discussion_id = a["targets"][0]["fileComment"]["legacyDiscussionId"]
+                comment = get_comment(comment_client, file_id, discussion_id)
 
-        db_session = SessionLocal()
-        owner = (
-            db_session.query(IndividualContact)
-            .filter(IndividualContact.name == t["author"]["displayName"])
-            .first()
-        )
+                task["description"] = comment["content"]
 
-        if owner:
-            task_meta["task"].update({"owner": {"individual": {"email": owner.email}}})
+                task["tickets"] = get_tickets(comment["replies"])
 
-        db_session.close()
+                # we assume the person doing the assignment to be the creator of the task
+                creator_person_id = a["actors"][0]["user"]["knownUser"]["personName"]
+                task["creator"] = {
+                    "individual": {"email": get_user_email(people_client, creator_person_id)}
+                }
 
-        task_meta["task"].update(status)
+                # we only associate the current assignee event if multiple of people are mentioned (NOTE: should we also associated other mentions?)
+                assignee_person_id = a["primaryActionDetail"]["comment"][CommentTypes.assignment][
+                    "assignedUser"
+                ]["knownUser"]["personName"]
+                task["assignees"] = [
+                    {"individual": {"email": get_user_email(people_client, assignee_person_id)}}
+                ]
 
-        tasks.append({**document_meta, **task_meta})
+                # this is when the user was assigned (making it into a task, not when the inital comment was created)
+                task["created_at"] = a["timestamp"]
 
+                # this is the deep link to the associated comment
+                task["weblink"] = a["targets"][0]["fileComment"]["linkToDiscussion"]
+
+            elif subtype == AssignmentSubTypes.reply_added:
+                # check to see if there are any linked tickets
+                comment_id = a["targets"][0]["fileComment"]["legacyDiscussionId"]
+                comment = get_comment(comment_client, file_id, comment_id)
+                task["tickets"] = get_tickets(comment["replies"])
+
+            elif subtype == AssignmentSubTypes.deleted:
+                task["status"] = TaskStatus.resolved
+
+            elif subtype == AssignmentSubTypes.resolved:
+                task["status"] = TaskStatus.resolved
+
+            elif subtype == AssignmentSubTypes.reassigned:
+                assignee_person_id = a["primaryActionDetail"]["comment"][CommentTypes.assignment][
+                    "assignedUser"
+                ]["knownUser"]["personName"]
+                task["assignees"] = [
+                    {"individual": {"email": get_user_email(people_client, assignee_person_id)}}
+                ]
+
+            elif subtype == AssignmentSubTypes.reopened:
+                task["status"] = TaskStatus.open
+
+            tasks.append(task)
     return tasks

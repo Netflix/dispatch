@@ -1,4 +1,4 @@
-def test_get_ticket(session, ticket):
+def test_get(session, ticket):
     from dispatch.ticket.service import get
 
     t_ticket = get(db_session=session, ticket_id=ticket.id)

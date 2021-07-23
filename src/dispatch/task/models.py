@@ -121,8 +121,9 @@ class TaskCreate(TaskBase):
 
 
 class TaskUpdate(TaskBase):
-    assignees: List[Optional[ParticipantUpdate]]
+    assignees: List[Optional[ParticipantUpdate]] = []
     owner: Optional[ParticipantUpdate]
+    creator: Optional[ParticipantUpdate]
 
 
 class TaskRead(TaskBase):
