@@ -44,8 +44,8 @@ class OrganizationBase(DispatchBase):
     id: Optional[PrimaryKey]
     name: OrganizationName
     description: Optional[str] = Field(None, nullable=True)
-    default: Optional[bool] = Field(None, nullable=True)
-    banner_enabled: Optional[bool] = Field(None, nullable=True)
+    default: Optional[bool] = Field(False, nullable=True)
+    banner_enabled: Optional[bool] = Field(False, nullable=True)
     banner_color: Optional[str] = Field(None, nullable=True)
     banner_text: Optional[str] = Field(None, nullable=True)
 

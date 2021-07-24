@@ -1,6 +1,5 @@
 from typing import List, Optional
-from pydantic import StrictBool
-from dispatch.models import PrimaryKey
+from pydantic import StrictBool, Field
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -8,7 +7,7 @@ from sqlalchemy.event import listen
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base, ensure_unique_default_per_project
-from dispatch.models import DispatchBase, ProjectMixin
+from dispatch.models import DispatchBase, ProjectMixin, PrimaryKey
 from dispatch.project.models import ProjectRead
 
 
@@ -39,7 +38,7 @@ listen(IncidentPriority.default, "set", ensure_unique_default_per_project)
 # Pydantic models...
 class IncidentPriorityBase(DispatchBase):
     name: str
-    description: Optional[str]
+    description: Optional[str] = Field(None, nullable=True)
     page_commander: Optional[StrictBool]
     tactical_report_reminder: Optional[int]
     executive_report_reminder: Optional[int]

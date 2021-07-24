@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.models import PrimaryKey
 
 from .models import (
     TagTypeCreate,
@@ -22,7 +23,7 @@ def get_tag_types(*, common: dict = Depends(common_parameters)):
 
 
 @router.get("/{tag_type_id}", response_model=TagTypeRead)
-def get_tag_type(*, db_session: Session = Depends(get_db), tag_type_id: str):
+def get_tag_type(*, db_session: Session = Depends(get_db), tag_type_id: PrimaryKey):
     """Get a tag type by its id."""
     tag_type = get(db_session=db_session, tag_type_id=tag_type_id)
     if not tag_type:
@@ -42,7 +43,7 @@ def create_tag_type(*, db_session: Session = Depends(get_db), tag_type_in: TagTy
 
 @router.put("/{tag_type_id}", response_model=TagTypeRead)
 def update_tag_type(
-    *, db_session: Session = Depends(get_db), tag_type_id: int, tag_type_in: TagTypeUpdate
+    *, db_session: Session = Depends(get_db), tag_type_id: PrimaryKey, tag_type_in: TagTypeUpdate
 ):
     """Update a tag type."""
     tag_type = get(db_session=db_session, tag_type_id=tag_type_id)
@@ -56,7 +57,7 @@ def update_tag_type(
 
 
 @router.delete("/{tag_type_id}")
-def delete_tag_type(*, db_session: Session = Depends(get_db), tag_type_id: int):
+def delete_tag_type(*, db_session: Session = Depends(get_db), tag_type_id: PrimaryKey):
     """Delete a tag type."""
     tag_type = get(db_session=db_session, tag_type_id=tag_type_id)
     if not tag_type:

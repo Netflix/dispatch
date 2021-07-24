@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
-from dispatch.models import PrimaryKey
+from pydantic import Field
 
 from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -10,7 +10,7 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
 from dispatch.project.models import ProjectRead
 from dispatch.search_filter.models import SearchFilterRead
-from dispatch.models import ContactBase, ContactMixin, DispatchBase, ProjectMixin
+from dispatch.models import ContactBase, ContactMixin, DispatchBase, ProjectMixin, PrimaryKey
 
 # Association tables for many to many relationships
 assoc_individual_filters = Table(
@@ -54,11 +54,11 @@ class IndividualContact(Base, ContactMixin, ProjectMixin):
 
 
 class IndividualContactBase(ContactBase):
-    weblink: Optional[str]
-    mobile_phone: Optional[str]
-    office_phone: Optional[str]
-    title: Optional[str]
-    external_id: Optional[str]
+    weblink: Optional[str] = Field(None, nullable=True)
+    mobile_phone: Optional[str] = Field(None, nullable=True)
+    office_phone: Optional[str] = Field(None, nullable=True)
+    title: Optional[str] = Field(None, nullable=True)
+    external_id: Optional[str] = Field(None, nullable=True)
 
 
 class IndividualContactCreate(IndividualContactBase):

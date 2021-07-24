@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.models import PrimaryKey
 
 from .models import (
     SearchFilterCreate,
@@ -40,7 +41,7 @@ def create_search_filter(
 def update_search_filter(
     *,
     db_session: Session = Depends(get_db),
-    search_filter_id: int,
+    search_filter_id: PrimaryKey,
     search_filter_in: SearchFilterUpdate,
 ):
     """Update a search filter."""
@@ -57,7 +58,7 @@ def update_search_filter(
 
 
 @router.delete("/{search_filter_id}")
-def delete_filter(*, db_session: Session = Depends(get_db), search_filter_id: int):
+def delete_filter(*, db_session: Session = Depends(get_db), search_filter_id: PrimaryKey):
     """Delete a search filter."""
     search_filter = get(db_session=db_session, search_filter_id=search_filter_id)
     if not search_filter:

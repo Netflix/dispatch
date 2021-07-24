@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.models import PrimaryKey
 
 from .models import TermCreate, TermPagination, TermRead, TermUpdate
 from .service import create, delete, get, get_by_text, update
@@ -36,7 +37,7 @@ def create_term(*, db_session: Session = Depends(get_db), term_in: TermCreate):
 
 
 @router.get("/{term_id}", response_model=TermRead)
-def get_term(*, db_session: Session = Depends(get_db), term_id: int):
+def get_term(*, db_session: Session = Depends(get_db), term_id: PrimaryKey):
     """Get a term."""
     term = get(db_session=db_session, term_id=term_id)
     if not term:
@@ -48,7 +49,7 @@ def get_term(*, db_session: Session = Depends(get_db), term_id: int):
 
 
 @router.put("/{term_id}", response_model=TermRead)
-def update_term(*, db_session: Session = Depends(get_db), term_id: int, term_in: TermUpdate):
+def update_term(*, db_session: Session = Depends(get_db), term_id: PrimaryKey, term_in: TermUpdate):
     """Update a term."""
     term = get(db_session=db_session, term_id=term_id)
     if not term:
@@ -61,7 +62,7 @@ def update_term(*, db_session: Session = Depends(get_db), term_id: int, term_in:
 
 
 @router.delete("/{term_id}", response_model=TermRead)
-def delete_term(*, db_session: Session = Depends(get_db), term_id: int):
+def delete_term(*, db_session: Session = Depends(get_db), term_id: PrimaryKey):
     """Delete a term."""
     term = get(db_session=db_session, term_id=term_id)
     if not term:

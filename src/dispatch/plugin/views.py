@@ -5,6 +5,7 @@ from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.exceptions import InvalidConfiguration
+from dispatch.models import PrimaryKey
 
 from .models import (
     PluginInstanceRead,
@@ -32,7 +33,7 @@ def get_plugin_instances(*, common: dict = Depends(common_parameters)):
 
 
 @router.get("/instances/{plugin_instance_id}", response_model=PluginInstanceRead)
-def get_plugin_instance(*, db_session: Session = Depends(get_db), plugin_instance_id: int):
+def get_plugin_instance(*, db_session: Session = Depends(get_db), plugin_instance_id: PrimaryKey):
     """Get a plugin instance."""
     plugin = get_instance(db_session=db_session, plugin_instance_id=plugin_instance_id)
     if not plugin:
@@ -63,7 +64,7 @@ def create_plugin_instance(
 def update_plugin_instance(
     *,
     db_session: Session = Depends(get_db),
-    plugin_instance_id: int,
+    plugin_instance_id: PrimaryKey,
     plugin_instance_in: PluginInstanceUpdate,
 ):
     """Update a plugin instance."""

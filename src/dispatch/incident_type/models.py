@@ -71,9 +71,9 @@ listen(IncidentType.default, "set", ensure_unique_default_per_project)
 
 class Document(DispatchBase):
     id: PrimaryKey
-    resource_type: Optional[str]
-    resource_id: Optional[str]
-    description: Optional[str]
+    resource_type: Optional[str] = Field(None, nullable=True)
+    resource_id: Optional[str] = Field(None, nullable=True)
+    description: Optional[str] = Field(None, nullable=True)
     weblink: str
     name: str
 
@@ -82,15 +82,15 @@ class Service(DispatchBase):
     id: PrimaryKey
     name: Optional[str] = Field(None, nullable=True)
     external_id: Optional[str] = Field(None, nullable=True)
-    is_active: Optional[bool] = None
+    is_active: Optional[bool] = False
     type: Optional[str] = Field(None, nullable=True)
 
 
 # Pydantic models...
 class IncidentTypeBase(DispatchBase):
     name: str
-    visibility: Optional[str]
-    description: Optional[str]
+    visibility: Optional[str] = Field(None, nullable=True)
+    description: Optional[str] = Field(None, nullable=True)
     enabled: Optional[bool]
     incident_template_document: Optional[Document]
     executive_template_document: Optional[Document]

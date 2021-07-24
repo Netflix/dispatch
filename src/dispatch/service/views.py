@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.exceptions import InvalidConfiguration
+from dispatch.models import PrimaryKey
 
 from .models import ServiceCreate, ServicePagination, ServiceRead, ServiceUpdate
 from .service import get, create, update, delete, get_by_external_id_and_project_name
@@ -55,7 +56,7 @@ def create_service(
 
 @router.put("/{service_id}", response_model=ServiceRead)
 def update_service(
-    *, db_session: Session = Depends(get_db), service_id: int, service_in: ServiceUpdate
+    *, db_session: Session = Depends(get_db), service_id: PrimaryKey, service_in: ServiceUpdate
 ):
     """Update an existing service."""
     service = get(db_session=db_session, service_id=service_id)
@@ -77,7 +78,7 @@ def update_service(
 
 
 @router.get("/{service_id}", response_model=ServiceRead)
-def get_service(*, db_session: Session = Depends(get_db), service_id: int):
+def get_service(*, db_session: Session = Depends(get_db), service_id: PrimaryKey):
     """Get a single service."""
     service = get(db_session=db_session, service_id=service_id)
     if not service:
@@ -89,7 +90,7 @@ def get_service(*, db_session: Session = Depends(get_db), service_id: int):
 
 
 @router.delete("/{service_id}")
-def delete_service(*, db_session: Session = Depends(get_db), service_id: int):
+def delete_service(*, db_session: Session = Depends(get_db), service_id: PrimaryKey):
     """Delete a single service."""
     service = get(db_session=db_session, service_id=service_id)
     if not service:

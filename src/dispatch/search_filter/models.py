@@ -1,5 +1,5 @@
 from typing import List, Optional
-from dispatch.models import PrimaryKey
+from pydantic import Field
 
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -9,7 +9,7 @@ from sqlalchemy.sql.sqltypes import JSON
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, ProjectMixin
+from dispatch.models import DispatchBase, ProjectMixin, PrimaryKey
 
 from dispatch.auth.models import DispatchUser
 
@@ -37,7 +37,7 @@ class SearchFilterBase(DispatchBase):
     expression: Optional[List[dict]] = []
     name: str
     type: Optional[str]
-    description: Optional[str]
+    description: Optional[str] = Field(None, nullable=True)
 
 
 class SearchFilterCreate(SearchFilterBase):

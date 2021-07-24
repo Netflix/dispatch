@@ -1,5 +1,5 @@
 from typing import List, Optional
-from dispatch.models import PrimaryKey
+from pydantic import Field
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -8,7 +8,7 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy_utils import TSVectorType, JSONType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, ProjectMixin
+from dispatch.models import DispatchBase, ProjectMixin, PrimaryKey
 from dispatch.plugins.base import plugins
 from dispatch.project.models import ProjectRead
 
@@ -66,7 +66,7 @@ class PluginRead(PluginBase):
     author_url: str
     type: str
     multiple: bool
-    description: Optional[str]
+    description: Optional[str] = Field(None, nullable=True)
 
 
 class PluginInstanceRead(PluginBase):

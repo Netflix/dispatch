@@ -58,7 +58,7 @@ class Document(ProjectMixin, ResourceMixin, Base):
 
 # Pydantic models...
 class DocumentBase(ResourceBase):
-    description: Optional[str]
+    description: Optional[str] = Field(None, nullable=True)
     name: str
     evergreen: Optional[bool] = False
     evergreen_reminder_interval: Optional[int] = 90

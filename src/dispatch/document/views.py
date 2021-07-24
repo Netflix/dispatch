@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.models import PrimaryKey
 
 from .models import DocumentCreate, DocumentPagination, DocumentRead, DocumentUpdate
 from .service import create, delete, get, update
@@ -17,7 +18,7 @@ def get_documents(*, common: dict = Depends(common_parameters)):
 
 
 @router.get("/{document_id}", response_model=DocumentRead)
-def get_document(*, db_session: Session = Depends(get_db), document_id: int):
+def get_document(*, db_session: Session = Depends(get_db), document_id: PrimaryKey):
     """Update a document."""
     document = get(db_session=db_session, document_id=document_id)
     if not document:
@@ -37,7 +38,7 @@ def create_document(*, db_session: Session = Depends(get_db), document_in: Docum
 
 @router.put("/{document_id}", response_model=DocumentCreate)
 def update_document(
-    *, db_session: Session = Depends(get_db), document_id: int, document_in: DocumentUpdate
+    *, db_session: Session = Depends(get_db), document_id: PrimaryKey, document_in: DocumentUpdate
 ):
     """Update a document."""
     document = get(db_session=db_session, document_id=document_id)
@@ -51,7 +52,7 @@ def update_document(
 
 
 @router.delete("/{document_id}")
-def delete_document(*, db_session: Session = Depends(get_db), document_id: int):
+def delete_document(*, db_session: Session = Depends(get_db), document_id: PrimaryKey):
     """Delete a document."""
     document = get(db_session=db_session, document_id=document_id)
     if not document:

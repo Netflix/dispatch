@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.auth.permissions import PermissionsDependency, SensitiveProjectActionPermission
+from dispatch.models import PrimaryKey
 
 from .models import (
     IndividualContactCreate,
@@ -44,7 +45,7 @@ def create_individual(
 
 
 @router.get("/{individual_contact_id}", response_model=IndividualContactRead)
-def get_individual(*, db_session: Session = Depends(get_db), individual_contact_id: int):
+def get_individual(*, db_session: Session = Depends(get_db), individual_contact_id: PrimaryKey):
     """Get an individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
@@ -64,7 +65,7 @@ def get_individual(*, db_session: Session = Depends(get_db), individual_contact_
 def update_individual(
     *,
     db_session: Session = Depends(get_db),
-    individual_contact_id: int,
+    individual_contact_id: PrimaryKey,
     individual_contact_in: IndividualContactUpdate,
 ):
     """Update an individual contact."""
@@ -87,7 +88,9 @@ def update_individual(
     summary="Delete an individual contact.",
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-async def delete_individual(*, db_session: Session = Depends(get_db), individual_contact_id: int):
+async def delete_individual(
+    *, db_session: Session = Depends(get_db), individual_contact_id: PrimaryKey
+):
     """Delete an individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:

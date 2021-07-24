@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
+from dispatch.models import PrimaryKey
 
 from .models import (
     NotificationCreate,
@@ -24,7 +25,7 @@ def get_notifications(*, common: dict = Depends(common_parameters)):
 
 
 @router.get("/{notification_id}", response_model=NotificationRead)
-def get_notification(*, db_session: Session = Depends(get_db), notification_id: int):
+def get_notification(*, db_session: Session = Depends(get_db), notification_id: PrimaryKey):
     """Get a notification by its id."""
     notification = get(db_session=db_session, notification_id=notification_id)
     if not notification:
@@ -56,7 +57,7 @@ def create_notification(
 def update_notification(
     *,
     db_session: Session = Depends(get_db),
-    notification_id: int,
+    notification_id: PrimaryKey,
     notification_in: NotificationUpdate,
 ):
     """Update a notification by its id."""
@@ -76,7 +77,7 @@ def update_notification(
     "/{notification_id}",
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def delete_notification(*, db_session: Session = Depends(get_db), notification_id: int):
+def delete_notification(*, db_session: Session = Depends(get_db), notification_id: PrimaryKey):
     """Delete a notification, returning only an HTTP 200 OK if successful."""
     notification = get(db_session=db_session, notification_id=notification_id)
     if not notification:

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
+from dispatch.models import PrimaryKey
 
 from .models import (
     IncidentCostTypeCreate,
@@ -24,7 +25,9 @@ def get_incident_cost_types(*, common: dict = Depends(common_parameters)):
 
 
 @router.get("/{incident_cost_type_id}", response_model=IncidentCostTypeRead)
-def get_incident_cost_type(*, db_session: Session = Depends(get_db), incident_cost_type_id: int):
+def get_incident_cost_type(
+    *, db_session: Session = Depends(get_db), incident_cost_type_id: PrimaryKey
+):
     """Get an incident cost type by its id."""
     incident_cost_type = get(db_session=db_session, incident_cost_type_id=incident_cost_type_id)
     if not incident_cost_type:
@@ -56,7 +59,7 @@ def create_incident_cost_type(
 def update_incident_cost_type(
     *,
     db_session: Session = Depends(get_db),
-    incident_cost_type_id: int,
+    incident_cost_type_id: PrimaryKey,
     incident_cost_type_in: IncidentCostTypeUpdate,
 ):
     """Update an incident cost type by its id."""
@@ -88,7 +91,7 @@ def update_incident_cost_type(
 def delete_incident_cost_type(
     *,
     db_session: Session = Depends(get_db),
-    incident_cost_type_id: int,
+    incident_cost_type_id: PrimaryKey,
 ):
     """Delete an incident cost type, returning only an HTTP 200 OK if successful."""
     incident_cost_type = get(db_session=db_session, incident_cost_type_id=incident_cost_type_id)

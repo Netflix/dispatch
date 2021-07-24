@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.models import PrimaryKey
 
 from .models import WorkflowPagination, WorkflowRead, WorkflowCreate, WorkflowUpdate
 from .service import create, delete, get, update
@@ -17,7 +18,7 @@ def get_workflows(*, common: dict = Depends(common_parameters)):
 
 
 @router.get("/{workflow_id}", response_model=WorkflowRead)
-def get_workflow(*, db_session: Session = Depends(get_db), workflow_id: int):
+def get_workflow(*, db_session: Session = Depends(get_db), workflow_id: PrimaryKey):
     """Get a workflow."""
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:
@@ -37,7 +38,7 @@ def create_workflow(*, db_session: Session = Depends(get_db), workflow_in: Workf
 
 @router.put("/{workflow_id}", response_model=WorkflowUpdate)
 def update_workflow(
-    *, db_session: Session = Depends(get_db), workflow_id: int, workflow_in: WorkflowUpdate
+    *, db_session: Session = Depends(get_db), workflow_id: PrimaryKey, workflow_in: WorkflowUpdate
 ):
     """Update a workflow."""
     workflow = get(db_session=db_session, workflow_id=workflow_id)
@@ -51,7 +52,7 @@ def update_workflow(
 
 
 @router.delete("/{workflow_id}")
-def delete_workflow(*, db_session: Session = Depends(get_db), workflow_id: int):
+def delete_workflow(*, db_session: Session = Depends(get_db), workflow_id: PrimaryKey):
     """Delete a workflow."""
     workflow = get(db_session=db_session, workflow_id=workflow_id)
     if not workflow:

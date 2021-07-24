@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db, get_class_by_tablename
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.models import PrimaryKey
 from dispatch.tag.recommender import get_recommendations
 
 from .models import (
@@ -23,7 +24,7 @@ def get_tags(*, common: dict = Depends(common_parameters)):
 
 
 @router.get("/{tag_id}", response_model=TagRead)
-def get_tag(*, db_session: Session = Depends(get_db), tag_id: str):
+def get_tag(*, db_session: Session = Depends(get_db), tag_id: PrimaryKey):
     """Given its unique ID, retrieve details about a single tag."""
     tag = get(db_session=db_session, tag_id=tag_id)
     if not tag:
@@ -42,7 +43,7 @@ def create_tag(*, db_session: Session = Depends(get_db), tag_in: TagCreate):
 
 
 @router.put("/{tag_id}", response_model=TagRead)
-def update_tag(*, db_session: Session = Depends(get_db), tag_id: int, tag_in: TagUpdate):
+def update_tag(*, db_session: Session = Depends(get_db), tag_id: PrimaryKey, tag_in: TagUpdate):
     """Update a tag."""
     tag = get(db_session=db_session, tag_id=tag_id)
     if not tag:
@@ -55,7 +56,7 @@ def update_tag(*, db_session: Session = Depends(get_db), tag_id: int, tag_in: Ta
 
 
 @router.delete("/{tag_id}")
-def delete_tag(*, db_session: Session = Depends(get_db), tag_id: int):
+def delete_tag(*, db_session: Session = Depends(get_db), tag_id: PrimaryKey):
     """Delete a tag, returning only an HTTP 200 OK if successful."""
     tag = get(db_session=db_session, tag_id=tag_id)
     if not tag:

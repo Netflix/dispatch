@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.models import PrimaryKey
 
 from .models import (
     DefinitionCreate,
@@ -22,7 +23,7 @@ def get_definitions(*, common: dict = Depends(common_parameters)):
 
 
 @router.get("/{definition_id}", response_model=DefinitionRead)
-def get_definition(*, db_session: Session = Depends(get_db), definition_id: int):
+def get_definition(*, db_session: Session = Depends(get_db), definition_id: PrimaryKey):
     """Update a definition."""
     definition = get(db_session=db_session, definition_id=definition_id)
     if not definition:
@@ -54,7 +55,10 @@ def create_definition(*, db_session: Session = Depends(get_db), definition_in: D
 
 @router.put("/{definition_id}", response_model=DefinitionRead)
 def update_definition(
-    *, db_session: Session = Depends(get_db), definition_id: int, definition_in: DefinitionUpdate
+    *,
+    db_session: Session = Depends(get_db),
+    definition_id: PrimaryKey,
+    definition_in: DefinitionUpdate,
 ):
     """Update a definition."""
     definition = get(db_session=db_session, definition_id=definition_id)
@@ -68,7 +72,7 @@ def update_definition(
 
 
 @router.delete("/{definition_id}")
-def delete_definition(*, db_session: Session = Depends(get_db), definition_id: int):
+def delete_definition(*, db_session: Session = Depends(get_db), definition_id: PrimaryKey):
     """Delete a definition."""
     definition = get(db_session=db_session, definition_id=definition_id)
     if not definition:

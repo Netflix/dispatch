@@ -133,7 +133,7 @@ class UserLogin(UserBase):
 
 
 class UserRegister(UserLogin):
-    password: Optional[str]
+    password: Optional[str] = Field(None, nullable=True)
 
     @validator("password", pre=True, always=True)
     def password_required(cls, v):
@@ -143,7 +143,7 @@ class UserRegister(UserLogin):
 
 
 class UserLoginResponse(DispatchBase):
-    token: Optional[str]
+    token: Optional[str] = Field(None, nullable=True)
 
 
 class UserRead(UserBase):
@@ -153,7 +153,7 @@ class UserRead(UserBase):
 
 class UserUpdate(DispatchBase):
     id: PrimaryKey
-    password: Optional[str]
+    password: Optional[str] = Field(None, nullable=True)
     projects: Optional[List[UserProject]]
     organizations: Optional[List[UserOrganization]]
     role: Optional[str] = Field(None, nullable=True)

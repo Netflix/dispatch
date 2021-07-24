@@ -1,13 +1,14 @@
 from datetime import datetime
 from typing import Optional, List
-
-from dispatch.models import PrimaryKey
+from pydantic import Field
 
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 
 
 from dispatch.database.core import Base
+from dispatch.models import PrimaryKey
+
 from dispatch.incident.models import IncidentReadNested
 from dispatch.models import DispatchBase, TimeStampMixin
 from dispatch.participant.models import ParticipantRead
@@ -32,7 +33,7 @@ class Feedback(TimeStampMixin, Base):
 class FeedbackBase(DispatchBase):
     created_at: Optional[datetime]
     rating: str
-    feedback: Optional[str]
+    feedback: Optional[str] = Field(None, nullable=True)
     incident: Optional[IncidentReadNested]
     participant: Optional[ParticipantRead]
 
