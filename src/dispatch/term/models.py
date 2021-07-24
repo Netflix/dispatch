@@ -1,12 +1,18 @@
 from typing import List, Optional
-from dispatch.models import PrimaryKey
+from pydantic import Field
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DefinitionNested, DefinitionReadNested, DispatchBase, ProjectMixin
+from dispatch.models import (
+    DefinitionNested,
+    DefinitionReadNested,
+    DispatchBase,
+    ProjectMixin,
+    PrimaryKey,
+)
 from dispatch.project.models import ProjectRead
 
 
@@ -22,7 +28,7 @@ class Term(Base, ProjectMixin):
 # Pydantic models...
 class TermBase(DispatchBase):
     id: Optional[int] = None
-    text: Optional[str] = None
+    text: Optional[str] = Field(None, nullable=True)
     discoverable: Optional[bool] = True
 
 

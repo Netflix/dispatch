@@ -96,9 +96,15 @@ def update_organization(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "An organization with this id does not exist."}],
         )
-    organization = update(
-        db_session=db_session, organization=organization, organization_in=organization_in
-    )
+    try:
+        organization = update(
+            db_session=db_session, organization=organization, organization_in=organization_in
+        )
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=[{"msg": "An organization with that name already exists."}],
+        )
     return organization
 
 

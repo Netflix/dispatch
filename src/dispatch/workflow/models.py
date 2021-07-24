@@ -104,7 +104,7 @@ class WorkflowInstance(Base, ResourceMixin):
 class WorkflowBase(DispatchBase):
     name: str
     resource_id: str
-    plugin_instance: Optional[PluginInstanceRead]
+    plugin_instance: PluginInstanceRead
     parameters: Optional[List[dict]] = []
     enabled: Optional[bool]
     description: Optional[str]

@@ -28,6 +28,10 @@ def get_all(*, db_session):
 def create(*, db_session, tag_type_in: TagTypeCreate) -> TagType:
     """Creates a new tag type."""
     project = project_service.get_by_name(db_session=db_session, name=tag_type_in.project.name)
+
+    if not project:
+        raise ValueError(f"Project {tag_type_in.project.name} does not exists.")
+
     tag_type = TagType(**tag_type_in.dict(exclude={"project"}), project=project)
     db_session.add(tag_type)
     db_session.commit()

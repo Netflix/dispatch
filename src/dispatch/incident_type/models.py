@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import validator
+from pydantic import validator, Field
 from dispatch.models import PrimaryKey
 
 from sqlalchemy import Column, Boolean, ForeignKey, Integer, String, JSON
@@ -80,10 +80,10 @@ class Document(DispatchBase):
 
 class Service(DispatchBase):
     id: PrimaryKey
-    name: Optional[str] = None
-    external_id: Optional[str] = None
+    name: Optional[str] = Field(None, nullable=True)
+    external_id: Optional[str] = Field(None, nullable=True)
     is_active: Optional[bool] = None
-    type: Optional[str] = None
+    type: Optional[str] = Field(None, nullable=True)
 
 
 # Pydantic models...

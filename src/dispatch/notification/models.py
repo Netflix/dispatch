@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from dispatch.models import PrimaryKey
+from pydantic import Field
 
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
@@ -8,6 +8,7 @@ from sqlalchemy.sql.schema import PrimaryKeyConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
+from dispatch.models import PrimaryKey
 from dispatch.enums import DispatchEnum
 from dispatch.project.models import ProjectRead
 from dispatch.search_filter.models import SearchFilterRead, SearchFilterUpdate
@@ -49,7 +50,7 @@ class Notification(Base, TimeStampMixin, ProjectMixin):
 # Pydantic models
 class NotificationBase(DispatchBase):
     name: str
-    description: Optional[str] = None
+    description: Optional[str] = Field(None, nullable=True)
     type: NotificationTypeEnum
     target: str
     enabled: Optional[bool]

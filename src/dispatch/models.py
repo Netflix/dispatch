@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
+from pydantic.fields import Field
 from pydantic.types import conint, constr
 
 import validators
@@ -73,9 +74,9 @@ class DispatchBase(BaseModel):
 
 
 class ResourceBase(DispatchBase):
-    resource_type: Optional[str] = None
-    resource_id: Optional[str] = None
-    weblink: Optional[str] = None
+    resource_type: Optional[str] = Field(None, nullable=True)
+    resource_id: Optional[str] = Field(None, nullable=True)
+    weblink: Optional[str] = Field(None, nullable=True)
 
     @validator("weblink")
     def sanitize_weblink(cls, v):
@@ -87,13 +88,13 @@ class ResourceBase(DispatchBase):
 
 class ContactBase(DispatchBase):
     email: str
-    name: Optional[str] = None
+    name: Optional[str] = Field(None, nullable=True)
     is_active: Optional[bool] = True
     is_external: Optional[bool] = False
-    company: Optional[str] = None
-    contact_type: Optional[str] = None
-    notes: Optional[str] = None
-    owner: Optional[str] = None
+    company: Optional[str] = Field(None, nullable=True)
+    contact_type: Optional[str] = Field(None, nullable=True)
+    notes: Optional[str] = Field(None, nullable=True)
+    owner: Optional[str] = Field(None, nullable=True)
 
 
 class PluginOptionModel(DispatchBase):
@@ -137,15 +138,15 @@ class DefinitionReadNested(DispatchBase):
 
 
 class ServiceReadNested(DispatchBase):
-    name: Optional[str] = None
-    external_id: Optional[str] = None
-    is_active: Optional[bool] = None
-    type: Optional[str] = None
+    name: Optional[str] = Field(None, nullable=True)
+    external_id: Optional[str] = Field(None, nullable=True)
+    is_active: Optional[bool] = False
+    type: Optional[str] = Field(None, nullable=True)
 
 
 class IndividualReadNested(ContactBase):
     id: Optional[PrimaryKey]
-    title: Optional[str] = None
+    title: Optional[str] = Field(None, nullable=True)
     external_id: Optional[str]
     weblink: Optional[str]
     title: Optional[str]

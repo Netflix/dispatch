@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import validator
+from pydantic import validator, Field
 from dispatch.models import PrimaryKey
 from sqlalchemy import (
     Column,
@@ -63,7 +63,7 @@ class DocumentBase(ResourceBase):
     evergreen: Optional[bool] = False
     evergreen_reminder_interval: Optional[int] = 90
     evergreen_last_reminder_at: Optional[datetime] = None
-    evergreen_owner: Optional[str] = None
+    evergreen_owner: Optional[str] = Field(None, nullable=True)
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

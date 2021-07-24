@@ -182,8 +182,10 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
             response = JSONResponse(status_code=e.status_code, content=e.detail)
         except Exception as e:
             response = JSONResponse(
-                status_code=HTTP_500_INTERNAL_SERVER_ERROR, content={"detail": [{"msg": str(e)}]}
+                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"detail": [{"msg": "An unknown error has occured."}]},
             )
+            log.exception(e)
 
         metric_provider.counter("server.call.exception.counter", tags=tags)
         return response

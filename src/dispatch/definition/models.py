@@ -1,5 +1,5 @@
 from typing import List, Optional
-from dispatch.models import PrimaryKey
+from pydantic import Field
 
 from sqlalchemy import Table, Column, Integer, String, ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.orm import relationship
@@ -9,6 +9,7 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.models import (
+    PrimaryKey,
     DispatchBase,
     ProjectMixin,
     TermNested,
@@ -47,7 +48,7 @@ class Definition(Base, ProjectMixin):
 # Pydantic models...
 class DefinitionBase(DispatchBase):
     text: str
-    source: Optional[str] = None
+    source: Optional[str] = Field(None, nullable=True)
 
 
 class DefinitionCreate(DefinitionBase):
