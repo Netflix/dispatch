@@ -610,31 +610,13 @@ class TeamContactFactory(ContactBaseFactory):
                 self.incidents.append(incident)
 
     @post_generation
-    def incident_priorities(self, create, extracted, **kwargs):
+    def filters(self, create, extracted, **kwargs):
         if not create:
             return
 
         if extracted:
-            for priority in extracted:
-                self.incident_priorities.append(priority)
-
-    @post_generation
-    def incident_types(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for incident_type in extracted:
-                self.incident_types.append(incident_type)
-
-    @post_generation
-    def terms(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for term in extracted:
-                self.terms.append(term)
+            for filter in extracted:
+                self.filters.append(filter)
 
 
 class TermFactory(BaseFactory):
