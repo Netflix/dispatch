@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import Field
+from pydantic import Field, constr
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -20,7 +20,7 @@ class TagType(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic models
 class TagTypeBase(DispatchBase):
-    name: str
+    name: constr(min_length=3)
     description: Optional[str] = Field(None, nullable=True)
 
 

@@ -2,7 +2,7 @@ from datetime import datetime
 from collections import Counter
 from typing import List, Optional, Any
 
-from pydantic import validator
+from pydantic import validator, constr
 from dispatch.models import PrimaryKey
 from sqlalchemy import (
     Column,
@@ -281,7 +281,7 @@ class IncidentBase(DispatchBase):
 
 class IncidentReadNested(IncidentBase):
     id: PrimaryKey
-    name: str = None
+    name: constr(min_length=3)
     reporter: Optional[ParticipantRead]
     commander: Optional[ParticipantRead]
     incident_priority: IncidentPriorityRead
@@ -315,7 +315,7 @@ class IncidentUpdate(IncidentBase):
 
 class IncidentRead(IncidentBase):
     id: PrimaryKey
-    name: str = None
+    name: constr(min_length=3)
     primary_team: Any
     primary_location: Any
     reporter: Optional[ParticipantRead]

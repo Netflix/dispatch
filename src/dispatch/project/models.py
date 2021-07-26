@@ -1,6 +1,6 @@
 from slugify import slugify
 from typing import List, Optional
-from pydantic import Field
+from pydantic import Field, constr
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
@@ -34,7 +34,7 @@ class Project(Base):
 
 class ProjectBase(DispatchBase):
     id: Optional[PrimaryKey]
-    name: str
+    name: constr(min_length=3)
     description: Optional[str] = Field(None, nullable=True)
     default: bool = False
     color: Optional[str] = Field(None, nullable=True)

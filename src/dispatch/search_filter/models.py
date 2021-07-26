@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import Field
+from pydantic import Field, constr
 
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -35,7 +35,7 @@ class SearchFilter(Base, ProjectMixin):
 # Pydantic models...
 class SearchFilterBase(DispatchBase):
     expression: Optional[List[dict]] = []
-    name: str
+    name: constr(min_length=3)
     type: Optional[str]
     description: Optional[str] = Field(None, nullable=True)
 

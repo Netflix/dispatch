@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
-from pydantic import Field
+from pydantic import Field, constr
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.event import listen
@@ -34,7 +34,7 @@ listen(IncidentCostType.default, "set", ensure_unique_default_per_project)
 
 # Pydantic Models
 class IncidentCostTypeBase(DispatchBase):
-    name: str
+    name: constr(min_length=3)
     description: Optional[str] = Field(None, nullable=True)
     category: Optional[str] = Field(None, nullable=True)
     details: Optional[dict] = {}

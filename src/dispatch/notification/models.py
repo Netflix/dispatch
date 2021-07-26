@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import Field
+from pydantic import Field, constr
 
 from sqlalchemy import Boolean, Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
@@ -49,7 +49,7 @@ class Notification(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic models
 class NotificationBase(DispatchBase):
-    name: str
+    name: constr(min_length=3)
     description: Optional[str] = Field(None, nullable=True)
     type: NotificationTypeEnum
     target: str

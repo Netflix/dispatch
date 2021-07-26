@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
@@ -37,7 +38,31 @@ def get_tag_type(*, db_session: Session = Depends(get_db), tag_type_id: PrimaryK
 @router.post("", response_model=TagTypeRead)
 def create_tag_type(*, db_session: Session = Depends(get_db), tag_type_in: TagTypeCreate):
     """Create a new tag type."""
-    tag_type = create(db_session=db_session, tag_type_in=tag_type_in)
+    try:
+        tag_type = create(db_session=db_session, tag_type_in=tag_type_in)
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": "An tag type with this name already exists.",
+                    "loc": ["name"],
+                    "type": "Exists",
+                }
+            ],
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": str(e),
+                    "loc": ["Unknown"],
+                    "type": "Unknown",
+                }
+            ],
+        )
+
     return tag_type
 
 
@@ -52,7 +77,32 @@ def update_tag_type(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "A tag type with this id does not exist."}],
         )
-    tag_type = update(db_session=db_session, tag_type=tag_type, tag_type_in=tag_type_in)
+
+    try:
+        tag_type = update(db_session=db_session, tag_type=tag_type, tag_type_in=tag_type_in)
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": "An tag type with this name already exists.",
+                    "loc": ["name"],
+                    "type": "Exists",
+                }
+            ],
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": str(e),
+                    "loc": ["Unknown"],
+                    "type": "Unknown",
+                }
+            ],
+        )
+
     return tag_type
 
 

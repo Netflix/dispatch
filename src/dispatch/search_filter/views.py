@@ -29,11 +29,17 @@ def create_search_filter(
 ):
     """Create a new filter."""
     try:
-        search_filter = create(db_session=db_session, search_filter_in=search_filter_in)
-        return search_filter
+        return create(db_session=db_session, search_filter_in=search_filter_in)
     except IntegrityError:
         raise HTTPException(
-            status_code=409, detail=[{"msg": "A search filter already exists with this name."}]
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": "An search filter with this name already exists.",
+                    "loc": ["name"],
+                    "type": "Exists",
+                }
+            ],
         )
 
 
@@ -51,9 +57,21 @@ def update_search_filter(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "A search filter with this id does not exist."}],
         )
-    search_filter = update(
-        db_session=db_session, search_filter=search_filter, search_filter_in=search_filter_in
-    )
+    try:
+        search_filter = update(
+            db_session=db_session, search_filter=search_filter, search_filter_in=search_filter_in
+        )
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": "An search filter with this name already exists.",
+                    "loc": ["name"],
+                    "type": "Exists",
+                }
+            ],
+        )
     return search_filter
 
 

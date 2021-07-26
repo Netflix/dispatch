@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
-from pydantic import Field
+from pydantic import Field, constr
 
 from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.orm import relationship
@@ -44,7 +44,7 @@ class TeamContact(Base, ContactMixin, ProjectMixin):
 
 
 class TeamContactBase(ContactBase):
-    name: str
+    name: constr(min_length=3)
     notes: Optional[str] = Field(None, nullable=True)
 
 

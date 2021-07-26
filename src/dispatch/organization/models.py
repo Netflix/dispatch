@@ -37,7 +37,7 @@ def generate_slug(target, value, oldvalue, initiator):
 
 listen(Organization.name, "set", generate_slug)
 
-OrganizationName = constr(regex=r"[\w\s]+")
+OrganizationName = constr(regex=r"^(?!\s*$).+")
 
 
 class OrganizationBase(DispatchBase):

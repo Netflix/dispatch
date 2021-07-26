@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Body, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
@@ -72,6 +73,17 @@ def update_service(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail={"msg": str(e), "loc": ["configuration"], "type": "InvalidConfiguration"},
+        )
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": "A service with this name already exists.",
+                    "loc": ["name"],
+                    "type": "Exists",
+                }
+            ],
         )
 
     return service

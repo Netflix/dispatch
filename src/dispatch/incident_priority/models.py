@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import StrictBool, Field
+from pydantic import StrictBool, Field, constr
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -37,7 +37,7 @@ listen(IncidentPriority.default, "set", ensure_unique_default_per_project)
 
 # Pydantic models...
 class IncidentPriorityBase(DispatchBase):
-    name: str
+    name: constr(min_length=3)
     description: Optional[str] = Field(None, nullable=True)
     page_commander: Optional[StrictBool]
     tactical_report_reminder: Optional[int]

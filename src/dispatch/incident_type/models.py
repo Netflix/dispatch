@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import validator, Field
+from pydantic import validator, Field, constr
 from dispatch.models import PrimaryKey
 
 from sqlalchemy import Column, Boolean, ForeignKey, Integer, String, JSON
@@ -71,11 +71,11 @@ listen(IncidentType.default, "set", ensure_unique_default_per_project)
 
 class Document(DispatchBase):
     id: PrimaryKey
+    name: constr(min_length=3)
     resource_type: Optional[str] = Field(None, nullable=True)
     resource_id: Optional[str] = Field(None, nullable=True)
     description: Optional[str] = Field(None, nullable=True)
     weblink: str
-    name: str
 
 
 class Service(DispatchBase):
@@ -88,7 +88,7 @@ class Service(DispatchBase):
 
 # Pydantic models...
 class IncidentTypeBase(DispatchBase):
-    name: str
+    name: constr(min_length=3)
     visibility: Optional[str] = Field(None, nullable=True)
     description: Optional[str] = Field(None, nullable=True)
     enabled: Optional[bool]

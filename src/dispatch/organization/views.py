@@ -102,8 +102,14 @@ def update_organization(
         )
     except IntegrityError:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=[{"msg": "An organization with that name already exists."}],
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": "An organization with this name already exists.",
+                    "loc": ["name"],
+                    "type": "Exists",
+                }
+            ],
         )
     return organization
 
