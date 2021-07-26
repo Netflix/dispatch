@@ -919,7 +919,7 @@ class WorkflowInstanceFactory(BaseFactory):
 
     parameters = [{}]
     run_reason = FuzzyText()
-    status = FuzzyChoice(["submitted", "created", "running", "completed", "failed"])
+    status = FuzzyChoice(["Submitted", "Created", "Running", "Completed", "Failed"])
 
     class Meta:
         """Factory Configuration."""
