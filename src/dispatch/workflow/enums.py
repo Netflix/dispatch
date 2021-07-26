@@ -2,8 +2,8 @@ from dispatch.enums import DispatchEnum
 
 
 class WorkflowInstanceStatus(DispatchEnum):
-    submitted = "submitted"
-    created = "created"
-    running = "running"
-    completed = "completed"
-    failed = "failed"
+    submitted = "Submitted"
+    created = "Created"
+    running = "Running"
+    completed = "Completed"
+    failed = "Failed"
