@@ -63,7 +63,7 @@ class IndividualContactBase(ContactBase):
 
 class IndividualContactCreate(IndividualContactBase):
     filters: Optional[List[SearchFilterRead]]
-    project: Optional[ProjectRead]
+    project: ProjectRead
 
 
 class IndividualContactUpdate(IndividualContactBase):

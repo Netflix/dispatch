@@ -14,6 +14,7 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 
 from sqlalchemy.exc import IntegrityError
 
+from dispatch.exceptions import OrganizationNotFoundException
 from dispatch.plugins.base import plugins
 from dispatch.config import (
     DISPATCH_AUTHENTICATION_PROVIDER_SLUG,
@@ -119,6 +120,9 @@ def create(*, db_session, organization: str, user_in: UserRegister) -> DispatchU
     )
 
     org = organization_service.get_by_slug(db_session=db_session, slug=organization)
+
+    if not org:
+        raise OrganizationNotFoundException("Organization not found.")
 
     # add the user to the default organization
     user.organizations.append(DispatchUserOrganization(organization=org, role=UserRoles.member))

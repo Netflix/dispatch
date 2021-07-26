@@ -12,3 +12,7 @@ class InvalidFilterPolicy(DispatchException):
 
 class DispatchPluginException(DispatchException):
     pass
+
+
+class OrganizationNotFoundException(DispatchException):
+    pass
