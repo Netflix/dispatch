@@ -100,7 +100,7 @@ class TaskBase(ResourceBase):
     created_at: Optional[datetime]
     creator: Optional[ParticipantRead]
     description: Optional[str] = Field(None, nullable=True)
-    incident: Optional[IncidentReadNested]
+    incident: IncidentReadNested
     owner: Optional[ParticipantRead]
     priority: Optional[str] = Field(None, nullable=True)
     resolve_by: Optional[datetime]

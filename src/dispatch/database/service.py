@@ -2,7 +2,7 @@ import logging
 import json
 
 from typing import List
-from pydantic.types import Json, constr
+from pydantic.types import Json, conint, constr
 
 from fastapi import Depends, Query
 
@@ -165,8 +165,8 @@ def get_all(*, db_session, model):
 
 def common_parameters(
     db_session: orm.Session = Depends(get_db),
-    page: int = Query(1, gt=0, lt=9223372036854775807),
-    items_per_page: int = Query(5, alias="itemsPerPage", gt=0, lt=9223372036854775807),
+    page: int = Query(1, gt=0, lt=2147483647),
+    items_per_page: int = Query(5, alias="itemsPerPage", gt=0, lt=2147483647),
     query_str: constr(strip_whitespace=True, min_length=1) = Query(None, alias="q"),
     filter_spec: Json = Query([], alias="filter"),
     sort_by: List[str] = Query([], alias="sortBy[]"),

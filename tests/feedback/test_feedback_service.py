@@ -19,7 +19,7 @@ def test_create(session):
     from dispatch.feedback.service import create
     from dispatch.feedback.models import FeedbackCreate
 
-    rating = "XXX"
+    rating = "either satisfied nor dissatisfied"
     feedback = "XXX"
 
     feedback_in = FeedbackCreate(
