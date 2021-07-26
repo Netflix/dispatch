@@ -42,6 +42,7 @@ from dispatch.task.models import Task
 from dispatch.team.models import TeamContact
 from dispatch.term.models import Term
 from dispatch.ticket.models import Ticket
+from dispatch.workflow.models import Workflow, WorkflowInstance
 
 
 class BaseFactory(SQLAlchemyModelFactory):
@@ -114,7 +115,7 @@ class ResourceBaseFactory(TimeStampBaseFactory):
 
     resource_type = FuzzyChoice(["one", "two", "three"])
     resource_id = FuzzyText()
-    weblink = FuzzyText()
+    weblink = Sequence(lambda n: f"https://www.example.com/{n}")
 
     @post_generation
     def incident_priorities(self, create, extracted, **kwargs):
@@ -854,16 +855,106 @@ class PluginInstanceFactory(BaseFactory):
 
     enabled = Faker().pybool()
     configuration = {}
+    project = SubFactory(ProjectFactory)
+    plugin = SubFactory(PluginFactory)
 
     class Meta:
         """Factory Configuration."""
 
         model = PluginInstance
 
+
+class WorkflowFactory(BaseFactory):
+    """Workflow Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    enabled = Faker().pybool()
+    parameters = [{}]
+    resource_id = Sequence(lambda n: f"resource_id{n}")
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Workflow
+
     @post_generation
-    def plugin(self, create, extracted, **kwargs):
+    def incident_priorities(self, create, extracted, **kwargs):
         if not create:
             return
 
         if extracted:
-            self.plugin_id = extracted.id
+            for priority in extracted:
+                self.incident_priorities.append(priority)
+
+    @post_generation
+    def incident_types(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for incident_type in extracted:
+                self.incident_types.append(incident_type)
+
+    @post_generation
+    def terms(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for term in extracted:
+                self.terms.append(term)
+
+    @post_generation
+    def plugin_instance(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.plugin_instance_id = extracted.id
+
+
+class WorkflowInstanceFactory(BaseFactory):
+    """WorkflowInstance Factory."""
+
+    parameters = [{}]
+    run_reason = FuzzyText()
+    status = FuzzyChoice(["Submitted", "Created", "Running", "Completed", "Failed"])
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = WorkflowInstance
+
+    @post_generation
+    def artifacts(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for artifact in extracted:
+                self.artifacts.append(artifact)
+
+    @post_generation
+    def workflow(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.workflow_id = extracted.id
+
+    @post_generation
+    def incident(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.incident_id = extracted.id
+
+    @post_generation
+    def creator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.creator_id = extracted.id

@@ -9,20 +9,13 @@ from sqlalchemy.sql.sqltypes import Boolean
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.enums import DispatchEnum
 from dispatch.document.models import DocumentCreate
 from dispatch.models import DispatchBase, ResourceBase, ResourceMixin, TimeStampMixin, ProjectMixin
 from dispatch.participant.models import ParticipantRead
 from dispatch.plugin.models import PluginInstance, PluginInstanceRead
 from dispatch.project.models import ProjectRead
 
-
-class WorkflowInstanceStatus(DispatchEnum):
-    submitted = "submitted"
-    created = "created"
-    running = "running"
-    completed = "completed"
-    failed = "failed"
+from .enums import WorkflowInstanceStatus
 
 
 # Association tables for many to many relationships
