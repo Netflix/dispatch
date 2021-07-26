@@ -39,8 +39,7 @@ def get_feedback(*, db_session: Session = Depends(get_db), feedback_id: PrimaryK
 @router.post("", response_model=FeedbackRead)
 def create_feedback(*, db_session: Session = Depends(get_db), feedback_in: FeedbackCreate):
     """Create a new feedback entry."""
-    feedback = create(db_session=db_session, feedback_in=feedback_in)
-    return feedback
+    return create(db_session=db_session, feedback_in=feedback_in)
 
 
 @router.put("/{feedback_id}", response_model=FeedbackRead)

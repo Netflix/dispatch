@@ -61,7 +61,7 @@ def update_term(*, db_session: Session = Depends(get_db), term_id: PrimaryKey, t
     return term
 
 
-@router.delete("/{term_id}", response_model=TermRead)
+@router.delete("/{term_id}")
 def delete_term(*, db_session: Session = Depends(get_db), term_id: PrimaryKey):
     """Delete a term."""
     term = get(db_session=db_session, term_id=term_id)

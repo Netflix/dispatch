@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 from pydantic.fields import Field
+from pydantic.networks import EmailStr
 from pydantic.types import conint, constr
 
 import validators
@@ -88,7 +89,7 @@ class ResourceBase(DispatchBase):
 
 
 class ContactBase(DispatchBase):
-    email: str
+    email: EmailStr
     name: Optional[str] = Field(None, nullable=True)
     is_active: Optional[bool] = True
     is_external: Optional[bool] = False

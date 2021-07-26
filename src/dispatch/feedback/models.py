@@ -7,6 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 
 
 from dispatch.database.core import Base
+from dispatch.feedback.enums import FeedbackRating
 from dispatch.models import PrimaryKey
 
 from dispatch.incident.models import IncidentReadNested
@@ -32,10 +33,10 @@ class Feedback(TimeStampMixin, Base):
 # Pydantic models
 class FeedbackBase(DispatchBase):
     created_at: Optional[datetime]
-    rating: str
+    rating: FeedbackRating = FeedbackRating.very_satisfied
     feedback: Optional[str] = Field(None, nullable=True)
-    incident: Optional[IncidentReadNested]
-    participant: Optional[ParticipantRead]
+    incident: IncidentReadNested
+    participant: ParticipantRead
 
 
 class FeedbackCreate(FeedbackBase):
