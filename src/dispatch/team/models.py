@@ -10,7 +10,14 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
 from dispatch.project.models import ProjectRead
 from dispatch.search_filter.models import SearchFilterRead
-from dispatch.models import ContactBase, ContactMixin, DispatchBase, NameStr, ProjectMixin, PrimaryKey
+from dispatch.models import (
+    ContactBase,
+    ContactMixin,
+    DispatchBase,
+    NameStr,
+    ProjectMixin,
+    PrimaryKey,
+)
 
 assoc_team_contact_incidents = Table(
     "team_contact_incident",
