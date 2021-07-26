@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import validator, Field, constr
-from dispatch.models import PrimaryKey
+from pydantic import validator, Field
+from dispatch.models import NameStr, PrimaryKey
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -59,7 +59,7 @@ class Document(ProjectMixin, ResourceMixin, Base):
 # Pydantic models...
 class DocumentBase(ResourceBase):
     description: Optional[str] = Field(None, nullable=True)
-    name: constr(min_length=3)
+    name: NameStr
     evergreen: Optional[bool] = False
     evergreen_reminder_interval: Optional[int] = 90
     evergreen_last_reminder_at: Optional[datetime] = None

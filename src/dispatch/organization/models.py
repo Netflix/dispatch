@@ -1,5 +1,5 @@
 from slugify import slugify
-from pydantic import Field, constr
+from pydantic import Field
 
 from typing import List, Optional
 
@@ -9,7 +9,7 @@ from sqlalchemy_utils import TSVectorType
 
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, PrimaryKey
+from dispatch.models import DispatchBase, NameStr, PrimaryKey
 
 
 class Organization(Base):
@@ -37,12 +37,10 @@ def generate_slug(target, value, oldvalue, initiator):
 
 listen(Organization.name, "set", generate_slug)
 
-OrganizationName = constr(regex=r"^(?!\s*$).+", min_length=3)
-
 
 class OrganizationBase(DispatchBase):
     id: Optional[PrimaryKey]
-    name: OrganizationName
+    name: NameStr
     description: Optional[str] = Field(None, nullable=True)
     default: Optional[bool] = Field(False, nullable=True)
     banner_enabled: Optional[bool] = Field(False, nullable=True)

@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
-from pydantic import Field, constr
+from pydantic import Field
 
 from sqlalchemy import Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.orm import relationship
@@ -10,7 +10,7 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
 from dispatch.project.models import ProjectRead
 from dispatch.search_filter.models import SearchFilterRead
-from dispatch.models import ContactBase, ContactMixin, DispatchBase, ProjectMixin, PrimaryKey
+from dispatch.models import ContactBase, ContactMixin, DispatchBase, NameStr, ProjectMixin, PrimaryKey
 
 assoc_team_contact_incidents = Table(
     "team_contact_incident",
@@ -44,7 +44,7 @@ class TeamContact(Base, ContactMixin, ProjectMixin):
 
 
 class TeamContactBase(ContactBase):
-    name: constr(min_length=3)
+    name: NameStr
     notes: Optional[str] = Field(None, nullable=True)
 
 

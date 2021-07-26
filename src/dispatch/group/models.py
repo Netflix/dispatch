@@ -1,9 +1,8 @@
-from pydantic import constr
 from pydantic.networks import EmailStr
-from dispatch.models import PrimaryKey
 from sqlalchemy import Column, Integer, String, ForeignKey
 
 from dispatch.database.core import Base
+from dispatch.models import NameStr, PrimaryKey
 from dispatch.models import ResourceBase, ResourceMixin
 
 
@@ -16,7 +15,7 @@ class Group(Base, ResourceMixin):
 
 # Pydantic models...
 class GroupBase(ResourceBase):
-    name: constr(min_length=3)
+    name: NameStr
     email: EmailStr
 
 

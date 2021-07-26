@@ -1,12 +1,12 @@
 from typing import List, Optional
-from pydantic import Field, constr
+from pydantic import Field
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin, PrimaryKey
+from dispatch.models import DispatchBase, NameStr, TimeStampMixin, ProjectMixin, PrimaryKey
 from dispatch.project.models import ProjectRead
 
 
@@ -20,7 +20,7 @@ class TagType(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic models
 class TagTypeBase(DispatchBase):
-    name: constr(min_length=3)
+    name: NameStr
     description: Optional[str] = Field(None, nullable=True)
 
 

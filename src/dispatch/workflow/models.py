@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import validator, Field, constr
+from pydantic import validator, Field
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, ForeignKey, Integer, String, JSON, Table
 from sqlalchemy.sql.schema import PrimaryKeyConstraint
@@ -13,6 +13,7 @@ from dispatch.enums import DispatchEnum
 from dispatch.document.models import DocumentCreate
 from dispatch.models import (
     DispatchBase,
+    NameStr,
     ResourceBase,
     ResourceMixin,
     TimeStampMixin,
@@ -108,7 +109,7 @@ class WorkflowInstance(Base, ResourceMixin):
 
 # Pydantic models...
 class WorkflowBase(DispatchBase):
-    name: constr(min_length=3)
+    name: NameStr
     resource_id: str
     plugin_instance: PluginInstanceRead
     parameters: Optional[List[dict]] = []
