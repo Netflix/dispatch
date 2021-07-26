@@ -1,4 +1,5 @@
-from pydantic.networks import EmailStr, constr
+from pydantic import constr
+from pydantic.networks import EmailStr
 from dispatch.models import PrimaryKey
 from sqlalchemy import Column, Integer, String, ForeignKey
 
