@@ -623,6 +623,7 @@ class TermFactory(BaseFactory):
     """Term Factory."""
 
     text = FuzzyText()
+    discoverable = Faker().pybool()
     project = SubFactory(ProjectFactory)
 
     class Meta:
