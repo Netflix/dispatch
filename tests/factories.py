@@ -566,19 +566,63 @@ class StorageFactory(ResourceBaseFactory):
             self.incident_id = extracted.id
 
 
+class IncidentFactory(BaseFactory):
+    """Incident Factory."""
+
+    id = Sequence(lambda n: f"1{n}")
+    title = FuzzyText()
+    description = FuzzyText()
+    status = FuzzyChoice(["Active", "Stable", "Closed"])
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Incident
+
+    @post_generation
+    def participants(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for participant in extracted:
+                self.participants.append(participant)
+
+
 class TaskFactory(ResourceBaseFactory):
     """Task Factory."""
 
-    resolved_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
-    last_reminder_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
-    creator = "joe@example.com"
-    assignees = "joe@example.com"
     description = FuzzyText()
+    last_reminder_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
+    priority = FuzzyChoice(["Low", "Medium", "High"])
+    reminders = Faker().pybool()
+    resolve_by = FuzzyDateTime(datetime(2020, 1, 2, tzinfo=UTC))
+    resolved_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
+    source = FuzzyChoice(["Incident", "Post Incident Review"])
+    status = FuzzyChoice(["Open", "Resolved"])
+    incident = SubFactory(IncidentFactory)
 
     class Meta:
         """Factory Configuration."""
 
         model = Task
+
+    @post_generation
+    def creator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.creator_id = extracted.id
+
+    @post_generation
+    def owner(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.owner_id = extracted.id
 
     @post_generation
     def incident(self, create, extracted, **kwargs):
@@ -587,6 +631,24 @@ class TaskFactory(ResourceBaseFactory):
 
         if extracted:
             self.incident_id = extracted.id
+
+    @post_generation
+    def assignees(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for assignee in extracted:
+                self.assignees.append(assignee)
+
+    @post_generation
+    def tickets(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for ticket in extracted:
+                self.tickets.append(ticket)
 
 
 class TeamContactFactory(ContactBaseFactory):
@@ -644,30 +706,6 @@ class TicketFactory(ResourceBaseFactory):
         """Factory Configuration."""
 
         model = Ticket
-
-
-class IncidentFactory(BaseFactory):
-    """Incident Factory."""
-
-    id = Sequence(lambda n: f"1{n}")
-    title = FuzzyText()
-    description = FuzzyText()
-    status = FuzzyChoice(["Active", "Stable", "Closed"])
-    project = SubFactory(ProjectFactory)
-
-    class Meta:
-        """Factory Configuration."""
-
-        model = Incident
-
-    @post_generation
-    def participants(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for participant in extracted:
-                self.participants.append(participant)
 
 
 class EventFactory(BaseFactory):
