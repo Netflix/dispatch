@@ -1,5 +1,5 @@
 from slugify import slugify
-from pydantic import Field
+from pydantic import Field, Color
 
 from typing import List, Optional
 
@@ -44,8 +44,8 @@ class OrganizationBase(DispatchBase):
     description: Optional[str] = Field(None, nullable=True)
     default: Optional[bool] = Field(False, nullable=True)
     banner_enabled: Optional[bool] = Field(False, nullable=True)
-    banner_color: Optional[str] = Field(None, nullable=True)
-    banner_text: Optional[str] = Field(None, nullable=True)
+    banner_color: Optional[Color] = Field(None, nullable=True)
+    banner_text: Optional[NameStr] = Field(None, nullable=True)
 
 
 class OrganizationCreate(OrganizationBase):
