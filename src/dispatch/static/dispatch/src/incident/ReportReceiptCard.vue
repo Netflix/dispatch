@@ -7,68 +7,77 @@
         you have any questions, please feel free to review the Frequently Asked Questions (FAQ)
         document linked below, and/or reach out to the listed Incident Commander.
       </p>
+      <p v-if="project_faq">
+        Checkout this project's incident FAQ document:
+        <a :href="project_faq.weblink" target="_blank" style="text-decoration: none">
+          {{ project_faq.name }}
+          <v-icon small>open_in_new</v-icon>
+        </a>
+      </p>
       <v-list three-line>
         <v-list-group :value="true">
           <template v-slot:activator>
             <v-list-item-title class="title"> Incident Details </v-list-item-title>
           </template>
           <v-list-item-group>
-            <v-list-item
-              :href="commander.individual.weblink"
-              target="_blank"
-              title="The Incident Commander is responsible for maintaining all necessary context and driving the incident to resolution."
-            >
+            <v-list-item>
               <v-list-item-content>
                 <v-list-item-title>Commander</v-list-item-title>
-                <v-list-item-subtitle
-                  >{{ commander.individual.name }} ({{
-                    commander.individual.email
-                  }})</v-list-item-subtitle
-                >
+                <v-list-item-subtitle>
+                  <participant :participant="commander" />
+                </v-list-item-subtitle>
               </v-list-item-content>
-              <v-list-item-action>
-                <v-list-item-icon>
-                  <v-icon>open_in_new</v-icon>
-                </v-list-item-icon>
-              </v-list-item-action>
             </v-list-item>
             <v-divider />
-            <v-list-item disabled>
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>Participants</v-list-item-title>
+                <v-list-item-subtitle>
+                  <v-chip-group column>
+                    <v-item v-for="participant in participants" :key="participant.id">
+                      <participant :participant="participant" />
+                    </v-item>
+                  </v-chip-group>
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
+            <v-list-item>
               <v-list-item-content>
                 <v-list-item-title>Title</v-list-item-title>
                 <v-list-item-subtitle>{{ title }}</v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item disabled>
+            <v-list-item>
               <v-list-item-content>
                 <v-list-item-title>Description</v-list-item-title>
                 <v-list-item-subtitle>{{ description }}</v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item disabled>
+            <v-list-item>
               <v-list-item-content>
                 <v-list-item-title>Project</v-list-item-title>
                 <v-list-item-subtitle>{{ project.name }}</v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item disabled>
+            <v-list-item>
               <v-list-item-content>
                 <v-list-item-title>Type</v-list-item-title>
                 <v-list-item-subtitle>{{ incident_type.name }}</v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item disabled>
+            <v-list-item>
               <v-list-item-content>
                 <v-list-item-title>Priority</v-list-item-title>
                 <v-list-item-subtitle>{{ incident_priority.name }}</v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
             <v-divider />
-            <v-list-item disabled>
+            <v-list-item>
               <v-list-item-content>
                 <v-list-item-title>Visibility</v-list-item-title>
                 <v-list-item-subtitle>{{ visibility }}</v-list-item-subtitle>
@@ -204,12 +213,17 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { forEach, find } from "lodash"
+import DocumentApi from "@/document/api"
+import Participant from "@/incident/Participant.vue"
+
 import PluginApi from "@/plugin/api"
 
 export default {
   name: "ReportReceiptCard",
 
-  components: {},
+  components: {
+    Participant,
+  },
   data() {
     return {
       isSubmitted: false,
@@ -220,9 +234,11 @@ export default {
         conversation: null,
         conference: null,
       },
+      project_faq: null,
     }
   },
   created() {
+    this.getFAQ()
     PluginApi.getAllInstances({
       itemsPerPage: -1,
       filter: JSON.stringify({
@@ -256,6 +272,7 @@ export default {
       "selected.incident_priority",
       "selected.incident_type",
       "selected.commander",
+      "selected.participants",
       "selected.title",
       "selected.tags",
       "selected.description",
@@ -273,6 +290,29 @@ export default {
   },
 
   methods: {
+    getFAQ() {
+      DocumentApi.getAll({
+        filter: JSON.stringify({
+          and: [
+            {
+              field: "resource_type",
+              op: "==",
+              value: "dispatch-faq-reference-document",
+            },
+            {
+              model: "Project",
+              field: "name",
+              op: "==",
+              value: this.project.name,
+            },
+          ],
+        }),
+      }).then((response) => {
+        if (response.data.items.length) {
+          this.project_faq = response.data.items[0]
+        }
+      })
+    },
     ...mapActions("incident", ["report", "get", "resetSelected"]),
   },
 }
