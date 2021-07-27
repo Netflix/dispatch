@@ -30,7 +30,7 @@ def create(*, db_session, tag_type_in: TagTypeCreate) -> TagType:
     project = project_service.get_by_name(db_session=db_session, name=tag_type_in.project.name)
 
     if not project:
-        raise ValueError(f"Project {tag_type_in.project.name} does not exist.")
+        raise ValueError("No project specificed or not found.")
 
     tag_type = TagType(**tag_type_in.dict(exclude={"project"}), project=project)
     db_session.add(tag_type)

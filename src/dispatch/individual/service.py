@@ -82,6 +82,9 @@ def create(*, db_session, individual_contact_in: IndividualContactCreate) -> Ind
         db_session=db_session, name=individual_contact_in.project.name
     )
 
+    if not project:
+        raise ValueError(f"Project {individual_contact_in.project.name} does not exist.")
+
     contact = IndividualContact(
         **individual_contact_in.dict(exclude={"project", "filters"}),
         project=project,
