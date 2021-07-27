@@ -82,7 +82,7 @@ fastapi==0.67.0
     # via -r requirements-base.in
 google-api-core==1.26.1
     # via google-api-python-client
-google-api-python-client==2.14.0
+google-api-python-client==2.15.0
     # via -r requirements-base.in
 google-auth==1.28.0
     # via
@@ -268,7 +268,6 @@ six==1.15.0
     #   bcrypt
     #   ecdsa
     #   google-api-core
-    #   google-api-python-client
     #   google-auth
     #   google-auth-httplib2
     #   jira
