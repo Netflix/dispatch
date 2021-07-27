@@ -5,6 +5,8 @@ from pydantic import Field
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 
+from sqlalchemy_utils import TSVectorType
+
 
 from dispatch.database.core import Base
 from dispatch.feedback.enums import FeedbackRating
@@ -24,6 +26,8 @@ class Feedback(TimeStampMixin, Base):
     # Relationships
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     participant_id = Column(Integer, ForeignKey("participant.id"))
+
+    search_vector = Column(TSVectorType("feedback", "rating"))
 
     @hybrid_property
     def project(self):

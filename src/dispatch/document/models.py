@@ -62,10 +62,10 @@ class DocumentBase(ResourceBase):
     name: NameStr
     evergreen: Optional[bool] = False
     evergreen_reminder_interval: Optional[int] = 90
-    evergreen_last_reminder_at: Optional[datetime] = None
+    evergreen_last_reminder_at: Optional[datetime] = Field(None, nullable=True)
     evergreen_owner: Optional[str] = Field(None, nullable=True)
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: Optional[datetime] = Field(None, nullable=True)
+    updated_at: Optional[datetime] = Field(None, nullable=True)
 
 
 class DocumentCreate(DocumentBase):

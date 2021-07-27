@@ -29,14 +29,13 @@ def get_document(*, db_session: Session = Depends(get_db), document_id: PrimaryK
     return document
 
 
-@router.post("", response_model=DocumentCreate)
+@router.post("", response_model=DocumentRead)
 def create_document(*, db_session: Session = Depends(get_db), document_in: DocumentCreate):
     """Create a new document."""
-    document = create(db_session=db_session, document_in=document_in)
-    return document
+    return create(db_session=db_session, document_in=document_in)
 
 
-@router.put("/{document_id}", response_model=DocumentCreate)
+@router.put("/{document_id}", response_model=DocumentRead)
 def update_document(
     *, db_session: Session = Depends(get_db), document_id: PrimaryKey, document_in: DocumentUpdate
 ):

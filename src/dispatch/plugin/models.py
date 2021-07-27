@@ -74,7 +74,7 @@ class PluginInstanceRead(PluginBase):
     enabled: Optional[bool]
     configuration: Optional[dict]
     plugin: PluginRead
-    project: ProjectRead
+    project: Optional[ProjectRead]
 
 
 class PluginInstanceCreate(PluginBase):
