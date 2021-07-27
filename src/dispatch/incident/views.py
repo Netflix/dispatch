@@ -1,6 +1,7 @@
 import json
 import logging
 from typing import List
+from pydantic import Json
 
 import calendar
 from datetime import date
@@ -283,7 +284,7 @@ def get_month_range(relative):
 def get_incident_forecast(
     *,
     db_session: Session = Depends(get_db),
-    filter_spec: str = Query(None, alias="filter"),
+    filter_spec: Json = Query(None, alias="filter"),
 ):
     """Get incident forecast data."""
     categories = []

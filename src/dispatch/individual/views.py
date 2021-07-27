@@ -40,7 +40,19 @@ def create_individual(
                 }
             ],
         )
-    individual = create(db_session=db_session, individual_contact_in=individual_contact_in)
+    try:
+        individual = create(db_session=db_session, individual_contact_in=individual_contact_in)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": str(e),
+                    "loc": ["Unknown"],
+                    "type": "Unknown",
+                }
+            ],
+        )
     return individual
 
 
