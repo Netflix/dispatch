@@ -284,15 +284,12 @@ def get_month_range(relative):
 def get_incident_forecast(
     *,
     db_session: Session = Depends(get_db),
-    filter_spec: Json = Query(None, alias="filter"),
+    filter_spec: Json = Query([], alias="filter"),
 ):
     """Get incident forecast data."""
     categories = []
     predicted = []
     actual = []
-
-    if filter_spec:
-        filter_spec = json.loads(filter_spec)
 
     for i in reversed(range(1, 5)):
         start_date, end_date = get_month_range(i)

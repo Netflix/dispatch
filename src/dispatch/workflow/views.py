@@ -5,6 +5,7 @@ from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
+from dispatch.plugin import service as plugin_service
 from .models import WorkflowPagination, WorkflowRead, WorkflowCreate, WorkflowUpdate
 from .service import create, delete, get, update
 
@@ -29,14 +30,29 @@ def get_workflow(*, db_session: Session = Depends(get_db), workflow_id: PrimaryK
     return workflow
 
 
-@router.post("", response_model=WorkflowCreate)
+@router.post("", response_model=WorkflowRead)
 def create_workflow(*, db_session: Session = Depends(get_db), workflow_in: WorkflowCreate):
     """Create a new workflow."""
+    plugin_instance = plugin_service.get_instance(
+        db_session=db_session, plugin_instance_id=workflow_in.plugin_instance.id
+    )
+    if not plugin_instance:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": "No plugin instance found..",
+                    "loc": ["plugin_instance"],
+                    "type": "NotFound",
+                }
+            ],
+        )
+
     workflow = create(db_session=db_session, workflow_in=workflow_in)
     return workflow
 
 
-@router.put("/{workflow_id}", response_model=WorkflowUpdate)
+@router.put("/{workflow_id}", response_model=WorkflowRead)
 def update_workflow(
     *, db_session: Session = Depends(get_db), workflow_id: PrimaryKey, workflow_in: WorkflowUpdate
 ):
