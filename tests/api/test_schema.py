@@ -24,7 +24,7 @@ def token():
 
 
 @schema.parametrize()
-@settings(suppress_health_check=[HealthCheck.too_slow])
+@settings(suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much])
 def test_api(db, token, case):
     case.headers = case.headers or {}
     case.headers["Authorization"] = f"Bearer {token}"
