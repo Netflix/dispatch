@@ -2,7 +2,7 @@ import logging
 import json
 
 from typing import List
-from pydantic.types import Json, conint, constr
+from pydantic.types import Json, constr
 
 from fastapi import Depends, Query
 
