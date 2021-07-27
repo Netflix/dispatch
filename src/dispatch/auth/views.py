@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, Request, HTTPException, status
 from sqlalchemy.orm import Session
 
-from dispatch.exceptions import OrganizationNotFoundException
 from dispatch.auth.permissions import (
     OrganizationOwnerPermission,
     OrganizationMemberPermission,
@@ -171,6 +170,17 @@ def register_user(
     db_session: Session = Depends(get_db),
 ):
     user = get_by_email(db_session=db_session, email=user_in.email)
+    if user:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": "User with that email address exists.",
+                    "loc": ["email"],
+                    "type": "UserExists",
+                }
+            ],
+        )
 
     org = organization_service.get_by_slug(db_session=db_session, slug=organization)
 
@@ -186,31 +196,6 @@ def register_user(
             ],
         )
 
-    if not user:
-        try:
-            user = create(db_session=db_session, organization=organization, user_in=user_in)
-        except OrganizationNotFoundException:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=[
-                    {
-                        "msg": "Organization not found..",
-                        "loc": ["organization"],
-                        "type": "Not found",
-                    }
-                ],
-            )
-
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[
-                {
-                    "msg": "User with that email address exists.",
-                    "loc": ["email"],
-                    "type": "UserExists",
-                }
-            ],
-        )
+    user = create(db_session=db_session, organization=organization, user_in=user_in)
 
     return user
