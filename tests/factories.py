@@ -70,7 +70,7 @@ class OrganizationFactory(BaseFactory):
     description = FuzzyText()
     default = Faker().pybool()
     banner_enabled = Faker().pybool()
-    banner_color = FuzzyText()
+    banner_color = Faker().color()
     banner_text = FuzzyText()
 
     class Meta:
@@ -94,7 +94,7 @@ class ProjectFactory(BaseFactory):
     name = Sequence(lambda n: f"project{n}")
     description = FuzzyText()
     default = Faker().pybool()
-    color = FuzzyText()
+    color = Faker().color()
 
     class Meta:
         """Factory Configuration."""

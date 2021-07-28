@@ -23,6 +23,7 @@ def token():
     return response.json()["token"]
 
 
+@pytest.mark.long
 @schema.parametrize()
 @settings(suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much])
 def test_api(db, token, case):
