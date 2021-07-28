@@ -111,7 +111,7 @@ def create_incident(
         incident_in.reporter = ParticipantUpdate(
             individual=IndividualReadNested(email=current_user.email)
         )
-    incident = create(db_session=db_session, **incident_in.dict())
+    incident = create(db_session=db_session, incident_in=incident_in)
 
     if incident.status == IncidentStatus.stable:
         background_tasks.add_task(

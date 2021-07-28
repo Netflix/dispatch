@@ -27,7 +27,7 @@ class Term(Base, ProjectMixin):
 
 # Pydantic models...
 class TermBase(DispatchBase):
-    id: Optional[int] = None
+    id: Optional[PrimaryKey] = None
     text: Optional[str] = Field(None, nullable=True)
     discoverable: Optional[bool] = True
 

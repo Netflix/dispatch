@@ -257,6 +257,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
 
 class ProjectRead(DispatchBase):
     id: PrimaryKey
+    name: NameStr
 
 
 # Pydantic models...

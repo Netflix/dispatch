@@ -131,7 +131,7 @@ def report_incident_from_submitted_form(
     )
 
     # Create the incident
-    incident = incident_service.create(db_session=db_session, **incident_in.dict())
+    incident = incident_service.create(db_session=db_session, incident_in=incident_in)
 
     incident_flows.incident_create_flow(incident_id=incident.id, db_session=db_session)
 
