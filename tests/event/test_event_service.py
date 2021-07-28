@@ -65,7 +65,6 @@ def test_create(session):
     assert source == event.source
 
 
-@pytest.mark.skip
 def test_update(session, event):
     from dispatch.event.service import update
     from dispatch.event.models import EventUpdate

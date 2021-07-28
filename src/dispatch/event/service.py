@@ -39,14 +39,13 @@ def create(*, db_session, event_in: EventCreate) -> Event:
 
 def update(*, db_session, event: Event, event_in: EventUpdate) -> Event:
     """Updates an event."""
-    event_data = jsonable_encoder(event)
+    event_data = event.dict()
     update_data = event_in.dict(skip_defaults=True)
 
     for field in event_data:
         if field in update_data:
             setattr(event, field, update_data[field])
 
-    db_session.add(event)
     db_session.commit()
     return event
 

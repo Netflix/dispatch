@@ -43,6 +43,9 @@ class CustomBase:
     def __tablename__(self):
         return resolve_table_name(self.__name__)
 
+    def dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 Base = declarative_base(cls=CustomBase)
 make_searchable(Base.metadata)

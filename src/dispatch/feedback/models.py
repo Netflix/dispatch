@@ -40,7 +40,7 @@ class FeedbackBase(DispatchBase):
     rating: FeedbackRating = FeedbackRating.very_satisfied
     feedback: Optional[str] = Field(None, nullable=True)
     incident: IncidentReadNested
-    participant: ParticipantRead
+    participant: Optional[ParticipantRead]
 
 
 class FeedbackCreate(FeedbackBase):

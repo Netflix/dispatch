@@ -15,17 +15,16 @@ def test_get_all(session, feedbacks):
     assert len(t_feedbacks) > 1
 
 
-def test_create(session):
+def test_create(session, incident, incident_type, incident_priority):
     from dispatch.feedback.service import create
     from dispatch.feedback.models import FeedbackCreate
 
+    incident.incident_type = incident_type
+    incident.incident_priority = incident_priority
     rating = "Neither satisfied nor dissatisfied"
     feedback = "XXX"
 
-    feedback_in = FeedbackCreate(
-        rating=rating,
-        feedback=feedback,
-    )
+    feedback_in = FeedbackCreate(rating=rating, feedback=feedback, incident=incident)
     feedback = create(db_session=session, feedback_in=feedback_in)
     assert feedback
 

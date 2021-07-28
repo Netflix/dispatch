@@ -570,6 +570,7 @@ class IncidentFactory(BaseFactory):
     """Incident Factory."""
 
     id = Sequence(lambda n: f"1{n}")
+    name = FuzzyText()
     title = FuzzyText()
     description = FuzzyText()
     status = FuzzyChoice(["Active", "Stable", "Closed"])
