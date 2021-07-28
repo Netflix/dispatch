@@ -8,12 +8,16 @@ def test_get(session, task):
     assert t_task.id == task.id
 
 
-def test_create(session, incident, incident_type, incident_priority, participant):
+@pytest.mark.skip  # NOTE: refactor create function in the task service module before enabling this test
+def test_create(
+    session, incident, incident_type, incident_priority, participant, individual_contact
+):
     from dispatch.task.service import create
     from dispatch.task.models import TaskCreate
 
     incident.incident_type = incident_type
     incident.incident_priority = incident_priority
+    participant.individual = individual_contact
 
     task_in = TaskCreate(incident=incident, owner=participant)
     task = create(db_session=session, task_in=task_in)

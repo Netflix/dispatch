@@ -148,13 +148,13 @@ class ResourceBaseFactory(TimeStampBaseFactory):
 class ContactBaseFactory(TimeStampBaseFactory):
     """Contact Base Factory."""
 
-    is_active = True
-    is_external = False
+    company = FuzzyText()
     contact_type = FuzzyChoice(["one", "two"])
     email = Sequence(lambda n: f"user{n}@example.com")
-    company = FuzzyText()
+    is_active = Faker().pybool()
+    is_external = Faker().pybool()
     notes = FuzzyText()
-    owner = "kevin@example.com"
+    owner = Sequence(lambda n: f"user{n}@example.com")
 
     @post_generation
     def incident_priorities(self, create, extracted, **kwargs):
@@ -347,12 +347,12 @@ class IncidentTypeFactory(BaseFactory):
 class IndividualContactFactory(ContactBaseFactory):
     """Individual Contact Factory."""
 
-    name = Sequence(lambda n: f"Joe{n}")
     mobile_phone = "111-111-1111"
+    name = Sequence(lambda n: f"Joe{n}")
     office_phone = "111-111-1111"
-    title = FuzzyText()
-    weblink = FuzzyText()
     project = SubFactory(ProjectFactory)
+    title = FuzzyText()
+    weblink = Sequence(lambda n: f"https://www.example.com/{n}")
 
     class Meta:
         """Factory Configuration."""
