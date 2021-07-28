@@ -150,6 +150,9 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
     else:
         project = project_service.get_by_name(db_session=db_session, name=incident_in.project.name)
 
+        if not project:
+            raise Exception("Project not found.")
+
     # We get the incident type by name
     if not incident_in.incident_type:
         incident_type = incident_type_service.get_default(
