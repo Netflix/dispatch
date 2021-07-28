@@ -1,5 +1,6 @@
 from slugify import slugify
-from pydantic import Field, Color
+from pydantic import Field
+from pydantic.color import Color
 
 from typing import List, Optional
 
