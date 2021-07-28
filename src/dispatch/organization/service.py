@@ -35,7 +35,7 @@ def get_all(*, db_session) -> List[Optional[Organization]]:
 
 def create(*, db_session, organization_in: OrganizationCreate) -> Organization:
     organization = Organization(
-        **organization_in.dict(exclude=("banner_color")),
+        **organization_in.dict(exclude={"banner_color"}),
     )
     organization.banner_color = organization_in.banner_color.as_hex()
     db_session.add(organization)
