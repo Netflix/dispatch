@@ -111,9 +111,14 @@ class TermNested(DispatchBase):
     # definitions: Optional[List["DefinitionNested"]] = []
 
 
+class ProjectReadNested(DispatchBase):
+    name: str
+
+
 class DefinitionNested(DispatchBase):
     id: Optional[PrimaryKey]
     text: str
+    project: ProjectReadNested
     terms: Optional[List["TermNested"]] = []
 
 
