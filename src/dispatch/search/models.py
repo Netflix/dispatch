@@ -17,7 +17,7 @@ from dispatch.term.models import TermRead
 
 # Pydantic models...
 class SearchBase(DispatchBase):
-    query: Optional[str]
+    query: Optional[str] = Field(None, nullable=True)
 
 
 class SearchRequest(SearchBase):
@@ -40,5 +40,5 @@ class ContentResponse(DispatchBase):
 
 
 class SearchResponse(DispatchBase):
-    query: Optional[str]
+    query: Optional[str] = Field(None, nullable=True)
     results: ContentResponse

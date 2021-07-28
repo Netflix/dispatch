@@ -80,6 +80,9 @@ def create(*, db_session, service_in: ServiceCreate) -> Service:
     """Creates a new service."""
     project = project_service.get_by_name(db_session=db_session, name=service_in.project.name)
 
+    if not project:
+        raise ValueError("No project specificed or not found.")
+
     filters = [
         search_filter_service.get(db_session=db_session, search_filter_id=f.id)
         for f in service_in.filters

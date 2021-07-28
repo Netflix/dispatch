@@ -1,5 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
+from pydantic import Field
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.orm import relationship
@@ -50,11 +52,11 @@ class Service(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic models...
 class ServiceBase(DispatchBase):
-    name: Optional[str] = None
-    external_id: Optional[str] = None
-    description: Optional[str] = None
+    name: Optional[str] = Field(None, nullable=True)
+    external_id: Optional[str] = Field(None, nullable=True)
+    description: Optional[str] = Field(None, nullable=True)
     is_active: Optional[bool] = None
-    type: Optional[str] = None
+    type: Optional[str] = Field(None, nullable=True)
 
 
 class ServiceCreate(ServiceBase):
@@ -67,14 +69,14 @@ class ServiceUpdate(ServiceBase):
 
 
 class ServiceRead(ServiceBase):
-    id: int
+    id: PrimaryKey
     filters: Optional[List[SearchFilterRead]] = []
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
 
 class ServiceNested(ServiceBase):
-    id: int
+    id: PrimaryKey
 
 
 class ServicePagination(DispatchBase):

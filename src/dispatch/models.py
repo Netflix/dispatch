@@ -1,11 +1,19 @@
 from datetime import datetime
 from typing import List, Optional
+from pydantic.fields import Field
+from pydantic.networks import EmailStr
+from pydantic.types import conint, constr
 
 import validators
 from pydantic import BaseModel, validator
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, event, ForeignKey
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
+
+# pydantic type that limits the range of primary keys
+PrimaryKey = conint(gt=0, lt=2147483647)
+NameStr = constr(regex=r"^[\w ]+$", strip_whitespace=True, min_length=3)
+OrganizationSlug = constr(regex="^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 # SQLAlchemy models...
@@ -68,9 +76,9 @@ class DispatchBase(BaseModel):
 
 
 class ResourceBase(DispatchBase):
-    resource_type: Optional[str] = None
-    resource_id: Optional[str] = None
-    weblink: Optional[str] = None
+    resource_type: Optional[str] = Field(None, nullable=True)
+    resource_id: Optional[str] = Field(None, nullable=True)
+    weblink: Optional[str] = Field(None, nullable=True)
 
     @validator("weblink")
     def sanitize_weblink(cls, v):
@@ -81,14 +89,14 @@ class ResourceBase(DispatchBase):
 
 
 class ContactBase(DispatchBase):
-    email: str
-    name: Optional[str] = None
+    email: EmailStr
+    name: Optional[str] = Field(None, nullable=True)
     is_active: Optional[bool] = True
     is_external: Optional[bool] = False
-    company: Optional[str] = None
-    contact_type: Optional[str] = None
-    notes: Optional[str] = None
-    owner: Optional[str] = None
+    company: Optional[str] = Field(None, nullable=True)
+    contact_type: Optional[str] = Field(None, nullable=True)
+    notes: Optional[str] = Field(None, nullable=True)
+    owner: Optional[str] = Field(None, nullable=True)
 
 
 class PluginOptionModel(DispatchBase):
@@ -97,7 +105,7 @@ class PluginOptionModel(DispatchBase):
 
 # self referential models
 class TermNested(DispatchBase):
-    id: Optional[int]
+    id: Optional[PrimaryKey]
     text: str
     # disabling this for now as recursive models break swagger api gen
     # definitions: Optional[List["DefinitionNested"]] = []
@@ -108,7 +116,7 @@ class ProjectReadNested(DispatchBase):
 
 
 class DefinitionNested(DispatchBase):
-    id: Optional[int]
+    id: Optional[PrimaryKey]
     text: str
     project: ProjectReadNested
     terms: Optional[List["TermNested"]] = []
@@ -127,25 +135,25 @@ class TeamNested(DispatchBase):
 
 
 class TermReadNested(DispatchBase):
-    id: int
+    id: PrimaryKey
     text: str
 
 
 class DefinitionReadNested(DispatchBase):
-    id: int
+    id: PrimaryKey
     text: str
 
 
 class ServiceReadNested(DispatchBase):
-    name: Optional[str] = None
-    external_id: Optional[str] = None
-    is_active: Optional[bool] = None
-    type: Optional[str] = None
+    name: Optional[str] = Field(None, nullable=True)
+    external_id: Optional[str] = Field(None, nullable=True)
+    is_active: Optional[bool] = False
+    type: Optional[str] = Field(None, nullable=True)
 
 
 class IndividualReadNested(ContactBase):
-    id: Optional[int]
-    title: Optional[str] = None
+    id: Optional[PrimaryKey]
+    title: Optional[str] = Field(None, nullable=True)
     external_id: Optional[str]
     weblink: Optional[str]
     title: Optional[str]

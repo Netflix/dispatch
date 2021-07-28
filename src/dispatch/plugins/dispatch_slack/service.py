@@ -1,6 +1,7 @@
 import time
 import logging
 import functools
+from pydantic import Field
 
 import slack_sdk
 from slack_sdk.web.async_client import AsyncWebClient
@@ -334,7 +335,7 @@ def send_ephemeral_message(
     user_id: str,
     text: str,
     blocks: Optional[List] = None,
-    thread_ts: Optional[str] = None,
+    thread_ts: Optional[str] = Field(None, nullable=True),
 ):
     """Sends an ephemeral message to a user in a channel."""
     if thread_ts:

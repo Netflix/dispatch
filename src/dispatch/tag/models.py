@@ -1,4 +1,5 @@
 from typing import Optional, List
+from pydantic import Field
 
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
@@ -6,7 +7,7 @@ from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin
+from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin, PrimaryKey
 from dispatch.project.models import ProjectRead
 from dispatch.tag_type.models import TagTypeRead, TagTypeCreate, TagTypeUpdate
 
@@ -31,26 +32,26 @@ class Tag(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic models
 class TagBase(DispatchBase):
-    name: Optional[str]
-    source: Optional[str]
-    uri: Optional[str]
+    name: Optional[str] = Field(None, nullable=True)
+    source: Optional[str] = Field(None, nullable=True)
+    uri: Optional[str] = Field(None, nullable=True)
     discoverable: Optional[bool] = True
-    description: Optional[str]
+    description: Optional[str] = Field(None, nullable=True)
 
 
 class TagCreate(TagBase):
-    id: Optional[int]
+    id: Optional[PrimaryKey]
     tag_type: TagTypeCreate
     project: ProjectRead
 
 
 class TagUpdate(TagBase):
-    id: Optional[int]
+    id: Optional[PrimaryKey]
     tag_type: Optional[TagTypeUpdate]
 
 
 class TagRead(TagBase):
-    id: int
+    id: PrimaryKey
     tag_type: Optional[TagTypeRead]
     project: ProjectRead
 

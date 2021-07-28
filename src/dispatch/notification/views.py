@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
+from dispatch.models import PrimaryKey
 
 from .models import (
     NotificationCreate,
@@ -24,11 +25,14 @@ def get_notifications(*, common: dict = Depends(common_parameters)):
 
 
 @router.get("/{notification_id}", response_model=NotificationRead)
-def get_notification(*, db_session: Session = Depends(get_db), notification_id: int):
+def get_notification(*, db_session: Session = Depends(get_db), notification_id: PrimaryKey):
     """Get a notification by its id."""
     notification = get(db_session=db_session, notification_id=notification_id)
     if not notification:
-        raise HTTPException(status_code=404, detail="A notification with this id does not exist.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A notification with this id does not exist."}],
+        )
     return notification
 
 
@@ -53,13 +57,16 @@ def create_notification(
 def update_notification(
     *,
     db_session: Session = Depends(get_db),
-    notification_id: int,
+    notification_id: PrimaryKey,
     notification_in: NotificationUpdate,
 ):
     """Update a notification by its id."""
     notification = get(db_session=db_session, notification_id=notification_id)
     if not notification:
-        raise HTTPException(status_code=404, detail="A notification with this id does not exist.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A notification with this id does not exist."}],
+        )
     notification = update(
         db_session=db_session, notification=notification, notification_in=notification_in
     )
@@ -70,9 +77,12 @@ def update_notification(
     "/{notification_id}",
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-def delete_notification(*, db_session: Session = Depends(get_db), notification_id: int):
+def delete_notification(*, db_session: Session = Depends(get_db), notification_id: PrimaryKey):
     """Delete a notification, returning only an HTTP 200 OK if successful."""
     notification = get(db_session=db_session, notification_id=notification_id)
     if not notification:
-        raise HTTPException(status_code=404, detail="A notification with this id does not exist.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A notification with this id does not exist."}],
+        )
     delete(db_session=db_session, notification_id=notification_id)

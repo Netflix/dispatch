@@ -74,7 +74,7 @@ class BasicAuthProviderPlugin(AuthenticationProviderPlugin):
         try:
             data = jwt.decode(token, DISPATCH_JWT_SECRET)
         except (JWKError, JWTError) as e:
-            raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail=str(e))
+            raise HTTPException(status_code=HTTP_401_UNAUTHORIZED, detail=[{"msg": str(e)}])
         return data["email"]
 
 
@@ -89,7 +89,7 @@ class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
 
     def get_current_user(self, request: Request, **kwargs):
         credentials_exception = HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"
+            status_code=HTTP_401_UNAUTHORIZED, detail=[{"msg": "Could not validate credentials"}]
         )
 
         authorization: str = request.headers.get(

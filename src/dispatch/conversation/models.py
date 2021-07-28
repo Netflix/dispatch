@@ -1,4 +1,4 @@
-from pydantic import validator
+from pydantic import validator, Field
 
 from typing import Optional
 
@@ -17,7 +17,7 @@ class Conversation(Base, ResourceMixin):
 
 # Pydantic models...
 class ConversationBase(ResourceBase):
-    channel_id: Optional[str]
+    channel_id: Optional[str] = Field(None, nullable=True)
 
 
 class ConversationCreate(ConversationBase):
@@ -29,7 +29,7 @@ class ConversationUpdate(ConversationBase):
 
 
 class ConversationRead(ConversationBase):
-    description: Optional[str]
+    description: Optional[str] = Field(None, nullable=True)
 
     @validator("description", pre=True, always=True)
     def set_description(cls, v):

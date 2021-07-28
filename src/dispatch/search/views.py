@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import APIRouter, Depends
 from starlette.responses import JSONResponse
 
@@ -17,13 +15,7 @@ router = APIRouter()
 
 
 @router.get("", response_class=JSONResponse)
-def search(
-    *,
-    common: dict = Depends(common_parameters),
-    type: List[str] = [
-        v for v in SearchTypes
-    ],  # hack for pydantic enum json generation see: https://github.com/samuelcolvin/pydantic/pull/1749
-):
+def search(*, common: dict = Depends(common_parameters), type: SearchTypes):
     """Perform a search."""
     if common["query_str"]:
         models = [get_class_by_tablename(t) for t in type]
@@ -33,21 +25,21 @@ def search(
             models=models,
             current_user=common["current_user"],
         )
+        # add a filter for restricted incidents
+        # TODO won't currently show incidents that you are a member
+        admin_projects = []
+        for p in common["current_user"].projects:
+            if p.role == UserRoles.admin:
+                admin_projects.append(p)
+
+        filtered_incidents = []
+        for incident in results["Incident"]:
+            if incident.project in admin_projects or incident.visibility == Visibility.open:
+                filtered_incidents.append(incident)
+
+        results["Incident"] = filtered_incidents
+
     else:
         results = []
-
-    # add a filter for restricted incidents
-    # TODO won't currently show incidents that you are a member
-    admin_projects = []
-    for p in common["current_user"].projects:
-        if p.role == UserRoles.admin:
-            admin_projects.append(p)
-
-    filtered_incidents = []
-    for incident in results["Incident"]:
-        if incident.project in admin_projects or incident.visibility == Visibility.open:
-            filtered_incidents.append(incident)
-
-    results["Incident"] = filtered_incidents
 
     return SearchResponse(**{"query": common["query_str"], "results": results}).dict(by_alias=False)

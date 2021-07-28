@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
+from pydantic import Field
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.event import listen
@@ -7,7 +8,7 @@ from sqlalchemy.event import listen
 from sqlalchemy_utils import TSVectorType, JSONType
 
 from dispatch.database.core import Base, ensure_unique_default_per_project
-from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
+from dispatch.models import DispatchBase, NameStr, ProjectMixin, TimeStampMixin, PrimaryKey
 from dispatch.project.models import ProjectRead
 
 
@@ -33,9 +34,9 @@ listen(IncidentCostType.default, "set", ensure_unique_default_per_project)
 
 # Pydantic Models
 class IncidentCostTypeBase(DispatchBase):
-    name: str
-    description: Optional[str]
-    category: Optional[str]
+    name: NameStr
+    description: Optional[str] = Field(None, nullable=True)
+    category: Optional[str] = Field(None, nullable=True)
     details: Optional[dict] = {}
     created_at: Optional[datetime]
     default: Optional[bool]
@@ -47,15 +48,15 @@ class IncidentCostTypeCreate(IncidentCostTypeBase):
 
 
 class IncidentCostTypeUpdate(IncidentCostTypeBase):
-    id: int
+    id: PrimaryKey
 
 
 class IncidentCostTypeRead(IncidentCostTypeBase):
-    id: int
+    id: PrimaryKey
 
 
 class IncidentCostTypeNested(IncidentCostTypeBase):
-    id: int
+    id: PrimaryKey
 
 
 class IncidentCostTypePagination(DispatchBase):

@@ -1,43 +1,52 @@
 from slugify import slugify
+from pydantic import Field
+from pydantic.color import Color
 
 from typing import List, Optional
 
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.event import listen
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy_utils import TSVectorType
 
+
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase
+from dispatch.models import DispatchBase, NameStr, PrimaryKey
 
 
 class Organization(Base):
     __table_args__ = {"schema": "dispatch_core"}
 
     id = Column(Integer, primary_key=True)
-    name = Column(String)
+    name = Column(String, unique=True)
+    slug = Column(String)
     default = Column(Boolean)
     description = Column(String)
     banner_enabled = Column(Boolean)
     banner_color = Column(String)
     banner_text = Column(String)
 
-    @hybrid_property
-    def slug(self):
-        return slugify(self.name)
-
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})
     )
 
 
+def generate_slug(target, value, oldvalue, initiator):
+    """Creates a resonable slug based on organization name."""
+    if value and (not target.slug or value != oldvalue):
+        target.slug = slugify(value, separator="_")
+
+
+listen(Organization.name, "set", generate_slug)
+
+
 class OrganizationBase(DispatchBase):
-    id: Optional[int]
-    name: str
-    description: Optional[str]
-    default: Optional[bool]
-    banner_enabled: Optional[bool]
-    banner_color: Optional[str]
-    banner_text: Optional[str]
+    id: Optional[PrimaryKey]
+    name: NameStr
+    description: Optional[str] = Field(None, nullable=True)
+    default: Optional[bool] = Field(False, nullable=True)
+    banner_enabled: Optional[bool] = Field(False, nullable=True)
+    banner_color: Optional[Color] = Field(None, nullable=True)
+    banner_text: Optional[NameStr] = Field(None, nullable=True)
 
 
 class OrganizationCreate(OrganizationBase):
@@ -49,7 +58,7 @@ class OrganizationUpdate(OrganizationBase):
 
 
 class OrganizationRead(OrganizationBase):
-    id: Optional[int]
+    id: Optional[PrimaryKey]
     slug: Optional[str]
 
 

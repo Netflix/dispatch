@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
 from dispatch.exceptions import InvalidConfiguration
+from dispatch.models import PrimaryKey
 
 from .models import (
     PluginInstanceRead,
@@ -32,12 +33,13 @@ def get_plugin_instances(*, common: dict = Depends(common_parameters)):
 
 
 @router.get("/instances/{plugin_instance_id}", response_model=PluginInstanceRead)
-def get_plugin_instance(*, db_session: Session = Depends(get_db), plugin_instance_id: int):
+def get_plugin_instance(*, db_session: Session = Depends(get_db), plugin_instance_id: PrimaryKey):
     """Get a plugin instance."""
     plugin = get_instance(db_session=db_session, plugin_instance_id=plugin_instance_id)
     if not plugin:
         raise HTTPException(
-            status_code=404, detail="A plugin instance with this id does not exist."
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A plugin instance with this id does not exist."}],
         )
     return plugin
 
@@ -62,14 +64,15 @@ def create_plugin_instance(
 def update_plugin_instance(
     *,
     db_session: Session = Depends(get_db),
-    plugin_instance_id: int,
+    plugin_instance_id: PrimaryKey,
     plugin_instance_in: PluginInstanceUpdate,
 ):
     """Update a plugin instance."""
     plugin_instance = get_instance(db_session=db_session, plugin_instance_id=plugin_instance_id)
     if not plugin_instance:
         raise HTTPException(
-            status_code=404, detail="A plugin instance with this id does not exist."
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A plugin instance with this id does not exist."}],
         )
 
     try:
@@ -79,6 +82,9 @@ def update_plugin_instance(
             plugin_instance_in=plugin_instance_in,
         )
     except InvalidConfiguration as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[{"msg": str(e), "loc": ["configuration"], "type": "InvalidConfiguration"}],
+        )
 
     return plugin_instance

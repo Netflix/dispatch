@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.auth.permissions import PermissionsDependency, SensitiveProjectActionPermission
+from dispatch.models import PrimaryKey
 
 from .models import (
     IndividualContactCreate,
@@ -30,18 +31,40 @@ def create_individual(
     individual = get_by_email(db_session=db_session, email=individual_contact_in.email)
     if individual:
         raise HTTPException(
-            status_code=400, detail="The individual with this email already exists."
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": "The individual with this email already exists.",
+                    "loc": ["email"],
+                    "type": "Exists",
+                }
+            ],
         )
-    individual = create(db_session=db_session, individual_contact_in=individual_contact_in)
+    try:
+        individual = create(db_session=db_session, individual_contact_in=individual_contact_in)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=[
+                {
+                    "msg": str(e),
+                    "loc": ["Unknown"],
+                    "type": "Unknown",
+                }
+            ],
+        )
     return individual
 
 
 @router.get("/{individual_contact_id}", response_model=IndividualContactRead)
-def get_individual(*, db_session: Session = Depends(get_db), individual_contact_id: int):
+def get_individual(*, db_session: Session = Depends(get_db), individual_contact_id: PrimaryKey):
     """Get an individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
-        raise HTTPException(status_code=404, detail="The individual with this id does not exist.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The individual with this id does not exist."}],
+        )
     return individual
 
 
@@ -54,13 +77,16 @@ def get_individual(*, db_session: Session = Depends(get_db), individual_contact_
 def update_individual(
     *,
     db_session: Session = Depends(get_db),
-    individual_contact_id: int,
+    individual_contact_id: PrimaryKey,
     individual_contact_in: IndividualContactUpdate,
 ):
     """Update an individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
-        raise HTTPException(status_code=404, detail="The individual with this id does not exist.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The individual with this id does not exist."}],
+        )
     individual = update(
         db_session=db_session,
         individual_contact=individual,
@@ -74,10 +100,15 @@ def update_individual(
     summary="Delete an individual contact.",
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
-async def delete_individual(*, db_session: Session = Depends(get_db), individual_contact_id: int):
+async def delete_individual(
+    *, db_session: Session = Depends(get_db), individual_contact_id: PrimaryKey
+):
     """Delete an individual contact."""
     individual = get(db_session=db_session, individual_contact_id=individual_contact_id)
     if not individual:
-        raise HTTPException(status_code=404, detail="The individual with this id does not exist.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "The individual with this id does not exist."}],
+        )
 
     delete(db_session=db_session, individual_contact_id=individual_contact_id)

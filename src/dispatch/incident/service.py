@@ -17,7 +17,7 @@ from dispatch.plugin import service as plugin_service
 from dispatch.participant import flows as participant_flows
 
 from .enums import IncidentStatus
-from .models import Incident, IncidentUpdate
+from .models import Incident, IncidentCreate, IncidentUpdate
 
 
 def assign_incident_role(
@@ -141,29 +141,20 @@ def get_all_last_x_hours_by_status(
         )
 
 
-def create(
-    *,
-    db_session,
-    project: str,
-    incident_priority: str,
-    incident_type: str,
-    reporter: dict,
-    title: str,
-    status: str,
-    description: str,
-    tags: List[dict],
-    visibility: str = None,
-) -> Incident:
+def create(*, db_session, incident_in: IncidentCreate) -> Incident:
     """Creates a new incident."""
-    if not project:
+    if not incident_in.project:
         project = project_service.get_default(db_session=db_session)
         if not project:
             raise Exception("No project specificed and no default has been defined.")
     else:
-        project = project_service.get_by_name(db_session=db_session, name=project["name"])
+        project = project_service.get_by_name(db_session=db_session, name=incident_in.project.name)
+
+        if not project:
+            raise Exception("Project not found.")
 
     # We get the incident type by name
-    if not incident_type:
+    if not incident_in.incident_type:
         incident_type = incident_type_service.get_default(
             db_session=db_session, project_id=project.id
         )
@@ -171,14 +162,14 @@ def create(
             raise Exception("No incident type specified and no default has been defined.")
     else:
         incident_type = incident_type_service.get_by_name(
-            db_session=db_session, project_id=project.id, name=incident_type["name"]
+            db_session=db_session, project_id=project.id, name=incident_in.incident_type.name
         )
 
         if not incident_type.enabled:
             raise Exception("Incident type must be enabled.")
 
     # We get the incident priority by name
-    if not incident_priority:
+    if not incident_in.incident_priority:
         incident_priority = incident_priority_service.get_default(
             db_session=db_session, project_id=project.id
         )
@@ -186,24 +177,24 @@ def create(
             raise Exception("No incident priority specified and no default has been defined.")
     else:
         incident_priority = incident_priority_service.get_by_name(
-            db_session=db_session, project_id=project.id, name=incident_priority["name"]
+            db_session=db_session, project_id=project.id, name=incident_in.incident_priority.name
         )
 
         if not incident_priority.enabled:
             raise Exception("Incident priority must be enabled.")
 
-    if not visibility:
+    if not incident_in.visibility:
         visibility = incident_type.visibility
 
     tag_objs = []
-    for t in tags:
+    for t in incident_in.tags:
         tag_objs.append(tag_service.get_or_create(db_session=db_session, tag_in=TagCreate(**t)))
 
     # We create the incident
     incident = Incident(
-        title=title,
-        description=description,
-        status=status,
+        title=incident_in.title,
+        description=incident_in.description,
+        status=incident_in.status,
         incident_type=incident_type,
         incident_priority=incident_priority,
         visibility=visibility,
@@ -222,18 +213,18 @@ def create(
 
     # Add other incident roles (e.g. commander and liaison)
     assign_incident_role(
-        db_session, incident, reporter["individual"]["email"], ParticipantRoleType.reporter
+        db_session, incident, incident_in.reporter.individual.email, ParticipantRoleType.reporter
     )
 
     assign_incident_role(
         db_session,
         incident,
-        reporter["individual"]["email"],
+        incident_in.reporter.individual.email,
         ParticipantRoleType.incident_commander,
     )
 
     assign_incident_role(
-        db_session, incident, reporter["individual"]["email"], ParticipantRoleType.liaison
+        db_session, incident, incident_in.reporter.individual.email, ParticipantRoleType.liaison
     )
 
     return incident

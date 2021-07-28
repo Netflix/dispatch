@@ -3,6 +3,7 @@ from collections import Counter
 from typing import List, Optional, Any
 
 from pydantic import validator
+from dispatch.models import NameStr, PrimaryKey
 from sqlalchemy import (
     Column,
     DateTime,
@@ -39,7 +40,6 @@ from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, 
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.participant.models import Participant, ParticipantRead, ParticipantUpdate
 from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
-from dispatch.project.models import ProjectRead
 from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
@@ -255,6 +255,11 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     duplicates = relationship("Incident", remote_side=[id], uselist=True)
 
 
+class ProjectRead(DispatchBase):
+    id: PrimaryKey
+    name: NameStr
+
+
 # Pydantic models...
 class IncidentBase(DispatchBase):
     title: str
@@ -276,8 +281,8 @@ class IncidentBase(DispatchBase):
 
 
 class IncidentReadNested(IncidentBase):
-    id: int
-    name: str = None
+    id: PrimaryKey
+    name: NameStr
     reporter: Optional[ParticipantRead]
     commander: Optional[ParticipantRead]
     incident_priority: IncidentPriorityRead
@@ -310,8 +315,8 @@ class IncidentUpdate(IncidentBase):
 
 
 class IncidentRead(IncidentBase):
-    id: int
-    name: str = None
+    id: PrimaryKey
+    name: NameStr
     primary_team: Any
     primary_location: Any
     reporter: Optional[ParticipantRead]

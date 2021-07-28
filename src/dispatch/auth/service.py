@@ -37,7 +37,7 @@ from .models import (
 log = logging.getLogger(__name__)
 
 InvalidCredentialException = HTTPException(
-    status_code=HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"
+    status_code=HTTP_401_UNAUTHORIZED, detail=[{"msg": "Could not validate credentials"}]
 )
 
 
