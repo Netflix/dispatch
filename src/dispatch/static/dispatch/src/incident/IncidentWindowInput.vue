@@ -68,6 +68,7 @@ import startOfYear from "date-fns/startOfYear"
 import startOfMonth from "date-fns/startOfMonth"
 import lastDayOfMonth from "date-fns/lastDayOfMonth"
 import { endOfQuarter, startOfQuarter, subQuarters } from "date-fns"
+import parseISO from "date-fns/fp/parseISO"
 
 let today = function () {
   let now = new Date()
@@ -171,16 +172,18 @@ export default {
       this.window = {}
     },
     setWindowStart: function (start) {
+      start = parseISO(start)
       start.setHours(0, 0, 0, 0)
       this.window = {
         start: start.toISOString(),
-        end: this.window.end.toISOString(),
+        end: this.window.end,
       }
     },
     setWindowEnd: function (end) {
+      end = parseISO(end)
       end.setHours(23, 59, 59, 999)
       this.window = {
-        start: this.window.start.toISOString(),
+        start: this.window.start,
         end: end.toISOString(),
       }
     },

@@ -56,6 +56,8 @@ from .factories import (
     TeamContactFactory,
     TermFactory,
     TicketFactory,
+    WorkflowFactory,
+    WorkflowInstanceFactory,
 )
 
 
@@ -504,3 +506,13 @@ def plugins(session):
 @pytest.fixture
 def plugin_instance(session):
     return PluginInstanceFactory()
+
+
+@pytest.fixture
+def workflow(session):
+    return WorkflowFactory()
+
+
+@pytest.fixture
+def workflow_instance(session):
+    return WorkflowInstanceFactory()

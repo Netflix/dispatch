@@ -75,6 +75,7 @@ export default {
           if (typeof v === "string") {
             v = {
               text: v,
+              project: this.project,
             }
             this.items.push(v)
           }
