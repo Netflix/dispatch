@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_get(session, plugin):
     from dispatch.plugin.service import get
 
@@ -13,13 +10,6 @@ def test_get_instance(session, plugin_instance):
 
     t_plugin_instance = get_instance(db_session=session, plugin_instance_id=plugin_instance.id)
     assert t_plugin_instance.id == plugin_instance.id
-
-
-def test_get_all(session, plugins):
-    from dispatch.plugin.service import get_all
-
-    t_plugins = get_all(db_session=session).all()
-    assert len(t_plugins) > 1
 
 
 def test_create_instance(session, plugin, project):
@@ -39,7 +29,6 @@ def test_create_instance(session, plugin, project):
     assert plugin_instance
 
 
-@pytest.mark.skip
 def test_update_instance(session, plugin_instance):
     from dispatch.plugin.service import update_instance
     from dispatch.plugin.models import PluginInstanceUpdate

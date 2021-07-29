@@ -2,6 +2,7 @@ import logging
 import json
 
 from typing import List
+from pydantic.types import Json, constr
 
 from fastapi import Depends, Query
 
@@ -33,6 +34,9 @@ from .core import (
 
 
 log = logging.getLogger(__file__)
+
+# allows only printable characters
+QueryStr = constr(regex=r"^[ -~]+$", min_length=1)
 
 
 def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, role: UserRoles):
@@ -169,18 +173,15 @@ def get_all(*, db_session, model):
 
 def common_parameters(
     db_session: orm.Session = Depends(get_db),
-    page: int = 1,
-    items_per_page: int = Query(5, alias="itemsPerPage"),
-    query_str: str = Query(None, alias="q"),
-    filter_spec: str = Query([], alias="filter"),
+    page: int = Query(1, gt=0, lt=2147483647),
+    items_per_page: int = Query(5, alias="itemsPerPage", gt=0, lt=2147483647),
+    query_str: QueryStr = Query(None, alias="q"),
+    filter_spec: Json = Query([], alias="filter"),
     sort_by: List[str] = Query([], alias="sortBy[]"),
     descending: List[bool] = Query([], alias="descending[]"),
     current_user: DispatchUser = Depends(get_current_user),
     role: UserRoles = Depends(get_current_role),
 ):
-    if filter_spec:
-        filter_spec = json.loads(filter_spec)
-
     return {
         "db_session": db_session,
         "page": page,

@@ -8,7 +8,6 @@ import logging
 from typing import Optional
 
 from fastapi import HTTPException, Depends
-from fastapi.encoders import jsonable_encoder
 from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
 
@@ -19,6 +18,7 @@ from dispatch.config import (
     DISPATCH_AUTHENTICATION_PROVIDER_SLUG,
     DISPATCH_AUTHENTICATION_DEFAULT_USER,
 )
+from dispatch.organization.models import OrganizationRead
 from dispatch.organization import service as organization_service
 from dispatch.project import service as project_service
 
@@ -37,7 +37,7 @@ from .models import (
 log = logging.getLogger(__name__)
 
 InvalidCredentialException = HTTPException(
-    status_code=HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"
+    status_code=HTTP_401_UNAUTHORIZED, detail=[{"msg": "Could not validate credentials"}]
 )
 
 
@@ -118,13 +118,16 @@ def create(*, db_session, organization: str, user_in: UserRegister) -> DispatchU
         **user_in.dict(exclude={"password", "organizations", "projects"}), password=password
     )
 
-    org = organization_service.get_by_slug(db_session=db_session, slug=organization)
+    org = organization_service.get_by_slug_or_raise(
+        db_session=db_session,
+        organization_in=OrganizationRead(name=organization, slug=organization),
+    )
 
     # add the user to the default organization
     user.organizations.append(DispatchUserOrganization(organization=org, role=UserRoles.member))
 
     # get the default project
-    default_project = project_service.get_default(db_session=db_session)
+    default_project = project_service.get_default_or_raise(db_session=db_session)
 
     # add the user to the default project
     user.projects.append(DispatchUserProject(project=default_project, role=UserRoles.member))
@@ -144,7 +147,7 @@ def get_or_create(*, db_session, organization: str, user_in: UserRegister) -> Di
 
 def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUser:
     """Updates a user."""
-    user_data = jsonable_encoder(user)
+    user_data = user.dict()
 
     update_data = user_in.dict(exclude={"password"}, skip_defaults=True)
     for field in user_data:
@@ -163,7 +166,6 @@ def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUs
                 create_or_update_organization_role(db_session=db_session, user=user, role_in=role)
             )
 
-    db_session.add(user)
     db_session.commit()
     return user
 
@@ -182,6 +184,9 @@ def get_current_user(request: Request) -> DispatchUser:
         log.exception(
             f"Unable to determine user email based on configured auth provider or no default auth user email defined. Provider: {DISPATCH_AUTHENTICATION_PROVIDER_SLUG}"
         )
+        raise InvalidCredentialException
+
+    if not hasattr(request.state, "organization"):
         raise InvalidCredentialException
 
     return get_or_create(

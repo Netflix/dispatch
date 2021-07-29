@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import validator
+from pydantic import validator, Field
+from dispatch.models import NameStr, PrimaryKey
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -57,14 +58,14 @@ class Document(ProjectMixin, ResourceMixin, Base):
 
 # Pydantic models...
 class DocumentBase(ResourceBase):
-    description: Optional[str]
-    name: str
+    description: Optional[str] = Field(None, nullable=True)
+    name: NameStr
     evergreen: Optional[bool] = False
     evergreen_reminder_interval: Optional[int] = 90
-    evergreen_last_reminder_at: Optional[datetime] = None
-    evergreen_owner: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    evergreen_last_reminder_at: Optional[datetime] = Field(None, nullable=True)
+    evergreen_owner: Optional[str] = Field(None, nullable=True)
+    created_at: Optional[datetime] = Field(None, nullable=True)
+    updated_at: Optional[datetime] = Field(None, nullable=True)
 
 
 class DocumentCreate(DocumentBase):
@@ -77,7 +78,7 @@ class DocumentUpdate(DocumentBase):
 
 
 class DocumentRead(DocumentBase):
-    id: int
+    id: PrimaryKey
     filters: Optional[List[SearchFilterRead]] = []
     project: Optional[ProjectRead]
 

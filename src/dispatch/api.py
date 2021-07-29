@@ -1,10 +1,13 @@
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends
-from fastapi.openapi.docs import get_redoc_html
-from fastapi.openapi.utils import get_openapi
+
+from pydantic import BaseModel
 from starlette.responses import JSONResponse
 
 from dispatch.auth.service import get_current_user
 from dispatch.auth.views import user_router, auth_router
+from dispatch.models import OrganizationSlug
 from dispatch.organization.views import router as organization_router
 from dispatch.project.views import router as project_router
 from dispatch.definition.views import router as definition_router
@@ -32,97 +35,112 @@ from dispatch.workflow.views import router as workflow_router
 
 from .config import DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 
+
+class ErrorMessage(BaseModel):
+    msg: str
+
+
+class ErrorResponse(BaseModel):
+    detail: Optional[List[ErrorMessage]]
+
+
 api_router = APIRouter(
-    default_response_class=JSONResponse
-)  # WARNING: Don't use this unless you want unauthenticated routes
+    default_response_class=JSONResponse,
+    responses={
+        400: {"model": ErrorResponse},
+        401: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+    },
+)
+
+# WARNING: Don't use this unless you want unauthenticated routes
 authenticated_api_router = APIRouter()
+
+
+def get_organization_path(organization: OrganizationSlug):
+    pass
+
 
 # NOTE we only advertise auth routes when basic auth is enabled
 if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-basic":
     api_router.include_router(auth_router, prefix="/{organization}/auth", tags=["auth"])
 
+
 # NOTE: All api routes should be authenticated by default
 authenticated_api_router.include_router(
     organization_router, prefix="/organizations", tags=["organizations"]
 )
-authenticated_api_router.include_router(
-    project_router, prefix="/{organization}/projects", tags=["projects"]
+
+authenticated_organization_api_router = APIRouter(
+    prefix="/{organization}", dependencies=[Depends(get_organization_path)]
 )
-authenticated_api_router.include_router(user_router, prefix="/{organization}/users", tags=["users"])
-authenticated_api_router.include_router(
-    document_router, prefix="/{organization}/documents", tags=["documents"]
+
+authenticated_organization_api_router.include_router(
+    project_router, prefix="/projects", tags=["projects"]
 )
-authenticated_api_router.include_router(tag_router, prefix="/{organization}/tags", tags=["tags"])
-authenticated_api_router.include_router(
-    tag_type_router, prefix="/{organization}/tag_types", tags=["tag_types"]
+
+authenticated_organization_api_router.include_router(user_router, prefix="/users", tags=["users"])
+authenticated_organization_api_router.include_router(
+    document_router, prefix="/documents", tags=["documents"]
 )
-authenticated_api_router.include_router(
-    service_router, prefix="/{organization}/services", tags=["services"]
+authenticated_organization_api_router.include_router(tag_router, prefix="/tags", tags=["tags"])
+authenticated_organization_api_router.include_router(
+    tag_type_router, prefix="/tag_types", tags=["tag_types"]
 )
-authenticated_api_router.include_router(
-    team_contact_router, prefix="/{organization}/teams", tags=["teams"]
+authenticated_organization_api_router.include_router(
+    service_router, prefix="/services", tags=["services"]
 )
-authenticated_api_router.include_router(
-    individual_contact_router, prefix="/{organization}/individuals", tags=["individuals"]
+authenticated_organization_api_router.include_router(
+    team_contact_router, prefix="/teams", tags=["teams"]
+)
+authenticated_organization_api_router.include_router(
+    individual_contact_router, prefix="/individuals", tags=["individuals"]
 )
 # authenticated_api_router.include_router(route_router, prefix="/route", tags=["route"])
-authenticated_api_router.include_router(
-    definition_router, prefix="/{organization}/definitions", tags=["definitions"]
+authenticated_organization_api_router.include_router(
+    definition_router, prefix="/definitions", tags=["definitions"]
 )
-authenticated_api_router.include_router(term_router, prefix="/{organization}/terms", tags=["terms"])
-authenticated_api_router.include_router(task_router, prefix="/{organization}/tasks", tags=["tasks"])
-authenticated_api_router.include_router(
-    search_router, prefix="/{organization}/search", tags=["search"]
+authenticated_organization_api_router.include_router(term_router, prefix="/terms", tags=["terms"])
+authenticated_organization_api_router.include_router(task_router, prefix="/tasks", tags=["tasks"])
+authenticated_organization_api_router.include_router(
+    search_router, prefix="/search", tags=["search"]
 )
-authenticated_api_router.include_router(
-    search_filter_router, prefix="/{organization}/search/filters", tags=["search_filters"]
+authenticated_organization_api_router.include_router(
+    search_filter_router, prefix="/search/filters", tags=["search_filters"]
 )
-authenticated_api_router.include_router(
-    incident_router, prefix="/{organization}/incidents", tags=["incidents"]
+authenticated_organization_api_router.include_router(
+    incident_router, prefix="/incidents", tags=["incidents"]
 )
-authenticated_api_router.include_router(
-    incident_type_router, prefix="/{organization}/incident_types", tags=["incident_types"]
+authenticated_organization_api_router.include_router(
+    incident_type_router, prefix="/incident_types", tags=["incident_types"]
 )
-authenticated_api_router.include_router(
+authenticated_organization_api_router.include_router(
     incident_priority_router,
-    prefix="/{organization}/incident_priorities",
+    prefix="/incident_priorities",
     tags=["incident_priorities"],
 )
-authenticated_api_router.include_router(
-    workflow_router, prefix="/{organization}/workflows", tags=["workflows"]
+authenticated_organization_api_router.include_router(
+    workflow_router, prefix="/workflows", tags=["workflows"]
 )
-authenticated_api_router.include_router(
-    plugin_router, prefix="/{organization}/plugins", tags=["plugins"]
+authenticated_organization_api_router.include_router(
+    plugin_router, prefix="/plugins", tags=["plugins"]
 )
-authenticated_api_router.include_router(
-    feedback_router, prefix="/{organization}/feedback", tags=["feedback"]
+authenticated_organization_api_router.include_router(
+    feedback_router, prefix="/feedback", tags=["feedback"]
 )
-authenticated_api_router.include_router(
-    notification_router, prefix="/{organization}/notifications", tags=["notifications"]
+authenticated_organization_api_router.include_router(
+    notification_router, prefix="/notifications", tags=["notifications"]
 )
-authenticated_api_router.include_router(
-    incident_cost_router, prefix="/{organization}/incident_costs", tags=["incident_costs"]
+authenticated_organization_api_router.include_router(
+    incident_cost_router, prefix="/incident_costs", tags=["incident_costs"]
 )
-authenticated_api_router.include_router(
+authenticated_organization_api_router.include_router(
     incident_cost_type_router,
-    prefix="/{organization}/incident_cost_types",
+    prefix="/incident_cost_types",
     tags=["incident_cost_types"],
 )
-
-doc_router = APIRouter()
-
-
-@doc_router.get("/openapi.json", include_in_schema=False)
-async def get_open_api_endpoint():
-    return JSONResponse(get_openapi(title="Dispatch Docs", version=1, routes=api_router.routes))
-
-
-@doc_router.get("/", include_in_schema=False)
-async def get_documentation():
-    return get_redoc_html(openapi_url="/api/v1/docs/openapi.json", title="Dispatch Docs")
-
-
-api_router.include_router(doc_router, prefix="/docs")
 
 
 @api_router.get("/healthcheck", include_in_schema=False)
@@ -130,4 +148,11 @@ def healthcheck():
     return {"status": "ok"}
 
 
-api_router.include_router(authenticated_api_router, dependencies=[Depends(get_current_user)])
+api_router.include_router(
+    authenticated_organization_api_router, dependencies=[Depends(get_current_user)]
+)
+
+api_router.include_router(
+    authenticated_api_router,
+    dependencies=[Depends(get_current_user)],
+)

@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_get(session, term):
     from dispatch.term.service import get
 
@@ -24,12 +21,11 @@ def test_create(session, project):
     assert term
 
 
-@pytest.mark.skip
 def test_update(session, term):
     from dispatch.term.service import update
     from dispatch.term.models import TermUpdate
 
-    text = "updated text"
+    text = "Updated text"
 
     term_in = TermUpdate(
         text=text,

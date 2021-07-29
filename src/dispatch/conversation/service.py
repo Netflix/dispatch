@@ -1,7 +1,5 @@
 from typing import Optional
 
-from fastapi.encoders import jsonable_encoder
-
 from dispatch.event import service as event_service
 
 from .models import Conversation, ConversationCreate, ConversationUpdate
@@ -58,14 +56,13 @@ def update(
     *, db_session, conversation: Conversation, conversation_in: ConversationUpdate
 ) -> Conversation:
     """Updates a conversation."""
-    conversation_data = jsonable_encoder(conversation)
+    conversation_data = conversation.dict()
     update_data = conversation_in.dict(skip_defaults=True)
 
     for field in conversation_data:
         if field in update_data:
             setattr(conversation, field, update_data[field])
 
-    db_session.add(conversation)
     db_session.commit()
     return conversation
 

@@ -1,4 +1,5 @@
 from datetime import datetime
+from dispatch.models import PrimaryKey
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 
@@ -38,7 +39,7 @@ class ParticipantRoleUpdate(ParticipantRoleBase):
 
 
 class ParticipantRoleRead(ParticipantRoleBase):
-    id: int
+    id: PrimaryKey
     assumed_at: Optional[datetime] = None
     renounced_at: Optional[datetime] = None
 

@@ -71,6 +71,21 @@ def test_create(session, project):
     assert individual_contact
 
 
+def test_update(session, individual_contact):
+    from dispatch.individual.service import update
+    from dispatch.individual.models import IndividualContactUpdate
+
+    email = "updated@example.com"
+
+    individual_contact_in = IndividualContactUpdate(email=email)
+    individual_contact = update(
+        db_session=session,
+        individual_contact=individual_contact,
+        individual_contact_in=individual_contact_in,
+    )
+    assert individual_contact.email == email
+
+
 def test_delete(session, individual_contact):
     from dispatch.individual.service import delete, get
 

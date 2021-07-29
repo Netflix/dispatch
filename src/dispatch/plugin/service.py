@@ -1,6 +1,6 @@
 import logging
+
 from typing import List, Optional
-from fastapi.encoders import jsonable_encoder
 
 from dispatch.exceptions import InvalidConfiguration
 from dispatch.plugins.bases import OncallPlugin
@@ -85,8 +85,8 @@ def get_enabled_instances_by_type(
 
 def create_instance(*, db_session, plugin_instance_in: PluginInstanceCreate) -> PluginInstance:
     """Creates a new plugin instance."""
-    project = project_service.get_by_name(
-        db_session=db_session, name=plugin_instance_in.project.name
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=plugin_instance_in.project
     )
     plugin = get(db_session=db_session, plugin_id=plugin_instance_in.plugin.id)
     plugin_instance = PluginInstance(
@@ -101,7 +101,7 @@ def update_instance(
     *, db_session, plugin_instance: PluginInstance, plugin_instance_in: PluginInstanceUpdate
 ) -> PluginInstance:
     """Updates a plugin instance."""
-    plugin_instance_data = jsonable_encoder(plugin_instance)
+    plugin_instance_data = plugin_instance.dict()
     update_data = plugin_instance_in.dict(skip_defaults=True)
 
     if plugin_instance_in.enabled:  # user wants to enable the plugin
@@ -112,7 +112,6 @@ def update_instance(
             )
             if enabled_plugin_instances:
                 enabled_plugin_instances[0].enabled = False
-                db_session.add(enabled_plugin_instances[0])
 
     if not plugin_instance_in.enabled:  # user wants to disable the plugin
         if plugin_instance.plugin.type == OncallPlugin.type:
@@ -128,7 +127,6 @@ def update_instance(
         if field in update_data:
             setattr(plugin_instance, field, update_data[field])
 
-    db_session.add(plugin_instance)
     db_session.commit()
     return plugin_instance
 

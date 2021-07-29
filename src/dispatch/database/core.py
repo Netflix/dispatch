@@ -13,6 +13,10 @@ from dispatch import config
 from dispatch.search.fulltext import make_searchable
 
 
+class MissingTable(Exception):
+    pass
+
+
 engine = create_engine(str(config.SQLALCHEMY_DATABASE_URI))
 SessionLocal = sessionmaker(bind=engine)
 
@@ -38,6 +42,10 @@ class CustomBase:
     @declared_attr
     def __tablename__(self):
         return resolve_table_name(self.__name__)
+
+    def dict(self):
+        """Returns a dict representation of a model."""
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
 Base = declarative_base(cls=CustomBase)
@@ -70,7 +78,7 @@ def get_class_by_tablename(table_fullname: str) -> Any:
         mapped_class = _find_class(f"dispatch_core.{mapped_name}")
 
     if not mapped_class:
-        raise Exception(f"Incorrect tablename '{mapped_name}'. Check the name of your model.")
+        raise MissingTable(f"Incorrect tablename '{mapped_name}'. Check the name of your model.")
 
     return mapped_class
 

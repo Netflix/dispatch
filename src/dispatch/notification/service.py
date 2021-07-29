@@ -2,12 +2,10 @@ import logging
 
 from typing import List, Optional, Type
 
-from fastapi.encoders import jsonable_encoder
-
 from dispatch.database.core import Base
 from dispatch.incident.models import Incident
-from dispatch.project import service as project_service
 from dispatch.plugin import service as plugin_service
+from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
 
 from .models import Notification, NotificationCreate, NotificationUpdate
@@ -44,7 +42,9 @@ def create(*, db_session, notification_in: NotificationCreate) -> Notification:
             for f in notification_in.filters
         ]
 
-    project = project_service.get_by_name(db_session=db_session, name=notification_in.project.name)
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=notification_in.project
+    )
 
     notification = Notification(
         **notification_in.dict(exclude={"filters", "project"}), filters=filters, project=project
@@ -59,13 +59,7 @@ def update(
     *, db_session, notification: Notification, notification_in: NotificationUpdate
 ) -> Notification:
     """Updates a notification."""
-    notification_data = jsonable_encoder(notification)
-
-    filters = [
-        search_filter_service.get(db_session=db_session, search_filter_id=f.id)
-        for f in notification_in.filters
-    ]
-
+    notification_data = notification.dict()
     update_data = notification_in.dict(
         skip_defaults=True,
         exclude={"filters"},
@@ -75,8 +69,13 @@ def update(
         if field in update_data:
             setattr(notification, field, update_data[field])
 
-    notification.filters = filters
-    db_session.add(notification)
+    if notification_in.filters is not None:
+        filters = [
+            search_filter_service.get(db_session=db_session, search_filter_id=f.id)
+            for f in notification_in.filters
+        ]
+        notification.filters = filters
+
     db_session.commit()
     return notification
 

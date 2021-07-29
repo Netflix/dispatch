@@ -1,7 +1,5 @@
 from typing import Optional
 
-from fastapi.encoders import jsonable_encoder
-
 from .models import Group, GroupCreate, GroupUpdate
 
 
@@ -37,14 +35,13 @@ def create(*, db_session, group_in: GroupCreate) -> Group:
 
 def update(*, db_session, group: Group, group_in: GroupUpdate) -> Group:
     """Updates a group."""
-    group_data = jsonable_encoder(group)
+    group_data = group.dict()
     update_data = group_in.dict(skip_defaults=True)
 
     for field in group_data:
         if field in update_data:
             setattr(group, field, update_data[field])
 
-    db_session.add(group)
     db_session.commit()
     return group
 

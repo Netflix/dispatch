@@ -1,4 +1,4 @@
-from pydantic import validator
+from pydantic import validator, Field
 
 from typing import Optional
 
@@ -6,7 +6,7 @@ from sqlalchemy import Column, Integer, ForeignKey
 
 from dispatch.database.core import Base
 from dispatch.messaging.strings import INCIDENT_TICKET_DESCRIPTION
-from dispatch.models import ResourceBase, ResourceMixin
+from dispatch.models import ResourceBase, ResourceMixin, PrimaryKey
 
 
 class Ticket(Base, ResourceMixin):
@@ -28,7 +28,7 @@ class TicketUpdate(TicketBase):
 
 
 class TicketRead(TicketBase):
-    description: Optional[str]
+    description: Optional[str] = Field(None, nullable=True)
 
     @validator("description", pre=True, always=True)
     def set_description(cls, v):
@@ -37,4 +37,4 @@ class TicketRead(TicketBase):
 
 
 class TicketNested(TicketBase):
-    id: int
+    id: PrimaryKey

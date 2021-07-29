@@ -1,8 +1,6 @@
 from typing import List, Optional
 from datetime import datetime, timedelta
 
-from fastapi.encoders import jsonable_encoder
-
 from dispatch.enums import DocumentResourceReferenceTypes
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
@@ -74,9 +72,9 @@ def get_all(*, db_session) -> List[Optional[Document]]:
 
 def create(*, db_session, document_in: DocumentCreate) -> Document:
     """Creates a new document."""
-    project = None
-    if document_in.project:
-        project = project_service.get_by_name(db_session=db_session, name=document_in.project.name)
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=document_in.project
+    )
 
     filters = [
         search_filter_service.get(db_session=db_session, search_filter_id=f.id)
@@ -114,25 +112,26 @@ def get_or_create(*, db_session, document_in) -> Document:
 
 def update(*, db_session, document: Document, document_in: DocumentUpdate) -> Document:
     """Updates a document."""
-    # reset the last reminder to now
+    document_data = document.dict()
+
+    # we reset the last evergreeen reminder to now
     if document_in.evergreen:
         if not document.evergreen:
             document_in.evergreen_last_reminder_at = datetime.utcnow()
 
-    filters = [
-        search_filter_service.get(db_session=db_session, search_filter_id=f.id)
-        for f in document_in.filters
-    ]
-
-    document_data = jsonable_encoder(document)
     update_data = document_in.dict(skip_defaults=True, exclude={"filters"})
 
     for field in document_data:
         if field in update_data:
             setattr(document, field, update_data[field])
 
-    document.filters = filters
-    db_session.add(document)
+    if document_in.filters is not None:
+        filters = [
+            search_filter_service.get(db_session=db_session, search_filter_id=f.id)
+            for f in document_in.filters
+        ]
+        document.filters = filters
+
     db_session.commit()
     return document
 

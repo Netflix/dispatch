@@ -1,13 +1,14 @@
 from typing import List, Optional
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql.expression import true
 
-from dispatch.project import service as project_service
 from dispatch.document import service as document_service
+from dispatch.exceptions import NotFoundError
+from dispatch.project import service as project_service
 from dispatch.service import service as service_service
 
-from .models import IncidentType, IncidentTypeCreate, IncidentTypeUpdate
+from .models import IncidentType, IncidentTypeCreate, IncidentTypeRead, IncidentTypeUpdate
 
 
 def get(*, db_session, incident_type_id: int) -> Optional[IncidentType]:
@@ -25,6 +26,23 @@ def get_default(*, db_session, project_id: int):
     )
 
 
+def get_default_or_raise(*, db_session, project_id: int) -> IncidentType:
+    """Returns the default incident_type or raise a ValidationError if one doesn't exist."""
+    incident_type = get_default(db_session=db_session, project_id=project_id)
+
+    if not incident_type:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(msg="No default incident_type defined."),
+                    loc="incident_type",
+                )
+            ],
+            model=IncidentTypeRead,
+        )
+    return incident_type
+
+
 def get_by_name(*, db_session, project_id: int, name: str) -> Optional[IncidentType]:
     """Returns an incident type based on the given type name."""
     return (
@@ -33,6 +51,42 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[IncidentT
         .filter(IncidentType.project_id == project_id)
         .one_or_none()
     )
+
+
+def get_by_name_or_raise(
+    *, db_session, project_id: int, incident_type_in=IncidentTypeRead
+) -> IncidentType:
+    """Returns the incident_type specified or raises ValidationError."""
+    incident_type = get_by_name(
+        db_session=db_session, project_id=project_id, name=incident_type_in.name
+    )
+
+    if not incident_type:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(
+                        msg="IncidentType not found.", incident_type=incident_type_in.name
+                    ),
+                    loc="incident_type",
+                )
+            ],
+            model=IncidentTypeRead,
+        )
+
+    return incident_type
+
+
+def get_by_name_or_default(
+    *, db_session, project_id: int, incident_type_in=IncidentTypeRead
+) -> IncidentType:
+    """Returns a incident_type based on a name or the default if not specified."""
+    if incident_type_in.name:
+        return get_by_name_or_raise(
+            db_session=db_session, project_id=project_id, incident_type_in=incident_type_in
+        )
+    else:
+        return get_default_or_raise(db_session=db_session, project_id=project_id)
 
 
 def get_by_slug(*, db_session, project_id: int, slug: str) -> Optional[IncidentType]:
@@ -65,7 +119,9 @@ def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[Inci
 
 def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
     """Creates an incident type."""
-    project = project_service.get_by_name(db_session=db_session, name=incident_type_in.project.name)
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=incident_type_in.project
+    )
     incident_type = IncidentType(
         **incident_type_in.dict(
             exclude={
@@ -161,7 +217,7 @@ def update(
         )
         incident_type.liaison_service = liaison_service
 
-    incident_type_data = jsonable_encoder(incident_type)
+    incident_type_data = incident_type.dict()
 
     update_data = incident_type_in.dict(
         skip_defaults=True,
@@ -179,7 +235,6 @@ def update(
         if field in update_data:
             setattr(incident_type, field, update_data[field])
 
-    db_session.add(incident_type)
     db_session.commit()
     return incident_type
 

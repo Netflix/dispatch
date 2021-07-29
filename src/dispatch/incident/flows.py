@@ -137,8 +137,10 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
         if incident.visibility == Visibility.restricted:
             title = incident.incident_type.name
 
-        incident_type_plugin_metadata = incident_type_service.get_by_name(
-            db_session=db_session, project_id=incident.project.id, name=incident.incident_type.name
+        incident_type_plugin_metadata = incident_type_service.get_by_name_or_raise(
+            db_session=db_session,
+            project_id=incident.project.id,
+            incident_type_in=incident.incident_type,
         ).get_meta(plugin.plugin.slug)
 
         ticket = plugin.instance.create(
@@ -180,8 +182,10 @@ def update_external_incident_ticket(
     if incident.visibility == Visibility.restricted:
         title = description = incident.incident_type.name
 
-    incident_type_plugin_metadata = incident_type_service.get_by_name(
-        db_session=db_session, project_id=incident.project.id, name=incident.incident_type.name
+    incident_type_plugin_metadata = incident_type_service.get_by_name_raise(
+        db_session=db_session,
+        project_id=incident.project.id,
+        incident_type_in=incident.incident_type,
     ).get_meta(plugin.plugin.slug)
 
     plugin.instance.update(

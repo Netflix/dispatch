@@ -1,10 +1,7 @@
 import math
-
 from datetime import datetime
 
 from typing import List, Optional
-
-from fastapi.encoders import jsonable_encoder
 
 from dispatch.config import ANNUAL_COST_EMPLOYEE, BUSINESS_HOURS_YEAR
 from dispatch.database.core import SessionLocal
@@ -77,14 +74,13 @@ def update(
     *, db_session, incident_cost: IncidentCost, incident_cost_in: IncidentCostUpdate
 ) -> IncidentCost:
     """Updates an incident cost."""
-    incident_cost_data = jsonable_encoder(incident_cost)
+    incident_cost_data = incident_cost.dict()
     update_data = incident_cost_in.dict(skip_defaults=True)
 
     for field in incident_cost_data:
         if field in update_data:
             setattr(incident_cost, field, update_data[field])
 
-    db_session.add(incident_cost)
     db_session.commit()
     return incident_cost
 

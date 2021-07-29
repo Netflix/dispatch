@@ -1,5 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
+
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
@@ -12,6 +15,8 @@ from dispatch.auth.permissions import (
     OrganizationOwnerPermission,
     PermissionsDependency,
 )
+from dispatch.exceptions import ExistsError
+from dispatch.models import PrimaryKey
 
 from .models import (
     OrganizationCreate,
@@ -19,7 +24,7 @@ from .models import (
     OrganizationUpdate,
     OrganizationPagination,
 )
-from .service import create, delete, get, get_by_name, update, add_user
+from .service import create, get, update, add_user
 
 router = APIRouter()
 
@@ -41,12 +46,17 @@ def create_organization(
     current_user: DispatchUser = Depends(get_current_user),
 ):
     """Create a new organization."""
-    organization = get_by_name(db_session=db_session, name=organization_in.name)
-    if organization:
-        raise HTTPException(
-            status_code=400, detail="An organization with this name already exists."
+    try:
+        organization = create(db_session=db_session, organization_in=organization_in)
+    except IntegrityError:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    ExistsError(msg="An organization with this name already exists."), loc="name"
+                )
+            ],
+            model=OrganizationCreate,
         )
-    organization = create(db_session=db_session, organization_in=organization_in)
 
     # add creator as organization owner
     add_user(
@@ -57,11 +67,14 @@ def create_organization(
 
 
 @router.get("/{organization_id}", response_model=OrganizationRead)
-def get_organization(*, db_session: Session = Depends(get_db), organization_id: int):
+def get_organization(*, db_session: Session = Depends(get_db), organization_id: PrimaryKey):
     """Get an organization."""
     organization = get(db_session=db_session, organization_id=organization_id)
     if not organization:
-        raise HTTPException(status_code=404, detail="An organization with this id does not exist.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "An organization with this id does not exist."}],
+        )
     return organization
 
 
@@ -73,29 +86,46 @@ def get_organization(*, db_session: Session = Depends(get_db), organization_id: 
 def update_organization(
     *,
     db_session: Session = Depends(get_db),
-    organization_id: int,
+    organization_id: PrimaryKey,
     organization_in: OrganizationUpdate,
 ):
     """Update an organization."""
     organization = get(db_session=db_session, organization_id=organization_id)
     if not organization:
-        raise HTTPException(status_code=404, detail="An organization with this id does not exist.")
-    organization = update(
-        db_session=db_session, organization=organization, organization_in=organization_in
-    )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "An organization with this id does not exist."}],
+        )
+    try:
+        organization = update(
+            db_session=db_session, organization=organization, organization_in=organization_in
+        )
+    except IntegrityError:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    ExistsError(msg="An organization with this name already exists."), loc="name"
+                )
+            ],
+            model=OrganizationUpdate,
+        )
     return organization
 
 
-@router.delete(
-    "/{organization_id}",
-    response_model=OrganizationRead,
-    dependencies=[Depends(PermissionsDependency([OrganizationOwnerPermission]))],
-)
-def delete_organization(*, db_session: Session = Depends(get_db), organization_id: int):
-    """Delete an organization."""
-    organization = get(db_session=db_session, organization_id=organization_id)
-    if not organization:
-        raise HTTPException(status_code=404, detail="An organization with this id does not exist.")
-
-    delete(db_session=db_session, organization_id=organization_id)
-    return organization
+# this isn't full supported yet
+# @router.delete(
+#    "/{organization_id}",
+#    response_model=OrganizationRead,
+#    dependencies=[Depends(PermissionsDependency([OrganizationOwnerPermission]))],
+# )
+# def delete_organization(*, db_session: Session = Depends(get_db), organization_id: PrimaryKey):
+#    """Delete an organization."""
+#    organization = get(db_session=db_session, organization_id=organization_id)
+#    if not organization:
+#        raise HTTPException(
+#            status_code=status.HTTP_404_NOT_FOUND, detail=[{"msg": "An organization with this id does not exist."}]
+#        )
+#
+#    delete(db_session=db_session, organization_id=organization_id)
+#    return organization
+#

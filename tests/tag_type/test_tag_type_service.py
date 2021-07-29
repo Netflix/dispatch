@@ -1,18 +1,8 @@
-import pytest
-
-
 def test_get(session, tag_type):
     from dispatch.tag_type.service import get
 
     t_tag_type = get(db_session=session, tag_type_id=tag_type.id)
     assert t_tag_type.id == tag_type.id
-
-
-def test_get_all(session, tag_types):
-    from dispatch.tag_type.service import get_all
-
-    t_tag_types = get_all(db_session=session).all()
-    assert len(t_tag_types) > 1
 
 
 def test_create(session, tag_type, project):
@@ -31,12 +21,11 @@ def test_create(session, tag_type, project):
     assert tag_type
 
 
-@pytest.mark.skip
 def test_update(session, tag_type):
     from dispatch.tag_type.service import update
     from dispatch.tag_type.models import TagTypeUpdate
 
-    name = "updated name"
+    name = "Updated name"
 
     tag_type_in = TagTypeUpdate(
         name=name,

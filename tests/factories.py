@@ -70,7 +70,7 @@ class OrganizationFactory(BaseFactory):
     description = FuzzyText()
     default = Faker().pybool()
     banner_enabled = Faker().pybool()
-    banner_color = FuzzyText()
+    banner_color = Faker().color()
     banner_text = FuzzyText()
 
     class Meta:
@@ -94,7 +94,7 @@ class ProjectFactory(BaseFactory):
     name = Sequence(lambda n: f"project{n}")
     description = FuzzyText()
     default = Faker().pybool()
-    color = FuzzyText()
+    color = Faker().color()
 
     class Meta:
         """Factory Configuration."""
@@ -148,13 +148,13 @@ class ResourceBaseFactory(TimeStampBaseFactory):
 class ContactBaseFactory(TimeStampBaseFactory):
     """Contact Base Factory."""
 
-    is_active = True
-    is_external = False
+    company = FuzzyText()
     contact_type = FuzzyChoice(["one", "two"])
     email = Sequence(lambda n: f"user{n}@example.com")
-    company = FuzzyText()
+    is_active = Faker().pybool()
+    is_external = Faker().pybool()
     notes = FuzzyText()
-    owner = "kevin@example.com"
+    owner = Sequence(lambda n: f"user{n}@example.com")
 
     @post_generation
     def incident_priorities(self, create, extracted, **kwargs):
@@ -347,12 +347,12 @@ class IncidentTypeFactory(BaseFactory):
 class IndividualContactFactory(ContactBaseFactory):
     """Individual Contact Factory."""
 
-    name = Sequence(lambda n: f"Joe{n}")
     mobile_phone = "111-111-1111"
+    name = Sequence(lambda n: f"Joe{n}")
     office_phone = "111-111-1111"
-    title = FuzzyText()
-    weblink = FuzzyText()
     project = SubFactory(ProjectFactory)
+    title = FuzzyText()
+    weblink = Sequence(lambda n: f"https://www.example.com/{n}")
 
     class Meta:
         """Factory Configuration."""
@@ -365,7 +365,7 @@ class ParticipantRoleFactory(BaseFactory):
 
     assumed_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
     renounced_at = None
-    role = FuzzyChoice(["Incident Commander", "Reporter", "Scribe", "Liaison"])
+    role = FuzzyChoice(["Incident Commander", "Reporter", "Scribe", "Liaison", "Participant"])
 
     class Meta:
         """Factory Configuration."""
@@ -383,6 +383,12 @@ class ParticipantRoleFactory(BaseFactory):
 
 class ParticipantFactory(BaseFactory):
     """Participant Factory."""
+
+    team = Sequence(lambda n: f"team{n}")
+    department = Sequence(lambda n: f"department{n}")
+    location = Sequence(lambda n: f"location{n}")
+    added_reason = Sequence(lambda n: f"added_reason{n}")
+    after_hours_notification = Faker().pybool()
 
     class Meta:
         """Factory Configuration."""
@@ -412,6 +418,14 @@ class ParticipantFactory(BaseFactory):
 
         if extracted:
             self.team_id = extracted.id
+
+    @post_generation
+    def service(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.service_id = extracted.id
 
     @post_generation
     def participant_roles(self, create, extracted, **kwargs):
@@ -566,19 +580,64 @@ class StorageFactory(ResourceBaseFactory):
             self.incident_id = extracted.id
 
 
+class IncidentFactory(BaseFactory):
+    """Incident Factory."""
+
+    id = Sequence(lambda n: f"1{n}")
+    name = FuzzyText()
+    title = FuzzyText()
+    description = FuzzyText()
+    status = FuzzyChoice(["Active", "Stable", "Closed"])
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Incident
+
+    @post_generation
+    def participants(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for participant in extracted:
+                self.participants.append(participant)
+
+
 class TaskFactory(ResourceBaseFactory):
     """Task Factory."""
 
-    resolved_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
-    last_reminder_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
-    creator = "joe@example.com"
-    assignees = "joe@example.com"
     description = FuzzyText()
+    last_reminder_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
+    priority = FuzzyChoice(["Low", "Medium", "High"])
+    reminders = Faker().pybool()
+    resolve_by = FuzzyDateTime(datetime(2020, 1, 2, tzinfo=UTC))
+    resolved_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
+    source = FuzzyChoice(["Incident", "Post Incident Review"])
+    status = FuzzyChoice(["Open", "Resolved"])
+    incident = SubFactory(IncidentFactory)
 
     class Meta:
         """Factory Configuration."""
 
         model = Task
+
+    @post_generation
+    def creator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.creator_id = extracted.id
+
+    @post_generation
+    def owner(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.owner_id = extracted.id
 
     @post_generation
     def incident(self, create, extracted, **kwargs):
@@ -587,6 +646,24 @@ class TaskFactory(ResourceBaseFactory):
 
         if extracted:
             self.incident_id = extracted.id
+
+    @post_generation
+    def assignees(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for assignee in extracted:
+                self.assignees.append(assignee)
+
+    @post_generation
+    def tickets(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for ticket in extracted:
+                self.tickets.append(ticket)
 
 
 class TeamContactFactory(ContactBaseFactory):
@@ -646,30 +723,6 @@ class TicketFactory(ResourceBaseFactory):
         model = Ticket
 
 
-class IncidentFactory(BaseFactory):
-    """Incident Factory."""
-
-    id = Sequence(lambda n: f"1{n}")
-    title = FuzzyText()
-    description = FuzzyText()
-    status = FuzzyChoice(["Active", "Stable", "Closed"])
-    project = SubFactory(ProjectFactory)
-
-    class Meta:
-        """Factory Configuration."""
-
-        model = Incident
-
-    @post_generation
-    def participants(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted:
-            for participant in extracted:
-                self.participants.append(participant)
-
-
 class EventFactory(BaseFactory):
     """Event Factory."""
 
@@ -718,7 +771,15 @@ class FeedbackFactory(BaseFactory):
     """Feedback Factory."""
 
     created_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
-    rating = FuzzyText()
+    rating = FuzzyChoice(
+        [
+            "Very satisfied",
+            "Somewhat satisfied",
+            "Neither satisfied nor dissatisfied",
+            "Somewhat dissatisfied",
+            "Very dissatisfied",
+        ]
+    )
     feedback = FuzzyText()
 
     class Meta:

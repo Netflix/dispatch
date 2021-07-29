@@ -1,29 +1,35 @@
 from typing import List, Optional
-from fastapi.encoders import jsonable_encoder
 
-from .models import Definition, DefinitionCreate, DefinitionUpdate
 from dispatch.project import service as project_service
 from dispatch.term import service as term_service
 
+from .models import Definition, DefinitionCreate, DefinitionUpdate
+
 
 def get(*, db_session, definition_id: int) -> Optional[Definition]:
+    """Gets a definition by its id."""
     return db_session.query(Definition).filter(Definition.id == definition_id).first()
 
 
 def get_by_text(*, db_session, text: str) -> Optional[Definition]:
+    """Gets a definition by its text."""
     return db_session.query(Definition).filter(Definition.text == text).first()
 
 
 def get_all(*, db_session) -> List[Optional[Definition]]:
+    """Gets all definitions."""
     return db_session.query(Definition)
 
 
 def create(*, db_session, definition_in: DefinitionCreate) -> Definition:
+    """Creates a new definition."""
     terms = [
         term_service.get_or_create(db_session=db_session, term_in=t) for t in definition_in.terms
     ]
 
-    project = project_service.get_by_name(db_session=db_session, name=definition_in.project.name)
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=definition_in.project
+    )
     definition = Definition(
         **definition_in.dict(exclude={"terms", "project"}), project=project, terms=terms
     )
@@ -33,6 +39,7 @@ def create(*, db_session, definition_in: DefinitionCreate) -> Definition:
 
 
 def create_all(*, db_session, definitions_in: List[DefinitionCreate]) -> List[Definition]:
+    """Creates a definitions in bulk."""
     definitions = [Definition(text=d.text) for d in definitions_in]
     db_session.bulk_save_insert(definitions)
     db_session.commit()
@@ -41,7 +48,8 @@ def create_all(*, db_session, definitions_in: List[DefinitionCreate]) -> List[De
 
 
 def update(*, db_session, definition: Definition, definition_in: DefinitionUpdate) -> Definition:
-    definition_data = jsonable_encoder(definition)
+    """Updates a definition."""
+    definition_data = definition.dict()
 
     terms = [
         term_service.get_or_create(db_session=db_session, term_in=t) for t in definition_in.terms
@@ -53,12 +61,13 @@ def update(*, db_session, definition: Definition, definition_in: DefinitionUpdat
             setattr(definition, field, update_data[field])
 
     definition.terms = terms
-    db_session.add(definition)
+
     db_session.commit()
     return definition
 
 
 def delete(*, db_session, definition_id: int):
+    """Deletes a definition."""
     definition = db_session.query(Definition).filter(Definition.id == definition_id).first()
     definition.terms = []
     db_session.delete(definition)
@@ -66,6 +75,7 @@ def delete(*, db_session, definition_id: int):
 
 
 def upsert(*, db_session, definition_in: DefinitionCreate) -> Definition:
+    """Gets or creates a new definition."""
     # we only care about unique columns
     q = db_session.query(Definition).filter(Definition.text == definition_in.text)
     instance = q.first()

@@ -1,4 +1,4 @@
-from pydantic import validator
+from pydantic import validator, Field
 
 from typing import Optional
 
@@ -28,7 +28,7 @@ class StorageUpdate(StorageBase):
 
 
 class StorageRead(StorageBase):
-    description: Optional[str]
+    description: Optional[str] = Field(None, nullable=True)
 
     @validator("description", pre=True, always=True)
     def set_description(cls, v):

@@ -1,8 +1,9 @@
 from typing import List, Optional
 from datetime import datetime, timedelta
-from fastapi.encoders import jsonable_encoder
 
+from dispatch.incident import service as incident_service
 from dispatch.incident.models import Incident
+from dispatch.participant import service as participant_service
 from dispatch.project.models import Project
 
 from .models import Feedback, FeedbackCreate, FeedbackUpdate
@@ -34,7 +35,14 @@ def get_all_last_x_hours_by_project_id(
 
 def create(*, db_session, feedback_in: FeedbackCreate) -> Feedback:
     """Creates a new piece of feedback."""
-    feedback = Feedback(**feedback_in.dict())
+    incident = incident_service.get(
+        db_session=db_session,
+        incident_id=feedback_in.incident.id,
+    )
+    feedback = Feedback(
+        **feedback_in.dict(exclude={"incident"}),
+        incident=incident,
+    )
     db_session.add(feedback)
     db_session.commit()
     return feedback
@@ -42,14 +50,13 @@ def create(*, db_session, feedback_in: FeedbackCreate) -> Feedback:
 
 def update(*, db_session, feedback: Feedback, feedback_in: FeedbackUpdate) -> Feedback:
     """Updates a piece of feedback."""
-    feedback_data = jsonable_encoder(feedback)
+    feedback_data = feedback.dict()
     update_data = feedback_in.dict(skip_defaults=True)
 
     for field in feedback_data:
         if field in update_data:
             setattr(feedback, field, update_data[field])
 
-    db_session.add(feedback)
     db_session.commit()
     return feedback
 

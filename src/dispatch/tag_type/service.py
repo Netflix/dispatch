@@ -1,8 +1,11 @@
 from typing import Optional
-from fastapi.encoders import jsonable_encoder
+
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from dispatch.exceptions import NotFoundError
 
 from dispatch.project import service as project_service
-from .models import TagType, TagTypeCreate, TagTypeUpdate
+
+from .models import TagType, TagTypeCreate, TagTypeRead, TagTypeUpdate
 
 
 def get(*, db_session, tag_type_id: int) -> Optional[TagType]:
@@ -20,6 +23,24 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[TagType]:
     )
 
 
+def get_by_name_or_raise(*, db_session, project_id: int, tag_type_in=TagTypeRead) -> TagType:
+    """Returns the tag_type specified or raises ValidationError."""
+    tag_type = get_by_name(db_session=db_session, project_id=project_id, name=tag_type_in.name)
+
+    if not tag_type:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(msg="TagType not found.", tag_type=tag_type_in.name),
+                    loc="tag_type",
+                )
+            ],
+            model=TagTypeRead,
+        )
+
+    return tag_type
+
+
 def get_all(*, db_session):
     """Gets all tag types."""
     return db_session.query(TagType)
@@ -27,7 +48,9 @@ def get_all(*, db_session):
 
 def create(*, db_session, tag_type_in: TagTypeCreate) -> TagType:
     """Creates a new tag type."""
-    project = project_service.get_by_name(db_session=db_session, name=tag_type_in.project.name)
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=tag_type_in.project
+    )
     tag_type = TagType(**tag_type_in.dict(exclude={"project"}), project=project)
     db_session.add(tag_type)
     db_session.commit()
@@ -51,14 +74,13 @@ def get_or_create(*, db_session, tag_type_in: TagTypeCreate) -> TagType:
 
 def update(*, db_session, tag_type: TagType, tag_type_in: TagTypeUpdate) -> TagType:
     """Updates a tag type."""
-    tag_type_data = jsonable_encoder(tag_type)
+    tag_type_data = tag_type.dict()
     update_data = tag_type_in.dict(skip_defaults=True)
 
     for field in tag_type_data:
         if field in update_data:
             setattr(tag_type, field, update_data[field])
 
-    db_session.add(tag_type)
     db_session.commit()
     return tag_type
 

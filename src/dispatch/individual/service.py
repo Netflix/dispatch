@@ -1,12 +1,10 @@
 from typing import List, Optional
 
-from fastapi.encoders import jsonable_encoder
 from dispatch.database.core import SessionLocal
-
 from dispatch.incident.models import Incident
+from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
-from dispatch.plugin import service as plugin_service
 
 from .models import IndividualContact, IndividualContactCreate, IndividualContactUpdate
 
@@ -78,8 +76,8 @@ def get_or_create(
 
 def create(*, db_session, individual_contact_in: IndividualContactCreate) -> IndividualContact:
     """Creates an individual."""
-    project = project_service.get_by_name(
-        db_session=db_session, name=individual_contact_in.project.name
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=individual_contact_in.project
     )
 
     contact = IndividualContact(
@@ -105,7 +103,13 @@ def update(
     individual_contact: IndividualContact,
     individual_contact_in: IndividualContactUpdate,
 ) -> IndividualContact:
-    individual_contact_data = jsonable_encoder(individual_contact_in)
+    """Updates an individual."""
+    individual_contact_data = individual_contact.dict()
+    update_data = individual_contact_in.dict(skip_defaults=True, exclude={"filters"})
+
+    for field in individual_contact_data:
+        if field in update_data:
+            setattr(individual_contact, field, update_data[field])
 
     if individual_contact_in.filters is not None:
         filters = [
@@ -114,18 +118,12 @@ def update(
         ]
         individual_contact.filters = filters
 
-    update_data = individual_contact_in.dict(skip_defaults=True, exclude={"filters"})
-
-    for field in individual_contact_data:
-        if field in update_data:
-            setattr(individual_contact, field, update_data[field])
-
-    db_session.add(individual_contact)
     db_session.commit()
     return individual_contact
 
 
 def delete(*, db_session, individual_contact_id: int):
+    """Deletes an individual."""
     individual = (
         db_session.query(IndividualContact)
         .filter(IndividualContact.id == individual_contact_id)

@@ -1,9 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.exceptions import ExistsError
+from dispatch.models import PrimaryKey
 
 from .models import (
     SearchFilterCreate,
@@ -28,11 +31,15 @@ def create_search_filter(
 ):
     """Create a new filter."""
     try:
-        search_filter = create(db_session=db_session, search_filter_in=search_filter_in)
-        return search_filter
+        return create(db_session=db_session, search_filter_in=search_filter_in)
     except IntegrityError:
-        raise HTTPException(
-            status_code=409, detail="A search filter already exists with this name."
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    ExistsError(msg="A search filter with this name already exists."), loc="name"
+                )
+            ],
+            model=SearchFilterRead,
         )
 
 
@@ -40,24 +47,40 @@ def create_search_filter(
 def update_search_filter(
     *,
     db_session: Session = Depends(get_db),
-    search_filter_id: int,
+    search_filter_id: PrimaryKey,
     search_filter_in: SearchFilterUpdate,
 ):
     """Update a search filter."""
     search_filter = get(db_session=db_session, search_filter_id=search_filter_id)
     if not search_filter:
-        raise HTTPException(status_code=404, detail="A search filter with this id does not exist.")
-    search_filter = update(
-        db_session=db_session, search_filter=search_filter, search_filter_in=search_filter_in
-    )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A search filter with this id does not exist."}],
+        )
+    try:
+        search_filter = update(
+            db_session=db_session, search_filter=search_filter, search_filter_in=search_filter_in
+        )
+    except IntegrityError:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    ExistsError(msg="A search filter with this name already exists."), loc="name"
+                )
+            ],
+            model=SearchFilterUpdate,
+        )
     return search_filter
 
 
 @router.delete("/{search_filter_id}")
-def delete_filter(*, db_session: Session = Depends(get_db), search_filter_id: int):
+def delete_filter(*, db_session: Session = Depends(get_db), search_filter_id: PrimaryKey):
     """Delete a search filter."""
     search_filter = get(db_session=db_session, search_filter_id=search_filter_id)
     if not search_filter:
-        raise HTTPException(status_code=404, detail="A search filter with this id does not exist.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A search filter with this id does not exist."}],
+        )
 
     delete(db_session=db_session, search_filter_id=search_filter_id)

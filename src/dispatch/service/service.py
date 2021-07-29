@@ -1,11 +1,9 @@
 from typing import List, Optional
 
-from fastapi.encoders import jsonable_encoder
-
 from dispatch.exceptions import InvalidConfiguration
+from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
-from dispatch.plugin import service as plugin_service
 
 from .models import Service, ServiceCreate, ServiceUpdate
 
@@ -78,7 +76,9 @@ def get_all_by_project_id_and_status(
 
 def create(*, db_session, service_in: ServiceCreate) -> Service:
     """Creates a new service."""
-    project = project_service.get_by_name(db_session=db_session, name=service_in.project.name)
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=service_in.project
+    )
 
     filters = [
         search_filter_service.get(db_session=db_session, search_filter_id=f.id)
@@ -97,7 +97,7 @@ def create(*, db_session, service_in: ServiceCreate) -> Service:
 
 def update(*, db_session, service: Service, service_in: ServiceUpdate) -> Service:
     """Updates an existing service."""
-    service_data = jsonable_encoder(service)
+    service_data = service.dict()
 
     update_data = service_in.dict(skip_defaults=True, exclude={"filters"})
 
@@ -120,7 +120,7 @@ def update(*, db_session, service: Service, service_in: ServiceUpdate) -> Servic
             setattr(service, field, update_data[field])
 
     service.filters = filters
-    db_session.add(service)
+
     db_session.commit()
     return service
 

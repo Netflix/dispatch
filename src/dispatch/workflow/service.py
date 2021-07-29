@@ -1,5 +1,4 @@
 from typing import List, Optional
-from fastapi.encoders import jsonable_encoder
 
 from sqlalchemy.sql.expression import true
 from dispatch.project import service as project_service
@@ -37,7 +36,9 @@ def get_enabled(*, db_session) -> List[Optional[Workflow]]:
 
 def create(*, db_session, workflow_in: WorkflowCreate) -> Workflow:
     """Creates a new workflow."""
-    project = project_service.get_by_name(db_session=db_session, name=workflow_in.project.name)
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=workflow_in.project
+    )
     plugin_instance = plugin_service.get_instance(
         db_session=db_session, plugin_instance_id=workflow_in.plugin_instance.id
     )
@@ -54,8 +55,8 @@ def create(*, db_session, workflow_in: WorkflowCreate) -> Workflow:
 
 def update(*, db_session, workflow: Workflow, workflow_in: WorkflowUpdate) -> Workflow:
     """Updates a workflow."""
-    workflow_data = jsonable_encoder(workflow)
-    update_data = workflow_in.dict(skip_defaults=True, exclude={"plugin"})
+    workflow_data = workflow.dict()
+    update_data = workflow_in.dict(skip_defaults=True, exclude={"plugin_instance"})
 
     for field in workflow_data:
         if field in update_data:
@@ -64,11 +65,10 @@ def update(*, db_session, workflow: Workflow, workflow_in: WorkflowUpdate) -> Wo
     plugin_instance = plugin_service.get_instance(
         db_session=db_session, plugin_instance_id=workflow_in.plugin_instance.id
     )
+
     workflow.plugin_instance = plugin_instance
 
-    db_session.add(workflow)
     db_session.commit()
-
     return workflow
 
 
@@ -116,7 +116,7 @@ def create_instance(*, db_session, instance_in: WorkflowInstanceCreate) -> Workf
 
 def update_instance(*, db_session, instance: WorkflowInstance, instance_in: WorkflowInstanceUpdate):
     """Updates an existing workflow instance."""
-    instance_data = jsonable_encoder(instance)
+    instance_data = instance.dict()
     update_data = instance_in.dict(
         skip_defaults=True, exclude={"incident", "workflow", "creator", "artifacts"}
     )
@@ -129,7 +129,5 @@ def update_instance(*, db_session, instance: WorkflowInstance, instance_in: Work
         if field in update_data:
             setattr(instance, field, update_data[field])
 
-    db_session.add(instance)
     db_session.commit()
-
     return instance

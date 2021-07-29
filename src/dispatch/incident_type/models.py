@@ -1,5 +1,6 @@
 from typing import List, Optional
-from pydantic import validator
+from pydantic import validator, Field
+from dispatch.models import NameStr, PrimaryKey
 
 from sqlalchemy import Column, Boolean, ForeignKey, Integer, String, JSON
 from sqlalchemy.ext.hybrid import hybrid_method
@@ -69,27 +70,27 @@ listen(IncidentType.default, "set", ensure_unique_default_per_project)
 
 
 class Document(DispatchBase):
-    id: int
-    resource_type: Optional[str]
-    resource_id: Optional[str]
-    description: Optional[str]
+    id: PrimaryKey
+    name: NameStr
+    resource_type: Optional[str] = Field(None, nullable=True)
+    resource_id: Optional[str] = Field(None, nullable=True)
+    description: Optional[str] = Field(None, nullable=True)
     weblink: str
-    name: str
 
 
 class Service(DispatchBase):
-    id: int
-    name: Optional[str] = None
-    external_id: Optional[str] = None
-    is_active: Optional[bool] = None
-    type: Optional[str] = None
+    id: PrimaryKey
+    name: Optional[str] = Field(None, nullable=True)
+    external_id: Optional[str] = Field(None, nullable=True)
+    is_active: Optional[bool] = False
+    type: Optional[str] = Field(None, nullable=True)
 
 
 # Pydantic models...
 class IncidentTypeBase(DispatchBase):
-    name: str
-    visibility: Optional[str]
-    description: Optional[str]
+    name: NameStr
+    visibility: Optional[str] = Field(None, nullable=True)
+    description: Optional[str] = Field(None, nullable=True)
     enabled: Optional[bool]
     incident_template_document: Optional[Document]
     executive_template_document: Optional[Document]
@@ -112,11 +113,11 @@ class IncidentTypeCreate(IncidentTypeBase):
 
 
 class IncidentTypeUpdate(IncidentTypeBase):
-    id: int
+    id: PrimaryKey = None
 
 
 class IncidentTypeRead(IncidentTypeBase):
-    id: int
+    id: PrimaryKey
 
 
 class IncidentTypePagination(DispatchBase):

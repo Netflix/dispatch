@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
+from pydantic import Field
 
 from sqlalchemy import (
     Boolean,
@@ -18,7 +19,7 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.config import INCIDENT_RESOURCE_INCIDENT_TASK
-from dispatch.models import DispatchBase, ResourceBase, ResourceMixin
+from dispatch.models import DispatchBase, ResourceBase, ResourceMixin, PrimaryKey
 
 from dispatch.project.models import ProjectRead
 from dispatch.incident.models import IncidentReadNested
@@ -98,14 +99,14 @@ class TaskBase(ResourceBase):
     assignees: List[Optional[ParticipantRead]] = []
     created_at: Optional[datetime]
     creator: Optional[ParticipantRead]
-    description: Optional[str]
-    incident: Optional[IncidentReadNested]
+    description: Optional[str] = Field(None, nullable=True)
+    incident: IncidentReadNested
     owner: Optional[ParticipantRead]
-    priority: Optional[str]
+    priority: Optional[str] = Field(None, nullable=True)
     resolve_by: Optional[datetime]
     resolved_at: Optional[datetime]
-    resource_id: Optional[str]
-    source: Optional[str]
+    resource_id: Optional[str] = Field(None, nullable=True)
+    source: Optional[str] = Field(None, nullable=True)
     status: TaskStatus = TaskStatus.open
     tickets: Optional[List[TicketRead]] = []
     updated_at: Optional[datetime]
@@ -126,7 +127,7 @@ class TaskUpdate(TaskBase):
 
 
 class TaskRead(TaskBase):
-    id: int
+    id: PrimaryKey
     project: Optional[ProjectRead]
 
 

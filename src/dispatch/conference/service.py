@@ -28,5 +28,4 @@ def create(*, db_session, conference_in: ConferenceCreate) -> Conference:
     conference = Conference(**conference_in.dict())
     db_session.add(conference)
     db_session.commit()
-    db_session.flush(conference)
     return conference

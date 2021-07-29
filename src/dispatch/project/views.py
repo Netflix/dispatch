@@ -1,5 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
+
+from dispatch.exceptions import ExistsError
 
 from dispatch.auth.permissions import (
     ProjectCreatePermission,
@@ -9,6 +12,7 @@ from dispatch.auth.permissions import (
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.models import PrimaryKey
 
 from .models import (
     ProjectCreate,
@@ -37,7 +41,11 @@ def create_project(*, db_session: Session = Depends(get_db), project_in: Project
     """Create a new project."""
     project = get_by_name(db_session=db_session, name=project_in.name)
     if project:
-        raise HTTPException(status_code=400, detail="A project with this name already exists.")
+        raise ValidationError(
+            [ErrorWrapper(ExistsError(msg="A project with this name already exists."), loc="name")],
+            model=ProjectCreate,
+        )
+
     project = create(db_session=db_session, project_in=project_in)
     return project
 
@@ -47,11 +55,14 @@ def create_project(*, db_session: Session = Depends(get_db), project_in: Project
     response_model=ProjectRead,
     summary="Get a project.",
 )
-def get_project(*, db_session: Session = Depends(get_db), project_id: int):
+def get_project(*, db_session: Session = Depends(get_db), project_id: PrimaryKey):
     """Get a project."""
     project = get(db_session=db_session, project_id=project_id)
     if not project:
-        raise HTTPException(status_code=404, detail="A project with this id does not exist.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A project with this id does not exist."}],
+        )
     return project
 
 
@@ -63,13 +74,16 @@ def get_project(*, db_session: Session = Depends(get_db), project_id: int):
 def update_project(
     *,
     db_session: Session = Depends(get_db),
-    project_id: int,
+    project_id: PrimaryKey,
     project_in: ProjectUpdate,
 ):
     """Update a project."""
     project = get(db_session=db_session, project_id=project_id)
     if not project:
-        raise HTTPException(status_code=404, detail="A project with this id does not exist.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A project with this id does not exist."}],
+        )
     project = update(db_session=db_session, project=project, project_in=project_in)
     return project
 
@@ -79,11 +93,14 @@ def update_project(
     response_model=ProjectRead,
     dependencies=[Depends(PermissionsDependency([ProjectUpdatePermission]))],
 )
-def delete_project(*, db_session: Session = Depends(get_db), project_id: int):
+def delete_project(*, db_session: Session = Depends(get_db), project_id: PrimaryKey):
     """Delete a project."""
     project = get(db_session=db_session, project_id=project_id)
     if not project:
-        raise HTTPException(status_code=404, detail="A project with this id does not exist.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A project with this id does not exist."}],
+        )
 
     delete(db_session=db_session, project_id=project_id)
     return project

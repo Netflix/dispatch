@@ -1,13 +1,12 @@
-from datetime import datetime
-
 from typing import Optional, List
+from pydantic import Field
 
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, Boolean, String, Integer, ForeignKey, select
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, IndividualReadNested
+from dispatch.models import DispatchBase, IndividualReadNested, PrimaryKey
 from dispatch.participant_role.models import (
     ParticipantRoleCreate,
     ParticipantRoleRead,
@@ -64,17 +63,17 @@ class Participant(Base):
 
 
 class ParticipantBase(DispatchBase):
-    location: Optional[str]
-    team: Optional[str]
-    department: Optional[str]
-    added_reason: Optional[str]
+    location: Optional[str] = Field(None, nullable=True)
+    team: Optional[str] = Field(None, nullable=True)
+    department: Optional[str] = Field(None, nullable=True)
+    added_reason: Optional[str] = Field(None, nullable=True)
 
 
 class ParticipantCreate(ParticipantBase):
     participant_roles: Optional[List[ParticipantRoleCreate]] = []
-    location: Optional[str]
-    team: Optional[str]
-    department: Optional[str]
+    location: Optional[str] = Field(None, nullable=True)
+    team: Optional[str] = Field(None, nullable=True)
+    department: Optional[str] = Field(None, nullable=True)
     service: Optional[ServiceRead]
 
 
@@ -83,7 +82,7 @@ class ParticipantUpdate(ParticipantBase):
 
 
 class ParticipantRead(ParticipantBase):
-    id: int
+    id: PrimaryKey
     participant_roles: Optional[List[ParticipantRoleRead]] = []
     individual: Optional[IndividualReadNested]
 

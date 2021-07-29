@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import validator
+from pydantic import validator, Field
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, ForeignKey, Integer, String, JSON, Table
 from sqlalchemy.sql.schema import PrimaryKeyConstraint
@@ -10,7 +10,15 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.document.models import DocumentCreate
-from dispatch.models import DispatchBase, ResourceBase, ResourceMixin, TimeStampMixin, ProjectMixin
+from dispatch.models import (
+    DispatchBase,
+    NameStr,
+    ResourceBase,
+    ResourceMixin,
+    TimeStampMixin,
+    ProjectMixin,
+    PrimaryKey,
+)
 from dispatch.participant.models import ParticipantRead
 from dispatch.plugin.models import PluginInstance, PluginInstanceRead
 from dispatch.project.models import ProjectRead
@@ -94,12 +102,12 @@ class WorkflowInstance(Base, ResourceMixin):
 
 # Pydantic models...
 class WorkflowBase(DispatchBase):
-    name: str
+    name: NameStr
     resource_id: str
-    plugin_instance: Optional[PluginInstanceRead]
+    plugin_instance: PluginInstanceRead
     parameters: Optional[List[dict]] = []
     enabled: Optional[bool]
-    description: Optional[str]
+    description: Optional[str] = Field(None, nullable=True)
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -109,11 +117,11 @@ class WorkflowCreate(WorkflowBase):
 
 
 class WorkflowUpdate(WorkflowBase):
-    id: int
+    id: PrimaryKey = None
 
 
 class WorkflowRead(WorkflowBase):
-    id: int
+    id: PrimaryKey
 
     @validator("description", pre=True, always=True)
     def set_description(cls, v, values):
@@ -136,7 +144,7 @@ class WorkflowInstanceBase(ResourceBase):
     artifacts: Optional[List[DocumentCreate]] = []
     created_at: Optional[datetime] = None
     parameters: Optional[List[dict]] = []
-    run_reason: Optional[str]
+    run_reason: Optional[str] = Field(None, nullable=True)
     status: Optional[WorkflowInstanceStatus]
     updated_at: Optional[datetime] = None
 
@@ -152,7 +160,7 @@ class WorkflowInstanceUpdate(WorkflowInstanceBase):
 
 
 class WorkflowInstanceRead(WorkflowInstanceBase):
-    id: int
+    id: PrimaryKey
     workflow: WorkflowRead
     creator: ParticipantRead
 

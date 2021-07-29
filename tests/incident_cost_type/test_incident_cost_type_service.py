@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_get(session, incident_cost_type):
     from dispatch.incident_cost_type.service import get
 
@@ -39,7 +36,6 @@ def test_create(session, project):
     assert incident_cost_type
 
 
-@pytest.mark.skip
 def test_update(session, incident_cost_type):
     from dispatch.incident_cost_type.service import update
     from dispatch.incident_cost_type.models import IncidentCostTypeUpdate
