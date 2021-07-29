@@ -1,12 +1,10 @@
 from typing import List, Optional
 
-from fastapi.encoders import jsonable_encoder
 from dispatch.database.core import SessionLocal
-
 from dispatch.incident.models import Incident
+from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
-from dispatch.plugin import service as plugin_service
 
 from .models import IndividualContact, IndividualContactCreate, IndividualContactUpdate
 
@@ -108,7 +106,8 @@ def update(
     individual_contact: IndividualContact,
     individual_contact_in: IndividualContactUpdate,
 ) -> IndividualContact:
-    individual_contact_data = jsonable_encoder(individual_contact_in)
+    """Updates an individual."""
+    individual_contact_data = individual_contact.dict()
 
     if individual_contact_in.filters is not None:
         filters = [
@@ -123,12 +122,12 @@ def update(
         if field in update_data:
             setattr(individual_contact, field, update_data[field])
 
-    db_session.add(individual_contact)
     db_session.commit()
     return individual_contact
 
 
 def delete(*, db_session, individual_contact_id: int):
+    """Deletes an individual."""
     individual = (
         db_session.query(IndividualContact)
         .filter(IndividualContact.id == individual_contact_id)

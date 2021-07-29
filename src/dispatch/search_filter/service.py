@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi.encoders import jsonable_encoder
+
 from sqlalchemy_filters import apply_filters
 
 from dispatch.database.core import Base, get_class_by_tablename, get_table_name_by_class_instance
@@ -66,14 +66,13 @@ def update(
     *, db_session, search_filter: SearchFilter, search_filter_in: SearchFilterUpdate
 ) -> SearchFilter:
     """Updates a search filter."""
-    search_filter_data = jsonable_encoder(search_filter)
+    search_filter_data = search_filter.dict()
     update_data = search_filter_in.dict(skip_defaults=True)
 
     for field in search_filter_data:
         if field in update_data:
             setattr(search_filter, field, update_data[field])
 
-    db_session.add(search_filter)
     db_session.commit()
     return search_filter
 

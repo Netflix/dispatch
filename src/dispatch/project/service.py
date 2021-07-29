@@ -1,7 +1,6 @@
 from typing import List, Optional
-from sqlalchemy.sql.expression import true
 
-from fastapi.encoders import jsonable_encoder
+from sqlalchemy.sql.expression import true
 
 from .models import Project, ProjectCreate, ProjectUpdate
 
@@ -58,7 +57,7 @@ def get_or_create(*, db_session, project_in: ProjectCreate) -> Project:
 
 def update(*, db_session, project: Project, project_in: ProjectUpdate) -> Project:
     """Updates a project."""
-    project_data = jsonable_encoder(project)
+    project_data = project.dict()
 
     update_data = project_in.dict(skip_defaults=True, exclude={})
 

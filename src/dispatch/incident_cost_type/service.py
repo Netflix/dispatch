@@ -1,7 +1,5 @@
 from typing import List, Optional
 
-from fastapi.encoders import jsonable_encoder
-
 from sqlalchemy.sql.expression import true
 
 from dispatch.project import service as project_service
@@ -69,14 +67,13 @@ def update(
     incident_cost_type_in: IncidentCostTypeUpdate,
 ) -> IncidentCostType:
     """Updates an incident cost type."""
-    incident_cost_data = jsonable_encoder(incident_cost_type)
+    incident_cost_data = incident_cost_type.dict()
     update_data = incident_cost_type_in.dict(skip_defaults=True)
 
     for field in incident_cost_data:
         if field in update_data:
             setattr(incident_cost_type, field, update_data[field])
 
-    db_session.add(incident_cost_type)
     db_session.commit()
     return incident_cost_type
 
