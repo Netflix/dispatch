@@ -35,7 +35,7 @@ def create_individual(
         raise ValidationError(
             [
                 ErrorWrapper(
-                    ExistsError(msg="A individual with this email already exists."), loc="email"
+                    ExistsError(msg="An individual with this email already exists."), loc="email"
                 )
             ]
         )
