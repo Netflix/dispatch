@@ -68,7 +68,7 @@ def update_search_filter(
                     ExistsError(msg="A search filter with this name already exists."), loc="name"
                 )
             ],
-            model=SearchFilterUpdate
+            model=SearchFilterUpdate,
         )
     return search_filter
 
