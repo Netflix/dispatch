@@ -2,12 +2,10 @@ import logging
 
 from typing import List, Optional, Type
 
-from fastapi.encoders import jsonable_encoder
-
 from dispatch.database.core import Base
 from dispatch.incident.models import Incident
-from dispatch.project import service as project_service
 from dispatch.plugin import service as plugin_service
+from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
 
 from .models import Notification, NotificationCreate, NotificationUpdate
@@ -59,7 +57,7 @@ def update(
     *, db_session, notification: Notification, notification_in: NotificationUpdate
 ) -> Notification:
     """Updates a notification."""
-    notification_data = jsonable_encoder(notification)
+    notification_data = notification.dict()
 
     filters = [
         search_filter_service.get(db_session=db_session, search_filter_id=f.id)
@@ -76,7 +74,7 @@ def update(
             setattr(notification, field, update_data[field])
 
     notification.filters = filters
-    db_session.add(notification)
+
     db_session.commit()
     return notification
 

@@ -1,8 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
 
-from fastapi.encoders import jsonable_encoder
-
 from dispatch.participant import service as participant_service
 
 from .models import (
@@ -81,7 +79,7 @@ def update(
     *, db_session, participant_role: ParticipantRole, participant_role_in: ParticipantRoleUpdate
 ) -> ParticipantRole:
     """Updates a participant role."""
-    participant_role_data = jsonable_encoder(participant_role)
+    participant_role_data = participant_role.dict()
 
     update_data = participant_role_in.dict(skip_defaults=True)
 
@@ -89,7 +87,6 @@ def update(
         if field in update_data:
             setattr(participant_role, field, update_data[field])
 
-    db_session.add(participant_role)
     db_session.commit()
     return participant_role
 

@@ -1,7 +1,5 @@
 from typing import List, Optional
 
-from fastapi.encoders import jsonable_encoder
-
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContact
@@ -9,7 +7,6 @@ from dispatch.participant_role import service as participant_role_service
 from dispatch.participant_role.models import ParticipantRole, ParticipantRoleCreate
 from dispatch.plugin import service as plugin_service
 from dispatch.service import service as service_service
-
 
 from .models import Participant, ParticipantCreate, ParticipantUpdate
 
@@ -162,7 +159,7 @@ def update(
     *, db_session, participant: Participant, participant_in: ParticipantUpdate
 ) -> Participant:
     """Updates a participant."""
-    participant_data = jsonable_encoder(participant)
+    participant_data = participant.dict()
 
     update_data = participant_in.dict(skip_defaults=True)
 
@@ -170,7 +167,6 @@ def update(
         if field in update_data:
             setattr(participant, field, update_data[field])
 
-    db_session.add(participant)
     db_session.commit()
     return participant
 
