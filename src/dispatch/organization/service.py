@@ -70,11 +70,14 @@ def update(
     """Updates an organization."""
     organization_data = organization.dict()
 
-    update_data = organization_in.dict(skip_defaults=True)
+    update_data = organization_in.dict(skip_defaults=True, exclude={"banner_color"})
 
     for field in organization_data:
         if field in update_data:
             setattr(organization, field, update_data[field])
+
+    if organization_in.banner_color:
+        organization.banner_color = organization_in.banner_color.as_hex()
 
     db_session.commit()
     return organization

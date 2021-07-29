@@ -35,6 +35,9 @@ from .core import (
 
 log = logging.getLogger(__file__)
 
+# allows only printable characters
+QueryStr = constr(regex=r"^[ -~]+$", min_length=1)
+
 
 def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, role: UserRoles):
     """Adds additional incident filters to query (usually for permissions)."""
@@ -172,7 +175,7 @@ def common_parameters(
     db_session: orm.Session = Depends(get_db),
     page: int = Query(1, gt=0, lt=2147483647),
     items_per_page: int = Query(5, alias="itemsPerPage", gt=0, lt=2147483647),
-    query_str: constr(strip_whitespace=True, min_length=1) = Query(None, alias="q"),
+    query_str: QueryStr = Query(None, alias="q"),
     filter_spec: Json = Query([], alias="filter"),
     sort_by: List[str] = Query([], alias="sortBy[]"),
     descending: List[bool] = Query([], alias="descending[]"),

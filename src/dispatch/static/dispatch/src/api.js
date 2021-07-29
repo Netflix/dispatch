@@ -25,6 +25,20 @@ instance.interceptors.request.use(
   }
 )
 
+// we don't want to send null/empty values to the API
+// TODO do we need to do this for all params?
+instance.interceptors.request.use(
+  (config) => {
+    if (!config.params["q"]) {
+      delete config.params["q"]
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
 instance.interceptors.request.use(function (config) {
   if (!config.url.includes("organization")) {
     let currentOrganization = store.state.route.params.organization || null
