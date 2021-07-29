@@ -65,11 +65,14 @@ def update(
 ) -> Organization:
     organization_data = jsonable_encoder(organization)
 
-    update_data = organization_in.dict(skip_defaults=True)
+    update_data = organization_in.dict(skip_defaults=True, exclude={"banner_color"})
 
     for field in organization_data:
         if field in update_data:
             setattr(organization, field, update_data[field])
+
+    if organization_in.banner_color:
+        organization.banner_color = organization_in.banner_color.as_hex()
 
     db_session.add(organization)
     db_session.commit()
