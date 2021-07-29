@@ -53,7 +53,7 @@ def create_organization(
         raise ValidationError(
             [
                 ErrorWrapper(
-                    ExistsError(msg="A organization with this name already exists."), loc="name"
+                    ExistsError(msg="An organization with this name already exists."), loc="name"
                 )
             ]
         )
