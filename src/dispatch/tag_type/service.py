@@ -1,8 +1,11 @@
 from typing import Optional
 
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from dispatch.exceptions import NotFoundError
+
 from dispatch.project import service as project_service
 
-from .models import TagType, TagTypeCreate, TagTypeUpdate
+from .models import TagType, TagTypeCreate, TagTypeRead, TagTypeUpdate
 
 
 def get(*, db_session, tag_type_id: int) -> Optional[TagType]:
@@ -18,6 +21,23 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[TagType]:
         .filter(TagType.project_id == project_id)
         .one_or_none()
     )
+
+
+def get_by_name_or_raise(*, db_session, project_id: int, tag_type_in=TagTypeRead) -> TagType:
+    """Returns the tag_type specified or raises ValidationError."""
+    tag_type = get_by_name(db_session=db_session, project_id=project_id, name=tag_type_in.name)
+
+    if not tag_type:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(msg="TagType not found.", tag_type=tag_type_in.name),
+                    loc="tag_type",
+                )
+            ]
+        )
+
+    return tag_type
 
 
 def get_all(*, db_session):

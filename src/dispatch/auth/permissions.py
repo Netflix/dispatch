@@ -55,7 +55,7 @@ class BasePermission(ABC):
     def __init__(self, request: Request):
         organization = None
         if request.path_params.get("organization"):
-            organization = organization_service.get_by_name(
+            organization = organization_service.get_by_name_or_raise(
                 db_session=request.state.db, name=request.path_params["organization"]
             )
         elif request.path_params.get("organization_id"):

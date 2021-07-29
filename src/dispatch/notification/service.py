@@ -43,7 +43,7 @@ def create(*, db_session, notification_in: NotificationCreate) -> Notification:
         ]
 
     project = project_service.get_by_name_or_raise(
-        db_session=db_session, project_in=notification_in.project.name
+        db_session=db_session, project_in=notification_in.project
     )
 
     notification = Notification(
