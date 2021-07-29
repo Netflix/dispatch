@@ -29,7 +29,7 @@ class TagTypeCreate(TagTypeBase):
 
 
 class TagTypeUpdate(TagTypeBase):
-    id: PrimaryKey
+    id: PrimaryKey = None
 
 
 class TagTypeRead(TagTypeBase):

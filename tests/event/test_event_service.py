@@ -1,6 +1,4 @@
 import datetime
-import pytest
-
 from uuid import uuid4
 
 
@@ -15,26 +13,6 @@ def test_get_by_incident_id(session, event):
     from dispatch.event.service import get_by_incident_id
 
     t_events = get_by_incident_id(db_session=session, incident_id=event.incident_id).all()
-    assert len(t_events) > 1
-
-
-@pytest.mark.skip()
-def test_get_by_incident_id_and_source(session, incident, event):
-    from dispatch.event.service import get_by_incident_id_and_source
-
-    t_events = get_by_incident_id_and_source(
-        db_session=session, incident_id=incident.id, source=event.source
-    )
-    assert len(t_events) > 1
-
-
-@pytest.mark.skip()
-def test_get_by_incident_id_and_individual_id(session, incident, individual_contact):
-    from dispatch.event.service import test_get_by_incident_id_and_individual_id
-
-    t_events = test_get_by_incident_id_and_individual_id(
-        db_session=session, incident_id=incident.id, individual_id=individual_contact.id
-    )
     assert len(t_events) > 1
 
 
@@ -65,7 +43,6 @@ def test_create(session):
     assert source == event.source
 
 
-@pytest.mark.skip
 def test_update(session, event):
     from dispatch.event.service import update
     from dispatch.event.models import EventUpdate

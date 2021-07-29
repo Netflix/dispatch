@@ -15,33 +15,33 @@ def test_get_all(session, feedbacks):
     assert len(t_feedbacks) > 1
 
 
-def test_create(session):
+@pytest.mark.skip
+def test_create(session, incident, incident_type, incident_priority):
     from dispatch.feedback.service import create
     from dispatch.feedback.models import FeedbackCreate
 
+    incident.incident_type = incident_type
+    incident.incident_priority = incident_priority
     rating = "Neither satisfied nor dissatisfied"
-    feedback = "XXX"
+    feedback = "The incident commander did an excellent job"
 
-    feedback_in = FeedbackCreate(
-        rating=rating,
-        feedback=feedback,
-    )
+    feedback_in = FeedbackCreate(rating=rating, feedback=feedback, incident=incident)
     feedback = create(db_session=session, feedback_in=feedback_in)
     assert feedback
 
 
-@pytest.mark.skip
 def test_update(session, feedback):
     from dispatch.feedback.service import update
     from dispatch.feedback.models import FeedbackUpdate
 
-    rating = "Updated rating"
+    rating = "Very satisfied"
+    feedback_text = "The incident commander did an excellent job"
 
-    feedback_in = FeedbackUpdate(
-        rating=rating,
-    )
+    feedback_in = FeedbackUpdate(rating=rating, feedback=feedback_text)
     feedback = update(db_session=session, feedback=feedback, feedback_in=feedback_in)
+
     assert feedback.rating == rating
+    assert feedback.feedback == feedback_text
 
 
 def test_delete(session, feedback):

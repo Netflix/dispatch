@@ -113,7 +113,7 @@ class IncidentTypeCreate(IncidentTypeBase):
 
 
 class IncidentTypeUpdate(IncidentTypeBase):
-    id: PrimaryKey
+    id: PrimaryKey = None
 
 
 class IncidentTypeRead(IncidentTypeBase):

@@ -28,6 +28,23 @@ def test_create(session):
     assert conversation
 
 
+def test_update(session, conversation):
+    from dispatch.conversation.service import update
+    from dispatch.conversation.models import ConversationUpdate
+
+    channel_id = "channel_id"
+
+    conversation_in = ConversationUpdate(
+        channel_id=channel_id,
+    )
+    conversation = update(
+        db_session=session,
+        conversation=conversation,
+        conversation_in=conversation_in,
+    )
+    assert conversation.channel_id == channel_id
+
+
 def test_delete(session, conversation):
     from dispatch.conversation.service import delete, get
 

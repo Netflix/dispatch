@@ -24,16 +24,17 @@ def test_create(
     assert task
 
 
-@pytest.mark.skip
-def test_update(session, task):
+def test_update(session, task, incident, incident_type, incident_priority, project):
     from dispatch.task.service import update
     from dispatch.task.models import TaskUpdate
 
     description = "Updated description"
+    incident.incident_type = incident_type
+    incident.incident_priority = incident_priority
+    incident.project = project
+    task.incident = incident
 
-    task_in = TaskUpdate(
-        description=description,
-    )
+    task_in = TaskUpdate(description=description, incident=incident)
     task = update(
         db_session=session,
         task=task,

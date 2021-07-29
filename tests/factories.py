@@ -365,7 +365,7 @@ class ParticipantRoleFactory(BaseFactory):
 
     assumed_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
     renounced_at = None
-    role = FuzzyChoice(["Incident Commander", "Reporter", "Scribe", "Liaison"])
+    role = FuzzyChoice(["Incident Commander", "Reporter", "Scribe", "Liaison", "Participant"])
 
     class Meta:
         """Factory Configuration."""
@@ -383,6 +383,12 @@ class ParticipantRoleFactory(BaseFactory):
 
 class ParticipantFactory(BaseFactory):
     """Participant Factory."""
+
+    team = Sequence(lambda n: f"team{n}")
+    department = Sequence(lambda n: f"department{n}")
+    location = Sequence(lambda n: f"location{n}")
+    added_reason = Sequence(lambda n: f"added_reason{n}")
+    after_hours_notification = Faker().pybool()
 
     class Meta:
         """Factory Configuration."""
@@ -412,6 +418,14 @@ class ParticipantFactory(BaseFactory):
 
         if extracted:
             self.team_id = extracted.id
+
+    @post_generation
+    def service(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.service_id = extracted.id
 
     @post_generation
     def participant_roles(self, create, extracted, **kwargs):
@@ -570,6 +584,7 @@ class IncidentFactory(BaseFactory):
     """Incident Factory."""
 
     id = Sequence(lambda n: f"1{n}")
+    name = FuzzyText()
     title = FuzzyText()
     description = FuzzyText()
     status = FuzzyChoice(["Active", "Stable", "Closed"])
@@ -756,7 +771,15 @@ class FeedbackFactory(BaseFactory):
     """Feedback Factory."""
 
     created_at = FuzzyDateTime(datetime(2020, 1, 1, tzinfo=UTC))
-    rating = FuzzyText()
+    rating = FuzzyChoice(
+        [
+            "Very satisfied",
+            "Somewhat satisfied",
+            "Neither satisfied nor dissatisfied",
+            "Somewhat dissatisfied",
+            "Very dissatisfied",
+        ]
+    )
     feedback = FuzzyText()
 
     class Meta:

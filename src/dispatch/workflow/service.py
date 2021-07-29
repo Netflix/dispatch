@@ -54,7 +54,7 @@ def create(*, db_session, workflow_in: WorkflowCreate) -> Workflow:
 def update(*, db_session, workflow: Workflow, workflow_in: WorkflowUpdate) -> Workflow:
     """Updates a workflow."""
     workflow_data = workflow.dict()
-    update_data = workflow_in.dict(skip_defaults=True, exclude={"plugin"})
+    update_data = workflow_in.dict(skip_defaults=True, exclude={"plugin_instance"})
 
     for field in workflow_data:
         if field in update_data:

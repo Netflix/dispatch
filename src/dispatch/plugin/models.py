@@ -85,7 +85,7 @@ class PluginInstanceCreate(PluginBase):
 
 
 class PluginInstanceUpdate(PluginBase):
-    id: PrimaryKey
+    id: PrimaryKey = None
     enabled: Optional[bool]
     configuration: Optional[dict]
 

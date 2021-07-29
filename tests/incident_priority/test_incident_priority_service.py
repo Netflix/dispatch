@@ -39,6 +39,21 @@ def test_create(session, project):
     assert incident_priority
 
 
+def test_update(session, incident_priority):
+    from dispatch.incident_priority.service import update
+    from dispatch.incident_priority.models import IncidentPriorityUpdate
+
+    name = "Updated incident priority name"
+
+    incident_priority_in = IncidentPriorityUpdate(name=name)
+    incident_priority = update(
+        db_session=session,
+        incident_priority=incident_priority,
+        incident_priority_in=incident_priority_in,
+    )
+    assert incident_priority.name == name
+
+
 def test_delete(session, incident_priority):
     from dispatch.incident_priority.service import delete, get
 

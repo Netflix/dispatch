@@ -58,12 +58,6 @@ def update(
 ) -> Notification:
     """Updates a notification."""
     notification_data = notification.dict()
-
-    filters = [
-        search_filter_service.get(db_session=db_session, search_filter_id=f.id)
-        for f in notification_in.filters
-    ]
-
     update_data = notification_in.dict(
         skip_defaults=True,
         exclude={"filters"},
@@ -73,7 +67,12 @@ def update(
         if field in update_data:
             setattr(notification, field, update_data[field])
 
-    notification.filters = filters
+    if notification_in.filters is not None:
+        filters = [
+            search_filter_service.get(db_session=db_session, search_filter_id=f.id)
+            for f in notification_in.filters
+        ]
+        notification.filters = filters
 
     db_session.commit()
     return notification

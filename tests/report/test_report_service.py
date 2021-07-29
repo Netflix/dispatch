@@ -30,7 +30,6 @@ def test_create(session):
     assert report
 
 
-@pytest.mark.skip
 def test_update(session, report):
     from dispatch.report.service import update
     from dispatch.report.models import ReportUpdate
@@ -40,10 +39,9 @@ def test_update(session, report):
         "actions": "updated actions",
         "needs": "updated needs",
     }
+    type = "Tactical Report"
 
-    report_in = ReportUpdate(
-        details=details,
-    )
+    report_in = ReportUpdate(details=details, type=type)
     report = update(
         db_session=session,
         report=report,

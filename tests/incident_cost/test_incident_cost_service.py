@@ -30,16 +30,13 @@ def test_create(session, incident_cost_type, project):
     assert incident_cost
 
 
-@pytest.mark.skip
-def test_update(session, incident_cost):
+def test_update(session, incident_cost, incident_cost_type):
     from dispatch.incident_cost.service import update
     from dispatch.incident_cost.models import IncidentCostUpdate
 
     amount = 10001
 
-    incident_cost_in = IncidentCostUpdate(
-        amount=amount,
-    )
+    incident_cost_in = IncidentCostUpdate(amount=amount, incident_cost_type=incident_cost_type)
     incident_cost = update(
         db_session=session, incident_cost=incident_cost, incident_cost_in=incident_cost_in
     )

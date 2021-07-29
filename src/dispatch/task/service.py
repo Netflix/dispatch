@@ -190,7 +190,6 @@ def update(*, db_session, task: Task, task_in: TaskUpdate, sync_external: bool =
                         file_id, task.resource_id, resolved=task.status
                     )
 
-    db_session.add(task)
     db_session.commit()
     return task
 

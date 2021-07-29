@@ -108,6 +108,11 @@ def update(
 ) -> IndividualContact:
     """Updates an individual."""
     individual_contact_data = individual_contact.dict()
+    update_data = individual_contact_in.dict(skip_defaults=True, exclude={"filters"})
+
+    for field in individual_contact_data:
+        if field in update_data:
+            setattr(individual_contact, field, update_data[field])
 
     if individual_contact_in.filters is not None:
         filters = [
@@ -115,12 +120,6 @@ def update(
             for f in individual_contact_in.filters
         ]
         individual_contact.filters = filters
-
-    update_data = individual_contact_in.dict(skip_defaults=True, exclude={"filters"})
-
-    for field in individual_contact_data:
-        if field in update_data:
-            setattr(individual_contact, field, update_data[field])
 
     db_session.commit()
     return individual_contact

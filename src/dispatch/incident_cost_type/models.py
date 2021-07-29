@@ -48,7 +48,7 @@ class IncidentCostTypeCreate(IncidentCostTypeBase):
 
 
 class IncidentCostTypeUpdate(IncidentCostTypeBase):
-    id: PrimaryKey
+    id: PrimaryKey = None
 
 
 class IncidentCostTypeRead(IncidentCostTypeBase):
