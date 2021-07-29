@@ -72,9 +72,9 @@ def get_all(*, db_session) -> List[Optional[Document]]:
 
 def create(*, db_session, document_in: DocumentCreate) -> Document:
     """Creates a new document."""
-    project = None
-    if document_in.project:
-        project = project_service.get_by_name(db_session=db_session, name=document_in.project.name)
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=document_in.project
+    )
 
     filters = [
         search_filter_service.get(db_session=db_session, search_filter_id=f.id)

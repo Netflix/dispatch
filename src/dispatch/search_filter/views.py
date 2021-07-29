@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
 
 from .models import (
@@ -31,15 +33,13 @@ def create_search_filter(
     try:
         return create(db_session=db_session, search_filter_in=search_filter_in)
     except IntegrityError:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[
-                {
-                    "msg": "An search filter with this name already exists.",
-                    "loc": ["name"],
-                    "type": "Exists",
-                }
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    ExistsError(msg="A search filter with this name already exists."), loc="name"
+                )
             ],
+            model=SearchFilterRead,
         )
 
 
@@ -62,15 +62,13 @@ def update_search_filter(
             db_session=db_session, search_filter=search_filter, search_filter_in=search_filter_in
         )
     except IntegrityError:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[
-                {
-                    "msg": "An search filter with this name already exists.",
-                    "loc": ["name"],
-                    "type": "Exists",
-                }
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    ExistsError(msg="A search filter with this name already exists."), loc="name"
+                )
             ],
+            model=SearchFilterUpdate,
         )
     return search_filter
 

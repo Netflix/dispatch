@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.auth.permissions import PermissionsDependency, SensitiveProjectActionPermission
+from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
 
 from .models import (
@@ -30,29 +32,15 @@ def create_individual(
     """Create a new individual contact."""
     individual = get_by_email(db_session=db_session, email=individual_contact_in.email)
     if individual:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[
-                {
-                    "msg": "The individual with this email already exists.",
-                    "loc": ["email"],
-                    "type": "Exists",
-                }
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    ExistsError(msg="An individual with this email already exists."), loc="email"
+                )
             ],
+            model=IndividualContactRead,
         )
-    try:
-        individual = create(db_session=db_session, individual_contact_in=individual_contact_in)
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[
-                {
-                    "msg": str(e),
-                    "loc": ["Unknown"],
-                    "type": "Unknown",
-                }
-            ],
-        )
+    individual = create(db_session=db_session, individual_contact_in=individual_contact_in)
     return individual
 
 

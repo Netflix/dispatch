@@ -1,10 +1,17 @@
 from typing import List, Optional
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.sql.expression import true
+from dispatch.exceptions import NotFoundError
 
 from dispatch.project import service as project_service
 
-from .models import IncidentPriority, IncidentPriorityCreate, IncidentPriorityUpdate
+from .models import (
+    IncidentPriority,
+    IncidentPriorityCreate,
+    IncidentPriorityRead,
+    IncidentPriorityUpdate,
+)
 
 
 def get(*, db_session, incident_priority_id: int) -> Optional[IncidentPriority]:
@@ -26,6 +33,23 @@ def get_default(*, db_session, project_id: int):
     )
 
 
+def get_default_or_raise(*, db_session, project_id: int) -> IncidentPriority:
+    """Returns the default incident_priority or raise a ValidationError if one doesn't exist."""
+    incident_priority = get_default(db_session=db_session, project_id=project_id)
+
+    if not incident_priority:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(msg="No default incident_priority defined."),
+                    loc="incident_priority",
+                )
+            ],
+            model=IncidentPriorityRead,
+        )
+    return incident_priority
+
+
 def get_by_name(*, db_session, project_id: int, name: str) -> Optional[IncidentPriority]:
     """Returns an incident priority based on the given priority name."""
     return (
@@ -34,6 +58,43 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[IncidentP
         .filter(IncidentPriority.project_id == project_id)
         .one_or_none()
     )
+
+
+def get_by_name_or_raise(
+    *, db_session, project_id: int, incident_priority_in=IncidentPriorityRead
+) -> IncidentPriority:
+    """Returns the incident_priority specified or raises ValidationError."""
+    incident_priority = get_by_name(
+        db_session=db_session, project_id=project_id, name=incident_priority_in.name
+    )
+
+    if not incident_priority:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(
+                        msg="IncidentPriority not found.",
+                        incident_priority=incident_priority_in.name,
+                    ),
+                    loc="incident_priority",
+                )
+            ],
+            model=IncidentPriorityRead,
+        )
+
+    return incident_priority
+
+
+def get_by_name_or_default(
+    *, db_session, project_id: int, incident_priority_in=IncidentPriorityRead
+) -> IncidentPriority:
+    """Returns a incident_priority based on a name or the default if not specified."""
+    if incident_priority_in.name:
+        return get_by_name_or_raise(
+            db_session=db_session, project_id=project_id, incident_priority_in=incident_priority_in
+        )
+    else:
+        return get_default_or_raise(db_session=db_session, project_id=project_id)
 
 
 def get_all(*, db_session, project_id: int = None) -> List[Optional[IncidentPriority]]:
@@ -56,8 +117,8 @@ def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[Inci
 
 def create(*, db_session, incident_priority_in: IncidentPriorityCreate) -> IncidentPriority:
     """Creates an incident priority."""
-    project = project_service.get_by_name(
-        db_session=db_session, name=incident_priority_in.project.name
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=incident_priority_in.project
     )
     incident_priority = IncidentPriority(
         **incident_priority_in.dict(exclude={"project"}), project=project

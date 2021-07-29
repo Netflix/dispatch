@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -14,6 +15,7 @@ from dispatch.auth.permissions import (
     OrganizationOwnerPermission,
     PermissionsDependency,
 )
+from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
 
 from .models import (
@@ -44,19 +46,16 @@ def create_organization(
     current_user: DispatchUser = Depends(get_current_user),
 ):
     """Create a new organization."""
-    print(organization_in)
     try:
         organization = create(db_session=db_session, organization_in=organization_in)
     except IntegrityError:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[
-                {
-                    "msg": "An organization with this name already exists.",
-                    "loc": ["name"],
-                    "type": "Exists",
-                }
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    ExistsError(msg="An organization with this name already exists."), loc="name"
+                )
             ],
+            model=OrganizationCreate,
         )
 
     # add creator as organization owner
@@ -102,15 +101,13 @@ def update_organization(
             db_session=db_session, organization=organization, organization_in=organization_in
         )
     except IntegrityError:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[
-                {
-                    "msg": "An organization with this name already exists.",
-                    "loc": ["name"],
-                    "type": "Exists",
-                }
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    ExistsError(msg="An organization with this name already exists."), loc="name"
+                )
             ],
+            model=OrganizationUpdate,
         )
     return organization
 

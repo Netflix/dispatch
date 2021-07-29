@@ -1,5 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
+
+from dispatch.exceptions import ExistsError
 
 from dispatch.auth.permissions import (
     ProjectCreatePermission,
@@ -38,16 +41,11 @@ def create_project(*, db_session: Session = Depends(get_db), project_in: Project
     """Create a new project."""
     project = get_by_name(db_session=db_session, name=project_in.name)
     if project:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[
-                {
-                    "msg": "A project with this name already exists.",
-                    "loc": ["name"],
-                    "type": "Exists",
-                }
-            ],
+        raise ValidationError(
+            [ErrorWrapper(ExistsError(msg="A project with this name already exists."), loc="name")],
+            model=ProjectCreate,
         )
+
     project = create(db_session=db_session, project_in=project_in)
     return project
 

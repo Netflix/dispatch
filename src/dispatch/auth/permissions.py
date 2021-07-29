@@ -9,6 +9,7 @@ from dispatch.enums import UserRoles, Visibility
 from dispatch.auth.service import get_current_user
 from dispatch.incident import service as incident_service
 from dispatch.organization import service as organization_service
+from dispatch.organization.models import OrganizationRead
 
 
 log = logging.getLogger(__name__)
@@ -55,8 +56,9 @@ class BasePermission(ABC):
     def __init__(self, request: Request):
         organization = None
         if request.path_params.get("organization"):
-            organization = organization_service.get_by_name(
-                db_session=request.state.db, name=request.path_params["organization"]
+            organization = organization_service.get_by_slug_or_raise(
+                db_session=request.state.db,
+                organization_in=OrganizationRead(slug=request.path_params["organization"]),
             )
         elif request.path_params.get("organization_id"):
             organization = organization_service.get(

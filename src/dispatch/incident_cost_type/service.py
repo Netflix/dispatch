@@ -49,8 +49,8 @@ def get_all(*, db_session) -> List[Optional[IncidentCostType]]:
 
 def create(*, db_session, incident_cost_type_in: IncidentCostTypeCreate) -> IncidentCostType:
     """Creates a new incident cost type."""
-    project = project_service.get_by_name(
-        db_session=db_session, name=incident_cost_type_in.project.name
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=incident_cost_type_in.project
     )
     incident_cost_type = IncidentCostType(
         **incident_cost_type_in.dict(exclude={"project"}), project=project

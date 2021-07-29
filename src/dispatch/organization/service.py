@@ -1,13 +1,14 @@
 from typing import List, Optional
-
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.sql.expression import true
 
 from dispatch.auth.models import DispatchUser, DispatchUserOrganization
 from dispatch.database.core import engine
 from dispatch.database.manage import init_schema
 from dispatch.enums import UserRoles
+from dispatch.exceptions import NotFoundError
 
-from .models import Organization, OrganizationCreate, OrganizationUpdate
+from .models import Organization, OrganizationCreate, OrganizationRead, OrganizationUpdate
 
 
 def get(*, db_session, organization_id: int) -> Optional[Organization]:
@@ -20,14 +21,75 @@ def get_default(*, db_session) -> Optional[Organization]:
     return db_session.query(Organization).filter(Organization.default == true()).one_or_none()
 
 
+def get_default_or_raise(*, db_session) -> Organization:
+    """Returns the default organization or raise a ValidationError if one doesn't exist."""
+    organization = get_default(db_session=db_session)
+
+    if not organization:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(msg="No default organization defined."),
+                    loc="organization",
+                )
+            ],
+            model=OrganizationRead,
+        )
+    return organization
+
+
 def get_by_name(*, db_session, name: str) -> Optional[Organization]:
     """Gets an organization by its name."""
     return db_session.query(Organization).filter(Organization.name == name).one_or_none()
 
 
+def get_by_name_or_raise(*, db_session, organization_in=OrganizationRead) -> Organization:
+    """Returns the organization specified or raises ValidationError."""
+    organization = get_by_name(db_session=db_session, name=organization_in.name)
+
+    if not organization:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(msg="Organization not found.", organization=organization_in.name),
+                    loc="organization",
+                )
+            ],
+            model=OrganizationRead,
+        )
+
+    return organization
+
+
 def get_by_slug(*, db_session, slug: str) -> Optional[Organization]:
     """Gets an organization by its slug."""
     return db_session.query(Organization).filter(Organization.name == slug).one_or_none()
+
+
+def get_by_slug_or_raise(*, db_session, organization_in=OrganizationRead) -> Organization:
+    """Returns the organization specified or raises ValidationError."""
+    organization = get_by_name(db_session=db_session, name=organization_in.name)
+
+    if not organization:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(msg="Organization not found.", organization=organization_in.name),
+                    loc="organization",
+                )
+            ],
+            model=OrganizationRead,
+        )
+
+    return organization
+
+
+def get_by_name_or_default(*, db_session, organization_in=OrganizationRead) -> Organization:
+    """Returns a organization based on a name or the default if not specified."""
+    if organization_in.name:
+        return get_by_name_or_raise(db_session=db_session, organization_in=organization_in)
+    else:
+        return get_default_or_raise(db_session=db_session)
 
 
 def get_all(*, db_session) -> List[Optional[Organization]]:

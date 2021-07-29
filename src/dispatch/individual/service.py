@@ -76,12 +76,9 @@ def get_or_create(
 
 def create(*, db_session, individual_contact_in: IndividualContactCreate) -> IndividualContact:
     """Creates an individual."""
-    project = project_service.get_by_name(
-        db_session=db_session, name=individual_contact_in.project.name
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=individual_contact_in.project
     )
-
-    if not project:
-        raise ValueError(f"Project {individual_contact_in.project.name} does not exist.")
 
     contact = IndividualContact(
         **individual_contact_in.dict(exclude={"project", "filters"}),
