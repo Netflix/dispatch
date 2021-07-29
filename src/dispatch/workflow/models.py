@@ -117,7 +117,7 @@ class WorkflowCreate(WorkflowBase):
 
 
 class WorkflowUpdate(WorkflowBase):
-    id: PrimaryKey
+    id: PrimaryKey = None
 
 
 class WorkflowRead(WorkflowBase):

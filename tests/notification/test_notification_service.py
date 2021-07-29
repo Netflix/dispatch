@@ -37,16 +37,15 @@ def test_create(session, project):
     assert notification
 
 
-@pytest.mark.skip
 def test_update(session, notification):
     from dispatch.notification.service import update
     from dispatch.notification.models import NotificationUpdate
 
     name = "Updated name"
+    target = "incident-channel"
+    type = "conversation"
 
-    notification_in = NotificationUpdate(
-        name=name,
-    )
+    notification_in = NotificationUpdate(name=name, target=target, type=type)
     notification = update(
         db_session=session,
         notification=notification,

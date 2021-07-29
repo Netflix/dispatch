@@ -112,24 +112,25 @@ def get_or_create(*, db_session, document_in) -> Document:
 
 def update(*, db_session, document: Document, document_in: DocumentUpdate) -> Document:
     """Updates a document."""
-    # reset the last reminder to now
+    document_data = document.dict()
+
+    # we reset the last evergreeen reminder to now
     if document_in.evergreen:
         if not document.evergreen:
             document_in.evergreen_last_reminder_at = datetime.utcnow()
 
-    filters = [
-        search_filter_service.get(db_session=db_session, search_filter_id=f.id)
-        for f in document_in.filters
-    ]
-
-    document_data = document.dict()
     update_data = document_in.dict(skip_defaults=True, exclude={"filters"})
 
     for field in document_data:
         if field in update_data:
             setattr(document, field, update_data[field])
 
-    document.filters = filters
+    if document_in.filters is not None:
+        filters = [
+            search_filter_service.get(db_session=db_session, search_filter_id=f.id)
+            for f in document_in.filters
+        ]
+        document.filters = filters
 
     db_session.commit()
     return document

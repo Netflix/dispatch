@@ -32,6 +32,23 @@ def test_create(session, project):
     assert document
 
 
+def test_update(session, document):
+    from dispatch.document.service import update
+    from dispatch.document.models import DocumentUpdate
+
+    name = "Updated document name"
+
+    document_in = DocumentUpdate(
+        name=name,
+    )
+    document = update(
+        db_session=session,
+        document=document,
+        document_in=document_in,
+    )
+    assert document.name == name
+
+
 def test_delete(session, document):
     from dispatch.document.service import delete, get
 

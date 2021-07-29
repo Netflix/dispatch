@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_get(session, group):
     from dispatch.group.service import get
 
@@ -34,6 +31,19 @@ def test_create(session):
     )
     group = create(db_session=session, group_in=group_in)
     assert group
+
+
+def test_update(session, group):
+    from dispatch.group.service import update
+    from dispatch.group.models import GroupUpdate
+
+    name = "Updated name"
+    email = "updated@example.com"
+
+    group_in = GroupUpdate(name=name, email=email)
+    group = update(db_session=session, group=group, group_in=group_in)
+    assert group.name == name
+    assert group.email == email
 
 
 def test_delete(session, group):

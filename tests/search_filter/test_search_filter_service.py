@@ -1,18 +1,8 @@
-import pytest
-
-
 def test_get(session, search_filter):
     from dispatch.search_filter.service import get
 
     t_search_filter = get(db_session=session, search_filter_id=search_filter.id)
     assert t_search_filter.id == search_filter.id
-
-
-def test_get_all(session, search_filters):
-    from dispatch.search_filter.service import get_all
-
-    t_search_filters = get_all(db_session=session).all()
-    assert len(t_search_filters) > 1
 
 
 def test_create(session, project):
@@ -35,7 +25,6 @@ def test_create(session, project):
     assert search_filter
 
 
-@pytest.mark.skip
 def test_update(session, search_filter):
     from dispatch.search_filter.service import update
     from dispatch.search_filter.models import SearchFilterUpdate

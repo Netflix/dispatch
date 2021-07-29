@@ -45,7 +45,7 @@ class SearchFilterCreate(SearchFilterBase):
 
 
 class SearchFilterUpdate(SearchFilterBase):
-    id: PrimaryKey
+    id: PrimaryKey = None
 
 
 class SearchFilterRead(SearchFilterBase):

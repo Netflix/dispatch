@@ -1,18 +1,8 @@
-import pytest
-
-
 def test_get(session, project):
     from dispatch.project.service import get
 
     t_project = get(db_session=session, project_id=project.id)
     assert t_project.id == project.id
-
-
-def test_get_all(session, projects):
-    from dispatch.project.service import get_all
-
-    t_projects = get_all(db_session=session).all()
-    assert len(t_projects) > 1
 
 
 def test_create(session, organization):
@@ -35,7 +25,6 @@ def test_create(session, organization):
     assert project
 
 
-@pytest.mark.skip
 def test_update(session, project):
     from dispatch.project.service import update
     from dispatch.project.models import ProjectUpdate

@@ -63,19 +63,18 @@ def update(
     *, db_session, team_contact: TeamContact, team_contact_in: TeamContactUpdate
 ) -> TeamContact:
     team_contact_data = team_contact.dict()
-
     update_data = team_contact_in.dict(skip_defaults=True, exclude={"filter"})
-
-    filters = [
-        search_filter_service.get(db_session=db_session, search_filter_id=f.id)
-        for f in team_contact_in.filters
-    ]
 
     for field in team_contact_data:
         if field in update_data:
             setattr(team_contact, field, update_data[field])
 
-    db_session.filters = filters
+    if team_contact_in.filters is not None:
+        filters = [
+            search_filter_service.get(db_session=db_session, search_filter_id=f.id)
+            for f in team_contact_in.filters
+        ]
+        db_session.filters = filters
 
     db_session.commit()
     return team_contact

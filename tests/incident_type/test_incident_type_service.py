@@ -46,6 +46,21 @@ def test_create(session, project, document):
     assert incident_type
 
 
+def test_update(session, incident_type):
+    from dispatch.incident_type.service import update
+    from dispatch.incident_type.models import IncidentTypeUpdate
+
+    name = "Updated incident type name"
+
+    incident_type_in = IncidentTypeUpdate(name=name)
+    incident_type = update(
+        db_session=session,
+        incident_type=incident_type,
+        incident_type_in=incident_type_in,
+    )
+    assert incident_type.name == name
+
+
 def test_delete(session, incident_type):
     from dispatch.incident_type.service import delete, get
 

@@ -24,7 +24,7 @@ class GroupCreate(GroupBase):
 
 
 class GroupUpdate(GroupBase):
-    id: PrimaryKey
+    id: PrimaryKey = None
 
 
 class GroupRead(GroupBase):

@@ -72,14 +72,17 @@ def test_create_instance(session, incident, workflow, participant, project):
 
 
 @pytest.mark.skip
-def test_update(session, workflow):
+def test_update(session, workflow, plugin_instance):
     from dispatch.workflow.service import update
     from dispatch.workflow.models import WorkflowUpdate
 
     name = "Updated name"
+    resource_id = "resource_id_updated"
 
     workflow_in = WorkflowUpdate(
         name=name,
+        resource_id=resource_id,
+        plugin_instance=plugin_instance,
     )
     workflow = update(
         db_session=session,
@@ -87,22 +90,22 @@ def test_update(session, workflow):
         workflow_in=workflow_in,
     )
     assert workflow.name == name
+    assert workflow.resource_id == resource_id
 
 
-@pytest.mark.skip
-def test_update_instance(session, workflow):
-    from dispatch.workflow.service import update
+def test_update_instance(session, workflow_instance):
+    from dispatch.workflow.service import update_instance
     from dispatch.workflow.models import WorkflowInstanceUpdate
 
-    status = "running"
+    status = "Running"
 
     workflow_instance_in = WorkflowInstanceUpdate(
         status=status,
     )
-    workflow_instance = update(
+    workflow_instance = update_instance(
         db_session=session,
-        workflow=workflow,
-        workflow_instance_in=workflow_instance_in,
+        instance=workflow_instance,
+        instance_in=workflow_instance_in,
     )
     assert workflow_instance.status == status
 

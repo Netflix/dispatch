@@ -1,33 +1,8 @@
-import pytest
-
-
 def test_get(session, service):
     from dispatch.service.service import get
 
     t_service = get(db_session=session, service_id=service.id)
     assert t_service.id == service.id
-
-
-def test_get_by_external_id(session, service):
-    from dispatch.service.service import get_by_external_id
-
-    t_service = get_by_external_id(db_session=session, external_id=service.external_id)
-    assert t_service.external_id == service.external_id
-
-
-def test_get_by_status(session, services):
-    from dispatch.service.service import get_all_by_status
-
-    t_services = get_all_by_status(db_session=session, is_active=True).all()
-    assert len(t_services) > 1
-
-
-def test_get_all(session, services):
-    from dispatch.service.service import get_all
-
-    t_services = get_all(db_session=session).all()
-
-    assert len(t_services) > 1
 
 
 def test_create(session, project):
@@ -44,12 +19,11 @@ def test_create(session, project):
     assert name == service.name
 
 
-@pytest.mark.skip
 def test_update(session, service):
     from dispatch.service.service import update
     from dispatch.service.models import ServiceUpdate
 
-    name = "nameUpdate"
+    name = "Updated Name"
     service_in = ServiceUpdate(name=name)
 
     service = update(db_session=session, service=service, service_in=service_in)

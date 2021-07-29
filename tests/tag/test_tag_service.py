@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_get(session, tag):
     from dispatch.tag.service import get
 
@@ -31,7 +28,6 @@ def test_create(session, tag_type, project):
     assert tag
 
 
-@pytest.mark.skip
 def test_update(session, tag):
     from dispatch.tag.service import update
     from dispatch.tag.models import TagUpdate

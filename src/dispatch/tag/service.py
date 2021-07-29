@@ -58,15 +58,15 @@ def update(*, db_session, tag: Tag, tag_in: TagUpdate) -> Tag:
     tag_data = tag.dict()
     update_data = tag_in.dict(skip_defaults=True, exclude={"tag_type"})
 
-    tag_type = tag_type_service.get_by_name(
-        db_session=db_session, project_id=tag.project.id, name=tag_in.tag_type.name
-    )
-
     for field in tag_data:
         if field in update_data:
             setattr(tag, field, update_data[field])
 
-    tag.tag_type = tag_type
+    if tag_in.tag_type is not None:
+        tag_type = tag_type_service.get_by_name(
+            db_session=db_session, project_id=tag.project.id, name=tag_in.tag_type.name
+        )
+        tag.tag_type = tag_type
 
     db_session.commit()
     return tag

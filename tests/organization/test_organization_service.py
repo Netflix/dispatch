@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_get(session, organization):
     from dispatch.organization.service import get
 
@@ -38,7 +35,6 @@ def test_create(session):
     assert organization
 
 
-@pytest.mark.skip
 def test_update(session, organization):
     from dispatch.organization.service import update
     from dispatch.organization.models import OrganizationUpdate
