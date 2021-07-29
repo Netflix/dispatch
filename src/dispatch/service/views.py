@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
-from dispatch.incident_type.models import Service
 from dispatch.models import PrimaryKey
 
 from .models import ServiceCreate, ServicePagination, ServiceRead, ServiceUpdate

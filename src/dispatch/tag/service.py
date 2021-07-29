@@ -64,7 +64,7 @@ def update(*, db_session, tag: Tag, tag_in: TagUpdate) -> Tag:
 
     if tag_in.tag_type is not None:
         tag_type = tag_type_service.get_by_name_or_raise(
-            db_session=db_session, project_id=tag.project.id, tag_type=tag_in.tag_type
+            db_session=db_session, project_id=tag.project.id, tag_type_in=tag_in.tag_type
         )
         tag.tag_type = tag_type
 

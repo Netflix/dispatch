@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, Request, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.functions import mode
 
 from dispatch.auth.permissions import (
     OrganizationOwnerPermission,
