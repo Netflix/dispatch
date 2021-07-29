@@ -63,6 +63,7 @@ def update(*, db_session, workflow: Workflow, workflow_in: WorkflowUpdate) -> Wo
     plugin_instance = plugin_service.get_instance(
         db_session=db_session, plugin_instance_id=workflow_in.plugin_instance.id
     )
+
     workflow.plugin_instance = plugin_instance
 
     db_session.commit()
