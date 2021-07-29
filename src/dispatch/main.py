@@ -88,6 +88,7 @@ async def db_session_middleware(request: Request, call_next):
     # if this call is organization specific set the correct search path
     organization_slug = path_params.get("organization")
     if organization_slug:
+        request.state.organization = organization_slug
         schema = f"dispatch_organization_{organization_slug}"
         # validate slug exists
         schema_names = inspect(engine).get_schema_names()
@@ -113,9 +114,7 @@ async def db_session_middleware(request: Request, call_next):
         )
     try:
         session = sessionmaker(bind=schema_engine)
-
         request.state.db = session()
-        request.state.organization = organization_slug
         response = await call_next(request)
     finally:
         request.state.db.close()

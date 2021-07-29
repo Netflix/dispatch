@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Request, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.functions import mode
 
 from dispatch.auth.permissions import (
     OrganizationOwnerPermission,
@@ -15,6 +16,7 @@ from dispatch.database.service import common_parameters, search_filter_sort_pagi
 from dispatch.organization.models import OrganizationRead
 
 from .models import (
+    DispatchUser,
     UserLogin,
     UserOrganization,
     UserRegister,
@@ -83,9 +85,10 @@ def get_user(*, db_session: Session = Depends(get_db), user_id: PrimaryKey):
 def get_me(
     req: Request,
     organization: OrganizationSlug,
+    current_user: DispatchUser = Depends(get_current_user),
     db_session: Session = Depends(get_db),
 ):
-    return get_current_user(request=req)
+    return current_user
 
 
 @user_router.put(
@@ -136,7 +139,8 @@ def login_user(
                 InvalidValueError(msg="Invalid password."),
                 loc="password",
             ),
-        ]
+        ],
+        model=UserLogin,
     )
 
 
@@ -154,7 +158,8 @@ def register_user(
                     InvalidConfigurationError(msg="A user with this email already exists."),
                     loc="email",
                 )
-            ]
+            ],
+            model=UserRegister,
         )
 
     user = create(db_session=db_session, organization=organization, user_in=user_in)

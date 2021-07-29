@@ -10,7 +10,7 @@ from sqlalchemy_utils import TSVectorType
 
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, NameStr, PrimaryKey
+from dispatch.models import DispatchBase, NameStr, OrganizationSlug, PrimaryKey
 
 
 class Organization(Base):
@@ -59,7 +59,7 @@ class OrganizationUpdate(OrganizationBase):
 
 class OrganizationRead(OrganizationBase):
     id: Optional[PrimaryKey]
-    slug: Optional[str]
+    slug: Optional[OrganizationSlug]
 
 
 class OrganizationPagination(DispatchBase):

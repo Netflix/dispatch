@@ -38,7 +38,8 @@ def create_search_filter(
                 ErrorWrapper(
                     ExistsError(msg="A search filter with this name already exists."), loc="name"
                 )
-            ]
+            ],
+            model=SearchFilterRead,
         )
 
 
@@ -66,7 +67,8 @@ def update_search_filter(
                 ErrorWrapper(
                     ExistsError(msg="A search filter with this name already exists."), loc="name"
                 )
-            ]
+            ],
+            model=SearchFilterUpdate
         )
     return search_filter
 

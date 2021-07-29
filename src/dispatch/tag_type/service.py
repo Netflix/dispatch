@@ -34,7 +34,8 @@ def get_by_name_or_raise(*, db_session, project_id: int, tag_type_in=TagTypeRead
                     NotFoundError(msg="TagType not found.", tag_type=tag_type_in.name),
                     loc="tag_type",
                 )
-            ]
+            ],
+            model=TagTypeRead
         )
 
     return tag_type

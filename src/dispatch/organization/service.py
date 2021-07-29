@@ -32,7 +32,8 @@ def get_default_or_raise(*, db_session) -> Organization:
                     NotFoundError(msg="No default organization defined."),
                     loc="organization",
                 )
-            ]
+            ],
+            model=OrganizationRead,
         )
     return organization
 
@@ -53,7 +54,8 @@ def get_by_name_or_raise(*, db_session, organization_in=OrganizationRead) -> Org
                     NotFoundError(msg="Organization not found.", organization=organization_in.name),
                     loc="organization",
                 )
-            ]
+            ],
+            model=OrganizationRead,
         )
 
     return organization
@@ -75,7 +77,8 @@ def get_by_slug_or_raise(*, db_session, organization_in=OrganizationRead) -> Org
                     NotFoundError(msg="Organization not found.", organization=organization_in.name),
                     loc="organization",
                 )
-            ]
+            ],
+            model=OrganizationRead,
         )
 
     return organization
@@ -84,7 +87,7 @@ def get_by_slug_or_raise(*, db_session, organization_in=OrganizationRead) -> Org
 def get_by_name_or_default(*, db_session, organization_in=OrganizationRead) -> Organization:
     """Returns a organization based on a name or the default if not specified."""
     if organization_in.name:
-        return get_by_name_or_raise(db_session=db_session, name=organization_in.name)
+        return get_by_name_or_raise(db_session=db_session, organization_in=organization_in)
     else:
         return get_default_or_raise(db_session=db_session)
 

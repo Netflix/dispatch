@@ -30,7 +30,8 @@ def get_default_or_raise(*, db_session) -> Project:
                     NotFoundError(msg="No default project defined."),
                     loc="project",
                 )
-            ]
+            ],
+            model=ProjectRead,
         )
     return project
 
@@ -48,10 +49,11 @@ def get_by_name_or_raise(*, db_session, project_in=ProjectRead) -> Project:
         raise ValidationError(
             [
                 ErrorWrapper(
-                    NotFoundError(msg="Project not found.", project=project_in.name),
-                    loc="project",
+                    NotFoundError(msg="Project not found.", name=project_in.name),
+                    loc="name",
                 )
-            ]
+            ],
+            model=ProjectRead,
         )
 
     return project
@@ -60,7 +62,7 @@ def get_by_name_or_raise(*, db_session, project_in=ProjectRead) -> Project:
 def get_by_name_or_default(*, db_session, project_in=ProjectRead) -> Project:
     """Returns a project based on a name or the default if not specified."""
     if project_in.name:
-        return get_by_name_or_raise(db_session=db_session, name=project_in.name)
+        return get_by_name_or_raise(db_session=db_session, project_in=project_in)
     else:
         return get_default_or_raise(db_session=db_session)
 

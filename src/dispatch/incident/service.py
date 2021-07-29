@@ -154,7 +154,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
     incident_priority = incident_priority_service.get_by_name_or_default(
         db_session=db_session,
         project_id=project.id,
-        incident_priority=incident_in.incident_priority,
+        incident_priority_in=incident_in.incident_priority,
     )
 
     if not incident_in.visibility:
@@ -217,7 +217,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
     incident_priority = incident_priority_service.get_by_name_or_default(
         db_session=db_session,
         project_id=project.id,
-        incident_priority=incident_in.incident_priority,
+        incident_priority_in=incident_in.incident_priority,
     )
 
     tags = []

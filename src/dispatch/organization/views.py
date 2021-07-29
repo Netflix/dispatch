@@ -46,7 +46,6 @@ def create_organization(
     current_user: DispatchUser = Depends(get_current_user),
 ):
     """Create a new organization."""
-    print(organization_in)
     try:
         organization = create(db_session=db_session, organization_in=organization_in)
     except IntegrityError:
@@ -55,7 +54,8 @@ def create_organization(
                 ErrorWrapper(
                     ExistsError(msg="An organization with this name already exists."), loc="name"
                 )
-            ]
+            ],
+            model=OrganizationCreate,
         )
 
     # add creator as organization owner
@@ -106,7 +106,8 @@ def update_organization(
                 ErrorWrapper(
                     ExistsError(msg="An organization with this name already exists."), loc="name"
                 )
-            ]
+            ],
+            model=OrganizationUpdate,
         )
     return organization
 

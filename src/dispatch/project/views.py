@@ -42,7 +42,8 @@ def create_project(*, db_session: Session = Depends(get_db), project_in: Project
     project = get_by_name(db_session=db_session, name=project_in.name)
     if project:
         raise ValidationError(
-            [ErrorWrapper(ExistsError(msg="A project with this name already exists."), loc="name")]
+            [ErrorWrapper(ExistsError(msg="A project with this name already exists."), loc="name")],
+            model=ProjectCreate,
         )
 
     project = create(db_session=db_session, project_in=project_in)

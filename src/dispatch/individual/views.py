@@ -37,7 +37,8 @@ def create_individual(
                 ErrorWrapper(
                     ExistsError(msg="An individual with this email already exists."), loc="email"
                 )
-            ]
+            ],
+            model=IndividualContactRead,
         )
     individual = create(db_session=db_session, individual_contact_in=individual_contact_in)
     return individual

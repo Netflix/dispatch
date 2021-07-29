@@ -46,7 +46,8 @@ def create_definition(*, db_session: Session = Depends(get_db), definition_in: D
                 ErrorWrapper(
                     ExistsError(msg="A description with this text already exists."), loc="text"
                 )
-            ]
+            ],
+            model=DefinitionRead,
         )
 
     definition = create(db_session=db_session, definition_in=definition_in)

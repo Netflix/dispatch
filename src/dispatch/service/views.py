@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
+from dispatch.incident_type.models import Service
 from dispatch.models import PrimaryKey
 
 from .models import ServiceCreate, ServicePagination, ServiceRead, ServiceUpdate
@@ -48,7 +49,8 @@ def create_service(
                     ExistsError(msg="A service with this external_id already exists."),
                     loc="external_id",
                 )
-            ]
+            ],
+            model=ServiceCreate,
         )
     service = create(db_session=db_session, service_in=service_in)
     return service
@@ -70,7 +72,8 @@ def update_service(
         service = update(db_session=db_session, service=service, service_in=service_in)
     except IntegrityError:
         raise ValidationError(
-            [ErrorWrapper(ExistsError(msg="A service with this name already exists."), loc="name")]
+            [ErrorWrapper(ExistsError(msg="A service with this name already exists."), loc="name")],
+            model=ServiceUpdate,
         )
 
     return service

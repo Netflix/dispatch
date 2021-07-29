@@ -44,7 +44,8 @@ def get_default_or_raise(*, db_session, project_id: int) -> IncidentPriority:
                     NotFoundError(msg="No default incident_priority defined."),
                     loc="incident_priority",
                 )
-            ]
+            ],
+            model=IncidentPriorityRead,
         )
     return incident_priority
 
@@ -77,7 +78,8 @@ def get_by_name_or_raise(
                     ),
                     loc="incident_priority",
                 )
-            ]
+            ],
+            model=IncidentPriorityRead,
         )
 
     return incident_priority
@@ -89,7 +91,7 @@ def get_by_name_or_default(
     """Returns a incident_priority based on a name or the default if not specified."""
     if incident_priority_in.name:
         return get_by_name_or_raise(
-            db_session=db_session, project_id=project_id, name=incident_priority_in.name
+            db_session=db_session, project_id=project_id, incident_priority_in=incident_priority_in
         )
     else:
         return get_default_or_raise(db_session=db_session, project_id=project_id)
