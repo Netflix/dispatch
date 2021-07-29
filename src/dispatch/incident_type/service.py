@@ -1,10 +1,9 @@
 from typing import List, Optional
 
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql.expression import true
 
-from dispatch.project import service as project_service
 from dispatch.document import service as document_service
+from dispatch.project import service as project_service
 from dispatch.service import service as service_service
 
 from .models import IncidentType, IncidentTypeCreate, IncidentTypeUpdate
@@ -161,7 +160,7 @@ def update(
         )
         incident_type.liaison_service = liaison_service
 
-    incident_type_data = jsonable_encoder(incident_type)
+    incident_type_data = incident_type.dict()
 
     update_data = incident_type_in.dict(
         skip_defaults=True,
@@ -179,7 +178,6 @@ def update(
         if field in update_data:
             setattr(incident_type, field, update_data[field])
 
-    db_session.add(incident_type)
     db_session.commit()
     return incident_type
 

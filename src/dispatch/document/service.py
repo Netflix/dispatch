@@ -1,8 +1,6 @@
 from typing import List, Optional
 from datetime import datetime, timedelta
 
-from fastapi.encoders import jsonable_encoder
-
 from dispatch.enums import DocumentResourceReferenceTypes
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
@@ -124,7 +122,7 @@ def update(*, db_session, document: Document, document_in: DocumentUpdate) -> Do
         for f in document_in.filters
     ]
 
-    document_data = jsonable_encoder(document)
+    document_data = document.dict()
     update_data = document_in.dict(skip_defaults=True, exclude={"filters"})
 
     for field in document_data:
@@ -132,7 +130,7 @@ def update(*, db_session, document: Document, document_in: DocumentUpdate) -> Do
             setattr(document, field, update_data[field])
 
     document.filters = filters
-    db_session.add(document)
+
     db_session.commit()
     return document
 

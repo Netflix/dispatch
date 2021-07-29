@@ -8,7 +8,6 @@ import logging
 from typing import Optional
 
 from fastapi import HTTPException, Depends
-from fastapi.encoders import jsonable_encoder
 from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED
 
@@ -144,7 +143,7 @@ def get_or_create(*, db_session, organization: str, user_in: UserRegister) -> Di
 
 def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUser:
     """Updates a user."""
-    user_data = jsonable_encoder(user)
+    user_data = user.dict()
 
     update_data = user_in.dict(exclude={"password"}, skip_defaults=True)
     for field in user_data:
@@ -163,7 +162,6 @@ def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUs
                 create_or_update_organization_role(db_session=db_session, user=user, role_in=role)
             )
 
-    db_session.add(user)
     db_session.commit()
     return user
 

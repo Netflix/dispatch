@@ -1,5 +1,4 @@
 from typing import Optional
-from fastapi.encoders import jsonable_encoder
 
 from dispatch.project import service as project_service
 from dispatch.tag_type import service as tag_type_service
@@ -56,7 +55,7 @@ def get_or_create(*, db_session, tag_in: TagCreate) -> Tag:
 
 def update(*, db_session, tag: Tag, tag_in: TagUpdate) -> Tag:
     """Updates an existing tag."""
-    tag_data = jsonable_encoder(tag)
+    tag_data = tag.dict()
     update_data = tag_in.dict(skip_defaults=True, exclude={"tag_type"})
 
     tag_type = tag_type_service.get_by_name(
@@ -69,7 +68,6 @@ def update(*, db_session, tag: Tag, tag_in: TagUpdate) -> Tag:
 
     tag.tag_type = tag_type
 
-    db_session.add(tag)
     db_session.commit()
     return tag
 

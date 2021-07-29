@@ -1,7 +1,5 @@
 from typing import List, Optional
 
-from fastapi.encoders import jsonable_encoder
-
 from .enums import ReportTypes
 from .models import Report, ReportCreate, ReportUpdate
 
