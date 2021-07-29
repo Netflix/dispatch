@@ -1,6 +1,5 @@
 from typing import List, Optional
 from datetime import datetime, timedelta
-from fastapi.encoders import jsonable_encoder
 
 from dispatch.incident.models import Incident
 from dispatch.project.models import Project
@@ -42,14 +41,13 @@ def create(*, db_session, feedback_in: FeedbackCreate) -> Feedback:
 
 def update(*, db_session, feedback: Feedback, feedback_in: FeedbackUpdate) -> Feedback:
     """Updates a piece of feedback."""
-    feedback_data = jsonable_encoder(feedback)
+    feedback_data = feedback.dict()
     update_data = feedback_in.dict(skip_defaults=True)
 
     for field in feedback_data:
         if field in update_data:
             setattr(feedback, field, update_data[field])
 
-    db_session.add(feedback)
     db_session.commit()
     return feedback
 

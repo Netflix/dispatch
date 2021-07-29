@@ -1,6 +1,5 @@
 from typing import List, Optional
 
-from fastapi.encoders import jsonable_encoder
 from dispatch.incident.models import Incident
 
 from dispatch.project import service as project_service
@@ -63,7 +62,7 @@ def create_all(*, db_session, team_contacts_in: List[TeamContactCreate]) -> List
 def update(
     *, db_session, team_contact: TeamContact, team_contact_in: TeamContactUpdate
 ) -> TeamContact:
-    team_contact_data = jsonable_encoder(team_contact)
+    team_contact_data = team_contact.dict()
 
     update_data = team_contact_in.dict(skip_defaults=True, exclude={"filter"})
 
@@ -77,7 +76,7 @@ def update(
             setattr(team_contact, field, update_data[field])
 
     db_session.filters = filters
-    db_session.add(team_contact)
+
     db_session.commit()
     return team_contact
 

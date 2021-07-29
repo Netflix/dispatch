@@ -1,9 +1,9 @@
 from typing import List, Optional
 
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy.sql.expression import true
 
 from dispatch.project import service as project_service
+
 from .models import IncidentPriority, IncidentPriorityCreate, IncidentPriorityUpdate
 
 
@@ -71,14 +71,13 @@ def update(
     *, db_session, incident_priority: IncidentPriority, incident_priority_in: IncidentPriorityUpdate
 ) -> IncidentPriority:
     """Updates an incident priority."""
-    incident_priority_data = jsonable_encoder(incident_priority)
+    incident_priority_data = incident_priority.dict()
     update_data = incident_priority_in.dict(skip_defaults=True, exclude={"project"})
 
     for field in incident_priority_data:
         if field in update_data:
             setattr(incident_priority, field, update_data[field])
 
-    db_session.add(incident_priority)
     db_session.commit()
     return incident_priority
 

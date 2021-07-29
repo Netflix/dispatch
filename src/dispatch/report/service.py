@@ -1,7 +1,5 @@
 from typing import List, Optional
 
-from fastapi.encoders import jsonable_encoder
-
 from .enums import ReportTypes
 from .models import Report, ReportCreate, ReportUpdate
 
@@ -50,14 +48,13 @@ def create(*, db_session, report_in: ReportCreate) -> Report:
 
 def update(*, db_session, report: Report, report_in: ReportUpdate) -> Report:
     """Updates a report."""
-    report_data = jsonable_encoder(report)
+    report_data = report.dict()
     update_data = report_in.dict(skip_defaults=True)
 
     for field in report_data:
         if field in update_data:
             setattr(report, field, update_data[field])
 
-    db_session.add(report)
     db_session.commit()
     return report
 
