@@ -1,6 +1,8 @@
 from typing import List, Optional
 
-from dispatch.exceptions import InvalidConfiguration
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
+
+from dispatch.exceptions import InvalidConfigurationError
 from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
@@ -111,8 +113,16 @@ def update(*, db_session, service: Service, service_in: ServiceUpdate) -> Servic
             db_session=db_session, slug=service_in.type, project_id=service.project.id
         )
         if not oncall_plugin_instance.enabled:
-            raise InvalidConfiguration(
-                f"Cannot enable service: {service.name}. Its associated plugin {oncall_plugin_instance.plugin.title} is not enabled."
+            raise ValidationError(
+                [
+                    ErrorWrapper(
+                        InvalidConfigurationError(
+                            f"Cannot enable service: {service.name}. Its associated plugin {oncall_plugin_instance.plugin.title} is not enabled."
+                        ),
+                        loc="type",
+                    )
+                ],
+                model=ServiceUpdate,
             )
 
     for field in service_data:
