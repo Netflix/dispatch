@@ -1,3 +1,6 @@
+from pydantic.errors import PydanticValueError
+
+
 class DispatchException(Exception):
     pass
 
@@ -12,3 +15,19 @@ class InvalidFilterPolicy(DispatchException):
 
 class DispatchPluginException(DispatchException):
     pass
+
+
+class NotFoundError(PydanticValueError):
+    code = "not_found"
+
+
+class ExistsError(PydanticValueError):
+    code = "exists"
+
+
+class InvalidConfigurationError(PydanticValueError):
+    code = "invalid.configuration"
+
+
+class InvalidValueError(PydanticValueError):
+    code = "invalid"

@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Body, Depends, HTTPException, status
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
-from dispatch.exceptions import InvalidConfiguration
+from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
 
 from .models import ServiceCreate, ServicePagination, ServiceRead, ServiceUpdate
@@ -41,15 +42,13 @@ def create_service(
         project_name=service_in.project.name,
     )
     if service:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[
-                {
-                    "msg": f"A service with this identifier ({service_in.external_id}) already exists.",
-                    "loc": ["external_id"],
-                    "type": "Exists",
-                }
-            ],
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    ExistsError(msg="A service with this external_id already exists."),
+                    loc="external_id",
+                )
+            ]
         )
     service = create(db_session=db_session, service_in=service_in)
     return service
@@ -69,21 +68,9 @@ def update_service(
 
     try:
         service = update(db_session=db_session, service=service, service_in=service_in)
-    except InvalidConfiguration as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={"msg": str(e), "loc": ["configuration"], "type": "InvalidConfiguration"},
-        )
     except IntegrityError:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[
-                {
-                    "msg": "A service with this name already exists.",
-                    "loc": ["name"],
-                    "type": "Exists",
-                }
-            ],
+        raise ValidationError(
+            [ErrorWrapper(ExistsError(msg="A service with this name already exists."), loc="name")]
         )
 
     return service

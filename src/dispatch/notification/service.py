@@ -42,7 +42,9 @@ def create(*, db_session, notification_in: NotificationCreate) -> Notification:
             for f in notification_in.filters
         ]
 
-    project = project_service.get_by_name(db_session=db_session, name=notification_in.project.name)
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=notification_in.project.name
+    )
 
     notification = Notification(
         **notification_in.dict(exclude={"filters", "project"}), filters=filters, project=project

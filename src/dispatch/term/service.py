@@ -19,7 +19,9 @@ def get_all(*, db_session, project_id: int):
 
 
 def create(*, db_session, term_in: TermCreate) -> Term:
-    project = project_service.get_by_name(db_session=db_session, name=term_in.project.name)
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=term_in.project
+    )
 
     definitions = [
         definition_service.upsert(db_session=db_session, definition_in=d)

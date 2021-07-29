@@ -36,7 +36,9 @@ def get_enabled(*, db_session) -> List[Optional[Workflow]]:
 
 def create(*, db_session, workflow_in: WorkflowCreate) -> Workflow:
     """Creates a new workflow."""
-    project = project_service.get_by_name(db_session=db_session, name=workflow_in.project.name)
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=workflow_in.project
+    )
     plugin_instance = plugin_service.get_instance(
         db_session=db_session, plugin_instance_id=workflow_in.plugin_instance.id
     )

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Request, HTTPException, status
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
 
 from dispatch.auth.permissions import (
@@ -6,12 +7,12 @@ from dispatch.auth.permissions import (
     OrganizationMemberPermission,
     PermissionsDependency,
 )
+from dispatch.exceptions import InvalidConfigurationError, InvalidValueError
 
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.organization.models import OrganizationRead
-from dispatch.organization import service as organization_service
 
 from .models import (
     UserLogin,
@@ -100,19 +101,6 @@ def update_user(
     user_in: UserUpdate,
 ):
     """Update a user."""
-    org = organization_service.get_by_slug(db_session=db_session, slug=organization)
-    if not org:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[
-                {
-                    "msg": "Organization not found.",
-                    "loc": ["organization"],
-                    "type": "Not found",
-                }
-            ],
-        )
-
     user = get(db_session=db_session, user_id=user_id)
     if not user:
         raise HTTPException(
@@ -134,32 +122,21 @@ def login_user(
     organization: OrganizationSlug,
     db_session: Session = Depends(get_db),
 ):
-    org = organization_service.get_by_slug(db_session=db_session, slug=organization)
-    if not org:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[
-                {
-                    "msg": "Organization not found.",
-                    "loc": ["organization"],
-                    "type": "Not found",
-                }
-            ],
-        )
-
     user = get_by_email(db_session=db_session, email=user_in.email)
     if user and user.check_password(user_in.password):
         return {"token": user.token}
 
-    raise HTTPException(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        detail=[
-            {
-                "msg": "Invalid username or password",
-                "loc": ["username"],
-                "type": "BadUsernamePassword",
-            }
-        ],
+    raise ValidationError(
+        [
+            ErrorWrapper(
+                InvalidValueError(msg="Invalid username."),
+                loc="username",
+            ),
+            ErrorWrapper(
+                InvalidValueError(msg="Invalid password."),
+                loc="password",
+            ),
+        ]
     )
 
 
@@ -171,31 +148,14 @@ def register_user(
 ):
     user = get_by_email(db_session=db_session, email=user_in.email)
     if user:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[
-                {
-                    "msg": "User with that email address exists.",
-                    "loc": ["email"],
-                    "type": "UserExists",
-                }
-            ],
-        )
-
-    org = organization_service.get_by_slug(db_session=db_session, slug=organization)
-
-    if not org:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[
-                {
-                    "msg": "Organization not found.",
-                    "loc": ["organization"],
-                    "type": "Not found",
-                }
-            ],
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    InvalidConfigurationError(msg="A user with this email already exists."),
+                    loc="email",
+                )
+            ]
         )
 
     user = create(db_session=db_session, organization=organization, user_in=user_in)
-
     return user

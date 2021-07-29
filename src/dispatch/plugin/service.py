@@ -85,8 +85,8 @@ def get_enabled_instances_by_type(
 
 def create_instance(*, db_session, plugin_instance_in: PluginInstanceCreate) -> PluginInstance:
     """Creates a new plugin instance."""
-    project = project_service.get_by_name(
-        db_session=db_session, name=plugin_instance_in.project.name
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=plugin_instance_in.project
     )
     plugin = get(db_session=db_session, plugin_id=plugin_instance_in.plugin.id)
     plugin_instance = PluginInstance(

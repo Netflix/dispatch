@@ -143,45 +143,19 @@ def get_all_last_x_hours_by_status(
 
 def create(*, db_session, incident_in: IncidentCreate) -> Incident:
     """Creates a new incident."""
-    if not incident_in.project:
-        project = project_service.get_default(db_session=db_session)
-        if not project:
-            raise Exception("No project specificed and no default has been defined.")
-    else:
-        project = project_service.get_by_name(db_session=db_session, name=incident_in.project.name)
+    project = project_service.get_by_name_or_default(
+        db_session=db_session, project_in=incident_in.project
+    )
 
-        if not project:
-            raise Exception("Project not found.")
+    incident_type = incident_type_service.get_by_name_or_default(
+        db_session=db_session, project_id=project.id, incident_type_in=incident_in.incident_type
+    )
 
-    # We get the incident type by name
-    if not incident_in.incident_type:
-        incident_type = incident_type_service.get_default(
-            db_session=db_session, project_id=project.id
-        )
-        if not incident_type:
-            raise Exception("No incident type specified and no default has been defined.")
-    else:
-        incident_type = incident_type_service.get_by_name(
-            db_session=db_session, project_id=project.id, name=incident_in.incident_type.name
-        )
-
-        if not incident_type.enabled:
-            raise Exception("Incident type must be enabled.")
-
-    # We get the incident priority by name
-    if not incident_in.incident_priority:
-        incident_priority = incident_priority_service.get_default(
-            db_session=db_session, project_id=project.id
-        )
-        if not incident_priority:
-            raise Exception("No incident priority specified and no default has been defined.")
-    else:
-        incident_priority = incident_priority_service.get_by_name(
-            db_session=db_session, project_id=project.id, name=incident_in.incident_priority.name
-        )
-
-        if not incident_priority.enabled:
-            raise Exception("Incident priority must be enabled.")
+    incident_priority = incident_priority_service.get_by_name_or_default(
+        db_session=db_session,
+        project_id=project.id,
+        incident_priority=incident_in.incident_priority,
+    )
 
     if not incident_in.visibility:
         visibility = incident_type.visibility
@@ -232,21 +206,19 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
 
 def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> Incident:
     """Updates an existing incident."""
-    incident_priority = incident_priority_service.get_by_name(
+    project = project_service.get_by_name_or_default(
+        db_session=db_session, project_in=incident_in.project
+    )
+
+    incident_type = incident_type_service.get_by_name_or_default(
+        db_session=db_session, project_id=project.id, incident_type_in=incident_in.incident_type
+    )
+
+    incident_priority = incident_priority_service.get_by_name_or_default(
         db_session=db_session,
-        project_id=incident.project.id,
-        name=incident_in.incident_priority.name,
+        project_id=project.id,
+        incident_priority=incident_in.incident_priority,
     )
-
-    if not incident_priority.enabled:
-        raise Exception("Incident priority must be enabled.")
-
-    incident_type = incident_type_service.get_by_name(
-        db_session=db_session, project_id=incident.project.id, name=incident_in.incident_type.name
-    )
-
-    if not incident_type.enabled:
-        raise Exception("Incident type must be enabled.")
 
     tags = []
     for t in incident_in.tags:
@@ -297,7 +269,6 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
     incident.terms = terms
     incident.visibility = incident_in.visibility
 
-    db_session.add(incident)
     db_session.commit()
 
     return incident

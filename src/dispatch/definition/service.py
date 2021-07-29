@@ -27,7 +27,9 @@ def create(*, db_session, definition_in: DefinitionCreate) -> Definition:
         term_service.get_or_create(db_session=db_session, term_in=t) for t in definition_in.terms
     ]
 
-    project = project_service.get_by_name(db_session=db_session, name=definition_in.project.name)
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=definition_in.project
+    )
     definition = Definition(
         **definition_in.dict(exclude={"terms", "project"}), project=project, terms=terms
     )
