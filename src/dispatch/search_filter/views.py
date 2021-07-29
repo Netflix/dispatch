@@ -64,7 +64,7 @@ def update_search_filter(
         raise ValidationError(
             [
                 ErrorWrapper(
-                    ExistsError(msg="A sarch filter with this name already exists."), loc="name"
+                    ExistsError(msg="A search filter with this name already exists."), loc="name"
                 )
             ]
         )
