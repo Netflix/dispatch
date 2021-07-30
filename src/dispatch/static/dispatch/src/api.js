@@ -62,6 +62,23 @@ instance.interceptors.response.use(
           store.dispatch("auth/logout")
         }
       }
+
+      // allow us to turn off error handling where necessary
+      if (error.config.hasOwnProperty("errorHandle") && error.config.errorHandle === false) {
+        return Promise.reject(error)
+      }
+      if (err.response.status == 422) {
+        let errorText = err.response.data.detail[0].msg
+        store.commit(
+          "notification_backend/addBeNotification",
+          {
+            text: errorText,
+            type: "error",
+          },
+          { root: true }
+        )
+      }
+
       if (err.response.status == 500) {
         store.commit(
           "notification_backend/addBeNotification",

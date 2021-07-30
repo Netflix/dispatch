@@ -93,14 +93,6 @@ const actions = {
         })
         .catch((err) => {
           commit("SET_SELECTED_LOADING", false)
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Definition not created. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
         })
     } else {
       return DefinitionApi.update(state.selected.id, state.selected)
@@ -116,38 +108,19 @@ const actions = {
         })
         .catch((err) => {
           commit("SET_SELECTED_LOADING", false)
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Definition not updated. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
         })
     }
   },
   remove({ commit, dispatch }) {
-    return DefinitionApi.delete(state.selected.id)
-      .then(function () {
-        dispatch("closeRemove")
-        dispatch("getAll")
-        commit(
-          "notification_backend/addBeNotification",
-          { text: "Definition deleted successfully.", type: "success" },
-          { root: true }
-        )
-      })
-      .catch((err) => {
-        commit(
-          "notification_backend/addBeNotification",
-          {
-            text: "Definition not deleted. Reason: " + err.response.data.detail,
-            type: "error",
-          },
-          { root: true }
-        )
-      })
+    return DefinitionApi.delete(state.selected.id).then(function () {
+      dispatch("closeRemove")
+      dispatch("getAll")
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Definition deleted successfully.", type: "success" },
+        { root: true }
+      )
+    })
   },
 }
 

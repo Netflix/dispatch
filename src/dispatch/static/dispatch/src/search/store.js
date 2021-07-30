@@ -62,14 +62,6 @@ const actions = {
         commit("SET_LOADING", false)
       })
       .catch((err) => {
-        commit(
-          "notification_backend/addBeNotification",
-          {
-            text: "Search Failed. Reason: " + err.response.data.detail,
-            color: "red",
-          },
-          { root: true }
-        )
         commit("SET_LOADING", false)
       })
   },
@@ -95,14 +87,6 @@ const actions = {
           return resp.data
         })
         .catch((err) => {
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Search Filter not saved. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
           commit("SET_SELECTED_LOADING", false)
         })
     } else {
@@ -116,14 +100,6 @@ const actions = {
           commit("SET_SELECTED_LOADING", false)
         })
         .catch((err) => {
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Search filter not updated. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
           commit("SET_SELECTED_LOADING", false)
         })
     }
