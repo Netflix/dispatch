@@ -127,10 +127,10 @@ def update_instance(
                             InvalidConfigurationError(
                                 msg=f"Cannot disable plugin instance: {plugin_instance.plugin.title}. One or more oncall services depend on it. "
                             ),
-                            loc="plugin_instance"
+                            loc="plugin_instance",
                         )
                     ],
-                    model=PluginInstanceUpdate
+                    model=PluginInstanceUpdate,
                 )
 
     for field in plugin_instance_data:
