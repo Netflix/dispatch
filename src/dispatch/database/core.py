@@ -82,10 +82,10 @@ def get_class_by_tablename(table_fullname: str) -> Any:
                     ModuleNotFoundError(
                         msg=f"Incorrect tablename '{mapped_name}'. Check the name of your model."
                     ),
-                    loc="filter"
+                    loc="filter",
                 )
             ],
-            model=Json
+            model=Json,
         )
 
     return mapped_class

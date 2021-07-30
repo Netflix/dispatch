@@ -2,7 +2,6 @@ import time
 import logging
 
 from fastapi import FastAPI, status
-from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 from pydantic.error_wrappers import ValidationError
 
@@ -133,8 +132,6 @@ class MetricsMiddleware(BaseHTTPMiddleware):
 
         method = request.method
         tags = {"method": method, "endpoint": path_template}
-
-        start = time.perf_counter()
 
         try:
             start = time.perf_counter()
