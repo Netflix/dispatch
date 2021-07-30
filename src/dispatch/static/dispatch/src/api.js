@@ -64,8 +64,11 @@ instance.interceptors.response.use(
       }
 
       // allow us to turn off error handling where necessary
-      if (error.config.hasOwnProperty("errorHandle") && error.config.errorHandle === false) {
-        return Promise.reject(error)
+      if (
+        Object.prototype.hasOwnProperty.call(err.config, "errorHandle") &&
+        err.config.errorHandle === false
+      ) {
+        return Promise.reject(err)
       }
       if (err.response.status == 422) {
         let errorText = err.response.data.detail[0].msg

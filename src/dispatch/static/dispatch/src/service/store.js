@@ -97,7 +97,7 @@ const actions = {
           )
           return resp.data
         })
-        .catch((err) => {
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
         })
     } else {
@@ -112,7 +112,7 @@ const actions = {
             { root: true }
           )
         })
-        .catch((err) => {
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
         })
     }

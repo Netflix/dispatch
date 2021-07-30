@@ -114,7 +114,7 @@ const actions = {
             { root: true }
           )
         })
-        .catch((err) => {
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
         })
     } else {
@@ -129,7 +129,7 @@ const actions = {
             { root: true }
           )
         })
-        .catch((err) => {
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
         })
     }
@@ -146,7 +146,7 @@ const actions = {
         )
         commit("SET_BULK_EDIT_LOADING", false)
       })
-      .catch((err) => {
+      .catch(() => {
         commit("SET_BULK_EDIT_LOADING", false)
       })
   },

@@ -61,7 +61,7 @@ const actions = {
         commit("SET_RESULTS", response.data.results)
         commit("SET_LOADING", false)
       })
-      .catch((err) => {
+      .catch(() => {
         commit("SET_LOADING", false)
       })
   },
@@ -86,7 +86,7 @@ const actions = {
           commit("RESET_SELECTED")
           return resp.data
         })
-        .catch((err) => {
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
         })
     } else {
@@ -99,7 +99,7 @@ const actions = {
           )
           commit("SET_SELECTED_LOADING", false)
         })
-        .catch((err) => {
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
         })
     }
