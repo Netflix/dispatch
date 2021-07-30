@@ -24,17 +24,10 @@ def get(*, db_session, individual_contact_id: int) -> Optional[IndividualContact
     )
 
 
-def get_by_email(*, db_session, email: str) -> Optional[IndividualContact]:
-    """Returns an individual given an individual email address."""
-    return (
-        db_session.query(IndividualContact).filter(IndividualContact.email == email).one_or_none()
-    )
-
-
 def get_by_email_and_project(
     *, db_session, email: str, project_id: int
 ) -> Optional[IndividualContact]:
-    """Returns an individual given an individual email address and project id."""
+    """Returns an individual given an email address and project id."""
     return (
         db_session.query(IndividualContact)
         .filter(IndividualContact.email == email)
