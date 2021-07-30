@@ -212,33 +212,33 @@ def search_filter_sort_paginate(
 ):
     """Common functionality for searching, filtering, sorting, and pagination."""
     model_cls = get_class_by_tablename(model)
-    sort_spec = create_sort_spec(model, sort_by, descending)
+    try:
+        query = db_session.query(model_cls)
 
-    query = db_session.query(model_cls)
+        if query_str:
+            sort = False if sort_by else True
+            query = search(query_str=query_str, query=query, model=model, sort=sort)
 
-    if query_str:
-        sort = False if sort_by else True
-        query = search(query_str=query_str, query=query, model=model, sort=sort)
+        query = apply_model_specific_filters(model_cls, query, current_user, role)
 
-    query = apply_model_specific_filters(model_cls, query, current_user, role)
-
-    if filter_spec:
-        query = apply_filter_specific_joins(model_cls, filter_spec, query)
-        try:
+        if filter_spec:
+            query = apply_filter_specific_joins(model_cls, filter_spec, query)
             query = apply_filters(query, filter_spec)
-        except FieldNotFound as e:
-            raise ValidationError(
-                [
-                    ErrorWrapper(FieldNotFoundError(msg=str(e)), loc="filter"),
-                ],
-                model=Json,
-            )
-        except BadFilterFormat as e:
-            raise ValidationError(
-                [ErrorWrapper(InvalidFilterError(msg=str(e)), loc="filter")], model=Json
-            )
 
-    query = apply_sort(query, sort_spec)
+        if sort_by:
+            sort_spec = create_sort_spec(model, sort_by, descending)
+            query = apply_sort(query, sort_spec)
+    except FieldNotFound as e:
+        raise ValidationError(
+            [
+                ErrorWrapper(FieldNotFoundError(msg=str(e)), loc="filter"),
+            ],
+            model=Json,
+        )
+    except BadFilterFormat as e:
+        raise ValidationError(
+            [ErrorWrapper(InvalidFilterError(msg=str(e)), loc="filter")], model=Json
+        )
 
     if items_per_page == -1:
         items_per_page = None
