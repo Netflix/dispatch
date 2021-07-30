@@ -234,7 +234,7 @@ def search_filter_sort_paginate(
             [
                 ErrorWrapper(FieldNotFoundError(msg=str(e)), loc="filter"),
             ],
-            model=Json,
+            model=BaseModel,
         )
     except BadFilterFormat as e:
         raise ValidationError(
