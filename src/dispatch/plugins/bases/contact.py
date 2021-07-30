@@ -13,7 +13,7 @@ class ContactPlugin(Plugin):
     type = "contact"
     _schema = PluginOptionModel
 
-    def get(self, key, **kwargs):
+    def get(self, email, project_id, **kwargs):
         raise NotImplementedError
 
     def create(self, key, **kwargs):
