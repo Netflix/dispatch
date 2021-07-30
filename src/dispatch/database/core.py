@@ -2,7 +2,7 @@ import re
 import functools
 from typing import Any
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from pydantic.types import Json
+from pydantic.main import BaseModel
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
@@ -12,6 +12,7 @@ from sqlalchemy_utils import get_mapper
 from starlette.requests import Request
 
 from dispatch import config
+from dispatch.exceptions import NotFoundError
 from dispatch.search.fulltext import make_searchable
 
 
@@ -79,13 +80,11 @@ def get_class_by_tablename(table_fullname: str) -> Any:
         raise ValidationError(
             [
                 ErrorWrapper(
-                    ModuleNotFoundError(
-                        msg=f"Incorrect tablename '{mapped_name}'. Check the name of your model."
-                    ),
+                    NotFoundError(msg="Model not found. Check the name of your model."),
                     loc="filter",
                 )
             ],
-            model=Json,
+            model=BaseModel,
         )
 
     return mapped_class

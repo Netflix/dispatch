@@ -3,6 +3,7 @@ import json
 
 from typing import List
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic.main import BaseModel
 from pydantic.types import Json, constr
 
 from fastapi import Depends, Query
@@ -237,7 +238,7 @@ def search_filter_sort_paginate(
         )
     except BadFilterFormat as e:
         raise ValidationError(
-            [ErrorWrapper(InvalidFilterError(msg=str(e)), loc="filter")], model=Json
+            [ErrorWrapper(InvalidFilterError(msg=str(e)), loc="filter")], model=BaseModel
         )
 
     if items_per_page == -1:
