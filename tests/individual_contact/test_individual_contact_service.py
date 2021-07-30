@@ -5,25 +5,13 @@ def test_get(session, individual_contact):
     assert t_individual_contact.id == individual_contact.id
 
 
-def test_get_by_email(session, individual_contact):
-    from dispatch.individual.service import get_by_email
-
-    t_individual_contact = get_by_email(db_session=session, email=individual_contact.email)
-    assert t_individual_contact.email == individual_contact.email
-
-
-def test_get_all(session, individual_contact):
-    from dispatch.individual.service import get_all
-
-    t_individual_contacts = get_all(db_session=session).all()
-    assert len(t_individual_contacts) > 1
-
-
 def test_get_or_create(session, project, individual_contact):
-    from dispatch.individual.service import create, get_by_email
+    from dispatch.individual.service import create, get_by_email_and_project
     from dispatch.individual.models import IndividualContactCreate
 
-    contact = get_by_email(db_session=session, email=individual_contact.email)
+    contact = get_by_email_and_project(
+        db_session=session, email=individual_contact.email, project_id=project.id
+    )
 
     if not contact:
         name = "Joe Smith"
