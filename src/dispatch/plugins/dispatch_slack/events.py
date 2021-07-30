@@ -5,21 +5,22 @@ import datetime
 from typing import List
 from pydantic import BaseModel
 
+from dispatch.conversation import service as conversation_service
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 from dispatch.participant import service as participant_service
-from dispatch.conversation import service as conversation_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 from .config import (
-    SLACK_TIMELINE_EVENT_REACTION,
     SLACK_BAN_THREADS,
+    SLACK_TIMELINE_EVENT_REACTION,
 )
-from .service import get_user_email
 from .decorators import slack_background_task, get_organization_from_channel_id
+from .service import get_user_email
+
 
 log = logging.getLogger(__name__)
 
@@ -155,10 +156,13 @@ def handle_reaction_added_event(
         message_text = response["messages"][0]["text"]
         message_sender_id = response["messages"][0]["user"]
 
+        # we fetch the incident
+        incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
         # we fetch the individual who sent the message
         message_sender_email = get_user_email(client=slack_client, user_id=message_sender_id)
-        individual = individual_service.get_by_email(
-            db_session=db_session, email=message_sender_email
+        individual = individual_service.get_by_email_and_project(
+            db_session=db_session, email=message_sender_email, project_id=incident.project.id
         )
 
         # we log the event

@@ -1073,7 +1073,9 @@ def incident_update_flow(
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # we load the individual
-    individual = individual_service.get_by_email(db_session=db_session, email=user_email)
+    individual = individual_service.get_by_email_and_project(
+        db_session=db_session, email=user_email, project_id=incident.project.id
+    )
 
     # run whatever flows we need
     status_flow_dispatcher(
@@ -1233,7 +1235,9 @@ def incident_engage_oncall_flow(
         # we already have the oncall for the service in the incident
         return None, oncall_service
 
-    individual = individual_service.get_by_email(db_session=db_session, email=user_email)
+    individual = individual_service.get_by_email_and_project(
+        db_session=db_session, email=user_email, project_id=incident.project.id
+    )
 
     event_service.log(
         db_session=db_session,
