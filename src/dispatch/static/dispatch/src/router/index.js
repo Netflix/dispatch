@@ -20,6 +20,19 @@ const router = new Router({
 const authProviderSlug =
   process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG || "dispatch-auth-provider-basic"
 
+const originalPush = Router.prototype.push
+Router.prototype.push = function push(location, onResolve, onReject) {
+  if (onResolve || onReject) return originalPush.call(this, location, onResolve, onReject)
+  return originalPush.call(this, location).catch((err) => {
+    if (Router.isNavigationFailure(err)) {
+      // resolve err
+      return err
+    }
+    // rethrow error
+    return Promise.reject(err)
+  })
+}
+
 // router guards
 router.beforeEach((to, from, next) => {
   store.dispatch("app/setLoading", true)

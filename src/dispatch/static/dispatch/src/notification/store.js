@@ -94,16 +94,8 @@ const actions = {
             { root: true }
           )
         })
-        .catch((err) => {
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Notification not created. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
         })
     } else {
       return NotificationApi.update(state.selected.id, state.selected)
@@ -117,40 +109,21 @@ const actions = {
             { root: true }
           )
         })
-        .catch((err) => {
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Notification not updated. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
         })
     }
   },
   remove({ commit, dispatch }) {
-    return NotificationApi.delete(state.selected.id)
-      .then(function () {
-        dispatch("closeRemove")
-        dispatch("getAll")
-        commit(
-          "notification_backend/addBeNotification",
-          { text: "Notification deleted successfully.", type: "success" },
-          { root: true }
-        )
-      })
-      .catch((err) => {
-        commit(
-          "notification_backend/addBeNotification",
-          {
-            text: "Notification not deleted. Reason: " + err.response.data.detail,
-            type: "error",
-          },
-          { root: true }
-        )
-      })
+    return NotificationApi.delete(state.selected.id).then(function () {
+      dispatch("closeRemove")
+      dispatch("getAll")
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Notification deleted successfully.", type: "success" },
+        { root: true }
+      )
+    })
   },
 }
 

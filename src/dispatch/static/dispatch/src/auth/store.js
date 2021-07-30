@@ -66,70 +66,37 @@ const actions = {
   },
   save({ commit, dispatch }) {
     if (!state.selected.id) {
-      return UserApi.create(state.selected)
-        .then(() => {
-          dispatch("closeEdit")
-          dispatch("getAll")
-          commit(
-            "notification_backend/addBeNotification",
-            { text: "User created successfully.", type: "success" },
-            { root: true }
-          )
-        })
-        .catch((err) => {
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "User not created. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
-        })
-    } else {
-      return UserApi.update(state.selected.id, state.selected)
-        .then(() => {
-          dispatch("closeEdit")
-          dispatch("getAll")
-          commit(
-            "notification_backend/addBeNotification",
-            { text: "User updated successfully.", type: "success" },
-            { root: true }
-          )
-        })
-        .catch((err) => {
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "User not updated. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
-        })
-    }
-  },
-  remove({ commit, dispatch }) {
-    return UserApi.delete(state.selected.id)
-      .then(function () {
-        dispatch("closeRemove")
+      return UserApi.create(state.selected).then(() => {
+        dispatch("closeEdit")
         dispatch("getAll")
         commit(
           "notification_backend/addBeNotification",
-          { text: "User deleted successfully.", type: "success" },
+          { text: "User created successfully.", type: "success" },
           { root: true }
         )
       })
-      .catch((err) => {
+    } else {
+      return UserApi.update(state.selected.id, state.selected).then(() => {
+        dispatch("closeEdit")
+        dispatch("getAll")
         commit(
           "notification_backend/addBeNotification",
-          {
-            text: "User not deleted. Reason: " + err.response.data.detail,
-            type: "error",
-          },
+          { text: "User updated successfully.", type: "success" },
           { root: true }
         )
       })
+    }
+  },
+  remove({ commit, dispatch }) {
+    return UserApi.delete(state.selected.id).then(function () {
+      dispatch("closeRemove")
+      dispatch("getAll")
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "User deleted successfully.", type: "success" },
+        { root: true }
+      )
+    })
   },
   loginRedirect({ state }, redirectUri) {
     let redirectUrl = new URL(redirectUri)
@@ -146,37 +113,21 @@ const actions = {
   },
   basicLogin({ commit }, payload) {
     commit("SET_BASIC_LOGIN_LOADING", true)
-    UserApi.login(payload.email, payload.password)
-      .then(function (res) {
-        commit("SET_USER_LOGIN", res.data.token)
-        router.push({
-          name: "IncidentOverview",
-        })
+    UserApi.login(payload.email, payload.password).then(function (res) {
+      commit("SET_USER_LOGIN", res.data.token)
+      router.push({
+        name: "IncidentOverview",
       })
-      .catch((err) => {
-        commit(
-          "notification_backend/addBeNotification",
-          { text: err.response.data.detail, type: "error" },
-          { root: true }
-        )
-      })
+    })
     commit("SET_BASIC_LOGIN_LOADING", false)
   },
   register({ commit }, payload) {
-    UserApi.register(payload.email, payload.password)
-      .then(function (res) {
-        commit("SET_USER_LOGIN", res.data.token)
-        router.push({
-          name: "IncidentOverview",
-        })
+    UserApi.register(payload.email, payload.password).then(function (res) {
+      commit("SET_USER_LOGIN", res.data.token)
+      router.push({
+        name: "IncidentOverview",
       })
-      .catch((err) => {
-        commit(
-          "notification_backend/addBeNotification",
-          { text: err.response.data.detail, type: "error" },
-          { root: true }
-        )
-      })
+    })
   },
   login({ dispatch, commit }, payload) {
     commit("SET_USER_LOGIN", payload)

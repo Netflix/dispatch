@@ -94,16 +94,8 @@ const actions = {
             { root: true }
           )
         })
-        .catch((err) => {
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Plugin instance not created. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
         })
     } else {
       return PluginApi.updateInstance(state.selected.id, state.selected)
@@ -117,40 +109,21 @@ const actions = {
             { root: true }
           )
         })
-        .catch((err) => {
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Plugin instance not updated. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
         })
     }
   },
   remove({ commit, dispatch }) {
-    return PluginApi.delete(state.selected.id)
-      .then(function () {
-        dispatch("closeRemove")
-        dispatch("getAllInstances")
-        commit(
-          "notification_backend/addBeNotification",
-          { text: "Plugin instance deleted successfully.", type: "success" },
-          { root: true }
-        )
-      })
-      .catch((err) => {
-        commit(
-          "notification_backend/addBeNotification",
-          {
-            text: "Plugin instance not deleted. Reason: " + err.response.data.detail,
-            type: "error",
-          },
-          { root: true }
-        )
-      })
+    return PluginApi.delete(state.selected.id).then(function () {
+      dispatch("closeRemove")
+      dispatch("getAllInstances")
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Plugin instance deleted successfully.", type: "success" },
+        { root: true }
+      )
+    })
   },
 }
 

@@ -7,7 +7,11 @@ from dispatch.auth.permissions import (
     OrganizationMemberPermission,
     PermissionsDependency,
 )
-from dispatch.exceptions import InvalidConfigurationError, InvalidValueError
+from dispatch.exceptions import (
+    InvalidConfigurationError,
+    InvalidPasswordError,
+    InvalidUsernameError,
+)
 
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.database.core import get_db
@@ -131,11 +135,11 @@ def login_user(
     raise ValidationError(
         [
             ErrorWrapper(
-                InvalidValueError(msg="Invalid username."),
+                InvalidUsernameError(msg="Invalid username."),
                 loc="username",
             ),
             ErrorWrapper(
-                InvalidValueError(msg="Invalid password."),
+                InvalidPasswordError(msg="Invalid password."),
                 loc="password",
             ),
         ],
