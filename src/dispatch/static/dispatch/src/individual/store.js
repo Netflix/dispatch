@@ -99,16 +99,8 @@ const actions = {
             { root: true }
           )
         })
-        .catch((err) => {
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Individual not created. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
         })
     } else {
       return IndividualApi.update(state.selected.id, state.selected)
@@ -122,40 +114,21 @@ const actions = {
             { root: true }
           )
         })
-        .catch((err) => {
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Individual not updated. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
         })
     }
   },
   remove({ commit, dispatch }) {
-    return IndividualApi.delete(state.selected.id)
-      .then(() => {
-        dispatch("closeRemove")
-        dispatch("getAll")
-        commit(
-          "notification_backend/addBeNotification",
-          { text: "Individual deleted successfully.", type: "success" },
-          { root: true }
-        )
-      })
-      .catch((err) => {
-        commit(
-          "notification_backend/addBeNotification",
-          {
-            text: "Individual not deleted. Reason: " + err.response.data.detail,
-            type: "error",
-          },
-          { root: true }
-        )
-      })
+    return IndividualApi.delete(state.selected.id).then(() => {
+      dispatch("closeRemove")
+      dispatch("getAll")
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Individual deleted successfully.", type: "success" },
+        { root: true }
+      )
+    })
   },
 }
 

@@ -15,8 +15,10 @@ instance.interceptors.request.use(
   (config) => {
     // we don't want to send null/empty values to the API
     // TODO do we need to do this for all params?
-    if (!config.params["q"]) {
-      delete config.params["q"]
+    if (config.params) {
+      if (!config.params["q"]) {
+        delete config.params["q"]
+      }
     }
     let token = auth_store.state.currentUser.token
     if (token) {
@@ -53,6 +55,26 @@ instance.interceptors.response.use(
           store.dispatch("auth/logout")
         }
       }
+
+      // allow us to turn off error handling where necessary
+      if (
+        Object.prototype.hasOwnProperty.call(err.config, "errorHandle") &&
+        err.config.errorHandle === false
+      ) {
+        return Promise.reject(err)
+      }
+      if (err.response.status == 422) {
+        let errorText = err.response.data.detail.map(({ msg }) => msg).join(" ")
+        store.commit(
+          "notification_backend/addBeNotification",
+          {
+            text: errorText,
+            type: "error",
+          },
+          { root: true }
+        )
+      }
+
       if (err.response.status == 500) {
         store.commit(
           "notification_backend/addBeNotification",

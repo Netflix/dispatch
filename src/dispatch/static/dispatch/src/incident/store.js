@@ -217,17 +217,7 @@ const actions = {
           }
         }, 5000)
       })
-      .catch((err) => {
-        commit(
-          "notification_backend/addBeNotification",
-          {
-            text:
-              "Incident could not be reported. Please try again. Reason: " +
-              err.response.data.detail,
-            type: "error",
-          },
-          { root: true }
-        )
+      .catch(() => {
         commit("SET_SELECTED_LOADING", false)
       })
   },
@@ -245,15 +235,7 @@ const actions = {
           )
           commit("SET_SELECTED_LOADING", false)
         })
-        .catch((err) => {
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Incident not created. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
         })
     } else {
@@ -268,15 +250,7 @@ const actions = {
           )
           commit("SET_SELECTED_LOADING", false)
         })
-        .catch((err) => {
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Incident not updated. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
         })
     }
@@ -293,15 +267,7 @@ const actions = {
         )
         commit("SET_BULK_EDIT_LOADING", false)
       })
-      .catch((err) => {
-        commit(
-          "notification_backend/addBeNotification",
-          {
-            text: "Incident(s) not updated. Reason: " + err.response.data.detail,
-            type: "error",
-          },
-          { root: true }
-        )
+      .catch(() => {
         commit("SET_BULK_EDIT_LOADING", false)
       })
   },
@@ -317,65 +283,35 @@ const actions = {
         )
         commit("SET_BULK_EDIT_LOADING", false)
       })
-      .catch((err) => {
-        commit(
-          "notification_backend/addBeNotification",
-          {
-            text: "Incident(s) not deleted. Reason: " + err.response.data.detail,
-            type: "error",
-          },
-          { root: true }
-        )
+      .catch(() => {
         commit("SET_BULK_EDIT_LOADING", false)
       })
   },
   deleteIncident({ commit, dispatch }) {
-    return IncidentApi.delete(state.selected.id)
-      .then(function () {
-        dispatch("closeDeleteDialog")
-        dispatch("getAll")
-        commit(
-          "notification_backend/addBeNotification",
-          { text: "Incident deleted successfully.", type: "success" },
-          { root: true }
-        )
-      })
-      .catch((err) => {
-        commit(
-          "notification_backend/addBeNotification",
-          {
-            text: "Incident not deleted. Reason: " + err.response.data.detail,
-            type: "error",
-          },
-          { root: true }
-        )
-      })
+    return IncidentApi.delete(state.selected.id).then(function () {
+      dispatch("closeDeleteDialog")
+      dispatch("getAll")
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Incident deleted successfully.", type: "success" },
+        { root: true }
+      )
+    })
   },
   createReport({ commit, dispatch }) {
     return IncidentApi.createReport(
       state.selected.id,
       state.report.type,
       state.report[state.report.type]
-    )
-      .then(function () {
-        dispatch("closeReportDialog")
-        dispatch("getAll")
-        commit(
-          "notification_backend/addBeNotification",
-          { text: "Report created successfully.", type: "success" },
-          { root: true }
-        )
-      })
-      .catch((err) => {
-        commit(
-          "notification_backend/addBeNotification",
-          {
-            text: "Report not created. Reason: " + err.response.data.detail,
-            type: "error",
-          },
-          { root: true }
-        )
-      })
+    ).then(function () {
+      dispatch("closeReportDialog")
+      dispatch("getAll")
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Report created successfully.", type: "success" },
+        { root: true }
+      )
+    })
   },
   resetSelected({ commit }) {
     commit("RESET_SELECTED")
