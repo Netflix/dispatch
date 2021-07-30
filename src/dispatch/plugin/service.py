@@ -2,7 +2,9 @@ import logging
 
 from typing import List, Optional
 
-from dispatch.exceptions import InvalidConfiguration
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
+
+from dispatch.exceptions import InvalidConfigurationError
 from dispatch.plugins.bases import OncallPlugin
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service
@@ -119,8 +121,16 @@ def update_instance(
                 db_session=db_session, service_type=plugin_instance.plugin.slug, is_active=True
             )
             if oncall_services:
-                raise InvalidConfiguration(
-                    f"Cannot disable plugin instance: {plugin_instance.plugin.title}. One or more oncall services depend on it. "
+                raise ValidationError(
+                    [
+                        ErrorWrapper(
+                            InvalidConfigurationError(
+                                msg=f"Cannot disable plugin instance: {plugin_instance.plugin.title}. One or more oncall services depend on it. "
+                            ),
+                            loc="plugin_instance",
+                        )
+                    ],
+                    model=PluginInstanceUpdate,
                 )
 
     for field in plugin_instance_data:

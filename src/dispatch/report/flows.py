@@ -2,12 +2,14 @@ import logging
 
 from datetime import date
 
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
+
 from dispatch.enums import DocumentResourceTemplateTypes
 from dispatch.decorators import background_task
 from dispatch.document import service as document_service
 from dispatch.document.models import DocumentCreate
 from dispatch.event import service as event_service
-from dispatch.exceptions import InvalidConfiguration
+from dispatch.exceptions import InvalidConfigurationError
 from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.plugin import service as plugin_service
@@ -96,7 +98,15 @@ def create_executive_report(
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     if not incident.incident_type.executive_template_document:
-        raise InvalidConfiguration("No executive report template defined.")
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    InvalidConfigurationError(msg="No executive report template defined."),
+                    loc="executive_template_document",
+                )
+            ],
+            model=ExecutiveReportCreate,
+        )
 
     # we fetch all previous executive reports
     executive_reports = get_all_by_incident_id_and_type(

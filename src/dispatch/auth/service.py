@@ -186,9 +186,6 @@ def get_current_user(request: Request) -> DispatchUser:
         )
         raise InvalidCredentialException
 
-    if not hasattr(request.state, "organization"):
-        raise InvalidCredentialException
-
     return get_or_create(
         db_session=request.state.db,
         organization=request.state.organization,

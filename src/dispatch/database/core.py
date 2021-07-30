@@ -1,6 +1,8 @@
 import re
 import functools
 from typing import Any
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic.main import BaseModel
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
@@ -10,11 +12,8 @@ from sqlalchemy_utils import get_mapper
 from starlette.requests import Request
 
 from dispatch import config
+from dispatch.exceptions import NotFoundError
 from dispatch.search.fulltext import make_searchable
-
-
-class MissingTable(Exception):
-    pass
 
 
 engine = create_engine(str(config.SQLALCHEMY_DATABASE_URI))
@@ -78,7 +77,15 @@ def get_class_by_tablename(table_fullname: str) -> Any:
         mapped_class = _find_class(f"dispatch_core.{mapped_name}")
 
     if not mapped_class:
-        raise MissingTable(f"Incorrect tablename '{mapped_name}'. Check the name of your model.")
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(msg="Model not found. Check the name of your model."),
+                    loc="filter",
+                )
+            ],
+            model=BaseModel,
+        )
 
     return mapped_class
 

@@ -13,25 +13,16 @@ const authProviderSlug =
 
 instance.interceptors.request.use(
   (config) => {
+    // we don't want to send null/empty values to the API
+    // TODO do we need to do this for all params?
+    if (!config.params["q"]) {
+      delete config.params["q"]
+    }
     let token = auth_store.state.currentUser.token
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`
     }
 
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
-
-// we don't want to send null/empty values to the API
-// TODO do we need to do this for all params?
-instance.interceptors.request.use(
-  (config) => {
-    if (!config.params["q"]) {
-      delete config.params["q"]
-    }
     return config
   },
   (error) => {
