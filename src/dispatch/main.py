@@ -1,5 +1,6 @@
 import time
 import logging
+from os import path
 
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
@@ -11,7 +12,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.routing import compile_path
 
-from starlette.responses import Response
+from starlette.responses import Response, FileResponse
 from starlette.staticfiles import StaticFiles
 
 from .api import api_router
@@ -47,6 +48,16 @@ app = FastAPI(exception_handlers=exception_handlers)
 
 # we create the ASGI for the frontend
 frontend = FastAPI()
+
+
+@frontend.middleware("http")
+async def default_page(request, call_next):
+    response = await call_next(request)
+    if response.status_code == 404:
+        if STATIC_DIR:
+            return FileResponse(path.join(STATIC_DIR, "index.html"))
+    return response
+
 
 # we create the Web API framework
 api = FastAPI(
@@ -159,7 +170,7 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
         except ValueError:
             response = JSONResponse(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                content={"detail": [{"msg": "Unknown"}]},
+                content={"detail": [{"msg": "Unknown", "loc": ["Unknown"], "type": "Unknown"}]},
             )
 
         return response

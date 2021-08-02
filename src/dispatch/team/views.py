@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
+from dispatch.exceptions import ExistsError
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
@@ -29,15 +31,13 @@ def create_team(*, db_session: Session = Depends(get_db), team_contact_in: TeamC
         db_session=db_session, email=team_contact_in.email, project_id=team_contact_in.project.id
     )
     if team:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[
-                {
-                    "msg": "A team with this email already exists.",
-                    "loc": ["email"],
-                    "type": "Exists",
-                }
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    ExistsError(msg="A team type with this name already exists."), loc="name"
+                )
             ],
+            model=TeamContactCreate,
         )
     team = create(db_session=db_session, team_contact_in=team_contact_in)
     return team
