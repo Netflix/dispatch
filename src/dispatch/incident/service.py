@@ -206,17 +206,15 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
 
 def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> Incident:
     """Updates an existing incident."""
-    project = project_service.get_by_name_or_default(
-        db_session=db_session, project_in=incident_in.project
-    )
-
     incident_type = incident_type_service.get_by_name_or_default(
-        db_session=db_session, project_id=project.id, incident_type_in=incident_in.incident_type
+        db_session=db_session,
+        project_id=incident.project.id,
+        incident_type_in=incident_in.incident_type,
     )
 
     incident_priority = incident_priority_service.get_by_name_or_default(
         db_session=db_session,
-        project_id=project.id,
+        project_id=incident.project.id,
         incident_priority_in=incident_in.incident_priority,
     )
 
