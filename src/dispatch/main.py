@@ -156,6 +156,11 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
             response = JSONResponse(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content={"detail": e.errors()}
             )
+        except ValueError:
+            response = JSONResponse(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                content={"detail": [{"msg": "Unknown"}]},
+            )
 
         return response
 
