@@ -14,7 +14,8 @@ from .models import (
     IndividualContactRead,
     IndividualContactUpdate,
 )
-from .service import create, delete, get, get_by_email, update
+from .service import get, get_by_email_and_project, create, update, delete
+
 
 router = APIRouter()
 
@@ -30,12 +31,17 @@ def create_individual(
     *, db_session: Session = Depends(get_db), individual_contact_in: IndividualContactCreate
 ):
     """Create a new individual contact."""
-    individual = get_by_email(db_session=db_session, email=individual_contact_in.email)
+    individual = get_by_email_and_project(
+        db_session=db_session,
+        email=individual_contact_in.email,
+        project_id=individual_contact_in.project.id,
+    )
     if individual:
         raise ValidationError(
             [
                 ErrorWrapper(
-                    ExistsError(msg="An individual with this email already exists."), loc="email"
+                    ExistsError(msg="An individual with this email already exists."),
+                    loc="email",
                 )
             ],
             model=IndividualContactRead,
@@ -51,7 +57,7 @@ def get_individual(*, db_session: Session = Depends(get_db), individual_contact_
     if not individual:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "The individual with this id does not exist."}],
+            detail=[{"msg": "An individual with this id does not exist."}],
         )
     return individual
 
@@ -59,7 +65,7 @@ def get_individual(*, db_session: Session = Depends(get_db), individual_contact_
 @router.put(
     "/{individual_contact_id}",
     response_model=IndividualContactRead,
-    summary="Update an individuals contact information.",
+    summary="Update an individual's contact information.",
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def update_individual(
@@ -73,7 +79,7 @@ def update_individual(
     if not individual:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "The individual with this id does not exist."}],
+            detail=[{"msg": "An individual with this id does not exist."}],
         )
     individual = update(
         db_session=db_session,
@@ -96,7 +102,7 @@ async def delete_individual(
     if not individual:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "The individual with this id does not exist."}],
+            detail=[{"msg": "An individual with this id does not exist."}],
         )
 
     delete(db_session=db_session, individual_contact_id=individual_contact_id)
