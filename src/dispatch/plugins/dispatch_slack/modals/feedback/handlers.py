@@ -65,7 +65,9 @@ def rating_feedback_from_submitted_form(
     feedback = parsed_form_data.get(RatingFeedbackBlockId.feedback)
     rating = parsed_form_data.get(RatingFeedbackBlockId.rating, {}).get("value")
 
-    feedback_in = FeedbackCreate(rating=rating, feedback=feedback, project=incident.project)
+    feedback_in = FeedbackCreate(
+        rating=rating, feedback=feedback, project=incident.project, incident=incident
+    )
     feedback = feedback_service.create(db_session=db_session, feedback_in=feedback_in)
 
     incident.feedback.append(feedback)
