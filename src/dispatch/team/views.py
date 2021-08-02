@@ -32,11 +32,7 @@ def create_team(*, db_session: Session = Depends(get_db), team_contact_in: TeamC
     )
     if team:
         raise ValidationError(
-            [
-                ErrorWrapper(
-                    ExistsError(msg="A team type with this name already exists."), loc="name"
-                )
-            ],
+            [ErrorWrapper(ExistsError(msg="A team with this name already exists."), loc="name")],
             model=TeamContactCreate,
         )
     team = create(db_session=db_session, team_contact_in=team_contact_in)
