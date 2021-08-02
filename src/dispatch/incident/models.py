@@ -282,7 +282,7 @@ class IncidentBase(DispatchBase):
 
 class IncidentReadNested(IncidentBase):
     id: PrimaryKey
-    name: NameStr
+    name: Optional[NameStr]
     reporter: Optional[ParticipantRead]
     commander: Optional[ParticipantRead]
     incident_priority: IncidentPriorityRead
@@ -316,7 +316,7 @@ class IncidentUpdate(IncidentBase):
 
 class IncidentRead(IncidentBase):
     id: PrimaryKey
-    name: NameStr
+    name: Optional[NameStr]
     primary_team: Any
     primary_location: Any
     reporter: Optional[ParticipantRead]

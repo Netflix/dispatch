@@ -182,7 +182,7 @@ def update_external_incident_ticket(
     if incident.visibility == Visibility.restricted:
         title = description = incident.incident_type.name
 
-    incident_type_plugin_metadata = incident_type_service.get_by_name_raise(
+    incident_type_plugin_metadata = incident_type_service.get_by_name_or_raise(
         db_session=db_session,
         project_id=incident.project.id,
         incident_type_in=incident.incident_type,
@@ -612,6 +612,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                 document_in = DocumentCreate(
                     name=d["name"],
                     resource_id=d["resource_id"],
+                    project={"name": incident.project.name},
                     resource_type=d["resource_type"],
                     weblink=d["weblink"],
                 )
