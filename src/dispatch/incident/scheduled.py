@@ -170,8 +170,9 @@ def daily_report(db_session: SessionLocal, project: Project):
                 "items_grouped_template": items_grouped_template,
             }
 
+            notification_title_text = f"{project.name} {INCIDENT_DAILY_REPORT_TITLE}"
             notification_params = {
-                "text": INCIDENT_DAILY_REPORT_TITLE,
+                "text": notification_title_text,
                 "type": MessageType.incident_daily_report,
                 "template": INCIDENT_DAILY_REPORT,
                 "kwargs": notification_kwargs,
