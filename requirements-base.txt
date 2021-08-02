@@ -103,7 +103,7 @@ google-auth==1.28.0
     #   google-auth-oauthlib
 google-auth-httplib2==0.1.0
     # via google-api-python-client
-google-auth-oauthlib==0.4.4
+google-auth-oauthlib==0.4.5
     # via -r requirements-base.in
 googleapis-common-protos==1.53.0
     # via google-api-core
