@@ -13,6 +13,7 @@ from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
 from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
 from sqlalchemy_filters.filters import build_filters, get_named_models
 from sqlalchemy_filters.models import get_query_models
+from dispatch import exceptions
 
 
 from dispatch.exceptions import FieldNotFoundError, InvalidFilterError
@@ -96,7 +97,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Task, "IncidentPriority"): (Incident, False),
         (Task, "IncidentType"): (Incident, False),
         (PluginInstance, "Plugin"): (Plugin, False),
-        # (DispatchUser, "Organization"): (DispatchUser.organizations, True),
+        (DispatchUser, "Organization"): (DispatchUser.organizations, True),
         (Incident, "Tag"): (Incident.tags, True),
         (Incident, "TagType"): (Incident.tags, True),
         (Incident, "Terms"): (Incident.terms, True),
@@ -105,15 +106,12 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
     filter_models = get_named_models(filters)
 
     for filter_model in filter_models:
-        # this is a special case, the association object return doesn't play well with
-        # the other query comparisons
-        if filter_model == "Organization":
-            query = query.join(DispatchUser.organizations, isouter=True)
-        else:
-            if model_map.get((model, filter_model)):
-                joined_model, is_outer = model_map[(model, filter_model)]
-                if joined_model not in get_query_models(query).values():
-                    query = query.join(joined_model, isouter=is_outer)
+        if model_map.get((model, filter_model)):
+            joined_model, is_outer = model_map[(model, filter_model)]
+            try:
+                query = query.join(joined_model, isouter=is_outer)
+            except Exception as e:
+                log.debug(str(e))
 
     return query
 
