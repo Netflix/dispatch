@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import Incident
-from dispatch.participant import service as participant_service
 from dispatch.project.models import Project
 
 from .models import Feedback, FeedbackCreate, FeedbackUpdate
