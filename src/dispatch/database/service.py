@@ -9,6 +9,7 @@ from pydantic.types import Json, constr
 from fastapi import Depends, Query
 
 from sqlalchemy import or_, orm, func, desc
+import sqlalchemy
 from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
 from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
 from sqlalchemy_filters.filters import build_filters, get_named_models
@@ -240,7 +241,19 @@ def search_filter_sort_paginate(
     if items_per_page == -1:
         items_per_page = None
 
-    query, pagination = apply_pagination(query, page_number=page, page_size=items_per_page)
+    # sometimes we get bad input for the search function
+    # TODO investigate moving to a different way to parsing queries that won't through errors
+    # e.g. websearch_to_tsquery
+    # https://www.postgresql.org/docs/current/textsearch-controls.html
+    try:
+        query, pagination = apply_pagination(query, page_number=page, page_size=items_per_page)
+    except sqlalchemy.exc.ProgrammingError:
+        return {
+            "items": [],
+            "itemsPerPage": items_per_page,
+            "page": page,
+            "total": 0,
+        }
 
     return {
         "items": query.all(),
