@@ -121,7 +121,7 @@ def slack_background_task(func):
                 )
             else:
                 dispatch_slack_service.send_message(
-                    client=slack_client,
+                    client=kwargs["slack_client"],
                     conversation_id=user_id,
                     text=message,
                 )
