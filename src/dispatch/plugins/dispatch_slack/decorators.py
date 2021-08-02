@@ -1,14 +1,15 @@
+from functools import wraps
 import inspect
 import logging
 import time
 import uuid
-from functools import wraps
 
-from dispatch.metrics import provider as metrics_provider
-from dispatch.database.core import engine, sessionmaker, SessionLocal
-from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
-from dispatch.organization import service as organization_service
 from dispatch.conversation import service as conversation_service
+from dispatch.database.core import engine, sessionmaker, SessionLocal
+from dispatch.incident.enums import IncidentStatus
+from dispatch.metrics import provider as metrics_provider
+from dispatch.organization import service as organization_service
+from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 
 log = logging.getLogger(__name__)
@@ -102,14 +103,28 @@ def slack_background_task(func):
             slack_interaction_guid = str(uuid.uuid4())
             log.exception(e, extra=dict(slack_interaction_guid=slack_interaction_guid))
 
-            # notify the user the interaction failed
             user_id = args[0]
             channel_id = args[2]
-            message = f"Sorry, we've run into an unexpected error. For help, please reach out to the incident commander and provide them with the following token: {slack_interaction_guid}."
-            dispatch_slack_service.send_ephemeral_message(
-                kwargs["slack_client"], channel_id, user_id, message
+
+            conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
+                db_session=kwargs["db_session"], channel_id=channel_id
             )
 
+            # we notify the user that the interaction failed
+            message = (
+                f"Sorry, we've run into an unexpected error. For help, please reach out to {conversation.incident.commander.individual.name}",
+                f" and provide them with the following token: {slack_interaction_guid}.",
+            )
+            if conversation.incident.status != IncidentStatus.closed:
+                dispatch_slack_service.send_ephemeral_message(
+                    kwargs["slack_client"], channel_id, user_id, message
+                )
+            else:
+                dispatch_slack_service.send_message(
+                    client=slack_client,
+                    conversation_id=user_id,
+                    text=message,
+                )
         finally:
             if background:
                 kwargs["db_session"].close()
