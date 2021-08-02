@@ -127,6 +127,10 @@ def make_call(client: Any, endpoint: str, **kwargs):
             time.sleep(300)
             raise TryAgain
 
+        # NOTE if the channel is archived we generally don't care, we log the error above.
+        if e.response["error"] == "is_archived":
+            pass
+
         if e.response.headers.get("Retry-After"):
             wait = int(e.response.headers["Retry-After"])
             log.info(f"SlackError: Rate limit hit. Waiting {wait} seconds.")
@@ -338,6 +342,7 @@ def send_ephemeral_message(
     thread_ts: Optional[str] = None,
 ):
     """Sends an ephemeral message to a user in a channel."""
+
     if thread_ts:
         response = make_call(
             client,
