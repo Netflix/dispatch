@@ -24,10 +24,15 @@ def get(*, db_session, individual_contact_id: int) -> Optional[IndividualContact
     )
 
 
-def get_by_email(*, db_session, email: str) -> Optional[IndividualContact]:
-    """Returns an individual given an individual email address."""
+def get_by_email_and_project(
+    *, db_session, email: str, project_id: int
+) -> Optional[IndividualContact]:
+    """Returns an individual given an email address and project id."""
     return (
-        db_session.query(IndividualContact).filter(IndividualContact.email == email).one_or_none()
+        db_session.query(IndividualContact)
+        .filter(IndividualContact.email == email)
+        .filter(IndividualContact.project_id == project_id)
+        .one_or_none()
     )
 
 
@@ -41,7 +46,9 @@ def get_or_create(
 ) -> IndividualContact:
     """Gets or creates an individual."""
     # we fetch the individual contact from the database
-    individual_contact = get_by_email(db_session=db_session, email=email)
+    individual_contact = get_by_email_and_project(
+        db_session=db_session, email=email, project_id=incident.project.id
+    )
 
     # we try to fetch the individual's contact information using the contact plugin
     contact_plugin = plugin_service.get_active_instance(

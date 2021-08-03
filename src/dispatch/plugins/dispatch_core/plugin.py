@@ -207,15 +207,17 @@ class DispatchDocumentResolverPlugin(DocumentResolverPlugin):
 class DispatchContactPlugin(ContactPlugin):
     title = "Dispatch Plugin - Contact plugin"
     slug = "dispatch-contact"
-    description = "Uses dispatch itself to resolve incident participants."
+    description = "Uses dispatch itself to fetch incident participants contact info."
     version = dispatch_plugin.__version__
 
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
-    def get(self, email, db_session=None):
+    def get(self, email, project_id=None, db_session=None):
         return getattr(
-            individual_service.get_by_email(db_session=db_session, email=email),
+            individual_service.get_by_email_and_project(
+                db_session=db_session, email=email, project_id=project_id
+            ),
             "__dict__",
             {"email": email, "fullname": email},
         )

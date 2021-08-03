@@ -120,7 +120,10 @@ def create_or_update_task(
         task = task_service.update(
             db_session=db_session,
             task=existing_task,
-            task_in=TaskUpdate(**task),
+            task_in=TaskUpdate(
+                **task,
+                incident=incident,
+            ),
             sync_external=sync_external,
         )
 

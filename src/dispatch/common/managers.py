@@ -7,7 +7,7 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 import logging
-from dispatch.exceptions import InvalidConfiguration
+from dispatch.exceptions import InvalidConfigurationError
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ class InstanceManager(object):
                 else:
                     results.append(cls)
 
-            except InvalidConfiguration as e:
+            except InvalidConfigurationError as e:
                 logger.warning(f"Plugin '{class_name}' may not work correctly. {e}")
 
             except Exception as e:

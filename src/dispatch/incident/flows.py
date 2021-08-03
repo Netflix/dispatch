@@ -182,7 +182,7 @@ def update_external_incident_ticket(
     if incident.visibility == Visibility.restricted:
         title = description = incident.incident_type.name
 
-    incident_type_plugin_metadata = incident_type_service.get_by_name_raise(
+    incident_type_plugin_metadata = incident_type_service.get_by_name_or_raise(
         db_session=db_session,
         project_id=incident.project.id,
         incident_type_in=incident.incident_type,
@@ -612,6 +612,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                 document_in = DocumentCreate(
                     name=d["name"],
                     resource_id=d["resource_id"],
+                    project={"name": incident.project.name},
                     resource_type=d["resource_type"],
                     weblink=d["weblink"],
                 )
@@ -1073,7 +1074,9 @@ def incident_update_flow(
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     # we load the individual
-    individual = individual_service.get_by_email(db_session=db_session, email=user_email)
+    individual = individual_service.get_by_email_and_project(
+        db_session=db_session, email=user_email, project_id=incident.project.id
+    )
 
     # run whatever flows we need
     status_flow_dispatcher(
@@ -1233,7 +1236,9 @@ def incident_engage_oncall_flow(
         # we already have the oncall for the service in the incident
         return None, oncall_service
 
-    individual = individual_service.get_by_email(db_session=db_session, email=user_email)
+    individual = individual_service.get_by_email_and_project(
+        db_session=db_session, email=user_email, project_id=incident.project.id
+    )
 
     event_service.log(
         db_session=db_session,

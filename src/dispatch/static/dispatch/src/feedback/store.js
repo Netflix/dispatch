@@ -79,70 +79,37 @@ const actions = {
   },
   save({ commit, dispatch }) {
     if (!state.selected.id) {
-      return FeedbackApi.create(state.selected)
-        .then(() => {
-          dispatch("closeCreateEdit")
-          dispatch("getAll")
-          commit(
-            "notification_backend/addBeNotification",
-            { text: "Feedback created successfully.", type: "success" },
-            { root: true }
-          )
-        })
-        .catch((err) => {
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Feedback not created. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
-        })
-    } else {
-      return FeedbackApi.update(state.selected.id, state.selected)
-        .then(() => {
-          dispatch("closeCreateEdit")
-          dispatch("getAll")
-          commit(
-            "notification_backend/addBeNotification",
-            { text: "Feedback updated successfully.", type: "success" },
-            { root: true }
-          )
-        })
-        .catch((err) => {
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Feedback not updated. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
-        })
-    }
-  },
-  remove({ commit, dispatch }) {
-    return FeedbackApi.delete(state.selected.id)
-      .then(function () {
-        dispatch("closeRemove")
+      return FeedbackApi.create(state.selected).then(() => {
+        dispatch("closeCreateEdit")
         dispatch("getAll")
         commit(
           "notification_backend/addBeNotification",
-          { text: "Feedback deleted successfully.", type: "success" },
+          { text: "Feedback created successfully.", type: "success" },
           { root: true }
         )
       })
-      .catch((err) => {
+    } else {
+      return FeedbackApi.update(state.selected.id, state.selected).then(() => {
+        dispatch("closeCreateEdit")
+        dispatch("getAll")
         commit(
           "notification_backend/addBeNotification",
-          {
-            text: "Feedback not deleted. Reason: " + err.response.data.detail,
-            type: "error",
-          },
+          { text: "Feedback updated successfully.", type: "success" },
           { root: true }
         )
       })
+    }
+  },
+  remove({ commit, dispatch }) {
+    return FeedbackApi.delete(state.selected.id).then(function () {
+      dispatch("closeRemove")
+      dispatch("getAll")
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Feedback deleted successfully.", type: "success" },
+        { root: true }
+      )
+    })
   },
 }
 

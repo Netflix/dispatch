@@ -29,7 +29,7 @@ def upgrade():
 
     for r in results:
         slug = slugify(r[1], separator="_")
-        conn.execute(f"update dispatch_core.organization set slug = {slug} where id = {r[0]} ")
+        conn.execute(f"update dispatch_core.organization set slug = '{slug}' where id = {r[0]}")
 
     # ### end Alembic commands ###
 

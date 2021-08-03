@@ -204,8 +204,7 @@ export default {
           this.exportLoading = false
           this.closeExport()
         })
-        .catch((err) => {
-          console.log(err)
+        .catch(() => {
           this.exportLoading = false
           this.closeExport()
         })

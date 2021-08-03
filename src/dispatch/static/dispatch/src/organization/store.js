@@ -54,16 +54,8 @@ const actions = {
             { root: true }
           )
         })
-        .catch((err) => {
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Organization not created. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
         })
     } else {
       return OrganizationApi.update(state.selected.id, state.selected)
@@ -77,16 +69,8 @@ const actions = {
             { root: true }
           )
         })
-        .catch((err) => {
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Organization not updated. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
         })
     }
   },

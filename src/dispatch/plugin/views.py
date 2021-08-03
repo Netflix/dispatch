@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
-from dispatch.exceptions import InvalidConfiguration
 from dispatch.models import PrimaryKey
 
 from .models import (
@@ -75,16 +74,10 @@ def update_plugin_instance(
             detail=[{"msg": "A plugin instance with this id does not exist."}],
         )
 
-    try:
-        plugin_instance = update_instance(
-            db_session=db_session,
-            plugin_instance=plugin_instance,
-            plugin_instance_in=plugin_instance_in,
-        )
-    except InvalidConfiguration as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=[{"msg": str(e), "loc": ["configuration"], "type": "InvalidConfiguration"}],
-        )
+    plugin_instance = update_instance(
+        db_session=db_session,
+        plugin_instance=plugin_instance,
+        plugin_instance_in=plugin_instance_in,
+    )
 
     return plugin_instance

@@ -100,62 +100,32 @@ const actions = {
           )
           return resp.data
         })
-        .catch((err) => {
+        .catch(() => {
           commit("SET_SELECTED_LOADING", false)
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Document not created. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
         })
     } else {
-      return DocumentApi.update(state.selected.id, state.selected)
-        .then(() => {
-          commit("SET_SELECTED_LOADING", false)
-          dispatch("closeCreateEdit")
-          dispatch("getAll")
-          commit(
-            "notification_backend/addBeNotification",
-            { text: "Document updated successfully.", type: "success" },
-            { root: true }
-          )
-        })
-        .catch((err) => {
-          commit(
-            "notification_backend/addBeNotification",
-            {
-              text: "Document not updated. Reason: " + err.response.data.detail,
-              type: "error",
-            },
-            { root: true }
-          )
-        })
-    }
-  },
-  remove({ commit, dispatch }) {
-    return DocumentApi.delete(state.selected.id)
-      .then(function () {
-        dispatch("closeRemove")
+      return DocumentApi.update(state.selected.id, state.selected).then(() => {
+        commit("SET_SELECTED_LOADING", false)
+        dispatch("closeCreateEdit")
         dispatch("getAll")
         commit(
           "notification_backend/addBeNotification",
-          { text: "Document deleted successfully.", type: "success" },
+          { text: "Document updated successfully.", type: "success" },
           { root: true }
         )
       })
-      .catch((err) => {
-        commit(
-          "notification_backend/addBeNotification",
-          {
-            text: "Document not deleted. Reason: " + err.response.data.detail,
-            type: "error",
-          },
-          { root: true }
-        )
-      })
+    }
+  },
+  remove({ commit, dispatch }) {
+    return DocumentApi.delete(state.selected.id).then(function () {
+      dispatch("closeRemove")
+      dispatch("getAll")
+      commit(
+        "notification_backend/addBeNotification",
+        { text: "Document deleted successfully.", type: "success" },
+        { root: true }
+      )
+    })
   },
 }
 
