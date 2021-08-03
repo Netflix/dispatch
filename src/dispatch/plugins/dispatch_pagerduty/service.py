@@ -14,7 +14,6 @@ def get_oncall_email(client, service: dict) -> str:
         client.iter_all(
             "oncalls",  # method
             {
-                # "include[]": "users", # including users doesn't give us the contact details
                 filter_name: [filter_value],
                 "escalation_policy_ids[]": [escalation_policy_id],
             },  # params
