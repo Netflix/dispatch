@@ -5,8 +5,8 @@ def get_oncall_email(client, service: dict) -> str:
     """Fetches the oncall's email for a given service."""
     escalation_policy_id = service["escalation_policy"]["id"]
     escalation_policy = client.rget(f"/escalation_policies/{escalation_policy_id}")
-    filter_name = "{}_ids[]".format(
-        escalation_policy["escalation_rules"][0]["targets"][0]["type"].split("_")[0]
+    filter_name = (
+        f"{escalation_policy['escalation_rules'][0]['targets'][0]['type'].split('_')[0]}_ids[]"
     )
     filter_value = escalation_policy["escalation_rules"][0]["targets"][0]["id"]
 
