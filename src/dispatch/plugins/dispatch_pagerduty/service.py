@@ -5,14 +5,16 @@ def get_oncall_email(client, service: dict) -> str:
     """Fetches the oncall's email for a given service."""
     escalation_policy_id = service["escalation_policy"]["id"]
     escalation_policy = client.rget(f"/escalation_policies/{escalation_policy_id}")
-    schedule_id = escalation_policy["escalation_rules"][0]["targets"][0]["id"]
+    filter_name = (
+        f"{escalation_policy['escalation_rules'][0]['targets'][0]['type'].split('_')[0]}_ids[]"
+    )
+    filter_value = escalation_policy["escalation_rules"][0]["targets"][0]["id"]
 
     oncalls = list(
         client.iter_all(
             "oncalls",  # method
             {
-                # "include[]": "users", # including users doesn't give us the contact details
-                "schedule_ids[]": [schedule_id],
+                filter_name: [filter_value],
                 "escalation_policy_ids[]": [escalation_policy_id],
             },  # params
         )
