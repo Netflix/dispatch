@@ -226,6 +226,7 @@ def search_filter_sort_paginate(
         if sort_by:
             sort_spec = create_sort_spec(model, sort_by, descending)
             query = apply_sort(query, sort_spec)
+
     except FieldNotFound as e:
         raise ValidationError(
             [
@@ -247,7 +248,8 @@ def search_filter_sort_paginate(
     # https://www.postgresql.org/docs/current/textsearch-controls.html
     try:
         query, pagination = apply_pagination(query, page_number=page, page_size=items_per_page)
-    except sqlalchemy.exc.ProgrammingError:
+    except sqlalchemy.exc.ProgrammingError as e:
+        log.debug(e)
         return {
             "items": [],
             "itemsPerPage": items_per_page,
