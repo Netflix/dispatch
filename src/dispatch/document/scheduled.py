@@ -38,7 +38,7 @@ def sync_document_terms(db_session: SessionLocal, project: Project):
     terms = term_service.get_all(db_session=db_session, project_id=project.id).all()
     log.debug(f"Fetched {len(terms)} terms from database.")
 
-    term_strings = [t.name.lower() for t in terms if t.discoverable]
+    term_strings = [t.text.lower() for t in terms if t.discoverable]
     phrases = build_term_vocab(term_strings)
     matcher = build_phrase_matcher("dispatch-term", phrases)
 
