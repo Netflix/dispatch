@@ -4581,7 +4581,7 @@ ALTER TABLE ONLY public.workflow_instance ALTER COLUMN id SET DEFAULT nextval('p
 --
 
 COPY dispatch_core.alembic_version (version_num) FROM stdin;
-8f364cf49a23
+c0bc938b058e
 \.
 
 
