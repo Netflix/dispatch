@@ -1277,7 +1277,8 @@ CREATE TABLE dispatch_organization_default.feedback (
     incident_id integer,
     participant_id integer,
     updated_at timestamp without time zone,
-    created_at timestamp without time zone
+    created_at timestamp without time zone,
+    search_vector tsvector
 );
 
 
@@ -4581,7 +4582,7 @@ ALTER TABLE ONLY public.workflow_instance ALTER COLUMN id SET DEFAULT nextval('p
 --
 
 COPY dispatch_core.alembic_version (version_num) FROM stdin;
-8f364cf49a23
+e0d568f345c9
 \.
 
 
@@ -4593,6 +4594,7 @@ COPY dispatch_core.dispatch_user (id, email, password, search_vector, updated_at
 1	test@email.com	\\x24326224313224335178516e33684c3138414a6645764370787856427555364b3037586b4555615468345a6d5652697737722f6133506d4233314357	'test@email.com':1A	2021-07-27 18:03:54.011712	2021-07-27 18:03:53.987587
 496	kglisson@example.com	\\x24326224313224475a57777a53673452745579676d37456b6b3658757547497a55414b3977566953572e526f7876554e56795848544f334b36583647	'kglisson@example.com':1A	2021-07-27 19:50:07.978675	2021-07-27 19:47:26.818131
 129	dispatch@example.com	\\x24326224313224652f674233756651656365474b376b6a6d7a44473175367a6e563677663030437777575055694d657156566c6c4272346c746a6832	'dispatch@example.com':1A	2021-07-27 18:45:54.472619	2021-07-27 18:44:28.472455
+4236	kglisson@acme.com	\\x2432622431322448786558306a756e387a6f534f43314f63757432786561492f32436c2f6b794533756242634251592e44706b627078726d335a386d	'kglisson@netflix.com':1A	2021-08-04 21:14:27.742017	2021-08-04 21:14:27.722495
 \.
 
 
@@ -4604,6 +4606,7 @@ COPY dispatch_core.dispatch_user_organization (dispatch_user_id, organization_id
 1	1	Member	2021-07-27 18:03:54.004041	2021-07-27 18:03:54.004048
 129	1	Owner	2021-07-27 18:45:54.477286	2021-07-27 18:44:28.473467
 496	1	Owner	2021-07-27 19:50:07.983374	2021-07-27 19:47:26.819394
+4236	1	Member	2021-08-04 21:14:27.726854	2021-08-04 21:14:27.726861
 \.
 
 
@@ -4612,7 +4615,7 @@ COPY dispatch_core.dispatch_user_organization (dispatch_user_id, organization_id
 --
 
 COPY dispatch_core.organization (id, name, "default", description, banner_enabled, banner_color, banner_text, search_vector, slug) FROM stdin;
-1	default	t	Default dispatch organization.	\N	\N	\N	'default':1A,2B 'dispatch':3B 'organ':4B	\N
+1	default	t	Default dispatch organization.	\N	\N	\N	'default':1A,2B 'dispatch':3B 'organ':4B	default
 \.
 
 
@@ -4644,7 +4647,7 @@ COPY dispatch_core.plugin (id, title, slug, description, version, author, author
 --
 
 COPY dispatch_organization_default.alembic_version (version_num) FROM stdin;
-2780d28e4f39
+9fcf205ba6a5
 \.
 
 
@@ -4765,6 +4768,7 @@ COPY dispatch_organization_default.dispatch_user_project (dispatch_user_id, proj
 1	1	Member	2021-07-27 18:03:54.014291	2021-07-27 18:03:54.014284
 129	1	Member	2021-07-27 18:44:28.479945	2021-07-27 18:44:28.47995
 496	1	Member	2021-07-27 19:47:26.825534	2021-07-27 19:47:26.825539
+4236	1	Member	2021-08-04 21:14:27.744061	2021-08-04 21:14:27.744069
 \.
 
 
@@ -4850,7 +4854,7 @@ COPY dispatch_organization_default.event (id, uuid, started_at, ended_at, source
 -- Data for Name: feedback; Type: TABLE DATA; Schema: dispatch_organization_default; Owner: dispatch
 --
 
-COPY dispatch_organization_default.feedback (id, rating, feedback, incident_id, participant_id, updated_at, created_at) FROM stdin;
+COPY dispatch_organization_default.feedback (id, rating, feedback, incident_id, participant_id, updated_at, created_at, search_vector) FROM stdin;
 \.
 
 
@@ -5774,7 +5778,7 @@ COPY public.workflow_term (term_id, workflow_id) FROM stdin;
 -- Name: dispatch_user_id_seq; Type: SEQUENCE SET; Schema: dispatch_core; Owner: dispatch
 --
 
-SELECT pg_catalog.setval('dispatch_core.dispatch_user_id_seq', 4235, true);
+SELECT pg_catalog.setval('dispatch_core.dispatch_user_id_seq', 4257, true);
 
 
 --
@@ -7425,6 +7429,13 @@ CREATE INDEX document_search_vector_idx ON dispatch_organization_default.documen
 --
 
 CREATE INDEX event_search_vector_idx ON dispatch_organization_default.event USING gin (search_vector);
+
+
+--
+-- Name: feedback_search_vector_idx; Type: INDEX; Schema: dispatch_organization_default; Owner: dispatch
+--
+
+CREATE INDEX feedback_search_vector_idx ON dispatch_organization_default.feedback USING gin (search_vector);
 
 
 --
