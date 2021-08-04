@@ -99,7 +99,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (DispatchUser, "Organization"): (DispatchUser.organizations, True),
         (Incident, "Tag"): (Incident.tags, True),
         (Incident, "TagType"): (Incident.tags, True),
-        (Incident, "Terms"): (Incident.terms, True),
+        (Incident, "Term"): (Incident.terms, True),
     }
     filters = build_filters(filter_spec)
     filter_models = get_named_models(filters)

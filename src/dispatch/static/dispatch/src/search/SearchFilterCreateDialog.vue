@@ -33,7 +33,7 @@
                         <v-list-item-content>
                           <tag-filter-combobox
                             :project="project"
-                            v-model="filters.tags"
+                            v-model="filters.tag"
                             label="Tags"
                           />
                         </v-list-item-content>
