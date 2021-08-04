@@ -1,33 +1,12 @@
 import logging
 import os
-import sys
-import types
 
 import click
 import uvicorn
-import asyncio
-import sqlalchemy
-from alembic import command as alembic_command
-from alembic.config import Config as AlembicConfig
-from tabulate import tabulate
-
 from dispatch import __version__, config
 from dispatch.enums import UserRoles
 
-from .main import *  # noqa
-from .database.core import engine
-from .database.manage import (
-    get_core_tables,
-    get_tenant_tables,
-    init_database,
-    setup_fulltext_search,
-)
-from .exceptions import DispatchException
-from .plugins.base import plugins
 from .scheduler import scheduler
-from .logging import configure_logging
-
-from dispatch.plugins.dispatch_slack import socket_mode
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -38,6 +17,8 @@ log = logging.getLogger(__name__)
 @click.version_option(version=__version__)
 def dispatch_cli():
     """Command-line interface to Dispatch."""
+    from .logging import configure_logging
+
     configure_logging()
 
 
@@ -50,20 +31,14 @@ def plugins_group():
 @plugins_group.command("list")
 def list_plugins():
     """Shows all available plugins."""
+    from tabulate import tabulate
+
     from dispatch.database.core import SessionLocal
     from dispatch.plugin import service as plugin_service
 
     db_session = SessionLocal()
     table = []
-    for p in plugins.all():
-        record = plugin_service.get_by_slug(db_session=db_session, slug=p.slug)
-
-        if not record:
-            log.warning(
-                f"Plugin {p.slug} available, but not installed. Run `dispatch plugins install` to install it."
-            )
-            continue
-
+    for record in plugin_service.get_all(db_session=db_session):
         table.append(
             [
                 record.title,
@@ -103,6 +78,10 @@ def install_plugins(force):
     from dispatch.database.core import SessionLocal
     from dispatch.plugin import service as plugin_service
     from dispatch.plugin.models import Plugin
+    from dispatch.common.utils.cli import install_plugins
+    from dispatch.plugins.base import plugins
+
+    install_plugins()
 
     db_session = SessionLocal()
     for p in plugins.all():
@@ -228,6 +207,11 @@ def dispatch_database():
 def database_init():
     """Initializes a new database."""
     click.echo("Initializing new database...")
+    from .database.core import engine
+    from .database.manage import (
+        init_database,
+    )
+
     init_database(engine)
     click.secho("Success.", fg="green")
 
@@ -347,8 +331,20 @@ def drop_database(yes):
 @click.option("--revision-type", type=click.Choice(["core", "tenant"]))
 def upgrade_database(tag, sql, revision, revision_type):
     """Upgrades database schema to newest version."""
+    import sqlalchemy
     from sqlalchemy import inspect
     from sqlalchemy_utils import database_exists
+    from alembic import command as alembic_command
+    from alembic.config import Config as AlembicConfig
+
+    from .database.core import engine
+
+    from .database.manage import (
+        get_core_tables,
+        get_tenant_tables,
+        init_database,
+        setup_fulltext_search,
+    )
 
     alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
 
@@ -398,6 +394,9 @@ def upgrade_database(tag, sql, revision, revision_type):
 @click.option("--message")
 def merge_revisions(revisions, revision_type, message):
     """Combines two revisions."""
+    from alembic import command as alembic_command
+    from alembic.config import Config as AlembicConfig
+
     alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
     if revision_type == "core":
         path = config.ALEMBIC_CORE_REVISION_PATH
@@ -413,6 +412,9 @@ def merge_revisions(revisions, revision_type, message):
 @click.option("--revision-type", type=click.Choice(["core", "tenant"]), default="core")
 def head_database(revision_type):
     """Shows the heads of the database."""
+    from alembic import command as alembic_command
+    from alembic.config import Config as AlembicConfig
+
     alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
     if revision_type == "core":
         path = config.ALEMBIC_CORE_REVISION_PATH
@@ -428,6 +430,9 @@ def head_database(revision_type):
 @click.option("--revision-type", type=click.Choice(["core", "tenant"]), default="core")
 def history_database(revision_type):
     """Shows the history of the database."""
+    from alembic import command as alembic_command
+    from alembic.config import Config as AlembicConfig
+
     alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
     if revision_type == "core":
         path = config.ALEMBIC_CORE_REVISION_PATH
@@ -453,6 +458,9 @@ def history_database(revision_type):
 @click.option("--revision-type", type=click.Choice(["core", "tenant"]), default="core")
 def downgrade_database(tag, sql, revision, revision_type):
     """Downgrades database schema to next newest version."""
+    from alembic import command as alembic_command
+    from alembic.config import Config as AlembicConfig
+
     if sql and revision == "-1":
         revision = "head:-1"
 
@@ -482,6 +490,9 @@ def downgrade_database(tag, sql, revision, revision_type):
 )
 def stamp_database(revision, revision_type, tag, sql):
     """Forces the database to a given revision."""
+    from alembic import command as alembic_command
+    from alembic.config import Config as AlembicConfig
+
     alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
 
     if revision_type == "core":
@@ -529,6 +540,10 @@ def revision_database(
     message, autogenerate, revision_type, sql, head, splice, branch_label, version_path, rev_id
 ):
     """Create new database revision."""
+    import types
+    from alembic import command as alembic_command
+    from alembic.config import Config as AlembicConfig
+
     alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
 
     if revision_type:
@@ -595,6 +610,8 @@ def dispatch_scheduler():
 @dispatch_scheduler.command("list")
 def list_tasks():
     """Prints and runs all currently configured periodic tasks, in seperate event loop."""
+    from tabulate import tabulate
+
     table = []
     for task in scheduler.registered_tasks:
         table.append([task["name"], task["job"].period, task["job"].at_time])
@@ -635,6 +652,7 @@ def dispatch_server():
 @dispatch_server.command("routes")
 def show_routes():
     """Prints all available routes."""
+    from tabulate import tabulate
     from dispatch.main import api_router
 
     table = []
@@ -649,6 +667,7 @@ def show_config():
     """Prints the current config as dispatch sees it."""
     import sys
     import inspect
+    from tabulate import tabulate
     from dispatch import config
 
     func_members = inspect.getmembers(sys.modules[config.__name__])
@@ -691,6 +710,9 @@ dispatch_server.add_command(uvicorn.main, name="start")
 @dispatch_server.command("slack")
 def run_slack_websocket():
     """Runs the slack websocket process."""
+    import asyncio
+    from dispatch.plugins.dispatch_slack import socket_mode
+
     asyncio.run(socket_mode.run_websocket_process())
 
 
@@ -698,6 +720,7 @@ def run_slack_websocket():
 @click.argument("ipython_args", nargs=-1, type=click.UNPROCESSED)
 def shell(ipython_args):
     """Starts an ipython shell importing our app. Useful for debugging."""
+    import sys
     import IPython
     from IPython.terminal.ipapp import load_default_config
 
@@ -711,6 +734,8 @@ IPython: {IPython.__version__}"""
 
 def entrypoint():
     """The entry that the CLI is executed from"""
+    from .exceptions import DispatchException
+
     try:
         dispatch_cli()
     except DispatchException as e:
