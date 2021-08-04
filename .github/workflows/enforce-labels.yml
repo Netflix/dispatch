@@ -9,6 +9,6 @@ jobs:
     steps:
       - uses: yogevbd/enforce-label-action@2.1.0
         with:
-          REQUIRED_LABELS_ANY: "bug,enhancement,doc,feature,skip-changelog"
-          REQUIRED_LABELS_ANY_DESCRIPTION: "Select at least one label ['bug','doc','feature','enhancement','skip-changelog']"
+          REQUIRED_LABELS_ANY: "bug,enhancement,doc,feature,dependencies,skip-changelog"
+          REQUIRED_LABELS_ANY_DESCRIPTION: "Select at least one label ['bug','doc','feature','dependencies','enhancement','skip-changelog']"
           BANNED_LABELS: "banned"
