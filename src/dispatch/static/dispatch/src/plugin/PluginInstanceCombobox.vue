@@ -1,6 +1,6 @@
 <template>
   <v-combobox
-    v-model="plugin"
+    v-model="plugin.slug"
     :items="items"
     item-text="plugin.slug"
     :search-input.sync="search"
@@ -109,33 +109,37 @@ export default {
     fetchData() {
       this.error = null
       this.loading = "error"
+      let filter = {
+        and: [
+          {
+            model: "PluginInstance",
+            field: "enabled",
+            op: "==",
+            value: "true",
+          },
+          {
+            model: "Project",
+            field: "name",
+            op: "==",
+            value: this.project.name,
+          },
+        ],
+      }
+
+      if (this.type) {
+        filter["and"].push({
+          model: "Plugin",
+          field: "type",
+          op: "==",
+          value: this.type,
+        })
+      }
 
       let filterOptions = {
         q: this.search,
         sortBy: ["slug"],
         itemsPerPage: this.numItems,
-        filter: JSON.stringify({
-          and: [
-            {
-              model: "Plugin",
-              field: "type",
-              op: "==",
-              value: this.type,
-            },
-            {
-              model: "PluginInstance",
-              field: "enabled",
-              op: "==",
-              value: "true",
-            },
-            {
-              model: "Project",
-              field: "name",
-              op: "==",
-              value: this.project.name,
-            },
-          ],
-        }),
+        filter: JSON.stringify(this.filter),
       }
 
       PluginApi.getAllInstances(filterOptions).then((response) => {
