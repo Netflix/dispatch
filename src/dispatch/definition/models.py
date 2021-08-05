@@ -12,7 +12,6 @@ from dispatch.models import (
     PrimaryKey,
     DispatchBase,
     ProjectMixin,
-    TermReadNested,
 )
 from dispatch.project.models import ProjectRead
 
