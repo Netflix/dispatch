@@ -79,13 +79,13 @@ class ParticipantCreate(ParticipantBase):
 
 
 class ParticipantUpdate(ParticipantBase):
-    individual: Optional[IndividualRead]
+    individual: Optional[IndividualContactRead]
 
 
 class ParticipantRead(ParticipantBase):
     id: PrimaryKey
     participant_roles: Optional[List[ParticipantRoleRead]] = []
-    individual: Optional[IndividualRead]
+    individual: Optional[IndividualContactRead]
 
 
 class ParticipantPagination(DispatchBase):
