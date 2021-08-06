@@ -103,9 +103,7 @@ def create_instance(*, db_session, instance_in: WorkflowInstanceCreate) -> Workf
     instance.creator = creator
 
     for a in instance_in.artifacts:
-        artifact_document = document_service.create(
-            db_session=db_session, document_in=a
-        )
+        artifact_document = document_service.create(db_session=db_session, document_in=a)
         instance.artifacts.append(artifact_document)
 
     db_session.add(instance)
