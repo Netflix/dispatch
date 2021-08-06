@@ -23,6 +23,7 @@ from dispatch import config
 from dispatch.database.core import engine, sessionmaker
 from dispatch.database.manage import init_database
 
+
 from .factories import (
     ConferenceFactory,
     ConversationFactory,
@@ -330,7 +331,7 @@ def participant_roles(session):
 
 @pytest.fixture
 def participant(session):
-    return ParticipantFactory()
+    return ParticipantFactory(individual=IndividualContactFactory())
 
 
 @pytest.fixture
@@ -510,7 +511,7 @@ def plugin_instance(session):
 
 @pytest.fixture
 def workflow(session):
-    return WorkflowFactory()
+    return WorkflowFactory(plugin_instance=PluginInstanceFactory())
 
 
 @pytest.fixture

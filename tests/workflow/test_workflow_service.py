@@ -35,7 +35,7 @@ def test_create(session, project, plugin_instance):
     assert workflow
 
 
-def test_create_instance(session, incident, workflow, participant, project, plugin_instance):
+def test_create_instance(session, incident, workflow, participant, project):
     from dispatch.workflow.service import create_instance
     from dispatch.workflow.models import WorkflowInstanceCreate
     from dispatch.document.models import DocumentCreate
@@ -54,17 +54,16 @@ def test_create_instance(session, incident, workflow, participant, project, plug
         )
     ]
 
-    workflow_in = WorkflowInstanceCreate(
+    instance_in = WorkflowInstanceCreate(
         parameters=parameters,
         run_reason=run_reason,
         status=status,
         incident=incident,
-        plugin_instance=plugin_instance,
         workflow=workflow,
         creator=participant,
         artifacts=artifacts,
     )
-    workflow_instance = create_instance(db_session=session, workflow_in=workflow_in)
+    workflow_instance = create_instance(db_session=session, instance_in=instance_in)
     assert workflow_instance
 
 

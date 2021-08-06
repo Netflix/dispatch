@@ -91,20 +91,20 @@ def create_instance(*, db_session, instance_in: WorkflowInstanceCreate) -> Workf
         **instance_in.dict(exclude={"incident", "workflow", "creator", "artifacts"})
     )
 
-    incident = incident_service.get(db_session=db_session, incident_id=instance_in.incident["id"])
+    incident = incident_service.get(db_session=db_session, incident_id=instance_in.incident.id)
     instance.incident = incident
 
-    workflow = get(db_session=db_session, workflow_id=instance_in.workflow["id"])
+    workflow = get(db_session=db_session, workflow_id=instance_in.workflow.id)
     instance.workflow = workflow
 
     creator = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=incident.id, email=instance_in.creator["email"]
+        db_session=db_session, incident_id=incident.id, email=instance_in.creator.individual.email
     )
     instance.creator = creator
 
     for a in instance_in.artifacts:
         artifact_document = document_service.create(
-            db_session=db_session, document_in=DocumentCreate(**a)
+            db_session=db_session, document_in=a
         )
         instance.artifacts.append(artifact_document)
 
