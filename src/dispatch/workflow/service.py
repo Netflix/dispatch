@@ -7,8 +7,6 @@ from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.document import service as document_service
 
-from dispatch.document.models import DocumentCreate
-
 from .models import (
     Workflow,
     WorkflowInstance,
