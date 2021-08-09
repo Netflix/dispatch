@@ -159,6 +159,8 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
 
     if not incident_in.visibility:
         visibility = incident_type.visibility
+    else:
+        visibility = incident_in.visibility
 
     tag_objs = []
     for t in incident_in.tags:
