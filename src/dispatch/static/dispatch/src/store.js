@@ -28,6 +28,7 @@ import workflow from "@/workflow/store"
 import template from "@/document/template/store"
 import runbook from "@/document/runbook/store"
 import reference from "@/document/reference/store"
+import incident_role from "@/incident_role/store"
 
 Vue.use(Vuex)
 
@@ -59,6 +60,7 @@ export default new Vuex.Store({
     workflow,
     runbook,
     reference,
+    incident_role,
     route: {
       namespaced: true,
       getters: {
