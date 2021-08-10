@@ -256,7 +256,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
 
 
 class ProjectRead(DispatchBase):
-    id: PrimaryKey
+    id: Optional[PrimaryKey]
     name: NameStr
     color: Optional[str]
 
