@@ -22,7 +22,7 @@ from .models import (
 log = logging.getLogger(__name__)
 
 
-def get(*, db_session, incident_role__id: int) -> Optional[IncidentRole]:
+def get(*, db_session, incident_role_id: int) -> Optional[IncidentRole]:
     """Gets a notifcation by id."""
     return db_session.query(IncidentRole).filter(IncidentRole.id == incident_role__id).one_or_none()
 

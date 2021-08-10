@@ -56,21 +56,11 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
-
-extend("required", {
-  ...required,
-  message: "This field is required",
-})
 
 export default {
   name: "IncidentRoleNewEditSheet",
 
-  components: {
-    ValidationObserver,
-    ValidationProvider,
-  },
+  components: {},
 
   computed: {
     ...mapFields("incident_role", [
