@@ -106,11 +106,10 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
-import DocumentApi from "@/document/api"
-import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
-import ProjectApi from "@/project/api"
+import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
+import DocumentApi from "@/document/api"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 
 extend("required", {
@@ -186,18 +185,7 @@ export default {
 
   created() {
     if (this.query.project) {
-      ProjectApi.getAll({
-        filter: JSON.stringify({
-          model: "Project",
-          field: "name",
-          op: "==",
-          value: this.query.project,
-        }),
-      }).then((response) => {
-        if (response.data.items.length) {
-          this.project = response.data.items[0]
-        }
-      })
+      this.project = { name: this.query.project }
     }
 
     if (this.query.incident_type) {
