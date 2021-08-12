@@ -344,6 +344,57 @@ class IncidentTypeFactory(BaseFactory):
         model = IncidentType
 
 
+class IncidentRoleFactory(BaseFactory):
+    """Incident Role Factory."""
+
+    role = FuzzyChoice(["Incident Commander", "Scribe", "Liaison"])
+    order = FuzzyInteger()
+    enabled = True
+
+    @post_generation
+    def incident_priorities(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for priority in extracted:
+                self.incident_priorities.append(priority)
+
+    @post_generation
+    def incident_types(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for incident_type in extracted:
+                self.incident_types.append(incident_type)
+
+    @post_generation
+    def tags(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for tag in extracted:
+                self.tags.append(tag)
+
+    @post_generation
+    def service(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.service_id = extracted.id
+
+    @post_generation
+    def individual(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.individual_id = extracted.id
+
+
 class IndividualContactFactory(ContactBaseFactory):
     """Individual Contact Factory."""
 

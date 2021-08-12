@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 
 def get(*, db_session, incident_role_id: int) -> Optional[IncidentRole]:
     """Gets a notifcation by id."""
-    return db_session.query(IncidentRole).filter(IncidentRole.id == incident_role__id).one_or_none()
+    return db_session.query(IncidentRole).filter(IncidentRole.id == incident_role_id).one_or_none()
 
 
 def get_all(*, db_session):
@@ -165,7 +165,6 @@ def resolve_role(
     incident: Incident,
 ):
     """Based on parameters currently associated to an incident determine who should be assigned which incident role."""
-
     incident_roles = get_all_enabled(db_session=db_session, project_id=incident.project.id)
 
     # get the subject role policies
