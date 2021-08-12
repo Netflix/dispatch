@@ -89,8 +89,8 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
-import DeleteDialog from "@/incident_cost_type/DeleteDialog.vue"
-import NewEditSheet from "@/incident_cost_type/NewEditSheet.vue"
+import DeleteDialog from "@/incident_role/DeleteDialog.vue"
+import NewEditSheet from "@/incident_role/NewEditSheet.vue"
 import { incidentRoleTypes } from "@/incident_role/store.js"
 
 export default {

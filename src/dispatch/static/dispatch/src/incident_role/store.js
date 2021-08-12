@@ -8,6 +8,10 @@ const getDefaultSelectedState = () => {
   return {
     id: null,
     project: null,
+    incident_priorities: [],
+    incident_type: [],
+    service: null,
+    individual: null,
     enabled: true,
     loading: false,
   }
@@ -51,7 +55,7 @@ const state = {
       q: "",
       page: 1,
       itemsPerPage: 10,
-      sortBy: ["name"],
+      sortBy: ["order"],
       descending: [true],
       filters: {
         project: [],

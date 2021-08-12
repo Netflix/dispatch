@@ -68,7 +68,7 @@ export default {
     label: {
       type: String,
       default: function () {
-        return "Incident Types"
+        return "Types"
       },
     },
     project: {
