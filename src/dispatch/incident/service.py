@@ -189,14 +189,14 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
     )
 
     assign_incident_role(
+        db_session, incident, incident_in.reporter.individual.email, ParticipantRoleType.liaison
+    )
+
+    assign_incident_role(
         db_session,
         incident,
         incident_in.reporter.individual.email,
         ParticipantRoleType.incident_commander,
-    )
-
-    assign_incident_role(
-        db_session, incident, incident_in.reporter.individual.email, ParticipantRoleType.liaison
     )
 
     return incident
