@@ -97,7 +97,7 @@ def get_task_activity(
                 discussion_id = a["targets"][0]["fileComment"]["legacyDiscussionId"]
                 comment = get_comment(comment_client, file_id, discussion_id)
 
-                task["description"] = comment["content"]
+                task["description"] = comment.get("quotedFileContent", {}).get("value", "")
 
                 task["tickets"] = get_tickets(comment["replies"])
 

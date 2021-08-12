@@ -624,6 +624,10 @@ def list_tasks():
 @click.option("--eager", is_flag=True, default=False, help="Run the tasks immediately.")
 def start_tasks(tasks, eager):
     """Starts the scheduler."""
+    from dispatch.common.utils.cli import install_plugins
+
+    install_plugins()
+
     if tasks:
         for task in scheduler.registered_tasks:
             if task["name"] not in tasks:
