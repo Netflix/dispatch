@@ -348,7 +348,7 @@ class IncidentRoleFactory(BaseFactory):
     """Incident Role Factory."""
 
     role = FuzzyChoice(["Incident Commander", "Scribe", "Liaison"])
-    order = FuzzyInteger()
+    order = FuzzyInteger(low=1, high=10)
     enabled = True
 
     @post_generation
