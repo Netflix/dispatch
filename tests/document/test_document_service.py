@@ -9,7 +9,7 @@ def test_get_all(session, document):
     from dispatch.document.service import get_all
 
     t_documents = get_all(db_session=session).all()
-    assert len(t_documents) > 1
+    assert t_documents)
 
 
 def test_create(session, project):

@@ -27,7 +27,7 @@ def test_get_all(session, project, incident_types):
     from dispatch.incident_type.service import get_all
 
     t_incident_types = get_all(db_session=session, project_id=incident_types[0].project.id).all()
-    assert len(t_incident_types) >= 1
+    assert t_incident_types
 
 
 def test_create(session, project, document):

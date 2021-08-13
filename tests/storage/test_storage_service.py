@@ -9,7 +9,7 @@ def test_get_all(session, storages):
     from dispatch.storage.service import get_all
 
     t_storages = get_all(db_session=session).all()
-    assert len(t_storages) > 1
+    assert t_storages
 
 
 def test_create(session, project):
