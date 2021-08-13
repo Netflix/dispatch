@@ -229,7 +229,7 @@ async def handle_incident_conversation_commands(client, request, background_task
     )
 
     user_id = request.get("user_id")
-    user_email = dispatch_slack_service.get_user_email_async(client, user_id)
+    user_email = await dispatch_slack_service.get_user_email_async(client, user_id)
 
     # some commands are sensitive and we only let non-participants execute them
     allowed = check_command_restrictions(
