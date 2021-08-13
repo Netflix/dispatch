@@ -9,7 +9,9 @@ from dispatch.database.core import engine, sessionmaker, SessionLocal
 from dispatch.incident.enums import IncidentStatus
 from dispatch.metrics import provider as metrics_provider
 from dispatch.organization import service as organization_service
+from dispatch.organization.models import Organization
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.project.service import get_default
 
 
 log = logging.getLogger(__name__)
@@ -41,20 +43,12 @@ def get_organization_from_channel_id(channel_id: str) -> SessionLocal:
         scoped_db_session.close()
 
 
-def get_organization_from_slug(organization_slug: str) -> SessionLocal:
+def get_default_organization_slug() -> str:
     """Iterate all organizations looking for matching organization."""
     db_session = SessionLocal()
-    organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
+    organization = organization_service.get_default(db_session=db_session)
     db_session.close()
-
-    if organization_slug in organization_slugs:
-        schema_engine = engine.execution_options(
-            schema_translate_map={
-                None: f"dispatch_organization_{organization_slug}",
-            }
-        )
-
-        return sessionmaker(bind=schema_engine)()
+    return organization.slug
 
 
 def fullname(o):
