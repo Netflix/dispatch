@@ -176,7 +176,7 @@ async def handle_non_incident_conversation_commands(client, request, background_
     if len(command_args):
         organization_slug = command_args[0]
 
-    # We get the list of public and private conversations the Slack bot is a member of
+    # We get the list of public and private conversations the Dispatch bot is a member of
     (
         public_conversations,
         private_conversations,
