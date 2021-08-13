@@ -166,10 +166,8 @@ def slack_background_task(func):
             )
 
             # we notify the user that the interaction failed
-            message = (
-                "Sorry, we've run into an unexpected error. For help please reach out to your Dispatch admins",
-                f" and provide them with the following token: {slack_interaction_guid}.",
-            )
+            message = f"""Sorry, we've run into an unexpected error. For help please reach out to your Dispatch admins \
+and provide them with the following token: '{slack_interaction_guid}'."""
 
             if conversation:
                 if conversation.incident.status != IncidentStatus.closed:

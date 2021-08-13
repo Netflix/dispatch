@@ -27,6 +27,7 @@ def create_rating_feedback_modal(
     """Creates a modal for rating and providing feedback about an incident."""
     trigger_id = action["trigger_id"]
 
+    raise Exception
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     if not incident:
