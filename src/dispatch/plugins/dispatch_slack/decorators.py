@@ -4,6 +4,11 @@ import logging
 import time
 import uuid
 
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic.main import BaseModel
+from sqlalchemy.sql.functions import user
+
+from dispatch.exceptions import NotFoundError
 from dispatch.conversation import service as conversation_service
 from dispatch.database.core import engine, sessionmaker, SessionLocal
 from dispatch.incident.enums import IncidentStatus
@@ -18,7 +23,7 @@ log = logging.getLogger(__name__)
 # we need a way to determine which organization to use for a given
 # event, we use the unique channel id to determine which organization the
 # event belongs to.
-def get_organization_from_channel_id(channel_id: str) -> SessionLocal:
+def get_organization_scope_from_channel_id(channel_id: str) -> SessionLocal:
     """Iterate all organizations looking for a relevant channel_id."""
     db_session = SessionLocal()
     organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
@@ -41,12 +46,45 @@ def get_organization_from_channel_id(channel_id: str) -> SessionLocal:
         scoped_db_session.close()
 
 
-def get_default_organization_slug() -> str:
+def get_organization_scope_from_slug(slug: str) -> SessionLocal:
+    """Iterate all organizations looking for a relevant channel_id."""
+    db_session = SessionLocal()
+    organization = organization_service.get_by_slug(db_session=db_session, slug=slug)
+    db_session.close()
+
+    if organization:
+        schema_engine = engine.execution_options(
+            schema_translate_map={
+                None: f"dispatch_organization_{slug}",
+            }
+        )
+
+        return sessionmaker(bind=schema_engine)()
+
+    raise ValidationError(
+        [
+            ErrorWrapper(
+                NotFoundError(msg=f"Organization slug '{slug}' not found. Check your spelling."),
+                loc="organization",
+            )
+        ],
+        model=BaseModel,
+    )
+
+
+def get_default_organization_scope() -> str:
     """Iterate all organizations looking for matching organization."""
     db_session = SessionLocal()
     organization = organization_service.get_default(db_session=db_session)
     db_session.close()
-    return organization.slug
+
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: f"dispatch_organization_{organization.slug}",
+        }
+    )
+
+    return sessionmaker(bind=schema_engine)()
 
 
 def fullname(o):
@@ -66,37 +104,32 @@ def slack_background_task(func):
     def wrapper(*args, **kwargs):
         background = False
 
-        if not kwargs.get("db_session"):
-            channel_id = args[2]
-
-            # slug passed directly is prefered over just having a channel_id
-            organization_slug = kwargs.pop("organization_slug", None)
-            if not organization_slug:
-                scoped_db_session = get_organization_from_channel_id(channel_id=channel_id)
-                if not scoped_db_session:
-                    raise Exception(
-                        f"Could not find an organization associated with channel_id. ChannelId: {channel_id}"
-                    )
-            else:
-                schema_engine = engine.execution_options(
-                    schema_translate_map={
-                        None: f"dispatch_organization_{organization_slug}",
-                    }
-                )
-
-                scoped_db_session = sessionmaker(bind=schema_engine)()
-
-            background = True
-            kwargs["db_session"] = scoped_db_session
-
-        if not kwargs.get("slack_client"):
-            slack_client = dispatch_slack_service.create_slack_client()
-            kwargs["slack_client"] = slack_client
-
         try:
             metrics_provider.counter(
                 "function.call.counter", tags={"function": fullname(func), "slack": True}
             )
+
+            if not kwargs.get("slack_client"):
+                slack_client = dispatch_slack_service.create_slack_client()
+                kwargs["slack_client"] = slack_client
+
+            if not kwargs.get("db_session"):
+                channel_id = args[2]
+
+                # slug passed directly is prefered over just having a channel_id
+                organization_slug = kwargs.pop("organization_slug", None)
+                if not organization_slug:
+                    scoped_db_session = get_organization_scope_from_channel_id(
+                        channel_id=channel_id
+                    )
+                    if not scoped_db_session:
+                        scoped_db_session = get_default_organization_scope()
+                else:
+                    scoped_db_session = get_organization_scope_from_slug(organization_slug)
+
+                background = True
+                kwargs["db_session"] = scoped_db_session
+
             start = time.perf_counter()
             result = func(*args, **kwargs)
             elapsed_time = time.perf_counter() - start
@@ -106,6 +139,21 @@ def slack_background_task(func):
                 tags={"function": fullname(func), "slack": True},
             )
             return result
+        except ValidationError as e:
+            log.exception(e)
+
+            user_id = args[0]
+            channel_id = args[2]
+
+            message = f"Command Error: {e.errors()[0]['msg']}"
+
+            dispatch_slack_service.send_ephemeral_message(
+                client=kwargs["slack_client"],
+                conversation_id=channel_id,
+                user_id=user_id,
+                text=message,
+            )
+
         except Exception as e:
             # we generate our own guid for now, maybe slack provides us something we can use?
             slack_interaction_guid = str(uuid.uuid4())
@@ -120,17 +168,20 @@ def slack_background_task(func):
 
             # we notify the user that the interaction failed
             message = (
-                f"Sorry, we've run into an unexpected error. For help, please reach out to {conversation.incident.commander.individual.name}",
+                "Sorry, we've run into an unexpected error. For help please reach out to your Dispatch admins",
                 f" and provide them with the following token: {slack_interaction_guid}.",
             )
-            if conversation.incident.status != IncidentStatus.closed:
-                dispatch_slack_service.send_ephemeral_message(
-                    kwargs["slack_client"], channel_id, user_id, message
-                )
+
+            if conversation:
+                if conversation.incident.status != IncidentStatus.closed:
+                    dispatch_slack_service.send_ephemeral_message(
+                        kwargs["slack_client"], channel_id, user_id, message
+                    )
             else:
-                dispatch_slack_service.send_message(
+                dispatch_slack_service.send_ephemeral_message(
                     client=kwargs["slack_client"],
-                    conversation_id=user_id,
+                    conversation_id=channel_id,
+                    user_id=user_id,
                     text=message,
                 )
         finally:

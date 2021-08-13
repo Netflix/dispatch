@@ -52,7 +52,7 @@ from .modals.incident.enums import (
 from .models import ButtonValue, TaskButton
 
 from .service import get_user_email
-from .decorators import slack_background_task, get_organization_from_channel_id
+from .decorators import slack_background_task, get_organization_scope_from_channel_id
 
 
 def handle_modal_action(action: dict, background_tasks: BackgroundTasks):
@@ -143,7 +143,7 @@ def block_action_functions(action: str):
 def handle_dialog_action(action: dict, background_tasks: BackgroundTasks):
     """Handles all dialog actions."""
     channel_id = action["channel"]["id"]
-    db_session = get_organization_from_channel_id(channel_id=channel_id)
+    db_session = get_organization_scope_from_channel_id(channel_id=channel_id)
 
     conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
         db_session=db_session, channel_id=channel_id
