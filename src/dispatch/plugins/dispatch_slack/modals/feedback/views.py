@@ -15,7 +15,7 @@ class RatingFeedbackCallbackId(DispatchEnum):
     submit_form = "rating_feedback_submit_form"
 
 
-def rating_feedback_view(incident: Incident):
+def rating_feedback_view(incident: Incident, channel_id: str):
     """Builds all blocks required to rate and provide feedback about an incident."""
     modal_template = {
         "type": "modal",
@@ -34,9 +34,7 @@ def rating_feedback_view(incident: Incident):
         "close": {"type": "plain_text", "text": "Cancel"},
         "submit": {"type": "plain_text", "text": "Submit"},
         "callback_id": RatingFeedbackCallbackId.submit_form,
-        "private_metadata": json.dumps(
-            {"incident_id": str(incident.id), "channel_id": incident.conversation.channel_id}
-        ),
+        "private_metadata": json.dumps({"incident_id": str(incident.id), "channel_id": channel_id}),
     }
 
     rating_picker_options = []

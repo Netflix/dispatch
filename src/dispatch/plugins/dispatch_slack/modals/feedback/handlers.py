@@ -27,7 +27,6 @@ def create_rating_feedback_modal(
     """Creates a modal for rating and providing feedback about an incident."""
     trigger_id = action["trigger_id"]
 
-    raise Exception
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     if not incident:
@@ -36,7 +35,7 @@ def create_rating_feedback_modal(
         )
         send_ephemeral_message(slack_client, channel_id, user_id, message)
     else:
-        modal_create_template = rating_feedback_view(incident=incident)
+        modal_create_template = rating_feedback_view(incident=incident, channel_id=channel_id)
 
         open_modal_with_user(
             client=slack_client, trigger_id=trigger_id, modal=modal_create_template
@@ -55,6 +54,7 @@ def rating_feedback_from_submitted_form(
 ):
     """Adds rating and feeback to incident based on submitted form data."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    raise Exception
 
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident_id, email=user_email
