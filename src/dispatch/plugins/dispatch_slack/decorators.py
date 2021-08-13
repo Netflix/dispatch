@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 # we need a way to determine which organization to use for a given
 # event, we use the unique channel id to determine which organization the
 # event belongs to.
-def get_organization_from_channel_id(channel_id: str) -> str:
+def get_organization_from_channel_id(channel_id: str) -> SessionLocal:
     """Iterate all organizations looking for a relevant channel_id."""
     db_session = SessionLocal()
     organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
@@ -39,6 +39,22 @@ def get_organization_from_channel_id(channel_id: str) -> str:
             return scoped_db_session
 
         scoped_db_session.close()
+
+
+def get_organization_from_slug(organization_slug: str) -> SessionLocal:
+    """Iterate all organizations looking for matching organization."""
+    db_session = SessionLocal()
+    organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
+    db_session.close()
+
+    if organization_slug in organization_slugs:
+        schema_engine = engine.execution_options(
+            schema_translate_map={
+                None: f"dispatch_organization_{organization_slug}",
+            }
+        )
+
+        return sessionmaker(bind=schema_engine)()
 
 
 def fullname(o):
