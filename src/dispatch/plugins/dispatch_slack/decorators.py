@@ -6,7 +6,6 @@ import uuid
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from pydantic.main import BaseModel
-from sqlalchemy.sql.functions import user
 
 from dispatch.exceptions import NotFoundError
 from dispatch.conversation import service as conversation_service
