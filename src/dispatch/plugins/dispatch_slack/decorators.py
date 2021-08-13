@@ -9,9 +9,7 @@ from dispatch.database.core import engine, sessionmaker, SessionLocal
 from dispatch.incident.enums import IncidentStatus
 from dispatch.metrics import provider as metrics_provider
 from dispatch.organization import service as organization_service
-from dispatch.organization.models import Organization
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
-from dispatch.project.service import get_default
 
 
 log = logging.getLogger(__name__)

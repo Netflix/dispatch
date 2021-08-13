@@ -44,7 +44,6 @@ from .config import (
 
 from .decorators import (
     get_organization_from_channel_id,
-    get_organization_from_slug,
     slack_background_task,
 )
 
