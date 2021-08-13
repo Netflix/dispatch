@@ -54,7 +54,6 @@ def rating_feedback_from_submitted_form(
 ):
     """Adds rating and feeback to incident based on submitted form data."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
-    raise Exception
 
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident_id, email=user_email
