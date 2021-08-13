@@ -173,7 +173,7 @@ async def handle_non_incident_conversation_commands(client, request, background_
     command = request.get("command")
     channel_id = request.get("channel_id")
     command_args = request.get("text", "").split(" ")
-    if len(command_args):
+    if command_args:
         organization_slug = command_args[0]
 
     # We get the list of public and private conversations the Dispatch bot is a member of
