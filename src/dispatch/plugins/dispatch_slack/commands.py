@@ -552,7 +552,7 @@ def list_incidents(
                     [
                         ErrorWrapper(
                             NotFoundError(
-                                msg=f"Project slug '{args[1]}' not found. Check your spelling."
+                                msg=f"Project name '{args[1]}' in organization '{args[0]}' not found. Check your spelling."
                             ),
                             loc="project",
                         )
