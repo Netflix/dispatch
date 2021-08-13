@@ -161,26 +161,16 @@ def slack_background_task(func):
             user_id = args[0]
             channel_id = args[2]
 
-            conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
-                db_session=kwargs["db_session"], channel_id=channel_id
-            )
-
             # we notify the user that the interaction failed
             message = f"""Sorry, we've run into an unexpected error. For help please reach out to your Dispatch admins \
 and provide them with the following token: '{slack_interaction_guid}'."""
 
-            if conversation:
-                if conversation.incident.status != IncidentStatus.closed:
-                    dispatch_slack_service.send_ephemeral_message(
-                        kwargs["slack_client"], channel_id, user_id, message
-                    )
-            else:
-                dispatch_slack_service.send_ephemeral_message(
-                    client=kwargs["slack_client"],
-                    conversation_id=channel_id,
-                    user_id=user_id,
-                    text=message,
-                )
+            dispatch_slack_service.send_ephemeral_message(
+                client=kwargs["slack_client"],
+                conversation_id=channel_id,
+                user_id=user_id,
+                text=message,
+            )
         finally:
             if background:
                 kwargs["db_session"].close()
