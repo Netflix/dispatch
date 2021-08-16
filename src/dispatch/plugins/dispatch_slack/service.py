@@ -1,7 +1,6 @@
 import time
 import logging
 import functools
-from pydantic import Field
 
 import slack_sdk
 from slack_sdk.web.async_client import AsyncWebClient

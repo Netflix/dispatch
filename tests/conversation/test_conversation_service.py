@@ -9,7 +9,7 @@ def test_get_all(session, conversations):
     from dispatch.conversation.service import get_all
 
     t_conversations = get_all(db_session=session).all()
-    assert len(t_conversations) > 1
+    assert t_conversations
 
 
 def test_create(session):

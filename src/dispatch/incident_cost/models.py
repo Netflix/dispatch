@@ -1,8 +1,9 @@
 from typing import List, Optional
 from dispatch.models import PrimaryKey
 
-from sqlalchemy import Column, ForeignKey, Integer, Numeric
 from sqlalchemy.orm import relationship
+from sqlalchemy import Column, ForeignKey, Integer, Numeric
+from sqlalchemy.ext.associationproxy import association_proxy
 
 from dispatch.database.core import Base
 from dispatch.incident_cost_type.models import (
@@ -22,6 +23,7 @@ class IncidentCost(Base, TimeStampMixin, ProjectMixin):
     incident_cost_type = relationship("IncidentCostType", backref="incident_cost")
     incident_cost_type_id = Column(Integer, ForeignKey("incident_cost_type.id"))
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
+    search_vector = association_proxy("incident_cost_type", "search_vector")
 
 
 # Pydantic Models
