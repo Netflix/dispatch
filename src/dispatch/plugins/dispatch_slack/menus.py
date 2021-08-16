@@ -11,7 +11,7 @@ from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.modals.common import parse_submitted_form
 from dispatch.plugins.dispatch_slack.modals.incident.enums import IncidentBlockId
 
-from .decorators import get_organization_from_channel_id
+from .decorators import get_organization_scope_from_channel_id
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ async def handle_slack_menu(*, client: WebClient, request: Request):
     channel_id = view_data["private_metadata"].get("channel_id")
     action_id = request["action_id"]
 
-    db_session = get_organization_from_channel_id(channel_id=channel_id)
+    db_session = get_organization_scope_from_channel_id(channel_id=channel_id)
 
     f = menu_functions(action_id)
     return f(db_session, user_id, user_email, channel_id, incident_id, query_str, request)
