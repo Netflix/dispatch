@@ -2,12 +2,12 @@ import pytz
 from datetime import datetime
 
 from dispatch.database.core import SessionLocal
+from dispatch.models import IndividualReadNested
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentUpdate, IncidentRead, IncidentCreate
-from dispatch.individual.models import IndividualContactCreate
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.plugin import service as plugin_service
@@ -120,20 +120,27 @@ def report_incident_from_submitted_form(
     for t in parsed_form_data.get(IncidentBlockId.tags, []):
         tags.append({"id": t["value"]})
 
+    project = {"name": parsed_form_data[IncidentBlockId.project]["value"]}
     incident_in = IncidentCreate(
         title=parsed_form_data[IncidentBlockId.title],
         description=parsed_form_data[IncidentBlockId.description],
         incident_type={"name": parsed_form_data[IncidentBlockId.type]["value"]},
         incident_priority={"name": parsed_form_data[IncidentBlockId.priority]["value"]},
-        project={"name": parsed_form_data[IncidentBlockId.project]["value"]},
-        reporter=IndividualContactCreate(email=user_email),
+        project=project,
         tags=tags,
     )
+
+    if not incident_in.reporter:
+        incident_in.reporter = ParticipantUpdate(individual=IndividualReadNested(email=user_email))
 
     # Create the incident
     incident = incident_service.create(db_session=db_session, incident_in=incident_in)
 
-    incident_flows.incident_create_flow(incident_id=incident.id, db_session=db_session)
+    incident_flows.incident_create_flow(
+        incident_id=incident.id,
+        db_session=db_session,
+        organization_slug=incident.project.organization.slug,
+    )
 
 
 # update incident
