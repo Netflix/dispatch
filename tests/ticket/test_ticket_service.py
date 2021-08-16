@@ -16,7 +16,7 @@ def test_get_all(session, tickets):
     from dispatch.ticket.service import get_all
 
     t_tickets = get_all(db_session=session).all()
-    assert len(t_tickets) > 1
+    assert t_tickets
 
 
 def test_create(session, incident_type, incident_priority, individual_contact):

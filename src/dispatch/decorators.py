@@ -1,15 +1,15 @@
+from functools import wraps
+from typing import Any, List
 import inspect
 import logging
 import time
-from functools import wraps
-from typing import Any, List
 
 from dispatch.metrics import provider as metrics_provider
+from dispatch.organization import service as organization_service
+from dispatch.project import service as project_service
 
 from .database.core import SessionLocal, engine, sessionmaker
 
-from dispatch.organization import service as organization_service
-from dispatch.project import service as project_service
 
 log = logging.getLogger(__name__)
 

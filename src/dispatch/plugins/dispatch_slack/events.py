@@ -18,7 +18,7 @@ from .config import (
     SLACK_BAN_THREADS,
     SLACK_TIMELINE_EVENT_REACTION,
 )
-from .decorators import slack_background_task, get_organization_from_channel_id
+from .decorators import slack_background_task, get_organization_scope_from_channel_id
 from .service import get_user_email
 
 
@@ -102,7 +102,7 @@ async def handle_slack_event(*, client, event, background_tasks):
     channel_id = get_channel_id_from_event(event)
 
     if user_id and channel_id:
-        db_session = get_organization_from_channel_id(channel_id=channel_id)
+        db_session = get_organization_scope_from_channel_id(channel_id=channel_id)
         if not db_session:
             log.info(
                 f"Unable to determine organization associated with channel id. ChannelId: {channel_id}"
