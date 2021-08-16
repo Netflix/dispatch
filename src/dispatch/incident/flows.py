@@ -812,10 +812,6 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
     # we set the stable time
     incident.stable_at = datetime.utcnow()
 
-    # set time immediately
-    db_session.add(incident)
-    db_session.commit()
-
     if incident.incident_review_document:
         log.debug("Incident review document already created... skipping creation.")
         return
