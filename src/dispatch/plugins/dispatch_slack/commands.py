@@ -1,8 +1,12 @@
 import base64
 import logging
 from typing import List
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic.main import BaseModel
 
 from sqlalchemy.orm import Session
+
+from dispatch.exceptions import NotFoundError
 
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.enums import ConversationButtonActions
@@ -42,7 +46,10 @@ from .config import (
     SLACK_COMMAND_LIST_WORKFLOWS_SLUG,
 )
 
-from .decorators import get_organization_from_channel_id, slack_background_task
+from .decorators import (
+    get_organization_scope_from_channel_id,
+    slack_background_task,
+)
 
 from .dialogs import (
     create_assign_role_dialog,
@@ -161,43 +168,61 @@ def filter_tasks_by_assignee_and_creator(tasks: List[Task], by_assignee: str, by
     return filtered_tasks
 
 
-async def handle_slack_command(*, client, request, background_tasks):
-    """Handles slack command message."""
-    # We fetch conversation by channel id
-    channel_id = request.get("channel_id")
-
-    db_session = get_organization_from_channel_id(channel_id=channel_id)
-    # We get the name of command that was run
+async def handle_non_incident_conversation_commands(client, request, background_tasks):
+    """Handles all commands that do not have a specific incident conversation."""
     command = request.get("command")
+    channel_id = request.get("channel_id")
+    command_args = request.get("text", "").split(" ")
+    if command_args:
+        organization_slug = command_args[0]
+
+    # We get the list of public and private conversations the Dispatch bot is a member of
+    (
+        public_conversations,
+        private_conversations,
+    ) = await dispatch_slack_service.get_conversations_by_user_id_async(client, SLACK_APP_USER_SLUG)
+
+    # We get the name of conversation where the command was run
+    conversation_name = await dispatch_slack_service.get_conversation_name_by_id_async(
+        client, channel_id
+    )
+
+    if (
+        not conversation_name
+        or conversation_name not in public_conversations + private_conversations
+    ):
+        # We let the user know in which public conversations they can run the command
+        return create_command_run_in_conversation_where_bot_not_present_message(
+            command, public_conversations
+        )
+
+    user_id = request.get("user_id")
+    user_email = await dispatch_slack_service.get_user_email_async(client, user_id)
+
+    for f in command_functions(command):
+        background_tasks.add_task(
+            f,
+            user_id,
+            user_email,
+            channel_id,
+            None,
+            organization_slug=organization_slug,
+            command=request,
+        )
+
+    return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(command, f"Running... Command: {command}")
+
+
+async def handle_incident_conversation_commands(client, request, background_tasks):
+    """Handles all commands that are issued from an incident conversation."""
+    channel_id = request.get("channel_id")
+    command = request.get("command")
+    db_session = get_organization_scope_from_channel_id(channel_id=channel_id)
 
     if not db_session:
-        if command not in [SLACK_COMMAND_REPORT_INCIDENT_SLUG, SLACK_COMMAND_LIST_INCIDENTS_SLUG]:
-            # We let the user know that incident-specific commands
-            # can only be run in incident conversations
-            return create_command_run_in_nonincident_conversation_message(command)
-
-        # We get the list of public and private conversations the Slack bot is a member of
-        (
-            public_conversations,
-            private_conversations,
-        ) = await dispatch_slack_service.get_conversations_by_user_id_async(
-            client, SLACK_APP_USER_SLUG
-        )
-
-        # We get the name of conversation where the command was run
-        conversation_id = request.get("channel_id")
-        conversation_name = await dispatch_slack_service.get_conversation_name_by_id_async(
-            client, conversation_id
-        )
-
-        if (
-            not conversation_name
-            or conversation_name not in public_conversations + private_conversations
-        ):
-            # We let the user know in which public conversations they can run the command
-            return create_command_run_in_conversation_where_bot_not_present_message(
-                command, public_conversations
-            )
+        # We let the user know that incident-specific commands
+        # can only be run in incident conversations
+        return create_command_run_in_nonincident_conversation_message(command)
 
     conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
         db_session=db_session, channel_id=channel_id
@@ -227,6 +252,16 @@ async def handle_slack_command(*, client, request, background_tasks):
         )
 
     return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(command, f"Running... Command: {command}")
+
+
+async def handle_slack_command(*, client, request, background_tasks):
+    """Handles slack command message."""
+    # We get the name of command that was run
+    command = request.get("command")
+    if command in [SLACK_COMMAND_REPORT_INCIDENT_SLUG, SLACK_COMMAND_LIST_INCIDENTS_SLUG]:
+        return await handle_non_incident_conversation_commands(client, request, background_tasks)
+    else:
+        return await handle_incident_conversation_commands(client, request, background_tasks)
 
 
 @slack_background_task
@@ -497,6 +532,7 @@ def list_incidents(
     and closed incidents in the last 24 hours."""
     projects = []
     incidents = []
+    args = command["text"].split(" ")
 
     # scopes reply to the current incident's project
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
@@ -506,7 +542,26 @@ def list_incidents(
         projects.append(incident.project)
     else:
         # command was run in a non-incident conversation
-        projects = project_service.get_all(db_session=db_session)
+        if len(args) == 2:
+            project = project_service.get_by_name(db_session=db_session, name=args[1])
+
+            if project:
+                projects.append()
+            else:
+                raise ValidationError(
+                    [
+                        ErrorWrapper(
+                            NotFoundError(
+                                msg=f"Project name '{args[1]}' in organization '{args[0]}' not found. Check your spelling."
+                            ),
+                            loc="project",
+                        )
+                    ],
+                    model=BaseModel,
+                )
+
+        else:
+            projects = project_service.get_all(db_session=db_session)
 
     for project in projects:
         # we fetch active incidents

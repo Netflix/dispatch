@@ -35,7 +35,7 @@ def create_rating_feedback_modal(
         )
         send_ephemeral_message(slack_client, channel_id, user_id, message)
     else:
-        modal_create_template = rating_feedback_view(incident=incident)
+        modal_create_template = rating_feedback_view(incident=incident, channel_id=channel_id)
 
         open_modal_with_user(
             client=slack_client, trigger_id=trigger_id, modal=modal_create_template
