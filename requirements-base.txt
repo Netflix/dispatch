@@ -12,7 +12,7 @@ alembic==1.6.5
     # via -r requirements-base.in
 arrow==1.1.1
     # via -r requirements-base.in
-asgiref==3.3.4
+asgiref==3.4.1
     # via uvicorn
 async-timeout==3.0.1
     # via aiohttp
@@ -386,7 +386,7 @@ urllib3==1.26.5
     #   pdpyras
     #   requests
     #   sentry-sdk
-uvicorn==0.14.0
+uvicorn==0.15.0
     # via -r requirements-base.in
 validators==0.18.2
     # via -r requirements-base.in
