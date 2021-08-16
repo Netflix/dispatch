@@ -330,7 +330,7 @@ six==1.15.0
     #   sqlalchemy-filters
     #   sqlalchemy-utils
     #   validators
-slack-sdk==3.8.0
+slack_sdk==3.9.0
     # via -r requirements-base.in
 sniffio==1.2.0
     # via
