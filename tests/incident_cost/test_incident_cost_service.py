@@ -12,7 +12,7 @@ def test_get_all(session, incident_costs):
     from dispatch.incident_cost.service import get_all
 
     t_incident_costs = get_all(db_session=session).all()
-    assert len(t_incident_costs) > 1
+    assert t_incident_costs
 
 
 def test_create(session, incident_cost_type, project):

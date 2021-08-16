@@ -12,7 +12,7 @@ def test_get_all(session, reports):
     from dispatch.report.service import get_all
 
     t_reports = get_all(db_session=session).all()
-    assert len(t_reports) > 1
+    assert t_reports
 
 
 def test_create(session):

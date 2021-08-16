@@ -31,7 +31,7 @@ def test_get_all(session, conferences):
     from dispatch.conference.service import get_all
 
     test_conferences = get_all(db_session=session).all()
-    assert len(test_conferences) > 1
+    assert test_conferences
 
 
 def test_create(session):

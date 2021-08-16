@@ -20,7 +20,7 @@ def get_oncall_email(client, service: dict) -> str:
         )
     )
 
-    if len(oncalls):
+    if oncalls:
         user_id = list(oncalls)[0]["user"]["id"]
     else:
         raise Exception(

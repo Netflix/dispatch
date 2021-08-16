@@ -12,7 +12,7 @@ def test_get_all(session, notifications):
     from dispatch.notification.service import get_all
 
     t_notifications = get_all(db_session=session).all()
-    assert len(t_notifications) > 1
+    assert t_notifications
 
 
 def test_create(session, project):

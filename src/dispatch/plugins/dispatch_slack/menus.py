@@ -88,7 +88,7 @@ def get_tags(
         else:
             filter_spec = {"and": [type_filter]}
 
-        if not len(tag_name):
+        if not tag_name:
             query_str = None
 
         tags = search_filter_sort_paginate(
