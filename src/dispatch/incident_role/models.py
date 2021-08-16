@@ -63,7 +63,6 @@ class IncidentRole(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic models
 class IncidentRoleBase(DispatchBase):
-    target: str
     role: ParticipantRoleType
     enabled: Optional[bool]
     tags: Optional[List[TagRead]]

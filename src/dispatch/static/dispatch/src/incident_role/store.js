@@ -9,9 +9,11 @@ const getDefaultSelectedState = () => {
     id: null,
     project: null,
     incident_priorities: [],
-    incident_type: [],
+    incident_types: [],
+    tags: [],
     service: null,
     individual: null,
+    role: null,
     enabled: true,
     loading: false,
   }
@@ -20,7 +22,7 @@ const getDefaultSelectedState = () => {
 export const incidentRoleTypes = [
   {
     type: "dispatch-incident-role-commander",
-    title: "Commander",
+    title: "Incident Commander",
     description: "Create a new commander policy.",
     icon: "mdi-shield-account",
   },

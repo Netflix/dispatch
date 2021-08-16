@@ -9,8 +9,20 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col v-for="incidentRole in incidentRoleTypes" :key="incidentRole.type">
-          <v-card outlined elevation="0" @click.stop="createEditShow({ type: incidentRole.type })">
+        <v-col v-for="incidentRole in incidentRoleTypes" :key="incidentRole.resource_type">
+          <v-card
+            outlined
+            elevation="0"
+            @click.stop="
+              createEditShow({
+                role: incidentRole.title,
+                service: null,
+                incident_types: [],
+                incident_priorities: [],
+                tags: [],
+              })
+            "
+          >
             <div class="d-flex flex-no-wrap justify-space-between">
               <div>
                 <v-card-title class="text-h5">{{ incidentRole.title }}</v-card-title>
@@ -45,22 +57,11 @@
           :loading="loading"
           loading-text="Loading... Please wait"
         >
-          <template v-slot:item.default="{ item }">
-            <v-simple-checkbox v-model="item.default" disabled />
+          <template v-slot:item.enabled="{ item }">
+            <v-simple-checkbox v-model="item.enabled" disabled />
           </template>
-          <template v-slot:item.editable="{ item }">
-            <v-simple-checkbox v-model="item.editable" disabled />
-          </template>
-          <template v-slot:item.details="{ item }">
-            {{ item.details }}
-          </template>
-          <template v-slot:item.created_at="{ item }">
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on, attrs }">
-                <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
-              </template>
-              <span>{{ item.created_at | formatDate }}</span>
-            </v-tooltip>
+          <template v-slot:item.service="{ item }">
+            {{ item.service.name }}
           </template>
           <template v-slot:item.data-table-actions="{ item }">
             <v-menu bottom left>
@@ -107,7 +108,7 @@ export default {
       incidentRoleTypes: incidentRoleTypes,
       headers: [
         { text: "Role", value: "role", sortable: false },
-        { text: "Target", value: "target", sortable: false },
+        { text: "Service", value: "service", sortable: false },
         { text: "Enabled", value: "enabled", sortable: false },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],

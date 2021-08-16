@@ -47,31 +47,6 @@ def create(*, db_session, incident_role_in: IncidentRoleCreate) -> IncidentRole:
         db_session=db_session, project_in=incident_role_in.project
     )
 
-    tags = [
-        tag_service.get_by_name_or_raise(db_session=db_session, tag_in=t)
-        for t in incident_role_in.tags
-    ]
-
-    incident_types = [
-        incident_type_service.get_by_name_or_raise(db_session=db_session, incident_type_in=i)
-        for i in incident_role_in.incident_types
-    ]
-
-    incident_priorities = [
-        incident_priority_service.get_by_name_or_raise(
-            db_session=db_session, incident_priority_in=i
-        )
-        for i in incident_role_in.incident_priorities
-    ]
-
-    service = service_service.get_by_name_or_raise(
-        db_session=db_session, service_in=incident_role_in.service
-    )
-
-    individual = individual_contact_service.get_by_name_or_raise(
-        db_session=db_session, individual_contact_in=incident_role_in.individual
-    )
-
     incident_role = IncidentRole(
         **incident_role_in.dict(
             exclude={
@@ -86,11 +61,46 @@ def create(*, db_session, incident_role_in: IncidentRoleCreate) -> IncidentRole:
         project=project,
     )
 
-    incident_role.tags = tags
-    incident_role.incident_priorities = incident_types
-    incident_role.incident_priorities = incident_priorities
-    incident_role.service = service
-    incident_role.individual = individual
+    if incident_role_in.tags:
+        tags = [
+            tag_service.get_by_name_or_raise(
+                db_session=db_session, project_id=incident_role.project.id, tag_in=t
+            )
+            for t in incident_role_in.tags
+        ]
+        incident_role.tags = tags
+
+    if incident_role_in.incident_types:
+        incident_types = [
+            incident_type_service.get_by_name_or_raise(
+                db_session=db_session, project_id=incident_role.project.id, incident_type_in=i
+            )
+            for i in incident_role_in.incident_types
+        ]
+        incident_role.incident_types = incident_types
+
+    if incident_role_in.incident_priorities:
+        incident_priorities = [
+            incident_priority_service.get_by_name_or_raise(
+                db_session=db_session, project_id=project.id, incident_priority_in=i
+            )
+            for i in incident_role_in.incident_priorities
+        ]
+        incident_role.incident_priorities = incident_priorities
+
+    if incident_role_in.service:
+        service = service_service.get_by_external_id_and_project_id_or_raise(
+            db_session=db_session, project_id=project.id, service_in=incident_role_in.service
+        )
+        incident_role.service = service
+
+    if incident_role_in.individual:
+        individual = individual_contact_service.get_by_email_and_project_id_or_raise(
+            db_session=db_session,
+            project_id=incident_role.project.id,
+            individual_contact_in=incident_role_in.individual,
+        )
+        incident_role.individual = individual
 
     db_session.add(incident_role)
     db_session.commit()
@@ -114,36 +124,48 @@ def update(
         if field in update_data:
             setattr(incident_role, field, update_data[field])
 
-    tags = [
-        tag_service.get_by_name_or_raise(db_session=db_session, tag_in=t)
-        for t in incident_role_in.tags
-    ]
+    if incident_role_in.tags:
+        tags = [
+            tag_service.get_by_name_or_raise(
+                db_session=db_session, project_id=incident_role.project.id, tag_in=t
+            )
+            for t in incident_role_in.tags
+        ]
+        incident_role.tags = tags
 
-    incident_types = [
-        incident_type_service.get_by_name_or_raise(db_session=db_session, incident_type_in=i)
-        for i in incident_role_in.incident_types
-    ]
+    if incident_role_in.incident_types:
+        incident_types = [
+            incident_type_service.get_by_name_or_raise(
+                db_session=db_session, project_id=incident_role.project.id, incident_type_in=i
+            )
+            for i in incident_role_in.incident_types
+        ]
+        incident_role.incident_types = incident_types
 
-    incident_priorities = [
-        incident_priority_service.get_by_name_or_raise(
-            db_session=db_session, incident_priority_in=i
+    if incident_role_in.incident_priorities:
+        incident_priorities = [
+            incident_priority_service.get_by_name_or_raise(
+                db_session=db_session, project_id=incident_role.project.id, incident_priority_in=i
+            )
+            for i in incident_role_in.incident_priorities
+        ]
+        incident_role.incident_priorities = incident_priorities
+
+    if incident_role_in.service:
+        service = service_service.get_by_external_id_and_project_id_or_raise(
+            db_session=db_session,
+            project_id=incident_role.project.id,
+            service_in=incident_role_in.service,
         )
-        for i in incident_role_in.incident_priorities
-    ]
+        incident_role.service = service
 
-    service = service_service.get_by_name_or_raise(
-        db_session=db_session, service_in=incident_role_in.service
-    )
-
-    individual = individual_contact_service.get_by_name_or_raise(
-        db_session=db_session, individual_contact_in=incident_role_in.individual
-    )
-
-    incident_role.tags = tags
-    incident_role.incident_priorities = incident_types
-    incident_role.incident_priorities = incident_priorities
-    incident_role.service = service
-    incident_role.individual = individual
+    if incident_role_in.individual:
+        individual = individual_contact_service.get_by_email_and_project_id_or_raise(
+            db_session=db_session,
+            project_id=incident_role.project.id,
+            individual_contact_in=incident_role_in.individual,
+        )
+        incident_role.individual = individual
 
     db_session.commit()
     return incident_role

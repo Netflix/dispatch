@@ -11,8 +11,6 @@ const getDefaultSelectedState = () => {
     name: null,
     description: null,
     visibility: null,
-    commander_service: null,
-    liaison_service: null,
     incident_template_document: null,
     tracking_template_document: null,
     review_template_document: null,
