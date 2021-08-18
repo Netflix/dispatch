@@ -44,10 +44,10 @@ For these users, we have a CLI command that allows users to be granted the role 
 
 ```bash
 docker exec -it dispatch_web_1 bash
-dispatch user update --role Admin <email-address-of-registered-user> --project <name-of-the-project>
+dispatch user update --role Admin --organization <name-of-the-organization> <email-address-of-registered-user>
 ```
 
-The default project name in the sample data file is "default".
+The default organization name in the sample data file is "default".
 
 After one admin user has been established, they can grant this role to others via the UI.
 
