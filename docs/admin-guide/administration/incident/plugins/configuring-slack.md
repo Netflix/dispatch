@@ -168,35 +168,35 @@ Below are the optional env variables to override the default slack command names
 
 | Override env var | Default command + *Command description* |
 --- | ---
-| `SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG`           | /dispatch-add-timeline-event  |
+| `SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG`           | `/dispatch-add-timeline-event`  |
 |                                                   | *Opens a dialog to add an event to the incident timeline.* |
 | `SLACK_COMMAND_ASSIGN_ROLE`                       | /dispatch-assign-role         |
 |                                                   | *Opens a dialog for assigning a role to a participant.* |
-| `SLACK_COMMAND_ENGAGE_ONCALL`                     | /dispatch-engage-oncall       |
+| `SLACK_COMMAND_ENGAGE_ONCALL`                     | `/dispatch-engage-oncall`       |
 |                                                   | *Opens a dialog to engage an on-call person.* |
-| `SLACK_COMMAND_LIST_INCIDENTS_SLUG`               | /dispatch-list-incidents      |
+| `SLACK_COMMAND_LIST_INCIDENTS_SLUG`               | `/dispatch-list-incidents <organization-slug|'default'> <project-slug|'default'>`    |
 |                                                   | *Lists current active and stable incidents and closed incidents in the last 24 hours.* |
-| `SLACK_COMMAND_LIST_MY_TASKS_SLUG`                | /dispatch-list-my-tasks       |
+| `SLACK_COMMAND_LIST_MY_TASKS_SLUG`                | `/dispatch-list-my-tasks`       |
 |                                                   | *Sends an ephemeral message with the list of your open and resolved incident tasks.* |
-| `SLACK_COMMAND_LIST_PARTICIPANTS_SLUG`            | /dispatch-list-participants   |
+| `SLACK_COMMAND_LIST_PARTICIPANTS_SLUG`            | `/dispatch-list-participants`   |
 |                                                   | *Sends an ephemeral message with the list of incident participants.* |
-| `SLACK_COMMAND_LIST_RESOURCES`                    | /dispatch-list-resources      |
+| `SLACK_COMMAND_LIST_RESOURCES`                    | `/dispatch-list-resources`      |
 |                                                   | *Sends an ephemeral message with the list of all incident resources.* |
-| `SLACK_COMMAND_LIST_TASKS_SLUG`                   | /dispatch-list-tasks          |
+| `SLACK_COMMAND_LIST_TASKS_SLUG`                   | `/dispatch-list-tasks`          |
 |                                                   | *Sends an ephemeral message with the list of open and resolved incident tasks.* |
-| `SLACK_COMMAND_LIST_WORKFLOWS_SLUG`               | /dispatch-list-workflows      |
+| `SLACK_COMMAND_LIST_WORKFLOWS_SLUG`               | `/dispatch-list-workflows`      |
 |                                                   | *List workflows previously run during this incident.* |
-| `SLACK_COMMAND_REPORT_EXECUTIVE_SLUG`             | /dispatch-report-executive    |
+| `SLACK_COMMAND_REPORT_EXECUTIVE_SLUG`             | `/dispatch-report-executive`    |
 |                                                   | *Opens a dialog to write an executive report.* |
-| `SLACK_COMMAND_REPORT_INCIDENT_SLUG`              | /dispatch-report-incident     |
+| `SLACK_COMMAND_REPORT_INCIDENT_SLUG`              | `/dispatch-report-incident <orgnaization-slug|'default'>`     |
 |                                                   | *Opens a dialog to report an incident. This command can be run from non-incident channels where the Dispatch bot is a member.* |
-| `SLACK_COMMAND_REPORT_TACTICAL_SLUG`              | /dispatch-report-tactical     |
+| `SLACK_COMMAND_REPORT_TACTICAL_SLUG`              | `/dispatch-report-tactical`     |
 |                                                   | *Opens a dialog to write a tactical report.* |
-| `SLACK_COMMAND_RUN_WORKFLOW_SLUG`                 | /dispatch-run-workflow        |
+| `SLACK_COMMAND_RUN_WORKFLOW_SLUG`                 | `/dispatch-run-workflow`        |
 |                                                   | *Run a workflow and associate artifacts with this incident.* |
-| `SLACK_COMMAND_UPDATE_INCIDENT`                   | /dispatch-update-incident     |
+| `SLACK_COMMAND_UPDATE_INCIDENT`                   | `/dispatch-update-incident`     |
 |                                                   | *Opens a dialog to update the incident.* |
-| `SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG`   | /dispatch-notifications-group |
+| `SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG`   | `/dispatch-notifications-group` |
 |                                                   | *Opens a dialog to edit the notifications group.* |
-| `SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG`           | /dispatch-update-participant  |
+| `SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG`           | `/dispatch-update-participant`  |
 |                                                   | *Opens a dialog to update participant metadata.* |
