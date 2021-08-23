@@ -1,87 +1,97 @@
+<style scoped>
+.v-expansion-panel--active::before {
+  background-color: #e50914;
+  display: block;
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: -8px;
+  width: 5px;
+  opacity: 0.5 !important;
+  border-radius: 0px 3px 3px 0px;
+  transition: background-color 0.15s linear 0s;
+}
+</style>
 <template>
   <v-layout wrap>
-    <new-edit-sheet />
     <delete-dialog />
     <v-container>
       <v-row align="center" justify="space-between">
         <v-col class="grow">
-          <settings-breadcrumbs v-model="project" />
+          <settings-breadcrumbs v-model="breadCrumbProject" />
+        </v-col>
+        <v-col class="shrink">
+          <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
+        </v-col>
+        <v-col class="shrink">
+          <v-btn color="info" class="mr-2" @click="createEditShow()"> Save </v-btn>
         </v-col>
       </v-row>
       <v-row>
-        <v-col v-for="incidentRole in incidentRoleTypes" :key="incidentRole.resource_type">
-          <v-card
-            outlined
-            elevation="0"
-            @click.stop="
-              createEditShow({
-                role: incidentRole.title,
-                service: null,
-                incident_types: [],
-                incident_priorities: [],
-                tags: [],
-              })
-            "
-          >
-            <div class="d-flex flex-no-wrap justify-space-between">
-              <div>
-                <v-card-title class="text-h5">{{ incidentRole.title }}</v-card-title>
-                <v-card-subtitle>{{ incidentRole.description }}</v-card-subtitle>
-              </div>
-              <v-avatar class="ma-3" tile>
-                <v-icon x-large>{{ incidentRole.icon }}</v-icon>
-              </v-avatar>
-            </div>
-          </v-card>
-        </v-col>
+        <v-card class="grow" :loading="loading">
+          <v-expansion-panels>
+            <draggable class="grow" v-model="items" @start="drag = true" @end="drag = false">
+              <v-expansion-panel v-for="policy in items" :key="policy.id">
+                <v-expansion-panel-header>
+                  <v-row align="center" justify="center">
+                    <v-col cols="1">
+                      <v-icon> mdi-drag-horizontal-variant </v-icon>
+                    </v-col>
+                    <v-col> {{ policy.role }} - {{ policy.service.name }} </v-col>
+                  </v-row>
+                </v-expansion-panel-header>
+                <v-expansion-panel-content>
+                  <v-container grid-list-md>
+                    <v-layout wrap>
+                      <v-flex xs12>
+                        <v-select
+                          label="Role Type"
+                          v-model="policy.role"
+                          :items="incidentRoleTypes"
+                        />
+                      </v-flex>
+                      <v-flex xs12>
+                        <tag-filter-combobox
+                          label="Tags"
+                          :project="project"
+                          v-model="policy.tags"
+                        />
+                      </v-flex>
+                      <v-flex xs12>
+                        <incident-priority-combobox
+                          :project="project"
+                          v-model="policy.incident_priorities"
+                        />
+                      </v-flex>
+                      <v-flex xs12>
+                        <incident-type-combobox
+                          :project="project"
+                          v-model="policy.incident_types"
+                        />
+                      </v-flex>
+                      <v-flex xs12>
+                        <service-select
+                          label="Target Service"
+                          :project="project"
+                          v-model="policy.service"
+                        ></service-select>
+                      </v-flex>
+                      <v-flex xs12>
+                        <v-checkbox
+                          v-model="policy.enabled"
+                          label="Enabled"
+                          hint="Check this if you would like this policy to be considered when resolving the role."
+                        />
+                      </v-flex>
+                    </v-layout>
+                  </v-container>
+                </v-expansion-panel-content>
+              </v-expansion-panel>
+            </draggable>
+          </v-expansion-panels>
+        </v-card>
       </v-row>
-      <v-card elevation="0">
-        <v-card-title>
-          <v-text-field
-            v-model="q"
-            append-icon="search"
-            label="Search"
-            single-line
-            hide-details
-            clearable
-          />
-        </v-card-title>
-        <v-data-table
-          :headers="headers"
-          :items="items"
-          :server-items-length="total"
-          :page.sync="page"
-          :items-per-page.sync="itemsPerPage"
-          :sort-by.sync="sortBy"
-          :sort-desc.sync="descending"
-          :loading="loading"
-          loading-text="Loading... Please wait"
-        >
-          <template v-slot:item.enabled="{ item }">
-            <v-simple-checkbox v-model="item.enabled" disabled />
-          </template>
-          <template v-slot:item.service="{ item }">
-            {{ item.service.name }}
-          </template>
-          <template v-slot:item.data-table-actions="{ item }">
-            <v-menu bottom left>
-              <template v-slot:activator="{ on }">
-                <v-btn icon v-on="on">
-                  <v-icon>mdi-dots-vertical</v-icon>
-                </v-btn>
-              </template>
-              <v-list>
-                <v-list-item @click="createEditShow(item)">
-                  <v-list-item-title>Edit</v-list-item-title>
-                </v-list-item>
-                <v-list-item @click="removeShow(item)">
-                  <v-list-item-title>Delete</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-          </template>
-        </v-data-table>
-      </v-card>
     </v-container>
   </v-layout>
 </template>
@@ -89,49 +99,43 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+import draggable from "vuedraggable"
+
+import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
+import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
+import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import ServiceSelect from "@/service/ServiceSelect.vue"
+
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 import DeleteDialog from "@/incident_role/DeleteDialog.vue"
-import NewEditSheet from "@/incident_role/NewEditSheet.vue"
-import { incidentRoleTypes } from "@/incident_role/store.js"
 
 export default {
   name: "IncidentCostTypeTable",
 
   components: {
+    draggable,
     DeleteDialog,
-    NewEditSheet,
+    IncidentTypeCombobox,
+    IncidentPriorityCombobox,
+    TagFilterCombobox,
+    ServiceSelect,
     SettingsBreadcrumbs,
   },
 
   data() {
     return {
-      incidentRoleTypes: incidentRoleTypes,
-      headers: [
-        { text: "Role", value: "role", sortable: false },
-        { text: "Service", value: "service", sortable: false },
-        { text: "Enabled", value: "enabled", sortable: false },
-        { text: "", value: "data-table-actions", sortable: false, align: "end" },
-      ],
+      incidentRoleTypes: ["Incident Commander", "Liasion", "Scribe"],
     }
   },
 
   computed: {
-    ...mapFields("incident_role", [
-      "table.options.q",
-      "table.options.page",
-      "table.options.itemsPerPage",
-      "table.options.sortBy",
-      "table.options.descending",
-      "table.options.filters.project",
-      "table.loading",
-      "table.rows.items",
-      "table.rows.total",
-    ]),
+    ...mapFields("incident_role", ["table.rows.items", "table.loading"]),
     ...mapFields("route", ["query"]),
   },
 
   created() {
-    this.project = [{ name: this.query.project }]
+    this.breadCrumbProject = [{ name: this.query.project }]
+    this.project = { name: this.query.project }
 
     this.getAll()
 
@@ -143,17 +147,17 @@ export default {
     )
 
     this.$watch(
-      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project],
+      (vm) => [vm.breadCrumbProject],
       () => {
         this.page = 1
-        this.$router.push({ query: { project: this.project[0].name } })
+        this.$router.push({ query: { project: this.breadCrumbProject[0].name } })
         this.getAll()
       }
     )
   },
 
   methods: {
-    ...mapActions("incident_role", ["getAll", "createEditShow", "removeShow"]),
+    ...mapActions("incident_role", ["getAll"]),
   },
 }
 </script>

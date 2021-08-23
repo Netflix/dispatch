@@ -25,7 +25,7 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Tag]:
 
 def get_by_name_or_raise(*, db_session, project_id: int, tag_in=TagRead) -> TagRead:
     """Returns the tag specified or raises ValidationError."""
-    tag = get_by_name(db_session=db_session, project_id=project_id, email=tag_in.email)
+    tag = get_by_name(db_session=db_session, project_id=project_id, name=tag_in.name)
 
     if not tag:
         raise ValidationError(

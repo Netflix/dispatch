@@ -19,33 +19,11 @@ const getDefaultSelectedState = () => {
   }
 }
 
-export const incidentRoleTypes = [
-  {
-    type: "dispatch-incident-role-commander",
-    title: "Incident Commander",
-    description: "Create a new commander policy.",
-    icon: "mdi-shield-account",
-  },
-  {
-    resource_type: "dispatch-incident-role-liason",
-    title: "Liason",
-    description: "Create a new liason policy.",
-    icon: "mdi-account-tie",
-  },
-  {
-    resource_type: "dispatch-incident-role-scribe",
-    title: "Scribe",
-    description: "Create a new scribe policy.",
-    icon: "mdi-account-edit",
-  },
-]
-
 const state = {
   selected: {
     ...getDefaultSelectedState(),
   },
   dialogs: {
-    showCreateEdit: false,
     showRemove: false,
   },
   table: {
@@ -56,7 +34,7 @@ const state = {
     options: {
       q: "",
       page: 1,
-      itemsPerPage: 10,
+      itemsPerPage: 100,
       sortBy: ["order"],
       descending: [true],
       filters: {
@@ -84,19 +62,9 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 500),
-  createEditShow({ commit }, incidentRole) {
-    commit("SET_DIALOG_CREATE_EDIT", true)
-    if (incidentRole) {
-      commit("SET_SELECTED", incidentRole)
-    }
-  },
   removeShow({ commit }, incidentRole) {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", incidentRole)
-  },
-  closeCreateEdit({ commit }) {
-    commit("SET_DIALOG_CREATE_EDIT", false)
-    commit("RESET_SELECTED")
   },
   closeRemove({ commit }) {
     commit("SET_DIALOG_DELETE", false)
@@ -107,7 +75,6 @@ const actions = {
     if (!state.selected.id) {
       return IncidentRoleApi.create(state.selected)
         .then(() => {
-          dispatch("closeCreateEdit")
           dispatch("getAll")
           commit("SET_SELECTED_LOADING", false)
           commit(
