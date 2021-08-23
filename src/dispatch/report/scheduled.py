@@ -1,16 +1,17 @@
 import logging
 from datetime import datetime
 from schedule import every
-from dispatch.database.core import SessionLocal
 
+from dispatch.database.core import SessionLocal
 from dispatch.decorators import scheduled_project_task
 from dispatch.incident import service as incident_service
-from dispatch.project.models import Project
 from dispatch.incident.enums import IncidentStatus
+from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
 
 from .messaging import send_incident_report_reminder
 from .models import ReportTypes
+
 
 log = logging.getLogger(__name__)
 

@@ -4,10 +4,10 @@ from datetime import date
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
-from dispatch.enums import DocumentResourceTemplateTypes
 from dispatch.decorators import background_task
 from dispatch.document import service as document_service
 from dispatch.document.models import DocumentCreate
+from dispatch.enums import DocumentResourceTypes
 from dispatch.event import service as event_service
 from dispatch.exceptions import InvalidConfigurationError
 from dispatch.incident import service as incident_service
@@ -87,7 +87,6 @@ def create_executive_report(
     db_session=None,
 ):
     """Creates an executive report."""
-
     current_date = date.today().strftime("%B %d, %Y")
 
     current_status = executive_report_in.current_status
@@ -163,7 +162,7 @@ def create_executive_report(
     executive_report_document.update(
         {
             "name": executive_report_document_name,
-            "resource_type": DocumentResourceTemplateTypes.executive,
+            "resource_type": DocumentResourceTypes.executive,
         }
     )
 
