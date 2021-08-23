@@ -511,7 +511,7 @@ def plugin_instance(session):
 
 @pytest.fixture
 def workflow(session):
-    return WorkflowFactory(plugin_instance=PluginInstanceFactory())
+    return WorkflowFactory()
 
 
 @pytest.fixture
