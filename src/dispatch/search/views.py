@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends
+from fastapi.params import Query
 from starlette.responses import JSONResponse
 
 from dispatch.database.core import get_class_by_tablename
@@ -19,7 +20,7 @@ router = APIRouter()
 def search(
     *,
     common: dict = Depends(common_parameters),
-    type: List[str] = [v for v in SearchTypes],
+    type: List[SearchTypes] = Query(..., alias="type[]"),
 ):
     """Perform a search."""
     if common["query_str"]:

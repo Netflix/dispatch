@@ -33,7 +33,7 @@ const state = {
     tags: [],
   },
   query: "",
-  type: ["Document", "Incident", "Tag", "Tasks"],
+  type: ["Document", "Incident", "Tag", "Task"],
   dialogs: {
     showCreate: false,
   },
