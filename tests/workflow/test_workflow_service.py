@@ -67,7 +67,7 @@ def test_create_instance(session, incident, workflow, participant, project):
     assert workflow_instance
 
 
-def test_update(session, workflow, plugin_instance):
+def test_update(session, workflow):
     from dispatch.workflow.service import update
     from dispatch.workflow.models import WorkflowUpdate
 
@@ -77,7 +77,6 @@ def test_update(session, workflow, plugin_instance):
     workflow_in = WorkflowUpdate(
         name=name,
         resource_id=resource_id,
-        plugin_instance=plugin_instance,
     )
     workflow = update(
         db_session=session,

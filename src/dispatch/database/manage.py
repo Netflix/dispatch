@@ -75,15 +75,19 @@ def init_database(engine):
     db_session = session()
 
     # default organization
-    organization = Organization(
-        name="default",
-        slug="default",
-        default=True,
-        description="Default dispatch organization.",
+    organization = (
+        db_session.query(Organization).filter(Organization.name == "default").one_or_none()
     )
+    if not organization:
+        organization = Organization(
+            name="default",
+            slug="default",
+            default=True,
+            description="Default dispatch organization.",
+        )
 
-    db_session.add(organization)
-    db_session.commit()
+        db_session.add(organization)
+        db_session.commit()
 
     init_schema(engine=engine, organization=organization)
 
