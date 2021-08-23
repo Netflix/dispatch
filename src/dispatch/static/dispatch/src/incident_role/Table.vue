@@ -21,114 +21,61 @@
         <v-col class="grow">
           <settings-breadcrumbs v-model="breadCrumbProject" />
         </v-col>
-        <v-col class="shrink">
-          <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
-        </v-col>
-        <v-col class="shrink">
-          <v-btn color="info" class="mr-2" @click="createEditShow()"> Save </v-btn>
+      </v-row>
+      <v-row>
+        <v-alert icon="mdi-school" prominent text type="info"
+          >The role policies defined below control which user is assigned a given role. It uses
+          incident characteristics (e.g IncidentType, IncidentPriority, etc.,) to resolve the
+          individual. Policy order is used to resolve any conflicting policies.
+        </v-alert>
+      </v-row>
+      <v-row>
+        <v-col cols="12">
+          <policy-role-builder label="Commander" v-model="commanderPolicies" :project="project" />
         </v-col>
       </v-row>
       <v-row>
-        <v-card class="grow" :loading="loading">
-          <v-expansion-panels>
-            <draggable class="grow" v-model="items" @start="drag = true" @end="drag = false">
-              <v-expansion-panel v-for="policy in items" :key="policy.id">
-                <v-expansion-panel-header>
-                  <v-row align="center" justify="center">
-                    <v-col cols="1">
-                      <v-icon> mdi-drag-horizontal-variant </v-icon>
-                    </v-col>
-                    <v-col> {{ policy.role }} - {{ policy.service.name }} </v-col>
-                  </v-row>
-                </v-expansion-panel-header>
-                <v-expansion-panel-content>
-                  <v-container grid-list-md>
-                    <v-layout wrap>
-                      <v-flex xs12>
-                        <v-select
-                          label="Role Type"
-                          v-model="policy.role"
-                          :items="incidentRoleTypes"
-                        />
-                      </v-flex>
-                      <v-flex xs12>
-                        <tag-filter-combobox
-                          label="Tags"
-                          :project="project"
-                          v-model="policy.tags"
-                        />
-                      </v-flex>
-                      <v-flex xs12>
-                        <incident-priority-combobox
-                          :project="project"
-                          v-model="policy.incident_priorities"
-                        />
-                      </v-flex>
-                      <v-flex xs12>
-                        <incident-type-combobox
-                          :project="project"
-                          v-model="policy.incident_types"
-                        />
-                      </v-flex>
-                      <v-flex xs12>
-                        <service-select
-                          label="Target Service"
-                          :project="project"
-                          v-model="policy.service"
-                        ></service-select>
-                      </v-flex>
-                      <v-flex xs12>
-                        <v-checkbox
-                          v-model="policy.enabled"
-                          label="Enabled"
-                          hint="Check this if you would like this policy to be considered when resolving the role."
-                        />
-                      </v-flex>
-                    </v-layout>
-                  </v-container>
-                </v-expansion-panel-content>
-              </v-expansion-panel>
-            </draggable>
-          </v-expansion-panels>
-        </v-card>
+        <v-col cols="12">
+          <policy-role-builder label="Liasion" v-model="liasionPolicies" :project="project" />
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="12">
+          <policy-role-builder label="Scribe" v-model="scribePolicies" :project="project" />
+        </v-col>
       </v-row>
     </v-container>
   </v-layout>
 </template>
 
 <script>
+import { filter } from "lodash"
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import draggable from "vuedraggable"
 
-import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
-import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
-import ServiceSelect from "@/service/ServiceSelect.vue"
-
+import PolicyRoleBuilder from "@/incident_role/PolicyRoleBuilder.vue"
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 import DeleteDialog from "@/incident_role/DeleteDialog.vue"
 
 export default {
-  name: "IncidentCostTypeTable",
+  name: "IncidentRoleTable",
 
   components: {
-    draggable,
+    PolicyRoleBuilder,
     DeleteDialog,
-    IncidentTypeCombobox,
-    IncidentPriorityCombobox,
-    TagFilterCombobox,
-    ServiceSelect,
     SettingsBreadcrumbs,
   },
 
-  data() {
-    return {
-      incidentRoleTypes: ["Incident Commander", "Liasion", "Scribe"],
-    }
-  },
-
   computed: {
+    commanderPolicies: function () {
+      return filter(this.items, { role: "Incident Commander" })
+    },
+    liasionPolicies: function () {
+      return filter(this.items, { role: "Liasion" })
+    },
+    scribePolicies: function () {
+      return filter(this.items, { role: "Scribe" })
+    },
     ...mapFields("incident_role", ["table.rows.items", "table.loading"]),
     ...mapFields("route", ["query"]),
   },
