@@ -7,6 +7,7 @@ from starlette.config import environ
 # set test config
 environ["DATABASE_CREDENTIALS"] = "postgres:dispatch"
 environ["DATABASE_HOSTNAME"] = "localhost"
+environ["DATABASE_NAME"] = "dispatch-test"
 environ["DISPATCH_HELP_EMAIL"] = "example@example.com"
 environ["DISPATCH_HELP_SLACK_CHANNEL"] = "help-me"
 environ["DISPATCH_UI_URL"] = "https://example.com"
