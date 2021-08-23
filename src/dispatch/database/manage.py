@@ -1,25 +1,23 @@
 import os
 import logging
-from sqlalchemy import text
-from sqlalchemy.schema import CreateSchema
-
-from dispatch.search import fulltext
-from dispatch.search.fulltext import (
-    sync_trigger,
-)
-from sqlalchemy_utils import create_database, database_exists
 
 from alembic import command as alembic_command
 from alembic.config import Config as AlembicConfig
 
+from sqlalchemy import text
+from sqlalchemy.schema import CreateSchema
+from sqlalchemy_utils import create_database, database_exists
+
 from dispatch import config
-from dispatch.project.models import ProjectCreate
 from dispatch.organization.models import Organization
 from dispatch.project import service as project_service
+from dispatch.project.models import ProjectCreate
+from dispatch.search import fulltext
+from dispatch.search.fulltext import (
+    sync_trigger,
+)
 
 from .core import Base, sessionmaker
-
-
 from .enums import DISPATCH_ORGANIZATION_SCHEMA_PREFIX
 
 
@@ -36,7 +34,7 @@ def version_schema(script_location: str):
 
 
 def get_core_tables():
-    """Fetches tables are belong to the 'dispatch_core' schema."""
+    """Fetches tables that belong to the 'dispatch_core' schema."""
     core_tables = []
     for _, table in Base.metadata.tables.items():
         if table.schema == "dispatch_core":
@@ -54,7 +52,7 @@ def get_tenant_tables():
 
 
 def init_database(engine):
-    """Initializes a the database."""
+    """Initializes the database."""
     if not database_exists(str(config.SQLALCHEMY_DATABASE_URI)):
         create_database(str(config.SQLALCHEMY_DATABASE_URI))
 
@@ -93,7 +91,7 @@ def init_database(engine):
 
 
 def init_schema(*, engine, organization: Organization):
-    """Initializing a new schema."""
+    """Initializes a new schema."""
 
     schema_name = f"{DISPATCH_ORGANIZATION_SCHEMA_PREFIX}_{organization.slug}"
     if not engine.dialect.has_schema(engine, schema_name):
@@ -140,7 +138,7 @@ def init_schema(*, engine, organization: Organization):
 
 
 def setup_fulltext_search(connection, tables):
-    """Syncs any required fulltext table triggers/functions."""
+    """Syncs any required fulltext table triggers and functions."""
     # parsing functions
     function_path = os.path.join(
         os.path.dirname(os.path.abspath(fulltext.__file__)), "expressions.sql"
