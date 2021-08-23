@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, Depends
 from starlette.responses import JSONResponse
 
@@ -15,7 +16,11 @@ router = APIRouter()
 
 
 @router.get("", response_class=JSONResponse)
-def search(*, common: dict = Depends(common_parameters), type: SearchTypes):
+def search(
+    *,
+    common: dict = Depends(common_parameters),
+    type: List[str] = [v for v in SearchTypes],
+):
     """Perform a search."""
     if common["query_str"]:
         models = [get_class_by_tablename(t) for t in type]
