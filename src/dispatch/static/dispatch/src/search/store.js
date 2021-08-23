@@ -33,7 +33,7 @@ const state = {
     tags: [],
   },
   query: "",
-  models: [],
+  type: ["Document", "Incident", "Tag", "Tasks"],
   dialogs: {
     showCreate: false,
   },
@@ -56,7 +56,7 @@ const actions = {
   },
   getResults({ commit, state }) {
     commit("SET_LOADING", true)
-    return SearchApi.search(state.query, state.models)
+    return SearchApi.search(state.query, state.type)
       .then((response) => {
         commit("SET_RESULTS", response.data.results)
         commit("SET_LOADING", false)
