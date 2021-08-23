@@ -96,6 +96,10 @@ class SQLConstruct(object):
         return options
 
     @property
+    def schema_name(self):
+        return self.table.schema
+
+    @property
     def table_name(self):
         if self.table.schema:
             return '%s."%s"' % (self.table.schema, self.table.name)
@@ -147,7 +151,7 @@ class CreateSearchFunctionSQL(SQLConstruct):
     def __str__(self):
         return (
             """CREATE OR REPLACE FUNCTION
-                {search_trigger_function_name}() RETURNS TRIGGER AS $$
+                {schema_name}.{search_trigger_function_name}() RETURNS TRIGGER AS $$
             BEGIN
                 NEW.{search_vector_name} = {ts_vector};
                 RETURN NEW;
@@ -155,6 +159,7 @@ class CreateSearchFunctionSQL(SQLConstruct):
             $$ LANGUAGE 'plpgsql';
             """
         ).format(
+            schema_name=self.schema_name,
             search_trigger_function_name=self.search_function_name,
             search_vector_name=self.tsvector_column.name,
             ts_vector=self.search_vector,
@@ -190,7 +195,7 @@ class CreateSearchTriggerSQL(SQLConstruct):
 
 class DropSearchFunctionSQL(SQLConstruct):
     def __str__(self):
-        return "DROP FUNCTION IF EXISTS %s()" % self.search_function_name
+        return "DROP FUNCTION IF EXISTS %s.%s()" % (self.schema_name, self.search_function_name)
 
 
 class DropSearchTriggerSQL(SQLConstruct):
@@ -390,8 +395,8 @@ def sync_trigger(conn, table, tsvector_column, indexed_columns, metadata=None, o
     )
     classes = [
         DropSearchTriggerSQL,
-        # DropSearchFunctionSQL,
-        # CreateSearchFunctionSQL,
+        DropSearchFunctionSQL,
+        CreateSearchFunctionSQL,
         CreateSearchTriggerSQL,
     ]
     for class_ in classes:
