@@ -172,7 +172,7 @@ class CreateSearchTriggerSQL(SQLConstruct):
         if self.options["weights"] or any(
             getattr(self.table.c, column) in vectorizer for column in self.indexed_columns
         ):
-            return self.search_function_name + "()"
+            return self.schema_name + "." + self.search_function_name + "()"
         return "tsvector_update_trigger({arguments})".format(
             arguments=", ".join(
                 [self.tsvector_column.name, "'%s'" % self.options["regconfig"]]
@@ -401,6 +401,7 @@ def sync_trigger(conn, table, tsvector_column, indexed_columns, metadata=None, o
     ]
     for class_ in classes:
         sql = class_(**params)
+        print(sql)
         conn.execute(str(sql), **sql.params)
     update_sql = table.update().values({indexed_columns[0]: text(indexed_columns[0])})
     conn.execute(update_sql)
