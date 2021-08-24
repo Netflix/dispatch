@@ -5,7 +5,6 @@ from operator import attrgetter
 
 from dispatch.incident.models import Incident
 from dispatch.participant_role.models import ParticipantRoleType
-from dispatch.project import service as project_service
 from dispatch.tag import service as tag_service
 from dispatch.incident_type import service as incident_type_service
 from dispatch.incident_priority import service as incident_priority_service
@@ -14,7 +13,6 @@ from dispatch.service import service as service_service
 
 from .models import (
     IncidentRole,
-    IncidentRoleCreate,
     IncidentRoleUpdate,
 )
 
@@ -32,6 +30,16 @@ def get_all(*, db_session):
     return db_session.query(IncidentRole)
 
 
+def get_all_by_role(*, db_session, role: str, project_id: int) -> Optional[List[IncidentRole]]:
+    """Gets all policies for a given role."""
+    return (
+        db_session.query(IncidentRole)
+        .filter(IncidentRole.role == role)
+        .filter(IncidentRole.project_id == project_id)
+        .all()
+    )
+
+
 def get_all_enabled(*, db_session, project_id: int) -> Optional[List[IncidentRole]]:
     """Gets all enabled incident_role_s."""
     return (
@@ -39,72 +47,6 @@ def get_all_enabled(*, db_session, project_id: int) -> Optional[List[IncidentRol
         .filter(IncidentRole.enabled == True)  # noqa Flake8 E712
         .filter(IncidentRole.project_id == project_id)
     ).all()
-
-
-def create(*, db_session, incident_role_in: IncidentRoleCreate) -> IncidentRole:
-    """Creates a new incident_role_."""
-    project = project_service.get_by_name_or_raise(
-        db_session=db_session, project_in=incident_role_in.project
-    )
-
-    incident_role = IncidentRole(
-        **incident_role_in.dict(
-            exclude={
-                "tags",
-                "incident_types",
-                "incident_priorities",
-                "service",
-                "individual",
-                "project",
-            }
-        ),
-        project=project,
-    )
-
-    if incident_role_in.tags:
-        tags = [
-            tag_service.get_by_name_or_raise(
-                db_session=db_session, project_id=incident_role.project.id, tag_in=t
-            )
-            for t in incident_role_in.tags
-        ]
-        incident_role.tags = tags
-
-    if incident_role_in.incident_types:
-        incident_types = [
-            incident_type_service.get_by_name_or_raise(
-                db_session=db_session, project_id=incident_role.project.id, incident_type_in=i
-            )
-            for i in incident_role_in.incident_types
-        ]
-        incident_role.incident_types = incident_types
-
-    if incident_role_in.incident_priorities:
-        incident_priorities = [
-            incident_priority_service.get_by_name_or_raise(
-                db_session=db_session, project_id=project.id, incident_priority_in=i
-            )
-            for i in incident_role_in.incident_priorities
-        ]
-        incident_role.incident_priorities = incident_priorities
-
-    if incident_role_in.service:
-        service = service_service.get_by_external_id_and_project_id_or_raise(
-            db_session=db_session, project_id=project.id, service_in=incident_role_in.service
-        )
-        incident_role.service = service
-
-    if incident_role_in.individual:
-        individual = individual_contact_service.get_by_email_and_project_id_or_raise(
-            db_session=db_session,
-            project_id=incident_role.project.id,
-            individual_contact_in=incident_role_in.individual,
-        )
-        incident_role.individual = individual
-
-    db_session.add(incident_role)
-    db_session.commit()
-    return incident_role
 
 
 def update(
@@ -169,15 +111,6 @@ def update(
 
     db_session.commit()
     return incident_role
-
-
-def delete(*, db_session, incident_role_id: int):
-    """Deletes a incident_role_."""
-    incident_role = (
-        db_session.query(IncidentRole).filter(IncidentRole.id == incident_role_id).one_or_none()
-    )
-    db_session.delete(incident_role)
-    db_session.commit()
 
 
 def resolve_role(

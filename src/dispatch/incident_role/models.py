@@ -86,6 +86,5 @@ class IncidentRoleRead(IncidentRoleBase):
     updated_at: Optional[datetime] = None
 
 
-class IncidentRolePagination(DispatchBase):
-    total: int
-    items: List[IncidentRoleRead] = []
+class IncidentRoles(DispatchBase):
+    policies: List[IncidentRoleRead] = []

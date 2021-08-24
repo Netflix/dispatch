@@ -3,23 +3,11 @@ import API from "@/api"
 const resource = "/incident_roles"
 
 export default {
-  getAll(options) {
-    return API.get(`${resource}`, { params: { ...options } })
+  getRolePolicies(role, project_name) {
+    return API.get(`${resource}/${role}`, { params: { project_name: project_name } })
   },
 
-  get(incidentRoleId) {
-    return API.get(`${resource}/${incidentRoleId}`)
-  },
-
-  create(payload) {
-    return API.post(`${resource}`, payload)
-  },
-
-  update(incidentRoleId, payload) {
-    return API.put(`${resource}/${incidentRoleId}`, payload)
-  },
-
-  delete(incidentRoleId) {
-    return API.delete(`${resource}/${incidentRoleId}`)
+  updateRole(role, project_name, payload) {
+    return API.put(`${resource}/${role}`, { params: { project_name: project_name }, data: payload })
   },
 }

@@ -6,7 +6,7 @@
           {{ label }}
           <v-tooltip bottom>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn icon color="info" v-bind="attrs" v-on="on" @click="addPolicy()">
+              <v-btn icon color="info" v-bind="attrs" v-on="on" @click="add()">
                 <v-icon> mdi-playlist-plus </v-icon>
               </v-btn>
             </template>
@@ -16,7 +16,7 @@
         <v-col cols="1" align="end">
           <v-tooltip bottom>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn icon color="info" v-bind="attrs" v-on="on" @click="savePolicies()">
+              <v-btn icon color="info" v-bind="attrs" v-on="on" @click="save()">
                 <v-icon> save </v-icon>
               </v-btn>
             </template>
@@ -28,7 +28,7 @@
     <v-card-text v-if="policies.length">
       <v-expansion-panels>
         <draggable class="grow" v-model="policies" @start="drag = true" @end="drag = false">
-          <v-expansion-panel v-for="policy in policies" :key="policy.id">
+          <v-expansion-panel v-for="(policy, idx) in policies" :key="policy.id">
             <v-expansion-panel-header>
               <v-row align="center" justify="center">
                 <v-col cols="1">
@@ -81,6 +81,11 @@
                     />
                   </v-list-item-content>
                 </v-list-item>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-btn color="primary" @click="remove(idx)"> Delete Policy </v-btn>
+                  </v-list-item-content>
+                </v-list-item>
               </v-list>
             </v-expansion-panel-content>
           </v-expansion-panel>
@@ -94,8 +99,9 @@
 </template>
 
 <script>
-import { cloneDeep } from "lodash"
 import draggable from "vuedraggable"
+
+import IncidentRoleApi from "@/incident_role/api"
 
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
@@ -130,18 +136,52 @@ export default {
     ServiceSelect,
   },
 
-  computed: {
-    policies: {
-      get() {
-        return cloneDeep(this.value)
-      },
-    },
+  data() {
+    return {
+      policies: [],
+    }
   },
 
   methods: {
-    addPolicy: function () {
-      this.policies.push({ role: this.label })
+    add: function () {
+      this.policies.push({
+        role: this.label,
+        project: this.project,
+        enabled: false,
+        service: null,
+        incident_priorities: [],
+        incident_types: [],
+        tags: [],
+      })
     },
+    remove: function (idx) {
+      this.policies.splice(idx, 1)
+    },
+    save: function () {
+      IncidentRoleApi.updateRole(this.label, this.project.name, this.policies).then((response) => {
+        this.$store.commit(
+          "notification_backend/addBeNotification",
+          { text: "Role policies successfully updated.", type: "success" },
+          { root: true }
+        )
+        return response.data
+      })
+    },
+    get: function () {
+      IncidentRoleApi.getRolePolicies(this.label, this.project.name).then((response) => {
+        this.policies = response.data.policies
+      })
+    },
+  },
+
+  created() {
+    this.get()
+    this.$watch(
+      (vm) => [vm.project],
+      () => {
+        this.get()
+      }
+    )
   },
 }
 </script>
