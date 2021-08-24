@@ -401,7 +401,6 @@ def sync_trigger(conn, table, tsvector_column, indexed_columns, metadata=None, o
     ]
     for class_ in classes:
         sql = class_(**params)
-        print(sql)
         conn.execute(str(sql), **sql.params)
     update_sql = table.update().values({indexed_columns[0]: text(indexed_columns[0])})
     conn.execute(update_sql)
