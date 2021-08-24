@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
+
 
 from dispatch.database.core import get_db
 from dispatch.auth.permissions import SensitiveProjectActionPermission, PermissionsDependency
@@ -8,8 +9,9 @@ from dispatch.project import service as project_service
 
 from .models import (
     IncidentRoles,
+    IncidentRolesCreateUpdate,
 )
-from .service import get, update, get_all_by_role
+from .service import create_or_update, get_all_by_role
 
 
 router = APIRouter()
@@ -17,7 +19,10 @@ router = APIRouter()
 
 @router.get("/{incident_role}", response_model=IncidentRoles)
 def get_incident_roles(
-    *, db_session: Session = Depends(get_db), incident_role: str, project_name: str
+    *,
+    db_session: Session = Depends(get_db),
+    incident_role: str,
+    project_name: str = Query(..., alias="projectName"),
 ):
     """Get all incident role mappings."""
     project = project_service.get_by_name_or_raise(
@@ -35,21 +40,9 @@ def get_incident_roles(
 def update_incident_role(
     *,
     db_session: Session = Depends(get_db),
-    incident_role: str,
-    incident_roles_in: IncidentRoles,
+    incident_roles_in: IncidentRolesCreateUpdate,
 ):
     """Update a incident role mapping by its id."""
-    incident_roles = [
-        get(db_session=db_session, incident_role_id=i["id"]) for i in incident_roles_in
-    ]
-    if not incident_roles:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A incident role mapping with this id does not exist."}],
-        )
-    incident_roles = update(
-        db_session=db_session,
-        incident_role=incident_role,
-        incident_roles_in=incident_roles_in,
-    )
-    return incident_roles
+    return {
+        "policies": create_or_update(db_session=db_session, incident_roles_in=incident_roles_in)
+    }

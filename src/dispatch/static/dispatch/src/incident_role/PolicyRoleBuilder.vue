@@ -16,7 +16,7 @@
         <v-col cols="1" align="end">
           <v-tooltip bottom>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn icon color="info" v-bind="attrs" v-on="on" @click="save()">
+              <v-btn icon color="info" v-bind="attrs" v-on="on" :loading="loading" @click="save()">
                 <v-icon> save </v-icon>
               </v-btn>
             </template>
@@ -139,6 +139,7 @@ export default {
   data() {
     return {
       policies: [],
+      loading: false,
     }
   },
 
@@ -158,14 +159,19 @@ export default {
       this.policies.splice(idx, 1)
     },
     save: function () {
-      IncidentRoleApi.updateRole(this.label, this.project.name, this.policies).then((response) => {
-        this.$store.commit(
-          "notification_backend/addBeNotification",
-          { text: "Role policies successfully updated.", type: "success" },
-          { root: true }
-        )
-        return response.data
-      })
+      this.loading = true
+      IncidentRoleApi.updateRole(this.label, { policies: this.policies })
+        .then((response) => {
+          this.$store.commit(
+            "notification_backend/addBeNotification",
+            { text: "Role policies successfully updated.", type: "success" },
+            { root: true }
+          )
+          this.policies = response.data.policies
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
     get: function () {
       IncidentRoleApi.getRolePolicies(this.label, this.project.name).then((response) => {

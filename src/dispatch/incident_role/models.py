@@ -72,12 +72,13 @@ class IncidentRoleBase(DispatchBase):
     individual: Optional[IndividualContactRead]
 
 
-class IncidentRoleCreate(IncidentRoleBase):
-    project: ProjectRead
+class IncidentRoleCreateUpdate(IncidentRoleBase):
+    id: Optional[PrimaryKey]
+    project: Optional[ProjectRead]
 
 
-class IncidentRoleUpdate(IncidentRoleBase):
-    pass
+class IncidentRolesCreateUpdate(DispatchBase):
+    policies: List[IncidentRoleCreateUpdate]
 
 
 class IncidentRoleRead(IncidentRoleBase):
