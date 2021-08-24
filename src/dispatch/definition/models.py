@@ -12,8 +12,6 @@ from dispatch.models import (
     PrimaryKey,
     DispatchBase,
     ProjectMixin,
-    TermNested,
-    TermReadNested,
 )
 from dispatch.project.models import ProjectRead
 
@@ -45,6 +43,11 @@ class Definition(Base, ProjectMixin):
     search_vector = Column(TSVectorType("text"))
 
 
+class DefinitionTerm(DispatchBase):
+    id: Optional[PrimaryKey]
+    text: Optional[str]
+
+
 # Pydantic models...
 class DefinitionBase(DispatchBase):
     text: str
@@ -52,17 +55,17 @@ class DefinitionBase(DispatchBase):
 
 
 class DefinitionCreate(DefinitionBase):
-    terms: Optional[List[TermNested]] = []
+    terms: Optional[List[DefinitionTerm]] = []
     project: ProjectRead
 
 
 class DefinitionUpdate(DefinitionBase):
-    terms: Optional[List[TermReadNested]] = []
+    terms: Optional[List[DefinitionTerm]] = []
 
 
 class DefinitionRead(DefinitionBase):
     id: PrimaryKey
-    terms: Optional[List[TermReadNested]]
+    terms: Optional[List[DefinitionTerm]]
 
 
 class DefinitionPagination(DispatchBase):

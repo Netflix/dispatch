@@ -1,5 +1,6 @@
 from dispatch.messaging.strings import INCIDENT_WORKFLOW_CREATED_NOTIFICATION
 from dispatch.incident import service as incident_service
+from dispatch.participant import service as participant_service
 from dispatch.workflow import service as workflow_service
 from dispatch.workflow.models import WorkflowInstanceCreate
 from dispatch.workflow.flows import send_workflow_notification
@@ -165,13 +166,16 @@ def run_workflow_submitted_form(
     workflow = workflow_service.get(db_session=db_session, workflow_id=workflow_id)
 
     creator_email = get_user_email(slack_client, action["user"]["id"])
+    creator = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=incident.id, email=creator_email
+    )
 
     instance = workflow_service.create_instance(
         db_session=db_session,
         instance_in=WorkflowInstanceCreate(
-            workflow={"id": workflow.id},
-            incident={"id": incident.id},
-            creator={"email": creator_email},
+            workflow=workflow,
+            incident=incident,
+            creator=creator,
             run_reason=run_reason,
             parameters=named_params,
         ),

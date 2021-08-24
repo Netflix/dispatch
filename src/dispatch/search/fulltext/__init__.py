@@ -172,7 +172,7 @@ class CreateSearchTriggerSQL(SQLConstruct):
         if self.options["weights"] or any(
             getattr(self.table.c, column) in vectorizer for column in self.indexed_columns
         ):
-            return self.search_function_name + "()"
+            return self.schema_name + "." + self.search_function_name + "()"
         return "tsvector_update_trigger({arguments})".format(
             arguments=", ".join(
                 [self.tsvector_column.name, "'%s'" % self.options["regconfig"]]
