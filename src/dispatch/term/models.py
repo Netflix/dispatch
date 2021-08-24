@@ -7,12 +7,11 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.models import (
-    DefinitionNested,
-    DefinitionReadNested,
     DispatchBase,
     ProjectMixin,
     PrimaryKey,
 )
+from dispatch.definition.models import DefinitionRead
 from dispatch.project.models import ProjectRead
 
 
@@ -33,17 +32,17 @@ class TermBase(DispatchBase):
 
 
 class TermCreate(TermBase):
-    definitions: Optional[List[DefinitionNested]] = []
+    definitions: Optional[List[DefinitionRead]] = []
     project: ProjectRead
 
 
 class TermUpdate(TermBase):
-    definitions: Optional[List[DefinitionNested]] = []
+    definitions: Optional[List[DefinitionRead]] = []
 
 
 class TermRead(TermBase):
     id: PrimaryKey
-    definitions: Optional[List[DefinitionReadNested]] = []
+    definitions: Optional[List[DefinitionRead]] = []
 
 
 class TermPagination(DispatchBase):
