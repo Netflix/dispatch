@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 from pydantic.fields import Field
 from pydantic.networks import EmailStr
 from pydantic.types import conint, constr
@@ -100,64 +100,4 @@ class ContactBase(DispatchBase):
 
 
 class PluginOptionModel(DispatchBase):
-    pass
-
-
-# self referential models
-class TermNested(DispatchBase):
-    id: Optional[PrimaryKey]
-    text: str
-    # disabling this for now as recursive models break swagger api gen
-    # definitions: Optional[List["DefinitionNested"]] = []
-
-
-class ProjectReadNested(DispatchBase):
-    name: str
-
-
-class DefinitionNested(DispatchBase):
-    id: Optional[PrimaryKey]
-    text: str
-    project: ProjectReadNested
-    terms: Optional[List["TermNested"]] = []
-
-
-class ServiceNested(DispatchBase):
-    pass
-
-
-class IndividualNested(DispatchBase):
-    pass
-
-
-class TeamNested(DispatchBase):
-    pass
-
-
-class TermReadNested(DispatchBase):
-    id: PrimaryKey
-    text: str
-
-
-class DefinitionReadNested(DispatchBase):
-    id: PrimaryKey
-    text: str
-
-
-class ServiceReadNested(DispatchBase):
-    name: Optional[str] = Field(None, nullable=True)
-    external_id: Optional[str] = Field(None, nullable=True)
-    is_active: Optional[bool] = False
-    type: Optional[str] = Field(None, nullable=True)
-
-
-class IndividualReadNested(ContactBase):
-    id: Optional[PrimaryKey]
-    title: Optional[str] = Field(None, nullable=True)
-    external_id: Optional[str]
-    weblink: Optional[str]
-    title: Optional[str]
-
-
-class TeamReadNested(ContactBase):
     pass

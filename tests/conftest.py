@@ -7,6 +7,7 @@ from starlette.config import environ
 # set test config
 environ["DATABASE_CREDENTIALS"] = "postgres:dispatch"
 environ["DATABASE_HOSTNAME"] = "localhost"
+environ["DATABASE_NAME"] = "dispatch-test"
 environ["DISPATCH_HELP_EMAIL"] = "example@example.com"
 environ["DISPATCH_HELP_SLACK_CHANNEL"] = "help-me"
 environ["DISPATCH_UI_URL"] = "https://example.com"
@@ -22,6 +23,7 @@ environ["STATIC_DIR"] = ""  # we don't need static files for tests
 from dispatch import config
 from dispatch.database.core import engine, sessionmaker
 from dispatch.database.manage import init_database
+
 
 from .factories import (
     ConferenceFactory,
@@ -330,7 +332,7 @@ def participant_roles(session):
 
 @pytest.fixture
 def participant(session):
-    return ParticipantFactory()
+    return ParticipantFactory(individual=IndividualContactFactory())
 
 
 @pytest.fixture
@@ -510,7 +512,7 @@ def plugin_instance(session):
 
 @pytest.fixture
 def workflow(session):
-    return WorkflowFactory()
+    return WorkflowFactory(plugin_instance=PluginInstanceFactory())
 
 
 @pytest.fixture

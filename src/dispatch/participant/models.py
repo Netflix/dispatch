@@ -6,13 +6,14 @@ from sqlalchemy import Column, Boolean, String, Integer, ForeignKey, select
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, IndividualReadNested, PrimaryKey
+from dispatch.models import DispatchBase, PrimaryKey
 from dispatch.participant_role.models import (
     ParticipantRoleCreate,
     ParticipantRoleRead,
     ParticipantRole,
 )
 from dispatch.service.models import ServiceRead
+from dispatch.individual.models import IndividualContactRead
 
 
 class Participant(Base):
@@ -78,13 +79,13 @@ class ParticipantCreate(ParticipantBase):
 
 
 class ParticipantUpdate(ParticipantBase):
-    individual: Optional[IndividualReadNested]
+    individual: Optional[IndividualContactRead]
 
 
 class ParticipantRead(ParticipantBase):
     id: PrimaryKey
     participant_roles: Optional[List[ParticipantRoleRead]] = []
-    individual: Optional[IndividualReadNested]
+    individual: Optional[IndividualContactRead]
 
 
 class ParticipantPagination(DispatchBase):

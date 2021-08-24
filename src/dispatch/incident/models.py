@@ -1,6 +1,6 @@
 from datetime import datetime
 from collections import Counter
-from typing import List, Optional, Any
+from typing import List, Optional
 
 from pydantic import validator
 from dispatch.models import NameStr, PrimaryKey
@@ -43,6 +43,7 @@ from dispatch.participant_role.models import ParticipantRole, ParticipantRoleTyp
 from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
+from dispatch.term.models import TermRead
 from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
 from dispatch.workflow.models import WorkflowInstanceRead
@@ -298,7 +299,7 @@ class IncidentCreate(IncidentBase):
     incident_priority: Optional[IncidentPriorityCreate]
     incident_type: Optional[IncidentTypeCreate]
     reporter: Optional[ParticipantUpdate]
-    tags: Optional[List[Any]] = []  # any until we figure out circular imports
+    tags: Optional[List[TagRead]] = []
     project: ProjectRead
 
 
@@ -310,16 +311,16 @@ class IncidentUpdate(IncidentBase):
     commander: Optional[ParticipantUpdate]
     reporter: Optional[ParticipantUpdate]
     duplicates: Optional[List[IncidentReadNested]] = []
-    tags: Optional[List[Any]] = []  # any until we figure out circular imports
-    terms: Optional[List[Any]] = []  # any until we figure out circular imports
+    tags: Optional[List[TagRead]] = []
+    terms: Optional[List[TermRead]] = []
     incident_costs: Optional[List[IncidentCostUpdate]] = []
 
 
 class IncidentRead(IncidentBase):
     id: PrimaryKey
     name: Optional[NameStr]
-    primary_team: Any
-    primary_location: Any
+    primary_team: str
+    primary_location: str
     reporter: Optional[ParticipantRead]
     commander: Optional[ParticipantRead]
     last_tactical_report: Optional[ReportRead]
@@ -332,7 +333,7 @@ class IncidentRead(IncidentBase):
     ticket: Optional[TicketRead] = None
     documents: Optional[List[DocumentRead]] = []
     tags: Optional[List[TagRead]] = []
-    terms: Optional[List[Any]] = []  # any until we figure out circular imports
+    terms: Optional[List[TermRead]] = []
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
     events: Optional[List[EventRead]] = []

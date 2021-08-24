@@ -100,6 +100,11 @@ class WorkflowInstance(Base, ResourceMixin):
     )
 
 
+class WorkflowIncident(DispatchBase):
+    id: PrimaryKey
+    name: Optional[NameStr]
+
+
 # Pydantic models...
 class WorkflowBase(DispatchBase):
     name: NameStr
@@ -150,9 +155,9 @@ class WorkflowInstanceBase(ResourceBase):
 
 
 class WorkflowInstanceCreate(WorkflowInstanceBase):
-    creator: dict  # TODO define a required email
-    incident: dict  # TODO define a required ID
-    workflow: dict  # TODO define a required ID
+    creator: ParticipantRead
+    incident: WorkflowIncident
+    workflow: WorkflowRead
 
 
 class WorkflowInstanceUpdate(WorkflowInstanceBase):
