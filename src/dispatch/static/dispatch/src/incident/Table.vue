@@ -1,105 +1,103 @@
 <template>
-  <v-layout wrap>
+  <v-container>
     <div v-if="showEditSheet">
       <router-view />
     </div>
-    <new-sheet />
-    <delete-dialog />
-    <report-dialog />
-    <div class="headline">Incidents</div>
-    <v-spacer />
-    <table-filter-dialog />
-    <table-export-dialog />
-    <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn>
-    <v-flex xs12>
-      <v-layout column>
-        <v-flex>
-          <v-card elevation="0">
-            <v-card-title>
-              <v-text-field
-                v-model="q"
-                append-icon="search"
-                label="Search"
-                single-line
-                hide-details
-                clearable
-              />
-            </v-card-title>
-            <v-data-table
-              :headers="headers"
-              :items="items"
-              :server-items-length="total"
-              :page.sync="page"
-              :items-per-page.sync="itemsPerPage"
-              :sort-by.sync="sortBy"
-              :sort-desc.sync="descending"
-              :loading="loading"
-              v-model="selected"
-              loading-text="Loading... Please wait"
-              show-select
-            >
-              <template v-slot:item.project.name="{ item }">
-                <v-chip small :color="item.project.color" text-color="white">
-                  {{ item.project.name }}
-                </v-chip>
-              </template>
-              <template v-slot:item.incident_priority.name="{ item }">
-                <incident-priority :priority="item.incident_priority.name" />
-              </template>
-              <template v-slot:item.status="{ item }">
-                <incident-status :status="item.status" :id="item.id" />
-              </template>
-              <template v-slot:item.incident_costs="{ item }">
-                <incident-cost-card :incident-costs="item.incident_costs" />
-              </template>
-              <template v-slot:item.commander="{ item }">
-                <incident-participant :participant="item.commander" />
-              </template>
-              <template v-slot:item.reported_at="{ item }">
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
-                    <span v-bind="attrs" v-on="on">{{
-                      item.reported_at | formatRelativeDate
-                    }}</span>
-                  </template>
-                  <span>{{ item.reported_at | formatDate }}</span>
-                </v-tooltip>
-              </template>
-              <template v-slot:item.data-table-actions="{ item }">
-                <v-menu bottom left>
-                  <template v-slot:activator="{ on }">
-                    <v-btn icon v-on="on">
-                      <v-icon>mdi-dots-vertical</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-list>
-                    <v-list-item
-                      :to="{
-                        name: 'IncidentTableEdit',
-                        params: { name: item.name },
-                      }"
-                    >
-                      <v-list-item-title>View / Edit</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item
-                      @click="showReportDialog(item)"
-                      :disabled="item.status == 'Closed'"
-                    >
-                      <v-list-item-title>Create Report</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="showDeleteDialog(item)">
-                      <v-list-item-title>Delete</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </template>
-            </v-data-table>
-          </v-card>
-        </v-flex>
-      </v-layout>
-    </v-flex>
+    <v-row no-gutters>
+      <new-sheet />
+      <delete-dialog />
+      <report-dialog />
+      <v-col>
+        <div class="headline">Incidents</div>
+      </v-col>
+      <v-col cols="3">
+        <table-filter-dialog />
+        <table-export-dialog />
+        <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn>
+      </v-col>
+    </v-row>
+    <v-row no-gutters>
+      <v-col>
+        <v-card elevation="0">
+          <v-card-title>
+            <v-text-field
+              v-model="q"
+              append-icon="search"
+              label="Search"
+              single-line
+              hide-details
+              clearable
+            />
+          </v-card-title>
+          <v-data-table
+            :headers="headers"
+            :items="items"
+            :server-items-length="total"
+            :page.sync="page"
+            :items-per-page.sync="itemsPerPage"
+            :sort-by.sync="sortBy"
+            :sort-desc.sync="descending"
+            :loading="loading"
+            v-model="selected"
+            loading-text="Loading... Please wait"
+            show-select
+          >
+            <template v-slot:item.project.name="{ item }">
+              <v-chip small :color="item.project.color" text-color="white">
+                {{ item.project.name }}
+              </v-chip>
+            </template>
+            <template v-slot:item.incident_priority.name="{ item }">
+              <incident-priority :priority="item.incident_priority.name" />
+            </template>
+            <template v-slot:item.status="{ item }">
+              <incident-status :status="item.status" :id="item.id" />
+            </template>
+            <template v-slot:item.incident_costs="{ item }">
+              <incident-cost-card :incident-costs="item.incident_costs" />
+            </template>
+            <template v-slot:item.commander="{ item }">
+              <incident-participant :participant="item.commander" />
+            </template>
+            <template v-slot:item.reported_at="{ item }">
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <span v-bind="attrs" v-on="on">{{ item.reported_at | formatRelativeDate }}</span>
+                </template>
+                <span>{{ item.reported_at | formatDate }}</span>
+              </v-tooltip>
+            </template>
+            <template v-slot:item.data-table-actions="{ item }">
+              <v-menu bottom left>
+                <template v-slot:activator="{ on }">
+                  <v-btn icon v-on="on">
+                    <v-icon>mdi-dots-vertical</v-icon>
+                  </v-btn>
+                </template>
+                <v-list>
+                  <v-list-item
+                    :to="{
+                      name: 'IncidentTableEdit',
+                      params: { name: item.name },
+                    }"
+                  >
+                    <v-list-item-title>View / Edit</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="showReportDialog(item)" :disabled="item.status == 'Closed'">
+                    <v-list-item-title>Create Report</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="showDeleteDialog(item)">
+                    <v-list-item-title>Delete</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+            </template>
+          </v-data-table>
+        </v-card>
+      </v-col>
+    </v-row>
     <bulk-edit-sheet />
-  </v-layout>
+  </v-container>
 </template>
 
 <script>
