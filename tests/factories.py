@@ -351,6 +351,7 @@ class IncidentRoleFactory(BaseFactory):
     role = FuzzyChoice(["Incident Commander", "Scribe", "Liaison"])
     order = FuzzyInteger(low=1, high=10)
     enabled = True
+    project = SubFactory(ProjectFactory)
 
     class Meta:
         """Factory configuration."""

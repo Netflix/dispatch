@@ -1,6 +1,3 @@
-from dispatch.incident.models import ProjectRead
-
-
 def test_get(session, incident_role):
     from dispatch.incident_role.service import get
 
