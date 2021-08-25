@@ -16,11 +16,6 @@ function login(to, from, next) {
   }
 }
 
-function logout(next) {
-  next()
-}
-
 export default {
   login,
-  logout,
 }
