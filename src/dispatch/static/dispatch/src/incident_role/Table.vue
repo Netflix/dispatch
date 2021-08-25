@@ -7,11 +7,13 @@
         </v-col>
       </v-row>
       <v-row no-gutters>
-        <v-alert width="100%" icon="mdi-school" prominent text type="info"
-          >Role policies defined below control the user resolution for a incident role. It uses
-          incident characteristics (e.g IncidentType, IncidentPriority, etc.,) and the order of the
-          policies to determine the correct user.
-        </v-alert>
+        <v-col>
+          <v-alert dismissible icon="mdi-school" prominent text type="info"
+            >Role policies defined below control the user resolution for a incident role. It uses
+            incident characteristics (e.g IncidentType, IncidentPriority, etc.,) and the order of
+            the policies to determine the correct user.
+          </v-alert>
+        </v-col>
       </v-row>
       <v-row no-gutters>
         <v-col>
