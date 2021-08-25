@@ -20,7 +20,7 @@
       </v-row>
       <v-row no-gutters>
         <v-col>
-          <policy-role-builder label="Liasion" :project="project" />
+          <policy-role-builder label="Liaison" :project="project" />
         </v-col>
       </v-row>
       <v-row no-gutters>

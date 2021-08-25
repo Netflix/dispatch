@@ -125,7 +125,6 @@ def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
     incident_type = IncidentType(
         **incident_type_in.dict(
             exclude={
-                "commander_service",
                 "incident_template_document",
                 "executive_template_document",
                 "tracking_template_document",
@@ -160,18 +159,6 @@ def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:
         )
         incident_type.tracking_template_document = tracking_template_document
 
-    if incident_type_in.commander_service:
-        commander_service = service_service.get(
-            db_session=db_session, service_id=incident_type_in.commander_service.id
-        )
-        incident_type.commander_service = commander_service
-
-    if incident_type_in.liaison_service:
-        liaison_service = service_service.get(
-            db_session=db_session, service_id=incident_type_in.liaison_service.id
-        )
-        incident_type.liaison_service = liaison_service
-
     db_session.add(incident_type)
     db_session.commit()
     return incident_type
@@ -205,25 +192,11 @@ def update(
         )
         incident_type.tracking_template_document = tracking_template_document
 
-    if incident_type_in.commander_service:
-        commander_service = service_service.get(
-            db_session=db_session, service_id=incident_type_in.commander_service.id
-        )
-        incident_type.commander_service = commander_service
-
-    if incident_type_in.liaison_service:
-        liaison_service = service_service.get(
-            db_session=db_session, service_id=incident_type_in.liaison_service.id
-        )
-        incident_type.liaison_service = liaison_service
-
     incident_type_data = incident_type.dict()
 
     update_data = incident_type_in.dict(
         skip_defaults=True,
         exclude={
-            "commander_service",
-            "liaison_service",
             "incident_template_document",
             "executive_template_document",
             "tracking_template_document",

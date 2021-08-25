@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
+from pydantic.types import PositiveInt
 
 from sqlalchemy import Boolean, Column, Integer, String, PrimaryKeyConstraint, Table, ForeignKey
 from sqlalchemy.orm import relationship
@@ -63,9 +64,9 @@ class IncidentRole(Base, TimeStampMixin, ProjectMixin):
 
 # Pydantic models
 class IncidentRoleBase(DispatchBase):
-    role: ParticipantRoleType
     enabled: Optional[bool]
     tags: Optional[List[TagRead]]
+    order: Optional[PositiveInt]
     incident_types: Optional[List[IncidentTypeRead]]
     incident_priorities: Optional[List[IncidentPriorityRead]]
     service: Optional[ServiceRead]
@@ -83,6 +84,7 @@ class IncidentRolesCreateUpdate(DispatchBase):
 
 class IncidentRoleRead(IncidentRoleBase):
     id: PrimaryKey
+    role: ParticipantRoleType
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

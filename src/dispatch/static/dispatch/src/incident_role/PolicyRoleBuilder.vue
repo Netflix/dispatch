@@ -27,7 +27,13 @@
     </v-card-title>
     <v-card-text v-if="policies.length">
       <v-expansion-panels>
-        <draggable class="grow" v-model="policies" @start="drag = true" @end="drag = false">
+        <draggable
+          class="grow"
+          v-model="policies"
+          @update="onUpdate"
+          @start="drag = true"
+          @end="drag = false"
+        >
           <v-expansion-panel v-for="(policy, idx) in policies" :key="policy.id">
             <v-expansion-panel-header>
               <v-row align="center" justify="center">
@@ -160,7 +166,7 @@ export default {
     },
     save: function () {
       this.loading = true
-      IncidentRoleApi.updateRole(this.label, { policies: this.policies })
+      IncidentRoleApi.updateRole(this.label, this.project.name, { policies: this.policies })
         .then((response) => {
           this.$store.commit(
             "notification_backend/addBeNotification",
@@ -176,6 +182,12 @@ export default {
     get: function () {
       IncidentRoleApi.getRolePolicies(this.label, this.project.name).then((response) => {
         this.policies = response.data.policies
+      })
+    },
+    onUpdate() {
+      // update the order attr
+      this.policies.forEach((policy, idx) => {
+        policy.order = idx + 1
       })
     },
   },

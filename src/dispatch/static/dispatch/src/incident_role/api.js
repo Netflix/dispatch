@@ -7,7 +7,7 @@ export default {
     return API.get(`${resource}/${role}`, { params: { projectName: project_name } })
   },
 
-  updateRole(role, payload) {
-    return API.put(`${resource}/${role}`, payload)
+  updateRole(role, project_name, payload) {
+    return API.put(`${resource}/${role}`, payload, { params: { projectName: project_name } })
   },
 }

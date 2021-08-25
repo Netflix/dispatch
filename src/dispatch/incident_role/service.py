@@ -5,7 +5,7 @@ from operator import attrgetter
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 
-from dispatch.incident.models import Incident
+from dispatch.incident.models import Incident, ProjectRead
 from dispatch.exceptions import NotFoundError
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.tag import service as tag_service
@@ -34,7 +34,9 @@ def get_all(*, db_session):
     return db_session.query(IncidentRole)
 
 
-def get_all_by_role(*, db_session, role: str, project_id: int) -> Optional[List[IncidentRole]]:
+def get_all_by_role(
+    *, db_session, role: ParticipantRoleType, project_id: int
+) -> Optional[List[IncidentRole]]:
     """Gets all policies for a given role."""
     return (
         db_session.query(IncidentRole)
@@ -56,11 +58,17 @@ def get_all_enabled(*, db_session, project_id: int) -> Optional[List[IncidentRol
 def create_or_update(
     *,
     db_session,
-    incident_roles_in: IncidentRoleCreateUpdate,
+    project_in: ProjectRead,
+    role: ParticipantRoleType,
+    incident_roles_in: List[IncidentRoleCreateUpdate],
 ) -> List[IncidentRole]:
     """Updates a list of incident role policies."""
     role_policies = []
-    for role_policy_in in incident_roles_in.policies:
+
+    project = project_service.get_by_name_or_raise(db_session=db_session, project_in=project_in)
+
+    # update/create everybody else
+    for role_policy_in in incident_roles_in:
         if role_policy_in.id:
             role_policy = get(db_session=db_session, incident_role_id=role_policy_in.id)
 
@@ -76,16 +84,14 @@ def create_or_update(
                 )
 
         else:
-            role_policy = IncidentRole()
-            role_policy.project = project_service.get_by_name_or_raise(
-                db_session=db_session, project_in=role_policy_in.project
-            )
+            role_policy = IncidentRole(role=role)
             db_session.add(role_policy)
 
         role_policy_data = role_policy.dict()
         update_data = role_policy_in.dict(
             skip_defaults=True,
             exclude={
+                "role",  # we don't allow role to be updated
                 "tags",
                 "incident_types",
                 "incident_priorities",
@@ -94,7 +100,6 @@ def create_or_update(
                 "project",
             },
         )
-        print(role_policy_in.project)
 
         for field in role_policy_data:
             if field in update_data:
@@ -103,7 +108,7 @@ def create_or_update(
         if role_policy_in.tags:
             tags = [
                 tag_service.get_by_name_or_raise(
-                    db_session=db_session, project_id=role_policy.project.id, tag_in=t
+                    db_session=db_session, project_id=project.id, tag_in=t
                 )
                 for t in role_policy_in.tags
             ]
@@ -112,7 +117,7 @@ def create_or_update(
         if role_policy_in.incident_types:
             incident_types = [
                 incident_type_service.get_by_name_or_raise(
-                    db_session=db_session, project_id=role_policy.project.id, incident_type_in=i
+                    db_session=db_session, project_id=project.id, incident_type_in=i
                 )
                 for i in role_policy_in.incident_types
             ]
@@ -122,7 +127,7 @@ def create_or_update(
             incident_priorities = [
                 incident_priority_service.get_by_name_or_raise(
                     db_session=db_session,
-                    project_id=role_policy.project.id,
+                    project_id=project.id,
                     incident_priority_in=i,
                 )
                 for i in role_policy_in.incident_priorities
@@ -132,7 +137,7 @@ def create_or_update(
         if role_policy_in.service:
             service = service_service.get_by_external_id_and_project_id_or_raise(
                 db_session=db_session,
-                project_id=role_policy.project.id,
+                project_id=project.id,
                 service_in=role_policy_in.service,
             )
             role_policy.service = service
@@ -140,12 +145,24 @@ def create_or_update(
         if role_policy_in.individual:
             individual = individual_contact_service.get_by_email_and_project_id_or_raise(
                 db_session=db_session,
-                project_id=role_policy.project.id,
+                project_id=project.id,
                 individual_contact_in=role_policy_in.individual,
             )
             role_policy.individual = individual
 
         role_policies.append(role_policy)
+
+    # TODO Add projects
+    # get all current policies in order to detect deletions
+    existing_incident_roles = get_all_by_role(
+        db_session=db_session, role=role, project_id=project.id
+    )
+    for existing_role_policy in existing_incident_roles:
+        for current_role_policy in role_policies:
+            if existing_role_policy.id == current_role_policy.id:
+                break
+        else:
+            db_session.delete(existing_role_policy)
 
     db_session.commit()
     return role_policies

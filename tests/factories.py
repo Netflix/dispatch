@@ -23,6 +23,7 @@ from dispatch.incident.models import Incident
 from dispatch.incident_cost.models import IncidentCost
 from dispatch.incident_cost_type.models import IncidentCostType
 from dispatch.incident_priority.models import IncidentPriority
+from dispatch.incident_role.models import IncidentRole
 from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
 from dispatch.notification.models import Notification
@@ -350,6 +351,11 @@ class IncidentRoleFactory(BaseFactory):
     role = FuzzyChoice(["Incident Commander", "Scribe", "Liaison"])
     order = FuzzyInteger(low=1, high=10)
     enabled = True
+
+    class Meta:
+        """Factory configuration."""
+
+        model = IncidentRole
 
     @post_generation
     def incident_priorities(self, create, extracted, **kwargs):

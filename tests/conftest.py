@@ -36,6 +36,7 @@ from .factories import (
     IncidentCostFactory,
     IncidentCostTypeFactory,
     IncidentFactory,
+    IncidentRoleFactory,
     IncidentPriorityFactory,
     IncidentTypeFactory,
     IndividualContactFactory,
@@ -303,6 +304,11 @@ def incident_priority(session):
 @pytest.fixture
 def incident_priorities(session):
     return [IncidentPriorityFactory(), IncidentPriorityFactory()]
+
+
+@pytest.fixture
+def incident_role(session):
+    return IncidentRoleFactory()
 
 
 @pytest.fixture
