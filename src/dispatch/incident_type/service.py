@@ -6,7 +6,6 @@ from sqlalchemy.sql.expression import true
 from dispatch.document import service as document_service
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
-from dispatch.service import service as service_service
 
 from .models import IncidentType, IncidentTypeCreate, IncidentTypeRead, IncidentTypeUpdate
 
