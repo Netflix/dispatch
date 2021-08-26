@@ -136,7 +136,9 @@ const actions = {
     })
   },
   logout({ commit }) {
+    localStorage.removeItem("token")
     commit("SET_USER_LOGOUT")
+    router.go()
   },
   createExpirationCheck({ state, commit }) {
     // expiration time minus 10 min
@@ -183,7 +185,6 @@ const mutations = {
   },
   SET_USER_LOGOUT(state) {
     state.currentUser = { loggedIn: false }
-    localStorage.removeItem("token")
   },
 }
 
