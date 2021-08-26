@@ -1,6 +1,3 @@
-from tests.conftest import incident_priorities
-
-
 def test_get(session, incident_role):
     from dispatch.incident_role.service import get
 
@@ -12,13 +9,6 @@ def test_get_all(session, project, incident_role):
     from dispatch.incident_role.service import get_all
 
     t_incident_roles = get_all(db_session=session).all()
-    assert len(t_incident_roles) >= 1
-
-
-def test_get_all_enabled(session, project, incident_role):
-    from dispatch.incident_role.service import get_all_enabled
-
-    t_incident_roles = get_all_enabled(db_session=session, project_id=incident_role.project.id)
     assert len(t_incident_roles) >= 1
 
 
