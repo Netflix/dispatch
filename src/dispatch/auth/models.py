@@ -158,7 +158,7 @@ class UserUpdate(DispatchBase):
     organizations: Optional[List[UserOrganization]]
     role: Optional[str] = Field(None, nullable=True)
 
-    @validator("password", pre=True, always=True)
+    @validator("password", pre=True)
     def hash(cls, v):
         return hash_password(str(v))
 
