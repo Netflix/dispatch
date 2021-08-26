@@ -31,11 +31,12 @@ from dispatch.messaging.email.utils import create_message_body, create_multi_mes
 log = logging.getLogger(__name__)
 
 
-@retry(stop=stop_after_attempt(3))
+# @retry(stop=stop_after_attempt(3))
 def send_message(service, message: dict) -> bool:
     """Sends an email message."""
-    return True
-    message_response = service.users().messages().send(userId="me", body=message).execute()
+    sent_message_thread_id = (
+        service.users().messages().send(userId="me", body=message).execute()["threadId"]
+    )
 
     # wait for a bounce
     time.sleep(1)
@@ -43,12 +44,12 @@ def send_message(service, message: dict) -> bool:
     messages = (
         service.users()
         .messages()
-        .list(userId="me", query="from=mailer-daemon@googlemail.com")
+        .list(userId="me", q="from=mailer-daemon@googlemail.com", maxResults=10)
         .execute()
-    )
+    )["messages"]
 
-    for msg in messages:
-        if msg["threadId"] == message_response["threadId"]:
+    for message in messages:
+        if message["threadId"] == sent_message_thread_id:
             return False
 
 

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 from pydantic import Field
-from dispatch.models import PrimaryKey
+from dispatch.models import EvergreenMixin, PrimaryKey
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.orm import relationship
@@ -34,7 +34,7 @@ assoc_service_filters = Table(
 
 
 # SQLAlchemy models...
-class Service(Base, TimeStampMixin, ProjectMixin):
+class Service(Base, TimeStampMixin, ProjectMixin, EvergreenMixin):
     __table_args__ = (UniqueConstraint("external_id", "project_id"),)
     id = Column(Integer, primary_key=True)
     is_active = Column(Boolean, default=True)

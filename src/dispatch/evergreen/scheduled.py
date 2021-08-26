@@ -6,7 +6,7 @@
 """
 import logging
 
-from typing import List, Any
+from typing import Any
 from schedule import every
 from datetime import datetime
 from collections import defaultdict
@@ -30,7 +30,7 @@ log = logging.getLogger(__name__)
 
 
 def create_evergreen_reminder(
-    db_session: SessionLocal, project: Project, owner_email: str, resources: List[Any]
+    db_session: SessionLocal, project: Project, owner_email: str, resource_groups: Any
 ):
     """Contains the logic for evergreen reminders."""
     contact_fullname = contact_weblink = DISPATCH_HELP_EMAIL
@@ -44,14 +44,15 @@ def create_evergreen_reminder(
     notification_template = EVERGREEN_REMINDER
 
     items = []
-    for resource_type, resource in resources.items():
-        items.append(
-            {
-                "name": resource.name,
-                "description": resource.description,
-                "weblink": resource.weblink,
-            }
-        )
+    for resource_type, resources in resource_groups.items():
+        for resource in resources:
+            items.append(
+                {
+                    "name": resource.name,
+                    "description": resource.description,
+                    "weblink": resource.weblink,
+                }
+            )
     notification_type = "evergreen-reminder"
     name = subject = notification_text = "Evergreen Reminder"
     success = plugin.instance.send(
@@ -70,7 +71,7 @@ def create_evergreen_reminder(
         for item in items:
             item.evergreen_last_reminder_at = datetime.utcnow()
 
-        # db_session.commit()
+        db_session.commit()
     else:
         log.error(f"Unable to send evergreen message. Email: {owner_email}")
 
@@ -92,17 +93,16 @@ def create_evergreen_reminders(db_session: SessionLocal, project: Project):
     items += document_service.get_overdue_evergreen_documents(
         db_session=db_session, project_id=project.id
     )
-    print(items)
 
-    # items += service_service.get_overdue_evergreen_services(
-    #    db_session=db_session, project_id=project.id
-    # )
+    items += service_service.get_overdue_evergreen_services(
+        db_session=db_session, project_id=project.id
+    )
 
-    # items += team_service.get_overdue_evergreen_teams(db_session=db_session, project_id=project.id)
+    items += team_service.get_overdue_evergreen_teams(db_session=db_session, project_id=project.id)
 
-    # items += notification_service.get_overdue_evergreen_notifications(
-    #    db_session=db_session, project_id=project.id
-    # )
+    items += notification_service.get_overdue_evergreen_notifications(
+        db_session=db_session, project_id=project.id
+    )
 
     if items:
         grouped_items = group_items_by_owner_and_type(items)

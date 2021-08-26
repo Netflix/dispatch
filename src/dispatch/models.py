@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from typing import Optional
 from pydantic.fields import Field
 from pydantic.networks import EmailStr
@@ -74,7 +74,7 @@ class EvergreenMixin(object):
     evergreen = Column(Boolean)
     evergreen_owner = Column(String)
     evergreen_reminder_interval = Column(Integer, default=90)  # number of days
-    evergreen_last_reminder_at = Column(DateTime)
+    evergreen_last_reminder_at = Column(DateTime, default=datetime.utcnow())
 
     @hybrid_property
     def overdue(self):
@@ -83,18 +83,15 @@ class EvergreenMixin(object):
             days=self.evergreen_reminder_interval
         )
 
-        if now > next_reminder:
+        if now >= next_reminder:
             return True
 
     @overdue.expression
     def overdue(cls):
-        days_since_reminded = func.trunc(
-            (extract("epoch", cls.evergreen_last_reminder_at) - extract("epoch", datetime.utcnow()))
-            / 60
-            / 60
-            / 24
+        return (
+            func.date_part("day", func.now() - cls.evergreen_last_reminder_at)
+            >= cls.evergreen_reminder_interval
         )
-        return days_since_reminded >= cls.evergreen_reminder_interval
 
 
 # Pydantic models...

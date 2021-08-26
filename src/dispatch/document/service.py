@@ -46,15 +46,15 @@ def get_conversation_reference_document(*, db_session, project_id: int):
     ).one_or_none()
 
 
-# TODO this could also be done with an sql query if we end up with lots of docs
 def get_overdue_evergreen_documents(*, db_session, project_id) -> List[Optional[Document]]:
     """Returns all documents that have not had a recent evergreen notification."""
-    return (
+    query = (
         db_session.query(Document)
         .filter(Document.evergreen == True)  # noqa
         .filter(Document.project_id == project_id)
         .filter(Document.overdue == True)  # noqa
-    ).all()
+    )
+    return query.all()
 
 
 def get_all(*, db_session) -> List[Optional[Document]]:

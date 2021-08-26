@@ -14,6 +14,7 @@ from dispatch.models import (
     ContactBase,
     ContactMixin,
     DispatchBase,
+    EvergreenMixin,
     NameStr,
     ProjectMixin,
     PrimaryKey,
@@ -36,7 +37,7 @@ assoc_team_filters = Table(
 )
 
 
-class TeamContact(Base, ContactMixin, ProjectMixin):
+class TeamContact(Base, ContactMixin, ProjectMixin, EvergreenMixin):
     __table_args__ = (UniqueConstraint("email", "project_id"),)
 
     id = Column(Integer, primary_key=True)
