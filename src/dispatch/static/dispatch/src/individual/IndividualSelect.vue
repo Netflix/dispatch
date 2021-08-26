@@ -24,8 +24,11 @@
 </template>
 
 <script>
-import IndividualApi from "@/individual/api"
 import { cloneDeep } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import IndividualApi from "@/individual/api"
+
 export default {
   name: "IndividualSelect",
   props: {
@@ -42,7 +45,7 @@ export default {
       },
     },
     project: {
-      type: String,
+      type: [Object],
       default: null,
     },
   },
@@ -71,9 +74,26 @@ export default {
   },
 
   methods: {
-    fetchData(filterOptions) {
+    fetchData() {
       this.error = null
       this.loading = "error"
+
+      let filterOptions = {
+        q: this.search,
+        sortBy: ["name"],
+        descending: [false],
+      }
+
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+      }
+
       IndividualApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false

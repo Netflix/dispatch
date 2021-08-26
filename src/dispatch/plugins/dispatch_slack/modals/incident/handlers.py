@@ -2,12 +2,12 @@ import pytz
 from datetime import datetime
 
 from dispatch.database.core import SessionLocal
-from dispatch.models import IndividualReadNested
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentUpdate, IncidentRead, IncidentCreate
+from dispatch.individual.models import IndividualContactRead
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.plugin import service as plugin_service
@@ -131,7 +131,7 @@ def report_incident_from_submitted_form(
     )
 
     if not incident_in.reporter:
-        incident_in.reporter = ParticipantUpdate(individual=IndividualReadNested(email=user_email))
+        incident_in.reporter = ParticipantUpdate(individual=IndividualContactRead(email=user_email))
 
     # Create the incident
     incident = incident_service.create(db_session=db_session, incident_in=incident_in)

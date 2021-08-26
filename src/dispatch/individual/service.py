@@ -1,12 +1,19 @@
 from typing import List, Optional
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
+from dispatch.exceptions import NotFoundError
 from dispatch.database.core import SessionLocal
 from dispatch.incident.models import Incident
 from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
 
-from .models import IndividualContact, IndividualContactCreate, IndividualContactUpdate
+from .models import (
+    IndividualContact,
+    IndividualContactCreate,
+    IndividualContactRead,
+    IndividualContactUpdate,
+)
 
 
 def resolve_user_by_email(email, db_session: SessionLocal):
@@ -34,6 +41,31 @@ def get_by_email_and_project(
         .filter(IndividualContact.project_id == project_id)
         .one_or_none()
     )
+
+
+def get_by_email_and_project_id_or_raise(
+    *, db_session, project_id: int, individual_contact_in=IndividualContactRead
+) -> IndividualContactRead:
+    """Returns the individual specified or raises ValidationError."""
+    individual_contact = get_by_email_and_project(
+        db_session=db_session, project_id=project_id, email=individual_contact_in.email
+    )
+
+    if not individual_contact:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(
+                        msg="Indivdual not found.",
+                        individual=individual_contact_in.email,
+                    ),
+                    loc="individual",
+                )
+            ],
+            model=IndividualContactRead,
+        )
+
+    return individual_contact
 
 
 def get_all(*, db_session) -> List[Optional[IndividualContact]]:

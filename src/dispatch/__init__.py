@@ -27,6 +27,7 @@ try:
     from dispatch.incident.models import Incident  # noqa lgtm[py/unused-import]
     from dispatch.incident_cost.models import IncidentCost  # noqa lgtm[py/unused-import]
     from dispatch.incident_cost_type.models import IncidentCostType  # noqa lgtm[py/unused-import]
+    from dispatch.incident_role.models import IncidentRole  # noqa lgtm[py/unused-import]
     from dispatch.incident_priority.models import IncidentPriority  # noqa lgtm[py/unused-import]
     from dispatch.incident_type.models import IncidentType  # noqa lgtm[py/unused-import]
     from dispatch.individual.models import IndividualContact  # noqa lgtm[py/unused-import]

@@ -221,24 +221,33 @@ export const protectedRoute = [
           {
             path: "incidentTypes",
             name: "IncidentTypeTable",
-            meta: { title: "Incident Types", subMenu: "project", group: "incident" },
+            meta: { title: "Types", subMenu: "project", group: "incident" },
             component: () =>
               import(/* webpackChunkName: "incident-type-table" */ "@/incident_type/Table.vue"),
           },
           {
             path: "incidentPriorities",
             name: "IncidentPriorityTable",
-            meta: { title: "Incident Priorities", subMenu: "project", group: "incident" },
+            meta: { title: "Priorities", subMenu: "project", group: "incident" },
             component: () =>
               import(/* webpackChunkName: "-table" */ "@/incident_priority/Table.vue"),
           },
           {
             path: "incidentCostTypes",
             name: "IncidentCostTypesTable",
-            meta: { title: "Incident Cost Types", subMenu: "project", group: "incident" },
+            meta: { title: "Cost Types", subMenu: "project", group: "incident" },
             component: () =>
               import(
                 /* webpackChunkName: "incident-cost-type-table" */ "@/incident_cost_type/Table.vue"
+              ),
+          },
+          {
+            path: "incidentRoles",
+            name: "IncidentRolesTable",
+            meta: { title: "Roles", subMenu: "project", group: "incident" },
+            component: () =>
+              import(
+                /* webpackChunkName: "incident-cost-type-table" */ "@/incident_role/Table.vue"
               ),
           },
           {

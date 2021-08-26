@@ -96,8 +96,6 @@ class IncidentTypeBase(DispatchBase):
     executive_template_document: Optional[Document]
     review_template_document: Optional[Document]
     tracking_template_document: Optional[Document]
-    commander_service: Optional[Service]
-    liaison_service: Optional[Service]
     exclude_from_metrics: Optional[bool] = False
     default: Optional[bool] = False
     project: Optional[ProjectRead]
