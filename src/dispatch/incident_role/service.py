@@ -87,7 +87,7 @@ def create_or_update(
                 )
 
         else:
-            role_policy = IncidentRole(role=role)
+            role_policy = IncidentRole(role=role, project=project)
             db_session.add(role_policy)
 
         role_policy_data = role_policy.dict()
