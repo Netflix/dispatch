@@ -1,8 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 from pydantic.fields import Field
 from pydantic.networks import EmailStr
 from pydantic.types import conint, constr
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import func, extract
 
 import validators
 from pydantic import BaseModel, validator
@@ -64,6 +66,35 @@ class ResourceMixin(TimeStampMixin):
     resource_type = Column(String)
     resource_id = Column(String)
     weblink = Column(String)
+
+
+class EvergreenMixin(object):
+    """Evergreen mixin."""
+
+    evergreen = Column(Boolean)
+    evergreen_owner = Column(String)
+    evergreen_reminder_interval = Column(Integer, default=90)  # number of days
+    evergreen_last_reminder_at = Column(DateTime)
+
+    @hybrid_property
+    def overdue(self):
+        now = datetime.utcnow()
+        next_reminder = self.evergreen_last_reminder_at + timedelta(
+            days=self.evergreen_reminder_interval
+        )
+
+        if now > next_reminder:
+            return True
+
+    @overdue.expression
+    def overdue(cls):
+        days_since_reminded = func.trunc(
+            (extract("epoch", cls.evergreen_last_reminder_at) - extract("epoch", datetime.utcnow()))
+            / 60
+            / 60
+            / 24
+        )
+        return days_since_reminded >= cls.evergreen_reminder_interval
 
 
 # Pydantic models...

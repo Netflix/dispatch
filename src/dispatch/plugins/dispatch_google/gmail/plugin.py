@@ -5,6 +5,7 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
+import time
 from email.mime.text import MIMEText
 from typing import Dict, List, Optional
 import base64
@@ -31,9 +32,24 @@ log = logging.getLogger(__name__)
 
 
 @retry(stop=stop_after_attempt(3))
-def send_message(service, message: dict):
+def send_message(service, message: dict) -> bool:
     """Sends an email message."""
-    return service.users().messages().send(userId="me", body=message).execute()
+    return True
+    message_response = service.users().messages().send(userId="me", body=message).execute()
+
+    # wait for a bounce
+    time.sleep(1)
+
+    messages = (
+        service.users()
+        .messages()
+        .list(userId="me", query="from=mailer-daemon@googlemail.com")
+        .execute()
+    )
+
+    for msg in messages:
+        if msg["threadId"] == message_response["threadId"]:
+            return False
 
 
 def create_html_message(recipient: str, cc: str, subject: str, body: str) -> Dict:

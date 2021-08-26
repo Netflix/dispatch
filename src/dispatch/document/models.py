@@ -19,12 +19,7 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
 
 from dispatch.messaging.strings import INCIDENT_DOCUMENT_DESCRIPTIONS
-from dispatch.models import (
-    DispatchBase,
-    ResourceBase,
-    ProjectMixin,
-    ResourceMixin,
-)
+from dispatch.models import DispatchBase, ResourceBase, ProjectMixin, ResourceMixin, EvergreenMixin
 
 from dispatch.search_filter.models import SearchFilterRead
 from dispatch.project.models import ProjectRead
@@ -39,7 +34,7 @@ assoc_document_filters = Table(
 )
 
 
-class Document(ProjectMixin, ResourceMixin, Base):
+class Document(ProjectMixin, ResourceMixin, EvergreenMixin, Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
@@ -47,11 +42,6 @@ class Document(ProjectMixin, ResourceMixin, Base):
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE", use_alter=True))
 
     filters = relationship("SearchFilter", secondary=assoc_document_filters, backref="documents")
-
-    evergreen = Column(Boolean)
-    evergreen_owner = Column(String)
-    evergreen_reminder_interval = Column(Integer, default=90)  # number of days
-    evergreen_last_reminder_at = Column(DateTime)
 
     search_vector = Column(TSVectorType("name"))
 

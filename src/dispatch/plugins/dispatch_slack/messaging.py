@@ -9,9 +9,7 @@ from typing import List, Optional
 from jinja2 import Template
 
 from dispatch.messaging.strings import (
-    DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
-    INCIDENT_DAILY_REPORT_DESCRIPTION,
-    INCIDENT_OPEN_TASKS_DESCRIPTION,
+    EVERGREEN_REMINDER_DESCRIPTION,
     INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
     INCIDENT_TASK_LIST_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
@@ -199,9 +197,9 @@ def create_incident_reported_confirmation_message(
 def get_template(message_type: MessageType):
     """Fetches the correct template based on message type."""
     template_map = {
-        MessageType.document_evergreen_reminder: (
+        MessageType.evergreen_reminder: (
             default_notification,
-            DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
+            EVERGREEN_REMINDER_DESCRIPTION,
         ),
         MessageType.incident_participant_suggested_reading: (
             default_notification,
