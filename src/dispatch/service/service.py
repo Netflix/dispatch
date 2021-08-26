@@ -2,12 +2,12 @@ from typing import List, Optional
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
-from dispatch.exceptions import InvalidConfigurationError
+from dispatch.exceptions import InvalidConfigurationError, NotFoundError
 from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
 
-from .models import Service, ServiceCreate, ServiceUpdate
+from .models import Service, ServiceCreate, ServiceUpdate, ServiceRead
 
 
 def get(*, db_session, service_id: int) -> Optional[Service]:
@@ -30,6 +30,31 @@ def get_by_external_id_and_project_id(
         .filter(Service.external_id == external_id)
         .first()
     )
+
+
+def get_by_external_id_and_project_id_or_raise(
+    *, db_session, project_id: int, service_in=ServiceRead
+) -> Service:
+    """Returns the service specified or raises ValidationError."""
+    service = get_by_external_id_and_project_id(
+        db_session=db_session, project_id=project_id, external_id=service_in.external_id
+    )
+
+    if not service:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(
+                        msg="Service not found.",
+                        incident_priority=service.external_id,
+                    ),
+                    loc="service",
+                )
+            ],
+            model=ServiceRead,
+        )
+
+    return service
 
 
 def get_by_external_id_and_project_name(

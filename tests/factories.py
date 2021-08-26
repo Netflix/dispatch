@@ -9,8 +9,6 @@ from factory import Sequence, post_generation, SubFactory, LazyAttribute
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime, FuzzyInteger
 
-from dispatch.database.core import SessionLocal
-
 from dispatch.auth.models import DispatchUser  # noqa
 from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
@@ -23,6 +21,7 @@ from dispatch.incident.models import Incident
 from dispatch.incident_cost.models import IncidentCost
 from dispatch.incident_cost_type.models import IncidentCostType
 from dispatch.incident_priority.models import IncidentPriority
+from dispatch.incident_role.models import IncidentRole
 from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
 from dispatch.notification.models import Notification
@@ -44,6 +43,8 @@ from dispatch.term.models import Term
 from dispatch.ticket.models import Ticket
 from dispatch.workflow.models import Workflow, WorkflowInstance
 
+from .database import Session
+
 
 class BaseFactory(SQLAlchemyModelFactory):
     """Base Factory."""
@@ -52,7 +53,7 @@ class BaseFactory(SQLAlchemyModelFactory):
         """Factory configuration."""
 
         abstract = True
-        sqlalchemy_session = SessionLocal()
+        sqlalchemy_session = Session
         sqlalchemy_session_persistence = "commit"
 
 
@@ -344,6 +345,63 @@ class IncidentTypeFactory(BaseFactory):
         model = IncidentType
 
 
+class IncidentRoleFactory(BaseFactory):
+    """Incident Role Factory."""
+
+    role = FuzzyChoice(["Incident Commander", "Scribe", "Liaison"])
+    order = FuzzyInteger(low=1, high=10)
+    enabled = True
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        """Factory configuration."""
+
+        model = IncidentRole
+
+    @post_generation
+    def incident_priorities(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for priority in extracted:
+                self.incident_priorities.append(priority)
+
+    @post_generation
+    def incident_types(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for incident_type in extracted:
+                self.incident_types.append(incident_type)
+
+    @post_generation
+    def tags(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            for tag in extracted:
+                self.tags.append(tag)
+
+    @post_generation
+    def service(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.service_id = extracted.id
+
+    @post_generation
+    def individual(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            self.individual_id = extracted.id
+
+
 class IndividualContactFactory(ContactBaseFactory):
     """Individual Contact Factory."""
 
@@ -588,6 +646,8 @@ class IncidentFactory(BaseFactory):
     title = FuzzyText()
     description = FuzzyText()
     status = FuzzyChoice(["Active", "Stable", "Closed"])
+    incident_type = SubFactory(IncidentTypeFactory)
+    incident_priority = SubFactory(IncidentPriorityFactory)
     project = SubFactory(ProjectFactory)
 
     class Meta:

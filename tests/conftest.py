@@ -4,6 +4,7 @@ from sqlalchemy_utils import drop_database
 from starlette.testclient import TestClient
 from starlette.config import environ
 
+
 # set test config
 environ["DATABASE_CREDENTIALS"] = "postgres:dispatch"
 environ["DATABASE_HOSTNAME"] = "localhost"
@@ -21,7 +22,7 @@ environ["SLACK_APP_USER_SLUG"] = "XXX"
 environ["STATIC_DIR"] = ""  # we don't need static files for tests
 
 from dispatch import config
-from dispatch.database.core import engine, sessionmaker
+from dispatch.database.core import engine
 from dispatch.database.manage import init_database
 
 
@@ -36,6 +37,7 @@ from .factories import (
     IncidentCostFactory,
     IncidentCostTypeFactory,
     IncidentFactory,
+    IncidentRoleFactory,
     IncidentPriorityFactory,
     IncidentTypeFactory,
     IndividualContactFactory,
@@ -61,6 +63,8 @@ from .factories import (
     WorkflowFactory,
     WorkflowInstanceFactory,
 )
+
+from .database import Session
 
 
 def pytest_runtest_setup(item):
@@ -101,21 +105,21 @@ def db():
             "dispatch_core": "dispatch_core",
         }
     )
-    session = sessionmaker(bind=schema_engine)
-    _db = session()
-    yield _db
+    Session.configure(bind=schema_engine)
+    yield
     drop_database(str(config.SQLALCHEMY_DATABASE_URI))
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="function", autouse=True)
 def session(db):
     """
     Creates a new database session with (with working transaction)
     for test duration.
     """
-    db.begin_nested()
-    yield db
-    db.rollback()
+    session = Session()
+    session.begin_nested()
+    yield session
+    session.rollback()
 
 
 @pytest.fixture(scope="function")
@@ -303,6 +307,11 @@ def incident_priority(session):
 @pytest.fixture
 def incident_priorities(session):
     return [IncidentPriorityFactory(), IncidentPriorityFactory()]
+
+
+@pytest.fixture
+def incident_role(session):
+    return IncidentRoleFactory()
 
 
 @pytest.fixture

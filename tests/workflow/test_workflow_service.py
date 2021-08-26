@@ -1,3 +1,6 @@
+from tests.conftest import plugin_instance
+
+
 def test_get(session, workflow):
     from dispatch.workflow.service import get
 
@@ -76,6 +79,7 @@ def test_update(session, workflow):
 
     workflow_in = WorkflowUpdate(
         name=name,
+        plugin_instance=workflow.plugin_instance,
         resource_id=resource_id,
     )
     workflow = update(

@@ -18,6 +18,7 @@ from dispatch.incident_cost.views import router as incident_cost_router
 from dispatch.incident_cost_type.views import router as incident_cost_type_router
 from dispatch.incident_priority.views import router as incident_priority_router
 from dispatch.incident_type.views import router as incident_type_router
+from dispatch.incident_role.views import router as incident_role_router
 from dispatch.individual.views import router as individual_contact_router
 from dispatch.notification.views import router as notification_router
 from dispatch.plugin.views import router as plugin_router
@@ -140,6 +141,9 @@ authenticated_organization_api_router.include_router(
     incident_cost_type_router,
     prefix="/incident_cost_types",
     tags=["incident_cost_types"],
+)
+authenticated_organization_api_router.include_router(
+    incident_role_router, prefix="/incident_roles", tags=["role"]
 )
 
 

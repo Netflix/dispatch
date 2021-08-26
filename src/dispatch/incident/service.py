@@ -6,6 +6,7 @@ from dispatch.database.core import SessionLocal
 from dispatch.event import service as event_service
 from dispatch.incident_cost import service as incident_cost_service
 from dispatch.incident_priority import service as incident_priority_service
+from dispatch.incident_role.service import resolve_role
 from dispatch.incident_type import service as incident_type_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.tag import service as tag_service
@@ -27,42 +28,37 @@ def assign_incident_role(
     role: ParticipantRoleType,
 ):
     """Assigns incident roles."""
-    # We resolve the incident role email
-    # default to reporter if we don't have an oncall plugin enabled
-    assignee_email = reporter_email
+    incident_role = resolve_role(db_session=db_session, role=role, incident=incident)
+    service_external_id = None
+    if incident_role.service:
+        service_external_id = incident_role.service.external_id
+        oncall_plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
+        )
+        if oncall_plugin:
+            assignee_email = oncall_plugin.instance.get(service_id=service_external_id)
+            if incident.incident_priority.page_commander:
+                oncall_plugin.instance.page(
+                    service_id=service_external_id,
+                    incident_name=incident.name,
+                    incident_title=incident.title,
+                    incident_description=incident.description,
+                )
+        else:
+            # TODO emit warning/error
+            pass
 
-    oncall_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
-    )
-    service_id = None
-    if role == ParticipantRoleType.incident_commander:
-        # default to reporter
-        if incident.incident_type.commander_service:
-            service = incident.incident_type.commander_service
-            service_id = service.id
-            if oncall_plugin:
-                assignee_email = oncall_plugin.instance.get(service_id=service.external_id)
-                if incident.incident_priority.page_commander:
-                    oncall_plugin.instance.page(
-                        service_id=service.external_id,
-                        incident_name=incident.name,
-                        incident_title=incident.title,
-                        incident_description=incident.description,
-                    )
-
-    elif role == ParticipantRoleType.liaison:
-        if incident.incident_type.liaison_service:
-            service = incident.incident_type.liaison_service
-            service_id = service.id
-            if oncall_plugin:
-                assignee_email = oncall_plugin.instance.get(service_id=service.external_id)
+    elif incident_role.individual:
+        assignee_email = incident_role.individual.email
+    else:
+        assignee_email = reporter_email
 
     # Add a new participant (duplicate participants with different roles will be updated)
     participant_flows.add_participant(
         assignee_email,
         incident,
         db_session,
-        service_id=service_id,
+        service_id=service_external_id,
         role=role,
     )
 
@@ -193,14 +189,14 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
     )
 
     assign_incident_role(
+        db_session, incident, incident_in.reporter.individual.email, ParticipantRoleType.liaison
+    )
+
+    assign_incident_role(
         db_session,
         incident,
         incident_in.reporter.individual.email,
         ParticipantRoleType.incident_commander,
-    )
-
-    assign_incident_role(
-        db_session, incident, incident_in.reporter.individual.email, ParticipantRoleType.liaison
     )
 
     return incident

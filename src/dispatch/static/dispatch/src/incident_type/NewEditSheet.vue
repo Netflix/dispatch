@@ -68,24 +68,6 @@
               </v-flex>
               <v-flex xs12>
                 <ValidationObserver disabled>
-                  <service-select
-                    :project="project"
-                    label="Commander Service"
-                    v-model="commander_service"
-                  />
-                </ValidationObserver>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationObserver disabled>
-                  <service-select
-                    :project="project"
-                    label="Liaison Service"
-                    v-model="liaison_service"
-                  />
-                </ValidationObserver>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationObserver disabled>
                   <template-select
                     :project="project"
                     label="Incident Template"
@@ -161,7 +143,6 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
-import ServiceSelect from "@/service/ServiceSelect.vue"
 import TemplateSelect from "@/document/template/TemplateSelect.vue"
 import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
 
@@ -177,7 +158,6 @@ export default {
     ValidationObserver,
     ValidationProvider,
     PluginMetadataInput,
-    ServiceSelect,
     TemplateSelect,
   },
 
