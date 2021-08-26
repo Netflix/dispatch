@@ -46,11 +46,14 @@ def get_all_by_role(
     )
 
 
-def get_all_enabled(*, db_session, project_id: int) -> Optional[List[IncidentRole]]:
+def get_all_enabled_by_role(
+    *, db_session, role: ParticipantRoleType, project_id: int
+) -> Optional[List[IncidentRole]]:
     """Gets all enabled incident roles."""
     return (
         db_session.query(IncidentRole)
         .filter(IncidentRole.enabled == True)  # noqa Flake8 E712
+        .filter(IncidentRole.role == role)
         .filter(IncidentRole.project_id == project_id)
     ).all()
 
@@ -173,12 +176,11 @@ def resolve_role(
     db_session,
     role: ParticipantRoleType,
     incident: Incident,
-):
+) -> Optional[IncidentRole]:
     """Based on parameters currently associated to an incident determine who should be assigned which incident role."""
-    incident_roles = get_all_enabled(db_session=db_session, project_id=incident.project.id)
-
-    # get the subject role policies
-    incident_roles = [p for p in incident_roles if p.role == role]
+    incident_roles = get_all_enabled_by_role(
+        db_session=db_session, role=role, project_id=incident.project.id
+    )
 
     # the order of evaluation of policies is as follows:
     # 1) Match any policy that includes the current priority
@@ -199,5 +201,3 @@ def resolve_role(
 
     if len(incident_roles) > 1:
         return sorted(incident_roles, key=attrgetter("order"))[0]
-
-    return

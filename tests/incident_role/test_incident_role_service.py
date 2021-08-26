@@ -1,3 +1,6 @@
+from tests.conftest import incident_priorities
+
+
 def test_get(session, incident_role):
     from dispatch.incident_role.service import get
 
@@ -8,16 +11,14 @@ def test_get(session, incident_role):
 def test_get_all(session, project, incident_role):
     from dispatch.incident_role.service import get_all
 
-    t_incident_roles = get_all(db_session=session, project_id=incident_role.project.id).all()
+    t_incident_roles = get_all(db_session=session).all()
     assert len(t_incident_roles) >= 1
 
 
 def test_get_all_enabled(session, project, incident_role):
     from dispatch.incident_role.service import get_all_enabled
 
-    t_incident_roles = get_all_enabled(
-        db_session=session, project_id=incident_role.project.id
-    ).all()
+    t_incident_roles = get_all_enabled(db_session=session, project_id=incident_role.project.id)
     assert len(t_incident_roles) >= 1
 
 
@@ -71,23 +72,20 @@ def test_create_update(session, incident_type):
     assert not incident_roles
 
 
-def test_resolve_role(session, project, incident, incident_type, tag, incident_priority, service):
-    from dispatch.incident_role.service import create
+def test_resolve_role(session, incident):
     from dispatch.incident_role.service import resolve_role
+    from dispatch.incident_role.models import IncidentRole
     from dispatch.participant_role.models import ParticipantRoleType
-    from dispatch.incident_role.models import IncidentRoleCreate
 
-    incident_role_in = IncidentRoleCreate(
+    incident_role = IncidentRole(
         role=ParticipantRoleType.incident_commander,
-        incident_types=[incident_type],
-        tags=[tag],
-        incident_priorities=[incident_priority],
-        service=service,
-        project=project,
+        project=incident.project,
+        incident_priorities=[incident.incident_priority],
+        incident_types=[incident.incident_type],
     )
+    session.add(incident_role)
+    session.commit()
 
-    create(db_session=session, incident_role_in=incident_role_in)
-    incident.incident_priority = incident_priority
     matching_role = resolve_role(
         db_session=session, role=ParticipantRoleType.incident_commander, incident=incident
     )

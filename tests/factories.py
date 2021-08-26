@@ -9,8 +9,6 @@ from factory import Sequence, post_generation, SubFactory, LazyAttribute
 from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime, FuzzyInteger
 
-from dispatch.database.core import SessionLocal
-
 from dispatch.auth.models import DispatchUser  # noqa
 from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
@@ -45,6 +43,8 @@ from dispatch.term.models import Term
 from dispatch.ticket.models import Ticket
 from dispatch.workflow.models import Workflow, WorkflowInstance
 
+from .database import Session
+
 
 class BaseFactory(SQLAlchemyModelFactory):
     """Base Factory."""
@@ -53,7 +53,7 @@ class BaseFactory(SQLAlchemyModelFactory):
         """Factory configuration."""
 
         abstract = True
-        sqlalchemy_session = SessionLocal()
+        sqlalchemy_session = Session
         sqlalchemy_session_persistence = "commit"
 
 
@@ -646,6 +646,8 @@ class IncidentFactory(BaseFactory):
     title = FuzzyText()
     description = FuzzyText()
     status = FuzzyChoice(["Active", "Stable", "Closed"])
+    incident_type = SubFactory(IncidentTypeFactory)
+    incident_priority = SubFactory(IncidentPriorityFactory)
     project = SubFactory(ProjectFactory)
 
     class Meta:
