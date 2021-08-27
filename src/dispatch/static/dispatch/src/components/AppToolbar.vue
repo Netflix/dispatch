@@ -26,7 +26,6 @@
         </template>
         <span>Dark Mode On</span>
       </v-tooltip>
-
       <v-tooltip v-else bottom>
         <template v-slot:activator="{ on }">
           <v-btn v-on="on" small icon @click="toggleDarkTheme">
@@ -35,15 +34,32 @@
         </template>
         <span>Dark Mode Off</span>
       </v-tooltip>
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
-          <v-btn icon v-on="on" @click="handleFullScreen()">
-            <v-icon>fullscreen</v-icon>
+      <v-menu offset-y>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn icon v-bind="attrs" v-on="on">
+            <v-icon>help_outline</v-icon>
           </v-btn>
         </template>
-        <span>Fullscreen</span>
-      </v-tooltip>
-      <v-menu bottom left transition="scale-transition" origin="top right">
+        <v-list dense>
+          <v-list-item href="/api/v1/docs" target="_blank">
+            <v-list-item-title>API Documentation</v-list-item-title>
+            <v-list-item-action>
+              <v-list-item-icon>
+                <v-icon small>open_in_new</v-icon>
+              </v-list-item-icon>
+            </v-list-item-action>
+          </v-list-item>
+          <v-list-item href="https://hawkins.gitbook.io/dispatch/" target="_blank">
+            <v-list-item-title>App Documentation</v-list-item-title>
+            <v-list-item-action>
+              <v-list-item-icon>
+                <v-icon small>open_in_new</v-icon>
+              </v-list-item-icon>
+            </v-list-item-action>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+      <v-menu offset-y>
         <template v-slot:activator="{ on }">
           <v-btn icon large text v-on="on">
             <v-avatar size="30px">
