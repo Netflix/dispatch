@@ -1,16 +1,19 @@
-from datetime import date, datetime, timedelta
 from typing import Optional
-from pydantic.fields import Field
-from pydantic.networks import EmailStr
-from pydantic.types import conint, constr
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import func, extract
+from datetime import datetime, timedelta
 
 import validators
+
+from pydantic.fields import Field
+from pydantic.networks import EmailStr
 from pydantic import BaseModel, validator
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, event, ForeignKey
-from sqlalchemy.ext.declarative import declared_attr
+from pydantic.types import conint, constr
+
+from sqlalchemy import func
+from sqlalchemy.event import listens_for
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, event, ForeignKey
 
 # pydantic type that limits the range of primary keys
 PrimaryKey = conint(gt=0, lt=2147483647)
@@ -94,6 +97,14 @@ class EvergreenMixin(object):
         )
 
 
+# @listens_for(EvergreenMixin.evergreen, "set", propagate=True)
+def reset_last_reminded(target, value, oldvalue, initiator):
+    """Reset last reminder at if evergreen goes from disabled -> enabled."""
+    if not oldvalue:
+        target.evergreen_last_reminder_at = datetime.utcnow()
+    target.evergreen = value
+
+
 # Pydantic models...
 class DispatchBase(BaseModel):
     class Config:
@@ -105,6 +116,7 @@ class DispatchBase(BaseModel):
 
 class EvergreenBase(DispatchBase):
     evergreen: Optional[bool] = False
+    evergreen_owner: Optional[EmailStr]
     evergreen_reminder_interval: Optional[int] = 90
     evergreen_last_reminder_at: Optional[datetime] = Field(None, nullable=True)
 

@@ -15,7 +15,7 @@ from dispatch.database.core import SessionLocal
 from dispatch.messaging.strings import EVERGREEN_REMINDER
 from dispatch.decorators import scheduled_project_task
 from dispatch.scheduler import scheduler
-from dispatch.config import DISPATCH_HELP_EMAIL
+from dispatch.config import DISPATCH_HELP_EMAIL, DISPATCH_UI_URL
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
 from dispatch.team import service as team_service
@@ -46,13 +46,19 @@ def create_evergreen_reminder(
     items = []
     for resource_type, resources in resource_groups.items():
         for resource in resources:
+            weblink = getattr(resource, "weblink", None)
+            if not weblink:
+                weblink = DISPATCH_UI_URL
+
             items.append(
                 {
+                    "resource_type": resource_type.replace("_", " ").title(),
                     "name": resource.name,
-                    "description": resource.description,
-                    "weblink": resource.weblink,
+                    "description": getattr(resource, "description", None),
+                    "weblink": weblink,
                 }
             )
+
     notification_type = "evergreen-reminder"
     name = subject = notification_text = "Evergreen Reminder"
     success = plugin.instance.send(
@@ -68,6 +74,7 @@ def create_evergreen_reminder(
     )
 
     if success:
+        return
         for item in items:
             item.evergreen_last_reminder_at = datetime.utcnow()
 
@@ -84,7 +91,7 @@ def group_items_by_owner_and_type(items):
     return grouped
 
 
-@scheduler.add(every(1).day.at("18:00"), name="evergreen-reminder")
+@scheduler.add(every().monday.at("18:00"), name="evergreen-reminder")
 @scheduled_project_task
 def create_evergreen_reminders(db_session: SessionLocal, project: Project):
     """Sends reminders for items that have evergreen enabled."""

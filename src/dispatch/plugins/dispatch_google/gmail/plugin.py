@@ -51,6 +51,7 @@ def send_message(service, message: dict) -> bool:
     for message in messages:
         if message["threadId"] == sent_message_thread_id:
             return False
+    return True
 
 
 def create_html_message(recipient: str, cc: str, subject: str, body: str) -> Dict:

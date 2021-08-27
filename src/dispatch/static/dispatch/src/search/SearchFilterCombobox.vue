@@ -123,6 +123,7 @@ export default {
       items: [],
       search: null,
       createdFilter: null,
+      menu: false,
     }
   },
 

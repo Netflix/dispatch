@@ -480,7 +480,8 @@ INCIDENT_TASK_REMINDER = [
 ]
 
 EVERGREEN_REMINDER = [
-    {"title": "Document", "text": "{{ name }}"},
+    {"title": "Resource Type", "text": "{{ resource_type }}"},
+    {"title": "Name", "text": "{{ name }}"},
     {"title": "Description", "text": "{{ description }}"},
     {"title": "Link", "text": "{{ weblink }}"},
 ]

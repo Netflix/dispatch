@@ -14,6 +14,9 @@ const getDefaultSelectedState = () => {
     company: null,
     project: null,
     email: null,
+    evergreen: null,
+    evergreen_owner: null,
+    evergreen_reminder_interval: null,
     loading: false,
   }
 }

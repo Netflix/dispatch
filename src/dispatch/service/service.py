@@ -57,6 +57,17 @@ def get_by_external_id_and_project_id_or_raise(
     return service
 
 
+def get_overdue_evergreen_services(*, db_session, project_id) -> List[Optional[Service]]:
+    """Returns all services that have not had a recent evergreen notification."""
+    query = (
+        db_session.query(Service)
+        .filter(Service.evergreen == True)  # noqa
+        .filter(Service.project_id == project_id)
+        .filter(Service.overdue == True)  # noqa
+    )
+    return query.all()
+
+
 def get_by_external_id_and_project_name(
     *, db_session, external_id: str, project_name: str
 ) -> Optional[Service]:
