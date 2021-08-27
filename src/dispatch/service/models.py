@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 from pydantic import Field
-from dispatch.models import EvergreenMixin, PrimaryKey
+from dispatch.models import EvergreenBase, EvergreenMixin, PrimaryKey
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, PrimaryKeyConstraint, String, Table
 from sqlalchemy.orm import relationship
@@ -51,7 +51,7 @@ class Service(Base, TimeStampMixin, ProjectMixin, EvergreenMixin):
 
 
 # Pydantic models...
-class ServiceBase(DispatchBase):
+class ServiceBase(EvergreenBase):
     name: Optional[str] = Field(None, nullable=True)
     external_id: Optional[str] = Field(None, nullable=True)
     description: Optional[str] = Field(None, nullable=True)

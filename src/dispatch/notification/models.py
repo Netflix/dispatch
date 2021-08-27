@@ -8,12 +8,19 @@ from sqlalchemy.sql.schema import PrimaryKeyConstraint
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.models import EvergreenMixin, NameStr, PrimaryKey
 from dispatch.enums import DispatchEnum
 from dispatch.project.models import ProjectRead
 from dispatch.search_filter.models import SearchFilterRead, SearchFilterUpdate
 
-from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin
+from dispatch.models import (
+    DispatchBase,
+    EvergreenBase,
+    EvergreenMixin,
+    TimeStampMixin,
+    ProjectMixin,
+    NameStr,
+    PrimaryKey,
+)
 
 
 class NotificationTypeEnum(DispatchEnum):
@@ -48,7 +55,7 @@ class Notification(Base, TimeStampMixin, ProjectMixin, EvergreenMixin):
 
 
 # Pydantic models
-class NotificationBase(DispatchBase):
+class NotificationBase(EvergreenBase):
     name: NameStr
     description: Optional[str] = Field(None, nullable=True)
     type: NotificationTypeEnum

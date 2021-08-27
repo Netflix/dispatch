@@ -103,6 +103,12 @@ class DispatchBase(BaseModel):
         anystr_strip_whitespace = True
 
 
+class EvergreenBase(DispatchBase):
+    evergreen: Optional[bool] = False
+    evergreen_reminder_interval: Optional[int] = 90
+    evergreen_last_reminder_at: Optional[datetime] = Field(None, nullable=True)
+
+
 class ResourceBase(DispatchBase):
     resource_type: Optional[str] = Field(None, nullable=True)
     resource_id: Optional[str] = Field(None, nullable=True)

@@ -92,19 +92,12 @@
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                     </template>
-                    Dispatch will send the owner a reminder email to the template owner, reminding
-                    them to keep the template current.
+                    Dispatch will send the owner a reminder email to the resource owner, reminding
+                    them to keep the resource current.
                   </v-tooltip></span
                 >
               </v-flex>
               <v-flex xs12>
-                <v-checkbox
-                  v-model="evergreen"
-                  hint="Enabling evergreen will send periodic reminders to the owner to update this document."
-                  label="Enabled"
-                />
-              </v-flex>
-              <v-flex v-if="evergreen" xs12>
                 <ValidationProvider name="Owner" immediate>
                   <v-text-field
                     v-model="evergreen_owner"
@@ -117,7 +110,7 @@
                   />
                 </ValidationProvider>
               </v-flex>
-              <v-flex v-if="evergreen" xs12>
+              <v-flex xs12>
                 <ValidationProvider name="Reminder Interval" immediate>
                   <v-text-field
                     v-model="evergreen_reminder_interval"
@@ -132,6 +125,13 @@
                     min="1"
                   />
                 </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <v-checkbox
+                  v-model="evergreen"
+                  hint="Enabling evergreen will send periodic reminders to the owner to update this document."
+                  label="Enabled"
+                />
               </v-flex>
             </v-layout>
           </v-container>

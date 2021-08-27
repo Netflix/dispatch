@@ -14,6 +14,7 @@ from dispatch.models import (
     ContactBase,
     ContactMixin,
     DispatchBase,
+    EvergreenBase,
     EvergreenMixin,
     NameStr,
     ProjectMixin,
@@ -51,7 +52,7 @@ class TeamContact(Base, ContactMixin, ProjectMixin, EvergreenMixin):
     search_vector = Column(TSVectorType("name", "notes", weights={"name": "A", "notes": "B"}))
 
 
-class TeamContactBase(ContactBase):
+class TeamContactBase(ContactBase, EvergreenBase):
     name: NameStr
     notes: Optional[str] = Field(None, nullable=True)
 

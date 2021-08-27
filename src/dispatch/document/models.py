@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from pydantic import validator, Field
-from dispatch.models import NameStr, PrimaryKey
+from dispatch.models import EvergreenBase, NameStr, PrimaryKey
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -10,8 +10,6 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     String,
     Table,
-    Boolean,
-    DateTime,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
@@ -47,13 +45,9 @@ class Document(ProjectMixin, ResourceMixin, EvergreenMixin, Base):
 
 
 # Pydantic models...
-class DocumentBase(ResourceBase):
+class DocumentBase(ResourceBase, EvergreenBase):
     description: Optional[str] = Field(None, nullable=True)
     name: NameStr
-    evergreen: Optional[bool] = False
-    evergreen_reminder_interval: Optional[int] = 90
-    evergreen_last_reminder_at: Optional[datetime] = Field(None, nullable=True)
-    evergreen_owner: Optional[str] = Field(None, nullable=True)
     created_at: Optional[datetime] = Field(None, nullable=True)
     updated_at: Optional[datetime] = Field(None, nullable=True)
 
