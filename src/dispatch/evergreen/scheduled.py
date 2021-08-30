@@ -81,7 +81,7 @@ def create_evergreen_reminder(
 
 
 def group_items_by_owner_and_type(items):
-    """Groups documents by owner."""
+    """Groups items by owner."""
     grouped = defaultdict(lambda: defaultdict(lambda: []))
     for item in items:
         grouped[item.evergreen_owner][item.__tablename__].append(item)
