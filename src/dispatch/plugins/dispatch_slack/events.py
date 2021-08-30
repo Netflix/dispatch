@@ -340,8 +340,6 @@ def message_tagging(
     text = event.event.text
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     tags = tag_service.get_all(db_session=db_session, project_id=incident.project.id).all()
-    log.debug(f"Fetched {len(tags)} tags from database.")
-
     tag_strings = [t.name.lower() for t in tags if t.discoverable]
     phrases = build_term_vocab(tag_strings)
     matcher = build_phrase_matcher("dispatch-tag", phrases)
