@@ -36,7 +36,7 @@ INCIDENT_STATUS_DESCRIPTIONS = {
 }
 
 EVERGREEN_REMINDER_DESCRIPTION = """
-You are the owner of the following incident resources.
+You are the owner of the following Dispatch resources.
 This is a reminder that these resources should be kept up to date in order to effectively
 respond to incidents. Please review them and update, or clearly mark them as deprecated.""".replace(
     "\n", " "
