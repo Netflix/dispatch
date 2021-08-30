@@ -72,7 +72,6 @@ def create_evergreen_reminder(
     )
 
     if success:
-        return
         for item in items:
             item.evergreen_last_reminder_at = datetime.utcnow()
 
