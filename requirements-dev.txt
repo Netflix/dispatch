@@ -4,11 +4,9 @@
 #
 #    pip-compile --no-emit-index-url requirements-dev.in
 #
-appdirs==1.4.4
-    # via black
 attrs==20.3.0
     # via pytest
-black==21.7b0
+black==21.8b0
     # via -r requirements-dev.in
 click==7.1.2
     # via black
@@ -32,7 +30,9 @@ mypy-extensions==0.4.3
     # via black
 packaging==20.9
     # via pytest
-pathspec==0.8.1
+pathspec==0.9.0
+    # via black
+platformdirs==2.2.0
     # via black
 pluggy==0.13.1
     # via pytest
@@ -59,6 +59,8 @@ toml==0.10.2
     #   pytest
     #   vulture
 tomli==1.0.4
+    # via black
+typing-extensions==3.10.0.1
     # via black
 vulture==2.3
     # via -r requirements-dev.in
