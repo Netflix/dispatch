@@ -21,8 +21,6 @@ from dispatch.project.models import Project
 from dispatch.team import service as team_service
 from dispatch.notification import service as notification_service
 from dispatch.service import service as service_service
-
-
 from dispatch.document import service as document_service
 
 
