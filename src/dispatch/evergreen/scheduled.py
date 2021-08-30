@@ -92,7 +92,6 @@ def group_items_by_owner_and_type(items):
 @scheduled_project_task
 def create_evergreen_reminders(db_session: SessionLocal, project: Project):
     """Sends reminders for items that have evergreen enabled."""
-
     items = []
     items += document_service.get_overdue_evergreen_documents(
         db_session=db_session, project_id=project.id
