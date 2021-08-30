@@ -31,7 +31,7 @@ from dispatch.messaging.email.utils import create_message_body, create_multi_mes
 log = logging.getLogger(__name__)
 
 
-# @retry(stop=stop_after_attempt(3))
+@retry(stop=stop_after_attempt(3))
 def send_message(service, message: dict) -> bool:
     """Sends an email message."""
     sent_message_thread_id = (
