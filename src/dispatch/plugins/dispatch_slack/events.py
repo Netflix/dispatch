@@ -4,15 +4,20 @@ import datetime
 
 from typing import List
 from pydantic import BaseModel
+from sqlalchemy import func
 
+from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.conversation import service as conversation_service
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
+from dispatch.tag import service as tag_service
 from dispatch.individual import service as individual_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.tag.models import Tag
+
 
 from .config import (
     SLACK_BAN_THREADS,
@@ -88,7 +93,7 @@ def event_functions(event: EventEnvelope):
     event_mappings = {
         "member_joined_channel": [member_joined_channel],
         "member_left_channel": [member_left_channel],
-        "message": [after_hours, ban_threads_warning],
+        "message": [after_hours, ban_threads_warning, message_tagging],
         "message.groups": [],
         "message.im": [],
         "reaction_added": [handle_reaction_added_event],
@@ -319,3 +324,32 @@ def ban_threads_warning(
             message,
             thread_ts=event.event.thread_ts,
         )
+
+
+@slack_background_task
+def message_tagging(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    event: EventEnvelope = None,
+    db_session=None,
+    slack_client=None,
+):
+    """Looks for incident tags in incident messages."""
+    text = event.event.text
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    tags = tag_service.get_all(db_session=db_session, project_id=incident.project.id).all()
+    tag_strings = [t.name.lower() for t in tags if t.discoverable]
+    phrases = build_term_vocab(tag_strings)
+    matcher = build_phrase_matcher("dispatch-tag", phrases)
+    extracted_tags = list(set(extract_terms_from_text(text, matcher)))
+
+    matched_tags = (
+        db_session.query(Tag)
+        .filter(func.upper(Tag.name).in_([func.upper(t) for t in extracted_tags]))
+        .all()
+    )
+
+    incident.tags.extend(matched_tags)
+    db_session.commit()
