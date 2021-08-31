@@ -8,7 +8,7 @@ aiofiles==0.7.0
     # via -r requirements-base.in
 aiohttp==3.7.4.post0
     # via -r requirements-base.in
-alembic==1.6.5
+alembic==1.7.1
     # via -r requirements-base.in
 arrow==1.1.1
     # via -r requirements-base.in
@@ -253,12 +253,9 @@ pytest-subtests==0.5.0
 python-dateutil==2.8.2
     # via
     #   -r requirements-base.in
-    #   alembic
     #   arrow
     #   emails
     #   pandas
-python-editor==1.0.4
-    # via alembic
 python-jose==3.3.0
     # via -r requirements-base.in
 python-multipart==0.0.5
