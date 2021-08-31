@@ -244,7 +244,7 @@ pyparsing==2.4.7
     #   packaging
 pyrsistent==0.18.0
     # via jsonschema
-pytest==6.2.4
+pytest==6.2.5
     # via
     #   pytest-subtests
     #   schemathesis
@@ -330,7 +330,7 @@ six==1.15.0
     #   sqlalchemy-filters
     #   sqlalchemy-utils
     #   validators
-slack_sdk==3.10.1
+slack-sdk==3.10.1
     # via -r requirements-base.in
 sniffio==1.2.0
     # via
