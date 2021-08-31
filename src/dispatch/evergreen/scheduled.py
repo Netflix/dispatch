@@ -21,8 +21,6 @@ from dispatch.project.models import Project
 from dispatch.team import service as team_service
 from dispatch.notification import service as notification_service
 from dispatch.service import service as service_service
-
-
 from dispatch.document import service as document_service
 
 
@@ -74,7 +72,6 @@ def create_evergreen_reminder(
     )
 
     if success:
-        return
         for item in items:
             item.evergreen_last_reminder_at = datetime.utcnow()
 
@@ -84,7 +81,7 @@ def create_evergreen_reminder(
 
 
 def group_items_by_owner_and_type(items):
-    """Groups documents by owner."""
+    """Groups items by owner."""
     grouped = defaultdict(lambda: defaultdict(lambda: []))
     for item in items:
         grouped[item.evergreen_owner][item.__tablename__].append(item)
@@ -95,7 +92,6 @@ def group_items_by_owner_and_type(items):
 @scheduled_project_task
 def create_evergreen_reminders(db_session: SessionLocal, project: Project):
     """Sends reminders for items that have evergreen enabled."""
-
     items = []
     items += document_service.get_overdue_evergreen_documents(
         db_session=db_session, project_id=project.id
