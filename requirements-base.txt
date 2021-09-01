@@ -371,7 +371,7 @@ tqdm==4.59.0
     # via
     #   spacy
     #   thinc
-typing-extensions==3.7.4.3
+typing-extensions
     # via
     #   aiohttp
     #   pydantic
