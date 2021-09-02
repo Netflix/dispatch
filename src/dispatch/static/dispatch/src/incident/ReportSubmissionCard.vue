@@ -196,6 +196,8 @@ export default {
       this.incident_priority = { name: this.query.incident_priority }
     }
 
+    this.getFAQ()
+
     this.$watch(
       (vm) => [vm.project],
       () => {
