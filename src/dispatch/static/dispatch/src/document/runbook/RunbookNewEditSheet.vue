@@ -105,14 +105,16 @@
                 />
               </v-flex>
               <v-flex xs12>
-                <span class="subtitle-2">Evergreen</span>
-              </v-flex>
-              <v-flex xs12>
-                <v-checkbox
-                  v-model="evergreen"
-                  hint="Enabling evergreen will send periodic reminders to the owner to update this runbook."
-                  label="Enabled"
-                />
+                <span class="subtitle-2"
+                  >Evergreen
+                  <v-tooltip max-width="250px" bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                    </template>
+                    Dispatch will send the owner a reminder email to the resource owner, reminding
+                    them to keep the resource current.
+                  </v-tooltip>
+                </span>
               </v-flex>
               <v-flex xs12>
                 <ValidationProvider name="Owner" immediate>
@@ -142,6 +144,13 @@
                     min="1"
                   />
                 </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <v-checkbox
+                  v-model="evergreen"
+                  hint="Enabling evergreen will send periodic reminders to the owner to update this runbook."
+                  label="Enabled"
+                />
               </v-flex>
             </v-layout>
           </v-container>

@@ -1,14 +1,19 @@
-from datetime import datetime
 from typing import Optional
-from pydantic.fields import Field
-from pydantic.networks import EmailStr
-from pydantic.types import conint, constr
+from datetime import datetime, timedelta
 
 import validators
+
+from pydantic.fields import Field
+from pydantic.networks import EmailStr
 from pydantic import BaseModel, validator
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, event, ForeignKey
-from sqlalchemy.ext.declarative import declared_attr
+from pydantic.types import conint, constr
+
+from sqlalchemy import func
+from sqlalchemy.event import listens_for
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, event, ForeignKey
 
 # pydantic type that limits the range of primary keys
 PrimaryKey = conint(gt=0, lt=2147483647)
@@ -66,6 +71,40 @@ class ResourceMixin(TimeStampMixin):
     weblink = Column(String)
 
 
+class EvergreenMixin(object):
+    """Evergreen mixin."""
+
+    evergreen = Column(Boolean)
+    evergreen_owner = Column(String)
+    evergreen_reminder_interval = Column(Integer, default=90)  # number of days
+    evergreen_last_reminder_at = Column(DateTime, default=datetime.utcnow())
+
+    @hybrid_property
+    def overdue(self):
+        now = datetime.utcnow()
+        next_reminder = self.evergreen_last_reminder_at + timedelta(
+            days=self.evergreen_reminder_interval
+        )
+
+        if now >= next_reminder:
+            return True
+
+    @overdue.expression
+    def overdue(cls):
+        return (
+            func.date_part("day", func.now() - cls.evergreen_last_reminder_at)
+            >= cls.evergreen_reminder_interval
+        )
+
+
+# @listens_for(EvergreenMixin.evergreen, "set", propagate=True)
+def reset_last_reminded(target, value, oldvalue, initiator):
+    """Reset last reminder at if evergreen goes from disabled -> enabled."""
+    if not oldvalue:
+        target.evergreen_last_reminder_at = datetime.utcnow()
+    target.evergreen = value
+
+
 # Pydantic models...
 class DispatchBase(BaseModel):
     class Config:
@@ -73,6 +112,13 @@ class DispatchBase(BaseModel):
         validate_assignment = True
         arbitrary_types_allowed = True
         anystr_strip_whitespace = True
+
+
+class EvergreenBase(DispatchBase):
+    evergreen: Optional[bool] = False
+    evergreen_owner: Optional[EmailStr]
+    evergreen_reminder_interval: Optional[int] = 90
+    evergreen_last_reminder_at: Optional[datetime] = Field(None, nullable=True)
 
 
 class ResourceBase(DispatchBase):

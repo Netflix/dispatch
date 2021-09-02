@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from pydantic import validator, Field
-from dispatch.models import NameStr, PrimaryKey
+from dispatch.models import EvergreenBase, NameStr, PrimaryKey
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -10,8 +10,6 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     String,
     Table,
-    Boolean,
-    DateTime,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
@@ -19,12 +17,7 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
 
 from dispatch.messaging.strings import INCIDENT_DOCUMENT_DESCRIPTIONS
-from dispatch.models import (
-    DispatchBase,
-    ResourceBase,
-    ProjectMixin,
-    ResourceMixin,
-)
+from dispatch.models import DispatchBase, ResourceBase, ProjectMixin, ResourceMixin, EvergreenMixin
 
 from dispatch.search_filter.models import SearchFilterRead
 from dispatch.project.models import ProjectRead
@@ -39,7 +32,7 @@ assoc_document_filters = Table(
 )
 
 
-class Document(ProjectMixin, ResourceMixin, Base):
+class Document(ProjectMixin, ResourceMixin, EvergreenMixin, Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
@@ -48,29 +41,20 @@ class Document(ProjectMixin, ResourceMixin, Base):
 
     filters = relationship("SearchFilter", secondary=assoc_document_filters, backref="documents")
 
-    evergreen = Column(Boolean)
-    evergreen_owner = Column(String)
-    evergreen_reminder_interval = Column(Integer, default=90)  # number of days
-    evergreen_last_reminder_at = Column(DateTime)
-
     search_vector = Column(TSVectorType("name"))
 
 
 # Pydantic models...
-class DocumentBase(ResourceBase):
+class DocumentBase(ResourceBase, EvergreenBase):
     description: Optional[str] = Field(None, nullable=True)
     name: NameStr
-    evergreen: Optional[bool] = False
-    evergreen_reminder_interval: Optional[int] = 90
-    evergreen_last_reminder_at: Optional[datetime] = Field(None, nullable=True)
-    evergreen_owner: Optional[str] = Field(None, nullable=True)
     created_at: Optional[datetime] = Field(None, nullable=True)
     updated_at: Optional[datetime] = Field(None, nullable=True)
 
 
 class DocumentCreate(DocumentBase):
     filters: Optional[List[SearchFilterRead]] = []
-    project: Optional[ProjectRead]
+    project: ProjectRead
 
 
 class DocumentUpdate(DocumentBase):

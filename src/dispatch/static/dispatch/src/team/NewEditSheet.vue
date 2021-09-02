@@ -90,6 +90,54 @@
                   hint="Select one or more filters that will determine when a team is engaged."
                 />
               </v-flex>
+              <v-flex xs12>
+                <span class="subtitle-2"
+                  >Evergreen
+                  <v-tooltip max-width="250px" bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                    </template>
+                    Dispatch will send the owner a reminder email to the resource owner, reminding
+                    them to keep the resource current.
+                  </v-tooltip>
+                </span>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="Owner" immediate>
+                  <v-text-field
+                    v-model="evergreen_owner"
+                    slot-scope="{ errors, valid }"
+                    label="Owner"
+                    :error-messages="errors"
+                    :success="valid"
+                    hint="Owner of this team."
+                    clearable
+                  />
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="Reminder Interval" immediate>
+                  <v-text-field
+                    v-model="evergreen_reminder_interval"
+                    slot-scope="{ errors, valid }"
+                    label="Reminder Interval"
+                    :error-messages="errors"
+                    :success="valid"
+                    type="number"
+                    hint="Number of days that should elapse between reminders sent to the team owner."
+                    placeholder="90"
+                    clearable
+                    min="1"
+                  />
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <v-checkbox
+                  v-model="evergreen"
+                  hint="Enabling evergreen will send periodic reminders to the owner to update this team."
+                  label="Enabled"
+                />
+              </v-flex>
             </v-layout>
           </v-container>
         </v-card-text>
@@ -132,6 +180,9 @@ export default {
       "selected.email",
       "selected.filters",
       "selected.project",
+      "selected.evergreen_owner",
+      "selected.evergreen",
+      "selected.evergreen_reminder_interval",
       "selected.id",
       "selected.loading",
       "dialogs.showCreateEdit",
