@@ -14,6 +14,8 @@ from dispatch.models import (
     ContactBase,
     ContactMixin,
     DispatchBase,
+    EvergreenBase,
+    EvergreenMixin,
     NameStr,
     ProjectMixin,
     PrimaryKey,
@@ -36,7 +38,7 @@ assoc_team_filters = Table(
 )
 
 
-class TeamContact(Base, ContactMixin, ProjectMixin):
+class TeamContact(Base, ContactMixin, ProjectMixin, EvergreenMixin):
     __table_args__ = (UniqueConstraint("email", "project_id"),)
 
     id = Column(Integer, primary_key=True)
@@ -50,7 +52,7 @@ class TeamContact(Base, ContactMixin, ProjectMixin):
     search_vector = Column(TSVectorType("name", "notes", weights={"name": "A", "notes": "B"}))
 
 
-class TeamContactBase(ContactBase):
+class TeamContactBase(ContactBase, EvergreenBase):
     name: NameStr
     notes: Optional[str] = Field(None, nullable=True)
 

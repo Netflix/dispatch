@@ -7,7 +7,7 @@ from dispatch.config import MJML_PATH
 
 
 from dispatch.messaging.strings import (
-    DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
+    EVERGREEN_REMINDER_DESCRIPTION,
     INCIDENT_DAILY_REPORT_DESCRIPTION,
     INCIDENT_FEEDBACK_DAILY_REPORT_DESCRIPTION,
     INCIDENT_TASK_REMINDER_DESCRIPTION,
@@ -31,9 +31,9 @@ def get_template(message_type: MessageType):
             "notification_list.mjml",
             INCIDENT_TASK_REMINDER_DESCRIPTION,
         ),
-        MessageType.document_evergreen_reminder: (
+        MessageType.evergreen_reminder: (
             "notification_list.mjml",
-            DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION,
+            EVERGREEN_REMINDER_DESCRIPTION,
         ),
         MessageType.incident_feedback_daily_report: (
             "notification_list.mjml",

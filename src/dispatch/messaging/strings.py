@@ -11,7 +11,7 @@ from dispatch.enums import DispatchEnum, DocumentResourceTypes, DocumentResource
 
 
 class MessageType(DispatchEnum):
-    document_evergreen_reminder = "document-evergreen-reminder"
+    evergreen_reminder = "evergreen-reminder"
     incident_closed_information_review_reminder = "incident-closed-information-review-reminder"
     incident_daily_report = "incident-daily-report"
     incident_executive_report = "incident-executive-report"
@@ -35,10 +35,10 @@ INCIDENT_STATUS_DESCRIPTIONS = {
     IncidentStatus.closed: "This no longer requires additional involvement, long term incident action items have been assigned to their respective owners.",
 }
 
-DOCUMENT_EVERGREEN_REMINDER_DESCRIPTION = """
-You are the owner of the following incident documents.
-This is a reminder that these documents should be kept up to date in order to effectively
-respond to incidents. Please review them and update, or clearly mark the documents as deprecated.""".replace(
+EVERGREEN_REMINDER_DESCRIPTION = """
+You are the owner of the following Dispatch resources.
+This is a reminder that these resources should be kept up to date in order to effectively
+respond to incidents. Please review them and update, or clearly mark them as deprecated.""".replace(
     "\n", " "
 ).strip()
 
@@ -479,8 +479,9 @@ INCIDENT_TASK_REMINDER = [
     {"title": "Link", "text": "{{ weblink }}"},
 ]
 
-DOCUMENT_EVERGREEN_REMINDER = [
-    {"title": "Document", "text": "{{ name }}"},
+EVERGREEN_REMINDER = [
+    {"title": "Resource Type", "text": "{{ resource_type }}"},
+    {"title": "Name", "text": "{{ name }}"},
     {"title": "Description", "text": "{{ description }}"},
     {"title": "Link", "text": "{{ weblink }}"},
 ]
