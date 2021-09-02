@@ -54,7 +54,7 @@ class DocumentBase(ResourceBase, EvergreenBase):
 
 class DocumentCreate(DocumentBase):
     filters: Optional[List[SearchFilterRead]] = []
-    project: Optional[ProjectRead]
+    project: ProjectRead
 
 
 class DocumentUpdate(DocumentBase):

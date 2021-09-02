@@ -72,7 +72,7 @@ def get_by_external_id_and_project_name(
     *, db_session, external_id: str, project_name: str
 ) -> Optional[Service]:
     """Gets a service by external id (e.g. PagerDuty service id) and project name."""
-    project = project_service.get_by_name(db_session=db_session, name=project_name)
+    project = project_service.get_by_name_or_raise(db_session=db_session, name=project_name)
     service = get_by_external_id_and_project_id(
         db_session=db_session, external_id=external_id, project_id=project.id
     )
