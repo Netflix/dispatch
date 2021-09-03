@@ -71,7 +71,7 @@ class IndividualContactUpdate(IndividualContactBase):
 
 
 class IndividualContactRead(IndividualContactBase):
-    id: PrimaryKey
+    id: Optional[PrimaryKey]
     filters: Optional[List[SearchFilterRead]] = []
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
