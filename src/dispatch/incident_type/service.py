@@ -80,12 +80,12 @@ def get_by_name_or_default(
     *, db_session, project_id: int, incident_type_in=IncidentTypeRead
 ) -> IncidentType:
     """Returns a incident_type based on a name or the default if not specified."""
-    if incident_type_in.name:
-        return get_by_name_or_raise(
-            db_session=db_session, project_id=project_id, incident_type_in=incident_type_in
-        )
-    else:
-        return get_default_or_raise(db_session=db_session, project_id=project_id)
+    if incident_type_in:
+        if incident_type_in.name:
+            return get_by_name_or_raise(
+                db_session=db_session, project_id=project_id, incident_type_in=incident_type_in
+            )
+    return get_default_or_raise(db_session=db_session, project_id=project_id)
 
 
 def get_by_slug(*, db_session, project_id: int, slug: str) -> Optional[IncidentType]:

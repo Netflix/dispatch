@@ -30,28 +30,30 @@ def assign_incident_role(
     """Assigns incident roles."""
     incident_role = resolve_role(db_session=db_session, role=role, incident=incident)
     service_external_id = None
-    if incident_role.service:
-        service_external_id = incident_role.service.external_id
-        oncall_plugin = plugin_service.get_active_instance(
-            db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
-        )
-        if oncall_plugin:
-            assignee_email = oncall_plugin.instance.get(service_id=service_external_id)
-            if incident.incident_priority.page_commander:
-                oncall_plugin.instance.page(
-                    service_id=service_external_id,
-                    incident_name=incident.name,
-                    incident_title=incident.title,
-                    incident_description=incident.description,
-                )
-        else:
-            # TODO emit warning/error
-            pass
 
-    elif incident_role.individual:
-        assignee_email = incident_role.individual.email
-    else:
-        assignee_email = reporter_email
+    assignee_email = reporter_email
+
+    if incident_role:
+        if incident_role.service:
+            service_external_id = incident_role.service.external_id
+            oncall_plugin = plugin_service.get_active_instance(
+                db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
+            )
+            if oncall_plugin:
+                assignee_email = oncall_plugin.instance.get(service_id=service_external_id)
+                if incident.incident_priority.page_commander:
+                    oncall_plugin.instance.page(
+                        service_id=service_external_id,
+                        incident_name=incident.name,
+                        incident_title=incident.title,
+                        incident_description=incident.description,
+                    )
+            else:
+                # TODO emit warning/error
+                pass
+
+        elif incident_role.individual:
+            assignee_email = incident_role.individual.email
 
     # Add a new participant (duplicate participants with different roles will be updated)
     participant_flows.add_participant(

@@ -164,6 +164,7 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
         try:
             response = await call_next(request)
         except ValidationError as e:
+            log.exception(e)
             response = JSONResponse(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content={"detail": e.errors()}
             )
