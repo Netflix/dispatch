@@ -22,6 +22,7 @@ try:
     from dispatch.definition.models import Definition  # noqa lgtm[py/unused-import]
     from dispatch.document.models import Document  # noqa lgtm[py/unused-import]
     from dispatch.event.models import Event  # noqa lgtm[py/unused-import]
+    from dispatch.monitor.models import Monitor  # noqa lgtm[py/unused-import]
     from dispatch.feedback.models import Feedback  # noqa lgtm[py/unused-import]
     from dispatch.group.models import Group  # noqa lgtm[py/unused-import]
     from dispatch.incident.models import Incident  # noqa lgtm[py/unused-import]

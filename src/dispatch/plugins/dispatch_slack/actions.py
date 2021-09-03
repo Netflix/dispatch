@@ -8,7 +8,7 @@ from dispatch.conversation.messaging import send_feedack_to_user
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
-from dispatch.monitor.models import MonitorInstance
+from dispatch.monitor.models import Monitor
 from dispatch.monitor import service as monitor_service
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
@@ -250,7 +250,7 @@ def monitor_link(
     if button.action_type == "monitor":
         enabled = True
 
-    monitor_in = MonitorInstance(incident=incident, enabled=enabled, url=button.url)
+    monitor_in = Monitor(incident=incident, enabled=enabled, url=button.url)
     monitor_service.create_or_update(db_session=db_session, monitor_in=monitor_in)
 
     if button.action_type == "monitor":

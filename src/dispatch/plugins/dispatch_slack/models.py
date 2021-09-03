@@ -9,3 +9,7 @@ class ButtonValue(BaseModel):
 
 class TaskButton(ButtonValue):
     resource_id: str
+
+
+class MonitorButton(ButtonValue):
+    weblink: str

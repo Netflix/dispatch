@@ -12,7 +12,6 @@ from dispatch.conversation import service as conversation_service
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
-from dispatch.plugins.dispatch_slack.models import MonitorButton
 from dispatch.tag import service as tag_service
 from dispatch.individual import service as individual_service
 from dispatch.participant import service as participant_service
@@ -30,6 +29,7 @@ from .config import (
 )
 from .decorators import slack_background_task, get_organization_scope_from_channel_id
 from .service import get_user_email
+from .models import MonitorButton
 
 
 log = logging.getLogger(__name__)
@@ -383,10 +383,12 @@ def message_monitor(
             for match in matcher.finditer(text):
                 match_data = match.groupdict()
                 match_url = urllib.parse.urlencode(match[0])
-                monitor = monitor_service.get_by_url(db_session=db_session, url=match_url)
+                monitor = monitor_service.get_by_weblink(db_session=db_session, weblink=match_url)
 
+                # silence ignored matches
                 if monitor:
-                    continue
+                    if not monitor.enabled:
+                        continue
 
                 current_status = p.get_match_status(match_data)
 

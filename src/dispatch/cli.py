@@ -606,6 +606,7 @@ def dispatch_scheduler():
         daily_sync_workflow,  # noqa
         sync_active_stable_workflows,  # noqa
     )
+    from .monitor.scheduled import sync_active_stable_workflows  # noqa
 
 
 @dispatch_scheduler.command("list")
