@@ -8,6 +8,8 @@ from dispatch.conversation.messaging import send_feedack_to_user
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
+from dispatch.monitor.models import MonitorInstance
+from dispatch.monitor import service as monitor_service
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.report import flows as report_flows
@@ -49,7 +51,7 @@ from .modals.incident.enums import (
     UpdateNotificationsGroupCallbackId,
 )
 
-from .models import ButtonValue, TaskButton
+from .models import ButtonValue, MonitorButton, TaskButton
 
 from .service import get_user_email
 from .decorators import slack_background_task, get_organization_scope_from_channel_id
@@ -121,6 +123,7 @@ def block_action_functions(action: str):
         ConversationButtonActions.invite_user: [add_user_to_conversation],
         ConversationButtonActions.provide_feedback: [create_rating_feedback_modal],
         ConversationButtonActions.update_task_status: [update_task_status],
+        ConversationButtonActions.monitor_link: [monitor_link],
         # Note these are temporary for backward compatibility of block ids and should be remove in a future release
         "ConversationButtonActions.invite_user": [add_user_to_conversation],
         "ConversationButtonActions.provide_feedback": [create_rating_feedback_modal],
@@ -226,6 +229,37 @@ def add_user_to_conversation(
         )
         message = f"Success! We've added you to incident {incident.name}. Please, check your sidebar for the new incident channel."
         dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
+
+
+@slack_background_task
+def monitor_link(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    action: dict,
+    db_session=None,
+    slack_client=None,
+):
+    """Starts monitoring a link."""
+    button = MonitorButton.parse_raw(action["actions"][0]["value"])
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    # we create a monitor record regardless of action type
+    enabled = False
+    if button.action_type == "monitor":
+        enabled = True
+
+    monitor_in = MonitorInstance(incident=incident, enabled=enabled, url=button.url)
+    monitor_service.create_or_update(db_session=db_session, monitor_in=monitor_in)
+
+    if button.action_type == "monitor":
+        message = "Dispatch is now monitoring."
+
+    elif button.action_type == "ignore":
+        message = "Ignoring this link. Dispatch won't bother you about it again."
+
+    dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
 
 
 @slack_background_task

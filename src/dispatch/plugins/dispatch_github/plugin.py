@@ -26,7 +26,7 @@ class GithubMonitorPlugin(MonitorPlugin):
     def get_matchers():
         """Returns a list of regexes that this monitor plugin should look for in chat messages."""
         matchers = [
-            r"^((https):\/)?\/?(?P<domain>[^:\/\s]+)(?P<repo>(?P<type>\/\w+)*\/)(?P<id>[\w\-\.]+[^#?\s]+)(.*)?(#[\w\-]+)?$"
+            r"^https:\/\/github.com\/(?P<organization>\w+)*\/(?P<repo>\w+)*\/(?P<type>[pull|issues])*\/(?P<id>\w+)*"
         ]
         return [re.compile(r) for r in matchers]
 
@@ -35,25 +35,15 @@ class GithubMonitorPlugin(MonitorPlugin):
         # determine what kind of link we have
         base_url = "https://api.github.com/repos"
 
-        if match_data["type"] == "/pull":
+        if match_data["type"] == "pull":
             # for some reason the api and the front end differ for PRs
-            repo = match_data["repo"].replace("pull", "pulls")
-            request_url = f"{base_url}/{repo}/{match_data['id']}"
-            status_data = requests.get(request_url).json()
+            match_data["type"].replace("pull", "pulls")
 
-            # we pull out only the attributes we care about diff/monitor
-            monitor_data = {
-                "title": status_data["title"],
-                "state": status_data["state"],
-            }
-            return monitor_data
+        request_url = f"{base_url}/{match_data['organization']}/{match_data['repo']}/{match_data['type']}/{match_data['id']}"
+        status_data = requests.get(request_url(request_url)).json()
 
-        elif match_data["type"] == "/issues":
-            request_url = f"{base_url}/{match_data['repo']}/{match_data['id']}"
-            status_data = requests.get(request_url(request_url)).json()
-
-            monitor_data = {
-                "title": status_data["title"],
-                "state": status_data["state"],
-            }
-            return monitor_data
+        monitor_data = {
+            "title": status_data["title"],
+            "state": status_data["state"],
+        }
+        return monitor_data

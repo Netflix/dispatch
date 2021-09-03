@@ -1,6 +1,7 @@
 import arrow
 import logging
 import datetime
+import urllib
 
 from typing import List
 from pydantic import BaseModel
@@ -11,11 +12,15 @@ from dispatch.conversation import service as conversation_service
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
+from dispatch.plugins.dispatch_slack.models import MonitorButton
 from dispatch.tag import service as tag_service
 from dispatch.individual import service as individual_service
 from dispatch.participant import service as participant_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.plugin import service as plugin_service
+from dispatch.monitor import service as monitor_service
+from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.tag.models import Tag
 
 
@@ -93,7 +98,7 @@ def event_functions(event: EventEnvelope):
     event_mappings = {
         "member_joined_channel": [member_joined_channel],
         "member_left_channel": [member_left_channel],
-        "message": [after_hours, ban_threads_warning, message_tagging],
+        "message": [after_hours, ban_threads_warning, message_tagging, message_monitor],
         "message.groups": [],
         "message.im": [],
         "reaction_added": [handle_reaction_added_event],
@@ -353,3 +358,91 @@ def message_tagging(
 
     incident.tags.extend(matched_tags)
     db_session.commit()
+
+
+@slack_background_task
+def message_monitor(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    event: EventEnvelope = None,
+    db_session=None,
+    slack_client=None,
+):
+    """Looks strings that are available for monitoring (usually links)."""
+    text = event.event.text
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    plugins = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="monitor"
+    )
+
+    for p in plugins:
+        for matcher in p.get_matchers():
+            for match in matcher.finditer(text):
+                match_data = match.groupdict()
+                match_url = urllib.parse.urlencode(match[0])
+                monitor = monitor_service.get_by_url(db_session=db_session, url=match_url)
+
+                if monitor:
+                    continue
+
+                current_status = p.get_match_status(match_data)
+
+                status_text = ""
+                for k, v in current_status.items():
+                    status_text += f"*{k.titlecase()}*:\n{v}\n"
+
+                monitor_button = MonitorButton(
+                    incident_id=incident.id,
+                    organization=incident.project.organization.slug,
+                    url=match_url,
+                    action_type="monitor",
+                )
+
+                ignore_button = MonitorButton(
+                    incident_id=incident.id,
+                    organization=incident.project.organization.slug,
+                    url=match_url,
+                    action_type="ignore",
+                )
+
+                blocks = [
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "Dispatch Monitor",
+                        },
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": status_text,
+                        },
+                    },
+                    {
+                        "type": "actions",
+                        "block_id": f"{ConversationButtonActions.monitor_link}",
+                        "elements": [
+                            {
+                                "type": "button",
+                                "text": {"type": "plain_text", "emoji": True, "text": "Monitor"},
+                                "style": "primary",
+                                "value": monitor_button.json(),
+                            },
+                            {
+                                "type": "button",
+                                "text": {"type": "plain_text", "emoji": True, "text": "Ignore"},
+                                "style": "danger",
+                                "value": ignore_button.json(),
+                            },
+                        ],
+                    },
+                ]
+
+                dispatch_slack_service.send_message(
+                    slack_client, channel_id, user_id, "", blocks=blocks
+                )
