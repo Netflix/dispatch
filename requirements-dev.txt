@@ -4,6 +4,8 @@
 #
 #    pip-compile --no-emit-index-url requirements-dev.in
 #
+asttokens==2.0.5
+    # via devtools
 attrs==20.3.0
     # via pytest
 black==21.8b0
@@ -12,8 +14,10 @@ click==7.1.2
     # via black
 coverage==5.5
     # via -r requirements-dev.in
-devtools==0.6.1
+devtools==0.7.0
     # via -r requirements-dev.in
+executing==0.8.0
+    # via devtools
 factory-boy==3.2.0
     # via -r requirements-dev.in
 faker==8.12.1
@@ -51,7 +55,9 @@ python-dateutil==2.8.2
 regex==2020.11.13
     # via black
 six==1.15.0
-    # via python-dateutil
+    # via
+    #   asttokens
+    #   python-dateutil
 text-unidecode==1.3
     # via faker
 toml==0.10.2
