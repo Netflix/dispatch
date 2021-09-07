@@ -170,11 +170,11 @@ Below are the optional env variables to override the default slack command names
 --- | ---
 | `SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG`           | `/dispatch-add-timeline-event`  |
 |                                                   | *Opens a dialog to add an event to the incident timeline.* |
-| `SLACK_COMMAND_ASSIGN_ROLE`                       | /dispatch-assign-role         |
+| `SLACK_COMMAND_ASSIGN_ROLE`                       | `/dispatch-assign-role`         |
 |                                                   | *Opens a dialog for assigning a role to a participant.* |
 | `SLACK_COMMAND_ENGAGE_ONCALL`                     | `/dispatch-engage-oncall`       |
 |                                                   | *Opens a dialog to engage an on-call person.* |
-| `SLACK_COMMAND_LIST_INCIDENTS_SLUG`               | `/dispatch-list-incidents <organization-slug|'default'> <project-slug|'default'>`    |
+| `SLACK_COMMAND_LIST_INCIDENTS_SLUG`               | `/dispatch-list-incidents <organization-slug\|'default'> <project-slug\|'default'>`    |
 |                                                   | *Lists current active and stable incidents and closed incidents in the last 24 hours.* |
 | `SLACK_COMMAND_LIST_MY_TASKS_SLUG`                | `/dispatch-list-my-tasks`       |
 |                                                   | *Sends an ephemeral message with the list of your open and resolved incident tasks.* |
@@ -188,7 +188,7 @@ Below are the optional env variables to override the default slack command names
 |                                                   | *List workflows previously run during this incident.* |
 | `SLACK_COMMAND_REPORT_EXECUTIVE_SLUG`             | `/dispatch-report-executive`    |
 |                                                   | *Opens a dialog to write an executive report.* |
-| `SLACK_COMMAND_REPORT_INCIDENT_SLUG`              | `/dispatch-report-incident <orgnaization-slug|'default'>`     |
+| `SLACK_COMMAND_REPORT_INCIDENT_SLUG`              | `/dispatch-report-incident <orgnaization-slug\|'default'>`     |
 |                                                   | *Opens a dialog to report an incident. This command can be run from non-incident channels where the Dispatch bot is a member.* |
 | `SLACK_COMMAND_REPORT_TACTICAL_SLUG`              | `/dispatch-report-tactical`     |
 |                                                   | *Opens a dialog to write a tactical report.* |
