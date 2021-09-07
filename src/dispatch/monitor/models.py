@@ -33,6 +33,7 @@ class Monitor(Base, ResourceMixin, TimeStampMixin):
 
 class MonitorBase(ResourceBase):
     enabled: Optional[bool]
+    status: Optional[dict]
 
 
 class MonitorCreate(MonitorBase):

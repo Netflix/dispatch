@@ -248,27 +248,30 @@ def monitor_link(
         db_session=db_session, plugin_instance_id=button.plugin_instance_id
     )
 
-    # we create a monitor record regardless of action type
-    enabled = False
     if button.action_type == "monitor":
-        enabled = True
+        status = plugin_instance.instance.get_match_status(weblink=button.weblink)
 
-    monitor_in = MonitorCreate(
-        incident=incident,
-        enabled=enabled,
-        plugin_instance=plugin_instance,
-        weblink=button.weblink,
-    )
-    monitor_service.create_or_update(db_session=db_session, monitor_in=monitor_in)
-
-    if button.action_type == "monitor":
+        monitor_in = MonitorCreate(
+            incident=incident,
+            enabled=True,
+            status=status,
+            plugin_instance=plugin_instance,
+            weblink=button.weblink,
+        )
         message = f"Dispatch is now monitoring {button.weblink} for status updates."
 
     elif button.action_type == "ignore":
+        monitor_in = MonitorCreate(
+            incident=incident,
+            enabled=False,
+            plugin_instance=plugin_instance,
+            weblink=button.weblink,
+        )
         message = (
             f"Ignoring {button.weblink}. Dispatch won't bother you about it again in this incident."
         )
 
+    monitor_service.create_or_update(db_session=db_session, monitor_in=monitor_in)
     dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
 
 

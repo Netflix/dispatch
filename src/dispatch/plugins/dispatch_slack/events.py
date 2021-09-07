@@ -385,9 +385,6 @@ def message_monitor(
                     db_session=db_session, weblink=match_data["weblink"]
                 )
 
-                print(match_data["weblink"])
-                print(monitor)
-
                 # silence ignored matches
                 if monitor:
                     continue

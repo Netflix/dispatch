@@ -219,8 +219,7 @@ A new monitor instance has been created.
 """
 
 INCIDENT_MONITOR_UPDATE_DESCRIPTION = """
-This workflow's status has changed from *{{ monitor_status_old }}* to *{{ monitor_status_new }}*.
-\n\n {% for a in instance_artifacts %}- <{{a.weblink}}|{{a.name}}> \n\n{% endfor %}
+This monitor detected a change in state. State has changed from *{{ monitor_state_old }}* to *{{ monitor_state_new }}*.
 """
 
 INCIDENT_MONITOR_IGNORED_DESCRIPTION = """

@@ -55,7 +55,7 @@ class GithubMonitorPlugin(MonitorPlugin):
         ]
         return [re.compile(r) for r in matchers]
 
-    # @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
     def get_match_status(self, weblink: str, last_modified: datetime = None, **kwargs) -> dict:
         """Fetches the match and attempts to determine current status."""
         # determine what kind of link we have

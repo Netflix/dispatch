@@ -41,6 +41,10 @@ def run_monitors(db_session, project, monitor_plugin, incidents, notify: bool = 
             if not monitor_status:
                 continue
 
+            monitor_status_old = monitor.status
+            if monitor_status["state"] == monitor.status["state"]:
+                continue
+
             monitor_service.update(
                 db_session=db_session,
                 monitor=monitor,
@@ -52,16 +56,14 @@ def run_monitors(db_session, project, monitor_plugin, incidents, notify: bool = 
                 ),
             )
 
-            monitor_status_old = monitor.status
-
             if notify:
                 send_monitor_notification(
                     project.id,
                     incident.conversation.channel_id,
                     INCIDENT_MONITOR_UPDATE_NOTIFICATION,
                     db_session,
-                    monitor_status_old=monitor_status_old,
-                    monitor_status_new=monitor.status,
+                    monitor_state_old=monitor_status_old["state"],
+                    monitor_state_new=monitor.status["state"],
                     weblink=monitor.weblink,
                     monitor_creator_name=resolve_attr(monitor, "creator.individual.name"),
                 )
