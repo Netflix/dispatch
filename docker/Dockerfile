@@ -1,4 +1,4 @@
-FROM python:3.8-slim-buster as sdist
+FROM python:3.9.7-slim-buster as sdist
 
 LABEL maintainer="oss@netflix.com"
 LABEL org.opencontainers.image.title="Dispatch PyPI Wheel"
@@ -46,7 +46,7 @@ RUN export YARN_CACHE_FOLDER="$(mktemp -d)" \
     && mv /usr/src/dispatch/dist /dist
 
 # This is the image to be run
-FROM python:3.8-buster
+FROM python:3.9.7-slim-buster
 
 LABEL maintainer="oss@dispatch.io"
 LABEL org.opencontainers.image.title="Dispatch"
