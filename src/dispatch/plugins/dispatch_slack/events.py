@@ -1,7 +1,6 @@
 import arrow
 import logging
 import datetime
-import urllib
 
 from typing import List
 from pydantic import BaseModel
@@ -374,77 +373,86 @@ def message_monitor(
     text = event.event.text
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    plugins = plugin_service.get_active_instance(
+    plugins = plugin_service.get_active_instances(
         db_session=db_session, project_id=incident.project.id, plugin_type="monitor"
     )
 
     for p in plugins:
-        for matcher in p.get_matchers():
+        for matcher in p.instance.get_matchers():
             for match in matcher.finditer(text):
                 match_data = match.groupdict()
-                match_url = urllib.parse.urlencode(match[0])
-                monitor = monitor_service.get_by_weblink(db_session=db_session, weblink=match_url)
+                monitor = monitor_service.get_by_weblink(
+                    db_session=db_session, weblink=match_data["weblink"]
+                )
+
+                print(match_data["weblink"])
+                print(monitor)
 
                 # silence ignored matches
                 if monitor:
-                    if not monitor.enabled:
-                        continue
+                    continue
 
-                current_status = p.get_match_status(match_data)
+                current_status = p.instance.get_match_status(match_data)
+                if current_status:
+                    status_text = ""
+                    for k, v in current_status.items():
+                        status_text += f"*{k.title()}*:\n{v.title()}\n"
 
-                status_text = ""
-                for k, v in current_status.items():
-                    status_text += f"*{k.titlecase()}*:\n{v}\n"
+                    monitor_button = MonitorButton(
+                        incident_id=incident.id,
+                        plugin_instance_id=p.id,
+                        organization=incident.project.organization.slug,
+                        weblink=match_data["weblink"],
+                        action_type="monitor",
+                    )
 
-                monitor_button = MonitorButton(
-                    incident_id=incident.id,
-                    organization=incident.project.organization.slug,
-                    url=match_url,
-                    action_type="monitor",
-                )
+                    ignore_button = MonitorButton(
+                        incident_id=incident.id,
+                        plugin_instance_id=p.id,
+                        organization=incident.project.organization.slug,
+                        weblink=match_data["weblink"],
+                        action_type="ignore",
+                    )
 
-                ignore_button = MonitorButton(
-                    incident_id=incident.id,
-                    organization=incident.project.organization.slug,
-                    url=match_url,
-                    action_type="ignore",
-                )
-
-                blocks = [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "Dispatch Monitor",
-                        },
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": status_text,
-                        },
-                    },
-                    {
-                        "type": "actions",
-                        "block_id": f"{ConversationButtonActions.monitor_link}",
-                        "elements": [
-                            {
-                                "type": "button",
-                                "text": {"type": "plain_text", "emoji": True, "text": "Monitor"},
-                                "style": "primary",
-                                "value": monitor_button.json(),
+                    blocks = [
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": f"Hi! Dispatch is able to help track the status of: \n {match_data['weblink']} \n\n Would you like for changes in it's status to be propagated to this incident channel?",
                             },
-                            {
-                                "type": "button",
-                                "text": {"type": "plain_text", "emoji": True, "text": "Ignore"},
-                                "style": "danger",
-                                "value": ignore_button.json(),
+                        },
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": status_text,
                             },
-                        ],
-                    },
-                ]
+                        },
+                        {
+                            "type": "actions",
+                            "block_id": f"{ConversationButtonActions.monitor_link}",
+                            "elements": [
+                                {
+                                    "type": "button",
+                                    "text": {
+                                        "type": "plain_text",
+                                        "emoji": True,
+                                        "text": "Monitor",
+                                    },
+                                    "style": "primary",
+                                    "value": monitor_button.json(),
+                                },
+                                {
+                                    "type": "button",
+                                    "text": {"type": "plain_text", "emoji": True, "text": "Ignore"},
+                                    "style": "danger",
+                                    "value": ignore_button.json(),
+                                },
+                            ],
+                        },
+                    ]
 
-                dispatch_slack_service.send_message(
-                    slack_client, channel_id, user_id, "", blocks=blocks
-                )
+                    dispatch_slack_service.send_ephemeral_message(
+                        slack_client, channel_id, user_id, "", blocks=blocks
+                    )

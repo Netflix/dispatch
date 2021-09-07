@@ -1,18 +1,21 @@
 import logging
 
 from schedule import every
-from dispatch.database.core import SessionLocal
+from dispatch.database.core import SessionLocal, resolve_attr
 
 from dispatch.decorators import scheduled_project_task
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
+
 from dispatch.messaging.strings import (
     INCIDENT_MONITOR_UPDATE_NOTIFICATION,
 )
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
+from dispatch.monitor.models import MonitorUpdate
 from dispatch.monitor import service as monitor_service
+from dispatch.monitor.flows import send_monitor_notification
 
 
 log = logging.getLogger(__name__)
@@ -23,33 +26,33 @@ MONITOR_SYNC_INTERVAL = 30  # seconds
 def run_monitors(db_session, project, monitor_plugin, incidents, notify: bool = False):
     """Performs monitor run."""
     for incident in incidents:
-        for instance in incident.monitor_instances:
+        for monitor in incident.monitors:
             # once an instance is complete we don't update it any more
-            if not instance.enabled:
+            if not monitor.enabled:
                 continue
 
-            log.debug(f"Processing monitor instance. Instance: {instance.parameters}")
-            instance_data = monitor_plugin.instance.get_match_status(
-                monitor_id=instance.monitor.resource_id,
-                monitor_instance_id=instance.id,
-                incident_name=incident.name,
-                incident_id=incident.id,
+            log.debug(f"Processing monitor. Monitor: {monitor.weblink}")
+            monitor_status = monitor_plugin.instance.get_match_status(
+                weblink=monitor.weblink,
+                last_modified=monitor.updated_at,
             )
 
-            log.debug(f"Retrieved instance data from plugin. Data: {instance_data}")
-            if not instance_data:
-                log.warning(
-                    f"Could not locate a Dispatch instance for a given workflow instance. WorkflowId: {instance.workflow.resource_id} WorkflowInstanceId: {instance.id} IncidentName: {incident.name}"
-                )
+            log.debug(f"Retrieved data from plugin. Data: {monitor_status}")
+            if not monitor_status:
                 continue
 
-            instance_status_old = instance.status
-
-            instance = monitor_service.update_instance(
+            monitor_service.update(
                 db_session=db_session,
-                instance=instance,
-                instance_in=MonitorInstanceUpdate(**instance_data),
+                monitor=monitor,
+                monitor_in=MonitorUpdate(
+                    id=monitor.id,
+                    weblink=monitor.weblink,
+                    enabled=monitor.enabled,
+                    status=monitor_status,
+                ),
             )
+
+            monitor_status_old = monitor.status
 
             if notify:
                 send_monitor_notification(
@@ -57,19 +60,17 @@ def run_monitors(db_session, project, monitor_plugin, incidents, notify: bool = 
                     incident.conversation.channel_id,
                     INCIDENT_MONITOR_UPDATE_NOTIFICATION,
                     db_session,
-                    instance_status_old=instance_status_old,
-                    instance_status_new=instance.status,
-                    instance_weblink=instance.weblink,
-                    instance_creator_name=instance.creator.individual.name,
-                    monitor_name=instance.monitor.name,
-                    monitor_description=instance.monitor.description,
+                    monitor_status_old=monitor_status_old,
+                    monitor_status_new=monitor.status,
+                    weblink=monitor.weblink,
+                    monitor_creator_name=resolve_attr(monitor, "creator.individual.name"),
                 )
 
 
-@scheduler.add(every(MONITOR_SYNC_INTERVAL).seconds, name="incident-workflow-sync")
+@scheduler.add(every(MONITOR_SYNC_INTERVAL).seconds, name="incident-monitor-sync")
 @scheduled_project_task
-def sync_active_stable_workflows(db_session: SessionLocal, project: Project):
-    """Syncs incident workflows."""
+def sync_active_stable_monitors(db_session: SessionLocal, project: Project):
+    """Syncs incident monitors."""
     monitor_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project.id, plugin_type="monitor"
     )

@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from sqlalchemy.sql.expression import true
-from dispatch.project import service as project_service
+from dispatch.incident import service as incident_service
 from dispatch.plugin import service as plugin_service
 
 from .models import (
@@ -26,28 +26,32 @@ def get_enabled(*, db_session) -> List[Optional[Monitor]]:
     return db_session.query(Monitor).filter(Monitor.enabled == true()).all()
 
 
-def get_instance_enabled(*, db_session) -> List[Optional[Monitor]]:
-    """Fetches all enabled instance monitors."""
-    return db_session.query(Monitor).filter(Monitor.enabled == true()).all()
-
-
-def get_instance_by_weblink(*, db_session, weblink: str) -> Optional[Monitor]:
+def get_by_weblink(*, db_session, weblink: str) -> Optional[Monitor]:
     """Fetches a monitor by it's weblink"""
     return db_session.query(Monitor).filter(Monitor.weblink == weblink).one_or_none()
 
 
+def create_or_update(*, db_session, monitor_in: MonitorCreate) -> Monitor:
+    """Creates or updates a monitor."""
+    monitor = get_by_weblink(db_session=db_session, weblink=monitor_in.weblink)
+    if monitor:
+        monitor = update(db_session=db_session, monitor=monitor, monitor_in=monitor_in)
+    else:
+        monitor = create(db_session=db_session, monitor_in=monitor_in)
+
+    return monitor
+
+
 def create(*, db_session, monitor_in: MonitorCreate) -> Monitor:
     """Creates a new monitor."""
-    project = project_service.get_by_name_or_raise(
-        db_session=db_session, project_in=monitor_in.project
-    )
+    incident = incident_service.get(db_session=db_session, incident_id=monitor_in.incident.id)
     plugin_instance = plugin_service.get_instance(
         db_session=db_session, plugin_instance_id=monitor_in.plugin_instance.id
     )
     monitor = Monitor(
-        **monitor_in.dict(exclude={"plugin_instance", "project"}),
+        **monitor_in.dict(exclude={"plugin_instance", "incident"}),
         plugin_instance=plugin_instance,
-        project=project,
+        incident=incident,
     )
 
     db_session.add(monitor)
@@ -58,17 +62,11 @@ def create(*, db_session, monitor_in: MonitorCreate) -> Monitor:
 def update(*, db_session, monitor: Monitor, monitor_in: MonitorUpdate) -> Monitor:
     """Updates a monitor."""
     monitor_data = monitor.dict()
-    update_data = monitor_in.dict(skip_defaults=True, exclude={"plugin_instance"})
+    update_data = monitor_in.dict()
 
     for field in monitor_data:
         if field in update_data:
             setattr(monitor, field, update_data[field])
-
-    plugin_instance = plugin_service.get_instance(
-        db_session=db_session, plugin_instance_id=monitor_in.plugin_instance.id
-    )
-
-    monitor.plugin_instance = plugin_instance
 
     db_session.commit()
     return monitor

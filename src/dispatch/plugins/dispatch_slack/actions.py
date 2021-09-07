@@ -8,7 +8,7 @@ from dispatch.conversation.messaging import send_feedack_to_user
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
-from dispatch.monitor.models import Monitor
+from dispatch.monitor.models import MonitorCreate
 from dispatch.monitor import service as monitor_service
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
@@ -244,20 +244,30 @@ def monitor_link(
     """Starts monitoring a link."""
     button = MonitorButton.parse_raw(action["actions"][0]["value"])
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    plugin_instance = plugin_service.get_instance(
+        db_session=db_session, plugin_instance_id=button.plugin_instance_id
+    )
 
     # we create a monitor record regardless of action type
     enabled = False
     if button.action_type == "monitor":
         enabled = True
 
-    monitor_in = Monitor(incident=incident, enabled=enabled, url=button.url)
+    monitor_in = MonitorCreate(
+        incident=incident,
+        enabled=enabled,
+        plugin_instance=plugin_instance,
+        weblink=button.weblink,
+    )
     monitor_service.create_or_update(db_session=db_session, monitor_in=monitor_in)
 
     if button.action_type == "monitor":
-        message = "Dispatch is now monitoring."
+        message = f"Dispatch is now monitoring {button.weblink} for status updates."
 
     elif button.action_type == "ignore":
-        message = "Ignoring this link. Dispatch won't bother you about it again."
+        message = (
+            f"Ignoring {button.weblink}. Dispatch won't bother you about it again in this incident."
+        )
 
     dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
 

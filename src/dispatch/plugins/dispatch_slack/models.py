@@ -13,3 +13,4 @@ class TaskButton(ButtonValue):
 
 class MonitorButton(ButtonValue):
     weblink: str
+    plugin_instance_id: int

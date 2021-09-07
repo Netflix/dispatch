@@ -606,7 +606,7 @@ def dispatch_scheduler():
         daily_sync_workflow,  # noqa
         sync_active_stable_workflows,  # noqa
     )
-    from .monitor.scheduled import sync_active_stable_workflows  # noqa
+    from .monitor.scheduled import sync_active_stable_monitors  # noqa
 
 
 @dispatch_scheduler.command("list")
@@ -718,6 +718,11 @@ def run_slack_websocket():
     """Runs the slack websocket process."""
     import asyncio
     from dispatch.plugins.dispatch_slack import socket_mode
+    from dispatch.common.utils.cli import install_plugins
+
+    install_plugins()
+
+    click.secho("Slack websocket process started...", fg="blue")
 
     asyncio.run(socket_mode.run_websocket_process())
 
