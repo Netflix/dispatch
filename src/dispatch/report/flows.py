@@ -32,6 +32,7 @@ def create_tactical_report(
     user_email: str,
     incident_id: int,
     tactical_report_in: TacticalReportCreate,
+    organization_slug: str = None,
     db_session=None,
 ):
     """Creates and sends a new tactical report to a conversation."""

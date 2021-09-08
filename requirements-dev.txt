@@ -66,7 +66,7 @@ toml==0.10.2
     #   vulture
 tomli==1.0.4
     # via black
-typing-extensions==3.10.0.1
+typing-extensions==3.10.0.2
     # via black
 vulture==2.3
     # via -r requirements-dev.in
