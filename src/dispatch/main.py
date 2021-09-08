@@ -104,6 +104,9 @@ def get_request_id() -> Optional[str]:
 @api.middleware("http")
 async def db_session_middleware(request: Request, call_next):
     request_id = str(uuid1())
+
+    # we create a per-request id such that we can ensure that our session is scoped for a particular request.
+    # see: https://github.com/tiangolo/fastapi/issues/726
     ctx_token = _request_id_ctx_var.set(request_id)
     path_params = get_path_params_from_request(request)
 
