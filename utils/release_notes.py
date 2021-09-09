@@ -22,10 +22,18 @@ def release_notes(pull_request_number):
 
     dispatch_pr_url = "https://github.com/Netflix/dispatch/pull/"
     exclude_authors = ["dependabot"]
-    gh_command = 'gh pr list -s merged --json "title,author,number" -L 250'
+    gh_command = 'gh pr list -s merged --json "title,author,number,labels" -L 250'
 
     stream = os.popen(gh_command)
     pull_requests = json.loads(stream.read())
+
+    sections = {
+        "enhancement": "",
+        "bug": "",
+        "documentation": "",
+        "feature": "",
+        "dependencies": "",
+    }
 
     for pull_request in pull_requests:
         author = pull_request["author"]["login"]
@@ -38,7 +46,27 @@ def release_notes(pull_request_number):
         if author in exclude_authors:
             continue
 
-        print(f"* {title} ([#{number}]({dispatch_pr_url}{number})) by @{author}")
+        for label in pull_request["labels"]:
+            sections[label["name"]] = (
+                sections[label["name"]]
+                + f"\n* {title} ([#{number}]({dispatch_pr_url}{number})) by @{author}"
+            )
+
+    print(
+        f"""
+Features:
+    {sections["feature"]}
+
+Enhancements:
+    {sections["enhancement"]}
+
+Bug Fixes:
+    {sections["bug"]}
+
+Documentation:
+    {sections["documentation"]}
+    """
+    )
 
 
 if __name__ == "__main__":
