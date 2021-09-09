@@ -62,23 +62,6 @@
               <v-flex xs12>
                 <tag-filter-combobox :project="project" v-model="tags" label="Tags" />
               </v-flex>
-              <v-flex xs12>
-                <v-checkbox v-model="trackingOnly" label="Tracking Only">
-                  <template v-slot:label>
-                    <div>
-                      Tracking Only
-                      <v-tooltip max-width="250px" bottom>
-                        <template v-slot:activator="{ on, attrs }">
-                          <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
-                        </template>
-                        Dispatch will only create a ticket for this incident. The status of the
-                        incident will be closed and no collaboration resources will be created. No
-                        further action from you will be needed.
-                      </v-tooltip>
-                    </div>
-                  </template>
-                </v-checkbox>
-              </v-flex>
             </v-layout>
             <template>
               <v-btn
@@ -150,7 +133,6 @@ export default {
       "selected.loading",
       "selected.ticket",
       "selected.project",
-      "selected.trackingOnly",
       "selected.id",
     ]),
     ...mapFields("route", ["query"]),

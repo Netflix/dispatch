@@ -21,17 +21,16 @@ const getDefaultSelectedState = () => {
     incident_type: null,
     name: null,
     participants: null,
+    project: null,
     reported_at: null,
     reporter: null,
     stable_at: null,
     status: null,
     storage: null,
     tags: [],
-    project: null,
     terms: [],
     ticket: null,
     title: null,
-    trackingOnly: null,
     visibility: null,
     workflow_instances: null,
     loading: false,
@@ -199,9 +198,6 @@ const actions = {
   },
   report({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
-    if (state.selected.trackingOnly === true) {
-      state.selected.status = "Closed"
-    }
     return IncidentApi.create(state.selected)
       .then((response) => {
         commit("SET_SELECTED", response.data)
