@@ -31,8 +31,8 @@ def assign_incident_role(
     assignee_email = reporter_email
     service_external_id = None
 
-    # We only resolve the incident role and page the commander for newly created active incidents
-    if incident.status == IncidentStatus.active:
+    # We only resolve the incident role and page the commander for active and stable incidents
+    if incident.status != IncidentStatus.closed:
         incident_role = resolve_role(db_session=db_session, role=role, incident=incident)
         if incident_role:
             if incident_role.service:
