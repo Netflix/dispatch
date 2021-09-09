@@ -319,8 +319,8 @@ class IncidentUpdate(IncidentBase):
 class IncidentRead(IncidentBase):
     id: PrimaryKey
     name: Optional[NameStr]
-    primary_team: str
-    primary_location: str
+    primary_team: Optional[str]
+    primary_location: Optional[str]
     reporter: Optional[ParticipantRead]
     commander: Optional[ParticipantRead]
     last_tactical_report: Optional[ReportRead]
