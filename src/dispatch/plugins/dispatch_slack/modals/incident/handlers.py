@@ -172,10 +172,11 @@ def update_incident_from_submitted_form(
     """Massages slack dialog data into something that Dispatch can use."""
     submitted_form = action.get("view")
     parsed_form_data = parse_submitted_form(submitted_form)
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     tags = []
     for t in parsed_form_data.get(IncidentBlockId.tags, []):
-        tags.append({"id": t["value"]})
+        tags.append({"id": t["value"], "project": {"name": incident.project.name}})
 
     incident_in = IncidentUpdate(
         title=parsed_form_data[IncidentBlockId.title],
@@ -186,7 +187,6 @@ def update_incident_from_submitted_form(
         tags=tags,
     )
 
-    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     existing_incident = IncidentRead.from_orm(incident)
 
     # we don't allow visibility to be set in slack so we copy it over
