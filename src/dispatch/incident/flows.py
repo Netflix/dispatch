@@ -188,7 +188,9 @@ def update_external_incident_ticket(
         incident_type_in=incident.incident_type,
     ).get_meta(plugin.plugin.slug)
 
-    total_cost = incident.total_cost
+    total_cost = 0
+    if incident.total_cost:
+        total_cost = incident.total_cost
 
     plugin.instance.update(
         incident.ticket.resource_id,
