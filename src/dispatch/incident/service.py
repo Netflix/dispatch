@@ -2,20 +2,18 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 
 from dispatch.database.core import SessionLocal
-
 from dispatch.event import service as event_service
 from dispatch.incident_cost import service as incident_cost_service
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_role.service import resolve_role
 from dispatch.incident_type import service as incident_type_service
-from dispatch.participant_role.models import ParticipantRoleType
-from dispatch.tag import service as tag_service
-from dispatch.tag.models import TagUpdate, TagCreate
-from dispatch.term import service as term_service
-from dispatch.term.models import TermUpdate
-from dispatch.project import service as project_service
-from dispatch.plugin import service as plugin_service
 from dispatch.participant import flows as participant_flows
+from dispatch.participant_role.models import ParticipantRoleType
+from dispatch.plugin import service as plugin_service
+from dispatch.project import service as project_service
+from dispatch.tag import service as tag_service
+from dispatch.tag.models import TagCreate
+from dispatch.term import service as term_service
 
 from .enums import IncidentStatus
 from .models import Incident, IncidentCreate, IncidentUpdate
