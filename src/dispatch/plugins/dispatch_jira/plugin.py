@@ -31,7 +31,7 @@ ISSUE_SUMMARY_TEMPLATE = """
 Description: {{description}}
 Type: {{incident_type}}
 Priority: {{priority}}
-Cost: ${{cost}}
+Cost: {{cost}}
 
 *Incident Resources*
 [Conversation|{{conversation_weblink}}]
@@ -106,8 +106,9 @@ def create_issue_fields(
     cost: float,
 ):
     """Creates Jira issue fields."""
-    issue_fields = {}
+    cost = f"${cost:,.2f}"
 
+    issue_fields = {}
     issue_fields.update({"summary": title})
     issue_fields.update({"assignee": assignee})
     issue_fields.update({"reporter": reporter})

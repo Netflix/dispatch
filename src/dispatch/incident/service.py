@@ -2,20 +2,18 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 
 from dispatch.database.core import SessionLocal
-
 from dispatch.event import service as event_service
 from dispatch.incident_cost import service as incident_cost_service
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_role.service import resolve_role
 from dispatch.incident_type import service as incident_type_service
-from dispatch.participant_role.models import ParticipantRoleType
-from dispatch.tag import service as tag_service
-from dispatch.tag.models import TagUpdate, TagCreate
-from dispatch.term import service as term_service
-from dispatch.term.models import TermUpdate
-from dispatch.project import service as project_service
-from dispatch.plugin import service as plugin_service
 from dispatch.participant import flows as participant_flows
+from dispatch.participant_role.models import ParticipantRoleType
+from dispatch.plugin import service as plugin_service
+from dispatch.project import service as project_service
+from dispatch.tag import service as tag_service
+from dispatch.tag.models import TagCreate
+from dispatch.term import service as term_service
 
 from .enums import IncidentStatus
 from .models import Incident, IncidentCreate, IncidentUpdate
@@ -28,34 +26,35 @@ def assign_incident_role(
     role: ParticipantRoleType,
 ):
     """Assigns incident roles."""
-    incident_role = resolve_role(db_session=db_session, role=role, incident=incident)
+    assignee_email = reporter_email
     service_external_id = None
 
-    assignee_email = reporter_email
+    # We only resolve the incident role and page the commander for active and stable incidents
+    if incident.status != IncidentStatus.closed:
+        incident_role = resolve_role(db_session=db_session, role=role, incident=incident)
+        if incident_role:
+            if incident_role.service:
+                service_external_id = incident_role.service.external_id
+                oncall_plugin = plugin_service.get_active_instance(
+                    db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
+                )
+                if oncall_plugin:
+                    assignee_email = oncall_plugin.instance.get(service_id=service_external_id)
+                    if incident.incident_priority.page_commander:
+                        oncall_plugin.instance.page(
+                            service_id=service_external_id,
+                            incident_name=incident.name,
+                            incident_title=incident.title,
+                            incident_description=incident.description,
+                        )
+                else:
+                    # TODO emit warning/error
+                    pass
 
-    if incident_role:
-        if incident_role.service:
-            service_external_id = incident_role.service.external_id
-            oncall_plugin = plugin_service.get_active_instance(
-                db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
-            )
-            if oncall_plugin:
-                assignee_email = oncall_plugin.instance.get(service_id=service_external_id)
-                if incident.incident_priority.page_commander:
-                    oncall_plugin.instance.page(
-                        service_id=service_external_id,
-                        incident_name=incident.name,
-                        incident_title=incident.title,
-                        incident_description=incident.description,
-                    )
-            else:
-                # TODO emit warning/error
-                pass
+            elif incident_role.individual:
+                assignee_email = incident_role.individual.email
 
-        elif incident_role.individual:
-            assignee_email = incident_role.individual.email
-
-    # Add a new participant (duplicate participants with different roles will be updated)
+    # We add a new participant if it doesn't exist, otherwise we update it.
     participant_flows.add_participant(
         assignee_email,
         incident,
@@ -220,11 +219,11 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
 
     tags = []
     for t in incident_in.tags:
-        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=TagUpdate(**t)))
+        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
 
     terms = []
     for t in incident_in.terms:
-        terms.append(term_service.get_or_create(db_session=db_session, term_in=TermUpdate(**t)))
+        terms.append(term_service.get_or_create(db_session=db_session, term_in=t))
 
     duplicates = []
     for d in incident_in.duplicates:

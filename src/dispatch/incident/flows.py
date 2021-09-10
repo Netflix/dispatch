@@ -174,7 +174,7 @@ def update_external_incident_ticket(
         db_session=db_session, project_id=incident.project.id, plugin_type="ticket"
     )
     if not plugin:
-        log.warning("External ticket not updated, no ticket plugin enabled.")
+        log.warning("External ticket not updated. No ticket plugin enabled.")
         return
 
     title = incident.title
@@ -187,6 +187,10 @@ def update_external_incident_ticket(
         project_id=incident.project.id,
         incident_type_in=incident.incident_type,
     ).get_meta(plugin.plugin.slug)
+
+    total_cost = 0
+    if incident.total_cost:
+        total_cost = incident.total_cost
 
     plugin.instance.update(
         incident.ticket.resource_id,
@@ -201,7 +205,7 @@ def update_external_incident_ticket(
         resolve_attr(incident, "incident_document.weblink"),
         resolve_attr(incident, "storage.weblink"),
         resolve_attr(incident, "conference.weblink"),
-        incident.total_cost,
+        total_cost,
         incident_type_plugin_metadata=incident_type_plugin_metadata,
     )
 
@@ -1074,11 +1078,12 @@ def incident_update_flow(
         db_session=db_session, email=user_email, project_id=incident.project.id
     )
 
-    # run whatever flows we need
+    # we run whatever flows we need
     status_flow_dispatcher(
         incident, incident.status, previous_incident.status, db_session=db_session
     )
 
+    # we update the conversation topic
     conversation_topic_dispatcher(incident, previous_incident, individual, db_session=db_session)
 
     # we update the external ticket

@@ -86,7 +86,7 @@
           </v-list-item-group>
         </v-list-group>
       </v-list>
-      <v-list three-line v-if="!trackingOnly">
+      <v-list three-line>
         <v-list-group :value="true">
           <template v-slot:activator>
             <v-list-item-title class="title"> Incident Resources </v-list-item-title>
@@ -282,7 +282,6 @@ export default {
       "selected.storage",
       "selected.documents",
       "selected.project",
-      "selected.trackingOnly",
       "selected.loading",
       "selected.ticket",
       "selected.id",
