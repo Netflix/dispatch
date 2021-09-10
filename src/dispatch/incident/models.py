@@ -201,10 +201,14 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
 
     @hybrid_property
     def total_cost(self):
+        print(f"incident costs: {self.incident_costs}")
+        print(f"name: {self.name}")
         if self.incident_costs:
             total_cost = 0
             for cost in self.incident_costs:
+                print(cost)
                 total_cost += cost.amount
+            print(total_cost)
             return total_cost
 
     # resources
