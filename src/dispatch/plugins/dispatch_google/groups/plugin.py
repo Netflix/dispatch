@@ -15,7 +15,7 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import ParticipantGroupPlugin
 from dispatch.plugins.dispatch_google import groups as google_group_plugin
 from dispatch.plugins.dispatch_google.common import get_service
-from dispatch.plugins.dispatch_google.config import GOOGLE_USER_OVERRIDE, GOOGLE_DOMAIN
+from dispatch.plugins.dispatch_google.config import GoogleConfiguration
 
 log = logging.getLogger(__name__)
 
@@ -67,10 +67,6 @@ def add_member(client: Any, group_key: str, email: str, role: str):
 
     for m in members:
         body = {"email": m, "role": role}
-        if GOOGLE_USER_OVERRIDE:
-            log.warning("GOOGLE_USER_OVERIDE set. Using override.")
-            body["email"] = GOOGLE_USER_OVERRIDE
-
         try:
             make_call(
                 client.members(), "insert", groupKey=group_key, body=body, propagate_errors=True
@@ -118,7 +114,7 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
-    _schema = None
+    _schema = GoogleConfiguration
 
     def __init__(self):
         self.scopes = [
@@ -131,7 +127,7 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
     ):
         """Creates a new Google Group."""
         client = get_service("admin", "directory_v1", self.scopes)
-        group_key = f"{name.lower()}@{GOOGLE_DOMAIN}"
+        group_key = f"{name.lower()}@{self.configuration.domain}"
 
         if not description:
             description = "Group automatically created by Dispatch."
@@ -143,7 +139,7 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
 
         group.update(
             {
-                "weblink": f"https://groups.google.com/a/{GOOGLE_DOMAIN}/forum/#!forum/{group['name']}"
+                "weblink": f"https://groups.google.com/a/{self.configuration.domain}/forum/#!forum/{group['name']}"
             }
         )
         return group

@@ -1,14 +1,21 @@
-from dispatch.config import config, Secret
+from pydantic.main import BaseModel, Field
 
 
-GOOGLE_DEVELOPER_KEY = config("GOOGLE_DEVELOPER_KEY", cast=Secret)
-GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL = config("GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL")
-GOOGLE_SERVICE_ACCOUNT_CLIENT_ID = config("GOOGLE_SERVICE_ACCOUNT_CLIENT_ID")
-GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT = config("GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT")
-GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY = config("GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY", cast=Secret)
-GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID = config("GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID")
-GOOGLE_SERVICE_ACCOUNT_PROJECT_ID = config("GOOGLE_SERVICE_ACCOUNT_PROJECT_ID")
+class GoogleConfiguration(BaseModel):
+    """Google configuration description."""
 
-GOOGLE_DOMAIN = config("GOOGLE_DOMAIN")
+    developer_key: str = Field(title="Developer Key", description="")
+    service_account_client_email: str = Field(title="Service Account Client Email", description="")
+    service_account_client_id: str = Field(title="Service Account Client Id", description="")
+    service_account_private_key: str = Field(title="Service Account Private Key", description="")
+    service_account_private_key_id: str = Field(
+        title="Service Account Private Key Id", description=""
+    )
+    service_account_delegated_account: str = Field(
+        title="Service Account Delegated Account", description=""
+    )
+    service_account_project_id: str = Field(title="Service Account Project Id", description="")
+    google_domain: str = Field("Google Workspace Domain", description="")
 
-GOOGLE_USER_OVERRIDE = config("GOOGLE_USER_OVERRIDE", default=None)
+    class Config:
+        title = "Google Configuration"

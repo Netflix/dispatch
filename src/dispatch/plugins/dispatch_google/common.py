@@ -5,30 +5,22 @@ import tempfile
 from google.oauth2 import service_account
 import googleapiclient.discovery
 
-from .config import (
-    GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL,
-    GOOGLE_SERVICE_ACCOUNT_CLIENT_ID,
-    GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT,
-    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
-    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID,
-    GOOGLE_SERVICE_ACCOUNT_PROJECT_ID,
-    GOOGLE_DEVELOPER_KEY,
-)
+from .config import GoogleConfiguration
 
 TIMEOUT = 300
 
 socket.setdefaulttimeout(TIMEOUT)
 
 
-def get_service(service_name: str, version: str, scopes: list):
+def get_service(config: GoogleConfiguration, service_name: str, version: str, scopes: list):
     """Formats specified credentials for Google clients."""
     data = {
         "type": "service_account",
-        "project_id": GOOGLE_SERVICE_ACCOUNT_PROJECT_ID,
-        "private_key_id": GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID,
-        "private_key": str(GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY).replace("\\n", "\n"),
-        "client_email": GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL,
-        "client_id": GOOGLE_SERVICE_ACCOUNT_CLIENT_ID,
+        "project_id": config.service_account_project_id,
+        "private_key_id": config.service_account_private_key_id,
+        "private_key": str(config.service_account_private_key).replace("\\n", "\n"),
+        "client_email": config.service_account_client_email,
+        "client_id": config.service_account_client_id,
         "token_uri": "https://oauth2.googleapis.com/token",
     }
 
@@ -40,12 +32,12 @@ def get_service(service_name: str, version: str, scopes: list):
             service_account_file.name, scopes=scopes
         )
 
-        delegated_credentials = credentials.with_subject(GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT)
+        delegated_credentials = credentials.with_subject(config.service_account_delegated_account)
 
         return googleapiclient.discovery.build(
             service_name,
             version,
             credentials=delegated_credentials,
             cache_discovery=False,
-            developerKey=GOOGLE_DEVELOPER_KEY,
+            developerKey=config.developer_key,
         )
