@@ -28,12 +28,14 @@ def assign_incident_role(
     """Assigns incident roles."""
     assignee_email = reporter_email
     service_external_id = None
+    service_id = None
 
     # We only resolve the incident role and page the commander for active and stable incidents
     if incident.status != IncidentStatus.closed:
         incident_role = resolve_role(db_session=db_session, role=role, incident=incident)
         if incident_role:
             if incident_role.service:
+                service_id = incident_role.service.id
                 service_external_id = incident_role.service.external_id
                 oncall_plugin = plugin_service.get_active_instance(
                     db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
@@ -59,7 +61,7 @@ def assign_incident_role(
         assignee_email,
         incident,
         db_session,
-        service_id=service_external_id,
+        service_id=service_id,
         role=role,
     )
 
@@ -161,7 +163,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
 
     tag_objs = []
     for t in incident_in.tags:
-        tag_objs.append(tag_service.get_or_create(db_session=db_session, tag_in=TagCreate(**t)))
+        tag_objs.append(tag_service.get_or_create(db_session=db_session, tag_in=TagCreate(t)))
 
     # We create the incident
     incident = Incident(
