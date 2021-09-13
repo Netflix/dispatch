@@ -44,12 +44,25 @@ class IncidentType(Base):
     liaison_service = relationship("Service", foreign_keys=[liaison_service_id])
 
 
+class IncidentPriority(Base):
+    __tablename__ = "incident_priority"
+    id = Column(Integer, primary_key=True)
+
+
 assoc_incident_roles_incident_types = Table(
     "incident_role_incident_type",
     Base.metadata,
     Column("incident_role_id", Integer, ForeignKey("incident_role.id")),
     Column("incident_type_id", Integer, ForeignKey("incident_type.id")),
     PrimaryKeyConstraint("incident_role_id", "incident_type_id"),
+)
+
+assoc_incident_roles_incident_priorities = Table(
+    "incident_role_incident_priorities",
+    Base.metadata,
+    Column("incident_role_id", Integer, ForeignKey("incident_role.id")),
+    Column("incident_priority_id", Integer, ForeignKey("incident_priority.id")),
+    PrimaryKeyConstraint("incident_role_id", "incident_priority_id"),
 )
 
 
@@ -67,6 +80,9 @@ class IncidentRole(Base):
 
     # Relationships
     incident_types = relationship("IncidentType", secondary=assoc_incident_roles_incident_types)
+    incident_priorities = relationship(
+        "IncidentPriority", secondary=assoc_incident_roles_incident_priorities
+    )
 
     service_id = Column(Integer, ForeignKey("service.id"))
     service = relationship("Service")
@@ -155,12 +171,15 @@ def upgrade():
         if i_type.liaison_service_id:
             roles[(i_type.project_id, i_type.liaison_service_id, "Liaison")].append(i_type)
 
+    incident_priorities = session.query(IncidentPriority).all()
+
     for k, v in roles.items():
         project_id, service_id, role = k
         session.add(
             IncidentRole(
                 project_id=project_id,
                 incident_types=v,
+                incident_priorities=incident_priorities,
                 role=role,
                 service_id=service_id,
             )
