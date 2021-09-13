@@ -61,7 +61,7 @@ assoc_incident_roles_incident_priorities = Table(
     "incident_role_incident_priorities",
     Base.metadata,
     Column("incident_role_id", Integer, ForeignKey("incident_role.id")),
-    Column("incident_priorities_id", Integer, ForeignKey("incident_priority.id")),
+    Column("incident_priority_id", Integer, ForeignKey("incident_priority.id")),
     PrimaryKeyConstraint("incident_role_id", "incident_priority_id"),
 )
 
