@@ -51,6 +51,7 @@ class IPlugin(local):
     version: Optional[str] = None
     author: Optional[str] = None
     author_url: Optional[str] = None
+    configuration: Optional[dict] = None
     resource_links = ()
 
     _schema: Any = None
