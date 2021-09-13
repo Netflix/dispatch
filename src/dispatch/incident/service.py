@@ -163,7 +163,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
 
     tag_objs = []
     for t in incident_in.tags:
-        tag_objs.append(tag_service.get_or_create(db_session=db_session, tag_in=TagCreate(t)))
+        tag_objs.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
 
     # We create the incident
     incident = Incident(
