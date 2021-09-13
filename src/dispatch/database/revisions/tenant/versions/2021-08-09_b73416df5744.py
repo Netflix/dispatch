@@ -9,7 +9,7 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Boolean, Column, Integer, String, PrimaryKeyConstraint, Table, ForeignKey
-from sqlalchemy.orm import relation, relationship, Session
+from sqlalchemy.orm import relationship, Session
 from collections import defaultdict
 
 
