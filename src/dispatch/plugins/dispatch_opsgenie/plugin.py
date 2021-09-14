@@ -8,6 +8,7 @@ import logging
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import OncallPlugin
+from dispatch.plugins.dispatch_opsgenie.config import OpsgenieConfiguration
 from .service import get_oncall, page_oncall
 
 __version__ = "0.1.0"
@@ -24,8 +25,10 @@ class OpsGenieOncallPlugin(OncallPlugin):
     description = "Uses Opsgenie to resolve and page oncall teams."
     version = __version__
 
+    schema = OpsgenieConfiguration
+
     def get(self, service_id: str, **kwargs):
-        return get_oncall()
+        return get_oncall(self.configuration.api_key, service_id)
 
     def page(
         self,
@@ -35,4 +38,6 @@ class OpsGenieOncallPlugin(OncallPlugin):
         incident_description: str,
         **kwargs,
     ):
-        return page_oncall(incident_name, incident_title, incident_description)
+        return page_oncall(
+            self.configuration.api_key, incident_name, incident_title, incident_description
+        )

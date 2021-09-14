@@ -38,7 +38,12 @@ def get_oncall(client, service_id: str):
 
 
 def page_oncall(
-    client, service_id: str, incident_name: str, incident_title: str, incident_description: str
+    client,
+    from_email: str,
+    service_id: str,
+    incident_name: str,
+    incident_title: str,
+    incident_description: str,
 ):
     """Pages the oncall for a given service id."""
     service = client.rget(f"/services/{service_id}")
@@ -52,7 +57,7 @@ def page_oncall(
         "body": {"type": "incident_body", "details": incident_description},
         "escalation_policy": {"id": escalation_policy_id, "type": "escalation_policy_reference"},
     }
-    headers = {"from": PAGERDUTY_API_FROM_EMAIL}
+    headers = {"from": from_email}
     incident = client.rpost("/incidents", json=data, headers=headers)
 
     return incident

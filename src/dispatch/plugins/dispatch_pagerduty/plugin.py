@@ -11,7 +11,7 @@ from dispatch.plugins import dispatch_pagerduty as pagerduty_oncall_plugin
 from dispatch.plugins.bases import OncallPlugin
 
 from .service import get_oncall, page_oncall
-from .config import PAGERDUTY_API_KEY
+from .config import PagerdutyConfiguration
 
 
 log = logging.getLogger(__name__)
@@ -25,11 +25,12 @@ class PagerDutyOncallPlugin(OncallPlugin):
     author = "Netflix"
     author_url = "https://github.com/Netflix/dispatch.git"
     description = "Uses PagerDuty to resolve and page oncall teams."
+    schema = PagerdutyConfiguration
     version = pagerduty_oncall_plugin.__version__
 
     def get(self, service_id: str = None, **kwargs):
         """Gets the oncall person."""
-        client = APISession(str(PAGERDUTY_API_KEY))
+        client = APISession(self.configuration.api_key.get_secret_value())
         return get_oncall(client=client, service_id=service_id)
 
     def page(
@@ -41,9 +42,10 @@ class PagerDutyOncallPlugin(OncallPlugin):
         **kwargs,
     ):
         """Pages the oncall person."""
-        client = APISession(str(PAGERDUTY_API_KEY))
+        client = APISession(self.configuration.api_key.get_secret_value())
         return page_oncall(
             client=client,
+            from_email=self.configuration.from_email,
             service_id=service_id,
             incident_name=incident_name,
             incident_title=incident_title,

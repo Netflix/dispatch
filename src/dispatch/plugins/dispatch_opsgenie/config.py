@@ -1,5 +1,9 @@
-from dispatch.config import config, Secret
+from pydantic import BaseModel, Field
+from pydantic.types import SecretStr
 
 
-OPSGENIE_API_KEY = config("OPSGENIE_API_KEY", cast=Secret)
-OPSGENIE_TEAM_ID = config("OPSGENIE_TEAM_ID")
+class OpsgenieConfiguration(BaseModel):
+    """Opsgenie configuration description."""
+
+    api_key: SecretStr = Field(title="API Key", description="")
+    team_id: str = Field(title="Team ID", description="")

@@ -52,8 +52,13 @@ class PluginInstance(Base, ProjectMixin):
     def instance(self):
         """Fetches a plugin instance that matches this record."""
         plugin_instance = plugins.get(self.plugin.slug)
-        plugin_instance.configuration(plugin_instance._schema(**self.configuration))
+        plugin_instance.configuration = plugin_instance._schema(**self.configuration)
         return plugin
+
+    @property
+    def schema(self):
+        """Renders the plugin's schema to JSON Schema."""
+        return self.instance.schema.schema_json
 
 
 # Pydantic models...
@@ -76,6 +81,7 @@ class PluginInstanceRead(PluginBase):
     id: PrimaryKey
     enabled: Optional[bool]
     configuration: Optional[dict]
+    schema: Optional[dict]
     plugin: PluginRead
     project: Optional[ProjectRead]
 

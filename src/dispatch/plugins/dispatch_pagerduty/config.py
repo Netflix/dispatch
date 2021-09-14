@@ -1,4 +1,9 @@
-from dispatch.config import config, Secret
+from pydantic import BaseModel, Field
+from pydantic.types import SecretStr, EmailStr
 
-PAGERDUTY_API_KEY = config("PAGERDUTY_API_KEY", cast=Secret)
-PAGERDUTY_API_FROM_EMAIL = config("PAGERDUTY_API_FROM_EMAIL")
+
+class PagerdutyConfiguration(BaseModel):
+    """Pagerduty configuration description."""
+
+    api_key: SecretStr = Field(title="API Key", description="")
+    from_email: EmailStr = Field(title="API from Email", description="")

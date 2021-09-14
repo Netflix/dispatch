@@ -12,6 +12,7 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import DocumentPlugin
 from dispatch.plugins.dispatch_google import docs as google_docs_plugin
 from dispatch.plugins.dispatch_google.common import get_service
+from dispatch.plugins.dispatch_google.config import GoogleConfiguration
 
 
 def remove_control_characters(s):
@@ -38,6 +39,8 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
     description = "Uses Google docs to manage document contents."
     version = google_docs_plugin.__version__
 
+    schema = GoogleConfiguration
+
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
@@ -51,5 +54,5 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
         """Replaces text in document."""
         # TODO escape and use f strings? (kglisson)
         kwargs = {"{{" + k + "}}": v for k, v in kwargs.items()}
-        client = get_service("docs", "v1", self.scopes).documents()
+        client = get_service(self.configuration, "docs", "v1", self.scopes).documents()
         return replace_text(client, document_id, kwargs)
