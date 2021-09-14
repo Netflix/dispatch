@@ -8,7 +8,7 @@ asttokens==2.0.5
     # via devtools
 attrs==20.3.0
     # via pytest
-black==21.8b0
+black==21.9b0
     # via -r requirements-dev.in
 click==7.1.2
     # via black
