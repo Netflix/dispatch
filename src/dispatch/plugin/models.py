@@ -6,7 +6,6 @@ from sqlalchemy.ext.associationproxy import association_proxy
 
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy_utils import TSVectorType, JSONType
-from dispatch import plugin
 
 from dispatch.database.core import Base
 from dispatch.models import DispatchBase, ProjectMixin, PrimaryKey
@@ -53,7 +52,7 @@ class PluginInstance(Base, ProjectMixin):
         """Fetches a plugin instance that matches this record."""
         plugin_instance = plugins.get(self.plugin.slug)
         plugin_instance.configuration = plugin_instance._schema(**self.configuration)
-        return plugin
+        return plugin_instance
 
     @property
     def schema(self):
