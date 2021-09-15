@@ -69,10 +69,10 @@ def get_user_field(client: JIRA, hosting_type: str, jira_username: str, user_ema
         return {"id": user.accountId}
 
 
-def process_incident_type_plugin_metadata(
-    project_id: str, issue_type_name: str, plugin_metadata: dict
-):
+def process_incident_type_plugin_metadata(plugin_metadata: dict):
     """Processes the given incident type plugin metadata."""
+    project_id = None
+    issue_type_name = None
     if plugin_metadata:
         for key_value in plugin_metadata["metadata"]:
             if key_value["key"] == "project_id":

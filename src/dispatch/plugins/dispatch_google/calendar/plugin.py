@@ -135,7 +135,7 @@ class GoogleCalendarConferencePlugin(ConferencePlugin):
         self, name: str, description: str = None, title: str = None, participants: List[str] = []
     ):
         """Create a new event."""
-        client = get_service("calendar", "v3", self.scopes)
+        client = get_service(self.configuration, "calendar", "v3", self.scopes)
         conference = create_event(
             self.configuration,
             client,
