@@ -223,7 +223,7 @@ This monitor detected a change in state. State has changed from *{{ monitor_stat
 """
 
 INCIDENT_MONITOR_IGNORED_DESCRIPTION = """
-This monitor is now ignored. Dispatch won't bother this incident channel about it again..
+This monitor is now ignored. Dispatch won't remind this incident channel about it again.
 """
 
 INCIDENT_WORKFLOW_CREATED_DESCRIPTION = """
