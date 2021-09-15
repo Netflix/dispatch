@@ -73,9 +73,8 @@ class GoogleGmailEmailPlugin(EmailPlugin):
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
-    schema = GoogleConfiguration
-
     def __init__(self):
+        self.configuration_schema = GoogleConfiguration
         self.scopes = ["https://mail.google.com/"]
 
     def send(

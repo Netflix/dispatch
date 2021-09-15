@@ -1,4 +1,4 @@
-from pydantic.main import BaseModel, Field, SecretStr
+from pydantic import BaseModel, Field, SecretStr
 
 
 class SlackConfiguration(BaseModel):
@@ -12,6 +12,7 @@ class SlackConfiguration(BaseModel):
         None, title="Profile Department Field Id", description=""
     )
     profile_team_field_id: str = Field(None, title="Profile Team Field Id", description="")
+    profile_weblink_field_id: str = Field(None, title="Profile Weblink Field Id")
     signing_secret: SecretStr = Field(None, title="Signing Secret", description="")
     timeline_event_reaction: str = Field(
         "stopwatch", title="Timeline Event Reaction", description=""

@@ -25,7 +25,8 @@ class OpsGenieOncallPlugin(OncallPlugin):
     description = "Uses Opsgenie to resolve and page oncall teams."
     version = __version__
 
-    schema = OpsgenieConfiguration
+    def __init__(self):
+        self.configuration_schema = OpsgenieConfiguration
 
     def get(self, service_id: str, **kwargs):
         return get_oncall(self.configuration.api_key, service_id)

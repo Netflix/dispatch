@@ -25,8 +25,10 @@ class PagerDutyOncallPlugin(OncallPlugin):
     author = "Netflix"
     author_url = "https://github.com/Netflix/dispatch.git"
     description = "Uses PagerDuty to resolve and page oncall teams."
-    schema = PagerdutyConfiguration
     version = pagerduty_oncall_plugin.__version__
+
+    def __init__(self):
+        self.configuration_schema = PagerdutyConfiguration
 
     def get(self, service_id: str = None, **kwargs):
         """Gets the oncall person."""

@@ -5,12 +5,11 @@ import time
 import uuid
 
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from pydantic.main import BaseModel
+from pydantic import BaseModel
 
 from dispatch.exceptions import NotFoundError
 from dispatch.conversation import service as conversation_service
 from dispatch.database.core import engine, sessionmaker, SessionLocal
-from dispatch.incident.enums import IncidentStatus
 from dispatch.metrics import provider as metrics_provider
 from dispatch.organization import service as organization_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service

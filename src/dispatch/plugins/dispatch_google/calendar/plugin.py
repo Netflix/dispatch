@@ -123,13 +123,13 @@ class GoogleCalendarConferencePlugin(ConferencePlugin):
     slug = "google-calendar-conference"
     description = "Uses Google calendar to manage conference rooms/meets."
     version = google_calendar_plugin.__version__
-    schema = GoogleConfiguration
 
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
         self.scopes = ["https://www.googleapis.com/auth/calendar"]
+        self.configuration_schema = GoogleConfiguration
 
     def create(
         self, name: str, description: str = None, title: str = None, participants: List[str] = []

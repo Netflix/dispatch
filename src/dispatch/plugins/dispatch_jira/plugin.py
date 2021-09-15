@@ -157,7 +157,8 @@ class JiraTicketPlugin(TicketPlugin):
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
-    schema = JiraConfiguration
+    def __init__(self):
+        self.configuration_schema = JiraConfiguration
 
     def create(
         self,

@@ -39,12 +39,11 @@ class GoogleDocsDocumentPlugin(DocumentPlugin):
     description = "Uses Google docs to manage document contents."
     version = google_docs_plugin.__version__
 
-    schema = GoogleConfiguration
-
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
+        self.configuration_schema = GoogleConfiguration
         self.scopes = [
             "https://www.googleapis.com/auth/documents",
             "https://www.googleapis.com/auth/drive",

@@ -1,4 +1,4 @@
-from pydantic.main import BaseModel, Field
+from pydantic import BaseModel, Field
 
 
 class GoogleConfiguration(BaseModel):

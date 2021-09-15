@@ -3,7 +3,7 @@ import json
 
 from typing import List
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from pydantic.main import BaseModel
+from pydantic import BaseModel
 from pydantic.types import Json, constr
 
 from fastapi import Depends, Query

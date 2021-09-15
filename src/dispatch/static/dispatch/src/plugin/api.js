@@ -26,4 +26,8 @@ export default {
   updateInstance(instanceId, payload) {
     return API.put(`/${resource}/instances/${instanceId}`, payload)
   },
+
+  deleteInstance(instanceId) {
+    return API.delete(`/${resource}/instances/${instanceId}`)
+  },
 }

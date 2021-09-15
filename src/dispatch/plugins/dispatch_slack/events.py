@@ -11,6 +11,7 @@ from dispatch.conversation import service as conversation_service
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
+from dispatch.plugins.dispatch_slack.config import SlackConfiguration
 from dispatch.tag import service as tag_service
 from dispatch.individual import service as individual_service
 from dispatch.participant import service as participant_service
@@ -19,10 +20,6 @@ from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.tag.models import Tag
 
 
-from .config import (
-    SLACK_BAN_THREADS,
-    SLACK_TIMELINE_EVENT_REACTION,
-)
 from .decorators import slack_background_task, get_organization_scope_from_channel_id
 from .service import get_user_email
 
@@ -138,6 +135,7 @@ async def handle_slack_event(*, client, event, background_tasks):
 
 @slack_background_task
 def handle_reaction_added_event(
+    config: SlackConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,
@@ -149,7 +147,7 @@ def handle_reaction_added_event(
     """Handles an event where a reaction is added to a message."""
     reaction = event.event.reaction
 
-    if reaction == SLACK_TIMELINE_EVENT_REACTION:
+    if reaction == config.timeline_event_reaction:
         conversation_id = event.event.item.channel
         message_ts = event.event.item.ts
         message_ts_utc = datetime.datetime.utcfromtimestamp(float(message_ts))
@@ -297,6 +295,7 @@ def member_left_channel(
 
 @slack_background_task
 def ban_threads_warning(
+    config: SlackConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,
@@ -306,7 +305,7 @@ def ban_threads_warning(
     slack_client=None,
 ):
     """Sends the user an ephemeral message if they use threads."""
-    if not SLACK_BAN_THREADS:
+    if not config.ban_threads:
         return
 
     if event.event.thread_ts:

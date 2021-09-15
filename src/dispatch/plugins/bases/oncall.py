@@ -6,12 +6,10 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from dispatch.plugins.base import Plugin
-from dispatch.models import PluginOptionModel
 
 
 class OncallPlugin(Plugin):
     type = "oncall"
-    _schema = PluginOptionModel
 
     def get(self, service_id: str, **kwargs):
         raise NotImplementedError

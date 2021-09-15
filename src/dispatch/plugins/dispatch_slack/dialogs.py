@@ -8,8 +8,6 @@ from dispatch.report import service as report_service
 from dispatch.report.enums import ReportTypes
 from dispatch.service import service as service_service
 
-from .config import SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG
-
 
 log = logging.getLogger(__name__)
 
@@ -191,7 +189,7 @@ def create_executive_report_dialog(
                 "label": "Next Steps",
                 "name": "next_steps",
                 "value": next_steps,
-                "hint": f"Use {SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG} to update the list of recipients of this report.",
+                "hint": f"Use {config.slack_command_update_notifications_group} to update the list of recipients of this report.",
             },
         ],
     }

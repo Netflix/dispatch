@@ -33,9 +33,8 @@ class GoogleDriveStoragePlugin(StoragePlugin):
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
-    schema = GoogleConfiguration
-
     def __init__(self):
+        self.configuration_schema = GoogleConfiguration
         self.scopes = ["https://www.googleapis.com/auth/drive"]
 
     def get(self, file_id: str, mime_type=None):
@@ -116,9 +115,8 @@ class GoogleDriveTaskPlugin(TaskPlugin):
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
-    schema = GoogleConfiguration
-
     def __init__(self):
+        self.configuration_schema = GoogleConfiguration
         self.scopes = ["https://www.googleapis.com/auth/drive"]
 
     def create(self, file_id: str, text: str):

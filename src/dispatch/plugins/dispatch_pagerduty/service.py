@@ -1,6 +1,3 @@
-from .config import PAGERDUTY_API_FROM_EMAIL
-
-
 def get_oncall_email(client, service: dict) -> str:
     """Fetches the oncall's email for a given service."""
     escalation_policy_id = service["escalation_policy"]["id"]

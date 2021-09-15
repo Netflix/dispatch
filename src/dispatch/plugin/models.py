@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 from pydantic import Field
 
 from sqlalchemy.orm import relationship
@@ -50,14 +50,15 @@ class PluginInstance(Base, ProjectMixin):
     @property
     def instance(self):
         """Fetches a plugin instance that matches this record."""
-        plugin_instance = plugins.get(self.plugin.slug)
-        plugin_instance.configuration = plugin_instance._schema(**self.configuration)
-        return plugin_instance
+        plugin = plugins.get(self.plugin.slug)
+        plugin.configuration = plugin.configuration_schema(**self.configuration)
+        return plugin
 
     @property
-    def schema(self):
+    def configuration_schema(self):
         """Renders the plugin's schema to JSON Schema."""
-        return self.instance.schema.schema_json
+        plugin = plugins.get(self.plugin.slug)
+        return plugin.configuration_schema.schema()
 
 
 # Pydantic models...
@@ -80,7 +81,7 @@ class PluginInstanceRead(PluginBase):
     id: PrimaryKey
     enabled: Optional[bool]
     configuration: Optional[dict]
-    schema: Optional[dict]
+    configuration_schema: Any
     plugin: PluginRead
     project: Optional[ProjectRead]
 

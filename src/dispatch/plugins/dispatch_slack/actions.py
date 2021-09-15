@@ -15,12 +15,7 @@ from dispatch.report.models import ExecutiveReportCreate, TacticalReportCreate
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 
-from .config import (
-    SLACK_COMMAND_ASSIGN_ROLE_SLUG,
-    SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
-    SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
-    SLACK_COMMAND_REPORT_TACTICAL_SLUG,
-)
+from .config import SlackConfiguration
 
 from .modals.feedback.views import RatingFeedbackCallbackId
 from .modals.feedback.handlers import (
@@ -155,7 +150,7 @@ def handle_dialog_action(action: dict, background_tasks: BackgroundTasks):
 
     action_id = action["callback_id"]
 
-    for f in dialog_action_functions(action_id):
+    for f in dialog_action_functions(configuration, action_id):
         background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, action)
 
 
@@ -403,13 +398,13 @@ def handle_assign_role_action(
     )
 
 
-def dialog_action_functions(action: str):
+def dialog_action_functions(config: SlackConfiguration, action: str):
     """Interprets the action and routes it to the appropriate function."""
     action_mappings = {
-        SLACK_COMMAND_ASSIGN_ROLE_SLUG: [handle_assign_role_action],
-        SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [handle_engage_oncall_action],
-        SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [handle_executive_report_create],
-        SLACK_COMMAND_REPORT_TACTICAL_SLUG: [handle_tactical_report_create],
+        config.slack_command_assign_role: [handle_assign_role_action],
+        config.slack_command_engage_oncall: [handle_engage_oncall_action],
+        config.slack_command_report_executive: [handle_executive_report_create],
+        config.slack_command_report_tactical: [handle_tactical_report_create],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc

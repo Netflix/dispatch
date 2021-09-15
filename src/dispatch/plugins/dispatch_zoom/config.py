@@ -1,4 +1,4 @@
-from pydantic.main import BaseModel, Field, SecretStr
+from pydantic import BaseModel, Field, SecretStr
 
 
 class ZoomConfiguration(BaseModel):

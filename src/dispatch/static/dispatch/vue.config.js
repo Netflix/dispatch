@@ -8,6 +8,7 @@ function resolve(dir) {
 
 // vue.config.js
 module.exports = {
+  transpileDependencies: ["vuetify", "@koumoul/vjsf"],
   chainWebpack: (config) => {
     config.plugin("monaco-editor").use(MonacoWebpackPlugin, [
       {

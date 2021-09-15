@@ -59,10 +59,11 @@ class ZoomConferencePlugin(ConferencePlugin):
     description = "Uses Zoom to manage conference meetings."
     version = zoom_plugin.__version__
 
-    schema = ZoomConfiguration
-
     author = "HashiCorp"
     author_url = "https://github.com/netflix/dispatch.git"
+
+    def __init__(self):
+        self.configuration_schema = ZoomConfiguration
 
     def create(
         self, name: str, description: str = None, title: str = None, participants: List[str] = []

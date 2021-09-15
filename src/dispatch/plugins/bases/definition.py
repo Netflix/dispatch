@@ -6,12 +6,10 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from dispatch.plugins.base import Plugin
-from dispatch.models import PluginOptionModel
 
 
 class DefinitionPlugin(Plugin):
     type = "definition"
-    _schema = PluginOptionModel
 
     def get(self, key, **kwargs):
         raise NotImplementedError

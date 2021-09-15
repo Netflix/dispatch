@@ -143,7 +143,3 @@ class ContactBase(DispatchBase):
     contact_type: Optional[str] = Field(None, nullable=True)
     notes: Optional[str] = Field(None, nullable=True)
     owner: Optional[str] = Field(None, nullable=True)
-
-
-class PluginOptionModel(DispatchBase):
-    pass

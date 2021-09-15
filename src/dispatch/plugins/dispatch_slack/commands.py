@@ -2,7 +2,7 @@ import base64
 import logging
 from typing import List
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from pydantic.main import BaseModel
+from pydantic import BaseModel
 
 from sqlalchemy.orm import Session
 
@@ -42,7 +42,7 @@ from .dialogs import (
 )
 
 from .messaging import (
-    INCIDENT_CONVERSATION_COMMAND_MESSAGE,
+    get_incident_conversation_command_message,
     create_command_run_in_conversation_where_bot_not_present_message,
     create_command_run_in_nonincident_conversation_message,
     create_command_run_by_non_privileged_user_message,
@@ -195,7 +195,7 @@ async def handle_non_incident_conversation_commands(config, client, request, bac
             command=request,
         )
 
-    return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(command, f"Running... Command: {command}")
+    return get_incident_conversation_command_message(config, command)
 
 
 async def handle_incident_conversation_commands(config, client, request, background_tasks):
@@ -237,7 +237,7 @@ async def handle_incident_conversation_commands(config, client, request, backgro
             command=request,
         )
 
-    return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(command, f"Running... Command: {command}")
+    return get_incident_conversation_command_message(config, command)
 
 
 async def handle_slack_command(*, config, client, request, background_tasks):

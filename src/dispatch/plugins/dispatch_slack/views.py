@@ -17,7 +17,6 @@ from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from . import __version__
 from .actions import handle_slack_action
 from .commands import handle_slack_command
-from .config import SLACK_SIGNING_SECRET
 from .events import handle_slack_event, EventEnvelope
 from .menus import handle_slack_menu
 

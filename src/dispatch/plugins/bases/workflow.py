@@ -6,12 +6,10 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from dispatch.plugins.base import Plugin
-from dispatch.models import PluginOptionModel
 
 
 class WorkflowPlugin(Plugin):
     type = "workflow"
-    _schema = PluginOptionModel
 
     def get_instance(self, workflow_id: str, instance_id: str, **kwargs):
         raise NotImplementedError

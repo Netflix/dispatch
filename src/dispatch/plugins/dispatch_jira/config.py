@@ -1,4 +1,4 @@
-from pydantic.main import BaseModel, Field, SecretStr, HttpUrl
+from pydantic import BaseModel, Field, SecretStr, HttpUrl
 from enum import Enum
 
 

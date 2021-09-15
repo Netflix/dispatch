@@ -114,9 +114,8 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
-    schema = GoogleConfiguration
-
     def __init__(self):
+        self.configuration_schema = GoogleConfiguration
         self.scopes = [
             "https://www.googleapis.com/auth/admin.directory.group",
             "https://www.googleapis.com/auth/apps.groups.settings",
