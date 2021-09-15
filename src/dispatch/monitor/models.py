@@ -17,11 +17,9 @@ class Monitor(Base, ResourceMixin, TimeStampMixin):
     id = Column(Integer, primary_key=True)
     plugin_instance_id = Column(Integer, ForeignKey(PluginInstance.id))
     plugin_instance = relationship(PluginInstance, backref="monitors")
-    creator_id = Column(Integer, ForeignKey("participant.id"))
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
-
     incident = relationship("Incident", backref="monitors", foreign_keys=[incident_id])
-
+    creator_id = Column(Integer, ForeignKey("participant.id"))
     creator = relationship(
         "Participant", backref="created_monitor_instances", foreign_keys=[creator_id]
     )
