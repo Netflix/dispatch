@@ -224,6 +224,7 @@ This monitor detected a change in state. State has changed from *{{ monitor_stat
 
 INCIDENT_MONITOR_IGNORED_DESCRIPTION = """
 This monitor is now ignored. Dispatch won't remind this incident channel about it again.
+\n\n *Weblink:* {{weblink}}
 """
 
 INCIDENT_WORKFLOW_CREATED_DESCRIPTION = """

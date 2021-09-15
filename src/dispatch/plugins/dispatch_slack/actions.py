@@ -5,9 +5,16 @@ from fastapi import BackgroundTasks
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.conversation.messaging import send_feedack_to_user
+from dispatch.exceptions import DispatchException
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
+from dispatch.messaging.strings import (
+    INCIDENT,
+    INCIDENT_MONITOR_CREATED_DESCRIPTION,
+    INCIDENT_MONITOR_CREATED_NOTIFICATION,
+    INCIDENT_MONITOR_IGNORE_NOTIFICATION,
+)
 from dispatch.monitor.models import MonitorCreate
 from dispatch.monitor import service as monitor_service
 from dispatch.plugin import service as plugin_service
@@ -258,7 +265,7 @@ def monitor_link(
             plugin_instance=plugin_instance,
             weblink=button.weblink,
         )
-        message = f"Dispatch is now monitoring {button.weblink} for status updates."
+        message_template = INCIDENT_MONITOR_CREATED_NOTIFICATION
 
     elif button.action_type == "ignore":
         monitor_in = MonitorCreate(
@@ -267,12 +274,23 @@ def monitor_link(
             plugin_instance=plugin_instance,
             weblink=button.weblink,
         )
-        message = (
-            f"Ignoring {button.weblink}. Dispatch won't bother you about it again in this incident."
-        )
+
+        message_template = INCIDENT_MONITOR_IGNORE_NOTIFICATION
+
+    else:
+        raise DispatchException(f"Unknown monitor action type. Type: {button.action_type}")
 
     monitor_service.create_or_update(db_session=db_session, monitor_in=monitor_in)
-    dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
+
+    notification_text = "Incident Notification"
+    notification_type = "incident-notification"
+
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, plugin_type="conversation", project_id=incident.project.id
+    )
+    plugin.instance.send_ephemeral(
+        channel_id, notification_text, message_template, notification_type, weblink=button.weblink
+    )
 
 
 @slack_background_task

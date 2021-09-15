@@ -1,7 +1,10 @@
+from dispatch.database.core import SessionLocal
 from dispatch.plugin import service as plugin_service
 
 
-def send_monitor_notification(project_id, conversation_id, message_template, db_session, **kwargs):
+def send_monitor_notification(
+    project_id: int, conversation_id: int, message_template: str, db_session: SessionLocal, **kwargs
+):
     """Sends a monitor notification."""
     notification_text = "Incident Notification"
     notification_type = "incident-notification"
