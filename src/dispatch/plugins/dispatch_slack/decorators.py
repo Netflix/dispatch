@@ -12,10 +12,26 @@ from dispatch.conversation import service as conversation_service
 from dispatch.database.core import engine, sessionmaker, SessionLocal
 from dispatch.metrics import provider as metrics_provider
 from dispatch.organization import service as organization_service
+from dispatch.plugin import service as plugin_service
+from dispatch.plugins.base.v1 import Plugin
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 
 
 log = logging.getLogger(__name__)
+
+
+def get_plugin_configuration_from_channel_id(db_session: SessionLocal, channel_id: str) -> Plugin:
+    """Fetches the currently slack plugin configuration for this incident channel."""
+    conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
+        db_session, channel_id
+    )
+    if conversation:
+        plugin_instance = plugin_service.get_active_instance(
+            db_session=db_session,
+            plugin_type="conversation",
+            project_id=conversation.incident.project.id,
+        )
+        return plugin_instance.configuration
 
 
 # we need a way to determine which organization to use for a given
@@ -107,10 +123,6 @@ def slack_background_task(func):
                 "function.call.counter", tags={"function": fullname(func), "slack": True}
             )
 
-            if not kwargs.get("slack_client"):
-                slack_client = dispatch_slack_service.create_slack_client()
-                kwargs["slack_client"] = slack_client
-
             if not kwargs.get("db_session"):
                 channel_id = args[2]
 
@@ -127,6 +139,13 @@ def slack_background_task(func):
 
                 background = True
                 kwargs["db_session"] = scoped_db_session
+
+            if not kwargs.get("slack_client"):
+                config = get_plugin_configuration_from_channel_id(
+                    db_session=kwargs["db_session"], channel_id=channel_id
+                )
+                slack_client = dispatch_slack_service.create_slack_client(config=config)
+                kwargs["slack_client"] = slack_client
 
             start = time.perf_counter()
             result = func(*args, **kwargs)

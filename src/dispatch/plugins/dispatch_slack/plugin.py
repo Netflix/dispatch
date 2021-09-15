@@ -219,10 +219,10 @@ class SlackDocumentPlugin(DocumentPlugin):
     def __init__(self):
         self.cachedir = os.path.dirname(os.path.realpath(__file__))
         self.memory = Memory(cachedir=self.cachedir, verbose=0)
-        self.client = create_slack_client()
 
     def get(self, **kwargs) -> dict:
         """Queries slack for documents."""
+        client = create_slack_client(self.configuration)
         conversations = []
 
         if kwargs["channels"]:
@@ -230,7 +230,7 @@ class SlackDocumentPlugin(DocumentPlugin):
 
             channels = kwargs["channels"].split(",")
             for c in channels:
-                conversations.append(get_conversation_by_name(self.client, c))
+                conversations.append(get_conversation_by_name(client, c))
 
         if kwargs["channel_match_pattern"]:
             try:
@@ -244,14 +244,14 @@ class SlackDocumentPlugin(DocumentPlugin):
             logger.debug(
                 f"Querying slack for documents. ChannelsPattern: {kwargs['channel_match_pattern']}"
             )
-            for c in list_conversations(self.client):
+            for c in list_conversations(client):
                 if pattern.match(c["name"]):
                     conversations.append(c)
 
         for c in conversations:
             logger.info(f'Fetching channel messages. Channel Name: {c["name"]}')
 
-            messages = list_conversation_messages(self.client, c["id"], lookback=kwargs["lookback"])
+            messages = list_conversation_messages(client, c["id"], lookback=kwargs["lookback"])
 
             logger.info(f'Found {len(messages)} messages in slack. Channel Name: {c["name"]}')
 
@@ -259,7 +259,7 @@ class SlackDocumentPlugin(DocumentPlugin):
                 if not message_filter(m):
                     continue
 
-                user_email = get_user_info_by_id(self.client, m["user"])["user"]["profile"]["email"]
+                user_email = get_user_info_by_id(client, m["user"])["user"]["profile"]["email"]
 
                 yield {
                     "person": {"email": user_email},
