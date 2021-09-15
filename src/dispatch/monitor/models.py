@@ -5,6 +5,7 @@ from sqlalchemy import Column, ForeignKey, Integer, JSON, Boolean
 from dispatch.database.core import Base
 from dispatch.incident.models import IncidentRead
 from dispatch.plugin.models import PluginInstance, PluginInstanceRead
+from dispatch.participant.models import ParticipantRead
 from dispatch.models import (
     PrimaryKey,
     ResourceBase,
@@ -34,6 +35,7 @@ class MonitorBase(ResourceBase):
 
 class MonitorCreate(MonitorBase):
     plugin_instance: PluginInstanceRead
+    creator: ParticipantRead
     incident: IncidentRead
 
 

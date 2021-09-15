@@ -10,13 +10,12 @@ from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.messaging.strings import (
-    INCIDENT,
-    INCIDENT_MONITOR_CREATED_DESCRIPTION,
     INCIDENT_MONITOR_CREATED_NOTIFICATION,
     INCIDENT_MONITOR_IGNORE_NOTIFICATION,
 )
 from dispatch.monitor.models import MonitorCreate
 from dispatch.monitor import service as monitor_service
+from dispatch.participant import service as participant_service
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.report import flows as report_flows
@@ -255,6 +254,11 @@ def monitor_link(
         db_session=db_session, plugin_instance_id=button.plugin_instance_id
     )
 
+    creator_email = get_user_email(slack_client, action["user"]["id"])
+    creator = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=incident.id, email=creator_email
+    )
+
     if button.action_type == "monitor":
         status = plugin_instance.instance.get_match_status(weblink=button.weblink)
 
@@ -263,6 +267,7 @@ def monitor_link(
             enabled=True,
             status=status,
             plugin_instance=plugin_instance,
+            creator=creator,
             weblink=button.weblink,
         )
         message_template = INCIDENT_MONITOR_CREATED_NOTIFICATION
