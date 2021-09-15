@@ -1,12 +1,11 @@
 import logging
 
 from schedule import every
-from dispatch.database.core import SessionLocal, resolve_attr
 
+from dispatch.database.core import SessionLocal, resolve_attr
 from dispatch.decorators import scheduled_project_task
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
-
 from dispatch.messaging.strings import (
     INCIDENT_MONITOR_UPDATE_NOTIFICATION,
 )
