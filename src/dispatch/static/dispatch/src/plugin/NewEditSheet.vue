@@ -7,7 +7,7 @@
           <v-list-item-title v-else class="title"> New </v-list-item-title>
           <v-list-item-subtitle>Plugin Instance</v-list-item-subtitle>
         </v-list-item-content>
-        <v-btn icon color="info" :loading="loading" @click="save()">
+        <v-btn icon color="info" :loading="loading" :disabled="!valid" @click="save()">
           <v-icon>save</v-icon>
         </v-btn>
         <v-btn icon color="secondary" @click="closeCreateEdit">
@@ -17,23 +17,14 @@
     </template>
     <v-card flat>
       <v-card-text>
-        <v-container grid-list-md>
-          <v-layout wrap>
-            <v-flex xs12>
-              <span class="subtitle-2">Plugin Configuration</span>
-              <v-checkbox
-                v-model="enabled"
-                hint="Each plugin type can only ever have one enabled plugin. Existing enabled plugins will be de-activated."
-                label="Enabled"
-              />
-            </v-flex>
-            <v-flex xs12>
-              <v-form v-model="valid">
-                <v-jsf v-model="model" :schema="configuration_schema" />
-              </v-form>
-            </v-flex>
-          </v-layout>
-        </v-container>
+        <v-form v-model="valid">
+          <v-checkbox
+            v-model="enabled"
+            hint="Each plugin type can only ever have one enabled plugin. Existing enabled plugins will be de-activated."
+            label="Enabled"
+          />
+          <v-jsf v-model="configuration" :schema="configuration_schema" :options="options" />
+        </v-form>
       </v-card-text>
     </v-card>
   </v-navigation-drawer>
@@ -42,7 +33,8 @@
 <script>
 import VJsf from "@koumoul/vjsf"
 import "@koumoul/vjsf/dist/main.css"
-import { mapFields, mapMultiRowFields } from "vuex-map-fields"
+import { mapFields } from "vuex-map-fields"
+
 import { mapActions, mapMutations } from "vuex"
 
 export default {
@@ -55,7 +47,9 @@ export default {
   data() {
     return {
       valid: false,
-      model: {},
+      options: {
+        initialValidation: "all",
+      },
     }
   },
 
@@ -64,13 +58,13 @@ export default {
       "selected.id",
       "selected.project",
       "selected.enabled",
+      "selected.configuration",
       "selected.configuration_schema",
       "selected.loading",
       "selected.plugin",
       "dialogs.showCreateEdit",
     ]),
     ...mapFields("route", ["query"]),
-    ...mapMultiRowFields("plugin", ["selected.configuration"]),
   },
 
   methods: {

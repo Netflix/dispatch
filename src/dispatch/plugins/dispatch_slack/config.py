@@ -1,23 +1,57 @@
+from typing import Optional
 from pydantic import BaseModel, Field, SecretStr
 
 
 class SlackConfiguration(BaseModel):
     """Slack configuration description."""
 
-    api_bot_token: SecretStr = Field(None, title="API Bot Token", description="")
-    socket_mode_app_token: SecretStr = Field(None, title="Socket Mode App Token", description="")
-    app_user_slug: str = Field(None, title="App User Slug")
-    ban_threads: bool = Field(True, title="Ban Threads", description="")
-    profile_department_field_id: str = Field(
-        None, title="Profile Department Field Id", description=""
+    api_bot_token: SecretStr = Field(
+        title="API Bot Token", description="Token to use when plugin is in http/api mode."
     )
-    profile_team_field_id: str = Field(None, title="Profile Team Field Id", description="")
-    profile_weblink_field_id: str = Field(None, title="Profile Weblink Field Id")
-    signing_secret: SecretStr = Field(None, title="Signing Secret", description="")
+    socket_mode_app_token: SecretStr = Field(
+        title="Socket Mode App Token", description="Token used when plugin is in socket mode."
+    )
+    signing_secret: SecretStr = Field(
+        title="Signing Secret",
+        description="Secret used to validate incoming messages from the Slack events API.",
+    )
+
+
+class SlackContactConfiguration(SlackConfiguration):
+    """Slack contact configuration."""
+
+    profile_department_field_id: Optional[str] = Field(
+        None,
+        title="Profile Department Field Id",
+        description="Defines the field in the slack profile where Dispatch should fetch the users department.",
+    )
+    profile_team_field_id: Optional[str] = Field(
+        title="Profile Team Field Id",
+        description="Defines the field in the slack profile where Dispatch should fetch a users team.",
+    )
+    profile_weblink_field_id: Optional[str] = Field(
+        title="Profile Weblink Field Id",
+        description="Defines the field in the slack profile where Dispatch should fetch the users weblink.",
+    )
+
+
+class SlackConversationConfiguration(SlackConfiguration):
+    """Slack conversation configuration."""
+
+    app_user_slug: str = Field(
+        title="App User Slug",
+        description="Defines the name of the Dispatch app in your environment.",
+    )
+    ban_threads: bool = Field(
+        True,
+        title="Ban Threads",
+        description="If enabled, Dispatch will message users reminding them to not use threads in incident channels.",
+    )
     timeline_event_reaction: str = Field(
-        "stopwatch", title="Timeline Event Reaction", description=""
+        "stopwatch",
+        title="Timeline Event Reaction",
+        description="Defines the emoji that Dispatch will monitor for adding slack messages to the timeline.",
     )
-    user_id_override: str = Field(None, title="User Id Override", description="")
     slash_command_list_tasks: str = Field(
         "/dispatch-list-tasks",
         title="List Tasks Command String",

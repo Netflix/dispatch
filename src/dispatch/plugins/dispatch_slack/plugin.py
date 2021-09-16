@@ -16,7 +16,11 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.exceptions import DispatchPluginException
 from dispatch.plugins import dispatch_slack as slack_plugin
 from dispatch.plugins.bases import ConversationPlugin, DocumentPlugin, ContactPlugin
-from dispatch.plugins.dispatch_slack.config import SlackConfiguration
+from dispatch.plugins.dispatch_slack.config import (
+    SlackConfiguration,
+    SlackContactConfiguration,
+    SlackConversationConfiguration,
+)
 
 from .views import router as slack_event_router
 from .messaging import create_message_blocks
@@ -57,7 +61,7 @@ class SlackConversationPlugin(ConversationPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
-        self.configuration_schema = SlackConfiguration
+        self.configuration_schema = SlackConversationConfiguration
 
     def create(self, name: str, is_private: bool = True):
         """Creates a new Slack conversation."""
@@ -175,7 +179,7 @@ class SlackContactPlugin(ContactPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
-        self.configuration_schema = SlackConfiguration
+        self.configuration_schema = SlackContactConfiguration
 
     def get(self, email: str, **kwargs):
         """Fetch user info by email."""
@@ -217,6 +221,7 @@ class SlackDocumentPlugin(DocumentPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
+        self.configuration_schema = SlackConfiguration
         self.cachedir = os.path.dirname(os.path.realpath(__file__))
         self.memory = Memory(cachedir=self.cachedir, verbose=0)
 

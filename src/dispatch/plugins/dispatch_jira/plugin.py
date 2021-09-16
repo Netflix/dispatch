@@ -4,7 +4,10 @@
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.
 """
+from enum import Enum
 from typing import Any
+
+from pydantic import BaseModel, Field, SecretStr, HttpUrl
 
 from jinja2 import Template
 from jira import JIRA, User
@@ -13,7 +16,32 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_jira as jira_plugin
 from dispatch.plugins.bases import TicketPlugin
 
-from .config import JiraConfiguration
+
+class HostingType(str, Enum):
+    """Type of Jira deployment."""
+
+    cloud = "cloud"
+    server = "server"
+
+
+class JiraConfiguration(BaseModel):
+    """Jira configuration description."""
+
+    api_url: HttpUrl = Field(
+        title="API URL", description="This URL is used for communication with API."
+    )
+    browser_url: HttpUrl = Field(
+        title="Browser URL", description="This URL is used to construct browser weblinks."
+    )
+    hosting_type: HostingType = Field(
+        "cloud", title="Hosting Type", description="Defines the type of deployment."
+    )
+    username: str = Field(
+        title="Username", description="Username to use to authenticate to Jira API."
+    )
+    password: SecretStr = Field(
+        title="Password", description="Password to use to authenticate to Jira API."
+    )
 
 
 ISSUE_SUMMARY_TEMPLATE = """

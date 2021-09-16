@@ -1,13 +1,18 @@
 from typing import Any, List, Optional
+import json
 from pydantic import Field
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.associationproxy import association_proxy
 
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
-from sqlalchemy_utils import TSVectorType, JSONType
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy_utils import TSVectorType, StringEncryptedType
+from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
+
 
 from dispatch.database.core import Base
+from dispatch.config import DISPATCH_ENCRYPTION_KEY
 from dispatch.models import DispatchBase, ProjectMixin, PrimaryKey
 from dispatch.plugins.base import plugins
 from dispatch.project.models import ProjectRead
@@ -39,7 +44,9 @@ class Plugin(Base):
 class PluginInstance(Base, ProjectMixin):
     id = Column(Integer, primary_key=True)
     enabled = Column(Boolean)
-    configuration = Column(JSONType)
+    _configuration = Column(
+        StringEncryptedType(key=str(DISPATCH_ENCRYPTION_KEY), engine=AesEngine, padding="pkcs5")
+    )
     plugin_id = Column(Integer, ForeignKey(Plugin.id))
     plugin = relationship(Plugin, backref="instances")
 
@@ -59,6 +66,17 @@ class PluginInstance(Base, ProjectMixin):
         """Renders the plugin's schema to JSON Schema."""
         plugin = plugins.get(self.plugin.slug)
         return plugin.configuration_schema.schema()
+
+    @hybrid_property
+    def configuration(self):
+        if self._configuration:
+            return json.loads(self._configuration)
+
+    @configuration.setter
+    def configuration(self, configuration):
+        print(configuration)
+        if configuration:
+            self._configuration = json.dumps(configuration)
 
 
 # Pydantic models...
