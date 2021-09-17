@@ -307,7 +307,11 @@ def add_users_to_conversation(client: Any, conversation_id: str, user_ids: List[
 
 
 def send_message(
-    client: Any, conversation_id: str, text: str = None, blocks: Dict = None, persist: bool = False
+    client: Any,
+    conversation_id: str,
+    text: str = None,
+    blocks: List[Dict] = None,
+    persist: bool = False,
 ):
     """Sends a message to the given conversation."""
     response = make_call(
