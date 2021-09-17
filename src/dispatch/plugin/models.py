@@ -74,7 +74,6 @@ class PluginInstance(Base, ProjectMixin):
 
     @configuration.setter
     def configuration(self, configuration):
-        print(configuration)
         if configuration:
             self._configuration = json.dumps(configuration)
 

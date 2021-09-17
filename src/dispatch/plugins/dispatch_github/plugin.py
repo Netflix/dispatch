@@ -8,6 +8,7 @@ import re
 import platform
 import sys
 import requests
+from pydantic import BaseModel
 from datetime import datetime
 from tenacity import TryAgain, retry, stop_after_attempt, wait_fixed
 
@@ -15,6 +16,10 @@ from . import __version__
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_github as github_plugin
 from dispatch.plugins.bases.monitor import MonitorPlugin
+
+
+class GithubConfiguration(BaseModel):
+    pass
 
 
 def create_ua_string():
@@ -47,6 +52,9 @@ class GithubMonitorPlugin(MonitorPlugin):
 
     author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
+
+    def __init__(self):
+        self.configuration_schema = GithubConfiguration
 
     def get_matchers(self, *args, **kwargs):
         """Returns a list of regexes that this monitor plugin should look for in chat messages."""

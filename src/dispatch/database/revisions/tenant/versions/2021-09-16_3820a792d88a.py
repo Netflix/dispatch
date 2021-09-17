@@ -1,20 +1,60 @@
-"""empty message
+"""Migrates plugin instance configuration column to encrypted column.
 
 Revision ID: 3820a792d88a
 Revises: 3820fb661728
 Create Date: 2021-09-16 16:33:40.605881
 
 """
+import json
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 import sqlalchemy_utils
+from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, Session
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy_utils import StringEncryptedType
+from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
+from dispatch.config import config, Secret
+from starlette.datastructures import URL
+
 
 # revision identifiers, used by Alembic.
 revision = "3820a792d88a"
 down_revision = "3820fb661728"
 branch_labels = None
 depends_on = None
+
+Base = declarative_base()
+
+
+class Plugin(Base):
+    __tablename__ = "plugin"
+    __table_args__ = {"schema": "dispatch_core"}
+    id = Column(Integer, primary_key=True)
+
+
+class PluginInstance(Base):
+    __tablename__ = "plugin_instance"
+    id = Column(Integer, primary_key=True)
+    _configuration = Column(
+        StringEncryptedType(
+            key=str(config.DISPATCH_ENCRYPTION_KEY), engine=AesEngine, padding="pkcs5"
+        )
+    )
+    plugin_id = Column(Integer, ForeignKey(Plugin.id))
+    plugin = relationship(Plugin, backref="instances")
+
+    @hybrid_property
+    def configuration(self):
+        if self._configuration:
+            return json.loads(self._configuration)
+
+    @configuration.setter
+    def configuration(self, configuration):
+        if configuration:
+            self._configuration = json.dumps(configuration)
 
 
 def upgrade():
@@ -27,7 +67,204 @@ def upgrade():
             nullable=True,
         ),
     )
-    # op.drop_column("plugin_instance", "configuration")
+
+    from dispatch.plugins.dispatch_google.config import GoogleConfiguration
+
+    GOOGLE_DEVELOPER_KEY = config("GOOGLE_DEVELOPER_KEY", cast=Secret)
+    GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL = config("GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL")
+    GOOGLE_SERVICE_ACCOUNT_CLIENT_ID = config("GOOGLE_SERVICE_ACCOUNT_CLIENT_ID")
+    GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT = config("GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT")
+    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY = config("GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY", cast=Secret)
+    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID = config("GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID")
+    GOOGLE_SERVICE_ACCOUNT_PROJECT_ID = config("GOOGLE_SERVICE_ACCOUNT_PROJECT_ID")
+    GOOGLE_DOMAIN = config("GOOGLE_DOMAIN")
+
+    google_config = GoogleConfiguration(
+        developer_key=str(GOOGLE_DEVELOPER_KEY),
+        service_account_client_email=GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL,
+        service_account_client_id=GOOGLE_SERVICE_ACCOUNT_CLIENT_ID,
+        service_account_private_key=str(GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY),
+        service_account_private_key_id=GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID,
+        service_account_delegated_account=GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT,
+        service_account_project_id=GOOGLE_SERVICE_ACCOUNT_PROJECT_ID,
+        goole_domain=GOOGLE_DOMAIN,
+    )
+
+    from dispatch.plugins.dispatch_pagerduty.plugin import PagerdutyConfiguration
+
+    PAGERDUTY_API_KEY = config("PAGERDUTY_API_KEY", cast=Secret)
+    PAGERDUTY_API_FROM_EMAIL = config("PAGERDUTY_API_FROM_EMAIL")
+
+    pagerduty_config = PagerdutyConfiguration(
+        api_key=str(PAGERDUTY_API_KEY), from_email=PAGERDUTY_API_FROM_EMAIL
+    )
+
+    from dispatch.plugins.dispatch_zoom.plugin import ZoomConfiguration
+
+    ZOOM_API_USER_ID = config("ZOOM_API_USER_ID")
+    ZOOM_API_KEY = config("ZOOM_API_KEY")
+    ZOOM_API_SECRET = config("ZOOM_API_SECRET", cast=Secret)
+
+    zoom_config = ZoomConfiguration(
+        api_user_id=ZOOM_API_USER_ID, api_key=ZOOM_API_KEY, api_secret=str(ZOOM_API_SECRET)
+    )
+
+    from dispatch.plugins.dispatch_jira.plugin import JiraConfiguration
+
+    JIRA_API_URL = config("JIRA_API_URL", cast=URL)
+    JIRA_BROWSER_URL = config("JIRA_BROWSER_URL", cast=URL)
+    JIRA_HOSTING_TYPE = config("JIRA_HOSTING_TYPE", default="Cloud")
+    JIRA_PASSWORD = config("JIRA_PASSWORD", cast=Secret)
+    JIRA_USERNAME = config("JIRA_USERNAME")
+
+    jira_config = JiraConfiguration(
+        api_url=JIRA_API_URL,
+        browser_url=JIRA_BROWSER_URL,
+        hosting_type=JIRA_HOSTING_TYPE,
+        username=JIRA_USERNAME,
+        password=str(JIRA_PASSWORD),
+    )
+
+    from dispatch.plugins.dispatch_opsgenie.plugin import OpsgenieConfiguration
+
+    OPSGENIE_API_KEY = config("OPSGENIE_API_KEY", cast=Secret)
+
+    opsgenie_config = OpsgenieConfiguration(api_key=str(OPSGENIE_API_KEY))
+
+    from dispatch.plugins.dispatch_slack.config import (
+        SlackContactConfiguration,
+        SlackConversationConfiguration,
+    )
+
+    SLACK_API_BOT_TOKEN = config("SLACK_API_BOT_TOKEN", cast=Secret, default=None)
+    SLACK_SOCKET_MODE_APP_TOKEN = config("SLACK_SOCKET_MODE_APP_TOKEN", cast=Secret, default=None)
+    SLACK_APP_USER_SLUG = config("SLACK_APP_USER_SLUG", default=None)
+    SLACK_BAN_THREADS = config("SLACK_BAN_THREADS", default=True)
+    SLACK_PROFILE_DEPARTMENT_FIELD_ID = config("SLACK_PROFILE_DEPARTMENT_FIELD_ID", default="")
+    SLACK_PROFILE_TEAM_FIELD_ID = config("SLACK_PROFILE_TEAM_FIELD_ID", default="")
+    SLACK_PROFILE_WEBLINK_FIELD_ID = config("SLACK_PROFILE_WEBLINK_FIELD_ID", default="")
+    SLACK_SIGNING_SECRET = config("SLACK_SIGNING_SECRET", cast=Secret, default=None)
+    SLACK_TIMELINE_EVENT_REACTION = config("SLACK_TIMELINE_EVENT_REACTION", default="stopwatch")
+
+    # Slash commands
+    SLACK_COMMAND_LIST_TASKS_SLUG = config(
+        "SLACK_COMMAND_LIST_TASKS_SLUG", default="/dispatch-list-tasks"
+    )
+    SLACK_COMMAND_LIST_MY_TASKS_SLUG = config(
+        "SLACK_COMMAND_LIST_MY_TASKS_SLUG", default="/dispatch-list-my-tasks"
+    )
+    SLACK_COMMAND_LIST_PARTICIPANTS_SLUG = config(
+        "SLACK_COMMAND_LIST_PARTICIPANTS_SLUG", default="/dispatch-list-participants"
+    )
+    SLACK_COMMAND_ASSIGN_ROLE_SLUG = config(
+        "SLACK_COMMAND_ASSIGN_ROLE_SLUG", default="/dispatch-assign-role"
+    )
+    SLACK_COMMAND_UPDATE_INCIDENT_SLUG = config(
+        "SLACK_COMMAND_UPDATE_INCIDENT_SLUG", default="/dispatch-update-incident"
+    )
+    SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG = config(
+        "SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG", default="/dispatch-update-participant"
+    )
+    SLACK_COMMAND_ENGAGE_ONCALL_SLUG = config(
+        "SLACK_COMMAND_ENGAGE_ONCALL_SLUG", default="/dispatch-engage-oncall"
+    )
+    SLACK_COMMAND_LIST_RESOURCES_SLUG = config(
+        "SLACK_COMMAND_LIST_RESOURCES_SLUG", default="/dispatch-list-resources"
+    )
+    SLACK_COMMAND_REPORT_INCIDENT_SLUG = config(
+        "SLACK_COMMAND_REPORT_INCIDENT_SLUG", default="/dispatch-report-incident"
+    )
+    SLACK_COMMAND_REPORT_TACTICAL_SLUG = config(
+        "SLACK_COMMAND_REPORT_TACTICAL_SLUG", default="/dispatch-report-tactical"
+    )
+    SLACK_COMMAND_REPORT_EXECUTIVE_SLUG = config(
+        "SLACK_COMMAND_REPORT_EXECUTIVE_SLUG", default="/dispatch-report-executive"
+    )
+    SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG = config(
+        "SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG", default="/dispatch-notifications-group"
+    )
+    SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG = config(
+        "SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG", default="/dispatch-add-timeline-event"
+    )
+    SLACK_COMMAND_LIST_INCIDENTS_SLUG = config(
+        "SLACK_COMMAND_LIST_INCIDENTS_SLUG", default="/dispatch-list-incidents"
+    )
+    SLACK_COMMAND_RUN_WORKFLOW_SLUG = config(
+        "SLACK_COMMAND_RUN_WORKFLOW_SLUG", default="/dispatch-run-workflow"
+    )
+    SLACK_COMMAND_LIST_WORKFLOWS_SLUG = config(
+        "SLUG_COMMAND_LIST_WORKFLOWS_SLUG", default="/dispatch-list-workflows"
+    )
+
+    slack_conversation_config = SlackConversationConfiguration(
+        api_bot_token=str(SLACK_API_BOT_TOKEN),
+        socket_mode_app_token=str(SLACK_SOCKET_MODE_APP_TOKEN),
+        signing_secret=str(SLACK_SIGNING_SECRET),
+        app_user_slug=SLACK_APP_USER_SLUG,
+        ban_threads=SLACK_BAN_THREADS,
+        timeline_event_reaction=SLACK_TIMELINE_EVENT_REACTION,
+        slack_command_tasks=SLACK_COMMAND_LIST_TASKS_SLUG,
+        slack_command_list_my_tasks=SLACK_COMMAND_LIST_MY_TASKS_SLUG,
+        slack_command_list_participants=SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
+        slack_command_assign_role=SLACK_COMMAND_ASSIGN_ROLE_SLUG,
+        slack_command_update_incident=SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
+        slack_command_update_participant=SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG,
+        slack_command_engage_oncall=SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
+        slack_command_list_resource=SLACK_COMMAND_LIST_RESOURCES_SLUG,
+        slack_command_report_incident=SLACK_COMMAND_REPORT_INCIDENT_SLUG,
+        slack_command_report_tactical=SLACK_COMMAND_REPORT_TACTICAL_SLUG,
+        slack_command_report_executive=SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
+        slack_command_update_notifications_group=SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG,
+        slack_command_add_timeline_event=SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG,
+        slack_command_list_incidents=SLACK_COMMAND_LIST_INCIDENTS_SLUG,
+        slack_command_run_workflow=SLACK_COMMAND_RUN_WORKFLOW_SLUG,
+        slack_command_list_workflow=SLACK_COMMAND_LIST_WORKFLOWS_SLUG,
+    )
+
+    slack_contact_config = SlackContactConfiguration(
+        api_bot_token=str(SLACK_API_BOT_TOKEN),
+        socket_mode_app_token=str(SLACK_SOCKET_MODE_APP_TOKEN),
+        signing_secret=str(SLACK_SIGNING_SECRET),
+        profile_department_field_id=SLACK_PROFILE_DEPARTMENT_FIELD_ID,
+        profile_team_field_id=SLACK_PROFILE_TEAM_FIELD_ID,
+        profile_weblink_field_id=SLACK_PROFILE_WEBLINK_FIELD_ID,
+    )
+
+    bind = op.get_bind()
+    session = Session(bind=bind)
+
+    for instance in session(PluginInstance).all():
+        slug = instance.plugin.slug
+
+        if "google" in slug:
+            instance.configuration = google_config
+            continue
+
+        if slug == "slack-conversation":
+            instance.configuration = slack_conversation_config
+            continue
+
+        if slug == "slack-contact":
+            instance.configuration = slack_contact_config
+            continue
+
+        if slug == "jira-ticket":
+            instance.configuration = jira_config
+            continue
+
+        if slug == "zoom-conference":
+            instance.configuration = zoom_config
+            continue
+
+        if slug == "pagerduty-oncall":
+            instance.configuration = pagerduty_config
+            continue
+
+        if slug == "opsgenie-oncall":
+            instance.configuration = opsgenie_config
+
+    session.commit()
+
     # ### end Alembic commands ###
 
 
@@ -37,5 +274,4 @@ def downgrade():
         "plugin_instance",
         sa.Column("configuration", postgresql.BYTEA(), autoincrement=False, nullable=True),
     )
-    # op.drop_column("plugin_instance", "_configuration")
     # ### end Alembic commands ###
