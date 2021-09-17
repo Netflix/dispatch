@@ -10,7 +10,6 @@ from .commands import handle_slack_command
 from .config import SLACK_API_BOT_TOKEN, SLACK_SOCKET_MODE_APP_TOKEN
 from .events import handle_slack_event, EventEnvelope
 
-
 log = logging.getLogger(__name__)
 
 

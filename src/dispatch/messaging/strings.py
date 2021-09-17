@@ -213,6 +213,20 @@ then wait about 30 seconds for Dispatch to update the tasks before leaving the i
     "\n", " "
 ).strip()
 
+INCIDENT_MONITOR_CREATED_DESCRIPTION = """
+A new monitor instance has been created.
+\n\n *Weblink:* {{weblink}}
+"""
+
+INCIDENT_MONITOR_UPDATE_DESCRIPTION = """
+This monitor detected a change in state. State has changed from *{{ monitor_state_old }}* to *{{ monitor_state_new }}*.
+"""
+
+INCIDENT_MONITOR_IGNORED_DESCRIPTION = """
+This monitor is now ignored. Dispatch won't remind this incident channel about it again.
+\n\n *Weblink:* {{weblink}}
+"""
+
 INCIDENT_WORKFLOW_CREATED_DESCRIPTION = """
 A new workflow instance has been created.
 \n\n *Creator:* {{instance_creator_name}}
@@ -507,6 +521,30 @@ INCIDENT_TASK_RESOLVED_NOTIFICATION = [
         "title": "Resolved Incident Task",
         "title_link": "{{task_weblink}}",
         "text": INCIDENT_TASK_RESOLVED_DESCRIPTION,
+    }
+]
+
+INCIDENT_MONITOR_CREATED_NOTIFICATION = [
+    {
+        "title": "Monitor Created",
+        "title_link": "{{weblink}}",
+        "text": INCIDENT_MONITOR_CREATED_DESCRIPTION,
+    }
+]
+
+INCIDENT_MONITOR_UPDATE_NOTIFICATION = [
+    {
+        "title": "Monitor Status Change",
+        "title_link": "{{weblink}}",
+        "text": INCIDENT_MONITOR_UPDATE_DESCRIPTION,
+    }
+]
+
+INCIDENT_MONITOR_IGNORE_NOTIFICATION = [
+    {
+        "title": "Monitor Ignored",
+        "title_link": "{{weblink}}",
+        "text": INCIDENT_MONITOR_IGNORED_DESCRIPTION,
     }
 ]
 
