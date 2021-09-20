@@ -67,6 +67,12 @@ ENV PIP_NO_CACHE_DIR=off \
     # Dispatch config params
     DISPATCH_CONF=/etc/dispatch
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Needed for fetching stuff
+    ca-certificates \
+    wget gnupg \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN set -x \
     && echo "deb http://apt.postgresql.org/pub/repos/apt buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -

@@ -417,6 +417,7 @@ setup(
             "google_groups_participants = dispatch.plugins.dispatch_google.groups.plugin:GoogleGroupParticipantGroupPlugin",
             "jira_ticket = dispatch.plugins.dispatch_jira.plugin:JiraTicketPlugin",
             "pagerduty_oncall = dispatch.plugins.dispatch_pagerduty.plugin:PagerDutyOncallPlugin",
+            "github_monitor = dispatch.plugins.dispatch_github.plugin:GithubMonitorPlugin",
             "slack_contact = dispatch.plugins.dispatch_slack.plugin:SlackContactPlugin",
             "slack_conversation = dispatch.plugins.dispatch_slack.plugin:SlackConversationPlugin",
             "zoom_conference = dispatch.plugins.dispatch_zoom.plugin:ZoomConferencePlugin",
