@@ -7,27 +7,22 @@ from slack_sdk.web.async_client import AsyncWebClient
 
 from .actions import handle_slack_action
 from .commands import handle_slack_command
-from .config import SLACK_API_BOT_TOKEN, SLACK_SOCKET_MODE_APP_TOKEN
 from .events import handle_slack_event, EventEnvelope
 
 log = logging.getLogger(__name__)
 
 
-async def run_websocket_process():
+async def run_websocket_process(app_token: str, bot_token: str):
     from slack_sdk.socket_mode.aiohttp import SocketModeClient
     from slack_sdk.socket_mode.response import SocketModeResponse
     from slack_sdk.socket_mode.request import SocketModeRequest
 
-    if not SLACK_SOCKET_MODE_APP_TOKEN:
-        log.error("SLACK_SOCKET_MODE_APP_TOKEN not defined in .env file.")
-        return
-
     # Initialize SocketModeClient with an app-level token + WebClient
     client = SocketModeClient(
         # This app-level token will be used only for establishing a connection
-        app_token=str(SLACK_SOCKET_MODE_APP_TOKEN),  # xapp-A111-222-xyz
+        app_token=app_token,  # xapp-A111-222-xyz
         # You will be using this WebClient for performing Web API calls in listeners
-        web_client=AsyncWebClient(token=str(SLACK_API_BOT_TOKEN)),  # xoxb-111-222-xyz
+        web_client=AsyncWebClient(token=bot_token),  # xoxb-111-222-xyz
     )
 
     async def process(client: SocketModeClient, req: SocketModeRequest):

@@ -23,7 +23,7 @@ from dispatch.report.models import ExecutiveReportCreate, TacticalReportCreate
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 
-from .config import SlackConfiguration
+from .config import SlackConfiguration, SlackConversationConfiguration
 
 from .modals.feedback.views import RatingFeedbackCallbackId
 from .modals.feedback.handlers import (
@@ -144,7 +144,9 @@ def block_action_functions(action: str):
     return []
 
 
-def handle_dialog_action(action: dict, background_tasks: BackgroundTasks):
+def handle_dialog_action(
+    config: SlackConversationConfiguration, action: dict, background_tasks: BackgroundTasks
+):
     """Handles all dialog actions."""
     channel_id = action["channel"]["id"]
     db_session = get_organization_scope_from_channel_id(channel_id=channel_id)
@@ -159,7 +161,7 @@ def handle_dialog_action(action: dict, background_tasks: BackgroundTasks):
 
     action_id = action["callback_id"]
 
-    for f in dialog_action_functions(configuration, action_id):
+    for f in dialog_action_functions(config, action_id):
         background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, action)
 
 

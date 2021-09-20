@@ -9,10 +9,14 @@ from time import time
 
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException
 
+from sqlalchemy import true
+
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
+from dispatch.plugin.models import PluginInstance
 
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.plugins.dispatch_slack.decorators import get_organization_scope_from_slug
 
 from . import __version__
 from .actions import handle_slack_action
@@ -49,13 +53,27 @@ def create_ua_string():
     return " ".join(ua_string)
 
 
-def verify_signature(request_data, timestamp: int, signature: str):
+def verify_signature(
+    organization: str, signing_secret: str, request_data, timestamp: int, signature: str
+):
     """Verifies the request signature using the app's signing secret."""
     req = f"v0:{timestamp}:{request_data}".encode("utf-8")
-    slack_signing_secret = bytes(str(SLACK_SIGNING_SECRET), "utf-8")
+    slack_signing_secret = bytes(signing_secret, "utf-8")
     h = hmac.new(slack_signing_secret, req, hashlib.sha256).hexdigest()
-    if not hmac.compare_digest(f"v0={h}", signature):
-        raise HTTPException(status_code=403, detail=[{"msg": "Invalid request signature"}])
+
+    session = get_organization_scope_from_slug(organization)
+    plugin_instances = (
+        session.query(PluginInstance)
+        .filter(PluginInstance.enabled == true(), PluginInstance.slug == "slack-conversation")
+        .all()
+    )
+    signatures = [p.instance.configuration.signing_secret for p in plugin_instances]
+    for signature in signatures:
+        result = hmac.compare_digest(f"v0={h}", signature)
+        if result:
+            return
+
+    raise HTTPException(status_code=403, detail=[{"msg": "Invalid request signature"}])
 
 
 def verify_timestamp(timestamp: int):
@@ -65,12 +83,13 @@ def verify_timestamp(timestamp: int):
 
 
 @router.post(
-    "/slack/event",
+    "/{organization}/slack/event",
 )
 async def handle_event(
     event: EventEnvelope,
     request: Request,
     response: Response,
+    organization: str,
     background_tasks: BackgroundTasks,
     x_slack_request_timestamp: int = Header(...),
     x_slack_signature: str = Header(...),
@@ -82,7 +101,7 @@ async def handle_event(
     verify_timestamp(x_slack_request_timestamp)
 
     # We verify the signature
-    verify_signature(raw_request_body, x_slack_request_timestamp, x_slack_signature)
+    verify_signature(organization, raw_request_body, x_slack_request_timestamp, x_slack_signature)
 
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()
@@ -103,11 +122,12 @@ async def handle_event(
 
 
 @router.post(
-    "/slack/command",
+    "/{organization}/slack/command",
 )
 async def handle_command(
     request: Request,
     response: Response,
+    organization: str,
     background_tasks: BackgroundTasks,
     x_slack_request_timestamp: int = Header(...),
     x_slack_signature: str = Header(...),
@@ -121,7 +141,7 @@ async def handle_command(
     verify_timestamp(x_slack_request_timestamp)
 
     # We verify the signature
-    verify_signature(raw_request_body, x_slack_request_timestamp, x_slack_signature)
+    verify_signature(organization, raw_request_body, x_slack_request_timestamp, x_slack_signature)
 
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()
@@ -138,11 +158,12 @@ async def handle_command(
 
 
 @router.post(
-    "/slack/action",
+    "/{organization}/slack/action",
 )
 async def handle_action(
     request: Request,
     response: Response,
+    organization: str,
     background_tasks: BackgroundTasks,
     x_slack_request_timestamp: int = Header(...),
     x_slack_signature: str = Header(...),
@@ -159,7 +180,7 @@ async def handle_action(
     verify_timestamp(x_slack_request_timestamp)
 
     # We verify the signature
-    verify_signature(raw_request_body, x_slack_request_timestamp, x_slack_signature)
+    verify_signature(organization, raw_request_body, x_slack_request_timestamp, x_slack_signature)
 
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()
@@ -176,11 +197,12 @@ async def handle_action(
 
 
 @router.post(
-    "/slack/menu",
+    "/{organization}/slack/menu",
 )
 async def handle_menu(
     request: Request,
     response: Response,
+    organization: str,
     x_slack_request_timestamp: int = Header(...),
     x_slack_signature: str = Header(...),
 ):
@@ -196,7 +218,7 @@ async def handle_menu(
     verify_timestamp(x_slack_request_timestamp)
 
     # We verify the signature
-    verify_signature(raw_request_body, x_slack_request_timestamp, x_slack_signature)
+    verify_signature(organization, raw_request_body, x_slack_request_timestamp, x_slack_signature)
 
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()

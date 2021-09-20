@@ -3,6 +3,7 @@ import logging
 from dispatch.incident import service as incident_service
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 from dispatch.plugins.dispatch_slack.decorators import slack_background_task
 from dispatch.report import service as report_service
 from dispatch.report.enums import ReportTypes
@@ -156,6 +157,7 @@ def create_executive_report_dialog(
     user_email: str,
     channel_id: str,
     incident_id: int,
+    config: SlackConversationConfiguration = None,
     command: dict = None,
     db_session=None,
     slack_client=None,

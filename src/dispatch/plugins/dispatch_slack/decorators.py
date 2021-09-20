@@ -140,10 +140,11 @@ def slack_background_task(func):
                 background = True
                 kwargs["db_session"] = scoped_db_session
 
+            config = get_plugin_configuration_from_channel_id(
+                db_session=kwargs["db_session"], channel_id=channel_id
+            )
+            kwargs["config"] = config
             if not kwargs.get("slack_client"):
-                config = get_plugin_configuration_from_channel_id(
-                    db_session=kwargs["db_session"], channel_id=channel_id
-                )
                 slack_client = dispatch_slack_service.create_slack_client(config=config)
                 kwargs["slack_client"] = slack_client
 
