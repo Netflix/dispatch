@@ -3,11 +3,18 @@ import os
 import base64
 from urllib import parse
 from typing import List
+from pydantic import BaseModel
 
 from starlette.config import Config
 from starlette.datastructures import CommaSeparatedStrings
 
 log = logging.getLogger(__name__)
+
+
+class BaseConfigurationModel(BaseModel):
+    """Base configuration model used by all config options."""
+
+    pass
 
 
 def get_env_tags(tag_list: List[str]) -> dict:

@@ -5,8 +5,9 @@
     :license: Apache, see LICENSE for more details.
 """
 import logging
-from pydantic import BaseModel, Field, SecretStr, EmailStr
+from pydantic import Field, SecretStr, EmailStr
 from pdpyras import APISession
+from dispatch.config import BaseConfigurationModel
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_pagerduty as pagerduty_oncall_plugin
 from dispatch.plugins.bases import OncallPlugin
@@ -17,7 +18,7 @@ from .service import get_oncall, page_oncall
 log = logging.getLogger(__name__)
 
 
-class PagerdutyConfiguration(BaseModel):
+class PagerdutyConfiguration(BaseConfigurationModel):
     """The values below are the availible configurations for Dispatch's PagerDuty plugin."""
 
     api_key: SecretStr = Field(

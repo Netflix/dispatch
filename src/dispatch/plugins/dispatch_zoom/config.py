@@ -1,7 +1,9 @@
-from pydantic import BaseModel, Field, SecretStr
+from pydantic import Field, SecretStr
+
+from dispatch.config import BaseConfigurationModel
 
 
-class ZoomConfiguration(BaseModel):
+class ZoomConfiguration(BaseConfigurationModel):
     """Zoom configuration description."""
 
     api_user_id: str = Field(title="Zoom API User Id")

@@ -1,10 +1,12 @@
-from pydantic import BaseModel, Field
+from pydantic import Field, SecretStr
+
+from dispatch.config import BaseConfigurationModel
 
 
-class GoogleConfiguration(BaseModel):
+class GoogleConfiguration(BaseConfigurationModel):
     """Google configuration"""
 
-    developer_key: str = Field(
+    developer_key: SecretStr = Field(
         title="Developer Key",
         description="This is used by the Google API Discovery Service and prevents rate limiting.",
     )
@@ -16,7 +18,7 @@ class GoogleConfiguration(BaseModel):
         title="Service Account Client Id",
         description="The client_id value from your Google Cloud Platform (GCP) service account configuration file.",
     )
-    service_account_private_key: str = Field(
+    service_account_private_key: SecretStr = Field(
         title="Service Account Private Key",
         description="The private_key value from your Google Cloud Platform (GCP) service account configuration file.",
     )

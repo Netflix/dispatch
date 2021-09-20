@@ -1,8 +1,9 @@
 from typing import Optional
-from pydantic import BaseModel, Field, SecretStr
+from pydantic import Field, SecretStr
+from dispatch.config import BaseConfigurationModel
 
 
-class SlackConfiguration(BaseModel):
+class SlackConfiguration(BaseConfigurationModel):
     """Slack configuration description."""
 
     api_bot_token: SecretStr = Field(

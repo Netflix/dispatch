@@ -8,17 +8,17 @@ import re
 import platform
 import sys
 import requests
-from pydantic import BaseModel
 from datetime import datetime
 from tenacity import TryAgain, retry, stop_after_attempt, wait_fixed
 
 from . import __version__
+from dispatch.config import BaseConfigurationModel
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_github as github_plugin
 from dispatch.plugins.bases.monitor import MonitorPlugin
 
 
-class GithubConfiguration(BaseModel):
+class GithubConfiguration(BaseConfigurationModel):
     pass
 
 

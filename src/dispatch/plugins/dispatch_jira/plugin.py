@@ -7,11 +7,12 @@
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field, SecretStr, HttpUrl
+from pydantic import Field, SecretStr, HttpUrl
 
 from jinja2 import Template
 from jira import JIRA, User
 
+from dispatch.config import BaseConfigurationModel
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_jira as jira_plugin
 from dispatch.plugins.bases import TicketPlugin
@@ -24,7 +25,7 @@ class HostingType(str, Enum):
     server = "server"
 
 
-class JiraConfiguration(BaseModel):
+class JiraConfiguration(BaseConfigurationModel):
     """Jira configuration description."""
 
     api_url: HttpUrl = Field(

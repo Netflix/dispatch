@@ -70,12 +70,13 @@ class PluginInstance(Base, ProjectMixin):
     @hybrid_property
     def configuration(self):
         if self._configuration:
-            return json.loads(self._configuration)
+            plugin = plugins.get(self.plugin.slug)
+            return plugin.configuration_schema.parse_raw(self._configuration)
 
     @configuration.setter
     def configuration(self, configuration):
         if configuration:
-            self._configuration = json.dumps(configuration)
+            self._configuration = configuration.json()
 
 
 # Pydantic models...

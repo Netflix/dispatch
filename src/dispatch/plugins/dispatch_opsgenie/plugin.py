@@ -5,8 +5,9 @@
     :license: Apache, see LICENSE for more details.
 """
 import logging
-from pydantic import BaseModel, Field, SecretStr
+from pydantic import Field, SecretStr
 
+from dispatch.config import BaseConfigurationModel
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import OncallPlugin
 from .service import get_oncall, page_oncall
@@ -15,7 +16,7 @@ __version__ = "0.1.0"
 log = logging.getLogger(__name__)
 
 
-class OpsgenieConfiguration(BaseModel):
+class OpsgenieConfiguration(BaseConfigurationModel):
     """Opsgenie configuration description."""
 
     api_key: SecretStr = Field(

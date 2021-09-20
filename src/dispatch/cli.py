@@ -721,7 +721,8 @@ def run_slack_websocket(organization: str, project: str):
     """Runs the slack websocket process."""
     import asyncio
     from sqlalchemy import true
-    from dispatch.project.models import Project
+    from dispatch.project.models import ProjectRead
+    from dispatch.project import service as project_service
     from dispatch.plugins.dispatch_slack import socket_mode
     from dispatch.plugins.dispatch_slack.decorators import get_organization_scope_from_slug
     from dispatch.common.utils.cli import install_plugins
@@ -730,12 +731,22 @@ def run_slack_websocket(organization: str, project: str):
 
     session = get_organization_scope_from_slug(organization)
 
-    instance = (
-        session.query(PluginInstance, Project)
-        .filter(PluginInstance.enabled == true())
-        .filter(Project.name == project)
-        .one_or_none()
+    project = project_service.get_by_name_or_raise(
+        db_session=session, project_in=ProjectRead(name=project)
     )
+
+    instances = (
+        session.query(PluginInstance)
+        .filter(PluginInstance.enabled == true())
+        .filter(PluginInstance.project_id == project.id)
+        .all()
+    )
+
+    instance = None
+    for i in instances:
+        if i.plugin.slug == "slack-conversation":
+            instance = i
+            break
 
     if not instance:
         click.secho(
@@ -743,6 +754,7 @@ def run_slack_websocket(organization: str, project: str):
             fg="red",
         )
         return
+
     app_token = instance.configuration.socket_mode_app_token
     bot_token = instance.configuration.api_bot_token
 
