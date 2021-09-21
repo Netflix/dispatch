@@ -162,6 +162,10 @@ groups:read
 
 > Specifies the profile field ID where the web link is mapped.
 
+#### `SLACK_CREATE_PRIVATE_CHANNELS` \[Optional. Default: "True"\]
+
+> Specifies privacy for Dispatch created Slack conversation channels.
+
 
 ### Commands
 Below are the optional env variables to override the default slack command names as documented in the [Incident Commander](../../user-guide/incident-commander.md#all-slack-commands) user guide page.  Also included are the descriptions for easy cut & paste into the Slack Slash Commands set-up.

@@ -29,6 +29,7 @@ from .config import (
     SLACK_PROFILE_DEPARTMENT_FIELD_ID,
     SLACK_PROFILE_TEAM_FIELD_ID,
     SLACK_PROFILE_WEBLINK_FIELD_ID,
+    SLACK_ENABLE_PRIVATE_CHANNEL,
 )
 from .views import router as slack_event_router
 from .messaging import create_message_blocks
@@ -82,7 +83,7 @@ class SlackConversationPlugin(ConversationPlugin):
     def __init__(self):
         self.client = create_slack_client()
 
-    def create(self, name: str, is_private: bool = True):
+    def create(self, name: str, is_private: bool = SLACK_ENABLE_PRIVATE_CHANNEL):
         """Creates a new Slack conversation."""
         return create_conversation(self.client, name, is_private)
 
