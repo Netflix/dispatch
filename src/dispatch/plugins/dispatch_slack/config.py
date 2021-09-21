@@ -43,6 +43,11 @@ class SlackConversationConfiguration(SlackConfiguration):
         title="App User Slug",
         description="Defines the name of the Dispatch app in your environment.",
     )
+    private_channels: bool = Field(
+        True,
+        title="Private Channels",
+        description="The visibility of the slack channel created by Dispatch.",
+    )
     ban_threads: bool = Field(
         True,
         title="Ban Threads",

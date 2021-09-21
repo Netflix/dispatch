@@ -11,7 +11,7 @@ We do our best to keep this documentation up-to-date. However, the code itself i
 Conversation plugins are deeply integrated within Dispatch. They server as the real-time communication channel used for incidents. By default Dispatch supports `Slack` as a conversation channel, if you wish to use another platform for conversations you will need to implement the following interface:
 
 ```python
-def create(self, name: str, participants: List[dict], is_private: bool = True):
+def create(self, name: str, participants: List[dict]):
     """Creates a new conversation."""
     return {
         "id": "abc123",
