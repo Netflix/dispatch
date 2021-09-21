@@ -63,10 +63,10 @@ class SlackConversationPlugin(ConversationPlugin):
     def __init__(self):
         self.configuration_schema = SlackConversationConfiguration
 
-    def create(self, name: str, is_private: bool = True):
+    def create(self, name: str):
         """Creates a new Slack conversation."""
         client = create_slack_client(self.configuration)
-        return create_conversation(client, name, is_private)
+        return create_conversation(client, name, self.configuration.enable_private_channel)
 
     def send(
         self,

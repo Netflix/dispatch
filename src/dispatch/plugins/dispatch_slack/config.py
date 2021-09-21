@@ -48,6 +48,11 @@ class SlackConversationConfiguration(SlackConfiguration):
         title="Ban Threads",
         description="If enabled, Dispatch will message users reminding them to not use threads in incident channels.",
     )
+    enable_private_channel: bool = Field(
+        True,
+        title="Set Channel Private",
+        description="If enabled, Dispatch will create private Slack conversation channels",
+    )
     timeline_event_reaction: str = Field(
         "stopwatch",
         title="Timeline Event Reaction",
