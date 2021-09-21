@@ -705,7 +705,12 @@ def run_server(log_level):
         envvars = os.environ.copy()
         envvars.update({x: getattr(config, x) for x in dir(config) if x.startswith("VUE_APP_")})
 
-        p = Popen(["npm", "run", "serve"], cwd="src/dispatch/static/dispatch", env=envvars)
+        p = Popen(
+            ["npm", "run", "serve"],
+            cwd=os.path.join("src", "dispatch", "static", "dispatch"),
+            shell=True,
+            env=envvars,
+        )
         atexit.register(p.terminate)
     uvicorn.run("dispatch.main:app", debug=True, log_level=log_level)
 
