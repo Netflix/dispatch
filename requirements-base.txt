@@ -8,7 +8,7 @@ aiofiles==0.7.0
     # via -r requirements-base.in
 aiohttp==3.7.4.post0
     # via -r requirements-base.in
-alembic==1.7.1
+alembic==1.7.3
     # via -r requirements-base.in
 arrow==1.1.1
     # via -r requirements-base.in
@@ -327,7 +327,7 @@ six==1.15.0
     #   sqlalchemy-filters
     #   sqlalchemy-utils
     #   validators
-slack-sdk==3.11.0
+slack_sdk==3.11.1
     # via -r requirements-base.in
 sniffio==1.2.0
     # via
