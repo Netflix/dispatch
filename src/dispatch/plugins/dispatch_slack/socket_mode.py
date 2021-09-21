@@ -20,7 +20,7 @@ async def run_websocket_process(app_token: str, bot_token: str):
     # Initialize SocketModeClient with an app-level token + WebClient
     client = SocketModeClient(
         # This app-level token will be used only for establishing a connection
-        app_token=app_token,  # xapp-A111-222-xyz
+        app_token=app_token.get_secret_value(),  # xapp-A111-222-xyz
         # You will be using this WebClient for performing Web API calls in listeners
         web_client=AsyncWebClient(token=bot_token.get_secret_value()),  # xoxb-111-222-xyz
     )

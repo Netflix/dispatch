@@ -1,6 +1,6 @@
 from typing import Any, List, Optional
-import json
-from pydantic import Field
+from pydantic import Field, SecretStr
+from pydantic.json import pydantic_encoder
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -16,6 +16,13 @@ from dispatch.config import DISPATCH_ENCRYPTION_KEY
 from dispatch.models import DispatchBase, ProjectMixin, PrimaryKey
 from dispatch.plugins.base import plugins
 from dispatch.project.models import ProjectRead
+
+
+def show_secrets_encoder(obj):
+    if type(obj) == SecretStr:
+        return obj.get_secret_value()
+    else:
+        return pydantic_encoder(obj)
 
 
 class Plugin(Base):
@@ -69,14 +76,18 @@ class PluginInstance(Base, ProjectMixin):
 
     @hybrid_property
     def configuration(self):
+        """Property that correctly returns a plugins configuration object."""
         if self._configuration:
             plugin = plugins.get(self.plugin.slug)
             return plugin.configuration_schema.parse_raw(self._configuration)
 
     @configuration.setter
     def configuration(self, configuration):
+        """Property that correctly sets a plugins configuration object."""
         if configuration:
-            self._configuration = configuration.json()
+            plugin = plugins.get(self.plugin.slug)
+            config_object = plugin.configuration_schema.parse_obj(configuration)
+            self._configuration = config_object.json(encoder=show_secrets_encoder)
 
 
 # Pydantic models...
