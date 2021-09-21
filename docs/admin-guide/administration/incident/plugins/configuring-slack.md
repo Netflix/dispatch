@@ -26,9 +26,9 @@ See the [Dispatch Configuration](#dispatch-configuration) section below for furt
 
 Event mode requires specific URL mapping that must be **publicly** available:
 
-- `Dispatch` receives general events at the `/api/v1/events/slack/event` endpoint (reactions).
-- `Dispatch` receives command events at the `/api/v1/events/slack/command` endpoint (`/dispatch-*` commands)
-- `Dispatch` receives action events at the `/api/v1/events/slack/action` (dialogs and modals) endpoint.
+- `Dispatch` receives general events at the `/api/v1/<organization>/events/slack/event` endpoint (reactions).
+- `Dispatch` receives command events at the `/api/v1/<organization>/events/slack/command` endpoint (`/dispatch-*` commands)
+- `Dispatch` receives action events at the `/api/v1/<organization>/events/slack/action` (dialogs and modals) endpoint.
 
 ## Socket Mode
 
@@ -61,13 +61,13 @@ To enable Dispatch to process Slack events, ensure your bot is subscribed to the
 
 ### Interactivity
 
-To enable Dispatch to generate interactive components such as dialogs and modals, ensure that the `Request URL` points to the events action API endpoint of the Dispatch server at `/API/v1/events/slack/action`.
+To enable Dispatch to generate interactive components such as dialogs and modals, ensure that the `Request URL` points to the events action API endpoint of the Dispatch server at `/API/v1/<organziation>?events/slack/action`.
 
 ![](../../../../.gitbook/assets/slack-setup-dialogs.png)
 
 ### Slash Commands
 
-To enable Dispatch's slash commands, you must add them to the Slack app first. Ensure that the `Command` field matches the configuration variables in the [Commands](#commands) listing below \(e.g. `/dispatch-update-incident`\) and that the `Request URL` points to the events command API endpoint of the Dispatch server at `/API/v1/events/slack/command`.
+To enable Dispatch's slash commands, you must add them to the Slack app first. Ensure that the `Command` field matches the configuration variables in the [Commands](#commands) listing below \(e.g. `/dispatch-update-incident`\) and that the `Request URL` points to the events command API endpoint of the Dispatch server at `/API/v1/<organization>/events/slack/command`.
 
 ![](../../../../.gitbook/assets/slack-setup-commands-0.png)
 

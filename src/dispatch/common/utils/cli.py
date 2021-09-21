@@ -14,7 +14,7 @@ def install_plugin_events(api):
     """Adds plugin endpoints to the event router."""
     for plugin in plugins.all():
         if plugin.events:
-            api.include_router(plugin.events, prefix="/events", tags=["events"])
+            api.include_router(plugin.events, prefix="/{organization}/events", tags=["events"])
 
 
 def install_plugins():

@@ -83,7 +83,7 @@ def verify_timestamp(timestamp: int):
 
 
 @router.post(
-    "/{organization}/slack/event",
+    "/slack/event",
 )
 async def handle_event(
     event: EventEnvelope,
@@ -122,7 +122,7 @@ async def handle_event(
 
 
 @router.post(
-    "/{organization}/slack/command",
+    "/slack/command",
 )
 async def handle_command(
     request: Request,
@@ -158,7 +158,7 @@ async def handle_command(
 
 
 @router.post(
-    "/{organization}/slack/action",
+    "/slack/action",
 )
 async def handle_action(
     request: Request,
@@ -197,7 +197,7 @@ async def handle_action(
 
 
 @router.post(
-    "/{organization}/slack/menu",
+    "/slack/menu",
 )
 async def handle_menu(
     request: Request,
