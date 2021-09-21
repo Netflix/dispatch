@@ -162,7 +162,7 @@ groups:read
 
 > Specifies the profile field ID where the web link is mapped.
 
-#### `SLACK_CREATE_PRIVATE_CHANNELS` \[Optional. Default: "True"\]
+#### `SLACK_ENABLE_PRIVATE_CHANNEL` \[Optional. Default: "True"\]
 
 > Specifies privacy for Dispatch created Slack conversation channels.
 
