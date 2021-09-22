@@ -82,6 +82,7 @@ def make_forecast(incidents: List[Incident]):
     dataframe = dataframe.reindex(idx, fill_value=0)
 
     try:
+        print(dataframe)
         forecaster = ExponentialSmoothing(
             dataframe, seasonal_periods=12, trend="add", seasonal="add"
         ).fit()

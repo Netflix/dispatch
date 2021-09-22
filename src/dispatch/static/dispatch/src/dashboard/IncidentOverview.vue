@@ -10,7 +10,7 @@
         <v-btn color="info" @click="copyView"> Share View </v-btn>
       </v-flex>
       <v-flex class="d-flex justify-end" lg6 sm6 xs12>
-        <dialog-filter @update="update" @loading="setLoading" />
+        <dialog-filter @filterOptions="setFilterOptions" @update="update" @loading="setLoading" />
       </v-flex>
     </v-layout>
     <v-layout row wrap>
@@ -57,7 +57,7 @@
         <incident-cost-bar-chart-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <v-flex lg12 sm12 xs12>
-        <incident-forecast-card />
+        <incident-forecast-card :filterOptions="filterOptions" />
       </v-flex>
       <v-flex lg6 sm6 xs12>
         <incident-active-time-card v-model="groupedItems" :loading="loading" />
@@ -136,6 +136,7 @@ export default {
       loading: "error",
       items: [],
       detailItems: [],
+      filterOptions: null,
       showDrillDown: false,
     }
   },
@@ -152,6 +153,9 @@ export default {
     },
     setLoading(data) {
       this.loading = data
+    },
+    setFilterOptions(data) {
+      this.filterOptions = data
     },
     copyView: function () {
       let store = this.$store

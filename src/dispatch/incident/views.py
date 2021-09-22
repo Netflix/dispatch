@@ -300,7 +300,6 @@ def get_incident_forecast(
                 filter_spec=filter_spec,
                 end_date=end_date,
             )
-
             predicted_months, predicted_counts = make_forecast(incidents=incidents)
             categories = categories + predicted_months
             predicted = predicted + predicted_counts

@@ -9,10 +9,8 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
 import IncidentApi from "@/incident/api"
 import DashboardCard from "@/dashboard/DashboardCard.vue"
-import SearchUtils from "@/search/utils"
 
 export default {
   name: "IncidentForecastCard",
@@ -21,8 +19,16 @@ export default {
     DashboardCard,
   },
 
+  props: {
+    filterOptions: {
+      type: Object,
+      default: function () {
+        return {}
+      },
+    },
+  },
+
   computed: {
-    ...mapFields("incident", ["table.options"]),
     chartOptions() {
       return {
         chart: {
@@ -71,7 +77,8 @@ export default {
   methods: {
     fetchData() {
       this.loading = "error"
-      let params = SearchUtils.createParametersFromTableOptions({ ...this.options })
+      let params = this.filterOptions || {}
+      console.log(this.filterOptions)
       IncidentApi.getMetricForecast(params).then((response) => {
         this.loading = false
         this.series = response.data.series
@@ -83,7 +90,7 @@ export default {
   created() {
     this.fetchData()
     this.$watch(
-      (vm) => [vm.options],
+      (vm) => [vm.filterOptions],
       () => {
         this.fetchData()
       }
