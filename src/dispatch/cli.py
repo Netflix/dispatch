@@ -704,11 +704,13 @@ def run_server(log_level):
         # take our frontend vars and export them for the frontend to consume
         envvars = os.environ.copy()
         envvars.update({x: getattr(config, x) for x in dir(config) if x.startswith("VUE_APP_")})
-
+        is_windows = os.name == "nt"
+        windows_cmds = ["cmd", "/c"]
+        default_cmds = ["npm", "run", "serve"]
+        cmds = windows_cmds + default_cmds if is_windows else default_cmds
         p = Popen(
-            ["npm", "run", "serve"],
+            cmds,
             cwd=os.path.join("src", "dispatch", "static", "dispatch"),
-            shell=True,
             env=envvars,
         )
         atexit.register(p.terminate)
