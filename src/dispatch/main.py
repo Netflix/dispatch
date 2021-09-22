@@ -214,7 +214,7 @@ install_plugin_events(api_router)
 api.include_router(api_router)
 
 # we mount the frontend and app
-if STATIC_DIR:
+if STATIC_DIR and path.isdir(STATIC_DIR):
     frontend.mount("/", StaticFiles(directory=STATIC_DIR), name="app")
 
 app.mount("/api/v1", app=api)

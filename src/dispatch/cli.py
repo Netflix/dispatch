@@ -697,7 +697,7 @@ def run_server(log_level):
     """Runs a simple server for development."""
     # Uvicorn expects lowercase logging levels; the logging package expects upper.
     os.environ["LOG_LEVEL"] = log_level.upper()
-    if not config.STATIC_DIR:
+    if not os.path.isdir(config.STATIC_DIR):
         import atexit
         from subprocess import Popen
 
