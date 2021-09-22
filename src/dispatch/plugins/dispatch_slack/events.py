@@ -11,7 +11,10 @@ from dispatch.conversation import service as conversation_service
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
-from dispatch.plugins.dispatch_slack.config import SlackConfiguration
+from dispatch.plugins.dispatch_slack.config import (
+    SlackConfiguration,
+    SlackConversationConfiguration,
+)
 from dispatch.tag import service as tag_service
 from dispatch.individual import service as individual_service
 from dispatch.participant import service as participant_service
@@ -102,7 +105,7 @@ def event_functions(event: EventEnvelope):
     return event_mappings.get(event.event.type, [])
 
 
-async def handle_slack_event(*, client, event, background_tasks):
+async def handle_slack_event(*, config, client, event, background_tasks):
     """Handles slack event message."""
     user_id = event.event.user
     channel_id = get_channel_id_from_event(event)
@@ -127,6 +130,7 @@ async def handle_slack_event(*, client, event, background_tasks):
             for f in event_functions(event):
                 background_tasks.add_task(
                     f,
+                    config,
                     user_id,
                     user_email,
                     channel_id,
@@ -139,7 +143,7 @@ async def handle_slack_event(*, client, event, background_tasks):
 
 @slack_background_task
 def handle_reaction_added_event(
-    config: SlackConfiguration,
+    config: SlackConversationConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,
@@ -191,6 +195,7 @@ def is_business_hours(commander_tz: str):
 
 @slack_background_task
 def after_hours(
+    config: SlackConversationConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,
@@ -244,6 +249,7 @@ def after_hours(
 
 @slack_background_task
 def member_joined_channel(
+    config: SlackConversationConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,
@@ -285,6 +291,7 @@ def member_joined_channel(
 
 @slack_background_task
 def member_left_channel(
+    config: SlackConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,
@@ -331,6 +338,7 @@ def ban_threads_warning(
 
 @slack_background_task
 def message_tagging(
+    config: SlackConversationConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,
@@ -360,6 +368,7 @@ def message_tagging(
 
 @slack_background_task
 def message_monitor(
+    config: SlackConversationConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,

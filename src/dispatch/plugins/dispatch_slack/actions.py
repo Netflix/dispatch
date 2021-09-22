@@ -97,7 +97,7 @@ def action_functions(action_id: str):
     return []
 
 
-async def handle_slack_action(*, client, request, background_tasks):
+async def handle_slack_action(*, config, client, request, background_tasks):
     """Handles slack action message."""
     # We resolve the user's email
     user_id = request["user"]["id"]

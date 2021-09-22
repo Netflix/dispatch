@@ -61,14 +61,14 @@ def verify_signature(organization: str, request_data: str, timestamp: int, signa
         .filter(PluginInstance.enabled == true(), PluginInstance.slug == "slack-conversation")
         .all()
     )
-    secrets = [p.instance.configuration.signing_secret for p in plugin_instances]
-    for secret in secrets:
+    for p in plugin_instances:
+        secret = p.instance.configuration.signing_secret
         req = f"v0:{timestamp}:{request_data}".encode("utf-8")
         slack_signing_secret = bytes(secret, "utf-8")
         h = hmac.new(slack_signing_secret, req, hashlib.sha256).hexdigest()
         result = hmac.compare_digest(f"v0={h}", signature)
         if result:
-            return
+            return p.instance.configuration
 
     raise HTTPException(status_code=403, detail=[{"msg": "Invalid request signature"}])
 
@@ -98,7 +98,9 @@ async def handle_event(
     verify_timestamp(x_slack_request_timestamp)
 
     # We verify the signature
-    verify_signature(organization, raw_request_body, x_slack_request_timestamp, x_slack_signature)
+    current_configuration = verify_signature(
+        organization, raw_request_body, x_slack_request_timestamp, x_slack_signature
+    )
 
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()
@@ -107,9 +109,12 @@ async def handle_event(
     if event.challenge:
         return JSONResponse(content={"challenge": event.challenge})
 
-    slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
+    slack_async_client = dispatch_slack_service.create_slack_client(
+        config=current_configuration, run_async=True
+    )
 
     body = await handle_slack_event(
+        config=current_configuration,
         client=slack_async_client,
         event=event,
         background_tasks=background_tasks,
@@ -138,14 +143,19 @@ async def handle_command(
     verify_timestamp(x_slack_request_timestamp)
 
     # We verify the signature
-    verify_signature(organization, raw_request_body, x_slack_request_timestamp, x_slack_signature)
+    current_configuration = verify_signature(
+        organization, raw_request_body, x_slack_request_timestamp, x_slack_signature
+    )
 
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()
 
-    slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
+    slack_async_client = dispatch_slack_service.create_slack_client(
+        config=current_configuration, run_async=True
+    )
 
     body = await handle_slack_command(
+        config=current_configuration,
         client=slack_async_client,
         request=request,
         background_tasks=background_tasks,
@@ -176,8 +186,7 @@ async def handle_action(
     # We verify the timestamp
     verify_timestamp(x_slack_request_timestamp)
 
-    # We verify the signature
-    slack_sync_client = verify_signature(
+    current_configuration = verify_signature(
         organization, raw_request_body, x_slack_request_timestamp, x_slack_signature
     )
 
@@ -185,9 +194,12 @@ async def handle_action(
     response.headers["X-Slack-Powered-By"] = create_ua_string()
 
     # We create an async Slack client
-    slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
+    slack_async_client = dispatch_slack_service.create_slack_client(
+        config=current_configuration, run_async=True
+    )
 
     body = await handle_slack_action(
+        config=current_configuration,
         client=slack_async_client,
         request=request,
         background_tasks=background_tasks,
