@@ -119,7 +119,7 @@ async def handle_slack_event(*, client, event, background_tasks):
             db_session=db_session, channel_id=channel_id
         )
 
-        if conversation and dispatch_slack_service.is_user(user_id):
+        if conversation and dispatch_slack_service.is_user(config, user_id):
             # We resolve the user's email
             user_email = await dispatch_slack_service.get_user_email_async(client, user_id)
 
@@ -259,7 +259,7 @@ def member_joined_channel(
 
     if event.event.inviter:
         # we update the participant's metadata
-        if not dispatch_slack_service.is_user(event.event.inviter):
+        if not dispatch_slack_service.is_user(config, event.event.inviter):
             # we default to the incident commander when we don't know how the user was added
             added_by_participant = participant_service.get_by_incident_id_and_role(
                 db_session=db_session,

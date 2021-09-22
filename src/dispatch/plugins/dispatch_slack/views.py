@@ -53,22 +53,19 @@ def create_ua_string():
     return " ".join(ua_string)
 
 
-def verify_signature(
-    organization: str, signing_secret: str, request_data, timestamp: int, signature: str
-):
+def verify_signature(organization: str, request_data: str, timestamp: int, signature: str):
     """Verifies the request signature using the app's signing secret."""
-    req = f"v0:{timestamp}:{request_data}".encode("utf-8")
-    slack_signing_secret = bytes(signing_secret, "utf-8")
-    h = hmac.new(slack_signing_secret, req, hashlib.sha256).hexdigest()
-
     session = get_organization_scope_from_slug(organization)
     plugin_instances = (
         session.query(PluginInstance)
         .filter(PluginInstance.enabled == true(), PluginInstance.slug == "slack-conversation")
         .all()
     )
-    signatures = [p.instance.configuration.signing_secret for p in plugin_instances]
-    for signature in signatures:
+    secrets = [p.instance.configuration.signing_secret for p in plugin_instances]
+    for secret in secrets:
+        req = f"v0:{timestamp}:{request_data}".encode("utf-8")
+        slack_signing_secret = bytes(secret, "utf-8")
+        h = hmac.new(slack_signing_secret, req, hashlib.sha256).hexdigest()
         result = hmac.compare_digest(f"v0={h}", signature)
         if result:
             return
@@ -180,7 +177,9 @@ async def handle_action(
     verify_timestamp(x_slack_request_timestamp)
 
     # We verify the signature
-    verify_signature(organization, raw_request_body, x_slack_request_timestamp, x_slack_signature)
+    slack_sync_client = verify_signature(
+        organization, raw_request_body, x_slack_request_timestamp, x_slack_signature
+    )
 
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()

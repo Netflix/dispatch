@@ -58,7 +58,9 @@ from .service import get_user_email
 from .decorators import slack_background_task, get_organization_scope_from_channel_id
 
 
-def handle_modal_action(action: dict, background_tasks: BackgroundTasks):
+def handle_modal_action(
+    config: SlackConversationConfiguration, action: dict, background_tasks: BackgroundTasks
+):
     """Handles all modal actions."""
     view_data = action["view"]
     view_data["private_metadata"] = json.loads(view_data["private_metadata"])
@@ -106,14 +108,14 @@ async def handle_slack_action(*, client, request, background_tasks):
     # When there are no exceptions within the dialog submission, your app must respond with 200 OK with an empty body.
     response_body = {}
     if request["type"] == "view_submission":
-        handle_modal_action(request, background_tasks)
+        handle_modal_action(config, request, background_tasks)
         # For modals we set "response_action" to "clear" to close all views in the modal.
         # An empty body is currently not working.
         response_body = {"response_action": "clear"}
     elif request["type"] == "dialog_submission":
-        handle_dialog_action(request, background_tasks)
+        handle_dialog_action(config, request, background_tasks)
     elif request["type"] == "block_actions":
-        handle_block_action(request, background_tasks)
+        handle_block_action(config, request, background_tasks)
 
     return response_body
 
@@ -165,7 +167,9 @@ def handle_dialog_action(
         background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, action)
 
 
-def handle_block_action(action: dict, background_tasks: BackgroundTasks):
+def handle_block_action(
+    config: SlackConversationConfiguration, action: dict, background_tasks: BackgroundTasks
+):
     """Handles a standalone block action."""
     # TODO (kglisson) align our use of action_ids and block_ids
     organization_slug = None
