@@ -93,7 +93,7 @@ fastapi==0.68.1
     # via -r requirements-base.in
 google-api-core==1.26.1
     # via google-api-python-client
-google-api-python-client==2.21.0
+google-api-python-client==2.22.0
     # via -r requirements-base.in
 google-auth==1.28.0
     # via
@@ -327,7 +327,7 @@ six==1.15.0
     #   sqlalchemy-filters
     #   sqlalchemy-utils
     #   validators
-slack_sdk==3.11.1
+slack-sdk==3.11.1
     # via -r requirements-base.in
 sniffio==1.2.0
     # via
