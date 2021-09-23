@@ -697,15 +697,22 @@ def run_server(log_level):
     """Runs a simple server for development."""
     # Uvicorn expects lowercase logging levels; the logging package expects upper.
     os.environ["LOG_LEVEL"] = log_level.upper()
-    if not config.STATIC_DIR:
+    if not os.path.isdir(config.STATIC_DIR):
         import atexit
         from subprocess import Popen
 
         # take our frontend vars and export them for the frontend to consume
         envvars = os.environ.copy()
         envvars.update({x: getattr(config, x) for x in dir(config) if x.startswith("VUE_APP_")})
-
-        p = Popen(["npm", "run", "serve"], cwd="src/dispatch/static/dispatch", env=envvars)
+        is_windows = os.name == "nt"
+        windows_cmds = ["cmd", "/c"]
+        default_cmds = ["npm", "run", "serve"]
+        cmds = windows_cmds + default_cmds if is_windows else default_cmds
+        p = Popen(
+            cmds,
+            cwd=os.path.join("src", "dispatch", "static", "dispatch"),
+            env=envvars,
+        )
         atexit.register(p.terminate)
     uvicorn.run("dispatch.main:app", debug=True, log_level=log_level)
 

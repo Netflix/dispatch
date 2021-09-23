@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "NODE_ENV=dev NODE_OPTIONS='--max-http-header-size=100000' vue-cli-service serve",
+    "serve": "cross-env NODE_ENV=dev NODE_OPTIONS='--max-http-header-size=100000' vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "build-report": "vue-cli-service build --report"
@@ -44,6 +44,7 @@
     "@vue/cli-service": "^4.1.1",
     "@vue/eslint-config-prettier": "^6.0.0",
     "babel-eslint": "^10.1.0",
+    "cross-env": "^7.0.3",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-prettier": "^3.3.1",

@@ -153,7 +153,7 @@ VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_USE_ID_TOKEN = config(
 
 # static files
 DEFAULT_STATIC_DIR = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), "static/dispatch/dist"
+    os.path.abspath(os.path.dirname(__file__)), os.path.join("static", "dispatch", "dist")
 )
 STATIC_DIR = config("STATIC_DIR", default=DEFAULT_STATIC_DIR)
 
