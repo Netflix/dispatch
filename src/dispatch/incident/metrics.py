@@ -81,21 +81,24 @@ def make_forecast(incidents: List[Incident]):
     dataframe.index = pd.DatetimeIndex(dataframe.index)
     dataframe = dataframe.reindex(idx, fill_value=0)
 
-    try:
-        print(dataframe)
-        forecaster = ExponentialSmoothing(
-            dataframe, seasonal_periods=12, trend="add", seasonal="add"
-        ).fit()
-    except Exception as e:
-        log.warning(f"Issue forecasting incidents: {e}")
+    row_count, _ = dataframe.shape
+
+    if row_count > 3:
+        try:
+            forecaster = ExponentialSmoothing(
+                dataframe, seasonal_periods=12, trend="add", seasonal="add"
+            ).fit()
+        except Exception as e:
+            log.warning(f"Issue forecasting incidents: {e}")
+            return [], []
+        forecast = forecaster.forecast(12)
+        forecast_df = pd.DataFrame({"ds": forecast.index.astype("str"), "yhat": forecast.values})
+
+        forecast_data = forecast_df.to_dict("series")
+
+        # drop day data
+        categories = [d[:-3] for d in forecast_data["ds"]]
+        predicted_counts = [max(math.ceil(x), 0) for x in list(forecast_data["yhat"])]
+        return categories, predicted_counts
+    else:
         return [], []
-
-    forecast = forecaster.forecast(12)
-    forecast_df = pd.DataFrame({"ds": forecast.index.astype("str"), "yhat": forecast.values})
-
-    forecast_data = forecast_df.to_dict("series")
-
-    # drop day data
-    categories = [d[:-3] for d in forecast_data["ds"]]
-    predicted_counts = [max(math.ceil(x), 0) for x in list(forecast_data["yhat"])]
-    return categories, predicted_counts

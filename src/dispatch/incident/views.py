@@ -322,6 +322,15 @@ def get_incident_forecast(
 
         actual.append(len(incidents))
 
+    if not (len(predicted)):
+        return {
+            "categories": categories,
+            "series": [
+                {"name": "Predicted", "data": []},
+                {"name": "Actual", "data": []},
+            ],
+        }
+
     return {
         "categories": categories,
         "series": [

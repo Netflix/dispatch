@@ -38,6 +38,18 @@ export default {
         dataLabels: {
           enabled: true,
         },
+        noData: {
+          text: "Not enough data to create a forecast.",
+          align: "center",
+          verticalAlign: "middle",
+          offsetX: 0,
+          offsetY: 0,
+          style: {
+            color: undefined,
+            fontSize: "14px",
+            fontFamily: undefined,
+          },
+        },
         stroke: {
           curve: "smooth",
         },
