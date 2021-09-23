@@ -14,10 +14,27 @@
       no-filter
     >
       <template slot="append-outer">
-        <v-btn icon @click="createEditShow({})">
+        <v-btn icon @click="createEditShow({ resource_type: resourceType })">
           <v-icon>add</v-icon>
         </v-btn>
         <new-edit-sheet @new-document-created="addItem($event)" />
+      </template>
+      <template v-slot:no-data>
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title>
+              No results matching "<strong>{{ search }}</strong
+              >"
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </template>
+      <template v-slot:append-item>
+        <v-list-item v-if="more" @click="loadMore()">
+          <v-list-item-content>
+            <v-list-item-subtitle> Load More </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
       </template>
     </v-combobox>
   </ValidationProvider>
@@ -72,12 +89,14 @@ export default {
       search: null,
       select: null,
       items: [],
+      more: false,
+      numItems: 5,
     }
   },
 
   watch: {
-    search(val) {
-      val && val !== this.select && this.fetchData()
+    search() {
+      this.fetchData()
     },
     value(val) {
       if (!val) return
@@ -101,6 +120,10 @@ export default {
     addItem(value) {
       this.document = value
       this.items.push(value)
+    },
+    loadMore() {
+      this.numItems = this.numItems + 5
+      this.fetchData()
     },
     fetchData() {
       this.error = null
@@ -130,6 +153,12 @@ export default {
       DocumentApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
+
+        if (this.items.length < this.total) {
+          this.more = true
+        } else {
+          this.more = false
+        }
       })
     },
   },
