@@ -195,7 +195,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident_type", ["save", "closeCreateEdit", "setPluginMetadata"]),
+    ...mapActions("incident_type", ["save", "closeCreateEdit"]),
   },
   created() {
     if (this.query.project) {
