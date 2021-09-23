@@ -1,14 +1,14 @@
 <template>
-  <v-combobox
-    v-model="plugin.slug"
+  <v-autocomplete
+    v-model="plugin"
+    :loading="loading"
     :items="items"
     item-text="plugin.slug"
     :search-input.sync="search"
     hide-selected
     :label="label"
     no-filter
-    :loading="loading"
-    @update:search-input="getFilteredData()"
+    return-object
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -42,7 +42,7 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-  </v-combobox>
+  </v-autocomplete>
 </template>
 
 <script>
@@ -77,28 +77,12 @@ export default {
       more: false,
       numItems: 5,
       search: null,
+      plugin: null,
     }
   },
 
-  computed: {
-    plugin: {
-      get() {
-        return cloneDeep(this.value)
-      },
-      set(value) {
-        this.search = null
-        if (typeof value === "string") {
-          let v = {
-            slug: value,
-          }
-          this.items.push(v)
-        }
-        this.$emit("input", value)
-      },
-    },
-  },
-
   created() {
+    this.plugin = cloneDeep(this.value)
     this.fetchData()
   },
 
@@ -158,6 +142,15 @@ export default {
     getFilteredData: debounce(function (options) {
       this.fetchData(options)
     }, 500),
+  },
+
+  watch: {
+    search(val) {
+      val && val !== this.select && this.getFilteredData(val)
+    },
+    plugin(val) {
+      this.$emit("input", val)
+    },
   },
 }
 </script>

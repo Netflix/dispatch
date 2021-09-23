@@ -40,11 +40,11 @@
           </v-tooltip>
         </v-col>
       </v-row>
-      <v-row align="center" dense v-for="meta in plugin.metadata" :key="meta.key">
+      <v-row align="center" dense v-for="(meta, index) in plugin.metadata" :key="index">
         <v-col cols="12" sm="1">
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
-              <v-btn small icon @click="removeItem(plugin)" v-on="on"
+              <v-btn small icon @click="removeItem(plugin, index)" v-on="on"
                 ><v-icon>remove</v-icon></v-btn
               >
             </template>
@@ -63,6 +63,7 @@
 </template>
 
 <script>
+import { cloneDeep } from "lodash"
 import PluginInstanceCombobox from "@/plugin/PluginInstanceCombobox.vue"
 export default {
   name: "PluginMetadataInput",
@@ -88,37 +89,43 @@ export default {
     },
   },
 
-  computed: {
-    plugins: {
-      get() {
-        return [...this.value]
-      },
-    },
+  data() {
+    return {
+      plugins: [],
+    }
+  },
+
+  created() {
+    this.plugins = cloneDeep(this.value)
   },
 
   methods: {
     addPlugin() {
       this.plugins.push({ title: null, slug: null, metadata: [{ key: "", value: "" }] })
-      this.$emit("input", this.plugins)
     },
     removePlugin(idx) {
-      this.plugins.splice(idx)
-      this.$emit("input", this.plugins)
+      this.plugins.splice(idx, 1)
     },
     addItem(plugin) {
-      plugin.metadata.push({ key: null, value: null })
-      this.$emit("input", this.plugins)
+      plugin.metadata.push({ key: "", value: "" })
     },
     removeItem(plugin, idx) {
-      plugin.metadata.splice(idx)
-      this.$emit("input", this.plugins)
+      plugin.metadata.splice(idx, 1)
     },
     setPlugin(event) {
       if (!event.plugin.metadata) {
-        event.plugin.metadata = [{ key: null, value: null }]
+        event.plugin.metadata = [{ key: "", value: "" }]
       }
       this.plugins[event.idx] = event.plugin
-      this.$emit("input", this.plugins)
+    },
+  },
+
+  watch: {
+    plugins: {
+      deep: true,
+      handler(val) {
+        this.$emit("input", cloneDeep(val))
+      },
     },
   },
 }

@@ -128,7 +128,7 @@
                 />
               </v-flex>
               <v-flex xs12>
-                <plugin-metadata-input :project="project" v-model="plugin_metadata" />
+                <plugin-metadata-input v-model="plugin_metadata" :project="project" />
               </v-flex>
             </v-layout>
           </v-container>
@@ -182,9 +182,9 @@ export default {
       "selected.tracking_template_document",
       "selected.review_template_document",
       "selected.executive_template_document",
+      "selected.plugin_metadata",
       "selected.visibility",
       "selected.enabled",
-      "selected.plugin_metadata",
       "selected.exclude_from_metrics",
       "selected.default",
     ]),
@@ -195,7 +195,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident_type", ["save", "closeCreateEdit"]),
+    ...mapActions("incident_type", ["save", "closeCreateEdit", "setPluginMetadata"]),
   },
   created() {
     if (this.query.project) {
