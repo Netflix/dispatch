@@ -45,8 +45,8 @@ QueryStr = constr(regex=r"^[ -~]+$", min_length=1)
 
 def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, role: UserRoles):
     """Adds additional incident filters to query (usually for permissions)."""
-    if role != UserRoles.owner:
-        # We don't allow users that are not owners to see restricted incidents
+    if role == UserRoles.member:
+        # We filter out resticted incidents for users with a member role if the user is not an incident participant
         query = (
             query.join(Participant, Incident.id == Participant.incident_id)
             .join(IndividualContact)
