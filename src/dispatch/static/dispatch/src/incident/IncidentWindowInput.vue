@@ -60,15 +60,15 @@
 <script>
 import { cloneDeep } from "lodash"
 
-import subMonths from "date-fns/subMonths"
-import subDays from "date-fns/subDays"
-import lastDayOfYear from "date-fns/lastDayOfYear"
-import subYears from "date-fns/subYears"
-import startOfYear from "date-fns/startOfYear"
-import startOfMonth from "date-fns/startOfMonth"
-import lastDayOfMonth from "date-fns/lastDayOfMonth"
-import { endOfQuarter, startOfQuarter, subQuarters } from "date-fns"
+import endOfMonth from "date-fns/endOfMonth"
+import endOfYear from "date-fns/endOfYear"
 import parseISO from "date-fns/fp/parseISO"
+import startOfMonth from "date-fns/startOfMonth"
+import startOfYear from "date-fns/startOfYear"
+import subDays from "date-fns/subDays"
+import subMonths from "date-fns/subMonths"
+import subYears from "date-fns/subYears"
+import { endOfQuarter, startOfQuarter, subQuarters } from "date-fns"
 
 let today = function () {
   let now = new Date()
@@ -91,17 +91,24 @@ export default {
       menu: false,
       windowRanges: [
         { title: "Today", window: { start: today(), end: today() } },
-        { title: "Yesterday", window: { start: subDays(today(), 1), end: subDays(today(), 1) } },
-        { title: "Last 7 Days", window: { start: subDays(today(), 7), end: today() } },
-        { title: "Last 30 Days", window: { start: subDays(today(), 30), end: today() } },
         { title: "This Month", window: { start: startOfMonth(today()), end: today() } },
-        {
-          title: "Last Month",
-          window: { start: subMonths(today(), 1), end: lastDayOfMonth(subMonths(today(), 1)) },
-        },
         {
           title: "This Quarter",
           window: { start: startOfQuarter(today()), end: endOfQuarter(today()) },
+        },
+        {
+          title: "This Year",
+          window: { start: startOfYear(today()), end: endOfYear(today()) },
+        },
+        { title: "Yesterday", window: { start: subDays(today(), 1), end: subDays(today(), 1) } },
+        { title: "Last 7 Days", window: { start: subDays(today(), 7), end: today() } },
+        { title: "Last 30 Days", window: { start: subDays(today(), 30), end: today() } },
+        {
+          title: "Last Month",
+          window: {
+            start: startOfMonth(subMonths(today(), 1)),
+            end: endOfMonth(subMonths(today(), 1)),
+          },
         },
         {
           title: "Last Quarter",
@@ -111,14 +118,10 @@ export default {
           },
         },
         {
-          title: "This Year",
-          window: { start: startOfYear(today()), end: lastDayOfYear(today()) },
-        },
-        {
           title: "Last Year",
           window: {
             start: startOfYear(subYears(today(), 1)),
-            end: lastDayOfYear(subYears(today(), 1)),
+            end: endOfYear(subYears(today(), 1)),
           },
         },
       ],
@@ -137,8 +140,8 @@ export default {
         let start = subMonths(today(), 6).setHours(0, 0, 0, 0)
         let end = today().setHours(23, 59, 59, 999)
         return {
-          start: start.toISOString(),
-          end: end.toISOString(),
+          start: this.toLocalISOString(start),
+          end: this.toLocalISOString(end),
         }
       },
       set(value) {
@@ -164,8 +167,8 @@ export default {
       range.start.setHours(0, 0, 0, 0)
       range.end.setHours(23, 59, 59, 999)
       this.window = {
-        start: range.start.toISOString(),
-        end: range.end.toISOString(),
+        start: this.toLocalISOString(range.start),
+        end: this.toLocalISOString(range.end),
       }
     },
     clearWindowRange: function () {
@@ -175,7 +178,7 @@ export default {
       start = parseISO(start)
       start.setHours(0, 0, 0, 0)
       this.window = {
-        start: start.toISOString(),
+        start: this.toLocalISOString(start),
         end: this.window.end,
       }
     },
@@ -184,8 +187,12 @@ export default {
       end.setHours(23, 59, 59, 999)
       this.window = {
         start: this.window.start,
-        end: end.toISOString(),
+        end: this.toLocalISOString(end),
       }
+    },
+    toLocalISOString: function (date) {
+      let tzOffset = date.getTimezoneOffset() * 60000 //offset in milliseconds
+      return new Date(date - tzOffset).toISOString().slice(0, -1)
     },
   },
 }
