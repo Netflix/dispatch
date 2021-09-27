@@ -26,7 +26,7 @@ from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
 
-from .config import SlackConfiguration
+from .config import SlackConfiguration, SlackConversationConfiguration
 
 
 from .decorators import (
@@ -187,10 +187,10 @@ async def handle_non_incident_conversation_commands(config, client, request, bac
     for f in command_functions(config, command):
         background_tasks.add_task(
             f,
-            user_id,
-            user_email,
-            channel_id,
-            None,
+            user_id=user_id,
+            user_email=user_email,
+            channel_id=channel_id,
+            incident_id=None,
             organization_slug=organization_slug,
             command=request,
         )
@@ -230,10 +230,10 @@ async def handle_incident_conversation_commands(config, client, request, backgro
     for f in command_functions(config, command):
         background_tasks.add_task(
             f,
-            user_id,
-            user_email,
-            channel_id,
-            conversation.incident.id,
+            user_id=user_id,
+            user_email=user_email,
+            channel_id=channel_id,
+            incident_id=conversation.incident.id,
             command=request,
         )
 
@@ -260,6 +260,7 @@ def list_resources(
     user_email: str,
     channel_id: str,
     incident_id: int,
+    config: SlackConversationConfiguration = None,
     command: dict = None,
     db_session=None,
     slack_client=None,
@@ -280,6 +281,7 @@ def list_my_tasks(
     user_email: str,
     channel_id: str,
     incident_id: int,
+    config: SlackConversationConfiguration = None,
     command: dict = None,
     db_session=None,
     slack_client=None,
@@ -290,6 +292,7 @@ def list_my_tasks(
         user_email=user_email,
         channel_id=channel_id,
         incident_id=incident_id,
+        config=config,
         command=command,
         by_creator=user_email,
         by_assignee=user_email,
@@ -304,6 +307,7 @@ def list_tasks(
     user_email: str,
     channel_id: str,
     incident_id: int,
+    config: SlackConversationConfiguration = None,
     command: dict = None,
     db_session=None,
     slack_client=None,
@@ -376,6 +380,7 @@ def list_workflows(
     user_email: str,
     channel_id: str,
     incident_id: int,
+    config: SlackConversationConfiguration = None,
     command: dict = None,
     db_session=None,
     slack_client=None,
@@ -423,6 +428,7 @@ def list_participants(
     user_email: str,
     channel_id: str,
     incident_id: int,
+    config: SlackConversationConfiguration = None,
     command: dict = None,
     db_session=None,
     slack_client=None,
@@ -514,6 +520,7 @@ def list_incidents(
     user_email: str,
     channel_id: str,
     incident_id: int,
+    config: SlackConversationConfiguration = None,
     command: dict = None,
     db_session=None,
     slack_client=None,

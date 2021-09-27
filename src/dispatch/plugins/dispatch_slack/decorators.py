@@ -118,36 +118,34 @@ def slack_background_task(func):
     def wrapper(*args, **kwargs):
         background = False
 
+        metrics_provider.counter(
+            "function.call.counter", tags={"function": fullname(func), "slack": True}
+        )
+
+        channel_id = kwargs["channel_id"]
+        if not kwargs.get("db_session"):
+
+            # slug passed directly is prefered over just having a channel_id
+            organization_slug = kwargs.pop("organization_slug", None)
+            if not organization_slug:
+                scoped_db_session = get_organization_scope_from_channel_id(channel_id=channel_id)
+                if not scoped_db_session:
+                    scoped_db_session = get_default_organization_scope()
+            else:
+                scoped_db_session = get_organization_scope_from_slug(organization_slug)
+
+            background = True
+            kwargs["db_session"] = scoped_db_session
+
+        config = get_plugin_configuration_from_channel_id(
+            db_session=kwargs["db_session"], channel_id=channel_id
+        )
+        kwargs["config"] = config
+        if not kwargs.get("slack_client"):
+            slack_client = dispatch_slack_service.create_slack_client(config=config)
+            kwargs["slack_client"] = slack_client
+
         try:
-            metrics_provider.counter(
-                "function.call.counter", tags={"function": fullname(func), "slack": True}
-            )
-
-            if not kwargs.get("db_session"):
-                channel_id = args[2]
-
-                # slug passed directly is prefered over just having a channel_id
-                organization_slug = kwargs.pop("organization_slug", None)
-                if not organization_slug:
-                    scoped_db_session = get_organization_scope_from_channel_id(
-                        channel_id=channel_id
-                    )
-                    if not scoped_db_session:
-                        scoped_db_session = get_default_organization_scope()
-                else:
-                    scoped_db_session = get_organization_scope_from_slug(organization_slug)
-
-                background = True
-                kwargs["db_session"] = scoped_db_session
-
-            config = get_plugin_configuration_from_channel_id(
-                db_session=kwargs["db_session"], channel_id=channel_id
-            )
-            kwargs["config"] = config
-            if not kwargs.get("slack_client"):
-                slack_client = dispatch_slack_service.create_slack_client(config=config)
-                kwargs["slack_client"] = slack_client
-
             start = time.perf_counter()
             result = func(*args, **kwargs)
             elapsed_time = time.perf_counter() - start
@@ -161,7 +159,6 @@ def slack_background_task(func):
             log.exception(e)
 
             user_id = args[0]
-            channel_id = args[2]
 
             message = f"Command Error: {e.errors()[0]['msg']}"
 

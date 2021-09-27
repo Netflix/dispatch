@@ -762,11 +762,8 @@ def run_slack_websocket(organization: str, project: str):
         )
         return
 
-    app_token = instance.configuration.socket_mode_app_token
-    bot_token = instance.configuration.api_bot_token
-
     click.secho("Slack websocket process started...", fg="blue")
-    asyncio.run(socket_mode.run_websocket_process(app_token, bot_token))
+    asyncio.run(socket_mode.run_websocket_process(instance.configuration))
 
 
 @dispatch_server.command("shell")

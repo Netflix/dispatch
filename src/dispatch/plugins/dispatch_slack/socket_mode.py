@@ -12,7 +12,7 @@ from .events import handle_slack_event, EventEnvelope
 log = logging.getLogger(__name__)
 
 
-async def run_websocket_process(app_token: str, bot_token: str):
+async def run_websocket_process(config):
     from slack_sdk.socket_mode.aiohttp import SocketModeClient
     from slack_sdk.socket_mode.response import SocketModeResponse
     from slack_sdk.socket_mode.request import SocketModeRequest
@@ -20,9 +20,11 @@ async def run_websocket_process(app_token: str, bot_token: str):
     # Initialize SocketModeClient with an app-level token + WebClient
     client = SocketModeClient(
         # This app-level token will be used only for establishing a connection
-        app_token=app_token.get_secret_value(),  # xapp-A111-222-xyz
+        app_token=config.socket_mode_app_token.get_secret_value(),  # xapp-A111-222-xyz
         # You will be using this WebClient for performing Web API calls in listeners
-        web_client=AsyncWebClient(token=bot_token.get_secret_value()),  # xoxb-111-222-xyz
+        web_client=AsyncWebClient(
+            token=config.api_bot_token.get_secret_value()
+        ),  # xoxb-111-222-xyz
     )
 
     async def process(client: SocketModeClient, req: SocketModeRequest):
@@ -30,6 +32,7 @@ async def run_websocket_process(app_token: str, bot_token: str):
 
         if req.type == "events_api":
             response = await handle_slack_event(
+                config=config,
                 client=client.web_client,
                 event=EventEnvelope(**req.payload),
                 background_tasks=background_tasks,
@@ -37,6 +40,7 @@ async def run_websocket_process(app_token: str, bot_token: str):
 
         if req.type == "slash_commands":
             response = await handle_slack_command(
+                config=config,
                 client=client.web_client,
                 request=req.payload,
                 background_tasks=background_tasks,
@@ -44,6 +48,7 @@ async def run_websocket_process(app_token: str, bot_token: str):
 
         if req.type == "interactive":
             response = await handle_slack_action(
+                config=config,
                 client=client.web_client,
                 request=req.payload,
                 background_tasks=background_tasks,

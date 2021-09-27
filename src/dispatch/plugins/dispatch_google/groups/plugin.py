@@ -126,7 +126,7 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
     ):
         """Creates a new Google Group."""
         client = get_service(self.configuration, "admin", "directory_v1", self.scopes)
-        group_key = f"{name.lower()}@{self.configuration.domain}"
+        group_key = f"{name.lower()}@{self.configuration.google_domain}"
 
         if not description:
             description = "Group automatically created by Dispatch."
@@ -138,7 +138,7 @@ class GoogleGroupParticipantGroupPlugin(ParticipantGroupPlugin):
 
         group.update(
             {
-                "weblink": f"https://groups.google.com/a/{self.configuration.domain}/forum/#!forum/{group['name']}"
+                "weblink": f"https://groups.google.com/a/{self.configuration.google_domain}/forum/#!forum/{group['name']}"
             }
         )
         return group

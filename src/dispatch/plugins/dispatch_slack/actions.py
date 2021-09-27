@@ -73,7 +73,14 @@ def handle_modal_action(
     user_email = action["user"]["email"]
 
     for f in action_functions(action_id):
-        background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, action)
+        background_tasks.add_task(
+            f,
+            user_id=user_id,
+            user_email=user_email,
+            channel_id=channel_id,
+            incident_id=incident_id,
+            action=action,
+        )
 
 
 def action_functions(action_id: str):
@@ -164,7 +171,14 @@ def handle_dialog_action(
     action_id = action["callback_id"]
 
     for f in dialog_action_functions(config, action_id):
-        background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, action)
+        background_tasks.add_task(
+            f,
+            user_id=user_id,
+            user_email=user_email,
+            channel_id=channel_id,
+            incident_id=incident_id,
+            action=action,
+        )
 
 
 def handle_block_action(
@@ -203,11 +217,11 @@ def handle_block_action(
     for f in block_action_functions(action_id):
         background_tasks.add_task(
             f,
-            user_id,
-            user_email,
-            channel_id,
-            incident_id,
-            action,
+            user_id=user_id,
+            user_email=user_email,
+            channel_id=channel_id,
+            incident_id=incident_id,
+            action=action,
             organization_slug=organization_slug,
         )
 
@@ -355,6 +369,7 @@ def handle_engage_oncall_action(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -385,6 +400,7 @@ def handle_tactical_report_create(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -419,6 +435,7 @@ def handle_executive_report_create(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -462,6 +479,7 @@ def handle_assign_role_action(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):

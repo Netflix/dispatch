@@ -130,11 +130,11 @@ async def handle_slack_event(*, config, client, event, background_tasks):
             for f in event_functions(event):
                 background_tasks.add_task(
                     f,
-                    config,
-                    user_id,
-                    user_email,
-                    channel_id,
-                    conversation.incident_id,
+                    config=config,
+                    user_id=user_id,
+                    user_email=user_email,
+                    channel_id=channel_id,
+                    incident_id=conversation.incident_id,
                     event=event,
                 )
 

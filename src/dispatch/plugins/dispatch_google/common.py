@@ -18,7 +18,7 @@ def get_service(config: GoogleConfiguration, service_name: str, version: str, sc
         "type": "service_account",
         "project_id": config.service_account_project_id,
         "private_key_id": config.service_account_private_key_id,
-        "private_key": str(config.service_account_private_key).replace("\\n", "\n"),
+        "private_key": config.service_account_private_key.get_secret_value().replace("\\n", "\n"),
         "client_email": config.service_account_client_email,
         "client_id": config.service_account_client_id,
         "token_uri": "https://oauth2.googleapis.com/token",
@@ -39,5 +39,5 @@ def get_service(config: GoogleConfiguration, service_name: str, version: str, sc
             version,
             credentials=delegated_credentials,
             cache_discovery=False,
-            developerKey=config.developer_key,
+            developerKey=config.developer_key.get_secret_value(),
         )

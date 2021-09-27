@@ -13,7 +13,7 @@ from sqlalchemy import true
 
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
-from dispatch.plugin.models import PluginInstance
+from dispatch.plugin.models import PluginInstance, Plugin
 
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.decorators import get_organization_scope_from_slug
@@ -58,11 +58,13 @@ def verify_signature(organization: str, request_data: str, timestamp: int, signa
     session = get_organization_scope_from_slug(organization)
     plugin_instances = (
         session.query(PluginInstance)
-        .filter(PluginInstance.enabled == true(), PluginInstance.slug == "slack-conversation")
+        .join(Plugin)
+        .filter(PluginInstance.enabled == true(), Plugin.slug == "slack-conversation")
         .all()
     )
+
     for p in plugin_instances:
-        secret = p.instance.configuration.signing_secret
+        secret = p.instance.configuration.signing_secret.get_secret_value()
         req = f"v0:{timestamp}:{request_data}".encode("utf-8")
         slack_signing_secret = bytes(secret, "utf-8")
         h = hmac.new(slack_signing_secret, req, hashlib.sha256).hexdigest()
