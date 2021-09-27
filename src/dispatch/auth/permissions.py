@@ -110,6 +110,40 @@ class PermissionsDependency(object):
             permission_class(request=request)
 
 
+class OrganizationOwnerPermission(BasePermission):
+    def has_required_permissions(self, request: Request) -> bool:
+        return self.role == UserRoles.owner
+
+
+class OrganizationManagerPermission(BasePermission):
+    def has_required_permissions(self, request: Request) -> bool:
+        permission = any_permission(
+            permissions=[
+                OrganizationOwnerPermission,
+            ],
+            request=request,
+        )
+        if not permission:
+            if self.role == UserRoles.manager:
+                return True
+        return permission
+
+
+class OrganizationAdminPermission(BasePermission):
+    def has_required_permissions(self, request: Request) -> bool:
+        permission = any_permission(
+            permissions=[
+                OrganizationOwnerPermission,
+                OrganizationManagerPermission,
+            ],
+            request=request,
+        )
+        if not permission:
+            if self.role == UserRoles.admin:
+                return True
+        return permission
+
+
 class OrganizationMemberPermission(BasePermission):
     def has_required_permissions(
         self,
@@ -127,40 +161,6 @@ class OrganizationMemberPermission(BasePermission):
             if self.role == UserRoles.member:
                 return True
         return permission
-
-
-class OrganizationManagerPermission(BasePermission):
-    def has_required_permissions(self, request: Request) -> bool:
-        permission = any_permission(
-            permissions=[
-                OrganizationOwnerPermission,
-                OrganizationAdminPermission,
-            ],
-            request=request,
-        )
-        if not permission:
-            if self.role == UserRoles.manager:
-                return True
-        return permission
-
-
-class OrganizationAdminPermission(BasePermission):
-    def has_required_permissions(self, request: Request) -> bool:
-        permission = any_permission(
-            permissions=[
-                OrganizationOwnerPermission,
-            ],
-            request=request,
-        )
-        if not permission:
-            if self.role == UserRoles.admin:
-                return True
-        return permission
-
-
-class OrganizationOwnerPermission(BasePermission):
-    def has_required_permissions(self, request: Request) -> bool:
-        return self.role == UserRoles.owner
 
 
 class SensitiveProjectActionPermission(BasePermission):
