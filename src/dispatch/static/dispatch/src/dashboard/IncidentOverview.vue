@@ -57,7 +57,7 @@
         <incident-cost-bar-chart-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <v-flex lg12 sm12 xs12>
-        <incident-forecast-card :filterOptions="filterOptions" />
+        <incident-forecast-card :filter-options="filterOptions" />
       </v-flex>
       <v-flex lg6 sm6 xs12>
         <incident-active-time-card v-model="groupedItems" :loading="loading" />
