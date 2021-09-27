@@ -12,12 +12,14 @@
         <span>Add Plugin</span>
       </v-tooltip>
     </v-row>
-    <span v-for="(plugin, idx) in plugins" :key="plugin.slug">
+    <span v-for="(plugin, plugin_idx) in plugins" :key="plugin_idx">
       <v-row align="center" dense>
         <v-col cols="12" sm="1">
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
-              <v-btn small icon @click="removePlugin(idx)" v-on="on"><v-icon>remove</v-icon></v-btn>
+              <v-btn small icon @click="removePlugin(plugin_idx)" v-on="on"
+                ><v-icon>remove</v-icon></v-btn
+              >
             </template>
             <span>Remove Plugin</span>
           </v-tooltip>
@@ -26,7 +28,7 @@
           <plugin-instance-combobox
             :project="project"
             :type="type"
-            @input="setPlugin({ plugin: $event, idx: idx })"
+            @input="setPlugin({ plugin: $event, idx: plugin_idx })"
             label="Plugin"
             :value="plugin"
           />
@@ -34,17 +36,23 @@
         <v-col cols="12" sm="1">
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
-              <v-btn small icon @click="addItem(plugin)" v-on="on"><v-icon>add</v-icon></v-btn>
+              <v-btn small icon @click="addItem(plugin_idx)" v-on="on"><v-icon>add</v-icon></v-btn>
             </template>
             <span>Add Item</span>
           </v-tooltip>
         </v-col>
       </v-row>
-      <v-row align="center" dense v-for="(meta, index) in plugin.metadata" :key="index">
+      <v-row
+        align="center"
+        dense
+        v-for="(meta, meta_idx) in plugin.metadata"
+        :key="meta_idx"
+        :plugin-index="plugin_idx"
+      >
         <v-col cols="12" sm="1">
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
-              <v-btn small icon @click="removeItem(plugin, index)" v-on="on"
+              <v-btn small icon @click="removeItem(plugin_idx, meta_idx)" v-on="on"
                 ><v-icon>remove</v-icon></v-btn
               >
             </template>
@@ -52,10 +60,10 @@
           </v-tooltip>
         </v-col>
         <v-col cols="12" sm="5">
-          <v-text-field label="Key" v-model="meta.key" type="text" />
+          <v-text-field label="Key" @input="itemChanged()" v-model="meta.key" type="text" />
         </v-col>
         <v-col cols="12" sm="6">
-          <v-text-field label="Value" v-model="meta.value" type="text" />
+          <v-text-field label="Value" @input="itemChanged()" v-model="meta.value" type="text" />
         </v-col>
       </v-row>
     </span>
@@ -89,43 +97,41 @@ export default {
     },
   },
 
-  data() {
-    return {
-      plugins: [],
-    }
-  },
-
-  created() {
-    this.plugins = cloneDeep(this.value)
+  computed: {
+    plugins: {
+      get() {
+        return cloneDeep(this.value).map((x) => ({ ...x, ...{ plugin: { slug: x.slug } } }))
+      },
+    },
   },
 
   methods: {
     addPlugin() {
-      this.plugins.push({ title: null, slug: null, metadata: [{ key: "", value: "" }] })
+      this.plugins.push({ plugin: { slug: "" } })
+      this.$emit("input", this.plugins)
     },
-    removePlugin(idx) {
-      this.plugins.splice(idx, 1)
+    removePlugin(plugin_idx) {
+      this.plugins.splice(plugin_idx, 1)
+      this.$emit("input", this.plugins)
     },
-    addItem(plugin) {
-      plugin.metadata.push({ key: "", value: "" })
+    addItem(plugin_idx) {
+      if (!this.plugins[plugin_idx].metadata) {
+        this.$set(this.plugins[plugin_idx], "metadata", [])
+      }
+      this.plugins[plugin_idx].metadata.push({ key: "", value: "" })
+      this.$emit("input", this.plugins)
     },
-    removeItem(plugin, idx) {
-      plugin.metadata.splice(idx, 1)
+    removeItem(plugin_idx, metadata_idx) {
+      this.plugins[plugin_idx].metadata.splice(metadata_idx, 1)
+      this.$emit("input", this.plugins)
     },
     setPlugin(event) {
-      if (!event.plugin.metadata) {
-        event.plugin.metadata = [{ key: "", value: "" }]
-      }
-      this.plugins[event.idx] = event.plugin
+      this.$set(this.plugins, event.idx, event.plugin)
+      this.plugins[event.idx].slug = event.plugin.plugin.slug
+      this.$emit("input", this.plugins)
     },
-  },
-
-  watch: {
-    plugins: {
-      deep: true,
-      handler(val) {
-        this.$emit("input", cloneDeep(val))
-      },
+    itemChanged() {
+      this.$emit("input", this.plugins)
     },
   },
 }
