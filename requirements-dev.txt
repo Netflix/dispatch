@@ -14,7 +14,7 @@ click==7.1.2
     # via black
 coverage==5.5
     # via -r requirements-dev.in
-devtools==0.7.0
+devtools==0.8.0
     # via -r requirements-dev.in
 executing==0.8.0
     # via devtools
