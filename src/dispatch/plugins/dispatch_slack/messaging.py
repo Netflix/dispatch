@@ -33,7 +33,7 @@ def get_incident_conversation_command_message(config: SlackConfiguration, comman
             "response_type": "ephemeral",
             "text": "Opening a dialog to write a tactical report...",
         },
-        config.slack_command_list_incidents: {
+        config.slack_command_list_tasks: {
             "response_type": "ephemeral",
             "text": "Fetching the list of incident tasks...",
         },
