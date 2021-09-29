@@ -8,9 +8,9 @@ Dispatch allows you to define incident types. Incident types bucket or categoriz
 
 **Description:** The description of the incident type presented to the user.
 
-**Visibility:** Determines whether to send notification messages about this incident on creation and update. On incident close, this setting will add organization-wide permission to incident resources. Defaults to 'Open'.
+**Visibility:** Allows you to specify how visible an incident of this type will be. For example, if `Open` is chosen, then notifications about an incident of this type will be sent on incident creation and update, and updates included on daily incident reports. All Dispatch users will be able to see incidents of this type in the Web UI regardless of their role. Also, Dispatch will use the Google domain provided to add organization-wide permission to the incident folder and its contents when the incident is marked as closed. However, if `Restricted` is chosen, incidents of this type will not be included in notifications, won't be visible to Dispatch users with a `member` role in the Web UI, and Dispatch won't open the incident folder and its contents to the whole organization. This setting defaults to `Open`.
 
-**Service:** Defines the on-call service to use to resolve an incident commander. The incident commander defaults to the `reporter` if no on-call service is defined.
+**Service:** Allows you to define the on-call service to use to resolve an incident commander. The incident commander defaults to the `reporter` if no on-call service is defined.
 
 **Document:** Allows you to specify an incident document template to be created and filled for this incident type. This is useful if you like to use different document templates depending on the type of incident.
 
