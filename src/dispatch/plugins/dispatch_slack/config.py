@@ -61,7 +61,7 @@ class SlackConversationConfiguration(SlackConfiguration):
     slack_command_list_tasks: str = Field(
         "/dispatch-list-tasks",
         title="List Tasks Command String",
-        description="Defines the string used to list all incidents in an incident. Must match what is defined in Slack.",
+        description="Defines the string used to list all tasks in an incident. Must match what is defined in Slack.",
     )
     slack_command_list_my_tasks: str = Field(
         "/dispatch-list-my-tasks",
