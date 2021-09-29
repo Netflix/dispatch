@@ -126,7 +126,7 @@ class SlackConversationConfiguration(SlackConfiguration):
     slack_command_list_incidents: str = Field(
         "/dispatch-list-incidents",
         title="List Incidents Command String",
-        description="Defines the string used to list all current incidents. Must match what is defined in Slack.",
+        description="Defines the string used to list current active and stable incidents, and closed incidents in the last 24 hours. Must match what is defined in Slack.",
     )
     slack_command_run_workflow: str = Field(
         "/dispatch-run-workflow",
