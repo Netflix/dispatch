@@ -67,7 +67,7 @@ To enable Dispatch to generate interactive components such as dialogs and modals
 
 ### Slash Commands
 
-To enable Dispatch's slash commands, you must add them to the Slack app first. Ensure that the `Command` field matches the configuration variables in the [Commands](#commands) listing below \(e.g. `/dispatch-update-incident`\) and that the `Request URL` points to the events command API endpoint of the Dispatch server at `/API/v1/<organization>/events/slack/command`.
+To enable Dispatch's slash commands, you must add them to the Slack app first. Ensure that the `Command` field matches the configuration variables in the [Commands](#commands) listing below \(e.g. `/dispatch-update-incident`\) and that the `Request URL` points to the events command API endpoint of the Dispatch server at `/api/v1/<organization>/events/slack/command`.
 
 ![](../../../../.gitbook/assets/slack-setup-commands-0.png)
 
