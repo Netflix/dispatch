@@ -106,7 +106,7 @@ class SlackConversationConfiguration(SlackConfiguration):
     slack_command_report_tactical: str = Field(
         "/dispatch-report-tactical",
         title="Report Tactical Command String",
-        description="Defines the string used to create an tactical report. Must match is defined in Slack.",
+        description="Defines the string used to create a tactical report. Must match is defined in Slack.",
     )
     slack_command_report_executive: str = Field(
         "/dispatch-report-executive",
