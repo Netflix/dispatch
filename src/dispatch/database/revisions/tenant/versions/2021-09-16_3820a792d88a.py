@@ -131,6 +131,8 @@ def upgrade():
     JIRA_HOSTING_TYPE = config("JIRA_HOSTING_TYPE", default="cloud")
     JIRA_PASSWORD = config("JIRA_PASSWORD", cast=Secret, default=None)
     JIRA_USERNAME = config("JIRA_USERNAME", default=None)
+    JIRA_PROJECT_ID = config("JIRA_PROJECT_ID", default=None)
+    JIRA_ISSUE_TYPE_NAME = config("JIRA_ISSUE_TYPE_NAME", default=None)
 
     if JIRA_PASSWORD:
         jira_config = JiraConfiguration(
@@ -138,6 +140,8 @@ def upgrade():
             browser_url=str(JIRA_BROWSER_URL),
             hosting_type=JIRA_HOSTING_TYPE,
             username=JIRA_USERNAME,
+            default_jira_project_id=JIRA_PROJECT_ID,
+            default_jira_issue_type_name=JIRA_ISSUE_TYPE_NAME,
             password=str(JIRA_PASSWORD),
         )
 

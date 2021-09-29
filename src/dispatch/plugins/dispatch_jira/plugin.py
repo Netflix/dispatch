@@ -34,6 +34,12 @@ class JiraConfiguration(BaseConfigurationModel):
     browser_url: HttpUrl = Field(
         title="Browser URL", description="This URL is used to construct browser weblinks."
     )
+    default_project_id = str = Field(
+        title="Default Project ID", description="Defines the default Jira Project to use."
+    )
+    default_issue_type_name: str = Field(
+        title="Default Issue Type Name", description="Defines the default Jira issue type name to use."
+    )
     hosting_type: HostingType = Field(
         "cloud", title="Hosting Type", description="Defines the type of deployment."
     )
@@ -219,6 +225,12 @@ class JiraTicketPlugin(TicketPlugin):
         project_id, issue_type_name = process_incident_type_plugin_metadata(
             incident_type_plugin_metadata
         )
+
+        if not project_id:
+            project_id = self.configuration.default_project_id
+
+        if not issue_type_name:
+            issue_type_name = self.configuration.default_issue_type_name
 
         issue_fields = {
             "project": {"id": project_id},
