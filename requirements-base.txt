@@ -93,7 +93,7 @@ fastapi==0.68.1
     # via -r requirements-base.in
 google-api-core==1.26.1
     # via google-api-python-client
-google-api-python-client==2.22.0
+google-api-python-client==2.23.0
     # via -r requirements-base.in
 google-auth==1.28.0
     # via
@@ -303,7 +303,7 @@ scipy==1.6.1
     # via statsmodels
 sentry-asgi==0.2.0
     # via -r requirements-base.in
-sentry-sdk==1.4.1
+sentry-sdk==1.4.2
     # via
     #   -r requirements-base.in
     #   sentry-asgi

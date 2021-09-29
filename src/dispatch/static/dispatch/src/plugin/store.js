@@ -140,12 +140,6 @@ const actions = {
 
 const mutations = {
   updateField,
-  addConfigurationItem(state) {
-    state.selected.configuration.push({ key: null, value: null })
-  },
-  removeConfigurationItem(state, idx) {
-    state.selected.configuration.splice(idx)
-  },
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
   },
