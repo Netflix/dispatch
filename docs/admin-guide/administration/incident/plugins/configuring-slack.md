@@ -61,7 +61,7 @@ To enable Dispatch to process Slack events, ensure your bot is subscribed to the
 
 ### Interactivity
 
-To enable Dispatch to generate interactive components such as dialogs and modals, ensure that the `Request URL` points to the events action API endpoint of the Dispatch server at `/API/v1/<organziation>?events/slack/action`.
+To enable Dispatch to generate interactive components such as dialogs and modals, ensure that the `Request URL` points to the events action API endpoint of the Dispatch server at `/api/v1/<organization>?events/slack/action`.
 
 ![](../../../../.gitbook/assets/slack-setup-dialogs.png)
 
