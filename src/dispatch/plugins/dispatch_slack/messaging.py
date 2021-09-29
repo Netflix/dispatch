@@ -63,7 +63,7 @@ def get_incident_conversation_command_message(config: SlackConfiguration, comman
         },
         config.slack_command_list_resources: {
             "response_type": "ephemeral",
-            "text": "Listing all incident resources...",
+            "text": "Fetching the list of incident resources...",
         },
         config.slack_command_report_incident: {
             "response_type": "ephemeral",
