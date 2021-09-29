@@ -83,7 +83,7 @@ def get_user_field(client: JIRA, hosting_type: str, jira_username: str, user_ema
         # we default to the Jira user we use for managing issues
         # if we can't find the user in Jira
         return {"name": jira_username}
-    if hosting_type == "sloud":
+    if hosting_type == "cloud":
         username = get_email_username(user_email)
         user = next(
             client._fetch_pages(
