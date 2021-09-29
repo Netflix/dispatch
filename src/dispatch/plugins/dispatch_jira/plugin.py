@@ -34,11 +34,12 @@ class JiraConfiguration(BaseConfigurationModel):
     browser_url: HttpUrl = Field(
         title="Browser URL", description="This URL is used to construct browser weblinks."
     )
-    default_project_id = str = Field(
+    default_project_id: str = Field(
         title="Default Project ID", description="Defines the default Jira Project to use."
     )
     default_issue_type_name: str = Field(
-        title="Default Issue Type Name", description="Defines the default Jira issue type name to use."
+        title="Default Issue Type Name",
+        description="Defines the default Jira issue type name to use.",
     )
     hosting_type: HostingType = Field(
         "cloud", title="Hosting Type", description="Defines the type of deployment."
