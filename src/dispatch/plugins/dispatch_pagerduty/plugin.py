@@ -5,16 +5,30 @@
     :license: Apache, see LICENSE for more details.
 """
 import logging
+from pydantic import Field, SecretStr, EmailStr
 from pdpyras import APISession
+from dispatch.config import BaseConfigurationModel
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_pagerduty as pagerduty_oncall_plugin
 from dispatch.plugins.bases import OncallPlugin
 
 from .service import get_oncall, page_oncall
-from .config import PAGERDUTY_API_KEY
 
 
 log = logging.getLogger(__name__)
+
+
+class PagerdutyConfiguration(BaseConfigurationModel):
+    """The values below are the availible configurations for Dispatch's PagerDuty plugin."""
+
+    api_key: SecretStr = Field(
+        title="API Key",
+        description="This is the key used to talk to the PagerDuty API. See: https://support.pagerduty.com/docs/generating-api-keys",
+    )
+    from_email: EmailStr = Field(
+        title="From Email",
+        description="This the email to put into the 'From' field of any page requests.",
+    )
 
 
 @apply(timer)
@@ -27,9 +41,12 @@ class PagerDutyOncallPlugin(OncallPlugin):
     description = "Uses PagerDuty to resolve and page oncall teams."
     version = pagerduty_oncall_plugin.__version__
 
+    def __init__(self):
+        self.configuration_schema = PagerdutyConfiguration
+
     def get(self, service_id: str = None, **kwargs):
         """Gets the oncall person."""
-        client = APISession(str(PAGERDUTY_API_KEY))
+        client = APISession(self.configuration.api_key.get_secret_value())
         return get_oncall(client=client, service_id=service_id)
 
     def page(
@@ -41,9 +58,10 @@ class PagerDutyOncallPlugin(OncallPlugin):
         **kwargs,
     ):
         """Pages the oncall person."""
-        client = APISession(str(PAGERDUTY_API_KEY))
+        client = APISession(self.configuration.api_key.get_secret_value())
         return page_oncall(
             client=client,
+            from_email=self.configuration.from_email,
             service_id=service_id,
             incident_name=incident_name,
             incident_title=incident_title,

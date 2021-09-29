@@ -1,6 +1,7 @@
 <template>
   <v-container>
     <new-edit-sheet />
+    <delete-dialog />
     <v-row align="center" justify="space-between" no-gutters>
       <v-col>
         <settings-breadcrumbs v-model="project" />
@@ -59,6 +60,9 @@
                   <v-list-item @click="createEditShow(item)">
                     <v-list-item-title>View / Edit</v-list-item-title>
                   </v-list-item>
+                  <v-list-item @click="removeShow(item)">
+                    <v-list-item-title>Delete</v-list-item-title>
+                  </v-list-item>
                 </v-list>
               </v-menu>
             </template>
@@ -74,6 +78,7 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
+import DeleteDialog from "@/plugin/DeleteDialog.vue"
 import NewEditSheet from "@/plugin/NewEditSheet.vue"
 
 export default {
@@ -81,6 +86,7 @@ export default {
 
   components: {
     NewEditSheet,
+    DeleteDialog,
     SettingsBreadcrumbs,
   },
   data() {
@@ -137,7 +143,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("plugin", ["getAllInstances", "createEditShow"]),
+    ...mapActions("plugin", ["getAllInstances", "createEditShow", "removeShow"]),
   },
 }
 </script>

@@ -1,16 +1,28 @@
-from typing import List, Optional
-from pydantic import Field
+from typing import Any, List, Optional
+from pydantic import Field, SecretStr
+from pydantic.json import pydantic_encoder
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.associationproxy import association_proxy
 
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
-from sqlalchemy_utils import TSVectorType, JSONType
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy_utils import TSVectorType, StringEncryptedType
+from sqlalchemy_utils.types.encrypted.encrypted_type import AesEngine
+
 
 from dispatch.database.core import Base
+from dispatch.config import DISPATCH_ENCRYPTION_KEY
 from dispatch.models import DispatchBase, ProjectMixin, PrimaryKey
 from dispatch.plugins.base import plugins
 from dispatch.project.models import ProjectRead
+
+
+def show_secrets_encoder(obj):
+    if type(obj) == SecretStr:
+        return obj.get_secret_value()
+    else:
+        return pydantic_encoder(obj)
 
 
 class Plugin(Base):
@@ -39,7 +51,9 @@ class Plugin(Base):
 class PluginInstance(Base, ProjectMixin):
     id = Column(Integer, primary_key=True)
     enabled = Column(Boolean)
-    configuration = Column(JSONType)
+    _configuration = Column(
+        StringEncryptedType(key=str(DISPATCH_ENCRYPTION_KEY), engine=AesEngine, padding="pkcs5")
+    )
     plugin_id = Column(Integer, ForeignKey(Plugin.id))
     plugin = relationship(Plugin, backref="instances")
 
@@ -50,7 +64,30 @@ class PluginInstance(Base, ProjectMixin):
     @property
     def instance(self):
         """Fetches a plugin instance that matches this record."""
-        return plugins.get(self.plugin.slug)
+        plugin = plugins.get(self.plugin.slug)
+        plugin.configuration = self.configuration
+        return plugin
+
+    @property
+    def configuration_schema(self):
+        """Renders the plugin's schema to JSON Schema."""
+        plugin = plugins.get(self.plugin.slug)
+        return plugin.configuration_schema.schema()
+
+    @hybrid_property
+    def configuration(self):
+        """Property that correctly returns a plugins configuration object."""
+        if self._configuration:
+            plugin = plugins.get(self.plugin.slug)
+            return plugin.configuration_schema.parse_raw(self._configuration)
+
+    @configuration.setter
+    def configuration(self, configuration):
+        """Property that correctly sets a plugins configuration object."""
+        if configuration:
+            plugin = plugins.get(self.plugin.slug)
+            config_object = plugin.configuration_schema.parse_obj(configuration)
+            self._configuration = config_object.json(encoder=show_secrets_encoder)
 
 
 # Pydantic models...
@@ -73,6 +110,7 @@ class PluginInstanceRead(PluginBase):
     id: PrimaryKey
     enabled: Optional[bool]
     configuration: Optional[dict]
+    configuration_schema: Any
     plugin: PluginRead
     project: Optional[ProjectRead]
 

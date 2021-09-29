@@ -151,6 +151,8 @@ def update_instance(
         if field in update_data:
             setattr(plugin_instance, field, update_data[field])
 
+    plugin_instance.configuration = plugin_instance_in.configuration
+
     db_session.commit()
     return plugin_instance
 

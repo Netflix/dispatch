@@ -14,7 +14,6 @@ from dispatch.task.enums import TaskStatus
 from enum import Enum
 
 from .drive import get_activity, get_comment, get_person
-from dispatch.plugins.dispatch_google.config import GOOGLE_USER_OVERRIDE
 
 log = logging.getLogger(__name__)
 
@@ -68,10 +67,6 @@ def get_user_email(client: Any, person_id: str) -> str:
     """Resolves the email address for the actor of the activity."""
     # fetch the email from the people api
     person_data = get_person(client, person_id)
-
-    # this is required due to issues with cross domain lookups (mainly used for testing)
-    if GOOGLE_USER_OVERRIDE:
-        return GOOGLE_USER_OVERRIDE
 
     return person_data["emailAddresses"][0]["value"]
 

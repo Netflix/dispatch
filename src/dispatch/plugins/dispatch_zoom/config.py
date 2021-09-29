@@ -1,6 +1,11 @@
-from dispatch.config import config, Secret
+from pydantic import Field, SecretStr
+
+from dispatch.config import BaseConfigurationModel
 
 
-ZOOM_API_USER_ID = config("ZOOM_API_USER_ID")
-ZOOM_API_KEY = config("ZOOM_API_KEY")
-ZOOM_API_SECRET = config("ZOOM_API_SECRET", cast=Secret)
+class ZoomConfiguration(BaseConfigurationModel):
+    """Zoom configuration description."""
+
+    api_user_id: str = Field(title="Zoom API User Id")
+    api_key: str = Field(title="API Key")
+    api_secret: SecretStr = Field(title="API Secret")

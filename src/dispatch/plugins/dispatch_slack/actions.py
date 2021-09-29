@@ -23,12 +23,7 @@ from dispatch.report.models import ExecutiveReportCreate, TacticalReportCreate
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 
-from .config import (
-    SLACK_COMMAND_ASSIGN_ROLE_SLUG,
-    SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
-    SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
-    SLACK_COMMAND_REPORT_TACTICAL_SLUG,
-)
+from .config import SlackConfiguration, SlackConversationConfiguration
 
 from .modals.feedback.views import RatingFeedbackCallbackId
 from .modals.feedback.handlers import (
@@ -63,7 +58,9 @@ from .service import get_user_email
 from .decorators import slack_background_task, get_organization_scope_from_channel_id
 
 
-def handle_modal_action(action: dict, background_tasks: BackgroundTasks):
+def handle_modal_action(
+    config: SlackConversationConfiguration, action: dict, background_tasks: BackgroundTasks
+):
     """Handles all modal actions."""
     view_data = action["view"]
     view_data["private_metadata"] = json.loads(view_data["private_metadata"])
@@ -76,7 +73,14 @@ def handle_modal_action(action: dict, background_tasks: BackgroundTasks):
     user_email = action["user"]["email"]
 
     for f in action_functions(action_id):
-        background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, action)
+        background_tasks.add_task(
+            f,
+            user_id=user_id,
+            user_email=user_email,
+            channel_id=channel_id,
+            incident_id=incident_id,
+            action=action,
+        )
 
 
 def action_functions(action_id: str):
@@ -100,7 +104,7 @@ def action_functions(action_id: str):
     return []
 
 
-async def handle_slack_action(*, client, request, background_tasks):
+async def handle_slack_action(*, config, client, request, background_tasks):
     """Handles slack action message."""
     # We resolve the user's email
     user_id = request["user"]["id"]
@@ -111,14 +115,14 @@ async def handle_slack_action(*, client, request, background_tasks):
     # When there are no exceptions within the dialog submission, your app must respond with 200 OK with an empty body.
     response_body = {}
     if request["type"] == "view_submission":
-        handle_modal_action(request, background_tasks)
+        handle_modal_action(config, request, background_tasks)
         # For modals we set "response_action" to "clear" to close all views in the modal.
         # An empty body is currently not working.
         response_body = {"response_action": "clear"}
     elif request["type"] == "dialog_submission":
-        handle_dialog_action(request, background_tasks)
+        handle_dialog_action(config, request, background_tasks)
     elif request["type"] == "block_actions":
-        handle_block_action(request, background_tasks)
+        handle_block_action(config, request, background_tasks)
 
     return response_body
 
@@ -149,7 +153,9 @@ def block_action_functions(action: str):
     return []
 
 
-def handle_dialog_action(action: dict, background_tasks: BackgroundTasks):
+def handle_dialog_action(
+    config: SlackConversationConfiguration, action: dict, background_tasks: BackgroundTasks
+):
     """Handles all dialog actions."""
     channel_id = action["channel"]["id"]
     db_session = get_organization_scope_from_channel_id(channel_id=channel_id)
@@ -164,11 +170,20 @@ def handle_dialog_action(action: dict, background_tasks: BackgroundTasks):
 
     action_id = action["callback_id"]
 
-    for f in dialog_action_functions(action_id):
-        background_tasks.add_task(f, user_id, user_email, channel_id, incident_id, action)
+    for f in dialog_action_functions(config, action_id):
+        background_tasks.add_task(
+            f,
+            user_id=user_id,
+            user_email=user_email,
+            channel_id=channel_id,
+            incident_id=incident_id,
+            action=action,
+        )
 
 
-def handle_block_action(action: dict, background_tasks: BackgroundTasks):
+def handle_block_action(
+    config: SlackConversationConfiguration, action: dict, background_tasks: BackgroundTasks
+):
     """Handles a standalone block action."""
     # TODO (kglisson) align our use of action_ids and block_ids
     organization_slug = None
@@ -202,11 +217,11 @@ def handle_block_action(action: dict, background_tasks: BackgroundTasks):
     for f in block_action_functions(action_id):
         background_tasks.add_task(
             f,
-            user_id,
-            user_email,
-            channel_id,
-            incident_id,
-            action,
+            user_id=user_id,
+            user_email=user_email,
+            channel_id=channel_id,
+            incident_id=incident_id,
+            action=action,
             organization_slug=organization_slug,
         )
 
@@ -354,6 +369,7 @@ def handle_engage_oncall_action(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -384,6 +400,7 @@ def handle_tactical_report_create(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -418,6 +435,7 @@ def handle_executive_report_create(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -461,6 +479,7 @@ def handle_assign_role_action(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -473,13 +492,13 @@ def handle_assign_role_action(
     )
 
 
-def dialog_action_functions(action: str):
+def dialog_action_functions(config: SlackConfiguration, action: str):
     """Interprets the action and routes it to the appropriate function."""
     action_mappings = {
-        SLACK_COMMAND_ASSIGN_ROLE_SLUG: [handle_assign_role_action],
-        SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [handle_engage_oncall_action],
-        SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [handle_executive_report_create],
-        SLACK_COMMAND_REPORT_TACTICAL_SLUG: [handle_tactical_report_create],
+        config.slack_command_assign_role: [handle_assign_role_action],
+        config.slack_command_engage_oncall: [handle_engage_oncall_action],
+        config.slack_command_report_executive: [handle_executive_report_create],
+        config.slack_command_report_tactical: [handle_tactical_report_create],
     }
 
     # this allows for unique action blocks e.g. invite-user or invite-user-1, etc

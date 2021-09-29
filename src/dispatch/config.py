@@ -3,11 +3,18 @@ import os
 import base64
 from urllib import parse
 from typing import List
+from pydantic import BaseModel
 
 from starlette.config import Config
 from starlette.datastructures import CommaSeparatedStrings
 
 log = logging.getLogger(__name__)
+
+
+class BaseConfigurationModel(BaseModel):
+    """Base configuration model used by all config options."""
+
+    pass
 
 
 def get_env_tags(tag_list: List[str]) -> dict:
@@ -89,6 +96,7 @@ ENV_TAGS = get_env_tags(ENV_TAG_LIST)
 
 DISPATCH_UI_URL = config("DISPATCH_UI_URL", default="http://localhost:8000 ")
 DISPATCH_HELP_EMAIL = config("DISPATCH_HELP_EMAIL", default="help@example.com")
+DISPATCH_ENCRYPTION_KEY = config("DISPATCH_ENCRYPTION_KEY", cast=Secret)
 
 # authentication
 DISPATCH_AUTHENTICATION_PROVIDER_SLUG = config(

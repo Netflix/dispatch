@@ -11,6 +11,10 @@ from dispatch.conversation import service as conversation_service
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
+from dispatch.plugins.dispatch_slack.config import (
+    SlackConfiguration,
+    SlackConversationConfiguration,
+)
 from dispatch.tag import service as tag_service
 from dispatch.individual import service as individual_service
 from dispatch.participant import service as participant_service
@@ -22,10 +26,6 @@ from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.tag.models import Tag
 
 
-from .config import (
-    SLACK_BAN_THREADS,
-    SLACK_TIMELINE_EVENT_REACTION,
-)
 from .decorators import slack_background_task, get_organization_scope_from_channel_id
 from .service import get_user_email
 from .models import MonitorButton
@@ -105,7 +105,7 @@ def event_functions(event: EventEnvelope):
     return event_mappings.get(event.event.type, [])
 
 
-async def handle_slack_event(*, client, event, background_tasks):
+async def handle_slack_event(*, config, client, event, background_tasks):
     """Handles slack event message."""
     user_id = event.event.user
     channel_id = get_channel_id_from_event(event)
@@ -122,7 +122,7 @@ async def handle_slack_event(*, client, event, background_tasks):
             db_session=db_session, channel_id=channel_id
         )
 
-        if conversation and dispatch_slack_service.is_user(user_id):
+        if conversation and dispatch_slack_service.is_user(config, user_id):
             # We resolve the user's email
             user_email = await dispatch_slack_service.get_user_email_async(client, user_id)
 
@@ -130,10 +130,11 @@ async def handle_slack_event(*, client, event, background_tasks):
             for f in event_functions(event):
                 background_tasks.add_task(
                     f,
-                    user_id,
-                    user_email,
-                    channel_id,
-                    conversation.incident_id,
+                    config=config,
+                    user_id=user_id,
+                    user_email=user_email,
+                    channel_id=channel_id,
+                    incident_id=conversation.incident_id,
                     event=event,
                 )
 
@@ -142,6 +143,7 @@ async def handle_slack_event(*, client, event, background_tasks):
 
 @slack_background_task
 def handle_reaction_added_event(
+    config: SlackConversationConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,
@@ -153,7 +155,7 @@ def handle_reaction_added_event(
     """Handles an event where a reaction is added to a message."""
     reaction = event.event.reaction
 
-    if reaction == SLACK_TIMELINE_EVENT_REACTION:
+    if reaction == config.timeline_event_reaction:
         conversation_id = event.event.item.channel
         message_ts = event.event.item.ts
         message_ts_utc = datetime.datetime.utcfromtimestamp(float(message_ts))
@@ -193,6 +195,7 @@ def is_business_hours(commander_tz: str):
 
 @slack_background_task
 def after_hours(
+    config: SlackConversationConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,
@@ -246,6 +249,7 @@ def after_hours(
 
 @slack_background_task
 def member_joined_channel(
+    config: SlackConversationConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,
@@ -261,7 +265,7 @@ def member_joined_channel(
 
     if event.event.inviter:
         # we update the participant's metadata
-        if not dispatch_slack_service.is_user(event.event.inviter):
+        if not dispatch_slack_service.is_user(config, event.event.inviter):
             # we default to the incident commander when we don't know how the user was added
             added_by_participant = participant_service.get_by_incident_id_and_role(
                 db_session=db_session,
@@ -287,6 +291,7 @@ def member_joined_channel(
 
 @slack_background_task
 def member_left_channel(
+    config: SlackConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,
@@ -301,6 +306,7 @@ def member_left_channel(
 
 @slack_background_task
 def ban_threads_warning(
+    config: SlackConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,
@@ -310,7 +316,7 @@ def ban_threads_warning(
     slack_client=None,
 ):
     """Sends the user an ephemeral message if they use threads."""
-    if not SLACK_BAN_THREADS:
+    if not config.ban_threads:
         return
 
     if event.event.thread_ts:
@@ -332,6 +338,7 @@ def ban_threads_warning(
 
 @slack_background_task
 def message_tagging(
+    config: SlackConversationConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,
@@ -361,6 +368,7 @@ def message_tagging(
 
 @slack_background_task
 def message_monitor(
+    config: SlackConversationConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,

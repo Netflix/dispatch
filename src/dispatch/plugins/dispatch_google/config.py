@@ -1,14 +1,40 @@
-from dispatch.config import config, Secret
+from pydantic import Field, SecretStr
+
+from dispatch.config import BaseConfigurationModel
 
 
-GOOGLE_DEVELOPER_KEY = config("GOOGLE_DEVELOPER_KEY", cast=Secret)
-GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL = config("GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL")
-GOOGLE_SERVICE_ACCOUNT_CLIENT_ID = config("GOOGLE_SERVICE_ACCOUNT_CLIENT_ID")
-GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT = config("GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT")
-GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY = config("GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY", cast=Secret)
-GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID = config("GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID")
-GOOGLE_SERVICE_ACCOUNT_PROJECT_ID = config("GOOGLE_SERVICE_ACCOUNT_PROJECT_ID")
+class GoogleConfiguration(BaseConfigurationModel):
+    """Google configuration"""
 
-GOOGLE_DOMAIN = config("GOOGLE_DOMAIN")
-
-GOOGLE_USER_OVERRIDE = config("GOOGLE_USER_OVERRIDE", default=None)
+    developer_key: SecretStr = Field(
+        title="Developer Key",
+        description="This is used by the Google API Discovery Service and prevents rate limiting.",
+    )
+    service_account_client_email: str = Field(
+        title="Service Account Client Email",
+        description="The client_email value from your Google Cloud Platform (GCP) service account configuration file.",
+    )
+    service_account_client_id: str = Field(
+        title="Service Account Client Id",
+        description="The client_id value from your Google Cloud Platform (GCP) service account configuration file.",
+    )
+    service_account_private_key: SecretStr = Field(
+        title="Service Account Private Key",
+        description="The private_key value from your Google Cloud Platform (GCP) service account configuration file.",
+    )
+    service_account_private_key_id: str = Field(
+        title="Service Account Private Key Id",
+        description="The private_key_id value from your Google Cloud Platform (GCP) service account configuration file.",
+    )
+    service_account_delegated_account: str = Field(
+        title="Service Account Delegated Account",
+        description="Account to delegate to from the Google Cloud Platform (GCP) service account. Outgoing emails and other artifacts will appear to be from this account.",
+    )
+    service_account_project_id: str = Field(
+        title="Service Account Project Id",
+        description="The project_id value from your Google Cloud Platform (GCP) service account configuration file.",
+    )
+    google_domain: str = Field(
+        "Google Workspace Domain",
+        description="Base domain for which this Google Cloud Platform (GCP) service account resides.",
+    )

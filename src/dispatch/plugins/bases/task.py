@@ -6,12 +6,10 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from dispatch.plugins.base import Plugin
-from dispatch.models import PluginOptionModel
 
 
 class TaskPlugin(Plugin):
     type = "task"
-    _schema = PluginOptionModel
 
     def get(self, **kwargs):
         raise NotImplementedError

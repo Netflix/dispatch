@@ -9,6 +9,7 @@ const getDefaultSelectedState = () => {
     id: null,
     enabled: null,
     configuration: [],
+    configuration_schema: {},
     project: null,
     plugin_instance: null,
     plugin: null,
@@ -22,6 +23,7 @@ const state = {
   },
   dialogs: {
     showCreateEdit: false,
+    showRemove: false,
   },
   table: {
     rows: {
@@ -81,6 +83,14 @@ const actions = {
     commit("SET_DIALOG_EDIT", false)
     commit("RESET_SELECTED")
   },
+  removeShow({ commit }, plugin) {
+    commit("SET_DIALOG_DELETE", true)
+    commit("SET_SELECTED", plugin)
+  },
+  closeRemove({ commit }) {
+    commit("SET_DIALOG_DELETE", false)
+    commit("RESET_SELECTED")
+  },
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
@@ -116,7 +126,7 @@ const actions = {
     }
   },
   remove({ commit, dispatch }) {
-    return PluginApi.delete(state.selected.id).then(function () {
+    return PluginApi.deleteInstance(state.selected.id).then(function () {
       dispatch("closeRemove")
       dispatch("getAllInstances")
       commit(
@@ -144,6 +154,9 @@ const mutations = {
   },
   SET_DIALOG_EDIT(state, value) {
     state.dialogs.showCreateEdit = value
+  },
+  SET_DIALOG_DELETE(state, value) {
+    state.dialogs.showRemove = value
   },
   RESET_SELECTED(state) {
     // do not reset project

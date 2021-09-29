@@ -6,12 +6,10 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from dispatch.plugins.base import Plugin
-from dispatch.models import PluginOptionModel
 
 
 class EmailPlugin(Plugin):
     type = "email"
-    _schema = PluginOptionModel
 
     def send(self, items, **kwargs):
         raise NotImplementedError

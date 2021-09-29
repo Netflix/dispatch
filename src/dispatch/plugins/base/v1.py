@@ -10,9 +10,13 @@ import logging
 from threading import local
 from typing import Any, List, Optional
 
-from pydantic.schema import schema
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
+
+
+class PluginConfiguration(BaseModel):
+    pass
 
 
 # stolen from https://github.com/getsentry/sentry/
@@ -51,9 +55,10 @@ class IPlugin(local):
     version: Optional[str] = None
     author: Optional[str] = None
     author_url: Optional[str] = None
+    configuration: Optional[dict] = None
     resource_links = ()
 
-    _schema: Any = None
+    schema: PluginConfiguration
     commands: List[Any] = []
 
     events: Any = None
@@ -62,18 +67,6 @@ class IPlugin(local):
     enabled: bool = False
     can_disable: bool = True
     multiple: bool = False
-
-    def validate_options(self, options: dict) -> Any:
-        """
-        Validates given options against defined schema.
-        >>> plugin.validate_options(options)
-        """
-        return self._schema(**options)
-
-    @property
-    def schema(self):
-        """Returns current plugin schema."""
-        return schema([self._schema])
 
     def is_enabled(self) -> bool:
         """

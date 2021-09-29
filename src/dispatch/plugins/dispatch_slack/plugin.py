@@ -16,20 +16,12 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.exceptions import DispatchPluginException
 from dispatch.plugins import dispatch_slack as slack_plugin
 from dispatch.plugins.bases import ConversationPlugin, DocumentPlugin, ContactPlugin
-
-from .config import (
-    SLACK_COMMAND_ASSIGN_ROLE_SLUG,
-    SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
-    SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
-    SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
-    SLACK_COMMAND_LIST_RESOURCES_SLUG,
-    SLACK_COMMAND_LIST_TASKS_SLUG,
-    SLACK_COMMAND_REPORT_TACTICAL_SLUG,
-    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
-    SLACK_PROFILE_DEPARTMENT_FIELD_ID,
-    SLACK_PROFILE_TEAM_FIELD_ID,
-    SLACK_PROFILE_WEBLINK_FIELD_ID,
+from dispatch.plugins.dispatch_slack.config import (
+    SlackConfiguration,
+    SlackContactConfiguration,
+    SlackConversationConfiguration,
 )
+
 from .views import router as slack_event_router
 from .messaging import create_message_blocks
 from .service import (
@@ -55,17 +47,6 @@ from .service import (
 
 logger = logging.getLogger(__name__)
 
-command_mappings = {
-    ConversationCommands.assign_role: SLACK_COMMAND_ASSIGN_ROLE_SLUG,
-    ConversationCommands.update_incident: SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
-    ConversationCommands.engage_oncall: SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
-    ConversationCommands.executive_report: SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
-    ConversationCommands.list_participants: SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
-    ConversationCommands.list_resources: SLACK_COMMAND_LIST_RESOURCES_SLUG,
-    ConversationCommands.list_tasks: SLACK_COMMAND_LIST_TASKS_SLUG,
-    ConversationCommands.tactical_report: SLACK_COMMAND_REPORT_TACTICAL_SLUG,
-}
-
 
 @apply(counter, exclude=["__init__"])
 @apply(timer, exclude=["__init__"])
@@ -80,11 +61,12 @@ class SlackConversationPlugin(ConversationPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
-        self.client = create_slack_client()
+        self.configuration_schema = SlackConversationConfiguration
 
-    def create(self, name: str, is_private: bool = True):
+    def create(self, name: str):
         """Creates a new Slack conversation."""
-        return create_conversation(self.client, name, is_private)
+        client = create_slack_client(self.configuration)
+        return create_conversation(client, name, self.configuration.private_channels)
 
     def send(
         self,
@@ -98,11 +80,12 @@ class SlackConversationPlugin(ConversationPlugin):
         **kwargs,
     ):
         """Sends a new message based on data and type."""
+        client = create_slack_client(self.configuration)
         if not blocks:
             blocks = create_message_blocks(message_template, notification_type, items, **kwargs)
 
         for c in chunks(blocks, 50):
-            send_message(self.client, conversation_id, text, c, persist)
+            send_message(client, conversation_id, text, c, persist)
 
     def send_direct(
         self,
@@ -115,12 +98,13 @@ class SlackConversationPlugin(ConversationPlugin):
         **kwargs,
     ):
         """Sends a message directly to a user."""
-        user_id = resolve_user(self.client, user)["id"]
+        client = create_slack_client(self.configuration)
+        user_id = resolve_user(client, user)["id"]
 
         if not blocks:
             blocks = create_message_blocks(message_template, notification_type, items, **kwargs)
 
-        return send_message(self.client, user_id, text, blocks)
+        return send_message(client, user_id, text, blocks)
 
     def send_ephemeral(
         self,
@@ -134,36 +118,52 @@ class SlackConversationPlugin(ConversationPlugin):
         **kwargs,
     ):
         """Sends an ephemeral message to a user in a channel."""
-        user_id = resolve_user(self.client, user)["id"]
+        client = create_slack_client(self.configuration)
+        user_id = resolve_user(client, user)["id"]
 
         if not blocks:
             blocks = create_message_blocks(message_template, notification_type, items, **kwargs)
 
-        return send_ephemeral_message(self.client, conversation_id, user_id, text, blocks)
+        return send_ephemeral_message(client, conversation_id, user_id, text, blocks)
 
     def add(self, conversation_id: str, participants: List[str]):
         """Adds users to conversation."""
-        participants = [resolve_user(self.client, p)["id"] for p in participants]
-        return add_users_to_conversation(self.client, conversation_id, participants)
+        client = create_slack_client(self.configuration)
+        participants = [resolve_user(client, p)["id"] for p in participants]
+        return add_users_to_conversation(client, conversation_id, participants)
 
     def archive(self, conversation_id: str):
         """Archives conversation."""
-        return archive_conversation(self.client, conversation_id)
+        client = create_slack_client(self.configuration)
+        return archive_conversation(client, conversation_id)
 
     def unarchive(self, conversation_id: str):
         """Unarchives conversation."""
-        return unarchive_conversation(self.client, conversation_id)
+        client = create_slack_client(self.configuration)
+        return unarchive_conversation(client, conversation_id)
 
     def get_participant_avatar_url(self, participant_id: str):
         """Gets the participant's avatar url."""
-        return get_user_avatar_url(self.client, participant_id)
+        client = create_slack_client(self.configuration)
+        return get_user_avatar_url(client, participant_id)
 
     def set_topic(self, conversation_id: str, topic: str):
         """Sets the conversation topic."""
-        return set_conversation_topic(self.client, conversation_id, topic)
+        client = create_slack_client(self.configuration)
+        return set_conversation_topic(client, conversation_id, topic)
 
     def get_command_name(self, command: str):
         """Gets the command name."""
+        command_mappings = {
+            ConversationCommands.assign_role: self.configuration.slack_command_assign_role,
+            ConversationCommands.update_incident: self.configuration.slack_command_update_incident,
+            ConversationCommands.engage_oncall: self.configuration.slack_command_engage_oncall,
+            ConversationCommands.executive_report: self.configuration.slack_command_report_executive,
+            ConversationCommands.list_participants: self.configuration.slack_command_list_participants,
+            ConversationCommands.list_resources: self.configuration.slack_command_list_resources,
+            ConversationCommands.list_tasks: self.configuration.slack_command_list_tasks,
+            ConversationCommands.tactical_report: self.configuration.slack_command_report_tactical,
+        }
         return command_mappings.get(command, [])
 
 
@@ -179,20 +179,25 @@ class SlackContactPlugin(ContactPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
-        self.client = create_slack_client()
+        self.configuration_schema = SlackContactConfiguration
 
     def get(self, email: str, **kwargs):
         """Fetch user info by email."""
+        client = create_slack_client(self.configuration)
         team = department = weblink = "Unknown"
 
-        profile = get_user_profile_by_email(self.client, email)
+        profile = get_user_profile_by_email(client, email)
         profile_fields = profile.get("fields")
         if profile_fields:
-            team = profile_fields.get(SLACK_PROFILE_TEAM_FIELD_ID, {}).get("value", "Unknown")
-            department = profile_fields.get(SLACK_PROFILE_DEPARTMENT_FIELD_ID, {}).get(
+            team = profile_fields.get(self.configuration.profile_team_field_id, {}).get(
                 "value", "Unknown"
             )
-            weblink = profile_fields.get(SLACK_PROFILE_WEBLINK_FIELD_ID, {}).get("value", "Unknown")
+            department = profile_fields.get(self.configuration.profile_department_field_id, {}).get(
+                "value", "Unknown"
+            )
+            weblink = profile_fields.get(self.configuration.profile_weblink_field_id, {}).get(
+                "value", "Unknown"
+            )
 
         return {
             "fullname": profile["real_name"],
@@ -216,12 +221,13 @@ class SlackDocumentPlugin(DocumentPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
+        self.configuration_schema = SlackConfiguration
         self.cachedir = os.path.dirname(os.path.realpath(__file__))
         self.memory = Memory(cachedir=self.cachedir, verbose=0)
-        self.client = create_slack_client()
 
     def get(self, **kwargs) -> dict:
         """Queries slack for documents."""
+        client = create_slack_client(self.configuration)
         conversations = []
 
         if kwargs["channels"]:
@@ -229,7 +235,7 @@ class SlackDocumentPlugin(DocumentPlugin):
 
             channels = kwargs["channels"].split(",")
             for c in channels:
-                conversations.append(get_conversation_by_name(self.client, c))
+                conversations.append(get_conversation_by_name(client, c))
 
         if kwargs["channel_match_pattern"]:
             try:
@@ -243,14 +249,14 @@ class SlackDocumentPlugin(DocumentPlugin):
             logger.debug(
                 f"Querying slack for documents. ChannelsPattern: {kwargs['channel_match_pattern']}"
             )
-            for c in list_conversations(self.client):
+            for c in list_conversations(client):
                 if pattern.match(c["name"]):
                     conversations.append(c)
 
         for c in conversations:
             logger.info(f'Fetching channel messages. Channel Name: {c["name"]}')
 
-            messages = list_conversation_messages(self.client, c["id"], lookback=kwargs["lookback"])
+            messages = list_conversation_messages(client, c["id"], lookback=kwargs["lookback"])
 
             logger.info(f'Found {len(messages)} messages in slack. Channel Name: {c["name"]}')
 
@@ -258,7 +264,7 @@ class SlackDocumentPlugin(DocumentPlugin):
                 if not message_filter(m):
                     continue
 
-                user_email = get_user_info_by_id(self.client, m["user"])["user"]["profile"]["email"]
+                user_email = get_user_info_by_id(client, m["user"])["user"]["profile"]["email"]
 
                 yield {
                     "person": {"email": user_email},

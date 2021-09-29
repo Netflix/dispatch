@@ -9,28 +9,20 @@ from typing import Any, Dict, List, Optional
 
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
 
-from .config import (
-    SLACK_APP_USER_SLUG,
-    SLACK_API_BOT_TOKEN,
-    SLACK_USER_ID_OVERRIDE,
-)
+from .config import SlackConversationConfiguration
 
 log = logging.getLogger(__name__)
 
 
-def create_slack_client(run_async: bool = False):
+def create_slack_client(config: SlackConversationConfiguration, run_async: bool = False):
     """Creates a Slack Web API client."""
     if not run_async:
-        return slack_sdk.WebClient(token=str(SLACK_API_BOT_TOKEN))
-    return AsyncWebClient(token=str(SLACK_API_BOT_TOKEN))
+        return slack_sdk.WebClient(token=config.api_bot_token.get_secret_value())
+    return AsyncWebClient(token=config.api_bot_token.get_secret_value())
 
 
 def resolve_user(client: Any, user_id: str):
     """Attempts to resolve a user object regardless if email, id, or prefix."""
-    if SLACK_USER_ID_OVERRIDE:
-        log.warning("SLACK_USER_ID_OVERIDE set. Using override.")
-        return {"id": SLACK_USER_ID_OVERRIDE}
-
     if "@" in user_id:
         return get_user_info_by_email(client, user_id)
 
@@ -386,9 +378,9 @@ def message_filter(message):
     return message
 
 
-def is_user(slack_user: str):
+def is_user(config: SlackConversationConfiguration, slack_user: str):
     """Returns true if it's a regular user, false if dispatch bot'."""
-    return slack_user != SLACK_APP_USER_SLUG
+    return slack_user != config.app_user_slug
 
 
 def open_dialog_with_user(client: Any, trigger_id: str, dialog: dict):

@@ -21,6 +21,7 @@ from dispatch.plugins.dispatch_slack.service import (
     get_user_profile_by_email,
 )
 from dispatch.plugins.dispatch_slack.modals.common import parse_submitted_form
+from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 
 from .enums import (
     IncidentBlockId,
@@ -44,6 +45,7 @@ def create_report_incident_modal(
     user_email: str,
     channel_id: str,
     incident_id: int,
+    config: SlackConversationConfiguration = None,
     command: dict = None,
     db_session=None,
     slack_client=None,
@@ -61,6 +63,7 @@ def update_report_incident_modal(
     channel_id: str,
     incident_id: int,
     action: dict = None,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -94,6 +97,7 @@ def report_incident_from_submitted_form(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session: SessionLocal = None,
     slack_client=None,
 ):
@@ -150,6 +154,7 @@ def create_update_incident_modal(
     user_email: str,
     channel_id: str,
     incident_id: int,
+    config: SlackConversationConfiguration = None,
     command: dict = None,
     db_session=None,
     slack_client=None,
@@ -166,6 +171,7 @@ def update_incident_from_submitted_form(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -213,6 +219,7 @@ def create_update_participant_modal(
     channel_id: str,
     incident_id: int,
     command: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -230,6 +237,7 @@ def update_update_participant_modal(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -262,6 +270,7 @@ def update_participant_from_submitted_form(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -297,6 +306,7 @@ def create_update_notifications_group_modal(
     channel_id: str,
     incident_id: int,
     command: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -317,6 +327,7 @@ def update_notifications_group_from_submitted_form(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -361,6 +372,7 @@ def create_add_timeline_event_modal(
     channel_id: str,
     incident_id: int,
     command: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -378,6 +390,7 @@ def add_timeline_event_from_submitted_form(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):

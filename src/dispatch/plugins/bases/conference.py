@@ -6,12 +6,10 @@
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
 from dispatch.plugins.base import Plugin
-from dispatch.models import PluginOptionModel
 
 
 class ConferencePlugin(Plugin):
     type = "conference"
-    _schema = PluginOptionModel
 
     def create(self, items, **kwargs):
         raise NotImplementedError

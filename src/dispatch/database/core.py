@@ -2,7 +2,7 @@ import re
 import functools
 from typing import Any
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from pydantic.main import BaseModel
+from pydantic import BaseModel
 
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.ext.declarative import declarative_base, declared_attr

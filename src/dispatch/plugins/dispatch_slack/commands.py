@@ -2,7 +2,7 @@ import base64
 import logging
 from typing import List
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from pydantic.main import BaseModel
+from pydantic import BaseModel
 
 from sqlalchemy.orm import Session
 
@@ -26,25 +26,8 @@ from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
 
-from .config import (
-    SLACK_APP_USER_SLUG,
-    SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG,
-    SLACK_COMMAND_ASSIGN_ROLE_SLUG,
-    SLACK_COMMAND_ENGAGE_ONCALL_SLUG,
-    SLACK_COMMAND_LIST_INCIDENTS_SLUG,
-    SLACK_COMMAND_LIST_MY_TASKS_SLUG,
-    SLACK_COMMAND_LIST_PARTICIPANTS_SLUG,
-    SLACK_COMMAND_LIST_RESOURCES_SLUG,
-    SLACK_COMMAND_LIST_TASKS_SLUG,
-    SLACK_COMMAND_REPORT_EXECUTIVE_SLUG,
-    SLACK_COMMAND_REPORT_INCIDENT_SLUG,
-    SLACK_COMMAND_REPORT_TACTICAL_SLUG,
-    SLACK_COMMAND_UPDATE_INCIDENT_SLUG,
-    SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG,
-    SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG,
-    SLACK_COMMAND_RUN_WORKFLOW_SLUG,
-    SLACK_COMMAND_LIST_WORKFLOWS_SLUG,
-)
+from .config import SlackConfiguration, SlackConversationConfiguration
+
 
 from .decorators import (
     get_organization_scope_from_channel_id,
@@ -59,7 +42,7 @@ from .dialogs import (
 )
 
 from .messaging import (
-    INCIDENT_CONVERSATION_COMMAND_MESSAGE,
+    get_incident_conversation_command_message,
     create_command_run_in_conversation_where_bot_not_present_message,
     create_command_run_in_nonincident_conversation_message,
     create_command_run_by_non_privileged_user_message,
@@ -85,26 +68,26 @@ def base64_encode(input: str):
 
 
 def check_command_restrictions(
-    command: str, user_email: str, incident_id: int, db_session: Session
+    config: SlackConfiguration, command: str, user_email: str, incident_id: int, db_session: Session
 ) -> bool:
     """Checks the current user's role to determine what commands they are allowed to run."""
     # some commands are sensitive and we only let non-participants execute them
     command_permissons = {
-        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [
+        config.slack_command_update_incident: [
             ParticipantRoleType.incident_commander,
             ParticipantRoleType.scribe,
         ],
-        SLACK_COMMAND_ASSIGN_ROLE_SLUG: [
+        config.slack_command_assign_role: [
             ParticipantRoleType.incident_commander,
             ParticipantRoleType.reporter,
             ParticipantRoleType.liaison,
             ParticipantRoleType.scribe,
         ],
-        SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [
+        config.slack_command_report_executive: [
             ParticipantRoleType.incident_commander,
             ParticipantRoleType.scribe,
         ],
-        SLACK_COMMAND_REPORT_TACTICAL_SLUG: [
+        config.slack_command_report_tactical: [
             ParticipantRoleType.incident_commander,
             ParticipantRoleType.scribe,
         ],
@@ -125,25 +108,25 @@ def check_command_restrictions(
                 return True
 
 
-def command_functions(command: str):
+def command_functions(config: SlackConfiguration, command: str):
     """Interprets the command and routes it the appropriate function."""
     command_mappings = {
-        SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG: [create_add_timeline_event_modal],
-        SLACK_COMMAND_ASSIGN_ROLE_SLUG: [create_assign_role_dialog],
-        SLACK_COMMAND_ENGAGE_ONCALL_SLUG: [create_engage_oncall_dialog],
-        SLACK_COMMAND_LIST_INCIDENTS_SLUG: [list_incidents],
-        SLACK_COMMAND_LIST_MY_TASKS_SLUG: [list_my_tasks],
-        SLACK_COMMAND_LIST_PARTICIPANTS_SLUG: [list_participants],
-        SLACK_COMMAND_LIST_RESOURCES_SLUG: [list_resources],
-        SLACK_COMMAND_LIST_TASKS_SLUG: [list_tasks],
-        SLACK_COMMAND_REPORT_EXECUTIVE_SLUG: [create_executive_report_dialog],
-        SLACK_COMMAND_REPORT_INCIDENT_SLUG: [create_report_incident_modal],
-        SLACK_COMMAND_REPORT_TACTICAL_SLUG: [create_tactical_report_dialog],
-        SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG: [create_update_notifications_group_modal],
-        SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG: [create_update_participant_modal],
-        SLACK_COMMAND_UPDATE_INCIDENT_SLUG: [create_update_incident_modal],
-        SLACK_COMMAND_RUN_WORKFLOW_SLUG: [create_run_workflow_modal],
-        SLACK_COMMAND_LIST_WORKFLOWS_SLUG: [list_workflows],
+        config.slack_command_add_timeline_event: [create_add_timeline_event_modal],
+        config.slack_command_assign_role: [create_assign_role_dialog],
+        config.slack_command_engage_oncall: [create_engage_oncall_dialog],
+        config.slack_command_list_incidents: [list_incidents],
+        config.slack_command_list_my_tasks: [list_my_tasks],
+        config.slack_command_list_participants: [list_participants],
+        config.slack_command_list_resources: [list_resources],
+        config.slack_command_list_tasks: [list_tasks],
+        config.slack_command_report_executive: [create_executive_report_dialog],
+        config.slack_command_report_incident: [create_report_incident_modal],
+        config.slack_command_report_tactical: [create_tactical_report_dialog],
+        config.slack_command_update_notifications_group: [create_update_notifications_group_modal],
+        config.slack_command_update_participant: [create_update_participant_modal],
+        config.slack_command_update_incident: [create_update_incident_modal],
+        config.slack_command_run_workflow: [create_run_workflow_modal],
+        config.slack_command_list_workflows: [list_workflows],
     }
 
     return command_mappings.get(command, [])
@@ -168,7 +151,7 @@ def filter_tasks_by_assignee_and_creator(tasks: List[Task], by_assignee: str, by
     return filtered_tasks
 
 
-async def handle_non_incident_conversation_commands(client, request, background_tasks):
+async def handle_non_incident_conversation_commands(config, client, request, background_tasks):
     """Handles all commands that do not have a specific incident conversation."""
     command = request.get("command")
     channel_id = request.get("channel_id")
@@ -180,7 +163,9 @@ async def handle_non_incident_conversation_commands(client, request, background_
     (
         public_conversations,
         private_conversations,
-    ) = await dispatch_slack_service.get_conversations_by_user_id_async(client, SLACK_APP_USER_SLUG)
+    ) = await dispatch_slack_service.get_conversations_by_user_id_async(
+        client, config.app_user_slug
+    )
 
     # We get the name of conversation where the command was run
     conversation_name = await dispatch_slack_service.get_conversation_name_by_id_async(
@@ -199,21 +184,21 @@ async def handle_non_incident_conversation_commands(client, request, background_
     user_id = request.get("user_id")
     user_email = await dispatch_slack_service.get_user_email_async(client, user_id)
 
-    for f in command_functions(command):
+    for f in command_functions(config, command):
         background_tasks.add_task(
             f,
-            user_id,
-            user_email,
-            channel_id,
-            None,
+            user_id=user_id,
+            user_email=user_email,
+            channel_id=channel_id,
+            incident_id=None,
             organization_slug=organization_slug,
             command=request,
         )
 
-    return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(command, f"Running... Command: {command}")
+    return get_incident_conversation_command_message(config, command)
 
 
-async def handle_incident_conversation_commands(client, request, background_tasks):
+async def handle_incident_conversation_commands(config, client, request, background_tasks):
     """Handles all commands that are issued from an incident conversation."""
     channel_id = request.get("channel_id")
     command = request.get("command")
@@ -233,6 +218,7 @@ async def handle_incident_conversation_commands(client, request, background_task
 
     # some commands are sensitive and we only let non-participants execute them
     allowed = check_command_restrictions(
+        config=config,
         command=command,
         user_email=user_email,
         incident_id=conversation.incident.id,
@@ -241,27 +227,31 @@ async def handle_incident_conversation_commands(client, request, background_task
     if not allowed:
         return create_command_run_by_non_privileged_user_message(command)
 
-    for f in command_functions(command):
+    for f in command_functions(config, command):
         background_tasks.add_task(
             f,
-            user_id,
-            user_email,
-            channel_id,
-            conversation.incident.id,
+            user_id=user_id,
+            user_email=user_email,
+            channel_id=channel_id,
+            incident_id=conversation.incident.id,
             command=request,
         )
 
-    return INCIDENT_CONVERSATION_COMMAND_MESSAGE.get(command, f"Running... Command: {command}")
+    return get_incident_conversation_command_message(config, command)
 
 
-async def handle_slack_command(*, client, request, background_tasks):
+async def handle_slack_command(*, config, client, request, background_tasks):
     """Handles slack command message."""
     # We get the name of command that was run
     command = request.get("command")
-    if command in [SLACK_COMMAND_REPORT_INCIDENT_SLUG, SLACK_COMMAND_LIST_INCIDENTS_SLUG]:
-        return await handle_non_incident_conversation_commands(client, request, background_tasks)
+    if command in [config.slack_command_report_incident, config.slack_command_list_incidents]:
+        return await handle_non_incident_conversation_commands(
+            config, client, request, background_tasks
+        )
     else:
-        return await handle_incident_conversation_commands(client, request, background_tasks)
+        return await handle_incident_conversation_commands(
+            config, client, request, background_tasks
+        )
 
 
 @slack_background_task
@@ -270,6 +260,7 @@ def list_resources(
     user_email: str,
     channel_id: str,
     incident_id: int,
+    config: SlackConversationConfiguration = None,
     command: dict = None,
     db_session=None,
     slack_client=None,
@@ -290,6 +281,7 @@ def list_my_tasks(
     user_email: str,
     channel_id: str,
     incident_id: int,
+    config: SlackConversationConfiguration = None,
     command: dict = None,
     db_session=None,
     slack_client=None,
@@ -300,6 +292,7 @@ def list_my_tasks(
         user_email=user_email,
         channel_id=channel_id,
         incident_id=incident_id,
+        config=config,
         command=command,
         by_creator=user_email,
         by_assignee=user_email,
@@ -314,6 +307,7 @@ def list_tasks(
     user_email: str,
     channel_id: str,
     incident_id: int,
+    config: SlackConversationConfiguration = None,
     command: dict = None,
     db_session=None,
     slack_client=None,
@@ -386,6 +380,7 @@ def list_workflows(
     user_email: str,
     channel_id: str,
     incident_id: int,
+    config: SlackConversationConfiguration = None,
     command: dict = None,
     db_session=None,
     slack_client=None,
@@ -433,6 +428,7 @@ def list_participants(
     user_email: str,
     channel_id: str,
     incident_id: int,
+    config: SlackConversationConfiguration = None,
     command: dict = None,
     db_session=None,
     slack_client=None,
@@ -524,6 +520,7 @@ def list_incidents(
     user_email: str,
     channel_id: str,
     incident_id: int,
+    config: SlackConversationConfiguration = None,
     command: dict = None,
     db_session=None,
     slack_client=None,

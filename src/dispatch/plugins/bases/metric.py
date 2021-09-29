@@ -5,13 +5,11 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from dispatch.models import PluginOptionModel
 from dispatch.plugins.base import Plugin
 
 
 class MetricPlugin(Plugin):
     type = "metric"
-    _schema = PluginOptionModel
 
     def gauge(self, name, value, tags=None):
         raise NotImplementedError

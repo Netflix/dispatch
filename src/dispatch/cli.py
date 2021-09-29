@@ -5,6 +5,7 @@ import click
 import uvicorn
 from dispatch import __version__, config
 from dispatch.enums import UserRoles
+from dispatch.plugin.models import PluginInstance
 
 from .scheduler import scheduler
 
@@ -721,17 +722,48 @@ dispatch_server.add_command(uvicorn.main, name="start")
 
 
 @dispatch_server.command("slack")
-def run_slack_websocket():
+@click.argument("organization")
+@click.argument("project")
+def run_slack_websocket(organization: str, project: str):
     """Runs the slack websocket process."""
     import asyncio
+    from sqlalchemy import true
+    from dispatch.project.models import ProjectRead
+    from dispatch.project import service as project_service
     from dispatch.plugins.dispatch_slack import socket_mode
+    from dispatch.plugins.dispatch_slack.decorators import get_organization_scope_from_slug
     from dispatch.common.utils.cli import install_plugins
 
     install_plugins()
 
-    click.secho("Slack websocket process started...", fg="blue")
+    session = get_organization_scope_from_slug(organization)
 
-    asyncio.run(socket_mode.run_websocket_process())
+    project = project_service.get_by_name_or_raise(
+        db_session=session, project_in=ProjectRead(name=project)
+    )
+
+    instances = (
+        session.query(PluginInstance)
+        .filter(PluginInstance.enabled == true())
+        .filter(PluginInstance.project_id == project.id)
+        .all()
+    )
+
+    instance = None
+    for i in instances:
+        if i.plugin.slug == "slack-conversation":
+            instance = i
+            break
+
+    if not instance:
+        click.secho(
+            f"No slack plugin has been configured for this organization/plugin. Organization: {organization} Project: {project}",
+            fg="red",
+        )
+        return
+
+    click.secho("Slack websocket process started...", fg="blue")
+    asyncio.run(socket_mode.run_websocket_process(instance.configuration))
 
 
 @dispatch_server.command("shell")

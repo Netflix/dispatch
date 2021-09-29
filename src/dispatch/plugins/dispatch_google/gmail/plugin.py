@@ -20,10 +20,7 @@ from dispatch.messaging.strings import (
 from dispatch.plugins.bases import EmailPlugin
 from dispatch.plugins.dispatch_google import gmail as google_gmail_plugin
 from dispatch.plugins.dispatch_google.common import get_service
-from dispatch.plugins.dispatch_google.config import (
-    GOOGLE_USER_OVERRIDE,
-    GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT,
-)
+from dispatch.plugins.dispatch_google.config import GoogleConfiguration
 
 from dispatch.messaging.email.utils import create_message_body, create_multi_message_body
 
@@ -54,17 +51,13 @@ def send_message(service, message: dict) -> bool:
     return True
 
 
-def create_html_message(recipient: str, cc: str, subject: str, body: str) -> Dict:
+def create_html_message(sender: str, recipient: str, cc: str, subject: str, body: str) -> Dict:
     """Creates a message for an email."""
     message = MIMEText(body, "html")
 
-    if GOOGLE_USER_OVERRIDE:
-        recipient = cc = GOOGLE_USER_OVERRIDE
-        log.warning("GOOGLE_USER_OVERIDE set. Using override.")
-
     message["to"] = recipient
     message["cc"] = cc
-    message["from"] = GOOGLE_SERVICE_ACCOUNT_DELEGATED_ACCOUNT
+    message["from"] = sender
     message["subject"] = subject
     return {"raw": base64.urlsafe_b64encode(message.as_bytes()).decode()}
 
@@ -81,6 +74,7 @@ class GoogleGmailEmailPlugin(EmailPlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
+        self.configuration_schema = GoogleConfiguration
         self.scopes = ["https://mail.google.com/"]
 
     def send(
@@ -94,7 +88,7 @@ class GoogleGmailEmailPlugin(EmailPlugin):
     ):
         """Sends an html email based on the type."""
         # TODO allow for bulk sending (kglisson)
-        client = get_service("gmail", "v1", self.scopes)
+        client = get_service(self.configuration, "gmail", "v1", self.scopes)
 
         subject = notification_text
 
@@ -115,5 +109,11 @@ class GoogleGmailEmailPlugin(EmailPlugin):
                 notification_template, notification_type, items, **kwargs
             )
 
-        html_message = create_html_message(recipient, cc, subject, message_body)
+        html_message = create_html_message(
+            self.configuration.service_account_delegated_account,
+            recipient,
+            cc,
+            subject,
+            message_body,
+        )
         return send_message(client, html_message)

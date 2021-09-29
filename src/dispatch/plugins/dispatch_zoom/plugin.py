@@ -13,7 +13,7 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_zoom as zoom_plugin
 from dispatch.plugins.bases import ConferencePlugin
 
-from .config import ZOOM_API_USER_ID, ZOOM_API_KEY, ZOOM_API_SECRET
+from .config import ZoomConfiguration
 from .client import ZoomClient
 
 log = logging.getLogger(__name__)
@@ -33,6 +33,7 @@ def delete_meeting(client, event_id: int):
 
 def create_meeting(
     client,
+    user_id: str,
     name: str,
     description: str = None,
     title: str = None,
@@ -47,7 +48,7 @@ def create_meeting(
         "settings": {"join_before_host": True},
     }
 
-    return client.post("/users/{}/meetings".format(ZOOM_API_USER_ID), data=body)
+    return client.post("/users/{}/meetings".format(user_id), data=body)
 
 
 @apply(timer, exclude=["__init__"])
@@ -61,13 +62,20 @@ class ZoomConferencePlugin(ConferencePlugin):
     author = "HashiCorp"
     author_url = "https://github.com/netflix/dispatch.git"
 
+    def __init__(self):
+        self.configuration_schema = ZoomConfiguration
+
     def create(
         self, name: str, description: str = None, title: str = None, participants: List[str] = []
     ):
         """Create a new event."""
-        client = ZoomClient(ZOOM_API_KEY, str(ZOOM_API_SECRET))
+        client = ZoomClient(
+            self.configuration.api_key, self.configuration.api_secret.get_secret_value()
+        )
 
-        conference_response = create_meeting(client, name, description=description, title=title)
+        conference_response = create_meeting(
+            client, self.configuration.api_user_id, name, description=description, title=title
+        )
 
         conference_json = conference_response.json()
 
@@ -79,7 +87,9 @@ class ZoomConferencePlugin(ConferencePlugin):
 
     def delete(self, event_id: str):
         """Deletes an existing event."""
-        client = ZoomClient(ZOOM_API_KEY, str(ZOOM_API_SECRET))
+        client = ZoomClient(
+            self.configuration.api_key, self.configuration.api_secret.get_secret_value()
+        )
         delete_meeting(client, event_id)
 
     def add_participant(self, event_id: str, participant: str):
