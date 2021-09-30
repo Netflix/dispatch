@@ -106,8 +106,12 @@ def create_instance(*, db_session, plugin_instance_in: PluginInstanceCreate) -> 
     )
     plugin = get(db_session=db_session, plugin_id=plugin_instance_in.plugin.id)
     plugin_instance = PluginInstance(
-        **plugin_instance_in.dict(exclude={"project", "plugin"}), project=project, plugin=plugin
+        **plugin_instance_in.dict(exclude={"project", "plugin", "configuration"}),
+        project=project,
+        plugin=plugin,
     )
+    plugin_instance.configuration = plugin_instance_in.configuration
+
     db_session.add(plugin_instance)
     db_session.commit()
     return plugin_instance
