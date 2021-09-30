@@ -155,4 +155,5 @@ def sync_active_stable_tasks(db_session: SessionLocal, project: Project):
     )
 
     incidents = active_incidents + stable_incidents
-    sync_tasks(db_session, task_plugin, incidents, lookback=TASK_SYNC_INTERVAL, notify=True)
+    lookback = 60 * 5  # 5 min
+    sync_tasks(db_session, task_plugin, incidents, lookback=lookback, notify=True)
