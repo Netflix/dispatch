@@ -140,8 +140,8 @@ def upgrade():
             browser_url=str(JIRA_BROWSER_URL),
             hosting_type=JIRA_HOSTING_TYPE,
             username=JIRA_USERNAME,
-            default_jira_project_id=JIRA_PROJECT_ID,
-            default_jira_issue_type_name=JIRA_ISSUE_TYPE_NAME,
+            default_project_id=JIRA_PROJECT_ID,
+            default_issue_type_name=JIRA_ISSUE_TYPE_NAME,
             password=str(JIRA_PASSWORD),
         )
 
