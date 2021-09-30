@@ -18,6 +18,7 @@
     <v-card flat>
       <v-card-text>
         <v-form v-model="valid">
+          <plugin-combobox v-if="!id" label="Plugin" v-model="plugin" />
           <v-checkbox
             v-model="enabled"
             hint="Each plugin type can only ever have one enabled plugin. Existing enabled plugins will be de-activated."
@@ -34,14 +35,16 @@
 import VJsf from "@koumoul/vjsf"
 import "@koumoul/vjsf/dist/main.css"
 import { mapFields } from "vuex-map-fields"
-
 import { mapActions, mapMutations } from "vuex"
+
+import PluginCombobox from "@/plugin/PluginCombobox.vue"
 
 export default {
   name: "PluginEditSheet",
 
   components: {
     VJsf,
+    PluginCombobox,
   },
 
   data() {
