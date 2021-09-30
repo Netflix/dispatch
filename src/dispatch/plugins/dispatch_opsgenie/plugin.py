@@ -24,8 +24,8 @@ class OpsgenieConfiguration(BaseConfigurationModel):
     )
 
 
-@apply(timer)
-@apply(counter)
+@apply(counter, exclude=["__init__"])
+@apply(timer, exclude=["__init__"])
 class OpsGenieOncallPlugin(OncallPlugin):
     title = "OpsGenie Plugin - Oncall Management"
     slug = "opsgenie-oncall"
