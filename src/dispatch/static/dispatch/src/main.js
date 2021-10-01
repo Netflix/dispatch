@@ -34,11 +34,7 @@ if (process.env.VUE_APP_SENTRY_ENABLED) {
 
 console.log(Sentry.config)
 console.log(process.env)
-// Send the Hello Radar! message (if it wasn't sent yet)
-if (!"_sentry_hello_" in localStorage) {
-  Sentry.captureMessage("Hello Sentry!", "warning")
-  localStorage["_sentry_hello_"] = true
-}
+Sentry.captureMessage("Hello Sentry!", "warning")
 
 sync(store, router, { moduleName: "route" })
 
