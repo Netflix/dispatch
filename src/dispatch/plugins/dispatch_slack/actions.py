@@ -311,7 +311,12 @@ def monitor_link(
         db_session=db_session, plugin_type="conversation", project_id=incident.project.id
     )
     plugin.instance.send_ephemeral(
-        channel_id, notification_text, message_template, notification_type, weblink=button.weblink
+        channel_id,
+        user_id,
+        notification_text,
+        message_template,
+        notification_type,
+        weblink=button.weblink,
     )
 
 
