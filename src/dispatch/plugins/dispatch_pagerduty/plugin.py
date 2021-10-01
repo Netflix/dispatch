@@ -31,8 +31,8 @@ class PagerdutyConfiguration(BaseConfigurationModel):
     )
 
 
-@apply(timer)
-@apply(counter)
+@apply(counter, exclude=["__init__"])
+@apply(timer, exclude=["__init__"])
 class PagerDutyOncallPlugin(OncallPlugin):
     title = "PagerDuty Plugin - Oncall Management"
     slug = "pagerduty-oncall"
