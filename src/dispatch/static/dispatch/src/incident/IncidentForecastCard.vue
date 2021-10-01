@@ -90,7 +90,6 @@ export default {
     fetchData() {
       this.loading = "error"
       let params = this.filterOptions || {}
-      console.log(this.filterOptions)
       IncidentApi.getMetricForecast(params).then((response) => {
         this.loading = false
         this.series = response.data.series
