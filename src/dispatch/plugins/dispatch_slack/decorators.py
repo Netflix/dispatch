@@ -123,6 +123,7 @@ def slack_background_task(func):
         )
 
         channel_id = kwargs["channel_id"]
+        user_id = kwargs["user_id"]
         if not kwargs.get("db_session"):
 
             # slug passed directly is prefered over just having a channel_id
@@ -157,9 +158,6 @@ def slack_background_task(func):
             return result
         except ValidationError as e:
             log.exception(e)
-
-            user_id = args[0]
-
             message = f"Command Error: {e.errors()[0]['msg']}"
 
             dispatch_slack_service.send_ephemeral_message(
@@ -173,9 +171,6 @@ def slack_background_task(func):
             # we generate our own guid for now, maybe slack provides us something we can use?
             slack_interaction_guid = str(uuid.uuid4())
             log.exception(e, extra=dict(slack_interaction_guid=slack_interaction_guid))
-
-            user_id = args[0]
-            channel_id = args[2]
 
             # we notify the user that the interaction failed
             message = f"""Sorry, we've run into an unexpected error. For help please reach out to your Dispatch admins \
