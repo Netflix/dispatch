@@ -32,6 +32,14 @@ if (process.env.VUE_APP_SENTRY_ENABLED) {
   Sentry.setTag(process.env.VUE_APP_SENTRY_APP_KEY, APP_HOSTNAME)
 }
 
+console.log(Sentry.config)
+console.log(process.env)
+// Send the Hello Radar! message (if it wasn't sent yet)
+if (!"_sentry_hello_" in localStorage) {
+  Sentry.captureMessage("Hello Sentry!", "warning")
+  localStorage["_sentry_hello_"] = true
+}
+
 sync(store, router, { moduleName: "route" })
 
 Vue.config.productionTip = false
