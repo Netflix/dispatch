@@ -32,6 +32,10 @@ if (process.env.VUE_APP_SENTRY_ENABLED) {
   Sentry.setTag(process.env.VUE_APP_SENTRY_APP_KEY, APP_HOSTNAME)
 }
 
+console.log(Sentry.config)
+console.log(process.env)
+Sentry.captureMessage("Hello Sentry!", "warning")
+
 sync(store, router, { moduleName: "route" })
 
 Vue.config.productionTip = false

@@ -1,8 +1,10 @@
 from typing import List, Optional
 
 from sqlalchemy.sql.expression import true
+from dispatch import participant
 from dispatch.incident import service as incident_service
 from dispatch.plugin import service as plugin_service
+from dispatch.participant import service as participant_service
 
 from .models import (
     Monitor,
@@ -48,10 +50,12 @@ def create(*, db_session, monitor_in: MonitorCreate) -> Monitor:
     plugin_instance = plugin_service.get_instance(
         db_session=db_session, plugin_instance_id=monitor_in.plugin_instance.id
     )
+    creator = participant_service.get(db_session=db_session, participant_id=monitor_in.creator.id)
     monitor = Monitor(
-        **monitor_in.dict(exclude={"plugin_instance", "incident"}),
+        **monitor_in.dict(exclude={"plugin_instance", "incident", "creator"}),
         plugin_instance=plugin_instance,
         incident=incident,
+        creator=creator,
     )
 
     db_session.add(monitor)
