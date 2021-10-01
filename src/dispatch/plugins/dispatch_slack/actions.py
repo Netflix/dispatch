@@ -233,6 +233,7 @@ def add_user_to_conversation(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -259,6 +260,7 @@ def monitor_link(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -320,6 +322,7 @@ def update_task_status(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
