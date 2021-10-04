@@ -1,3 +1,11 @@
+"""
+.. module: dispatch.incident.service
+    :platform: Unix
+    :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
+    :license: Apache, see LICENSE for more details.
+"""
+import logging
+
 from datetime import datetime, timedelta
 from typing import List, Optional
 
@@ -12,58 +20,50 @@ from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.project import service as project_service
 from dispatch.tag import service as tag_service
-from dispatch.tag.models import TagCreate
 from dispatch.term import service as term_service
 
 from .enums import IncidentStatus
 from .models import Incident, IncidentCreate, IncidentUpdate
 
+log = logging.getLogger(__name__)
 
-def assign_incident_role(
-    db_session: SessionLocal,
-    incident: Incident,
-    reporter_email: str,
-    role: ParticipantRoleType,
+
+def resolve_and_associate_role(
+    db_session: SessionLocal, incident: Incident, role: ParticipantRoleType
 ):
-    """Assigns incident roles."""
-    assignee_email = reporter_email
-    service_external_id = None
+    """For a given role type resolve which individual email should be assigned that role."""
+    email_address = None
     service_id = None
 
-    # We only resolve the incident role and page the commander for active and stable incidents
-    if incident.status != IncidentStatus.closed:
-        incident_role = resolve_role(db_session=db_session, role=role, incident=incident)
-        if incident_role:
-            if incident_role.service:
-                service_id = incident_role.service.id
-                service_external_id = incident_role.service.external_id
-                oncall_plugin = plugin_service.get_active_instance(
-                    db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
+    incident_role = resolve_role(db_session=db_session, role=role, incident=incident)
+    if not incident_role:
+        return email_address, service_id
+
+    if incident_role.service:
+        service_id = incident_role.service.id
+        service_external_id = incident_role.service.external_id
+        oncall_plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
+        )
+        if oncall_plugin:
+            email_address = oncall_plugin.instance.get(service_id=service_external_id)
+            if incident.incident_priority.page_commander:
+                oncall_plugin.instance.page(
+                    service_id=service_external_id,
+                    incident_name=incident.name,
+                    incident_title=incident.title,
+                    incident_description=incident.description,
                 )
-                if oncall_plugin:
-                    assignee_email = oncall_plugin.instance.get(service_id=service_external_id)
-                    if incident.incident_priority.page_commander:
-                        oncall_plugin.instance.page(
-                            service_id=service_external_id,
-                            incident_name=incident.name,
-                            incident_title=incident.title,
-                            incident_description=incident.description,
-                        )
-                else:
-                    # TODO emit warning/error
-                    pass
 
-            elif incident_role.individual:
-                assignee_email = incident_role.individual.email
+        log.warning("Resolved incident role associated with a plugin that is not active.")
 
-    # We add a new participant if it doesn't exist, otherwise we update it.
     participant_flows.add_participant(
-        assignee_email,
+        email_address,
         incident,
         db_session,
-        service_id=service_id,
         role=role,
     )
+    return email_address, service_id
 
 
 def get(*, db_session, incident_id: int) -> Optional[Incident]:
@@ -186,20 +186,32 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         incident_id=incident.id,
     )
 
-    # Add other incident roles (e.g. commander and liaison)
-    assign_incident_role(
-        db_session, incident, incident_in.reporter.individual.email, ParticipantRoleType.reporter
-    )
-
-    assign_incident_role(
-        db_session, incident, incident_in.reporter.individual.email, ParticipantRoleType.liaison
-    )
-
-    assign_incident_role(
-        db_session,
-        incident,
+    # add reporter
+    participant_flows.add_participant(
         incident_in.reporter.individual.email,
-        ParticipantRoleType.incident_commander,
+        incident,
+        db_session,
+        role=ParticipantRoleType.reporter,
+    )
+
+    # add commander resolve, if not provided
+    if not incident_in.commander:
+        resolve_and_associate_role(
+            db_session=db_session, incident=incident, role=ParticipantRoleType.incident_commander
+        )
+    else:
+        commander_email = incident_in.commander.individual.email
+
+        participant_flows.add_participant(
+            commander_email,
+            incident,
+            db_session,
+            role=ParticipantRoleType.incident_commander,
+        )
+
+    # add liason
+    resolve_and_associate_role(
+        db_session=db_session, incident=incident, role=ParticipantRoleType.liaison
     )
 
     return incident
