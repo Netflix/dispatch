@@ -221,6 +221,7 @@ def handle_block_action(
             user_email=user_email,
             channel_id=channel_id,
             incident_id=incident_id,
+            config=config,
             action=action,
             organization_slug=organization_slug,
         )
