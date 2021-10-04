@@ -190,6 +190,7 @@ async def handle_non_incident_conversation_commands(config, client, request, bac
             user_id=user_id,
             user_email=user_email,
             channel_id=channel_id,
+            config=config,
             incident_id=None,
             organization_slug=organization_slug,
             command=request,
@@ -233,6 +234,7 @@ async def handle_incident_conversation_commands(config, client, request, backgro
             user_id=user_id,
             user_email=user_email,
             channel_id=channel_id,
+            config=config,
             incident_id=conversation.incident.id,
             command=request,
         )

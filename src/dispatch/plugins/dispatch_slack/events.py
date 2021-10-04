@@ -291,7 +291,7 @@ def member_joined_channel(
 
 @slack_background_task
 def member_left_channel(
-    config: SlackConfiguration,
+    config: SlackConversationConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,
@@ -306,7 +306,7 @@ def member_left_channel(
 
 @slack_background_task
 def ban_threads_warning(
-    config: SlackConfiguration,
+    config: SlackConversationConfiguration,
     user_id: str,
     user_email: str,
     channel_id: str,
