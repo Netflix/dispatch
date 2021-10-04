@@ -1,6 +1,3 @@
-from tests.conftest import plugin_instance
-
-
 def test_get(session, workflow):
     from dispatch.workflow.service import get
 
