@@ -2,6 +2,7 @@ from dispatch.incident import service as incident_service
 from dispatch.participant import service as participant_service
 from dispatch.feedback import service as feedback_service
 from dispatch.feedback.models import FeedbackCreate
+from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 
 from dispatch.plugins.dispatch_slack.decorators import slack_background_task
 from dispatch.plugins.dispatch_slack.service import (
@@ -21,6 +22,7 @@ def create_rating_feedback_modal(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -49,6 +51,7 @@ def rating_feedback_from_submitted_form(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
