@@ -262,7 +262,7 @@ python-multipart==0.0.5
     # via -r requirements-base.in
 python-slugify==5.0.2
     # via -r requirements-base.in
-pytz==2021.1
+pytz==2021.3
     # via
     #   -r requirements-base.in
     #   google-api-core
