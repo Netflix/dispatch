@@ -140,7 +140,7 @@ idna==2.10
     #   yarl
 iniconfig==1.1.1
     # via pytest
-jinja2==3.0.1
+jinja2==3.0.2
     # via -r requirements-base.in
 jira==2.0.0
     # via -r requirements-base.in
