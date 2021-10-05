@@ -47,22 +47,19 @@ def resolve_and_associate_role(
         )
         if oncall_plugin:
             email_address = oncall_plugin.instance.get(service_id=service_external_id)
-            if incident.incident_priority.page_commander:
-                oncall_plugin.instance.page(
-                    service_id=service_external_id,
-                    incident_name=incident.name,
-                    incident_title=incident.title,
-                    incident_description=incident.description,
-                )
+
+            # don't page commander for closed incidents or stable
+            if incident.status == IncidentStatus.active:
+                if incident.incident_priority.page_commander:
+                    oncall_plugin.instance.page(
+                        service_id=service_external_id,
+                        incident_name=incident.name,
+                        incident_title=incident.title,
+                        incident_description=incident.description,
+                    )
 
         log.warning("Resolved incident role associated with a plugin that is not active.")
 
-    participant_flows.add_participant(
-        email_address,
-        incident,
-        db_session,
-        role=role,
-    )
     return email_address, service_id
 
 
@@ -195,23 +192,35 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
     )
 
     # add commander resolve, if not provided
+    commander_email = None
+    commander_service_id = None
     if not incident_in.commander:
-        resolve_and_associate_role(
+        commander_email, commander_service_id = resolve_and_associate_role(
             db_session=db_session, incident=incident, role=ParticipantRoleType.incident_commander
         )
+
     else:
         commander_email = incident_in.commander.individual.email
 
-        participant_flows.add_participant(
-            commander_email,
-            incident,
-            db_session,
-            role=ParticipantRoleType.incident_commander,
-        )
+    participant_flows.add_participant(
+        commander_email,
+        incident,
+        db_session,
+        service_id=commander_service_id,
+        role=ParticipantRoleType.incident_commander,
+    )
 
     # add liason
-    resolve_and_associate_role(
+    liason_email, liason_service_id = resolve_and_associate_role(
         db_session=db_session, incident=incident, role=ParticipantRoleType.liaison
+    )
+
+    participant_flows.add_participant(
+        liason_email,
+        incident,
+        db_session,
+        service_id=liason_service_id,
+        role=ParticipantRoleType.liaison,
     )
 
     return incident
