@@ -22,7 +22,7 @@ class SearchFilter(Base, ProjectMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
-    expression = Column(JSON)
+    expression = Column(JSON, nullable=False)
     creator_id = Column(Integer, ForeignKey(DispatchUser.id))
     creator = relationship("DispatchUser", backref="search_filters")
     type = Column(String)
@@ -34,7 +34,7 @@ class SearchFilter(Base, ProjectMixin):
 
 # Pydantic models...
 class SearchFilterBase(DispatchBase):
-    expression: Optional[List[dict]] = []
+    expression: List[dict]
     name: NameStr
     type: Optional[str]
     description: Optional[str] = Field(None, nullable=True)
