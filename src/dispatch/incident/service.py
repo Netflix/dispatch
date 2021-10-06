@@ -48,7 +48,7 @@ def resolve_and_associate_role(
         if oncall_plugin:
             email_address = oncall_plugin.instance.get(service_id=service_external_id)
 
-            # don't page commander for closed incidents or stable
+            # we don't page the incident commander for stable or closed incidents
             if incident.status == IncidentStatus.active:
                 if incident.incident_priority.page_commander:
                     oncall_plugin.instance.page(
