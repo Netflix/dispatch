@@ -1,5 +1,5 @@
 """
-.. module: dispatch.plugins.google_gmail.plugin
+.. module: dispatch.evergreen.scheduled
     :platform: Unix
     :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
     :license: Apache, see LICENSE for more details.

@@ -232,6 +232,9 @@ async def handle_menu(
 
     # We verify the signature
     verify_signature(organization, raw_request_body, x_slack_request_timestamp, x_slack_signature)
+    current_configuration = verify_signature(
+        organization, raw_request_body, x_slack_request_timestamp, x_slack_signature
+    )
 
     # We add the user-agent string to the response headers
     response.headers["X-Slack-Powered-By"] = create_ua_string()
@@ -240,6 +243,7 @@ async def handle_menu(
     slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
 
     body = await handle_slack_menu(
+        config=current_configuration,
         client=slack_async_client,
         request=request,
     )
