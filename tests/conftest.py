@@ -246,6 +246,15 @@ def ticket_plugin():
 
 
 @pytest.fixture
+def workflow_plugin():
+    from dispatch.plugins.base import register
+    from dispatch.plugins.dispatch_test.workflow import TestWorkflowPlugin
+
+    register(TestWorkflowPlugin)
+    return TestWorkflowPlugin
+
+
+@pytest.fixture
 def tag(session):
     return TagFactory()
 
@@ -521,8 +530,13 @@ def plugin_instance(session):
 
 
 @pytest.fixture
-def workflow(session):
-    return WorkflowFactory(plugin_instance=PluginInstanceFactory())
+def workflow_plugin_instance(session, workflow_plugin):
+    return PluginInstanceFactory(plugin=PluginFactory(slug=workflow_plugin.slug))
+
+
+@pytest.fixture
+def workflow(session, workflow_plugin_instance):
+    return WorkflowFactory(plugin_instance=workflow_plugin_instance)
 
 
 @pytest.fixture
