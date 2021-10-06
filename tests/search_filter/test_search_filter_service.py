@@ -31,9 +31,7 @@ def test_update(session, search_filter):
 
     name = "Updated name"
 
-    search_filter_in = SearchFilterUpdate(
-        name=name,
-    )
+    search_filter_in = SearchFilterUpdate(name=name, expression=[{}])
     search_filter = update(
         db_session=session,
         search_filter=search_filter,
