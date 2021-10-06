@@ -198,7 +198,6 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         commander_email, commander_service_id = resolve_and_associate_role(
             db_session=db_session, incident=incident, role=ParticipantRoleType.incident_commander
         )
-
     else:
         commander_email = incident_in.commander.individual.email
 
