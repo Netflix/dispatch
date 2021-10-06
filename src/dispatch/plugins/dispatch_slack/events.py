@@ -12,7 +12,6 @@ from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.plugins.dispatch_slack.config import (
-    SlackConfiguration,
     SlackConversationConfiguration,
 )
 from dispatch.tag import service as tag_service
