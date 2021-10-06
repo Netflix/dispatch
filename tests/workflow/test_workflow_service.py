@@ -1,4 +1,4 @@
-from tests.conftest import plugin_instance
+import pytest
 
 
 def test_get(session, workflow):
@@ -15,7 +15,7 @@ def test_get_instance(session, workflow_instance):
     assert t_workflow_instance.id == workflow_instance.id
 
 
-def test_create(session, project, plugin_instance):
+def test_create(session, workflow_plugin_instance):
     from dispatch.workflow.service import create
     from dispatch.workflow.models import WorkflowCreate
 
@@ -31,14 +31,14 @@ def test_create(session, project, plugin_instance):
         resource_id=resource_id,
         parameters=parameters,
         enabled=enabled,
-        plugin_instance=plugin_instance,
-        project=project,
+        plugin_instance=workflow_plugin_instance,
+        project=workflow_plugin_instance.project,
     )
     workflow = create(db_session=session, workflow_in=workflow_in)
     assert workflow
 
 
-def test_create_instance(session, incident, workflow, participant, project):
+def test_create_instance(session, incident, workflow, participant, project, workflow_plugin):
     from dispatch.workflow.service import create_instance
     from dispatch.workflow.models import WorkflowInstanceCreate
     from dispatch.document.models import DocumentCreate
