@@ -105,6 +105,13 @@ const getters = {
     // format our filters
     return state.table.options
   },
+  getLocalReportedAt(state) {
+    console.log(state.selected.reported_at)
+    console.log(new Date(state.selected.reported_at + "Z").toLocaleString("sv"))
+  },
+  getLocalStableAt(state) {
+    return new Date(state.selected.stable_at + "Z").toString()
+  },
 }
 
 const actions = {
@@ -325,6 +332,12 @@ const actions = {
 
 const mutations = {
   updateField,
+  updateLocalReportedAt(state, field) {
+    updateField(state.reported_at, field.toISOString())
+  },
+  updateLocalStableAt(state, field) {
+    updateField(state.stable_at, field.toISOString())
+  },
   addIncidentCost(state, value) {
     state.selected.incident_costs.push(value)
   },

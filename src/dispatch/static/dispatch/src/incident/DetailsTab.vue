@@ -90,10 +90,10 @@
       <v-flex xs12>
         <v-row>
           <v-col cols="6">
-            <date-picker-menu v-model="reported_at" />
+            <date-picker-menu v-model="localReportedAt" />
           </v-col>
           <v-col cols="6">
-            <time-picker-menu v-model="reported_at" />
+            <time-picker-menu v-model="localReportedAt" />
           </v-col>
         </v-row>
       </v-flex>
@@ -103,10 +103,10 @@
       <v-flex xs12>
         <v-row>
           <v-col cols="6">
-            <date-picker-menu v-model="stable_at" />
+            <date-picker-menu v-model="localStableAt" />
           </v-col>
           <v-col cols="6">
-            <time-picker-menu v-model="stable_at" />
+            <time-picker-menu v-model="localStableAt" />
           </v-col>
         </v-row>
       </v-flex>
@@ -121,7 +121,7 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
+import { createHelpers } from "vuex-map-fields"
 import { ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 import DatePickerMenu from "@/components/DatePickerMenu.vue"
@@ -132,6 +132,11 @@ import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import TimePickerMenu from "@/components/TimePickerMenu.vue"
+
+const { mapFields } = createHelpers({
+  getterType: "incident/getLocalReportedAt",
+  mutationType: "incident/updateLocalReportedAt",
+})
 
 extend("required", {
   ...required,
@@ -179,6 +184,8 @@ export default {
       "selected.incident_type",
       "selected.duplicates",
       "selected.visibility",
+      "localReportedAt",
+      "localStableAt",
     ]),
   },
 }
