@@ -19,7 +19,11 @@
         v-on="on"
       />
     </template>
-    <v-time-picker v-model="time" color="info" full-width @click:minute="$refs.menu.save(time)" />
+    <v-time-picker v-model="time" color="info" format="24hr" full-width>
+      <v-spacer />
+      <v-btn text color="info" @click="menu = false"> Cancel </v-btn>
+      <v-btn text color="info" @click="$refs.menu.save(time)"> OK </v-btn>
+    </v-time-picker>
   </v-menu>
 </template>
 
@@ -43,17 +47,36 @@ export default {
   computed: {
     time: {
       get() {
+        console.log("get")
+        console.log(this.value)
         if (!this.value) {
-          return new Date().toISOString().substring(11, 16)
+          console.log("no value")
+          var date = Date().substring(16, 21)
+          console.log(date)
+          return date
         }
-        return this.value.substring(11, 16)
+        console.log("value")
+        date = new Date(this.value + "Z").toString().substring(16, 21)
+        console.log(date)
+        return date
       },
       set(value) {
+        console.log("set")
+        console.log(this.value)
+        console.log(value)
         if (!this.value) {
-          value = new Date().toISOString().substring(0, 10) + "T" + value
+          console.log("no value")
+          value = new Date().toISOString().substring(0, 23)
+          // value = new Date().toISOString().substring(0, 10) + "T" + value
         } else {
-          value = this.value.substring(0, 10) + "T" + value
+          console.log("value")
+          var date = new Date(this.value)
+          console.log(date)
+          console.log(date.toISOString())
+          value = new Date(this.value).toISOString().substring(0, 23)
+          // value = new Date(this.value).toISOString().substring(0, 10) + "T" + value
         }
+        console.log(value)
         this.$emit("input", value)
       },
     },

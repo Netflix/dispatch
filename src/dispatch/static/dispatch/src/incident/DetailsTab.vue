@@ -124,14 +124,14 @@
 import { mapFields } from "vuex-map-fields"
 import { ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
-import ProjectSelect from "@/project/ProjectSelect.vue"
+import DatePickerMenu from "@/components/DatePickerMenu.vue"
+import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
-import DatePickerMenu from "@/components/DatePickerMenu.vue"
-import TimePickerMenu from "@/components/TimePickerMenu.vue"
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
-import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import ParticipantSelect from "@/incident/ParticipantSelect.vue"
+import ProjectSelect from "@/project/ProjectSelect.vue"
+import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import TimePickerMenu from "@/components/TimePickerMenu.vue"
 
 extend("required", {
   ...required,
@@ -142,15 +142,15 @@ export default {
   name: "IncidentDetailsTab",
 
   components: {
-    ValidationProvider,
+    DatePickerMenu,
+    IncidentFilterCombobox,
     IncidentPrioritySelect,
     IncidentTypeSelect,
     ParticipantSelect,
-    TagFilterCombobox,
-    IncidentFilterCombobox,
     ProjectSelect,
+    TagFilterCombobox,
     TimePickerMenu,
-    DatePickerMenu,
+    ValidationProvider,
   },
 
   data() {
