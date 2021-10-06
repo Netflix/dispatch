@@ -57,8 +57,8 @@ def resolve_and_associate_role(
                         incident_title=incident.title,
                         incident_description=incident.description,
                     )
-
-        log.warning("Resolved incident role associated with a plugin that is not active.")
+        else:
+            log.warning("Resolved incident role associated with a plugin that is not active.")
 
     return email_address, service_id
 
