@@ -969,6 +969,7 @@ class PluginFactory(BaseFactory):
         """Factory Configuration."""
 
         model = Plugin
+        sqlalchemy_get_or_create = ("slug",)
 
 
 class PluginInstanceFactory(BaseFactory):

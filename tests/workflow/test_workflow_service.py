@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_get(session, workflow):
     from dispatch.workflow.service import get
 
@@ -12,7 +15,7 @@ def test_get_instance(session, workflow_instance):
     assert t_workflow_instance.id == workflow_instance.id
 
 
-def test_create(session, plugin_instance, workflow_plugin):
+def test_create(session, workflow_plugin_instance):
     from dispatch.workflow.service import create
     from dispatch.workflow.models import WorkflowCreate
 
@@ -22,16 +25,14 @@ def test_create(session, plugin_instance, workflow_plugin):
     parameters = [{}]
     enabled = True
 
-    plugin_instance.plugin.slug = workflow_plugin.slug
-
     workflow_in = WorkflowCreate(
         name=name,
         description=description,
         resource_id=resource_id,
         parameters=parameters,
         enabled=enabled,
-        plugin_instance=plugin_instance,
-        project=plugin_instance.project,
+        plugin_instance=workflow_plugin_instance,
+        project=workflow_plugin_instance.project,
     )
     workflow = create(db_session=session, workflow_in=workflow_in)
     assert workflow
@@ -45,8 +46,6 @@ def test_create_instance(session, incident, workflow, participant, project, work
     parameters = [{}]
     run_reason = "reason"
     status = "Submitted"
-
-    workflow.plugin_instance.plugin.slug = workflow_plugin.slug
 
     artifacts = [
         DocumentCreate(
@@ -71,14 +70,12 @@ def test_create_instance(session, incident, workflow, participant, project, work
     assert workflow_instance
 
 
-def test_update(session, workflow, workflow_plugin):
+def test_update(session, workflow):
     from dispatch.workflow.service import update
     from dispatch.workflow.models import WorkflowUpdate
 
     name = "Updated name"
     resource_id = "resource_id_updated"
-
-    workflow.plugin_instance.plugin.slug = workflow_plugin.slug
 
     workflow_in = WorkflowUpdate(
         name=name,
