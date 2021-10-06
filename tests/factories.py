@@ -969,13 +969,13 @@ class PluginFactory(BaseFactory):
         """Factory Configuration."""
 
         model = Plugin
+        sqlalchemy_get_or_create = ("slug",)
 
 
 class PluginInstanceFactory(BaseFactory):
     """PluginInstance Factory."""
 
     enabled = Faker().pybool()
-    configuration = {}
     project = SubFactory(ProjectFactory)
     plugin = SubFactory(PluginFactory)
 
