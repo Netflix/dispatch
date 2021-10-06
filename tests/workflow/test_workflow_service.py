@@ -12,7 +12,7 @@ def test_get_instance(session, workflow_instance):
     assert t_workflow_instance.id == workflow_instance.id
 
 
-def test_create(session, project, plugin_instance):
+def test_create(session, plugin_instance, workflow_plugin):
     from dispatch.workflow.service import create
     from dispatch.workflow.models import WorkflowCreate
 
@@ -22,6 +22,8 @@ def test_create(session, project, plugin_instance):
     parameters = [{}]
     enabled = True
 
+    plugin_instance.plugin.slug = workflow_plugin.slug
+
     workflow_in = WorkflowCreate(
         name=name,
         description=description,
@@ -29,13 +31,13 @@ def test_create(session, project, plugin_instance):
         parameters=parameters,
         enabled=enabled,
         plugin_instance=plugin_instance,
-        project=project,
+        project=plugin_instance.project,
     )
     workflow = create(db_session=session, workflow_in=workflow_in)
     assert workflow
 
 
-def test_create_instance(session, incident, workflow, participant, project):
+def test_create_instance(session, incident, workflow, participant, project, workflow_plugin):
     from dispatch.workflow.service import create_instance
     from dispatch.workflow.models import WorkflowInstanceCreate
     from dispatch.document.models import DocumentCreate
@@ -43,6 +45,8 @@ def test_create_instance(session, incident, workflow, participant, project):
     parameters = [{}]
     run_reason = "reason"
     status = "Submitted"
+
+    workflow.plugin_instance.plugin.slug = workflow_plugin.slug
 
     artifacts = [
         DocumentCreate(
@@ -67,12 +71,14 @@ def test_create_instance(session, incident, workflow, participant, project):
     assert workflow_instance
 
 
-def test_update(session, workflow):
+def test_update(session, workflow, workflow_plugin):
     from dispatch.workflow.service import update
     from dispatch.workflow.models import WorkflowUpdate
 
     name = "Updated name"
     resource_id = "resource_id_updated"
+
+    workflow.plugin_instance.plugin.slug = workflow_plugin.slug
 
     workflow_in = WorkflowUpdate(
         name=name,
