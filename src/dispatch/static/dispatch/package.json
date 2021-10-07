@@ -16,6 +16,7 @@
     "apexcharts": "^3.27.1",
     "axios": "^0.21.1",
     "date-fns": "^2.21.1",
+    "date-fns-tz": "^1.1.6",
     "font-awesome": "^4.7.0",
     "json2csv": "^5.0.6",
     "lodash": "^4.17.21",

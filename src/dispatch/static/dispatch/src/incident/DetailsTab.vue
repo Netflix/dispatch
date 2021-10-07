@@ -89,12 +89,7 @@
       </v-flex>
       <v-flex xs12>
         <v-row>
-          <v-col cols="6">
-            <date-picker-menu v-model="reported_at" />
-          </v-col>
-          <v-col cols="6">
-            <time-picker-menu v-model="reported_at" />
-          </v-col>
+          <datetime-picker-menu v-model="reported_at" />
         </v-row>
       </v-flex>
       <v-flex xs12>
@@ -129,6 +124,7 @@ import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.v
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import DatePickerMenu from "@/components/DatePickerMenu.vue"
 import TimePickerMenu from "@/components/TimePickerMenu.vue"
+import DatetimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import ParticipantSelect from "@/incident/ParticipantSelect.vue"
@@ -151,6 +147,7 @@ export default {
     ProjectSelect,
     TimePickerMenu,
     DatePickerMenu,
+    DatetimePickerMenu,
   },
 
   data() {
