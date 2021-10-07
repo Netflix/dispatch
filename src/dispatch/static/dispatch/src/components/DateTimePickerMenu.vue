@@ -134,9 +134,6 @@ export default {
       } else if (typeof this.datetime === "string" || this.datetime instanceof String) {
         initDateTime = parseISO(this.datetime)
       }
-      // localtimezone
-      //let timezone = new Date().getTimezoneOffset()
-      //let localDatetime = utcToZonedTime(initDateTime, timezone)
       this.date = format(initDateTime, DEFAULT_DATE_FORMAT)
       this.time = format(initDateTime, DEFAULT_TIME_FORMAT)
     },
