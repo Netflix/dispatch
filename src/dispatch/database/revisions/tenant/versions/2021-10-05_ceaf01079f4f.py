@@ -16,7 +16,7 @@ depends_on = None
 
 
 def upgrade():
-    op.execute("UPDATE search_filter SET expression = [] WHERE expression is null")
+    op.execute("UPDATE search_filter SET expression = '[]' WHERE expression is null")
     op.alter_column("search_filter", "expression", nullable=False)
 
 
