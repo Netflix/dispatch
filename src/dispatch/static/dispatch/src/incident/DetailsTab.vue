@@ -85,28 +85,12 @@
         </ValidationProvider>
       </v-flex>
       <v-flex xs12>
-        <span class="subtitle-2">Reported At</span>
-      </v-flex>
-      <v-flex xs12>
         <v-row>
           <v-col cols="6">
-            <date-picker-menu v-model="reported_at" />
+            <date-time-picker-menu label="Reported At" v-model="reported_at" />
           </v-col>
           <v-col cols="6">
-            <time-picker-menu v-model="reported_at" />
-          </v-col>
-        </v-row>
-      </v-flex>
-      <v-flex xs12>
-        <span class="subtitle-2">Stable At</span>
-      </v-flex>
-      <v-flex xs12>
-        <v-row>
-          <v-col cols="6">
-            <date-picker-menu v-model="stable_at" />
-          </v-col>
-          <v-col cols="6">
-            <time-picker-menu v-model="stable_at" />
+            <date-time-picker-menu label="Stable At" v-model="stable_at" />
           </v-col>
         </v-row>
       </v-flex>
@@ -127,8 +111,7 @@ import { required } from "vee-validate/dist/rules"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
-import DatePickerMenu from "@/components/DatePickerMenu.vue"
-import TimePickerMenu from "@/components/TimePickerMenu.vue"
+import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import ParticipantSelect from "@/incident/ParticipantSelect.vue"
@@ -149,8 +132,7 @@ export default {
     TagFilterCombobox,
     IncidentFilterCombobox,
     ProjectSelect,
-    TimePickerMenu,
-    DatePickerMenu,
+    DateTimePickerMenu,
   },
 
   data() {

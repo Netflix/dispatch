@@ -19,13 +19,13 @@ const locale = {
 
 Vue.filter("formatDate", function (value) {
   if (value) {
-    return formatISO(parseISO(value + "Z"))
+    return formatISO(parseISO(value))
   }
 })
 
 Vue.filter("formatRelativeDate", function (value) {
   if (value) {
-    return formatRelative(parseISO(value + "Z"), new Date(), { locale })
+    return formatRelative(parseISO(value), new Date(), { locale })
   }
 })
 

@@ -113,6 +113,13 @@ class DispatchBase(BaseModel):
         arbitrary_types_allowed = True
         anystr_strip_whitespace = True
 
+        json_encoders = {
+            # custom output conversion for datetime
+            datetime: lambda v: v.strftime("%Y-%m-%dT%H:%M:%SZ")
+            if v
+            else None
+        }
+
 
 class EvergreenBase(DispatchBase):
     evergreen: Optional[bool] = False
