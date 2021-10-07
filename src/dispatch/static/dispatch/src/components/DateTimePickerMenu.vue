@@ -51,7 +51,7 @@
 </template>
 <script>
 import { parse, parseISO } from "date-fns"
-import { format, utcToZonedTime } from "date-fns-tz"
+import { format } from "date-fns-tz"
 
 const DEFAULT_DATE = ""
 const DEFAULT_TIME = "00:00:00"
@@ -135,10 +135,10 @@ export default {
         initDateTime = parseISO(this.datetime)
       }
       // localtimezone
-      let timezone = new Date().getTimezoneOffset()
-      let localDatetime = utcToZonedTime(initDateTime, timezone)
-      this.date = format(localDatetime, DEFAULT_DATE_FORMAT)
-      this.time = format(localDatetime, DEFAULT_TIME_FORMAT)
+      //let timezone = new Date().getTimezoneOffset()
+      //let localDatetime = utcToZonedTime(initDateTime, timezone)
+      this.date = format(initDateTime, DEFAULT_DATE_FORMAT)
+      this.time = format(initDateTime, DEFAULT_TIME_FORMAT)
     },
     okHandler() {
       this.resetPicker()

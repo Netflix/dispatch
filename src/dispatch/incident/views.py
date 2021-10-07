@@ -2,6 +2,7 @@ import logging
 from typing import List
 from pydantic import Json
 
+import json
 import calendar
 from datetime import date
 from dateutil.relativedelta import relativedelta
@@ -15,7 +16,6 @@ from dispatch.auth.permissions import (
     PermissionsDependency,
     IncidentViewPermission,
 )
-
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
@@ -77,8 +77,8 @@ def get_incidents(
             "page": ...,
             "total": ...,
         }
-        return IncidentPagination(**pagination).dict(include=include_fields)
-    return IncidentPagination(**pagination).dict()
+        return json.loads(IncidentPagination(**pagination).json(include=include_fields))
+    return json.loads(IncidentPagination(**pagination).json())
 
 
 @router.get(
