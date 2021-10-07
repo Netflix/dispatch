@@ -94,28 +94,12 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <span class="subtitle-2">Resolved At</span>
-              </v-flex>
-              <v-flex xs12>
                 <v-row>
                   <v-col cols="6">
-                    <date-picker-menu v-model="resolved_at" />
+                    <date-time-picker-menu label="Resolved At" v-model="resolved_at" />
                   </v-col>
                   <v-col cols="6">
-                    <time-picker-menu v-model="resolved_at" />
-                  </v-col>
-                </v-row>
-              </v-flex>
-              <v-flex xs12>
-                <span class="subtitle-2">Resolve By</span>
-              </v-flex>
-              <v-flex xs12>
-                <v-row>
-                  <v-col cols="6">
-                    <date-picker-menu v-model="resolve_by" />
-                  </v-col>
-                  <v-col cols="6">
-                    <time-picker-menu v-model="resolve_by" />
+                    <date-time-picker-menu label="Resolve By" v-model="resolve_by" />
                   </v-col>
                 </v-row>
               </v-flex>
@@ -135,8 +119,7 @@ import ProjectSelect from "@/project/ProjectSelect.vue"
 import IncidentSelect from "@/incident/IncidentSelect.vue"
 import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import AssigneeCombobox from "@/task/AssigneeCombobox.vue"
-import DatePickerMenu from "@/components/DatePickerMenu.vue"
-import TimePickerMenu from "@/components/TimePickerMenu.vue"
+import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import { required } from "vee-validate/dist/rules"
 
 extend("required", {
@@ -154,8 +137,7 @@ export default {
     AssigneeCombobox,
     ParticipantSelect,
     ProjectSelect,
-    TimePickerMenu,
-    DatePickerMenu,
+    DateTimePickerMenu,
   },
 
   data() {
