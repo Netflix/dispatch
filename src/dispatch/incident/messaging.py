@@ -758,10 +758,10 @@ def send_incident_closed_information_review_reminder(incident: Incident, db_sess
         {
             "name": incident.name,
             "title": incident.title,
-            "description": incident.description,
+            "description": f"{incident.description[:100]}",
             "type": incident.incident_type.name,
             "priority": incident.incident_priority.name,
-            "dispatch_ui_url": DISPATCH_UI_URL,
+            "dispatch_ui_incident_url": f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{incident.name}",
         }
     ]
 
