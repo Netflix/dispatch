@@ -11,9 +11,9 @@
   >
     <template v-slot:activator="{ on }">
       <v-text-field
-        v-model="datetime"
-        label="Select Datetime"
+        v-model="formattedDatetime"
         prepend-icon="event"
+        :label="label"
         readonly
         v-on="on"
       />
@@ -50,7 +50,7 @@
   </v-menu>
 </template>
 <script>
-import { parse } from "date-fns"
+import { parse, parseISO } from "date-fns"
 import { format, utcToZonedTime } from "date-fns-tz"
 
 const DEFAULT_DATE = ""
@@ -70,6 +70,18 @@ export default {
     datetime: {
       type: [Date, String],
       default: null,
+    },
+    label: {
+      type: String,
+      default: "",
+    },
+    dateFormat: {
+      type: String,
+      default: DEFAULT_DATE_FORMAT,
+    },
+    timeFormat: {
+      type: String,
+      default: "HH:mm",
     },
   },
 
@@ -120,8 +132,7 @@ export default {
       if (this.datetime instanceof Date) {
         initDateTime = this.datetime
       } else if (typeof this.datetime === "string" || this.datetime instanceof String) {
-        // see https://stackoverflow.com/a/9436948
-        initDateTime = parse(this.datetime, this.dateTimeFormat, new Date())
+        initDateTime = parseISO(this.datetime)
       }
       // localtimezone
       let timezone = new Date().getTimezoneOffset()
@@ -131,11 +142,8 @@ export default {
     },
     okHandler() {
       this.resetPicker()
-      const formatInTimeZone = (date, fmt, tz) =>
-        format(utcToZonedTime(date, tz), fmt, { timeZone: tz })
-      const formattedTime = formatInTimeZone(this.selectedDatetime, "yyyy-MM-dd'T'HH:mmXXX", "UTC")
-
-      this.$emit("input", formattedTime)
+      let isoString = this.selectedDatetime.toISOString()
+      this.$emit("input", isoString)
     },
     clearHandler() {
       this.resetPicker()
