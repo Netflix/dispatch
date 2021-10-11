@@ -37,6 +37,9 @@ def resolve_and_associate_role(
 
     incident_role = resolve_role(db_session=db_session, role=role, incident=incident)
     if not incident_role:
+        log.info(
+            f"We were not able to resolve the email address for {incident.name} and {role} via incident role policies."
+        )
         return email_address, service_id
 
     if incident_role.service:
@@ -184,22 +187,27 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
     )
 
     # add reporter
+    reporter_email = incident_in.reporter.individual.email
     participant_flows.add_participant(
-        incident_in.reporter.individual.email,
+        reporter_email,
         incident,
         db_session,
         role=ParticipantRoleType.reporter,
     )
 
-    # add commander resolve, if not provided
-    commander_email = None
-    commander_service_id = None
-    if not incident_in.commander:
+    # add commander
+    commander_email = commander_service_id = None
+    if incident_in.commander:
+        commander_email = incident_in.commander.individual.email
+    else:
         commander_email, commander_service_id = resolve_and_associate_role(
             db_session=db_session, incident=incident, role=ParticipantRoleType.incident_commander
         )
-    else:
-        commander_email = incident_in.commander.individual.email
+
+    if not commander_email:
+        # we make the reporter the commander if an email for the commander
+        # was not provided or resolved via incident role policies
+        commander_email = reporter_email
 
     participant_flows.add_participant(
         commander_email,
@@ -214,13 +222,16 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         db_session=db_session, incident=incident, role=ParticipantRoleType.liaison
     )
 
-    participant_flows.add_participant(
-        liason_email,
-        incident,
-        db_session,
-        service_id=liason_service_id,
-        role=ParticipantRoleType.liaison,
-    )
+    if liason_email:
+        # we only add the liaison if we are able to resolve its email
+        # via incident role policies
+        participant_flows.add_participant(
+            liason_email,
+            incident,
+            db_session,
+            service_id=liason_service_id,
+            role=ParticipantRoleType.liaison,
+        )
 
     return incident
 
