@@ -178,7 +178,7 @@ export default {
     },
     toggleDarkTheme() {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark
-      localStorage.setItem("dark_theme", this.$vuetify.theme.dark.toString());
+      localStorage.setItem("dark_theme", this.$vuetify.theme.dark.toString())
     },
     switchOrganizations(slug) {
       this.$router.push({ params: { organization: slug } })
