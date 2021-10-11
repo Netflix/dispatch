@@ -205,7 +205,7 @@ export default {
       if (theme === "true") {
         this.$vuetify.theme.dark = true
       } else {
-          this.$vuetify.theme.dark = false;
+        this.$vuetify.theme.dark = false
       }
     }
 
