@@ -5,14 +5,18 @@
     :license: Apache, see LICENSE for more details.
 """
 import logging
+
 from pydantic import Field, SecretStr
 
 from dispatch.config import BaseConfigurationModel
 from dispatch.decorators import apply, counter, timer
+
 from dispatch.plugins.bases import OncallPlugin
 from .service import get_oncall, page_oncall
 
+
 __version__ = "0.1.0"
+
 log = logging.getLogger(__name__)
 
 
@@ -49,5 +53,9 @@ class OpsGenieOncallPlugin(OncallPlugin):
         **kwargs,
     ):
         return page_oncall(
-            self.configuration.api_key, incident_name, incident_title, incident_description
+            self.configuration.api_key,
+            service_id,
+            incident_name,
+            incident_title,
+            incident_description,
         )

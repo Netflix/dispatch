@@ -1,5 +1,6 @@
-import requests
 import json
+import requests
+
 from dispatch.exceptions import DispatchPluginException
 
 
@@ -26,12 +27,17 @@ def get_oncall(api_key: str, team_id: str) -> str:
 
 
 def page_oncall(
-    api_key: str, incident_title: str, incident_name: str, incident_description: str
+    api_key: str,
+    service_id: str,
+    incident_title: str,
+    incident_name: str,
+    incident_description: str,
 ) -> str:
     data = {
         "message": incident_title,
         "alias": incident_title + incident_name,
         "description": incident_description,
+        "responders": [{"id": service_id, "type": "schedule"}],
     }
 
     response = requests.post(
