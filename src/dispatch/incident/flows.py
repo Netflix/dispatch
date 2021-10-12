@@ -794,6 +794,22 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
         incident_id=incident.id,
     )
 
+    # we page the incident commander based on incident priority
+    if incident.incident_priority.page_commander:
+        service_id = incident.commander.service.external_id
+        oncall_plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
+        )
+        if oncall_plugin:
+            oncall_plugin.instance.page(
+                service_id=service_id,
+                incident_name=incident.name,
+                incident_title=incident.title,
+                incident_description=incident.description,
+            )
+    else:
+        log.warning("Incident commander not paged. No plugin of type oncall enabled.")
+
     # we send a message to the incident commander with tips on how to manage the incident
     send_incident_management_help_tips_message(incident, db_session)
 
