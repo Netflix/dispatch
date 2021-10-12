@@ -1252,7 +1252,10 @@ def incident_engage_oncall_flow(
     if page == "Yes":
         # we page the oncall
         oncall_plugin.instance.page(
-            oncall_service_external_id, incident.name, incident.title, incident.description
+            service_id=oncall_service_external_id,
+            incident_name=incident.name,
+            incident_title=incident.title,
+            incident_description=incident.description,
         )
 
         event_service.log(
