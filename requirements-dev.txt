@@ -12,7 +12,7 @@ black==21.8b0
     # via -r requirements-dev.in
 click==7.1.2
     # via black
-coverage==6.0.1
+coverage==6.0.2
     # via -r requirements-dev.in
 devtools==0.8.0
     # via -r requirements-dev.in
