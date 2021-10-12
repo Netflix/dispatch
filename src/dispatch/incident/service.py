@@ -39,7 +39,7 @@ def resolve_and_associate_role(
     incident_role = resolve_role(db_session=db_session, role=role, incident=incident)
     if not incident_role:
         log.info(
-            f"We were not able to resolve the email address for {incident.name} and {role} via incident role policies."
+            f"We were not able to resolve the email address for {role} via incident role policies."
         )
         return email_address, service_id
 
