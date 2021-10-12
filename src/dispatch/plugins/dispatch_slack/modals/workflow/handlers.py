@@ -1,17 +1,18 @@
-from dispatch.messaging.strings import INCIDENT_WORKFLOW_CREATED_NOTIFICATION
 from dispatch.incident import service as incident_service
+from dispatch.messaging.strings import INCIDENT_WORKFLOW_CREATED_NOTIFICATION
 from dispatch.participant import service as participant_service
 from dispatch.workflow import service as workflow_service
-from dispatch.workflow.models import WorkflowInstanceCreate
 from dispatch.workflow.flows import send_workflow_notification
+from dispatch.workflow.models import WorkflowInstanceCreate
 
-from dispatch.plugins.dispatch_slack.modals.common import parse_submitted_form
+from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
 from dispatch.plugins.dispatch_slack.decorators import slack_background_task
+from dispatch.plugins.dispatch_slack.modals.common import parse_submitted_form
 from dispatch.plugins.dispatch_slack.service import (
-    send_ephemeral_message,
-    open_modal_with_user,
-    update_modal_with_user,
     get_user_email,
+    open_modal_with_user,
+    send_ephemeral_message,
+    update_modal_with_user,
 )
 
 from .views import run_workflow_view, RunWorkflowBlockId, RunWorkflowCallbackId
@@ -24,6 +25,7 @@ def create_run_workflow_modal(
     channel_id: str,
     incident_id: int,
     command: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -65,6 +67,7 @@ def update_workflow_modal(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
@@ -144,6 +147,7 @@ def run_workflow_submitted_form(
     channel_id: str,
     incident_id: int,
     action: dict,
+    config: SlackConversationConfiguration = None,
     db_session=None,
     slack_client=None,
 ):
