@@ -750,10 +750,14 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                 )
                 log.exception(e)
 
-    # we defer this setup until after resources have been created
-    for user_email in set(
-        [incident.commander.individual.email, incident.reporter.individual.email]
-    ):
+    # we defer this setup for all resolved incident roles until after resources have been created
+    roles = ["reporter", "commander", "liaison", "scribe"]
+    user_emails = [
+        resolve_attr(incident, f"{role}.individual.email")
+        for role in roles
+        if resolve_attr(incident, role)
+    ]
+    for user_email in user_emails:
         # we add the participant to the tactical group
         add_participant_to_tactical_group(user_email, incident, db_session)
 

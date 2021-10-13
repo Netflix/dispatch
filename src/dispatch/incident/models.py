@@ -134,6 +134,52 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
         )
 
     @hybrid_property
+    def liaison(self):
+        liaison = None
+        if self.participants:
+            most_recent_assumed_at = self.created_at
+            for p in self.participants:
+                for pr in p.participant_roles:
+                    if pr.role == ParticipantRoleType.liaison:
+                        if pr.assumed_at > most_recent_assumed_at:
+                            most_recent_assumed_at = pr.assumed_at
+                            liaison = p
+        return liaison
+
+    @liaison.expression
+    def liaison(cls):
+        return (
+            select([Participant])
+            .where(Participant.incident_id == cls.id)
+            .where(ParticipantRole.role == ParticipantRoleType.liaison)
+            .order_by(ParticipantRole.assumed_at.desc())
+            .first()
+        )
+
+    @hybrid_property
+    def scribe(self):
+        scribe = None
+        if self.participants:
+            most_recent_assumed_at = self.created_at
+            for p in self.participants:
+                for pr in p.participant_roles:
+                    if pr.role == ParticipantRoleType.scribe:
+                        if pr.assumed_at > most_recent_assumed_at:
+                            most_recent_assumed_at = pr.assumed_at
+                            scribe = p
+        return scribe
+
+    @scribe.expression
+    def scribe(cls):
+        return (
+            select([Participant])
+            .where(Participant.incident_id == cls.id)
+            .where(ParticipantRole.role == ParticipantRoleType.scribe)
+            .order_by(ParticipantRole.assumed_at.desc())
+            .first()
+        )
+
+    @hybrid_property
     def tactical_group(self):
         if self.groups:
             for g in self.groups:
