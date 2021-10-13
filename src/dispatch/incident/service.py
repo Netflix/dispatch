@@ -209,20 +209,36 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         role=ParticipantRoleType.incident_commander,
     )
 
-    # add liason
-    liason_email, liason_service_id = resolve_and_associate_role(
+    # add liaison
+    liaison_email, liaison_service_id = resolve_and_associate_role(
         db_session=db_session, incident=incident, role=ParticipantRoleType.liaison
     )
 
-    if liason_email:
+    if liaison_email:
         # we only add the liaison if we are able to resolve its email
         # via incident role policies
         participant_flows.add_participant(
-            liason_email,
+            liaison_email,
             incident,
             db_session,
-            service_id=liason_service_id,
+            service_id=liaison_service_id,
             role=ParticipantRoleType.liaison,
+        )
+
+    # add scribe
+    scribe_email, scribe_service_id = resolve_and_associate_role(
+        db_session=db_session, incident=incident, role=ParticipantRoleType.scribe
+    )
+
+    if scribe_email:
+        # we only add the scribe if we are able to resolve its email
+        # via incident role policies
+        participant_flows.add_participant(
+            scribe_email,
+            incident,
+            db_session,
+            service_id=scribe_service_id,
+            role=ParticipantRoleType.scribe,
         )
 
     return incident
