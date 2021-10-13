@@ -35,7 +35,7 @@ def page_oncall(
 ) -> str:
     data = {
         "message": incident_title,
-        "alias": incident_name,
+        "alias": f"{incident_name}-{incident_title}",
         "description": incident_description,
         "responders": [{"id": service_id, "type": "schedule"}],
     }
