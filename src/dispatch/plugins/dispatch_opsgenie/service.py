@@ -29,8 +29,8 @@ def get_oncall(api_key: str, team_id: str) -> str:
 def page_oncall(
     api_key: str,
     service_id: str,
-    incident_title: str,
     incident_name: str,
+    incident_title: str,
     incident_description: str,
 ) -> str:
     data = {
