@@ -41,7 +41,7 @@ class SlackConversationConfiguration(SlackConfiguration):
 
     app_user_slug: str = Field(
         title="App User Id",
-        description="Defines the user id of the Slack app in your environment. You can use Slack endpoint https://api.slack.com/methods/auth.test/test to find the user id.",
+        description="Defines the user id of the Slack app in your environment. You can use Slack's tester endpoint auth.test to find the user id.",
     )
     private_channels: bool = Field(
         True,
