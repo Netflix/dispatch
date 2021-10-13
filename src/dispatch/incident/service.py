@@ -25,6 +25,7 @@ from dispatch.term import service as term_service
 from .enums import IncidentStatus
 from .models import Incident, IncidentCreate, IncidentUpdate
 
+
 log = logging.getLogger(__name__)
 
 
@@ -38,7 +39,7 @@ def resolve_and_associate_role(
     incident_role = resolve_role(db_session=db_session, role=role, incident=incident)
     if not incident_role:
         log.info(
-            f"We were not able to resolve the email address for {incident.name} and {role} via incident role policies."
+            f"We were not able to resolve the email address for {role} via incident role policies."
         )
         return email_address, service_id
 
@@ -48,20 +49,11 @@ def resolve_and_associate_role(
         oncall_plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="oncall"
         )
-        if oncall_plugin:
-            email_address = oncall_plugin.instance.get(service_id=service_external_id)
-
-            # we don't page the incident commander for stable or closed incidents
-            if incident.status == IncidentStatus.active:
-                if incident.incident_priority.page_commander:
-                    oncall_plugin.instance.page(
-                        service_id=service_external_id,
-                        incident_name=incident.name,
-                        incident_title=incident.title,
-                        incident_description=incident.description,
-                    )
-        else:
+        if not oncall_plugin:
             log.warning("Resolved incident role associated with a plugin that is not active.")
+            return email_address, service_id
+
+        email_address = oncall_plugin.instance.get(service_id=service_external_id)
 
     return email_address, service_id
 

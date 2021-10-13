@@ -115,13 +115,19 @@ def get_or_create(
 
         participant = create(db_session=db_session, participant_in=participant_in)
     else:
+        # we add additional roles to the participant
         for participant_role in participant_roles:
             participant.participant_roles.append(
                 participant_role_service.create(
                     db_session=db_session, participant_role_in=participant_role
                 )
             )
+
+        # we associate the service with the participant
         participant.service_id = service_id
+        service = service_service.get(db_session=db_session, service_id=service_id)
+        participant.service = service
+        db_session.commit()
 
     return participant
 
