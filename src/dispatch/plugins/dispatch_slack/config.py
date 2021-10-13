@@ -40,8 +40,8 @@ class SlackConversationConfiguration(SlackConfiguration):
     """Slack conversation configuration."""
 
     app_user_slug: str = Field(
-        title="App User Slug",
-        description="Defines the name of the Dispatch app in your environment.",
+        title="App User Id",
+        description="Defines the user id of the Slack app in your environment. You can use Slack endpoint https://api.slack.com/methods/auth.test/test to find the user id.",
     )
     private_channels: bool = Field(
         True,
