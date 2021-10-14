@@ -29,7 +29,7 @@ from .models import (
     UserLoginResponse,
     UserRegisterResponse,
 )
-from .service import get, get_by_email, update, create, get_current_user
+from .service import get, get_by_email, update, create
 
 
 auth_router = APIRouter()
@@ -82,16 +82,6 @@ def get_user(*, db_session: Session = Depends(get_db), user_id: PrimaryKey):
         )
 
     return user
-
-
-@auth_router.get("/me", response_model=UserRead)
-def get_me(
-    req: Request,
-    organization: OrganizationSlug,
-    current_user: DispatchUser = Depends(get_current_user),
-    db_session: Session = Depends(get_db),
-):
-    return current_user
 
 
 @user_router.put(
