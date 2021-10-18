@@ -97,7 +97,9 @@ def sync_active_stable_workflows(db_session: SessionLocal, project: Project):
         db_session=db_session, project_id=project.id, plugin_type="workflow"
     )
     if not workflow_plugin:
-        log.warning(f"No workflow plugin is enabled. ProjectId: {project.id}")
+        log.warning(
+            f"No workflow plugin is enabled. Project: {project.name}. Organization: {project.organization.name}"
+        )
         return
 
     # we get all active and stable incidents
@@ -119,7 +121,9 @@ def daily_sync_workflow(db_session: SessionLocal, project: Project):
         db_session=db_session, project_id=project.id, plugin_type="workflow"
     )
     if not workflow_plugin:
-        log.warning(f"No workflow plugin is enabled. ProjectId: {project.id}")
+        log.warning(
+            f"No workflow plugin is enabled. Project: {project.name}. Organization: {project.organization.name}"
+        )
         return
 
     incidents = incident_service.get_all(db_session=db_session, project_id=project.id).all()
