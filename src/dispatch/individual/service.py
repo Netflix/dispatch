@@ -93,7 +93,7 @@ def get_or_create(
 
     kwargs["email"] = individual_info.get("email", email)
     kwargs["name"] = individual_info.get("fullname", "Unknown")
-    kwargs["weblink"] = individual_info.get("weblink", "Unknown")
+    kwargs["weblink"] = individual_info.get("weblink", "")
 
     if not individual_contact:
         # we create a new contact

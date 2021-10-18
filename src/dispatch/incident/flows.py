@@ -1186,12 +1186,12 @@ def incident_assign_role_flow(
             assigner_contact_info = {
                 "email": assigner_email,
                 "fullname": "Unknown",
-                "weblink": None,
+                "weblink": "",
             }
             assignee_contact_info = {
                 "email": assignee_email,
                 "fullname": "Unknown",
-                "weblink": None,
+                "weblink": "",
             }
 
         if incident.status != IncidentStatus.closed:
