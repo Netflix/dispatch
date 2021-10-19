@@ -138,11 +138,16 @@ def create(*, db_session, organization: str, user_in: UserRegister) -> DispatchU
 
 def get_or_create(*, db_session, organization: str, user_in: UserRegister) -> DispatchUser:
     """Gets an existing user or creates a new one."""
-    try:
-        return create(db_session=db_session, organization=organization, user_in=user_in)
-    except IntegrityError:
-        db_session.rollback()
-        return get_by_email(db_session=db_session, email=user_in.email)
+    user = get_by_email(db_session=db_session, email=user_in.email)
+
+    if not user:
+        try:
+            user = create(db_session=db_session, organization=organization, user_in=user_in)
+        except IntegrityError:
+            db_session.rollback()
+            log.exception(f"Unable to create user with email address {user_in.email}.")
+
+    return user
 
 
 def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUser:
