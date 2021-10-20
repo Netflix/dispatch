@@ -28,7 +28,10 @@ if (process.env.VUE_APP_SENTRY_ENABLED) {
     dsn: DSN,
     integrations: [new Integrations.Vue({ Vue, attachProps: true })],
   })
-  Sentry.setTag(process.env.VUE_APP_SENTRY_APP_KEY, APP_HOSTNAME)
+  process.env.VUE_APP_SENTRY_TAGS.split(",").forEach(function (item) {
+    var parts = item.split(":")
+    Sentry.setTag(parts[0], parts[1])
+  })
 }
 
 sync(store, router, { moduleName: "route" })
