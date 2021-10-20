@@ -184,7 +184,8 @@ class SlackContactPlugin(ContactPlugin):
     def get(self, email: str, **kwargs):
         """Fetch user info by email."""
         client = create_slack_client(self.configuration)
-        team = department = weblink = "Unknown"
+        team = department = "Unknown"
+        weblink = ""
 
         profile = get_user_profile_by_email(client, email)
         profile_fields = profile.get("fields")
@@ -196,7 +197,7 @@ class SlackContactPlugin(ContactPlugin):
                 "value", "Unknown"
             )
             weblink = profile_fields.get(self.configuration.profile_weblink_field_id, {}).get(
-                "value", "Unknown"
+                "value", ""
             )
 
         return {
