@@ -87,13 +87,14 @@ def get_active_instance_by_slug(
 
 
 def get_enabled_instances_by_type(
-    *, db_session, plugin_type: str
+    *, db_session, project_id: int, plugin_type: str
 ) -> List[Optional[PluginInstance]]:
     """Fetches all enabled plugins for a given type."""
     return (
         db_session.query(PluginInstance)
         .join(Plugin)
         .filter(Plugin.type == plugin_type)
+        .filter(PluginInstance.project_id == project_id)
         .filter(PluginInstance.enabled == True)  # noqa
         .all()
     )
@@ -128,7 +129,9 @@ def update_instance(
         if not plugin_instance.plugin.multiple:
             # we can't have multiple plugins of this type disable the currently enabled one
             enabled_plugin_instances = get_enabled_instances_by_type(
-                db_session=db_session, plugin_type=plugin_instance.plugin.type
+                db_session=db_session,
+                project_id=plugin_instance.project_id,
+                plugin_type=plugin_instance.plugin.type,
             )
             if enabled_plugin_instances:
                 enabled_plugin_instances[0].enabled = False
