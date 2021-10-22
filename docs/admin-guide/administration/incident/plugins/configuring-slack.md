@@ -171,9 +171,9 @@ Below are the optional env variables to override the default slack command names
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG`         | `/dispatch-add-timeline-event`                                                                                                 |
 |                                                 | _Opens a dialog to add an event to the incident timeline._                                                                     |
-| `SLACK_COMMAND_ASSIGN_ROLE`                     | `/dispatch-assign-role`                                                                                                        |
+| `SLACK_COMMAND_ASSIGN_ROLE_SLUG`                | `/dispatch-assign-role`                                                                                                        |
 |                                                 | _Opens a dialog for assigning a role to a participant._                                                                        |
-| `SLACK_COMMAND_ENGAGE_ONCALL`                   | `/dispatch-engage-oncall`                                                                                                      |
+| `SLACK_COMMAND_ENGAGE_ONCALL_SLUG`              | `/dispatch-engage-oncall`                                                                                                      |
 |                                                 | _Opens a dialog to engage an on-call person._                                                                                  |
 | `SLACK_COMMAND_LIST_INCIDENTS_SLUG`             | `/dispatch-list-incidents <organization-slug\|'default'> <project-slug\|'default'>`                                            |
 |                                                 | _Lists current active and stable incidents and closed incidents in the last 24 hours._                                         |
@@ -181,7 +181,7 @@ Below are the optional env variables to override the default slack command names
 |                                                 | _Sends an ephemeral message with the list of your open and resolved incident tasks._                                           |
 | `SLACK_COMMAND_LIST_PARTICIPANTS_SLUG`          | `/dispatch-list-participants`                                                                                                  |
 |                                                 | _Sends an ephemeral message with the list of incident participants._                                                           |
-| `SLACK_COMMAND_LIST_RESOURCES`                  | `/dispatch-list-resources`                                                                                                     |
+| `SLACK_COMMAND_LIST_RESOURCES_SLUG`             | `/dispatch-list-resources`                                                                                                     |
 |                                                 | _Sends an ephemeral message with the list of all incident resources._                                                          |
 | `SLACK_COMMAND_LIST_TASKS_SLUG`                 | `/dispatch-list-tasks`                                                                                                         |
 |                                                 | _Sends an ephemeral message with the list of open and resolved incident tasks._                                                |
@@ -195,7 +195,7 @@ Below are the optional env variables to override the default slack command names
 |                                                 | _Opens a dialog to write a tactical report._                                                                                   |
 | `SLACK_COMMAND_RUN_WORKFLOW_SLUG`               | `/dispatch-run-workflow`                                                                                                       |
 |                                                 | _Run a workflow and associate artifacts with this incident._                                                                   |
-| `SLACK_COMMAND_UPDATE_INCIDENT`                 | `/dispatch-update-incident`                                                                                                    |
+| `SLACK_COMMAND_UPDATE_INCIDENT_SLUG`            | `/dispatch-update-incident`                                                                                                    |
 |                                                 | _Opens a dialog to update the incident._                                                                                       |
 | `SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG` | `/dispatch-notifications-group`                                                                                                |
 |                                                 | _Opens a dialog to edit the notifications group._                                                                              |
