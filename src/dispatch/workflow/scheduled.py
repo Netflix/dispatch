@@ -52,6 +52,10 @@ def sync_workflows(db_session, project, workflow_plugin, incidents, notify: bool
 
             instance_status_old = instance.status
 
+            # add project information to artifacts
+            for a in instance_data["artifacts"]:
+                a["project"] = {"id": project.id, "name": project.name}
+
             instance = workflow_service.update_instance(
                 db_session=db_session,
                 instance=instance,
