@@ -10,7 +10,7 @@ aiohttp==3.7.4.post0
     # via -r requirements-base.in
 alembic==1.7.4
     # via -r requirements-base.in
-arrow==1.2.0
+arrow==1.2.1
     # via -r requirements-base.in
 asgiref==3.4.1
     # via uvicorn
