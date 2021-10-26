@@ -1,4 +1,4 @@
-import arrow
+import pytz
 import logging
 import datetime
 
@@ -188,7 +188,7 @@ def handle_reaction_added_event(
 
 def is_business_hours(commander_tz: str):
     """Determines if it's currently office hours where the incident commander is located."""
-    now = arrow.utcnow().to(commander_tz)
+    now = datetime.datetime.now(pytz.timezone(commander_tz))
     return now.weekday() not in [5, 6] and 9 <= now.hour < 17
 
 
