@@ -15,8 +15,6 @@ from typing import Any, List
 from dispatch.config import (
     INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
     INCIDENT_RESOURCE_TACTICAL_GROUP,
-    INCIDENT_STORAGE_FOLDER_ID,
-    INCIDENT_STORAGE_OPEN_ON_CLOSE,
 )
 
 from dispatch.enums import DocumentResourceTypes
@@ -285,9 +283,8 @@ def create_incident_storage(
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="storage"
     )
-    storage = plugin.instance.create_file(
-        INCIDENT_STORAGE_FOLDER_ID, incident.name, participant_group_emails
-    )
+    storage_root_id = plugin.configuration.root_id
+    storage = plugin.instance.create_file(storage_root_id, incident.name, participant_group_emails)
     storage.update({"resource_type": plugin.plugin.slug, "resource_id": storage["id"]})
     return storage
 
@@ -953,14 +950,14 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
     if convo_plugin:
         convo_plugin.instance.archive(incident.conversation.channel_id)
 
-    if INCIDENT_STORAGE_OPEN_ON_CLOSE:
-        # storage for incidents with restricted visibility is never opened
-        if incident.visibility == Visibility.open:
-            # add organization wide permission
-            storage_plugin = plugin_service.get_active_instance(
-                db_session=db_session, project_id=incident.project.id, plugin_type="storage"
-            )
-            if storage_plugin:
+    # storage for incidents with restricted visibility is never opened
+    if incident.visibility == Visibility.open:
+        # add organization wide permission
+        storage_plugin = plugin_service.get_active_instance(
+            db_session=db_session, project_id=incident.project.id, plugin_type="storage"
+        )
+        if storage_plugin:
+            if storage_plugin.configuration.open_on_close:
                 storage_plugin.instance.open(incident.storage.resource_id)
 
     # we send a direct message to the incident commander asking to review

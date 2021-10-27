@@ -1,4 +1,5 @@
 from typing import List
+from pydantic import Field
 
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import StoragePlugin, TaskPlugin
@@ -22,6 +23,21 @@ from .drive import (
 from .task import get_task_activity
 
 
+class GoogleDriveConfiguration(GoogleConfiguration):
+    """Google drive configuration."""
+
+    root_id: str = Field(
+        title="Root Incident Storage FolderId",
+        description="This is the default folder for all incident data. Dispatch will create subfolders for each incident in this folder.",
+    )
+
+    open_on_close: bool = Field(
+        title="Open On Close",
+        default=False,
+        description="Controls the visibility of resources on incident close. If enabled Dispatch will make all resources visible to the entire workspace.",
+    )
+
+
 @apply(timer, exclude=["__init__"])
 @apply(counter, exclude=["__init__"])
 class GoogleDriveStoragePlugin(StoragePlugin):
@@ -34,7 +50,7 @@ class GoogleDriveStoragePlugin(StoragePlugin):
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):
-        self.configuration_schema = GoogleConfiguration
+        self.configuration_schema = GoogleDriveConfiguration
         self.scopes = ["https://www.googleapis.com/auth/drive"]
 
     def get(self, file_id: str, mime_type=None):
