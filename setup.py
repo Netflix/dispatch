@@ -423,6 +423,7 @@ setup(
             "slack_conversation = dispatch.plugins.dispatch_slack.plugin:SlackConversationPlugin",
             "zoom_conference = dispatch.plugins.dispatch_zoom.plugin:ZoomConferencePlugin",
             "opsgenie_oncall = dispatch.plugins.dispatch_opsgenie.plugin:OpsGenieOncallPlugin",
+            "generic_workflow = dispatch.plugins.generic_workflow.plugin:GenericWorkflowPlugin",
         ],
     },
 )
