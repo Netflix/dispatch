@@ -1,3 +1,4 @@
+from pydantic.networks import EmailStr
 from slugify import slugify
 from typing import List, Optional
 from pydantic import Field
@@ -20,6 +21,12 @@ class Project(Base):
     default = Column(Boolean, default=False)
     color = Column(String)
 
+    annual_employee_cost = Column(Integer, default=650000)
+    buisness_year_hours = Column(Integer, default=2000)
+
+    owner_email = Column(String)
+    owner_conversation = Column(String)
+
     organization_id = Column(Integer, ForeignKey(Organization.id))
     organization = relationship("Organization")
 
@@ -35,6 +42,10 @@ class Project(Base):
 class ProjectBase(DispatchBase):
     id: Optional[PrimaryKey]
     name: NameStr
+    owner_email: Optional[EmailStr]
+    owner_conversation: Optional[str]
+    annual_employee_cost: int
+    buisness_year_hours: int
     description: Optional[str] = Field(None, nullable=True)
     default: bool = False
     color: Optional[str] = Field(None, nullable=True)

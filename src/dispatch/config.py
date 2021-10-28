@@ -194,31 +194,3 @@ ALEMBIC_MULTI_TENANT_MIGRATION_PATH = config(
     "ALEMBIC_MULTI_TENANT_MIGRATION_PATH",
     default=f"{os.path.dirname(os.path.realpath(__file__))}/database/revisions/multi-tenant-migration.sql",
 )
-
-# incident resources
-INCIDENT_RESPONSE_TEAM_EMAIL = config("INCIDENT_RESPONSE_TEAM_EMAIL", default="")
-
-INCIDENT_ONCALL_SERVICE_ID = config("INCIDENT_ONCALL_SERVICE_ID", default=None)
-if not INCIDENT_ONCALL_SERVICE_ID:
-    INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID = config(
-        "INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID", default=None
-    )
-    if INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID:
-        log.warn(
-            "INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID has been deprecated. Please use INCIDENT_ONCALL_SERVICE_ID instead."
-        )
-        INCIDENT_ONCALL_SERVICE_ID = INCIDENT_DAILY_SUMMARY_ONCALL_SERVICE_ID
-
-INCIDENT_RESOURCE_TACTICAL_GROUP = config(
-    "INCIDENT_RESOURCE_TACTICAL_GROUP", default="google-group-participant-tactical-group"
-)
-INCIDENT_RESOURCE_NOTIFICATIONS_GROUP = config(
-    "INCIDENT_RESOURCE_NOTIFICATIONS_GROUP", default="google-group-participant-notifications-group"
-)
-INCIDENT_RESOURCE_INCIDENT_TASK = config(
-    "INCIDENT_RESOURCE_INCIDENT_TASK", default="google-docs-incident-task"
-)
-
-# Incident Cost Configuration
-ANNUAL_COST_EMPLOYEE = config("ANNUAL_COST_EMPLOYEE", cast=int, default="650000")
-BUSINESS_HOURS_YEAR = config("BUSINESS_HOURS_YEAR", cast=int, default="2080")

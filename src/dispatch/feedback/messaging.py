@@ -1,7 +1,7 @@
 import logging
 from typing import List
 
-from dispatch.config import DISPATCH_HELP_EMAIL, INCIDENT_RESPONSE_TEAM_EMAIL
+from dispatch.config import DISPATCH_HELP_EMAIL
 from dispatch.database.core import SessionLocal
 from dispatch.messaging.strings import (
     INCIDENT_FEEDBACK_DAILY_REPORT,
@@ -42,7 +42,6 @@ def send_incident_feedback_daily_report(
         )
 
     name = subject = notification_text = "Incident Feedback Daily Report"
-    contact_fullname = contact_weblink = DISPATCH_HELP_EMAIL
     plugin.instance.send(
         commander_email,
         notification_text,
@@ -50,9 +49,7 @@ def send_incident_feedback_daily_report(
         MessageType.incident_feedback_daily_report,
         name=name,
         subject=subject,
-        cc=INCIDENT_RESPONSE_TEAM_EMAIL,
-        contact_fullname=contact_fullname,
-        contact_weblink=contact_weblink,
+        cc=plugin.project.owner_email,
         items=items,
     )
 
