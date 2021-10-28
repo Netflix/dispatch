@@ -18,7 +18,7 @@ devtools==0.8.0
     # via -r requirements-dev.in
 executing==0.8.0
     # via devtools
-factory-boy==3.2.0
+factory-boy==3.2.1
     # via -r requirements-dev.in
 faker==9.7.1
     # via
