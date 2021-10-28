@@ -27,7 +27,7 @@ class GoogleDriveConfiguration(GoogleConfiguration):
     """Google drive configuration."""
 
     root_id: str = Field(
-        title="Root Incident Storage FolderId",
+        title="Incident storage root folder id",
         description="This is the default folder for all incident data. Dispatch will create subfolders for each incident in this folder.",
     )
 
