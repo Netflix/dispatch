@@ -34,35 +34,12 @@ import requests
 import json
 
 from pydantic import Field, SecretStr, HttpUrl
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+from tenacity import TryAgain, retry, stop_after_attempt, wait_exponential
 
 from dispatch.config import BaseConfigurationModel
 from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import generic_workflow as generic_workflow_plugin
 from dispatch.plugins.bases import WorkflowPlugin
-
-class TimeoutHTTPAdapter(HTTPAdapter):
-    '''
-    A class to implement a custom transport adapter for timeouts
-
-        Attributes:
-        -----------
-        timeout
-    '''
-    def __init__(self, *args, **kwargs):
-        self.timeout = 5
-        if "timeout" in kwargs:
-            self.timeout = kwargs["timeout"]
-            del kwargs["timeout"]
-        super().__init__(*args, **kwargs)
-
-    def send(self, request, **kwargs):
-        timeout = kwargs.get("timeout")
-        if timeout is None:
-            kwargs["timeout"] = self.timeout
-        return super().send(request, **kwargs)
-
 
 class GenericWorkflowConfiguration(BaseConfigurationModel):
     """
@@ -92,15 +69,12 @@ class GenericWorkflowPlugin(WorkflowPlugin):
 
     author = "Jørgen Teunis"
     author_url = "https://github.com/jtorvald/"
-    http = requests.Session()
 
     def __init__(self):
-        retries = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
-        self.http.mount("https://", TimeoutHTTPAdapter(max_retries=retries))
-        self.http.mount("http://", TimeoutHTTPAdapter(max_retries=retries))
-
+        WorkflowPlugin.__init__(self)
         self.configuration_schema = GenericWorkflowConfiguration
 
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
     def get_workflow_instance(
         self,
         workflow_id: str,
@@ -109,7 +83,6 @@ class GenericWorkflowPlugin(WorkflowPlugin):
         incident_name: str,
         **kwargs,
     ):
-
         api_url = self.configuration.api_url
         headers = {
             "Content-Type": "application/json",
@@ -121,13 +94,24 @@ class GenericWorkflowPlugin(WorkflowPlugin):
             "incident_id": incident_id,
             "incident_name": incident_name
         }
-        response = self.http.get(api_url, params=fields, headers=headers)
-        return response.json()
+        resp = requests.get(api_url, params=fields, headers=headers)
 
+        if resp.status_code in [429, 500, 502, 503, 504]:
+            raise TryAgain
+
+        return resp.json()
+
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
     def run(self, workflow_id: str, params: dict, **kwargs):
         logging.info('Run on generic workflow %s, %s', params, kwargs)
         api_url = self.configuration.api_url
         obj = {"workflow_id": workflow_id, "params": params}
         headers = {"Content-Type": "application/json", "Authorization": self.configuration.auth_header.get_secret_value()}
-        response = self.http.post(api_url, data=json.dumps(obj), headers=headers)
-        return response.json()
+        resp = requests.post(api_url, data=json.dumps(obj), headers=headers)
+
+        if resp.status_code in [429, 500, 502, 503, 504]:
+            raise TryAgain
+
+        return resp.json()
+
+
