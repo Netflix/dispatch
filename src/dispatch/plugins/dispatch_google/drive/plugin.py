@@ -32,7 +32,7 @@ class GoogleDriveConfiguration(GoogleConfiguration):
     )
 
     open_on_close: bool = Field(
-        title="Open On Close",
+        title="Open on close",
         default=False,
         description="Controls the visibility of resources on incident close. If enabled Dispatch will make all resources visible to the entire workspace.",
     )
