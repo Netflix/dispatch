@@ -34,6 +34,7 @@ def create_run_workflow_modal(
 
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     workflows = workflow_service.get_enabled(db_session=db_session)
+    workflows = [x for x in workflows if x.plugin_instance.enabled]
 
     if workflows:
         modal_create_template = run_workflow_view(incident=incident, workflows=workflows)
@@ -47,7 +48,7 @@ def create_run_workflow_modal(
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "No workflows are enabled. You can enable one in the Dispatch UI at /workflows.",
+                    "text": "No workflows are enabled or workflows plugin is not enabled. You can enable one in the Dispatch UI at /workflows.",
                 },
             }
         ]
