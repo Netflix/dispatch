@@ -24,6 +24,7 @@ Base = declarative_base()
 
 class Project(Base):
     __tablename__ = "project"
+    id = Column(Integer, primary_key=True)
     annual_employee_cost = Column(Integer, default=650000)
     business_year_hours = Column(Integer, default=2000)
 
