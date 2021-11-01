@@ -18,7 +18,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-from dispatch.config import INCIDENT_RESOURCE_INCIDENT_TASK
 from dispatch.models import DispatchBase, ResourceBase, ResourceMixin, PrimaryKey
 
 from dispatch.project.models import ProjectRead
@@ -116,7 +115,7 @@ class TaskCreate(TaskBase):
     assignees: List[Optional[ParticipantUpdate]] = []
     creator: Optional[ParticipantUpdate]
     owner: Optional[ParticipantUpdate]
-    resource_type: Optional[str] = INCIDENT_RESOURCE_INCIDENT_TASK
+    resource_type: Optional[str]
     status: TaskStatus = TaskStatus.open
 
 

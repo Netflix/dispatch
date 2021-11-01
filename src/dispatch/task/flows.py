@@ -68,8 +68,6 @@ def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact
         notification_type,
         name=name,
         subject=subject,
-        contact_fullname=contact_fullname,
-        contact_weblink=contact_weblink,
         items=items,  # plugin expect dicts
     )
 
