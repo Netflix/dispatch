@@ -53,14 +53,6 @@ In general, do not include any quotation marks when adding configuration values.
 
 > Optional configuration for using Sentry to report Dispatch errors.
 
-#### `DISPATCH_HELP_EMAIL`
-
-> Email address to be used by Dispatch when a help message is created.
-
-#### `DISPATCH_HELP_SLACK_CHANNEL`
-
-> Slack channel name to be used by Dispatch when a help message is created.
-
 #### `DISPATCH_UI_URL`
 
 > URL of the Dispatch's Admin UI, used by messaging to refer to the Admin UI.
@@ -164,42 +156,3 @@ For this plugin to work with your OIDC setup, you may need to set
 ### Incident Cost
 
 Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/service.py#L279) the cost of an incident by adding up the time participants have spent on each incident role \(e.g., Incident Commander\) and applying an [engagement multiplier](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/service.py#L266) that's based on the incident role. It also includes time spent on incident review-related activities. Dispatch calculates and published the cost for all incidents [every 5 minutes](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/scheduled.py#L257).
-
-#### `ANNUAL_COST_EMPLOYEE` \[default: '50000'\]
-
-> Used for incident cost modeling, specifies the total `all-in` average cost for an employee working on incidents.
-
-#### `BUSINESS_HOURS_YEAR` \[default: '2080'\]
-
-> Used for incident cost modeling, specifies the number of hours in an employee's work year.
-
-### Incident Resource Configuration
-
-#### `INCIDENT_STORAGE_FOLDER_ID`
-
-> Top-level folder where all incident data is stored. Note: viewing actual incident data is still on a per-sub folder basis. For Google Drive,
-> you can get the folder ID from viewing a folder in the Google Drive UI and copying the last part of the URL (`/drive/u/0/folders/<this value>`)
-
-#### `INCIDENT_STORAGE_OPEN_ON_CLOSE` \[default: 'true'\]
-
-> After an incident is closed, Netflix, as an organization, tries to be transparent and allow others within the organization to view incident data. This behavior is may not desirable in all organizations. This variable controls whether to open up incident data on incident close.
-
-#### `INCIDENT_RESPONSE_TEAM_EMAIL` \[default: ''\]
-
-> Specifies the email address of the incident response team. Used for cc'ing the team in certain email communications (e.g., incident feedback daily digest).
-
-#### `INCIDENT_ONCALL_SERVICE_ID` \[default: None\]
-
-> Specifies the on-call service id to use to resolve the on-call person.
-
-#### `INCIDENT_RESOURCE_TASK` \[default: 'google-docs-incident-task'\]
-
-> Controls the resource type to use for incident tasks.
-
-#### `INCIDENT_RESOURCE_TACTICAL_GROUP` \[default: 'google-group-participant-tactical-group'\]
-
-> Controls the resource type to use for tactical groups.
-
-#### `INCIDENT_RESOURCE_NOTIFICATIONS_GROUP` \[default: 'google-group-participant-notification-group'\]
-
-> Controls the resource type to use for notification groups.

@@ -1,7 +1,6 @@
 import logging
 from typing import List
 
-from dispatch.config import DISPATCH_HELP_EMAIL
 from dispatch.database.core import SessionLocal
 from dispatch.messaging.strings import (
     INCIDENT_FEEDBACK_DAILY_REPORT,

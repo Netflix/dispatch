@@ -173,7 +173,7 @@ def calculate_incident_response_cost(
 
     # we calculate and round up the hourly rate
     hourly_rate = math.ceil(
-        incident.project.annual_employee_cost / incident.project.buisness_year_hours
+        incident.project.annual_employee_cost / incident.project.business_year_hours
     )
 
     # we calculate and round up the incident cost

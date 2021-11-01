@@ -22,7 +22,7 @@ class Project(Base):
     color = Column(String)
 
     annual_employee_cost = Column(Integer, default=650000)
-    buisness_year_hours = Column(Integer, default=2000)
+    business_year_hours = Column(Integer, default=2000)
 
     owner_email = Column(String)
     owner_conversation = Column(String)
@@ -45,7 +45,7 @@ class ProjectBase(DispatchBase):
     owner_email: Optional[EmailStr]
     owner_conversation: Optional[str]
     annual_employee_cost: int
-    buisness_year_hours: int
+    business_year_hours: int
     description: Optional[str] = Field(None, nullable=True)
     default: bool = False
     color: Optional[str] = Field(None, nullable=True)
