@@ -1,5 +1,5 @@
 from datetime import datetime
-from collections import Counter
+from collections import Counter, defaultdict
 from typing import List, Optional
 
 from pydantic import validator
@@ -360,6 +360,21 @@ class IncidentUpdate(IncidentBase):
     tags: Optional[List[TagRead]] = []
     terms: Optional[List[TermRead]] = []
     incident_costs: Optional[List[IncidentCostUpdate]] = []
+
+    @validator("tags")
+    def find_exclusive(cls, v):
+        if v:
+            exclusive_tags = defaultdict(list)
+            for t in v:
+                if t.tag_type.exclusive:
+                    exclusive_tags[t.tag_type.id].append(t)
+
+            for v in exclusive_tags.values():
+                if len(v) > 1:
+                    raise ValueError(
+                        f"Found multiple exclusive tags. Please ensure that only one tag of a given type is applied. Tags: {','.join([t.name for t in v])}"
+                    )
+        return v
 
 
 class IncidentRead(IncidentBase):
