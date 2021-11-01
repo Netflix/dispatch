@@ -21,7 +21,6 @@ class Tag(Base, TimeStampMixin, ProjectMixin):
     description = Column(String)
     uri = Column(String)
     source = Column(String)
-    exclusive = Column(Boolean, default=False)
     discoverable = Column(Boolean, default=True)
 
     # Relationships
@@ -37,7 +36,6 @@ class TagBase(DispatchBase):
     source: Optional[str] = Field(None, nullable=True)
     uri: Optional[str] = Field(None, nullable=True)
     discoverable: Optional[bool] = True
-    exclusive: Optional[bool] = False
     description: Optional[str] = Field(None, nullable=True)
 
 

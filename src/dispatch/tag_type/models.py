@@ -3,6 +3,7 @@ from pydantic import Field
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.sql.schema import UniqueConstraint
+from sqlalchemy.sql.sqltypes import Boolean
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
@@ -15,12 +16,14 @@ class TagType(Base, TimeStampMixin, ProjectMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
+    exclusive = Column(Boolean, default=False)
     search_vector = Column(TSVectorType("name"))
 
 
 # Pydantic models
 class TagTypeBase(DispatchBase):
     name: NameStr
+    exclusive: Optional[bool] = False
     description: Optional[str] = Field(None, nullable=True)
 
 
