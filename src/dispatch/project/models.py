@@ -44,8 +44,8 @@ class ProjectBase(DispatchBase):
     name: NameStr
     owner_email: Optional[EmailStr]
     owner_conversation: Optional[str]
-    annual_employee_cost: int
-    business_year_hours: int
+    annual_employee_cost: Optional[int]
+    business_year_hours: Optional[int]
     description: Optional[str] = Field(None, nullable=True)
     default: bool = False
     color: Optional[str] = Field(None, nullable=True)
