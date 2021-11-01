@@ -15,7 +15,7 @@ from dispatch.database.core import SessionLocal
 from dispatch.messaging.strings import EVERGREEN_REMINDER
 from dispatch.decorators import scheduled_project_task
 from dispatch.scheduler import scheduler
-from dispatch.config import DISPATCH_HELP_EMAIL, DISPATCH_UI_URL
+from dispatch.config import DISPATCH_UI_URL
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
 from dispatch.team import service as team_service
@@ -31,7 +31,6 @@ def create_evergreen_reminder(
     db_session: SessionLocal, project: Project, owner_email: str, resource_groups: Any
 ):
     """Contains the logic for evergreen reminders."""
-    contact_fullname = contact_weblink = DISPATCH_HELP_EMAIL
     plugin = plugin_service.get_active_instance(
         db_session=db_session, plugin_type="email", project_id=project.id
     )
@@ -66,8 +65,6 @@ def create_evergreen_reminder(
         notification_type,
         name=name,
         subject=subject,
-        contact_fullname=contact_fullname,
-        contact_weblink=contact_weblink,
         items=items,  # plugin expect dicts
     )
 

@@ -19,6 +19,7 @@ from .drive import (
     remove_permission,
     add_domain_permission,
     add_reply,
+    mark_as_readonly,
 )
 from .task import get_task_activity
 
@@ -35,6 +36,12 @@ class GoogleDriveConfiguration(GoogleConfiguration):
         title="Open on close",
         default=False,
         description="Controls the visibility of resources on incident close. If enabled Dispatch will make all resources visible to the entire workspace.",
+    )
+
+    read_only: bool = Field(
+        title="Readonly",
+        default=True,
+        description="All incident resources will be marked as readonly on incident close. Participants will not be able to edit/copy/download any resources.",
     )
 
 
@@ -80,6 +87,11 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         """Adds the domain permission to the folder."""
         client = get_service(self.configuration, "drive", "v3", self.scopes)
         add_domain_permission(client, folder_id, self.configuration.google_domain)
+
+    def mark_readonly(self, folder_id: str):
+        """Adds the read only permission to the folder."""
+        client = get_service(self.configuration, "drive", "v3", self.scopes)
+        mark_as_readonly(client, folder_id)
 
     def create_file(
         self,

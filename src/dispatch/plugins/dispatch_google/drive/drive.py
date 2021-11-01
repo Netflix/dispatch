@@ -260,6 +260,15 @@ def delete_file(client: Any, folder_id: str, file_id: str):
     return make_call(client.files(), "delete", fileId=file_id, supportsAllDrives=True)
 
 
+def mark_as_readonly(
+    client: Any,
+    file_id: str,
+):
+    """Adds the 'copyRequiresWriterPermission' capability to the given file."""
+    capability = {"copyRequiresWriterPermission": True}
+    return make_call(client.files(), "update", fileId=file_id, body=capability)
+
+
 def add_domain_permission(
     client: Any,
     team_drive_or_file_id: str,

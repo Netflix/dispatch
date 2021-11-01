@@ -18,11 +18,6 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.config import (
-    INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
-    INCIDENT_RESOURCE_TACTICAL_GROUP,
-)
-
 from dispatch.enums import DocumentResourceTypes
 from dispatch.conference.models import ConferenceRead
 from dispatch.conversation.models import ConversationRead
@@ -183,14 +178,18 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     def tactical_group(self):
         if self.groups:
             for g in self.groups:
-                if g.resource_type == INCIDENT_RESOURCE_TACTICAL_GROUP:
+                # this currently relies on there being only one tactical group per incident
+                # this is not enforced and is only by convention
+                if g.resource_type.endswith("tactical-group"):
                     return g
 
     @hybrid_property
     def notifications_group(self):
         if self.groups:
             for g in self.groups:
-                if g.resource_type == INCIDENT_RESOURCE_NOTIFICATIONS_GROUP:
+                # this currently relies on there being only one notification group per incident
+                # this is not enforced and is only by convention
+                if g.resource_type.endswith("notification-group"):
                     return g
 
     @hybrid_property

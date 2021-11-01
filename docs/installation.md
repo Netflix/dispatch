@@ -38,18 +38,18 @@ To start, run the install script:
 
 ### The "first" user problem
 
-For any new Dispatch installation, new users are expected to register themselves via the `/auth/register` endpoint in the Dispatch UI. By default, users registering via this method are granted regular "user" permissions within Dispatch. There is no direct way through the UI to allow a user to obtain an "Admin" role (as no other Admins exist to grant them access).
+For any new Dispatch installation, new users are expected to register themselves via the `/auth/register` endpoint in the Dispatch UI. By default, users registering via this method are granted regular "user" permissions within Dispatch. There is no direct way through the UI to allow a user to obtain an "Owner" role (as no other Owners exist to grant them access).
 
 For these users, we have a CLI command that allows users to be granted the role of their choosing:
 
 ```bash
 docker exec -it dispatch_web_1 bash
-dispatch user update --role Admin --organization <name-of-the-organization> <email-address-of-registered-user>
+dispatch user update --role Owner --organization <name-of-the-organization> <email-address-of-registered-user>
 ```
 
 The default organization name in the sample data file is "default".
 
-After one admin user has been established, they can grant this role to others via the UI.
+After one owner user has been established, they can grant this role to others via the UI.
 
 ## Going to Production
 

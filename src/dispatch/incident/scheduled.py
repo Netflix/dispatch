@@ -6,9 +6,6 @@ from datetime import datetime, date
 from schedule import every
 from sqlalchemy import func
 
-from dispatch.config import (
-    DISPATCH_HELP_EMAIL,
-)
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.database.core import SessionLocal, resolve_attr
 from dispatch.decorators import scheduled_project_task
@@ -164,8 +161,6 @@ def daily_report(db_session: SessionLocal, project: Project):
                     log.exception(e)
 
             notification_kwargs = {
-                "contact_fullname": DISPATCH_HELP_EMAIL,
-                "contact_weblink": DISPATCH_HELP_EMAIL,
                 "items_grouped": items_grouped,
                 "items_grouped_template": items_grouped_template,
             }
