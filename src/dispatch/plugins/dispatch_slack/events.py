@@ -5,6 +5,7 @@ import datetime
 from typing import List
 from pydantic import BaseModel
 from sqlalchemy import func
+from sqlalchemy.sql.functions import user
 
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.conversation import service as conversation_service
@@ -111,6 +112,7 @@ async def handle_slack_event(*, config, client, event, background_tasks):
 
     if user_id and channel_id:
         db_session = get_organization_scope_from_channel_id(channel_id=channel_id)
+
         if not db_session:
             log.info(
                 f"Unable to determine organization associated with channel id. ChannelId: {channel_id}"
@@ -124,6 +126,14 @@ async def handle_slack_event(*, config, client, event, background_tasks):
         if conversation and dispatch_slack_service.is_user(config, user_id):
             # We resolve the user's email
             user_email = await dispatch_slack_service.get_user_email_async(client, user_id)
+
+            # increment activity for user
+            participant = participant_service.get_by_incident_id_and_email(
+                db_session=db_session, incident_id=conversation.incident_id, email=user_email
+            )
+
+            participant.activity += 1
+            db_session.commit()
 
             # Dispatch event functions to be executed in the background
             for f in event_functions(event):
