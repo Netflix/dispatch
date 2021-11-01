@@ -9,7 +9,7 @@ class SlackConfiguration(BaseConfigurationModel):
     api_bot_token: SecretStr = Field(
         title="API Bot Token", description="Token to use when plugin is in http/api mode."
     )
-    socket_mode_app_token: SecretStr = Field(
+    socket_mode_app_token: Optional[SecretStr] = Field(
         title="Socket Mode App Token", description="Token used when plugin is in socket mode."
     )
     signing_secret: SecretStr = Field(
