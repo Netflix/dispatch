@@ -145,12 +145,20 @@ def daily_report(db_session: SessionLocal, project: Project):
                         "title": incident.title,
                         "type": incident.incident_type.name,
                         "type_description": incident.incident_type.description,
+                        "buttons": [],
                     }
 
                     if incident.status != IncidentStatus.closed:
-                        item.update(
+                        item["buttons"].append(
                             {
-                                "button_text": "Join Incident",
+                                "button_text": "Subscribe",
+                                "button_value": f"{incident.project.organization.slug}-{incident.id}",
+                                "button_action": f"{ConversationButtonActions.subscribe_user}-{incident.status}-{idx}",
+                            }
+                        )
+                        item["buttons"].append(
+                            {
+                                "button_text": "Join",
                                 "button_value": f"{incident.project.organization.slug}-{incident.id}",
                                 "button_action": f"{ConversationButtonActions.invite_user}-{incident.status}-{idx}",
                             }

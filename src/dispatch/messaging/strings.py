@@ -293,18 +293,31 @@ INCIDENT_NAME_WITH_ENGAGEMENT = {
     "title": "{{name}} Incident Notification",
     "title_link": "{{ticket_weblink}}",
     "text": INCIDENT_NOTIFICATION_PURPOSES_FYI,
-    "button_text": "Join Incident",
-    "button_value": "{{organization_slug}}-{{incident_id}}",
-    "button_action": ConversationButtonActions.invite_user,
+    "buttons": [
+        {
+            "button_text": "Subscribe",
+            "button_value": "{{organization_slug}}-{{incident_id}}",
+            "button_action": ConversationButtonActions.subscribe_user,
+        },
+        {
+            "button_text": "Join",
+            "button_value": "{{organization_slug}}-{{incident_id}}",
+            "button_action": ConversationButtonActions.invite_user,
+        },
+    ],
 }
 
 INCIDENT_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION = {
     "title": "{{name}}",
     "title_link": "{{ticket_weblink}}",
     "text": "{{ignore}}",
-    "button_text": "{{button_text}}",
-    "button_value": "{{button_value}}",
-    "button_action": "{{button_action}}",
+    "buttons": [
+        {
+            "button_text": "{{button_text}}",
+            "button_value": "{{button_value}}",
+            "button_action": "{{button_action}}",
+        }
+    ],
 }
 
 INCIDENT_NAME = {
