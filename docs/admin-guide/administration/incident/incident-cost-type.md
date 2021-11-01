@@ -13,3 +13,9 @@ Dispatch allows you to define incident cost types. These types can then be used 
 **Default:** Whether the incident cost type is the default or not.
 
 **Editable:** Whether this cost type can be edited or not.
+
+### Calculating Incident Cost
+
+Dispatch [calculates](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/service.py#L279) the cost of an incident by adding up the time participants have spent on each incident role \(e.g., Incident Commander\) and applying an [engagement multiplier](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/service.py#L266) that's based on the incident role. It also includes time spent on incident review-related activities. Dispatch calculates and published the cost for all incidents [every 5 minutes](https://github.com/Netflix/dispatch/blob/develop/src/dispatch/incident/scheduled.py#L257).
+
+If you can tweak incident cost parameters on a per-project basis by editing your project [here](../project.md)
