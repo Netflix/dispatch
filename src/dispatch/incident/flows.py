@@ -960,6 +960,9 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
             if storage_plugin.configuration.open_on_close:
                 storage_plugin.instance.open(incident.storage.resource_id)
 
+    if storage_plugin.configuration.readonly:
+        storage_plugin.instance.mark_readonly(incident.storage.resource_id)
+
     # we send a direct message to the incident commander asking to review
     # the incident's information and to tag the incident if appropiate
     send_incident_closed_information_review_reminder(incident, db_session)
