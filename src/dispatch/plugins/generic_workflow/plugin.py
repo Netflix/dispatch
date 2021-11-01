@@ -41,6 +41,7 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import generic_workflow as generic_workflow_plugin
 from dispatch.plugins.bases import WorkflowPlugin
 
+
 class GenericWorkflowConfiguration(BaseConfigurationModel):
     """
     Generic Workflow configuration
@@ -55,7 +56,8 @@ class GenericWorkflowConfiguration(BaseConfigurationModel):
         title="API URL", description="This API endpoint to GET or POST workflow info from/to."
     )
     auth_header: SecretStr = Field(
-       title="Authorization Header", description="For example: Bearer: JWT token, or basic: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
+        title="Authorization Header",
+        description="For example: Bearer: JWT token, or basic: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==",
     )
 
 
@@ -86,13 +88,13 @@ class GenericWorkflowPlugin(WorkflowPlugin):
         api_url = self.configuration.api_url
         headers = {
             "Content-Type": "application/json",
-            "Authorization": self.configuration.auth_header.get_secret_value()
+            "Authorization": self.configuration.auth_header.get_secret_value(),
         }
         fields = {
             "workflow_id": workflow_id,
             "workflow_instance_id": workflow_instance_id,
             "incident_id": incident_id,
-            "incident_name": incident_name
+            "incident_name": incident_name,
         }
         resp = requests.get(api_url, params=fields, headers=headers)
 
@@ -103,15 +105,16 @@ class GenericWorkflowPlugin(WorkflowPlugin):
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
     def run(self, workflow_id: str, params: dict, **kwargs):
-        logging.info('Run on generic workflow %s, %s', params, kwargs)
+        logging.info("Run on generic workflow %s, %s", params, kwargs)
         api_url = self.configuration.api_url
         obj = {"workflow_id": workflow_id, "params": params}
-        headers = {"Content-Type": "application/json", "Authorization": self.configuration.auth_header.get_secret_value()}
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": self.configuration.auth_header.get_secret_value(),
+        }
         resp = requests.post(api_url, data=json.dumps(obj), headers=headers)
 
         if resp.status_code in [429, 500, 502, 503, 504]:
             raise TryAgain
 
         return resp.json()
-
-

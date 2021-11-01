@@ -441,7 +441,7 @@ def add_participant_to_tactical_group(
     tactical_group = group_service.get_by_incident_id_and_resource_type(
         db_session=db_session,
         incident_id=incident.id,
-        resource_type=f"{plugin.slug}-tactical-group"
+        resource_type=f"{plugin.slug}-tactical-group",
     )
     if plugin and tactical_group:
         plugin.instance.add(tactical_group.email, [user_email])
@@ -458,7 +458,7 @@ def remove_participant_from_tactical_group(
     tactical_group = group_service.get_by_incident_id_and_resource_type(
         db_session=db_session,
         incident_id=incident.id,
-        resource_type=f"{plugin.slug}-tactical-group"
+        resource_type=f"{plugin.slug}-tactical-group",
     )
     if plugin and tactical_group:
         plugin.instance.remove(tactical_group.email, [user_email])
