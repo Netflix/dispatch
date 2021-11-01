@@ -57,6 +57,13 @@
                   />
                 </ValidationProvider>
               </v-flex>
+              <v-flex>
+                <v-checkbox
+                  v-model="exclusive"
+                  label="Exclusive"
+                  hint="Should an incident only have one tag of this type?"
+                />
+              </v-flex>
             </v-layout>
           </v-container>
         </v-card-text>
@@ -91,6 +98,7 @@ export default {
       "selected.name",
       "selected.project",
       "selected.description",
+      "selected.exclusive",
       "selected.loading",
     ]),
     ...mapFields("tag_type", {

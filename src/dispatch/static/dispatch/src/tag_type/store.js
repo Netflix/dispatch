@@ -11,6 +11,7 @@ const getDefaultSelectedState = () => {
     description: null,
     project: null,
     default: false,
+    exclusive: false,
   }
 }
 

@@ -42,8 +42,8 @@ class Project(Base):
 class ProjectBase(DispatchBase):
     id: Optional[PrimaryKey]
     name: NameStr
-    owner_email: Optional[EmailStr]
-    owner_conversation: Optional[str]
+    owner_email: Optional[EmailStr] = None
+    owner_conversation: Optional[str] = None
     annual_employee_cost: Optional[int]
     business_year_hours: Optional[int]
     description: Optional[str] = Field(None, nullable=True)
