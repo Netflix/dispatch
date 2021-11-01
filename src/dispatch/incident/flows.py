@@ -12,11 +12,6 @@ import logging
 from datetime import datetime
 from typing import Any, List
 
-from dispatch.config import (
-    INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
-    INCIDENT_RESOURCE_TACTICAL_GROUP,
-)
-
 from dispatch.enums import DocumentResourceTypes
 
 from dispatch.conference import service as conference_service
@@ -238,11 +233,11 @@ def create_participant_groups(
     )
 
     tactical_group.update(
-        {"resource_type": INCIDENT_RESOURCE_TACTICAL_GROUP, "resource_id": tactical_group["id"]}
+        {"resource_type": f"{plugin.slug}-tactical-group", "resource_id": tactical_group["id"]}
     )
     notification_group.update(
         {
-            "resource_type": INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
+            "resource_type": f"{plugin.slug}-notification-group",
             "resource_id": notification_group["id"],
         }
     )
@@ -440,13 +435,13 @@ def add_participant_to_tactical_group(
 ):
     """Adds participant to the tactical group."""
     # we get the tactical group
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
+    )
     tactical_group = group_service.get_by_incident_id_and_resource_type(
         db_session=db_session,
         incident_id=incident.id,
-        resource_type=INCIDENT_RESOURCE_TACTICAL_GROUP,
-    )
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
+        resource_type=f"{plugin.slug}-tactical-group",
     )
     if plugin and tactical_group:
         plugin.instance.add(tactical_group.email, [user_email])
@@ -457,13 +452,13 @@ def remove_participant_from_tactical_group(
 ):
     """Removes participant from the tactical group."""
     # we get the tactical group
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
+    )
     tactical_group = group_service.get_by_incident_id_and_resource_type(
         db_session=db_session,
         incident_id=incident.id,
-        resource_type=INCIDENT_RESOURCE_TACTICAL_GROUP,
-    )
-    plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
+        resource_type=f"{plugin.slug}-tactical-group",
     )
     if plugin and tactical_group:
         plugin.instance.remove(tactical_group.email, [user_email])
