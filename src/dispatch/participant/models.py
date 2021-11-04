@@ -45,6 +45,8 @@ class Participant(Base):
     )
     owned_tasks = relationship("Task", backref="owner", primaryjoin="Participant.id==Task.owner_id")
 
+    activity = Column(Integer)
+
     @hybrid_property
     def active_roles(self):
         roles = []
@@ -85,6 +87,7 @@ class ParticipantUpdate(ParticipantBase):
 class ParticipantRead(ParticipantBase):
     id: PrimaryKey
     participant_roles: Optional[List[ParticipantRoleRead]] = []
+    activity: Optional[int] = 0
     individual: Optional[IndividualContactRead]
 
 
