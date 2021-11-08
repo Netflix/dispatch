@@ -238,7 +238,7 @@ def default_notification(items: list):
                 "text": {"type": "mrkdwn", "text": format_default_text(item)},
             }
 
-        for button in item.get("buttons"):
+        for button in item.get("buttons", []):
             if button.get("button_text") and button.get("button_value"):
                 block.update(
                     {

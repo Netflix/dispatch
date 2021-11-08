@@ -132,7 +132,11 @@ async def handle_slack_event(*, config, client, event, background_tasks):
                 db_session=db_session, incident_id=conversation.incident_id, email=user_email
             )
 
-            participant.activity += 1
+            if participant.activity:
+                participant.activity += 1
+            else:
+                participant.activity = 1
+
             db_session.commit()
 
             # Dispatch event functions to be executed in the background
