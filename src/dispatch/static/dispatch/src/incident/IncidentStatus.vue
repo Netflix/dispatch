@@ -10,7 +10,15 @@
             <v-icon> mdi-account-plus </v-icon>
           </v-btn>
         </template>
-        <span>Join Incident</span>
+        <span>Join</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn icon v-bind="attrs" v-on="on" @click="subscribeToIncident(id)">
+            <v-icon> mdi-email-plus </v-icon>
+          </v-btn>
+        </template>
+        <span>Subscribe</span>
       </v-tooltip>
     </div>
     <div v-if="status == 'Stable'">
@@ -23,7 +31,15 @@
             <v-icon> mdi-account-plus </v-icon>
           </v-btn>
         </template>
-        <span>Join Incident</span>
+        <span>Join</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn icon v-bind="attrs" v-on="on" @click="subscribeToIncident(id)">
+            <v-icon> mdi-email-plus </v-icon>
+          </v-btn>
+        </template>
+        <span>Subscribe</span>
       </v-tooltip>
     </div>
     <div v-if="status == 'Closed'">
@@ -52,7 +68,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident", ["joinIncident"]),
+    ...mapActions("incident", ["joinIncident", "subscribeToIncident"]),
   },
 }
 </script>

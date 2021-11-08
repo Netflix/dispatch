@@ -39,7 +39,7 @@ After an incident is marked stable, Dispatch continues to help with incident man
 In addition to Dispatch engaging individuals that will be directly responsible for managing the incident, it provides notifications for general awareness throughout the organization.
 
 {% hint style="info" %}
-The new incident notification message includes a "Join Incident" button; this allows individuals to add themselves to the incident \(and its resources\) without involvement from the incident commander.
+The new incident notification message includes a "Join" button; this allows individuals to add themselves to the incident \(and its resources\) without involvement from the incident commander.
 {% endhint %}
 
 ## Self-service engagement

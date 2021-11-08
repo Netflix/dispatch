@@ -1,6 +1,7 @@
 import json
 from pydantic import ValidationError
 from fastapi import BackgroundTasks
+from sqlalchemy.sql.functions import user
 
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.enums import ConversationButtonActions
@@ -132,6 +133,7 @@ def block_action_functions(action: str):
     """Interprets the action and routes it to the appropriate function."""
     action_mappings = {
         ConversationButtonActions.invite_user: [add_user_to_conversation],
+        ConversationButtonActions.subscribe_user: [add_user_to_tactical_group],
         ConversationButtonActions.provide_feedback: [create_rating_feedback_modal],
         ConversationButtonActions.update_task_status: [update_task_status],
         ConversationButtonActions.monitor_link: [monitor_link],
@@ -227,6 +229,33 @@ def handle_block_action(
             action=action,
             organization_slug=organization_slug,
         )
+
+
+@slack_background_task
+def add_user_to_tactical_group(
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    action: dict,
+    config: SlackConversationConfiguration = None,
+    db_session=None,
+    slack_client=None,
+):
+    """Adds a user to the incident tactical group."""
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+    if not incident:
+        message = "Sorry, we cannot add you to this incident. It does not exist."
+        dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
+    elif incident.status == IncidentStatus.closed:
+        message = f"Sorry, we cannot subscribe you to a closed incident. Please, reach out to the incident commander ({incident.commander.individual.name}) for details."
+        dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
+    else:
+        incident_flows.add_participant_to_tactical_group(
+            user_email=user_email, incident=incident, db_session=db_session
+        )
+        message = f"Success! We've subscribed you to incident {incident.name}. You will recieve all tactical reports about this incident."
+        dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
 
 
 @slack_background_task
