@@ -28,22 +28,22 @@ class GoogleDriveConfiguration(GoogleConfiguration):
     """Google drive configuration."""
 
     root_id: str = Field(
-        title="Incident storage root folder id",
+        title="Root Incident Storage FolderId",
         description="This is the default folder for all incident data. Dispatch will create subfolders for each incident in this folder.",
     )
 
     open_on_close: bool = Field(
-        title="Open on close",
+        title="Open On Close",
         default=False,
         description="Controls the visibility of resources on incident close. If enabled Dispatch will make all resources visible to the entire workspace.",
     )
+
 
     read_only: bool = Field(
         title="Readonly",
         default=True,
         description="All incident resources will be marked as readonly on incident close. Participants will not be able to edit/copy/download any resources.",
     )
-
 
 @apply(timer, exclude=["__init__"])
 @apply(counter, exclude=["__init__"])
