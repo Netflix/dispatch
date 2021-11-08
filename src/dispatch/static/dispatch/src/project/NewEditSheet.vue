@@ -60,6 +60,71 @@
               <v-flex xs12>
                 <color-picker-input v-model="color"></color-picker-input>
               </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="Employee Cost" immediate>
+                  <v-text-field
+                    v-model.number="annual_employee_cost"
+                    slot-scope="{ errors, valid }"
+                    :error-messages="errors"
+                    :success="valid"
+                    label="Annual Employee Cost"
+                    hint="A median cost on a per employee basis."
+                    clearable
+                    required
+                    type="number"
+                    min="1"
+                    pattern="\d+"
+                    prefix="$"
+                    placeholder="50000"
+                  />
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="Year Hours" immediate>
+                  <v-text-field
+                    v-model.number="business_year_hours"
+                    slot-scope="{ errors, valid }"
+                    :error-messages="errors"
+                    :success="valid"
+                    label="Business Year Hours"
+                    hint="Number of hours to average employee host."
+                    clearable
+                    required
+                    type="number"
+                    min="1"
+                    pattern="\d+"
+                    placeholder="2080"
+                  />
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="Owner Email" rules="email" immediate>
+                  <v-text-field
+                    v-model="owner_email"
+                    slot-scope="{ errors, valid }"
+                    :error-messages="errors"
+                    :success="valid"
+                    label="Owner Email"
+                    hint="This projects owners contact information"
+                    clearable
+                    required
+                  />
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
+                <ValidationProvider name="Owner Conversation" immediate>
+                  <v-text-field
+                    v-model="owner_conversation"
+                    slot-scope="{ errors, valid }"
+                    :error-messages="errors"
+                    :success="valid"
+                    label="Owner Conversation"
+                    hint="This projects owner conversation id. e.g. the project owners slack channel"
+                    clearable
+                    required
+                  />
+                </ValidationProvider>
+              </v-flex>
             </v-layout>
           </v-container>
         </v-card-text>
@@ -72,8 +137,10 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
+import { required, email } from "vee-validate/dist/rules"
 import ColorPickerInput from "@/project/ColorPickerInput.vue"
+
+extend("email", email)
 
 extend("required", {
   ...required,
@@ -103,6 +170,10 @@ export default {
       "selected.organization",
       "selected.loading",
       "selected.color",
+      "selected.annual_employee_cost",
+      "selected.business_year_hours",
+      "selected.owner_email",
+      "selected.owner_conversation",
       "dialogs.showCreateEdit",
     ]),
     ...mapFields("route", ["params"]),

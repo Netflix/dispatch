@@ -11,6 +11,10 @@ const getDefaultSelectedState = () => {
     organization: null,
     color: null,
     loading: false,
+    annual_employee_cost: 50000,
+    business_year_hours: 2080,
+    owner_email: null,
+    owner_conversation: null,
   }
 }
 
