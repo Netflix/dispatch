@@ -123,6 +123,9 @@ def init_schema(*, engine, organization: Organization):
     session = sessionmaker(bind=schema_engine)
     db_session = session()
 
+    organization = db_session.merge(organization)
+    db_session.add(organization)
+
     # create any required default values in schema here
     #
     #

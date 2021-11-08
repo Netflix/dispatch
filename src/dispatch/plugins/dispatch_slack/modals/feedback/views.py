@@ -69,7 +69,7 @@ def rating_feedback_view(incident: Incident, channel_id: str):
             },
             "multiline": True,
         },
-        "optional": True,
+        "optional": False,
     }
     modal_template["blocks"].append(feedback_block)
 

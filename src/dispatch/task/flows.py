@@ -35,7 +35,7 @@ def group_tasks_by_assignee(tasks):
     return grouped
 
 
-def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact_weblink):
+def create_reminder(db_session, assignee_email, tasks):
     """Contains the logic for incident task reminders."""
     # send email
     plugin = plugin_service.get_active_instance(db_session=db_session, plugin_type="email")
@@ -68,8 +68,6 @@ def create_reminder(db_session, assignee_email, tasks, contact_fullname, contact
         notification_type,
         name=name,
         subject=subject,
-        contact_fullname=contact_fullname,
-        contact_weblink=contact_weblink,
         items=items,  # plugin expect dicts
     )
 

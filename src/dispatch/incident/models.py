@@ -1,5 +1,5 @@
 from datetime import datetime
-from collections import Counter
+from collections import Counter, defaultdict
 from typing import List, Optional
 
 from pydantic import validator
@@ -17,11 +17,6 @@ from sqlalchemy import (
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
-
-from dispatch.config import (
-    INCIDENT_RESOURCE_NOTIFICATIONS_GROUP,
-    INCIDENT_RESOURCE_TACTICAL_GROUP,
-)
 
 from dispatch.enums import DocumentResourceTypes
 from dispatch.conference.models import ConferenceRead
@@ -183,14 +178,18 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     def tactical_group(self):
         if self.groups:
             for g in self.groups:
-                if g.resource_type == INCIDENT_RESOURCE_TACTICAL_GROUP:
+                # this currently relies on there being only one tactical group per incident
+                # this is not enforced and is only by convention
+                if g.resource_type.endswith("tactical-group"):
                     return g
 
     @hybrid_property
     def notifications_group(self):
         if self.groups:
             for g in self.groups:
-                if g.resource_type == INCIDENT_RESOURCE_NOTIFICATIONS_GROUP:
+                # this currently relies on there being only one notification group per incident
+                # this is not enforced and is only by convention
+                if g.resource_type.endswith("notification-group"):
                     return g
 
     @hybrid_property
@@ -361,6 +360,21 @@ class IncidentUpdate(IncidentBase):
     tags: Optional[List[TagRead]] = []
     terms: Optional[List[TermRead]] = []
     incident_costs: Optional[List[IncidentCostUpdate]] = []
+
+    @validator("tags")
+    def find_exclusive(cls, v):
+        if v:
+            exclusive_tags = defaultdict(list)
+            for t in v:
+                if t.tag_type.exclusive:
+                    exclusive_tags[t.tag_type.id].append(t)
+
+            for v in exclusive_tags.values():
+                if len(v) > 1:
+                    raise ValueError(
+                        f"Found multiple exclusive tags. Please ensure that only one tag of a given type is applied. Tags: {','.join([t.name for t in v])}"
+                    )
+        return v
 
 
 class IncidentRead(IncidentBase):

@@ -3,7 +3,6 @@ from datetime import datetime
 
 from typing import List, Optional
 
-from dispatch.config import ANNUAL_COST_EMPLOYEE, BUSINESS_HOURS_YEAR
 from dispatch.database.core import SessionLocal
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
@@ -112,11 +111,12 @@ def calculate_incident_response_cost(
 
     participants_total_response_time_seconds = 0
     for participant in incident.participants:
+        # skip participants that have no activity
+        if not participant.activity:
+            continue
 
         participant_total_roles_time_seconds = 0
         for participant_role in participant.participant_roles:
-            # TODO(mvilanova): skip if we did not see activity from the participant in the incident conversation
-
             participant_role_assumed_at = participant_role.assumed_at
 
             if incident.status == IncidentStatus.active:
@@ -173,7 +173,9 @@ def calculate_incident_response_cost(
         incident_review_hours = incident_review_prep + incident_review_meeting
 
     # we calculate and round up the hourly rate
-    hourly_rate = math.ceil(ANNUAL_COST_EMPLOYEE / BUSINESS_HOURS_YEAR)
+    hourly_rate = math.ceil(
+        incident.project.annual_employee_cost / incident.project.business_year_hours
+    )
 
     # we calculate and round up the incident cost
     incident_cost = math.ceil(
