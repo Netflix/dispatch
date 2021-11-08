@@ -689,7 +689,7 @@ def render_message_template(message_template: List[dict], **kwargs):
         if d.get("text"):
             d["text"] = Template(d["text"]).render(**kwargs)
 
-        for button in d.get("buttons"):
+        for button in d.get("buttons", []):
             if button.get("button_text"):
                 button["button_text"] = Template(button["button_text"]).render(**kwargs)
 
