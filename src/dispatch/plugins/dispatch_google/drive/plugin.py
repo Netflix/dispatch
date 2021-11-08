@@ -38,12 +38,12 @@ class GoogleDriveConfiguration(GoogleConfiguration):
         description="Controls the visibility of resources on incident close. If enabled Dispatch will make all resources visible to the entire workspace.",
     )
 
-
     read_only: bool = Field(
         title="Readonly",
         default=True,
         description="All incident resources will be marked as readonly on incident close. Participants will not be able to edit/copy/download any resources.",
     )
+
 
 @apply(timer, exclude=["__init__"])
 @apply(counter, exclude=["__init__"])
