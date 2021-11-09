@@ -242,7 +242,7 @@ def default_notification(items: list):
             if button.get("button_text") and button.get("button_value"):
                 block.update(
                     {
-                        "block_id": item["button_action"],
+                        "block_id": button["button_action"],
                         "accessory": {
                             "type": "button",
                             "text": {"type": "plain_text", "text": button["button_text"]},
