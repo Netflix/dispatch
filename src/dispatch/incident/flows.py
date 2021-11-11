@@ -1289,6 +1289,22 @@ def incident_engage_oncall_flow(
 
 
 @background_task
+def incident_add_participant_to_tactical_group_flow(
+    user_email: str,
+    incident_id: Incident,
+    organization_slug: str,
+    db_session: SessionLocal,
+):
+    """Adds participant to the tactical group."""
+    # we get the tactical group
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
+    add_participant_to_tactical_group(
+        db_session=db_session, incident=incident, user_email=user_email
+    )
+
+
+@background_task
 def incident_add_or_reactivate_participant_flow(
     user_email: str,
     incident_id: int,

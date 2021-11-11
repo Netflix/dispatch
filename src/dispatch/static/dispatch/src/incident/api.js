@@ -51,6 +51,10 @@ export default {
     return API.post(`/${resource}/${incidentId}/join`, payload)
   },
 
+  subscribe(incidentId, payload) {
+    return API.post(`/${resource}/${incidentId}/subscribe`, payload)
+  },
+
   delete(incidentId) {
     return API.delete(`/${resource}/${incidentId}`)
   },
