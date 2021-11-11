@@ -109,6 +109,8 @@ async def handle_slack_action(*, config, client, request, background_tasks):
     """Handles slack action message."""
     # We resolve the user's email
     user_id = request["user"]["id"]
+
+    print(request)
     user_email = await dispatch_slack_service.get_user_email_async(client, user_id)
 
     request["user"]["email"] = user_email

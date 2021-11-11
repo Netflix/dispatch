@@ -240,7 +240,9 @@ async def handle_menu(
     response.headers["X-Slack-Powered-By"] = create_ua_string()
 
     # We create an async Slack client
-    slack_async_client = dispatch_slack_service.create_slack_client(run_async=True)
+    slack_async_client = dispatch_slack_service.create_slack_client(
+        config=current_configuration, run_async=True
+    )
 
     body = await handle_slack_menu(
         config=current_configuration,

@@ -16,7 +16,7 @@ from .decorators import get_organization_scope_from_channel_id
 log = logging.getLogger(__name__)
 
 
-async def handle_slack_menu(*, client: WebClient, request: Request):
+async def handle_slack_menu(*, config, client: WebClient, request: Request):
     """Handles slack menu message."""
     # We resolve the user's email
     user_id = request["user"]["id"]
@@ -34,7 +34,6 @@ async def handle_slack_menu(*, client: WebClient, request: Request):
     action_id = request["action_id"]
 
     db_session = get_organization_scope_from_channel_id(channel_id=channel_id)
-
     f = menu_functions(action_id)
     return f(db_session, user_id, user_email, channel_id, incident_id, query_str, request)
 
