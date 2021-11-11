@@ -1,7 +1,6 @@
 import json
 from pydantic import ValidationError
 from fastapi import BackgroundTasks
-from sqlalchemy.sql.functions import user
 
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.enums import ConversationButtonActions
@@ -189,7 +188,6 @@ def handle_block_action(
     config: SlackConversationConfiguration, action: dict, background_tasks: BackgroundTasks
 ):
     """Handles a standalone block action."""
-    # TODO (kglisson) align our use of action_ids and block_ids
     organization_slug = None
     if action.get("view"):
         view_data = action["view"]
@@ -204,20 +202,13 @@ def handle_block_action(
             organization_slug = button.organization_slug
             incident_id = button.incident_id
         except ValidationError:
-            # maintain support for old block actions that were created before organization's split
-            actions = action["actions"][0]["value"].split("-")
-            if len(actions) == 2:
-                organization_slug, incident_id = actions
-            else:
-                organization_slug = "default"
-                incident_id = actions[0]
+            organization_slug, incident_id = action["actions"][0]["value"].split("-")
 
         channel_id = action["channel"]["id"]
-        action_id = action["actions"][0]["block_id"]
+        action_id = action["actions"][0]["action_id"]
 
     user_id = action["user"]["id"]
     user_email = action["user"]["email"]
-
     for f in block_action_functions(action_id):
         background_tasks.add_task(
             f,
@@ -246,9 +237,6 @@ def add_user_to_tactical_group(
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     if not incident:
         message = "Sorry, we cannot add you to this incident. It does not exist."
-        dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
-    elif incident.status == IncidentStatus.closed:
-        message = f"Sorry, we cannot subscribe you to a closed incident. Please, reach out to the incident commander ({incident.commander.individual.name}) for details."
         dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
     else:
         incident_flows.add_participant_to_tactical_group(
