@@ -5,7 +5,6 @@ import datetime
 from typing import List
 from pydantic import BaseModel
 from sqlalchemy import func
-from sqlalchemy.sql.functions import user
 
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.conversation import service as conversation_service

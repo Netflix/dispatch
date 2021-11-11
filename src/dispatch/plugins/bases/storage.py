@@ -35,7 +35,7 @@ class StoragePlugin(Plugin):
     def open(self, **kwargs):
         raise NotImplementedError
 
-    def mark_readonly(self, **kwargs):
+    def mark_readonly(self, folder_id: str, **kwargs):
         raise NotImplementedError
 
     def add_file(self, **kwargs):
