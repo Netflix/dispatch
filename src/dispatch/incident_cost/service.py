@@ -117,19 +117,29 @@ def calculate_incident_response_cost(
 
         participant_total_roles_time_seconds = 0
         for participant_role in participant.participant_roles:
+
             participant_role_assumed_at = participant_role.assumed_at
 
             if incident.status == IncidentStatus.active:
                 # the incident is still active. we use the current time
-                participant_role_renounced_at = datetime.utcnow()
-            else:
-                # the incident is stable or closed. we use the stable_at time
-                participant_role_renounced_at = incident.stable_at
+                if participant_role.renounced_at:
+                    # the participant left the conversation or got assigned another role
+                    # we use the renounced_at time
+                    participant_role_renounced_at = participant_role.renounced_at
+                else:
+                    participant_role_renounced_at = datetime.utcnow()
 
-            if participant_role.renounced_at:
-                # the participant left the conversation or got assigned another role
-                # we use the renounced_at time
-                participant_role_renounced_at = participant_role.renounced_at
+            else:
+                if participant_role.renounced_at:
+                    # the participant left the conversation or got assigned another role
+                    # we use the renounced_at time
+                    if participant_role.renounced_at < incident.stable_at:
+                        participant_role_renounced_at = participant_role.renounced_at
+                    else:
+                        participant_role_renounced_at = incident.stable_at
+                else:
+                    # the incident is stable or closed. we use the stable_at time
+                    participant_role_renounced_at = incident.stable_at
 
             # we calculate the time the participant has spent in the incident role
             participant_role_time = participant_role_renounced_at - participant_role_assumed_at

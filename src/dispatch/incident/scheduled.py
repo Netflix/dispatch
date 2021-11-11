@@ -145,6 +145,7 @@ def daily_report(db_session: SessionLocal, project: Project):
                         "title": incident.title,
                         "type": incident.incident_type.name,
                         "type_description": incident.incident_type.description,
+                        "organization_slug": incident.project.organization.slug,
                         "buttons": [],
                     }
 
