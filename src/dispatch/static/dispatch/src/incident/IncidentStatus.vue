@@ -1,5 +1,5 @@
 <template>
-  <div class="pl-5">
+  <div>
     <div v-if="status == 'Active'">
       <v-badge bordered color="error" slot="activator" dot left offset-x="-10" offset-y="12">
         {{ status }}

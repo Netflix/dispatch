@@ -321,6 +321,19 @@ const actions = {
       )
     })
   },
+  subscribeToIncident({ commit }, incidentId) {
+    console.log("C")
+    IncidentApi.subscribe(incidentId, {}).then(() => {
+      commit(
+        "notification_backend/addBeNotification",
+        {
+          text: "You have successfully subscribed to the incident. You will recieve all incident tactical reports.",
+          type: "success",
+        },
+        { root: true }
+      )
+    })
+  },
 }
 
 const mutations = {
