@@ -99,9 +99,6 @@ def get_tags(
         )
 
     options = []
-    from pprint import pprint
-
-    pprint(tags)
     for t in tags["items"]:
         options.append(
             {
