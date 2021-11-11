@@ -313,10 +313,15 @@ INCIDENT_NAME_WITH_ENGAGEMENT_NO_DESCRIPTION = {
     "text": "{{ignore}}",
     "buttons": [
         {
-            "button_text": "{{button_text}}",
-            "button_value": "{{button_value}}",
-            "button_action": "{{button_action}}",
-        }
+            "button_text": "Subscribe",
+            "button_value": "{{organization_slug}}-{{incident_id}}",
+            "button_action": ConversationButtonActions.subscribe_user,
+        },
+        {
+            "button_text": "Join",
+            "button_value": "{{organization_slug}}-{{incident_id}}",
+            "button_action": ConversationButtonActions.invite_user,
+        },
     ],
 }
 
@@ -689,14 +694,11 @@ def render_message_template(message_template: List[dict], **kwargs):
         if d.get("text"):
             d["text"] = Template(d["text"]).render(**kwargs)
 
-        for button in d.get("buttons", []):
-            if button.get("button_text"):
+        # render a new button array given the template
+        if d.get("buttons"):
+            for button in d["buttons"]:
                 button["button_text"] = Template(button["button_text"]).render(**kwargs)
-
-            if button.get("button_value"):
                 button["button_value"] = Template(button["button_value"]).render(**kwargs)
-
-            if button.get("button_action"):
                 button["button_action"] = Template(button["button_action"]).render(**kwargs)
 
         if d.get("status_mapping"):
