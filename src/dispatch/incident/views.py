@@ -36,6 +36,7 @@ from .flows import (
     incident_create_flow,
     incident_create_stable_flow,
     incident_update_flow,
+    incident_add_participant_to_tactical_group_flow,
 )
 from .metrics import make_forecast, create_incident_metric_query
 from .models import Incident, IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
@@ -199,6 +200,29 @@ def join_incident(
     """Join an individual incident."""
     background_tasks.add_task(
         incident_add_or_reactivate_participant_flow,
+        current_user.email,
+        incident_id=current_incident.id,
+        organization_slug=organization,
+    )
+
+
+@router.post(
+    "/{incident_id}/subscribe",
+    summary="Subscribe to an incident.",
+    dependencies=[Depends(PermissionsDependency([IncidentJoinPermission]))],
+)
+def subscribe_to_incident(
+    *,
+    db_session: Session = Depends(get_db),
+    organization: OrganizationSlug,
+    incident_id: PrimaryKey,
+    current_incident: Incident = Depends(get_current_incident),
+    current_user: DispatchUser = Depends(get_current_user),
+    background_tasks: BackgroundTasks,
+):
+    """Join an individual incident."""
+    background_tasks.add_task(
+        incident_add_participant_to_tactical_group_flow,
         current_user.email,
         incident_id=current_incident.id,
         organization_slug=organization,
