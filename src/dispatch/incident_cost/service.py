@@ -112,12 +112,12 @@ def calculate_incident_response_cost(
 
     participants_total_response_time_seconds = 0
     for participant in incident.participants:
+        # skip participants that have no activity
+        if not participant.activity:
+            continue
 
         participant_total_roles_time_seconds = 0
         for participant_role in participant.participant_roles:
-            # skip participants that have no activity
-            if not participant.activity:
-                continue
 
             participant_role_assumed_at = participant_role.assumed_at
 
