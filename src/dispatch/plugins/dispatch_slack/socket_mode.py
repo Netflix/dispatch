@@ -5,7 +5,9 @@ from fastapi import BackgroundTasks
 
 from slack_sdk.web.async_client import AsyncWebClient
 
-from .actions import handle_slack_action
+from dispatch.plugins.dispatch_slack.menus import handle_slack_menu
+
+from .actions import handle_engage_oncall_action, handle_slack_action
 from .commands import handle_slack_command
 from .events import handle_slack_event, EventEnvelope
 
@@ -47,12 +49,20 @@ async def run_websocket_process(config):
             )
 
         if req.type == "interactive":
-            response = await handle_slack_action(
-                config=config,
-                client=client.web_client,
-                request=req.payload,
-                background_tasks=background_tasks,
-            )
+            if req.payload["type"] == "block_suggestion":
+                response = await handle_slack_menu(
+                    config=config,
+                    client=client.web_client,
+                    request=req.payload,
+                )
+
+            else:
+                response = await handle_slack_action(
+                    config=config,
+                    client=client.web_client,
+                    request=req.payload,
+                    background_tasks=background_tasks,
+                )
 
         response = SocketModeResponse(envelope_id=req.envelope_id, payload=response)
         await client.send_socket_mode_response(response)

@@ -11,6 +11,7 @@ from dispatch.individual.models import IndividualContactRead
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.plugin import service as plugin_service
+from dispatch.tag import service as tag_service
 
 from dispatch.plugins.dispatch_slack.decorators import slack_background_task
 from dispatch.plugins.dispatch_slack.messaging import create_incident_reported_confirmation_message
@@ -122,7 +123,9 @@ def report_incident_from_submitted_form(
 
     tags = []
     for t in parsed_form_data.get(IncidentBlockId.tags, []):
-        tags.append({"id": t["value"]})
+        # we have to fetch as only the IDs are embedded in slack
+        tag = tag_service.get(db_session=db_session, tag_id=int(t["value"]))
+        tags.append(tag)
 
     project = {"name": parsed_form_data[IncidentBlockId.project]["value"]}
     incident_in = IncidentCreate(
@@ -182,7 +185,9 @@ def update_incident_from_submitted_form(
 
     tags = []
     for t in parsed_form_data.get(IncidentBlockId.tags, []):
-        tags.append({"id": t["value"], "project": {"name": incident.project.name}})
+        # we have to fetch as only the IDs are embedded in slack
+        tag = tag_service.get(db_session=db_session, tag_id=int(t["value"]))
+        tags.append(tag)
 
     incident_in = IncidentUpdate(
         title=parsed_form_data[IncidentBlockId.title],
