@@ -40,8 +40,8 @@ class GoogleDriveConfiguration(GoogleConfiguration):
 
     read_only: bool = Field(
         title="Readonly",
-        default=True,
-        description="All incident resources will be marked as readonly on incident close. Participants will not be able to edit/copy/download any resources.",
+        default=False,
+        description="The incident document will be marked as readonly on incident close. Participants will still be able to interact with the document but any other viewers will not.",
     )
 
 
@@ -88,10 +88,10 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         client = get_service(self.configuration, "drive", "v3", self.scopes)
         add_domain_permission(client, folder_id, self.configuration.google_domain)
 
-    def mark_readonly(self, folder_id: str):
+    def mark_readonly(self, file_id: str):
         """Adds the read only permission to the folder."""
         client = get_service(self.configuration, "drive", "v3", self.scopes)
-        mark_as_readonly(client, folder_id)
+        mark_as_readonly(client, file_id)
 
     def create_file(
         self,

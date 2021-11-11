@@ -956,10 +956,12 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
         )
         if storage_plugin:
             if storage_plugin.configuration.open_on_close:
-                storage_plugin.instance.open(incident.storage.resource_id)
+                # typically only broad access to the incident document itself is required.
+                storage_plugin.instance.open(incident.incident_document.resource_id)
 
     if storage_plugin.configuration.read_only:
-        storage_plugin.instance.mark_readonly(incident.storage.resource_id)
+        # unfortunately this can't be applied at the folder level so we just mark the incident doc as available.
+        storage_plugin.instance.mark_readonly(incident.incident_document.resource_id)
 
     # we send a direct message to the incident commander asking to review
     # the incident's information and to tag the incident if appropiate
