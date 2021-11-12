@@ -25,13 +25,21 @@ def get_plugins(*, common: dict = Depends(common_parameters)):
     return search_filter_sort_paginate(model="Plugin", **common)
 
 
-@router.get("/instances", response_model=PluginInstancePagination)
+@router.get(
+    "/instances",
+    response_model=PluginInstancePagination,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def get_plugin_instances(*, common: dict = Depends(common_parameters)):
     """Get all plugin instances."""
     return search_filter_sort_paginate(model="PluginInstance", **common)
 
 
-@router.get("/instances/{plugin_instance_id}", response_model=PluginInstanceRead)
+@router.get(
+    "/instances/{plugin_instance_id}",
+    response_model=PluginInstanceRead,
+    dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
+)
 def get_plugin_instance(*, db_session: Session = Depends(get_db), plugin_instance_id: PrimaryKey):
     """Get a plugin instance."""
     plugin = get_instance(db_session=db_session, plugin_instance_id=plugin_instance_id)
