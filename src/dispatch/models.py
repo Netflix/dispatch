@@ -6,7 +6,7 @@ import validators
 from pydantic.fields import Field
 from pydantic.networks import EmailStr
 from pydantic import BaseModel, validator
-from pydantic.types import conint, constr
+from pydantic.types import conint, constr, SecretStr
 
 from sqlalchemy import func
 from sqlalchemy.event import listens_for
@@ -115,9 +115,8 @@ class DispatchBase(BaseModel):
 
         json_encoders = {
             # custom output conversion for datetime
-            datetime: lambda v: v.strftime("%Y-%m-%dT%H:%M:%SZ")
-            if v
-            else None
+            datetime: lambda v: v.strftime("%Y-%m-%dT%H:%M:%SZ") if v else None,
+            SecretStr: lambda v: v.get_secret_value() if v else None,
         }
 
 
