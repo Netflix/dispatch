@@ -102,6 +102,22 @@ export default {
         descending: [false],
         sortBy: ["reported_at"],
         filters: { ...this.filters },
+        include: [
+          "closed_at",
+          "created_at",
+          "total_cost",
+          "stable_at",
+          "incident_priority",
+          "incident_type",
+          "status",
+          "primary_team",
+          "primary_location",
+          "tags",
+          "duplicates",
+          "project",
+          "name",
+          "title",
+        ],
       }
 
       filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
