@@ -107,6 +107,7 @@ export default {
           "created_at",
           "total_cost",
           "stable_at",
+          "reported_at",
           "incident_priority",
           "incident_type",
           "status",
