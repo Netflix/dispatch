@@ -20,8 +20,6 @@ from starlette.routing import compile_path
 from starlette.responses import Response, FileResponse
 from starlette.staticfiles import StaticFiles
 
-from fastapi_utils.timing import add_timing_middleware
-
 from .api import api_router
 from .common.utils.cli import install_plugins, install_plugin_events
 from .config import (
@@ -75,8 +73,6 @@ api = FastAPI(
     openapi_url="/docs/openapi.json",
     redoc_url="/docs",
 )
-
-add_timing_middleware(api, record=log.info, prefix="app", exclude="untimed")
 
 
 def get_path_params_from_request(request: Request) -> str:
