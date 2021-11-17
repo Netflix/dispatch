@@ -9,6 +9,8 @@ from dateutil.relativedelta import relativedelta
 
 from starlette.requests import Request
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+from fastapi_utils.timing import record_timing
+
 from sqlalchemy.orm import Session
 from dispatch.auth.permissions import (
     IncidentEditPermission,
@@ -62,11 +64,15 @@ def get_current_incident(*, db_session: Session = Depends(get_db), request: Requ
 @router.get("", summary="Retrieve a list of all incidents.")
 def get_incidents(
     *,
+    request: Request,
     common: dict = Depends(common_parameters),
     include: List[str] = Query([], alias="include[]"),
 ):
     """Retrieve a list of all incidents."""
+    record_timing(request, note="processing started")
+
     pagination = search_filter_sort_paginate(model="Incident", **common)
+    record_timing(request, note="query returned")
 
     if include:
         # only allow two levels for now
@@ -78,6 +84,7 @@ def get_incidents(
             "page": ...,
             "total": ...,
         }
+        print(include_fields)
         return json.loads(IncidentPagination(**pagination).json(include=include_fields))
     return json.loads(IncidentPagination(**pagination).json())
 

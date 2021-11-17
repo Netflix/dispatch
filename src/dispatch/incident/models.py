@@ -408,8 +408,25 @@ class IncidentRead(IncidentBase):
     project: ProjectRead
 
 
+class IncidentReadMinimal(IncidentBase):
+    primary_team: Optional[str]
+    primary_location: Optional[str]
+    incident_priority: IncidentPriorityRead
+    incident_type: IncidentTypeRead
+    total_cost: Optional[float]
+    project: ProjectRead
+    total_cost: Optional[float]
+    project: ProjectRead
+    tags: Optional[List[TagRead]] = []
+    duplicates: Optional[List[IncidentReadNested]] = []
+    created_at: Optional[datetime] = None
+    reported_at: Optional[datetime] = None
+    stable_at: Optional[datetime] = None
+    closed_at: Optional[datetime] = None
+
+
 class IncidentPagination(DispatchBase):
     total: int
     itemsPerPage: int
     page: int
-    items: List[IncidentRead] = []
+    items: List[IncidentReadMinimal] = []
