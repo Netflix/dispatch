@@ -107,7 +107,7 @@ def create(*, db_session, organization_in: OrganizationCreate) -> Organization:
         organization.banner_color = organization_in.banner_color.as_hex()
 
     # we let the new schema session create the organization
-    init_schema(engine=engine, organization=organization)
+    organization = init_schema(engine=engine, organization=organization)
     return organization
 
 
