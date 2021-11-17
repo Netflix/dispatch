@@ -15,6 +15,13 @@ from dispatch.main import app
 
 schemathesis.fixups.install(["fast_api"])
 
+
+def filter_null_bytes(strategy):
+    return strategy.filter(lambda value: "\\x00" not in str(value))
+
+
+schemathesis.hooks.strategies.register("body", filter_null_bytes)
+
 schema = schemathesis.from_asgi("/api/v1/docs/openapi.json", app, base_url="/api/v1")
 
 
