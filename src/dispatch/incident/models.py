@@ -377,39 +377,44 @@ class IncidentUpdate(IncidentBase):
         return v
 
 
-class IncidentRead(IncidentBase):
+class IncidentReadMinimal(IncidentBase):
     id: PrimaryKey
+    reporter: Optional[ParticipantRead]
+    commander: Optional[ParticipantRead]
     name: Optional[NameStr]
     primary_team: Optional[str]
     primary_location: Optional[str]
-    reporter: Optional[ParticipantRead]
-    commander: Optional[ParticipantRead]
-    last_tactical_report: Optional[ReportRead]
-    last_executive_report: Optional[ReportRead]
     incident_priority: IncidentPriorityRead
     incident_type: IncidentTypeRead
+    total_cost: Optional[float]
+    project: ProjectRead
+    total_cost: Optional[float]
+    project: ProjectRead
+    tags: Optional[List[TagRead]] = []
+    duplicates: Optional[List[IncidentReadNested]] = []
+    created_at: Optional[datetime] = None
+    reported_at: Optional[datetime] = None
+    stable_at: Optional[datetime] = None
+    closed_at: Optional[datetime] = None
+    incident_costs: Optional[List[IncidentCostRead]] = []
+
+
+class IncidentRead(IncidentReadMinimal):
+    last_tactical_report: Optional[ReportRead]
+    last_executive_report: Optional[ReportRead]
     participants: Optional[List[ParticipantRead]] = []
     workflow_instances: Optional[List[WorkflowInstanceRead]] = []
     storage: Optional[StorageRead] = None
     ticket: Optional[TicketRead] = None
     documents: Optional[List[DocumentRead]] = []
-    tags: Optional[List[TagRead]] = []
     terms: Optional[List[TermRead]] = []
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
     events: Optional[List[EventRead]] = []
-    created_at: Optional[datetime] = None
-    reported_at: Optional[datetime] = None
-    duplicates: Optional[List[IncidentReadNested]] = []
-    stable_at: Optional[datetime] = None
-    closed_at: Optional[datetime] = None
-    incident_costs: Optional[List[IncidentCostRead]] = []
-    total_cost: Optional[float]
-    project: ProjectRead
 
 
 class IncidentPagination(DispatchBase):
     total: int
     itemsPerPage: int
     page: int
-    items: List[IncidentRead] = []
+    items: List[IncidentReadMinimal] = []
