@@ -388,8 +388,6 @@ class IncidentReadMinimal(IncidentBase):
     incident_type: IncidentTypeRead
     total_cost: Optional[float]
     project: ProjectRead
-    total_cost: Optional[float]
-    project: ProjectRead
     tags: Optional[List[TagRead]] = []
     duplicates: Optional[List[IncidentReadNested]] = []
     created_at: Optional[datetime] = None
