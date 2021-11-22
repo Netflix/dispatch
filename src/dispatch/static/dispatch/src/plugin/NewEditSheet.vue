@@ -24,7 +24,18 @@
             hint="Each plugin type can only ever have one enabled plugin. Existing enabled plugins will be de-activated."
             label="Enabled"
           />
-          <v-jsf v-model="configuration" :schema="configuration_schema" :options="options" />
+          <v-jsf
+            v-if="!plugin"
+            v-model="configuration"
+            :schema="configuration_schema"
+            :options="options"
+          />
+          <v-jsf
+            v-else
+            v-model="configuration"
+            :schema="plugin.configuration_schema"
+            :options="options"
+          />
         </v-form>
       </v-card-text>
     </v-card>
