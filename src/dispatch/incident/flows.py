@@ -441,13 +441,14 @@ def add_participant_to_tactical_group(
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
     )
-    tactical_group = group_service.get_by_incident_id_and_resource_type(
-        db_session=db_session,
-        incident_id=incident.id,
-        resource_type=f"{plugin.plugin.slug}-tactical-group",
-    )
-    if plugin and tactical_group:
-        plugin.instance.add(tactical_group.email, [user_email])
+    if plugin:
+        tactical_group = group_service.get_by_incident_id_and_resource_type(
+            db_session=db_session,
+            incident_id=incident.id,
+            resource_type=f"{plugin.plugin.slug}-tactical-group",
+        )
+        if tactical_group:
+            plugin.instance.add(tactical_group.email, [user_email])
 
 
 def remove_participant_from_tactical_group(
@@ -458,13 +459,14 @@ def remove_participant_from_tactical_group(
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
     )
-    tactical_group = group_service.get_by_incident_id_and_resource_type(
-        db_session=db_session,
-        incident_id=incident.id,
-        resource_type=f"{plugin.plugin.slug}-tactical-group",
-    )
-    if plugin and tactical_group:
-        plugin.instance.remove(tactical_group.email, [user_email])
+    if plugin:
+        tactical_group = group_service.get_by_incident_id_and_resource_type(
+            db_session=db_session,
+            incident_id=incident.id,
+            resource_type=f"{plugin.plugin.slug}-tactical-group",
+        )
+        if tactical_group:
+            plugin.instance.remove(tactical_group.email, [user_email])
 
 
 @background_task
