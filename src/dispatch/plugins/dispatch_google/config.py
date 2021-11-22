@@ -35,6 +35,6 @@ class GoogleConfiguration(BaseConfigurationModel):
         description="The project_id value from your Google Cloud Platform (GCP) service account configuration file.",
     )
     google_domain: str = Field(
-        "Google Workspace Domain",
+        title="Google Workspace Domain",
         description="Base domain for which this Google Cloud Platform (GCP) service account resides.",
     )

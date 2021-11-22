@@ -10,6 +10,7 @@
     item-text="slug"
     no-filter
     v-model="plugin"
+    clearable
   >
     <template v-slot:no-data>
       <v-list-item>
