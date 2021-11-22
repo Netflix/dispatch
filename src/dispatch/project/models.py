@@ -6,7 +6,6 @@ from pydantic import Field
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.expression import null
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
