@@ -6,6 +6,7 @@ from pydantic import Field
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.expression import null
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
@@ -42,8 +43,8 @@ class Project(Base):
 class ProjectBase(DispatchBase):
     id: Optional[PrimaryKey]
     name: NameStr
-    owner_email: Optional[EmailStr] = None
-    owner_conversation: Optional[str] = None
+    owner_email: Optional[EmailStr] = Field(None, nullable=True)
+    owner_conversation: Optional[str] = Field(None, nullable=True)
     annual_employee_cost: Optional[int]
     business_year_hours: Optional[int]
     description: Optional[str] = Field(None, nullable=True)
