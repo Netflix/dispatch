@@ -1,7 +1,12 @@
 import pytest
 import schemathesis
 from fastapi.testclient import TestClient
-from schemathesis.checks import ALL_CHECKS
+from schemathesis.checks import (
+    not_a_server_error,
+    content_type_conformance,
+    response_headers_conformance,
+    response_schema_conformance,
+)
 
 from hypothesis import settings, HealthCheck
 
@@ -9,6 +14,13 @@ from dispatch.main import app
 
 
 schemathesis.fixups.install(["fast_api"])
+
+
+def filter_null_bytes(strategy):
+    return strategy.filter(lambda value: "\\x00" not in str(value))
+
+
+schemathesis.hooks.strategies.register("body", filter_null_bytes)
 
 schema = schemathesis.from_asgi("/api/v1/docs/openapi.json", app, base_url="/api/v1")
 
@@ -30,4 +42,12 @@ def test_api(db, token, case):
     case.headers = case.headers or {}
     case.headers["Authorization"] = f"Bearer {token}"
     response = case.call_asgi(base_url="http://testserver/api/v1")
-    case.validate_response(response, checks=ALL_CHECKS)
+    case.validate_response(
+        response,
+        checks=[
+            not_a_server_error,
+            content_type_conformance,
+            response_headers_conformance,
+            response_schema_conformance,
+        ],
+    )
