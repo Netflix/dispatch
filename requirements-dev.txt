@@ -8,7 +8,7 @@ asttokens==2.0.5
     # via devtools
 attrs==20.3.0
     # via pytest
-black==21.10b0
+black==21.11b1
     # via -r requirements-dev.in
 click==7.1.2
     # via black
@@ -20,7 +20,7 @@ executing==0.8.0
     # via devtools
 factory-boy==3.2.1
     # via -r requirements-dev.in
-faker==9.8.1
+faker==9.8.2
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -52,7 +52,7 @@ pytest==6.2.5
     # via -r requirements-dev.in
 python-dateutil==2.8.2
     # via faker
-regex==2020.11.13
+regex==2021.11.10
     # via black
 six==1.15.0
     # via

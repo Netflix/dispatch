@@ -172,7 +172,6 @@ import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
 import { mapActions } from "vuex"
-import MonacoEditor from "monaco-editor-vue"
 
 import IncidentApi from "@/incident/api"
 import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
@@ -237,7 +236,7 @@ export default {
     IncidentStatusMultiSelect,
     IncidentStatus,
     IncidentPriority,
-    MonacoEditor,
+    MonacoEditor: () => import("monaco-editor-vue"),
   },
   computed: {
     ...mapFields("search", [
