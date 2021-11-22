@@ -532,18 +532,31 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                 incident, individual_participants, team_participants, db_session
             )
 
-            for g in [tactical_group, notification_group]:
-                group_in = GroupCreate(
-                    name=g["name"],
-                    email=g["email"],
-                    resource_type=g["resource_type"],
-                    resource_id=g["resource_id"],
-                    weblink=g["weblink"],
-                )
-                incident.groups.append(
-                    group_service.create(db_session=db_session, group_in=group_in)
-                )
+            tactical_group_in = GroupCreate(
+                name=tactical_group["name"],
+                email=tactical_group["email"],
+                resource_type=tactical_group["resource_type"],
+                resource_id=tactical_group["resource_id"],
+                weblink=tactical_group["weblink"],
+            )
+            tactical_group_id = group_service.create(
+                db_session=db_session, group_in=tactical_group_in
+            )
+            incident.groups.append(tactical_group_id)
+            incident.tactical_group_id = tactical_group_id
 
+            notification_group_in = GroupCreate(
+                name=notification_group["name"],
+                email=notification_group["email"],
+                resource_type=notification_group["resource_type"],
+                resource_id=notification_group["resource_id"],
+                weblink=notification_group["weblink"],
+            )
+            notification_group_id = group_service.create(
+                db_session=db_session, group_in=notification_group_in
+            )
+            incident.groups.append(notification_group_id)
+            incident.notification_group_id = notification_group_id
             event_service.log(
                 db_session=db_session,
                 source="Dispatch Core App",

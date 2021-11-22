@@ -3,6 +3,7 @@ from collections import Counter, defaultdict
 from typing import List, Optional
 
 from pydantic import validator
+from sqlalchemy.sql.sqltypes import Numeric
 from dispatch.models import NameStr, PrimaryKey
 from sqlalchemy import (
     Column,
@@ -12,13 +13,10 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     String,
     Table,
-    select,
 )
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import TSVectorType
+from sqlalchemy_utils import TSVectorType, observes
 
-from dispatch.enums import DocumentResourceTypes
 from dispatch.conference.models import ConferenceRead
 from dispatch.conversation.models import ConversationRead
 from dispatch.database.core import Base
@@ -33,9 +31,7 @@ from dispatch.incident_priority.models import (
 )
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
-from dispatch.participant.models import Participant, ParticipantRead, ParticipantUpdate
-from dispatch.participant_role.models import ParticipantRole, ParticipantRoleType
-from dispatch.report.enums import ReportTypes
+from dispatch.participant.models import ParticipantRead, ParticipantUpdate
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
 from dispatch.term.models import TermRead
@@ -70,6 +66,9 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     description = Column(String, nullable=False)
     status = Column(String, default=IncidentStatus.active)
     visibility = Column(String, default=Visibility.open, nullable=False)
+    total_cost = Column(Numeric)
+    primary_team = Column(String)
+    primary_location = Column(String)
 
     # auto generated
     reported_at = Column(DateTime, default=datetime.utcnow)
@@ -82,176 +81,6 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
         )
     )
 
-    @hybrid_property
-    def commander(self):
-        commander = None
-        if self.participants:
-            most_recent_assumed_at = self.created_at
-            for p in self.participants:
-                for pr in p.participant_roles:
-                    if pr.role == ParticipantRoleType.incident_commander:
-                        if pr.assumed_at > most_recent_assumed_at:
-                            most_recent_assumed_at = pr.assumed_at
-                            commander = p
-        return commander
-
-    @commander.expression
-    def commander(cls):
-        return (
-            select([Participant])
-            .where(Participant.incident_id == cls.id)
-            .where(ParticipantRole.role == ParticipantRoleType.incident_commander)
-            .order_by(ParticipantRole.assumed_at.desc())
-            .first()
-        )
-
-    @hybrid_property
-    def reporter(self):
-        reporter = None
-        if self.participants:
-            most_recent_assumed_at = self.created_at
-            for p in self.participants:
-                for pr in p.participant_roles:
-                    if pr.role == ParticipantRoleType.reporter:
-                        if pr.assumed_at > most_recent_assumed_at:
-                            most_recent_assumed_at = pr.assumed_at
-                            reporter = p
-        return reporter
-
-    @reporter.expression
-    def reporter(cls):
-        return (
-            select([Participant])
-            .where(Participant.incident_id == cls.id)
-            .where(ParticipantRole.role == ParticipantRoleType.reporter)
-            .order_by(ParticipantRole.assumed_at.desc())
-            .first()
-        )
-
-    @hybrid_property
-    def liaison(self):
-        liaison = None
-        if self.participants:
-            most_recent_assumed_at = self.created_at
-            for p in self.participants:
-                for pr in p.participant_roles:
-                    if pr.role == ParticipantRoleType.liaison:
-                        if pr.assumed_at > most_recent_assumed_at:
-                            most_recent_assumed_at = pr.assumed_at
-                            liaison = p
-        return liaison
-
-    @liaison.expression
-    def liaison(cls):
-        return (
-            select([Participant])
-            .where(Participant.incident_id == cls.id)
-            .where(ParticipantRole.role == ParticipantRoleType.liaison)
-            .order_by(ParticipantRole.assumed_at.desc())
-            .first()
-        )
-
-    @hybrid_property
-    def scribe(self):
-        scribe = None
-        if self.participants:
-            most_recent_assumed_at = self.created_at
-            for p in self.participants:
-                for pr in p.participant_roles:
-                    if pr.role == ParticipantRoleType.scribe:
-                        if pr.assumed_at > most_recent_assumed_at:
-                            most_recent_assumed_at = pr.assumed_at
-                            scribe = p
-        return scribe
-
-    @scribe.expression
-    def scribe(cls):
-        return (
-            select([Participant])
-            .where(Participant.incident_id == cls.id)
-            .where(ParticipantRole.role == ParticipantRoleType.scribe)
-            .order_by(ParticipantRole.assumed_at.desc())
-            .first()
-        )
-
-    @hybrid_property
-    def tactical_group(self):
-        if self.groups:
-            for g in self.groups:
-                # this currently relies on there being only one tactical group per incident
-                # this is not enforced and is only by convention
-                if g.resource_type.endswith("tactical-group"):
-                    return g
-
-    @hybrid_property
-    def notifications_group(self):
-        if self.groups:
-            for g in self.groups:
-                # this currently relies on there being only one notification group per incident
-                # this is not enforced and is only by convention
-                if g.resource_type.endswith("notification-group"):
-                    return g
-
-    @hybrid_property
-    def incident_document(self):
-        if self.documents:
-            for d in self.documents:
-                if d.resource_type == DocumentResourceTypes.incident:
-                    return d
-
-    @hybrid_property
-    def incident_review_document(self):
-        if self.documents:
-            for d in self.documents:
-                if d.resource_type == DocumentResourceTypes.review:
-                    return d
-
-    @hybrid_property
-    def tactical_reports(self):
-        if self.reports:
-            tactical_reports = [
-                report for report in self.reports if report.type == ReportTypes.tactical_report
-            ]
-            return tactical_reports
-
-    @hybrid_property
-    def last_tactical_report(self):
-        if self.tactical_reports:
-            return sorted(self.tactical_reports, key=lambda r: r.created_at)[-1]
-
-    @hybrid_property
-    def executive_reports(self):
-        if self.reports:
-            executive_reports = [
-                report for report in self.reports if report.type == ReportTypes.executive_report
-            ]
-            return executive_reports
-
-    @hybrid_property
-    def last_executive_report(self):
-        if self.executive_reports:
-            return sorted(self.executive_reports, key=lambda r: r.created_at)[-1]
-
-    @hybrid_property
-    def primary_team(self):
-        if self.participants:
-            teams = [p.team for p in self.participants]
-            return Counter(teams).most_common(1)[0][0]
-
-    @hybrid_property
-    def primary_location(self):
-        if self.participants:
-            locations = [p.location for p in self.participants]
-            return Counter(locations).most_common(1)[0][0]
-
-    @hybrid_property
-    def total_cost(self):
-        if self.incident_costs:
-            total_cost = 0
-            for cost in self.incident_costs:
-                total_cost += cost.amount
-            return total_cost
-
     # resources
     incident_costs = relationship(
         "IncidentCost",
@@ -262,6 +91,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
 
     incident_priority = relationship("IncidentPriority", backref="incident")
     incident_priority_id = Column(Integer, ForeignKey("incident_priority.id"))
+
     incident_type = relationship("IncidentType", backref="incident")
     incident_type_id = Column(Integer, ForeignKey("incident_type.id"))
 
@@ -271,14 +101,10 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     conversation = relationship(
         "Conversation", uselist=False, backref="incident", cascade="all, delete-orphan"
     )
-    documents = relationship(
-        "Document", lazy="subquery", backref="incident", cascade="all, delete-orphan"
-    )
+    documents = relationship("Document", backref="incident", cascade="all, delete-orphan")
     events = relationship("Event", backref="incident", cascade="all, delete-orphan")
     feedback = relationship("Feedback", backref="incident", cascade="all, delete-orphan")
-    groups = relationship(
-        "Group", lazy="subquery", backref="incident", cascade="all, delete-orphan"
-    )
+    groups = relationship("Group", backref="incident", cascade="all, delete-orphan")
     participants = relationship("Participant", backref="incident", cascade="all, delete-orphan")
     reports = relationship("Report", backref="incident", cascade="all, delete-orphan")
     storage = relationship(
@@ -296,9 +122,44 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
         "WorkflowInstance", backref="incident", cascade="all, delete-orphan"
     )
 
-    # allow incidents to be marked as duplicate
     duplicate_id = Column(Integer, ForeignKey("incident.id"))
     duplicates = relationship("Incident", remote_side=[id], uselist=True)
+
+    commander_id = Column(Integer, ForeignKey("participant.id"))
+    commander = relationship("Participant", foreign_keys=[commander_id])
+
+    reporter_id = Column(Integer, ForeignKey("participant.id"))
+    reporter = relationship("Participant", foreign_keys=[reporter_id])
+
+    liason_id = Column(Integer, ForeignKey("participant.id"))
+    liason = relationship("Participant", foreign_keys=[liason_id])
+
+    scribe_id = Column(Integer, ForeignKey("participant.id"))
+    scribe = relationship("Participant", foreign_keys=[scribe_id])
+
+    incident_document_id = Column(Integer, ForeignKey("document.id"))
+    incident_document = relationship("Document", foreign_keys=[incident_document_id])
+
+    incident_review_document_id = Column(Integer, ForeignKey("document.id"))
+    incident_review_document = relationship("Document", foreign_keys=[incident_review_document_id])
+
+    # tactical_group_id = Column(Integer, ForeignKey["group.id"])
+    # tactical_group = relationship("Group", foreign_keys=[tactical_group_id])
+
+    # notification_group_id = Column(Integer, ForeignKey["group.id"])
+    # notification_group = relationship("Group", foreign_keys=[notification_group_id])
+
+    @observes("incident_costs")
+    def cost_observer(self, incident_costs):
+        total_cost = 0
+        for cost in incident_costs:
+            total_cost += cost.amount
+        self.total_cost = total_cost
+
+    @observes("participants")
+    def participant_observer(self, participants):
+        self.primary_team = Counter(p.team for p in participants).most_common(1)[0][0]
+        self.primary_location = Counter(p.location for p in participants).most_common(1)[0][0]
 
 
 class ProjectRead(DispatchBase):
