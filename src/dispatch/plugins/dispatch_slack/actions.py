@@ -243,7 +243,7 @@ def add_user_to_tactical_group(
         incident_flows.add_participant_to_tactical_group(
             user_email=user_email, incident=incident, db_session=db_session
         )
-        message = f"Success! We've subscribed you to incident {incident.name}. You will recieve all tactical reports about this incident."
+        message = f"Success! We've subscribed you to incident {incident.name}. You will receive all tactical reports about this incident."
         dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
 
 
