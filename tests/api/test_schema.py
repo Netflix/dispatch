@@ -7,7 +7,6 @@ from schemathesis.checks import (
     response_headers_conformance,
     response_schema_conformance,
 )
-
 from hypothesis import settings, HealthCheck
 
 from dispatch.main import app
@@ -15,14 +14,11 @@ from dispatch.main import app
 
 schemathesis.fixups.install(["fast_api"])
 
-
-def filter_null_bytes(strategy):
-    return strategy.filter(lambda value: "\\x00" not in str(value))
-
-
-schemathesis.hooks.strategies.register("body", filter_null_bytes)
-
 schema = schemathesis.from_asgi("/api/v1/docs/openapi.json", app, base_url="/api/v1")
+
+
+def before_generate_body(context, strategy):
+    return strategy.filter(lambda value: "\\x00" not in str(value))
 
 
 @pytest.fixture(scope="session")
@@ -36,6 +32,7 @@ def token():
 
 
 @pytest.mark.long
+@schema.hooks.apply(before_generate_body)
 @schema.parametrize()
 @settings(suppress_health_check=[HealthCheck.too_slow, HealthCheck.filter_too_much])
 def test_api(db, token, case):
