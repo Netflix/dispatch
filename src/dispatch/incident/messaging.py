@@ -311,14 +311,20 @@ def send_incident_update_notifications(
     if previous_incident.status != incident.status:
         change = True
         notification_template.append(INCIDENT_STATUS_CHANGE)
+        if previous_incident.incident_type.name != incident.incident_type.name:
+            notification_template.append(INCIDENT_TYPE_CHANGE)
 
-    if previous_incident.incident_type.name != incident.incident_type.name:
-        change = True
-        notification_template.append(INCIDENT_TYPE_CHANGE)
+        if previous_incident.incident_priority.name != incident.incident_priority.name:
+            notification_template.append(INCIDENT_PRIORITY_CHANGE)
+    else:
+        if incident.status != IncidentStatus.closed:
+            if previous_incident.incident_type.name != incident.incident_type.name:
+                change = True
+                notification_template.append(INCIDENT_TYPE_CHANGE)
 
-    if previous_incident.incident_priority.name != incident.incident_priority.name:
-        change = True
-        notification_template.append(INCIDENT_PRIORITY_CHANGE)
+            if previous_incident.incident_priority.name != incident.incident_priority.name:
+                change = True
+                notification_template.append(INCIDENT_PRIORITY_CHANGE)
 
     if not change:
         # we don't need to notify
