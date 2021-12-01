@@ -359,7 +359,7 @@ starlette==0.14.2
     # via
     #   fastapi
     #   schemathesis
-statsmodels==0.13.0
+statsmodels==0.13.1
     # via -r requirements-base.in
 tabulate==0.8.9
     # via -r requirements-base.in
