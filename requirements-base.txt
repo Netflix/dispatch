@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url requirements-base.in
 #
-aiofiles==0.7.0
+aiofiles==0.8.0
     # via -r requirements-base.in
 aiohttp==3.7.4.post0
     # via -r requirements-base.in
@@ -300,7 +300,7 @@ scipy==1.7.3
     # via statsmodels
 sentry-asgi==0.2.0
     # via -r requirements-base.in
-sentry-sdk==1.4.3
+sentry-sdk==1.5.0
     # via
     #   -r requirements-base.in
     #   sentry-asgi
