@@ -4,7 +4,7 @@
 #
 #    pip-compile --no-emit-index-url requirements-base.in
 #
-aiofiles==0.7.0
+aiofiles==0.8.0
     # via -r requirements-base.in
 aiohttp==3.8.1
     # via -r requirements-base.in
