@@ -145,7 +145,7 @@ idna==2.10
     #   yarl
 iniconfig==1.1.1
     # via pytest
-jinja2==3.0.2
+jinja2==3.0.3
     # via -r requirements-base.in
 jira==2.0.0
     # via -r requirements-base.in
@@ -331,7 +331,7 @@ six==1.15.0
     #   sqlalchemy-filters
     #   sqlalchemy-utils
     #   validators
-slack_sdk==3.12.0
+slack-sdk==3.12.0
     # via -r requirements-base.in
 sniffio==1.2.0
     # via
