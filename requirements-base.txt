@@ -98,7 +98,7 @@ frozenlist==1.2.0
     #   aiosignal
 google-api-core==1.26.1
     # via google-api-python-client
-google-api-python-client==2.28.0
+google-api-python-client==2.31.0
     # via -r requirements-base.in
 google-auth==1.28.0
     # via
@@ -359,7 +359,7 @@ starlette==0.14.2
     # via
     #   fastapi
     #   schemathesis
-statsmodels==0.13.0
+statsmodels==0.13.1
     # via -r requirements-base.in
 tabulate==0.8.9
     # via -r requirements-base.in
