@@ -10,7 +10,7 @@ aiohttp==3.8.1
     # via -r requirements-base.in
 aiosignal==1.2.0
     # via aiohttp
-alembic==1.7.4
+alembic==1.7.5
     # via -r requirements-base.in
 asgiref==3.4.1
     # via uvicorn
@@ -331,7 +331,7 @@ six==1.15.0
     #   sqlalchemy-filters
     #   sqlalchemy-utils
     #   validators
-slack_sdk==3.12.0
+slack-sdk==3.12.0
     # via -r requirements-base.in
 sniffio==1.2.0
     # via
