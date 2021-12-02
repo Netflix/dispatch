@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_get(session, plugin):
     from dispatch.plugin.service import get
 
@@ -12,6 +15,7 @@ def test_get_instance(session, plugin_instance):
     assert t_plugin_instance.id == plugin_instance.id
 
 
+# @pytest.mark.skip
 def test_create_instance(session, plugin, project):
     from dispatch.plugin.service import create_instance
     from dispatch.plugin.models import PluginInstanceCreate
