@@ -8,7 +8,7 @@ asttokens==2.0.5
     # via devtools
 attrs==20.3.0
     # via pytest
-black==21.11b1
+black==21.12b0
     # via -r requirements-dev.in
 click==7.1.2
     # via black
@@ -52,8 +52,6 @@ pytest==6.2.5
     # via -r requirements-dev.in
 python-dateutil==2.8.2
     # via faker
-regex==2021.11.10
-    # via black
 six==1.15.0
     # via
     #   asttokens
