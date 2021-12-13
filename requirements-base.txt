@@ -157,7 +157,7 @@ jsonschema==3.2.0
     #   schemathesis
 junit-xml==1.9
     # via schemathesis
-lxml==4.6.3
+lxml==4.6.5
     # via
     #   emails
     #   premailer
