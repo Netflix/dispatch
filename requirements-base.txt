@@ -98,7 +98,7 @@ frozenlist==1.2.0
     #   aiosignal
 google-api-core==1.26.1
     # via google-api-python-client
-google-api-python-client==2.33.0
+google-api-python-client==2.34.0
     # via -r requirements-base.in
 google-auth==1.28.0
     # via
@@ -387,7 +387,7 @@ urllib3==1.26.5
     #   pdpyras
     #   requests
     #   sentry-sdk
-uvicorn==0.15.0
+uvicorn==0.16.0
     # via -r requirements-base.in
 validators==0.18.2
     # via -r requirements-base.in
