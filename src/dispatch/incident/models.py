@@ -415,4 +415,4 @@ class IncidentPagination(DispatchBase):
     total: int
     itemsPerPage: int
     page: int
-    items: List[IncidentReadMinimal] = []
+    items: List[IncidentRead] = []

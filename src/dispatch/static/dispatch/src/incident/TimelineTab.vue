@@ -11,7 +11,7 @@
         Export
       </v-btn>
     </v-row>
-    <v-timeline v-if="events.length" dense clipped>
+    <v-timeline v-if="events && events.length" dense clipped>
       <v-timeline-item
         v-for="event in sortedEvents"
         :key="event.id"
