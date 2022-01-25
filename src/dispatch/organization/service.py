@@ -2,9 +2,9 @@ from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.sql.expression import true
 
-from dispatch.database.core import engine
 from dispatch.auth.models import DispatchUser, DispatchUserOrganization
-from dispatch.database.manage import init_schema
+from dispatch.database.core import engine
+from dispatch.database.manage import init_schema, rename_schema
 from dispatch.enums import UserRoles
 from dispatch.exceptions import NotFoundError
 
@@ -141,6 +141,15 @@ def update(
         organization.banner_color = organization_in.banner_color.as_hex()
 
     db_session.commit()
+
+    if organization_in.name != organization_data["name"]:
+        # we need to rename the organization database schema
+        rename_schema(
+            engine=engine,
+            current_organization_slug=organization_data["slug"],
+            new_organization_slug=organization.slug,
+        )
+
     return organization
 
 

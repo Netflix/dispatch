@@ -142,6 +142,21 @@ def init_schema(*, engine, organization: Organization):
     return organization
 
 
+def rename_schema(*, engine, current_organization_slug: str, new_organization_slug: str):
+    """Renames an existing schema."""
+    current_schema_name = f"{DISPATCH_ORGANIZATION_SCHEMA_PREFIX}_{current_organization_slug}"
+    new_schema_name = f"{DISPATCH_ORGANIZATION_SCHEMA_PREFIX}_{new_organization_slug}"
+
+    if not engine.dialect.has_schema(engine, current_schema_name):
+        log.warning(
+            f"Unable to rename {current_schema_name} to {new_schema_name}. Organization schema with name {current_schema_name} does not exist."
+        )
+        return
+
+    with engine.connect() as connection:
+        connection.execute(text(f"ALTER SCHEMA {current_schema_name} RENAME TO {new_schema_name}"))
+
+
 def setup_fulltext_search(connection, tables):
     """Syncs any required fulltext table triggers and functions."""
     # parsing functions
