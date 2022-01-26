@@ -63,6 +63,18 @@ instance.interceptors.response.use(
         return Promise.reject(err)
       }
 
+      if (err.response.status == 403) {
+        let errorText = err.response.data.detail.map(({ msg }) => msg).join(" ")
+        store.commit(
+          "notification_backend/addBeNotification",
+          {
+            text: errorText,
+            type: "error",
+          },
+          { root: true }
+        )
+      }
+
       if (err.response.status == 409) {
         let errorText = err.response.data.detail.map(({ msg }) => msg).join(" ")
         store.commit(
