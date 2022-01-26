@@ -53,8 +53,13 @@ class OrganizationCreate(OrganizationBase):
     pass
 
 
-class OrganizationUpdate(OrganizationBase):
-    pass
+class OrganizationUpdate(DispatchBase):
+    id: Optional[PrimaryKey]
+    description: Optional[str] = Field(None, nullable=True)
+    default: Optional[bool] = Field(False, nullable=True)
+    banner_enabled: Optional[bool] = Field(False, nullable=True)
+    banner_color: Optional[Color] = Field(None, nullable=True)
+    banner_text: Optional[NameStr] = Field(None, nullable=True)
 
 
 class OrganizationRead(OrganizationBase):

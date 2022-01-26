@@ -131,8 +131,7 @@ def update(
     """Updates an organization."""
     organization_data = organization.dict()
 
-    # we exclude the organization's name because the organization db schema is named after it
-    update_data = organization_in.dict(skip_defaults=True, exclude={"name", "banner_color"})
+    update_data = organization_in.dict(skip_defaults=True, exclude={"banner_color"})
 
     for field in organization_data:
         if field in update_data:
