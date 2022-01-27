@@ -4,16 +4,27 @@
       <v-card>
         <v-card-title>
           <span class="headline" v-if="id">Edit Organization</span>
-          <span class="headline" v-else>Create a New Organization</span>
+          <span class="headline" v-else>Create an Organization</span>
         </v-card-title>
         <v-card-text>
-          Organizations represent the top level in your hierarchy. You'll be able to bundle a
+          Organizations represent the top-level in your hierarchy. You'll be able to bundle a
           collection of projects within an organization.
           <ValidationProvider name="Name" rules="required" immediate>
             <v-text-field
+              v-if="id"
               v-model="name"
               label="Name"
-              hint="A name for your saved search."
+              hint="A name for your organization. Note: it can't be modified once the organization has been created."
+              slot-scope="{ errors, valid }"
+              :error-messages="errors"
+              :success="valid"
+              disabled
+            />
+            <v-text-field
+              v-else
+              v-model="name"
+              label="Name"
+              hint="A name for your organization. Note: it can't be modified once the organization has been created."
               slot-scope="{ errors, valid }"
               :error-messages="errors"
               :success="valid"
@@ -25,7 +36,7 @@
             <v-textarea
               v-model="description"
               label="Description"
-              hint="A short description."
+              hint="A short description for your organization."
               slot-scope="{ errors, valid }"
               :error-messages="errors"
               :success="valid"
@@ -37,12 +48,11 @@
         </v-card-text>
         <v-list-item-title class="subtitle-2 ml-4">
           Banner Settings
-
           <v-tooltip max-width="250px" bottom>
             <template v-slot:activator="{ on, attrs }">
               <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
             </template>
-            When enabled this banner will be presented to users throughout the application when
+            When enabled, this banner will be presented to users throughout the application when
             using this organization.
           </v-tooltip>
         </v-list-item-title>
