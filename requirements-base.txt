@@ -391,7 +391,7 @@ urllib3==1.26.5
     #   pdpyras
     #   requests
     #   sentry-sdk
-uvicorn==0.17.0.post1
+uvicorn==0.17.1
     # via -r requirements-base.in
 validators==0.18.2
     # via -r requirements-base.in
