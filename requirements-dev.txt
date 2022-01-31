@@ -8,9 +8,9 @@ asttokens==2.0.5
     # via devtools
 attrs==20.3.0
     # via pytest
-black==21.12b0
+black==22.1.0
     # via -r requirements-dev.in
-click==7.1.2
+click==8.0.3
     # via black
 coverage==6.3
     # via -r requirements-dev.in
@@ -62,9 +62,7 @@ toml==0.10.2
     # via
     #   pytest
     #   vulture
-tomli==1.0.4
-    # via black
-typing-extensions==3.10.0.2
+tomli==2.0.0
     # via black
 vulture==2.3
     # via -r requirements-dev.in
