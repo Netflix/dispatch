@@ -166,14 +166,17 @@ export default {
   },
 
   created() {
+    this.project = { name: "" }
     if (this.query.project) {
       this.project = { name: this.query.project }
     }
 
+    this.incident_type = { name: "" }
     if (this.query.incident_type) {
       this.incident_type = { name: this.query.incident_type }
     }
 
+    this.incident_priority = { name: "" }
     if (this.query.incident_priority) {
       this.incident_priority = { name: this.query.incident_priority }
     }
