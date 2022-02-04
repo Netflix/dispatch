@@ -48,7 +48,7 @@ pyflakes==2.4.0
     # via flake8
 pyparsing==3.0.7
     # via packaging
-pytest==6.2.5
+pytest==7.0.0
     # via -r requirements-dev.in
 python-dateutil==2.8.2
     # via faker
@@ -57,12 +57,10 @@ six==1.16.0
     #   asttokens
     #   python-dateutil
 toml==0.10.2
-    # via
-    #   pytest
-    #   vulture
+    # via vulture
 tomli==2.0.0
-    # via black
-typing-extensions==4.0.1
-    # via black
+    # via
+    #   black
+    #   pytest
 vulture==2.3
     # via -r requirements-dev.in
