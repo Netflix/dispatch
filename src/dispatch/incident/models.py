@@ -233,16 +233,36 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
             return sorted(self.executive_reports, key=lambda r: r.created_at)[-1]
 
     @hybrid_property
-    def primary_team(self):
+    def reporters_location(self):
         if self.participants:
-            teams = [p.team for p in self.participants]
-            return Counter(teams).most_common(1)[0][0]
+            locations = []
+            for p in self.participants:
+                for pr in p.participant_roles:
+                    if pr.role == ParticipantRoleType.reporter:
+                        locations.append(p.location)
+            return Counter(locations).most_common(1)[0][0]
 
     @hybrid_property
-    def primary_location(self):
+    def commanders_location(self):
+        if self.participants:
+            locations = []
+            for p in self.participants:
+                for pr in p.participant_roles:
+                    if pr.role == ParticipantRoleType.incident_commander:
+                        locations.append(p.location)
+            return Counter(locations).most_common(1)[0][0]
+
+    @hybrid_property
+    def participants_location(self):
         if self.participants:
             locations = [p.location for p in self.participants]
             return Counter(locations).most_common(1)[0][0]
+
+    @hybrid_property
+    def participants_team(self):
+        if self.participants:
+            teams = [p.team for p in self.participants]
+            return Counter(teams).most_common(1)[0][0]
 
     @hybrid_property
     def total_cost(self):
