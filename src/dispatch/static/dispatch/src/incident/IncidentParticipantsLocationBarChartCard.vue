@@ -4,17 +4,17 @@
     type="bar"
     :options="chartOptions"
     :series="series"
-    title="Primary Teams"
+    title="Participants Location"
   />
 </template>
 
 <script>
 import { forEach } from "lodash"
-import DashboardCard from "@/dashboard/DashboardCard.vue"
 import DashboardUtils from "@/dashboard/utils"
+import DashboardCard from "@/dashboard/DashboardCard.vue"
 
 export default {
-  name: "IncidentPrimaryTeamBarChartCard",
+  name: "IncidentParticipantsLocationBarChartCard",
 
   props: {
     value: {
@@ -49,7 +49,6 @@ export default {
             },
           },
         },
-        colors: DashboardUtils.defaultColorTheme(),
         responsive: [
           {
             options: {
@@ -74,14 +73,14 @@ export default {
       }
     },
     series() {
-      let allTeams = []
+      let allLocations = []
       forEach(this.value, function (value) {
         forEach(value, function (value) {
-          allTeams.push(value.primary_team)
+          allLocations.push(value.participants_location)
         })
       })
-      let series = DashboardUtils.createCountedSeriesData(this.value, "primary_team", [
-        ...new Set(allTeams),
+      let series = DashboardUtils.createCountedSeriesData(this.value, "participants_location", [
+        ...new Set(allLocations),
       ])
       return series
     },

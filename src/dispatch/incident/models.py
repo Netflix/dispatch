@@ -233,13 +233,13 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
             return sorted(self.executive_reports, key=lambda r: r.created_at)[-1]
 
     @hybrid_property
-    def primary_team(self):
+    def participants_team(self):
         if self.participants:
             teams = [p.team for p in self.participants]
             return Counter(teams).most_common(1)[0][0]
 
     @hybrid_property
-    def primary_location(self):
+    def participants_location(self):
         if self.participants:
             locations = [p.location for p in self.participants]
             return Counter(locations).most_common(1)[0][0]
