@@ -235,19 +235,21 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     @hybrid_property
     def reporters_location(self):
         if self.participants:
-            locations = [
-                p.location for p in self.participants if p.role == ParticipantRoleType.reporter
-            ]
+            locations = []
+            for p in self.participants:
+                for pr in p.participant_roles:
+                    if pr.role == ParticipantRoleType.reporter:
+                        locations.append(p.location)
             return Counter(locations).most_common(1)[0][0]
 
     @hybrid_property
     def commanders_location(self):
         if self.participants:
-            locations = [
-                p.location
-                for p in self.participants
-                if p.role == ParticipantRoleType.incident_commander
-            ]
+            locations = []
+            for p in self.participants:
+                for pr in p.participant_roles:
+                    if pr.role == ParticipantRoleType.incident_commander:
+                        locations.append(p.location)
             return Counter(locations).most_common(1)[0][0]
 
     @hybrid_property
