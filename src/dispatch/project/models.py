@@ -22,7 +22,7 @@ class Project(Base):
     color = Column(String)
 
     annual_employee_cost = Column(Integer, default=650000)
-    business_year_hours = Column(Integer, default=2080)
+    business_year_hours = Column(Integer, default=1640)
 
     owner_email = Column(String)
     owner_conversation = Column(String)

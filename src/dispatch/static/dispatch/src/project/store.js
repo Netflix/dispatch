@@ -12,7 +12,7 @@ const getDefaultSelectedState = () => {
     color: null,
     loading: false,
     annual_employee_cost: 50000,
-    business_year_hours: 2080,
+    business_year_hours: 1640,
     owner_email: null,
     owner_conversation: null,
   }

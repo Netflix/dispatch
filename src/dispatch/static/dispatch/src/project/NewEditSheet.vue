@@ -93,7 +93,7 @@
                     type="number"
                     min="1"
                     pattern="\d+"
-                    placeholder="2080"
+                    placeholder="1640"
                   />
                 </ValidationProvider>
               </v-flex>
