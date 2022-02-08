@@ -66,6 +66,20 @@
         <incident-resolve-time-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <v-flex lg12 sm12 xs12>
+        <incident-reporters-location-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+          @detailsSelected="detailsSelected($event)"
+        />
+      </v-flex>
+      <v-flex lg12 sm12 xs12>
+        <incident-commanders-location-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+          @detailsSelected="detailsSelected($event)"
+        />
+      </v-flex>
+      <v-flex lg12 sm12 xs12>
         <incident-participants-location-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
@@ -100,12 +114,14 @@ import differenceInHours from "date-fns/differenceInHours"
 import DialogFilter from "@/dashboard/DialogFilter.vue"
 import StatWidget from "@/components/StatWidget.vue"
 import IncidentActiveTimeCard from "@/incident/IncidentActiveTimeCard.vue"
+import IncidentCommandersLocationBarChartCard from "@/incident/IncidentCommandersLocationBarChartCard.vue"
 import IncidentCostBarChartCard from "@/incident/IncidentCostBarChartCard.vue"
 import IncidentForecastCard from "@/incident/IncidentForecastCard.vue"
 import IncidentHeatmapCard from "@/incident/IncidentHeatmapCard.vue"
 import IncidentParticipantsLocationBarChartCard from "@/incident/IncidentParticipantsLocationBarChartCard.vue"
 import IncidentParticipantsTeamBarChartCard from "@/incident/IncidentParticipantsTeamBarChartCard.vue"
 import IncidentPriorityBarChartCard from "@/incident/IncidentPriorityBarChartCard.vue"
+import IncidentReportersLocationBarChartCard from "@/incident/IncidentReportersLocationBarChartCard.vue"
 import IncidentResolveTimeCard from "@/incident/IncidentResolveTimeCard.vue"
 import IncidentTagsTreemapCard from "@/incident/IncidentTagsTreemapCard.vue"
 import IncidentTypeBarChartCard from "@/incident/IncidentTypeBarChartCard.vue"
@@ -118,12 +134,14 @@ export default {
     DialogFilter,
     StatWidget,
     IncidentActiveTimeCard,
+    IncidentCommandersLocationBarChartCard,
     IncidentCostBarChartCard,
     IncidentForecastCard,
     IncidentHeatmapCard,
     IncidentParticipantsLocationBarChartCard,
     IncidentParticipantsTeamBarChartCard,
     IncidentPriorityBarChartCard,
+    IncidentReportersLocationBarChartCard,
     IncidentResolveTimeCard,
     IncidentTagsTreemapCard,
     IncidentTypeBarChartCard,
