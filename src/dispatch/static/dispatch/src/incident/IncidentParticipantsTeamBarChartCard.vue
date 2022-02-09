@@ -4,7 +4,7 @@
     type="bar"
     :options="chartOptions"
     :series="series"
-    title="Participant Teams"
+    title="Participants Team"
   />
 </template>
 
