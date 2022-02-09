@@ -202,7 +202,12 @@ def update_external_incident_ticket(
         incident_type_plugin_metadata=incident_type_plugin_metadata,
     )
 
-    log.debug(f"Updated the external ticket {incident.ticket.resource_id}.")
+    event_service.log(
+        db_session=db_session,
+        source=plugin.plugin.title,
+        description="Ticket updated",
+        incident_id=incident.id,
+    )
 
 
 def create_participant_groups(
