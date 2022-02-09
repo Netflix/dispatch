@@ -41,18 +41,18 @@
 </template>
 
 <script>
+import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 import subMonths from "date-fns/subMonths"
-import { sum } from "lodash"
 
 import RouterUtils from "@/router/utils"
 import SearchUtils from "@/search/utils"
 import IncidentApi from "@/incident/api"
-import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
-import ProjectCombobox from "@/project/ProjectCombobox.vue"
-import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
+import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
+import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
+import ProjectCombobox from "@/project/ProjectCombobox.vue"
+import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 
 let today = function () {
   let now = new Date()
@@ -104,20 +104,22 @@ export default {
         filters: { ...this.filters },
         include: [
           "closed_at",
+          "commanders_location",
           "created_at",
-          "total_cost",
-          "stable_at",
-          "reported_at",
+          "duplicates",
           "incident_priority",
           "incident_type",
-          "status",
-          "participants_team",
-          "participants_location",
-          "tags",
-          "duplicates",
-          "project",
           "name",
+          "participants_location",
+          "participants_team",
+          "project",
+          "reported_at",
+          "reporters_location",
+          "stable_at",
+          "status",
+          "tags",
           "title",
+          "total_cost",
         ],
       }
 
@@ -133,11 +135,11 @@ export default {
   },
 
   components: {
-    TagFilterCombobox,
-    IncidentTypeCombobox,
     IncidentPriorityCombobox,
-    ProjectCombobox,
+    IncidentTypeCombobox,
     IncidentWindowInput,
+    ProjectCombobox,
+    TagFilterCombobox,
   },
 
   created() {

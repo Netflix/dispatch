@@ -349,37 +349,37 @@ class IncidentBase(DispatchBase):
 
 class IncidentReadNested(IncidentBase):
     id: PrimaryKey
-    name: Optional[NameStr]
-    reporter: Optional[ParticipantRead]
+    closed_at: Optional[datetime] = None
     commander: Optional[ParticipantRead]
+    created_at: Optional[datetime] = None
     incident_priority: IncidentPriorityRead
     incident_type: IncidentTypeRead
-    created_at: Optional[datetime] = None
+    name: Optional[NameStr]
     reported_at: Optional[datetime] = None
+    reporter: Optional[ParticipantRead]
     stable_at: Optional[datetime] = None
-    closed_at: Optional[datetime] = None
 
 
 class IncidentCreate(IncidentBase):
+    commander: Optional[ParticipantUpdate]
     incident_priority: Optional[IncidentPriorityCreate]
     incident_type: Optional[IncidentTypeCreate]
-    reporter: Optional[ParticipantUpdate]
-    commander: Optional[ParticipantUpdate]
-    tags: Optional[List[TagRead]] = []
     project: ProjectRead
+    reporter: Optional[ParticipantUpdate]
+    tags: Optional[List[TagRead]] = []
 
 
 class IncidentUpdate(IncidentBase):
+    commander: Optional[ParticipantUpdate]
+    duplicates: Optional[List[IncidentReadNested]] = []
+    incident_costs: Optional[List[IncidentCostUpdate]] = []
     incident_priority: IncidentPriorityBase
     incident_type: IncidentTypeBase
     reported_at: Optional[datetime] = None
-    stable_at: Optional[datetime] = None
-    commander: Optional[ParticipantUpdate]
     reporter: Optional[ParticipantUpdate]
-    duplicates: Optional[List[IncidentReadNested]] = []
+    stable_at: Optional[datetime] = None
     tags: Optional[List[TagRead]] = []
     terms: Optional[List[TermRead]] = []
-    incident_costs: Optional[List[IncidentCostUpdate]] = []
 
     @validator("tags")
     def find_exclusive(cls, v):
@@ -399,36 +399,38 @@ class IncidentUpdate(IncidentBase):
 
 class IncidentReadMinimal(IncidentBase):
     id: PrimaryKey
-    reporter: Optional[ParticipantRead]
+    closed_at: Optional[datetime] = None
     commander: Optional[ParticipantRead]
-    name: Optional[NameStr]
-    primary_team: Optional[str]
-    primary_location: Optional[str]
+    commanders_location: Optional[str]
+    created_at: Optional[datetime] = None
+    duplicates: Optional[List[IncidentReadNested]] = []
+    incident_costs: Optional[List[IncidentCostRead]] = []
     incident_priority: IncidentPriorityRead
     incident_type: IncidentTypeRead
-    total_cost: Optional[float]
+    name: Optional[NameStr]
+    participants_location: Optional[str]
+    participants_team: Optional[str]
     project: ProjectRead
-    tags: Optional[List[TagRead]] = []
-    duplicates: Optional[List[IncidentReadNested]] = []
-    created_at: Optional[datetime] = None
     reported_at: Optional[datetime] = None
+    reporter: Optional[ParticipantRead]
+    reporters_location: Optional[str]
     stable_at: Optional[datetime] = None
-    closed_at: Optional[datetime] = None
-    incident_costs: Optional[List[IncidentCostRead]] = []
+    tags: Optional[List[TagRead]] = []
+    total_cost: Optional[float]
 
 
 class IncidentRead(IncidentReadMinimal):
-    last_tactical_report: Optional[ReportRead]
-    last_executive_report: Optional[ReportRead]
-    participants: Optional[List[ParticipantRead]] = []
-    workflow_instances: Optional[List[WorkflowInstanceRead]] = []
-    storage: Optional[StorageRead] = None
-    ticket: Optional[TicketRead] = None
-    documents: Optional[List[DocumentRead]] = []
-    terms: Optional[List[TermRead]] = []
     conference: Optional[ConferenceRead] = None
     conversation: Optional[ConversationRead] = None
+    documents: Optional[List[DocumentRead]] = []
     events: Optional[List[EventRead]] = []
+    last_executive_report: Optional[ReportRead]
+    last_tactical_report: Optional[ReportRead]
+    participants: Optional[List[ParticipantRead]] = []
+    storage: Optional[StorageRead] = None
+    terms: Optional[List[TermRead]] = []
+    ticket: Optional[TicketRead] = None
+    workflow_instances: Optional[List[WorkflowInstanceRead]] = []
 
 
 class IncidentPagination(DispatchBase):
