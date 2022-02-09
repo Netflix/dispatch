@@ -209,6 +209,7 @@ packaging==21.3
     # via
     #   pytest
     #   spacy
+    #   statsmodels
 pandas==1.4.0
     # via
     #   -r requirements-base.in
@@ -341,7 +342,7 @@ six==1.16.0
     #   sqlalchemy-filters
     #   sqlalchemy-utils
     #   validators
-slack_sdk==3.14.1
+slack-sdk==3.14.1
     # via -r requirements-base.in
 smart-open==5.2.1
     # via pathy
@@ -376,7 +377,7 @@ starlette==0.17.1
     # via
     #   fastapi
     #   schemathesis
-statsmodels==0.13.1
+statsmodels==0.13.2
     # via -r requirements-base.in
 tabulate==0.8.9
     # via -r requirements-base.in
