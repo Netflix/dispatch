@@ -87,13 +87,13 @@
                     :error-messages="errors"
                     :success="valid"
                     label="Business Year Hours"
-                    hint="Number of hours to average employee host."
+                    hint="Number of working hours in a year. Used to calculate hourly rate."
                     clearable
                     required
                     type="number"
                     min="1"
                     pattern="\d+"
-                    placeholder="1640"
+                    placeholder="2080"
                   />
                 </ValidationProvider>
               </v-flex>
