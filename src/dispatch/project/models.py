@@ -21,7 +21,7 @@ class Project(Base):
     default = Column(Boolean, default=False)
     color = Column(String)
 
-    annual_employee_cost = Column(Integer, default=650000)
+    annual_employee_cost = Column(Integer, default=50000)
     business_year_hours = Column(Integer, default=1640)
 
     owner_email = Column(String)
