@@ -87,7 +87,7 @@
                     :error-messages="errors"
                     :success="valid"
                     label="Business Year Hours"
-                    hint="Number of hours to average employee host."
+                    hint="Number of working hours in a year. Used to calculate hourly rate."
                     clearable
                     required
                     type="number"
