@@ -39,17 +39,19 @@ def test_update(session, organization):
     from dispatch.organization.service import update
     from dispatch.organization.models import OrganizationUpdate
 
-    name = "Updated name"
+    description = "Updated description"
 
     organization_in = OrganizationUpdate(
-        name=name,
+        description=description,
     )
+
     organization = update(
         db_session=session,
         organization=organization,
         organization_in=organization_in,
     )
-    assert organization.name == name
+
+    assert organization.description == description
 
 
 def test_delete(session, organization):
