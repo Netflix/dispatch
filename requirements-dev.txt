@@ -4,8 +4,6 @@
 #
 #    pip-compile --no-emit-index-url requirements-dev.in
 #
-appnope==0.1.2
-    # via ipython
 asttokens==2.0.5
     # via
     #   devtools
@@ -32,7 +30,7 @@ executing==0.8.2
     #   stack-data
 factory-boy==3.2.1
     # via -r requirements-dev.in
-faker==12.1.0
+faker==12.2.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -100,8 +98,6 @@ traitlets==5.1.1
     # via
     #   ipython
     #   matplotlib-inline
-typing-extensions==4.0.1
-    # via black
 vulture==2.3
     # via -r requirements-dev.in
 wcwidth==0.2.5
