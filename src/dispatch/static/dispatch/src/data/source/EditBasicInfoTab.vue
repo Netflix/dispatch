@@ -1,0 +1,149 @@
+<template>
+  <v-container grid-list-md>
+    <v-layout wrap>
+      <v-flex xs12>
+        <ValidationProvider name="Name" rules="required" immediate>
+          <v-text-field
+            v-model="source.name"
+            slot-scope="{ errors, valid }"
+            :error-messages="errors"
+            :success="valid"
+            label="Name"
+            hint="Name of data source."
+            clearable
+            required
+          />
+        </ValidationProvider>
+      </v-flex>
+      <v-flex xs12>
+        <ValidationProvider name="Description" rules="required" immediate>
+          <v-textarea
+            v-model="source.description"
+            slot-scope="{ errors, valid }"
+            :error-messages="errors"
+            :success="valid"
+            label="Description"
+            hint="Description of incident."
+            clearable
+            required
+          />
+        </ValidationProvider>
+      </v-flex>
+      <v-flex xs6>
+        <v-select
+          v-model="source.status"
+          label="Status"
+          :items="statuses"
+          hint="The data source's current status"
+        />
+      </v-flex>
+      <v-flex xs6>
+        <v-select
+          v-model="source.source_type"
+          label="Source Type"
+          :items="sourceTypes"
+          hint="The data source's type."
+        />
+      </v-flex>
+      <v-flex xs6>
+        <v-select
+          v-model="source.transport"
+          label="Transport"
+          :items="transports"
+          hint="The data source's transport method"
+        />
+      </v-flex>
+      <v-flex xs6>
+        <v-select
+          v-model="source.data_format"
+          label="Data Format"
+          :items="dataFormats"
+          hint="The data source's data format."
+        />
+      </v-flex>
+      <v-flex xs6>
+        <v-select
+          v-model="source.environment"
+          label="Environment"
+          :items="environments"
+          hint="The data source's environment."
+        />
+      </v-flex>
+      <v-flex xs6>
+        <v-text-field
+          v-model.number="source.sampling_rate"
+          label="Sampling Rate"
+          hint="The data source's sample rate (as a percentage) as a rate between 1 and 100 (100 representing no sampling)"
+        />
+      </v-flex>
+      <v-flex xs6>
+        <v-text-field
+          v-model.number="source.retention"
+          label="Retention"
+          hint="The data source's current retention in days."
+        />
+      </v-flex>
+      <v-flex xs6>
+        <v-text-field
+          v-model.number="source.delay"
+          label="Delay"
+          hint="The delay better event time and when the data is available in source (in minutes)."
+        />
+      </v-flex>
+      <v-flex xs6>
+        <v-text-field
+          v-model.number="source.size"
+          label="Size"
+          hint="The data source's current size."
+        />
+      </v-flex>
+      <v-flex xs6>
+        <v-text-field
+          v-model.number="source.external_id"
+          label="External ID"
+          hint="The data source's external ID, this will be used to fetch data about the source automatically."
+        />
+      </v-flex>
+      <v-flex xs6>
+        <v-checkbox
+          v-model="source.aggregated"
+          label="Aggregated"
+          hint="If the data source is an aggregation of many data sources."
+        />
+      </v-flex>
+    </v-layout>
+  </v-container>
+</template>
+
+<script>
+import { mapFields } from "vuex-map-fields"
+import { ValidationProvider, extend } from "vee-validate"
+import { required } from "vee-validate/dist/rules"
+
+extend("required", {
+  ...required,
+  message: "This field is required",
+})
+
+export default {
+  name: "SourceDetailsTab",
+
+  components: {
+    ValidationProvider,
+  },
+
+  computed: {
+    ...mapFields("source", ["selected.source", "selected.loading"]),
+  },
+
+  data() {
+    return {
+      sourceTypes: ["Iceberg", "Elasticsearch", "S3", "Hive"],
+      statuses: ["Deprecated", "Alpha", "Beta", "Stable"],
+      transports: ["REST", "Syslog"],
+      dataFormats: ["JSON", "CSV"],
+      environments: ["Test", "Prod"],
+    }
+  },
+}
+</script>

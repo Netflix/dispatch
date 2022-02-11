@@ -1,0 +1,103 @@
+<template>
+  <div>
+    <new-edit-modal />
+    <v-toolbar dark flat>
+      <v-toolbar-title>{{ source.name }}</v-toolbar-title>
+
+      <v-spacer></v-spacer>
+
+      Current Status: {{ source.status }}
+
+      <v-menu bottom left>
+        <template v-slot:activator="{ on }">
+          <v-btn icon v-on="on">
+            <v-icon>mdi-dots-vertical</v-icon>
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-item @click="createEditShow(source)">
+            <v-list-item-title>Edit</v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="removeShow(source)">
+            <v-list-item-title>Delete</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+
+      <template v-slot:extension>
+        <v-tabs align-with-title>
+          <v-tabs-slider></v-tabs-slider>
+          <v-tab :to="{ params: { tab: 'details' } }">Details </v-tab>
+          <v-tab :to="{ params: { tab: 'schema' } }">Schema </v-tab>
+          <v-tab :to="{ params: { tab: 'alerts' } }"
+            ><v-badge :content="alertCount"> Alerts</v-badge></v-tab
+          >
+          <v-tab :to="{ params: { tab: 'queries' } }">Queries </v-tab>
+          <v-tab :to="{ params: { tab: 'pipelines' } }">Pipelines </v-tab>
+          <v-tab :to="{ params: { tab: 'incidents' } }">Incidents </v-tab>
+        </v-tabs>
+      </template>
+    </v-toolbar>
+    <v-tabs-items :value="tab">
+      <v-tab-item value="details"><details-tab /></v-tab-item>
+      <v-tab-item value="schema"><schema-tab /></v-tab-item>
+      <v-tab-item value="alerts"><alerts-tab /></v-tab-item>
+      <v-tab-item value="queries"><queries-tab /></v-tab-item>
+      <v-tab-item value="pipelines"><pipelines-tab /></v-tab-item>
+      <v-tab-item value="incidents"><incidents-tab /></v-tab-item>
+    </v-tabs-items>
+  </div>
+</template>
+
+<script>
+import { mapActions } from "vuex"
+import { mapFields } from "vuex-map-fields"
+import DetailsTab from "@/data/source/DetailsTab.vue"
+import AlertsTab from "@/data/source/AlertsTab.vue"
+import IncidentsTab from "@/data/source/IncidentsTab.vue"
+import QueriesTab from "@/data/source/QueriesTab.vue"
+import SchemaTab from "@/data/source/SchemaTab.vue"
+import PipelinesTab from "@/data/source/PipelinesTab.vue"
+import NewEditModal from "@/data/source/NewEditModal.vue"
+
+export default {
+  name: "SourceDetails",
+  components: {
+    DetailsTab,
+    AlertsTab,
+    IncidentsTab,
+    QueriesTab,
+    SchemaTab,
+    PipelinesTab,
+    NewEditModal,
+  },
+
+  created() {
+    this.fetchDetails()
+  },
+
+  computed: {
+    ...mapFields("source", ["selected.source", "selected.loading", "dialogs.showEditSheet"]),
+    alertCount: function () {
+      if (this.source.alerts) {
+        return this.source.alerts.length
+      }
+      return 0
+    },
+    tab: function () {
+      return this.$route.params.tab
+    },
+  },
+  watch: {
+    "$route.params.name": function () {
+      this.fetchDetails()
+    },
+  },
+  methods: {
+    fetchDetails() {
+      this.getDetails({ name: this.$route.params.name })
+    },
+    ...mapActions("source", ["getDetails", "createEditShow"]),
+  },
+}
+</script>

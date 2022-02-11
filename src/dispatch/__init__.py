@@ -46,6 +46,9 @@ try:
     from dispatch.term.models import Term  # noqa lgtm[py/unused-import]
     from dispatch.ticket.models import Ticket  # noqa lgtm[py/unused-import]
     from dispatch.workflow.models import Workflow  # noqa lgtm[py/unused-import]
+    from dispatch.data.source.models import Source  # noqa lgtm[py/unused-import]
+    from dispatch.data.alert.models import Alert  # noqa lgtm[py/unused-import]
+    from dispatch.data.query.models import Query  # noqa lgtm[py/unused-import]
     from dispatch.search_filter.models import SearchFilter  # noqa lgtm[py/unused-impot]
 except Exception:
     pass

@@ -142,6 +142,8 @@ async def db_session_middleware(request: Request, call_next):
         session = scoped_session(sessionmaker(bind=schema_engine), scopefunc=get_request_id)
         request.state.db = session()
         response = await call_next(request)
+    except Exception as e:
+        raise e from None
     finally:
         request.state.db.close()
 

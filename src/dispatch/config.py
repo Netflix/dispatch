@@ -58,6 +58,7 @@ if SECRET_PROVIDER == "metatron-secret":
         def __str__(self) -> str:
             return self._decrypted_value
 
+
 elif SECRET_PROVIDER == "kms-secret":
     import boto3
 
@@ -81,6 +82,7 @@ elif SECRET_PROVIDER == "kms-secret":
 
         def __str__(self) -> str:
             return self._decrypted_value
+
 
 else:
     from starlette.datastructures import Secret

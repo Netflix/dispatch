@@ -34,6 +34,10 @@ from dispatch.team.views import router as team_contact_router
 from dispatch.term.views import router as term_router
 from dispatch.workflow.views import router as workflow_router
 
+from dispatch.data.alert.views import router as alert_router
+from dispatch.data.query.views import router as query_router
+from dispatch.data.source.views import router as source_router
+
 from .config import DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 
 
@@ -80,6 +84,17 @@ authenticated_organization_api_router = APIRouter(
 
 authenticated_organization_api_router.include_router(
     project_router, prefix="/projects", tags=["projects"]
+)
+
+authenticated_organization_api_router.include_router(
+    source_router, prefix="/data/sources", tags=["sources"]
+)
+
+authenticated_organization_api_router.include_router(
+    query_router, prefix="/data/query", tags=["queries"]
+)
+authenticated_organization_api_router.include_router(
+    alert_router, prefix="/data/alerts", tags=["alerts"]
 )
 
 authenticated_organization_api_router.include_router(user_router, prefix="/users", tags=["users"])

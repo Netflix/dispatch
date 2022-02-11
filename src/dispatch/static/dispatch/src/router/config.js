@@ -150,6 +150,34 @@ export const protectedRoute = [
       ],
     },
     {
+      path: "data",
+      component: DefaultLayout,
+      name: "Data",
+      redirect: { name: "SourceTable" },
+      meta: {
+        title: "Data",
+        icon: "mdi-database",
+        group: "data",
+        menu: true,
+        requiresAuth: true,
+      },
+      children: [
+        {
+          path: "/:organization/data/sources",
+          name: "SourceTable",
+          meta: { title: "Sources", subMenu: "sources", group: "sources" },
+          component: () => import(/* webpackChunkName: "source-table" */ "@/data/source/Table.vue"),
+        },
+        {
+          path: "/:organization/data/sources/:name/:tab",
+          name: "SourceDetail",
+          meta: { title: "Source Detail" },
+          component: () =>
+            import(/* webpackChunkName: "source-table" */ "@/data/source/Detail.vue"),
+        },
+      ],
+    },
+    {
       path: "dashboards",
       component: DashboardLayout,
       name: "dashboards",

@@ -8,8 +8,8 @@
 
     <refresh />
     <v-main>
-      <div class="page-wrapper">
-        <v-container pa-4 grid-list-lg>
+      <div>
+        <v-container ma-0 pa-0 fluid>
           <router-view />
         </v-container>
       </div>

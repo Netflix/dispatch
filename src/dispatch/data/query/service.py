@@ -1,0 +1,85 @@
+from typing import Optional
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
+
+from dispatch.exceptions import NotFoundError
+
+from .models import Query, QueryCreate, QueryUpdate, QueryRead
+
+
+def get(*, db_session, query_id: int) -> Optional[Query]:
+    """Gets a query by its id."""
+    return db_session.query(Query).filter(Query.id == query_id).one_or_none()
+
+
+def get_by_name(*, db_session, name: str) -> Optional[Query]:
+    """Gets a query by its name."""
+    return db_session.query(Query).filter(Query.name == name).one_or_none()
+
+
+def get_by_name_or_raise(*, db_session, query_in=QueryRead) -> QueryRead:
+    """Returns the query specified or raises ValidationError."""
+    query = get_by_name(db_session=db_session, name=query_in.name)
+
+    if not query:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(
+                        msg="Query not found.",
+                        query=query_in.name,
+                    ),
+                    loc="query",
+                )
+            ],
+            model=QueryRead,
+        )
+
+    return query
+
+
+def get_all(*, db_session):
+    """Gets all querys."""
+    return db_session.query(Query)
+
+
+def create(*, db_session, query_in: QueryCreate) -> Query:
+    """Creates a new query."""
+    query = Query(**query_in.dict(exclude={}))
+    db_session.add(query)
+    db_session.commit()
+    return query
+
+
+def get_or_create(*, db_session, query_in: QueryCreate) -> Query:
+    """Gets or creates a new query."""
+    # prefer the query id if available
+    if query_in.id:
+        q = db_session.query(Query).filter(Query.id == query_in.id)
+    else:
+        q = db_session.query(Query).filter_by(name=query_in.name)
+
+    instance = q.first()
+    if instance:
+        return instance
+
+    return create(db_session=db_session, query_in=query_in)
+
+
+def update(*, db_session, query: Query, query_in: QueryUpdate) -> Query:
+    """Updates an existing query."""
+    query_data = query.dict()
+    update_data = query_in.dict(skip_defaults=True, exclude={})
+
+    for field in query_data:
+        if field in update_data:
+            setattr(query, field, update_data[field])
+
+    db_session.commit()
+    return query
+
+
+def delete(*, db_session, query_id: int):
+    """Deletes an existing query."""
+    query = db_session.query(Query).filter(Query.id == query_id).one_or_none()
+    db_session.delete(query)
+    db_session.commit()
