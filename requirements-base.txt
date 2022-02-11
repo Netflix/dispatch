@@ -353,7 +353,7 @@ sniffio==1.2.0
     #   httpx
 sortedcontainers==2.4.0
     # via hypothesis
-spacy==3.2.1
+spacy==3.2.2
     # via -r requirements-base.in
 spacy-legacy==3.0.8
     # via spacy
