@@ -980,7 +980,7 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
                 event_service.log(
                     db_session=db_session,
                     source="Dispatch Core App",
-                    description="Incident document marked as read only",
+                    description="Incident document marked as readonly",
                     incident_id=incident.id,
                 )
 
