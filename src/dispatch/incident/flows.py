@@ -1034,7 +1034,7 @@ def conversation_topic_dispatcher(
         event_service.log(
             db_session=db_session,
             source="Incident Participant",
-            description=f"{individual.name} marked the incident as {incident.status}",
+            description=f"{individual.name} marked the incident as {incident.status.lower()}",
             incident_id=incident.id,
             individual_id=individual.id,
         )
@@ -1084,7 +1084,7 @@ def status_flow_dispatcher(
         event_service.log(
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"The incident status has been changed from {previous_status} to {current_status}",
+            description=f"The incident status has been changed from {previous_status.lower()} to {current_status.lower()}",
             incident_id=incident.id,
         )
 
