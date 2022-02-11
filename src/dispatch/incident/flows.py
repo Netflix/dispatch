@@ -966,9 +966,23 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
                 # typically only broad access to the incident document itself is required.
                 storage_plugin.instance.open(incident.incident_document.resource_id)
 
+                event_service.log(
+                    db_session=db_session,
+                    source="Dispatch Core App",
+                    description="Incident document opened to anyone in the domain",
+                    incident_id=incident.id,
+                )
+
             if storage_plugin.configuration.read_only:
                 # unfortunately this can't be applied at the folder level so we just mark the incident doc as available.
                 storage_plugin.instance.mark_readonly(incident.incident_document.resource_id)
+
+                event_service.log(
+                    db_session=db_session,
+                    source="Dispatch Core App",
+                    description="Incident document marked as read only",
+                    incident_id=incident.id,
+                )
 
     # we send a direct message to the incident commander asking to review
     # the incident's information and to tag the incident if appropiate
