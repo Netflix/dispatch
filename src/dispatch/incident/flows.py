@@ -12,8 +12,6 @@ import logging
 from datetime import datetime
 from typing import Any, List
 
-from dispatch.enums import DocumentResourceTypes
-
 from dispatch.conference import service as conference_service
 from dispatch.conference.models import ConferenceCreate
 from dispatch.conversation import service as conversation_service
@@ -22,6 +20,7 @@ from dispatch.database.core import SessionLocal, resolve_attr
 from dispatch.decorators import background_task
 from dispatch.document import service as document_service
 from dispatch.document.models import DocumentCreate
+from dispatch.enums import DocumentResourceTypes
 from dispatch.enums import Visibility
 from dispatch.event import service as event_service
 from dispatch.group import service as group_service
@@ -30,7 +29,6 @@ from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
 from dispatch.incident_type import service as incident_type_service
 from dispatch.individual import service as individual_service
-from dispatch.individual.models import IndividualContact
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant

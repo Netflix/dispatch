@@ -17,7 +17,6 @@ from dispatch.auth.permissions import (
     PermissionsDependency,
     IncidentViewPermission,
 )
-from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.common.utils.views import create_pydantic_include
@@ -25,19 +24,18 @@ from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.incident.enums import IncidentStatus
 from dispatch.individual.models import IndividualContactRead
+from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.participant.models import ParticipantUpdate
-from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.report import flows as report_flows
 from dispatch.report.models import TacticalReportCreate, ExecutiveReportCreate
 
 from .flows import (
     incident_add_or_reactivate_participant_flow,
-    incident_assign_role_flow,
+    incident_add_participant_to_tactical_group_flow,
     incident_create_closed_flow,
     incident_create_flow,
     incident_create_stable_flow,
     incident_update_flow,
-    incident_add_participant_to_tactical_group_flow,
 )
 from .metrics import make_forecast, create_incident_metric_query
 from .models import Incident, IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
