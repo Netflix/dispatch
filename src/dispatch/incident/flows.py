@@ -1110,7 +1110,6 @@ def incident_update_flow(
     # we load the incident
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    print(f"Commander: {incident.commander.individual.name}")
     # we update the commander if needed
     incident_assign_role_flow(
         incident_id=incident_id,
@@ -1120,7 +1119,6 @@ def incident_update_flow(
         organization_slug=organization_slug,
     )
 
-    print(f"Reporter: {incident.reporter.individual.name}")
     # we update the reporter if needed
     incident_assign_role_flow(
         incident_id=incident_id,
