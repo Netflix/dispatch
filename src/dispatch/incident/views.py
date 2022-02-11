@@ -147,37 +147,38 @@ def update_incident(
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
-    """Update an individual incident."""
-    previous_incident = IncidentRead.from_orm(current_incident)
-
-    # NOTE: Order matters we have to get the previous state for change detection
-    incident = update(db_session=db_session, incident=current_incident, incident_in=incident_in)
-
-    background_tasks.add_task(
-        incident_update_flow,
-        user_email=current_user.email,
-        incident_id=incident.id,
-        previous_incident=previous_incident,
-        organization_slug=organization,
-    )
-
-    # assign commander
+    """Update an existing incident."""
+    # we update the commander if it has changed
     background_tasks.add_task(
         incident_assign_role_flow,
         current_user.email,
-        incident_id=incident.id,
+        incident_id=incident_id,
         assignee_email=incident_in.commander.individual.email,
         assignee_role=ParticipantRoleType.incident_commander,
         organization_slug=organization,
     )
 
-    # assign reporter
+    # we update the reporter if it has changed
     background_tasks.add_task(
         incident_assign_role_flow,
         current_user.email,
-        incident_id=incident.id,
+        incident_id=incident_id,
         assignee_email=incident_in.reporter.individual.email,
         assignee_role=ParticipantRoleType.reporter,
+        organization_slug=organization,
+    )
+
+    # NOTE: We have to store the previous state of the incident in order to detect changes
+    previous_incident = IncidentRead.from_orm(current_incident)
+
+    incident = update(db_session=db_session, incident=current_incident, incident_in=incident_in)
+
+    # we update the incident
+    background_tasks.add_task(
+        incident_update_flow,
+        user_email=current_user.email,
+        incident_id=incident_id,
+        previous_incident=previous_incident,
         organization_slug=organization,
     )
 
