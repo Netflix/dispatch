@@ -159,10 +159,12 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
 
 
 def update_external_incident_ticket(
-    incident: Incident,
+    incident_id: int,
     db_session: SessionLocal,
 ):
     """Update external incident ticket."""
+    incident = incident_service.get(db_session=db_session, incident_id=incident_id)
+
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="ticket"
     )
@@ -205,7 +207,7 @@ def update_external_incident_ticket(
     event_service.log(
         db_session=db_session,
         source=plugin.plugin.title,
-        description=f"Ticket marked as {incident.status.lower()}",
+        description=f"Ticket updated. Status: {incident.status}",
         incident_id=incident.id,
     )
 
@@ -504,7 +506,7 @@ def incident_create_closed_flow(
         )
 
         incident.name = ticket["resource_id"]
-        update_external_incident_ticket(incident, db_session)
+        update_external_incident_ticket(incident.id, db_session)
 
     db_session.add(incident)
     db_session.commit()
@@ -718,7 +720,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
             log.exception(e)
 
     # we update the incident ticket
-    update_external_incident_ticket(incident, db_session)
+    update_external_incident_ticket(incident.id, db_session)
 
     # we update the investigation document
     document_plugin = plugin_service.get_active_instance(
@@ -980,12 +982,17 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
 
 
 def conversation_topic_dispatcher(
+    user_email: str,
     incident: Incident,
     previous_incident: dict,
-    individual: IndividualContact,
     db_session: SessionLocal,
 ):
     """Determines if the conversation topic needs to be updated."""
+    # we load the individual
+    individual = individual_service.get_by_email_and_project(
+        db_session=db_session, email=user_email, project_id=incident.project.id
+    )
+
     conversation_topic_change = False
     if previous_incident.title != incident.title:
         event_service.log(
@@ -1092,35 +1099,50 @@ def status_flow_dispatcher(
 @background_task
 def incident_update_flow(
     user_email: str,
+    commander_email: str,
+    reporter_email: str,
     incident_id: int,
     previous_incident: IncidentRead,
     organization_slug: str = None,
     db_session=None,
 ):
     """Runs the incident update flow."""
-    # we load the incident instance
+    # we load the incident
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    # we load the individual
-    individual = individual_service.get_by_email_and_project(
-        db_session=db_session, email=user_email, project_id=incident.project.id
+    print(f"Commander: {incident.commander.individual.name}")
+    # we update the commander if needed
+    incident_assign_role_flow(
+        incident_id=incident_id,
+        assigner_email=user_email,
+        assignee_email=commander_email,
+        assignee_role=ParticipantRoleType.incident_commander,
+        organization_slug=organization_slug,
     )
 
-    # we run whatever flows we need
+    print(f"Reporter: {incident.reporter.individual.name}")
+    # we update the reporter if needed
+    incident_assign_role_flow(
+        incident_id=incident_id,
+        assigner_email=user_email,
+        assignee_email=reporter_email,
+        assignee_role=ParticipantRoleType.reporter,
+        organization_slug=organization_slug,
+    )
+
+    # we run the active, stable or closed flows based on incident status change
     status_flow_dispatcher(
         incident, incident.status, previous_incident.status, db_session=db_session
     )
 
     # we update the conversation topic
-    conversation_topic_dispatcher(incident, previous_incident, individual, db_session=db_session)
+    conversation_topic_dispatcher(user_email, incident, previous_incident, db_session=db_session)
 
     # we update the external ticket
-    update_external_incident_ticket(incident, db_session)
+    update_external_incident_ticket(incident_id, db_session)
 
-    # add new folks to the incident if appropriate
-    # we only have to do this for teams as new members will be added to tactical
-    # groups on incident join
     if incident.status == IncidentStatus.active:
+        # we re-resolve and add individuals to the incident
         individual_participants, team_participants = get_incident_participants(incident, db_session)
 
         for individual, service_id in individual_participants:
@@ -1129,6 +1151,7 @@ def incident_update_flow(
             )
 
         # we add the team distributions lists to the notifications group
+        # we only have to do this for teams as new members will be added to the tactical group on incident join
         group_plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
         )
@@ -1136,13 +1159,14 @@ def incident_update_flow(
             team_participant_emails = [x.email for x in team_participants]
             group_plugin.instance.add(incident.notifications_group.email, team_participant_emails)
 
+    # we send the incident update notifications
     send_incident_update_notifications(incident, previous_incident, db_session)
 
 
 @background_task
 def incident_assign_role_flow(
-    assigner_email: str,
     incident_id: int,
+    assigner_email: str,
     assignee_email: str,
     assignee_role: str,
     organization_slug: str = None,
@@ -1214,9 +1238,6 @@ def incident_assign_role_flow(
 
             # we send a message to the incident commander with tips on how to manage the incident
             send_incident_management_help_tips_message(incident, db_session)
-
-        # we update the external ticket
-        update_external_incident_ticket(incident, db_session)
 
 
 @background_task

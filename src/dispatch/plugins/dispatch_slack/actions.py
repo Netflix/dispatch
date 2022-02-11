@@ -517,9 +517,18 @@ def handle_assign_role_action(
     assignee_user_id = action["submission"]["participant"]
     assignee_role = action["submission"]["role"]
     assignee_email = get_user_email(client=slack_client, user_id=assignee_user_id)
+
+    # we assign the role
     incident_flows.incident_assign_role_flow(
-        user_email, incident_id, assignee_email, assignee_role, db_session=db_session
+        incident_id=incident_id,
+        assigner_email=user_email,
+        assignee_email=assignee_email,
+        assignee_role=assignee_role,
+        db_session=db_session,
     )
+
+    # we update the ticket
+    incident_flows.update_external_incident_ticket(incident_id=incident_id, db_session=db_session)
 
 
 def dialog_action_functions(config: SlackConfiguration, action: str):
