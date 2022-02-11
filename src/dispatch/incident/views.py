@@ -168,11 +168,12 @@ def update_incident(
         organization_slug=organization,
     )
 
+    # NOTE: We have to store the previous state of the incident in order to detect changes
     previous_incident = IncidentRead.from_orm(current_incident)
 
-    # NOTE: Order matters we have to get the previous state for change detection
     incident = update(db_session=db_session, incident=current_incident, incident_in=incident_in)
 
+    # we update the incident
     background_tasks.add_task(
         incident_update_flow,
         user_email=current_user.email,
