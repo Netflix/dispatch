@@ -205,7 +205,7 @@ def update_external_incident_ticket(
     event_service.log(
         db_session=db_session,
         source=plugin.plugin.title,
-        description="Ticket updated",
+        description=f"Ticket marked as {incident.status.lower()}",
         incident_id=incident.id,
     )
 
@@ -1208,12 +1208,12 @@ def incident_assign_role_flow(
             )
 
     if assignee_role == ParticipantRoleType.incident_commander:
-        # we send a message to the incident commander with tips on how to manage the incident
-        send_incident_management_help_tips_message(incident, db_session)
-
         if incident.status != IncidentStatus.closed:
             # we update the conversation topic
             set_conversation_topic(incident, db_session)
+
+            # we send a message to the incident commander with tips on how to manage the incident
+            send_incident_management_help_tips_message(incident, db_session)
 
         # we update the external ticket
         update_external_incident_ticket(incident, db_session)
