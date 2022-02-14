@@ -1128,7 +1128,7 @@ def incident_update_flow(
         assigner_email=user_email,
         assignee_email=commander_email,
         assignee_role=ParticipantRoleType.incident_commander,
-        organization_slug=organization_slug,
+        db_session=db_session,
     )
 
     # we update the reporter if needed
@@ -1137,7 +1137,7 @@ def incident_update_flow(
         assigner_email=user_email,
         assignee_email=reporter_email,
         assignee_role=ParticipantRoleType.reporter,
-        organization_slug=organization_slug,
+        db_session=db_session,
     )
 
     # we run the active, stable or closed flows based on incident status change
@@ -1173,14 +1173,12 @@ def incident_update_flow(
     send_incident_update_notifications(incident, previous_incident, db_session)
 
 
-@background_task
 def incident_assign_role_flow(
     incident_id: int,
     assigner_email: str,
     assignee_email: str,
     assignee_role: str,
-    organization_slug: str = None,
-    db_session=None,
+    db_session: SessionLocal,
 ):
     """Runs the incident participant role assignment flow."""
     # we load the incident instance
