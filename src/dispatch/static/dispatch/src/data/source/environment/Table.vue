@@ -1,13 +1,12 @@
 <template>
   <v-container>
-    <new-edit-modal />
+    <new-edit-sheet />
     <v-row align="center" justify="space-between" no-gutters>
       <delete-dialog />
       <v-col>
-        <div class="headline">Sources</div>
+        <div class="headline">Environments</div>
       </v-col>
-      <v-col cols="2">
-        <table-filter-dialog />
+      <v-col cols="1">
         <v-btn color="info" class="ml-2" @click="createEditShow()"> New </v-btn>
       </v-col>
     </v-row>
@@ -35,23 +34,6 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.name="{ item }">
-              <router-link
-                :to="{
-                  name: 'SourceDetail',
-                  params: { name: item.name, tab: 'details' },
-                }"
-                ><b>{{ item.name }}</b></router-link
-              >
-            </template>
-            <template v-slot:item.samplingRate="{ item }">
-              <v-chip :color="getSamplingRateColor(item.sampling_rate)" dark>
-                {{ item.sampling_rate }}
-              </v-chip>
-            </template>
-            <template v-slot:item.lastRefreshed="{ item }">
-              {{ item.last_refreshed | formatRelativeDate }}
-            </template>
             <template v-slot:item.data-table-actions="{ item }">
               <v-menu bottom left>
                 <template v-slot:activator="{ on }">
@@ -80,29 +62,21 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
-import DeleteDialog from "@/data/source/DeleteDialog.vue"
-import NewEditModal from "@/data/source/NewEditModal.vue"
-import TableFilterDialog from "@/data/source/TableFilterDialog.vue"
+import DeleteDialog from "@/data/source/environment/DeleteDialog.vue"
+import NewEditSheet from "@/data/source/environment/NewEditSheet.vue"
 
 export default {
-  name: "SourceTable",
+  name: "SourceEnvironmentTable",
 
   components: {
     DeleteDialog,
-    NewEditModal,
-    TableFilterDialog,
+    NewEditSheet,
   },
   data() {
     return {
       headers: [
         { text: "Name", value: "name", sortable: true },
-        { text: "Environment", value: "environment", sortable: true },
-        { text: "Status", value: "status", sortable: true },
-        { text: "Sampling Rate", value: "sampling_rate", sortable: true },
-        { text: "Transport", value: "transport", sortable: true },
-        { text: "Format", value: "data_format", sortable: true },
-        { text: "Type", value: "source_type", sortable: true },
-        { text: "Last Refreshed", value: "last_refreshed", sortable: true },
+        { text: "Description", value: "description", sortable: false },
         {
           text: "",
           value: "data-table-actions",
@@ -114,7 +88,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("source", [
+    ...mapFields("sourceEnvironment", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
@@ -146,12 +120,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("source", ["getAll", "createEditShow", "removeShow"]),
-    getSamplingRateColor(rate) {
-      if (rate > 40) return "red"
-      else if (rate < 80) return "orange"
-      else return "green"
-    },
+    ...mapActions("sourceEnvironment", ["getAll", "createEditShow", "removeShow"]),
   },
 }
 </script>

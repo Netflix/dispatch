@@ -9,7 +9,6 @@ from pydantic import BaseModel, validator
 from pydantic.types import conint, constr, SecretStr
 
 from sqlalchemy import func
-from sqlalchemy.event import listens_for
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.ext.declarative import declared_attr

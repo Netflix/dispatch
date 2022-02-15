@@ -2,12 +2,15 @@ import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import SourceApi from "@/data/source/api"
+import EnvironmentApi from "@/data/source/environment/api"
 
 const getDefaultSelectedState = () => {
   return {
     loading: false,
-    source: {},
+    environment: {
+      name: null,
+      description: null,
+    },
   }
 }
 
@@ -30,11 +33,6 @@ const state = {
       itemsPerPage: 10,
       sortBy: ["name"],
       descending: [true],
-      filters: {
-        tag: [],
-        project: [],
-        tag_type: [],
-      },
     },
     loading: false,
   },
@@ -50,7 +48,7 @@ const actions = {
     let params = SearchUtils.createParametersFromTableOptions({
       ...state.table.options,
     })
-    return SourceApi.getAll(params)
+    return EnvironmentApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
@@ -59,15 +57,15 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 500),
-  createEditShow({ commit }, source) {
+  createEditShow({ commit }, environment) {
     commit("SET_DIALOG_CREATE_EDIT", true)
-    if (source) {
-      commit("SET_SELECTED", source)
+    if (environment) {
+      commit("SET_SELECTED", environment)
     }
   },
-  removeShow({ commit }, source) {
+  removeShow({ commit }, environment) {
     commit("SET_DIALOG_DELETE", true)
-    commit("SET_SELECTED", source)
+    commit("SET_SELECTED", environment)
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
@@ -80,18 +78,18 @@ const actions = {
   getDetails({ commit, state }, payload) {
     commit("SET_SELECTED_LOADING", true)
     if ("id" in payload) {
-      return SourceApi.get(state.selected.source.id).then((response) => {
+      return EnvironmentApi.get(state.selected.environment.id).then((response) => {
         commit("SET_SELECTED", response.data)
         commit("SET_SELECTED_LOADING", false)
       })
     } else if ("name" in payload) {
       // this is kinda dirty
-      return SourceApi.getAll({
+      return EnvironmentApi.getAll({
         filter: JSON.stringify([
           {
             and: [
               {
-                model: "Source",
+                model: "environment",
                 field: "name",
                 op: "==",
                 value: payload.name,
@@ -106,7 +104,7 @@ const actions = {
           commit(
             "notification_backend/addBeNotification",
             {
-              text: `Source '${payload.name}' could not be found.`,
+              text: `environment '${payload.name}' could not be found.`,
               type: "error",
             },
             { root: true }
@@ -119,15 +117,15 @@ const actions = {
   },
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
-    if (!state.selected.source.id) {
-      return SourceApi.create(state.selected.source)
+    if (!state.selected.environment.id) {
+      return EnvironmentApi.create(state.selected.environment)
         .then(function (resp) {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Source created successfully.", type: "success" },
+            { text: "environment created successfully.", type: "success" },
             { root: true }
           )
           return resp.data
@@ -136,14 +134,14 @@ const actions = {
           commit("SET_SELECTED_LOADING", false)
         })
     } else {
-      return SourceApi.update(state.selected.source.id, state.selected.source)
+      return EnvironmentApi.update(state.selected.environment.id, state.selected.environment)
         .then(() => {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Source updated successfully.", type: "success" },
+            { text: "Environment updated successfully.", type: "success" },
             { root: true }
           )
         })
@@ -153,12 +151,12 @@ const actions = {
     }
   },
   remove({ commit, dispatch }) {
-    return SourceApi.delete(state.selected.source.id).then(function () {
+    return EnvironmentApi.delete(state.selected.environment.id).then(function () {
       dispatch("closeRemove")
       dispatch("getAll")
       commit(
         "notification_backend/addBeNotification",
-        { text: "Source deleted successfully.", type: "success" },
+        { text: "Environment deleted successfully.", type: "success" },
         { root: true }
       )
     })
@@ -168,7 +166,7 @@ const actions = {
 const mutations = {
   updateField,
   SET_SELECTED(state, value) {
-    state.selected.source = value
+    state.selected.environment = value
   },
   SET_SELECTED_LOADING(state, value) {
     state.selected.loading = value

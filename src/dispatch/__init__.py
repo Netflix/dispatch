@@ -46,6 +46,7 @@ try:
     from dispatch.term.models import Term  # noqa lgtm[py/unused-import]
     from dispatch.ticket.models import Ticket  # noqa lgtm[py/unused-import]
     from dispatch.workflow.models import Workflow  # noqa lgtm[py/unused-import]
+    from dispatch.data.source.environment.models import SourceEnvironment
     from dispatch.data.source.models import Source  # noqa lgtm[py/unused-import]
     from dispatch.data.alert.models import Alert  # noqa lgtm[py/unused-import]
     from dispatch.data.query.models import Query  # noqa lgtm[py/unused-import]

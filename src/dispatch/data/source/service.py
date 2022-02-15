@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.exceptions import NotFoundError
@@ -11,9 +11,14 @@ def get(*, db_session, source_id: int) -> Optional[Source]:
     return db_session.query(Source).filter(Source.id == source_id).one_or_none()
 
 
-def get_by_name(*, db_session, name: str) -> Optional[Source]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Source]:
     """Gets a source by its name."""
-    return db_session.query(Source).filter(Source.name == name).one_or_none()
+    return (
+        db_session.query(Source)
+        .filter(Source.name == name)
+        .filter(Source.project_id == project_id)
+        .one_or_none()
+    )
 
 
 def get_by_name_or_raise(*, db_session, source_in=SourceRead) -> SourceRead:
@@ -37,9 +42,9 @@ def get_by_name_or_raise(*, db_session, source_in=SourceRead) -> SourceRead:
     return source
 
 
-def get_all(*, db_session):
+def get_all(*, db_session, project_id: int) -> List[Optional[Source]]:
     """Gets all sources."""
-    return db_session.query(Source)
+    return db_session.query(Source).filter(Source.project_id == project_id)
 
 
 def create(*, db_session, source_in: SourceCreate) -> Source:

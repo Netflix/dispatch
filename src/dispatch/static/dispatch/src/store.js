@@ -29,6 +29,7 @@ import template from "@/document/template/store"
 import runbook from "@/document/runbook/store"
 import reference from "@/document/reference/store"
 import source from "@/data/source/store"
+import sourceEnvironment from "@/data/source/environment/store"
 
 Vue.use(Vuex)
 
@@ -61,6 +62,7 @@ export default new Vuex.Store({
     runbook,
     reference,
     source,
+    sourceEnvironment,
     route: {
       namespaced: true,
       getters: {

@@ -16,46 +16,17 @@ from sqlalchemy import (
     BigInteger,
 )
 from sqlalchemy.orm import relationship
+from sqlalchemy import UniqueConstraint
 
 from sqlalchemy_utils import TSVectorType
 
-from dispatch.enums import DispatchEnum
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey
+from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin, PrimaryKey
+from dispatch.data.source.environment.models import SourceEnvironmentRead
 from dispatch.tag.models import TagRead
 from dispatch.incident.models import IncidentRead
 from dispatch.service.models import ServiceRead
 from dispatch.data.alert.models import AlertRead
-
-
-class SourceTypes(DispatchEnum):
-    iceberg = "Iceberg"
-    elasticsearch = "Elasticsearch"
-    s3 = "S3"
-    hive = "Hive"
-
-
-class Statuses(DispatchEnum):
-    deprecated = "Deprecated"
-    alpha = "Alpha"
-    beta = "Beta"
-    stable = "Stable"
-
-
-class Transports(DispatchEnum):
-    rest = "REST"
-    syslog = "Syslog"
-
-
-class DataFormats(DispatchEnum):
-    json = "JSON"
-    csv = "CSV"
-
-
-class Environments(DispatchEnum):
-    test = "Test"
-    prod = "Prod"
-
 
 assoc_source_tags = Table(
     "assoc_source_tags",
@@ -74,7 +45,9 @@ assoc_source_incidents = Table(
 )
 
 
-class Source(Base, TimeStampMixin):
+class Source(Base, TimeStampMixin, ProjectMixin):
+    __table_args__ = (UniqueConstraint("name", "project_id"),)
+
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
@@ -89,16 +62,23 @@ class Source(Base, TimeStampMixin):
     documentation = Column(Text)
     sampling_rate = Column(Integer)
     source_schema = Column(Text)
-    source_type = Column(String)
-    data_format = Column(String)
-    status = Column(String)
-    transport = Column(String)
     links = Column(JSON)
-    owner = relationship("Service", uselist=False, backref="source")
+    # source_type_id = Column(Integer, ForeignKey("source_type.id"))
+    # source_type = relationship("SourceType", uselist=False, backref="sources")
+    # source_status_id = Column(Integer, ForeignKey("source_status.id"))
+    # source_status = relationship("SourceStatus", uselist=False, backref="sources")
+    source_environment_id = Column(Integer, ForeignKey("source_environment.id"))
+    source_environment = relationship("SourceEnvironment", uselist=False, backref="sources")
+    # source_data_format_id = Column(Integer, ForeignKey("source_data_format.id"))
+    # source_data_format = relationship("SourceDataFormat", uselist=False, backref="sources")
+    # source_transport_id = Column(Integer, ForeignKey("source_transport.id"))
+    # source_transport = relationship("SourceTransport", uselist=False, backref="sources")
+    owner = relationship("Service", uselist=False, backref="sources")
     owner_id = Column(Integer, ForeignKey("service.id"))
     incidents = relationship("Incident", secondary=assoc_source_incidents, backref="sources")
     tags = relationship("Tag", secondary=assoc_source_tags, backref="sources")
     alerts = relationship("Alert", backref="source", cascade="all, delete-orphan")
+
     search_vector = Column(TSVectorType("name"))
 
 
@@ -120,18 +100,18 @@ class SourceBase(DispatchBase):
     retention: Optional[int] = Field(None, nullable=True)
     delay: Optional[int] = Field(None, nullable=True)
     size: Optional[int] = Field(None, nullable=True)
+    external_id: Optional[str] = Field(None, nullable=True)
+    aggregated: Optional[bool] = Field(False, nullable=True)
     links: Optional[List] = []
     tags: Optional[List[TagRead]] = []
     incidents: Optional[List[IncidentRead]] = []
     alerts: Optional[List[AlertRead]] = []
     owner: Optional[ServiceRead] = Field(None, nullable=True)
-    environment: Optional[Environments] = Field(Environments.prod, nullable=False)
-    external_id: Optional[str] = Field(None, nullable=True)
-    source_type: Optional[SourceTypes] = Field(SourceTypes.iceberg, nullable=False)
-    data_format: Optional[DataFormats] = Field(DataFormats.json, nullable=False)
-    status: Optional[Statuses] = Field(Statuses.alpha, nullable=False)
-    transport: Optional[Transports] = Field(Transports.rest, nullable=False)
-    aggregated: Optional[bool] = Field(False, nullable=True)
+    # source_type: Optional[SourceAttributeRead]
+    source_environment: Optional[SourceEnvironmentRead]
+    # source_data_format: Optional[SourceAttributeRead]
+    # source_status: Optional[SourceAttributeRead]
+    # source_transport: Optional[SourceAttributeRead]
 
 
 class SourceCreate(SourceBase):

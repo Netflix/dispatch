@@ -370,6 +370,44 @@ export const protectedRoute = [
             meta: { title: "Terms", subMenu: "project", group: "knowledge" },
             component: () => import(/* webpackChunkName: "term-table" */ "@/term/Table.vue"),
           },
+          {
+            path: "source/types",
+            name: "SourceTypeTable",
+            meta: { title: "Source Types", subMenu: "project", group: "data" },
+            component: () =>
+              import(/* webpackChunkName: "tag-type-table" */ "@/tag_type/Table.vue"),
+          },
+          {
+            path: "source/environments",
+            name: "SourceEnvironmentTable",
+            meta: { title: "Source Environments", subMenu: "project", group: "data" },
+            component: () =>
+              import(
+                /* webpackChunkName: "environment-table" */ "@/data/source/environment/Table.vue"
+              ),
+          },
+          {
+            path: "source/statuses",
+            name: "SourceStatusTable",
+            meta: { title: "Source Statuses", subMenu: "project", group: "data" },
+            component: () =>
+              import(
+                /* webpackChunkName: "runbooks-table" */ "@/document/runbook/RunbookTable.vue"
+              ),
+          },
+          {
+            path: "source/transports",
+            name: "SourceTransportTable",
+            meta: { title: "Source Transports", subMenu: "project", group: "data" },
+            component: () =>
+              import(/* webpackchunkname: "definition-table" */ "@/definition/Table.vue"),
+          },
+          {
+            path: "source/dataFormats",
+            name: "SourceDataFormatTable",
+            meta: { title: "Source Data Formats", subMenu: "project", group: "data" },
+            component: () => import(/* webpackChunkName: "term-table" */ "@/term/Table.vue"),
+          },
         ]),
       ],
     },

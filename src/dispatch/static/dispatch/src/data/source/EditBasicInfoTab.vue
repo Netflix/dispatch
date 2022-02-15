@@ -30,46 +30,26 @@
         </ValidationProvider>
       </v-flex>
       <v-flex xs6>
-        <v-select
-          v-model="source.status"
-          label="Status"
-          :items="statuses"
-          hint="The data source's current status"
-        />
+        <status-select v-model="source.status" />
       </v-flex>
       <v-flex xs6>
-        <v-select
-          v-model="source.source_type"
-          label="Source Type"
-          :items="sourceTypes"
-          hint="The data source's type."
-        />
+        <project-select v-model="source.project" />
       </v-flex>
       <v-flex xs6>
-        <v-select
-          v-model="source.transport"
-          label="Transport"
-          :items="transports"
-          hint="The data source's transport method"
-        />
+        <environment-select v-model="source.environment" />
       </v-flex>
       <v-flex xs6> <service-select label="Owner" v-model="source.owner" /> </v-flex>
+      <!--
       <v-flex xs6>
-        <v-select
-          v-model="source.data_format"
-          label="Data Format"
-          :items="dataFormats"
-          hint="The data source's data format."
-        />
+        <source-type-select v-model="source.source_type" />
       </v-flex>
       <v-flex xs6>
-        <v-select
-          v-model="source.environment"
-          label="Environment"
-          :items="environments"
-          hint="The data source's environment."
-        />
+        <transport-select v-model="source.transport" />
       </v-flex>
+      <v-flex xs6>
+        <data-format-select v-model="source.data_format" />
+      </v-flex>
+      -->
       <v-flex xs6>
         <v-text-field
           v-model.number="source.sampling_rate"
@@ -122,6 +102,12 @@ import { ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
 import ServiceSelect from "@/service/ServiceSelect.vue"
+import ProjectSelect from "@/project/ProjectSelect.vue"
+//import StatusSelect from "@/data/source/StatusSelect.vue"
+//import SourceTypeSelect from "@/data/source/SourceTypeSelect.vue"
+//import TransportSelect from "@/data/source/TransportSelect.vue"
+//import DataFormatSelect from "@/data/source/DataFormatSelect.vue"
+import EnvironmentSelect from "@/data/source/environment/Select.vue"
 
 extend("required", {
   ...required,
@@ -134,6 +120,12 @@ export default {
   components: {
     ValidationProvider,
     ServiceSelect,
+    ProjectSelect,
+    //StatusSelect,
+    //SourceTypeSelect,
+    //TransportSelect,
+    //DataFormatSelect,
+    EnvironmentSelect,
   },
 
   computed: {
@@ -141,13 +133,7 @@ export default {
   },
 
   data() {
-    return {
-      sourceTypes: ["Iceberg", "Elasticsearch", "S3", "Hive"],
-      statuses: ["Deprecated", "Alpha", "Beta", "Stable"],
-      transports: ["REST", "Syslog"],
-      dataFormats: ["JSON", "CSV"],
-      environments: ["Test", "Prod"],
-    }
+    return {}
   },
 }
 </script>

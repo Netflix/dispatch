@@ -37,6 +37,7 @@ from dispatch.workflow.views import router as workflow_router
 from dispatch.data.alert.views import router as alert_router
 from dispatch.data.query.views import router as query_router
 from dispatch.data.source.views import router as source_router
+from dispatch.data.source.environment.views import router as source_environment_router
 
 from .config import DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 
@@ -88,6 +89,10 @@ authenticated_organization_api_router.include_router(
 
 authenticated_organization_api_router.include_router(
     source_router, prefix="/data/sources", tags=["sources"]
+)
+
+authenticated_organization_api_router.include_router(
+    source_environment_router, prefix="/data/sources/environments", tags=["source_environments"]
 )
 
 authenticated_organization_api_router.include_router(
