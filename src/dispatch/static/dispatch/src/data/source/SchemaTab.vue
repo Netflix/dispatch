@@ -5,60 +5,16 @@
         <v-card>
           <v-list-item two-line>
             <v-list-item-content>
-              <v-list-item-title class="text-h5"> Basic Information </v-list-item-title>
+              <v-list-item-title class="text-h5"> Example Log </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
-            {{ source.description }}
+            <pre> {{ source.example_log }} </pre>
           </v-list-item>
-          <v-list class="transparent">
-            <v-list-item>
-              <v-list-item-title>Last Refreshed</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ source.lastRefreshed | formatRelativeDate }}</v-list-item-subtitle
-              >
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-title>Retention</v-list-item-title>
-              <v-list-item-subtitle class="text-right"> 1 yr</v-list-item-subtitle>
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-title>Avg Prop Delay</v-list-item-title>
-              <v-list-item-subtitle class="text-right"> 1 hr</v-list-item-subtitle>
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-title>Avg Daily Volume</v-list-item-title>
-              <v-list-item-subtitle class="text-right"> 10m</v-list-item-subtitle>
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-title>Source Type</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ source.sourceType }}</v-list-item-subtitle
-              >
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-title>Data Format</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ source.dataFormat }}</v-list-item-subtitle
-              >
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-title>Transport</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ source.transport }}</v-list-item-subtitle
-              >
-            </v-list-item>
-            <v-list-item>
-              <v-list-item-title>Sampling Rate</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ source.samplingRate }}%</v-list-item-subtitle
-              >
-            </v-list-item>
-          </v-list>
         </v-card>
       </v-col>
       <v-col>
-        <v-card> <v-card-title>Documentation</v-card-title></v-card>
+        <v-card> <v-card-title>Schema</v-card-title></v-card>
       </v-col>
     </v-row>
     <v-row> </v-row>

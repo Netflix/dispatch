@@ -3,9 +3,6 @@ import API from "@/api"
 const resource = "/data/sources"
 
 export default {
-  getSchema() {
-    return API.get(`${resource}/schema`)
-  },
   getAll(options) {
     return API.get(`${resource}`, { params: { ...options } })
   },

@@ -15,7 +15,7 @@
           </v-sheet>
           <v-card-text class="pt-0">
             <div class="text-h6 font-weight-light mb-2">Alert Volume</div>
-            <v-data-table :headers="headers" :items="alerts" :search="search"></v-data-table>
+            <v-data-table :headers="headers" :items="alerts"></v-data-table>
             <v-divider class="my-2"></v-divider>
             <v-icon class="mr-2" small> mdi-clock </v-icon>
             <span class="text-caption grey--text font-weight-light">last alert 10min ago</span>
@@ -44,16 +44,13 @@ export default {
       value: [200, 675, 410, 390, 310, 460, 250, 240],
       headers: [
         {
-          text: "Dessert (100g serving)",
+          text: "Name",
           align: "start",
           sortable: false,
           value: "name",
         },
-        { text: "Calories", value: "calories" },
-        { text: "Fat (g)", value: "fat" },
-        { text: "Carbs (g)", value: "carbs" },
-        { text: "Protein (g)", value: "protein" },
-        { text: "Iron (%)", value: "iron" },
+        { text: "Description", value: "description" },
+        { text: "Source", value: "originator" },
       ],
     }
   },

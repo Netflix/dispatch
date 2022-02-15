@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import Field
 
 from sqlalchemy import (
+    JSON,
     Column,
     Integer,
     String,
@@ -21,6 +22,10 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.enums import DispatchEnum
 from dispatch.database.core import Base
 from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey
+from dispatch.tag.models import TagRead
+from dispatch.incident.models import IncidentRead
+from dispatch.service.models import ServiceRead
+from dispatch.data.alert.models import AlertRead
 
 
 class SourceTypes(DispatchEnum):
@@ -88,6 +93,7 @@ class Source(Base, TimeStampMixin):
     data_format = Column(String)
     status = Column(String)
     transport = Column(String)
+    links = Column(JSON)
     owner = relationship("Service", uselist=False, backref="source")
     owner_id = Column(Integer, ForeignKey("service.id"))
     incidents = relationship("Incident", secondary=assoc_source_incidents, backref="sources")
@@ -114,6 +120,11 @@ class SourceBase(DispatchBase):
     retention: Optional[int] = Field(None, nullable=True)
     delay: Optional[int] = Field(None, nullable=True)
     size: Optional[int] = Field(None, nullable=True)
+    links: Optional[List] = []
+    tags: Optional[List[TagRead]] = []
+    incidents: Optional[List[IncidentRead]] = []
+    alerts: Optional[List[AlertRead]] = []
+    owner: Optional[ServiceRead] = Field(None, nullable=True)
     environment: Optional[Environments] = Field(Environments.prod, nullable=False)
     external_id: Optional[str] = Field(None, nullable=True)
     source_type: Optional[SourceTypes] = Field(SourceTypes.iceberg, nullable=False)

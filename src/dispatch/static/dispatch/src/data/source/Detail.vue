@@ -33,7 +33,6 @@
             ><v-badge :content="alertCount"> Alerts</v-badge></v-tab
           >
           <v-tab :to="{ params: { tab: 'queries' } }">Queries </v-tab>
-          <v-tab :to="{ params: { tab: 'pipelines' } }">Pipelines </v-tab>
           <v-tab :to="{ params: { tab: 'incidents' } }">Incidents </v-tab>
         </v-tabs>
       </template>
@@ -43,7 +42,6 @@
       <v-tab-item value="schema"><schema-tab /></v-tab-item>
       <v-tab-item value="alerts"><alerts-tab /></v-tab-item>
       <v-tab-item value="queries"><queries-tab /></v-tab-item>
-      <v-tab-item value="pipelines"><pipelines-tab /></v-tab-item>
       <v-tab-item value="incidents"><incidents-tab /></v-tab-item>
     </v-tabs-items>
   </div>
@@ -57,7 +55,6 @@ import AlertsTab from "@/data/source/AlertsTab.vue"
 import IncidentsTab from "@/data/source/IncidentsTab.vue"
 import QueriesTab from "@/data/source/QueriesTab.vue"
 import SchemaTab from "@/data/source/SchemaTab.vue"
-import PipelinesTab from "@/data/source/PipelinesTab.vue"
 import NewEditModal from "@/data/source/NewEditModal.vue"
 
 export default {
@@ -68,7 +65,6 @@ export default {
     IncidentsTab,
     QueriesTab,
     SchemaTab,
-    PipelinesTab,
     NewEditModal,
   },
 

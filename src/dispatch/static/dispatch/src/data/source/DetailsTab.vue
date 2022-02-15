@@ -85,7 +85,24 @@
         <v-card> <v-card-title>Documentation</v-card-title></v-card>
       </v-col>
     </v-row>
-    <v-row> </v-row>
+    <v-row>
+      <v-col>
+        <v-card>
+          <v-card-title>Links</v-card-title>
+          <v-card-text>
+            <v-data-table :headers="headers" :items="source.links">
+              <template v-slot:item.name="{ item }">
+                <span
+                  ><a :href="item.href">
+                    <b>{{ item.name }}</b></a
+                  ></span
+                >
+              </template>
+            </v-data-table>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -107,58 +124,12 @@ export default {
       value: [200, 675, 410, 390, 310, 460, 250, 240],
       headers: [
         {
-          text: "Dessert (100g serving)",
+          text: "Name",
           align: "start",
           sortable: false,
           value: "name",
         },
-        { text: "Calories", value: "calories" },
-        { text: "Fat (g)", value: "fat" },
-        { text: "Carbs (g)", value: "carbs" },
-        { text: "Protein (g)", value: "protein" },
-        { text: "Iron (%)", value: "iron" },
-      ],
-      desserts: [
-        {
-          name: "Frozen Yogurt",
-          calories: 159,
-          fat: 6.0,
-          carbs: 24,
-          protein: 4.0,
-          iron: "1%",
-        },
-        {
-          name: "Ice cream sandwich",
-          calories: 237,
-          fat: 9.0,
-          carbs: 37,
-          protein: 4.3,
-          iron: "1%",
-        },
-        {
-          name: "Eclair",
-          calories: 262,
-          fat: 16.0,
-          carbs: 23,
-          protein: 6.0,
-          iron: "7%",
-        },
-        {
-          name: "Cupcake",
-          calories: 305,
-          fat: 3.7,
-          carbs: 67,
-          protein: 4.3,
-          iron: "8%",
-        },
-        {
-          name: "Gingerbread",
-          calories: 356,
-          fat: 16.0,
-          carbs: 49,
-          protein: 3.9,
-          iron: "16%",
-        },
+        { text: "Description", value: "description" },
       ],
     }
   },

@@ -1,3 +1,4 @@
+from lib2to3.pgen2.token import OP
 from typing import Optional, List
 from pydantic import Field
 
@@ -12,6 +13,8 @@ class Alert(Base, TimeStampMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
+    orginator = Column(String)
+    external_link = Column(String)
     source_id = Column(Integer, ForeignKey("source.id"))
     search_vector = Column(TSVectorType("name"))
 
@@ -20,6 +23,8 @@ class Alert(Base, TimeStampMixin):
 class AlertBase(DispatchBase):
     name: Optional[str] = Field(None, nullable=False)
     description: Optional[str] = Field(None, nullable=True)
+    originator: Optional[str] = Field(None, nullable=True)
+    external_link: Optional[str] = Field(None, nullable=True)
 
 
 class AlertCreate(AlertBase):

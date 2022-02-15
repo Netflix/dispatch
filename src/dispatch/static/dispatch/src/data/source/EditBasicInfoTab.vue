@@ -53,6 +53,7 @@
           hint="The data source's transport method"
         />
       </v-flex>
+      <v-flex xs6> <service-select label="Owner" v-model="source.owner" /> </v-flex>
       <v-flex xs6>
         <v-select
           v-model="source.data_format"
@@ -120,6 +121,8 @@ import { mapFields } from "vuex-map-fields"
 import { ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
+import ServiceSelect from "@/service/ServiceSelect.vue"
+
 extend("required", {
   ...required,
   message: "This field is required",
@@ -130,6 +133,7 @@ export default {
 
   components: {
     ValidationProvider,
+    ServiceSelect,
   },
 
   computed: {

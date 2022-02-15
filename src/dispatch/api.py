@@ -91,7 +91,7 @@ authenticated_organization_api_router.include_router(
 )
 
 authenticated_organization_api_router.include_router(
-    query_router, prefix="/data/query", tags=["queries"]
+    query_router, prefix="/data/queries", tags=["queries"]
 )
 authenticated_organization_api_router.include_router(
     alert_router, prefix="/data/alerts", tags=["alerts"]
