@@ -192,6 +192,7 @@ def update_incident_from_submitted_form(
     incident_in = IncidentUpdate(
         title=parsed_form_data[IncidentBlockId.title],
         description=parsed_form_data[IncidentBlockId.description],
+        resolution=parsed_form_data[IncidentBlockId.resolution],
         incident_type={"name": parsed_form_data[IncidentBlockId.type]["value"]},
         incident_priority={"name": parsed_form_data[IncidentBlockId.priority]["value"]},
         status=parsed_form_data[IncidentBlockId.status]["value"],
