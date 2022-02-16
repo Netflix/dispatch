@@ -7,10 +7,10 @@ import EnvironmentApi from "@/data/source/environment/api"
 const getDefaultSelectedState = () => {
   return {
     loading: false,
-    environment: {
-      name: null,
-      description: null,
-    },
+    id: null,
+    name: null,
+    description: null,
+    project: null,
   }
 }
 
@@ -33,6 +33,9 @@ const state = {
       itemsPerPage: 10,
       sortBy: ["name"],
       descending: [true],
+      filters: {
+        project: [],
+      },
     },
     loading: false,
   },
@@ -78,7 +81,7 @@ const actions = {
   getDetails({ commit, state }, payload) {
     commit("SET_SELECTED_LOADING", true)
     if ("id" in payload) {
-      return EnvironmentApi.get(state.selected.environment.id).then((response) => {
+      return EnvironmentApi.get(state.selected.id).then((response) => {
         commit("SET_SELECTED", response.data)
         commit("SET_SELECTED_LOADING", false)
       })
@@ -117,8 +120,8 @@ const actions = {
   },
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
-    if (!state.selected.environment.id) {
-      return EnvironmentApi.create(state.selected.environment)
+    if (!state.selected.id) {
+      return EnvironmentApi.create(state.selected)
         .then(function (resp) {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
@@ -134,7 +137,7 @@ const actions = {
           commit("SET_SELECTED_LOADING", false)
         })
     } else {
-      return EnvironmentApi.update(state.selected.environment.id, state.selected.environment)
+      return EnvironmentApi.update(state.selected.id, state.selected)
         .then(() => {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
@@ -151,7 +154,7 @@ const actions = {
     }
   },
   remove({ commit, dispatch }) {
-    return EnvironmentApi.delete(state.selected.environment.id).then(function () {
+    return EnvironmentApi.delete(state.selected.id).then(function () {
       dispatch("closeRemove")
       dispatch("getAll")
       commit(
@@ -166,7 +169,7 @@ const actions = {
 const mutations = {
   updateField,
   SET_SELECTED(state, value) {
-    state.selected.environment = value
+    state.selected = value
   },
   SET_SELECTED_LOADING(state, value) {
     state.selected.loading = value

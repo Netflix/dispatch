@@ -9,7 +9,7 @@
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
-            <pre> {{ source.example_log }} </pre>
+            <pre> {{ example_log }} </pre>
           </v-list-item>
         </v-card>
       </v-col>
@@ -30,7 +30,7 @@ export default {
   components: {},
 
   computed: {
-    ...mapFields("source", ["selected.source", "selected.loading"]),
+    ...mapFields("source", ["selected.schema", "selected.example_log", "selected.loading"]),
   },
 
   data() {

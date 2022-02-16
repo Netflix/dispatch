@@ -7,7 +7,28 @@ import SourceApi from "@/data/source/api"
 const getDefaultSelectedState = () => {
   return {
     loading: false,
-    source: {},
+    name: null,
+    description: null,
+    owner: null,
+    retention: null,
+    source_environment: null,
+    source_status: null,
+    source_type: null,
+    source_transport: null,
+    source_data_format: null,
+    size: null,
+    aggregation: null,
+    delay: null,
+    external_id: null,
+    project: null,
+    last_refreshed: null,
+    sampling_rate: null,
+    schema: null,
+    sample_log: null,
+    queries: [],
+    links: [],
+    incidents: [],
+    alerts: [],
   }
 }
 
@@ -34,6 +55,7 @@ const state = {
         tag: [],
         project: [],
         tag_type: [],
+        source_environment: [],
       },
     },
     loading: false,
@@ -80,7 +102,7 @@ const actions = {
   getDetails({ commit, state }, payload) {
     commit("SET_SELECTED_LOADING", true)
     if ("id" in payload) {
-      return SourceApi.get(state.selected.source.id).then((response) => {
+      return SourceApi.get(state.selected.id).then((response) => {
         commit("SET_SELECTED", response.data)
         commit("SET_SELECTED_LOADING", false)
       })
@@ -119,8 +141,8 @@ const actions = {
   },
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
-    if (!state.selected.source.id) {
-      return SourceApi.create(state.selected.source)
+    if (!state.selected.id) {
+      return SourceApi.create(state.selected)
         .then(function (resp) {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
@@ -136,7 +158,7 @@ const actions = {
           commit("SET_SELECTED_LOADING", false)
         })
     } else {
-      return SourceApi.update(state.selected.source.id, state.selected.source)
+      return SourceApi.update(state.selected.id, state.selected)
         .then(() => {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
@@ -153,7 +175,7 @@ const actions = {
     }
   },
   remove({ commit, dispatch }) {
-    return SourceApi.delete(state.selected.source.id).then(function () {
+    return SourceApi.delete(state.selected.id).then(function () {
       dispatch("closeRemove")
       dispatch("getAll")
       commit(
@@ -168,7 +190,7 @@ const actions = {
 const mutations = {
   updateField,
   SET_SELECTED(state, value) {
-    state.selected.source = value
+    state.selected = value
   },
   SET_SELECTED_LOADING(state, value) {
     state.selected.loading = value
@@ -186,10 +208,7 @@ const mutations = {
     state.dialogs.showRemove = value
   },
   RESET_SELECTED(state) {
-    // do not reset project
-    let project = state.selected.project
     state.selected = { ...getDefaultSelectedState() }
-    state.selected.project = project
   },
 }
 

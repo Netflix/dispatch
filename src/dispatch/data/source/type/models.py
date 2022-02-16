@@ -15,7 +15,7 @@ from dispatch.models import DispatchBase, ProjectMixin, PrimaryKey
 from dispatch.project.models import ProjectRead
 
 
-class SourceEnvironment(Base, ProjectMixin):
+class SourceType(Base, ProjectMixin):
     __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -23,24 +23,24 @@ class SourceEnvironment(Base, ProjectMixin):
     search_vector = Column(TSVectorType("name"))
 
 
-class SourceEnvironmentBase(DispatchBase):
+class SourceTypeBase(DispatchBase):
     name: Optional[str] = Field(None, nullable=False)
     description: Optional[str] = Field(None, nullable=True)
 
 
-class SourceEnvironmentRead(SourceEnvironmentBase):
+class SourceTypeRead(SourceTypeBase):
     id: PrimaryKey
     project: ProjectRead
 
 
-class SourceEnvironmentCreate(SourceEnvironmentBase):
+class SourceTypeCreate(SourceTypeBase):
     project: ProjectRead
 
 
-class SourceEnvironmentUpdate(SourceEnvironmentBase):
+class SourceTypeUpdate(SourceTypeBase):
     id: PrimaryKey
 
 
-class SourceEnvironmentPagination(DispatchBase):
-    items: List[SourceEnvironmentRead]
+class SourceTypePagination(DispatchBase):
+    items: List[SourceTypeRead]
     total: int

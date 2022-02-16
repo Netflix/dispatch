@@ -12,7 +12,7 @@
       <v-list dense>
         <v-list-item>
           <v-list-item-content>
-            <environment-multi-select v-model="source_environment" />
+            <environment-combobox v-model="source_environment" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
@@ -41,7 +41,7 @@ import { mapFields } from "vuex-map-fields"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
-import EnvironmentMultiSelect from "@/data/source/environment/MultiSelect.vue"
+import EnvironmentCombobox from "@/data/source/environment/EnvironmentCombobox.vue"
 
 export default {
   name: "SourceTableFilterDialog",
@@ -50,7 +50,7 @@ export default {
     TagFilterCombobox,
     TagTypeFilterCombobox,
     ProjectCombobox,
-    EnvironmentMultiSelect,
+    EnvironmentCombobox,
   },
 
   data() {

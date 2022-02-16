@@ -2,6 +2,7 @@ from typing import Optional, List
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.exceptions import NotFoundError
+from dispatch.project import service as project_service
 
 from .models import (
     SourceEnvironment,
@@ -31,10 +32,14 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SourceEnv
 
 
 def get_by_name_or_raise(
-    *, db_session, source_environment_in=SourceEnvironmentRead
+    *, db_session, project_id, source_environment_in=SourceEnvironmentRead
 ) -> SourceEnvironmentRead:
     """Returns the source specified or raises ValidationError."""
-    source = get_by_name(db_session=db_session, name=source_environment_in.name)
+    source = get_by_name(
+        db_session=db_session,
+        project_id=project_id,
+        name=source_environment_in.name,
+    )
 
     if not source:
         raise ValidationError(
@@ -60,7 +65,12 @@ def get_all(*, db_session, project_id: int) -> List[Optional[SourceEnvironment]]
 
 def create(*, db_session, source_environment_in: SourceEnvironmentCreate) -> SourceEnvironment:
     """Creates a new source."""
-    source_environment = SourceEnvironment(**source_environment_in.dict())
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=source_environment_in.project
+    )
+    source_environment = SourceEnvironment(
+        **source_environment_in.dict(exclude={"project"}), project=project
+    )
     db_session.add(source_environment)
     db_session.commit()
     return source_environment

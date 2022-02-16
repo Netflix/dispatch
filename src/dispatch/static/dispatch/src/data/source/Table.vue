@@ -44,6 +44,11 @@
                 ><b>{{ item.name }}</b></router-link
               >
             </template>
+            <template v-slot:item.environment="{ item }">
+              <v-chip dark>
+                {{ item.name }}
+              </v-chip>
+            </template>
             <template v-slot:item.samplingRate="{ item }">
               <v-chip :color="getSamplingRateColor(item.sampling_rate)" dark>
                 {{ item.sampling_rate }}
@@ -120,6 +125,7 @@ export default {
       "table.options.itemsPerPage",
       "table.options.sortBy",
       "table.options.descending",
+      "table.options.filters",
       "table.loading",
       "table.rows.items",
       "table.rows.total",
@@ -137,7 +143,16 @@ export default {
     )
 
     this.$watch(
-      (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending],
+      (vm) => [
+        vm.q,
+        vm.itemsPerPage,
+        vm.sortBy,
+        vm.descending,
+        vm.project,
+        vm.environment,
+        vm.tag,
+        vm.tag_type,
+      ],
       () => {
         this.page = 1
         this.getAll()

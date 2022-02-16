@@ -6,13 +6,7 @@
           <v-list-item-content>
             <v-list-item-title class="title"> New </v-list-item-title>
           </v-list-item-content>
-          <v-btn
-            icon
-            color="info"
-            :loading="loading"
-            :disabled="invalid || !validated"
-            @click="save()"
-          >
+          <v-btn icon color="info" :loading="loading" @click="save()">
             <v-icon>save</v-icon>
           </v-btn>
           <v-btn icon color="secondary" @click="closeCreateEdit">
@@ -76,11 +70,5 @@ export default {
       })
     },
   },
-
-  data() {
-    return {}
-  },
-
-  created() {},
 }
 </script>

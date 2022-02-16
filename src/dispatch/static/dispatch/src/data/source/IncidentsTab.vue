@@ -37,7 +37,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("source", ["selected.source.incidents", "selected.loading"]),
+    ...mapFields("source", ["selected.incidents", "selected.loading"]),
   },
 
   data() {

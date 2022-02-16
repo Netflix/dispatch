@@ -26,7 +26,7 @@
                 <v-flex xs12>
                   <ValidationProvider name="Name" rules="required" immediate>
                     <v-text-field
-                      v-model="environment.name"
+                      v-model="name"
                       slot-scope="{ errors, valid }"
                       :error-messages="errors"
                       :success="valid"
@@ -40,7 +40,7 @@
                 <v-flex xs12>
                   <ValidationProvider name="Description" rules="required" immediate>
                     <v-textarea
-                      v-model="environment.description"
+                      v-model="description"
                       slot-scope="{ errors, valid }"
                       :error-messages="errors"
                       :success="valid"
@@ -81,10 +81,14 @@ export default {
 
   computed: {
     ...mapFields("sourceEnvironment", [
-      "selected.environment",
+      "selected.project",
+      "selected.id",
+      "selected.name",
+      "selected.description",
       "selected.loading",
       "dialogs.showCreateEdit",
     ]),
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
@@ -97,10 +101,11 @@ export default {
     },
   },
 
-  data() {
-    return {}
+  created() {
+    console.log(this.query)
+    if (this.query.project) {
+      this.project = { name: this.query.project }
+    }
   },
-
-  created() {},
 }
 </script>

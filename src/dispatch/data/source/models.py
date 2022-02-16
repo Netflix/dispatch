@@ -22,7 +22,12 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin, PrimaryKey
+from dispatch.project.models import ProjectRead
 from dispatch.data.source.environment.models import SourceEnvironmentRead
+from dispatch.data.source.data_format.models import SourceDataFormatRead
+from dispatch.data.source.status.models import SourceStatusRead
+from dispatch.data.source.transport.models import SourceTransportRead
+from dispatch.data.source.type.models import SourceTypeRead
 from dispatch.tag.models import TagRead
 from dispatch.incident.models import IncidentRead
 from dispatch.service.models import ServiceRead
@@ -63,16 +68,18 @@ class Source(Base, TimeStampMixin, ProjectMixin):
     sampling_rate = Column(Integer)
     source_schema = Column(Text)
     links = Column(JSON)
-    # source_type_id = Column(Integer, ForeignKey("source_type.id"))
-    # source_type = relationship("SourceType", uselist=False, backref="sources")
-    # source_status_id = Column(Integer, ForeignKey("source_status.id"))
-    # source_status = relationship("SourceStatus", uselist=False, backref="sources")
-    source_environment_id = Column(Integer, ForeignKey("source_environment.id"))
+
+    # relationships
+    source_type = relationship("SourceType", uselist=False, backref="sources")
+    source_type_id = Column(Integer, ForeignKey("source_type.id"))
+    source_status = relationship("SourceStatus", uselist=False, backref="sources")
+    source_status_id = Column(Integer, ForeignKey("source_status.id"))
     source_environment = relationship("SourceEnvironment", uselist=False, backref="sources")
-    # source_data_format_id = Column(Integer, ForeignKey("source_data_format.id"))
-    # source_data_format = relationship("SourceDataFormat", uselist=False, backref="sources")
-    # source_transport_id = Column(Integer, ForeignKey("source_transport.id"))
-    # source_transport = relationship("SourceTransport", uselist=False, backref="sources")
+    source_environment_id = Column(Integer, ForeignKey("source_environment.id"))
+    source_data_format = relationship("SourceDataFormat", uselist=False, backref="sources")
+    source_data_format_id = Column(Integer, ForeignKey("source_data_format.id"))
+    source_transport_id = Column(Integer, ForeignKey("source_transport.id"))
+    source_transport = relationship("SourceTransport", uselist=False, backref="sources")
     owner = relationship("Service", uselist=False, backref="sources")
     owner_id = Column(Integer, ForeignKey("service.id"))
     incidents = relationship("Incident", secondary=assoc_source_incidents, backref="sources")
@@ -107,11 +114,12 @@ class SourceBase(DispatchBase):
     incidents: Optional[List[IncidentRead]] = []
     alerts: Optional[List[AlertRead]] = []
     owner: Optional[ServiceRead] = Field(None, nullable=True)
-    # source_type: Optional[SourceAttributeRead]
+    source_type: Optional[SourceTypeRead]
     source_environment: Optional[SourceEnvironmentRead]
-    # source_data_format: Optional[SourceAttributeRead]
-    # source_status: Optional[SourceAttributeRead]
-    # source_transport: Optional[SourceAttributeRead]
+    source_data_format: Optional[SourceDataFormatRead]
+    source_status: Optional[SourceStatusRead]
+    source_transport: Optional[SourceTransportRead]
+    project: ProjectRead
 
 
 class SourceCreate(SourceBase):

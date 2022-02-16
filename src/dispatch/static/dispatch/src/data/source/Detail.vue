@@ -2,11 +2,11 @@
   <div>
     <new-edit-modal />
     <v-toolbar dark flat>
-      <v-toolbar-title>{{ source.name }}</v-toolbar-title>
+      <v-toolbar-title>{{ name }}</v-toolbar-title>
 
       <v-spacer></v-spacer>
 
-      Current Status: {{ source.status }}
+      Current Status: {{ status }}
 
       <v-menu bottom left>
         <template v-slot:activator="{ on }">
@@ -15,10 +15,10 @@
           </v-btn>
         </template>
         <v-list>
-          <v-list-item @click="createEditShow(source)">
+          <v-list-item @click="createEditShow(selected)">
             <v-list-item-title>Edit</v-list-item-title>
           </v-list-item>
-          <v-list-item @click="removeShow(source)">
+          <v-list-item @click="removeShow(selected)">
             <v-list-item-title>Delete</v-list-item-title>
           </v-list-item>
         </v-list>
@@ -73,10 +73,16 @@ export default {
   },
 
   computed: {
-    ...mapFields("source", ["selected.source", "selected.loading", "dialogs.showEditSheet"]),
+    ...mapFields("source", [
+      "selected.name",
+      "selected.status",
+      "selected.alerts",
+      "selected.loading",
+      "dialogs.showEditSheet",
+    ]),
     alertCount: function () {
-      if (this.source.alerts) {
-        return this.source.alerts.length
+      if (this.alerts) {
+        return this.alerts.length
       }
       return 0
     },

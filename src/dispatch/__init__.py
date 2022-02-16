@@ -46,10 +46,18 @@ try:
     from dispatch.term.models import Term  # noqa lgtm[py/unused-import]
     from dispatch.ticket.models import Ticket  # noqa lgtm[py/unused-import]
     from dispatch.workflow.models import Workflow  # noqa lgtm[py/unused-import]
-    from dispatch.data.source.environment.models import SourceEnvironment
-    from dispatch.data.source.models import Source  # noqa lgtm[py/unused-import]
+    from dispatch.data.source.environment.models import (
+        SourceEnvironment,
+    )  # noqa lgtm[py/unused-import]
+    from dispatch.data.source.data_format.models import (
+        SourceDataFormat,
+    )  # noqa lgtm[py/unused-import]
+    from dispatch.data.source.status.models import SourceStatus  # noqa lgtm[py/unused-import]
+    from dispatch.data.source.transport.models import SourceTransport  # noqa lgtm[py/unused-import]
+    from dispatch.data.source.type.models import SourceType  # noqa lgtm[py/unused-import]
     from dispatch.data.alert.models import Alert  # noqa lgtm[py/unused-import]
     from dispatch.data.query.models import Query  # noqa lgtm[py/unused-import]
+    from dispatch.data.source.models import Source  # noqa lgtm[py/unused-import]
     from dispatch.search_filter.models import SearchFilter  # noqa lgtm[py/unused-impot]
 except Exception:
     pass

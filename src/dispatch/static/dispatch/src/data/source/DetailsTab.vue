@@ -31,52 +31,48 @@
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
-            {{ source.description }}
+            {{ description }}
           </v-list-item>
           <v-list class="transparent">
             <v-list-item>
               <v-list-item-title>Last Refreshed</v-list-item-title>
               <v-list-item-subtitle class="text-right">
-                {{ source.lastRefreshed | formatRelativeDate }}</v-list-item-subtitle
+                {{ last_refreshed | formatRelativeDate }}</v-list-item-subtitle
               >
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Retention</v-list-item-title>
               <v-list-item-subtitle class="text-right">
-                {{ source.retention }}
+                {{ retention }}
               </v-list-item-subtitle>
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Avg Prop Delay</v-list-item-title>
-              <v-list-item-subtitle class="text-right"> {{ source.delay }}</v-list-item-subtitle>
+              <v-list-item-subtitle class="text-right"> {{ delay }}</v-list-item-subtitle>
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Avg Daily Volume</v-list-item-title>
-              <v-list-item-subtitle class="text-right"> {{ source.size }}</v-list-item-subtitle>
+              <v-list-item-subtitle class="text-right"> {{ size }}</v-list-item-subtitle>
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Source Type</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ source.sourceType }}</v-list-item-subtitle
-              >
+              <v-list-item-subtitle class="text-right"> {{ source_type }}</v-list-item-subtitle>
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Data Format</v-list-item-title>
               <v-list-item-subtitle class="text-right">
-                {{ source.dataFormat }}</v-list-item-subtitle
+                {{ source_data_format }}</v-list-item-subtitle
               >
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Transport</v-list-item-title>
               <v-list-item-subtitle class="text-right">
-                {{ source.transport }}</v-list-item-subtitle
+                {{ source_transport }}</v-list-item-subtitle
               >
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Sampling Rate</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
-                {{ source.samplingRate }}%</v-list-item-subtitle
-              >
+              <v-list-item-subtitle class="text-right"> {{ sampling_rate }}%</v-list-item-subtitle>
             </v-list-item>
           </v-list>
         </v-card>
@@ -90,7 +86,7 @@
         <v-card>
           <v-card-title>Links</v-card-title>
           <v-card-text>
-            <v-data-table :headers="headers" :items="source.links">
+            <v-data-table :headers="headers" :items="links">
               <template v-slot:item.name="{ item }">
                 <span
                   ><a :href="item.href">
@@ -115,7 +111,26 @@ export default {
   components: {},
 
   computed: {
-    ...mapFields("source", ["selected.source", "selected.loading"]),
+    ...mapFields("source", [
+      "selected.name",
+      "selected.description",
+      "selected.owner",
+      "selected.retention",
+      "selected.source_environment",
+      "selected.source_status",
+      "selected.source_type",
+      "selected.source_transport",
+      "selected.source_data_format",
+      "selected.links",
+      "selected.size",
+      "selected.delay",
+      "selected.aggregation",
+      "selected.external_id",
+      "selected.project",
+      "selected.last_refreshed",
+      "selected.sampling_rate",
+      "selected.loading",
+    ]),
   },
 
   data() {

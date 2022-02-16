@@ -71,7 +71,7 @@ export default {
   components: {},
 
   computed: {
-    ...mapFields("source", ["selected.source.links", "selected.loading"]),
+    ...mapFields("source", ["selected.links", "selected.loading"]),
   },
   data: () => ({
     q: "",

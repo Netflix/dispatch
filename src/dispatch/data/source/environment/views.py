@@ -39,7 +39,7 @@ def get_source_environment(
 
 
 @router.post("", response_model=SourceEnvironmentRead)
-def create_source(
+def create_source_environment(
     *, db_session: Session = Depends(get_db), source_environment_in: SourceEnvironmentCreate
 ):
     """Create a new source environment."""
@@ -48,13 +48,13 @@ def create_source(
 
 
 @router.put("/{source_environment_id}", response_model=SourceEnvironmentRead)
-def update_source(
+def update_source_environment(
     *,
     db_session: Session = Depends(get_db),
     source_environment_id: PrimaryKey,
     source_environment_in: SourceEnvironmentUpdate,
 ):
-    """Update a source."""
+    """Update a source environment."""
     source = get(db_session=db_session, source_environment_id=source_environment_id)
     if not source:
         raise HTTPException(
@@ -68,8 +68,10 @@ def update_source(
 
 
 @router.delete("/{source_environment_id}")
-def delete_source(*, db_session: Session = Depends(get_db), source_environment_id: PrimaryKey):
-    """Delete a source, returning only an HTTP 200 OK if successful."""
+def delete_source_environment(
+    *, db_session: Session = Depends(get_db), source_environment_id: PrimaryKey
+):
+    """Delete a source environment, returning only an HTTP 200 OK if successful."""
     source = get(db_session=db_session, source_environment_id=source_environment_id)
     if not source:
         raise HTTPException(

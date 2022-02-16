@@ -87,12 +87,13 @@ authenticated_organization_api_router.include_router(
     project_router, prefix="/projects", tags=["projects"]
 )
 
+# Order matters for path eval
 authenticated_organization_api_router.include_router(
-    source_router, prefix="/data/sources", tags=["sources"]
+    source_environment_router, prefix="/data/sources/environments", tags=["source_environments"]
 )
 
 authenticated_organization_api_router.include_router(
-    source_environment_router, prefix="/data/sources/environments", tags=["source_environments"]
+    source_router, prefix="/data/sources", tags=["sources"]
 )
 
 authenticated_organization_api_router.include_router(

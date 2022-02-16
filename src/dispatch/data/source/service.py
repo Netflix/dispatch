@@ -2,6 +2,14 @@ from typing import Optional, List
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.exceptions import NotFoundError
+from dispatch.project import service as project_service
+from dispatch.service import service as service_service
+from dispatch.data.source.environment import service as environment_service
+from dispatch.data.source.data_format import service as data_format_service
+from dispatch.data.source.status import service as status_service
+from dispatch.data.source.type import service as type_service
+from dispatch.data.source.transport import service as transport_service
+
 
 from .models import Source, SourceCreate, SourceUpdate, SourceRead
 
@@ -49,7 +57,63 @@ def get_all(*, db_session, project_id: int) -> List[Optional[Source]]:
 
 def create(*, db_session, source_in: SourceCreate) -> Source:
     """Creates a new source."""
-    source = Source(**source_in.dict())
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=source_in.project
+    )
+
+    owner = service_service.get_by_name_or_raise(
+        db_session=db_session, project_id=project.id, service_in=source_in.owner
+    )
+
+    environment = environment_service.get_by_name_or_raise(
+        db_session=db_session,
+        project_id=project.id,
+        source_environment_in=source_in.source_environment,
+    )
+
+    #    type = type_service.get_by_name_or_raise(
+    #        db_session=db_session,
+    #        project_id=project.id,
+    #        source_type_in=source_in.source_type,
+    #    )
+    #
+    #    transport = transport_service.get_by_name_or_raise(
+    #        db_session=db_session,
+    #        project_id=project.id,
+    #        source_transport_in=source_in.source_transport,
+    #    )
+    #
+    #    data_format = data_format_service.get_by_name_or_raise(
+    #        db_session=db_session,
+    #        project_id=project.id,
+    #        source_data_format_in=source_in.source_data_format,
+    #    )
+    #    status = status_service.get_by_name_or_raise(
+    #        db_session=db_session,
+    #        project_id=project.id,
+    #        source_status_in=source_in.source_status,
+    #    )
+
+    source = Source(
+        **source_in.dict(
+            exclude={
+                "project",
+                "owner",
+                "source_environment",
+                # "source_data_format",
+                # "source_transport",
+                # "source_status",
+                # "source_type",
+            }
+        ),
+        project=project,
+        owner=owner,
+        source_environment=environment,
+        # source_data_format=data_format,
+        # source_transport=transport,
+        # source_status=status,
+        # source_type=type,
+    )
     db_session.add(source)
     db_session.commit()
     return source
@@ -73,6 +137,7 @@ def get_or_create(*, db_session, source_in: SourceCreate) -> Source:
 def update(*, db_session, source: Source, source_in: SourceUpdate) -> Source:
     """Updates an existing source."""
     source_data = source.dict()
+
     update_data = source_in.dict(skip_defaults=True, exclude={})
 
     for field in source_data:

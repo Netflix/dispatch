@@ -17,7 +17,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("source", ["selected.source.queries", "selected.loading"]),
+    ...mapFields("source", ["selected.queries", "selected.loading"]),
   },
 
   data() {
