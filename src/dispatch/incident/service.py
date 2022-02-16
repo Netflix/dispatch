@@ -286,12 +286,12 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
             "incident_costs",
             "incident_priority",
             "incident_type",
+            "project",
             "reporter",
             "status",
             "tags",
             "terms",
             "visibility",
-            "project",
         },
     )
 

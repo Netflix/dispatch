@@ -292,83 +292,85 @@ def create_incident_storage(
     return storage
 
 
-def create_collaboration_documents(incident: Incident, db_session: SessionLocal):
-    """Create external collaboration document."""
+def create_incident_documents(incident: Incident, db_session: SessionLocal):
+    """Create incident documents."""
+    incident_documents = []
+
+    if not incident.storage:
+        return incident_documents
+
+    # we get the storage plugin
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="storage"
     )
 
-    collab_documents = []
-
-    if not incident.storage:
-        return collab_documents
-
-    document_name = f"{incident.name} - Incident Document"
-
     if plugin:
-        # TODO can we make move and copy in one api call? (kglisson)
+        incident_document_name = f"{incident.name} - Incident Document"
+
         if incident.incident_type.incident_template_document:
             document = plugin.instance.copy_file(
                 incident.storage.resource_id,
                 incident.incident_type.incident_template_document.resource_id,
-                document_name,
+                incident_document_name,
             )
             plugin.instance.move_file(incident.storage.resource_id, document["id"])
-
-        # create a blank document if no template is defined
         else:
+            # create a blank document if no template is defined
             document = plugin.instance.create_file(
-                incident.storage.resource_id, document_name, file_type="document"
+                incident.storage.resource_id, incident_document_name, file_type="document"
             )
 
         # TODO this logic should probably be pushed down into the plugins i.e. making them return
         # the fields we expect instead of re-mapping. (kglisson)
         document.update(
             {
-                "name": document_name,
+                "name": incident_document_name,
                 "resource_type": DocumentResourceTypes.incident,
                 "resource_id": document["id"],
             }
         )
 
-        collab_documents.append(document)
+        incident_documents.append(document)
 
         event_service.log(
             db_session=db_session,
             source=plugin.plugin.title,
-            description="Incident investigation document created",
+            description="Incident document created",
             incident_id=incident.id,
         )
 
         sheet = None
         if incident.incident_type.tracking_template_document:
-            sheet_name = f"{incident.name} - Incident Tracking Sheet"
+            incident_sheet_name = f"{incident.name} - Incident Tracking Sheet"
             sheet = plugin.instance.copy_file(
                 incident.storage.resource_id,
                 incident.incident_type.tracking_template_document.resource_id,
-                sheet_name,
+                incident_sheet_name,
             )
             plugin.instance.move_file(incident.storage.resource_id, sheet["id"])
 
             sheet.update(
                 {
-                    "name": sheet_name,
+                    "name": incident_sheet_name,
                     "resource_type": DocumentResourceTypes.tracking,
                     "resource_id": sheet["id"],
                 }
             )
-            collab_documents.append(sheet)
+
+            incident_documents.append(sheet)
+
             event_service.log(
                 db_session=db_session,
                 source=plugin.plugin.title,
-                description="Incident investigation sheet created",
+                description="Incident sheet created",
                 incident_id=incident.id,
             )
 
+        # we create folders to store logs and screengrabs
         plugin.instance.create_file(incident.storage.resource_id, "logs")
         plugin.instance.create_file(incident.storage.resource_id, "screengrabs")
 
-    return collab_documents
+    return incident_documents
 
 
 def create_conversation(incident: Incident, db_session: SessionLocal):
@@ -612,9 +614,9 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
 
         # we create collaboration documents, don't fail the whole flow if this fails
         try:
-            collab_documents = create_collaboration_documents(incident, db_session)
+            incident_documents = create_incident_documents(incident, db_session)
 
-            for d in collab_documents:
+            for d in incident_documents:
                 document_in = DocumentCreate(
                     name=d["name"],
                     resource_id=d["resource_id"],
