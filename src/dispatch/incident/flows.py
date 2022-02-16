@@ -373,6 +373,108 @@ def create_incident_documents(incident: Incident, db_session: SessionLocal):
     return incident_documents
 
 
+def create_post_incident_review_document(incident: Incident, db_session: SessionLocal):
+    """Create post-incident review document."""
+    # we get the storage plugin
+    storage_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="storage"
+    )
+    if not storage_plugin:
+        log.warning("Post-incident review document not created. No storage plugin enabled.")
+        return
+
+    # we create a copy of the incident review document template and we move it to the incident storage
+    incident_review_document_name = f"{incident.name} - Post-Incident Review Document"
+
+    # incident review document is optional
+    if not incident.incident_type.review_template_document:
+        log.warning("No template for post-incident review document has been specified.")
+        return
+
+    # we create the document
+    incident_review_document = storage_plugin.instance.copy_file(
+        folder_id=incident.storage.resource_id,
+        file_id=incident.incident_type.review_template_document.resource_id,
+        name=incident_review_document_name,
+    )
+
+    incident_review_document.update(
+        {
+            "name": incident_review_document_name,
+            "resource_type": DocumentResourceTypes.review,
+        }
+    )
+
+    # we move the document to the storage
+    storage_plugin.instance.move_file(
+        new_folder_id=incident.storage.resource_id,
+        file_id=incident_review_document["id"],
+    )
+
+    event_service.log(
+        db_session=db_session,
+        source=storage_plugin.plugin.title,
+        description="Post-incident review document added to storage",
+        incident_id=incident.id,
+    )
+
+    # we add the document to the incident
+    document_in = DocumentCreate(
+        name=incident_review_document["name"],
+        resource_id=incident_review_document["id"],
+        resource_type=incident_review_document["resource_type"],
+        project=incident.project,
+        weblink=incident_review_document["weblink"],
+    )
+
+    incident.documents.append(
+        document_service.create(db_session=db_session, document_in=document_in)
+    )
+
+    event_service.log(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Post-incident review document added to incident",
+        incident_id=incident.id,
+    )
+
+    # we update the post-incident review document
+    update_document(incident.incident_review_document.resource_id, incident, db_session)
+
+    db_session.add(incident)
+    db_session.commit()
+
+
+def update_document(document_resource_id: str, incident: Incident, db_session: SessionLocal):
+    """Updates an existing document."""
+    # we get the document plugin
+    document_plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=incident.project.id, plugin_type="document"
+    )
+
+    if not document_plugin:
+        log.warning("No document plugin enabled. Document not updated.")
+        return
+
+    document_plugin.instance.update(
+        document_resource_id,
+        commander_fullname=incident.commander.individual.name,
+        conference_challenge=resolve_attr(incident, "conference.challenge"),
+        conference_weblink=resolve_attr(incident, "conference.weblink"),
+        conversation_weblink=resolve_attr(incident, "conversation.weblink"),
+        description=incident.description,
+        document_weblink=resolve_attr(incident, "incident_document.weblink"),
+        name=incident.name,
+        priority=incident.incident_priority.name,
+        resolution=incident.resolution,
+        status=incident.status,
+        storage_weblink=resolve_attr(incident, "storage.weblink"),
+        ticket_weblink=resolve_attr(incident, "ticket.weblink"),
+        title=incident.title,
+        type=incident.incident_type.name,
+    )
+
+
 def create_conversation(incident: Incident, db_session: SessionLocal):
     """Create external communication conversation."""
     plugin = plugin_service.get_active_instance(
@@ -839,103 +941,30 @@ def incident_stable_status_flow(incident: Incident, db_session=None):
     """Runs the incident stable flow."""
     # we set the stable time
     incident.stable_at = datetime.utcnow()
-
-    if incident.incident_review_document:
-        log.debug("Incident review document already created... skipping creation.")
-        return
-
-    storage_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="storage"
-    )
-    if not storage_plugin:
-        log.warning("Incident review document not created, no storage plugin enabled.")
-        return
-
-    # we create a copy of the incident review document template and we move it to the incident storage
-    incident_review_document_name = f"{incident.name} - Post Incident Review Document"
-
-    # incident review document is optional
-    if not incident.incident_type.review_template_document:
-        log.warning("No incident review template specified.")
-        return
-
-    incident_review_document = storage_plugin.instance.copy_file(
-        folder_id=incident.storage.resource_id,
-        file_id=incident.incident_type.review_template_document.resource_id,
-        name=incident_review_document_name,
-    )
-
-    incident_review_document.update(
-        {
-            "name": incident_review_document_name,
-            "resource_type": DocumentResourceTypes.review,
-        }
-    )
-
-    storage_plugin.instance.move_file(
-        new_folder_id=incident.storage.resource_id,
-        file_id=incident_review_document["id"],
-    )
-
-    event_service.log(
-        db_session=db_session,
-        source=storage_plugin.plugin.title,
-        description="Incident review document added to storage",
-        incident_id=incident.id,
-    )
-
-    document_in = DocumentCreate(
-        name=incident_review_document["name"],
-        resource_id=incident_review_document["id"],
-        resource_type=incident_review_document["resource_type"],
-        project=incident.project,
-        weblink=incident_review_document["weblink"],
-    )
-    incident.documents.append(
-        document_service.create(db_session=db_session, document_in=document_in)
-    )
-
-    event_service.log(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description="Incident review document added to incident",
-        incident_id=incident.id,
-    )
-
-    # we update the incident review document
-    document_plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=incident.project.id, plugin_type="document"
-    )
-    if document_plugin:
-        document_plugin.instance.update(
-            incident.incident_review_document.resource_id,
-            name=incident.name,
-            priority=incident.incident_priority.name,
-            status=incident.status,
-            type=incident.incident_type.name,
-            title=incident.title,
-            description=incident.description,
-            commander_fullname=incident.commander.individual.name,
-            conversation_weblink=resolve_attr(incident, "conversation.weblink"),
-            document_weblink=resolve_attr(incident, "incident_document.weblink"),
-            storage_weblink=resolve_attr(incident, "storage.weblink"),
-            ticket_weblink=resolve_attr(incident, "ticket.weblink"),
-            conference_weblink=resolve_attr(incident, "conference.weblink"),
-            conference_challenge=resolve_attr(incident, "conference.challenge"),
-        )
-    else:
-        log.warning("No document plugin enabled, could not update template.")
-
-    # we send a notification about the incident review document to the conversation
-    send_incident_review_document_notification(
-        incident.conversation.channel_id,
-        incident.incident_review_document.weblink,
-        incident,
-        db_session,
-    )
-
     db_session.add(incident)
     db_session.commit()
+
+    if incident.incident_document:
+        # we update the incident document
+        update_document(incident.incident_document.resource_id, incident, db_session)
+
+    if incident.incident_review_document:
+        log.debug(
+            "The post-incident review document has already been created. Skipping creation..."
+        )
+        return
+
+    # we create the post-incident review document
+    create_post_incident_review_document(incident, db_session)
+
+    if incident.incident_review_document:
+        # we send a notification about the incident review document to the conversation
+        send_incident_review_document_notification(
+            incident.conversation.channel_id,
+            incident.incident_review_document.weblink,
+            incident,
+            db_session,
+        )
 
 
 def incident_closed_status_flow(incident: Incident, db_session=None):
@@ -945,8 +974,6 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
 
     # we set the closed time
     incident.closed_at = datetime.utcnow()
-
-    # set time immediately
     db_session.add(incident)
     db_session.commit()
 
@@ -1198,7 +1225,7 @@ def incident_assign_role_flow(
         # NOTE: This is disabled until we can determine the source of the caller
         # we let the assigner know that the assignee already has this role
         # send_incident_participant_has_role_ephemeral_message(
-        #    assigner_email, assignee_contact_info, assignee_role, incident
+        #     assigner_email, assignee_contact_info, assignee_role, incident
         # )
         return
 
@@ -1206,7 +1233,7 @@ def incident_assign_role_flow(
         # NOTE: This is disabled until we can determine the source of the caller
         # we let the assigner know that we were not able to assign the role
         # send_incident_participant_role_not_assigned_ephemeral_message(
-        #    assigner_email, assignee_contact_info, assignee_role, incident
+        #     assigner_email, assignee_contact_info, assignee_role, incident
         # )
         return
 
