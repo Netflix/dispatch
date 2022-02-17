@@ -100,20 +100,20 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+
 import Util from "@/util"
 import SearchUtils from "@/search/utils"
 
 import IncidentApi from "@/incident/api"
-import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
+import IncidentPriority from "@/incident/IncidentPriority.vue"
+import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
+import IncidentStatus from "@/incident/IncidentStatus.vue"
 import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
+import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
+import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
+import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
-import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
-import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
-import ProjectCombobox from "@/project/ProjectCombobox.vue"
-
-import IncidentStatus from "@/incident/IncidentStatus.vue"
-import IncidentPriority from "@/incident/IncidentPriority.vue"
 
 export default {
   name: "IncidentTableExportDialog",
@@ -123,6 +123,8 @@ export default {
       selectedFields: [
         { text: "Name", value: "name", sortable: false },
         { text: "Title", value: "title", sortable: false },
+        { text: "Description", value: "description", sortable: false },
+        { text: "Resolution", value: "resolution", sortable: false },
         { text: "Status", value: "status", sortable: false },
         { text: "Incident Type", value: "incident_type.name", sortable: false },
         { text: "Incident Priority", value: "incident_priority.name", sortable: false },
@@ -134,6 +136,7 @@ export default {
         { text: "Total Cost", value: "total_cost", sortable: false },
         { text: "Visibility", value: "visibility", sortable: false },
         { text: "Description", value: "description", sortable: false },
+        { text: "Resolution", value: "resolution", sortable: false },
         { text: "Incident Type", value: "incident_type.name", sortable: false },
         { text: "Incident Priority", value: "incident_priority.name", sortable: false },
         { text: "Reporter", value: "reporter.individual.email", sortable: false },
