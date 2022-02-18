@@ -68,6 +68,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     name = Column(String)
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
+    resolution = Column(String)
     status = Column(String, default=IncidentStatus.active)
     visibility = Column(String, default=Visibility.open, nullable=False)
 
@@ -331,6 +332,7 @@ class ProjectRead(DispatchBase):
 class IncidentBase(DispatchBase):
     title: str
     description: str
+    resolution: Optional[str]
     status: Optional[IncidentStatus] = IncidentStatus.active
     visibility: Optional[Visibility]
 

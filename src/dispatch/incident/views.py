@@ -17,7 +17,6 @@ from dispatch.auth.permissions import (
     PermissionsDependency,
     IncidentViewPermission,
 )
-from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.common.utils.views import create_pydantic_include
@@ -25,19 +24,18 @@ from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.incident.enums import IncidentStatus
 from dispatch.individual.models import IndividualContactRead
+from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.participant.models import ParticipantUpdate
-from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.report import flows as report_flows
 from dispatch.report.models import TacticalReportCreate, ExecutiveReportCreate
 
 from .flows import (
     incident_add_or_reactivate_participant_flow,
-    incident_assign_role_flow,
+    incident_add_participant_to_tactical_group_flow,
     incident_create_closed_flow,
     incident_create_flow,
     incident_create_stable_flow,
     incident_update_flow,
-    incident_add_participant_to_tactical_group_flow,
 )
 from .metrics import make_forecast, create_incident_metric_query
 from .models import Incident, IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
@@ -147,37 +145,21 @@ def update_incident(
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
-    """Update an individual incident."""
+    """Update an existing incident."""
+    # we store the previous state of the incident in order to be able to detect changes
     previous_incident = IncidentRead.from_orm(current_incident)
 
-    # NOTE: Order matters we have to get the previous state for change detection
+    # we update the incident
     incident = update(db_session=db_session, incident=current_incident, incident_in=incident_in)
 
+    # we run the incident update flow
     background_tasks.add_task(
         incident_update_flow,
         user_email=current_user.email,
-        incident_id=incident.id,
+        commander_email=incident_in.commander.individual.email,
+        reporter_email=incident_in.reporter.individual.email,
+        incident_id=incident_id,
         previous_incident=previous_incident,
-        organization_slug=organization,
-    )
-
-    # assign commander
-    background_tasks.add_task(
-        incident_assign_role_flow,
-        current_user.email,
-        incident_id=incident.id,
-        assignee_email=incident_in.commander.individual.email,
-        assignee_role=ParticipantRoleType.incident_commander,
-        organization_slug=organization,
-    )
-
-    # assign reporter
-    background_tasks.add_task(
-        incident_assign_role_flow,
-        current_user.email,
-        incident_id=incident.id,
-        assignee_email=incident_in.reporter.individual.email,
-        assignee_role=ParticipantRoleType.reporter,
         organization_slug=organization,
     )
 

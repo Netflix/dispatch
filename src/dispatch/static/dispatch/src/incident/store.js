@@ -22,6 +22,7 @@ const getDefaultSelectedState = () => {
     name: null,
     participants: null,
     project: null,
+    resolution: null,
     reported_at: null,
     reporter: null,
     stable_at: null,
