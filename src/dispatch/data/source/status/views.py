@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 
 from sqlalchemy.orm import Session
 
@@ -27,13 +27,13 @@ def get_source_statuss(*, common: dict = Depends(common_parameters)):
 @router.get("/{source_status_id}", response_model=SourceStatusRead)
 def get_source_status(*, db_session: Session = Depends(get_db), source_status_id: PrimaryKey):
     """Given its unique ID, retrieve details about a single source status."""
-    source = get(db_session=db_session, source_status_id=source_status_id)
-    if not source:
+    status = get(db_session=db_session, source_status_id=source_status_id)
+    if not status:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "The requested source status does not exist."}],
         )
-    return source
+    return status
 
 
 @router.post("", response_model=SourceStatusRead)
@@ -41,8 +41,7 @@ def create_source_status(
     *, db_session: Session = Depends(get_db), source_status_in: SourceStatusCreate
 ):
     """Create a new source status."""
-    source = create(db_session=db_session, source_status_in=source_status_in)
-    return source
+    return create(db_session=db_session, source_status_in=source_status_in)
 
 
 @router.put("/{source_status_id}", response_model=SourceStatusRead)
@@ -52,22 +51,22 @@ def update_source_status(
     source_status_id: PrimaryKey,
     source_status_in: SourceStatusUpdate,
 ):
-    """Update a source status."""
-    source = get(db_session=db_session, source_status_id=source_status_id)
-    if not source:
+    """Update a status status."""
+    status = get(db_session=db_session, source_status_id=source_status_id)
+    if not status:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "An source status with this ID does not exist."}],
         )
-    source = update(db_session=db_session, source=source, source_status_in=source_status_in)
-    return source
+    status = update(db_session=db_session, status=status, source_status_in=source_status_in)
+    return status
 
 
 @router.delete("/{source_status_id}")
 def delete_source_status(*, db_session: Session = Depends(get_db), source_status_id: PrimaryKey):
     """Delete a source status, returning only an HTTP 200 OK if successful."""
-    source = get(db_session=db_session, source_status_id=source_status_id)
-    if not source:
+    status = get(db_session=db_session, source_status_id=source_status_id)
+    if not status:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "An source status with this ID does not exist."}],

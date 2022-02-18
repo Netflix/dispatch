@@ -38,6 +38,10 @@ from dispatch.data.alert.views import router as alert_router
 from dispatch.data.query.views import router as query_router
 from dispatch.data.source.views import router as source_router
 from dispatch.data.source.environment.views import router as source_environment_router
+from dispatch.data.source.data_format.views import router as source_data_format_router
+from dispatch.data.source.status.views import router as source_status_router
+from dispatch.data.source.transport.views import router as source_transport_router
+from dispatch.data.source.type.views import router as source_type_router
 
 from .config import DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 
@@ -88,6 +92,20 @@ authenticated_organization_api_router.include_router(
 )
 
 # Order matters for path eval
+authenticated_organization_api_router.include_router(
+    source_type_router, prefix="/data/sources/types", tags=["source_types"]
+)
+authenticated_organization_api_router.include_router(
+    source_transport_router, prefix="/data/sources/transports", tags=["source_transports"]
+)
+authenticated_organization_api_router.include_router(
+    source_status_router, prefix="/data/sources/statuses", tags=["source_statuses"]
+)
+
+authenticated_organization_api_router.include_router(
+    source_data_format_router, prefix="/data/sources/dataFormats", tags=["source_data_formats"]
+)
+
 authenticated_organization_api_router.include_router(
     source_environment_router, prefix="/data/sources/environments", tags=["source_environments"]
 )

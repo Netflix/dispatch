@@ -6,7 +6,7 @@
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
             <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Environment</v-list-item-subtitle>
+            <v-list-item-subtitle>Data Format</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
             icon
@@ -74,7 +74,7 @@ extend("required", {
 })
 
 export default {
-  name: "SourceEnvironmentNewEditSheet",
+  name: "SourceDataFormatNewEditSheet",
 
   components: {
     ValidationProvider,
@@ -82,7 +82,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("sourceEnvironment", [
+    ...mapFields("sourceDataFormat", [
       "selected.project",
       "selected.id",
       "selected.name",
@@ -94,10 +94,10 @@ export default {
   },
 
   methods: {
-    ...mapActions("sourceEnvironment", ["closeCreateEdit"]),
+    ...mapActions("sourceDataFormat", ["closeCreateEdit"]),
     save() {
       const self = this
-      this.$store.dispatch("sourceEnvironment/save").then(function (data) {
+      this.$store.dispatch("sourceDataFormat/save").then(function (data) {
         self.$emit("new-source-environment-created", data)
       })
     },

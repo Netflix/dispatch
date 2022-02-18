@@ -2,6 +2,7 @@ from typing import Optional, List
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.exceptions import NotFoundError
+from dispatch.project import service as project_service
 
 from .models import (
     SourceTransport,
@@ -29,10 +30,12 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[SourceTra
 
 
 def get_by_name_or_raise(
-    *, db_session, project_id, source_type_in=SourceTransportRead
+    *, db_session, project_id, source_transport_in=SourceTransportRead
 ) -> SourceTransportRead:
     """Returns the source specified or raises ValidationError."""
-    source = get_by_name(db_session=db_session, project_id=project_id, name=source_type_in.name)
+    source = get_by_name(
+        db_session=db_session, project_id=project_id, name=source_transport_in.name
+    )
 
     if not source:
         raise ValidationError(
@@ -40,7 +43,7 @@ def get_by_name_or_raise(
                 ErrorWrapper(
                     NotFoundError(
                         msg="SourceTransport not found.",
-                        source=source_type_in.name,
+                        source=source_transport_in.name,
                     ),
                     loc="source",
                 )
@@ -56,21 +59,26 @@ def get_all(*, db_session, project_id: int) -> List[Optional[SourceTransport]]:
     return db_session.query(SourceTransport).filter(SourceTransport.project_id == project_id)
 
 
-def create(*, db_session, source_type_in: SourceTransportCreate) -> SourceTransport:
+def create(*, db_session, source_transport_in: SourceTransportCreate) -> SourceTransport:
     """Creates a new source."""
-    source_type = SourceTransport(**source_type_in.dict())
-    db_session.add(source_type)
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=source_transport_in.project
+    )
+    source_transport = SourceTransport(
+        **source_transport_in.dict(exclude={"project"}), project=project
+    )
+    db_session.add(source_transport)
     db_session.commit()
-    return source_type
+    return source_transport
 
 
-def get_or_create(*, db_session, source_type_in: SourceTransportCreate) -> SourceTransport:
+def get_or_create(*, db_session, source_transport_in: SourceTransportCreate) -> SourceTransport:
     """Gets or creates a new source."""
     # prefer the source id if available
-    if source_type_in.id:
-        q = db_session.query(SourceTransport).filter(SourceTransport.id == source_type_in.id)
+    if source_transport_in.id:
+        q = db_session.query(SourceTransport).filter(SourceTransport.id == source_transport_in.id)
     else:
-        q = db_session.query(SourceTransport).filter_by(name=source_type_in.name)
+        q = db_session.query(SourceTransport).filter_by(name=source_transport_in.name)
 
     instance = q.first()
     if instance:
@@ -78,32 +86,34 @@ def get_or_create(*, db_session, source_type_in: SourceTransportCreate) -> Sourc
 
     return create(
         db_session=db_session,
-        source_type_in=source_type_in,
+        source_transport_in=source_transport_in,
     )
 
 
 def update(
     *,
     db_session,
-    source_type: SourceTransport,
-    source_type_in: SourceTransportUpdate,
+    source_transport: SourceTransport,
+    source_transport_in: SourceTransportUpdate,
 ) -> SourceTransport:
     """Updates an existing source."""
-    source_type_data = source_type.dict()
-    update_data = source_type_in.dict(skip_defaults=True, exclude={})
+    source_transport_data = source_transport.dict()
+    update_data = source_transport_in.dict(skip_defaults=True, exclude={})
 
-    for field in source_type_data:
+    for field in source_transport_data:
         if field in update_data:
-            setattr(source_type, field, update_data[field])
+            setattr(source_transport, field, update_data[field])
 
     db_session.commit()
-    return source_type
+    return source_transport
 
 
-def delete(*, db_session, source_type_id: int):
+def delete(*, db_session, source_transport_id: int):
     """Deletes an existing source."""
-    source_type = (
-        db_session.query(SourceTransport).filter(SourceTransport.id == source_type_id).one_or_none()
+    source_transport = (
+        db_session.query(SourceTransport)
+        .filter(SourceTransport.id == source_transport_id)
+        .one_or_none()
     )
-    db_session.delete(source_type)
+    db_session.delete(source_transport)
     db_session.commit()

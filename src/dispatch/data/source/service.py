@@ -71,28 +71,28 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
         source_environment_in=source_in.source_environment,
     )
 
-    #    type = type_service.get_by_name_or_raise(
-    #        db_session=db_session,
-    #        project_id=project.id,
-    #        source_type_in=source_in.source_type,
-    #    )
-    #
-    #    transport = transport_service.get_by_name_or_raise(
-    #        db_session=db_session,
-    #        project_id=project.id,
-    #        source_transport_in=source_in.source_transport,
-    #    )
-    #
-    #    data_format = data_format_service.get_by_name_or_raise(
-    #        db_session=db_session,
-    #        project_id=project.id,
-    #        source_data_format_in=source_in.source_data_format,
-    #    )
-    #    status = status_service.get_by_name_or_raise(
-    #        db_session=db_session,
-    #        project_id=project.id,
-    #        source_status_in=source_in.source_status,
-    #    )
+    source_type = type_service.get_by_name_or_raise(
+        db_session=db_session,
+        project_id=project.id,
+        source_type_in=source_in.source_type,
+    )
+
+    transport = transport_service.get_by_name_or_raise(
+        db_session=db_session,
+        project_id=project.id,
+        source_transport_in=source_in.source_transport,
+    )
+
+    data_format = data_format_service.get_by_name_or_raise(
+        db_session=db_session,
+        project_id=project.id,
+        source_data_format_in=source_in.source_data_format,
+    )
+    status = status_service.get_by_name_or_raise(
+        db_session=db_session,
+        project_id=project.id,
+        source_status_in=source_in.source_status,
+    )
 
     source = Source(
         **source_in.dict(
@@ -100,19 +100,19 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
                 "project",
                 "owner",
                 "source_environment",
-                # "source_data_format",
-                # "source_transport",
-                # "source_status",
-                # "source_type",
+                "source_data_format",
+                "source_transport",
+                "source_status",
+                "source_type",
             }
         ),
         project=project,
         owner=owner,
         source_environment=environment,
-        # source_data_format=data_format,
-        # source_transport=transport,
-        # source_status=status,
-        # source_type=type,
+        source_data_format=data_format,
+        source_transport=transport,
+        source_status=status,
+        source_type=source_type,
     )
     db_session.add(source)
     db_session.commit()
@@ -138,12 +138,19 @@ def update(*, db_session, source: Source, source_in: SourceUpdate) -> Source:
     """Updates an existing source."""
     source_data = source.dict()
 
-    update_data = source_in.dict(skip_defaults=True, exclude={})
+    environment = environment_service.get_by_name_or_raise(
+        db_session=db_session,
+        project_id=source.project_id,
+        source_environment_in=source_in.source_environment,
+    )
+
+    update_data = source_in.dict(skip_defaults=True, exclude={"source_environment"})
 
     for field in source_data:
         if field in update_data:
             setattr(source, field, update_data[field])
 
+    source.source_environment = environment
     db_session.commit()
     return source
 

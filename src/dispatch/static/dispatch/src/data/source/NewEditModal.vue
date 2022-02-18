@@ -4,7 +4,9 @@
       <template v-slot:prepend>
         <v-list-item two-line>
           <v-list-item-content>
-            <v-list-item-title class="title"> New </v-list-item-title>
+            <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
+            <v-list-item-title v-else class="title"> New </v-list-item-title>
+            <v-list-item-subtitle>Source</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn icon color="info" :loading="loading" @click="save()">
             <v-icon>save</v-icon>
@@ -58,7 +60,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("source", ["selected.source", "selected.loading", "dialogs.showCreateEdit"]),
+    ...mapFields("source", ["selected.id", "selected.loading", "dialogs.showCreateEdit"]),
   },
 
   methods: {

@@ -2,6 +2,7 @@ from typing import Optional, List
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.exceptions import NotFoundError
+from dispatch.project import service as project_service
 
 from .models import (
     SourceType,
@@ -50,20 +51,23 @@ def get_by_name_or_raise(
 
 
 def get_all(*, db_session, project_id: int) -> List[Optional[SourceType]]:
-    """Gets all sources."""
+    """Gets all source types."""
     return db_session.query(SourceType).filter(SourceType.project_id == project_id)
 
 
 def create(*, db_session, source_type_in: SourceTypeCreate) -> SourceType:
-    """Creates a new source."""
-    source_type = SourceType(**source_type_in.dict())
+    """Creates a new source type."""
+    project = project_service.get_by_name_or_raise(
+        db_session=db_session, project_in=source_type_in.project
+    )
+    source_type = SourceType(**source_type_in.dict(exclude={"project"}), project=project)
     db_session.add(source_type)
     db_session.commit()
     return source_type
 
 
 def get_or_create(*, db_session, source_type_in: SourceTypeCreate) -> SourceType:
-    """Gets or creates a new source."""
+    """Gets or creates a new source type."""
     # prefer the source id if available
     if source_type_in.id:
         q = db_session.query(SourceType).filter(SourceType.id == source_type_in.id)

@@ -44,9 +44,29 @@
                 ><b>{{ item.name }}</b></router-link
               >
             </template>
-            <template v-slot:item.environment="{ item }">
+            <template v-slot:item.source_environment="{ item }">
               <v-chip dark>
-                {{ item.name }}
+                {{ item.source_environment.name }}
+              </v-chip>
+            </template>
+            <template v-slot:item.source_transport="{ item }">
+              <v-chip dark>
+                {{ item.source_transport.name }}
+              </v-chip>
+            </template>
+            <template v-slot:item.source_status="{ item }">
+              <v-chip dark>
+                {{ item.source_status.name }}
+              </v-chip>
+            </template>
+            <template v-slot:item.source_data_format="{ item }">
+              <v-chip dark>
+                {{ item.source_data_format.name }}
+              </v-chip>
+            </template>
+            <template v-slot:item.source_type="{ item }">
+              <v-chip dark>
+                {{ item.source_type.name }}
               </v-chip>
             </template>
             <template v-slot:item.samplingRate="{ item }">
@@ -101,11 +121,11 @@ export default {
     return {
       headers: [
         { text: "Name", value: "name", sortable: true },
-        { text: "Environment", value: "environment", sortable: true },
-        { text: "Status", value: "status", sortable: true },
+        { text: "Environment", value: "source_environment", sortable: true },
+        { text: "Status", value: "source_status", sortable: true },
         { text: "Sampling Rate", value: "sampling_rate", sortable: true },
-        { text: "Transport", value: "transport", sortable: true },
-        { text: "Format", value: "data_format", sortable: true },
+        { text: "Transport", value: "source_transport", sortable: true },
+        { text: "Format", value: "source_data_format", sortable: true },
         { text: "Type", value: "source_type", sortable: true },
         { text: "Last Refreshed", value: "last_refreshed", sortable: true },
         {

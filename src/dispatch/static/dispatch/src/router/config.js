@@ -375,7 +375,7 @@ export const protectedRoute = [
             name: "SourceTypeTable",
             meta: { title: "Source Types", subMenu: "project", group: "data" },
             component: () =>
-              import(/* webpackChunkName: "tag-type-table" */ "@/tag_type/Table.vue"),
+              import(/* webpackChunkName: "source-type-table" */ "@/data/source/type/Table.vue"),
           },
           {
             path: "source/environments",
@@ -391,22 +391,23 @@ export const protectedRoute = [
             name: "SourceStatusTable",
             meta: { title: "Source Statuses", subMenu: "project", group: "data" },
             component: () =>
-              import(
-                /* webpackChunkName: "runbooks-table" */ "@/document/runbook/RunbookTable.vue"
-              ),
+              import(/* webpackChunkName: "status-table" */ "@/data/source/status/Table.vue"),
           },
           {
             path: "source/transports",
             name: "SourceTransportTable",
             meta: { title: "Source Transports", subMenu: "project", group: "data" },
             component: () =>
-              import(/* webpackchunkname: "definition-table" */ "@/definition/Table.vue"),
+              import(/* webpackchunkname: "transport-table" */ "@/data/source/transport/Table.vue"),
           },
           {
             path: "source/dataFormats",
             name: "SourceDataFormatTable",
             meta: { title: "Source Data Formats", subMenu: "project", group: "data" },
-            component: () => import(/* webpackChunkName: "term-table" */ "@/term/Table.vue"),
+            component: () =>
+              import(
+                /* webpackChunkName: "dataFormat-table" */ "@/data/source/dataFormat/Table.vue"
+              ),
           },
         ]),
       ],

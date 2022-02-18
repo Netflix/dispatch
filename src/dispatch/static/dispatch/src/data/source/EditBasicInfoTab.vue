@@ -36,6 +36,18 @@
         <environment-select v-model="source_environment" :project="project" />
       </v-flex>
       <v-flex xs6>
+        <transport-select v-model="source_transport" :project="project" />
+      </v-flex>
+      <v-flex xs6>
+        <status-select v-model="source_status" :project="project" />
+      </v-flex>
+      <v-flex xs6>
+        <type-select v-model="source_type" :project="project" />
+      </v-flex>
+      <v-flex xs6>
+        <data-format-select v-model="source_data_format" :project="project" />
+      </v-flex>
+      <v-flex xs6>
         <service-select label="Owner" v-model="owner" :project="project" />
       </v-flex>
       <v-flex xs6>
@@ -88,6 +100,10 @@ import { required } from "vee-validate/dist/rules"
 import ServiceSelect from "@/service/ServiceSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import EnvironmentSelect from "@/data/source/environment/EnvironmentSelect.vue"
+import StatusSelect from "@/data/source/status/StatusSelect.vue"
+import DataFormatSelect from "@/data/source/dataFormat/DataFormatSelect.vue"
+import TransportSelect from "@/data/source/transport/TransportSelect.vue"
+import TypeSelect from "@/data/source/type/TypeSelect.vue"
 
 extend("required", {
   ...required,
@@ -102,6 +118,10 @@ export default {
     ServiceSelect,
     ProjectSelect,
     EnvironmentSelect,
+    StatusSelect,
+    DataFormatSelect,
+    TransportSelect,
+    TypeSelect,
   },
 
   computed: {
@@ -120,6 +140,7 @@ export default {
       "selected.source_status",
       "selected.source_transport",
       "selected.source_data_format",
+      "selected.source_type",
       "selected.loading",
     ]),
   },

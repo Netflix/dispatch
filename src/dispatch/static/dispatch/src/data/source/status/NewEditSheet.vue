@@ -6,7 +6,7 @@
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
             <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Environment</v-list-item-subtitle>
+            <v-list-item-subtitle>Status</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
             icon
@@ -33,7 +33,7 @@
                       :error-messages="errors"
                       :success="valid"
                       label="Name"
-                      hint="Name of environment."
+                      hint="Name of status."
                       clearable
                       required
                     />
@@ -47,7 +47,7 @@
                       :error-messages="errors"
                       :success="valid"
                       label="Description"
-                      hint="Description of environment."
+                      hint="Description of status."
                       clearable
                       required
                     />
@@ -74,7 +74,7 @@ extend("required", {
 })
 
 export default {
-  name: "SourceEnvironmentNewEditSheet",
+  name: "SourceStatusNewEditSheet",
 
   components: {
     ValidationProvider,
@@ -82,7 +82,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("sourceEnvironment", [
+    ...mapFields("sourceStatus", [
       "selected.project",
       "selected.id",
       "selected.name",
@@ -94,11 +94,11 @@ export default {
   },
 
   methods: {
-    ...mapActions("sourceEnvironment", ["closeCreateEdit"]),
+    ...mapActions("sourceStatus", ["closeCreateEdit"]),
     save() {
       const self = this
-      this.$store.dispatch("sourceEnvironment/save").then(function (data) {
-        self.$emit("new-source-environment-created", data)
+      this.$store.dispatch("sourceStatus/save").then(function (data) {
+        self.$emit("new-source-status-created", data)
       })
     },
   },
