@@ -3,13 +3,14 @@ from dispatch.enums import DispatchEnum
 
 # report + update blocks
 class IncidentBlockId(DispatchEnum):
-    title = "title_field"
     description = "description_field"
-    type = "incident_type_field"
     priority = "incident_priority_field"
-    tags = "tags_select_field"
     project = "project_field"
+    resolution = "resolution_field"
     status = "status_field"
+    tags = "tags_select_field"
+    title = "title_field"
+    type = "incident_type_field"
 
 
 # report incident

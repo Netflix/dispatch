@@ -4,7 +4,7 @@
     type="bar"
     :options="chartOptions"
     :series="series"
-    title="Primary Location"
+    title="Reporters Location"
   />
 </template>
 
@@ -14,7 +14,7 @@ import DashboardUtils from "@/dashboard/utils"
 import DashboardCard from "@/dashboard/DashboardCard.vue"
 
 export default {
-  name: "IncidentPrimaryLocationBarChartCard",
+  name: "IncidentReportersLocationBarChartCard",
 
   props: {
     value: {
@@ -76,10 +76,10 @@ export default {
       let allLocations = []
       forEach(this.value, function (value) {
         forEach(value, function (value) {
-          allLocations.push(value.primary_location)
+          allLocations.push(value.reporters_location)
         })
       })
-      let series = DashboardUtils.createCountedSeriesData(this.value, "primary_location", [
+      let series = DashboardUtils.createCountedSeriesData(this.value, "reporters_location", [
         ...new Set(allLocations),
       ])
       return series

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="participants.length">
+    <div v-if="participants && participants.length">
       <span v-for="participant in participants" :key="participant.id">
         <v-list-item :href="participant.individual.weblink" target="_blank">
           <v-list-item-content>
@@ -33,6 +33,7 @@ import { mapFields } from "vuex-map-fields"
 
 export default {
   name: "IncidentParticipantsTab",
+
   computed: {
     ...mapFields("incident", ["selected.participants"]),
   },

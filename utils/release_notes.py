@@ -28,11 +28,12 @@ def release_notes(pull_request_number):
     pull_requests = json.loads(stream.read())
 
     sections = {
-        "enhancement": "",
         "bug": "",
-        "documentation": "",
-        "feature": "",
         "dependencies": "",
+        "documentation": "",
+        "enhancement": "",
+        "feature": "",
+        "tests": "",
     }
 
     for pull_request in pull_requests:
@@ -62,6 +63,9 @@ Enhancements:
 
 Bug Fixes:
     {sections["bug"]}
+
+Tests:
+    {sections["tests"]}
 
 Documentation:
     {sections["documentation"]}

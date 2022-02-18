@@ -307,7 +307,7 @@ export default {
           ],
         }),
       }).then((response) => {
-        if (response.data.items.length) {
+        if (response.data && response.data.items.length) {
           this.project_faq = response.data.items[0]
         }
       })

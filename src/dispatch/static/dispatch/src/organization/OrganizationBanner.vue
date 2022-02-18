@@ -1,6 +1,6 @@
 <template>
   <v-system-bar
-    v-if="currentOrganization.banner_enabled"
+    v-if="currentOrganization && currentOrganization.banner_enabled"
     :color="currentOrganization.banner_color"
     height="64px"
     app

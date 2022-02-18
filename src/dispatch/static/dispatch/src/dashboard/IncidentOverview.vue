@@ -66,14 +66,28 @@
         <incident-resolve-time-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <v-flex lg12 sm12 xs12>
-        <incident-primary-location-bar-chart-card
+        <incident-reporters-location-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
         />
       </v-flex>
       <v-flex lg12 sm12 xs12>
-        <incident-primary-team-bar-chart-card
+        <incident-commanders-location-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+          @detailsSelected="detailsSelected($event)"
+        />
+      </v-flex>
+      <v-flex lg12 sm12 xs12>
+        <incident-participants-location-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+          @detailsSelected="detailsSelected($event)"
+        />
+      </v-flex>
+      <v-flex lg12 sm12 xs12>
+        <incident-participants-team-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
@@ -94,21 +108,23 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { groupBy, sumBy, filter } from "lodash"
-import differenceInHours from "date-fns/differenceInHours"
 import { parseISO } from "date-fns"
+import differenceInHours from "date-fns/differenceInHours"
 
 import DialogFilter from "@/dashboard/DialogFilter.vue"
 import StatWidget from "@/components/StatWidget.vue"
-import IncidentTypeBarChartCard from "@/incident/IncidentTypeBarChartCard.vue"
 import IncidentActiveTimeCard from "@/incident/IncidentActiveTimeCard.vue"
-import IncidentResolveTimeCard from "@/incident/IncidentResolveTimeCard.vue"
+import IncidentCommandersLocationBarChartCard from "@/incident/IncidentCommandersLocationBarChartCard.vue"
 import IncidentCostBarChartCard from "@/incident/IncidentCostBarChartCard.vue"
-import IncidentPriorityBarChartCard from "@/incident/IncidentPriorityBarChartCard.vue"
 import IncidentForecastCard from "@/incident/IncidentForecastCard.vue"
 import IncidentHeatmapCard from "@/incident/IncidentHeatmapCard.vue"
-import IncidentPrimaryLocationBarChartCard from "@/incident/IncidentPrimaryLocationBarChartCard.vue"
-import IncidentPrimaryTeamBarChartCard from "@/incident/IncidentPrimaryTeamBarChartCard.vue"
+import IncidentParticipantsLocationBarChartCard from "@/incident/IncidentParticipantsLocationBarChartCard.vue"
+import IncidentParticipantsTeamBarChartCard from "@/incident/IncidentParticipantsTeamBarChartCard.vue"
+import IncidentPriorityBarChartCard from "@/incident/IncidentPriorityBarChartCard.vue"
+import IncidentReportersLocationBarChartCard from "@/incident/IncidentReportersLocationBarChartCard.vue"
+import IncidentResolveTimeCard from "@/incident/IncidentResolveTimeCard.vue"
 import IncidentTagsTreemapCard from "@/incident/IncidentTagsTreemapCard.vue"
+import IncidentTypeBarChartCard from "@/incident/IncidentTypeBarChartCard.vue"
 import IncidentsDrillDownSheet from "@/dashboard/IncidentsDrillDownSheet.vue"
 
 export default {
@@ -117,16 +133,18 @@ export default {
   components: {
     DialogFilter,
     StatWidget,
-    IncidentHeatmapCard,
-    IncidentTypeBarChartCard,
-    IncidentResolveTimeCard,
     IncidentActiveTimeCard,
+    IncidentCommandersLocationBarChartCard,
     IncidentCostBarChartCard,
-    IncidentPriorityBarChartCard,
     IncidentForecastCard,
-    IncidentPrimaryLocationBarChartCard,
-    IncidentPrimaryTeamBarChartCard,
+    IncidentHeatmapCard,
+    IncidentParticipantsLocationBarChartCard,
+    IncidentParticipantsTeamBarChartCard,
+    IncidentPriorityBarChartCard,
+    IncidentReportersLocationBarChartCard,
+    IncidentResolveTimeCard,
     IncidentTagsTreemapCard,
+    IncidentTypeBarChartCard,
     IncidentsDrillDownSheet,
   },
 

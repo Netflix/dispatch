@@ -1,33 +1,34 @@
 import json
 
 from dispatch.database.core import SessionLocal
-from dispatch.incident.models import Incident
 from dispatch.incident import service as incident_service
+from dispatch.incident.models import Incident
 from dispatch.participant.models import Participant
-from dispatch.project import service as project_service
 from dispatch.plugin import service as plugin_service
-
+from dispatch.project import service as project_service
 
 from .enums import (
+    AddTimelineEventBlockId,
+    AddTimelineEventCallbackId,
     ReportIncidentCallbackId,
     UpdateIncidentCallbackId,
-    UpdateParticipantCallbackId,
-    UpdateNotificationsGroupCallbackId,
-    AddTimelineEventCallbackId,
-    UpdateParticipantBlockId,
     UpdateNotificationsGroupBlockId,
-    AddTimelineEventBlockId,
+    UpdateNotificationsGroupCallbackId,
+    UpdateParticipantBlockId,
+    UpdateParticipantCallbackId,
 )
+
 from .fields import (
-    option_from_template,
-    title_input_block,
     description_input_block,
-    project_select_block,
-    participants_select_block,
-    status_select_block,
     incident_priority_select_block,
     incident_type_select_block,
+    option_from_template,
+    participants_select_block,
+    project_select_block,
+    resolution_input_block,
+    status_select_block,
     tag_multi_select_block,
+    title_input_block,
 )
 
 
@@ -50,6 +51,7 @@ def update_incident(db_session: SessionLocal, channel_id: str, incident_id: int 
             },
             title_input_block(initial_value=incident.title),
             description_input_block(initial_value=incident.description),
+            resolution_input_block(initial_value=incident.resolution),
             status_select_block(initial_option=incident.status),
             incident_type_select_block(
                 db_session=db_session,

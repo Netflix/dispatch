@@ -45,7 +45,7 @@ class BasePermission(ABC):
 
     """
 
-    error_msg = [{"msg": "Forbidden."}]
+    error_msg = [{"msg": "You don't have permission to access or modify this resource."}]
     status_code = HTTP_403_FORBIDDEN
     role = None
 

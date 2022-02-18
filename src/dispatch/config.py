@@ -58,7 +58,6 @@ if SECRET_PROVIDER == "metatron-secret":
         def __str__(self) -> str:
             return self._decrypted_value
 
-
 elif SECRET_PROVIDER == "kms-secret":
     import boto3
 
@@ -82,7 +81,6 @@ elif SECRET_PROVIDER == "kms-secret":
 
         def __str__(self) -> str:
             return self._decrypted_value
-
 
 else:
     from starlette.datastructures import Secret
@@ -175,6 +173,8 @@ _DATABASE_CREDENTIAL_USER, _DATABASE_CREDENTIAL_PASSWORD = str(DATABASE_CREDENTI
 _QUOTED_DATABASE_PASSWORD = parse.quote(str(_DATABASE_CREDENTIAL_PASSWORD))
 DATABASE_NAME = config("DATABASE_NAME", default="dispatch")
 DATABASE_PORT = config("DATABASE_PORT", default="5432")
+DATABASE_ENGINE_POOL_SIZE = config("DATABASE_ENGINE_POOL_SIZE", cast=int, default=20)
+DATABASE_ENGINE_MAX_OVERFLOW = config("DATABASE_ENGINE_MAX_OVERFLOW", cast=int, default=0)
 SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{_DATABASE_CREDENTIAL_USER}:{_QUOTED_DATABASE_PASSWORD}@{DATABASE_HOSTNAME}:{DATABASE_PORT}/{DATABASE_NAME}"
 
 ALEMBIC_CORE_REVISION_PATH = config(

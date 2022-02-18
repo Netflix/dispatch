@@ -192,13 +192,14 @@ def update_incident_from_submitted_form(
     incident_in = IncidentUpdate(
         title=parsed_form_data[IncidentBlockId.title],
         description=parsed_form_data[IncidentBlockId.description],
+        resolution=parsed_form_data[IncidentBlockId.resolution],
         incident_type={"name": parsed_form_data[IncidentBlockId.type]["value"]},
         incident_priority={"name": parsed_form_data[IncidentBlockId.priority]["value"]},
         status=parsed_form_data[IncidentBlockId.status]["value"],
         tags=tags,
     )
 
-    existing_incident = IncidentRead.from_orm(incident)
+    previous_incident = IncidentRead.from_orm(incident)
 
     # we don't allow visibility to be set in slack so we copy it over
     incident_in.visibility = incident.visibility
@@ -206,8 +207,16 @@ def update_incident_from_submitted_form(
     updated_incident = incident_service.update(
         db_session=db_session, incident=incident, incident_in=incident_in
     )
+
+    commander_email = updated_incident.commander.individual.email
+    reporter_email = updated_incident.reporter.individual.email
     incident_flows.incident_update_flow(
-        user_email, incident_id, existing_incident, db_session=db_session
+        user_email,
+        commander_email,
+        reporter_email,
+        incident_id,
+        previous_incident,
+        db_session=db_session,
     )
 
     if updated_incident.status != IncidentStatus.closed:

@@ -47,6 +47,12 @@ class Plugin(Base):
         )
     )
 
+    @property
+    def configuration_schema(self):
+        """Renders the plugin's schema to JSON Schema."""
+        plugin = plugins.get(self.slug)
+        return plugin.configuration_schema.schema()
+
 
 class PluginInstance(Base, ProjectMixin):
     id = Column(Integer, primary_key=True)
@@ -103,6 +109,7 @@ class PluginRead(PluginBase):
     author_url: str
     type: str
     multiple: bool
+    configuration_schema: Any
     description: Optional[str] = Field(None, nullable=True)
 
 

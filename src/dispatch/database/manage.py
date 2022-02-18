@@ -138,6 +138,8 @@ def init_schema(*, engine, organization: Organization):
             organization=organization,
         ),
     )
+    db_session.commit()
+    return organization
 
 
 def setup_fulltext_search(connection, tables):

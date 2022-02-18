@@ -16,7 +16,11 @@ from dispatch.exceptions import NotFoundError
 from dispatch.search.fulltext import make_searchable
 
 
-engine = create_engine(str(config.SQLALCHEMY_DATABASE_URI))
+engine = create_engine(
+    config.SQLALCHEMY_DATABASE_URI,
+    pool_size=config.DATABASE_ENGINE_POOL_SIZE,
+    max_overflow=config.DATABASE_ENGINE_MAX_OVERFLOW,
+)
 SessionLocal = sessionmaker(bind=engine)
 
 

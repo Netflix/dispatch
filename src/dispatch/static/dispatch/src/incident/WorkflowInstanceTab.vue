@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="workflow_instances.length">
+    <div v-if="workflow_instances && workflow_instances.length">
       <span v-for="instance in workflow_instances" :key="instance.id">
         <v-card>
           <div>

@@ -608,7 +608,7 @@ INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION = [
         "text": INCIDENT_CLOSED_RATING_FEEDBACK_DESCRIPTION,
         "buttons": [
             {
-                "button_text": "Provide Feeback",
+                "button_text": "Provide Feedback",
                 "button_value": "{{organization_slug}}-{{incident_id}}",
                 "button_action": ConversationButtonActions.provide_feedback,
             }
