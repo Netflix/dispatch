@@ -17,6 +17,26 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
+            <transport-combobox v-model="source_transport" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
+            <data-format-combobox v-model="source_data_format" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
+            <status-combobox v-model="source_status" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
+            <type-combobox v-model="source_type" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
             <project-combobox v-model="project" label="Projects" />
           </v-list-item-content>
         </v-list-item>
@@ -42,6 +62,10 @@ import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import EnvironmentCombobox from "@/data/source/environment/EnvironmentCombobox.vue"
+import TypeCombobox from "@/data/source/type/TypeCombobox.vue"
+import DataFormatCombobox from "@/data/source/dataFormat/DataFormatCombobox.vue"
+import StatusCombobox from "@/data/source/status/StatusCombobox.vue"
+import TransportCombobox from "@/data/source/transport/TransportCombobox.vue"
 
 export default {
   name: "SourceTableFilterDialog",
@@ -51,6 +75,10 @@ export default {
     TagTypeFilterCombobox,
     ProjectCombobox,
     EnvironmentCombobox,
+    StatusCombobox,
+    TypeCombobox,
+    TransportCombobox,
+    DataFormatCombobox,
   },
 
   data() {
@@ -65,6 +93,10 @@ export default {
       "table.options.filters.project",
       "table.options.filters.tag",
       "table.options.filters.source_environment",
+      "table.options.filters.source_status",
+      "table.options.filters.source_type",
+      "table.options.filters.source_transport",
+      "table.options.filters.source_data_format",
     ]),
     numFilters: function () {
       return sum([
@@ -72,6 +104,10 @@ export default {
         this.tag.length,
         this.tag_type.length,
         this.source_environment.length,
+        this.source_type.length,
+        this.source_status.length,
+        this.source_transport.length,
+        this.source_data_format.length,
       ])
     },
   },

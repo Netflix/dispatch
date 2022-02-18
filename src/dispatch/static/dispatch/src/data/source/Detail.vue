@@ -1,6 +1,6 @@
 <template>
   <div>
-    <new-edit-modal />
+    <new-edit-sheet />
     <v-toolbar dark flat>
       <v-toolbar-title>{{ name }}</v-toolbar-title>
 
@@ -55,7 +55,7 @@ import AlertsTab from "@/data/source/AlertsTab.vue"
 import IncidentsTab from "@/data/source/IncidentsTab.vue"
 import QueriesTab from "@/data/source/QueriesTab.vue"
 import SchemaTab from "@/data/source/SchemaTab.vue"
-import NewEditModal from "@/data/source/NewEditModal.vue"
+import NewEditSheet from "@/data/source/NewEditSheet.vue"
 
 export default {
   name: "SourceDetails",
@@ -65,7 +65,7 @@ export default {
     IncidentsTab,
     QueriesTab,
     SchemaTab,
-    NewEditModal,
+    NewEditSheet,
   },
 
   created() {

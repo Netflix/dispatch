@@ -65,7 +65,7 @@ export default {
     label: {
       type: String,
       default: function () {
-        return "Statuss"
+        return "Statuses"
       },
     },
   },

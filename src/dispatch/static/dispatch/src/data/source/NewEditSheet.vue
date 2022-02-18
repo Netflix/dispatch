@@ -8,7 +8,13 @@
             <v-list-item-title v-else class="title"> New </v-list-item-title>
             <v-list-item-subtitle>Source</v-list-item-subtitle>
           </v-list-item-content>
-          <v-btn icon color="info" :loading="loading" @click="save()">
+          <v-btn
+            icon
+            color="info"
+            :loading="loading"
+            :disabled="invalid || !validated"
+            @click="save()"
+          >
             <v-icon>save</v-icon>
           </v-btn>
           <v-btn icon color="secondary" @click="closeCreateEdit">
@@ -49,7 +55,7 @@ import EditQueriesTab from "@/data/source/EditQueriesTab.vue"
 import EditLinksTab from "@/data/source/EditLinksTab.vue"
 
 export default {
-  name: "SourceNewEditModal",
+  name: "SourceNewEditSheet",
 
   components: {
     EditBasicInfoTab,

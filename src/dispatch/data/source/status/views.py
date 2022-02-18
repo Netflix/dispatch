@@ -19,8 +19,8 @@ router = APIRouter()
 
 
 @router.get("", response_model=SourceStatusPagination)
-def get_source_statuss(*, common: dict = Depends(common_parameters)):
-    """Get all source statuss, or only those matching a given search term."""
+def get_source_statuses(*, common: dict = Depends(common_parameters)):
+    """Get all source statuses, or only those matching a given search term."""
     return search_filter_sort_paginate(model="SourceStatus", **common)
 
 

@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <new-edit-modal />
+    <new-edit-sheet />
     <v-row align="center" justify="space-between" no-gutters>
       <delete-dialog />
       <v-col>
@@ -44,20 +44,28 @@
                 ><b>{{ item.name }}</b></router-link
               >
             </template>
-            <template v-slot:item.source_environment="{ item }">
-              <v-chip dark>
+            <template v-slot:item.project.name="{ item }">
+              <v-chip small :color="item.project.color" text-color="white">
+                {{ item.project.name }}
+              </v-chip>
+            </template>
+            <template v-slot:item.source_environment.name="{ item }">
+              <v-chip small :color="item.source_environment.color" text-color="white">
                 {{ item.source_environment.name }}
               </v-chip>
             </template>
-            <template v-slot:item.source_transport="{ item }">
-              <v-chip dark>
-                {{ item.source_transport.name }}
-              </v-chip>
-            </template>
             <template v-slot:item.source_status="{ item }">
-              <v-chip dark>
+              <v-badge
+                bordered
+                color="warning"
+                slot="activator"
+                dot
+                left
+                offset-x="-10"
+                offset-y="12"
+              >
                 {{ item.source_status.name }}
-              </v-chip>
+              </v-badge>
             </template>
             <template v-slot:item.source_data_format="{ item }">
               <v-chip dark>
@@ -65,14 +73,12 @@
               </v-chip>
             </template>
             <template v-slot:item.source_type="{ item }">
-              <v-chip dark>
+              <v-chip small dark>
                 {{ item.source_type.name }}
               </v-chip>
             </template>
-            <template v-slot:item.samplingRate="{ item }">
-              <v-chip :color="getSamplingRateColor(item.sampling_rate)" dark>
-                {{ item.sampling_rate }}
-              </v-chip>
+            <template v-slot:item.owner="{ item }">
+              <service-popover :service="item.owner" />
             </template>
             <template v-slot:item.lastRefreshed="{ item }">
               {{ item.last_refreshed | formatRelativeDate }}
@@ -106,7 +112,8 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import DeleteDialog from "@/data/source/DeleteDialog.vue"
-import NewEditModal from "@/data/source/NewEditModal.vue"
+import NewEditSheet from "@/data/source/NewEditSheet.vue"
+import ServicePopover from "@/service/ServicePopover.vue"
 import TableFilterDialog from "@/data/source/TableFilterDialog.vue"
 
 export default {
@@ -114,18 +121,18 @@ export default {
 
   components: {
     DeleteDialog,
-    NewEditModal,
+    NewEditSheet,
+    ServicePopover,
     TableFilterDialog,
   },
   data() {
     return {
       headers: [
         { text: "Name", value: "name", sortable: true },
-        { text: "Environment", value: "source_environment", sortable: true },
+        { text: "Project", value: "project.name", sortable: false },
+        { text: "Environment", value: "source_environment.name", sortable: true },
+        { text: "Owner", value: "owner" },
         { text: "Status", value: "source_status", sortable: true },
-        { text: "Sampling Rate", value: "sampling_rate", sortable: true },
-        { text: "Transport", value: "source_transport", sortable: true },
-        { text: "Format", value: "source_data_format", sortable: true },
         { text: "Type", value: "source_type", sortable: true },
         { text: "Last Refreshed", value: "last_refreshed", sortable: true },
         {
@@ -146,6 +153,14 @@ export default {
       "table.options.sortBy",
       "table.options.descending",
       "table.options.filters",
+      "table.options.filters.tag",
+      "table.options.filters.tag_type",
+      "table.options.filters.project",
+      "table.options.filters.source_environment",
+      "table.options.filters.source_type",
+      "table.options.filters.source_transport",
+      "table.options.filters.source_data_format",
+      "table.options.filters.source_status",
       "table.loading",
       "table.rows.items",
       "table.rows.total",
@@ -169,7 +184,11 @@ export default {
         vm.sortBy,
         vm.descending,
         vm.project,
-        vm.environment,
+        vm.source_environment,
+        vm.source_status,
+        vm.source_type,
+        vm.source_transport,
+        vm.source_data_format,
         vm.tag,
         vm.tag_type,
       ],
@@ -182,11 +201,6 @@ export default {
 
   methods: {
     ...mapActions("source", ["getAll", "createEditShow", "removeShow"]),
-    getSamplingRateColor(rate) {
-      if (rate > 40) return "red"
-      else if (rate < 80) return "orange"
-      else return "green"
-    },
   },
 }
 </script>

@@ -71,11 +71,11 @@
                 </v-list-item>
                 <v-list-item>
                   <v-list-item-content>
-                    <service-select
+                    <service-select-new
                       label="Target Service"
                       :project="project"
                       v-model="policy.service"
-                    ></service-select>
+                    ></service-select-new>
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item>
@@ -112,7 +112,7 @@ import IncidentRoleApi from "@/incident_role/api"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
 import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
-import ServiceSelect from "@/service/ServiceSelect.vue"
+import ServiceSelectNew from "@/service/ServiceSelectNew.vue"
 
 export default {
   name: "RolePolicyBuilder",
@@ -139,7 +139,7 @@ export default {
     IncidentTypeCombobox,
     IncidentPriorityCombobox,
     TagFilterCombobox,
-    ServiceSelect,
+    ServiceSelectNew,
   },
 
   data() {

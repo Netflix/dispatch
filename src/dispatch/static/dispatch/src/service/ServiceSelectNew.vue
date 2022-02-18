@@ -12,14 +12,22 @@
     :loading="loading"
     no-filter
   >
+    <template slot="append-outer">
+      <v-btn icon @click="createEditShow({})">
+        <v-icon>add</v-icon>
+      </v-btn>
+      <new-edit-sheet @new-service-created="addItem($event)" />
+    </template>
   </v-combobox>
 </template>
 
 <script>
+import { mapActions } from "vuex"
 import { cloneDeep } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import ServiceApi from "@/service/api"
+import NewEditSheet from "@/service/NewEditSheet.vue"
 
 export default {
   name: "ServiceSelect",
@@ -47,6 +55,10 @@ export default {
       type: [Object],
       default: null,
     },
+  },
+
+  components: {
+    NewEditSheet,
   },
 
   data() {
@@ -80,6 +92,11 @@ export default {
   },
 
   methods: {
+    ...mapActions("service", ["createEditShow"]),
+    addItem(v) {
+      this.service = v
+      this.items.push(v)
+    },
     fetchData() {
       this.error = null
       this.loading = "error"
