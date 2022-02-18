@@ -58,7 +58,7 @@ def update_source_status(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "An source status with this ID does not exist."}],
         )
-    status = update(db_session=db_session, status=status, source_status_in=source_status_in)
+    status = update(db_session=db_session, source_status=status, source_status_in=source_status_in)
     return status
 
 

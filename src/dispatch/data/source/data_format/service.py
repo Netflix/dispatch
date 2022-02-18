@@ -50,7 +50,7 @@ def get_by_name_or_raise(
                     loc="dataFormat",
                 )
             ],
-            SourceDataFormat=SourceDataFormatRead,
+            model=SourceDataFormatRead,
         )
 
     return data_format

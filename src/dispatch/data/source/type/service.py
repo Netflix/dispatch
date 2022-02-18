@@ -44,7 +44,7 @@ def get_by_name_or_raise(
                     loc="source",
                 )
             ],
-            SourceType=SourceTypeRead,
+            model=SourceTypeRead,
         )
 
     return source

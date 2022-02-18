@@ -46,7 +46,7 @@ def get_by_name_or_raise(*, db_session, project_id, service_in=ServiceRead) -> S
                     loc="service",
                 )
             ],
-            Service=ServiceRead,
+            model=ServiceRead,
         )
 
     return source

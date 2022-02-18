@@ -29,59 +29,62 @@
           />
         </ValidationProvider>
       </v-flex>
-      <v-flex xs6>
-        <project-select v-model="project" />
-      </v-flex>
-      <v-flex xs6>
-        <environment-select v-model="source_environment" :project="project" />
-      </v-flex>
-      <v-flex xs6>
-        <transport-select v-model="source_transport" :project="project" />
-      </v-flex>
-      <v-flex xs6>
+      <v-flex xs12>
         <status-select v-model="source_status" :project="project" />
       </v-flex>
-      <v-flex xs6>
-        <type-select v-model="source_type" :project="project" />
+      <v-flex xs12>
+        <project-select v-model="project" />
       </v-flex>
-      <v-flex xs6>
-        <data-format-select v-model="source_data_format" :project="project" />
-      </v-flex>
-      <v-flex xs6>
+      <v-flex xs12>
         <service-select label="Owner" v-model="owner" :project="project" />
       </v-flex>
-      <v-flex xs6>
+      <v-flex xs12>
+        <environment-select v-model="source_environment" :project="project" />
+      </v-flex>
+      <v-flex xs12>
+        <transport-select v-model="source_transport" :project="project" />
+      </v-flex>
+      <v-flex xs12>
+        <type-select v-model="source_type" :project="project" />
+      </v-flex>
+      <v-flex xs12>
+        <data-format-select v-model="source_data_format" :project="project" />
+      </v-flex>
+      <v-flex xs12>
         <v-text-field
           v-model.number="sampling_rate"
           label="Sampling Rate"
           hint="The data source's sample rate (as a percentage) as a rate between 1 and 100 (100 representing no sampling)"
         />
       </v-flex>
-      <v-flex xs6>
+      <v-flex xs12>
         <v-text-field
           v-model.number="retention"
           label="Retention"
           hint="The data source's current retention in days."
         />
       </v-flex>
-      <v-flex xs6>
+      <v-flex xs12>
         <v-text-field
           v-model.number="delay"
           label="Delay"
           hint="The delay better event time and when the data is available in source (in minutes)."
         />
       </v-flex>
-      <v-flex xs6>
+      <v-flex xs12>
         <v-text-field v-model.number="size" label="Size" hint="The data source's current size." />
       </v-flex>
-      <v-flex xs6>
+      <v-flex xs12>
         <v-text-field
           v-model.number="external_id"
           label="External ID"
           hint="The data source's external ID, this will be used to fetch data about the source automatically."
         />
       </v-flex>
-      <v-flex xs6>
+      <v-flex xs12>
+        <tag-filter-combobox label="Tags" v-model="tags" model="source" :model-id="id" />
+      </v-flex>
+      <v-flex xs12>
         <v-checkbox
           v-model="aggregated"
           label="Aggregated"
@@ -98,6 +101,7 @@ import { ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
 import ServiceSelect from "@/service/ServiceSelect.vue"
+import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import EnvironmentSelect from "@/data/source/environment/EnvironmentSelect.vue"
 import StatusSelect from "@/data/source/status/StatusSelect.vue"
@@ -116,6 +120,7 @@ export default {
   components: {
     ValidationProvider,
     ServiceSelect,
+    TagFilterCombobox,
     ProjectSelect,
     EnvironmentSelect,
     StatusSelect,
@@ -136,6 +141,7 @@ export default {
       "selected.aggregated",
       "selected.sampling_rate",
       "selected.project",
+      "selected.tags",
       "selected.source_environment",
       "selected.source_status",
       "selected.source_transport",

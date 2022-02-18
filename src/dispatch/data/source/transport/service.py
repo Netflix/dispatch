@@ -12,10 +12,12 @@ from .models import (
 )
 
 
-def get(*, db_session, source_type_id: int) -> Optional[SourceTransport]:
+def get(*, db_session, source_transport_id: int) -> Optional[SourceTransport]:
     """Gets a source by its id."""
     return (
-        db_session.query(SourceTransport).filter(SourceTransport.id == source_type_id).one_or_none()
+        db_session.query(SourceTransport)
+        .filter(SourceTransport.id == source_transport_id)
+        .one_or_none()
     )
 
 
@@ -48,7 +50,7 @@ def get_by_name_or_raise(
                     loc="source",
                 )
             ],
-            SourceTransport=SourceTransportRead,
+            model=SourceTransportRead,
         )
 
     return source

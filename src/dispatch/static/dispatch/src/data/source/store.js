@@ -6,6 +6,7 @@ import SourceApi from "@/data/source/api"
 
 const getDefaultSelectedState = () => {
   return {
+    id: null,
     loading: false,
     name: null,
     description: null,

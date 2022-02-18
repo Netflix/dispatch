@@ -2,12 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
-from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
 from .models import (
     AlertCreate,
-    AlertPagination,
     AlertRead,
     AlertUpdate,
 )

@@ -59,7 +59,7 @@ def update_source_transport(
             detail=[{"msg": "An source transport with this ID does not exist."}],
         )
     return update(
-        db_session=db_session, transport=transport, source_transport_in=source_transport_in
+        db_session=db_session, source_transport=transport, source_transport_in=source_transport_in
     )
 
 

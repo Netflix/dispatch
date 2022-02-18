@@ -24,6 +24,9 @@
     </v-row>
     <v-row>
       <v-col>
+        <v-card> <v-card-title>Documentation</v-card-title></v-card>
+      </v-col>
+      <v-col>
         <v-card>
           <v-list-item two-line>
             <v-list-item-content>
@@ -56,18 +59,20 @@
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Source Type</v-list-item-title>
-              <v-list-item-subtitle class="text-right"> {{ source_type }}</v-list-item-subtitle>
+              <v-list-item-subtitle class="text-right">
+                {{ source_type.name }}</v-list-item-subtitle
+              >
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Data Format</v-list-item-title>
               <v-list-item-subtitle class="text-right">
-                {{ source_data_format }}</v-list-item-subtitle
+                {{ source_data_format.name }}</v-list-item-subtitle
               >
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Transport</v-list-item-title>
               <v-list-item-subtitle class="text-right">
-                {{ source_transport }}</v-list-item-subtitle
+                {{ source_transport.name }}</v-list-item-subtitle
               >
             </v-list-item>
             <v-list-item>
@@ -76,9 +81,6 @@
             </v-list-item>
           </v-list>
         </v-card>
-      </v-col>
-      <v-col>
-        <v-card> <v-card-title>Documentation</v-card-title></v-card>
       </v-col>
     </v-row>
     <v-row>

@@ -44,7 +44,7 @@ def get_by_name_or_raise(
                     loc="status",
                 )
             ],
-            SourceStatus=SourceStatusRead,
+            model=SourceStatusRead,
         )
 
     return status

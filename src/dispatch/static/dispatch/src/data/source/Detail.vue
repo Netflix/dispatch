@@ -6,7 +6,7 @@
 
       <v-spacer></v-spacer>
 
-      Current Status: {{ status }}
+      Status: {{ source_status.name }}
 
       <v-menu bottom left>
         <template v-slot:activator="{ on }">
@@ -75,7 +75,7 @@ export default {
   computed: {
     ...mapFields("source", [
       "selected.name",
-      "selected.status",
+      "selected.source_status",
       "selected.alerts",
       "selected.loading",
       "dialogs.showEditSheet",
