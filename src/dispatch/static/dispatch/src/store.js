@@ -34,6 +34,7 @@ import sourceDataFormat from "@/data/source/dataFormat/store"
 import sourceStatus from "@/data/source/status/store"
 import sourceTransport from "@/data/source/transport/store"
 import sourceType from "@/data/source/type/store"
+import query from "@/data/query/store"
 
 Vue.use(Vuex)
 
@@ -71,6 +72,7 @@ export default new Vuex.Store({
     sourceStatus,
     sourceTransport,
     sourceType,
+    query,
     route: {
       namespaced: true,
       getters: {

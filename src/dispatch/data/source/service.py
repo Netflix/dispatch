@@ -4,6 +4,7 @@ from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service
+from dispatch.tag import service as tag_service
 from dispatch.data.source.environment import service as environment_service
 from dispatch.data.source.data_format import service as data_format_service
 from dispatch.data.source.status import service as status_service
@@ -29,9 +30,9 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Source]:
     )
 
 
-def get_by_name_or_raise(*, db_session, source_in=SourceRead) -> SourceRead:
+def get_by_name_or_raise(*, db_session, project_id, source_in: SourceRead) -> SourceRead:
     """Returns the source specified or raises ValidationError."""
-    source = get_by_name(db_session=db_session, name=source_in.name)
+    source = get_by_name(db_session=db_session, project_id=project_id, name=source_in.name)
 
     if not source:
         raise ValidationError(
@@ -64,6 +65,10 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
     owner = service_service.get_by_name_or_raise(
         db_session=db_session, project_id=project.id, service_in=source_in.owner
     )
+
+    tags = []
+    for t in source_in.tags:
+        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
 
     environment = environment_service.get_by_name_or_raise(
         db_session=db_session,
@@ -99,6 +104,7 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
             exclude={
                 "project",
                 "owner",
+                "tags",
                 "source_environment",
                 "source_data_format",
                 "source_transport",
@@ -112,6 +118,7 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
         source_data_format=data_format,
         source_transport=transport,
         source_status=status,
+        tags=tags,
         source_type=source_type,
     )
     db_session.add(source)
@@ -138,6 +145,43 @@ def update(*, db_session, source: Source, source_in: SourceUpdate) -> Source:
     """Updates an existing source."""
     source_data = source.dict()
 
+    owner = service_service.get_by_name_or_raise(
+        db_session=db_session, project_id=source.project.id, service_in=source_in.owner
+    )
+
+    tags = []
+    for t in source_in.tags:
+        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
+
+    environment = environment_service.get_by_name_or_raise(
+        db_session=db_session,
+        project_id=source.project.id,
+        source_environment_in=source_in.source_environment,
+    )
+
+    source_type = type_service.get_by_name_or_raise(
+        db_session=db_session,
+        project_id=source.project.id,
+        source_type_in=source_in.source_type,
+    )
+
+    transport = transport_service.get_by_name_or_raise(
+        db_session=db_session,
+        project_id=source.project.id,
+        source_transport_in=source_in.source_transport,
+    )
+
+    data_format = data_format_service.get_by_name_or_raise(
+        db_session=db_session,
+        project_id=source.project.id,
+        source_data_format_in=source_in.source_data_format,
+    )
+    status = status_service.get_by_name_or_raise(
+        db_session=db_session,
+        project_id=source.project.id,
+        source_status_in=source_in.source_status,
+    )
+
     environment = environment_service.get_by_name_or_raise(
         db_session=db_session,
         project_id=source.project_id,
@@ -151,6 +195,12 @@ def update(*, db_session, source: Source, source_in: SourceUpdate) -> Source:
             setattr(source, field, update_data[field])
 
     source.source_environment = environment
+    source.source_status = status
+    source.source_data_format = data_format
+    source.source_transport = transport
+    source.source_type = source_type
+    source.tags = tags
+    source.owner = owner
     db_session.commit()
     return source
 

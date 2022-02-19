@@ -82,7 +82,13 @@
         />
       </v-flex>
       <v-flex xs12>
-        <tag-filter-combobox label="Tags" v-model="tags" model="source" :model-id="id" />
+        <tag-filter-combobox
+          label="Tags"
+          v-model="tags"
+          model="source"
+          :project="project"
+          :model-id="id"
+        />
       </v-flex>
       <v-flex xs12>
         <v-checkbox

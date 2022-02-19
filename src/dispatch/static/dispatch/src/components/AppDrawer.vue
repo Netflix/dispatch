@@ -81,7 +81,7 @@
   </v-navigation-drawer>
 </template>
 <script>
-import { groupBy } from "lodash"
+import { groupBy, filter } from "lodash"
 import { mapState } from "vuex"
 
 export default {
@@ -143,6 +143,11 @@ export default {
 
       // determine which submenu to display
       children = menuGroups[this.$route.meta.subMenu]
+
+      // Filter children without groups
+      children = filter(children, function (child) {
+        return child.meta.group
+      })
 
       return groupBy(children, function (child) {
         return child.meta.group

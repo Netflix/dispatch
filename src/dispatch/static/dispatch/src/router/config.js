@@ -165,7 +165,7 @@ export const protectedRoute = [
         {
           path: "/:organization/data/sources",
           name: "SourceTable",
-          meta: { title: "Sources", subMenu: "sources", group: "sources" },
+          meta: { title: "Sources", group: "data" },
           component: () => import(/* webpackChunkName: "source-table" */ "@/data/source/Table.vue"),
         },
         {
@@ -174,6 +174,12 @@ export const protectedRoute = [
           meta: { title: "Source Detail" },
           component: () =>
             import(/* webpackChunkName: "source-table" */ "@/data/source/Detail.vue"),
+        },
+        {
+          path: "/:organization/data/queries",
+          name: "QueryTable",
+          meta: { title: "Queries", group: "data" },
+          component: () => import(/* webpackChunkName: "query-table" */ "@/data/query/Table.vue"),
         },
       ],
     },
