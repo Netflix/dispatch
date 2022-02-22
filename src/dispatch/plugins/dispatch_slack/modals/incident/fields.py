@@ -1,16 +1,17 @@
 import logging
 from typing import List
-from sqlalchemy.orm import Session
-from dispatch.incident.enums import IncidentStatus
 
+from sqlalchemy.orm import Session
+
+from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_priority.models import IncidentPriority
 from dispatch.incident_type import service as incident_type_service
 from dispatch.incident_type.models import IncidentType
 from dispatch.participant.models import Participant
-from dispatch.tag.models import Tag
 from dispatch.project import service as project_service
+from dispatch.tag.models import Tag
 
 from .enums import (
     IncidentBlockId,
@@ -213,6 +214,28 @@ def description_input_block(initial_value: str = None):
             "placeholder": {
                 "type": "plain_text",
                 "text": "A summary of what you know so far. It's all right if this is incomplete.",
+            },
+            "multiline": True,
+        },
+    }
+
+    if initial_value:
+        block["element"].update({"initial_value": initial_value})
+
+    return block
+
+
+def resolution_input_block(initial_value: str = None):
+    """Builds a valid incident resolution input."""
+    block = {
+        "block_id": IncidentBlockId.resolution,
+        "type": "input",
+        "label": {"type": "plain_text", "text": "Resolution"},
+        "element": {
+            "type": "plain_text_input",
+            "placeholder": {
+                "type": "plain_text",
+                "text": "Description of the actions taken to resolve the incident.",
             },
             "multiline": True,
         },

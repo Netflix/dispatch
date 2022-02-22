@@ -30,7 +30,7 @@ executing==0.8.2
     #   stack-data
 factory-boy==3.2.1
     # via -r requirements-dev.in
-faker==12.2.0
+faker==13.0.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -78,7 +78,7 @@ pygments==2.11.2
     # via ipython
 pyparsing==3.0.7
     # via packaging
-pytest==7.0.0
+pytest==7.0.1
     # via -r requirements-dev.in
 python-dateutil==2.8.2
     # via faker
