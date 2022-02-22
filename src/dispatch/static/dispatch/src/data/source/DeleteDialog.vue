@@ -6,9 +6,7 @@
       </v-card-title>
       <v-card-text>
         <v-container grid-list-md>
-          <v-layout wrap>
-            Are you sure you would like to delete this source?
-          </v-layout>
+          <v-layout wrap> Are you sure you would like to delete this source? </v-layout>
         </v-container>
       </v-card-text>
       <v-card-actions>
@@ -21,12 +19,12 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
-import { mapFields } from "vuex-map-fields";
+import { mapActions } from "vuex"
+import { mapFields } from "vuex-map-fields"
 export default {
   name: "SourceDeleteDialog",
   data() {
-    return {};
+    return {}
   },
   computed: {
     ...mapFields("source", ["dialogs.showRemove"]),
@@ -35,5 +33,5 @@ export default {
   methods: {
     ...mapActions("source", ["remove", "closeRemove"]),
   },
-};
+}
 </script>

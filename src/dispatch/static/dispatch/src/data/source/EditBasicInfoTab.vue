@@ -137,6 +137,7 @@ export default {
 
   computed: {
     ...mapFields("source", [
+      "selected.id",
       "selected.name",
       "selected.description",
       "selected.size",

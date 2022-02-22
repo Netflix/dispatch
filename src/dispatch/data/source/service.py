@@ -62,43 +62,6 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
         db_session=db_session, project_in=source_in.project
     )
 
-    owner = service_service.get_by_name_or_raise(
-        db_session=db_session, project_id=project.id, service_in=source_in.owner
-    )
-
-    tags = []
-    for t in source_in.tags:
-        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
-
-    environment = environment_service.get_by_name_or_raise(
-        db_session=db_session,
-        project_id=project.id,
-        source_environment_in=source_in.source_environment,
-    )
-
-    source_type = type_service.get_by_name_or_raise(
-        db_session=db_session,
-        project_id=project.id,
-        source_type_in=source_in.source_type,
-    )
-
-    transport = transport_service.get_by_name_or_raise(
-        db_session=db_session,
-        project_id=project.id,
-        source_transport_in=source_in.source_transport,
-    )
-
-    data_format = data_format_service.get_by_name_or_raise(
-        db_session=db_session,
-        project_id=project.id,
-        source_data_format_in=source_in.source_data_format,
-    )
-    status = status_service.get_by_name_or_raise(
-        db_session=db_session,
-        project_id=project.id,
-        source_status_in=source_in.source_status,
-    )
-
     source = Source(
         **source_in.dict(
             exclude={
@@ -113,14 +76,54 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
             }
         ),
         project=project,
-        owner=owner,
-        source_environment=environment,
-        source_data_format=data_format,
-        source_transport=transport,
-        source_status=status,
-        tags=tags,
-        source_type=source_type,
     )
+
+    if source_in.owner:
+        source.source_owner = service_service.get_by_name_or_raise(
+            db_session=db_session, project_id=project.id, service_in=source_in.owner
+        )
+
+    tags = []
+    for t in source_in.tags:
+        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
+
+    source.tags = tags
+
+    if source_in.source_environment:
+        source.source_environment = environment_service.get_by_name_or_raise(
+            db_session=db_session,
+            project_id=project.id,
+            source_environment_in=source_in.source_environment,
+        )
+
+    if source_in.source_type:
+        source.source_type = type_service.get_by_name_or_raise(
+            db_session=db_session,
+            project_id=project.id,
+            source_type_in=source_in.source_type,
+        )
+
+    if source_in.source_transport:
+        source.source_transport = transport_service.get_by_name_or_raise(
+            db_session=db_session,
+            project_id=project.id,
+            source_transport_in=source_in.source_transport,
+        )
+
+    if source_in.source_data_format:
+        source.source_data_format = data_format_service.get_by_name_or_raise(
+            db_session=db_session,
+            project_id=project.id,
+            source_data_format_in=source_in.source_data_format,
+        )
+
+    if source_in.source_status:
+        source.source_status = status_service.get_by_name_or_raise(
+            db_session=db_session,
+            project_id=project.id,
+            source_status_in=source_in.source_status,
+        )
+
     db_session.add(source)
     db_session.commit()
     return source
@@ -145,62 +148,58 @@ def update(*, db_session, source: Source, source_in: SourceUpdate) -> Source:
     """Updates an existing source."""
     source_data = source.dict()
 
-    owner = service_service.get_by_name_or_raise(
-        db_session=db_session, project_id=source.project.id, service_in=source_in.owner
-    )
+    update_data = source_in.dict(skip_defaults=True, exclude={"source_environment"})
+
+    if source_in.owner:
+        source.owner = service_service.get_by_name_or_raise(
+            db_session=db_session, project_id=source.project.id, service_in=source_in.owner
+        )
 
     tags = []
     for t in source_in.tags:
         tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
 
-    environment = environment_service.get_by_name_or_raise(
-        db_session=db_session,
-        project_id=source.project.id,
-        source_environment_in=source_in.source_environment,
-    )
+    source.tags = tags
 
-    source_type = type_service.get_by_name_or_raise(
-        db_session=db_session,
-        project_id=source.project.id,
-        source_type_in=source_in.source_type,
-    )
+    if source_in.environment:
+        source.source_environment = environment_service.get_by_name_or_raise(
+            db_session=db_session,
+            project_id=source.project.id,
+            source_environment_in=source_in.source_environment,
+        )
 
-    transport = transport_service.get_by_name_or_raise(
-        db_session=db_session,
-        project_id=source.project.id,
-        source_transport_in=source_in.source_transport,
-    )
+    if source_in.source_type:
+        source.source_type = type_service.get_by_name_or_raise(
+            db_session=db_session,
+            project_id=source.project.id,
+            source_type_in=source_in.source_type,
+        )
 
-    data_format = data_format_service.get_by_name_or_raise(
-        db_session=db_session,
-        project_id=source.project.id,
-        source_data_format_in=source_in.source_data_format,
-    )
-    status = status_service.get_by_name_or_raise(
-        db_session=db_session,
-        project_id=source.project.id,
-        source_status_in=source_in.source_status,
-    )
+    if source_in.transport:
+        source.source_transport = transport_service.get_by_name_or_raise(
+            db_session=db_session,
+            project_id=source.project.id,
+            source_transport_in=source_in.source_transport,
+        )
 
-    environment = environment_service.get_by_name_or_raise(
-        db_session=db_session,
-        project_id=source.project_id,
-        source_environment_in=source_in.source_environment,
-    )
+    if source_in.source_data_format:
+        source.source_data_format = data_format_service.get_by_name_or_raise(
+            db_session=db_session,
+            project_id=source.project.id,
+            source_data_format_in=source_in.source_data_format,
+        )
 
-    update_data = source_in.dict(skip_defaults=True, exclude={"source_environment"})
+    if source_in.source_status:
+        source.source_status = status_service.get_by_name_or_raise(
+            db_session=db_session,
+            project_id=source.project.id,
+            source_status_in=source_in.source_status,
+        )
 
     for field in source_data:
         if field in update_data:
             setattr(source, field, update_data[field])
 
-    source.source_environment = environment
-    source.source_status = status
-    source.source_data_format = data_format
-    source.source_transport = transport
-    source.source_type = source_type
-    source.tags = tags
-    source.owner = owner
     db_session.commit()
     return source
 

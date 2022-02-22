@@ -35,46 +35,9 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.name="{ item }">
-              <router-link
-                :to="{
-                  name: 'QueryDetail',
-                  params: { name: item.name, tab: 'details' },
-                }"
-                ><b>{{ item.name }}</b></router-link
-              >
-            </template>
             <template v-slot:item.project.name="{ item }">
               <v-chip small :color="item.project.color" text-color="white">
                 {{ item.project.name }}
-              </v-chip>
-            </template>
-            <template v-slot:item.query_environment.name="{ item }">
-              <v-chip small :color="item.query_environment.color" text-color="white">
-                {{ item.query_environment.name }}
-              </v-chip>
-            </template>
-            <template v-slot:item.query_status="{ item }">
-              <v-badge
-                bordered
-                color="warning"
-                slot="activator"
-                dot
-                left
-                offset-x="-10"
-                offset-y="12"
-              >
-                {{ item.query_status.name }}
-              </v-badge>
-            </template>
-            <template v-slot:item.query_data_format="{ item }">
-              <v-chip dark>
-                {{ item.query_data_format.name }}
-              </v-chip>
-            </template>
-            <template v-slot:item.query_type="{ item }">
-              <v-chip small dark>
-                {{ item.query_type.name }}
               </v-chip>
             </template>
             <template v-slot:item.owner="{ item }">
@@ -130,6 +93,7 @@ export default {
       headers: [
         { text: "Name", value: "name", sortable: true },
         { text: "Project", value: "project.name", sortable: false },
+        { text: "Description", value: "description", sortable: false },
         {
           text: "",
           value: "data-table-actions",

@@ -50,12 +50,18 @@
               </v-chip>
             </template>
             <template v-slot:item.source_environment.name="{ item }">
-              <v-chip small :color="item.source_environment.color" text-color="white">
+              <v-chip
+                v-if="item.source_environment"
+                small
+                :color="item.source_environment.color"
+                text-color="white"
+              >
                 {{ item.source_environment.name }}
               </v-chip>
             </template>
             <template v-slot:item.source_status="{ item }">
               <v-badge
+                v-if="item.source_status"
                 bordered
                 color="warning"
                 slot="activator"
@@ -68,17 +74,17 @@
               </v-badge>
             </template>
             <template v-slot:item.source_data_format="{ item }">
-              <v-chip dark>
+              <v-chip v-if="item.source_data_format" small dark>
                 {{ item.source_data_format.name }}
               </v-chip>
             </template>
             <template v-slot:item.source_type="{ item }">
-              <v-chip small dark>
+              <v-chip v-if="item.source_type" small dark>
                 {{ item.source_type.name }}
               </v-chip>
             </template>
             <template v-slot:item.owner="{ item }">
-              <service-popover :service="item.owner" />
+              <service-popover v-if="item.owner" :service="item.owner" />
             </template>
             <template v-slot:item.lastRefreshed="{ item }">
               {{ item.last_refreshed | formatRelativeDate }}

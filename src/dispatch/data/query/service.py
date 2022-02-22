@@ -51,7 +51,9 @@ def create(*, db_session, query_in: QueryCreate) -> Query:
         db_session=db_session, project_in=query_in.project
     )
 
-    source = source_service.get_by_name_or_raise(db_session=db_session, project_id=project.id)
+    source = source_service.get_by_name_or_raise(
+        db_session=db_session, project_id=project.id, source_in=query_in.source
+    )
 
     tags = []
     for t in query_in.tags:
