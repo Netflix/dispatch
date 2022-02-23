@@ -40,13 +40,16 @@ def extract_terms_from_text(text: str, matcher: PhraseMatcher) -> List[str]:
 
     matches = matcher(doc)
     for _, start, end in matches:
-        token = doc[start:end].merge()
+        with doc.retokenize() as retokenizer:
+            retokenizer.merge(doc[start:end])
 
         # We try to filter out common stop words unless
         # we have surrounding context that would suggest they are not stop words.
-        if token.is_stop:
-            continue
+        span = doc[start:end]
+        for token in span:
+            if token.is_stop:
+                continue
 
-        terms.append(token.text.lower())
+            terms.append(token.text.lower())
 
     return terms
