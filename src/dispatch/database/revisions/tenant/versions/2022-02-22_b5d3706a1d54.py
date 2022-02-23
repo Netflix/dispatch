@@ -1,4 +1,4 @@
-"""Adds data sources
+"""Adds models to support first class support for data sources and queries.
 
 Revision ID: b5d3706a1d54
 Revises: 3097592c0739
@@ -7,7 +7,6 @@ Create Date: 2022-02-22 10:03:21.866998
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 import sqlalchemy_utils
 
 # revision identifiers, used by Alembic.

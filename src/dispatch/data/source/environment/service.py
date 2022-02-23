@@ -52,7 +52,7 @@ def get_by_name_or_raise(
                     loc="source",
                 )
             ],
-            SourceEnvironment=SourceEnvironmentRead,
+            model=SourceEnvironmentRead,
         )
 
     return source
