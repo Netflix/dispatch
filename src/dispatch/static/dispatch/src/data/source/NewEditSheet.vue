@@ -31,10 +31,10 @@
           <edit-basic-info-tab />
         </v-tab-item>
         <v-tab-item>
-          <edit-queries-tab />
+          <edit-queries-tab v-model="queries" />
         </v-tab-item>
         <v-tab-item>
-          <edit-incidents-tab />
+          <edit-incidents-tab v-model="incidents" />
         </v-tab-item>
         <v-tab-item>
           <edit-links-tab />
@@ -66,7 +66,13 @@ export default {
   },
 
   computed: {
-    ...mapFields("source", ["selected.id", "selected.loading", "dialogs.showCreateEdit"]),
+    ...mapFields("source", [
+      "selected.id",
+      "selected.loading",
+      "selected.incidents",
+      "selected.queries",
+      "dialogs.showCreateEdit",
+    ]),
   },
 
   methods: {

@@ -94,6 +94,7 @@ export default {
         { text: "Name", value: "name", sortable: true },
         { text: "Project", value: "project.name", sortable: false },
         { text: "Description", value: "description", sortable: false },
+        { text: "Language", value: "language", sortable: true },
         {
           text: "",
           value: "data-table-actions",

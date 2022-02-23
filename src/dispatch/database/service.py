@@ -24,6 +24,8 @@ from dispatch.incident.models import Incident
 from dispatch.feedback.models import Feedback
 from dispatch.task.models import Task
 from dispatch.plugin.models import Plugin, PluginInstance
+from dispatch.data.source.models import Source
+from dispatch.data.query.models import Query as QueryModel
 from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
 from dispatch.participant.models import Participant
@@ -97,6 +99,10 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Task, "IncidentPriority"): (Incident, False),
         (Task, "IncidentType"): (Incident, False),
         (PluginInstance, "Plugin"): (Plugin, False),
+        (Source, "Tag"): (Source.tags, True),
+        (Source, "TagType"): (Source.tags, True),
+        (QueryModel, "Tag"): (QueryModel.tags, True),
+        (QueryModel, "TagType"): (QueryModel.tags, True),
         (DispatchUser, "Organization"): (DispatchUser.organizations, True),
         (Incident, "Tag"): (Incident.tags, True),
         (Incident, "TagType"): (Incident.tags, True),

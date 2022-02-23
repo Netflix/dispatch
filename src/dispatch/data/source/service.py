@@ -3,8 +3,10 @@ from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
+from dispatch.incident import service as incident_service
 from dispatch.service import service as service_service
 from dispatch.tag import service as tag_service
+from dispatch.data.query import service as query_service
 from dispatch.data.source.environment import service as environment_service
 from dispatch.data.source.data_format import service as data_format_service
 from dispatch.data.source.status import service as status_service
@@ -85,9 +87,27 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
 
     tags = []
     for t in source_in.tags:
-        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
+        tags.append(
+            tag_service.get_or_create(db_session=db_session, tag_in=t, project_id=project.id)
+        )
 
     source.tags = tags
+
+    incidents = []
+    for i in source_in.incidents:
+        incidents.append(
+            incident_service.get_by_name_or_raise(
+                db_session=db_session, incident_in=i, project_id=project.id
+            )
+        )
+
+    queries = []
+    for q in source_in.queries:
+        queries.append(
+            query_service.get_by_name_or_raise(
+                db_session=db_session, query_in=q, project_id=project.id
+            )
+        )
 
     if source_in.source_environment:
         source.source_environment = environment_service.get_by_name_or_raise(
@@ -161,7 +181,25 @@ def update(*, db_session, source: Source, source_in: SourceUpdate) -> Source:
 
     source.tags = tags
 
-    if source_in.environment:
+    incidents = []
+    for i in source_in.incidents:
+        incidents.append(
+            incident_service.get_by_name_or_raise(
+                db_session=db_session, incident_in=i, project_id=source.project.id
+            )
+        )
+    source.incidents = incidents
+
+    queries = []
+    for q in source_in.queries:
+        queries.append(
+            query_service.get_by_name_or_raise(
+                db_session=db_session, query_in=q, project_id=source.project.id
+            )
+        )
+    source.queries = queries
+
+    if source_in.source_environment:
         source.source_environment = environment_service.get_by_name_or_raise(
             db_session=db_session,
             project_id=source.project.id,
@@ -175,7 +213,7 @@ def update(*, db_session, source: Source, source_in: SourceUpdate) -> Source:
             source_type_in=source_in.source_type,
         )
 
-    if source_in.transport:
+    if source_in.source_transport:
         source.source_transport = transport_service.get_by_name_or_raise(
             db_session=db_session,
             project_id=source.project.id,

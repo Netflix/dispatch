@@ -2,16 +2,15 @@
   <v-container fluid>
     <v-row>
       <v-col>
+        <incident-type-bar-chart-card v-model="groupedItems" :loading="loading" />
+      </v-col>
+      <v-col>
+        <incident-priority-bar-chart-card v-model="groupedItems" :loading="loading" />
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col>
         <v-card>
-          <v-sheet color="blue">
-            <v-sparkline
-              :labels="labels"
-              :value="value"
-              color="white"
-              line-width="1"
-              height="50"
-            ></v-sparkline>
-          </v-sheet>
           <v-card-text class="pt-0">
             <div class="text-h6 font-weight-light mb-2">Related Incidents</div>
             <incident-summary-table :items="incidents" />
@@ -27,24 +26,36 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
+import { groupBy } from "lodash"
+import { parseISO } from "date-fns"
+
+import IncidentPriorityBarChartCard from "@/incident/IncidentPriorityBarChartCard.vue"
+import IncidentTypeBarChartCard from "@/incident/IncidentTypeBarChartCard.vue"
 import IncidentSummaryTable from "@/incident/IncidentSummaryTable.vue"
 
 export default {
   name: "SourceDetailsTab",
 
   components: {
+    IncidentPriorityBarChartCard,
+    IncidentTypeBarChartCard,
     IncidentSummaryTable,
   },
 
   computed: {
     ...mapFields("source", ["selected.incidents", "selected.loading"]),
+    incidentsByMonth() {
+      return groupBy(this.incidents, function (item) {
+        return parseISO(item.reported_at).toLocaleString("default", { month: "short" })
+      })
+    },
+    groupedItems() {
+      return this.incidentsByMonth
+    },
   },
 
   data() {
-    return {
-      labels: ["Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-      value: [200, 675, 410, 390, 310, 460, 250, 240],
-    }
+    return {}
   },
 }
 </script>

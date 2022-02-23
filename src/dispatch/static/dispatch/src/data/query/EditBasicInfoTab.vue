@@ -74,6 +74,7 @@ export default {
 
   computed: {
     ...mapFields("query", [
+      "selected.id",
       "selected.name",
       "selected.description",
       "selected.project",

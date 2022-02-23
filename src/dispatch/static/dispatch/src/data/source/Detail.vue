@@ -6,7 +6,7 @@
 
       <v-spacer></v-spacer>
 
-      Status: {{ source_status.name }}
+      <span v-if="source_status"> Status: {{ source_status.name }}</span>
 
       <v-menu bottom left>
         <template v-slot:activator="{ on }">
@@ -29,9 +29,6 @@
           <v-tabs-slider></v-tabs-slider>
           <v-tab :to="{ params: { tab: 'details' } }">Details </v-tab>
           <v-tab :to="{ params: { tab: 'schema' } }">Schema </v-tab>
-          <v-tab :to="{ params: { tab: 'alerts' } }"
-            ><v-badge :content="alertCount"> Alerts</v-badge></v-tab
-          >
           <v-tab :to="{ params: { tab: 'queries' } }">Queries </v-tab>
           <v-tab :to="{ params: { tab: 'incidents' } }">Incidents </v-tab>
         </v-tabs>
@@ -40,7 +37,6 @@
     <v-tabs-items :value="tab">
       <v-tab-item value="details"><details-tab /></v-tab-item>
       <v-tab-item value="schema"><schema-tab /></v-tab-item>
-      <v-tab-item value="alerts"><alerts-tab /></v-tab-item>
       <v-tab-item value="queries"><queries-tab /></v-tab-item>
       <v-tab-item value="incidents"><incidents-tab /></v-tab-item>
     </v-tabs-items>
@@ -74,6 +70,7 @@ export default {
 
   computed: {
     ...mapFields("source", [
+      "selected",
       "selected.name",
       "selected.source_status",
       "selected.alerts",

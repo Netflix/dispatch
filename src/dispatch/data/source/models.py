@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Any
 from datetime import datetime
 from pydantic import Field
 
@@ -19,7 +19,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import UniqueConstraint
 
 from sqlalchemy_utils import TSVectorType
-
 from dispatch.database.core import Base
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin, PrimaryKey
 from dispatch.project.models import ProjectRead
@@ -30,6 +29,7 @@ from dispatch.data.source.transport.models import SourceTransportRead
 from dispatch.data.source.type.models import SourceTypeRead
 from dispatch.tag.models import TagRead
 from dispatch.incident.models import IncidentRead
+
 from dispatch.service.models import ServiceRead
 from dispatch.data.alert.models import AlertRead
 
@@ -89,6 +89,12 @@ class Source(Base, TimeStampMixin, ProjectMixin):
     search_vector = Column(TSVectorType("name"))
 
 
+class QueryReadNested(DispatchBase):
+    id: PrimaryKey
+    name: str
+    description: str
+
+
 # Pydantic models
 class SourceBase(DispatchBase):
     name: Optional[str] = Field(None, nullable=False)
@@ -112,6 +118,7 @@ class SourceBase(DispatchBase):
     links: Optional[List] = []
     tags: Optional[List[TagRead]] = []
     incidents: Optional[List[IncidentRead]] = []
+    queries: Optional[List[QueryReadNested]] = []
     alerts: Optional[List[AlertRead]] = []
     owner: Optional[ServiceRead] = Field(None, nullable=True)
     source_type: Optional[SourceTypeRead]

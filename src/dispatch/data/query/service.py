@@ -14,14 +14,19 @@ def get(*, db_session, query_id: int) -> Optional[Query]:
     return db_session.query(Query).filter(Query.id == query_id).one_or_none()
 
 
-def get_by_name(*, db_session, name: str) -> Optional[Query]:
+def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Query]:
     """Gets a query by its name."""
-    return db_session.query(Query).filter(Query.name == name).one_or_none()
+    return (
+        db_session.query(Query)
+        .filter(Query.name == name)
+        .filter(Query.project_id == project_id)
+        .one_or_none()
+    )
 
 
-def get_by_name_or_raise(*, db_session, query_in=QueryRead) -> QueryRead:
+def get_by_name_or_raise(*, db_session, query_in: QueryRead, project_id: int) -> QueryRead:
     """Returns the query specified or raises ValidationError."""
-    query = get_by_name(db_session=db_session, name=query_in.name)
+    query = get_by_name(db_session=db_session, name=query_in.name, project_id=project_id)
 
     if not query:
         raise ValidationError(

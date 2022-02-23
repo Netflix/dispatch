@@ -21,14 +21,14 @@
     <template v-slot:item="{ item }">
       <v-list-item-content>
         <v-list-item-title v-text="item.name" />
-        <v-list-item-subtitle v-text="item.title" />
+        <v-list-item-subtitle v-text="item.description" />
       </v-list-item-content>
     </template>
     <template v-slot:no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No querys matching "
+            No queries matching "
             <strong>{{ search }}</strong
             >".
           </v-list-item-title>
@@ -90,7 +90,6 @@ export default {
   methods: {
     querySelections(v) {
       this.loading = "error"
-      // Simulated ajax query
       QueryApi.getAll({ q: v }).then((response) => {
         this.items = response.data.items
         this.loading = false

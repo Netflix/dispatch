@@ -37,19 +37,19 @@
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Source Type</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
+              <v-list-item-subtitle v-if="source_type" class="text-right">
                 {{ source_type.name }}</v-list-item-subtitle
               >
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Data Format</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
+              <v-list-item-subtitle v-if="source_data_format" class="text-right">
                 {{ source_data_format.name }}</v-list-item-subtitle
               >
             </v-list-item>
             <v-list-item>
               <v-list-item-title>Transport</v-list-item-title>
-              <v-list-item-subtitle class="text-right">
+              <v-list-item-subtitle v-if="source_transport" class="text-right">
                 {{ source_transport.name }}</v-list-item-subtitle
               >
             </v-list-item>
