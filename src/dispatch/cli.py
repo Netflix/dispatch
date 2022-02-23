@@ -361,17 +361,6 @@ def upgrade_database(tag, sql, revision, revision_type):
             click.secho("Detected single tenant database, converting to multi-tenant...")
             conn.execute(sqlalchemy.text(open(config.ALEMBIC_MULTI_TENANT_MIGRATION_PATH).read()))
 
-            # init initial triggers
-            conn.execute("set search_path to dispatch_core")
-            setup_fulltext_search(conn, get_core_tables())
-
-            tenant_tables = get_tenant_tables()
-            for t in tenant_tables:
-                t.schema = "dispatch_organization_default"
-
-            conn.execute("set search_path to dispatch_organization_default")
-            setup_fulltext_search(conn, tenant_tables)
-
         if revision_type:
             if revision_type == "core":
                 path = config.ALEMBIC_CORE_REVISION_PATH
@@ -385,6 +374,21 @@ def upgrade_database(tag, sql, revision, revision_type):
             for path in [config.ALEMBIC_CORE_REVISION_PATH, config.ALEMBIC_TENANT_REVISION_PATH]:
                 alembic_cfg.set_main_option("script_location", path)
                 alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
+
+    # ensure triggers
+    conn.execute("set search_path to dispatch_core")
+    setup_fulltext_search(conn, get_core_tables())
+
+    for s in inspect(engine).get_schema_names():
+        # skip the core schema
+        if s == "dispatch_core":
+            continue
+
+        tenant_tables = get_tenant_tables()
+        for t in tenant_tables:
+            t.schema = s
+        conn.execute(f"set search_path to {s}")
+        setup_fulltext_search(conn, tenant_tables)
 
     click.secho("Success.", fg="green")
 
