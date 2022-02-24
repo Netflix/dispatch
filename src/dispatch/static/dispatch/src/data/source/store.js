@@ -26,6 +26,7 @@ const getDefaultSelectedState = () => {
     sampling_rate: null,
     schema: null,
     sample_log: null,
+    cost: null,
     queries: [],
     links: [],
     incidents: [],

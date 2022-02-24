@@ -88,7 +88,7 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
     tags = []
     for t in source_in.tags:
         tags.append(
-            tag_service.get_or_create(db_session=db_session, tag_in=t, project_id=project.id)
+            tag_service.get_by_name_or_raise(db_session=db_session, tag_in=t, project_id=project.id)
         )
 
     source.tags = tags
@@ -177,7 +177,7 @@ def update(*, db_session, source: Source, source_in: SourceUpdate) -> Source:
 
     tags = []
     for t in source_in.tags:
-        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
+        tags.append(tag_service.get_by_name_or_raise(db_session=db_session, tag_in=t))
 
     source.tags = tags
 

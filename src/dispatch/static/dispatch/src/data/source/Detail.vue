@@ -47,7 +47,6 @@
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import DetailsTab from "@/data/source/DetailsTab.vue"
-import AlertsTab from "@/data/source/AlertsTab.vue"
 import IncidentsTab from "@/data/source/IncidentsTab.vue"
 import QueriesTab from "@/data/source/QueriesTab.vue"
 import SchemaTab from "@/data/source/SchemaTab.vue"
@@ -57,7 +56,6 @@ export default {
   name: "SourceDetails",
   components: {
     DetailsTab,
-    AlertsTab,
     IncidentsTab,
     QueriesTab,
     SchemaTab,

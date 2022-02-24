@@ -210,6 +210,13 @@ export const protectedRoute = [
           component: () =>
             import(/* webpackChunkName: "task-overview" */ "@/dashboard/TaskOverview.vue"),
         },
+        {
+          path: "data",
+          name: "DataOverview",
+          meta: { title: "Data", group: "type" },
+          component: () =>
+            import(/* webpackChunkName: "data-overview" */ "@/dashboard/DataOverview.vue"),
+        },
       ],
     },
     {

@@ -1,4 +1,4 @@
-from typing import Optional, List, Any
+from typing import Optional, List
 from datetime import datetime
 from pydantic import Field
 
@@ -61,6 +61,7 @@ class Source(Base, TimeStampMixin, ProjectMixin):
     aggregated = Column(Boolean)
     retention = Column(Integer)
     size = Column(BigInteger)
+    cost = Column(Integer)
     delay = Column(Integer)
     environment = Column(String)
     external_id = Column(String)
@@ -120,6 +121,7 @@ class SourceBase(DispatchBase):
     incidents: Optional[List[IncidentRead]] = []
     queries: Optional[List[QueryReadNested]] = []
     alerts: Optional[List[AlertRead]] = []
+    cost: Optional[float]
     owner: Optional[ServiceRead] = Field(None, nullable=True)
     source_type: Optional[SourceTypeRead]
     source_environment: Optional[SourceEnvironmentRead]
