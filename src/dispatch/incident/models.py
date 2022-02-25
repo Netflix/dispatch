@@ -32,10 +32,11 @@ from dispatch.incident_priority.models import (
 from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.participant.models import ParticipantRead, ParticipantUpdate
+from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
-from dispatch.term.models import TermRead
 from dispatch.tag.models import TagRead
+from dispatch.term.models import TermRead
 from dispatch.ticket.models import TicketRead
 from dispatch.workflow.models import WorkflowInstanceRead
 
@@ -68,8 +69,10 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     status = Column(String, default=IncidentStatus.active)
     visibility = Column(String, default=Visibility.open, nullable=False)
     total_cost = Column(Numeric)
-    primary_team = Column(String)
-    primary_location = Column(String)
+    participants_team = Column(String)
+    participants_location = Column(String)
+    commanders_location = Column(String)
+    reporters_location = Column(String)
 
     # auto generated
     reported_at = Column(DateTime, default=datetime.utcnow)
@@ -159,8 +162,22 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
 
     @observes("participants")
     def participant_observer(self, participants):
-        self.primary_team = Counter(p.team for p in participants).most_common(1)[0][0]
-        self.primary_location = Counter(p.location for p in participants).most_common(1)[0][0]
+        self.participants_team = Counter(p.team for p in participants).most_common(1)[0][0]
+        self.participants_location = Counter(p.location for p in participants).most_common(1)[0][0]
+
+        # commanders_locations = []
+        # for p in participants:
+        #     for pr in p.participant_roles:
+        #         if pr.role == ParticipantRoleType.incident_commander:
+        #             commanders_locations.append(p.location)
+        # self.commanders_location = Counter(commanders_locations).most_common(1)[0][0]
+        #
+        # reporters_locations = []
+        # for p in participants:
+        #     for pr in p.participant_roles:
+        #         if pr.role == ParticipantRoleType.reporter:
+        #             reporters_locations.append(p.location)
+        # self.reporters_location = Counter(reporters_locations).most_common(1)[0][0]
 
 
 class ProjectRead(DispatchBase):
