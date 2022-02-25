@@ -220,7 +220,7 @@ patsy==0.5.2
     # via statsmodels
 pbr==5.8.0
     # via jira
-pdpyras==4.4.0
+pdpyras==4.5.0
     # via -r requirements-base.in
 pluggy==1.0.0
     # via pytest
@@ -342,7 +342,7 @@ six==1.16.0
     #   sqlalchemy-filters
     #   sqlalchemy-utils
     #   validators
-slack-sdk==3.15.0
+slack-sdk==3.15.1
     # via -r requirements-base.in
 smart-open==5.2.1
     # via pathy
