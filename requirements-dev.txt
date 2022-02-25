@@ -16,7 +16,7 @@ black==22.1.0
     # via
     #   -r requirements-dev.in
     #   ipython
-click==8.0.3
+click==8.0.4
     # via black
 coverage==6.3.1
     # via -r requirements-dev.in

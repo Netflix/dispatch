@@ -63,7 +63,7 @@ charset-normalizer==2.0.11
     #   aiohttp
     #   httpx
     #   requests
-click==8.0.3
+click==8.0.4
     # via
     #   -r requirements-base.in
     #   schemathesis
