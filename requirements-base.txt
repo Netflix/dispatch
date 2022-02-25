@@ -116,7 +116,7 @@ google-auth==2.6.0
     #   google-auth-oauthlib
 google-auth-httplib2==0.1.0
     # via google-api-python-client
-google-auth-oauthlib==0.4.6
+google-auth-oauthlib==0.5.0
     # via -r requirements-base.in
 googleapis-common-protos==1.54.0
     # via google-api-core
@@ -342,7 +342,7 @@ six==1.16.0
     #   sqlalchemy-filters
     #   sqlalchemy-utils
     #   validators
-slack-sdk==3.15.0
+slack-sdk==3.15.1
     # via -r requirements-base.in
 smart-open==5.2.1
     # via pathy
