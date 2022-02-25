@@ -279,7 +279,7 @@ python-jose==3.3.0
     # via -r requirements-base.in
 python-multipart==0.0.5
     # via -r requirements-base.in
-python-slugify==6.0.1
+python-slugify==6.1.0
     # via -r requirements-base.in
 pytz==2021.3
     # via
@@ -342,7 +342,7 @@ six==1.16.0
     #   sqlalchemy-filters
     #   sqlalchemy-utils
     #   validators
-slack-sdk==3.15.0
+slack-sdk==3.15.1
     # via -r requirements-base.in
 smart-open==5.2.1
     # via pathy
