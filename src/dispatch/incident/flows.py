@@ -930,8 +930,8 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                 incident_title=incident.title,
                 incident_description=incident.description,
             )
-    else:
-        log.warning("Incident commander not paged. No plugin of type oncall enabled.")
+        else:
+            log.warning("Incident commander not paged. No plugin of type oncall enabled.")
 
     # we send a message to the incident commander with tips on how to manage the incident
     send_incident_management_help_tips_message(incident, db_session)
