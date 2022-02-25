@@ -86,8 +86,8 @@
             <template v-slot:item.owner="{ item }">
               <service-popover v-if="item.owner" :service="item.owner" />
             </template>
-            <template v-slot:item.lastRefreshed="{ item }">
-              {{ item.last_refreshed | formatRelativeDate }}
+            <template v-slot:item.dataLastLoadedAt="{ item }">
+              {{ item.data_last_loaded_at | formatRelativeDate }}
             </template>
             <template v-slot:item.data-table-actions="{ item }">
               <v-menu bottom left>
@@ -140,7 +140,7 @@ export default {
         { text: "Owner", value: "owner" },
         { text: "Status", value: "source_status", sortable: true },
         { text: "Type", value: "source_type", sortable: true },
-        { text: "Last Refreshed", value: "last_refreshed", sortable: true },
+        { text: "Last Loaded", value: "data_last_loaded_at", sortable: true },
         {
           text: "",
           value: "data-table-actions",

@@ -177,7 +177,11 @@ def update(*, db_session, source: Source, source_in: SourceUpdate) -> Source:
 
     tags = []
     for t in source_in.tags:
-        tags.append(tag_service.get_by_name_or_raise(db_session=db_session, tag_in=t))
+        tags.append(
+            tag_service.get_by_name_or_raise(
+                db_session=db_session, tag_in=t, project_id=source.project.id
+            )
+        )
 
     source.tags = tags
 

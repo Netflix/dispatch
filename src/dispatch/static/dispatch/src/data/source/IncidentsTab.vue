@@ -14,9 +14,6 @@
           <v-card-text class="pt-0">
             <div class="text-h6 font-weight-light mb-2">Related Incidents</div>
             <incident-summary-table :items="incidents" />
-            <v-divider class="my-2"></v-divider>
-            <v-icon class="mr-2" small> mdi-clock </v-icon>
-            <span class="text-caption grey--text font-weight-light">last incident 10min ago</span>
           </v-card-text>
         </v-card>
       </v-col>

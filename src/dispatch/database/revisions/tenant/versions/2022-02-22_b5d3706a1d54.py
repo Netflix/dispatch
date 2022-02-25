@@ -113,7 +113,7 @@ def upgrade():
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("name", sa.String(), nullable=True),
         sa.Column("description", sa.String(), nullable=True),
-        sa.Column("last_refreshed", sa.DateTime(), nullable=True),
+        sa.Column("data_last_loaded_at", sa.DateTime(), nullable=True),
         sa.Column("daily_volume", sa.Integer(), nullable=True),
         sa.Column("aggregated", sa.Boolean(), nullable=True),
         sa.Column("retention", sa.Integer(), nullable=True),

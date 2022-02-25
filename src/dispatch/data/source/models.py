@@ -56,7 +56,7 @@ class Source(Base, TimeStampMixin, ProjectMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
-    last_refreshed = Column(DateTime)
+    data_last_loaded_at = Column(DateTime)
     daily_volume = Column(Integer)
     aggregated = Column(Boolean)
     retention = Column(Integer)
@@ -100,7 +100,7 @@ class QueryReadNested(DispatchBase):
 class SourceBase(DispatchBase):
     name: Optional[str] = Field(None, nullable=False)
     description: Optional[str] = Field(None, nullable=True)
-    last_refreshed: Optional[datetime] = Field(None, nullable=True, title="Last Refreshed")
+    data_last_loaded_at: Optional[datetime] = Field(None, nullable=True, title="Last Loaded")
     sampling_rate: Optional[int] = Field(
         None,
         nullable=True,

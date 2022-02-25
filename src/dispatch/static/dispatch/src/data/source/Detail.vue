@@ -28,7 +28,7 @@
         <v-tabs align-with-title>
           <v-tabs-slider></v-tabs-slider>
           <v-tab :to="{ params: { tab: 'details' } }">Details </v-tab>
-          <v-tab :to="{ params: { tab: 'schema' } }">Schema </v-tab>
+          <!--<v-tab :to="{ params: { tab: 'schema' } }">Schema </v-tab>-->
           <v-tab :to="{ params: { tab: 'queries' } }">Queries </v-tab>
           <v-tab :to="{ params: { tab: 'incidents' } }">Incidents </v-tab>
         </v-tabs>
@@ -36,7 +36,7 @@
     </v-toolbar>
     <v-tabs-items :value="tab">
       <v-tab-item value="details"><details-tab /></v-tab-item>
-      <v-tab-item value="schema"><schema-tab /></v-tab-item>
+      <v-tab-item disabled value="schema"><schema-tab /></v-tab-item>
       <v-tab-item value="queries"><queries-tab /></v-tab-item>
       <v-tab-item value="incidents"><incidents-tab /></v-tab-item>
     </v-tabs-items>
