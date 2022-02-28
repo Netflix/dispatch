@@ -116,7 +116,7 @@ google-auth==2.6.0
     #   google-auth-oauthlib
 google-auth-httplib2==0.1.0
     # via google-api-python-client
-google-auth-oauthlib==0.4.6
+google-auth-oauthlib==0.5.0
     # via -r requirements-base.in
 googleapis-common-protos==1.54.0
     # via google-api-core
@@ -279,7 +279,7 @@ python-jose==3.3.0
     # via -r requirements-base.in
 python-multipart==0.0.5
     # via -r requirements-base.in
-python-slugify==6.1.0
+python-slugify==6.1.1
     # via -r requirements-base.in
 pytz==2021.3
     # via
