@@ -1233,7 +1233,7 @@ def incident_assign_role_flow(
 
     # we run the participant assign role flow
     result = participant_role_flows.assign_role_flow(
-        incident.id, assignee_email, assignee_role, db_session
+        incident, assignee_email, assignee_role, db_session
     )
 
     if result == "assignee_has_role":
@@ -1404,7 +1404,7 @@ def incident_add_or_reactivate_participant_flow(
         )
 
         if participant:
-            log.debug("Skipping resolved participant, service member already engaged.")
+            log.debug("Skipping resolved participant. Oncall service member already engaged.")
             return
 
     participant = participant_service.get_by_incident_id_and_email(
