@@ -69,6 +69,13 @@ class Document(Base):
     resource_type = Column(String)
 
 
+class Group(Base):
+    __tablename__ = "group"
+    id = Column(Integer, primary_key=True)
+    incident_id = Column(Integer, ForeignKey("incident.id"))
+    resource_type = Column(String)
+
+
 class Incident(Base):
     __tablename__ = "incident"
     id = Column(Integer, primary_key=True)
