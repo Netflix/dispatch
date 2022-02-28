@@ -140,6 +140,8 @@ def upgrade():
     op.create_foreign_key(None, "incident", "group", ["tactical_group_id"], ["id"])
     op.create_foreign_key(None, "incident", "group", ["notifications_group_id"], ["id"])
 
+    print("Starting data migration...")
+
     bind = op.get_bind()
     session = Session(bind=bind)
 
@@ -215,6 +217,7 @@ def upgrade():
         if notifications_group:
             incident.notifications_group_id = notifications_group.id
 
+    print("Data migration completed.")
     # ### end Alembic commands ###
 
 
