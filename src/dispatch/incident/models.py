@@ -14,6 +14,7 @@ from sqlalchemy import (
     String,
     Table,
 )
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType, observes
 
@@ -33,6 +34,7 @@ from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, 
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.participant.models import ParticipantRead, ParticipantUpdate
 from dispatch.participant_role.models import ParticipantRoleType
+from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
 from dispatch.tag.models import TagRead
@@ -84,6 +86,32 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
             "title", "description", "name", weights={"name": "A", "title": "B", "description": "C"}
         )
     )
+
+    @hybrid_property
+    def tactical_reports(self):
+        if self.reports:
+            tactical_reports = [
+                report for report in self.reports if report.type == ReportTypes.tactical_report
+            ]
+            return tactical_reports
+
+    @hybrid_property
+    def last_tactical_report(self):
+        if self.tactical_reports:
+            return sorted(self.tactical_reports, key=lambda r: r.created_at)[-1]
+
+    @hybrid_property
+    def executive_reports(self):
+        if self.reports:
+            executive_reports = [
+                report for report in self.reports if report.type == ReportTypes.executive_report
+            ]
+            return executive_reports
+
+    @hybrid_property
+    def last_executive_report(self):
+        if self.executive_reports:
+            return sorted(self.executive_reports, key=lambda r: r.created_at)[-1]
 
     # resources
     incident_costs = relationship(
