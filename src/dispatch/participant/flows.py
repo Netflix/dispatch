@@ -40,15 +40,15 @@ def add_participant(
     individual.participant.append(participant)
     incident.participants.append(participant)
 
-    # set roles explicity so we don't have to calculate them on the fly
-    if role == ParticipantRoleType.incident_commander:
-        incident.commander_id = participant.id
-    elif role == ParticipantRoleType.reporter:
-        incident.reporter_id = participant.id
-    elif role == ParticipantRoleType.scribe:
-        incident.scribe_id = participant.id
-    elif role == ParticipantRoleType.liaison:
-        incident.liason_id = participant.id
+    # # set roles explicity so we don't have to calculate them on the fly
+    # if role == ParticipantRoleType.incident_commander:
+    #     incident.commander_id = participant.id
+    # elif role == ParticipantRoleType.reporter:
+    #     incident.reporter_id = participant.id
+    # elif role == ParticipantRoleType.scribe:
+    #     incident.scribe_id = participant.id
+    # elif role == ParticipantRoleType.liaison:
+    #     incident.liason_id = participant.id
 
     # We add and commit the changes
     db_session.add(participant)
