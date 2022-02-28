@@ -96,8 +96,8 @@ class Incident(Base):
     scribe_id = Column(Integer, ForeignKey("participant.id"))
     incident_document_id = Column(Integer, ForeignKey("document.id"))
     incident_review_document_id = Column(Integer, ForeignKey("document.id"))
-    tactical_group_id = Column(Integer, ForeignKey["group.id"])
-    notifications_group_id = Column(Integer, ForeignKey["group.id"])
+    tactical_group_id = Column(Integer, ForeignKey("group.id"))
+    notifications_group_id = Column(Integer, ForeignKey("group.id"))
 
 
 def get_current_participant(participants, role):
