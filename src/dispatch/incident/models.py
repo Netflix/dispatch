@@ -135,8 +135,8 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     reporter_id = Column(Integer, ForeignKey("participant.id"))
     reporter = relationship("Participant", foreign_keys=[reporter_id])
 
-    liason_id = Column(Integer, ForeignKey("participant.id"))
-    liason = relationship("Participant", foreign_keys=[liason_id])
+    liaison_id = Column(Integer, ForeignKey("participant.id"))
+    liaison = relationship("Participant", foreign_keys=[liaison_id])
 
     scribe_id = Column(Integer, ForeignKey("participant.id"))
     scribe = relationship("Participant", foreign_keys=[scribe_id])
@@ -147,11 +147,11 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     incident_review_document_id = Column(Integer, ForeignKey("document.id"))
     incident_review_document = relationship("Document", foreign_keys=[incident_review_document_id])
 
-    tactical_group_id = Column(Integer, ForeignKey["group.id"])
-    tactical_group = relationship("Group", foreign_keys=[tactical_group_id])
-
-    notification_group_id = Column(Integer, ForeignKey["group.id"])
-    notification_group = relationship("Group", foreign_keys=[notification_group_id])
+    # tactical_group_id = Column(Integer, ForeignKey["group.id"])
+    # tactical_group = relationship("Group", foreign_keys=[tactical_group_id])
+    #
+    # notification_group_id = Column(Integer, ForeignKey["group.id"])
+    # notification_group = relationship("Group", foreign_keys=[notification_group_id])
 
     @observes("incident_costs")
     def cost_observer(self, incident_costs):
