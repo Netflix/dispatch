@@ -13,6 +13,8 @@ from dispatch.tag.models import TagRead
 from dispatch.task.models import TaskRead
 from dispatch.team.models import TeamContactRead
 from dispatch.term.models import TermRead
+from dispatch.data.source.models import SourceRead
+from dispatch.data.query.models import QueryRead
 
 
 # Pydantic models...
@@ -31,6 +33,8 @@ class ContentResponse(DispatchBase):
     tags: Optional[List[TagRead]] = Field([], alias="Tag")
     terms: Optional[List[TermRead]] = Field([], alias="Term")
     definitions: Optional[List[DefinitionRead]] = Field([], alias="Definition")
+    sources: Optional[List[SourceRead]] = Field([], alias="Source")
+    queries: Optional[List[QueryRead]] = Field([], alias="Query")
     teams: Optional[List[TeamContactRead]] = Field([], alias="TeamContact")
     individuals: Optional[List[IndividualContactRead]] = Field([], alias="IndividualContact")
     services: Optional[List[ServiceRead]] = Field([], alias="Service")

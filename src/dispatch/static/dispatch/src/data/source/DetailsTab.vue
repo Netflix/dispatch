@@ -106,7 +106,7 @@
         <v-card>
           <v-card-title>Links</v-card-title>
           <v-card-text>
-            <v-data-table :headers="headers" :items="links">
+            <v-data-table hide-default-footer disable-pagination :headers="headers" :items="links">
               <template v-slot:item.name="{ item }">
                 <span
                   ><a :href="item.href">

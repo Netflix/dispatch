@@ -43,9 +43,6 @@
             <template v-slot:item.owner="{ item }">
               <service-popover :service="item.owner" />
             </template>
-            <template v-slot:item.dataLastLoadedAt="{ item }">
-              {{ item.data_last_loaded_at | formatRelativeDate }}
-            </template>
             <template v-slot:item.data-table-actions="{ item }">
               <v-menu bottom left>
                 <template v-slot:activator="{ on }">

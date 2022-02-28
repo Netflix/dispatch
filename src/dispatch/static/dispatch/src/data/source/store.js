@@ -22,7 +22,7 @@ const getDefaultSelectedState = () => {
     delay: null,
     external_id: null,
     project: null,
-    documentation: null,
+    documentation: "",
     data_last_loaded_at: null,
     sampling_rate: null,
     schema: null,
@@ -100,11 +100,9 @@ const actions = {
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
-    commit("RESET_SELECTED")
   },
   closeRemove({ commit }) {
     commit("SET_DIALOG_DELETE", false)
-    commit("RESET_SELECTED")
   },
   getDetails({ commit, state }, payload) {
     commit("SET_SELECTED_LOADING", true)

@@ -8,7 +8,9 @@
       </v-col>
       <v-col cols="2">
         <table-filter-dialog />
-        <v-btn color="info" class="ml-2" @click="createEditShow()"> New </v-btn>
+        <v-btn color="info" class="ml-2" @click="createEditShow(getDefaultSelectedState())">
+          New
+        </v-btn>
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -86,7 +88,7 @@
             <template v-slot:item.owner="{ item }">
               <service-popover v-if="item.owner" :service="item.owner" />
             </template>
-            <template v-slot:item.dataLastLoadedAt="{ item }">
+            <template v-slot:item.data_last_loaded_at="{ item }">
               {{ item.data_last_loaded_at | formatRelativeDate }}
             </template>
             <template v-slot:item.data-table-actions="{ item }">
@@ -206,7 +208,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("source", ["getAll", "createEditShow", "removeShow"]),
+    ...mapActions("source", ["getAll", "createEditShow", "getDefaultSelectedState", "removeShow"]),
   },
 }
 </script>

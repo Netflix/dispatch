@@ -161,7 +161,7 @@ export default {
         this.$store.dispatch("search/setQuery", query)
       },
       get() {
-        return this.$store.state.query
+        return this.$store.state.query.q
       },
     },
   },
