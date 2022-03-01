@@ -106,7 +106,7 @@ def get_current_participant(participants, role):
     participant_roles = []
     for p in participants:
         for pr in p.participant_roles:
-            if pr.role == role:
+            if pr.role == role.value:
                 participant_roles.append(pr)
 
     if participant_roles:
@@ -211,6 +211,8 @@ def upgrade():
         notifications_group = get_current_group(incident.groups, "notifications-group")
         if notifications_group:
             incident.notifications_group_id = notifications_group.id
+
+    session.commit()
 
     print("Data migration completed.")
     # ### end Alembic commands ###
