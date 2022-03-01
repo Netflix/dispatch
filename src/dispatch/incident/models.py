@@ -213,14 +213,16 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
             for pr in p.participant_roles:
                 if pr.role == ParticipantRoleType.incident_commander:
                     commanders_locations.append(p.location)
-        self.commanders_location = Counter(commanders_locations).most_common(1)[0][0]
+        if commanders_locations:
+            self.commanders_location = Counter(commanders_locations).most_common(1)[0][0]
 
         reporters_locations = []
         for p in participants:
             for pr in p.participant_roles:
                 if pr.role == ParticipantRoleType.reporter:
                     reporters_locations.append(p.location)
-        self.reporters_location = Counter(reporters_locations).most_common(1)[0][0]
+        if reporters_locations:
+            self.reporters_location = Counter(reporters_locations).most_common(1)[0][0]
 
 
 class ProjectRead(DispatchBase):
