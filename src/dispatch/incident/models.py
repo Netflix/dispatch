@@ -209,18 +209,17 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
         self.participants_location = Counter(p.location for p in participants).most_common(1)[0][0]
 
         commanders_locations = []
+        reporters_locations = []
         for p in participants:
             for pr in p.participant_roles:
                 if pr.role == ParticipantRoleType.incident_commander:
                     commanders_locations.append(p.location)
+                if pr.role == ParticipantRoleType.reporter:
+                    reporters_locations.append(p.location)
+
         if commanders_locations:
             self.commanders_location = Counter(commanders_locations).most_common(1)[0][0]
 
-        reporters_locations = []
-        for p in participants:
-            for pr in p.participant_roles:
-                if pr.role == ParticipantRoleType.reporter:
-                    reporters_locations.append(p.location)
         if reporters_locations:
             self.reporters_location = Counter(reporters_locations).most_common(1)[0][0]
 
