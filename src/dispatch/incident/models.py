@@ -35,6 +35,9 @@ from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.participant.models import ParticipantRead, ParticipantUpdate
 from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.report.enums import ReportTypes
+from dispatch.document.models import Document
+from dispatch.group.models import Group
+from dispatch.participant.models import Participant
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
 from dispatch.tag.models import TagRead
@@ -133,11 +136,23 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     conversation = relationship(
         "Conversation", uselist=False, backref="incident", cascade="all, delete-orphan"
     )
-    documents = relationship("Document", backref="incident", cascade="all, delete-orphan")
+    documents = relationship(
+        "Document",
+        backref="incident",
+        cascade="all, delete-orphan",
+        foreign_keys=[Document.incident_id],
+    )
     events = relationship("Event", backref="incident", cascade="all, delete-orphan")
     feedback = relationship("Feedback", backref="incident", cascade="all, delete-orphan")
-    groups = relationship("Group", backref="incident", cascade="all, delete-orphan")
-    participants = relationship("Participant", backref="incident", cascade="all, delete-orphan")
+    groups = relationship(
+        "Group", backref="incident", cascade="all, delete-orphan", foreign_keys=[Group.incident_id]
+    )
+    participants = relationship(
+        "Participant",
+        backref="incident",
+        cascade="all, delete-orphan",
+        foreign_keys=[Participant.incident_id],
+    )
     reports = relationship("Report", backref="incident", cascade="all, delete-orphan")
     storage = relationship(
         "Storage", uselist=False, backref="incident", cascade="all, delete-orphan"
@@ -175,10 +190,10 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     incident_review_document_id = Column(Integer, ForeignKey("document.id"))
     incident_review_document = relationship("Document", foreign_keys=[incident_review_document_id])
 
-    tactical_group_id = Column(Integer, ForeignKey["group.id"])
+    tactical_group_id = Column(Integer, ForeignKey("group.id"))
     tactical_group = relationship("Group", foreign_keys=[tactical_group_id])
 
-    notifications_group_id = Column(Integer, ForeignKey["group.id"])
+    notifications_group_id = Column(Integer, ForeignKey("group.id"))
     notifications_group = relationship("Group", foreign_keys=[notifications_group_id])
 
     @observes("incident_costs")

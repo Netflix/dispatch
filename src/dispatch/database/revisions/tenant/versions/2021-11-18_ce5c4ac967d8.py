@@ -58,6 +58,8 @@ class ParticipantRole(Base):
 class Participant(Base):
     __tablename__ = "participant"
     id = Column(Integer, primary_key=True)
+    team = Column(String)
+    location = Column(String)
     participant_roles = relationship("ParticipantRole", backref="participant")
     incident_id = Column(Integer, ForeignKey("incident.id"))
 
@@ -86,9 +88,9 @@ class Incident(Base):
     reporters_location = Column(String)
 
     incident_costs = relationship("IncidentCost")
-    documents = relationship("Document")
-    participants = relationship("Participant")
-    groups = relationship("Group")
+    documents = relationship("Document", foreign_keys=[Document.incident_id])
+    participants = relationship("Participant", foreign_keys=[Participant.incident_id])
+    groups = relationship("Group", foreign_keys=[Group.incident_id])
 
     commander_id = Column(Integer, ForeignKey("participant.id"))
     reporter_id = Column(Integer, ForeignKey("participant.id"))
@@ -119,8 +121,9 @@ def get_current_document(documents, resource_type):
 
 def get_current_group(groups, resource_type):
     for g in groups:
-        if g.resource_type.endswith(resource_type):
-            return g
+        if g.resource_type:
+            if g.resource_type.endswith(resource_type):
+                return g
 
 
 def upgrade():
@@ -157,8 +160,8 @@ def upgrade():
     for incident in incidents:
         # we set the total cost
         cost = 0
-        for cost in incident.incident_costs:
-            cost += cost.amount
+        for c in incident.incident_costs:
+            cost += c.amount
         incident.total_cost = cost
 
         # we set the participants team, and participants, commanders, and reporters location
@@ -169,30 +172,17 @@ def upgrade():
             p.location for p in incident.participants
         ).most_common(1)[0][0]
 
-        commanders_locations = []
-        for p in incident.participants:
-            for pr in p.participant_roles:
-                if pr.role == ParticipantRoleType.incident_commander:
-                    commanders_locations.append(p.location)
-        incident.commanders_location = Counter(commanders_locations).most_common(1)[0][0]
-
-        reporters_locations = []
-        for p in incident.participants:
-            for pr in p.participant_roles:
-                if pr.role == ParticipantRoleType.reporter:
-                    reporters_locations.append(p.location)
-        incident.reporters_location = Counter(reporters_locations).most_common(1)[0][0]
-
-        # we set the commander, reporter, liaison, and scribe foreign keys
         commander = get_current_participant(
             incident.participants, ParticipantRoleType.incident_commander
         )
         if commander:
             incident.commander_id = commander.id
+            incident.commanders_location = commander.location
 
         reporter = get_current_participant(incident.participants, ParticipantRoleType.reporter)
         if reporter:
             incident.reporter_id = reporter.id
+            incident.reporters_location = reporter.location
 
         liaison = get_current_participant(incident.participants, ParticipantRoleType.liaison)
         if liaison:
@@ -203,7 +193,6 @@ def upgrade():
             incident.scribe_id = scribe.id
 
         # we set the incident document and post-incident review document foreign keys
-
         incident_document = get_current_document(incident.documents, DocumentResourceTypes.incident)
         if incident_document:
             incident.incident_document_id = incident_document.id
@@ -215,7 +204,6 @@ def upgrade():
             incident.incident_review_document_id = incident_review_document.id
 
         # we set the tactical and notifications foreign keys
-
         tactical_group = get_current_group(incident.groups, "tactical-group")
         if tactical_group:
             incident.tactical_group_id = tactical_group.id
