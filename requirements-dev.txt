@@ -13,9 +13,7 @@ attrs==21.4.0
 backcall==0.2.0
     # via ipython
 black==22.1.0
-    # via
-    #   -r requirements-dev.in
-    #   ipython
+    # via -r requirements-dev.in
 click==8.0.4
     # via black
 coverage==6.3.2
@@ -38,7 +36,7 @@ flake8==4.0.1
     # via -r requirements-dev.in
 iniconfig==1.1.1
     # via pytest
-ipython==8.0.1
+ipython==8.1.0
     # via -r requirements-dev.in
 jedi==0.18.1
     # via ipython
