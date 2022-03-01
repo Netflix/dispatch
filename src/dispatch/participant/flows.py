@@ -22,12 +22,12 @@ def add_participant(
     role: ParticipantRoleType = ParticipantRoleType.participant,
 ):
     """Adds a participant."""
-    # We get or create a new individual
+    # we get or create a new individual
     individual = individual_service.get_or_create(
         db_session=db_session, incident=incident, email=user_email
     )
 
-    # We get or create a new participant
+    # we get or create a new participant
     participant_role = ParticipantRoleCreate(role=role)
     participant = get_or_create(
         db_session=db_session,
@@ -40,7 +40,19 @@ def add_participant(
     individual.participant.append(participant)
     incident.participants.append(participant)
 
-    # We add and commit the changes
+    # we update the commander, reporter, scribe, or liaison foreign key
+    if role == ParticipantRoleType.incident_commander:
+        incident.commander_id = participant.id
+        incident.commanders_location = participant.location
+    elif role == ParticipantRoleType.reporter:
+        incident.reporter_id = participant.id
+        incident.reporters_location = participant.location
+    elif role == ParticipantRoleType.scribe:
+        incident.scribe_id = participant.id
+    elif role == ParticipantRoleType.liaison:
+        incident.liaison_id = participant.id
+
+    # we add and commit the changes
     db_session.add(participant)
     db_session.add(individual)
     db_session.add(incident)

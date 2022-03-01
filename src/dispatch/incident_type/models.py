@@ -78,14 +78,6 @@ class Document(DispatchBase):
     weblink: str
 
 
-class Service(DispatchBase):
-    id: PrimaryKey
-    name: Optional[str] = Field(None, nullable=True)
-    external_id: Optional[str] = Field(None, nullable=True)
-    is_active: Optional[bool] = False
-    type: Optional[str] = Field(None, nullable=True)
-
-
 # Pydantic models...
 class IncidentTypeBase(DispatchBase):
     name: NameStr

@@ -222,7 +222,7 @@ def create_participant_groups(
     )
 
     group_name = f"{incident.name}"
-    notification_group_name = f"{group_name}-notifications"
+    notifications_group_name = f"{group_name}-notifications"
 
     direct_participant_emails = [x.email for x, _ in direct_participants]
     tactical_group = plugin.instance.create(
@@ -233,8 +233,8 @@ def create_participant_groups(
     indirect_participant_emails.append(
         tactical_group["email"]
     )  # add all those already in the tactical group
-    notification_group = plugin.instance.create(
-        notification_group_name, indirect_participant_emails
+    notifications_group = plugin.instance.create(
+        notifications_group_name, indirect_participant_emails
     )
 
     tactical_group.update(
@@ -243,21 +243,21 @@ def create_participant_groups(
             "resource_id": tactical_group["id"],
         }
     )
-    notification_group.update(
+    notifications_group.update(
         {
-            "resource_type": f"{plugin.plugin.slug}-notification-group",
-            "resource_id": notification_group["id"],
+            "resource_type": f"{plugin.plugin.slug}-notifications-group",
+            "resource_id": notifications_group["id"],
         }
     )
 
     event_service.log(
         db_session=db_session,
         source=plugin.plugin.title,
-        description="Tactical and notification groups created",
+        description="Tactical and notifications groups created",
         incident_id=incident.id,
     )
 
-    return tactical_group, notification_group
+    return tactical_group, notifications_group
 
 
 def create_conference(incident: Incident, participants: List[str], db_session: SessionLocal):
@@ -427,9 +427,11 @@ def create_post_incident_review_document(incident: Incident, db_session: Session
         weblink=incident_review_document["weblink"],
     )
 
-    incident.documents.append(
-        document_service.create(db_session=db_session, document_in=document_in)
+    incident_review_document = document_service.create(
+        db_session=db_session, document_in=document_in
     )
+    incident.documents.append(incident_review_document)
+    incident.incident_review_document_id = incident_review_document.id
 
     event_service.log(
         db_session=db_session,
@@ -631,41 +633,54 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
 
     individual_participants, team_participants = get_incident_participants(incident, db_session)
 
+    tactical_group = notifications_group = None
     group_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
     )
     if group_plugin:
-        tactical_group = None
-        notification_group = None
-
         try:
-            tactical_group, notification_group = create_participant_groups(
+            tactical_group_external, notifications_group_external = create_participant_groups(
                 incident, individual_participants, team_participants, db_session
             )
 
-            for g in [tactical_group, notification_group]:
-                group_in = GroupCreate(
-                    name=g["name"],
-                    email=g["email"],
-                    resource_type=g["resource_type"],
-                    resource_id=g["resource_id"],
-                    weblink=g["weblink"],
+            if tactical_group_external and notifications_group_external:
+                tactical_group_in = GroupCreate(
+                    name=tactical_group_external["name"],
+                    email=tactical_group_external["email"],
+                    resource_type=tactical_group_external["resource_type"],
+                    resource_id=tactical_group_external["resource_id"],
+                    weblink=tactical_group_external["weblink"],
                 )
-                incident.groups.append(
-                    group_service.create(db_session=db_session, group_in=group_in)
+                tactical_group = group_service.create(
+                    db_session=db_session, group_in=tactical_group_in
                 )
+                incident.groups.append(tactical_group)
+                incident.tactical_group_id = tactical_group.id
 
-            event_service.log(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description="Tactical and notification groups added to incident",
-                incident_id=incident.id,
-            )
+                notifications_group_in = GroupCreate(
+                    name=notifications_group_external["name"],
+                    email=notifications_group_external["email"],
+                    resource_type=notifications_group_external["resource_type"],
+                    resource_id=notifications_group_external["resource_id"],
+                    weblink=notifications_group_external["weblink"],
+                )
+                notifications_group = group_service.create(
+                    db_session=db_session, group_in=notifications_group_in
+                )
+                incident.groups.append(notifications_group)
+                incident.notifications_group_id = notifications_group.id
+
+                event_service.log(
+                    db_session=db_session,
+                    source="Dispatch Core App",
+                    description="Tactical and notifications groups added to incident",
+                    incident_id=incident.id,
+                )
         except Exception as e:
             event_service.log(
                 db_session=db_session,
                 source="Dispatch Core App",
-                description=f"Creation of tactical and notification groups failed. Reason: {e}",
+                description=f"Creation of tactical and notifications groups failed. Reason: {e}",
                 incident_id=incident.id,
             )
             log.exception(e)
@@ -678,8 +693,8 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
         try:
             if group_plugin:
                 group_emails = []
-                if tactical_group and notification_group:
-                    group_emails = [tactical_group["email"], notification_group["email"]]
+                if tactical_group and notifications_group:
+                    group_emails = [tactical_group.email, notifications_group.email]
 
                 storage = create_incident_storage(incident, group_emails, db_session)
             else:
@@ -726,21 +741,23 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                     resource_type=d["resource_type"],
                     weblink=d["weblink"],
                 )
-                incident.documents.append(
-                    document_service.create(db_session=db_session, document_in=document_in)
-                )
+                document = document_service.create(db_session=db_session, document_in=document_in)
+                incident.documents.append(document)
+
+                if document.resource_type == DocumentResourceTypes.incident:
+                    incident.incident_document_id = document.id
 
             event_service.log(
                 db_session=db_session,
                 source="Dispatch Core App",
-                description="Documents added to incident",
+                description="Collaboration documents added to incident",
                 incident_id=incident.id,
             )
         except Exception as e:
             event_service.log(
                 db_session=db_session,
                 source="Dispatch Core App",
-                description=f"Creation of incident documents failed. Reason: {e}",
+                description=f"Creation of collaboration documents failed. Reason: {e}",
                 incident_id=incident.id,
             )
             log.exception(e)
@@ -754,7 +771,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
 
             if group_plugin and tactical_group:
                 # we use the tactical group email if the group plugin is enabled
-                participant_emails = [tactical_group["email"]]
+                participant_emails = [tactical_group.email]
 
             conference = create_conference(incident, participant_emails, db_session)
 
@@ -1218,7 +1235,7 @@ def incident_assign_role_flow(
 
     # we run the participant assign role flow
     result = participant_role_flows.assign_role_flow(
-        incident.id, assignee_email, assignee_role, db_session
+        incident, assignee_email, assignee_role, db_session
     )
 
     if result == "assignee_has_role":
@@ -1389,7 +1406,7 @@ def incident_add_or_reactivate_participant_flow(
         )
 
         if participant:
-            log.debug("Skipping resolved participant, service member already engaged.")
+            log.debug("Skipping resolved participant. Oncall service member already engaged.")
             return
 
     participant = participant_service.get_by_incident_id_and_email(

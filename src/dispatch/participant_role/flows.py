@@ -1,4 +1,8 @@
 import logging
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dispatch.models import Incident
 
 from dispatch.database.core import SessionLocal
 from dispatch.event import service as event_service
@@ -12,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 def assign_role_flow(
-    incident_id: int, assignee_email: str, assignee_role: str, db_session: SessionLocal
+    incident: "Incident", assignee_email: str, assignee_role: str, db_session: SessionLocal
 ):
     """Attempts to assign a role to a participant.
 
@@ -25,12 +29,12 @@ def assign_role_flow(
     """
     # we get the participant that holds the role assigned to the assignee
     participant_with_assignee_role = participant_service.get_by_incident_id_and_role(
-        db_session=db_session, incident_id=incident_id, role=assignee_role
+        db_session=db_session, incident_id=incident.id, role=assignee_role
     )
 
     # we get the participant for the assignee
     assignee_participant = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=incident_id, email=assignee_email
+        db_session=db_session, incident_id=incident.id, email=assignee_email
     )
 
     if participant_with_assignee_role is assignee_participant:
@@ -79,11 +83,25 @@ def assign_role_flow(
             participant_role=assignee_role,
         )
 
+        # we update the commander, reporter, scribe, or liaison foreign key
+        if assignee_role == ParticipantRoleType.incident_commander:
+            incident.commander_id = assignee_participant.id
+        elif assignee_role == ParticipantRoleType.reporter:
+            incident.reporter_id = assignee_participant.id
+        elif assignee_role == ParticipantRoleType.scribe:
+            incident.scribe_id = assignee_participant.id
+        elif assignee_role == ParticipantRoleType.liaison:
+            incident.liaison_id = assignee_participant.id
+
+        # we add and commit the changes
+        db_session.add(incident)
+        db_session.commit()
+
         event_service.log(
             db_session=db_session,
             source="Dispatch Core App",
             description=f"{assignee_participant.individual.name} has been assigned the role of {assignee_role}",
-            incident_id=incident_id,
+            incident_id=incident.id,
         )
 
         return "role_assigned"
