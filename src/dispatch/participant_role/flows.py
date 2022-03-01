@@ -1,9 +1,11 @@
 import logging
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dispatch.models import Incident
 
 from dispatch.database.core import SessionLocal
 from dispatch.event import service as event_service
-from dispatch.incident import service as incident_service
-from dispatch.models import Incident
 from dispatch.participant import service as participant_service
 
 from .models import ParticipantRoleType
@@ -14,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 def assign_role_flow(
-    incident: Incident, assignee_email: str, assignee_role: str, db_session: SessionLocal
+    incident: "Incident", assignee_email: str, assignee_role: str, db_session: SessionLocal
 ):
     """Attempts to assign a role to a participant.
 

@@ -24,6 +24,7 @@ try:
     from dispatch.definition.models import Definition  # noqa lgtm[py/unused-import]
     from dispatch.document.models import Document  # noqa lgtm[py/unused-import]
     from dispatch.event.models import Event  # noqa lgtm[py/unused-import]
+    from dispatch.incident.models import Incident  # noqa lgtm[py/unused-import]
     from dispatch.monitor.models import Monitor  # noqa lgtm[py/unused-import]
     from dispatch.feedback.models import Feedback  # noqa lgtm[py/unused-import]
     from dispatch.group.models import Group  # noqa lgtm[py/unused-import]
@@ -48,7 +49,6 @@ try:
     from dispatch.ticket.models import Ticket  # noqa lgtm[py/unused-import]
     from dispatch.workflow.models import Workflow  # noqa lgtm[py/unused-import]
     from dispatch.search_filter.models import SearchFilter  # noqa lgtm[py/unused-impot]
-    from dispatch.incident.models import Incident  # noqa lgtm[py/unused-import]
 except Exception:
     traceback.print_exc()
 
