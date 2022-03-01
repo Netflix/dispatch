@@ -43,8 +43,10 @@ def add_participant(
     # we update the commander, reporter, scribe, or liaison foreign key
     if role == ParticipantRoleType.incident_commander:
         incident.commander_id = participant.id
+        incident.commanders_location = participant.location
     elif role == ParticipantRoleType.reporter:
         incident.reporter_id = participant.id
+        incident.reporters_location = participant.location
     elif role == ParticipantRoleType.scribe:
         incident.scribe_id = participant.id
     elif role == ParticipantRoleType.liaison:
