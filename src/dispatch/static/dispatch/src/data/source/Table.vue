@@ -8,9 +8,7 @@
       </v-col>
       <v-col cols="2">
         <table-filter-dialog />
-        <v-btn color="info" class="ml-2" @click="createEditShow(getDefaultSelectedState())">
-          New
-        </v-btn>
+        <v-btn color="info" class="ml-2" @click="createEditShow()"> New </v-btn>
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -208,7 +206,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("source", ["getAll", "createEditShow", "getDefaultSelectedState", "removeShow"]),
+    ...mapActions("source", ["getAll", "createEditShow", "removeShow"]),
   },
 }
 </script>

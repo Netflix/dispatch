@@ -92,6 +92,8 @@ const actions = {
     commit("SET_DIALOG_CREATE_EDIT", true)
     if (source) {
       commit("SET_SELECTED", source)
+    } else {
+      commit("SET_SELECTED", getDefaultSelectedState())
     }
   },
   removeShow({ commit }, source) {

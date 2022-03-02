@@ -380,8 +380,7 @@ def upgrade_database(tag, sql, revision, revision_type):
     setup_fulltext_search(conn, get_core_tables())
 
     for s in inspect(engine).get_schema_names():
-        # skip the core schema
-        if s == "dispatch_core":
+        if not s.startswith("dispatch_organization_"):
             continue
 
         tenant_tables = get_tenant_tables()

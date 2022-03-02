@@ -23,7 +23,7 @@
             :error-messages="errors"
             :success="valid"
             label="Description"
-            hint="Description of incident."
+            hint="Description of data source."
             clearable
             required
           />
