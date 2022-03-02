@@ -100,7 +100,7 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
                 db_session=db_session, incident_in=i, project_id=project.id
             )
         )
-
+    source.incidents = incidents
     queries = []
     for q in source_in.queries:
         queries.append(
@@ -108,6 +108,8 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
                 db_session=db_session, query_in=q, project_id=project.id
             )
         )
+
+    source.queries = queries
 
     if source_in.source_environment:
         source.source_environment = environment_service.get_by_name_or_raise(
