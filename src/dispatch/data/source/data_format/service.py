@@ -13,7 +13,7 @@ from .models import (
 
 
 def get(*, db_session, source_data_format_id: int) -> Optional[SourceDataFormat]:
-    """Gets a source by its id."""
+    """Gets a data source by its id."""
     return (
         db_session.query(SourceDataFormat)
         .filter(SourceDataFormat.id == source_data_format_id)
