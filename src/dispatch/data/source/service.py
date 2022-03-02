@@ -81,7 +81,7 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
     )
 
     if source_in.owner:
-        source.source_owner = service_service.get_by_name_or_raise(
+        source.owner = service_service.get_by_name_or_raise(
             db_session=db_session, project_id=project.id, service_in=source_in.owner
         )
 

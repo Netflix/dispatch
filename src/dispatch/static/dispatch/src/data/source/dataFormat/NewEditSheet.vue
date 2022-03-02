@@ -33,7 +33,7 @@
                       :error-messages="errors"
                       :success="valid"
                       label="Name"
-                      hint="Name of environment."
+                      hint="Name of data format."
                       clearable
                       required
                     />
@@ -47,7 +47,7 @@
                       :error-messages="errors"
                       :success="valid"
                       label="Description"
-                      hint="Description of environment."
+                      hint="Description of data format."
                       clearable
                       required
                     />
