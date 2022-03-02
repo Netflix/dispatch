@@ -63,6 +63,6 @@ def delete_query(*, db_session: Session = Depends(get_db), query_id: PrimaryKey)
     if not query:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An query with this ID does not exist."}],
+            detail=[{"msg": "A query with this ID does not exist."}],
         )
     delete(db_session=db_session, query_id=query_id)
