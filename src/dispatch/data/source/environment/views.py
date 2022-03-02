@@ -33,7 +33,7 @@ def get_source_environment(
     if not source_environment:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "The requested source_environment environment does not exist."}],
+            detail=[{"msg": "The requested source environment does not exist."}],
         )
     return source_environment
 
