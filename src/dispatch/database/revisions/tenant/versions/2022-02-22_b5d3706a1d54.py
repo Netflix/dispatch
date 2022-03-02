@@ -1,7 +1,7 @@
 """Adds models to support first class support for data sources and queries.
 
 Revision ID: b5d3706a1d54
-Revises: 3097592c0739
+Revises: ce5c4ac967d8
 Create Date: 2022-02-22 10:03:21.866998
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy_utils
 
 # revision identifiers, used by Alembic.
 revision = "b5d3706a1d54"
-down_revision = "3097592c0739"
+down_revision = "ce5c4ac967d8"
 branch_labels = None
 depends_on = None
 
