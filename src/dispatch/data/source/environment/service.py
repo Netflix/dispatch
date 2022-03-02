@@ -46,7 +46,7 @@ def get_by_name_or_raise(
             [
                 ErrorWrapper(
                     NotFoundError(
-                        msg="SourceEnvironment not found.",
+                        msg="Source environment not found.",
                         source=source_environment_in.name,
                     ),
                     loc="source",
