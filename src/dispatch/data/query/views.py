@@ -50,7 +50,7 @@ def update_query(
     if not query:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An query with this ID does not exist."}],
+            detail=[{"msg": "A query with this ID does not exist."}],
         )
     query = update(db_session=db_session, query=query, query_in=query_in)
     return query
