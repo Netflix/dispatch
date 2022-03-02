@@ -1,0 +1,142 @@
+<template>
+  <v-combobox
+    :items="items"
+    :label="label"
+    :loading="loading"
+    :search-input.sync="search"
+    @update:search-input="getFilteredData()"
+    chips
+    clearable
+    deletable-chips
+    hide-selected
+    item-text="name"
+    multiple
+    no-filter
+    v-model="transports"
+  >
+    <template v-slot:no-data>
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title>
+            No Projects matching "
+            <strong>{{ search }}</strong
+            >".
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
+    <template v-slot:item="data">
+      <template>
+        <v-list-item-content>
+          <v-list-item-title v-text="data.item.name" />
+          <v-list-item-subtitle
+            style="width: 200px"
+            class="text-truncate"
+            v-text="data.item.description"
+          />
+        </v-list-item-content>
+      </template>
+    </template>
+    <template v-slot:append-item>
+      <v-list-item v-if="more" @click="loadMore()">
+        <v-list-item-content>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
+  </v-combobox>
+</template>
+
+<script>
+import { cloneDeep, debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
+import TransportApi from "@/data/source/transport/api"
+
+export default {
+  name: "SourceTransportComboBox",
+  props: {
+    value: {
+      type: Array,
+      default: function () {
+        return []
+      },
+    },
+    label: {
+      type: String,
+      default: function () {
+        return "Transports"
+      },
+    },
+  },
+
+  data() {
+    return {
+      loading: false,
+      items: [],
+      more: false,
+      numItems: 5,
+      search: null,
+    }
+  },
+
+  computed: {
+    transports: {
+      get() {
+        return cloneDeep(this.value)
+      },
+      set(value) {
+        this.search = null
+        let _transports = value.map((v) => {
+          if (typeof v === "string") {
+            v = {
+              name: v,
+            }
+            this.items.push(v)
+          }
+          return v
+        })
+        this.$emit("input", _transports)
+      },
+    },
+  },
+
+  created() {
+    this.fetchData({})
+  },
+
+  methods: {
+    loadMore() {
+      this.numItems = this.numItems + 5
+      this.fetchData()
+    },
+    fetchData() {
+      this.error = null
+      this.loading = "error"
+
+      let filterOptions = {
+        q: this.search,
+        itemsPerPage: this.numItems,
+      }
+
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+
+      TransportApi.getAll(filterOptions).then((response) => {
+        this.items = response.data.items
+        this.total = response.data.total
+
+        if (this.items.length < this.total) {
+          this.more = true
+        } else {
+          this.more = false
+        }
+
+        this.loading = false
+      })
+    },
+    getFilteredData: debounce(function () {
+      this.fetchData()
+    }, 500),
+  },
+}
+</script>

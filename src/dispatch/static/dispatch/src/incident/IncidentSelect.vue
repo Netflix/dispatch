@@ -82,7 +82,7 @@ export default {
       val && val !== this.select && this.querySelections(val)
     },
     value(val) {
-      if (!val) return
+      //if (!val) return
       this.items.push(val)
     },
   },

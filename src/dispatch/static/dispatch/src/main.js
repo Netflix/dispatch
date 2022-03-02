@@ -13,6 +13,7 @@ import * as Sentry from "@sentry/browser"
 import * as Integrations from "@sentry/integrations"
 
 import VueClipboard from "vue-clipboard2"
+import VueMarkdown from "vue-markdown"
 
 // Configure sentry
 if (process.env.VUE_APP_SENTRY_ENABLED) {
@@ -39,6 +40,7 @@ sync(store, router, { moduleName: "route" })
 Vue.config.productionTip = false
 
 Vue.use(VueClipboard)
+Vue.use(VueMarkdown)
 
 new Vue({
   vuetify,

@@ -150,6 +150,40 @@ export const protectedRoute = [
       ],
     },
     {
+      path: "data",
+      component: DefaultLayout,
+      name: "Data",
+      redirect: { name: "SourceTable" },
+      meta: {
+        title: "Data",
+        icon: "mdi-database",
+        group: "data",
+        menu: true,
+        requiresAuth: true,
+      },
+      children: [
+        {
+          path: "/:organization/data/sources",
+          name: "SourceTable",
+          meta: { title: "Sources", group: "data" },
+          component: () => import(/* webpackChunkName: "source-table" */ "@/data/source/Table.vue"),
+        },
+        {
+          path: "/:organization/data/sources/:name/:tab",
+          name: "SourceDetail",
+          meta: { title: "Source Detail" },
+          component: () =>
+            import(/* webpackChunkName: "source-table" */ "@/data/source/Detail.vue"),
+        },
+        {
+          path: "/:organization/data/queries",
+          name: "QueryTable",
+          meta: { title: "Queries", group: "data" },
+          component: () => import(/* webpackChunkName: "query-table" */ "@/data/query/Table.vue"),
+        },
+      ],
+    },
+    {
       path: "dashboards",
       component: DashboardLayout,
       name: "dashboards",
@@ -175,6 +209,13 @@ export const protectedRoute = [
           meta: { title: "Tasks", group: "type" },
           component: () =>
             import(/* webpackChunkName: "task-overview" */ "@/dashboard/TaskOverview.vue"),
+        },
+        {
+          path: "data",
+          name: "DataOverview",
+          meta: { title: "Data", group: "type" },
+          component: () =>
+            import(/* webpackChunkName: "data-overview" */ "@/dashboard/DataOverview.vue"),
         },
       ],
     },
@@ -341,6 +382,45 @@ export const protectedRoute = [
             name: "TermTable",
             meta: { title: "Terms", subMenu: "project", group: "knowledge" },
             component: () => import(/* webpackChunkName: "term-table" */ "@/term/Table.vue"),
+          },
+          {
+            path: "source/types",
+            name: "SourceTypeTable",
+            meta: { title: "Source Types", subMenu: "project", group: "data" },
+            component: () =>
+              import(/* webpackChunkName: "source-type-table" */ "@/data/source/type/Table.vue"),
+          },
+          {
+            path: "source/environments",
+            name: "SourceEnvironmentTable",
+            meta: { title: "Source Environments", subMenu: "project", group: "data" },
+            component: () =>
+              import(
+                /* webpackChunkName: "environment-table" */ "@/data/source/environment/Table.vue"
+              ),
+          },
+          {
+            path: "source/statuses",
+            name: "SourceStatusTable",
+            meta: { title: "Source Statuses", subMenu: "project", group: "data" },
+            component: () =>
+              import(/* webpackChunkName: "status-table" */ "@/data/source/status/Table.vue"),
+          },
+          {
+            path: "source/transports",
+            name: "SourceTransportTable",
+            meta: { title: "Source Transports", subMenu: "project", group: "data" },
+            component: () =>
+              import(/* webpackchunkname: "transport-table" */ "@/data/source/transport/Table.vue"),
+          },
+          {
+            path: "source/dataFormats",
+            name: "SourceDataFormatTable",
+            meta: { title: "Source Data Formats", subMenu: "project", group: "data" },
+            component: () =>
+              import(
+                /* webpackChunkName: "dataFormat-table" */ "@/data/source/dataFormat/Table.vue"
+              ),
           },
         ]),
       ],

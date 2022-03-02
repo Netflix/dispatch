@@ -21,6 +21,37 @@ def get_by_external_id(*, db_session, external_id: str) -> Optional[Service]:
     return db_session.query(Service).filter(Service.external_id == external_id).first()
 
 
+def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Service]:
+    """Gets a service by its name."""
+    return (
+        db_session.query(Service)
+        .filter(Service.name == name)
+        .filter(Service.project_id == project_id)
+        .one_or_none()
+    )
+
+
+def get_by_name_or_raise(*, db_session, project_id, service_in=ServiceRead) -> ServiceRead:
+    """Returns the service specified or raises ValidationError."""
+    source = get_by_name(db_session=db_session, project_id=project_id, name=service_in.name)
+
+    if not source:
+        raise ValidationError(
+            [
+                ErrorWrapper(
+                    NotFoundError(
+                        msg="Service not found.",
+                        source=service_in.name,
+                    ),
+                    loc="service",
+                )
+            ],
+            model=ServiceRead,
+        )
+
+    return source
+
+
 def get_by_external_id_and_project_id(
     *, db_session, external_id: str, project_id: int
 ) -> Optional[Service]:

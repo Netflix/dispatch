@@ -17,6 +17,18 @@
         </v-expansion-panel-content>
       </v-expansion-panel>
       <v-expansion-panel>
+        <v-expansion-panel-header>Sources ({{ results.sources.length }})</v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <source-summary-table :items="results.sources" />
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+      <v-expansion-panel>
+        <v-expansion-panel-header>Queries ({{ results.queries.length }})</v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <query-summary-table :items="results.sources" />
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+      <v-expansion-panel>
         <v-expansion-panel-header>
           Documents ({{ results.documents.length }})
         </v-expansion-panel-header>
@@ -38,6 +50,8 @@
 import { mapState } from "vuex"
 import IncidentSummaryTable from "@/incident/IncidentSummaryTable.vue"
 import TaskSummaryTable from "@/task/TaskSummaryTable.vue"
+import SourceSummaryTable from "@/data/source/SourceSummaryTable.vue"
+import QuerySummaryTable from "@/data/query/QuerySummaryTable.vue"
 import DocumentSummaryTable from "@/document/DocumentSummaryTable.vue"
 import TagSummaryTable from "@/tag/TagSummaryTable.vue"
 
@@ -47,6 +61,8 @@ export default {
     IncidentSummaryTable,
     TaskSummaryTable,
     DocumentSummaryTable,
+    SourceSummaryTable,
+    QuerySummaryTable,
     TagSummaryTable,
   },
   data() {

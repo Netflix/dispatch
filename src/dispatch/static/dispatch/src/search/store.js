@@ -31,9 +31,11 @@ const state = {
     tasks: [],
     documents: [],
     tags: [],
+    queries: [],
+    sources: [],
   },
   query: "",
-  type: ["Document", "Incident", "Tag", "Task"],
+  type: ["Document", "Incident", "Tag", "Task", "Source", "Query"],
   dialogs: {
     showCreate: false,
   },

@@ -28,6 +28,13 @@ import workflow from "@/workflow/store"
 import template from "@/document/template/store"
 import runbook from "@/document/runbook/store"
 import reference from "@/document/reference/store"
+import source from "@/data/source/store"
+import sourceEnvironment from "@/data/source/environment/store"
+import sourceDataFormat from "@/data/source/dataFormat/store"
+import sourceStatus from "@/data/source/status/store"
+import sourceTransport from "@/data/source/transport/store"
+import sourceType from "@/data/source/type/store"
+import query from "@/data/query/store"
 
 Vue.use(Vuex)
 
@@ -59,6 +66,13 @@ export default new Vuex.Store({
     workflow,
     runbook,
     reference,
+    source,
+    sourceEnvironment,
+    sourceDataFormat,
+    sourceStatus,
+    sourceTransport,
+    sourceType,
+    query,
     route: {
       namespaced: true,
       getters: {

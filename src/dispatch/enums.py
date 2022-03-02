@@ -23,6 +23,8 @@ class SearchTypes(DispatchEnum):
     service = "Service"
     tag = "Tag"
     task = "Task"
+    source = "Source"
+    query = "Query"
     team_contact = "TeamContact"
     term = "Term"
 

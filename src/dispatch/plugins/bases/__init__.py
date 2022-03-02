@@ -16,3 +16,4 @@ from .term import TermPlugin  # noqa
 from .ticket import TicketPlugin  # noqa
 from .workflow import WorkflowPlugin  # noqa
 from .monitor import MonitorPlugin  # noqa
+from .source import SourcePlugin  # noqa
