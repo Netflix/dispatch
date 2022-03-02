@@ -1,5 +1,7 @@
+from inspect import trace
 import os
 import os.path
+import traceback
 from subprocess import check_output
 
 try:
@@ -22,10 +24,10 @@ try:
     from dispatch.definition.models import Definition  # noqa lgtm[py/unused-import]
     from dispatch.document.models import Document  # noqa lgtm[py/unused-import]
     from dispatch.event.models import Event  # noqa lgtm[py/unused-import]
+    from dispatch.incident.models import Incident  # noqa lgtm[py/unused-import]
     from dispatch.monitor.models import Monitor  # noqa lgtm[py/unused-import]
     from dispatch.feedback.models import Feedback  # noqa lgtm[py/unused-import]
     from dispatch.group.models import Group  # noqa lgtm[py/unused-import]
-    from dispatch.incident.models import Incident  # noqa lgtm[py/unused-import]
     from dispatch.incident_cost.models import IncidentCost  # noqa lgtm[py/unused-import]
     from dispatch.incident_cost_type.models import IncidentCostType  # noqa lgtm[py/unused-import]
     from dispatch.incident_role.models import IncidentRole  # noqa lgtm[py/unused-import]
@@ -60,7 +62,7 @@ try:
     from dispatch.data.source.models import Source  # noqa lgtm[py/unused-import]
     from dispatch.search_filter.models import SearchFilter  # noqa lgtm[py/unused-impot]
 except Exception:
-    pass
+    traceback.print_exc()
 
 
 def _get_git_revision(path):
