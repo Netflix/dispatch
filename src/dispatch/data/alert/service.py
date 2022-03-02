@@ -7,7 +7,7 @@ from .models import Alert, AlertCreate, AlertUpdate, AlertRead
 
 
 def get(*, db_session, alert_id: int) -> Optional[Alert]:
-    """Gets a alert by its id."""
+    """Gets an alert by its id."""
     return db_session.query(Alert).filter(Alert.id == alert_id).one_or_none()
 
 
