@@ -124,14 +124,12 @@ export default {
       return this.$router.currentRoute.query
     },
     showChildPane() {
-      return Object.values(this.children)[0].length > 1
+      if (Object.keys(this.children).length) {
+        return Object.values(this.children)[0].length > 1
+      }
+      return false
     },
     children() {
-      // Exclude routes that don't have a subMenu
-      if (this.$route.matched[0].meta.noMenu) {
-        return [[]]
-      }
-
       let children = this.$router.options.routes.filter(
         (route) => route.path == this.$route.matched[0].path
       )[0].children
