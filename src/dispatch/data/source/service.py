@@ -70,6 +70,8 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
                 "project",
                 "owner",
                 "tags",
+                "incidents",
+                "queries",
                 "source_environment",
                 "source_data_format",
                 "source_transport",
@@ -90,7 +92,6 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
         tags.append(
             tag_service.get_by_name_or_raise(db_session=db_session, tag_in=t, project_id=project.id)
         )
-
     source.tags = tags
 
     incidents = []
@@ -101,6 +102,7 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
             )
         )
     source.incidents = incidents
+
     queries = []
     for q in source_in.queries:
         queries.append(
@@ -108,7 +110,6 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
                 db_session=db_session, query_in=q, project_id=project.id
             )
         )
-
     source.queries = queries
 
     if source_in.source_environment:
@@ -170,7 +171,21 @@ def update(*, db_session, source: Source, source_in: SourceUpdate) -> Source:
     """Updates an existing source."""
     source_data = source.dict()
 
-    update_data = source_in.dict(skip_defaults=True, exclude={"source_environment"})
+    update_data = source_in.dict(
+        skip_defaults=True,
+        exclude={
+            "project",
+            "owner",
+            "tags",
+            "incidents",
+            "queries",
+            "source_environment",
+            "source_data_format",
+            "source_transport",
+            "source_status",
+            "source_type"
+        }
+    )
 
     if source_in.owner:
         source.owner = service_service.get_by_name_or_raise(

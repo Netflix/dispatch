@@ -30,10 +30,10 @@
         </ValidationProvider>
       </v-flex>
       <v-flex xs12>
-        <status-select v-model="source_status" :project="project" />
+        <project-select v-model="project" />
       </v-flex>
       <v-flex xs12>
-        <project-select v-model="project" />
+        <status-select v-model="source_status" :project="project" />
       </v-flex>
       <v-flex xs12>
         <service-select label="Owner" v-model="owner" :project="project" />
