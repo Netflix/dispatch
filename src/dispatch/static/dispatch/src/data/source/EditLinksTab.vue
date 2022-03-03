@@ -102,7 +102,6 @@ export default {
       href: "",
     },
   }),
-  created() {},
 
   methods: {
     editItem(item) {
@@ -112,7 +111,7 @@ export default {
 
     deleteItem(item) {
       const index = this.links.indexOf(item)
-      this.links.splice(index, 1)
+      this.localLinks.splice(index, 1)
     },
 
     close() {
@@ -125,6 +124,7 @@ export default {
       const addObj = Object.assign({}, this.defaultItem)
       addObj.id = this.links.length + 1
       this.editedItem.id = addObj.id
+      this.editedIndex = 0
       this.links.unshift(addObj)
     },
     save() {
