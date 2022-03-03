@@ -111,7 +111,7 @@ export default {
 
     deleteItem(item) {
       const index = this.links.indexOf(item)
-      this.links.splice(index, 1)
+      this.localLinks.splice(index, 1)
     },
 
     close() {
