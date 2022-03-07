@@ -17,25 +17,25 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-combobox v-model="local_incident" />
+            <incident-combobox v-model="local_incident" label="Incidents" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-type-combobox v-model="local_incident_type" label="Incident Type" />
+            <incident-type-combobox v-model="local_incident_type" label="Incident Types" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
             <incident-priority-combobox
               v-model="local_incident_priority"
-              label="Incident Priority"
+              label="Incident Priorities"
             />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <task-status-multi-select v-model="local_status" />
+            <task-status-multi-select v-model="local_status" label="Statuses"/>
           </v-list-item-content>
         </v-list-item>
       </v-list>

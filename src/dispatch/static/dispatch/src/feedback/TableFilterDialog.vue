@@ -12,12 +12,12 @@
       <v-list dense>
         <v-list-item>
           <v-list-item-content>
-            <project-combobox v-model="local_project" label="Project" />
+            <project-combobox v-model="local_project" label="Projects" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-combobox v-model="local_incident" />
+            <incident-combobox v-model="local_incident" label="Incidents" />
           </v-list-item-content>
         </v-list-item>
       </v-list>
