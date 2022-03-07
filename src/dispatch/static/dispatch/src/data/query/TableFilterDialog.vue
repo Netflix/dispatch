@@ -75,8 +75,8 @@ export default {
     applyFilters() {
       // we set the filter values
       this.project = this.local_project
-      this.project = this.local_tag_type
-      this.project = this.local_tag
+      this.tag_type = this.local_tag_type
+      this.tag = this.local_tag
 
       // we close the dialog
       this.display = false
