@@ -7,20 +7,24 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Column Filters</span>
+        <span class="headline">Feedback Filters</span>
       </v-card-title>
       <v-list dense>
         <v-list-item>
           <v-list-item-content>
-            <incident-combobox v-model="incident" />
+            <project-combobox v-model="local_project" label="Project" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <project-combobox v-model="project" />
+            <incident-combobox v-model="local_incident" />
           </v-list-item-content>
         </v-list-item>
       </v-list>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn color="info" text @click="applyFilters()"> Apply Filters </v-btn>
+      </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
@@ -28,6 +32,7 @@
 <script>
 import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
+
 import IncidentCombobox from "@/incident/IncidentCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 
@@ -42,13 +47,27 @@ export default {
   data() {
     return {
       display: false,
+      local_incident: [],
+      local_project: [],
     }
   },
 
   computed: {
     ...mapFields("feedback", ["table.options.filters.incident", "table.options.filters.project"]),
+
     numFilters: function () {
       return sum([this.incident.length, this.project.length])
+    },
+  },
+
+  methods: {
+    applyFilters() {
+      // we set the filter values
+      this.project = this.local_project
+      this.incident = this.local_incident
+
+      // we close the dialog
+      this.display = false
     },
   },
 }

@@ -69,10 +69,11 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
-import RouterUtils from "@/router/utils"
 import DeleteDialog from "@/feedback/DeleteDialog.vue"
-import TableFilterDialog from "@/feedback/TableFilterDialog.vue"
 import Participant from "@/incident/Participant.vue"
+import RouterUtils from "@/router/utils"
+import TableFilterDialog from "@/feedback/TableFilterDialog.vue"
+
 export default {
   name: "FeedbackTable",
 
@@ -84,11 +85,12 @@ export default {
   data() {
     return {
       headers: [
-        { text: "Incident", value: "incident.name", sortable: false },
         { text: "Title", value: "incident.title", sortable: false },
         { text: "Rating", value: "rating", sortable: true },
         { text: "Feedback", value: "feedback", sortable: true },
         { text: "Participant", value: "participant", sortable: true },
+        { text: "Incident", value: "incident.name", sortable: false },
+        { text: "Project", value: "incident.project.name", sortable: false },
         { text: "Created At", value: "created_at", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
