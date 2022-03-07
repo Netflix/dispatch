@@ -136,27 +136,28 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
-import RouterUtils from "@/router/utils"
-import DeleteDialog from "@/task/DeleteDialog.vue"
-import NewEditSheet from "@/task/NewEditSheet.vue"
-import TableFilterDialog from "@/task/TableFilterDialog.vue"
 import BulkEditSheet from "@/task/BulkEditSheet.vue"
+import DeleteDialog from "@/task/DeleteDialog.vue"
 import IncidentPriority from "@/incident/IncidentPriority.vue"
+import NewEditSheet from "@/task/NewEditSheet.vue"
 import Participant from "@/incident/Participant.vue"
+import RouterUtils from "@/router/utils"
 import TableExportDialog from "@/task/TableExportDialog.vue"
+import TableFilterDialog from "@/task/TableFilterDialog.vue"
 
 export default {
   name: "TaskTable",
 
   components: {
-    TableFilterDialog,
-    DeleteDialog,
-    NewEditSheet,
     BulkEditSheet,
+    DeleteDialog,
     IncidentPriority,
+    NewEditSheet,
     Participant,
     TableExportDialog,
+    TableFilterDialog,
   },
+
   data() {
     return {
       headers: [
@@ -221,14 +222,11 @@ export default {
         vm.itemsPerPage,
         vm.sortBy,
         vm.descending,
-        vm.creator,
-        vm.assignee,
+        vm.project,
         vm.incident,
         vm.incident_type,
         vm.incident_priority,
-        vm.project,
         vm.status,
-        vm.project,
       ],
       () => {
         this.page = 1

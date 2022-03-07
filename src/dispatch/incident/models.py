@@ -244,6 +244,7 @@ class IncidentReadNested(IncidentBase):
     incident_priority: IncidentPriorityRead
     incident_type: IncidentTypeRead
     name: Optional[NameStr]
+    project: ProjectRead
     reported_at: Optional[datetime] = None
     reporter: Optional[ParticipantRead]
     stable_at: Optional[datetime] = None
