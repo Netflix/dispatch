@@ -7,45 +7,49 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Column Filters</span>
+        <span class="headline">Incident Filters</span>
       </v-card-title>
       <v-list dense>
         <v-list-item>
           <v-list-item-content>
-            <incident-window-input v-model="reported_at" label="Reported At" />
+            <incident-window-input v-model="local_reported_at" label="Reported At" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <project-combobox v-model="project" label="Projects" />
+            <project-combobox v-model="local_project" label="Projects" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-status-multi-select v-model="status" />
+            <incident-type-combobox v-model="local_incident_type" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-priority-combobox v-model="incident_priority" />
+            <incident-priority-combobox v-model="local_incident_priority" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-type-combobox v-model="incident_type" />
+            <incident-status-multi-select v-model="local_status" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <tag-filter-combobox v-model="tag" label="Tags" />
+            <tag-type-filter-combobox v-model="local_tag_type" label="Tag Types" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <tag-type-filter-combobox v-model="tag_type" label="Tag Types" />
+            <tag-filter-combobox v-model="local_tag" label="Tags" />
           </v-list-item-content>
         </v-list-item>
       </v-list>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn color="info" text @click="applyFilters()"> Apply Filters </v-btn>
+      </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
@@ -53,49 +57,53 @@
 <script>
 import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
-import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
-import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
+
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
-import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
-import ProjectCombobox from "@/project/ProjectCombobox.vue"
+import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
+import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
+import ProjectCombobox from "@/project/ProjectCombobox.vue"
+import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 
 export default {
   name: "IncidentTableFilterDialog",
 
   components: {
-    TagFilterCombobox,
-    IncidentTypeCombobox,
     IncidentPriorityCombobox,
-    TagTypeFilterCombobox,
-    ProjectCombobox,
     IncidentStatusMultiSelect,
+    IncidentTypeCombobox,
     IncidentWindowInput,
+    ProjectCombobox,
+    TagFilterCombobox,
+    TagTypeFilterCombobox,
   },
 
   data() {
     return {
       display: false,
+      local_reported_at: {},
+      local_project: [],
+      local_incident_type: [],
+      local_incident_priority: [],
+      local_status: [],
+      local_tag_type: [],
+      local_tag: [],
     }
   },
 
   computed: {
     ...mapFields("incident", [
-      "table.options.filters.commander",
       "table.options.filters.reported_at",
-      "table.options.filters.reporter",
+      "table.options.filters.project",
       "table.options.filters.incident_type",
       "table.options.filters.incident_priority",
-      "table.options.filters.tag_type",
-      "table.options.filters.project",
       "table.options.filters.status",
+      "table.options.filters.tag_type",
       "table.options.filters.tag",
     ]),
     numFilters: function () {
       return sum([
-        this.reporter.length,
-        this.commander.length,
         this.incident_type.length,
         this.incident_priority.length,
         this.project.length,
@@ -103,6 +111,22 @@ export default {
         this.tag_type.length,
         this.status.length,
       ])
+    },
+  },
+
+  methods: {
+    applyFilters() {
+      // we set the filter values
+      this.reported_at = this.local_reported_at
+      this.project = this.local_project
+      this.incident_type = this.local_incident_type
+      this.incident_priority = this.local_incident_priority
+      this.status = this.local_status
+      this.tag_type = this.local_tag_type
+      this.tag = this.local_tag
+
+      // we close the dialog
+      this.display = false
     },
   },
 }

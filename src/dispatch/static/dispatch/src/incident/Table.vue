@@ -209,9 +209,18 @@ export default {
         vm.sortBy,
         vm.itemsPerPage,
         vm.descending,
+        vm.reported_at.start,
+        vm.reported_at.end,
+        vm.project,
+        vm.incident_type,
+        vm.incident_priority,
+        vm.status,
+        vm.tag_type,
+        vm.tag,
       ],
       () => {
         this.page = 1
+        RouterUtils.updateURLFilters(this.filters)
         this.getAll()
       }
     )
