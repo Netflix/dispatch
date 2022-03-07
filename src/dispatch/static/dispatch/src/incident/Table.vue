@@ -209,23 +209,17 @@ export default {
         vm.sortBy,
         vm.itemsPerPage,
         vm.descending,
-        vm.commander,
-        vm.reporter,
         vm.reported_at.start,
         vm.reported_at.end,
+        vm.project,
         vm.incident_type,
         vm.incident_priority,
-        vm.tag_type,
         vm.status,
+        vm.tag_type,
         vm.tag,
-        vm.project,
       ],
       () => {
         this.page = 1
-
-        // convert cost sort by to total cost
-        //let index = this.sortBy.findIndex((column) => column === "incident_costs")
-        //this.sortBy[index] = "total_cost"
         RouterUtils.updateURLFilters(this.filters)
         this.getAll()
       }
