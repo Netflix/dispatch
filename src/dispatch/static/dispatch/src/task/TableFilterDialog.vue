@@ -35,7 +35,7 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <task-status-multi-select v-model="local_status" label="Statuses"/>
+            <task-status-multi-select v-model="local_status" label="Statuses" />
           </v-list-item-content>
         </v-list-item>
       </v-list>
