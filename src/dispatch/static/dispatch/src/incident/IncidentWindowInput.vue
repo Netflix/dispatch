@@ -9,7 +9,7 @@
     <template v-slot:activator="{ on, attrs }">
       <v-text-field
         v-model="windowRange"
-        label="Reported At"
+        :label="label"
         v-bind="attrs"
         v-on="on"
         clearable
@@ -84,6 +84,10 @@ export default {
         return {}
       },
     },
+    label: {
+      type: String,
+      default: "Reported At",
+    },
   },
 
   data() {
@@ -137,8 +141,10 @@ export default {
         if (Object.keys(this.value).length > 1) {
           return cloneDeep(this.value)
         }
-        let start = subMonths(today(), 6).setHours(0, 0, 0, 0)
-        let end = today().setHours(23, 59, 59, 999)
+        let start = today()
+        let end = today()
+        subMonths(start, 1).setHours(0, 0, 0, 0)
+        end.setHours(23, 59, 59, 999)
         return {
           start: this.toLocalISOString(start),
           end: this.toLocalISOString(end),
