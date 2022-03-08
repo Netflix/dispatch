@@ -31,6 +31,10 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn color="info" text @click="applyFilters()"> Apply Filters </v-btn>
+      </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
@@ -90,6 +94,12 @@ export default {
   },
 
   methods: {
+    applyFilters() {
+      RouterUtils.updateURLFilters(this.filters)
+      this.fetchData()
+      // we close the dialog
+      this.display = false
+    },
     fetchData() {
       let filterOptions = {
         itemsPerPage: -1,
@@ -119,21 +129,6 @@ export default {
   created() {
     this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.query) }
     this.fetchData()
-    this.$watch(
-      (vm) => [
-        vm.filters.reported_at.start,
-        vm.filters.reported_at.end,
-        vm.filters.tag,
-        vm.filters.incident_priority,
-        vm.filters.incident_type,
-        vm.filters.status,
-        vm.filters.project,
-      ],
-      () => {
-        RouterUtils.updateURLFilters(this.filters)
-        this.fetchData()
-      }
-    )
   },
 }
 </script>

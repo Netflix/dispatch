@@ -104,6 +104,7 @@ const actions = {
 
     let params = SearchUtils.createParametersFromTableOptions(
       { ...state.table.options },
+      "Document",
       documentTypes
     )
     return DocumentApi.getAll(params)
