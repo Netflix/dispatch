@@ -88,6 +88,10 @@ const state = {
           start: null,
           end: null,
         },
+        closed_at: {
+          start: null,
+          end: null,
+        },
       },
       q: "",
       page: 1,
