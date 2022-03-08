@@ -42,7 +42,7 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <tag-filter-combobox v-model="local_tag" label="Tags" />
+            <tag-filter-auto-complete v-model="local_tag" label="Tags" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
@@ -67,7 +67,7 @@ import DataFormatCombobox from "@/data/source/dataFormat/DataFormatCombobox.vue"
 import EnvironmentCombobox from "@/data/source/environment/EnvironmentCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import StatusCombobox from "@/data/source/status/StatusCombobox.vue"
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 import TransportCombobox from "@/data/source/transport/TransportCombobox.vue"
 import TypeCombobox from "@/data/source/type/TypeCombobox.vue"
@@ -80,7 +80,7 @@ export default {
     EnvironmentCombobox,
     ProjectCombobox,
     StatusCombobox,
-    TagFilterCombobox,
+    TagFilterAutoComplete,
     TagTypeFilterCombobox,
     TransportCombobox,
     TypeCombobox,

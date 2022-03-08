@@ -53,7 +53,11 @@
               <v-list dense>
                 <v-list-item>
                   <v-list-item-content>
-                    <tag-filter-combobox label="Tags" :project="project" v-model="policy.tags" />
+                    <tag-filter-auto-complete
+                      label="Tags"
+                      :project="project"
+                      v-model="policy.tags"
+                    />
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item>
@@ -111,7 +115,7 @@ import IncidentRoleApi from "@/incident_role/api"
 
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import ServiceSelectNew from "@/service/ServiceSelectNew.vue"
 
 export default {
@@ -138,7 +142,7 @@ export default {
     draggable,
     IncidentTypeCombobox,
     IncidentPriorityCombobox,
-    TagFilterCombobox,
+    TagFilterAutoComplete,
     ServiceSelectNew,
   },
 

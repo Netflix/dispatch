@@ -22,7 +22,7 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <tag-filter-combobox v-model="local_tag" label="Tags" />
+            <tag-filter-auto-complete v-model="local_tag" label="Tags" />
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -39,7 +39,7 @@ import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 
 export default {
@@ -47,7 +47,7 @@ export default {
 
   components: {
     ProjectCombobox,
-    TagFilterCombobox,
+    TagFilterAutoComplete,
     TagTypeFilterCombobox,
   },
 

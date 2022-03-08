@@ -30,7 +30,7 @@
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  <tag-filter-combobox v-model="tag" label="Tags" />
+                  <tag-filter-auto-complete v-model="tag" label="Tags" />
                 </v-list-item-content>
               </v-list-item>
               <v-list-item>
@@ -112,7 +112,7 @@ import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 
 export default {
@@ -161,7 +161,7 @@ export default {
     }
   },
   components: {
-    TagFilterCombobox,
+    TagFilterAutoComplete,
     TagTypeFilterCombobox,
     IncidentTypeCombobox,
     IncidentPriorityCombobox,

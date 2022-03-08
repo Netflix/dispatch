@@ -60,7 +60,7 @@
                 <incident-priority-select :project="project" v-model="incident_priority" />
               </v-flex>
               <v-flex xs12>
-                <tag-filter-combobox :project="project" v-model="tags" label="Tags" />
+                <tag-filter-auto-complete :project="project" v-model="tags" label="Tags" />
               </v-flex>
             </v-layout>
             <template>
@@ -93,7 +93,7 @@ import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import DocumentApi from "@/document/api"
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
 extend("required", {
   ...required,
@@ -109,7 +109,7 @@ export default {
     IncidentTypeSelect,
     IncidentPrioritySelect,
     ProjectSelect,
-    TagFilterCombobox,
+    TagFilterAutoComplete,
   },
   data() {
     return {

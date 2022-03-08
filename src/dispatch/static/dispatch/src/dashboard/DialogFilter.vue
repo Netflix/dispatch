@@ -22,7 +22,7 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <tag-filter-combobox v-model="filters.tag" label="Tags" />
+            <tag-filter-auto-complete v-model="filters.tag" label="Tags" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
@@ -52,7 +52,7 @@ import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombob
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
 let today = function () {
   let now = new Date()
@@ -139,7 +139,7 @@ export default {
     IncidentTypeCombobox,
     IncidentWindowInput,
     ProjectCombobox,
-    TagFilterCombobox,
+    TagFilterAutoComplete,
   },
 
   created() {
