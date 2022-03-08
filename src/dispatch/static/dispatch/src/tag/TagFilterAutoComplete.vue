@@ -1,5 +1,5 @@
 <template>
-  <v-combobox
+  <v-autocomplete
     :items="items"
     :label="label"
     :loading="loading"
@@ -12,6 +12,7 @@
     multiple
     no-filter
     v-model="tags"
+    return-object
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -50,7 +51,7 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-  </v-combobox>
+  </v-autocomplete>
 </template>
 
 <script>
@@ -60,7 +61,7 @@ import SearchUtils from "@/search/utils"
 import TagApi from "@/tag/api"
 
 export default {
-  name: "TagCombobox",
+  name: "TagAutoComplete",
   props: {
     value: {
       type: Array,
