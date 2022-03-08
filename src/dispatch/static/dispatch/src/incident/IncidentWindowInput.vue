@@ -191,10 +191,8 @@ export default {
       }
     },
     toLocalISOString: function (date) {
-      if (typeof date === "object" && date !== null) {
-        let tzOffset = date.getTimezoneOffset() * 60000 // offset in milliseconds
-        return new Date(date - tzOffset).toISOString().slice(0, -1)
-      }
+      let tzOffset = date.getTimezoneOffset() * 60000 // offset in milliseconds
+      return new Date(date - tzOffset).toISOString().slice(0, -1)
     },
   },
 }
