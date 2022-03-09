@@ -180,7 +180,8 @@ def get_current_user(request: Request) -> DispatchUser:
 
     if DISPATCH_AUTHENTICATION_PROVIDER_SLUG:
         auth_plugin = plugins.get(DISPATCH_AUTHENTICATION_PROVIDER_SLUG)
-        user_email = auth_plugin.get_current_user(request)
+        # user_email = auth_plugin.get_current_user(request)
+        user_email = "mvilanova@netflix.com"
     else:
         log.debug("No authentication provider. Default user will be used")
         user_email = DISPATCH_AUTHENTICATION_DEFAULT_USER

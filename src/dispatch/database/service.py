@@ -1,5 +1,12 @@
-import logging
 import json
+import logging
+
+from collections import namedtuple
+from collections.abc import Iterable
+from inspect import signature
+from itertools import chain
+from six import string_types
+from sortedcontainers import SortedSet
 
 from typing import List
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
@@ -9,12 +16,13 @@ from pydantic.types import Json, constr
 from fastapi import Depends, Query
 
 import sqlalchemy
+from sqlalchemy import and_, not_
 from sqlalchemy import or_, orm, func, desc
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy_filters import apply_pagination, apply_sort
 from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
-from sqlalchemy_filters.filters import build_filters
+from sqlalchemy_filters.models import Field, get_model_from_spec
 
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user, get_current_role
@@ -44,29 +52,147 @@ log = logging.getLogger(__file__)
 # allows only printable characters
 QueryStr = constr(regex=r"^[ -~]+$", min_length=1)
 
+BooleanFunction = namedtuple("BooleanFunction", ("key", "sqlalchemy_fn", "only_one_arg"))
+BOOLEAN_FUNCTIONS = [
+    BooleanFunction("or", or_, False),
+    BooleanFunction("and", and_, False),
+    BooleanFunction("not", not_, True),
+]
 
-def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, role: UserRoles):
-    """Adds additional incident filters to query (usually for permissions)."""
-    if role == UserRoles.member:
-        # We filter out resticted incidents for users with a member role if the user is not an incident participant
-        query = (
-            query.join(Participant, Incident.id == Participant.incident_id)
-            .join(IndividualContact)
-            .filter(
-                or_(
-                    Incident.visibility == Visibility.open,
-                    IndividualContact.email == current_user.email,
-                )
-            )
+
+class Operator(object):
+
+    OPERATORS = {
+        "is_null": lambda f: f.is_(None),
+        "is_not_null": lambda f: f.isnot(None),
+        "==": lambda f, a: f == a,
+        "eq": lambda f, a: f == a,
+        "!=": lambda f, a: f != a,
+        "ne": lambda f, a: f != a,
+        ">": lambda f, a: f > a,
+        "gt": lambda f, a: f > a,
+        "<": lambda f, a: f < a,
+        "lt": lambda f, a: f < a,
+        ">=": lambda f, a: f >= a,
+        "ge": lambda f, a: f >= a,
+        "<=": lambda f, a: f <= a,
+        "le": lambda f, a: f <= a,
+        "like": lambda f, a: f.like(a),
+        "ilike": lambda f, a: f.ilike(a),
+        "not_ilike": lambda f, a: ~f.ilike(a),
+        "in": lambda f, a: f.in_(a),
+        "not_in": lambda f, a: ~f.in_(a),
+        "any": lambda f, a: f.any(a),
+        "not_any": lambda f, a: func.not_(f.any(a)),
+    }
+
+    def __init__(self, operator=None):
+        if not operator:
+            operator = "=="
+
+        if operator not in self.OPERATORS:
+            raise BadFilterFormat("Operator `{}` not valid.".format(operator))
+
+        self.operator = operator
+        self.function = self.OPERATORS[operator]
+        self.arity = len(signature(self.function).parameters)
+
+
+class Filter(object):
+    def __init__(self, filter_spec):
+        self.filter_spec = filter_spec
+
+        try:
+            filter_spec["field"]
+        except KeyError:
+            raise BadFilterFormat("`field` is a mandatory filter attribute.")
+        except TypeError:
+            raise BadFilterFormat("Filter spec `{}` should be a dictionary.".format(filter_spec))
+
+        self.operator = Operator(filter_spec.get("op"))
+        self.value = filter_spec.get("value")
+        value_present = True if "value" in filter_spec else False
+        if not value_present and self.operator.arity == 2:
+            raise BadFilterFormat("`value` must be provided.")
+
+    def get_named_models(self):
+        if "model" in self.filter_spec:
+            return {self.filter_spec["model"]}
+        return set()
+
+    def format_for_sqlalchemy(self, query, default_model):
+        filter_spec = self.filter_spec
+        operator = self.operator
+        value = self.value
+
+        model = get_model_from_spec(filter_spec, query, default_model)
+
+        function = operator.function
+        arity = operator.arity
+
+        field_name = self.filter_spec["field"]
+        field = Field(model, field_name)
+        sqlalchemy_field = field.get_sqlalchemy_field()
+
+        if arity == 1:
+            return function(sqlalchemy_field)
+
+        if arity == 2:
+            return function(sqlalchemy_field, value)
+
+
+class BooleanFilter(object):
+    def __init__(self, function, *filters):
+        self.function = function
+        self.filters = filters
+
+    def get_named_models(self):
+        models = SortedSet()
+        for filter in self.filters:
+            models.add(*filter.get_named_models())
+        return models
+
+    def format_for_sqlalchemy(self, query, default_model):
+        return self.function(
+            *[filter.format_for_sqlalchemy(query, default_model) for filter in self.filters]
         )
-    return query.distinct()
 
 
-def restricted_incident_type_filter(query: orm.Query, current_user: DispatchUser):
-    """Adds additional incident type filters to query (usually for permissions)."""
-    if current_user:
-        query = query.filter(IncidentType.visibility == Visibility.open)
-    return query
+def _is_iterable_filter(filter_spec):
+    """`filter_spec` may be a list of nested filter specs, or a dict."""
+    return isinstance(filter_spec, Iterable) and not isinstance(filter_spec, (string_types, dict))
+
+
+def build_filters(filter_spec):
+    """Recursively process `filter_spec`"""
+
+    if _is_iterable_filter(filter_spec):
+        return list(chain.from_iterable(build_filters(item) for item in filter_spec))
+
+    if isinstance(filter_spec, dict):
+        # Check if filter spec defines a boolean function.
+        for boolean_function in BOOLEAN_FUNCTIONS:
+            if boolean_function.key in filter_spec:
+                # The filter spec is for a boolean-function
+                # Get the function argument definitions and validate
+                fn_args = filter_spec[boolean_function.key]
+
+                if not _is_iterable_filter(fn_args):
+                    raise BadFilterFormat(
+                        "`{}` value must be an iterable across the function "
+                        "arguments".format(boolean_function.key)
+                    )
+                if boolean_function.only_one_arg and len(fn_args) != 1:
+                    raise BadFilterFormat(
+                        "`{}` must have one argument".format(boolean_function.key)
+                    )
+                if not boolean_function.only_one_arg and len(fn_args) < 1:
+                    raise BadFilterFormat(
+                        "`{}` must have one or more arguments".format(boolean_function.key)
+                    )
+                return [BooleanFilter(boolean_function.sqlalchemy_fn, *build_filters(fn_args))]
+
+    return [Filter(filter_spec)]
 
 
 def get_query_models(query):
@@ -102,14 +228,9 @@ def get_model_class_by_name(registry, name):
 
 
 def get_named_models(filters):
-    models = set()
-    print(filters)
+    models = []
     for filter in filters:
-        print(filter)
-        named_models = filter.get_named_models()
-        print(named_models)
-        models.update(named_models)
-        print(models)
+        models.append(filter.get_named_models())
     return models
 
 
@@ -125,7 +246,7 @@ def get_default_model(query):
     return default_model
 
 
-def auto_join(query, *model_names):
+def auto_join(query, model_names):
     """Automatically join models to `query` if they're not already present
     and the join can be done implicitly.
     """
@@ -197,12 +318,10 @@ def apply_filters(query, filter_spec, do_auto_join=True):
     """
     filters = build_filters(filter_spec)
     default_model = get_default_model(query)
-    print(filters)
-    filter_models = get_named_models(filters)
-    print(f"filter models: {filter_models}")
+    filter_models = get_named_models(filters)[0]
 
     if do_auto_join:
-        query = auto_join(query, *filter_models)
+        query = auto_join(query, filter_models)
 
     sqlalchemy_filters = [filter.format_for_sqlalchemy(query, default_model) for filter in filters]
 
@@ -216,7 +335,6 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
     """Applies any model specific implicity joins."""
     # this is required because by default sqlalchemy-filter's auto-join
     # knows nothing about how to join many-many relationships.
-    print("apply_filter_specific_joins")
     model_map = {
         (Feedback, "Project"): (Incident, False),
         (Feedback, "Incident"): (Incident, False),
@@ -235,10 +353,9 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
         (Incident, "Term"): (Incident.terms, True),
     }
     filters = build_filters(filter_spec)
-    filter_models = get_named_models(filters)
+    filter_models = get_named_models(filters)[0]
     for filter_model in filter_models:
         if model_map.get((model, filter_model)):
-            print("model_map")
             joined_model, is_outer = model_map[(model, filter_model)]
             try:
                 query = query.join(joined_model, isouter=is_outer)
@@ -353,7 +470,6 @@ def search_filter_sort_paginate(
         query = apply_model_specific_filters(model_cls, query, current_user, role)
 
         if filter_spec:
-            print(filter_spec)
             query = apply_filter_specific_joins(model_cls, filter_spec, query)
             query = apply_filters(query, filter_spec)
 
@@ -391,22 +507,33 @@ def search_filter_sort_paginate(
             "total": 0,
         }
 
-    # if model == "Incident":
-    #     statement = query.statement
-    #     print(statement)
-    #
-    #     results = query.all()
-    #
-    #     for result in results:
-    #         print(
-    #             result.name, result.incident_type.name, result.incident_type.id, result.project.name
-    #         )
-    #
-    #     print(pagination.page_size, pagination.page_number, pagination.total_results)
-
     return {
         "items": query.all(),
         "itemsPerPage": pagination.page_size,
         "page": pagination.page_number,
         "total": pagination.total_results,
     }
+
+
+def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, role: UserRoles):
+    """Adds additional incident filters to query (usually for permissions)."""
+    if role == UserRoles.member:
+        # We filter out resticted incidents for users with a member role if the user is not an incident participant
+        query = (
+            query.join(Participant, Incident.id == Participant.incident_id)
+            .join(IndividualContact)
+            .filter(
+                or_(
+                    Incident.visibility == Visibility.open,
+                    IndividualContact.email == current_user.email,
+                )
+            )
+        )
+    return query.distinct()
+
+
+def restricted_incident_type_filter(query: orm.Query, current_user: DispatchUser):
+    """Adds additional incident type filters to query (usually for permissions)."""
+    if current_user:
+        query = query.filter(IncidentType.visibility == Visibility.open)
+    return query
