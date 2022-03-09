@@ -14,7 +14,7 @@ from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy_filters import apply_pagination, apply_sort
 from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
-from sqlalchemy_filters.filters import build_filters, get_named_models
+from sqlalchemy_filters.filters import build_filters
 
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user, get_current_role
@@ -101,6 +101,18 @@ def get_model_class_by_name(registry, name):
             return cls
 
 
+def get_named_models(filters):
+    models = set()
+    print(filters)
+    for filter in filters:
+        print(filter)
+        named_models = filter.get_named_models()
+        print(named_models)
+        models.update(named_models)
+        print(models)
+    return models
+
+
 def get_default_model(query):
     """Return the singular model from `query`, or `None` if `query` contains
     multiple models.
@@ -183,25 +195,19 @@ def apply_filters(query, filter_spec, do_auto_join=True):
         The :class:`sqlalchemy.orm.Query` instance after all the filters
         have been applied.
     """
-    print("hello")
     filters = build_filters(filter_spec)
-    print(filters)
-
     default_model = get_default_model(query)
-    print(default_model)
-
+    print(filters)
     filter_models = get_named_models(filters)
-    print(filter_models)
+    print(f"filter models: {filter_models}")
+
     if do_auto_join:
-        print("auto_join")
         query = auto_join(query, *filter_models)
-        print(query.statement)
 
     sqlalchemy_filters = [filter.format_for_sqlalchemy(query, default_model) for filter in filters]
 
     if sqlalchemy_filters:
         query = query.filter(*sqlalchemy_filters)
-        print(query.statement)
 
     return query
 
@@ -210,6 +216,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
     """Applies any model specific implicity joins."""
     # this is required because by default sqlalchemy-filter's auto-join
     # knows nothing about how to join many-many relationships.
+    print("apply_filter_specific_joins")
     model_map = {
         (Feedback, "Project"): (Incident, False),
         (Feedback, "Incident"): (Incident, False),
@@ -231,6 +238,7 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
     filter_models = get_named_models(filters)
     for filter_model in filter_models:
         if model_map.get((model, filter_model)):
+            print("model_map")
             joined_model, is_outer = model_map[(model, filter_model)]
             try:
                 query = query.join(joined_model, isouter=is_outer)
@@ -345,6 +353,7 @@ def search_filter_sort_paginate(
         query = apply_model_specific_filters(model_cls, query, current_user, role)
 
         if filter_spec:
+            print(filter_spec)
             query = apply_filter_specific_joins(model_cls, filter_spec, query)
             query = apply_filters(query, filter_spec)
 
@@ -374,7 +383,6 @@ def search_filter_sort_paginate(
     try:
         query, pagination = apply_pagination(query, page_number=page, page_size=items_per_page)
     except sqlalchemy.exc.ProgrammingError as e:
-        print("Exception")
         log.debug(e)
         return {
             "items": [],
@@ -383,18 +391,18 @@ def search_filter_sort_paginate(
             "total": 0,
         }
 
-    if model == "Incident":
-        statement = query.statement
-        print(statement)
-
-        results = query.all()
-
-        for result in results:
-            print(
-                result.name, result.incident_type.name, result.incident_type.id, result.project.name
-            )
-
-        print(pagination.page_size, pagination.page_number, pagination.total_results)
+    # if model == "Incident":
+    #     statement = query.statement
+    #     print(statement)
+    #
+    #     results = query.all()
+    #
+    #     for result in results:
+    #         print(
+    #             result.name, result.incident_type.name, result.incident_type.id, result.project.name
+    #         )
+    #
+    #     print(pagination.page_size, pagination.page_number, pagination.total_results)
 
     return {
         "items": query.all(),

@@ -31,7 +31,7 @@
                     <v-list dense>
                       <v-list-item>
                         <v-list-item-content>
-                          <tag-filter-combobox
+                          <tag-filter-auto-complete
                             :project="project"
                             v-model="filters.tag"
                             label="Tags"
@@ -175,7 +175,7 @@ import { mapActions } from "vuex"
 
 import IncidentApi from "@/incident/api"
 import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
@@ -229,7 +229,7 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
-    TagFilterCombobox,
+    TagFilterAutoComplete,
     IncidentTypeCombobox,
     IncidentPriorityCombobox,
     TagTypeFilterCombobox,

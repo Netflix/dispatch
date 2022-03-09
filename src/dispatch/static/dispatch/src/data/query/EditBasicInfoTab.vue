@@ -36,7 +36,7 @@
         <source-select v-model="source" :project="project" />
       </v-flex>
       <v-flex xs12>
-        <tag-filter-combobox
+        <tag-filter-auto-complete
           label="Tags"
           v-model="tags"
           :project="project"
@@ -53,7 +53,7 @@ import { mapFields } from "vuex-map-fields"
 import { ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import SourceSelect from "@/data/source/SourceSelect.vue"
 
@@ -67,7 +67,7 @@ export default {
 
   components: {
     ValidationProvider,
-    TagFilterCombobox,
+    TagFilterAutoComplete,
     ProjectSelect,
     SourceSelect,
   },

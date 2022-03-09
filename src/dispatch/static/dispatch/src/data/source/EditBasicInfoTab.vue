@@ -82,7 +82,7 @@
         />
       </v-flex>
       <v-flex xs12>
-        <tag-filter-combobox
+        <tag-filter-auto-complete
           label="Tags"
           v-model="tags"
           model="source"
@@ -107,7 +107,7 @@ import { ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
 import ServiceSelect from "@/service/ServiceSelect.vue"
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import EnvironmentSelect from "@/data/source/environment/EnvironmentSelect.vue"
 import StatusSelect from "@/data/source/status/StatusSelect.vue"
@@ -126,7 +126,7 @@ export default {
   components: {
     ValidationProvider,
     ServiceSelect,
-    TagFilterCombobox,
+    TagFilterAutoComplete,
     ProjectSelect,
     EnvironmentSelect,
     StatusSelect,

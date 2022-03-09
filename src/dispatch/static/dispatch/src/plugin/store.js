@@ -51,7 +51,7 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options })
+    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options }, "Plugin")
     return PluginApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
@@ -63,7 +63,7 @@ const actions = {
   }, 500),
   getAllInstances: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options })
+    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options }, "Plugin")
     return PluginApi.getAllInstances(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)

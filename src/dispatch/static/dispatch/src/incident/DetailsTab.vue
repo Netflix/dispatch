@@ -103,7 +103,7 @@
         </v-row>
       </v-flex>
       <v-flex xs12>
-        <tag-filter-combobox label="Tags" v-model="tags" model="incident" :model-id="id" />
+        <tag-filter-auto-complete label="Tags" v-model="tags" model="incident" :model-id="id" />
       </v-flex>
       <v-flex xs12>
         <incident-filter-combobox label="Duplicates" v-model="duplicates" :project="project" />
@@ -120,7 +120,7 @@ import ProjectSelect from "@/project/ProjectSelect.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 
@@ -137,7 +137,7 @@ export default {
     IncidentPrioritySelect,
     IncidentTypeSelect,
     ParticipantSelect,
-    TagFilterCombobox,
+    TagFilterAutoComplete,
     IncidentFilterCombobox,
     ProjectSelect,
     DateTimePickerMenu,

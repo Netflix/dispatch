@@ -26,8 +26,8 @@ export default {
   mapTableOptionsToQueryParams(options, queryParams) {
     return options, queryParams
   },
-  createParametersFromTableOptions(options, rawFilters) {
-    let expression = this.createFilterExpression(options.filters)
+  createParametersFromTableOptions(options, model, rawFilters) {
+    let expression = this.createFilterExpression(options.filters, model)
     delete options.filters
 
     if (!expression.length) {
@@ -47,7 +47,7 @@ export default {
 
     return { ...options, filter: JSON.stringify(expression) }
   },
-  createFilterExpression(filters) {
+  createFilterExpression(filters, model) {
     let filterExpression = []
     forEach(filters, function (value, key) {
       let subFilter = []
@@ -56,8 +56,8 @@ export default {
         if (value.start) {
           subFilter.push({
             and: [
-              { model: "Incident", field: key, op: ">=", value: value.start },
-              { model: "Incident", field: key, op: "<=", value: value.end },
+              { model: model, field: key, op: ">=", value: value.start },
+              { model: model, field: key, op: "<=", value: value.end },
             ],
           })
         }
@@ -92,8 +92,7 @@ export default {
               })
             }
           } else {
-            // TODO support other models
-            subFilter.push({ model: "Incident", field: key, op: "==", value: value })
+            subFilter.push({ model: model, field: key, op: "==", value: value })
           }
         })
       }

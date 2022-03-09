@@ -17,6 +17,11 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
+            <incident-window-input v-model="local_closed_at" label="Closed At" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
             <project-combobox v-model="local_project" label="Projects" />
           </v-list-item-content>
         </v-list-item>
@@ -42,7 +47,7 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <tag-filter-combobox v-model="local_tag" label="Tags" />
+            <tag-filter-auto-complete v-model="local_tag" label="Tags" />
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -63,7 +68,7 @@ import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
-import TagFilterCombobox from "@/tag/TagFilterCombobox.vue"
+import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 
 export default {
@@ -75,7 +80,7 @@ export default {
     IncidentTypeCombobox,
     IncidentWindowInput,
     ProjectCombobox,
-    TagFilterCombobox,
+    TagFilterAutoComplete,
     TagTypeFilterCombobox,
   },
 
@@ -83,6 +88,7 @@ export default {
     return {
       display: false,
       local_reported_at: {},
+      local_closed_at: {},
       local_project: [],
       local_incident_type: [],
       local_incident_priority: [],
@@ -95,6 +101,7 @@ export default {
   computed: {
     ...mapFields("incident", [
       "table.options.filters.reported_at",
+      "table.options.filters.closed_at",
       "table.options.filters.project",
       "table.options.filters.incident_type",
       "table.options.filters.incident_priority",
@@ -118,6 +125,7 @@ export default {
     applyFilters() {
       // we set the filter values
       this.reported_at = this.local_reported_at
+      this.closed_at = this.local_closed_at
       this.project = this.local_project
       this.incident_type = this.local_incident_type
       this.incident_priority = this.local_incident_priority

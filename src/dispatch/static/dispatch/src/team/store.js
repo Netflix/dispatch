@@ -55,7 +55,7 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options })
+    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options }, "Team")
     return TeamApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)

@@ -88,6 +88,10 @@ const state = {
           start: null,
           end: null,
         },
+        closed_at: {
+          start: null,
+          end: null,
+        },
       },
       q: "",
       page: 1,
@@ -111,7 +115,10 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options })
+    let params = SearchUtils.createParametersFromTableOptions(
+      { ...state.table.options },
+      "Incident"
+    )
     return IncidentApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)

@@ -67,6 +67,14 @@
                 <span>{{ item.reported_at | formatDate }}</span>
               </v-tooltip>
             </template>
+            <template v-slot:item.closed_at="{ item }">
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <span v-bind="attrs" v-on="on">{{ item.closed_at | formatRelativeDate }}</span>
+                </template>
+                <span>{{ item.closed_at | formatDate }}</span>
+              </v-tooltip>
+            </template>
             <template v-slot:item.data-table-actions="{ item }">
               <v-menu bottom left>
                 <template v-slot:activator="{ on }">
@@ -151,6 +159,7 @@ export default {
         { text: "Commander", value: "commander", sortable: false },
         { text: "Cost", value: "incident_costs", sortable: false },
         { text: "Reported At", value: "reported_at" },
+        { text: "Closed At", value: "closed_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
       showEditSheet: false,
