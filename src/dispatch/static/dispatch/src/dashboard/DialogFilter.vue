@@ -17,6 +17,11 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
+            <incident-window-input label="Closed At" v-model="filters.closed_at" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
             <project-combobox v-model="filters.project" label="Projects" />
           </v-list-item-content>
         </v-list-item>
@@ -78,8 +83,12 @@ export default {
         status: [],
         tag: [],
         reported_at: {
-          start: subMonths(today(), 6).toISOString().substr(0, 10),
-          end: today().toISOString().substr(0, 10),
+          start: null,
+          end: null,
+        },
+        closed_at: {
+          start: null,
+          end: null,
         },
       },
     }
@@ -153,7 +162,19 @@ export default {
   },
 
   created() {
-    this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.query) }
+    this.filters = {
+      ...this.filters,
+      ...RouterUtils.deserializeFilters(this.query),
+    }
+    this.filters = {
+      ...this.filters,
+      ...{
+        reported_at: {
+          start: subMonths(today(), 1).toISOString().substr(0, 10),
+          end: today().toISOString().substr(0, 10),
+        },
+      },
+    }
     this.fetchData()
   },
 }

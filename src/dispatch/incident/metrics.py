@@ -12,7 +12,7 @@ from statsmodels.tsa.api import ExponentialSmoothing
 
 from sqlalchemy import and_
 
-from dispatch.database.service import apply_filters
+from dispatch.database.service import apply_filters, apply_filter_specific_joins
 from dispatch.incident_type.models import IncidentType
 
 from .models import Incident
@@ -38,9 +38,9 @@ def create_incident_metric_query(
     filter_spec: List[dict] = None,
 ):
     """Fetches eligible incidents."""
-    query = db_session.query(Incident).join(IncidentType).join(Incident.tags)
-
+    query = db_session.query(Incident)
     if filter_spec:
+        query = apply_filter_specific_joins(Incident, filter_spec, query)
         query = apply_filters(query, filter_spec)
 
     if start_date:
