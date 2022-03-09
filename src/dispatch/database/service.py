@@ -8,29 +8,28 @@ from pydantic.types import Json, constr
 
 from fastapi import Depends, Query
 
-from sqlalchemy import or_, orm, func, desc
 import sqlalchemy
-
-from sqlalchemy_filters import apply_pagination, apply_sort, apply_filters
+from sqlalchemy import or_, orm, func, desc
+from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy.orm.mapper import Mapper
+from sqlalchemy_filters import apply_pagination, apply_sort
 from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
 from sqlalchemy_filters.filters import build_filters, get_named_models
 
-
-from dispatch.exceptions import FieldNotFoundError, InvalidFilterError
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user, get_current_role
-from dispatch.enums import UserRoles, Visibility
-from dispatch.incident.models import Incident
-from dispatch.feedback.models import Feedback
-from dispatch.task.models import Task
-from dispatch.plugin.models import Plugin, PluginInstance
-from dispatch.data.source.models import Source
 from dispatch.data.query.models import Query as QueryModel
+from dispatch.data.source.models import Source
+from dispatch.enums import UserRoles, Visibility
+from dispatch.exceptions import FieldNotFoundError, InvalidFilterError
+from dispatch.feedback.models import Feedback
+from dispatch.incident.models import Incident
 from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
 from dispatch.participant.models import Participant
+from dispatch.plugin.models import Plugin, PluginInstance
 from dispatch.search.fulltext.composite_search import CompositeSearch
-
+from dispatch.task.models import Task
 
 from .core import (
     Base,
@@ -70,6 +69,68 @@ def restricted_incident_type_filter(query: orm.Query, current_user: DispatchUser
     return query
 
 
+def get_query_models(query):
+    """Get models from query.
+
+    :param query:
+        A :class:`sqlalchemy.orm.Query` instance.
+
+    :returns:
+        A dictionary with all the models included in the query.
+    """
+    models = [col_desc["entity"] for col_desc in query.column_descriptions]
+    models.extend(mapper.class_ for mapper in query._join_entities)
+
+    # account also query.select_from entities
+    if hasattr(query, "_select_from_entity") and (query._select_from_entity is not None):
+        model_class = (
+            query._select_from_entity.class_
+            if isinstance(query._select_from_entity, Mapper)  # sqlalchemy>=1.1
+            else query._select_from_entity  # sqlalchemy==1.0
+        )
+        if model_class not in models:
+            models.append(model_class)
+
+    return {model.__name__: model for model in models}
+
+
+def get_model_class_by_name(registry, name):
+    """Return the model class matching `name` in the given `registry`."""
+    for cls in registry.values():
+        if getattr(cls, "__name__", None) == name:
+            return cls
+
+
+def get_default_model(query):
+    """Return the singular model from `query`, or `None` if `query` contains
+    multiple models.
+    """
+    query_models = get_query_models(query).values()
+    if len(query_models) == 1:
+        (default_model,) = iter(query_models)
+    else:
+        default_model = None
+    return default_model
+
+
+def auto_join(query, *model_names):
+    """Automatically join models to `query` if they're not already present
+    and the join can be done implicitly.
+    """
+    # every model has access to the registry, so we can use any from the query
+    query_models = get_query_models(query).values()
+    model_registry = list(query_models)[-1]._decl_class_registry
+
+    for name in model_names:
+        model = get_model_class_by_name(model_registry, name)
+        if model not in get_query_models(query).values():
+            try:
+                query = query.join(model)
+            except InvalidRequestError:
+                pass  # can't be autojoined
+    return query
+
+
 def apply_model_specific_filters(
     model: Base, query: orm.Query, current_user: DispatchUser, role: UserRoles
 ):
@@ -83,6 +144,64 @@ def apply_model_specific_filters(
 
     for f in filters:
         query = f(query, current_user, role)
+
+    return query
+
+
+def apply_filters(query, filter_spec, do_auto_join=True):
+    """Apply filters to a SQLAlchemy query.
+
+    :param query:
+        A :class:`sqlalchemy.orm.Query` instance.
+
+    :param filter_spec:
+        A dict or an iterable of dicts, where each one includes
+        the necesary information to create a filter to be applied to the
+        query.
+
+        Example::
+
+            filter_spec = [
+                {'model': 'Foo', 'field': 'name', 'op': '==', 'value': 'foo'},
+            ]
+
+        If the query being modified refers to a single model, the `model` key
+        may be omitted from the filter spec.
+
+        Filters may be combined using boolean functions.
+
+        Example:
+
+            filter_spec = {
+                'or': [
+                    {'model': 'Foo', 'field': 'id', 'op': '==', 'value': '1'},
+                    {'model': 'Bar', 'field': 'id', 'op': '==', 'value': '2'},
+                ]
+            }
+
+    :returns:
+        The :class:`sqlalchemy.orm.Query` instance after all the filters
+        have been applied.
+    """
+    print("hello")
+    filters = build_filters(filter_spec)
+    print(filters)
+
+    default_model = get_default_model(query)
+    print(default_model)
+
+    filter_models = get_named_models(filters)
+    print(filter_models)
+    if do_auto_join:
+        print("auto_join")
+        query = auto_join(query, *filter_models)
+        print(query.statement)
+
+    sqlalchemy_filters = [filter.format_for_sqlalchemy(query, default_model) for filter in filters]
+
+    if sqlalchemy_filters:
+        query = query.filter(*sqlalchemy_filters)
+        print(query.statement)
 
     return query
 
@@ -110,7 +229,6 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
     }
     filters = build_filters(filter_spec)
     filter_models = get_named_models(filters)
-
     for filter_model in filter_models:
         if model_map.get((model, filter_model)):
             joined_model, is_outer = model_map[(model, filter_model)]
@@ -256,6 +374,7 @@ def search_filter_sort_paginate(
     try:
         query, pagination = apply_pagination(query, page_number=page, page_size=items_per_page)
     except sqlalchemy.exc.ProgrammingError as e:
+        print("Exception")
         log.debug(e)
         return {
             "items": [],
@@ -263,6 +382,19 @@ def search_filter_sort_paginate(
             "page": page,
             "total": 0,
         }
+
+    if model == "Incident":
+        statement = query.statement
+        print(statement)
+
+        results = query.all()
+
+        for result in results:
+            print(
+                result.name, result.incident_type.name, result.incident_type.id, result.project.name
+            )
+
+        print(pagination.page_size, pagination.page_number, pagination.total_results)
 
     return {
         "items": query.all(),
