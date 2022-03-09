@@ -15,10 +15,8 @@ from pydantic.types import Json, constr
 
 from fastapi import Depends, Query
 
-import sqlalchemy
-from sqlalchemy import and_, not_
-from sqlalchemy import or_, orm, func, desc
-from sqlalchemy.exc import InvalidRequestError
+from sqlalchemy import and_, not_, or_, orm, func, desc
+from sqlalchemy.exc import InvalidRequestError, ProgrammingError
 from sqlalchemy.orm.mapper import Mapper
 from sqlalchemy_filters import apply_pagination, apply_sort
 from sqlalchemy_filters.exceptions import BadFilterFormat, FieldNotFound
@@ -498,7 +496,7 @@ def search_filter_sort_paginate(
     # https://www.postgresql.org/docs/current/textsearch-controls.html
     try:
         query, pagination = apply_pagination(query, page_number=page, page_size=items_per_page)
-    except sqlalchemy.exc.ProgrammingError as e:
+    except ProgrammingError as e:
         log.debug(e)
         return {
             "items": [],
