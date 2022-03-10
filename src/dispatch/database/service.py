@@ -147,7 +147,9 @@ class BooleanFilter(object):
     def get_named_models(self):
         models = SortedSet()
         for filter in self.filters:
-            models.add(*filter.get_named_models())
+            named_models = filter.get_named_models()
+            if named_models:
+                models.add(*named_models)
         return models
 
     def format_for_sqlalchemy(self, query, default_model):
@@ -163,7 +165,6 @@ def _is_iterable_filter(filter_spec):
 
 def build_filters(filter_spec):
     """Recursively process `filter_spec`"""
-
     if _is_iterable_filter(filter_spec):
         return list(chain.from_iterable(build_filters(item) for item in filter_spec))
 
