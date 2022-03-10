@@ -7,7 +7,7 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Filters</span>
+        <span class="headline">Dashboard Task Filters</span>
       </v-card-title>
       <v-list dense>
         <v-list-item>

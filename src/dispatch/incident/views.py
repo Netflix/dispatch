@@ -304,7 +304,7 @@ def get_incident_forecast(
         if i == 1:
             incidents = create_incident_metric_query(
                 db_session=db_session,
-                filter_spec=common['filter_spec'],
+                filter_spec=common["filter_spec"],
                 end_date=end_date,
             )
             predicted_months, predicted_counts = make_forecast(incidents=incidents)
@@ -313,7 +313,7 @@ def get_incident_forecast(
 
         else:
             incidents = create_incident_metric_query(
-                db_session=db_session, filter_spec=common['filter_spec'], end_date=end_date
+                db_session=db_session, filter_spec=common["filter_spec"], end_date=end_date
             )
 
             # get only first predicted month for completed months
@@ -324,7 +324,10 @@ def get_incident_forecast(
 
         # get actual month counts
         incidents = create_incident_metric_query(
-            db_session=db_session, filter_spec=common['filter_spec'], end_date=end_date, start_date=start_date
+            db_session=db_session,
+            filter_spec=common["filter_spec"],
+            end_date=end_date,
+            start_date=start_date,
         )
 
         actual.append(len(incidents))
