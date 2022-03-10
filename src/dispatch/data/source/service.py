@@ -76,7 +76,7 @@ def create(*, db_session, source_in: SourceCreate) -> Source:
                 "source_data_format",
                 "source_transport",
                 "source_status",
-                "source_type"
+                "source_type",
             }
         ),
         project=project,
@@ -183,8 +183,8 @@ def update(*, db_session, source: Source, source_in: SourceUpdate) -> Source:
             "source_data_format",
             "source_transport",
             "source_status",
-            "source_type"
-        }
+            "source_type",
+        },
     )
 
     if source_in.owner:
