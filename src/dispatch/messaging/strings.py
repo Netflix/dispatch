@@ -252,6 +252,7 @@ INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_DESCRIPTION = """
 Thanks for closing incident {{name}}. Please, take a minute to review and update the following incident information in the <{{dispatch_ui_incident_url}}|Dispatch Web UI>:
 \n • Incident Title: {{title}}
 \n • Incident Description: {{description}}
+\n • Incident Resolution: {{resolution}}
 \n • Incident Type: {{type}}
 \n • Incident Priority: {{priority}}
 \n\n
