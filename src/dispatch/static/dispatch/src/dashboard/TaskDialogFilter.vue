@@ -7,12 +7,12 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Filters</span>
+        <span class="headline">Dashboard Task Filters</span>
       </v-card-title>
       <v-list dense>
         <v-list-item>
           <v-list-item-content>
-            <incident-window-input v-model="filters.reported_at" />
+            <incident-window-input v-model="filters.created_at" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
@@ -71,7 +71,7 @@ export default {
         incident_priority: [],
         status: [],
         tag: [],
-        reported_at: {
+        created_at: {
           start: subMonths(today(), 6).toISOString().substr(0, 10),
           end: today().toISOString().substr(0, 10),
         },
