@@ -173,16 +173,16 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     duplicates = relationship("Incident", remote_side=[id], uselist=True)
 
     commander_id = Column(Integer, ForeignKey("participant.id"))
-    commander = relationship("Participant", foreign_keys=[commander_id])
+    commander = relationship("Participant", foreign_keys=[commander_id], post_update=True)
 
     reporter_id = Column(Integer, ForeignKey("participant.id"))
-    reporter = relationship("Participant", foreign_keys=[reporter_id])
+    reporter = relationship("Participant", foreign_keys=[reporter_id], post_update=True)
 
     liaison_id = Column(Integer, ForeignKey("participant.id"))
-    liaison = relationship("Participant", foreign_keys=[liaison_id])
+    liaison = relationship("Participant", foreign_keys=[liaison_id], post_update=True)
 
     scribe_id = Column(Integer, ForeignKey("participant.id"))
-    scribe = relationship("Participant", foreign_keys=[scribe_id])
+    scribe = relationship("Participant", foreign_keys=[scribe_id], post_update=True)
 
     incident_document_id = Column(Integer, ForeignKey("document.id"))
     incident_document = relationship("Document", foreign_keys=[incident_document_id])
