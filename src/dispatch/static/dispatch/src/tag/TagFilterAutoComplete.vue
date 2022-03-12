@@ -1,5 +1,5 @@
 <template>
-  <v-autocomplete
+  <v-combobox
     :items="items"
     :label="label"
     :loading="loading"
@@ -7,12 +7,11 @@
     @update:search-input="getFilteredData()"
     chips
     clearable
-    hide-selected
     item-text="name"
+    hide-selected
     multiple
     no-filter
     v-model="tags"
-    return-object
   >
     <template v-slot:no-data>
       <v-list-item>
@@ -51,7 +50,7 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-  </v-autocomplete>
+  </v-combobox>
 </template>
 
 <script>
