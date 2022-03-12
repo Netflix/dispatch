@@ -142,10 +142,8 @@ export default {
         ],
       }
 
-      filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
-
       this.$emit("loading", "error")
-      this.$emit("filterOptions", filterOptions)
+      filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
       IncidentApi.getAll(filterOptions).then((response) => {
         this.$emit("update", response.data.items)
         this.$emit("loading", false)
@@ -164,16 +162,13 @@ export default {
   created() {
     this.filters = {
       ...this.filters,
-      ...RouterUtils.deserializeFilters(this.query),
-    }
-    this.filters = {
-      ...this.filters,
       ...{
         reported_at: {
           start: subMonths(today(), 1).toISOString().substr(0, 10),
           end: today().toISOString().substr(0, 10),
         },
       },
+      ...RouterUtils.deserializeFilters(this.query), // Order matters as values will overwrite
     }
     this.fetchData()
   },
