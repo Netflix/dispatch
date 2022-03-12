@@ -65,6 +65,7 @@ export default {
     fetchData() {
       this.error = null
       this.loading = "error"
+
       let filterOptions = {
         itemsPerPage: 50,
         sortBy: ["name"],
