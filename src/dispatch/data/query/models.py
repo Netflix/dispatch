@@ -49,7 +49,7 @@ class QueryBase(DispatchBase):
     language: Optional[str] = Field(None, nullable=True)
     text: Optional[str] = Field(None, nullable=True)
     tags: Optional[List[TagRead]] = []
-    source: Optional[SourceRead]
+    source: SourceRead
     project: ProjectRead
 
 
