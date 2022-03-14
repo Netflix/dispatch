@@ -83,12 +83,9 @@ export default {
         this.search = null
         this._individuals = value.map((v) => {
           if (typeof v === "string") {
-            v = {
-              name: v,
-            }
-            this.items.push(v)
+            return false
           }
-          return v
+          return true
         })
         this.$emit("input", this._individuals)
       },

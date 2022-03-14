@@ -66,14 +66,11 @@ export default {
       },
       set(value) {
         this.search = null
-        this._terms = value.map((v) => {
+        this._terms = value.filter((v) => {
           if (typeof v === "string") {
-            v = {
-              text: v,
-            }
-            this.items.push(v)
+            return false
           }
-          return v
+          return true
         })
         this.$emit("input", this._terms)
       },

@@ -100,14 +100,11 @@ export default {
       },
       set(value) {
         this.search = null
-        this._incidentTypes = value.map((v) => {
+        this._incidentTypes = value.filter((v) => {
           if (typeof v === "string") {
-            v = {
-              name: v,
-            }
-            this.items.push(v)
+            return false
           }
-          return v
+          return true
         })
         this.$emit("input", this._incidentTypes)
       },
