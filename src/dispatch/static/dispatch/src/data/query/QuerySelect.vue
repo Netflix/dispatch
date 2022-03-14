@@ -1,67 +1,78 @@
 <template>
-  <v-autocomplete
-    v-model="query"
+  <v-combobox
     :items="items"
-    item-text="name"
-    :search-input.sync="search"
-    :menu-props="{ maxHeight: '400' }"
-    hide-selected
     :label="label"
-    close
-    clearable
     :loading="loading"
-    return-object
-    no-filter
+    :menu-props="{ maxHeight: '400' }"
+    :search-input.sync="search"
+    @update:search-input="getFilteredData({ q: $event })"
+    item-text="name"
+    clearable
+    v-model="query"
   >
-    <template v-slot:selection="{ attr, on, item, selected }">
-      <v-chip v-bind="attr" :input-value="selected" v-on="on">
-        <span v-text="item.name" />
-      </v-chip>
-    </template>
-    <template v-slot:item="{ item }">
-      <v-list-item-content>
-        <v-list-item-title v-text="item.name" />
-        <v-list-item-subtitle v-text="item.description" />
-      </v-list-item-content>
-    </template>
     <template v-slot:no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No queries matching "
-            <strong>{{ search }}</strong
-            >".
+            No querys matching
+            <strong>"{{ search }}"</strong>
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
     </template>
-  </v-autocomplete>
+    <template v-slot:selection="{ item }">
+      {{ item.name }}
+    </template>
+    <template v-slot:item="data">
+      <v-list-item-content>
+        <v-list-item-title>
+          {{ data.item.name }}
+        </v-list-item-title>
+        <v-list-item-subtitle style="width: 200px" class="text-truncate">
+          {{ data.item.description }}
+        </v-list-item-subtitle>
+      </v-list-item-content>
+    </template>
+    <template v-slot:append-item>
+      <v-list-item v-if="more" @click="loadMore()">
+        <v-list-item-content>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
+  </v-combobox>
 </template>
 
 <script>
+import { cloneDeep, debounce } from "lodash"
+
+import SearchUtils from "@/search/utils"
 import QueryApi from "@/data/query/api"
-import { cloneDeep } from "lodash"
+
 export default {
   name: "QuerySelect",
   props: {
     value: {
       type: Object,
       default: function () {
-        return null
+        return {}
       },
     },
     label: {
       type: String,
-      default: function () {
-        return "Query"
-      },
+      default: "Query",
+    },
+    project: {
+      type: Object,
+      default: null,
     },
   },
-
   data() {
     return {
       loading: false,
       items: [],
+      more: false,
+      numItems: 5,
       search: null,
     }
   },
@@ -72,38 +83,66 @@ export default {
         return cloneDeep(this.value)
       },
       set(value) {
-        this.$emit("input", value)
+        if (typeof value !== "string") {
+          this.$emit("input", value)
+        }
       },
     },
   },
 
-  watch: {
-    search(val) {
-      val && val !== this.select && this.querySelections(val)
-    },
-    value(val) {
-      if (!val) return
-      this.items.push(val)
-    },
+  created() {
+    this.fetchData()
+    this.$watch(
+      (vm) => [vm.project],
+      () => {
+        this.fetchData()
+      }
+    )
   },
 
   methods: {
-    querySelections(v) {
+    loadMore() {
+      this.numItems = this.numItems + 5
+      this.fetchData()
+    },
+    fetchData() {
+      this.error = null
       this.loading = "error"
-      QueryApi.getAll({ q: v }).then((response) => {
+
+      let filterOptions = {
+        q: this.search,
+        itemsPerPage: this.numItems,
+        sortBy: ["name"],
+        descending: [false],
+      }
+
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+      }
+
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+
+      QueryApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
+        this.total = response.data.total
+
+        if (this.items.length < this.total) {
+          this.more = true
+        } else {
+          this.more = false
+        }
+
         this.loading = false
       })
     },
-  },
-
-  created() {
-    this.error = null
-    this.loading = "error"
-    QueryApi.getAll().then((response) => {
-      this.items = response.data.items
-      this.loading = false
-    })
+    getFilteredData: debounce(function () {
+      this.fetchData()
+    }, 500),
   },
 }
 </script>

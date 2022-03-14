@@ -1,37 +1,56 @@
 <template>
-  <v-select
-    v-model="source"
+  <v-combobox
     :items="items"
-    :menu-props="{ maxHeight: '400' }"
-    item-text="name"
-    label="Source"
-    return-object
+    :label="label"
     :loading="loading"
+    :menu-props="{ maxHeight: '400' }"
+    :search-input.sync="search"
+    @update:search-input="getFilteredData({ q: $event })"
+    item-text="name"
+    clearable
+    v-model="source"
   >
-    <template v-slot:item="data">
-      <template>
+    <template v-slot:no-data>
+      <v-list-item>
         <v-list-item-content>
-          <v-list-item-title v-text="data.item.name" />
-          <v-list-item-subtitle
-            style="width: 200px"
-            class="text-truncate"
-            v-text="data.item.description"
-          />
+          <v-list-item-title>
+            No sources matching
+            <strong>"{{ search }}"</strong>
+          </v-list-item-title>
         </v-list-item-content>
-      </template>
+      </v-list-item>
     </template>
-  </v-select>
+    <template v-slot:selection="{ item }">
+      {{ item.name }}
+    </template>
+    <template v-slot:item="data">
+      <v-list-item-content>
+        <v-list-item-title>
+          {{ data.item.name }}
+        </v-list-item-title>
+        <v-list-item-subtitle style="width: 200px" class="text-truncate">
+          {{ data.item.description }}
+        </v-list-item-subtitle>
+      </v-list-item-content>
+    </template>
+    <template v-slot:append-item>
+      <v-list-item v-if="more" @click="loadMore()">
+        <v-list-item-content>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
+  </v-combobox>
 </template>
 
 <script>
-import { cloneDeep } from "lodash"
+import { cloneDeep, debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
 import SourceApi from "@/data/source/api"
 
 export default {
   name: "SourceSelect",
-
   props: {
     value: {
       type: Object,
@@ -39,16 +58,22 @@ export default {
         return {}
       },
     },
+    label: {
+      type: String,
+      default: "Source",
+    },
     project: {
-      type: [Object],
+      type: Object,
       default: null,
     },
   },
-
   data() {
     return {
       loading: false,
       items: [],
+      more: false,
+      numItems: 5,
+      search: null,
     }
   },
 
@@ -58,33 +83,10 @@ export default {
         return cloneDeep(this.value)
       },
       set(value) {
-        this.$emit("input", value)
-      },
-    },
-  },
-
-  methods: {
-    fetchData() {
-      this.error = null
-      this.loading = "error"
-      let filterOptions = {
-        sortBy: ["name"],
-        descending: [false],
-      }
-
-      if (this.project) {
-        filterOptions = {
-          ...filterOptions,
-          filters: {
-            project: [this.project],
-          },
+        if (typeof value !== "string") {
+          this.$emit("input", value)
         }
-        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
-      }
-      SourceApi.getAll(filterOptions).then((response) => {
-        this.items = response.data.items
-        this.loading = false
-      })
+      },
     },
   },
 
@@ -96,6 +98,51 @@ export default {
         this.fetchData()
       }
     )
+  },
+
+  methods: {
+    loadMore() {
+      this.numItems = this.numItems + 5
+      this.fetchData()
+    },
+    fetchData() {
+      this.error = null
+      this.loading = "error"
+
+      let filterOptions = {
+        q: this.search,
+        itemsPerPage: this.numItems,
+        sortBy: ["name"],
+        descending: [false],
+      }
+
+      if (this.project) {
+        filterOptions = {
+          ...filterOptions,
+          filters: {
+            project: [this.project],
+          },
+        }
+      }
+
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+
+      SourceApi.getAll(filterOptions).then((response) => {
+        this.items = response.data.items
+        this.total = response.data.total
+
+        if (this.items.length < this.total) {
+          this.more = true
+        } else {
+          this.more = false
+        }
+
+        this.loading = false
+      })
+    },
+    getFilteredData: debounce(function () {
+      this.fetchData()
+    }, 500),
   },
 }
 </script>
