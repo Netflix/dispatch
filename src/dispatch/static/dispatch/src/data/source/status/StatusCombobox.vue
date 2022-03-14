@@ -87,14 +87,11 @@ export default {
       },
       set(value) {
         this.search = null
-        let _statuses = value.map((v) => {
+        let _statuses = value.filter((v) => {
           if (typeof v === "string") {
-            v = {
-              name: v,
-            }
-            this.items.push(v)
+            return false
           }
-          return v
+          return true
         })
         this.$emit("input", _statuses)
       },
