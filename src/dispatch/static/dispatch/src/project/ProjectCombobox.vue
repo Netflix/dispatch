@@ -87,7 +87,7 @@ export default {
       },
       set(value) {
         this.search = null
-        let _projects = value.map((v) => {
+        let _projects = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
