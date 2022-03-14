@@ -123,6 +123,7 @@ export default {
     fetchData() {
       this.error = null
       this.loading = "error"
+
       let filterOptions = {
         q: this.search,
         sortBy: ["name"],

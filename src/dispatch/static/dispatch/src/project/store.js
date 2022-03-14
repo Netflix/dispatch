@@ -36,7 +36,7 @@ const state = {
       page: 1,
       itemsPerPage: 10,
       sortBy: ["name"],
-      descending: [true],
+      descending: [false],
     },
     loading: false,
   },
