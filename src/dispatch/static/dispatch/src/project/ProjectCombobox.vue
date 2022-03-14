@@ -114,6 +114,8 @@ export default {
       let filterOptions = {
         q: this.search,
         itemsPerPage: this.numItems,
+        sortBy: ["name"],
+        descending: [false],
       }
 
       filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
