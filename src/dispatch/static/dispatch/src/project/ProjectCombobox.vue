@@ -87,7 +87,7 @@ export default {
       },
       set(value) {
         this.search = null
-        let _projects = value.map((v) => {
+        let _projects = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
@@ -114,8 +114,6 @@ export default {
       let filterOptions = {
         q: this.search,
         itemsPerPage: this.numItems,
-        sortBy: ["name"],
-        descending: [false],
       }
 
       filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })

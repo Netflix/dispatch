@@ -81,7 +81,7 @@ export default {
       },
       set(value) {
         this.search = null
-        this._individuals = value.map((v) => {
+        this._individuals = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
