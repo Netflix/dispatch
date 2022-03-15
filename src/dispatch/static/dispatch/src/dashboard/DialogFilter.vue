@@ -68,6 +68,11 @@ let today = function () {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate())
 }
 
+let thisMonth = function () {
+  let now = new Date()
+  return new Date(now.getFullYear(), now.getMonth())
+}
+
 export default {
   name: "IncidentOverviewFilterBar",
 
@@ -164,7 +169,7 @@ export default {
       ...this.filters,
       ...{
         reported_at: {
-          start: subMonths(today(), 1).toISOString().substr(0, 10),
+          start: subMonths(thisMonth(), 1).toISOString().substr(0, 10),
           end: today().toISOString().substr(0, 10),
         },
       },
