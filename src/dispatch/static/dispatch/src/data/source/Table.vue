@@ -50,7 +50,9 @@
               </v-chip>
             </template>
             <template v-slot:item.source_status="{ item }">
-              {{ item.source_status.name }}
+              <span v-if="items.source_status">
+                {{ item.source_status.name }}
+              </span>
             </template>
             <template v-slot:item.source_data_format="{ item }">
               <v-chip v-if="item.source_data_format" small dark>
