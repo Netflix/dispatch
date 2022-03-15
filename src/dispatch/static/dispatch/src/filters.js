@@ -34,6 +34,7 @@ Vue.filter("initials", function (value) {
     return value
       .split(" ")
       .map((n) => n[0])
+      .slice(0, 2)
       .join("")
   }
 })
