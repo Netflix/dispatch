@@ -49,29 +49,8 @@
                 {{ item.project.name }}
               </v-chip>
             </template>
-            <template v-slot:item.source_environment.name="{ item }">
-              <v-chip
-                v-if="item.source_environment"
-                small
-                :color="item.source_environment.color"
-                text-color="white"
-              >
-                {{ item.source_environment.name }}
-              </v-chip>
-            </template>
             <template v-slot:item.source_status="{ item }">
-              <v-badge
-                v-if="item.source_status"
-                bordered
-                color="warning"
-                slot="activator"
-                dot
-                left
-                offset-x="-10"
-                offset-y="12"
-              >
-                {{ item.source_status.name }}
-              </v-badge>
+              {{ item.source_status.name }}
             </template>
             <template v-slot:item.source_data_format="{ item }">
               <v-chip v-if="item.source_data_format" small dark>
@@ -79,9 +58,9 @@
               </v-chip>
             </template>
             <template v-slot:item.source_type="{ item }">
-              <v-chip v-if="item.source_type" small dark>
+              <span v-if="item.source_type">
                 {{ item.source_type.name }}
-              </v-chip>
+              </span>
             </template>
             <template v-slot:item.owner="{ item }">
               <service-popover v-if="item.owner" :service="item.owner" />
