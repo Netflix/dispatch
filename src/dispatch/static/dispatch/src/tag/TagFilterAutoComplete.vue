@@ -8,6 +8,7 @@
     chips
     clearable
     item-text="name"
+    item-value="id"
     hide-selected
     multiple
     no-filter

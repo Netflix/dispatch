@@ -7,6 +7,7 @@
     :search-input.sync="search"
     @update:search-input="fetchData({ q: $event })"
     item-text="name"
+    item-value="id"
     v-model="individual"
   >
     <template v-slot:no-data>

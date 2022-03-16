@@ -7,6 +7,7 @@
     :search-input.sync="search"
     @update:search-input="getFilteredData({ q: $event })"
     item-text="name"
+    item-value="id"
     clearable
     v-model="status"
   >
@@ -14,7 +15,7 @@
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No statuss matching
+            No statuses matching
             <strong>"{{ search }}"</strong>
           </v-list-item-title>
         </v-list-item-content>
