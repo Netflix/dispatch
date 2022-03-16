@@ -1,13 +1,24 @@
 <template>
-  <v-select
-    v-model="project"
+  <v-combobox
     :items="items"
-    :menu-props="{ maxHeight: '400' }"
-    item-text="name"
-    label="Project"
-    return-object
+    :label="label"
     :loading="loading"
+    :menu-props="{ maxHeight: '400' }"
+    :search-input.sync="search"
+    @update:search-input="getFilteredData({ q: $event })"
+    item-text="name"
+    v-model="project"
   >
+    <template v-slot:no-data>
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title>
+            No projects matching
+            <strong>"{{ search }}"</strong>
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
     <template v-slot:item="data">
       <v-list-item-content>
         <v-list-item-title v-text="data.item.name" />
@@ -18,11 +29,18 @@
         />
       </v-list-item-content>
     </template>
-  </v-select>
+    <template v-slot:append-item>
+      <v-list-item v-if="more" @click="loadMore()">
+        <v-list-item-content>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
+  </v-combobox>
 </template>
 
 <script>
-import { cloneDeep } from "lodash"
+import { cloneDeep, debounce } from "lodash"
 import ProjectApi from "@/project/api"
 
 export default {
@@ -35,12 +53,19 @@ export default {
         return {}
       },
     },
+    label: {
+      type: String,
+      default: "Project",
+    },
   },
 
   data() {
     return {
       loading: false,
       items: [],
+      numItems: 5,
+      more: false,
+      search: null,
     }
   },
 
@@ -55,19 +80,40 @@ export default {
     },
   },
 
-  created() {
-    this.error = null
-    this.loading = "error"
-    let filterOptions = {
-      itemsPerPage: 50,
-      sortBy: ["name"],
-      descending: [false],
-    }
+  methods: {
+    loadMore() {
+      this.numItems = this.numItems + 5
+      this.fetchData()
+    },
+    fetchData() {
+      this.error = null
+      this.loading = "error"
+      let filterOptions = {
+        itemsPerPage: this.numItems,
+        sortBy: ["name"],
+        descending: [false],
+      }
 
-    ProjectApi.getAll(filterOptions).then((response) => {
-      this.items = response.data.items
-      this.loading = false
-    })
+      ProjectApi.getAll(filterOptions).then((response) => {
+        this.items = response.data.items
+        this.total = response.data.total
+
+        if (this.items.length < this.total) {
+          this.more = true
+        } else {
+          this.more = false
+        }
+
+        this.loading = false
+      })
+    },
+    getFilteredData: debounce(function () {
+      this.fetchData()
+    }, 500),
+  },
+
+  created() {
+    this.fetchData()
   },
 }
 </script>
