@@ -52,6 +52,8 @@
 <script>
 import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
+
+import startOfMonth from "date-fns/startOfMonth"
 import subMonths from "date-fns/subMonths"
 
 import RouterUtils from "@/router/utils"
@@ -66,11 +68,6 @@ import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 let today = function () {
   let now = new Date()
   return new Date(now.getFullYear(), now.getMonth(), now.getDate())
-}
-
-let thisMonth = function () {
-  let now = new Date()
-  return new Date(now.getFullYear(), now.getMonth())
 }
 
 export default {
@@ -169,8 +166,8 @@ export default {
       ...this.filters,
       ...{
         reported_at: {
-          start: subMonths(thisMonth(), 1).toISOString().substr(0, 10),
-          end: today().toISOString().substr(0, 10),
+          start: startOfMonth(subMonths(today(), 1)).toISOString().slice(0, -1),
+          end: today().toISOString().slice(0, -1),
         },
       },
       ...RouterUtils.deserializeFilters(this.query), // Order matters as values will overwrite
