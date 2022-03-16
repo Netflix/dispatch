@@ -75,7 +75,7 @@
             <v-flex xs12>
               <v-list-item>
                 <v-list-item-content>
-                  <project-combobox v-model="projects" label="Projects" />
+                  <project-combobox v-model="projects" label="Default Projects" />
                 </v-list-item-content>
               </v-list-item>
             </v-flex>

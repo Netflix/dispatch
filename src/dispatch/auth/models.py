@@ -76,16 +76,6 @@ class DispatchUser(Base, TimeStampMixin):
             if o.organization.name == organization_name:
                 return o.role
 
-    def get_default_projects(self):
-        """Gets the user's default projects."""
-        projects = []
-
-        for p in self.projects:
-            if p.default is True:
-                return projects.append(p)
-
-        return projects
-
 
 class DispatchUserOrganization(Base, TimeStampMixin):
     __table_args__ = {"schema": "dispatch_core"}

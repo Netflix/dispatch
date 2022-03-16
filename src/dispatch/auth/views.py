@@ -65,7 +65,7 @@ def get_users(*, organization: OrganizationSlug, common: dict = Depends(common_p
             {
                 "id": u.id,
                 "email": u.email,
-                "projects": u.get_default_projects(),
+                "projects": u.projects,
                 "role": u.get_organization_role(organization),
             }
             for u in items["items"]
