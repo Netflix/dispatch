@@ -10,6 +10,7 @@
     deletable-chips
     hide-selected
     item-text="name"
+    item-value="id"
     multiple
     no-filter
     v-model="statuses"
@@ -18,7 +19,7 @@
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No Projects matching "
+            No statuses matching "
             <strong>{{ search }}</strong
             >".
           </v-list-item-title>

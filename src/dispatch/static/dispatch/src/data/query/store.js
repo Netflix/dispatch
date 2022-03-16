@@ -12,6 +12,7 @@ const getDefaultSelectedState = () => {
     description: null,
     source: null,
     text: null,
+    project: null,
     language: null,
   }
 }
@@ -39,11 +40,6 @@ const state = {
         tag: [],
         project: [],
         tag_type: [],
-        query_environment: [],
-        query_status: [],
-        query_type: [],
-        query_transport: [],
-        query_data_format: [],
       },
     },
     loading: false,
