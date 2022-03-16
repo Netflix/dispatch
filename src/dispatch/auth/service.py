@@ -130,7 +130,9 @@ def create(*, db_session, organization: str, user_in: UserRegister) -> DispatchU
     default_project = project_service.get_default_or_raise(db_session=db_session)
 
     # add the user to the default project
-    user.projects.append(DispatchUserProject(project=default_project, role=UserRoles.member))
+    user.projects.append(
+        DispatchUserProject(project=default_project, default=True, role=UserRoles.member)
+    )
     db_session.add(user)
     db_session.commit()
     return user
@@ -154,7 +156,9 @@ def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUs
     """Updates a user."""
     user_data = user.dict()
 
-    update_data = user_in.dict(exclude={"password"}, skip_defaults=True)
+    update_data = user_in.dict(
+        exclude={"password", "organizations", "projects"}, skip_defaults=True
+    )
     for field in user_data:
         if field in update_data:
             setattr(user, field, update_data[field])
@@ -171,7 +175,23 @@ def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUs
                 create_or_update_organization_role(db_session=db_session, user=user, role_in=role)
             )
 
-    db_session.commit()
+    if user_in.projects:
+        projects = []
+
+        for p in user_in.projects:
+            project = project_service.get_by_name(db_session=db_session, name=p.name)
+            projects.append(
+                DispatchUserProject(
+                    dispatch_user=user, project=project, default=True, role=user_in.role
+                )
+            )
+
+    try:
+        user.projects = projects
+        db_session.commit()
+    except Exception as e:
+        log.debug(e)
+
     return user
 
 

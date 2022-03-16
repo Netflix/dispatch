@@ -76,6 +76,16 @@ class DispatchUser(Base, TimeStampMixin):
             if o.organization.name == organization_name:
                 return o.role
 
+    def get_default_projects(self):
+        """Gets the user's default projects."""
+        projects = []
+
+        for p in self.projects:
+            if p.default is True:
+                return projects.append(p)
+
+        return projects
+
 
 class DispatchUserOrganization(Base, TimeStampMixin):
     __table_args__ = {"schema": "dispatch_core"}
@@ -94,6 +104,7 @@ class DispatchUserProject(Base, TimeStampMixin):
 
     project_id = Column(Integer, ForeignKey(Project.id), primary_key=True)
     project = relationship(Project, backref="users")
+
     default = Column(Boolean, default=False)
 
     role = Column(String, nullable=False, default=UserRoles.member)
@@ -154,7 +165,7 @@ class UserRead(UserBase):
 class UserUpdate(DispatchBase):
     id: PrimaryKey
     password: Optional[str] = Field(None, nullable=True)
-    projects: Optional[List[UserProject]]
+    projects: Optional[List[ProjectRead]]
     organizations: Optional[List[UserOrganization]]
     role: Optional[str] = Field(None, nullable=True)
 

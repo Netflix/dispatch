@@ -19,10 +19,10 @@
         <v-container grid-list-md>
           <v-layout wrap>
             <v-flex xs12>
-              <span class="subtitle-2">Details</span>
+              <span class="subtitle-2">Contact Information</span>
             </v-flex>
             <v-flex xs12>
-              <v-text-field v-model="email" disabled label="Email" hint="User's email." />
+              <v-text-field v-model="email" disabled label="Email" hint="Member's email." />
             </v-flex>
             <v-flex xs12>
               <span class="subtitle-2">Role</span>
@@ -69,6 +69,16 @@
                 </v-tooltip>
               </v-radio-group>
             </v-flex>
+            <v-flex xs12>
+              <span class="subtitle-2">Settings</span>
+            </v-flex>
+            <v-flex xs12>
+              <v-list-item>
+                <v-list-item-content>
+                  <project-combobox v-model="projects" label="Projects" />
+                </v-list-item-content>
+              </v-list-item>
+            </v-flex>
           </v-layout>
         </v-container>
       </v-card-text>
@@ -80,10 +90,14 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
+import ProjectCombobox from "@/project/ProjectCombobox.vue"
+
 export default {
   name: "MemberEditSheet",
 
-  components: {},
+  components: {
+    ProjectCombobox,
+  },
 
   computed: {
     ...mapFields("auth", [
