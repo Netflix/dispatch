@@ -8,6 +8,7 @@
     deletable-chips
     hide-selected
     item-text="name"
+    item-value="id"
     no-filter
     v-model="incident_cost_type"
   >

@@ -6,6 +6,7 @@
       :search-input.sync="search"
       :menu-props="{ maxHeight: '400' }"
       item-text="name"
+      item-value="id"
       :label="label"
       placeholder="Start typing to search"
       return-object

@@ -7,6 +7,7 @@
     :search-input.sync="search"
     @update:search-input="getFilteredData({ q: $event })"
     item-text="name"
+    item-value="id"
     clearable
     v-model="type"
   >
