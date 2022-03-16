@@ -14,9 +14,16 @@
 }
 </style>
 <template>
-  <v-navigation-drawer app permanent width="440" clipped class="background1" v-if="showChildPane">
+  <v-navigation-drawer
+    app
+    permanent
+    :width="mini ? 220 : 440"
+    clipped
+    class="background1"
+    v-if="showChildPane"
+  >
     <v-row class="fill-height" no-gutters>
-      <v-navigation-drawer width="220" permanent>
+      <v-navigation-drawer width="220" permanent :mini-variant="mini">
         <v-list dense flat nav>
           <span v-for="(route, index) in routes" :key="index" :to="route.path">
             <v-list-item :to="{ name: route.name }">
@@ -28,10 +35,29 @@
               </v-list-item-content>
             </v-list-item>
           </span>
+          <v-list-item v-if="mini" @click.stop="toggleMiniNav()">
+            <v-list-item-action>
+              <v-icon>mdi-chevron-right</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>
+              <v-list-item-title>Minimize</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item v-else @click.stop="toggleMiniNav()">
+            <v-list-item-action>
+              <v-icon>mdi-chevron-left</v-icon>
+            </v-list-item-action>
+            <v-list-item-content>
+              <v-list-item-title>Minimize</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
         </v-list>
         <template v-slot:append>
           <div class="pa-3">
-            <v-btn color="error" block :to="{ name: 'report' }">
+            <v-btn v-if="mini" color="error" block :to="{ name: 'report' }">
+              <v-icon> error_outline </v-icon>
+            </v-btn>
+            <v-btn v-else color="error" block :to="{ name: 'report' }">
               <v-icon left> error_outline </v-icon>
               Report Incident
             </v-btn>
@@ -57,7 +83,7 @@
       </v-list>
     </v-row>
   </v-navigation-drawer>
-  <v-navigation-drawer app permanent width="220" clipped v-else>
+  <v-navigation-drawer app permanent width="220" :mini-variant="mini" clipped v-else>
     <v-list dense nav>
       <span v-for="(route, index) in routes" :key="index">
         <v-list-item :to="{ name: route.name }">
@@ -69,12 +95,28 @@
           </v-list-item-content>
         </v-list-item>
       </span>
+      <v-list-item v-if="mini" @click.stop="toggleMiniNav()">
+        <v-list-item-action>
+          <v-icon>mdi-chevron-right</v-icon>
+        </v-list-item-action>
+        <v-list-item-content>
+          <v-list-item-title>Minimize</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      <v-list-item v-else @click.stop="toggleMiniNav()">
+        <v-list-item-action>
+          <v-icon>mdi-chevron-left</v-icon>
+        </v-list-item-action>
+        <v-list-item-content>
+          <v-list-item-title>Minimize</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
     </v-list>
     <template v-slot:append>
       <div class="pa-3">
         <v-btn color="error" block :to="{ name: 'report' }">
           <v-icon left> error_outline </v-icon>
-          Report Incident
+          <span v-if="!mini">Report Incident</span>
         </v-btn>
       </div>
     </template>
@@ -101,7 +143,12 @@ export default {
     scrollSettings: {
       maxScrollbarLength: 160,
     },
+    mini: false,
   }),
+
+  created() {
+    this.mini = JSON.parse(localStorage.getItem("mini_nav"))
+  },
 
   methods: {
     subIsActive(input) {
@@ -109,6 +156,10 @@ export default {
       return paths.some((path) => {
         return this.$route.path.indexOf(path) === 0 // current path starts with this path string
       })
+    },
+    toggleMiniNav() {
+      this.mini = !this.mini
+      localStorage.setItem("mini_nav", this.mini)
     },
   },
   computed: {
