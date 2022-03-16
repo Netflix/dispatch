@@ -13,16 +13,16 @@ from starlette.status import HTTP_401_UNAUTHORIZED
 
 from sqlalchemy.exc import IntegrityError
 
-from dispatch.plugins.base import plugins
 from dispatch.config import (
     DISPATCH_AUTHENTICATION_PROVIDER_SLUG,
     DISPATCH_AUTHENTICATION_DEFAULT_USER,
 )
-from dispatch.organization.models import OrganizationRead
-from dispatch.organization import service as organization_service
-from dispatch.project import service as project_service
-
 from dispatch.enums import UserRoles
+from dispatch.organization import service as organization_service
+from dispatch.organization.models import OrganizationRead
+from dispatch.plugins.base import plugins
+from dispatch.project import service as project_service
+from dispatch.project.models import ProjectRead
 
 from .models import (
     DispatchUser,
@@ -33,6 +33,7 @@ from .models import (
     UserRegister,
     UserUpdate,
 )
+
 
 log = logging.getLogger(__name__)
 
@@ -75,6 +76,36 @@ def create_or_update_project_role(*, db_session, user: DispatchUser, role_in: Us
         )
     project_role.role = role_in.role
     return project_role
+
+
+def create_or_update_project_default(*, db_session, user: DispatchUser, project: ProjectRead):
+    """Creates a new user project or updates an existing one."""
+    if project.id:
+        project_id = project.id
+    else:
+        project = project_service.get_by_name(db_session=db_session, name=project.name)
+        project_id = project.id
+
+    user_project = (
+        db_session.query(DispatchUserProject)
+        .filter(
+            DispatchUserProject.dispatch_user_id == user.id,
+        )
+        .filter(DispatchUserProject.project_id == project_id)
+        .one_or_none()
+    )
+
+    if not user_project:
+        user_project = DispatchUserProject(
+            dispatch_user_id=user.id,
+            project_id=project_id,
+            default=True,
+        )
+        db_session.add(user_project)
+        return user_project
+
+    user_project.default = True
+    return user_project
 
 
 def create_or_update_organization_role(
@@ -176,22 +207,17 @@ def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUs
             )
 
     if user_in.projects:
-        projects = []
+        # we reset the default value for all user projects
+        for project in user.projects:
+            project.default = False
 
-        for p in user_in.projects:
-            project = project_service.get_by_name(db_session=db_session, name=p.name)
+        projects = []
+        for project in user_in.projects:
             projects.append(
-                DispatchUserProject(
-                    dispatch_user=user, project=project, default=True, role=user_in.role
-                )
+                create_or_update_project_default(db_session=db_session, user=user, project=project)
             )
 
-    try:
-        user.projects = projects
-        db_session.commit()
-    except Exception as e:
-        log.debug(e)
-
+    db_session.commit()
     return user
 
 
