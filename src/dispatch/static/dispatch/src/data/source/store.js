@@ -18,7 +18,7 @@ const getDefaultSelectedState = () => {
     source_transport: null,
     source_data_format: null,
     size: null,
-    aggregation: null,
+    aggregated: null,
     delay: null,
     external_id: null,
     project: null,
