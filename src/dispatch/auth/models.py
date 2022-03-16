@@ -9,7 +9,7 @@ from typing import Optional
 from pydantic import validator, Field
 from pydantic.networks import EmailStr
 
-from sqlalchemy import Column, String, LargeBinary, Integer, Table, PrimaryKeyConstraint
+from sqlalchemy import Column, String, LargeBinary, Integer, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy_utils import TSVectorType
@@ -25,15 +25,6 @@ from dispatch.models import PrimaryKey
 from dispatch.models import TimeStampMixin, DispatchBase
 from dispatch.organization.models import Organization, OrganizationRead
 from dispatch.project.models import Project, ProjectRead
-
-
-assoc_dispatch_user_projects = Table(
-    "assoc_dispatch_user_projects",
-    Base.metadata,
-    Column("dispatch_user_id", Integer, ForeignKey("dispatch_user.id", ondelete="CASCADE")),
-    Column("project_id", Integer, ForeignKey("project.id", ondelete="CASCADE")),
-    PrimaryKeyConstraint("dispatch_user_id", "project_id"),
-)
 
 
 def generate_password():
@@ -63,11 +54,6 @@ class DispatchUser(Base, TimeStampMixin):
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True)
     password = Column(LargeBinary, nullable=False)
-
-    # user settings
-    projects = relationship(
-        "Project", secondary=assoc_dispatch_user_projects, backref="dispatch_users"
-    )
 
     search_vector = Column(TSVectorType("email", weights={"email": "A"}))
 
@@ -108,6 +94,7 @@ class DispatchUserProject(Base, TimeStampMixin):
 
     project_id = Column(Integer, ForeignKey(Project.id), primary_key=True)
     project = relationship(Project, backref="users")
+    default = Column(Boolean, default=False)
 
     role = Column(String, nullable=False, default=UserRoles.member)
 
