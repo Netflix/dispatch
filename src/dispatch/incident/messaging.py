@@ -813,13 +813,17 @@ def send_incident_rating_feedback_message(incident: Incident, db_session: Sessio
     ]
 
     for participant in incident.participants:
-        plugin.instance.send_direct(
-            participant.individual.email,
-            notification_text,
-            notification_template,
-            MessageType.incident_rating_feedback,
-            items=items,
-        )
+        try:
+            plugin.instance.send_direct(
+                participant.individual.email,
+                notification_text,
+                notification_template,
+                MessageType.incident_rating_feedback,
+                items=items,
+            )
+        except Exception as e:
+            # even if one document fails we don't want them to all fail
+            log.exception(e)
 
     log.debug("Incident rating and feedback message sent to all participants.")
 
