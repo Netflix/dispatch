@@ -78,12 +78,16 @@ def create_or_update_project_role(*, db_session, user: DispatchUser, role_in: Us
     return project_role
 
 
-def create_or_update_project_default(*, db_session, user: DispatchUser, project: ProjectRead):
+def create_or_update_project_default(
+    *, db_session, user: DispatchUser, user_project_in: UserProject
+):
     """Creates a new user project or updates an existing one."""
-    if project.id:
-        project_id = project.id
+    if user_project_in.project.id:
+        project_id = user_project_in.project.id
     else:
-        project = project_service.get_by_name(db_session=db_session, name=project.name)
+        project = project_service.get_by_name(
+            db_session=db_session, name=user_project_in.project.name
+        )
         project_id = project.id
 
     user_project = (
@@ -104,7 +108,7 @@ def create_or_update_project_default(*, db_session, user: DispatchUser, project:
         db_session.add(user_project)
         return user_project
 
-    user_project.default = True
+    user_project.default = user_project_in.default
     return user_project
 
 
@@ -208,13 +212,15 @@ def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUs
 
     if user_in.projects:
         # we reset the default value for all user projects
-        for project in user.projects:
-            project.default = False
+        for user_project in user.projects:
+            user_project.default = False
 
         projects = []
-        for project in user_in.projects:
+        for user_project in user_in.projects:
             projects.append(
-                create_or_update_project_default(db_session=db_session, user=user, project=project)
+                create_or_update_project_default(
+                    db_session=db_session, user=user, user_project_in=user_project
+                )
             )
 
     db_session.commit()

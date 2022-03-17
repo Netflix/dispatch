@@ -124,6 +124,7 @@ export default {
         let wrapped = map(value, function (item) {
           return { project: item, default: true }
         })
+        this.projects = wrapped
         this.$emit("input", wrapped)
       },
     },
