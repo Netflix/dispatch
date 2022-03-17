@@ -7,6 +7,7 @@
     :search-input.sync="search"
     @update:search-input="getFilteredData({ q: $event })"
     item-text="name"
+    item-value="id"
     v-model="project"
   >
     <template v-slot:no-data>
@@ -89,6 +90,7 @@ export default {
       this.error = null
       this.loading = "error"
       let filterOptions = {
+        q: this.search,
         itemsPerPage: this.numItems,
         sortBy: ["name"],
         descending: [false],

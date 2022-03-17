@@ -9,6 +9,7 @@
     clearable
     hide-selected
     item-text="name"
+    item-value="id"
     multiple
     no-filter
     v-model="tags"
