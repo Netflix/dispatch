@@ -60,6 +60,9 @@ export default {
           type: "bar",
           height: 350,
           stacked: true,
+          animations: {
+            enabled: false,
+          },
           events: {
             dataPointSelection: (event, chartContext, config) => {
               var data = config.w.config.series[config.seriesIndex].data[config.dataPointIndex]

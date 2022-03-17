@@ -204,9 +204,21 @@ export default {
       })
     },
     incidentsByMonth() {
-      return groupBy(this.items, function (item) {
-        return parseISO(item.reported_at).toLocaleString("default", { month: "short" })
-      })
+      // add year info if necessary
+      if (Object.keys(this.incidentsByYear).length > 1) {
+        return groupBy(this.items, function (item) {
+          return parseISO(item.reported_at).toLocaleString("default", {
+            month: "short",
+            year: "numeric",
+          })
+        })
+      } else {
+        return groupBy(this.items, function (item) {
+          return parseISO(item.reported_at).toLocaleString("default", {
+            month: "short",
+          })
+        })
+      }
     },
     incidentsByQuarter() {
       return groupBy(this.items, function (item) {
