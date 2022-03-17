@@ -24,7 +24,6 @@ from .models import (
     UserLoginResponse,
     UserOrganization,
     UserPagination,
-    UserProject,
     UserRead,
     UserRegister,
     UserRegisterResponse,
