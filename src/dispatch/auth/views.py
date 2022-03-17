@@ -12,10 +12,10 @@ from dispatch.exceptions import (
     InvalidPasswordError,
     InvalidUsernameError,
 )
-
-from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
+from dispatch.enums import UserRoles
+from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.organization.models import OrganizationRead
 
 from .models import (
@@ -98,7 +98,6 @@ def get_me(
 @user_router.put(
     "/{user_id}",
     response_model=UserRead,
-    dependencies=[Depends(PermissionsDependency([OrganizationOwnerPermission]))],
 )
 def update_user(
     *,
@@ -114,6 +113,17 @@ def update_user(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "A user with this id does not exist."}],
         )
+
+    if user_in.role:
+        user_organization_role = user.get_organization_role(organization)
+        if user_organization_role != user_in.role:
+            if user_organization_role != UserRoles.owner:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=[
+                        {"msg": "You don't have permissions to update your organization role."}
+                    ],
+                )
 
     # add organization information
     user_in.organizations = [
