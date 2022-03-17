@@ -43,6 +43,9 @@ export default {
         chart: {
           height: 350,
           type: "heatmap",
+          animations: {
+            enabled: false,
+          },
           events: {
             dataPointSelection: (event, chartContext, config) => {
               var data = config.w.config.series[config.seriesIndex].data[config.dataPointIndex]

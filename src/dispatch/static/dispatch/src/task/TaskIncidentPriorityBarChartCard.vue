@@ -47,6 +47,9 @@ export default {
           type: "bar",
           height: 350,
           stacked: true,
+          animations: {
+            enabled: false,
+          },
           toolbar: {
             show: false,
           },

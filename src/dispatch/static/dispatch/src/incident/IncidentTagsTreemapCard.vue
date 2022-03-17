@@ -41,6 +41,9 @@ export default {
         chart: {
           type: "treemap",
           height: 350,
+          animations: {
+            enabled: false,
+          },
           events: {
             dataPointSelection: (event, chartContext, config) => {
               var data = config.w.config.series[config.seriesIndex].data[config.dataPointIndex]

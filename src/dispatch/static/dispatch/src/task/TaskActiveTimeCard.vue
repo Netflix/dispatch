@@ -69,6 +69,9 @@ export default {
         chart: {
           height: 350,
           type: "line",
+          animations: {
+            enabled: false,
+          },
           toolbar: {
             show: false,
           },

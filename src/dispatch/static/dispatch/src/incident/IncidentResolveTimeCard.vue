@@ -70,6 +70,9 @@ export default {
         chart: {
           height: 350,
           type: "line",
+          animations: {
+            enabled: false,
+          },
         },
         xaxis: {
           categories: Object.keys(this.value) || [],
