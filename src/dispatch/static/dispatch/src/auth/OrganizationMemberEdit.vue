@@ -75,7 +75,7 @@
             <v-flex xs12>
               <v-list-item>
                 <v-list-item-content>
-                  <project-combobox v-model="projects" label="Default Projects" />
+                  <project-combobox v-model="defaultProjects" label="Default Projects" />
                 </v-list-item-content>
               </v-list-item>
             </v-flex>
@@ -87,6 +87,8 @@
 </template>
 
 <script>
+import { map } from "lodash"
+
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
@@ -108,6 +110,23 @@ export default {
       "selected.loading",
       "dialogs.showEdit",
     ]),
+
+    defaultProjects: {
+      get() {
+        let d = null
+        if (this.projects) {
+          let d = this.projects.filter((v) => v.default === true)
+          return d.map((v) => v.project)
+        }
+        return d
+      },
+      set(value) {
+        let wrapped = map(value, function (item) {
+          return { project: item, default: true }
+        })
+        this.$emit("input", wrapped)
+      },
+    },
   },
 
   methods: {

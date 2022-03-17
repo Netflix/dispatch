@@ -103,7 +103,7 @@ class DispatchUserProject(Base, TimeStampMixin):
 class UserProject(DispatchBase):
     project: ProjectRead
     default: Optional[bool] = False
-    role: str
+    role: Optional[str] = Field(None, nullable=True)
 
 
 class UserOrganization(DispatchBase):
@@ -155,7 +155,7 @@ class UserRead(UserBase):
 class UserUpdate(DispatchBase):
     id: PrimaryKey
     password: Optional[str] = Field(None, nullable=True)
-    projects: Optional[List[ProjectRead]]
+    projects: Optional[List[UserProject]]
     organizations: Optional[List[UserOrganization]]
     role: Optional[str] = Field(None, nullable=True)
 
