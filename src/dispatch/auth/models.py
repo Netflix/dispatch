@@ -8,24 +8,23 @@ from jose import jwt
 from typing import Optional
 from pydantic import validator, Field
 from pydantic.networks import EmailStr
-from dispatch.models import PrimaryKey
 
-from sqlalchemy import Column, String, LargeBinary, Integer
+from sqlalchemy import Column, String, LargeBinary, Integer, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy_utils import TSVectorType
-
-from dispatch.database.core import Base
-from dispatch.models import TimeStampMixin, DispatchBase
-from dispatch.enums import UserRoles
 
 from dispatch.config import (
     DISPATCH_JWT_SECRET,
     DISPATCH_JWT_ALG,
     DISPATCH_JWT_EXP,
 )
-from dispatch.project.models import Project, ProjectRead
+from dispatch.database.core import Base
+from dispatch.enums import UserRoles
+from dispatch.models import PrimaryKey
+from dispatch.models import TimeStampMixin, DispatchBase
 from dispatch.organization.models import Organization, OrganizationRead
+from dispatch.project.models import Project, ProjectRead
 
 
 def generate_password():
@@ -96,13 +95,15 @@ class DispatchUserProject(Base, TimeStampMixin):
     project_id = Column(Integer, ForeignKey(Project.id), primary_key=True)
     project = relationship(Project, backref="users")
 
+    default = Column(Boolean, default=False)
+
     role = Column(String, nullable=False, default=UserRoles.member)
 
 
 class UserProject(DispatchBase):
     project: ProjectRead
     default: Optional[bool] = False
-    role: str
+    role: Optional[str] = Field(None, nullable=True)
 
 
 class UserOrganization(DispatchBase):

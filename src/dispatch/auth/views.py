@@ -21,13 +21,13 @@ from dispatch.organization.models import OrganizationRead
 from .models import (
     DispatchUser,
     UserLogin,
-    UserOrganization,
-    UserRegister,
-    UserRead,
-    UserUpdate,
-    UserPagination,
     UserLoginResponse,
+    UserOrganization,
+    UserPagination,
+    UserRead,
+    UserRegister,
     UserRegisterResponse,
+    UserUpdate,
 )
 from .service import get, get_by_email, update, create, get_current_user
 
@@ -54,6 +54,7 @@ def get_users(*, organization: OrganizationSlug, common: dict = Depends(common_p
     common["filter_spec"] = {
         "and": [{"model": "Organization", "op": "==", "field": "name", "value": organization}]
     }
+
     items = search_filter_sort_paginate(model="DispatchUser", **common)
 
     # filtered users
@@ -78,7 +79,7 @@ def get_user(*, db_session: Session = Depends(get_db), user_id: PrimaryKey):
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "The user with this id does not exist."}],
+            detail=[{"msg": "A user with this id does not exist."}],
         )
 
     return user
@@ -111,7 +112,7 @@ def update_user(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "The user with this id does not exist."}],
+            detail=[{"msg": "A user with this id does not exist."}],
         )
 
     # add organization information
