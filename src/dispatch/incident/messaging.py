@@ -12,7 +12,6 @@ from dispatch.database.core import SessionLocal, resolve_attr
 from dispatch.document import service as document_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident, IncidentRead
-
 from dispatch.notification import service as notification_service
 from dispatch.messaging.strings import (
     INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION,
@@ -822,7 +821,7 @@ def send_incident_rating_feedback_message(incident: Incident, db_session: Sessio
                 items=items,
             )
         except Exception as e:
-            # even if one document fails we don't want them to all fail
+            # if one fails we don't want all to fail
             log.exception(e)
 
     log.debug("Incident rating and feedback message sent to all participants.")
