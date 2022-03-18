@@ -3,7 +3,6 @@ from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
 
 from dispatch.auth.permissions import (
-    OrganizationOwnerPermission,
     OrganizationMemberPermission,
     PermissionsDependency,
 )
