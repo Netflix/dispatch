@@ -100,8 +100,6 @@ mpim:write
 pins:write
 reactions:read
 reactions:write
-reminders:write
-remote_files:read
 team:read
 users:read
 users:read.email
