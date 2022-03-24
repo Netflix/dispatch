@@ -4,7 +4,7 @@ Templates are special types of documents that are used by Dispatch to create inc
 
 After creation they are normal documents that are associated to your incident which can be freely edited.
 
-There are found main types of templates that Dispatch support's
+There are four main types of templates that Dispatch supports:
 
 - Incident
 - Executive
@@ -15,63 +15,64 @@ Each type of template is fairly straightforward mapping directly to the incident
 
 ### Incident
 
-This template is created for each new incident on incident creation. It contains the current state of the incident and is used by incident participants to share knowledge about the incident.
+A copy of this template is created for each new incident on incident creation. It contains the current state of the incident and is used by incident participants to share knowledge about the incident.
 
 - [Example Incident Document](https://docs.google.com/document/d/1fv--CrGpWJJ4nyPR0N0hq4JchHJPuqsXN4azE9CGQiE)
 
 ### Executive
 
-Often during an incident a executive report needs to be drafted that provides a high-level overview of the incident and the current actions that are being carried out. This template prompts the incident commander aids them in writing that communication.
+Often during an incident an executive report needs to be drafted that provides a high-level overview of the incident and the current actions that are being carried out. A copy of this template will be created, filled, and stored in the incident storage every time a new executive report is drafted.
 
 - [Example Executive Report](https://docs.google.com/document/d/1dab6k14p5ageo5B_d1YlB_zS9hMGHDMXy9RUbIZous4)
 
 ### Review
 
-The incident review document is automatically create (if it exist) when an incident is marked as stable. It is used by the incident commander and participants for reconciling any incident learnings or discussions.
+A copy of this template is automatically created when an incident is marked as stable. It is used by the incident commander and participants for reconciling any incident learnings, discussions, or post-incident tasks.
 
-- [Example Incident Review Document](https://docs.google.com/document/d/0-VwcEpVVdymoojdUg9e5XP8QGam0-B5Djxh-guuPpEc)
+- [Example Incident Review Document](https://docs.google.com/document/d/1MkCTyheZRtKzMxOBhLgh3PrvarERA9Bwo0joM7D9tmg)
 
 ### Tracking
 
-Some incidents require the tracking of multiple assets, this document is a simple spreadsheet document that allows incident participant to collaborate on tabular data.
+Some incidents require the tracking of multiple assets, this template is a simple spreadsheet that allows incident participants to collaborate on tabular data.
 
 - [Example Incident Tracking Sheet](https://docs.google.com/spreadsheets/d/1Odk4KlL7uMF_yd7OvTOCaPWmtTA_WzFBIA4lMeU5cGY)
 
 ### Template Variables
 
-The following is a list of available variables that Dispatch will attempt to resolve on document creation (we do not currently re-resolve these).
+The following is a list of available variables that Dispatch will attempt to resolve on document creation. Note: we do not currently re-resolve these.
 
 NOTE: All variables must be enclosed in a `{{}}`
 
 - `name` - The name of the incident
-- `description` - The incidents description
-- `title` - The incidents title
-- `commander_fullname` - The current commanders name
-- `type` - The incident type name
-- `prioritity` - The incident priority name
-- `status` - The incidents status
+- `title` - The incident's title
+- `description` - The incident's description
+- `resolution` - The incident's resolution
+- `commander_fullname` - The current commander's name
+- `type` - The incident's type name
+- `prioritity` - The incident's priority name
+- `status` - The incident's status
 - `conversation_weblink` - Link to the conversation resource (if any)
 - `conference_weblink` - Link to the conference resource (if any)
 - `storage_weblink` - Link to the storage resource (if any)
-- `document_weblink` - Link the incident document (if any)
-- `ticket_weblink` - Link the incident ticket (if any)
+- `document_weblink` - Link to the incident document (if any)
+- `ticket_weblink` - Link to the incident ticket (if any)
 
 ### Association
 
-Each of these documents can be associated on a per-incident type basis. This allows our templates to closely match a given incident type and provide additional context direction for those incident types.
+Each of these templates can be associated on a per-incident type basis. This allows our templates to closely match a given incident type and provide additional context direction for those incident types.
 
-Additionally, if you only desire one template; templates can be associated with multiple incident types.
+Additionally, templates can be associated with multiple incident types, if for example, you only want to use one template.
 
 ![](../../../.gitbook/assets/admin-ui-create-edit-template.png)
 
-**Name:** Name of the document.
+**Name:** Name of the template.
 
-**Description:** Short description of the document.
+**Description:** Short description of the template.
 
-**Weblink:** A hyperlink representing the document.
+**Weblink:** The weblink to the template.
 
-**ID:** The external ID that is used to fetch the document.
+**ID:** The template's external ID used to fetch the document.
 
 ### Evergreen
 
-Enabling evergreen for a template instructs Dispatch to send an email reminder to the template owner, informing them that they should check to ensure that the template in question is up to date.
+Enabling evergreen for a template instructs Dispatch to send an email reminder to the template owner informing them that they should review the template to ensure that the template is up to date.
