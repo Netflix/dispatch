@@ -6,52 +6,44 @@ description: Configuration options for the Slack plugin.
 
 Dispatch ships with support for Slack. Below is how to configure the Slack plugin to work with `Dispatch`.
 
-Dispatch supports both the [Event Mode](https://api.slack.com/events-api) and [Socket Mode](https://api.slack.com/apis/connections/socket).
+## Events Mode vs Socket Mode
+
+Dispatch supports both [Events Mode](https://api.slack.com/events-api) and [Socket Mode](https://api.slack.com/apis/connections/socket).
 
 Which mode should you choose?
 
-- If you have Dispatch deployed behind a firewall, use **socket mode**
-- If you are deploying Dispatch publicly, use **event mode**
-
-In either case, the following configuration items are required:
-
-- `SLACK_WORKSPACE_NAME`
-- `SLACK_API_BOT_TOKEN`
-- `SLACK_SIGNING_SECRET`
-- `SLACK_APP_USER_SLUG`
+- If Dispatch will be listening on a public static HTTP endpoint, then we recommend using **events mode**.
+- If Dispatch will be deployed behind a corporate firewall or you have security concerns, then we recommend using **socket mode**.
 
 See the [Dispatch Configuration](#dispatch-configuration) section below for further details on the variables.
 
-## Events Mode
+### Events Mode
 
-Event mode requires specific URL mapping that must be **publicly** available:
+Events mode requires specific URL mapping that must be **publicly** accessible:
 
-- `Dispatch` receives general events at the `/api/v1/<organization>/events/slack/event` endpoint (reactions).
+- `Dispatch` receives general events at the `/api/v1/<organization>/events/slack/event` endpoint (e.g. member joins channel, reactions).
 - `Dispatch` receives command events at the `/api/v1/<organization>/events/slack/command` endpoint (`/dispatch-*` commands)
-- `Dispatch` receives action events at the `/api/v1/<organization>/events/slack/action` (dialogs and modals) endpoint.
+- `Dispatch` receives action events at the `/api/v1/<organization>/events/slack/action` endpoint (dialogs and modals).
 
-## Socket Mode
+### Socket Mode
 
-To enable socket mode:
-
-- Ensure the following configuration items are set:
-  - `SLACK_SOCKET_MODE_APP_TOKEN`
+To enable socket mode, add the socket mode app token in the `Socket Mode App Token` section of the `Slack Plugin - Conversation Management` and the `Slack Plugin - Contact Information Resolver` plugins Dispatch Web UI under Settings -> Project -> Plugins.
 
 Socket mode does not require the mapping of endpoints. These values are ignored in socket mode.
 
-Socket mode requires that you run a separate process (from the main dispatch webserver) to receive WebSocket events.
+Socket mode requires that you run a separate process (from the main Dispatch webserver) to receive WebSocket events.
 
-The easiest way to run this process is via the command:
+The easiest way to run this process is via the following CLI command:
 
 ```
 dispatch server slack <organization> <project>
 ```
 
-This process has to be daemonized similarly to the dispatch webserver.
+This process has to be daemonized similarly to the Dispatch webserver.
 
 ## Slack Configuration
 
-Both `socket mode` or `event mode` will need to set the following configuration items within the Slack API.
+You will need to set the following configuration settings for your Slack app in the [Slack API Web UI](https://api.slack.com/apps) for both `events mode` and `socket mode`.
 
 ### Event Subscriptions
 
@@ -67,11 +59,13 @@ To enable Dispatch to generate interactive components such as dialogs and modals
 
 ### Slash Commands
 
-To enable Dispatch's slash commands, you must add them to the Slack app first. Ensure that the `Command` field matches the configuration variables in the [Commands](#commands) listing below \(e.g. `/dispatch-update-incident`\) and that the `Request URL` points to the events command API endpoint of the Dispatch server at `/api/v1/<organization>/events/slack/command`.
+To enable Dispatch's slash commands, you must add them to your Slack app first. Ensure that the `Command` field in the Slack API Web UI matches the name of the command name in the Slack plugin in the Dispatch Web UI and that the `Request URL` points to the events command API endpoint of the Dispatch server at `/api/v1/<organization>/events/slack/command`.
 
 ![](../../../../.gitbook/assets/slack-setup-commands-0.png)
 
 ![](../../../../.gitbook/assets/slack-setup-commands-1.png)
+
+![](../../../../.gitbook/assets/slack-setup-commands-2.png)
 
 ### OAuth & Permissions
 
@@ -79,7 +73,7 @@ The `Bot User OAuth Access Token` is used to issue queries against the Slack API
 
 #### Scopes
 
-The following are the scopes required for the Dispatch Slack App to function correctly.
+The following are the bot and user scopes required for the Dispatch Slack App to function correctly.
 
 **Bot Token Scopes**
 
@@ -117,85 +111,89 @@ groups:read
 
 ## Dispatch Configuration
 
-#### `SLACK_WORKSPACE_NAME` \[Required. Secret: True\]
+The Dispatch Slack plugins for conversation management and resolving contact information are configured in the Dispatch Web UI under Settings ->  Project -> Plugins. Add the desired plugin(s) using the `NEW` button and then edit the plugin(s) configuration by clicking on the three vertical dots.
 
-> Specifies the name of the workspace where the Slack app is installed. This variable is typically the subdomain provided by Slack. For example, if your Slack workspace is accessible at `example.slack.com`, you would set your workspace name to `example`.
+### Conversation Management Plugin
 
-#### `SLACK_API_BOT_TOKEN` \[Required. Secret: True\]
+#### API Bot Token
 
-> The app's bot token necessary to communicate with the Slack API. Slack refers to this as your "Bot User OAuth Access Token" and should be revealed to app collaborators when installing the app.
+> The Slack app's bot token necessary to communicate with the Slack API. Slack refers to this as your "Bot User OAuth Access Token" and should be revealed to app collaborators when installing the app.
 
-#### `SLACK_SIGNING_SECRET` \[Required. Secret: True\]
+#### Socket Mode App Token
 
-> Secret used to verify signatures included on each HTTP request that Slack sends. Slack refers to this as your "Signing Secret."
+> The Slack app's socket mode token provided when socket mode is enabled to authenticate to the WebSocket API. Its value will be ignored if socket mode is not used.
 
-#### `SLACK_APP_USER_SLUG` \[Required\]
+#### Signing Secret
 
-> Specifies the Slack app's bot user id so that Dispatch can filter events generated by the app's user \(e.g., message posted in the channel\). You can use the [auth.test](https://api.slack.com/methods/auth.test/test) endpoint and the app's bot token \(`xoxb-*`\) to get the bot user-id \(`UXXXXXXXX`\)."
+> The secret used to verify signatures included on each HTTP request that Slack sends. Slack refers to this as your "Signing Secret."
 
-#### `SLACK_SOCKET_MODE_APP_TOKEN` \[Required (socket mode). Secret: True\]
+#### App User Id
 
-> Socket-specific app token used to authenticate to the WebSocket API.
+> The Slack app's bot user id so that Dispatch can filter events generated by the app's user \(e.g., message posted in the channel\). You can use the [auth.test](https://api.slack.com/methods/auth.test/test) endpoint and the app's bot token \(`xoxb-*`\) to get the bot user-id \(`UXXXXXXXX`\)."
 
-#### `SLACK_USER_ID_OVERRIDE` \[Optional. Default: ""\]
+#### Private Channels
 
-> Used during development to funnel all messages to a particular user.
+> Whether you want Dispatch to create public or private incident Slack channels.
 
-#### `SLACK_BAN_THREADS` \[Optional. Default: True\]
+#### Ban Threads
 
-> Do not allow threaded messages in incident channels.
+> Whether you want Dispatch to allow or ban threaded messages in incident channels.
 
-#### `SLACK_TIMELINE_EVENT_REACTION` \[Optional. Default: stopwatch\]
+#### Timeline Event Reaction
 
-> Specifies the reaction used for adding Slack messages posted the incident channel to the incident timeline.
+> The reaction used for adding Slack messages posted in the incident channel to the incident timeline.
 
-#### `SLACK_PROFILE_DEPARTMENT_FIELD_ID` \[Optional. Default: ""\]
+#### Command Strings
 
-> Specifies the profile field ID where Department is mapped.
+> The name of the slash commands that your Slack app will expose.
 
-#### `SLACK_PROFILE_TEAM_FIELD_ID` \[Optional. Default: ""\]
+![](../../../../.gitbook/assets/slack-plugin-conversation-management.png)
 
-> Specifies the profile field ID where the Team is mapped.
+You can override their values if you wish to do so. Included below are their descriptions for easy cut & paste into your Slack app slash commands set-up.
 
-#### `SLACK_PROFILE_WEBLINK_FIELD_ID` \[Optional. Default: ""\]
+| Command Name | Command Description                                                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------ |
+| `/dispatch-add-timeline-event` | Opens a dialog to add an event to the incident timeline.                                      |
+| `/dispatch-assign-role` | Opens a dialog for assigning a role to a participant.                                                |
+| `/dispatch-engage-oncall` | Opens a dialog to engage an on-call person.                                                        |
+| `/dispatch-list-incidents <organization-slug\|'default'> <project-slug\|'default'>` | Lists current active and stable incidents and closed incidents in the last 24 hours.                                                                                                               |
+| `/dispatch-list-my-tasks` | Sends an ephemeral message with the list of your open and resolved incident tasks.                 |
+| `/dispatch-list-participants` | Sends an ephemeral message with the list of incident participants.                             |
+| `/dispatch-list-resources` | Sends an ephemeral message with the list of all incident resources.                               |
+| `/dispatch-list-tasks` | Sends an ephemeral message with the list of open and resolved incident tasks.                         |
+| `/dispatch-list-workflows` | List workflows previously run during this incident.                                               |
+| `/dispatch-report-executive` | Opens a dialog to write an executive report.                                                    |
+| `/dispatch-report-incident <organization-slug\|'default'>` | Opens a dialog to report an incident. This command can be run from non-incident channels where the Dispatch bot is a member.                                                                                              |
+| `/dispatch-report-tactical` | Opens a dialog to write a tactical report.                                                       |
+| `/dispatch-run-workflow` | Run a workflow and associate artifacts with this incident.                                          |
+| `/dispatch-update-incident` | Opens a dialog to update the incident.                                                           |
+| `/dispatch-notifications-group` | Opens a dialog to edit the notifications group.                                              |
+| `/dispatch-update-participant` | Opens a dialog to update participant metadata.                                                |
 
-> Specifies the profile field ID where the web link is mapped.
+### Contact Information Resolver Plugin
 
-### Commands
+#### API Bot Token
 
-Below are the optional env variables to override the default slack command names as documented in the [Incident Commander](../../user-guide/incident-commander.md#all-slack-commands) user guide page. Also included are the descriptions for easy cut & paste into the Slack Slash Commands set-up.
+> The Slack app's bot token necessary to communicate with the Slack API. Slack refers to this as your "Bot User OAuth Access Token" and should be revealed to app collaborators when installing the app.
 
-| Override env var                                | Default command + _Command description_                                                                                        |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `SLACK_COMMAND_ADD_TIMELINE_EVENT_SLUG`         | `/dispatch-add-timeline-event`                                                                                                 |
-|                                                 | _Opens a dialog to add an event to the incident timeline._                                                                     |
-| `SLACK_COMMAND_ASSIGN_ROLE_SLUG`                | `/dispatch-assign-role`                                                                                                        |
-|                                                 | _Opens a dialog for assigning a role to a participant._                                                                        |
-| `SLACK_COMMAND_ENGAGE_ONCALL_SLUG`              | `/dispatch-engage-oncall`                                                                                                      |
-|                                                 | _Opens a dialog to engage an on-call person._                                                                                  |
-| `SLACK_COMMAND_LIST_INCIDENTS_SLUG`             | `/dispatch-list-incidents <organization-slug\|'default'> <project-slug\|'default'>`                                            |
-|                                                 | _Lists current active and stable incidents and closed incidents in the last 24 hours._                                         |
-| `SLACK_COMMAND_LIST_MY_TASKS_SLUG`              | `/dispatch-list-my-tasks`                                                                                                      |
-|                                                 | _Sends an ephemeral message with the list of your open and resolved incident tasks._                                           |
-| `SLACK_COMMAND_LIST_PARTICIPANTS_SLUG`          | `/dispatch-list-participants`                                                                                                  |
-|                                                 | _Sends an ephemeral message with the list of incident participants._                                                           |
-| `SLACK_COMMAND_LIST_RESOURCES_SLUG`             | `/dispatch-list-resources`                                                                                                     |
-|                                                 | _Sends an ephemeral message with the list of all incident resources._                                                          |
-| `SLACK_COMMAND_LIST_TASKS_SLUG`                 | `/dispatch-list-tasks`                                                                                                         |
-|                                                 | _Sends an ephemeral message with the list of open and resolved incident tasks._                                                |
-| `SLACK_COMMAND_LIST_WORKFLOWS_SLUG`             | `/dispatch-list-workflows`                                                                                                     |
-|                                                 | _List workflows previously run during this incident._                                                                          |
-| `SLACK_COMMAND_REPORT_EXECUTIVE_SLUG`           | `/dispatch-report-executive`                                                                                                   |
-|                                                 | _Opens a dialog to write an executive report._                                                                                 |
-| `SLACK_COMMAND_REPORT_INCIDENT_SLUG`            | `/dispatch-report-incident <orgnaization-slug\|'default'>`                                                                     |
-|                                                 | _Opens a dialog to report an incident. This command can be run from non-incident channels where the Dispatch bot is a member._ |
-| `SLACK_COMMAND_REPORT_TACTICAL_SLUG`            | `/dispatch-report-tactical`                                                                                                    |
-|                                                 | _Opens a dialog to write a tactical report._                                                                                   |
-| `SLACK_COMMAND_RUN_WORKFLOW_SLUG`               | `/dispatch-run-workflow`                                                                                                       |
-|                                                 | _Run a workflow and associate artifacts with this incident._                                                                   |
-| `SLACK_COMMAND_UPDATE_INCIDENT_SLUG`            | `/dispatch-update-incident`                                                                                                    |
-|                                                 | _Opens a dialog to update the incident._                                                                                       |
-| `SLACK_COMMAND_UPDATE_NOTIFICATIONS_GROUP_SLUG` | `/dispatch-notifications-group`                                                                                                |
-|                                                 | _Opens a dialog to edit the notifications group._                                                                              |
-| `SLACK_COMMAND_UPDATE_PARTICIPANT_SLUG`         | `/dispatch-update-participant`                                                                                                 |
-|                                                 | _Opens a dialog to update participant metadata._                                                                               |
+#### Socket Mode App Token
+
+> The Slack app's socket mode token provided when socket mode is enabled to authenticate to the WebSocket API. Its value will be ignored if socket mode is not used.
+
+#### Signing Secret
+
+> The secret used to verify signatures included on each HTTP request that Slack sends. Slack refers to this as your "Signing Secret."
+
+#### Profile Department Field Id
+
+> The profile field ID where Department is mapped.
+
+#### Profile Team Field Id
+
+> The profile field ID where the Team is mapped.
+
+#### Profile Weblink Field Id
+
+> The profile field ID where the weblink is mapped.
+
+![](../../../../.gitbook/assets/slack-plugin-contact-information-resolver.png)
