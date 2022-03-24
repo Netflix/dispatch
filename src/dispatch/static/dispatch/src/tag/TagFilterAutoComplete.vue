@@ -27,9 +27,12 @@
     </template>
     <template v-slot:selection="{ item, index }">
       <v-chip close @click:close="value.splice(index, 1)">
-        <span v-if="item.tag_type"
-          ><span v-if="!project">{{ item.project.name }}/</span>{{ item.tag_type.name }}/ </span
-        >{{ item.name }}
+        <span v-if="item.tag_type">
+          <span v-if="!project">{{ item.project.name }}/</span>{{ item.tag_type.name }}/
+        </span>
+        <a :href="item.uri" target="_blank" :title="item.description">
+          {{ item.name }}
+        </a>
       </v-chip>
     </template>
     <template v-slot:item="data">
