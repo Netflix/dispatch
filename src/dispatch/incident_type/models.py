@@ -54,7 +54,8 @@ class IncidentType(ProjectMixin, Base):
     liaison_service_id = Column(Integer, ForeignKey("service.id"))
     liaison_service = relationship("Service", foreign_keys=[liaison_service_id])
 
-    search_vector = Column(TSVectorType("name", "description"))
+    # the catalog here is simple to help matching "named entities"
+    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
     @hybrid_method
     def get_meta(self, slug):
