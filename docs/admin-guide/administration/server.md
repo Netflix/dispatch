@@ -21,9 +21,9 @@ In general, do not include any quotation marks when adding configuration values.
 
 ### General
 
-#### `LOG_LEVEL` \[default: 'warning'\]
+#### `LOG_LEVEL` \[default: 'WARNING'\]
 
-> Controls the level of logging the application will perform during operations.
+> Controls the level of logging the application will perform during operations. Possible values: CRITICAL, ERROR, WARNING, INFO, DEBUG
 
 #### `STATIC_DIR` \[default: './src/static/dispatch/dist'\]
 
