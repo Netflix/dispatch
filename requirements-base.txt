@@ -63,10 +63,11 @@ charset-normalizer==2.0.11
     #   aiohttp
     #   httpx
     #   requests
-click==8.1.0
+click==8.0.4
     # via
     #   -r requirements-base.in
     #   schemathesis
+    #   spacy
     #   typer
     #   uvicorn
 colorama==0.4.4
@@ -353,7 +354,7 @@ sniffio==1.2.0
     #   httpx
 sortedcontainers==2.4.0
     # via hypothesis
-spacy==3.2.3
+spacy==3.2.4
     # via -r requirements-base.in
 spacy-legacy==3.0.8
     # via spacy
