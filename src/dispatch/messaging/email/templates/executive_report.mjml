@@ -6,7 +6,7 @@
       {{ name }} - Executive Report
     </mj-text>
     <mj-text>
-      You're receiving this executive report, because you, or a distribution list you're a member of,
+      You're receiving this executive report, because you, or an e-mail distribution list you're on,
       is a member of this incident's notifications Google group ({{ notifications_group }}).
     </mj-text>
     <mj-text>
