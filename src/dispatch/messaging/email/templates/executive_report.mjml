@@ -6,8 +6,8 @@
       {{ name }} - Executive Report
     </mj-text>
     <mj-text>
-      You're receiving this executive report, because you're a member of this incident's
-      notifications Google group ({{ notifications_group }}).
+      You're receiving this executive report, because you, or an e-mail distribution list you're on,
+      is a member of this incident's notifications Google group ({{ notifications_group }}).
     </mj-text>
     <mj-text>
       Please be aware that this report is a point in time update and
