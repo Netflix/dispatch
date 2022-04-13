@@ -91,6 +91,7 @@ export default {
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
         { text: "Page Commander", value: "page_commander", sortable: true },
+        { text: "Color", value: "color", sortable: true },
         { text: "Default", value: "default", sortable: true },
         { text: "Enabled", value: "enabled", sortable: true },
         { text: "Tactical Report Reminder", value: "tactical_report_reminder", sortable: true },
