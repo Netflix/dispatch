@@ -135,11 +135,15 @@ def update(
 ) -> IncidentPriority:
     """Updates an incident priority."""
     incident_priority_data = incident_priority.dict()
-    update_data = incident_priority_in.dict(skip_defaults=True, exclude={"project"})
+
+    update_data = incident_priority_in.dict(skip_defaults=True, exclude={"project", "color"})
 
     for field in incident_priority_data:
         if field in update_data:
             setattr(incident_priority, field, update_data[field])
+
+    if incident_priority_in.color:
+        incident_priority.color = incident_priority_in.color.as_hex()
 
     db_session.commit()
     return incident_priority
