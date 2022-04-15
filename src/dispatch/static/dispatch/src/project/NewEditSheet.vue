@@ -138,7 +138,8 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required, email } from "vee-validate/dist/rules"
-import ColorPickerInput from "@/project/ColorPickerInput.vue"
+
+import ColorPickerInput from "@/components/ColorPickerInput.vue"
 
 extend("email", email)
 

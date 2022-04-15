@@ -109,7 +109,7 @@ import { required } from "vee-validate/dist/rules"
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 
-import ColorPickerInput from "@/project/ColorPickerInput.vue"
+import ColorPickerInput from "@/components/ColorPickerInput.vue"
 
 extend("required", {
   ...required,

@@ -112,6 +112,9 @@
                 />
               </v-flex>
               <v-flex xs12>
+                <color-picker-input label="Color" v-model="color"></color-picker-input>
+              </v-flex>
+              <v-flex xs12>
                 <v-checkbox
                   v-model="default_incident_priority"
                   label="Default Incident Priority"
@@ -134,10 +137,12 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
+import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+
+import ColorPickerInput from "@/components/ColorPickerInput.vue"
 
 extend("required", {
   ...required,
@@ -148,6 +153,7 @@ export default {
   name: "IncidentPriorityNewEditSheet",
 
   components: {
+    ColorPickerInput,
     ValidationObserver,
     ValidationProvider,
   },
@@ -159,17 +165,18 @@ export default {
   computed: {
     ...mapFields("incident_priority", [
       "dialogs.showCreateEdit",
+      "selected.color",
+      "selected.default",
       "selected.description",
+      "selected.enabled",
+      "selected.executive_report_reminder",
       "selected.id",
-      "selected.project",
       "selected.loading",
       "selected.name",
-      "selected.view_order",
-      "selected.enabled",
       "selected.page_commander",
+      "selected.project",
       "selected.tactical_report_reminder",
-      "selected.executive_report_reminder",
-      "selected.default",
+      "selected.view_order",
     ]),
     ...mapFields("incident_priority", {
       default_incident_priority: "selected.default",

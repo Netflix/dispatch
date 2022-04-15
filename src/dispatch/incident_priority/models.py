@@ -1,5 +1,6 @@
 from typing import List, Optional
 from pydantic import StrictBool, Field
+from pydantic.color import Color
 
 from sqlalchemy import Column, Integer, String, Boolean
 from sqlalchemy.sql.schema import UniqueConstraint
@@ -17,13 +18,13 @@ class IncidentPriority(Base, ProjectMixin):
     name = Column(String)
     description = Column(String)
     page_commander = Column(Boolean, default=False)
+    color = Column(String)
+    enabled = Column(Boolean, default=True)
+    default = Column(Boolean, default=False)
 
     # number of hours after which reports should be sent.
     tactical_report_reminder = Column(Integer, default=24, server_default="24")
     executive_report_reminder = Column(Integer, default=24, server_default="24")
-
-    enabled = Column(Boolean, default=True)
-    default = Column(Boolean, default=False)
 
     # This column is used to control how priorities should be displayed.
     # Lower orders will be shown first.
@@ -46,6 +47,7 @@ class IncidentPriorityBase(DispatchBase):
     default: Optional[bool]
     enabled: Optional[bool]
     view_order: Optional[int]
+    color: Optional[Color] = Field(None, nullable=True)
 
 
 class IncidentPriorityCreate(IncidentPriorityBase):

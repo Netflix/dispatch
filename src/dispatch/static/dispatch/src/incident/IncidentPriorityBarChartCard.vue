@@ -79,7 +79,15 @@ export default {
             },
           },
         ],
-        colors: ["#008FFB", "#FF4560", "#FEB019"],
+        colors: [
+          function ({ seriesIndex, w }) {
+            for (let i = 0; i < w.config.series[seriesIndex].data.length; i++) {
+              if (w.config.series[seriesIndex].data[i].items.length > 0) {
+                return w.config.series[seriesIndex].data[i].items[0].incident_priority.color
+              }
+            }
+          },
+        ],
         xaxis: {
           categories: this.categoryData || [],
           title: {
