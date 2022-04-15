@@ -44,12 +44,14 @@ export default {
 
   created: function () {
     IncidentPriorityApi.getAll().then((response) => {
-      this.priorities = map(
-        sortBy(response.data.items, function (value) {
-          return value.view_order
-        }),
-        "name"
-      )
+      this.priorities = [...new Set(
+        map(
+          sortBy(response.data.items, function (value) {
+            return value.view_order
+          }),
+          "name"
+        )
+      )]
     })
   },
 
@@ -86,6 +88,7 @@ export default {
                 return w.config.series[seriesIndex].data[i].items[0].incident_priority.color
               }
             }
+            return "#008FFB"
           },
         ],
         xaxis: {
