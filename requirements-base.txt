@@ -316,7 +316,7 @@ rsa==4.8
     #   python-jose
 schedule==1.1.0
     # via -r requirements-base.in
-schemathesis==3.13.9
+schemathesis==3.14.1
     # via -r requirements-base.in
 scipy==1.8.0
     # via statsmodels
@@ -389,7 +389,11 @@ text-unidecode==1.3
 thinc==8.0.15
     # via spacy
 tomli==2.0.1
-    # via pytest
+    # via
+    #   pytest
+    #   schemathesis
+tomli-w==1.0.0
+    # via schemathesis
 tqdm==4.64.0
     # via spacy
 typer==0.4.1
