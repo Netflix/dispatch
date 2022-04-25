@@ -23,11 +23,11 @@ git clone https://github.com/Netflix/dispatch-docker.git
 Before starting the installation, we strongly recommend you check out [how to configure your Dispatch instance](configuration/) as you'd need to rebuild your images \(`docker-compose build`\) if you want to change your configuration settings. You may copy and edit the example configs provided in the repository. If none exists, the install script will use these examples as actual configurations.
 
 {% hint style="info" %}
-Note: Dispatch will not start without at least a few required configuration variables. See the example [env](https://github.com/Netflix/dispatch/blob/latest/docker/.env.example).
+Note: Dispatch will not start without at least a few required configuration variables. See the example [.env](https://github.com/Netflix/dispatch/blob/latest/docker/.env.example) configuration file.
 {% endhint %}
 
 {% hint style="info" %}
-Note: Dispatch does not contain any data by default. For evaluation purposes, we do provide an example data set located [here](https://github.com/Netflix/dispatch/blob/develop/data/dispatch-sample-data.dump). For instructions for restoring this data, see [here](https://hawkins.gitbook.io/dispatch/cli#restore-dump).
+Note: Dispatch does not contain any data by default. For evaluation purposes, we do provide an example data set located [here](https://github.com/Netflix/dispatch/blob/master/data/dispatch-sample-data.dump). For instructions on how to restore this data, see [here](https://hawkins.gitbook.io/dispatch/administration-guide/cli#restore-dump).
 {% endhint %}
 
 To start, run the install script:
@@ -35,6 +35,10 @@ To start, run the install script:
 ```bash
 ./install.sh
 ```
+
+{% hint style="info" %}
+Note: The `core` Docker service is not needed once the `web` and `schedule` services, which depend on it, are built.
+{% endhint %}
 
 ### The "first" user problem
 
