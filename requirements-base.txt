@@ -265,7 +265,7 @@ pyparsing==3.0.8
     #   packaging
 pyrsistent==0.18.1
     # via jsonschema
-pytest==7.1.1
+pytest==7.1.2
     # via
     #   pytest-subtests
     #   schemathesis
