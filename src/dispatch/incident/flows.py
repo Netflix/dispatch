@@ -585,7 +585,9 @@ def incident_create_stable_flow(
     *, incident_id: int, organization_slug: str = None, db_session=None
 ):
     """Creates all resources necessary when an incident is created as 'stable'."""
-    incident_create_flow(incident_id=incident_id, db_session=db_session)
+    incident_create_flow(
+        incident_id=incident_id, organization_slug=organization_slug, db_session=db_session
+    )
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     incident_stable_status_flow(incident=incident, db_session=db_session)
 
