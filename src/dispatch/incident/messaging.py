@@ -450,7 +450,10 @@ def send_incident_participant_announcement_message(
 
     participant_avatar_url = convo_plugin.instance.get_participant_avatar_url(participant_email)
 
-    # TODO these shouldn't be raw blocks (kglisson)
+    participant_name_mrkdwn = participant_name
+    if participant_weblink:
+        participant_name_mrkdwn = f"<{participant_weblink}|{participant_name}>"
+
     blocks = [
         {"type": "section", "text": {"type": "mrkdwn", "text": f"*{notification_text}*"}},
         {
@@ -458,7 +461,7 @@ def send_incident_participant_announcement_message(
             "text": {
                 "type": "mrkdwn",
                 "text": (
-                    f"*Name:* <{participant_weblink}|{participant_name}>\n"
+                    f"*Name:* {participant_name_mrkdwn}\n"
                     f"*Team*: {participant_team}, {participant_department}\n"
                     f"*Location*: {participant_location}\n"
                     f"*Incident Role(s)*: {(', ').join(participant_roles)}\n"
