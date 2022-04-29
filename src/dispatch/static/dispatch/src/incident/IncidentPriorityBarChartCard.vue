@@ -44,14 +44,16 @@ export default {
 
   created: function () {
     IncidentPriorityApi.getAll().then((response) => {
-      this.priorities = [...new Set(
-        map(
-          sortBy(response.data.items, function (value) {
-            return value.view_order
-          }),
-          "name"
-        )
-      )]
+      this.priorities = [
+        ...new Set(
+          map(
+            sortBy(response.data.items, function (value) {
+              return value.view_order
+            }),
+            "name"
+          )
+        ),
+      ]
     })
   },
 
