@@ -35,8 +35,8 @@ def calculate_incidents_response_cost(db_session: SessionLocal, project: Project
         )
         return
 
-    # we only update the cost of active and stable incidents to avoid impacting old cost metrics
-    # when we relied on a different values for parameters such as average cost per employee or anuual business hours
+    # we only update the cost of active and stable incidents to avoid impacting older cost metrics
+    # when we make changes to average cost per employee and/ or number of annual business hours.
     active_incidents = incident_service.get_all_by_status(
         db_session=db_session, project_id=project.id, status=IncidentStatus.active
     )
