@@ -141,7 +141,7 @@ hypothesis==6.43.1
     #   hypothesis-graphql
     #   hypothesis-jsonschema
     #   schemathesis
-hypothesis-graphql==0.5.1
+hypothesis-graphql==0.9.0
     # via schemathesis
 hypothesis-jsonschema==0.22.0
     # via schemathesis
@@ -315,7 +315,7 @@ rsa==4.8
     #   python-jose
 schedule==1.1.0
     # via -r requirements-base.in
-schemathesis==3.14.2
+schemathesis==3.15.0
     # via -r requirements-base.in
 scipy==1.8.0
     # via statsmodels
