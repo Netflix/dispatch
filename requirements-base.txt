@@ -28,7 +28,7 @@ attrs==21.4.0
     #   jsonschema
     #   pytest
     #   schemathesis
-bcrypt==3.2.0
+bcrypt==3.2.2
     # via -r requirements-base.in
 blis==0.7.7
     # via
@@ -329,7 +329,6 @@ sh==1.14.2
     # via -r requirements-base.in
 six==1.16.0
     # via
-    #   bcrypt
     #   ecdsa
     #   google-auth
     #   google-auth-httplib2
