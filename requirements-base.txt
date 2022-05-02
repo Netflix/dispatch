@@ -94,7 +94,7 @@ dnspython==2.2.1
     # via email-validator
 ecdsa==0.17.0
     # via python-jose
-email-validator==1.2.0
+email-validator==1.2.1
     # via -r requirements-base.in
 emails==0.6
     # via -r requirements-base.in
