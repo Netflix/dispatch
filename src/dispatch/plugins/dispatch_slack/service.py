@@ -294,6 +294,19 @@ def unarchive_conversation(client: Any, conversation_id: str):
             raise e
 
 
+def conversation_archived(client: Any, conversation_id: str):
+    """Returns whether a given conversation has been archived or not."""
+    try:
+        return make_call(client, "conversations.info", channel=conversation_id)["channel"][
+            "is_archived"
+        ]
+    except slack_sdk.errors.SlackApiError as e:
+        if e.response["error"] == "channel_not_found":
+            return None
+        else:
+            raise e
+
+
 def add_users_to_conversation(client: Any, conversation_id: str, user_ids: List[str]):
     """Add users to conversation."""
     # NOTE this will trigger a member_joined_channel event, which we will capture and run the incident.incident_add_or_reactivate_participant_flow() as a result

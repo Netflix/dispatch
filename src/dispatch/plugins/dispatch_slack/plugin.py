@@ -28,6 +28,7 @@ from .service import (
     add_users_to_conversation,
     archive_conversation,
     chunks,
+    conversation_archived,
     create_conversation,
     create_slack_client,
     get_conversation_by_name,
@@ -124,13 +125,18 @@ class SlackConversationPlugin(ConversationPlugin):
         if not blocks:
             blocks = create_message_blocks(message_template, notification_type, items, **kwargs)
 
-        return send_ephemeral_message(client, conversation_id, user_id, text, blocks)
+        archived = conversation_archived(client, conversation_id)
+        if not archived:
+            send_ephemeral_message(client, conversation_id, user_id, text, blocks)
 
     def add(self, conversation_id: str, participants: List[str]):
         """Adds users to conversation."""
         client = create_slack_client(self.configuration)
         participants = [resolve_user(client, p)["id"] for p in participants]
-        return add_users_to_conversation(client, conversation_id, participants)
+
+        archived = conversation_archived(client, conversation_id)
+        if not archived:
+            add_users_to_conversation(client, conversation_id, participants)
 
     def archive(self, conversation_id: str):
         """Archives conversation."""
