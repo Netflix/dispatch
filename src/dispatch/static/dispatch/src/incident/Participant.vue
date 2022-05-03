@@ -2,7 +2,7 @@
   <div>
     <v-menu v-model="menu" bottom right transition="scale-transition" origin="top left">
       <template v-slot:activator="{ on }">
-        <v-chip pill small v-on="on">
+        <v-chip pill small v-on="on" v-if="participant.individual">
           <v-avatar color="teal" left>
             <span class="white--text">{{ participant.individual.name | initials }}</span>
           </v-avatar>
@@ -11,7 +11,7 @@
       </template>
       <v-card width="300">
         <v-list dark>
-          <v-list-item>
+          <v-list-item v-if="participant.individual">
             <v-list-item-avatar color="teal">
               <span class="white--text">{{ participant.individual.name | initials }}</span>
             </v-list-item-avatar>
