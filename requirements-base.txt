@@ -340,7 +340,6 @@ six==1.16.0
     #   python-multipart
     #   sqlalchemy-filters
     #   sqlalchemy-utils
-    #   validators
 slack-sdk==3.16.0
     # via -r requirements-base.in
 smart-open==5.2.1
@@ -411,7 +410,7 @@ urllib3==1.26.9
     #   sentry-sdk
 uvicorn==0.17.6
     # via -r requirements-base.in
-validators==0.18.2
+validators==0.19.0
     # via -r requirements-base.in
 wasabi==0.9.1
     # via
