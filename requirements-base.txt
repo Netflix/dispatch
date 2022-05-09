@@ -315,7 +315,7 @@ rsa==4.8
     #   python-jose
 schedule==1.1.0
     # via -r requirements-base.in
-schemathesis==3.15.1
+schemathesis==3.15.2
     # via -r requirements-base.in
 scipy==1.8.0
     # via statsmodels
