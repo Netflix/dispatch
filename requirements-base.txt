@@ -98,7 +98,7 @@ email-validator==1.2.1
     # via -r requirements-base.in
 emails==0.6
     # via -r requirements-base.in
-fastapi==0.76.0
+fastapi==0.77.1
     # via -r requirements-base.in
 frozenlist==1.3.0
     # via
@@ -371,7 +371,7 @@ srsly==2.4.3
     # via
     #   spacy
     #   thinc
-starlette==0.18.0
+starlette==0.19.1
     # via
     #   fastapi
     #   schemathesis
