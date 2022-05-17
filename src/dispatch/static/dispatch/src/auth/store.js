@@ -115,6 +115,7 @@ const actions = {
     commit("SET_BASIC_LOGIN_LOADING", true)
     UserApi.login(payload.email, payload.password).then(function (res) {
       commit("SET_USER_LOGIN", res.data.token)
+      commit("SET_USER_PROJECTS", res.data.projects)
       router.push({
         name: "IncidentOverview",
       })
@@ -177,14 +178,18 @@ const mutations = {
   },
   SET_USER_LOGIN(state, token) {
     state.currentUser = {
+      ...state.currentUser,
+      ...jwt_decode(token),
       token: token,
       loggedIn: true,
-      ...jwt_decode(token),
     }
     localStorage.setItem("token", token)
   },
   SET_USER_LOGOUT(state) {
     state.currentUser = { loggedIn: false }
+  },
+  SET_USER_PROJECTS(state, value) {
+    state.currentUser.projects = value
   },
 }
 

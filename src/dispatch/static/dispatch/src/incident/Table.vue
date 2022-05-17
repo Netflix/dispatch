@@ -11,7 +11,7 @@
         <div class="headline">Incidents</div>
       </v-col>
       <v-col cols="3">
-        <table-filter-dialog />
+        <table-filter-dialog :projects="defaultUserProjects" />
         <table-export-dialog />
         <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn>
       </v-col>
@@ -112,7 +112,6 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
-import RouterUtils from "@/router/utils"
 import BulkEditSheet from "@/incident/BulkEditSheet.vue"
 import DeleteDialog from "@/incident/DeleteDialog.vue"
 import IncidentCostCard from "@/incident_cost/IncidentCostCard.vue"
@@ -121,6 +120,7 @@ import IncidentPriority from "@/incident/IncidentPriority.vue"
 import IncidentStatus from "@/incident/IncidentStatus.vue"
 import NewSheet from "@/incident/NewSheet.vue"
 import ReportDialog from "@/incident/ReportDialog.vue"
+import RouterUtils from "@/router/utils"
 import TableExportDialog from "@/incident/TableExportDialog.vue"
 import TableFilterDialog from "@/incident/TableFilterDialog.vue"
 
@@ -189,6 +189,22 @@ export default {
       "table.rows.selected",
     ]),
     ...mapFields("route", ["query"]),
+    ...mapFields("auth", ["currentUser.projects"]),
+
+    defaultUserProjects: {
+      get() {
+        let d = null
+        if (this.projects) {
+          let d = this.projects.filter((v) => v.default === true)
+          return d.map((v) => v.project)
+        }
+        return d
+      },
+    },
+  },
+
+  methods: {
+    ...mapActions("incident", ["getAll", "showNewSheet", "showDeleteDialog", "showReportDialog"]),
   },
 
   watch: {
@@ -201,7 +217,11 @@ export default {
   },
 
   created() {
-    this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.query) }
+    this.filters = {
+      ...this.filters,
+      ...RouterUtils.deserializeFilters(this.query),
+      project: this.defaultUserProjects
+    }
 
     this.getAll()
 
@@ -233,10 +253,6 @@ export default {
         this.getAll()
       }
     )
-  },
-
-  methods: {
-    ...mapActions("incident", ["getAll", "showNewSheet", "showDeleteDialog", "showReportDialog"]),
   },
 }
 </script>

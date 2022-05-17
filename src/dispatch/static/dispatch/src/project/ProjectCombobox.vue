@@ -56,6 +56,7 @@ import ProjectApi from "@/project/api"
 
 export default {
   name: "ProjectComboBox",
+
   props: {
     value: {
       type: Array,
