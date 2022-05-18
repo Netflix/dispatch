@@ -41,16 +41,16 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
-import subMonths from "date-fns/subMonths"
 import { sum } from "lodash"
+import subMonths from "date-fns/subMonths"
 
+import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
+import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
+import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
+import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import RouterUtils from "@/router/utils"
 import SearchUtils from "@/search/utils"
 import TaskApi from "@/task/api"
-import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
-import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
-import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
-import ProjectCombobox from "@/project/ProjectCombobox.vue"
 
 let today = function () {
   let now = new Date()
@@ -60,13 +60,22 @@ let today = function () {
 export default {
   name: "TaskOverviewFilterDialog",
 
+  props: {
+    projects: {
+      type: Array,
+      default: function () {
+        return []
+      },
+    },
+  },
+
   data() {
     return {
       menuStart: false,
       menuEnd: false,
       display: false,
       filters: {
-        project: [],
+        project: this.projects,
         incident_type: [],
         incident_priority: [],
         status: [],

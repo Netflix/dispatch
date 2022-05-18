@@ -198,6 +198,9 @@ export default {
   },
 
   computed: {
+    ...mapFields("route", ["query.project"]),
+    ...mapFields("auth", ["currentUser.projects"]),
+
     incidentsByYear() {
       return groupBy(this.items, function (item) {
         return parseISO(item.reported_at).getYear()
@@ -246,9 +249,6 @@ export default {
         return differenceInHours(parseISO(endTime), parseISO(item.reported_at))
       })
     },
-    ...mapFields("route", ["query.project"]),
-    ...mapFields("auth", ["currentUser.projects"]),
-
     defaultUserProjects: {
       get() {
         let d = null
