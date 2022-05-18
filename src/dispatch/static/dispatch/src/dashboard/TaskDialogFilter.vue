@@ -12,7 +12,7 @@
       <v-list dense>
         <v-list-item>
           <v-list-item-content>
-            <incident-window-input v-model="filters.created_at" />
+            <incident-window-input v-model="filters.created_at" label="Created At" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
@@ -42,6 +42,7 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { sum } from "lodash"
+import startOfMonth from "date-fns/startOfMonth"
 import subMonths from "date-fns/subMonths"
 
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
@@ -59,6 +60,13 @@ let today = function () {
 
 export default {
   name: "TaskOverviewFilterDialog",
+
+  components: {
+    IncidentTypeCombobox,
+    IncidentPriorityCombobox,
+    ProjectCombobox,
+    IncidentWindowInput,
+  },
 
   props: {
     projects: {
@@ -81,8 +89,8 @@ export default {
         status: [],
         tag: [],
         created_at: {
-          start: subMonths(today(), 6).toISOString().substr(0, 10),
-          end: today().toISOString().substr(0, 10),
+          start: null,
+          end: null,
         },
       },
     }
@@ -117,10 +125,9 @@ export default {
         filters: { ...this.filters },
       }
 
-      filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
-
       this.$emit("loading", "error")
-      this.$emit("filterOptions", filterOptions)
+      filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
+      // this.$emit("filterOptions", filterOptions)
       TaskApi.getAll(filterOptions).then((response) => {
         this.$emit("update", response.data.items)
         this.$emit("loading", false)
@@ -128,15 +135,17 @@ export default {
     },
   },
 
-  components: {
-    IncidentTypeCombobox,
-    IncidentPriorityCombobox,
-    ProjectCombobox,
-    IncidentWindowInput,
-  },
-
   created() {
-    this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.query) }
+    this.filters = {
+      ...this.filters,
+      ...{
+        created_at: {
+          start: startOfMonth(subMonths(today(), 1)).toISOString().slice(0, -1),
+          end: today().toISOString().slice(0, -1),
+        },
+      },
+      ...RouterUtils.deserializeFilters(this.query), // Order matters as values will overwrite
+    }
     this.fetchData()
   },
 }

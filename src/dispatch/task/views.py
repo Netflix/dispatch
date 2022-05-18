@@ -1,3 +1,4 @@
+import json
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
@@ -18,10 +19,10 @@ router = APIRouter()
 
 @router.get("", summary="Retrieve a list of all tasks.")
 def get_tasks(
-    *, include: List[str] = Query([], alias="include[]"), commons: dict = Depends(common_parameters)
+    *, common: dict = Depends(common_parameters), include: List[str] = Query([], alias="include[]")
 ):
     """Retrieve all tasks."""
-    pagination = search_filter_sort_paginate(model="Task", **commons)
+    pagination = search_filter_sort_paginate(model="Task", **common)
 
     if include:
         # only allow two levels for now
@@ -34,8 +35,8 @@ def get_tasks(
             "total": ...,
         }
 
-        return TaskPagination(**pagination).dict(include=include_fields)
-    return TaskPagination(**pagination).dict()
+        return json.loads(TaskPagination(**pagination).json(include=include_fields))
+    return json.loads(TaskPagination(**pagination).json())
 
 
 @router.post("", response_model=TaskRead, tags=["tasks"])
