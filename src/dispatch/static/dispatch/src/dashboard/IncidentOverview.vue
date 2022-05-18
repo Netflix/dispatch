@@ -10,7 +10,7 @@
         <v-btn color="info" @click="copyView"> Share View </v-btn>
       </v-flex>
       <v-flex class="d-flex justify-end" lg6 sm6 xs12>
-        <dialog-filter @update="update" @loading="setLoading" />
+        <incident-dialog-filter @update="update" @loading="setLoading" :projects="defaultUserProjects" />
       </v-flex>
     </v-layout>
     <v-layout row wrap>
@@ -111,11 +111,10 @@ import { groupBy, sumBy, filter } from "lodash"
 import { parseISO } from "date-fns"
 import differenceInHours from "date-fns/differenceInHours"
 
-import DialogFilter from "@/dashboard/DialogFilter.vue"
-import StatWidget from "@/components/StatWidget.vue"
 import IncidentActiveTimeCard from "@/incident/IncidentActiveTimeCard.vue"
 import IncidentCommandersLocationBarChartCard from "@/incident/IncidentCommandersLocationBarChartCard.vue"
 import IncidentCostBarChartCard from "@/incident/IncidentCostBarChartCard.vue"
+import IncidentDialogFilter from "@/dashboard/IncidentDialogFilter.vue"
 import IncidentForecastCard from "@/incident/IncidentForecastCard.vue"
 import IncidentHeatmapCard from "@/incident/IncidentHeatmapCard.vue"
 import IncidentParticipantsLocationBarChartCard from "@/incident/IncidentParticipantsLocationBarChartCard.vue"
@@ -126,16 +125,16 @@ import IncidentResolveTimeCard from "@/incident/IncidentResolveTimeCard.vue"
 import IncidentTagsTreemapCard from "@/incident/IncidentTagsTreemapCard.vue"
 import IncidentTypeBarChartCard from "@/incident/IncidentTypeBarChartCard.vue"
 import IncidentsDrillDownSheet from "@/dashboard/IncidentsDrillDownSheet.vue"
+import StatWidget from "@/components/StatWidget.vue"
 
 export default {
   name: "IncidentDashboard",
 
   components: {
-    DialogFilter,
-    StatWidget,
     IncidentActiveTimeCard,
     IncidentCommandersLocationBarChartCard,
     IncidentCostBarChartCard,
+    IncidentDialogFilter,
     IncidentForecastCard,
     IncidentHeatmapCard,
     IncidentParticipantsLocationBarChartCard,
@@ -146,6 +145,7 @@ export default {
     IncidentTagsTreemapCard,
     IncidentTypeBarChartCard,
     IncidentsDrillDownSheet,
+    StatWidget,
   },
 
   data() {
@@ -247,6 +247,18 @@ export default {
       })
     },
     ...mapFields("route", ["query.project"]),
+    ...mapFields("auth", ["currentUser.projects"]),
+
+    defaultUserProjects: {
+      get() {
+        let d = null
+        if (this.projects) {
+          let d = this.projects.filter((v) => v.default === true)
+          return d.map((v) => v.project)
+        }
+        return d
+      },
+    },
   },
 }
 </script>

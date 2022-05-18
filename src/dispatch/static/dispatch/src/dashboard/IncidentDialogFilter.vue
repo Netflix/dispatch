@@ -56,13 +56,13 @@ import { mapFields } from "vuex-map-fields"
 import startOfMonth from "date-fns/startOfMonth"
 import subMonths from "date-fns/subMonths"
 
-import RouterUtils from "@/router/utils"
-import SearchUtils from "@/search/utils"
 import IncidentApi from "@/incident/api"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
+import RouterUtils from "@/router/utils"
+import SearchUtils from "@/search/utils"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
 let today = function () {
@@ -71,7 +71,24 @@ let today = function () {
 }
 
 export default {
-  name: "IncidentOverviewFilterBar",
+  name: "IncidentOverviewFilterDialog",
+
+  components: {
+    IncidentPriorityCombobox,
+    IncidentTypeCombobox,
+    IncidentWindowInput,
+    ProjectCombobox,
+    TagFilterAutoComplete,
+  },
+
+  props: {
+    projects: {
+      type: Array,
+      default: function () {
+        return []
+      },
+    },
+  },
 
   data() {
     return {
@@ -79,7 +96,7 @@ export default {
       menuEnd: false,
       display: false,
       filters: {
-        project: [],
+        project: this.projects,
         incident_type: [],
         incident_priority: [],
         status: [],
@@ -151,14 +168,6 @@ export default {
         this.$emit("loading", false)
       })
     },
-  },
-
-  components: {
-    IncidentPriorityCombobox,
-    IncidentTypeCombobox,
-    IncidentWindowInput,
-    ProjectCombobox,
-    TagFilterAutoComplete,
   },
 
   created() {
