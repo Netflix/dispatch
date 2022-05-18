@@ -44,11 +44,20 @@ export default {
     ProjectCombobox,
   },
 
+  props: {
+    projects: {
+      type: Array,
+      default: function () {
+        return []
+      },
+    },
+  },
+
   data() {
     return {
       display: false,
       local_incident: [],
-      local_project: [],
+      local_project: this.projects,
     }
   },
 

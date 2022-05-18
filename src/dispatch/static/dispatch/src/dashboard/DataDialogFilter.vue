@@ -28,13 +28,26 @@
 import { mapFields } from "vuex-map-fields"
 import { sum } from "lodash"
 
+import DataSourceApi from "@/data/source/api.js"
+import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import RouterUtils from "@/router/utils"
 import SearchUtils from "@/search/utils"
-import ProjectCombobox from "@/project/ProjectCombobox.vue"
-import DataSourceApi from "@/data/source/api.js"
 
 export default {
   name: "DataOverviewFilterDialog",
+
+  components: {
+    ProjectCombobox,
+  },
+
+  props: {
+    projects: {
+      type: Array,
+      default: function () {
+        return []
+      },
+    },
+  },
 
   data() {
     return {
@@ -43,7 +56,7 @@ export default {
       display: false,
       sources: [],
       filters: {
-        project: [],
+        project: this.projects,
       },
     }
   },
@@ -79,10 +92,6 @@ export default {
         this.$emit("loading", false)
       })
     },
-  },
-
-  components: {
-    ProjectCombobox,
   },
 
   created() {

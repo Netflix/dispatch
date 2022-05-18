@@ -7,7 +7,7 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Query Filters</span>
+        <span class="headline">Data Query Filters</span>
       </v-card-title>
       <v-list dense>
         <v-list-item>
@@ -51,10 +51,19 @@ export default {
     TagTypeFilterCombobox,
   },
 
+  props: {
+    projects: {
+      type: Array,
+      default: function () {
+        return []
+      },
+    },
+  },
+
   data() {
     return {
       display: false,
-      local_project: [],
+      local_project: this.projects,
       local_tag_type: [],
       local_tag: [],
     }

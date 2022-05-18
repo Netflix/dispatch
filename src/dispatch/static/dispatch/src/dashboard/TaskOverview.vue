@@ -5,7 +5,12 @@
         <v-btn color="info" @click="copyView"> Share View </v-btn>
       </v-flex>
       <v-flex class="d-flex justify-end" lg6 sm6 xs12>
-        <task-dialog-filter v-bind="query" @update="update" @loading="setLoading" />
+        <task-dialog-filter
+          v-bind="query"
+          @update="update"
+          @loading="setLoading"
+          :projects="defaultUserProjects"
+        />
       </v-flex>
     </v-layout>
     <v-layout row wrap>
@@ -51,16 +56,26 @@
 
 <script>
 import { groupBy, sumBy, uniq, map } from "lodash"
-import differenceInHours from "date-fns/differenceInHours"
+import { mapFields } from "vuex-map-fields"
 import { parseISO } from "date-fns"
+import differenceInHours from "date-fns/differenceInHours"
 
-import TaskDialogFilter from "@/dashboard/TaskDialogFilter.vue"
 import StatWidget from "@/components/StatWidget.vue"
 import TaskActiveTimeCard from "@/task/TaskActiveTimeCard.vue"
+import TaskDialogFilter from "@/dashboard/TaskDialogFilter.vue"
 import TaskIncidentPriorityBarChartCard from "@/task/TaskIncidentPriorityBarChartCard.vue"
 import TaskIncidentTypeBarChartCard from "@/task/TaskIncidentTypeBarChartCard.vue"
+
 export default {
   name: "TaskDashboard",
+
+  components: {
+    TaskDialogFilter,
+    StatWidget,
+    TaskIncidentPriorityBarChartCard,
+    TaskIncidentTypeBarChartCard,
+    TaskActiveTimeCard,
+  },
 
   props: {
     query: {
@@ -69,14 +84,6 @@ export default {
         return {}
       },
     },
-  },
-
-  components: {
-    TaskDialogFilter,
-    StatWidget,
-    TaskIncidentPriorityBarChartCard,
-    TaskIncidentTypeBarChartCard,
-    TaskActiveTimeCard,
   },
 
   data() {
@@ -121,6 +128,8 @@ export default {
   },
 
   computed: {
+    ...mapFields("auth", ["currentUser.projects"]),
+
     tasksByMonth() {
       return groupBy(this.items, function (item) {
         return parseISO(item.created_at).toLocaleString("default", { month: "short" })
@@ -152,6 +161,16 @@ export default {
         }
         return differenceInHours(parseISO(endTime), parseISO(item.created_at))
       })
+    },
+    defaultUserProjects: {
+      get() {
+        let d = null
+        if (this.projects) {
+          let d = this.projects.filter((v) => v.default === true)
+          return d.map((v) => v.project)
+        }
+        return d
+      },
     },
   },
 }

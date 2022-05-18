@@ -229,7 +229,6 @@ def update(*, db_session, user: DispatchUser, user_in: UserUpdate) -> DispatchUs
 
 def get_current_user(request: Request) -> DispatchUser:
     """Attempts to get the current user depending on the configured authentication provider."""
-
     if DISPATCH_AUTHENTICATION_PROVIDER_SLUG:
         auth_plugin = plugins.get(DISPATCH_AUTHENTICATION_PROVIDER_SLUG)
         user_email = auth_plugin.get_current_user(request)

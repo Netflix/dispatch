@@ -5,7 +5,7 @@
         <v-btn color="info" @click="copyView"> Share View </v-btn>
       </v-flex>
       <v-flex class="d-flex justify-end" lg6 sm6 xs12>
-        <dialog-filter @filterOptions="setFilterOptions" @update="update" @loading="setLoading" />
+        <dialog-filter @filterOptions="setFilterOptions" @update="update" @loading="setLoading" :projects="defaultUserProjects" />
       </v-flex>
     </v-layout>
     <v-row>
@@ -73,9 +73,9 @@ import { filter, sumBy } from "lodash"
 import { mapFields } from "vuex-map-fields"
 
 import DialogFilter from "@/dashboard/DataDialogFilter.vue"
-import StatWidget from "@/components/StatWidget.vue"
 import SourceTop5CostTableCard from "@/data/source/SourceTop5CostTableCard.vue"
 import SourceTop5IncidentTableCard from "@/data/source/SourceTop5IncidentTableCard.vue"
+import StatWidget from "@/components/StatWidget.vue"
 
 export default {
   name: "DataDashboard",
@@ -136,6 +136,9 @@ export default {
   },
 
   computed: {
+    ...mapFields("route", ["query.project"]),
+    ...mapFields("auth", ["currentUser.projects"]),
+
     totalSources() {
       return this.items.length
     },
@@ -170,7 +173,16 @@ export default {
         }) / this.totalSources
       )
     },
-    ...mapFields("route", ["query.project"]),
+    defaultUserProjects: {
+      get() {
+        let d = null
+        if (this.projects) {
+          let d = this.projects.filter((v) => v.default === true)
+          return d.map((v) => v.project)
+        }
+        return d
+      },
+    },
   },
 }
 </script>

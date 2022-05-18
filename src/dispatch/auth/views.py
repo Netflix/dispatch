@@ -140,7 +140,16 @@ def login_user(
 ):
     user = get_by_email(db_session=db_session, email=user_in.email)
     if user and user.check_password(user_in.password):
-        return {"token": user.token}
+        projects = []
+        for user_project in user.projects:
+            projects.append(
+                {
+                    "project": user_project.project,
+                    "default": user_project.default,
+                    "role": user_project.role,
+                }
+            )
+        return {"projects": projects, "token": user.token}
 
     raise ValidationError(
         [

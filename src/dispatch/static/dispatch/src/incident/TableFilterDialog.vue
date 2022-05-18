@@ -84,12 +84,21 @@ export default {
     TagTypeFilterCombobox,
   },
 
+  props: {
+    projects: {
+      type: Array,
+      default: function () {
+        return []
+      },
+    },
+  },
+
   data() {
     return {
       display: false,
       local_reported_at: {},
       local_closed_at: {},
-      local_project: [],
+      local_project: this.projects,
       local_incident_type: [],
       local_incident_priority: [],
       local_status: [],

@@ -144,6 +144,7 @@ class UserRegister(UserLogin):
 
 
 class UserLoginResponse(DispatchBase):
+    projects: Optional[List[UserProject]]
     token: Optional[str] = Field(None, nullable=True)
 
 
