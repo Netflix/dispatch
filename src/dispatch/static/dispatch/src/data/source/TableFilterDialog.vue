@@ -7,7 +7,7 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Source Filters</span>
+        <span class="headline">Data Source Filters</span>
       </v-card-title>
       <v-list dense>
         <v-list-item>
@@ -86,10 +86,19 @@ export default {
     TypeCombobox,
   },
 
+  props: {
+    projects: {
+      type: Array,
+      default: function () {
+        return []
+      },
+    },
+  },
+
   data() {
     return {
       display: false,
-      local_project: [],
+      local_project: this.projects,
       local_source_data_format: [],
       local_source_environment: [],
       local_source_status: [],
