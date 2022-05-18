@@ -7,7 +7,7 @@
         <div class="headline">Queries</div>
       </v-col>
       <v-col cols="2">
-        <table-filter-dialog />
+        <table-filter-dialog :projects="defaultUserProjects" />
         <v-btn color="info" class="ml-2" @click="createEditShow()"> New </v-btn>
       </v-col>
     </v-row>
@@ -73,6 +73,7 @@ import { mapActions } from "vuex"
 
 import DeleteDialog from "@/data/query/DeleteDialog.vue"
 import NewEditSheet from "@/data/query/NewEditSheet.vue"
+import RouterUtils from "@/router/utils"
 import ServicePopover from "@/service/ServicePopover.vue"
 import TableFilterDialog from "@/data/query/TableFilterDialog.vue"
 
@@ -85,6 +86,7 @@ export default {
     ServicePopover,
     TableFilterDialog,
   },
+
   data() {
     return {
       headers: [
@@ -117,9 +119,31 @@ export default {
       "table.rows.items",
       "table.rows.total",
     ]),
+    ...mapFields("auth", ["currentUser.projects"]),
+
+    defaultUserProjects: {
+      get() {
+        let d = null
+        if (this.projects) {
+          let d = this.projects.filter((v) => v.default === true)
+          return d.map((v) => v.project)
+        }
+        return d
+      },
+    },
+  },
+
+  methods: {
+    ...mapActions("query", ["getAll", "createEditShow", "removeShow"]),
   },
 
   created() {
+    this.filters = {
+      ...this.filters,
+      ...RouterUtils.deserializeFilters(this.query),
+      project: this.defaultUserProjects,
+    }
+
     this.getAll()
 
     this.$watch(
@@ -133,13 +157,10 @@ export default {
       (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project, vm.tag, vm.tag_type],
       () => {
         this.page = 1
+        RouterUtils.updateURLFilters(this.filters)
         this.getAll()
       }
     )
-  },
-
-  methods: {
-    ...mapActions("query", ["getAll", "createEditShow", "removeShow"]),
   },
 }
 </script>

@@ -224,7 +224,7 @@ export default {
     this.filters = {
       ...this.filters,
       ...RouterUtils.deserializeFilters(this.query),
-      project: this.defaultUserProjects
+      project: this.defaultUserProjects,
     }
 
     this.getAll()
