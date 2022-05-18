@@ -280,7 +280,7 @@ def apply_model_specific_filters(
     return query
 
 
-def apply_filters(query, filter_spec, model_cls, do_auto_join=True):
+def apply_filters(query, filter_spec, model_cls=None, do_auto_join=True):
     """Apply filters to a SQLAlchemy query.
 
     :param query:
