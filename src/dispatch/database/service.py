@@ -280,7 +280,7 @@ def apply_model_specific_filters(
     return query
 
 
-def apply_filters(query, filter_spec, do_auto_join=True):
+def apply_filters(query, filter_spec, model_cls, do_auto_join=True):
     """Apply filters to a SQLAlchemy query.
 
     :param query:
@@ -317,6 +317,8 @@ def apply_filters(query, filter_spec, do_auto_join=True):
     """
     filters = build_filters(filter_spec)
     default_model = get_default_model(query)
+    if not default_model:
+        default_model = model_cls
     filter_models = get_named_models(filters)[0]
 
     if do_auto_join:
@@ -470,7 +472,7 @@ def search_filter_sort_paginate(
 
         if filter_spec:
             query = apply_filter_specific_joins(model_cls, filter_spec, query)
-            query = apply_filters(query, filter_spec)
+            query = apply_filters(query, filter_spec, model_cls)
 
         if sort_by:
             sort_spec = create_sort_spec(model, sort_by, descending)
