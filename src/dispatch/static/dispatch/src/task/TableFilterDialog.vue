@@ -68,10 +68,19 @@ export default {
     TaskStatusMultiSelect,
   },
 
+  props: {
+    projects: {
+      type: Array,
+      default: function () {
+        return []
+      },
+    },
+	},
+
   data() {
     return {
       display: false,
-      local_project: [],
+      local_project: this.projects,
       local_incident: [],
       local_incident_type: [],
       local_incident_priority: [],
