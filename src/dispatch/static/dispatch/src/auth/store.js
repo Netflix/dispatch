@@ -77,6 +77,7 @@ const actions = {
       })
     } else {
       return UserApi.update(state.selected.id, state.selected).then(() => {
+        commit("SET_USER_PROJECTS", state.selected.projects)
         dispatch("closeEdit")
         dispatch("getAll")
         commit(
