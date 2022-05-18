@@ -214,9 +214,7 @@ export default {
         return d
       },
     },
-
   },
-
 
   methods: {
     ...mapActions("task", ["getAll", "createEditShow", "removeShow"]),

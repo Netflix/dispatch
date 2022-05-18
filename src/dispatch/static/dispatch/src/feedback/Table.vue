@@ -6,7 +6,7 @@
         <div class="headline">Feedback</div>
       </v-col>
       <v-col cols="1">
-        <table-filter-dialog />
+        <table-filter-dialog :projects="defaultUserProjects" />
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -78,10 +78,11 @@ export default {
   name: "FeedbackTable",
 
   components: {
-    TableFilterDialog,
     DeleteDialog,
     Participant,
+    TableFilterDialog,
   },
+
   data() {
     return {
       headers: [
@@ -115,10 +116,31 @@ export default {
       "table.rows.total",
     ]),
     ...mapFields("route", ["query"]),
+    ...mapFields("auth", ["currentUser.projects"]),
+
+    defaultUserProjects: {
+      get() {
+        let d = null
+        if (this.projects) {
+          let d = this.projects.filter((v) => v.default === true)
+          return d.map((v) => v.project)
+        }
+        return d
+      },
+    },
+  },
+
+  methods: {
+    ...mapActions("feedback", ["getAll", "removeShow"]),
   },
 
   created() {
-    this.filters = { ...this.filters, ...RouterUtils.deserializeFilters(this.query) }
+    this.filters = {
+      ...this.filters,
+      ...RouterUtils.deserializeFilters(this.query),
+      project: this.defaultUserProjects
+    }
+
     this.getAll()
 
     this.$watch(
@@ -146,10 +168,6 @@ export default {
         this.getAll()
       }
     )
-  },
-
-  methods: {
-    ...mapActions("feedback", ["getAll", "removeShow"]),
   },
 }
 </script>
