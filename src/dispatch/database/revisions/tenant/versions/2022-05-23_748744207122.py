@@ -9,11 +9,9 @@ from enum import Enum
 
 from alembic import op
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Numeric
-from sqlalchemy.dialects import postgresql
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, Session
-import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
