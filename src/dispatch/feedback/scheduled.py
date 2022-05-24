@@ -4,9 +4,8 @@ import logging
 
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import scheduled_project_task
-from dispatch.scheduler import scheduler
-
 from dispatch.project.models import Project
+from dispatch.scheduler import scheduler
 
 from .messaging import send_incident_feedback_daily_report
 from .service import get_all_last_x_hours_by_project_id
@@ -34,5 +33,5 @@ def daily_report(db_session: SessionLocal, project: Project):
 
     if feedback:
         grouped_feedback = group_feedback_by_commander(feedback)
-        for commander, feedback in grouped_feedback.items():
-            send_incident_feedback_daily_report(commander, feedback, project.id, db_session)
+        for commander_email, feedback in grouped_feedback.items():
+            send_incident_feedback_daily_report(commander_email, feedback, project.id, db_session)
