@@ -41,6 +41,9 @@ def send_incident_feedback_daily_report(
         )
 
     name = subject = notification_text = "Incident Feedback Daily Report"
+    commander_fullname = feedback[0].incident.commander.individual.name
+    commander_weblink = feedback[0].incident.commander.individual.weblink
+
     plugin.instance.send(
         commander_email,
         notification_text,
@@ -50,6 +53,8 @@ def send_incident_feedback_daily_report(
         subject=subject,
         cc=plugin.project.owner_email,
         items=items,
+        contact_fullname=commander_fullname,
+        contact_weblink=commander_weblink,
     )
 
     log.debug(f"Incident feedback daily report sent to {commander_email}.")
