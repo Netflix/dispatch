@@ -61,7 +61,6 @@ chardet==4.0.0
 charset-normalizer==2.0.12
     # via
     #   aiohttp
-    #   httpx
     #   requests
 click==8.0.4
     # via
@@ -127,14 +126,14 @@ h11==0.12.0
     #   -r requirements-base.in
     #   httpcore
     #   uvicorn
-httpcore==0.14.7
+httpcore==0.15.0
     # via httpx
 httplib2==0.20.4
     # via
     #   google-api-python-client
     #   google-auth-httplib2
     #   oauth2client
-httpx==0.22.0
+httpx==0.23.0
     # via -r requirements-base.in
 hypothesis==6.43.1
     # via
