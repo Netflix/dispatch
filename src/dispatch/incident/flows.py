@@ -325,6 +325,7 @@ def create_incident_documents(incident: Incident, db_session: SessionLocal):
         document.update(
             {
                 "name": incident_document_name,
+                "description": incident.incident_type.incident_template_document.description,
                 "resource_type": DocumentResourceTypes.incident,
                 "resource_id": document["id"],
             }
@@ -352,6 +353,7 @@ def create_incident_documents(incident: Incident, db_session: SessionLocal):
             sheet.update(
                 {
                     "name": incident_sheet_name,
+                    "description": incident.incident_type.tracking_template_document.description,
                     "resource_type": DocumentResourceTypes.tracking,
                     "resource_id": sheet["id"],
                 }
@@ -401,6 +403,7 @@ def create_post_incident_review_document(incident: Incident, db_session: Session
     incident_review_document.update(
         {
             "name": incident_review_document_name,
+            "description": incident.incident_type.review_template_document.description,
             "resource_type": DocumentResourceTypes.review,
         }
     )
@@ -421,6 +424,7 @@ def create_post_incident_review_document(incident: Incident, db_session: Session
     # we add the document to the incident
     document_in = DocumentCreate(
         name=incident_review_document["name"],
+        description=incident_review_document["description"],
         resource_id=incident_review_document["id"],
         resource_type=incident_review_document["resource_type"],
         project=incident.project,
@@ -738,6 +742,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
             for d in incident_documents:
                 document_in = DocumentCreate(
                     name=d["name"],
+                    description=d["description"],
                     resource_id=d["resource_id"],
                     project={"name": incident.project.name},
                     resource_type=d["resource_type"],
