@@ -163,6 +163,7 @@ def create_executive_report(
     executive_report_document.update(
         {
             "name": executive_report_document_name,
+            "description": incident.incident_type.executive_template_document.description,
             "resource_type": DocumentResourceTypes.executive,
         }
     )
@@ -180,6 +181,7 @@ def create_executive_report(
 
     document_in = DocumentCreate(
         name=executive_report_document["name"],
+        description=executive_report_document["description"],
         resource_id=executive_report_document["id"],
         resource_type=executive_report_document["resource_type"],
         project=incident.project,
