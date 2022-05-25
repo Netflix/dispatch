@@ -254,7 +254,7 @@ pydantic==1.8.2
     #   fastapi
     #   spacy
     #   thinc
-pyjwt==2.3.0
+pyjwt==2.4.0
     # via oauthlib
 pyparsing==3.0.9
     # via
