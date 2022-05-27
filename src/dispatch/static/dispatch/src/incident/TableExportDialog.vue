@@ -101,8 +101,8 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
-import Util from "@/util"
 import SearchUtils from "@/search/utils"
+import Util from "@/util"
 
 import IncidentApi from "@/incident/api"
 import IncidentPriority from "@/incident/IncidentPriority.vue"
@@ -117,6 +117,19 @@ import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 
 export default {
   name: "IncidentTableExportDialog",
+
+  components: {
+    IncidentPriority,
+    IncidentPriorityCombobox,
+    IncidentStatus,
+    IncidentStatusMultiSelect,
+    IncidentTypeCombobox,
+    IncidentWindowInput,
+    ProjectCombobox,
+    TagFilterAutoComplete,
+    TagTypeFilterCombobox,
+  },
+
   data() {
     return {
       e1: 1,
@@ -160,17 +173,7 @@ export default {
       exportLoading: false,
     }
   },
-  components: {
-    TagFilterAutoComplete,
-    TagTypeFilterCombobox,
-    IncidentTypeCombobox,
-    IncidentPriorityCombobox,
-    ProjectCombobox,
-    IncidentStatusMultiSelect,
-    IncidentStatus,
-    IncidentPriority,
-    IncidentWindowInput,
-  },
+
   computed: {
     ...mapFields("incident", [
       "table.options.filters.incident_type",
@@ -198,13 +201,15 @@ export default {
 
     exportToCSV() {
       let params = SearchUtils.createParametersFromTableOptions({ ...this.options })
+
       params["itemsPerPage"] = -1
       params["include"] = this.selectedFields.map((item) => item.value)
+
       this.exportLoading = true
+
       return IncidentApi.getAll(params)
         .then((response) => {
           let items = response.data.items
-
           Util.exportCSV(items, "incident-details-export.csv")
           this.exportLoading = false
           this.closeExport()
@@ -215,6 +220,7 @@ export default {
         })
     },
   },
+
   created() {
     this.$watch(
       (vm) => [

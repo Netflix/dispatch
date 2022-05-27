@@ -4,8 +4,8 @@
       <v-card-text>
         <p class="display-1 text--primary">Report Incident</p>
         <p>
-          If you suspect an incident and need help, please fill out this form to the best of
-          your abilities.
+          If you suspect an incident and need help, please fill out this form to the best of your
+          abilities.
         </p>
         <p v-if="project_faq">
           If you have additional questions, please check out the following FAQ document:
@@ -110,12 +110,14 @@ export default {
     ProjectSelect,
     TagFilterAutoComplete,
   },
+
   data() {
     return {
       isSubmitted: false,
       project_faq: null,
     }
   },
+
   computed: {
     ...mapFields("incident", [
       "selected.incident_priority",
