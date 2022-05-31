@@ -34,7 +34,7 @@ blis==0.7.7
     # via
     #   spacy
     #   thinc
-cachetools==5.1.0
+cachetools==5.2.0
     # via
     #   -r requirements-base.in
     #   google-auth
