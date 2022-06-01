@@ -104,6 +104,7 @@ def update_user(
     user_id: PrimaryKey,
     organization: OrganizationSlug,
     user_in: UserUpdate,
+    current_user: DispatchUser = Depends(get_current_user),
 ):
     """Update a user."""
     user = get(db_session=db_session, user_id=user_id)
@@ -116,11 +117,14 @@ def update_user(
     if user_in.role:
         user_organization_role = user.get_organization_role(organization)
         if user_organization_role != user_in.role:
-            if user_organization_role != UserRoles.owner:
+            current_user_organization_role = current_user.get_organization_role(organization)
+            if current_user_organization_role != UserRoles.owner:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail=[
-                        {"msg": "You don't have permissions to update your organization role."}
+                        {
+                            "msg": "You don't have permissions to update the user's role. Please, contact the organization's owner."
+                        }
                     ],
                 )
 
