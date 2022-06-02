@@ -11,7 +11,7 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
 from dispatch.models import DispatchBase, NameStr, PrimaryKey
 
-from dispatch.organization.models import Organization, OrganizationCreate
+from dispatch.organization.models import Organization, OrganizationRead
 
 
 class Project(Base):
@@ -52,7 +52,7 @@ class ProjectBase(DispatchBase):
 
 
 class ProjectCreate(ProjectBase):
-    organization: OrganizationCreate
+    organization: OrganizationRead
 
 
 class ProjectUpdate(ProjectBase):

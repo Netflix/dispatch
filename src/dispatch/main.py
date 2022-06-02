@@ -79,8 +79,7 @@ def get_path_params_from_request(request: Request) -> str:
     path_params = {}
     for r in api_router.routes:
         path_regex, path_format, param_converters = compile_path(r.path)
-        # remove the /api/v1 for matching
-        path = f"/{request['path'].strip('/api/v1')}"
+        path = request["path"].removeprefix("/api/v1")  # remove the /api/v1 for matching
         match = path_regex.match(path)
         if match:
             path_params = match.groupdict()
@@ -126,8 +125,8 @@ async def db_session_middleware(request: Request, call_next):
             )
         else:
             return JSONResponse(
-                status_code=status.HTTP_403_FORBIDDEN,
-                content={"detail": [{"msg": "Forbidden"}]},
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"detail": [{"msg": f"Unknown database schema name: {schema}"}]},
             )
     else:
         # add correct schema mapping depending on the request
