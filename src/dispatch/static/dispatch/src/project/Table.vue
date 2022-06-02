@@ -66,8 +66,10 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
+
 import DeleteDialog from "@/project/DeleteDialog.vue"
 import NewEditSheet from "@/project/NewEditSheet.vue"
+
 export default {
   name: "ProjectTable",
 
@@ -75,11 +77,14 @@ export default {
     DeleteDialog,
     NewEditSheet,
   },
+
   data() {
     return {
       headers: [
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
+        { text: "Annual Employee Cost", value: "annual_employee_cost", sortable: false },
+        { text: "Business Year Hours", value: "business_year_hours", sortable: false },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
