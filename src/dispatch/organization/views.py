@@ -109,22 +109,3 @@ def update_organization(
             model=OrganizationUpdate,
         )
     return organization
-
-
-# this isn't full supported yet
-# @router.delete(
-#    "/{organization_id}",
-#    response_model=OrganizationRead,
-#    dependencies=[Depends(PermissionsDependency([OrganizationOwnerPermission]))],
-# )
-# def delete_organization(*, db_session: Session = Depends(get_db), organization_id: PrimaryKey):
-#    """Delete an organization."""
-#    organization = get(db_session=db_session, organization_id=organization_id)
-#    if not organization:
-#        raise HTTPException(
-#            status_code=status.HTTP_404_NOT_FOUND, detail=[{"msg": "An organization with this id does not exist."}]
-#        )
-#
-#    delete(db_session=db_session, organization_id=organization_id)
-#    return organization
-#
