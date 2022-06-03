@@ -104,10 +104,9 @@
 
 <script>
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
-import { required } from "vee-validate/dist/rules"
-
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
+import { required } from "vee-validate/dist/rules"
 
 import ColorPickerInput from "@/components/ColorPickerInput.vue"
 
@@ -118,14 +117,17 @@ extend("required", {
 
 export default {
   name: "OrganizationCreateEditDialog",
+
+  components: {
+    ColorPickerInput,
+    ValidationObserver,
+    ValidationProvider,
+  },
+
   data() {
     return {}
   },
-  components: {
-    ValidationObserver,
-    ValidationProvider,
-    ColorPickerInput,
-  },
+
   computed: {
     ...mapFields("organization", [
       "selected.id",

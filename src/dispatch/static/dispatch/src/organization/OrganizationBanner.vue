@@ -9,9 +9,12 @@
     <span class="white--text">{{ currentOrganization.banner_text }}</span>
   </v-system-bar>
 </template>
+
 <script>
-import SearchUtils from "@/search/utils"
+import { mapFields } from "vuex-map-fields"
+
 import OrganizationApi from "@/organization/api"
+import SearchUtils from "@/search/utils"
 
 export default {
   data() {
@@ -20,23 +23,28 @@ export default {
     }
   },
 
-  created() {
-    let filterOptions = {
-      itemsPerPage: 50,
-      sortBy: ["name"],
-      descending: [false],
-    }
+  computed: {
+    ...mapFields("route", ["params"]),
+  },
 
-    let nameFilter = [
+  created() {
+    let slugFilter = [
       {
         model: "Organization",
-        field: "name",
+        field: "slug",
         op: "==",
         value: this.$route.params.organization,
       },
     ]
 
-    filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions }, nameFilter)
+    let filterOptions = {
+      itemsPerPage: 50,
+      sortBy: ["name"],
+      descending: [false],
+      filter: JSON.stringify(slugFilter),
+    }
+
+    filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
     OrganizationApi.getAll(filterOptions).then((response) => {
       this.currentOrganization = response.data.items[0]
