@@ -123,10 +123,13 @@ def get_or_create(
                 )
             )
 
-        # we associate the service with the participant
-        participant.service_id = service_id
-        service = service_service.get(db_session=db_session, service_id=service_id)
-        participant.service = service
+        if not participant.service:
+            # we only associate the service with the participant once to prevent overwrites
+            service = service_service.get(db_session=db_session, service_id=service_id)
+            if service:
+                participant.service_id = service_id
+                participant.service = service
+
         db_session.commit()
 
     return participant
