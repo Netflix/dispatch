@@ -340,7 +340,7 @@ six==1.16.0
     #   sqlalchemy-filters
     #   sqlalchemy-utils
     #   validators
-slack-sdk==3.17.0
+slack-sdk==3.17.1
     # via -r requirements-base.in
 smart-open==5.2.1
     # via pathy
