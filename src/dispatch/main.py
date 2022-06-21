@@ -5,7 +5,6 @@ from uuid import uuid1
 from typing import Optional, Final
 from contextvars import ContextVar
 
-
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 from pydantic.error_wrappers import ValidationError
