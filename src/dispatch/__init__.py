@@ -61,6 +61,7 @@ try:
     from dispatch.data.query.models import Query  # noqa lgtm[py/unused-import]
     from dispatch.data.source.models import Source  # noqa lgtm[py/unused-import]
     from dispatch.search_filter.models import SearchFilter  # noqa lgtm[py/unused-impot]
+    from dispatch.case.models import Case  # noqa lgtm[py/unused-impot]
 except Exception:
     traceback.print_exc()
 
