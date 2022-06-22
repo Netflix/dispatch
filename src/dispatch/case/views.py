@@ -1,11 +1,8 @@
 import logging
 from typing import List
-from pydantic import Json
 
 import json
-import calendar
 from datetime import date
-from dateutil.relativedelta import relativedelta
 
 from starlette.requests import Request
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
@@ -115,7 +112,7 @@ def update_case(
 ):
     """Update an existing case."""
     # we store the previous state of the case in order to be able to detect changes
-    previous_case = CaseRead.from_orm(current_case)
+    # previous_case = CaseRead.from_orm(current_case)
 
     # we update the case
     case = update(db_session=db_session, case=current_case, case_in=case_in)

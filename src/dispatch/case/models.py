@@ -1,9 +1,8 @@
 from datetime import datetime
-from collections import Counter, defaultdict
+from collections import defaultdict
 from typing import List, Optional
 
 from pydantic import validator
-from sqlalchemy.sql.sqltypes import Numeric
 from dispatch.models import NameStr, PrimaryKey
 from sqlalchemy import (
     Column,
@@ -14,9 +13,8 @@ from sqlalchemy import (
     String,
     Table,
 )
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-from sqlalchemy_utils import TSVectorType, observes
+from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.enums import Visibility
@@ -29,7 +27,8 @@ from dispatch.event.models import EventRead
 # )
 # from dispatch.case_type.models import CaseTypeCreate, CaseTypeRead, CaseTypeBase
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
-from dispatch.participant.models import Participant, ParticipantRead, ParticipantUpdate
+
+# from dispatch.participant.models import Participant, ParticipantRead, ParticipantUpdate
 from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
 
@@ -153,7 +152,7 @@ class CaseRead(CaseBase):
     name: Optional[NameStr]
     project: ProjectRead
     reported_at: Optional[datetime] = None
-    reporter: Optional[ParticipantRead]
+    # reporter: Optional[ParticipantRead]
     stable_at: Optional[datetime] = None
     tags: Optional[List[TagRead]] = []
     ticket: Optional[TicketRead] = None
@@ -165,7 +164,7 @@ class CaseUpdate(CaseBase):
     # case_type: CaseTypeBase
     duplicates: Optional[List[CaseReadNested]] = []
     reported_at: Optional[datetime] = None
-    reporter: Optional[ParticipantUpdate]
+    # reporter: Optional[ParticipantUpdate]
     stable_at: Optional[datetime] = None
     tags: Optional[List[TagRead]] = []
 
