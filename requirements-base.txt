@@ -314,7 +314,7 @@ rsa==4.8
     #   python-jose
 schedule==1.1.0
     # via -r requirements-base.in
-schemathesis==3.15.4
+schemathesis==3.15.5
     # via -r requirements-base.in
 scipy==1.8.0
     # via statsmodels
@@ -340,7 +340,7 @@ six==1.16.0
     #   sqlalchemy-filters
     #   sqlalchemy-utils
     #   validators
-slack-sdk==3.17.0
+slack-sdk==3.17.2
     # via -r requirements-base.in
 smart-open==5.2.1
     # via pathy
@@ -377,7 +377,7 @@ starlette==0.19.1
     #   schemathesis
 statsmodels==0.13.2
     # via -r requirements-base.in
-tabulate==0.8.9
+tabulate==0.8.10
     # via -r requirements-base.in
 tenacity==8.0.1
     # via -r requirements-base.in
