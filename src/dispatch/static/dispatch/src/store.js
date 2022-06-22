@@ -4,6 +4,7 @@ import { getField } from "vuex-map-fields"
 
 import app from "@/app/store"
 import auth from "@/auth/store"
+import case_management from "@/case/store"
 import definition from "@/definition/store"
 import document from "@/document/store"
 import feedback from "@/feedback/store"
@@ -42,6 +43,7 @@ export default new Vuex.Store({
   modules: {
     app,
     auth,
+    case_management,
     definition,
     document,
     feedback,

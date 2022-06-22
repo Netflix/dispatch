@@ -66,11 +66,11 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     )
 
     # relationships
-    assignee_id = Column(Integer, ForeignKey("participant.id"))
-    assignee = relationship("Participant", foreign_keys=[assignee_id], post_update=True)
-
-    reporter_id = Column(Integer, ForeignKey("participant.id"))
-    reporter = relationship("Participant", foreign_keys=[reporter_id], post_update=True)
+    # assignee_id = Column(Integer, ForeignKey("dispatch_user.id"))
+    # assignee = relationship("DispatchUser", foreign_keys=[assignee_id], post_update=True)
+    #
+    # reporter_id = Column(Integer, ForeignKey("dispatch_user.id"))
+    # reporter = relationship("DispatchUser", foreign_keys=[reporter_id], post_update=True)
 
     # NOTE: refactor and reuse incident priority and type or create new ones for case
     # case_priority = relationship("CasePriority", backref="case")
@@ -88,7 +88,6 @@ class Case(Base, TimeStampMixin, ProjectMixin):
         backref="cases",
     )
 
-    tasks = relationship("Task", backref="case", cascade="all, delete-orphan")
     ticket = relationship("Ticket", uselist=False, backref="case", cascade="all, delete-orphan")
 
 
@@ -120,17 +119,17 @@ class CaseBase(DispatchBase):
 
 
 class CaseCreate(CaseBase):
-    assignee: Optional[ParticipantUpdate]
+    # assignee: Optional[ParticipantUpdate]
     # case_priority: Optional[CasePriorityCreate]
     # case_type: Optional[CaseTypeCreate]
     project: ProjectRead
-    reporter: Optional[ParticipantUpdate]
+    # reporter: Optional[ParticipantUpdate]
     tags: Optional[List[TagRead]] = []
 
 
 class CaseReadNested(CaseBase):
     id: PrimaryKey
-    assignee: Optional[ParticipantRead]
+    # assignee: Optional[ParticipantRead]
     # case_priority: CasePriorityRead
     # case_type: CaseTypeRead
     closed_at: Optional[datetime] = None
@@ -138,13 +137,13 @@ class CaseReadNested(CaseBase):
     name: Optional[NameStr]
     project: ProjectRead
     reported_at: Optional[datetime] = None
-    reporter: Optional[ParticipantRead]
+    # reporter: Optional[ParticipantRead]
     stable_at: Optional[datetime] = None
 
 
 class CaseRead(CaseBase):
     id: PrimaryKey
-    assignee: Optional[ParticipantRead]
+    # assignee: Optional[ParticipantRead]
     # case_priority: CasePriorityRead
     # case_type: CaseTypeRead
     closed_at: Optional[datetime] = None
@@ -161,7 +160,7 @@ class CaseRead(CaseBase):
 
 
 class CaseUpdate(CaseBase):
-    assignee: Optional[ParticipantUpdate]
+    # assignee: Optional[ParticipantUpdate]
     # case_priority: CasePriorityBase
     # case_type: CaseTypeBase
     duplicates: Optional[List[CaseReadNested]] = []

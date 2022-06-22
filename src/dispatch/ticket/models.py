@@ -12,6 +12,7 @@ from dispatch.models import ResourceBase, ResourceMixin, PrimaryKey
 class Ticket(Base, ResourceMixin):
     id = Column(Integer, primary_key=True)
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
+    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
 
 
 # Pydantic models...

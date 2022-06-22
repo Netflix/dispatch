@@ -12,13 +12,13 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, s
 
 from sqlalchemy.orm import Session
 
-# NOTE: define permissions
-from dispatch.auth.permissions import (
-    CaseEditPermission,
-    CaseJoinPermission,
-    PermissionsDependency,
-    CaseViewPermission,
-)
+# NOTE: define permissions before enabling the code block below
+# from dispatch.auth.permissions import (
+#     CaseEditPermission,
+#     CaseJoinPermission,
+#     PermissionsDependency,
+#     CaseViewPermission,
+# )
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.common.utils.views import create_pydantic_include
@@ -34,7 +34,6 @@ from dispatch.participant.models import ParticipantUpdate
 #     case_create_flow,
 #     case_update_flow,
 # )
-from .metrics import make_forecast, create_case_metric_query
 from .models import Case, CaseCreate, CasePagination, CaseRead, CaseUpdate
 from .service import create, delete, get, update
 
@@ -102,7 +101,7 @@ def create_case(
     "/{case_id}",
     response_model=CaseRead,
     summary="Update an existing case.",
-    dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
+    # dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
 )
 def update_case(
     *,
@@ -140,7 +139,7 @@ def update_case(
     "/{case_id}",
     response_model=CaseRead,
     summary="Delete an case.",
-    dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
+    # dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
 )
 def delete_case(
     *,

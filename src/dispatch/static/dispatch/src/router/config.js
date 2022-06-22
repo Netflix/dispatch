@@ -74,6 +74,39 @@ export const protectedRoute = [
         import(/* webpackChunkName: "incidents-report" */ "@/incident/ReportForm.vue"),
     },
     {
+      path: "cases",
+      component: DefaultLayout,
+      name: "cases",
+      meta: {
+        title: "Cases",
+        icon: "mdi-file-multiple",
+        group: "cases",
+        requiresAuth: true,
+        menu: true,
+        showEditSheet: false,
+      },
+      redirect: { name: "CaseTable" },
+      children: [
+        {
+          path: "/:organization/cases",
+          name: "CaseTable",
+          meta: { title: "List" },
+          component: () => import(/* webpackChunkName: "case-table" */ "@/case/Table.vue"),
+          children: [
+            {
+              path: "/:organization/cases/:name",
+              name: "CaseTableEdit",
+              component: () => import(/* webpackChunkName: "case-table" */ "@/case/EditSheet.vue"),
+              props: true,
+              meta: {
+                showEditSheet: true,
+              },
+            },
+          ],
+        },
+      ],
+    },
+    {
       path: "incidents",
       component: DefaultLayout,
       name: "incidents",
