@@ -377,7 +377,7 @@ starlette==0.19.1
     #   schemathesis
 statsmodels==0.13.2
     # via -r requirements-base.in
-tabulate==0.8.9
+tabulate==0.8.10
     # via -r requirements-base.in
 tenacity==8.0.1
     # via -r requirements-base.in
