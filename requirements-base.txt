@@ -16,8 +16,6 @@ anyio==3.5.0
     # via
     #   httpcore
     #   starlette
-asgiref==3.5.0
-    # via uvicorn
 async-timeout==4.0.2
     # via aiohttp
 attrs==21.4.0
@@ -408,7 +406,7 @@ urllib3==1.26.9
     #   pdpyras
     #   requests
     #   sentry-sdk
-uvicorn==0.17.6
+uvicorn==0.18.1
     # via -r requirements-base.in
 validators==0.18.2
     # via -r requirements-base.in
