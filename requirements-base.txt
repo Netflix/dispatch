@@ -207,7 +207,7 @@ packaging==21.3
     #   pytest
     #   spacy
     #   statsmodels
-pandas==1.4.2
+pandas==1.4.3
     # via
     #   -r requirements-base.in
     #   statsmodels
