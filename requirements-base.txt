@@ -16,8 +16,6 @@ anyio==3.5.0
     # via
     #   httpcore
     #   starlette
-asgiref==3.5.0
-    # via uvicorn
 async-timeout==4.0.2
     # via aiohttp
 attrs==21.4.0
@@ -188,7 +186,7 @@ murmurhash==1.0.6
     #   preshed
     #   spacy
     #   thinc
-numpy==1.22.4
+numpy==1.23.0
     # via
     #   -r requirements-base.in
     #   blis
@@ -209,7 +207,7 @@ packaging==21.3
     #   pytest
     #   spacy
     #   statsmodels
-pandas==1.4.2
+pandas==1.4.3
     # via
     #   -r requirements-base.in
     #   statsmodels
@@ -314,7 +312,7 @@ rsa==4.8
     #   python-jose
 schedule==1.1.0
     # via -r requirements-base.in
-schemathesis==3.15.5
+schemathesis==3.15.6
     # via -r requirements-base.in
 scipy==1.8.0
     # via statsmodels
@@ -408,7 +406,7 @@ urllib3==1.26.9
     #   pdpyras
     #   requests
     #   sentry-sdk
-uvicorn==0.17.6
+uvicorn==0.18.1
     # via -r requirements-base.in
 validators==0.18.2
     # via -r requirements-base.in
