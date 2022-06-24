@@ -123,37 +123,40 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="ticket"
     )
-    if plugin:
-        title = incident.title
-        if incident.visibility == Visibility.restricted:
-            title = incident.incident_type.name
+    if not plugin:
+        log.warning("Incident ticket not created. No ticket plugin enabled.")
+        return
 
-        incident_type_plugin_metadata = incident_type_service.get_by_name_or_raise(
-            db_session=db_session,
-            project_id=incident.project.id,
-            incident_type_in=incident.incident_type,
-        ).get_meta(plugin.plugin.slug)
+    title = incident.title
+    if incident.visibility == Visibility.restricted:
+        title = incident.incident_type.name
 
-        ticket = plugin.instance.create(
-            incident.id,
-            title,
-            incident.incident_type.name,
-            incident.incident_priority.name,
-            incident.commander.individual.email,
-            incident.reporter.individual.email,
-            incident_type_plugin_metadata,
-            db_session=db_session,
-        )
-        ticket.update({"resource_type": plugin.plugin.slug})
+    incident_type_plugin_metadata = incident_type_service.get_by_name_or_raise(
+        db_session=db_session,
+        project_id=incident.project.id,
+        incident_type_in=incident.incident_type,
+    ).get_meta(plugin.plugin.slug)
 
-        event_service.log(
-            db_session=db_session,
-            source=plugin.plugin.title,
-            description="Ticket created",
-            incident_id=incident.id,
-        )
+    ticket = plugin.instance.create(
+        incident.id,
+        title,
+        incident.incident_type.name,
+        incident.incident_priority.name,
+        incident.commander.individual.email,
+        incident.reporter.individual.email,
+        incident_type_plugin_metadata,
+        db_session=db_session,
+    )
+    ticket.update({"resource_type": plugin.plugin.slug})
 
-        return ticket
+    event_service.log(
+        db_session=db_session,
+        source=plugin.plugin.title,
+        description="Ticket created",
+        incident_id=incident.id,
+    )
+
+    return ticket
 
 
 def update_external_incident_ticket(
