@@ -6,13 +6,10 @@
     <v-row no-gutters>
       <new-sheet />
       <delete-dialog />
-      <report-dialog />
       <v-col>
         <div class="headline">Cases</div>
       </v-col>
       <v-col cols="3">
-        <table-filter-dialog :projects="defaultUserProjects" />
-        <table-export-dialog />
         <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn>
       </v-col>
     </v-row>
@@ -107,7 +104,7 @@ import NewSheet from "@/case/NewSheet.vue"
 import RouterUtils from "@/router/utils"
 
 export default {
-  name: "IncidentTable",
+  name: "CaseTable",
 
   components: {
     BulkEditSheet,
@@ -130,7 +127,8 @@ export default {
         { text: "Title", value: "title", sortable: false },
         { text: "Status", value: "status" },
         { text: "Project", value: "project.name", sortable: true },
-        { text: "Assignee", value: "assignee", sortable: false },
+        { text: "Assignee", value: "assignee.email", sortable: false },
+        { text: "Source", value: "source.name", sortable: false },
         { text: "Reported At", value: "reported_at" },
         { text: "Closed At", value: "closed_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
@@ -140,23 +138,24 @@ export default {
   },
 
   computed: {
-    ...mapFields("case", [
-      "table.options.q",
-      "table.options.page",
-      "table.options.itemsPerPage",
-      "table.options.sortBy",
-      "table.options.filters",
-      "table.options.filters.assignee",
-      "table.options.filters.status",
-      "table.options.filters.reported_at",
-      "table.options.filters.tag",
-      "table.options.filters.tag_type",
-      "table.options.filters.project",
-      "table.options.descending",
-      "table.loading",
-      "table.rows.items",
-      "table.rows.total",
-      "table.rows.selected",
+    ...mapFields("case_management", [
+     "table.loading",
+     "table.options.descending",
+     "table.options.filters",
+     "table.options.filters.assignee",
+     "table.options.filters.project",
+     "table.options.filters.reported_at",
+     "table.options.filters.source",
+     "table.options.filters.status",
+     "table.options.filters.tag",
+     "table.options.filters.tag_type",
+     "table.options.itemsPerPage",
+     "table.options.page",
+     "table.options.q",
+     "table.options.sortBy",
+     "table.rows.items",
+     "table.rows.selected",
+     "table.rows.total",
     ]),
     ...mapFields("route", ["query"]),
     ...mapFields("auth", ["currentUser.projects"]),
@@ -174,7 +173,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident", ["getAll", "showNewSheet", "showDeleteDialog"]),
+    ...mapActions("case_management", ["getAll", "showNewSheet", "showDeleteDialog"]),
   },
 
   watch: {

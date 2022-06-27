@@ -30,11 +30,11 @@ export default {
   },
 
   computed: {
-    ...mapFields("case", ["dialogs.showDeleteDialog", "selected"]),
+    ...mapFields("case_management", ["dialogs.showDeleteDialog", "selected"]),
   },
 
   methods: {
-    ...mapActions("case", ["closeDeleteDialog", "deleteCase"]),
+    ...mapActions("case_management", ["closeDeleteDialog", "deleteCase"]),
   },
 }
 </script>

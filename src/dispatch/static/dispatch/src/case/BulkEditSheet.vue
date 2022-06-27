@@ -47,14 +47,14 @@ export default {
   name: "CaseBulkEditSheet",
 
   computed: {
-    ...mapFields("case", ["table.rows.selected", "table.bulkEditLoading"]),
     showBulkEdit: function () {
       return this.selected.length ? true : false
     },
+    ...mapFields("case_management", ["table.rows.selected", "table.bulkEditLoading"]),
   },
 
   methods: {
-    ...mapActions("case", ["saveBulk", "deleteBulk"]),
+    ...mapActions("case_management", ["saveBulk", "deleteBulk"]),
   },
 }
 </script>

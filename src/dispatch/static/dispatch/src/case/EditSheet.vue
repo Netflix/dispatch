@@ -54,9 +54,9 @@ export default {
   name: "CaseEditSheet",
 
   components: {
-    ValidationObserver,
     CaseDetailsTab,
     CaseTimelineTab,
+    ValidationObserver,
   },
 
   data() {
@@ -66,7 +66,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("case", [
+    ...mapFields("case_management", [
       "selected.id",
       "selected.name",
       "selected.project",
@@ -90,7 +90,7 @@ export default {
     fetchDetails() {
       this.getDetails({ name: this.$route.params.name })
     },
-    ...mapActions("case", ["save", "getDetails", "closeEditSheet"]),
+    ...mapActions("case_management", ["save", "getDetails", "closeEditSheet"]),
   },
 }
 </script>

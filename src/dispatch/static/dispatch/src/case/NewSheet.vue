@@ -52,7 +52,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("case", [
+    ...mapFields("case_management", [
       "selected.id",
       "selected.name",
       "selected.reported_at",
@@ -62,7 +62,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("case", ["save", "closeNewSheet"]),
+    ...mapActions("case_management", ["save", "closeNewSheet"]),
   },
 }
 </script>

@@ -2,55 +2,32 @@ import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import IncidentApi from "@/incident/api"
+import CaseApi from "@/case/api"
 import router from "@/router"
 
 const getDefaultSelectedState = () => {
   return {
-    commander: null,
-    conference: null,
-    conversation: null,
+    assignee: null,
     created_at: null,
+    // case_priority: null,
+    // case_type: null,
     description: null,
-    documents: null,
     duplicates: [],
-    events: null,
+    // events: null,
     id: null,
-    incident_costs: null,
-    incident_priority: null,
-    incident_type: null,
     name: null,
-    participants: null,
     project: null,
-    resolution: null,
     reported_at: null,
-    reporter: null,
+    resolution: null,
+    source: null,
     stable_at: null,
     status: null,
-    storage: null,
     tags: [],
-    terms: [],
     ticket: null,
     title: null,
     visibility: null,
     workflow_instances: null,
     loading: false,
-  }
-}
-
-const getDefaultReportState = () => {
-  return {
-    type: "tactical",
-    tactical: {
-      conditions: null,
-      actions: null,
-      needs: null,
-    },
-    executive: {
-      current_status: null,
-      overview: null,
-      next_steps: null,
-    },
   }
 }
 
@@ -60,13 +37,9 @@ const state = {
   },
   dialogs: {
     showDeleteDialog: false,
-    showReportDialog: false,
     showEditSheet: false,
     showExport: false,
     showNewSheet: false,
-  },
-  report: {
-    ...getDefaultReportState(),
   },
   table: {
     rows: {
@@ -76,13 +49,13 @@ const state = {
     },
     options: {
       filters: {
-        reporter: [],
-        commander: [],
-        incident_type: [],
-        incident_priority: [],
+        assignee: [],
+        // case_priority: [],
+        // case_type: [],
+        project: [],
+        source: [],
         status: [],
         tag: [],
-        project: [],
         tag_type: [],
         reported_at: {
           start: null,
@@ -115,11 +88,8 @@ const getters = {
 const actions = {
   getAll: debounce(({ commit, state }) => {
     commit("SET_TABLE_LOADING", "primary")
-    let params = SearchUtils.createParametersFromTableOptions(
-      { ...state.table.options },
-      "Incident"
-    )
-    return IncidentApi.getAll(params)
+    let params = SearchUtils.createParametersFromTableOptions({ ...state.table.options }, "Case")
+    return CaseApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
@@ -129,22 +99,22 @@ const actions = {
       })
   }, 500),
   get({ commit, state }) {
-    return IncidentApi.get(state.selected.id).then((response) => {
+    return CaseApi.get(state.selected.id).then((response) => {
       commit("SET_SELECTED", response.data)
     })
   },
   getDetails({ commit, state }, payload) {
     commit("SET_SELECTED_LOADING", true)
     if ("id" in payload) {
-      return IncidentApi.get(state.selected.id).then((response) => {
+      return CaseApi.get(state.selected.id).then((response) => {
         commit("SET_SELECTED", response.data)
         commit("SET_SELECTED_LOADING", false)
       })
     } else if ("name" in payload) {
       // this is kinda dirty
-      return IncidentApi.getAll({
+      return CaseApi.getAll({
         filter: JSON.stringify([
-          { and: [{ model: "Incident", field: "name", op: "==", value: payload.name }] },
+          { and: [{ model: "Case", field: "name", op: "==", value: payload.name }] },
         ]),
       }).then((response) => {
         if (response.data.items.length) {
@@ -153,7 +123,7 @@ const actions = {
           commit(
             "notification_backend/addBeNotification",
             {
-              text: `Incident '${payload.name}' could not be found.`,
+              text: `Case '${payload.name}' could not be found.`,
               type: "error",
             },
             { root: true }
@@ -164,10 +134,10 @@ const actions = {
       })
     }
   },
-  showNewSheet({ commit }, incident) {
+  showNewSheet({ commit }, value) {
     commit("SET_DIALOG_SHOW_NEW_SHEET", true)
-    if (incident) {
-      commit("SET_SELECTED", incident)
+    if (value) {
+      commit("SET_SELECTED", value)
     }
   },
   closeNewSheet({ commit }) {
@@ -180,61 +150,61 @@ const actions = {
   closeEditSheet({ commit }) {
     commit("SET_DIALOG_SHOW_EDIT_SHEET", false)
     commit("RESET_SELECTED")
-    router.push({ name: "IncidentTable" })
+    router.push({ name: "CaseTable" })
   },
-  showDeleteDialog({ commit }, incident) {
+  showDeleteDialog({ commit }, value) {
     commit("SET_DIALOG_DELETE", true)
-    commit("SET_SELECTED", incident)
+    commit("SET_SELECTED", value)
   },
   closeDeleteDialog({ commit }) {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
   },
-  showReportDialog({ commit }, incident) {
-    commit("SET_DIALOG_REPORT", true)
-    commit("SET_SELECTED", incident)
-  },
-  closeReportDialog({ commit }) {
-    commit("SET_DIALOG_REPORT", false)
-    commit("RESET_SELECTED")
-  },
+  // showReportDialog({ commit }, value) {
+  //   commit("SET_DIALOG_REPORT", true)
+  //   commit("SET_SELECTED", value)
+  // },
+  // closeReportDialog({ commit }) {
+  //   commit("SET_DIALOG_REPORT", false)
+  //   commit("RESET_SELECTED")
+  // },
   showExport({ commit }) {
     commit("SET_DIALOG_SHOW_EXPORT", true)
   },
   closeExport({ commit }) {
     commit("SET_DIALOG_SHOW_EXPORT", false)
   },
-  report({ commit, dispatch }) {
-    commit("SET_SELECTED_LOADING", true)
-    return IncidentApi.create(state.selected)
-      .then((response) => {
-        commit("SET_SELECTED", response.data)
-        commit("SET_SELECTED_LOADING", false)
-        this.interval = setInterval(function () {
-          if (state.selected.id) {
-            dispatch("get")
-          }
-
-          // TODO this is fragile but we don't set anything as "created"
-          if (state.selected.conversation) {
-            clearInterval(this.interval)
-          }
-        }, 5000)
-      })
-      .catch(() => {
-        commit("SET_SELECTED_LOADING", false)
-      })
-  },
+  // report({ commit, dispatch }) {
+  //   commit("SET_SELECTED_LOADING", true)
+  //   return CaseApi.create(state.selected)
+  //     .then((response) => {
+  //       commit("SET_SELECTED", response.data)
+  //       commit("SET_SELECTED_LOADING", false)
+  //       this.interval = setInterval(function () {
+  //         if (state.selected.id) {
+  //           dispatch("get")
+  //         }
+  //
+  //         // TODO this is fragile but we don't set anything as "created"
+  //         if (state.selected.conversation) {
+  //           clearInterval(this.interval)
+  //         }
+  //       }, 5000)
+  //     })
+  //     .catch(() => {
+  //       commit("SET_SELECTED_LOADING", false)
+  //     })
+  // },
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
-      return IncidentApi.create(state.selected)
+      return CaseApi.create(state.selected)
         .then(() => {
           dispatch("closeNewSheet")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Incident created successfully.", type: "success" },
+            { text: "Case created successfully.", type: "success" },
             { root: true }
           )
           commit("SET_SELECTED_LOADING", false)
@@ -243,13 +213,13 @@ const actions = {
           commit("SET_SELECTED_LOADING", false)
         })
     } else {
-      return IncidentApi.update(state.selected.id, state.selected)
+      return CaseApi.update(state.selected.id, state.selected)
         .then(() => {
           dispatch("closeEditSheet")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Incident updated successfully.", type: "success" },
+            { text: "Case updated successfully.", type: "success" },
             { root: true }
           )
           commit("SET_SELECTED_LOADING", false)
@@ -261,12 +231,12 @@ const actions = {
   },
   saveBulk({ commit, dispatch }, payload) {
     commit("SET_BULK_EDIT_LOADING", true)
-    return IncidentApi.bulkUpdate(state.table.rows.selected, payload)
+    return CaseApi.bulkUpdate(state.table.rows.selected, payload)
       .then(() => {
         dispatch("getAll")
         commit(
           "notification_backend/addBeNotification",
-          { text: "Incident(s) updated successfully.", type: "success" },
+          { text: "Case(s) updated successfully.", type: "success" },
           { root: true }
         )
         commit("SET_BULK_EDIT_LOADING", false)
@@ -277,12 +247,12 @@ const actions = {
   },
   deleteBulk({ commit, dispatch }) {
     commit("SET_BULK_EDIT_LOADING", true)
-    return IncidentApi.bulkDelete(state.table.rows.selected)
+    return CaseApi.bulkDelete(state.table.rows.selected)
       .then(() => {
         dispatch("getAll")
         commit(
           "notification_backend/addBeNotification",
-          { text: "Incident(s) deleted successfully.", type: "success" },
+          { text: "Case(s) deleted successfully.", type: "success" },
           { root: true }
         )
         commit("SET_BULK_EDIT_LOADING", false)
@@ -291,53 +261,13 @@ const actions = {
         commit("SET_BULK_EDIT_LOADING", false)
       })
   },
-  deleteIncident({ commit, dispatch }) {
-    return IncidentApi.delete(state.selected.id).then(function () {
+  deleteCase({ commit, dispatch }) {
+    return CaseApi.delete(state.selected.id).then(function () {
       dispatch("closeDeleteDialog")
       dispatch("getAll")
       commit(
         "notification_backend/addBeNotification",
-        { text: "Incident deleted successfully.", type: "success" },
-        { root: true }
-      )
-    })
-  },
-  createReport({ commit, dispatch }) {
-    return IncidentApi.createReport(
-      state.selected.id,
-      state.report.type,
-      state.report[state.report.type]
-    ).then(function () {
-      dispatch("closeReportDialog")
-      dispatch("getAll")
-      commit(
-        "notification_backend/addBeNotification",
-        { text: "Report created successfully.", type: "success" },
-        { root: true }
-      )
-    })
-  },
-  resetSelected({ commit }) {
-    commit("RESET_SELECTED")
-  },
-  joinIncident({ commit }, incidentId) {
-    IncidentApi.join(incidentId, {}).then(() => {
-      commit(
-        "notification_backend/addBeNotification",
-        { text: "You have successfully joined the incident.", type: "success" },
-        { root: true }
-      )
-    })
-  },
-  subscribeToIncident({ commit }, incidentId) {
-    console.log("C")
-    IncidentApi.subscribe(incidentId, {}).then(() => {
-      commit(
-        "notification_backend/addBeNotification",
-        {
-          text: "You have successfully subscribed to the incident. You will recieve all incident tactical reports.",
-          type: "success",
-        },
+        { text: "Case deleted successfully.", type: "success" },
         { root: true }
       )
     })
@@ -346,12 +276,6 @@ const actions = {
 
 const mutations = {
   updateField,
-  addIncidentCost(state, value) {
-    state.selected.incident_costs.push(value)
-  },
-  removeIncidentCost(state, idx) {
-    state.selected.incident_costs.splice(idx, 1)
-  },
   SET_SELECTED(state, value) {
     state.selected = Object.assign(state.selected, value)
   },
@@ -380,7 +304,6 @@ const mutations = {
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
-    state.report = Object.assign(state.report, getDefaultReportState())
   },
   SET_BULK_EDIT_LOADING(state, value) {
     state.table.bulkEditLoading = value

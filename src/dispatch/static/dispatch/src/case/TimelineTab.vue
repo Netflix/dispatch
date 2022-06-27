@@ -63,7 +63,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("case", ["selected.events", "selected.name"]),
+    ...mapFields("case_management", ["selected.events", "selected.name"]),
 
     sortedEvents: function () {
       return this.events.slice().sort((a, b) => new Date(a.started_at) - new Date(b.started_at))

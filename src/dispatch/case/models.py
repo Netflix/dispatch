@@ -12,13 +12,20 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     String,
     Table,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
+from dispatch.auth.models import UserRead
+from dispatch.data.source.models import SourceRead
 from dispatch.database.core import Base
 from dispatch.enums import Visibility
 from dispatch.event.models import EventRead
+from dispatch.incident.models import IncidentRead
+from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
+from dispatch.tag.models import TagRead
+from dispatch.ticket.models import TicketRead
 
 # from dispatch.case_priority.models import (
 #     CasePriorityBase,
@@ -26,11 +33,6 @@ from dispatch.event.models import EventRead
 #     CasePriorityRead,
 # )
 # from dispatch.case_type.models import CaseTypeCreate, CaseTypeRead, CaseTypeBase
-from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
-
-# from dispatch.participant.models import Participant, ParticipantRead, ParticipantUpdate
-from dispatch.tag.models import TagRead
-from dispatch.ticket.models import TicketRead
 
 from .enums import CaseStatus
 
@@ -45,6 +47,8 @@ assoc_case_tags = Table(
 
 
 class Case(Base, TimeStampMixin, ProjectMixin):
+    __table_args__ = (UniqueConstraint("name", "project_id"),)
+
     id = Column(Integer, primary_key=True)
     name = Column(String)
     title = Column(String, nullable=False)
@@ -60,16 +64,13 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
     search_vector = Column(
         TSVectorType(
-            "title", "description", "name", weights={"name": "A", "title": "B", "description": "C"}
+            "name", "title", "description", weights={"name": "A", "title": "B", "description": "C"}
         )
     )
 
     # relationships
-    # assignee_id = Column(Integer, ForeignKey("dispatch_user.id"))
-    # assignee = relationship("DispatchUser", foreign_keys=[assignee_id], post_update=True)
-    #
-    # reporter_id = Column(Integer, ForeignKey("dispatch_user.id"))
-    # reporter = relationship("DispatchUser", foreign_keys=[reporter_id], post_update=True)
+    assignee_id = Column(Integer, ForeignKey("dispatch_core.dispatch_user.id"))
+    assignee = relationship("DispatchUser", foreign_keys=[assignee_id], post_update=True)
 
     # NOTE: refactor and reuse incident priority and type or create new ones for case
     # case_priority = relationship("CasePriority", backref="case")
@@ -80,14 +81,20 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
     duplicate_id = Column(Integer, ForeignKey("case.id"))
     duplicates = relationship("Case", remote_side=[id], uselist=True)
-
+    # events = relationship("Event", backref="case", cascade="all, delete-orphan")
+    incident = relationship("Incident", uselist=False, backref="case", cascade="all, delete-orphan")
+    source = relationship("Source", uselist=False, backref="case")
+    source_id = Column(Integer, ForeignKey("source.id"))
     tags = relationship(
         "Tag",
         secondary=assoc_case_tags,
         backref="cases",
     )
-
+    # tasks = relationship("Task", backref="case", cascade="all, delete-orphan")
     ticket = relationship("Ticket", uselist=False, backref="case", cascade="all, delete-orphan")
+    # workflow_instances = relationship(
+    #     "WorkflowInstance", backref="case", cascade="all, delete-orphan"
+    # )
 
 
 class ProjectRead(DispatchBase):
@@ -118,17 +125,17 @@ class CaseBase(DispatchBase):
 
 
 class CaseCreate(CaseBase):
-    # assignee: Optional[ParticipantUpdate]
+    assignee: Optional[UserRead]
     # case_priority: Optional[CasePriorityCreate]
     # case_type: Optional[CaseTypeCreate]
     project: ProjectRead
-    # reporter: Optional[ParticipantUpdate]
+    source: SourceRead
     tags: Optional[List[TagRead]] = []
 
 
 class CaseReadNested(CaseBase):
     id: PrimaryKey
-    # assignee: Optional[ParticipantRead]
+    assignee: Optional[UserRead]
     # case_priority: CasePriorityRead
     # case_type: CaseTypeRead
     closed_at: Optional[datetime] = None
@@ -136,35 +143,37 @@ class CaseReadNested(CaseBase):
     name: Optional[NameStr]
     project: ProjectRead
     reported_at: Optional[datetime] = None
-    # reporter: Optional[ParticipantRead]
+    source: SourceRead
     stable_at: Optional[datetime] = None
 
 
 class CaseRead(CaseBase):
     id: PrimaryKey
-    # assignee: Optional[ParticipantRead]
+    assignee: UserRead
     # case_priority: CasePriorityRead
     # case_type: CaseTypeRead
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     duplicates: Optional[List[CaseReadNested]] = []
     events: Optional[List[EventRead]] = []
+    incident: Optional[IncidentRead]
     name: Optional[NameStr]
     project: ProjectRead
     reported_at: Optional[datetime] = None
-    # reporter: Optional[ParticipantRead]
+    source: SourceRead
     stable_at: Optional[datetime] = None
     tags: Optional[List[TagRead]] = []
     ticket: Optional[TicketRead] = None
 
 
 class CaseUpdate(CaseBase):
-    # assignee: Optional[ParticipantUpdate]
+    assignee: Optional[UserRead]
     # case_priority: CasePriorityBase
     # case_type: CaseTypeBase
     duplicates: Optional[List[CaseReadNested]] = []
+    incident: Optional[IncidentRead]
     reported_at: Optional[datetime] = None
-    # reporter: Optional[ParticipantUpdate]
+    source: Optional[SourceRead]
     stable_at: Optional[datetime] = None
     tags: Optional[List[TagRead]] = []
 

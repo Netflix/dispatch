@@ -79,7 +79,7 @@ export const protectedRoute = [
       name: "cases",
       meta: {
         title: "Cases",
-        icon: "mdi-file-multiple",
+        icon: "mdi-briefcase",
         group: "cases",
         requiresAuth: true,
         menu: true,

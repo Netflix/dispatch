@@ -97,7 +97,7 @@
         </v-row>
       </v-flex>
       <v-flex xs12>
-        <tag-filter-auto-complete label="Tags" v-model="tags" model="incident" :model-id="id" />
+        <tag-filter-auto-complete label="Tags" v-model="tags" model="case" :model-id="id" />
       </v-flex>
       <v-flex xs12>
         <case-filter-combobox label="Duplicates" v-model="duplicates" :project="project" />
@@ -140,14 +140,14 @@ export default {
   },
 
   computed: {
-    ...mapFields("incident", [
+    ...mapFields("case_management", [
       "selected.id",
       "selected.name",
       "selected.title",
       "selected.description",
       "selected.resolution",
       "selected.assignee",
-      "selected.reporter",
+      "selected.source",
       "selected.created_at",
       "selected.stable_at",
       "selected.reported_at",
