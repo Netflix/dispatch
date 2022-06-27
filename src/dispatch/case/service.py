@@ -6,7 +6,7 @@ from typing import List, Optional
 
 # from dispatch.case_priority import service as case_priority_service
 # from dispatch.case_type import service as case_type_service
-from dispatch.event import service as event_service
+# from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 from dispatch.tag import service as tag_service
