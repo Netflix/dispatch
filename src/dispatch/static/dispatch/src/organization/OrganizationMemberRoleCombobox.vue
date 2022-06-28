@@ -35,8 +35,9 @@
 
 <script>
 import ProjectSelect from "@/project/ProjectSelect.vue"
+
 export default {
-  name: "UserRoleCombobox",
+  name: "OrganizationMemberRoleCombobox",
 
   components: {
     ProjectSelect,
