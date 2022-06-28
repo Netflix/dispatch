@@ -37,9 +37,6 @@
           clearable
         />
       </v-flex>
-      <v-flex xs12>
-        <project-select v-model="project" />
-      </v-flex>
       <v-flex xs6>
         <v-select
           v-model="status"
@@ -56,36 +53,27 @@
           hint="The visibilty of the case."
         />
       </v-flex>
-      <!-- <v-flex xs6> -->
-      <!--   <ValidationProvider name="Assignee" rules="required" immediate> -->
-      <!--     <participant-select -->
-      <!--       v-model="assignee" -->
-      <!--       slot-scope="{ errors, valid }" -->
-      <!--       label="Assignee" -->
-      <!--       :error-messages="errors" -->
-      <!--       :success="valid" -->
-      <!--       hint="The individual to which the case is assigned." -->
-      <!--       clearable -->
-      <!--       required -->
-      <!--       :project="project" -->
-      <!--     /> -->
-      <!--   </ValidationProvider> -->
-      <!-- </v-flex> -->
-      <!-- <v-flex xs6> -->
-      <!--   <ValidationProvider name="Reporter" rules="required" immediate> -->
-      <!--     <participant-select -->
-      <!--       v-model="reporter" -->
-      <!--       slot-scope="{ errors, valid }" -->
-      <!--       label="Reporter" -->
-      <!--       :error-messages="errors" -->
-      <!--       :success="valid" -->
-      <!--       hint="The individual who reported the case." -->
-      <!--       clearable -->
-      <!--       required -->
-      <!--       :project="project" -->
-      <!--     /> -->
-      <!--   </ValidationProvider> -->
-      <!-- </v-flex> -->
+      <v-flex xs6>
+        <project-select v-model="project" />
+      </v-flex>
+      <v-flex xs6>
+        <source-select v-model="source" :project="project" />
+      </v-flex>
+      <v-flex xs12>
+        <ValidationProvider name="Assignee" rules="required" immediate>
+          <organization-member-combobox
+            v-model="assignee"
+            slot-scope="{ errors, valid }"
+            label="Assignee"
+            :error-messages="errors"
+            :success="valid"
+            hint="The organization member to which the case is assigned."
+            clearable
+            required
+            :project="project"
+          />
+        </ValidationProvider>
+      </v-flex>
       <v-flex xs12>
         <v-row>
           <v-col cols="6">
@@ -113,7 +101,9 @@ import { required } from "vee-validate/dist/rules"
 
 import CaseFilterCombobox from "@/case/CaseFilterCombobox.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
+import OrganizationMemberCombobox from "@/organization/OrganizationMemberCombobox.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
+import SourceSelect from "@/data/source/SourceSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
 extend("required", {
@@ -127,7 +117,9 @@ export default {
   components: {
     CaseFilterCombobox,
     DateTimePickerMenu,
+    OrganizationMemberCombobox,
     ProjectSelect,
+    SourceSelect,
     TagFilterAutoComplete,
     ValidationProvider,
   },

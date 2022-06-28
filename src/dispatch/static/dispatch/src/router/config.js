@@ -280,7 +280,9 @@ export const protectedRoute = [
           name: "OrganizationMemberTable",
           meta: { title: "Members", subMenu: "organization", group: "organization" },
           component: () =>
-            import(/* webpackChunkName: "users-table" */ "@/organization/OrganizationMemberTable.vue"),
+            import(
+              /* webpackChunkName: "users-table" */ "@/organization/OrganizationMemberTable.vue"
+            ),
         },
         {
           path: "projects",
