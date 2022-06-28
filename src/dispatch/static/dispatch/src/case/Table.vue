@@ -39,13 +39,18 @@
             loading-text="Loading... Please wait"
             show-select
           >
-            <template v-slot:item.project.name="{ item }">
-              <v-chip small :color="item.project.color" text-color="white">
-                {{ item.project.name }}
+            <template v-slot:item.source.name="{ item }">
+              <v-chip small color="info" text-color="white">
+                {{ item.source.name }}
               </v-chip>
             </template>
             <template v-slot:item.status="{ item }">
               <case-status :status="item.status" :id="item.id" />
+            </template>
+            <template v-slot:item.project.name="{ item }">
+              <v-chip small :color="item.project.color" text-color="white">
+                {{ item.project.name }}
+              </v-chip>
             </template>
             <template v-slot:item.reported_at="{ item }">
               <v-tooltip bottom>
@@ -126,9 +131,9 @@ export default {
         { text: "Name", value: "name", align: "left", width: "10%" },
         { text: "Title", value: "title", sortable: false },
         { text: "Status", value: "status" },
+        { text: "Assignee", value: "assignee.email", sortable: true },
+        { text: "Source", value: "source.name", sortable: true },
         { text: "Project", value: "project.name", sortable: true },
-        { text: "Assignee", value: "assignee.email", sortable: false },
-        { text: "Source", value: "source.name", sortable: false },
         { text: "Reported At", value: "reported_at" },
         { text: "Closed At", value: "closed_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
@@ -139,23 +144,23 @@ export default {
 
   computed: {
     ...mapFields("case_management", [
-     "table.loading",
-     "table.options.descending",
-     "table.options.filters",
-     "table.options.filters.assignee",
-     "table.options.filters.project",
-     "table.options.filters.reported_at",
-     "table.options.filters.source",
-     "table.options.filters.status",
-     "table.options.filters.tag",
-     "table.options.filters.tag_type",
-     "table.options.itemsPerPage",
-     "table.options.page",
-     "table.options.q",
-     "table.options.sortBy",
-     "table.rows.items",
-     "table.rows.selected",
-     "table.rows.total",
+      "table.loading",
+      "table.options.descending",
+      "table.options.filters",
+      "table.options.filters.assignee",
+      "table.options.filters.project",
+      "table.options.filters.reported_at",
+      "table.options.filters.source",
+      "table.options.filters.status",
+      "table.options.filters.tag",
+      "table.options.filters.tag_type",
+      "table.options.itemsPerPage",
+      "table.options.page",
+      "table.options.q",
+      "table.options.sortBy",
+      "table.rows.items",
+      "table.rows.selected",
+      "table.rows.total",
     ]),
     ...mapFields("route", ["query"]),
     ...mapFields("auth", ["currentUser.projects"]),
