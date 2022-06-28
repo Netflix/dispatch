@@ -52,7 +52,7 @@ cffi==1.15.0
     # via
     #   bcrypt
     #   cryptography
-chardet==4.0.0
+chardet==5.0.0
     # via
     #   -r requirements-base.in
     #   emails
