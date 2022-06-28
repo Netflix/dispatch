@@ -54,10 +54,10 @@
         />
       </v-flex>
       <v-flex xs6>
-        <project-select v-model="project" />
+        <source-select v-model="source" :project="project" />
       </v-flex>
       <v-flex xs6>
-        <source-select v-model="source" :project="project" />
+        <project-select v-model="project" />
       </v-flex>
       <v-flex xs12>
         <ValidationProvider name="Assignee" rules="required" immediate>
