@@ -103,7 +103,7 @@ frozenlist==1.3.0
     #   aiosignal
 google-api-core==2.7.2
     # via google-api-python-client
-google-api-python-client==2.51.0
+google-api-python-client==2.52.0
     # via -r requirements-base.in
 google-auth==2.6.5
     # via
