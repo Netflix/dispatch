@@ -96,14 +96,6 @@ class EvergreenMixin(object):
         )
 
 
-# @listens_for(EvergreenMixin.evergreen, "set", propagate=True)
-def reset_last_reminded(target, value, oldvalue, initiator):
-    """Reset last reminder at if evergreen goes from disabled -> enabled."""
-    if not oldvalue:
-        target.evergreen_last_reminder_at = datetime.utcnow()
-    target.evergreen = value
-
-
 # Pydantic models...
 class DispatchBase(BaseModel):
     class Config:
