@@ -36,9 +36,9 @@ INCIDENT_STATUS_DESCRIPTIONS = {
 }
 
 EVERGREEN_REMINDER_DESCRIPTION = """
-You are the owner of the following Dispatch resources.
+You are the owner of the following resources in Dispatch.
 This is a reminder that these resources should be kept up to date in order to effectively
-respond to incidents. Please review them and update, or clearly mark them as deprecated.""".replace(
+respond to incidents. Please review and update them, or mark them as deprecated.""".replace(
     "\n", " "
 ).strip()
 
@@ -513,7 +513,8 @@ INCIDENT_TASK_REMINDER = [
 ]
 
 EVERGREEN_REMINDER = [
-    {"title": "Resource Type", "text": "{{ resource_type }}"},
+    {"title": "Project", "text": "{{ project }}"},
+    {"title": "Type", "text": "{{ resource_type }}"},
     {"title": "Name", "text": "{{ name }}"},
     {"title": "Description", "text": "{{ description }}"},
     {"title": "Link", "text": "{{ weblink }}"},
