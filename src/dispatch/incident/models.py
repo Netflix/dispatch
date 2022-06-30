@@ -73,7 +73,6 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     resolution = Column(String)
     status = Column(String, default=IncidentStatus.active)
     visibility = Column(String, default=Visibility.open, nullable=False)
-    total_cost = Column(Numeric)
     participants_team = Column(String)
     participants_location = Column(String)
     commanders_location = Column(String)
@@ -196,12 +195,13 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     notifications_group_id = Column(Integer, ForeignKey("group.id"))
     notifications_group = relationship("Group", foreign_keys=[notifications_group_id])
 
-    @observes("incident_costs")
-    def cost_observer(self, incident_costs):
-        total_cost = 0
-        for cost in incident_costs:
-            total_cost += cost.amount
-        self.total_cost = total_cost
+    @hybrid_property
+    def total_cost(self):
+        if self.incident_costs:
+            total_cost = 0
+            for cost in self.incident_costs:
+                total_cost += cost.amount
+            return total_cost
 
     @observes("participants")
     def participant_observer(self, participants):

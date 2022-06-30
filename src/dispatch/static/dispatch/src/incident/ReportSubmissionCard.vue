@@ -4,12 +4,11 @@
       <v-card-text>
         <p class="display-1 text--primary">Report Incident</p>
         <p>
-          If you suspect an incident and require help, please fill out the following to the best of
-          your abilities.
+          If you suspect an incident and need help, please fill out this form to the best of your
+          abilities.
         </p>
         <p v-if="project_faq">
-          Unsure if your in the right place or have additional questions? Checkout this project's
-          incident FAQ document:
+          If you have additional questions, please check out the following FAQ document:
           <a :href="project_faq.weblink" target="_blank" style="text-decoration: none">
             {{ project_faq.name }}
             <v-icon small>open_in_new</v-icon>
@@ -111,12 +110,14 @@ export default {
     ProjectSelect,
     TagFilterAutoComplete,
   },
+
   data() {
     return {
       isSubmitted: false,
       project_faq: null,
     }
   },
+
   computed: {
     ...mapFields("incident", [
       "selected.incident_priority",

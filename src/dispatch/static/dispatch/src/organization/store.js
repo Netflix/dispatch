@@ -9,7 +9,7 @@ const getDefaultSelectedState = () => {
     description: [],
     banner_enabled: false,
     banner_text: null,
-    banner_color: null,
+    banner_color: "#1976D2FF",
     id: null,
     loading: false,
   }

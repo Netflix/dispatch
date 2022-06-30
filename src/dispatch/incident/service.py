@@ -100,22 +100,18 @@ def get_all(*, db_session, project_id: int) -> List[Optional[Incident]]:
     return db_session.query(Incident).filter(Incident.project_id == project_id)
 
 
-def get_all_by_status(
-    *, db_session, status: str, project_id: int, skip=0, limit=100
-) -> List[Optional[Incident]]:
+def get_all_by_status(*, db_session, status: str, project_id: int) -> List[Optional[Incident]]:
     """Returns all incidents based on the given status."""
     return (
         db_session.query(Incident)
         .filter(Incident.status == status)
         .filter(Incident.project_id == project_id)
-        .offset(skip)
-        .limit(limit)
         .all()
     )
 
 
 def get_all_last_x_hours_by_status(
-    *, db_session, status: str, hours: int, project_id: int, skip=0, limit=100
+    *, db_session, status: str, hours: int, project_id: int
 ) -> List[Optional[Incident]]:
     """Returns all incidents of a given status in the last x hours."""
     now = datetime.utcnow()
@@ -126,8 +122,6 @@ def get_all_last_x_hours_by_status(
             .filter(Incident.status == IncidentStatus.active)
             .filter(Incident.created_at >= now - timedelta(hours=hours))
             .filter(Incident.project_id == project_id)
-            .offset(skip)
-            .limit(limit)
             .all()
         )
 
@@ -137,8 +131,6 @@ def get_all_last_x_hours_by_status(
             .filter(Incident.status == IncidentStatus.stable)
             .filter(Incident.stable_at >= now - timedelta(hours=hours))
             .filter(Incident.project_id == project_id)
-            .offset(skip)
-            .limit(limit)
             .all()
         )
 
@@ -148,8 +140,6 @@ def get_all_last_x_hours_by_status(
             .filter(Incident.status == IncidentStatus.closed)
             .filter(Incident.closed_at >= now - timedelta(hours=hours))
             .filter(Incident.project_id == project_id)
-            .offset(skip)
-            .limit(limit)
             .all()
         )
 

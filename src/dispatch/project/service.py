@@ -76,8 +76,8 @@ def create(*, db_session, project_in: ProjectCreate) -> Project:
     """Creates a project."""
     from dispatch.organization import service as organization_service
 
-    organization = organization_service.get_by_name(
-        db_session=db_session, name=project_in.organization.name
+    organization = organization_service.get_by_slug(
+        db_session=db_session, slug=project_in.organization.slug
     )
     project = Project(
         **project_in.dict(exclude={"organization"}),

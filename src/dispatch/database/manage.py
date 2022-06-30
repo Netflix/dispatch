@@ -134,7 +134,7 @@ def init_schema(*, engine, organization: Organization):
         project_in=ProjectCreate(
             name="default",
             default=True,
-            description="Default dispatch project.",
+            description="Default Dispatch project.",
             organization=organization,
         ),
     )

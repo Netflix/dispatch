@@ -185,7 +185,7 @@ export default {
   },
 
   created() {
-    this.organization = { name: this.params.organization }
+    this.organization = { name: this.params.organization, slug: this.params.organization }
   },
 }
 </script>

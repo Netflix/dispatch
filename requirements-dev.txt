@@ -12,13 +12,13 @@ attrs==21.4.0
     # via pytest
 backcall==0.2.0
     # via ipython
-black==22.3.0
+black==22.6.0
     # via -r requirements-dev.in
 click==8.0.4
     # via
     #   -r requirements-dev.in
     #   black
-coverage==6.4
+coverage==6.4.1
     # via -r requirements-dev.in
 decorator==5.1.1
     # via ipython
@@ -30,7 +30,7 @@ executing==0.8.3
     #   stack-data
 factory-boy==3.2.1
     # via -r requirements-dev.in
-faker==13.11.1
+faker==13.14.0
     # via
     #   -r requirements-dev.in
     #   factory-boy
@@ -38,7 +38,7 @@ flake8==4.0.1
     # via -r requirements-dev.in
 iniconfig==1.1.1
     # via pytest
-ipython==8.3.0
+ipython==8.4.0
     # via -r requirements-dev.in
 jedi==0.18.1
     # via ipython
