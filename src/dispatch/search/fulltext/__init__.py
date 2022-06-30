@@ -394,8 +394,8 @@ def sync_trigger(conn, table, tsvector_column, indexed_columns, metadata=None, o
         conn=conn,
     )
     classes = [
-        DropSearchTriggerSQL,
         DropSearchFunctionSQL,
+        DropSearchTriggerSQL,
         CreateSearchFunctionSQL,
         CreateSearchTriggerSQL,
     ]
@@ -440,8 +440,8 @@ def drop_trigger(conn, table_name, tsvector_column, metadata=None, options=None)
     table = Table(table_name, metadata, autoload=True, autoload_with=conn)
     params = dict(tsvector_column=getattr(table.c, tsvector_column), options=options, conn=conn)
     classes = [
-        DropSearchTriggerSQL,
         DropSearchFunctionSQL,
+        DropSearchTriggerSQL,
     ]
     for class_ in classes:
         sql = class_(**params)
