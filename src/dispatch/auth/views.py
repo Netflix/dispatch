@@ -71,17 +71,6 @@ def get_users(*, organization: OrganizationSlug, common: dict = Depends(common_p
     }
 
 
-# NOTE: Order matters when defining path operations (see https://fastapi.tiangolo.com/tutorial/path-params/#order-matters)
-@user_router.get("/me", response_model=UserRead)
-def get_me(
-    *,
-    db_session: Session = Depends(get_db),
-    organization: OrganizationSlug,
-    current_user: DispatchUser = Depends(get_current_user),
-):
-    return current_user
-
-
 @user_router.get("/{user_id}", response_model=UserRead)
 def get_user(*, db_session: Session = Depends(get_db), user_id: PrimaryKey):
     """Get a user."""
@@ -135,6 +124,15 @@ def update_user(
     ]
 
     return update(db_session=db_session, user=user, user_in=user_in)
+
+
+@auth_router.get("/me", response_model=UserRead)
+def get_me(
+    *,
+    db_session: Session = Depends(get_db),
+    current_user: DispatchUser = Depends(get_current_user),
+):
+    return current_user
 
 
 @auth_router.post("/login", response_model=UserLoginResponse)

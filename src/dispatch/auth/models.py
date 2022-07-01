@@ -115,6 +115,7 @@ class UserOrganization(DispatchBase):
 class UserBase(DispatchBase):
     email: EmailStr
     projects: Optional[List[UserProject]] = []
+    organizations: Optional[List[UserOrganization]] = []
 
     @validator("email")
     def email_required(cls, v):

@@ -48,6 +48,10 @@ router.beforeEach((to, from, next) => {
         customAuthProvider.login(to, from, next)
       }
     } else {
+      // This feels hacky
+      if (!store.state.route.params.organization) {
+        store.state.route.params.organization = "default"
+      }
       userSettings.load()
       next()
     }
@@ -72,17 +76,6 @@ router.beforeEach((to, from, next) => {
   }
   next()
 })
-
-// router.beforeEach((to) => {
-//   console.log(store.state)
-//   // We load the user settings if after the user has logged in
-//   // and we have set the organization information in the store
-//   if (store.state.auth.currentUser.loggedIn) {
-//     if (to.name === "IncidentOverview") {
-//       userSettings.load()
-//     }
-//   }
-// })
 
 router.afterEach(function () {
   store.dispatch("app/setLoading", false)
