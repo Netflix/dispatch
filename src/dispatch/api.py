@@ -78,9 +78,7 @@ def get_organization_path(organization: OrganizationSlug):
     pass
 
 
-# NOTE we only advertise auth routes when basic auth is enabled
-if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-basic":
-    api_router.include_router(auth_router, prefix="/{organization}/auth", tags=["auth"])
+api_router.include_router(auth_router, prefix="/{organization}/auth", tags=["auth"])
 
 
 # NOTE: All api routes should be authenticated by default

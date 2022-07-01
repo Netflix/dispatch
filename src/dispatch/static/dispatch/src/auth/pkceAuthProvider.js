@@ -1,11 +1,11 @@
-import { BasicQueryStringUtils } from "@openid/appauth/built/query_string_utils"
-import { LocalStorageBackend } from "@openid/appauth/built/storage"
-import { AuthorizationRequest } from "@openid/appauth/built/authorization_request"
 import { AuthorizationNotifier } from "@openid/appauth/built/authorization_request_handler"
-import { RedirectRequestHandler } from "@openid/appauth/built/redirect_based_handler"
+import { AuthorizationRequest } from "@openid/appauth/built/authorization_request"
 import { AuthorizationServiceConfiguration } from "@openid/appauth/built/authorization_service_configuration"
 import { BaseTokenRequestHandler } from "@openid/appauth/built/token_request_handler"
+import { BasicQueryStringUtils } from "@openid/appauth/built/query_string_utils"
 import { GRANT_TYPE_AUTHORIZATION_CODE, TokenRequest } from "@openid/appauth/built/token_request"
+import { LocalStorageBackend } from "@openid/appauth/built/storage"
+import { RedirectRequestHandler } from "@openid/appauth/built/redirect_based_handler"
 
 import { FetchRequestor } from "@openid/appauth/built/xhr"
 

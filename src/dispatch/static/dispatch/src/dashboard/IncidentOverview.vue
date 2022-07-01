@@ -14,6 +14,7 @@
           @update="update"
           @loading="setLoading"
           :projects="defaultUserProjects"
+          v-if="defaultUserProjects.length > 0"
         />
       </v-flex>
     </v-layout>

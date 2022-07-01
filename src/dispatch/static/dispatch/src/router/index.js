@@ -6,6 +6,7 @@ import store from "@/store"
 import pkceAuthProvider from "@/auth/pkceAuthProvider"
 import basicAuthProvider from "@/auth/basicAuthProvider"
 import customAuthProvider from "@/auth/customAuthProvider"
+import userSettings from "@/auth/userSettings"
 
 const routes = protectedRoute.concat(publicRoute)
 
@@ -47,6 +48,11 @@ router.beforeEach((to, from, next) => {
         customAuthProvider.login(to, from, next)
       }
     } else {
+      // This feels hacky
+      if (!store.state.route.params.organization) {
+        store.state.route.params.organization = "default"
+      }
+      userSettings.load()
       next()
     }
   } else {

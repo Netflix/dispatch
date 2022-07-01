@@ -35,12 +35,12 @@ def get_or_create(*, db_session, email: str, incident: Incident = None, **kwargs
     return contact
 
 
-def get_overdue_evergreen_teams(*, db_session, project_id) -> List[Optional[TeamContact]]:
+def get_overdue_evergreen_teams(*, db_session, project_id: int) -> List[Optional[TeamContact]]:
     """Returns all teams that have not had a recent evergreen notification."""
     query = (
         db_session.query(TeamContact)
-        .filter(TeamContact.evergreen == True)  # noqa
         .filter(TeamContact.project_id == project_id)
+        .filter(TeamContact.evergreen == True)  # noqa
         .filter(TeamContact.overdue == True)  # noqa
     )
     return query.all()

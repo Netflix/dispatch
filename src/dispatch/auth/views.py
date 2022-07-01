@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from sqlalchemy.orm import Session
 
@@ -84,16 +84,6 @@ def get_user(*, db_session: Session = Depends(get_db), user_id: PrimaryKey):
     return user
 
 
-@auth_router.get("/me", response_model=UserRead)
-def get_me(
-    req: Request,
-    organization: OrganizationSlug,
-    current_user: DispatchUser = Depends(get_current_user),
-    db_session: Session = Depends(get_db),
-):
-    return current_user
-
-
 @user_router.put(
     "/{user_id}",
     response_model=UserRead,
@@ -134,6 +124,15 @@ def update_user(
     ]
 
     return update(db_session=db_session, user=user, user_in=user_in)
+
+
+@auth_router.get("/me", response_model=UserRead)
+def get_me(
+    *,
+    db_session: Session = Depends(get_db),
+    current_user: DispatchUser = Depends(get_current_user),
+):
+    return current_user
 
 
 @auth_router.post("/login", response_model=UserLoginResponse)

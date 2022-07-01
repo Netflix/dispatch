@@ -33,12 +33,14 @@ def get_all_enabled(*, db_session, project_id: int) -> Optional[List[Notificatio
     ).all()
 
 
-def get_overdue_evergreen_notifications(*, db_session, project_id) -> List[Optional[Notification]]:
+def get_overdue_evergreen_notifications(
+    *, db_session, project_id: int
+) -> List[Optional[Notification]]:
     """Returns all notifications that have not had a recent evergreen notification."""
     query = (
         db_session.query(Notification)
-        .filter(Notification.evergreen == True)  # noqa
         .filter(Notification.project_id == project_id)
+        .filter(Notification.evergreen == True)  # noqa
         .filter(Notification.overdue == True)  # noqa
     )
     return query.all()

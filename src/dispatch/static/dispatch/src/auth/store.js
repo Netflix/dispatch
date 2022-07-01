@@ -114,9 +114,9 @@ const actions = {
   },
   basicLogin({ commit }, payload) {
     commit("SET_BASIC_LOGIN_LOADING", true)
-    UserApi.login(payload.email, payload.password).then(function (res) {
-      commit("SET_USER_LOGIN", res.data.token)
-      commit("SET_USER_PROJECTS", res.data.projects)
+    UserApi.login(payload.email, payload.password).then(function (response) {
+      commit("SET_USER_LOGIN", response.data.token)
+      commit("SET_USER_PROJECTS", response.data.projects)
       router.push({
         name: "IncidentOverview",
       })
@@ -124,8 +124,8 @@ const actions = {
     commit("SET_BASIC_LOGIN_LOADING", false)
   },
   register({ commit }, payload) {
-    UserApi.register(payload.email, payload.password).then(function (res) {
-      commit("SET_USER_LOGIN", res.data.token)
+    UserApi.register(payload.email, payload.password).then(function (response) {
+      commit("SET_USER_LOGIN", response.data.token)
       router.push({
         name: "IncidentOverview",
       })

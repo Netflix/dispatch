@@ -6,22 +6,21 @@
 """
 import logging
 
-from typing import Any
-from schedule import every
-from datetime import datetime
 from collections import defaultdict
+from datetime import datetime
+from schedule import every
+from typing import Any
 
 from dispatch.database.core import SessionLocal
-from dispatch.messaging.strings import EVERGREEN_REMINDER
 from dispatch.decorators import scheduled_project_task
-from dispatch.scheduler import scheduler
-from dispatch.config import DISPATCH_UI_URL
+from dispatch.document import service as document_service
+from dispatch.messaging.strings import EVERGREEN_REMINDER
+from dispatch.notification import service as notification_service
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
-from dispatch.team import service as team_service
-from dispatch.notification import service as notification_service
+from dispatch.scheduler import scheduler
 from dispatch.service import service as service_service
-from dispatch.document import service as document_service
+from dispatch.team import service as team_service
 
 
 log = logging.getLogger(__name__)
@@ -35,27 +34,24 @@ def create_evergreen_reminder(
         db_session=db_session, plugin_type="email", project_id=project.id
     )
     if not plugin:
-        log.warning("Evergreen reminder not sent, no email plugin enabled.")
+        log.warning("Evergreen reminder not sent. No email plugin enabled.")
         return
-
-    notification_template = EVERGREEN_REMINDER
 
     items = []
     for resource_type, resources in resource_groups.items():
         for resource in resources:
-            weblink = getattr(resource, "weblink", None)
-            if not weblink:
-                weblink = DISPATCH_UI_URL
-
+            weblink = getattr(resource, "weblink", "N/A")
             items.append(
                 {
-                    "resource_type": resource_type.replace("_", " ").title(),
-                    "name": resource.name,
                     "description": getattr(resource, "description", None),
+                    "name": resource.name,
+                    "project": resource.project.name,
+                    "resource_type": resource_type.replace("_", " ").title(),
                     "weblink": weblink,
                 }
             )
 
+    notification_template = EVERGREEN_REMINDER
     notification_type = "evergreen-reminder"
     name = subject = notification_text = "Evergreen Reminder"
     success = plugin.instance.send(
@@ -68,13 +64,16 @@ def create_evergreen_reminder(
         items=items,  # plugin expect dicts
     )
 
-    if success:
-        for item in items:
-            item.evergreen_last_reminder_at = datetime.utcnow()
-
-        db_session.commit()
-    else:
+    if not success:
         log.error(f"Unable to send evergreen message. Email: {owner_email}")
+        return
+
+    # we set the evergreen last reminder at time to now
+    for resource_type, resources in resource_groups.items():
+        for resource in resources:
+            resource.evergreen_last_reminder_at = datetime.utcnow()
+
+    db_session.commit()
 
 
 def group_items_by_owner_and_type(items):
@@ -90,16 +89,21 @@ def group_items_by_owner_and_type(items):
 def create_evergreen_reminders(db_session: SessionLocal, project: Project):
     """Sends reminders for items that have evergreen enabled."""
     items = []
+
+    # Overdue evergreen documents
     items += document_service.get_overdue_evergreen_documents(
         db_session=db_session, project_id=project.id
     )
 
+    # Overdue evergreen oncall services
     items += service_service.get_overdue_evergreen_services(
         db_session=db_session, project_id=project.id
     )
 
+    # Overdue evergreen teams
     items += team_service.get_overdue_evergreen_teams(db_session=db_session, project_id=project.id)
 
+    # Overdue evergreen notifications
     items += notification_service.get_overdue_evergreen_notifications(
         db_session=db_session, project_id=project.id
     )

@@ -330,7 +330,6 @@ const actions = {
     })
   },
   subscribeToIncident({ commit }, incidentId) {
-    console.log("C")
     IncidentApi.subscribe(incidentId, {}).then(() => {
       commit(
         "notification_backend/addBeNotification",
