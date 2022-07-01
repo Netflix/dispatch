@@ -11,7 +11,10 @@
         <div class="headline">Incidents</div>
       </v-col>
       <v-col cols="3">
-        <table-filter-dialog :projects="defaultUserProjects" />
+        <table-filter-dialog
+          :projects="defaultUserProjects"
+          v-if="defaultUserProjects.length > 0"
+        />
         <table-export-dialog />
         <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn>
       </v-col>
