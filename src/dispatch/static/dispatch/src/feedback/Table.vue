@@ -6,10 +6,7 @@
         <div class="headline">Feedback</div>
       </v-col>
       <v-col cols="1">
-        <table-filter-dialog
-          :projects="defaultUserProjects"
-          v-if="defaultUserProjects.length > 0"
-        />
+        <table-filter-dialog :projects="defaultUserProjects" />
       </v-col>
     </v-row>
     <v-row no-gutters>

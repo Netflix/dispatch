@@ -7,10 +7,7 @@
         <div class="headline">Sources</div>
       </v-col>
       <v-col cols="2">
-        <table-filter-dialog
-          :projects="defaultUserProjects"
-          v-if="defaultUserProjects.length > 0"
-        />
+        <table-filter-dialog :projects="defaultUserProjects" />
         <v-btn color="info" class="ml-2" @click="createEditShow()"> New </v-btn>
       </v-col>
     </v-row>
