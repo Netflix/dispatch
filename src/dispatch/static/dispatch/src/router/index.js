@@ -39,21 +39,22 @@ router.beforeEach((to, from, next) => {
   store.dispatch("app/setLoading", true)
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     if (!store.state.auth.currentUser.loggedIn) {
-      if (authProviderSlug === "dispatch-auth-provider-pkce") {
-        pkceAuthProvider.login(to, from, next)
-      } else if (authProviderSlug === "dispatch-auth-provider-basic") {
+      if (authProviderSlug === "dispatch-auth-provider-basic") {
         basicAuthProvider.login(to, from, next)
+      } else if (authProviderSlug === "dispatch-auth-provider-pkce") {
+        pkceAuthProvider.login(to, from, next)
+          .then(function () {
+            return userSettings.load()
+          }).then(next)
       } else {
         // defaults to none, allows custom providers
         customAuthProvider.login(to, from, next)
+          .then(function () {
+            return userSettings.load()
+          }).then(next)
       }
     } else {
-      // This feels hacky
-      if (!store.state.route.params.organization) {
-        store.state.route.params.organization = "default"
-      }
-      userSettings.load()
-      next()
+      userSettings.load().then(next)
     }
   } else {
     next()
