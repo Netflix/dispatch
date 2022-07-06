@@ -2,8 +2,12 @@ import store from "@/store"
 import UserApi from "./api"
 
 function load() {
-  UserApi.getUserInfo().then(function (response) {
-    store.commit("auth/SET_USER_PROJECTS", response.data.projects)
+  if (!store.state.route.params.organization) {
+    store.state.route.params.organization = "default"
+  }
+
+  return UserApi.getUserInfo().then(function (response) {
+    return store.commit("auth/SET_USER_PROJECTS", response.data.projects)
   })
 }
 
