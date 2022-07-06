@@ -42,12 +42,7 @@ router.beforeEach((to, from, next) => {
       if (authProviderSlug === "dispatch-auth-provider-basic") {
         basicAuthProvider.login(to, from, next)
       } else if (authProviderSlug === "dispatch-auth-provider-pkce") {
-        pkceAuthProvider
-          .login(to, from, next)
-          .then(function () {
-            return userSettings.load()
-          })
-          .then(next)
+        pkceAuthProvider.login(to, from, next)
       } else {
         // defaults to none, allows custom providers
         customAuthProvider
