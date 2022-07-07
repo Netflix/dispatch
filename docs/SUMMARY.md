@@ -32,6 +32,7 @@
     - [Teams](admin-guide/administration/contact/team.md)
   - [Knowledge](admin-guide/administration/knowledge/README.md)
     - [Tag Types](admin-guide/administration/knowledge/tag-type.md)
+    - [Tags](admin-guide/administration/knowledge/tag.md)
     - [Runbooks](admin-guide/administration/knowledge/runbooks.md)
     - [Definitions](admin-guide/administration/knowledge/definition.md)
     - [Terms](admin-guide/administration/knowledge/term.md)
