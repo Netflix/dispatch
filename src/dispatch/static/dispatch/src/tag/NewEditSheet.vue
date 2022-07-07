@@ -44,6 +44,20 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
+                <ValidationProvider name="description" immediate>
+                  <v-textarea
+                    v-model="description"
+                    slot-scope="{ errors, valid }"
+                    label="Description"
+                    :error-messages="errors"
+                    :success="valid"
+                    hint="A description for your tag."
+                    clearable
+                    required
+                  />
+                </ValidationProvider>
+              </v-flex>
+              <v-flex xs12>
                 <tag-type-select :project="project" v-model="tag_type" />
               </v-flex>
               <v-flex xs12>
@@ -54,7 +68,7 @@
                     :error-messages="errors"
                     :success="valid"
                     label="Source"
-                    hint="Tag's source."
+                    hint="The tag's source."
                     clearable
                     required
                   />
@@ -68,21 +82,7 @@
                     :error-messages="errors"
                     :success="valid"
                     label="URI"
-                    hint="Tag's URI."
-                    clearable
-                    required
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="description" immediate>
-                  <v-textarea
-                    v-model="description"
-                    slot-scope="{ errors, valid }"
-                    label="Description"
-                    :error-messages="errors"
-                    :success="valid"
-                    hint="The tag's description."
+                    hint="The tag's URI."
                     clearable
                     required
                   />

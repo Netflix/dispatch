@@ -82,6 +82,7 @@ export default {
     NewEditSheet,
     SettingsBreadcrumbs,
   },
+
   data() {
     return {
       headers: [
@@ -89,6 +90,7 @@ export default {
         { text: "Description", value: "description", sortable: false },
         { text: "Type", value: "tag_type.name", sortable: true },
         { text: "Source", value: "source", sortable: true },
+        { text: "URI", value: "uri", sortable: false },
         { text: "Discoverable", value: "discoverable", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
