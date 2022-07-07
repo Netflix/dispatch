@@ -32,7 +32,6 @@ def release_notes(pull_request_number):
         "dependencies": "",
         "documentation": "",
         "enhancement": "",
-        "feature": "",
         "tests": "",
     }
 
@@ -55,9 +54,6 @@ def release_notes(pull_request_number):
 
     print(
         f"""
-Features:
-    {sections["feature"]}
-
 Enhancements:
     {sections["enhancement"]}
 
