@@ -51,7 +51,7 @@ user_router = APIRouter()
 def get_users(*, organization: OrganizationSlug, common: dict = Depends(common_parameters)):
     """Get all users."""
     common["filter_spec"] = {
-        "and": [{"model": "Organization", "op": "==", "field": "name", "value": organization}]
+        "and": [{"model": "Organization", "op": "==", "field": "slug", "value": organization}]
     }
 
     items = search_filter_sort_paginate(model="DispatchUser", **common)
