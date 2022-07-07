@@ -1,5 +1,4 @@
 import { DefaultLayout, DashboardLayout, BasicLayout } from "@/components/layouts"
-//import auth_store from "@/auth/store"
 
 const withPrefix = (prefix, routes) =>
   routes.map((route) => {
