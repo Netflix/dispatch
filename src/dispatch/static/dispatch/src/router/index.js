@@ -50,10 +50,10 @@ router.beforeEach((to, from, next) => {
           .then(function () {
             return userSettings.load()
           })
-          .then(next)
+          .then(next())
       }
     } else {
-      userSettings.load().then(next)
+      userSettings.load().then(next())
     }
   } else {
     next()

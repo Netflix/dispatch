@@ -21,8 +21,7 @@ from dispatch.config import (
 )
 from dispatch.database.core import Base
 from dispatch.enums import UserRoles
-from dispatch.models import PrimaryKey
-from dispatch.models import TimeStampMixin, DispatchBase
+from dispatch.models import OrganizationSlug, PrimaryKey, TimeStampMixin, DispatchBase
 from dispatch.organization.models import Organization, OrganizationRead
 from dispatch.project.models import Project, ProjectRead
 
@@ -70,10 +69,10 @@ class DispatchUser(Base, TimeStampMixin):
         }
         return jwt.encode(data, DISPATCH_JWT_SECRET, algorithm=DISPATCH_JWT_ALG)
 
-    def get_organization_role(self, organization_name):
-        """Gets the users role for a given organization."""
+    def get_organization_role(self, organization_slug: OrganizationSlug):
+        """Gets the user's role for a given organization slug."""
         for o in self.organizations:
-            if o.organization.name == organization_name:
+            if o.organization.slug == organization_slug:
                 return o.role
 
 

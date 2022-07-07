@@ -253,4 +253,4 @@ def get_current_role(
     request: Request, current_user: DispatchUser = Depends(get_current_user)
 ) -> UserRoles:
     """Attempts to get the current user depending on the configured authentication provider."""
-    return current_user.get_organization_role(organization_name=request.state.organization)
+    return current_user.get_organization_role(organization_slug=request.state.organization)

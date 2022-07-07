@@ -76,7 +76,7 @@ class BasePermission(ABC):
         if not user:
             raise HTTPException(status_code=self.status_code, detail=self.error_msg)
 
-        self.role = user.get_organization_role(organization.name)
+        self.role = user.get_organization_role(organization.slug)
 
         if not self.has_required_permissions(request):
             raise HTTPException(status_code=self.status_code, detail=self.error_msg)
