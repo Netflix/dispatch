@@ -7,8 +7,8 @@
 import logging
 
 from schedule import every
-from dispatch.database.core import SessionLocal
 
+from dispatch.database.core import SessionLocal
 from dispatch.decorators import scheduled_project_task
 from dispatch.plugin import service as plugin_service
 from dispatch.project.models import Project
@@ -28,11 +28,11 @@ def sync_terms(db_session: SessionLocal, project: Project):
     )
 
     if not term_plugin:
-        log.warning(f"Skipping term sync no term plugin enabled. ProjectId: {project.id}")
+        log.warning(f"Skipping syncing terms. No term plugin enabled. Project Id: {project.id}")
         return
 
     for t in term_plugin.instance.get():
-        log.debug(f"Adding Term. Term: {t}")
+        log.debug(f"Adding term {t} to {project.name} project.")
         term_in = TermCreate(**t)
         term = term_service.get_by_text(db_session=db_session, text=term_in.text)
 
