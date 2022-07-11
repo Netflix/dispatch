@@ -336,7 +336,6 @@ six==1.16.0
     #   python-dateutil
     #   python-multipart
     #   sqlalchemy-filters
-    #   sqlalchemy-utils
     #   validators
 slack-sdk==3.17.2
     # via -r requirements-base.in
@@ -363,7 +362,7 @@ sqlalchemy==1.3.24
     #   sqlalchemy-utils
 sqlalchemy-filters==0.12.0
     # via -r requirements-base.in
-sqlalchemy-utils==0.38.2
+sqlalchemy-utils==0.38.3
     # via -r requirements-base.in
 srsly==2.4.3
     # via
