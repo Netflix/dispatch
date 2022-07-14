@@ -10,7 +10,7 @@ aiohttp==3.8.1
     # via -r requirements-base.in
 aiosignal==1.2.0
     # via aiohttp
-alembic==1.8.0
+alembic==1.8.1
     # via -r requirements-base.in
 anyio==3.5.0
     # via
