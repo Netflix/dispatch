@@ -24,7 +24,7 @@ def get(*, db_session, incident_priority_id: int) -> Optional[IncidentPriority]:
 
 
 def get_default(*, db_session, project_id: int):
-    """Returns the current default incident_priority."""
+    """Returns the default incident priority."""
     return (
         db_session.query(IncidentPriority)
         .filter(IncidentPriority.default == true())
@@ -34,14 +34,14 @@ def get_default(*, db_session, project_id: int):
 
 
 def get_default_or_raise(*, db_session, project_id: int) -> IncidentPriority:
-    """Returns the default incident_priority or raise a ValidationError if one doesn't exist."""
+    """Returns the default incident priority or raise a ValidationError if one doesn't exist."""
     incident_priority = get_default(db_session=db_session, project_id=project_id)
 
     if not incident_priority:
         raise ValidationError(
             [
                 ErrorWrapper(
-                    NotFoundError(msg="No default incident_priority defined."),
+                    NotFoundError(msg="No default incident priority defined."),
                     loc="incident_priority",
                 )
             ],
@@ -63,7 +63,7 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[IncidentP
 def get_by_name_or_raise(
     *, db_session, project_id: int, incident_priority_in=IncidentPriorityRead
 ) -> IncidentPriority:
-    """Returns the incident_priority specified or raises ValidationError."""
+    """Returns the incident priority specified or raises ValidationError."""
     incident_priority = get_by_name(
         db_session=db_session, project_id=project_id, name=incident_priority_in.name
     )
@@ -73,7 +73,7 @@ def get_by_name_or_raise(
             [
                 ErrorWrapper(
                     NotFoundError(
-                        msg="IncidentPriority not found.",
+                        msg="Incident priority not found.",
                         incident_priority=incident_priority_in.name,
                     ),
                     loc="incident_priority",
@@ -88,7 +88,7 @@ def get_by_name_or_raise(
 def get_by_name_or_default(
     *, db_session, project_id: int, incident_priority_in=IncidentPriorityRead
 ) -> IncidentPriority:
-    """Returns a incident_priority based on a name or the default if not specified."""
+    """Returns a incident priority based on a name or the default if not specified."""
     if incident_priority_in:
         if incident_priority_in.name:
             return get_by_name_or_raise(

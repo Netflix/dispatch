@@ -55,7 +55,7 @@ def update_incident_priority(
     if not incident_priority:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "The incident priority with this id does not exist."}],
+            detail=[{"msg": "An incident priority with this id does not exist."}],
         )
 
     incident_priority = update(
@@ -75,6 +75,6 @@ def get_incident_priority(
     if not incident_priority:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "The incident priority with this id does not exist."}],
+            detail=[{"msg": "An incident priority with this id does not exist."}],
         )
     return incident_priority
