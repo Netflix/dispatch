@@ -6,7 +6,7 @@
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
             <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Incident Priority</v-list-item-subtitle>
+            <v-list-item-subtitle>Case Priority</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
             icon
@@ -37,7 +37,7 @@
                     :error-messages="errors"
                     :success="valid"
                     label="Name"
-                    hint="A name for your incident priority."
+                    hint="A name for your case priority."
                     clearable
                     required
                   />
@@ -51,7 +51,7 @@
                     label="Description"
                     :error-messages="errors"
                     :success="valid"
-                    hint="A description for your incident priority."
+                    hint="A description for your case priority."
                     clearable
                     required
                   />
@@ -73,59 +73,20 @@
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationProvider name="Tactical Report Reminder" rules="required" immediate>
-                  <v-text-field
-                    v-model="tactical_report_reminder"
-                    slot-scope="{ errors, valid }"
-                    label="Tactical Report Reminder"
-                    :error-messages="errors"
-                    :success="valid"
-                    type="number"
-                    hint="Number of hours to send a tactical report reminder to the incident commander."
-                    clearable
-                    required
-                    min="1"
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="Executive Report Reminder" rules="required" immediate>
-                  <v-text-field
-                    v-model="executive_report_reminder"
-                    slot-scope="{ errors, valid }"
-                    label="Executive Report Reminder"
-                    :error-messages="errors"
-                    :success="valid"
-                    type="number"
-                    hint="Number of hours to send an executive report reminder to the incident commander."
-                    clearable
-                    required
-                    min="1"
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <v-checkbox
-                  v-model="page_commander"
-                  label="Page Commander"
-                  hint="Would you like Dispatch to page the incident commander on incident creation?"
-                />
-              </v-flex>
-              <v-flex xs12>
                 <color-picker-input label="Color" v-model="color"></color-picker-input>
               </v-flex>
               <v-flex xs12>
                 <v-checkbox
-                  v-model="default_incident_priority"
-                  label="Default Incident Priority"
-                  hint="Check if this incident priority should be the default."
+                  v-model="default_case_priority"
+                  label="Default Case Priority"
+                  hint="Check if this case priority should be the default."
                 />
               </v-flex>
               <v-flex xs12>
                 <v-checkbox
                   v-model="enabled"
                   label="Enabled"
-                  hint="Determines whether this incident priority is availible for new incidents."
+                  hint="Determines whether this case priority is availible for new cases."
                 />
               </v-flex>
             </v-layout>
@@ -137,10 +98,10 @@
 </template>
 
 <script>
+import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 
 import ColorPickerInput from "@/components/ColorPickerInput.vue"
 
@@ -150,7 +111,7 @@ extend("required", {
 })
 
 export default {
-  name: "IncidentPriorityNewEditSheet",
+  name: "CasePriorityNewEditSheet",
 
   components: {
     ColorPickerInput,
@@ -163,29 +124,26 @@ export default {
   },
 
   computed: {
-    ...mapFields("incident_priority", [
+    ...mapFields("case/priority", [
       "dialogs.showCreateEdit",
       "selected.color",
       "selected.default",
       "selected.description",
       "selected.enabled",
-      "selected.executive_report_reminder",
       "selected.id",
       "selected.loading",
       "selected.name",
-      "selected.page_commander",
       "selected.project",
-      "selected.tactical_report_reminder",
       "selected.view_order",
     ]),
-    ...mapFields("incident_priority", {
-      default_incident_priority: "selected.default",
+    ...mapFields("case/priority", {
+      default_case_priority: "selected.default",
     }),
     ...mapFields("route", ["query"]),
   },
 
   methods: {
-    ...mapActions("incident_priority", ["save", "closeCreateEdit"]),
+    ...mapActions("case/priority", ["save", "closeCreateEdit"]),
   },
 
   created() {
