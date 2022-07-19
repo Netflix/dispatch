@@ -290,7 +290,7 @@ export const protectedRoute = [
             group: "settings",
           },
           name: "ProjectSettings",
-          redirect: { name: "IncidentTypeTable" },
+          redirect: { name: "CaseTypeTable" },
         },
         ...withPrefix("projects/", [
           {
@@ -319,7 +319,9 @@ export const protectedRoute = [
             name: "IncidentPriorityTable",
             meta: { title: "Priorities", subMenu: "project", group: "incident" },
             component: () =>
-              import(/* webpackChunkName: "incident-priority-table" */ "@/incident_priority/Table.vue"),
+              import(
+                /* webpackChunkName: "incident-priority-table" */ "@/incident_priority/Table.vue"
+              ),
           },
           {
             path: "incidentCostTypes",
