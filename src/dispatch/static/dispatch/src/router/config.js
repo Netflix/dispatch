@@ -294,6 +294,20 @@ export const protectedRoute = [
         },
         ...withPrefix("projects/", [
           {
+            path: "caseTypes",
+            name: "CaseTypeTable",
+            meta: { title: "Types", subMenu: "project", group: "case" },
+            component: () =>
+              import(/* webpackChunkName: "case-type-table" */ "@/case/type/Table.vue"),
+          },
+          {
+            path: "casePriorities",
+            name: "casePriorityTable",
+            meta: { title: "Priorities", subMenu: "project", group: "case" },
+            component: () =>
+              import(/* webpackChunkName: "case-priority-table" */ "@/case/priority/Table.vue"),
+          },
+          {
             path: "incidentTypes",
             name: "IncidentTypeTable",
             meta: { title: "Types", subMenu: "project", group: "incident" },
@@ -305,7 +319,7 @@ export const protectedRoute = [
             name: "IncidentPriorityTable",
             meta: { title: "Priorities", subMenu: "project", group: "incident" },
             component: () =>
-              import(/* webpackChunkName: "-table" */ "@/incident_priority/Table.vue"),
+              import(/* webpackChunkName: "incident-priority-table" */ "@/incident_priority/Table.vue"),
           },
           {
             path: "incidentCostTypes",
