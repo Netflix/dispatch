@@ -44,9 +44,9 @@ from dispatch.data.source.type.views import router as source_type_router
 from dispatch.data.source.views import router as source_router
 
 from dispatch.case.views import router as case_router
-
-# from dispatch.case_priority.views import router as case_priority_router
-# from dispatch.case_type.views import router as case_type_router
+from dispatch.case.priority.views import router as case_priority_router
+from dispatch.case.severity.views import router as case_severity_router
+from dispatch.case.type.views import router as case_type_router
 
 from .config import DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 
@@ -165,14 +165,19 @@ authenticated_organization_api_router.include_router(
     tags=["incident_priorities"],
 )
 authenticated_organization_api_router.include_router(case_router, prefix="/cases", tags=["cases"])
-# authenticated_organization_api_router.include_router(
-#     case_type_router, prefix="/case_types", tags=["case_types"]
-# )
-# authenticated_organization_api_router.include_router(
-#     case_priority_router,
-#     prefix="/case_priorities",
-#     tags=["case_priorities"],
-# )
+authenticated_organization_api_router.include_router(
+    case_type_router, prefix="/case_types", tags=["case_types"]
+)
+authenticated_organization_api_router.include_router(
+    case_priority_router,
+    prefix="/case_priorities",
+    tags=["case_priorities"],
+)
+authenticated_organization_api_router.include_router(
+    case_severity_router,
+    prefix="/case_severities",
+    tags=["case_severities"],
+)
 authenticated_organization_api_router.include_router(
     workflow_router, prefix="/workflows", tags=["workflows"]
 )
