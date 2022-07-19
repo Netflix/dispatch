@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import StrictBool, Field
+from pydantic import Field
 from pydantic.color import Color
 
 from sqlalchemy import Column, Integer, String, Boolean

@@ -34,7 +34,7 @@ def create_case_priority(
     db_session: Session = Depends(get_db),
     case_priority_in: CasePriorityCreate,
 ):
-    """Create a new case priority."""
+    """Creates a new case priority."""
     case_priority = create(db_session=db_session, case_priority_in=case_priority_in)
     return case_priority
 
@@ -50,7 +50,7 @@ def update_case_priority(
     case_priority_id: PrimaryKey,
     case_priority_in: CasePriorityUpdate,
 ):
-    """Update an existing case priority."""
+    """Updates an existing case priority."""
     case_priority = get(db_session=db_session, case_priority_id=case_priority_id)
     if not case_priority:
         raise HTTPException(
@@ -68,7 +68,7 @@ def update_case_priority(
 
 @router.get("/{case_priority_id}", response_model=CasePriorityRead)
 def get_case_priority(*, db_session: Session = Depends(get_db), case_priority_id: PrimaryKey):
-    """Get a case priority."""
+    """Gets a case priority."""
     case_priority = get(db_session=db_session, case_priority_id=case_priority_id)
     if not case_priority:
         raise HTTPException(
