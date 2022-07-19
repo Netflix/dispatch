@@ -301,6 +301,13 @@ export const protectedRoute = [
               import(/* webpackChunkName: "case-type-table" */ "@/case/type/Table.vue"),
           },
           {
+            path: "caseSeverities",
+            name: "caseSeverityTable",
+            meta: { title: "Severities", subMenu: "project", group: "case" },
+            component: () =>
+              import(/* webpackChunkName: "case-severity-table" */ "@/case/severity/Table.vue"),
+          },
+          {
             path: "casePriorities",
             name: "casePriorityTable",
             meta: { title: "Priorities", subMenu: "project", group: "case" },
