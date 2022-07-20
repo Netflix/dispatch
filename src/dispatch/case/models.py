@@ -37,6 +37,37 @@ from dispatch.ticket.models import TicketRead
 from .enums import CaseStatus
 
 
+# Assoc table for case and case types
+assoc_case_types = Table(
+    "assoc_case_types",
+    Base.metadata,
+    Column("created_at", DateTime, default=datetime.utcnow),
+    Column("case_id", Integer, ForeignKey("case.id", ondelete="CASCADE")),
+    Column("case_type_id", Integer, ForeignKey("case_type.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("case_id", "case_type_id"),
+)
+
+# Assoc table for case and case priorities
+assoc_case_priorities = Table(
+    "assoc_case_priorities",
+    Base.metadata,
+    Column("created_at", DateTime, default=datetime.utcnow),
+    Column("case_id", Integer, ForeignKey("case.id", ondelete="CASCADE")),
+    Column("case_priority_id", Integer, ForeignKey("case_priority.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("case_id", "case_priority_id"),
+)
+
+# Assoc table for case and case severities
+assoc_case_severities = Table(
+    "assoc_case_severities",
+    Base.metadata,
+    Column("created_at", DateTime, default=datetime.utcnow),
+    Column("case_id", Integer, ForeignKey("case.id", ondelete="CASCADE")),
+    Column("case_severity_id", Integer, ForeignKey("case_severity.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("case_id", "case_severity_id"),
+)
+
+# Assoc table for case and tags
 assoc_case_tags = Table(
     "assoc_case_tags",
     Base.metadata,
@@ -72,12 +103,21 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     assignee_id = Column(Integer, ForeignKey("dispatch_core.dispatch_user.id"))
     assignee = relationship("DispatchUser", foreign_keys=[assignee_id], post_update=True)
 
-    # NOTE: refactor and reuse incident priority and type or create new ones for case
-    # case_priority = relationship("CasePriority", backref="case")
-    # case_priority_id = Column(Integer, ForeignKey("case_priority.id"))
-    #
-    # case_type = relationship("CaseType", backref="case")
-    # case_type_id = Column(Integer, ForeignKey("case_type.id"))
+    case_types = relationship(
+        "CaseType",
+        secondary=assoc_case_types,
+        backref="cases",
+    )
+    case_priorities = relationship(
+        "CasePriority",
+        secondary=assoc_case_priorities,
+        backref="cases",
+    )
+    case_severities = relationship(
+        "CaseSeverity",
+        secondary=assoc_case_severities,
+        backref="cases",
+    )
 
     duplicate_id = Column(Integer, ForeignKey("case.id"))
     duplicates = relationship("Case", remote_side=[id], uselist=True)
@@ -136,8 +176,9 @@ class CaseCreate(CaseBase):
 class CaseReadNested(CaseBase):
     id: PrimaryKey
     assignee: Optional[UserRead]
-    # case_priority: CasePriorityRead
-    # case_type: CaseTypeRead
+    case_priorities: CasePriorityRead
+    case_severities: CaseSeverityRead
+    case_types: CaseTypeRead
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     name: Optional[NameStr]
