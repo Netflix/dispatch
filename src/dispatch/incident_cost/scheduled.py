@@ -3,13 +3,14 @@ import logging
 from schedule import every
 
 from dispatch.database.core import SessionLocal
-from dispatch.incident.enums import IncidentStatus
-from dispatch.incident import service as incident_service
 from dispatch.decorators import scheduled_project_task
-from dispatch.project.models import Project
+from dispatch.event import service as event_service
+from dispatch.incident import service as incident_service
+from dispatch.incident.enums import IncidentStatus
 from dispatch.incident_cost.models import IncidentCostCreate
-from dispatch.incident_cost_type.models import IncidentCostTypeRead
 from dispatch.incident_cost_type import service as incident_cost_type_service
+from dispatch.incident_cost_type.models import IncidentCostTypeRead
+from dispatch.project.models import Project
 from dispatch.scheduler import scheduler
 
 from .service import (
@@ -35,15 +36,7 @@ def calculate_incidents_response_cost(db_session: SessionLocal, project: Project
         )
         return
 
-    # we only update the cost of active and stable incidents to avoid impacting older cost metrics
-    # when we make changes to average cost per employee and/ or number of annual business hours.
-    active_incidents = incident_service.get_all_by_status(
-        db_session=db_session, project_id=project.id, status=IncidentStatus.active
-    )
-    stable_incidents = incident_service.get_all_by_status(
-        db_session=db_session, project_id=project.id, status=IncidentStatus.stable
-    )
-    incidents = active_incidents + stable_incidents
+    incidents = incident_service.get_all(db_session=db_session, project_id=project.id)
 
     for incident in incidents:
         try:
@@ -53,6 +46,14 @@ def calculate_incidents_response_cost(db_session: SessionLocal, project: Project
                 incident_id=incident.id,
                 incident_cost_type_id=response_cost_type.id,
             )
+
+            # we don't need to update the cost of closed incidents
+            # if they already have a response cost and this was updated
+            # after the incident was marked as stable
+            if incident.status == IncidentStatus.closed:
+                if incident_response_cost:
+                    if incident_response_cost.updated_at > incident.stable_at:
+                        continue
 
             if incident_response_cost is None:
                 # we create the response cost if it doesn't exist
@@ -77,8 +78,11 @@ def calculate_incidents_response_cost(db_session: SessionLocal, project: Project
             db_session.add(incident)
             db_session.commit()
 
-            log.debug(
-                f"Response cost amount for {incident.name} incident has been updated in the database."
+            event_service.log(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"The incident response cost has been updated to ${amount:,.2f}",
+                incident_id=incident.id,
             )
 
         except Exception as e:
