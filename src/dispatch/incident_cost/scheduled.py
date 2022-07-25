@@ -81,7 +81,7 @@ def calculate_incidents_response_cost(db_session: SessionLocal, project: Project
             event_service.log(
                 db_session=db_session,
                 source="Dispatch Core App",
-                description=f"The incident response cost has been updated to ${amount:,.2f}",
+                description=f"The incident's response cost has been updated to ${amount:,.2f}",
                 incident_id=incident.id,
             )
 
