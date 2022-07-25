@@ -51,7 +51,7 @@
                     label="Description"
                     :error-messages="errors"
                     :success="valid"
-                    hint="The project's decription."
+                    hint="A description for your project."
                     clearable
                     required
                   />
@@ -68,7 +68,7 @@
                     :error-messages="errors"
                     :success="valid"
                     label="Annual Employee Cost"
-                    hint="A median cost on a per employee basis."
+                    hint="An annual average cost per employee."
                     clearable
                     required
                     type="number"
@@ -105,7 +105,7 @@
                     :error-messages="errors"
                     :success="valid"
                     label="Owner Email"
-                    hint="This projects owners contact information"
+                    hint="The email account of the project owner."
                     clearable
                     required
                   />
@@ -119,7 +119,7 @@
                     :error-messages="errors"
                     :success="valid"
                     label="Owner Conversation"
-                    hint="This projects owner conversation id. e.g. the project owners slack channel"
+                    hint="The conversation of the project owner (e.g. Slack channel)."
                     clearable
                     required
                   />
@@ -134,10 +134,10 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { mapFields } from "vuex-map-fields"
 import { required, email } from "vee-validate/dist/rules"
+import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 
 import ColorPickerInput from "@/components/ColorPickerInput.vue"
 
@@ -151,30 +151,24 @@ extend("required", {
 export default {
   name: "ProjectNewEditSheet",
 
-  data() {
-    return {
-      visibilities: ["Open"],
-    }
-  },
-
   components: {
+    ColorPickerInput,
     ValidationObserver,
     ValidationProvider,
-    ColorPickerInput,
   },
 
   computed: {
     ...mapFields("project", [
-      "selected.name",
-      "selected.description",
-      "selected.id",
-      "selected.organization",
-      "selected.loading",
-      "selected.color",
       "selected.annual_employee_cost",
       "selected.business_year_hours",
-      "selected.owner_email",
+      "selected.color",
+      "selected.description",
+      "selected.id",
+      "selected.loading",
+      "selected.name",
+      "selected.organization",
       "selected.owner_conversation",
+      "selected.owner_email",
       "dialogs.showCreateEdit",
     ]),
     ...mapFields("route", ["params"]),
