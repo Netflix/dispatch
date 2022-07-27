@@ -22,7 +22,7 @@ coverage==6.4.2
     # via -r requirements-dev.in
 decorator==5.1.1
     # via ipython
-devtools==0.8.0
+devtools==0.9.0
     # via -r requirements-dev.in
 executing==0.8.3
     # via
