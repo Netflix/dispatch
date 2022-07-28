@@ -17,7 +17,6 @@ from dispatch.project.models import ProjectRead
 class CaseType(ProjectMixin, Base):
     __table_args__ = (UniqueConstraint("name", "project_id"),)
     id = Column(Integer, primary_key=True)
-    slug = Column(String)
     name = Column(String)
     description = Column(String)
     visibility = Column(String, default=Visibility.open)
