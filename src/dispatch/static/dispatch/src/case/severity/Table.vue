@@ -12,7 +12,7 @@
     <v-row no-gutters>
       <v-col>
         <v-alert dismissible icon="mdi-school" prominent text type="info">
-          Priorities add another dimension to Dispatch's case categorization. They also allow for
+          Severities add another dimension to Dispatch's case categorization. They also allow for
           some configurability.
         </v-alert>
       </v-col>
