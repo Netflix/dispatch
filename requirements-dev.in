@@ -1,5 +1,5 @@
 black
-click==8.0.4
+click
 coverage
 devtools
 factory-boy
