@@ -18,6 +18,9 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.auth.models import UserRead
+from dispatch.case.priority.models import CasePriorityRead
+from dispatch.case.severity.models import CaseSeverityRead
+from dispatch.case.type.models import CaseTypeRead
 from dispatch.data.source.models import SourceRead
 from dispatch.database.core import Base
 from dispatch.enums import Visibility
@@ -27,45 +30,35 @@ from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
 
-# from dispatch.case_priority.models import (
-#     CasePriorityBase,
-#     CasePriorityCreate,
-#     CasePriorityRead,
-# )
-# from dispatch.case_type.models import CaseTypeCreate, CaseTypeRead, CaseTypeBase
-
 from .enums import CaseStatus
 
 
-# Assoc table for case and case types
-assoc_case_types = Table(
-    "assoc_case_types",
-    Base.metadata,
-    Column("created_at", DateTime, default=datetime.utcnow),
-    Column("case_id", Integer, ForeignKey("case.id", ondelete="CASCADE")),
-    Column("case_type_id", Integer, ForeignKey("case_type.id", ondelete="CASCADE")),
-    PrimaryKeyConstraint("case_id", "case_type_id"),
-)
+# Assoc object for case and case types
+class AssocCaseCaseType(Base):
+    __tablename__ = "assoc_case_case_type"
+    case_id = Column(Integer, ForeignKey("case.id"), primary_key=True)
+    case_type_id = Column(Integer, ForeignKey("case_type.id"), primary_key=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    case_type = relationship("CaseType")
 
-# Assoc table for case and case priorities
-assoc_case_priorities = Table(
-    "assoc_case_priorities",
-    Base.metadata,
-    Column("created_at", DateTime, default=datetime.utcnow),
-    Column("case_id", Integer, ForeignKey("case.id", ondelete="CASCADE")),
-    Column("case_priority_id", Integer, ForeignKey("case_priority.id", ondelete="CASCADE")),
-    PrimaryKeyConstraint("case_id", "case_priority_id"),
-)
 
-# Assoc table for case and case severities
-assoc_case_severities = Table(
-    "assoc_case_severities",
-    Base.metadata,
-    Column("created_at", DateTime, default=datetime.utcnow),
-    Column("case_id", Integer, ForeignKey("case.id", ondelete="CASCADE")),
-    Column("case_severity_id", Integer, ForeignKey("case_severity.id", ondelete="CASCADE")),
-    PrimaryKeyConstraint("case_id", "case_severity_id"),
-)
+# Assoc object for case and case priorities
+class AssocCaseCasePriority(Base):
+    __tablename__ = "assoc_case_case_priority"
+    case_id = Column(Integer, ForeignKey("case.id"), primary_key=True)
+    case_priority_id = Column(Integer, ForeignKey("case_priority.id"), primary_key=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    case_priority = relationship("CasePriority")
+
+
+# Assoc object for case and case severities
+class AssocCaseCaseSeverity(Base):
+    __tablename__ = "assoc_case_case_severity"
+    case_id = Column(Integer, ForeignKey("case.id"), primary_key=True)
+    case_severity_id = Column(Integer, ForeignKey("case_severity.id"), primary_key=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    case_severity = relationship("CaseSeverity")
+
 
 # Assoc table for case and tags
 assoc_case_tags = Table(
@@ -103,21 +96,9 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     assignee_id = Column(Integer, ForeignKey("dispatch_core.dispatch_user.id"))
     assignee = relationship("DispatchUser", foreign_keys=[assignee_id], post_update=True)
 
-    case_types = relationship(
-        "CaseType",
-        secondary=assoc_case_types,
-        backref="cases",
-    )
-    case_priorities = relationship(
-        "CasePriority",
-        secondary=assoc_case_priorities,
-        backref="cases",
-    )
-    case_severities = relationship(
-        "CaseSeverity",
-        secondary=assoc_case_severities,
-        backref="cases",
-    )
+    case_types = relationship("AssocCaseCaseType", backref="cases")
+    case_priorities = relationship("AssocCaseCasePriority", backref="cases")
+    case_severities = relationship("AssocCaseCaseSeverity", backref="cases")
 
     duplicate_id = Column(Integer, ForeignKey("case.id"))
     duplicates = relationship("Case", remote_side=[id], uselist=True)
