@@ -123,8 +123,11 @@ def create(*, db_session, incident_priority_in: IncidentPriorityCreate) -> Incid
         db_session=db_session, project_in=incident_priority_in.project
     )
     incident_priority = IncidentPriority(
-        **incident_priority_in.dict(exclude={"project"}), project=project
+        **incident_priority_in.dict(exclude={"project", "color"}), project=project
     )
+    if incident_priority_in.color:
+        incident_priority.color = incident_priority_in.color.as_hex()
+
     db_session.add(incident_priority)
     db_session.commit()
     return incident_priority
