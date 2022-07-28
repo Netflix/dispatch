@@ -3,7 +3,6 @@ from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.sql.expression import true
 
-from dispatch.document import service as document_service
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 

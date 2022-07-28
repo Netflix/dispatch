@@ -1,19 +1,16 @@
 from typing import List, Optional
-from pydantic import validator, Field
-from dispatch.models import NameStr, PrimaryKey
+from pydantic import Field
 
-from sqlalchemy import Column, Boolean, ForeignKey, Integer, String, JSON
-from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy import Column, Boolean, Integer, String
+from sqlalchemy.event import listen
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
-from sqlalchemy.event import listen
-
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base, ensure_unique_default_per_project
 from dispatch.enums import Visibility
 from dispatch.models import DispatchBase, ProjectMixin
-from dispatch.plugin.models import PluginMetadata
+from dispatch.models import NameStr, PrimaryKey
 from dispatch.project.models import ProjectRead
 
 
