@@ -1,7 +1,7 @@
 import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 
-import CasePriorityApi from "@/case_priority/api"
+import CasePriorityApi from "@/case/priority/api"
 import SearchUtils from "@/search/utils"
 
 const getDefaultSelectedState = () => {

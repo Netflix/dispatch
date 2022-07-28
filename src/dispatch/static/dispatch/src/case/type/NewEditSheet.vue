@@ -134,14 +134,14 @@ export default {
       "selected.exclude_from_metrics",
       "selected.default",
     ]),
-    ...mapFields("case/type", {
+    ...mapFields("case_type", {
       default_case_type: "selected.default",
     }),
     ...mapFields("route", ["query"]),
   },
 
   methods: {
-    ...mapActions("case/type", ["save", "closeCreateEdit"]),
+    ...mapActions("case_type", ["save", "closeCreateEdit"]),
   },
   created() {
     if (this.query.project) {

@@ -124,7 +124,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("case/priority", [
+    ...mapFields("case_priority", [
       "dialogs.showCreateEdit",
       "selected.color",
       "selected.default",
@@ -136,14 +136,14 @@ export default {
       "selected.project",
       "selected.view_order",
     ]),
-    ...mapFields("case/priority", {
+    ...mapFields("case_priority", {
       default_case_priority: "selected.default",
     }),
     ...mapFields("route", ["query"]),
   },
 
   methods: {
-    ...mapActions("case/priority", ["save", "closeCreateEdit"]),
+    ...mapActions("case_priority", ["save", "closeCreateEdit"]),
   },
 
   created() {

@@ -12,8 +12,8 @@
     <v-row no-gutters>
       <v-col>
         <v-alert dismissible icon="mdi-school" prominent text type="info">
-          Priorities add another dimension to Dispatch's case categorization. They also allow
-          for some configurability.
+          Priorities add another dimension to Dispatch's case categorization. They also allow for
+          some configurability.
         </v-alert>
       </v-col>
     </v-row>
@@ -97,7 +97,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("case/severity", [
+    ...mapFields("case_severity", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
@@ -127,7 +127,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("case/severity", ["getAll", "createEditShow", "removeShow"]),
+    ...mapActions("case_severity", ["getAll", "createEditShow", "removeShow"]),
   },
 }
 </script>

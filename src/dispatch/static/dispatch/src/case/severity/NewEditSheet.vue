@@ -124,7 +124,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("case/severity", [
+    ...mapFields("case_severity", [
       "dialogs.showCreateEdit",
       "selected.color",
       "selected.default",
@@ -136,14 +136,14 @@ export default {
       "selected.project",
       "selected.view_order",
     ]),
-    ...mapFields("case/severity", {
+    ...mapFields("case_severity", {
       default_case_severity: "selected.default",
     }),
     ...mapFields("route", ["query"]),
   },
 
   methods: {
-    ...mapActions("case/severity", ["save", "closeCreateEdit"]),
+    ...mapActions("case_severity", ["save", "closeCreateEdit"]),
   },
 
   created() {

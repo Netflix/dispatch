@@ -133,7 +133,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("case/type", ["getAll", "createEditShow", "removeShow"]),
+    ...mapActions("case_type", ["getAll", "createEditShow", "removeShow"]),
   },
 }
 </script>
