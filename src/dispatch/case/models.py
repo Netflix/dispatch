@@ -25,7 +25,8 @@ from dispatch.data.source.models import SourceRead
 from dispatch.database.core import Base
 from dispatch.enums import Visibility
 from dispatch.event.models import EventRead
-from dispatch.incident.models import IncidentRead
+
+# from dispatch.incident.models import IncidentRead
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
@@ -39,6 +40,10 @@ class AssocCaseCaseType(Base):
     case_id = Column(Integer, ForeignKey("case.id"), primary_key=True)
     case_type_id = Column(Integer, ForeignKey("case_type.id"), primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    def __init__(self, case_type):
+        self.case_type = case_type
+
     case_type = relationship("CaseType")
 
 
@@ -48,6 +53,10 @@ class AssocCaseCasePriority(Base):
     case_id = Column(Integer, ForeignKey("case.id"), primary_key=True)
     case_priority_id = Column(Integer, ForeignKey("case_priority.id"), primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    def __init__(self, case_priority):
+        self.case_priority = case_priority
+
     case_priority = relationship("CasePriority")
 
 
@@ -57,6 +66,10 @@ class AssocCaseCaseSeverity(Base):
     case_id = Column(Integer, ForeignKey("case.id"), primary_key=True)
     case_severity_id = Column(Integer, ForeignKey("case_severity.id"), primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    def __init__(self, case_severity):
+        self.case_severity = case_severity
+
     case_severity = relationship("CaseSeverity")
 
 
@@ -78,7 +91,7 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
     resolution = Column(String)
-    status = Column(String, default=CaseStatus.active)
+    status = Column(String, default=CaseStatus.new)
     visibility = Column(String, default=Visibility.open, nullable=False)
 
     # auto generated
@@ -96,14 +109,14 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     assignee_id = Column(Integer, ForeignKey("dispatch_core.dispatch_user.id"))
     assignee = relationship("DispatchUser", foreign_keys=[assignee_id], post_update=True)
 
-    case_types = relationship("AssocCaseCaseType", backref="cases")
-    case_priorities = relationship("AssocCaseCasePriority", backref="cases")
-    case_severities = relationship("AssocCaseCaseSeverity", backref="cases")
+    case_types = relationship("AssocCaseCaseType", backref="case")
+    case_priorities = relationship("AssocCaseCasePriority", backref="case")
+    case_severities = relationship("AssocCaseCaseSeverity", backref="case")
 
     duplicate_id = Column(Integer, ForeignKey("case.id"))
     duplicates = relationship("Case", remote_side=[id], uselist=True)
     # events = relationship("Event", backref="case", cascade="all, delete-orphan")
-    incident = relationship("Incident", uselist=False, backref="case", cascade="all, delete-orphan")
+    # incident = relationship("Incident", uselist=False, backref="case", cascade="all, delete-orphan")
     source = relationship("Source", uselist=False, backref="case")
     source_id = Column(Integer, ForeignKey("source.id"))
     tags = relationship(
@@ -129,7 +142,7 @@ class CaseBase(DispatchBase):
     title: str
     description: str
     resolution: Optional[str]
-    status: Optional[CaseStatus] = CaseStatus.active
+    status: Optional[CaseStatus] = CaseStatus.new
     visibility: Optional[Visibility]
 
     @validator("title")
@@ -147,8 +160,9 @@ class CaseBase(DispatchBase):
 
 class CaseCreate(CaseBase):
     assignee: Optional[UserRead]
-    # case_priority: Optional[CasePriorityCreate]
-    # case_type: Optional[CaseTypeCreate]
+    case_priority: Optional[CasePriorityRead]
+    case_severity: Optional[CaseSeverityRead]
+    case_type: Optional[CaseTypeRead]
     project: ProjectRead
     source: SourceRead
     tags: Optional[List[TagRead]] = []
@@ -157,9 +171,9 @@ class CaseCreate(CaseBase):
 class CaseReadNested(CaseBase):
     id: PrimaryKey
     assignee: Optional[UserRead]
-    case_priorities: CasePriorityRead
-    case_severities: CaseSeverityRead
-    case_types: CaseTypeRead
+    # case_priorities: List[Optional[CasePriorityRead]]
+    # case_severities: List[Optional[CaseSeverityRead]]
+    # case_types: List[Optional[CaseTypeRead]]
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     name: Optional[NameStr]
@@ -171,14 +185,15 @@ class CaseReadNested(CaseBase):
 
 class CaseRead(CaseBase):
     id: PrimaryKey
-    assignee: UserRead
-    # case_priority: CasePriorityRead
-    # case_type: CaseTypeRead
+    assignee: Optional[UserRead]
+    # case_priorities: List[Optional[CasePriorityRead]]
+    # case_severities: List[Optional[CaseSeverityRead]]
+    # case_types: List[Optional[CaseTypeRead]]
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     duplicates: Optional[List[CaseReadNested]] = []
     events: Optional[List[EventRead]] = []
-    incident: Optional[IncidentRead]
+    # incident: Optional[IncidentRead]
     name: Optional[NameStr]
     project: ProjectRead
     reported_at: Optional[datetime] = None
@@ -190,10 +205,11 @@ class CaseRead(CaseBase):
 
 class CaseUpdate(CaseBase):
     assignee: Optional[UserRead]
-    # case_priority: CasePriorityBase
-    # case_type: CaseTypeBase
+    # case_priorities: List[Optional[CasePriorityRead]]
+    # case_severities: List[Optional[CaseSeverityRead]]
+    # case_types: List[Optional[CaseTypeRead]]
     duplicates: Optional[List[CaseReadNested]] = []
-    incident: Optional[IncidentRead]
+    # incident: Optional[IncidentRead]
     reported_at: Optional[datetime] = None
     source: Optional[SourceRead]
     stable_at: Optional[datetime] = None

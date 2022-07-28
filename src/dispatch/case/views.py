@@ -79,16 +79,12 @@ def get_cases(
 def create_case(
     *,
     db_session: Session = Depends(get_db),
-    organization: OrganizationSlug,
+    # organization: OrganizationSlug,
     case_in: CaseCreate,
-    current_user: DispatchUser = Depends(get_current_user),
-    background_tasks: BackgroundTasks,
+    # current_user: DispatchUser = Depends(get_current_user),
+    # background_tasks: BackgroundTasks,
 ):
     """Create a new case."""
-    if not case_in.reporter:
-        case_in.reporter = ParticipantUpdate(
-            individual=IndividualContactRead(email=current_user.email)
-        )
     case = create(db_session=db_session, case_in=case_in)
     # NOTE: implement case flows before enabling line below
     # background_tasks.add_task(case_create_flow, case_id=case.id, organization_slug=organization)

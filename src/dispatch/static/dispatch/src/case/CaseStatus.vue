@@ -1,11 +1,16 @@
 <template>
   <div>
-    <div v-if="status == 'Active'">
+    <div v-if="status == 'New'">
       <v-badge bordered color="error" slot="activator" dot left offset-x="-10" offset-y="12">
         {{ status }}
       </v-badge>
     </div>
-    <div v-if="status == 'Stable'">
+    <div v-if="status == 'Triage'">
+      <v-badge bordered color="warning" slot="activator" dot left offset-x="-10" offset-y="12">
+        {{ status }}
+      </v-badge>
+    </div>
+    <div v-if="status == 'Escalated'">
       <v-badge bordered color="warning" slot="activator" dot left offset-x="-10" offset-y="12">
         {{ status }}
       </v-badge>

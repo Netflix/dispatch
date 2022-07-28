@@ -60,19 +60,13 @@
         <project-select v-model="project" />
       </v-flex>
       <v-flex xs12>
-        <ValidationProvider name="Assignee" rules="required" immediate>
-          <organization-member-combobox
-            v-model="assignee"
-            slot-scope="{ errors, valid }"
-            label="Assignee"
-            :error-messages="errors"
-            :success="valid"
-            hint="The organization member to which the case is assigned."
-            clearable
-            required
-            :project="project"
-          />
-        </ValidationProvider>
+        <organization-member-combobox
+          v-model="assignee"
+          label="Assignee"
+          hint="The organization member to which the case is assigned."
+          clearable
+          :project="project"
+        />
       </v-flex>
       <v-flex xs12>
         <v-row>
@@ -126,7 +120,7 @@ export default {
 
   data() {
     return {
-      statuses: ["Active", "Stable", "Closed"],
+      statuses: ["New", "Triage", "Escalated", "Closed"],
       visibilities: ["Open", "Restricted"],
     }
   },
