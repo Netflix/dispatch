@@ -118,7 +118,12 @@ def create(*, db_session, case_priority_in: CasePriorityCreate) -> CasePriority:
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=case_priority_in.project
     )
-    case_priority = CasePriority(**case_priority_in.dict(exclude={"project"}), project=project)
+    case_priority = CasePriority(
+        **case_priority_in.dict(exclude={"project", "color"}), project=project
+    )
+    if case_priority_in.color:
+        case_priority.color = case_priority_in.color.as_hex()
+
     db_session.add(case_priority)
     db_session.commit()
     return case_priority

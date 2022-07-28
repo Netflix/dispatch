@@ -78,7 +78,7 @@
               <v-flex xs12>
                 <v-checkbox
                   v-model="default_case_severity"
-                  label="Default Case severity"
+                  label="Default Case Severity"
                   hint="Check if this case severity should be the default."
                 />
               </v-flex>
