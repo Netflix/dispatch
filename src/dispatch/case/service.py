@@ -180,35 +180,16 @@ def create(*, db_session, case_in: CaseCreate) -> Case:
 
 def update(*, db_session, case: Case, case_in: CaseUpdate) -> Case:
     """Updates an existing case."""
-    # case_type = case_type_service.get_by_name_or_default(
-    #     db_session=db_session,
-    #     project_id=case.project.id,
-    #     case_type_in=case_in.case_type,
-    # )
-    #
-    # case_priority = case_priority_service.get_by_name_or_default(
-    #     db_session=db_session,
-    #     project_id=case.project.id,
-    #     case_priority_in=case_in.case_priority,
-    # )
-
-    tags = []
-    for t in case_in.tags:
-        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
-
-    duplicates = []
-    for d in case_in.duplicates:
-        duplicates.append(get(db_session=db_session, case_id=d.id))
-
     update_data = case_in.dict(
         skip_defaults=True,
         exclude={
-            # "case_priority",
-            # "case_type",
-            "commander",
+            "assignee",
+            "case_priority",
+            "case_severity",
+            "case_type",
             "duplicates",
             "project",
-            "reporter",
+            "source",
             "status",
             "tags",
             "visibility",
@@ -218,11 +199,52 @@ def update(*, db_session, case: Case, case_in: CaseUpdate) -> Case:
     for field in update_data.keys():
         setattr(case, field, update_data[field])
 
-    # case.case_priority = case_priority
-    # case.case_type = case_type
-    case.duplicates = duplicates
-    case.status = case_in.status
+    case.assignee = auth_service.get_by_email(db_session=db_session, email=case_in.assignee.email)
+
+    if case_in.case_type:
+        if case.case_type.name != case_in.case_type.name:
+            case_type = case_type_service.get_by_name(
+                db_session=db_session,
+                project_id=case.project.id,
+                name=case_in.case_type.name,
+            )
+            case.case_types.append(AssocCaseCaseType(case_type))
+
+    if case_in.case_severity:
+        if case.case_severity.name != case_in.case_severity.name:
+            case_severity = case_severity_service.get_by_name(
+                db_session=db_session,
+                project_id=case.project.id,
+                name=case_in.case_severity.name,
+            )
+            case.case_severities.append(AssocCaseCaseSeverity(case_severity))
+
+    if case_in.case_priority:
+        if case.case_priority.name != case_in.case_priority.name:
+            case_priority = case_priority_service.get_by_name(
+                db_session=db_session,
+                project_id=case.project.id,
+                name=case_in.case_priority.name,
+            )
+            case.case_priorities.append(AssocCaseCasePriority(case_priority))
+
+    if case_in.source:
+        if case.source.name != case_in.source.name:
+            case.source = source_service.get_by_name(
+                db_session=db_session, project_id=case.project.id, name=case_in.source.name
+            )
+
+    tags = []
+    for t in case_in.tags:
+        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
     case.tags = tags
+
+    duplicates = []
+    for d in case_in.duplicates:
+        duplicates.append(get(db_session=db_session, case_id=d.id))
+    case.duplicates = duplicates
+
+    case.status = case_in.status
     case.visibility = case_in.visibility
 
     db_session.commit()
