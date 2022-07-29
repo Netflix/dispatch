@@ -12,7 +12,7 @@
       <v-card-actions>
         <v-spacer />
         <v-btn color="blue en-1" text @click="closeDeleteDialog()"> Cancel </v-btn>
-        <v-btn color="red en-1" text @click="deleteIncident(selected)"> Delete </v-btn>
+        <v-btn color="red en-1" text @click="deleteCase(selected)"> Delete </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
