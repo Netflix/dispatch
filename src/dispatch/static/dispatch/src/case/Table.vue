@@ -39,6 +39,12 @@
             loading-text="Loading... Please wait"
             show-select
           >
+            <template v-slot:item.case_severity.name="{ item }">
+              <case-severity :severity="item.case_severity.name" />
+            </template>
+            <template v-slot:item.case_priority.name="{ item }">
+              <case-priority :priority="item.case_priority.name" />
+            </template>
             <template v-slot:item.source.name="{ item }">
               <v-chip small color="info" text-color="white">
                 {{ item.source.name }}
@@ -103,6 +109,8 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import BulkEditSheet from "@/case/BulkEditSheet.vue"
+import CasePriority from "@/case/priority/CasePriority.vue"
+import CaseSeverity from "@/case/severity/CaseSeverity.vue"
 import CaseStatus from "@/case/CaseStatus.vue"
 import DeleteDialog from "@/case/DeleteDialog.vue"
 import NewSheet from "@/case/NewSheet.vue"
@@ -113,6 +121,8 @@ export default {
 
   components: {
     BulkEditSheet,
+    CasePriority,
+    CaseSeverity,
     CaseStatus,
     DeleteDialog,
     NewSheet,

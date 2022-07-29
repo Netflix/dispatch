@@ -4,7 +4,7 @@
     :items="items"
     item-text="name"
     :menu-props="{ maxHeight: '400' }"
-    label="Priority"
+    label="Severity"
     return-object
     :loading="loading"
   >
