@@ -23,9 +23,7 @@ from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 
 # from dispatch.case.enums import CaseStatus
-from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
-from dispatch.participant.models import ParticipantUpdate
 
 # NOTE: define flows before enabling code block
 # from .flows import (
