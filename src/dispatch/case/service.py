@@ -166,6 +166,11 @@ def create(*, db_session, case_in: CaseCreate) -> Case:
     db_session.add(case)
     db_session.commit()
 
+    # NOTE: The following is temporary until the case is named after the ticket
+    case.name = case.id
+    db_session.add(case)
+    db_session.commit()
+
     # event_service.log(
     #     db_session=db_session,
     #     source="Dispatch Core App",
