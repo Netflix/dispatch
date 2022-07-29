@@ -54,12 +54,6 @@
         />
       </v-flex>
       <v-flex xs6>
-        <source-select v-model="source" :project="project" />
-      </v-flex>
-      <v-flex xs6>
-        <project-select v-model="project" />
-      </v-flex>
-      <v-flex xs12>
         <organization-member-combobox
           v-model="assignee"
           label="Assignee"
@@ -67,6 +61,21 @@
           clearable
           :project="project"
         />
+      </v-flex>
+      <v-flex xs6>
+        <project-select v-model="project" />
+      </v-flex>
+      <v-flex xs6>
+        <case-type-select v-model="case_type" :project="project" />
+      </v-flex>
+      <v-flex xs6>
+        <case-severity-select v-model="case_severity" :project="project" />
+      </v-flex>
+      <v-flex xs6>
+        <case-priority-select v-model="case_priority" :project="project" />
+      </v-flex>
+      <v-flex xs6>
+        <source-select v-model="source" :project="project" />
       </v-flex>
       <v-flex xs12>
         <v-row>
@@ -94,6 +103,9 @@ import { ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
 import CaseFilterCombobox from "@/case/CaseFilterCombobox.vue"
+import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
+import CaseSeveritySelect from "@/case/severity/CaseSeveritySelect.vue"
+import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import OrganizationMemberCombobox from "@/organization/OrganizationMemberCombobox.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
@@ -110,6 +122,9 @@ export default {
 
   components: {
     CaseFilterCombobox,
+    CasePrioritySelect,
+    CaseSeveritySelect,
+    CaseTypeSelect,
     DateTimePickerMenu,
     OrganizationMemberCombobox,
     ProjectSelect,
@@ -127,20 +142,23 @@ export default {
 
   computed: {
     ...mapFields("case_management", [
+      "selected.assignee",
+      "selected.case_priority",
+      "selected.case_severity",
+      "selected.case_type",
+      "selected.created_at",
+      "selected.description",
+      "selected.duplicates",
       "selected.id",
       "selected.name",
-      "selected.title",
-      "selected.description",
-      "selected.resolution",
-      "selected.assignee",
-      "selected.source",
-      "selected.created_at",
-      "selected.stable_at",
+      "selected.project",
       "selected.reported_at",
+      "selected.resolution",
+      "selected.source",
+      "selected.stable_at",
       "selected.status",
       "selected.tags",
-      "selected.project",
-      "selected.duplicates",
+      "selected.title",
       "selected.visibility",
     ]),
   },

@@ -141,33 +141,30 @@ def create(*, db_session, case_in: CaseCreate) -> Case:
             db_session=db_session, project_id=project.id, name=case_in.source.name
         )
 
-    if case_in.case_type:
-        case_type = case_type_service.get_by_name_or_default(
-            db_session=db_session, project_id=project.id, case_type_in=case_in.case_type
-        )
-        case.case_types.append(AssocCaseCaseType(case_type))
-        case.visibility = case_type.visibility
+    case_type = case_type_service.get_by_name_or_default(
+        db_session=db_session, project_id=project.id, case_type_in=case_in.case_type
+    )
+    case.case_types.append(AssocCaseCaseType(case_type))
 
+    case.visibility = case_type.visibility
     if case_in.visibility:
         case.visibility = case_in.visibility
 
-    if case_in.case_severity:
-        case_severity = case_severity_service.get_by_name_or_default(
-            db_session=db_session, project_id=project.id, case_severity_in=case_in.case_severity
-        )
-        case.case_severities.append(AssocCaseCaseSeverity(case_severity))
+    case_severity = case_severity_service.get_by_name_or_default(
+        db_session=db_session, project_id=project.id, case_severity_in=case_in.case_severity
+    )
+    case.case_severities.append(AssocCaseCaseSeverity(case_severity))
 
-    if case_in.case_priority:
-        case_priority = case_priority_service.get_by_name_or_default(
-            db_session=db_session, project_id=project.id, case_priority_in=case_in.case_priority
-        )
-        case.case_priorities.append(AssocCaseCasePriority(case_priority))
+    case_priority = case_priority_service.get_by_name_or_default(
+        db_session=db_session, project_id=project.id, case_priority_in=case_in.case_priority
+    )
+    case.case_priorities.append(AssocCaseCasePriority(case_priority))
 
     db_session.add(case)
     db_session.commit()
 
     # NOTE: The following is temporary until the case is named after the ticket
-    case.name = case.id
+    case.name = f"{case.id}-{case.title}"
     db_session.add(case)
     db_session.commit()
 

@@ -7,13 +7,14 @@ import router from "@/router"
 
 const getDefaultSelectedState = () => {
   return {
+    // events: null,
     assignee: null,
+    case_priority: null,
+    case_severity: null,
+    case_type: null,
     created_at: null,
-    // case_priority: null,
-    // case_type: null,
     description: null,
     duplicates: [],
-    // events: null,
     id: null,
     name: null,
     project: null,
@@ -50,8 +51,9 @@ const state = {
     options: {
       filters: {
         assignee: [],
-        // case_priority: [],
-        // case_type: [],
+        case_priority: [],
+        case_severity: [],
+        case_type: [],
         project: [],
         source: [],
         status: [],

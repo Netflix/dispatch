@@ -14,6 +14,7 @@ from sqlalchemy import (
     Table,
     UniqueConstraint,
 )
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
@@ -37,8 +38,8 @@ from .enums import CaseStatus
 # Assoc object for case and case types
 class AssocCaseCaseType(Base):
     __tablename__ = "assoc_case_case_type"
-    case_id = Column(Integer, ForeignKey("case.id"), primary_key=True)
-    case_type_id = Column(Integer, ForeignKey("case_type.id"), primary_key=True)
+    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"), primary_key=True)
+    case_type_id = Column(Integer, ForeignKey("case_type.id", ondelete="CASCADE"), primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     def __init__(self, case_type):
@@ -50,8 +51,10 @@ class AssocCaseCaseType(Base):
 # Assoc object for case and case priorities
 class AssocCaseCasePriority(Base):
     __tablename__ = "assoc_case_case_priority"
-    case_id = Column(Integer, ForeignKey("case.id"), primary_key=True)
-    case_priority_id = Column(Integer, ForeignKey("case_priority.id"), primary_key=True)
+    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"), primary_key=True)
+    case_priority_id = Column(
+        Integer, ForeignKey("case_priority.id", ondelete="CASCADE"), primary_key=True
+    )
     created_at = Column(DateTime, default=datetime.utcnow)
 
     def __init__(self, case_priority):
@@ -63,8 +66,10 @@ class AssocCaseCasePriority(Base):
 # Assoc object for case and case severities
 class AssocCaseCaseSeverity(Base):
     __tablename__ = "assoc_case_case_severity"
-    case_id = Column(Integer, ForeignKey("case.id"), primary_key=True)
-    case_severity_id = Column(Integer, ForeignKey("case_severity.id"), primary_key=True)
+    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"), primary_key=True)
+    case_severity_id = Column(
+        Integer, ForeignKey("case_severity.id", ondelete="CASCADE"), primary_key=True
+    )
     created_at = Column(DateTime, default=datetime.utcnow)
 
     def __init__(self, case_severity):
@@ -130,6 +135,27 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     #     "WorkflowInstance", backref="case", cascade="all, delete-orphan"
     # )
 
+    # hybrid properties
+
+    @hybrid_property
+    def case_type(self):
+        if self.case_types:
+            return sorted(self.case_types, key=lambda case_type: case_type.created_at)[-1].case_type
+
+    @hybrid_property
+    def case_priority(self):
+        if self.case_priorities:
+            return sorted(self.case_priorities, key=lambda case_priority: case_priority.created_at)[
+                -1
+            ].case_priority
+
+    @hybrid_property
+    def case_severity(self):
+        if self.case_severities:
+            return sorted(self.case_severities, key=lambda case_severity: case_severity.created_at)[
+                -1
+            ].case_severity
+
 
 class ProjectRead(DispatchBase):
     id: Optional[PrimaryKey]
@@ -171,9 +197,9 @@ class CaseCreate(CaseBase):
 class CaseReadNested(CaseBase):
     id: PrimaryKey
     assignee: Optional[UserRead]
-    # case_priorities: List[Optional[CasePriorityRead]]
-    # case_severities: List[Optional[CaseSeverityRead]]
-    # case_types: List[Optional[CaseTypeRead]]
+    case_priority: CasePriorityRead
+    case_severity: CaseSeverityRead
+    case_type: CaseTypeRead
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     name: Optional[NameStr]
@@ -186,9 +212,9 @@ class CaseReadNested(CaseBase):
 class CaseRead(CaseBase):
     id: PrimaryKey
     assignee: Optional[UserRead]
-    # case_priorities: List[Optional[CasePriorityRead]]
-    # case_severities: List[Optional[CaseSeverityRead]]
-    # case_types: List[Optional[CaseTypeRead]]
+    case_priority: CasePriorityRead
+    case_severity: CaseSeverityRead
+    case_type: CaseTypeRead
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     duplicates: Optional[List[CaseReadNested]] = []
@@ -205,9 +231,9 @@ class CaseRead(CaseBase):
 
 class CaseUpdate(CaseBase):
     assignee: Optional[UserRead]
-    # case_priorities: List[Optional[CasePriorityRead]]
-    # case_severities: List[Optional[CaseSeverityRead]]
-    # case_types: List[Optional[CaseTypeRead]]
+    case_priority: CasePriorityRead
+    case_severity: CaseSeverityRead
+    case_type: CaseTypeRead
     duplicates: Optional[List[CaseReadNested]] = []
     # incident: Optional[IncidentRead]
     reported_at: Optional[datetime] = None
