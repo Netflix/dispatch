@@ -148,7 +148,7 @@ export default {
         { text: "Source", value: "source.name", sortable: true },
         { text: "Project", value: "project.name", sortable: true },
         { text: "Reported At", value: "reported_at" },
-        // { text: "Closed At", value: "closed_at" },
+        { text: "Closed At", value: "closed_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
       showEditSheet: false,

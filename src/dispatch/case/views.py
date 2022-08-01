@@ -18,23 +18,24 @@ from sqlalchemy.orm import Session
 # )
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
+from dispatch.case.enums import CaseStatus
 from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
-
-# from dispatch.case.enums import CaseStatus
 from dispatch.models import OrganizationSlug, PrimaryKey
 
-# NOTE: define flows before enabling code block
-# from .flows import (
-#     case_create_flow,
-#     case_update_flow,
-# )
+from .flows import (
+    case_closed_create_flow,
+    case_escalated_create_flow,
+    case_new_create_flow,
+    case_triage_create_flow,
+    case_update_flow,
+)
 from .models import Case, CaseCreate, CasePagination, CaseRead, CaseUpdate
 from .service import create, delete, get, update
 
-log = logging.getLogger(__name__)
 
+log = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -77,22 +78,45 @@ def get_cases(
 def create_case(
     *,
     db_session: Session = Depends(get_db),
-    # organization: OrganizationSlug,
+    organization: OrganizationSlug,
     case_in: CaseCreate,
     # current_user: DispatchUser = Depends(get_current_user),
-    # background_tasks: BackgroundTasks,
+    background_tasks: BackgroundTasks,
 ):
-    """Create a new case."""
+    """Creates a new case."""
     case = create(db_session=db_session, case_in=case_in)
-    # NOTE: implement case flows before enabling line below
-    # background_tasks.add_task(case_create_flow, case_id=case.id, organization_slug=organization)
+
+    if case.status == CaseStatus.triage:
+        background_tasks.add_task(
+            case_triage_create_flow,
+            case_id=case.id,
+            organization_slug=organization,
+        )
+    elif case.status == CaseStatus.escalated:
+        background_tasks.add_task(
+            case_escalated_create_flow,
+            case_id=case.id,
+            organization_slug=organization,
+        )
+    elif case.status == CaseStatus.closed:
+        background_tasks.add_task(
+            case_closed_create_flow,
+            case_id=case.id,
+            organization_slug=organization,
+        )
+    else:
+        background_tasks.add_task(
+            case_new_create_flow,
+            case_id=case.id,
+            organization_slug=organization,
+        )
     return case
 
 
 @router.put(
     "/{case_id}",
     response_model=CaseRead,
-    summary="Update an existing case.",
+    summary="Updates an existing case.",
     # dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
 )
 def update_case(
@@ -107,22 +131,19 @@ def update_case(
 ):
     """Update an existing case."""
     # we store the previous state of the case in order to be able to detect changes
-    # previous_case = CaseRead.from_orm(current_case)
+    previous_case = CaseRead.from_orm(current_case)
 
     # we update the case
     case = update(db_session=db_session, case=current_case, case_in=case_in)
 
     # we run the case update flow
-    # NOTE: implement case flows before enabling block below
-    # background_tasks.add_task(
-    #     case_update_flow,
-    #     user_email=current_user.email,
-    #     commander_email=case_in.commander.individual.email,
-    #     reporter_email=case_in.reporter.individual.email,
-    #     case_id=case_id,
-    #     previous_case=previous_case,
-    #     organization_slug=organization,
-    # )
+    background_tasks.add_task(
+        case_update_flow,
+        case_id=case_id,
+        previous_case=previous_case,
+        user_email=current_user.email,
+        organization_slug=organization,
+    )
 
     return case
 
