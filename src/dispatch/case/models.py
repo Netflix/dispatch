@@ -26,8 +26,7 @@ from dispatch.data.source.models import SourceRead
 from dispatch.database.core import Base
 from dispatch.enums import Visibility
 from dispatch.event.models import EventRead
-
-# from dispatch.incident.models import IncidentRead
+from dispatch.incident.models import IncidentRead
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
@@ -118,10 +117,10 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     case_priorities = relationship("AssocCaseCasePriority", backref="case")
     case_severities = relationship("AssocCaseCaseSeverity", backref="case")
 
+    # events = relationship("Event", backref="case", cascade="all, delete-orphan")
     duplicate_id = Column(Integer, ForeignKey("case.id"))
     duplicates = relationship("Case", remote_side=[id], uselist=True)
-    # events = relationship("Event", backref="case", cascade="all, delete-orphan")
-    # incident = relationship("Incident", uselist=False, backref="case", cascade="all, delete-orphan")
+    incidents = relationship("Incident", backref="case")
     source = relationship("Source", uselist=False, backref="case")
     source_id = Column(Integer, ForeignKey("source.id"))
     tags = relationship(
@@ -212,7 +211,6 @@ class CaseReadNested(CaseBase):
 
 class CaseRead(CaseBase):
     id: PrimaryKey
-    # incident: Optional[IncidentRead]
     assignee: Optional[UserRead]
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
@@ -222,6 +220,7 @@ class CaseRead(CaseBase):
     duplicates: Optional[List[CaseReadNested]] = []
     escalated_at: Optional[datetime] = None
     events: Optional[List[EventRead]] = []
+    incidents: List[Optional[IncidentRead]]
     name: Optional[NameStr]
     project: ProjectRead
     reported_at: Optional[datetime] = None
@@ -232,13 +231,13 @@ class CaseRead(CaseBase):
 
 
 class CaseUpdate(CaseBase):
-    # incident: Optional[IncidentRead]
     assignee: Optional[UserRead]
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
     duplicates: Optional[List[CaseReadNested]] = []
     escalated_at: Optional[datetime] = None
+    incidents: List[Optional[IncidentRead]]
     reported_at: Optional[datetime] = None
     source: Optional[SourceRead]
     tags: Optional[List[TagRead]] = []

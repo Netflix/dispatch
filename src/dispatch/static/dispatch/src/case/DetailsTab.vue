@@ -103,6 +103,9 @@
       <v-flex xs12>
         <case-filter-combobox label="Duplicates" v-model="duplicates" :project="project" />
       </v-flex>
+      <v-flex xs12>
+        <incident-filter-combobox label="Incidents" v-model="incidents" :project="project" />
+      </v-flex>
     </v-layout>
   </v-container>
 </template>
@@ -117,6 +120,7 @@ import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import CaseSeveritySelect from "@/case/severity/CaseSeveritySelect.vue"
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
+import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import OrganizationMemberCombobox from "@/organization/OrganizationMemberCombobox.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import SourceSelect from "@/data/source/SourceSelect.vue"
@@ -136,6 +140,7 @@ export default {
     CaseSeveritySelect,
     CaseTypeSelect,
     DateTimePickerMenu,
+    IncidentFilterCombobox,
     OrganizationMemberCombobox,
     ProjectSelect,
     SourceSelect,
@@ -161,6 +166,7 @@ export default {
       "selected.duplicates",
       "selected.escalated_at",
       "selected.id",
+      "selected.incidents",
       "selected.name",
       "selected.project",
       "selected.reported_at",

@@ -5,12 +5,13 @@ from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from typing import List, Optional
 
 # from dispatch.event import service as event_service
+from dispatch.auth import service as auth_service
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.severity import service as case_severity_service
 from dispatch.case.type import service as case_type_service
 from dispatch.data.source import service as source_service
-from dispatch.auth import service as auth_service
 from dispatch.exceptions import NotFoundError
+from dispatch.incident import service as incident_service
 from dispatch.project import service as project_service
 from dispatch.tag import service as tag_service
 
@@ -183,6 +184,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate) -> Case:
             "case_severity",
             "case_type",
             "duplicates",
+            "incidents",
             "project",
             "source",
             "status",
@@ -238,6 +240,11 @@ def update(*, db_session, case: Case, case_in: CaseUpdate) -> Case:
     for d in case_in.duplicates:
         duplicates.append(get(db_session=db_session, case_id=d.id))
     case.duplicates = duplicates
+
+    incidents = []
+    for i in case_in.incidents:
+        incidents.append(incident_service.get(db_session=db_session, incident_id=i.id))
+    case.incidents = incidents
 
     case.status = case_in.status
     case.visibility = case_in.visibility
