@@ -99,9 +99,9 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     status = Column(String, default=CaseStatus.new)
     visibility = Column(String, default=Visibility.open, nullable=False)
 
-    # auto generated
     reported_at = Column(DateTime, default=datetime.utcnow)
-    stable_at = Column(DateTime)
+    triage_at = Column(DateTime)
+    escalated_at = Column(DateTime)
     closed_at = Column(DateTime)
 
     search_vector = Column(
@@ -202,15 +202,17 @@ class CaseReadNested(CaseBase):
     case_type: CaseTypeRead
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
+    escalated_at: Optional[datetime] = None
     name: Optional[NameStr]
     project: ProjectRead
     reported_at: Optional[datetime] = None
     source: SourceRead
-    stable_at: Optional[datetime] = None
+    triage_at: Optional[datetime] = None
 
 
 class CaseRead(CaseBase):
     id: PrimaryKey
+    # incident: Optional[IncidentRead]
     assignee: Optional[UserRead]
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
@@ -218,28 +220,29 @@ class CaseRead(CaseBase):
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     duplicates: Optional[List[CaseReadNested]] = []
+    escalated_at: Optional[datetime] = None
     events: Optional[List[EventRead]] = []
-    # incident: Optional[IncidentRead]
     name: Optional[NameStr]
     project: ProjectRead
     reported_at: Optional[datetime] = None
     source: SourceRead
-    stable_at: Optional[datetime] = None
     tags: Optional[List[TagRead]] = []
     ticket: Optional[TicketRead] = None
+    triage_at: Optional[datetime] = None
 
 
 class CaseUpdate(CaseBase):
+    # incident: Optional[IncidentRead]
     assignee: Optional[UserRead]
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
     duplicates: Optional[List[CaseReadNested]] = []
-    # incident: Optional[IncidentRead]
+    escalated_at: Optional[datetime] = None
     reported_at: Optional[datetime] = None
     source: Optional[SourceRead]
-    stable_at: Optional[datetime] = None
     tags: Optional[List[TagRead]] = []
+    triage_at: Optional[datetime] = None
 
     @validator("tags")
     def find_exclusive(cls, v):
