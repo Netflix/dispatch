@@ -83,7 +83,17 @@
             <date-time-picker-menu label="Reported At" v-model="reported_at" />
           </v-col>
           <v-col cols="6">
-            <date-time-picker-menu label="Stable At" v-model="stable_at" />
+            <date-time-picker-menu label="Triage At" v-model="triage_at" />
+          </v-col>
+        </v-row>
+      </v-flex>
+      <v-flex xs12>
+        <v-row>
+          <v-col cols="6">
+            <date-time-picker-menu label="Escalated At" v-model="escalated_at" />
+          </v-col>
+          <v-col cols="6">
+            <date-time-picker-menu label="Closed At" v-model="closed_at" />
           </v-col>
         </v-row>
       </v-flex>
@@ -146,19 +156,20 @@ export default {
       "selected.case_priority",
       "selected.case_severity",
       "selected.case_type",
-      "selected.created_at",
+      "selected.closed_at",
       "selected.description",
       "selected.duplicates",
+      "selected.escalated_at",
       "selected.id",
       "selected.name",
       "selected.project",
       "selected.reported_at",
       "selected.resolution",
       "selected.source",
-      "selected.stable_at",
       "selected.status",
       "selected.tags",
       "selected.title",
+      "selected.triage_at",
       "selected.visibility",
     ]),
   },
