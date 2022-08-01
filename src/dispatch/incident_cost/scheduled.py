@@ -4,7 +4,6 @@ from schedule import every
 
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import scheduled_project_task
-from dispatch.event import service as event_service
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident_cost.models import IncidentCostCreate
@@ -78,12 +77,7 @@ def calculate_incidents_response_cost(db_session: SessionLocal, project: Project
             db_session.add(incident)
             db_session.commit()
 
-            event_service.log(
-                db_session=db_session,
-                source="Dispatch Core App",
-                description=f"The incident's response cost has been updated to ${amount:,.2f}",
-                incident_id=incident.id,
-            )
+            log.debug(f"{incident.name}'s response cost has been updated to ${amount:,.2f}")
 
         except Exception as e:
             # we shouldn't fail to update all incidents when one fails
