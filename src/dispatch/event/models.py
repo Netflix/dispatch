@@ -27,6 +27,11 @@ class Event(Base, TimeStampMixin):
     individual_id = Column(Integer, ForeignKey("individual_contact.id", ondelete="CASCADE"))
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
 
+    dispatch_user_id = Column(
+        Integer, ForeignKey("dispatch_core.dispatch_user.id", ondelete="CASCADE")
+    )
+    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
+
     # full text search capabilities
     search_vector = Column(
         TSVectorType("source", "description", weights={"source": "A", "description": "B"})

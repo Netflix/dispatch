@@ -54,6 +54,9 @@ class DispatchUser(Base, TimeStampMixin):
     email = Column(String, unique=True)
     password = Column(LargeBinary, nullable=False)
 
+    # relationships
+    events = relationship("Event", backref="dispatch_user")
+
     search_vector = Column(TSVectorType("email", weights={"email": "A"}))
 
     def check_password(self, password):

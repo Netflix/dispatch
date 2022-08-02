@@ -29,7 +29,7 @@ def get_by_channel_id_ignoring_channel_type(db_session, channel_id: str) -> Opti
                 conversation_in=conversation_in,
             )
 
-            event_service.log(
+            event_service.log_incident_event(
                 db_session=db_session,
                 source="Dispatch Core App",
                 description=f"Slack conversation type has changed ({channel_id[0]} -> {conversation.channel_id[0]})",

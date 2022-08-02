@@ -61,7 +61,7 @@ def create_tactical_report(
     db_session.add(incident)
     db_session.commit()
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source="Incident Participant",
         description=f"{participant.individual.name} created a new tactical report",
@@ -140,7 +140,7 @@ def create_executive_report(
     db_session.add(incident)
     db_session.commit()
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source="Incident Participant",
         description=f"{participant.individual.name} created a new executive report",
@@ -172,7 +172,7 @@ def create_executive_report(
         new_folder_id=incident.storage.resource_id, file_id=executive_report_document["id"]
     )
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source=storage_plugin.plugin.title,
         description="Executive report document added to storage",
@@ -197,7 +197,7 @@ def create_executive_report(
     db_session.add(incident)
     db_session.commit()
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source="Dispatch Core App",
         description="Executive report document added to incident",

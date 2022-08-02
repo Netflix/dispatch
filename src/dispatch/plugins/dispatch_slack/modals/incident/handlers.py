@@ -431,7 +431,7 @@ def add_timeline_event_from_submitted_form(
     event_dt = datetime.fromisoformat(f"{event_date}T{event_hour}:{event_minute}")
     event_dt_utc = pytz.timezone(event_timezone).localize(event_dt).astimezone(pytz.utc)
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source="Slack Plugin - Conversation Management",
         started_at=event_dt_utc,

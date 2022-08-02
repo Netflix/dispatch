@@ -4,12 +4,12 @@ from datetime import datetime, timedelta
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from typing import List, Optional
 
-# from dispatch.event import service as event_service
 from dispatch.auth import service as auth_service
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.severity import service as case_severity_service
 from dispatch.case.type import service as case_type_service
 from dispatch.data.source import service as source_service
+from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
 from dispatch.incident import service as incident_service
 from dispatch.project import service as project_service
@@ -164,12 +164,12 @@ def create(*, db_session, case_in: CaseCreate) -> Case:
     db_session.add(case)
     db_session.commit()
 
-    # event_service.log(
-    #     db_session=db_session,
-    #     source="Dispatch Core App",
-    #     description="Case created",
-    #     case_id=case.id,
-    # )
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description="Case created",
+        case_id=case.id,
+    )
 
     return case
 

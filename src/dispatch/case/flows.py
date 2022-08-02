@@ -3,17 +3,15 @@ import logging
 from datetime import datetime
 
 # from dispatch.case import service as case_service
-from dispatch.case.models import CaseRead
-
 # from dispatch.case_type import service as case_type_service
-from dispatch.database.core import SessionLocal
-from dispatch.decorators import background_task
-from dispatch.case import service as case_service
-
 # from dispatch.enums import Visibility
-# from dispatch.event import service as event_service
 # from dispatch.plugin import service as plugin_service
 # from dispatch.ticket import flows as ticket_flows
+from dispatch.case import service as case_service
+from dispatch.case.models import CaseRead
+from dispatch.database.core import SessionLocal
+from dispatch.decorators import background_task
+from dispatch.event import service as event_service
 
 from .models import Case, CaseStatus
 
@@ -160,10 +158,9 @@ def case_status_transition_flow_dispatcher(
             case_closed_status_flow(case, db_session)
 
     if previous_status != current_status:
-        # event_service.log(
-        #     db_session=db_session,
-        #     source="Dispatch Core App",
-        #     description=f"The incident status has been changed from {previous_status.lower()} to {current_status.lower()}",
-        #     incident_id=incident.id,
-        # )
-        pass
+        event_service.log_case_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"The case status has been changed from {previous_status.lower()} to {current_status.lower()}",
+            case_id=case.id,
+        )

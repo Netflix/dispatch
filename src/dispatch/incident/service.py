@@ -183,7 +183,7 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
     db_session.add(incident)
     db_session.commit()
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source="Dispatch Core App",
         description="Incident created",

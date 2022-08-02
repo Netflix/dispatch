@@ -117,9 +117,9 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     case_priorities = relationship("AssocCaseCasePriority", backref="case")
     case_severities = relationship("AssocCaseCaseSeverity", backref="case")
 
-    # events = relationship("Event", backref="case", cascade="all, delete-orphan")
     duplicate_id = Column(Integer, ForeignKey("case.id"))
     duplicates = relationship("Case", remote_side=[id], uselist=True)
+    events = relationship("Event", backref="case", cascade="all, delete-orphan")
     incidents = relationship("Incident", backref="case")
     source = relationship("Source", uselist=False, backref="case")
     source_id = Column(Integer, ForeignKey("source.id"))
