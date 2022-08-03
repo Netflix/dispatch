@@ -10,6 +10,7 @@ from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime, FuzzyInteger
 
 from dispatch.auth.models import DispatchUser  # noqa
+from dispatch.case.models import Case
 from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
 from dispatch.definition.models import Definition
@@ -651,7 +652,7 @@ class CaseFactory(BaseFactory):
     class Meta:
         """Factory Configuration."""
 
-        model = Incident
+        model = Case
 
 
 class IncidentFactory(BaseFactory):
