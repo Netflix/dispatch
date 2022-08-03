@@ -638,6 +638,22 @@ class StorageFactory(ResourceBaseFactory):
             self.incident_id = extracted.id
 
 
+class CaseFactory(BaseFactory):
+    """Case Factory."""
+
+    id = Sequence(lambda n: f"1{n}")
+    name = FuzzyText()
+    title = FuzzyText()
+    description = FuzzyText()
+    status = FuzzyChoice(["New", "Triage", "Escalated", "Closed"])
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Incident
+
+
 class IncidentFactory(BaseFactory):
     """Incident Factory."""
 
