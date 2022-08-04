@@ -28,11 +28,15 @@
       </template>
       <v-tabs color="primary" fixed-tabs v-model="tab">
         <v-tab key="details"> Details </v-tab>
+        <v-tab key="resources"> Resources </v-tab>
         <v-tab key="timeline"> Timeline </v-tab>
       </v-tabs>
       <v-tabs-items v-model="tab">
         <v-tab-item key="details">
           <case-details-tab />
+        </v-tab-item>
+        <v-tab-item key="resources">
+          <case-resources-tab />
         </v-tab-item>
         <v-tab-item key="timeline">
           <case-timeline-tab />
@@ -48,6 +52,7 @@ import { mapActions } from "vuex"
 import { ValidationObserver } from "vee-validate"
 
 import CaseDetailsTab from "@/case/DetailsTab.vue"
+import CaseResourcesTab from "@/case/ResourcesTab.vue"
 import CaseTimelineTab from "@/case/TimelineTab.vue"
 
 export default {
@@ -55,6 +60,7 @@ export default {
 
   components: {
     CaseDetailsTab,
+    CaseResourcesTab,
     CaseTimelineTab,
     ValidationObserver,
   },

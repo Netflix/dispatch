@@ -1,17 +1,20 @@
 import logging
 
+from fastapi import status
+
 from datetime import datetime
 
 # from dispatch.case import service as case_service
 # from dispatch.case_type import service as case_type_service
 # from dispatch.enums import Visibility
 # from dispatch.plugin import service as plugin_service
-# from dispatch.ticket import flows as ticket_flows
 from dispatch.case import service as case_service
 from dispatch.case.models import CaseRead
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import background_task
 from dispatch.event import service as event_service
+from dispatch.group import flows as group_flows
+from dispatch.ticket import flows as ticket_flows
 
 from .models import Case, CaseStatus
 
@@ -22,11 +25,81 @@ log = logging.getLogger(__name__)
 @background_task
 def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=None):
     """Runs the case new creation flow."""
-    # NOTE: The following is temporary until the case is named after the ticket
+    # we fetch the case
     case = case_service.get(db_session=db_session, case_id=case_id)
-    case.name = f"{case.id}-{case.title}"
+
+    # we create the ticket
+    ticket = ticket_flows.create_case_ticket(case=case, db_session=db_session)
+
+    if not ticket:
+        # we delete the case
+        case_service.delete(db_session=db_session, case_id=case_id)
+
+        # return {
+        #     "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
+        #     "msg": "Case not created. We encountered an error when trying to create the ticket.",
+        # }
+
+    # we update the ticket
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
+    # # we create the group
+    # group = group_flows.create_group(obj=case, db_session=db_session)
+    #
+    # if not group:
+    #     # we delete the ticket
+    #     ticket_flows.delete_ticket(obj=case, db_session=db_session)
+    #
+    #     # we delete the case
+    #     case_service.delete(db_session=db_session, case_id=case_id)
+    #
+    #     return {
+    #         "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #         "msg": "Case not created. We encountered an error when trying to create the group.",
+    #     }
+    #
+    # # we create the storage folder
+    # # storage = XXX
+    # if not storage:
+    #     # we delete the group
+    #     group_flows.delete_group(obj=case, db_session=db_session)
+    #
+    #     # we delete the ticket
+    #     ticket_flows.delete_ticket(obj=case, db_session=db_session)
+    #
+    #     # we delete the case
+    #     case_service.delete(db_session=db_session, case_id=case_id)
+    #
+    #     return {
+    #         "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #         "msg": "Case not created. We encountered an error when trying to create the storage folder.",
+    #     }
+    #
+    # # we create the investigation document
+    # if not document:
+    #     # we delete the storage
+    #     storage_flows.delete_storage(obj=case, db_session=db_session)
+    #
+    #     # we delete the group
+    #     group_flows.delete_group(obj=case, db_session=db_session)
+    #
+    #     # we delete the ticket
+    #     ticket_flows.delete_ticket(obj=case, db_session=db_session)
+    #
+    #     # we delete the case
+    #     case_service.delete(db_session=db_session, case_id=case_id)
+    #
+    #     return {
+    #         "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #         "msg": "Case not created. We encountered an error when trying to create the investigation document.",
+    #     }
+
+    # we send out notifications
+
     db_session.add(case)
     db_session.commit()
+
+    # return {"status_code": status.HTTP_201_CREATED, "msg": "Case created successfully."}
 
 
 @background_task
@@ -66,7 +139,7 @@ def case_update_flow(
     )
 
     # we update the ticket
-    # update_external_incident_ticket(incident_id, db_session)
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
     # we send the case updated notifications
     # send_case_update_notifications(case, previous_case, db_session)

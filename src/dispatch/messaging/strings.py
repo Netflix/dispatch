@@ -80,9 +80,8 @@ Please, handoff the Incident Commander role before leaving the conversation.""".
     "\n", " "
 ).strip()
 
-INCIDENT_TICKET_DESCRIPTION = """
-Ticket for tracking purposes. It contains a description of
-the incident and links to resources.""".replace(
+TICKET_DESCRIPTION = """
+Ticket for tracking purposes. It contains information and links to resources.""".replace(
     "\n", " "
 ).strip()
 

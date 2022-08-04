@@ -87,6 +87,9 @@
                   hint="Determines whether this case type is availible for new cases."
                 />
               </v-flex>
+              <v-flex xs12>
+                <plugin-metadata-input v-model="plugin_metadata" :project="project" />
+              </v-flex>
             </v-layout>
           </v-container>
         </v-card-text>
@@ -101,6 +104,8 @@ import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 
+import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
+
 extend("required", {
   ...required,
   message: "This field is required",
@@ -110,6 +115,7 @@ export default {
   name: "CaseTypeNewEditSheet",
 
   components: {
+    PluginMetadataInput,
     ValidationObserver,
     ValidationProvider,
   },
@@ -123,16 +129,17 @@ export default {
   computed: {
     ...mapFields("case_type", [
       "dialogs.showCreateEdit",
+      "selected.default",
       "selected.description",
-      "selected.id",
-      "selected.project",
-      "selected.loading",
-      "selected.name",
-      "selected.slug",
-      "selected.visibility",
       "selected.enabled",
       "selected.exclude_from_metrics",
-      "selected.default",
+      "selected.id",
+      "selected.loading",
+      "selected.name",
+      "selected.plugin_metadata",
+      "selected.project",
+      "selected.slug",
+      "selected.visibility",
     ]),
     ...mapFields("case_type", {
       default_case_type: "selected.default",

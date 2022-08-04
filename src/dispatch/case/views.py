@@ -110,6 +110,13 @@ def create_case(
             case_id=case.id,
             organization_slug=organization,
         )
+
+    # if result["status_code"] != status.HTTP_201_CREATED:
+    #     raise HTTPException(
+    #         status_code=result["status_code"],
+    #         detail=[result["msg"]],
+    #     )
+
     return case
 
 

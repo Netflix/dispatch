@@ -6,16 +6,17 @@ import SearchUtils from "@/search/utils"
 
 const getDefaultSelectedState = () => {
   return {
-    id: null,
-    slug: null,
-    name: null,
-    description: null,
-    visibility: null,
-    loading: false,
-    exclude_from_metrics: null,
-    enabled: false,
     default: false,
+    description: null,
+    enabled: false,
+    exclude_from_metrics: null,
+    id: null,
+    loading: false,
+    name: null,
+    plugin_metadata: [],
     project: null,
+    slug: null,
+    visibility: null,
   }
 }
 
