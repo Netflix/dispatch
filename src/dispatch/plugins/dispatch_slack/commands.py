@@ -362,6 +362,7 @@ def list_tasks(
                         "type": "button",
                         "text": {"type": "plain_text", "text": button_text},
                         "value": task_button.json(),
+                        "action_id": f"{ConversationButtonActions.update_task_status}",
                     },
                 }
             )
