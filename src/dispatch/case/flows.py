@@ -14,6 +14,7 @@ from dispatch.database.core import SessionLocal
 from dispatch.decorators import background_task
 from dispatch.event import service as event_service
 from dispatch.group import flows as group_flows
+from dispatch.group.enums import GroupType
 from dispatch.ticket import flows as ticket_flows
 
 from .models import Case, CaseStatus
@@ -36,63 +37,69 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
         case_service.delete(db_session=db_session, case_id=case_id)
 
         # return {
-        #     "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
-        #     "msg": "Case not created. We encountered an error when trying to create the ticket.",
+        # 	  "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
+        # 	  "msg": "Case not created. We encountered an error when trying to create the ticket.",
         # }
 
-    # we update the ticket
-    ticket_flows.update_case_ticket(case=case, db_session=db_session)
+    # we create the tactical group
+    group_participants = [case.assignee.email]
+    group = group_flows.create_group(
+        obj=case,
+        group_type=GroupType.tactical,
+        group_participants=group_participants,
+        db_session=db_session,
+    )
 
-    # # we create the group
-    # group = group_flows.create_group(obj=case, db_session=db_session)
-    #
-    # if not group:
-    #     # we delete the ticket
-    #     ticket_flows.delete_ticket(obj=case, db_session=db_session)
-    #
-    #     # we delete the case
-    #     case_service.delete(db_session=db_session, case_id=case_id)
-    #
-    #     return {
-    #         "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #         "msg": "Case not created. We encountered an error when trying to create the group.",
-    #     }
-    #
+    if not group:
+        # we delete the ticket
+        ticket_flows.delete_ticket(obj=case, db_session=db_session)
+
+        # we delete the case
+        case_service.delete(db_session=db_session, case_id=case_id)
+
+        # return {
+        # 	  "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
+        # 	  "msg": "Case not created. We encountered an error when trying to create the group.",
+        # }
+
     # # we create the storage folder
     # # storage = XXX
     # if not storage:
-    #     # we delete the group
-    #     group_flows.delete_group(obj=case, db_session=db_session)
+    # 	  # we delete the group
+    # 	  group_flows.delete_group(obj=case, db_session=db_session)
     #
-    #     # we delete the ticket
-    #     ticket_flows.delete_ticket(obj=case, db_session=db_session)
+    # 	  # we delete the ticket
+    # 	  ticket_flows.delete_ticket(obj=case, db_session=db_session)
     #
-    #     # we delete the case
-    #     case_service.delete(db_session=db_session, case_id=case_id)
+    # 	  # we delete the case
+    # 	  case_service.delete(db_session=db_session, case_id=case_id)
     #
-    #     return {
-    #         "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #         "msg": "Case not created. We encountered an error when trying to create the storage folder.",
-    #     }
+    # 	  return {
+    # 		  "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
+    # 		  "msg": "Case not created. We encountered an error when trying to create the storage folder.",
+    # 	  }
     #
     # # we create the investigation document
     # if not document:
-    #     # we delete the storage
-    #     storage_flows.delete_storage(obj=case, db_session=db_session)
+    # 	  # we delete the storage
+    # 	  storage_flows.delete_storage(obj=case, db_session=db_session)
     #
-    #     # we delete the group
-    #     group_flows.delete_group(obj=case, db_session=db_session)
+    # 	  # we delete the group
+    # 	  group_flows.delete_group(obj=case, db_session=db_session)
     #
-    #     # we delete the ticket
-    #     ticket_flows.delete_ticket(obj=case, db_session=db_session)
+    # 	  # we delete the ticket
+    # 	  ticket_flows.delete_ticket(obj=case, db_session=db_session)
     #
-    #     # we delete the case
-    #     case_service.delete(db_session=db_session, case_id=case_id)
+    # 	  # we delete the case
+    # 	  case_service.delete(db_session=db_session, case_id=case_id)
     #
-    #     return {
-    #         "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #         "msg": "Case not created. We encountered an error when trying to create the investigation document.",
-    #     }
+    # 	  return {
+    # 		  "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
+    # 		  "msg": "Case not created. We encountered an error when trying to create the investigation document.",
+    # 	  }
+
+    # we update the ticket
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
     # we send out notifications
 

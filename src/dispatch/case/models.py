@@ -26,6 +26,7 @@ from dispatch.data.source.models import SourceRead
 from dispatch.database.core import Base
 from dispatch.enums import Visibility
 from dispatch.event.models import EventRead
+from dispatch.group.models import Group, GroupRead
 from dispatch.incident.models import IncidentRead
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.tag.models import TagRead
@@ -120,6 +121,11 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     duplicate_id = Column(Integer, ForeignKey("case.id"))
     duplicates = relationship("Case", remote_side=[id], uselist=True)
     events = relationship("Event", backref="case", cascade="all, delete-orphan")
+    groups = relationship(
+        "Group", backref="case", cascade="all, delete-orphan", foreign_keys=[Group.case_id]
+    )
+    tactical_group_id = Column(Integer, ForeignKey("group.id"))
+    tactical_group = relationship("Group", foreign_keys=[tactical_group_id])
     incidents = relationship("Incident", backref="case")
     source = relationship("Source", uselist=False, backref="case")
     source_id = Column(Integer, ForeignKey("source.id"))
@@ -131,7 +137,7 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     # tasks = relationship("Task", backref="case", cascade="all, delete-orphan")
     ticket = relationship("Ticket", uselist=False, backref="case", cascade="all, delete-orphan")
     # workflow_instances = relationship(
-    #     "WorkflowInstance", backref="case", cascade="all, delete-orphan"
+    # 	  "WorkflowInstance", backref="case", cascade="all, delete-orphan"
     # )
 
     # hybrid properties
@@ -220,6 +226,7 @@ class CaseRead(CaseBase):
     duplicates: Optional[List[CaseReadNested]] = []
     escalated_at: Optional[datetime] = None
     events: Optional[List[EventRead]] = []
+    groups: Optional[List[GroupRead]] = []
     incidents: List[Optional[IncidentRead]]
     name: Optional[NameStr]
     project: ProjectRead

@@ -222,6 +222,13 @@ def delete_ticket(obj: Any, db_session: SessionLocal):
     """Deletes a ticket."""
     # we delete the external ticket
     # TODO(mvilanova): implement deleting the external ticket
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=obj.project.id, plugin_type="ticket"
+    )
+    if plugin:
+        plugin.instance.update_case_ticket()
+    else:
+        log.warning("Ticket not deleted. No ticket plugin enabled.")
 
     # we delete the internal ticket
     delete(db_session=db_session, ticket_id=obj.id)

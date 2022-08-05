@@ -85,6 +85,16 @@ Ticket for tracking purposes. It contains information and links to resources."""
     "\n", " "
 ).strip()
 
+TACTICAL_GROUP_DESCRIPTION = """
+Group for managing member access to storage. All participants get added to it.""".replace(
+    "\n", " "
+).strip()
+
+NOTIFICATIONS_GROUP_DESCRIPTION = """
+Group for email notification purposes. All participants get added to it.""".replace(
+    "\n", " "
+).strip()
+
 INCIDENT_CONVERSATION_DESCRIPTION = """
 Private conversation for real-time discussion. All incident participants get added to it.
 """.replace(
