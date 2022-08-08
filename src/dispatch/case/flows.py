@@ -15,6 +15,7 @@ from dispatch.decorators import background_task
 from dispatch.event import service as event_service
 from dispatch.group import flows as group_flows
 from dispatch.group.enums import GroupType
+from dispatch.storage import flows as storage_flows
 from dispatch.ticket import flows as ticket_flows
 
 from .models import Case, CaseStatus
@@ -62,23 +63,24 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
         # 	  "msg": "Case not created. We encountered an error when trying to create the group.",
         # }
 
-    # # we create the storage folder
-    # # storage = XXX
-    # if not storage:
-    # 	  # we delete the group
-    # 	  group_flows.delete_group(obj=case, db_session=db_session)
-    #
-    # 	  # we delete the ticket
-    # 	  ticket_flows.delete_ticket(obj=case, db_session=db_session)
-    #
-    # 	  # we delete the case
-    # 	  case_service.delete(db_session=db_session, case_id=case_id)
-    #
-    # 	  return {
-    # 		  "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
-    # 		  "msg": "Case not created. We encountered an error when trying to create the storage folder.",
-    # 	  }
-    #
+    # we create the storage folder
+    members = [group.email]
+    storage = storage_flows.create_storage(obj=case, members=members, db_session=db_session)
+    if not storage:
+        # we delete the group
+        group_flows.delete_group(obj=case, db_session=db_session)
+
+        # we delete the ticket
+        ticket_flows.delete_ticket(obj=case, db_session=db_session)
+
+        # we delete the case
+        case_service.delete(db_session=db_session, case_id=case_id)
+
+        # return {
+        # 	  "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
+        # 	  "msg": "Case not created. We encountered an error when trying to create the storage folder.",
+        # }
+
     # # we create the investigation document
     # if not document:
     # 	  # we delete the storage

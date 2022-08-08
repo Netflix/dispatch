@@ -29,6 +29,7 @@ from dispatch.event.models import EventRead
 from dispatch.group.models import Group, GroupRead
 from dispatch.incident.models import IncidentRead
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
+from dispatch.storage.models import StorageRead
 from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
 
@@ -113,11 +114,9 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     # relationships
     assignee_id = Column(Integer, ForeignKey("dispatch_core.dispatch_user.id"))
     assignee = relationship("DispatchUser", foreign_keys=[assignee_id], post_update=True)
-
     case_types = relationship("AssocCaseCaseType", backref="case")
     case_priorities = relationship("AssocCaseCasePriority", backref="case")
     case_severities = relationship("AssocCaseCaseSeverity", backref="case")
-
     duplicate_id = Column(Integer, ForeignKey("case.id"))
     duplicates = relationship("Case", remote_side=[id], uselist=True)
     events = relationship("Event", backref="case", cascade="all, delete-orphan")
@@ -129,6 +128,7 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     incidents = relationship("Incident", backref="case")
     source = relationship("Source", uselist=False, backref="case")
     source_id = Column(Integer, ForeignKey("source.id"))
+    storage = relationship("Storage", uselist=False, backref="case", cascade="all, delete-orphan")
     tags = relationship(
         "Tag",
         secondary=assoc_case_tags,
@@ -232,6 +232,7 @@ class CaseRead(CaseBase):
     project: ProjectRead
     reported_at: Optional[datetime] = None
     source: SourceRead
+    storage: Optional[StorageRead] = None
     tags: Optional[List[TagRead]] = []
     ticket: Optional[TicketRead] = None
     triage_at: Optional[datetime] = None

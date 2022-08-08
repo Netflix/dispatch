@@ -205,7 +205,7 @@ def update_case_ticket(
         case.assignee.email,
         # resolve_attr(case, "conversation.weblink"),
         # resolve_attr(case, "case_document.weblink"),
-        # resolve_attr(case, "storage.weblink"),
+        resolve_attr(case, "storage.weblink"),
         # resolve_attr(case, "conference.weblink"),
         case_type_plugin_metadata=case_type_plugin_metadata,
     )

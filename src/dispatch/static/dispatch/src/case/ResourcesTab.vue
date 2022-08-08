@@ -12,18 +12,6 @@
       </v-list-item-action>
     </v-list-item>
     <v-divider />
-    <!-- <v-list-item v-if="storage" :href="storage.weblink" target="_blank"> -->
-    <!--   <v-list-item-content> -->
-    <!--     <v-list-item-title>Storage</v-list-item-title> -->
-    <!--     <v-list-item-subtitle>{{ storage.description }}</v-list-item-subtitle> -->
-    <!--   </v-list-item-content> -->
-    <!--   <v-list-item-action> -->
-    <!--     <v-list-item-icon> -->
-    <!--       <v-icon>open_in_new</v-icon> -->
-    <!--     </v-list-item-icon> -->
-    <!--   </v-list-item-action> -->
-    <!-- </v-list-item> -->
-    <!-- <v-divider /> -->
     <span v-for="group in groups" :key="group.resource_id">
       <v-list-item :href="group.weblink" target="_blank">
         <v-list-item-content>
@@ -38,6 +26,18 @@
       </v-list-item>
       <v-divider />
     </span>
+    <v-divider />
+    <v-list-item v-if="storage" :href="storage.weblink" target="_blank">
+      <v-list-item-content>
+        <v-list-item-title>Storage</v-list-item-title>
+        <v-list-item-subtitle>{{ storage.description }}</v-list-item-subtitle>
+      </v-list-item-content>
+      <v-list-item-action>
+        <v-list-item-icon>
+          <v-icon>open_in_new</v-icon>
+        </v-list-item-icon>
+      </v-list-item-action>
+    </v-list-item>
   </v-list>
 </template>
 
@@ -51,7 +51,7 @@ export default {
     ...mapFields("case_management", [
       "selected.ticket",
       "selected.groups",
-      // "selected.storage",
+      "selected.storage",
       // "selected.documents",
     ]),
   },

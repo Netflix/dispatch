@@ -113,10 +113,10 @@ Video conference and phone bridge to be used throughout the incident.  Password:
     "\n", ""
 ).strip()
 
-INCIDENT_STORAGE_DESCRIPTION = """
-Common storage for all incident artifacts and
+STORAGE_DESCRIPTION = """
+Common storage for all artifacts and
 documents. Add logs, screen captures, or any other data collected during the
-investigation to this drive. It is shared with all incident participants.""".replace(
+investigation to this folder. It is shared with all participants.""".replace(
     "\n", " "
 ).strip()
 
@@ -383,7 +383,7 @@ INCIDENT_CONFERENCE = {
 INCIDENT_STORAGE = {
     "title": "Storage",
     "title_link": "{{storage_weblink}}",
-    "text": INCIDENT_STORAGE_DESCRIPTION,
+    "text": STORAGE_DESCRIPTION,
 }
 
 INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT = {

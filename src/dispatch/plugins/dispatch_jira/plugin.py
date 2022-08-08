@@ -162,7 +162,7 @@ def create_case_issue_fields(
     reporter: dict,
     assignee_username: str,
     # document_weblink: str,
-    # storage_weblink: str,
+    storage_weblink: str,
 ):
     """Creates Jira issue fields."""
     issue_fields = {}
@@ -178,7 +178,7 @@ def create_case_issue_fields(
         case_priority=case_priority,
         assignee_username=assignee_username,
         # document_weblink=document_weblink,
-        # storage_weblink=storage_weblink,
+        storage_weblink=storage_weblink,
     )
     issue_fields.update({"description": description})
 
@@ -361,7 +361,7 @@ class JiraTicketPlugin(TicketPlugin):
         assignee_email: str,
         # reporter_email: str,
         # document_weblink: str,
-        # storage_weblink: str,
+        storage_weblink: str,
         case_type_plugin_metadata: dict = {},
     ):
         """Updates a case Jira issue."""
@@ -389,7 +389,7 @@ class JiraTicketPlugin(TicketPlugin):
             reporter=reporter,
             assignee_username=assignee_username,
             # document_weblink=document_weblink,
-            # storage_weblink=storage_weblink,
+            storage_weblink=storage_weblink,
         )
 
         return update(self.configuration, client, issue, issue_fields, status)

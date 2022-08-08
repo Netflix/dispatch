@@ -7,7 +7,6 @@ import router from "@/router"
 
 const getDefaultSelectedState = () => {
   return {
-    // events: null,
     assignee: null,
     case_priority: null,
     case_severity: null,
@@ -16,6 +15,7 @@ const getDefaultSelectedState = () => {
     description: null,
     duplicates: [],
     escalated_at: null,
+    events: [],
     groups: [],
     id: null,
     incidents: [],
@@ -25,12 +25,13 @@ const getDefaultSelectedState = () => {
     resolution: null,
     source: null,
     status: null,
+    storage: null,
     tags: [],
     ticket: null,
     title: null,
     triage_at: null,
     visibility: null,
-    workflow_instances: null,
+    // workflow_instances: null,
     loading: false,
   }
 }
