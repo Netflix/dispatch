@@ -1,8 +1,7 @@
 import logging
-
-from fastapi import status
-
 from datetime import datetime
+
+# from fastapi import status
 
 # from dispatch.case import service as case_service
 # from dispatch.case_type import service as case_type_service
@@ -53,7 +52,7 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
 
     if not group:
         # we delete the ticket
-        ticket_flows.delete_ticket(obj=case, db_session=db_session)
+        ticket_flows.delete_ticket(ticket=ticket, db_session=db_session)
 
         # we delete the case
         case_service.delete(db_session=db_session, case_id=case_id)
@@ -68,10 +67,10 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
     storage = storage_flows.create_storage(obj=case, members=members, db_session=db_session)
     if not storage:
         # we delete the group
-        group_flows.delete_group(obj=case, db_session=db_session)
+        group_flows.delete_group(group=group, db_session=db_session)
 
         # we delete the ticket
-        ticket_flows.delete_ticket(obj=case, db_session=db_session)
+        ticket_flows.delete_ticket(ticket=ticket, db_session=db_session)
 
         # we delete the case
         case_service.delete(db_session=db_session, case_id=case_id)
@@ -84,13 +83,13 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
     # # we create the investigation document
     # if not document:
     # 	  # we delete the storage
-    # 	  storage_flows.delete_storage(obj=case, db_session=db_session)
+    # 	  storage_flows.delete_storage(storage=storage, db_session=db_session)
     #
     # 	  # we delete the group
-    # 	  group_flows.delete_group(obj=case, db_session=db_session)
+    # 	  group_flows.delete_group(group=group, db_session=db_session)
     #
     # 	  # we delete the ticket
-    # 	  ticket_flows.delete_ticket(obj=case, db_session=db_session)
+    # 	  ticket_flows.delete_ticket(ticket=ticket, db_session=db_session)
     #
     # 	  # we delete the case
     # 	  case_service.delete(db_session=db_session, case_id=case_id)

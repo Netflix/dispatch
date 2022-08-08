@@ -2,18 +2,16 @@ from typing import Any
 import logging
 
 from dispatch.case.models import Case
-from dispatch.case import service as case_service
 from dispatch.case.type import service as case_type_service
-from dispatch.database import service as database_service
 from dispatch.database.core import SessionLocal, resolve_attr
 from dispatch.enums import Visibility
 from dispatch.event import service as event_service
-from dispatch.incident.models import Incident
 from dispatch.incident import service as incident_service
+from dispatch.incident.models import Incident
 from dispatch.incident_type import service as incident_type_service
 from dispatch.plugin import service as plugin_service
 
-from .models import TicketCreate
+from .models import Ticket, TicketCreate
 from .service import create, delete
 
 
@@ -218,17 +216,18 @@ def update_case_ticket(
     )
 
 
-def delete_ticket(obj: Any, db_session: SessionLocal):
+def delete_ticket(ticket: Ticket, db_session: SessionLocal):
     """Deletes a ticket."""
     # we delete the external ticket
-    # TODO(mvilanova): implement deleting the external ticket
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=obj.project.id, plugin_type="ticket"
+        db_session=db_session, project_id=ticket.case.project.id, plugin_type="ticket"
     )
     if plugin:
-        plugin.instance.update_case_ticket()
+        # TODO(mvilanova): implement deleting the external ticket
+        # plugin.instance.delete_case_ticket()
+        pass
     else:
         log.warning("Ticket not deleted. No ticket plugin enabled.")
 
     # we delete the internal ticket
-    delete(db_session=db_session, ticket_id=obj.id)
+    delete(db_session=db_session, ticket_id=ticket.id)

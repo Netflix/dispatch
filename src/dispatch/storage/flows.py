@@ -6,7 +6,7 @@ from dispatch.database.core import get_table_name_by_class_instance
 from dispatch.event import service as event_service
 from dispatch.plugin import service as plugin_service
 
-from .models import StorageCreate
+from .models import Storage, StorageCreate
 from .service import create, delete
 
 
@@ -71,17 +71,18 @@ def create_storage(obj: Any, members: List[str], db_session: SessionLocal):
     return storage
 
 
-def delete_storage(obj: Any, db_session: SessionLocal):
+def delete_storage(storage: Storage, db_session: SessionLocal):
     """Deletes an existing storage."""
     # we delete the external storage
-    # TODO(mvilanova): implement deleting the external storage
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=obj.project.id, plugin_type="storage"
+        db_session=db_session, project_id=storage.case.project.id, plugin_type="storage"
     )
     if plugin:
-        plugin.instance.delete()
+        # TODO(mvilanova): implement deleting the external storage
+        # plugin.instance.delete()
+        pass
     else:
         log.warning("Storage not deleted. No storage plugin enabled.")
 
-    # we delete the internal ticket
-    delete(db_session=db_session, group_id=obj.id)
+    # we delete the internal storage
+    delete(db_session=db_session, storage_id=storage.id)

@@ -7,7 +7,7 @@ from dispatch.event import service as event_service
 from dispatch.plugin import service as plugin_service
 
 from .enums import GroupType
-from .models import GroupCreate
+from .models import Group, GroupCreate
 from .service import create, delete
 
 
@@ -81,17 +81,18 @@ def create_group(
     return group
 
 
-def delete_group(obj: Any, db_session: SessionLocal):
+def delete_group(group: Group, db_session: SessionLocal):
     """Deletes an existing group."""
     # we delete the external group
-    # TODO(mvilanova): implement deleting the external group
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=obj.project.id, plugin_type="participant-group"
+        db_session=db_session, project_id=group.case.project.id, plugin_type="participant-group"
     )
     if plugin:
-        plugin.instance.delete()
+        # TODO(mvilanova): implement deleting the external group
+        # plugin.instance.delete()
+        pass
     else:
         log.warning("Group not deleted. No group plugin enabled.")
 
-    # we delete the internal ticket
-    delete(db_session=db_session, group_id=obj.id)
+    # we delete the internal group
+    delete(db_session=db_session, group_id=group.id)
