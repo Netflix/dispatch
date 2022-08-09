@@ -319,7 +319,7 @@ scipy==1.8.1
     # via statsmodels
 sentry-asgi==0.2.0
     # via -r requirements-base.in
-sentry-sdk==1.8.0
+sentry-sdk==1.9.3
     # via
     #   -r requirements-base.in
     #   sentry-asgi
@@ -399,7 +399,6 @@ typing-extensions==4.3.0
     # via
     #   pydantic
     #   schemathesis
-    #   starlette
 uritemplate==4.1.1
     # via google-api-python-client
 urllib3==1.26.11
