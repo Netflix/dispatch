@@ -10,6 +10,7 @@ from factory.alchemy import SQLAlchemyModelFactory
 from factory.fuzzy import FuzzyChoice, FuzzyText, FuzzyDateTime, FuzzyInteger
 
 from dispatch.auth.models import DispatchUser  # noqa
+from dispatch.case.models import Case
 from dispatch.conference.models import Conference
 from dispatch.conversation.models import Conversation
 from dispatch.definition.models import Definition
@@ -636,6 +637,22 @@ class StorageFactory(ResourceBaseFactory):
 
         if extracted:
             self.incident_id = extracted.id
+
+
+class CaseFactory(BaseFactory):
+    """Case Factory."""
+
+    id = Sequence(lambda n: f"1{n}")
+    name = FuzzyText()
+    title = FuzzyText()
+    description = FuzzyText()
+    status = FuzzyChoice(["New", "Triage", "Escalated", "Closed"])
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = Case
 
 
 class IncidentFactory(BaseFactory):

@@ -31,8 +31,6 @@ class Participant(Base):
 
     # relationships
     feedback = relationship("Feedback", backref="participant")
-    service_id = Column(Integer, ForeignKey("service.id", ondelete="CASCADE"))
-    service = relationship("Service", backref="participant")
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE", use_alter=True))
     individual = relationship("IndividualContact", lazy="subquery", backref="participant")
     individual_contact_id = Column(Integer, ForeignKey("individual_contact.id"))
@@ -40,6 +38,8 @@ class Participant(Base):
         "ParticipantRole", backref="participant", lazy="subquery", cascade="all, delete-orphan"
     )
     reports = relationship("Report", backref="participant")
+    service = relationship("Service", backref="participant")
+    service_id = Column(Integer, ForeignKey("service.id", ondelete="CASCADE"))
     created_tasks = relationship(
         "Task", backref="creator", primaryjoin="Participant.id==Task.creator_id"
     )

@@ -15,12 +15,10 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
-
-from dispatch.messaging.strings import INCIDENT_DOCUMENT_DESCRIPTIONS
+from dispatch.messaging.strings import DOCUMENT_DESCRIPTIONS
 from dispatch.models import DispatchBase, ResourceBase, ProjectMixin, ResourceMixin, EvergreenMixin
-
-from dispatch.search_filter.models import SearchFilterRead
 from dispatch.project.models import ProjectRead
+from dispatch.search_filter.models import SearchFilterRead
 
 # Association tables for many to many relationships
 assoc_document_filters = Table(
@@ -38,6 +36,7 @@ class Document(ProjectMixin, ResourceMixin, EvergreenMixin, Base):
     description = Column(String)
     report_id = Column(Integer, ForeignKey("report.id", ondelete="CASCADE"))
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE", use_alter=True))
+    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE", use_alter=True))
 
     filters = relationship("SearchFilter", secondary=assoc_document_filters, backref="documents")
 
@@ -70,7 +69,7 @@ class DocumentRead(DocumentBase):
     def set_description(cls, v, values):
         """Sets the description"""
         if not v:
-            return INCIDENT_DOCUMENT_DESCRIPTIONS.get(values["resource_type"], "No Description")
+            return DOCUMENT_DESCRIPTIONS.get(values["resource_type"], "No Description")
         return v
 
 

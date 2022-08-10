@@ -182,7 +182,7 @@ def handle_reaction_added_event(
         )
 
         # we log the event
-        event_service.log(
+        event_service.log_incident_event(
             db_session=db_session,
             source="Slack Plugin - Conversation Management",
             description=f'"{message_text}," said {individual.name}',

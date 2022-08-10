@@ -116,6 +116,8 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
             return sorted(self.executive_reports, key=lambda r: r.created_at)[-1]
 
     # resources
+    case_id = Column(Integer, ForeignKey("case.id"))
+
     incident_costs = relationship(
         "IncidentCost",
         backref="incident",

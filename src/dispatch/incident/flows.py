@@ -80,7 +80,7 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
                 db_session=db_session,
             )
 
-            event_service.log(
+            event_service.log_incident_event(
                 db_session=db_session,
                 source=plugin.plugin.title,
                 description="Incident participants resolved",
@@ -97,7 +97,7 @@ def reactivate_incident_participants(incident: Incident, db_session: SessionLoca
             participant.individual.email, incident.id, db_session=db_session
         )
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source="Dispatch Core App",
         description="Incident participants reactivated",
@@ -110,7 +110,7 @@ def inactivate_incident_participants(incident: Incident, db_session: SessionLoca
     for participant in incident.participants:
         participant_flows.inactivate_participant(participant.individual.email, incident, db_session)
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source="Dispatch Core App",
         description="Incident participants inactivated",
@@ -149,7 +149,7 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     )
     ticket.update({"resource_type": plugin.plugin.slug})
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source=plugin.plugin.title,
         description="Ticket created",
@@ -205,7 +205,7 @@ def update_external_incident_ticket(
         incident_type_plugin_metadata=incident_type_plugin_metadata,
     )
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source=plugin.plugin.title,
         description=f"Ticket updated. Status: {incident.status}",
@@ -253,7 +253,7 @@ def create_participant_groups(
         }
     )
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source=plugin.plugin.title,
         description="Tactical and notifications groups created",
@@ -272,7 +272,7 @@ def create_conference(incident: Incident, participants: List[str], db_session: S
 
     conference.update({"resource_type": plugin.plugin.slug, "resource_id": conference["id"]})
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source=plugin.plugin.title,
         description="Incident conference created",
@@ -336,7 +336,7 @@ def create_incident_documents(incident: Incident, db_session: SessionLocal):
 
         incident_documents.append(document)
 
-        event_service.log(
+        event_service.log_incident_event(
             db_session=db_session,
             source=plugin.plugin.title,
             description="Incident document created",
@@ -364,7 +364,7 @@ def create_incident_documents(incident: Incident, db_session: SessionLocal):
 
             incident_documents.append(sheet)
 
-            event_service.log(
+            event_service.log_incident_event(
                 db_session=db_session,
                 source=plugin.plugin.title,
                 description="Incident sheet created",
@@ -417,7 +417,7 @@ def create_post_incident_review_document(incident: Incident, db_session: Session
         file_id=incident_review_document["id"],
     )
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source=storage_plugin.plugin.title,
         description="Post-incident review document added to storage",
@@ -440,7 +440,7 @@ def create_post_incident_review_document(incident: Incident, db_session: Session
     incident.documents.append(incident_review_document)
     incident.incident_review_document_id = incident_review_document.id
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source="Dispatch Core App",
         description="Post-incident review document added to incident",
@@ -492,7 +492,7 @@ def create_conversation(incident: Incident, db_session: SessionLocal):
     conversation = plugin.instance.create(incident.name)
     conversation.update({"resource_type": plugin.plugin.slug, "resource_id": conversation["name"]})
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source=plugin.plugin.title,
         description="Incident conversation created",
@@ -521,7 +521,7 @@ def set_conversation_topic(incident: Incident, db_session: SessionLocal):
     try:
         plugin.instance.set_topic(incident.conversation.channel_id, conversation_topic)
     except Exception as e:
-        event_service.log(
+        event_service.log_incident_event(
             db_session=db_session,
             source="Dispatch Core App",
             description=f"Setting the incident conversation topic failed. Reason: {e}",
@@ -542,7 +542,7 @@ def add_participants_to_conversation(
         try:
             plugin.instance.add(incident.conversation.channel_id, participant_emails)
         except Exception as e:
-            event_service.log(
+            event_service.log_incident_event(
                 db_session=db_session,
                 source="Dispatch Core App",
                 description=f"Adding participant(s) to incident conversation failed. Reason: {e}",
@@ -679,14 +679,14 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                 incident.groups.append(notifications_group)
                 incident.notifications_group_id = notifications_group.id
 
-                event_service.log(
+                event_service.log_incident_event(
                     db_session=db_session,
                     source="Dispatch Core App",
                     description="Tactical and notifications groups added to incident",
                     incident_id=incident.id,
                 )
         except Exception as e:
-            event_service.log(
+            event_service.log_incident_event(
                 db_session=db_session,
                 source="Dispatch Core App",
                 description=f"Creation of tactical and notifications groups failed. Reason: {e}",
@@ -723,14 +723,14 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                 storage_in=storage_in,
             )
 
-            event_service.log(
+            event_service.log_incident_event(
                 db_session=db_session,
                 source="Dispatch Core App",
                 description="Storage added to incident",
                 incident_id=incident.id,
             )
         except Exception as e:
-            event_service.log(
+            event_service.log_incident_event(
                 db_session=db_session,
                 source="Dispatch Core App",
                 description=f"Creation of incident storage failed. Reason: {e}",
@@ -757,14 +757,14 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                 if document.resource_type == DocumentResourceTypes.incident:
                     incident.incident_document_id = document.id
 
-            event_service.log(
+            event_service.log_incident_event(
                 db_session=db_session,
                 source="Dispatch Core App",
                 description="Collaboration documents added to incident",
                 incident_id=incident.id,
             )
         except Exception as e:
-            event_service.log(
+            event_service.log_incident_event(
                 db_session=db_session,
                 source="Dispatch Core App",
                 description=f"Creation of collaboration documents failed. Reason: {e}",
@@ -796,14 +796,14 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                 db_session=db_session, conference_in=conference_in
             )
 
-            event_service.log(
+            event_service.log_incident_event(
                 db_session=db_session,
                 source="Dispatch Core App",
                 description="Conference added to incident",
                 incident_id=incident.id,
             )
         except Exception as e:
-            event_service.log(
+            event_service.log_incident_event(
                 db_session=db_session,
                 source="Dispatch Core App",
                 description=f"Creation of incident conference failed. Reason: {e}",
@@ -830,7 +830,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                 db_session=db_session, conversation_in=conversation_in
             )
 
-            event_service.log(
+            event_service.log_incident_event(
                 db_session=db_session,
                 source="Dispatch Core App",
                 description="Conversation added to incident",
@@ -840,7 +840,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
             # we set the conversation topic
             set_conversation_topic(incident, db_session)
         except Exception as e:
-            event_service.log(
+            event_service.log_incident_event(
                 db_session=db_session,
                 source="Dispatch Core App",
                 description=f"Creation of incident conversation failed. Reason: {e}",
@@ -875,7 +875,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                     conference_challenge=resolve_attr(incident, "conference.challenge"),
                 )
             except Exception as e:
-                event_service.log(
+                event_service.log_incident_event(
                     db_session=db_session,
                     source="Dispatch Core App",
                     description=f"Incident documents rendering failed. Reason: {e}",
@@ -918,7 +918,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
             individual.email, incident.id, service_id=service_id, db_session=db_session
         )
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source="Dispatch Core App",
         description="Incident participants added to incident",
@@ -927,7 +927,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
 
     send_incident_created_notifications(incident, db_session)
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source="Dispatch Core App",
         description="Incident notifications sent",
@@ -1025,7 +1025,7 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
                 # typically only broad access to the incident document itself is required.
                 storage_plugin.instance.open(incident.incident_document.resource_id)
 
-                event_service.log(
+                event_service.log_incident_event(
                     db_session=db_session,
                     source="Dispatch Core App",
                     description="Incident document opened to anyone in the domain",
@@ -1036,7 +1036,7 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
                 # unfortunately this can't be applied at the folder level so we just mark the incident doc as available.
                 storage_plugin.instance.mark_readonly(incident.incident_document.resource_id)
 
-                event_service.log(
+                event_service.log_incident_event(
                     db_session=db_session,
                     source="Dispatch Core App",
                     description="Incident document marked as readonly",
@@ -1066,7 +1066,7 @@ def conversation_topic_dispatcher(
 
     conversation_topic_change = False
     if previous_incident.title != incident.title:
-        event_service.log(
+        event_service.log_incident_event(
             db_session=db_session,
             source="Incident Participant",
             description=f'{individual.name} changed the incident title to "{incident.title}"',
@@ -1075,7 +1075,7 @@ def conversation_topic_dispatcher(
         )
 
     if previous_incident.description != incident.description:
-        event_service.log(
+        event_service.log_incident_event(
             db_session=db_session,
             source="Incident Participant",
             description=f"{individual.name} changed the incident description",
@@ -1087,7 +1087,7 @@ def conversation_topic_dispatcher(
     if previous_incident.incident_type.name != incident.incident_type.name:
         conversation_topic_change = True
 
-        event_service.log(
+        event_service.log_incident_event(
             db_session=db_session,
             source="Incident Participant",
             description=f"{individual.name} changed the incident type to {incident.incident_type.name}",
@@ -1098,7 +1098,7 @@ def conversation_topic_dispatcher(
     if previous_incident.incident_priority.name != incident.incident_priority.name:
         conversation_topic_change = True
 
-        event_service.log(
+        event_service.log_incident_event(
             db_session=db_session,
             source="Incident Participant",
             description=f"{individual.name} changed the incident priority to {incident.incident_priority.name}",
@@ -1109,7 +1109,7 @@ def conversation_topic_dispatcher(
     if previous_incident.status != incident.status:
         conversation_topic_change = True
 
-        event_service.log(
+        event_service.log_incident_event(
             db_session=db_session,
             source="Incident Participant",
             description=f"{individual.name} marked the incident as {incident.status.lower()}",
@@ -1159,7 +1159,7 @@ def status_flow_dispatcher(
             incident_closed_status_flow(incident=incident, db_session=db_session)
 
     if previous_status != current_status:
-        event_service.log(
+        event_service.log_incident_event(
             db_session=db_session,
             source="Dispatch Core App",
             description=f"The incident status has been changed from {previous_status.lower()} to {current_status.lower()}",
@@ -1357,7 +1357,7 @@ def incident_engage_oncall_flow(
         db_session=db_session, email=user_email, project_id=incident.project.id
     )
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source=oncall_plugin.plugin.title,
         description=f"{individual.name} engages oncall service {oncall_service.name}",
@@ -1373,7 +1373,7 @@ def incident_engage_oncall_flow(
             incident_description=incident.description,
         )
 
-        event_service.log(
+        event_service.log_incident_event(
             db_session=db_session,
             source=oncall_plugin.plugin.title,
             description=f"{oncall_service.name} on-call paged",

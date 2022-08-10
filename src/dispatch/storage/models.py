@@ -5,13 +5,14 @@ from typing import Optional
 from sqlalchemy import Column, Integer, ForeignKey
 
 from dispatch.database.core import Base
-from dispatch.messaging.strings import INCIDENT_STORAGE_DESCRIPTION
+from dispatch.messaging.strings import STORAGE_DESCRIPTION
 from dispatch.models import ResourceBase, ResourceMixin
 
 
 class Storage(Base, ResourceMixin):
     id = Column(Integer, primary_key=True)
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
+    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
 
 
 # Pydantic models...
@@ -33,7 +34,7 @@ class StorageRead(StorageBase):
     @validator("description", pre=True, always=True)
     def set_description(cls, v):
         """Sets the description"""
-        return INCIDENT_STORAGE_DESCRIPTION
+        return STORAGE_DESCRIPTION
 
 
 class StorageNested(StorageBase):

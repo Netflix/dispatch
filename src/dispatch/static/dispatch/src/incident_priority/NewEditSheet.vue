@@ -66,7 +66,7 @@
                     :error-messages="errors"
                     :success="valid"
                     type="number"
-                    hint="Enter an value indicating where you want this priority to be in a list (lowest are first)."
+                    hint="Enter a value to indicate the order in which you want this priority to be shown in a list (lowest numbers are shown first)."
                     clearable
                     required
                   />

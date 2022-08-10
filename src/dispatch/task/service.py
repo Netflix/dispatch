@@ -122,7 +122,7 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
         tickets=tickets,
     )
 
-    event_service.log(
+    event_service.log_incident_event(
         db_session=db_session,
         source="Dispatch Core App",
         description=f"New incident task created by {creator.individual.name}",

@@ -3,6 +3,8 @@ from uuid import uuid4
 import datetime
 import logging
 
+from dispatch.auth import service as auth_service
+from dispatch.case import service as case_service
 from dispatch.incident import service as incident_service
 from dispatch.individual import service as individual_service
 
@@ -15,6 +17,11 @@ logger = logging.getLogger(__name__)
 def get(*, db_session, event_id: int) -> Optional[Event]:
     """Get an event by id."""
     return db_session.query(Event).filter(Event.id == event_id).one_or_none()
+
+
+def get_by_case_id(*, db_session, case_id: int) -> List[Optional[Event]]:
+    """Get events by case id."""
+    return db_session.query(Event).filter(Event.case_id == case_id)
 
 
 def get_by_incident_id(*, db_session, incident_id: int) -> List[Optional[Event]]:
@@ -55,7 +62,7 @@ def delete(*, db_session, event_id: int):
     db_session.commit()
 
 
-def log(
+def log_incident_event(
     db_session,
     source: str,
     description: str,
@@ -65,7 +72,7 @@ def log(
     ended_at: datetime = None,
     details: dict = None,
 ) -> Event:
-    """Logs an event."""
+    """Logs an event in the incident timeline."""
     uuid = uuid4()
 
     if not started_at:
@@ -97,6 +104,47 @@ def log(
 
     db_session.commit()
 
-    logger.info(f"{source}: {description}")
+    return event
+
+
+def log_case_event(
+    db_session,
+    source: str,
+    description: str,
+    case_id: int,
+    dispatch_user_id: int = None,
+    started_at: datetime = None,
+    ended_at: datetime = None,
+    details: dict = None,
+) -> Event:
+    """Logs an event in the case timeline."""
+    uuid = uuid4()
+
+    if not started_at:
+        started_at = datetime.datetime.utcnow()
+
+    if not ended_at:
+        ended_at = started_at
+
+    event_in = EventCreate(
+        uuid=uuid,
+        started_at=started_at,
+        ended_at=ended_at,
+        source=source,
+        description=description,
+        details=details,
+    )
+    event = create(db_session=db_session, event_in=event_in)
+
+    case = case_service.get(db_session=db_session, case_id=case_id)
+    case.events.append(event)
+    db_session.add(case)
+
+    if dispatch_user_id:
+        dispatch_user = auth_service.get(db_session=db_session, user_id=dispatch_user_id)
+        dispatch_user.events.append(event)
+        db_session.add(dispatch_user)
+
+    db_session.commit()
 
     return event

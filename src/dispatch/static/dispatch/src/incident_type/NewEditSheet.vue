@@ -139,12 +139,13 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
-import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { mapActions } from "vuex"
+import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
-import TemplateSelect from "@/document/template/TemplateSelect.vue"
+
 import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
+import TemplateSelect from "@/document/template/TemplateSelect.vue"
 
 extend("required", {
   ...required,
@@ -155,10 +156,10 @@ export default {
   name: "IncidentTypeNewEditSheet",
 
   components: {
-    ValidationObserver,
-    ValidationProvider,
     PluginMetadataInput,
     TemplateSelect,
+    ValidationObserver,
+    ValidationProvider,
   },
 
   data() {

@@ -80,9 +80,18 @@ Please, handoff the Incident Commander role before leaving the conversation.""".
     "\n", " "
 ).strip()
 
-INCIDENT_TICKET_DESCRIPTION = """
-Ticket for tracking purposes. It contains a description of
-the incident and links to resources.""".replace(
+TICKET_DESCRIPTION = """
+Ticket for tracking purposes. It contains information and links to resources.""".replace(
+    "\n", " "
+).strip()
+
+TACTICAL_GROUP_DESCRIPTION = """
+Group for managing member access to storage. All participants get added to it.""".replace(
+    "\n", " "
+).strip()
+
+NOTIFICATIONS_GROUP_DESCRIPTION = """
+Group for email notification purposes. All participants get added to it.""".replace(
     "\n", " "
 ).strip()
 
@@ -104,10 +113,10 @@ Video conference and phone bridge to be used throughout the incident.  Password:
     "\n", ""
 ).strip()
 
-INCIDENT_STORAGE_DESCRIPTION = """
-Common storage for all incident artifacts and
+STORAGE_DESCRIPTION = """
+Common storage for all artifacts and
 documents. Add logs, screen captures, or any other data collected during the
-investigation to this drive. It is shared with all incident participants.""".replace(
+investigation to this folder. It is shared with all participants.""".replace(
     "\n", " "
 ).strip()
 
@@ -115,6 +124,13 @@ INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION = """
 This is a document for all incident facts and context. All
 incident participants are expected to contribute to this document.
 It is shared with all incident participants.""".replace(
+    "\n", " "
+).strip()
+
+CASE_INVESTIGATION_DOCUMENT_DESCRIPTION = """
+This is a document for all investigation facts and context. All
+case participants are expected to contribute to this document.
+It is shared with all participants.""".replace(
     "\n", " "
 ).strip()
 
@@ -142,9 +158,10 @@ This is a document that contains an executive report about the incident.""".repl
     "\n", " "
 ).strip()
 
-INCIDENT_DOCUMENT_DESCRIPTIONS = {
+DOCUMENT_DESCRIPTIONS = {
     DocumentResourceReferenceTypes.conversation: INCIDENT_CONVERSATION_REFERENCE_DOCUMENT_DESCRIPTION,
     DocumentResourceReferenceTypes.faq: INCIDENT_FAQ_DOCUMENT_DESCRIPTION,
+    DocumentResourceTypes.case: CASE_INVESTIGATION_DOCUMENT_DESCRIPTION,
     DocumentResourceTypes.executive: INCIDENT_EXECUTIVE_REPORT_DOCUMENT_DESCRIPTION,
     DocumentResourceTypes.incident: INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,
     DocumentResourceTypes.review: INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,
@@ -374,7 +391,7 @@ INCIDENT_CONFERENCE = {
 INCIDENT_STORAGE = {
     "title": "Storage",
     "title_link": "{{storage_weblink}}",
-    "text": INCIDENT_STORAGE_DESCRIPTION,
+    "text": STORAGE_DESCRIPTION,
 }
 
 INCIDENT_CONVERSATION_COMMANDS_REFERENCE_DOCUMENT = {

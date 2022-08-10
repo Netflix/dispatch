@@ -14,22 +14,23 @@ from fastapi.security.utils import get_authorization_scheme_param
 
 from jose import JWTError, jwt
 from jose.exceptions import JWKError
-from starlette.status import HTTP_401_UNAUTHORIZED
 from starlette.requests import Request
+from starlette.status import HTTP_401_UNAUTHORIZED
 
+from dispatch.case import service as case_service
 from dispatch.config import DISPATCH_UI_URL
-from dispatch.incident.models import Incident
-from dispatch.individual.models import IndividualContact, IndividualContactRead
 from dispatch.document.models import Document, DocumentRead
-from dispatch.team.models import TeamContact, TeamContactRead
-from dispatch.service.models import Service, ServiceRead
-from dispatch.individual import service as individual_service
-from dispatch.plugins import dispatch_core as dispatch_plugin
 from dispatch.incident import service as incident_service
-from dispatch.team import service as team_service
+from dispatch.incident.models import Incident
+from dispatch.individual import service as individual_service
+from dispatch.individual.models import IndividualContact, IndividualContactRead
 from dispatch.plugin import service as plugin_service
+from dispatch.plugins import dispatch_core as dispatch_plugin
 from dispatch.route import service as route_service
 from dispatch.service import service as service_service
+from dispatch.service.models import Service, ServiceRead
+from dispatch.team import service as team_service
+from dispatch.team.models import TeamContact, TeamContactRead
 
 from dispatch.plugins.bases import (
     ParticipantPlugin,
@@ -39,7 +40,6 @@ from dispatch.plugins.bases import (
     ContactPlugin,
 )
 
-
 from dispatch.config import (
     DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS,
     DISPATCH_PKCE_DONT_VERIFY_AT_HASH,
@@ -47,6 +47,7 @@ from dispatch.config import (
     DISPATCH_JWT_AUDIENCE,
     DISPATCH_JWT_EMAIL_OVERRIDE,
 )
+
 
 log = logging.getLogger(__name__)
 
@@ -150,7 +151,7 @@ class DispatchTicketPlugin(TicketPlugin):
         plugin_metadata: dict,
         db_session=None,
     ):
-        """Creates a Dispatch ticket."""
+        """Creates a Dispatch incident ticket."""
         incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
         resource_id = (
@@ -179,7 +180,49 @@ class DispatchTicketPlugin(TicketPlugin):
         cost: float,
         incident_type_plugin_metadata: dict = {},
     ):
-        """Updates the incident."""
+        """Updates a Dispatch incident ticket."""
+        return
+
+    def create_case_ticket(
+        self,
+        case_id: int,
+        title: str,
+        case_type: str,
+        case_severity: str,
+        incident_priority: str,
+        assignee: str,
+        # reporter: str,
+        plugin_metadata: dict,
+        db_session=None,
+    ):
+        """Creates a Dispatch case ticket."""
+        case = case_service.get(db_session=db_session, case_id=case_id)
+
+        resource_id = f"dispatch-{case.project.organization.slug}-{case.project.slug}-{case.id}"
+
+        return {
+            "resource_id": resource_id,
+            "weblink": f"{DISPATCH_UI_URL}/{case.project.organization.name}/cases/{resource_id}?project={case.project.name}",
+            "resource_type": "dispatch-internal-ticket",
+        }
+
+    def update_case_ticket(
+        self,
+        ticket_id: str,
+        title: str,
+        description: str,
+        resolution: str,
+        case_type: str,
+        case_severity: str,
+        case_priority: str,
+        status: str,
+        assignee_email: str,
+        # reporter_email: str,
+        # document_weblink: str,
+        # storage_weblink: str,
+        incident_type_plugin_metadata: dict = {},
+    ):
+        """Updates a Dispatch case ticket."""
         return
 
 

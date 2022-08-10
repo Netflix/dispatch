@@ -113,16 +113,17 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
 import { ValidationProvider, extend } from "vee-validate"
+import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
-import ProjectSelect from "@/project/ProjectSelect.vue"
+
+import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
+import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
-import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
-import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import ParticipantSelect from "@/incident/ParticipantSelect.vue"
+import ProjectSelect from "@/project/ProjectSelect.vue"
+import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
 extend("required", {
   ...required,
@@ -133,14 +134,14 @@ export default {
   name: "IncidentDetailsTab",
 
   components: {
-    ValidationProvider,
+    DateTimePickerMenu,
+    IncidentFilterCombobox,
     IncidentPrioritySelect,
     IncidentTypeSelect,
     ParticipantSelect,
-    TagFilterAutoComplete,
-    IncidentFilterCombobox,
     ProjectSelect,
-    DateTimePickerMenu,
+    TagFilterAutoComplete,
+    ValidationProvider,
   },
 
   data() {
@@ -152,23 +153,23 @@ export default {
 
   computed: {
     ...mapFields("incident", [
-      "selected.id",
-      "selected.name",
-      "selected.title",
-      "selected.description",
-      "selected.resolution",
       "selected.commander",
-      "selected.reporter",
       "selected.created_at",
-      "selected.stable_at",
-      "selected.reported_at",
-      "selected.status",
-      "selected.terms",
-      "selected.tags",
-      "selected.project",
+      "selected.description",
+      "selected.duplicates",
+      "selected.id",
       "selected.incident_priority",
       "selected.incident_type",
-      "selected.duplicates",
+      "selected.name",
+      "selected.project",
+      "selected.reported_at",
+      "selected.reporter",
+      "selected.resolution",
+      "selected.stable_at",
+      "selected.status",
+      "selected.tags",
+      "selected.terms",
+      "selected.title",
       "selected.visibility",
     ]),
   },

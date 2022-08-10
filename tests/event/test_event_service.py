@@ -70,12 +70,27 @@ def test_delete(session, event):
     assert not get(db_session=session, event_id=event.id)
 
 
-def test_log(session, incident):
-    from dispatch.event.service import log
+def test_log_incident_event(session, incident):
+    from dispatch.event.service import log_incident_event
     from dispatch.event.models import EventCreate
 
     source = "Dispatch event source"
     description = "Dispatch event description"
-    event = log(db_session=session, source=source, description=description, incident_id=incident.id)
+    event = log_incident_event(
+        db_session=session, source=source, description=description, incident_id=incident.id
+    )
     assert event.source == source
     assert event.incident_id == incident.id
+
+
+def test_log_case_event(session, case):
+    from dispatch.event.service import log_case_event
+    from dispatch.event.models import EventCreate
+
+    source = "Dispatch event source"
+    description = "Dispatch event description"
+    event = log_case_event(
+        db_session=session, source=source, description=description, case_id=case.id
+    )
+    assert event.source == source
+    assert event.case_id == case.id

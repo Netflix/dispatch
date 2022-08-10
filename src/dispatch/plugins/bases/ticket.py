@@ -16,3 +16,6 @@ class TicketPlugin(Plugin):
 
     def update(self, ticket_id, **kwargs):
         raise NotImplementedError
+
+    def delete(self, ticket_id, **kwargs):
+        raise NotImplementedError

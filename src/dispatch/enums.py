@@ -19,12 +19,12 @@ class SearchTypes(DispatchEnum):
     incident_type = "IncidentType"
     individual_contact = "IndividualContact"
     plugin = "Plugin"
+    query = "Query"
     search_filter = "SearchFilter"
     service = "Service"
+    source = "Source"
     tag = "Tag"
     task = "Task"
-    source = "Source"
-    query = "Query"
     team_contact = "TeamContact"
     term = "Term"
 
@@ -37,19 +37,21 @@ class UserRoles(DispatchEnum):
 
 
 class DocumentResourceTypes(DispatchEnum):
+    case = "dispatch-case-document"
     executive = "dispatch-executive-report-document"
+    incident = "dispatch-incident-document"
     review = "dispatch-incident-review-document"
     tracking = "dispatch-incident-sheet"
-    incident = "dispatch-incident-document"
 
 
 class DocumentResourceReferenceTypes(DispatchEnum):
-    faq = "dispatch-incident-reference-faq-document"
     conversation = "dispatch-conversation-reference-document"
+    faq = "dispatch-incident-reference-faq-document"
 
 
 class DocumentResourceTemplateTypes(DispatchEnum):
+    case = "dispatch-case-document-template"
     executive = "dispatch-executive-report-document-template"
+    incident = "dispatch-incident-document-template"
     review = "dispatch-incident-review-document-template"
     tracking = "dispatch-incident-sheet-template"
-    incident = "dispatch-incident-document-template"

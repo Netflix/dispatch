@@ -93,19 +93,20 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
+import DeleteDialog from "@/document/template/DeleteDialog.vue"
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
 import TemplateNewEditSheet from "@/document/template/TemplateNewEditSheet.vue"
-import DeleteDialog from "@/document/template/DeleteDialog.vue"
 import { templateDocumentTypes } from "@/document/template/store.js"
 
 export default {
   name: "TemplateConfiguration",
 
   components: {
+    DeleteDialog,
     SettingsBreadcrumbs,
     TemplateNewEditSheet,
-    DeleteDialog,
   },
+
   data() {
     return {
       templateDocumentTypes: templateDocumentTypes,
@@ -118,6 +119,7 @@ export default {
       ],
     }
   },
+
   computed: {
     ...mapFields("template", [
       "table.options.q",
@@ -133,6 +135,7 @@ export default {
     ]),
     ...mapFields("route", ["query"]),
   },
+
   created() {
     this.project = [{ name: this.query.project }]
 

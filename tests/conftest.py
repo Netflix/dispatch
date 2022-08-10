@@ -4,17 +4,16 @@ from sqlalchemy_utils import drop_database
 from starlette.testclient import TestClient
 from starlette.config import environ
 
-
 # set test config
 environ["DATABASE_CREDENTIALS"] = "postgres:dispatch"
 environ["DATABASE_HOSTNAME"] = "localhost"
 environ["DATABASE_NAME"] = "dispatch-test"
-environ["DISPATCH_HELP_SLACK_CHANNEL"] = "help-me"
 environ["DISPATCH_ENCRYPTION_KEY"] = "test123"
+environ["DISPATCH_HELP_SLACK_CHANNEL"] = "help-me"
+environ["DISPATCH_JWT_SECRET"] = "test123"
 environ["DISPATCH_UI_URL"] = "https://example.com"
 environ["ENV"] = "pytest"
 environ["JWKS_URL"] = "example.com"
-environ["DISPATCH_JWT_SECRET"] = "test123"
 environ["METRIC_PROVIDERS"] = ""  # TODO move this to the default
 environ["SECRET_PROVIDER"] = ""
 environ["SLACK_APP_USER_SLUG"] = "XXX"
@@ -24,8 +23,9 @@ from dispatch import config
 from dispatch.database.core import engine
 from dispatch.database.manage import init_database
 
-
+from .database import Session
 from .factories import (
+    CaseFactory,
     ConferenceFactory,
     ConversationFactory,
     DefinitionFactory,
@@ -36,8 +36,8 @@ from .factories import (
     IncidentCostFactory,
     IncidentCostTypeFactory,
     IncidentFactory,
-    IncidentRoleFactory,
     IncidentPriorityFactory,
+    IncidentRoleFactory,
     IncidentTypeFactory,
     IndividualContactFactory,
     NotificationFactory,
@@ -62,8 +62,6 @@ from .factories import (
     WorkflowFactory,
     WorkflowInstanceFactory,
 )
-
-from .database import Session
 
 
 def pytest_runtest_setup(item):
@@ -445,6 +443,11 @@ def ticket(session):
 @pytest.fixture
 def tickets(session):
     return [TicketFactory(), TicketFactory()]
+
+
+@pytest.fixture
+def case(session):
+    return CaseFactory()
 
 
 @pytest.fixture

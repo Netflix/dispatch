@@ -54,7 +54,8 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import NewEditSheet from "@/auth/OrganizationMemberEdit.vue"
+import NewEditSheet from "@/organization/OrganizationMemberEdit.vue"
+
 export default {
   name: "OrganizationUserTable",
 

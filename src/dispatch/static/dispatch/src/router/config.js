@@ -73,6 +73,39 @@ export const protectedRoute = [
         import(/* webpackChunkName: "incidents-report" */ "@/incident/ReportForm.vue"),
     },
     {
+      path: "cases",
+      component: DefaultLayout,
+      name: "cases",
+      meta: {
+        title: "Cases",
+        icon: "mdi-briefcase",
+        group: "cases",
+        requiresAuth: true,
+        menu: true,
+        showEditSheet: false,
+      },
+      redirect: { name: "CaseTable" },
+      children: [
+        {
+          path: "/:organization/cases",
+          name: "CaseTable",
+          meta: { title: "List" },
+          component: () => import(/* webpackChunkName: "case-table" */ "@/case/Table.vue"),
+          children: [
+            {
+              path: "/:organization/cases/:name",
+              name: "CaseTableEdit",
+              component: () => import(/* webpackChunkName: "case-table" */ "@/case/EditSheet.vue"),
+              props: true,
+              meta: {
+                showEditSheet: true,
+              },
+            },
+          ],
+        },
+      ],
+    },
+    {
       path: "incidents",
       component: DefaultLayout,
       name: "incidents",
@@ -246,7 +279,9 @@ export const protectedRoute = [
           name: "OrganizationMemberTable",
           meta: { title: "Members", subMenu: "organization", group: "organization" },
           component: () =>
-            import(/* webpackChunkName: "users-table" */ "@/auth/OrganizationMemberTable.vue"),
+            import(
+              /* webpackChunkName: "users-table" */ "@/organization/OrganizationMemberTable.vue"
+            ),
         },
         {
           path: "projects",
@@ -255,9 +290,30 @@ export const protectedRoute = [
             group: "settings",
           },
           name: "ProjectSettings",
-          redirect: { name: "IncidentTypeTable" },
+          redirect: { name: "CaseTypeTable" },
         },
         ...withPrefix("projects/", [
+          {
+            path: "caseTypes",
+            name: "CaseTypeTable",
+            meta: { title: "Types", subMenu: "project", group: "case" },
+            component: () =>
+              import(/* webpackChunkName: "case-type-table" */ "@/case/type/Table.vue"),
+          },
+          {
+            path: "caseSeverities",
+            name: "caseSeverityTable",
+            meta: { title: "Severities", subMenu: "project", group: "case" },
+            component: () =>
+              import(/* webpackChunkName: "case-severity-table" */ "@/case/severity/Table.vue"),
+          },
+          {
+            path: "casePriorities",
+            name: "casePriorityTable",
+            meta: { title: "Priorities", subMenu: "project", group: "case" },
+            component: () =>
+              import(/* webpackChunkName: "case-priority-table" */ "@/case/priority/Table.vue"),
+          },
           {
             path: "incidentTypes",
             name: "IncidentTypeTable",
@@ -270,7 +326,9 @@ export const protectedRoute = [
             name: "IncidentPriorityTable",
             meta: { title: "Priorities", subMenu: "project", group: "incident" },
             component: () =>
-              import(/* webpackChunkName: "-table" */ "@/incident_priority/Table.vue"),
+              import(
+                /* webpackChunkName: "incident-priority-table" */ "@/incident_priority/Table.vue"
+              ),
           },
           {
             path: "incidentCostTypes",
