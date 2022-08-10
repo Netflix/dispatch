@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 import logging
 
 from dispatch.database.core import SessionLocal, resolve_attr
