@@ -15,7 +15,7 @@ from dispatch.incident import service as incident_service
 from dispatch.project import service as project_service
 from dispatch.tag import service as tag_service
 
-# from .enums import CaseStatus
+from .enums import CaseStatus
 from .models import (
     Case,
     CaseCreate,
@@ -80,38 +80,47 @@ def get_all_by_status(*, db_session, project_id: int, status: str) -> List[Optio
     )
 
 
-# def get_all_last_x_hours_by_status(
-#     *, db_session, project_id: int, status: str, hours: int
-# ) -> List[Optional[Case]]:
-#     """Returns all cases of a given status in the last x hours."""
-#     now = datetime.utcnow()
-#
-#     if status == CaseStatus.active:
-#         return (
-#             db_session.query(Case)
-#             .filter(Case.project_id == project_id)
-#             .filter(Case.status == CaseStatus.active)
-#             .filter(Case.created_at >= now - timedelta(hours=hours))
-#             .all()
-#         )
-#
-#     if status == CaseStatus.stable:
-#         return (
-#             db_session.query(Case)
-#             .filter(Case.project_id == project_id)
-#             .filter(Case.status == CaseStatus.stable)
-#             .filter(Case.stable_at >= now - timedelta(hours=hours))
-#             .all()
-#         )
-#
-#     if status == CaseStatus.closed:
-#         return (
-#             db_session.query(Case)
-#             .filter(Case.project_id == project_id)
-#             .filter(Case.status == CaseStatus.closed)
-#             .filter(Case.closed_at >= now - timedelta(hours=hours))
-#             .all()
-#         )
+def get_all_last_x_hours_by_status(
+    *, db_session, project_id: int, status: str, hours: int
+) -> List[Optional[Case]]:
+    """Returns all cases of a given status in the last x hours."""
+    now = datetime.utcnow()
+
+    if status == CaseStatus.new:
+        return (
+            db_session.query(Case)
+            .filter(Case.project_id == project_id)
+            .filter(Case.status == CaseStatus.new)
+            .filter(Case.created_at >= now - timedelta(hours=hours))
+            .all()
+        )
+
+    if status == CaseStatus.triage:
+        return (
+            db_session.query(Case)
+            .filter(Case.project_id == project_id)
+            .filter(Case.status == CaseStatus.triage)
+            .filter(Case.stable_at >= now - timedelta(hours=hours))
+            .all()
+        )
+
+    if status == CaseStatus.escalated:
+        return (
+            db_session.query(Case)
+            .filter(Case.project_id == project_id)
+            .filter(Case.status == CaseStatus.escalated)
+            .filter(Case.closed_at >= now - timedelta(hours=hours))
+            .all()
+        )
+
+    if status == CaseStatus.closed:
+        return (
+            db_session.query(Case)
+            .filter(Case.project_id == project_id)
+            .filter(Case.status == CaseStatus.closed)
+            .filter(Case.closed_at >= now - timedelta(hours=hours))
+            .all()
+        )
 
 
 def create(*, db_session, case_in: CaseCreate) -> Case:
@@ -123,6 +132,8 @@ def create(*, db_session, case_in: CaseCreate) -> Case:
     tag_objs = []
     for t in case_in.tags:
         tag_objs.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
+
+    # TODO(mvilanova): allow to provide related cases and incidents and duplicated cases
 
     case = Case(
         title=case_in.title,
@@ -186,6 +197,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate) -> Case:
             "duplicates",
             "incidents",
             "project",
+            "related",
             "source",
             "status",
             "tags",
@@ -235,6 +247,11 @@ def update(*, db_session, case: Case, case_in: CaseUpdate) -> Case:
     for t in case_in.tags:
         tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
     case.tags = tags
+
+    related = []
+    for r in case_in.related:
+        related.append(get(db_session=db_session, case_id=r.id))
+    case.related = related
 
     duplicates = []
     for d in case_in.duplicates:

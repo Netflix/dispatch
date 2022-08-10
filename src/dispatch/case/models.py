@@ -127,7 +127,7 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     )
 
     duplicate_id = Column(Integer, ForeignKey("case.id"))
-    duplicates = relationship("Case", remote_side=[id], uselist=True)
+    duplicates = relationship("Case", remote_side=[id], uselist=True, foreign_keys=[duplicate_id])
 
     events = relationship("Event", backref="case", cascade="all, delete-orphan")
 
@@ -140,7 +140,7 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     incidents = relationship("Incident", backref="case")
 
     related_id = Column(Integer, ForeignKey("case.id"))
-    related = relationship("Case", remote_side=[id], uselist=True)
+    related = relationship("Case", remote_side=[id], uselist=True, foreign_keys=[related_id])
 
     source = relationship("Source", uselist=False, backref="case")
     source_id = Column(Integer, ForeignKey("source.id"))
@@ -152,11 +152,8 @@ class Case(Base, TimeStampMixin, ProjectMixin):
         secondary=assoc_case_tags,
         backref="cases",
     )
-    # tasks = relationship("Task", backref="case", cascade="all, delete-orphan")
+
     ticket = relationship("Ticket", uselist=False, backref="case", cascade="all, delete-orphan")
-    # workflow_instances = relationship(
-    # 	  "WorkflowInstance", backref="case", cascade="all, delete-orphan"
-    # )
 
     # hybrid properties
 
@@ -246,7 +243,7 @@ class CaseRead(CaseBase):
     escalated_at: Optional[datetime] = None
     events: Optional[List[EventRead]] = []
     groups: Optional[List[GroupRead]] = []
-    incidents: List[Optional[IncidentRead]]
+    incidents: Optional[List[IncidentRead]] = []
     name: Optional[NameStr]
     project: ProjectRead
     related: Optional[List[CaseReadNested]] = []
@@ -266,9 +263,9 @@ class CaseUpdate(CaseBase):
     duplicates: Optional[List[CaseRead]] = []
     related: Optional[List[CaseRead]] = []
     escalated_at: Optional[datetime] = None
-    incidents: List[Optional[IncidentRead]]
+    incidents: Optional[List[IncidentRead]] = []
     reported_at: Optional[datetime] = None
-    source: Optional[SourceRead]
+    source: Optional[SourceRead] = None
     tags: Optional[List[TagRead]] = []
     triage_at: Optional[datetime] = None
 
