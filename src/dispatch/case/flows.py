@@ -1,11 +1,6 @@
 import logging
 from datetime import datetime
 
-# from fastapi import status
-
-# from dispatch.case_type import service as case_type_service
-# from dispatch.enums import Visibility
-# from dispatch.plugin import service as plugin_service
 from dispatch.case.models import CaseRead
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import background_task
@@ -37,11 +32,6 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
         # we delete the case
         delete(db_session=db_session, case_id=case_id)
 
-        # return {
-        # 	  "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
-        # 	  "msg": "Case not created. We encountered an error when trying to create the ticket.",
-        # }
-
     # we create the tactical group
     group_participants = [case.assignee.email]
     group = group_flows.create_group(
@@ -58,11 +48,6 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
         # we delete the case
         delete(db_session=db_session, case_id=case_id)
 
-        # return {
-        # 	  "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
-        # 	  "msg": "Case not created. We encountered an error when trying to create the group.",
-        # }
-
     # we create the storage folder
     members = [group.email]
     storage = storage_flows.create_storage(obj=case, members=members, db_session=db_session)
@@ -75,11 +60,6 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
 
         # we delete the case
         delete(db_session=db_session, case_id=case_id)
-
-        # return {
-        # 	  "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
-        # 	  "msg": "Case not created. We encountered an error when trying to create the storage folder.",
-        # }
 
     # we create the investigation document
     document = document_flows.create_document(
@@ -103,11 +83,6 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
         # we delete the case
         delete(db_session=db_session, case_id=case_id)
 
-        # return {
-        # 	  "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
-        # 	  "msg": "Case not created. We encountered an error when trying to create the investigation document.",
-        # }
-
     # we update the ticket
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
@@ -116,12 +91,10 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
         document=document, project_id=case.project.id, db_session=db_session
     )
 
-    # we send out notifications
+    # we send the case created notification
 
     db_session.add(case)
     db_session.commit()
-
-    # return {"status_code": status.HTTP_201_CREATED, "msg": "Case created successfully."}
 
 
 @background_task
@@ -163,8 +136,7 @@ def case_update_flow(
     # we update the ticket
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
-    # we send the case updated notifications
-    # send_case_update_notifications(case, previous_case, db_session)
+    # we send the case updated notification
 
 
 def case_new_status_flow(case: Case, db_session=None):

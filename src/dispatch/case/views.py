@@ -80,7 +80,6 @@ def create_case(
     db_session: Session = Depends(get_db),
     organization: OrganizationSlug,
     case_in: CaseCreate,
-    # current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
     """Creates a new case."""
@@ -110,12 +109,6 @@ def create_case(
             case_id=case.id,
             organization_slug=organization,
         )
-
-    # if result["status_code"] != status.HTTP_201_CREATED:
-    #     raise HTTPException(
-    #         status_code=result["status_code"],
-    #         detail=[result["msg"]],
-    #     )
 
     return case
 
