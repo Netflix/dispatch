@@ -1,4 +1,3 @@
-from typing import Any
 import logging
 
 from dispatch.case.models import Case
