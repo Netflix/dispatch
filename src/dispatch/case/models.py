@@ -210,7 +210,7 @@ class CaseCreate(CaseBase):
     case_severity: Optional[CaseSeverityRead]
     case_type: Optional[CaseTypeRead]
     project: ProjectRead
-    source: SourceRead
+    source: Optional[SourceRead]
     tags: Optional[List[TagRead]] = []
 
 
@@ -226,7 +226,7 @@ class CaseReadNested(CaseBase):
     name: Optional[NameStr]
     project: ProjectRead
     reported_at: Optional[datetime] = None
-    source: SourceRead
+    source: Optional[SourceRead] = None
     triage_at: Optional[datetime] = None
 
 
@@ -247,7 +247,7 @@ class CaseRead(CaseBase):
     name: Optional[NameStr]
     project: ProjectRead
     reported_at: Optional[datetime] = None
-    source: SourceRead
+    source: Optional[SourceRead] = None
     storage: Optional[StorageRead] = None
     tags: Optional[List[TagRead]] = []
     ticket: Optional[TicketRead] = None

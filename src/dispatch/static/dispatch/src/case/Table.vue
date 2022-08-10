@@ -46,7 +46,7 @@
               <case-priority :priority="item.case_priority.name" />
             </template>
             <template v-slot:item.source.name="{ item }">
-              <v-chip small color="info" text-color="white">
+              <v-chip v-if="item.source" small color="info" text-color="white">
                 {{ item.source.name }}
               </v-chip>
             </template>
