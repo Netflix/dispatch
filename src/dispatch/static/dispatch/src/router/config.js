@@ -294,6 +294,26 @@ export const protectedRoute = [
         },
         ...withPrefix("projects/", [
           {
+            path: "plugins",
+            name: "PluginTable",
+            meta: { title: "Plugins", subMenu: "project", group: "general" },
+            component: () => import(/* webpackChunkName: "plugin-table" */ "@/plugin/Table.vue"),
+          },
+          {
+            path: "notifications",
+            name: "NotificationTable",
+            meta: { title: "Notifications", subMenu: "project", group: "general" },
+            component: () =>
+              import(/* webpackChunkName: "notification-table" */ "@/notification/Table.vue"),
+          },
+          {
+            path: "workflows",
+            name: "WorkflowTable",
+            meta: { title: "Workflows", subMenu: "project", group: "general" },
+            component: () =>
+              import(/* webpackChunkName: "workflows-table" */ "@/workflow/Table.vue"),
+          },
+          {
             path: "caseTypes",
             name: "CaseTypeTable",
             meta: { title: "Types", subMenu: "project", group: "case" },
@@ -349,29 +369,9 @@ export const protectedRoute = [
               ),
           },
           {
-            path: "workflows",
-            name: "WorkflowTable",
-            meta: { title: "Workflows", subMenu: "project", group: "incident" },
-            component: () =>
-              import(/* webpackChunkName: "workflows-table" */ "@/workflow/Table.vue"),
-          },
-          {
-            path: "notifications",
-            name: "NotificationTable",
-            meta: { title: "Notifications", subMenu: "project", group: "incident" },
-            component: () =>
-              import(/* webpackChunkName: "notification-table" */ "@/notification/Table.vue"),
-          },
-          {
-            path: "plugins",
-            name: "PluginTable",
-            meta: { title: "Plugins", subMenu: "project", group: "incident" },
-            component: () => import(/* webpackChunkName: "plugin-table" */ "@/plugin/Table.vue"),
-          },
-          {
             path: "templates",
             name: "TemplateTable",
-            meta: { title: "Templates", subMenu: "project", group: "incident" },
+            meta: { title: "Templates", subMenu: "project", group: "documentation" },
             component: () =>
               import(
                 /* webpackChunkName: "template-table" */ "@/document/template/TemplateTable.vue"
@@ -380,7 +380,7 @@ export const protectedRoute = [
           {
             path: "references",
             name: "ReferenceTable",
-            meta: { title: "References", subMenu: "project", group: "incident" },
+            meta: { title: "References", subMenu: "project", group: "documentation" },
             component: () =>
               import(
                 /* webpackChunkName: "reference-table" */ "@/document/reference/ReferenceTable.vue"
