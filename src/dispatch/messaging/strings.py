@@ -127,6 +127,13 @@ It is shared with all incident participants.""".replace(
     "\n", " "
 ).strip()
 
+CASE_INVESTIGATION_DOCUMENT_DESCRIPTION = """
+This is a document for all investigation facts and context. All
+case participants are expected to contribute to this document.
+It is shared with all participants.""".replace(
+    "\n", " "
+).strip()
+
 INCIDENT_INVESTIGATION_SHEET_DESCRIPTION = """
 This is a sheet for tracking impacted assets. All
 incident participants are expected to contribute to this sheet.
@@ -151,9 +158,10 @@ This is a document that contains an executive report about the incident.""".repl
     "\n", " "
 ).strip()
 
-INCIDENT_DOCUMENT_DESCRIPTIONS = {
+DOCUMENT_DESCRIPTIONS = {
     DocumentResourceReferenceTypes.conversation: INCIDENT_CONVERSATION_REFERENCE_DOCUMENT_DESCRIPTION,
     DocumentResourceReferenceTypes.faq: INCIDENT_FAQ_DOCUMENT_DESCRIPTION,
+    DocumentResourceTypes.case: CASE_INVESTIGATION_DOCUMENT_DESCRIPTION,
     DocumentResourceTypes.executive: INCIDENT_EXECUTIVE_REPORT_DOCUMENT_DESCRIPTION,
     DocumentResourceTypes.incident: INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,
     DocumentResourceTypes.review: INCIDENT_REVIEW_DOCUMENT_DESCRIPTION,

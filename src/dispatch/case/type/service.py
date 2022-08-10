@@ -3,6 +3,7 @@ from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 from sqlalchemy.sql.expression import true
 
+from dispatch.document import service as document_service
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
 
@@ -112,7 +113,17 @@ def create(*, db_session, case_type_in: CaseTypeCreate) -> CaseType:
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=case_type_in.project
     )
-    case_type = CaseType(**case_type_in.dict(exclude={"project"}), project=project)
+
+    case_type = CaseType(
+        **case_type_in.dict(exclude={"case_template_document", "project"}), project=project
+    )
+
+    if case_type_in.case_template_document:
+        case_template_document = document_service.get(
+            db_session=db_session, document_id=case_type_in.case_template_document.id
+        )
+        case_type.case_template_document = case_template_document
+
     db_session.add(case_type)
     db_session.commit()
     return case_type
@@ -120,9 +131,15 @@ def create(*, db_session, case_type_in: CaseTypeCreate) -> CaseType:
 
 def update(*, db_session, case_type: CaseType, case_type_in: CaseTypeUpdate) -> CaseType:
     """Updates a case type."""
+    if case_type_in.case_template_document:
+        case_template_document = document_service.get(
+            db_session=db_session, document_id=case_type_in.case_template_document.id
+        )
+        case_type.case_template_document = case_template_document
+
     case_type_data = case_type.dict()
 
-    update_data = case_type_in.dict(skip_defaults=True)
+    update_data = case_type_in.dict(skip_defaults=True, exclude={"case_template_document"})
 
     for field in case_type_data:
         if field in update_data:

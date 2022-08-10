@@ -201,10 +201,8 @@ def update_case_ticket(
         case.case_priority.name,
         case.status.lower(),
         case.assignee.email,
-        # resolve_attr(case, "conversation.weblink"),
-        # resolve_attr(case, "case_document.weblink"),
+        resolve_attr(case, "case_document.weblink"),
         resolve_attr(case, "storage.weblink"),
-        # resolve_attr(case, "conference.weblink"),
         case_type_plugin_metadata=case_type_plugin_metadata,
     )
 
@@ -216,11 +214,11 @@ def update_case_ticket(
     )
 
 
-def delete_ticket(ticket: Ticket, db_session: SessionLocal):
+def delete_ticket(ticket: Ticket, project_id: int, db_session: SessionLocal):
     """Deletes a ticket."""
     # we delete the external ticket
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=ticket.case.project.id, plugin_type="ticket"
+        db_session=db_session, project_id=project_id, plugin_type="ticket"
     )
     if plugin:
         # TODO(mvilanova): implement deleting the external ticket

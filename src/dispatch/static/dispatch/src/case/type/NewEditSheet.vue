@@ -66,6 +66,17 @@
                   clearable
                 />
               </v-flex>
+              <v-flex xs12>
+                <ValidationObserver disabled>
+                  <template-select
+                    :project="project"
+                    label="Case Template"
+                    v-model="case_template_document"
+                    resource-type="dispatch-case-document-template"
+                  />
+                </ValidationObserver>
+              </v-flex>
+
               <v-flex xs 12>
                 <v-checkbox
                   v-model="exclude_from_metrics"
@@ -105,6 +116,7 @@ import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 
 import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
+import TemplateSelect from "@/document/template/TemplateSelect.vue"
 
 extend("required", {
   ...required,
@@ -116,6 +128,7 @@ export default {
 
   components: {
     PluginMetadataInput,
+    TemplateSelect,
     ValidationObserver,
     ValidationProvider,
   },
@@ -134,6 +147,7 @@ export default {
       "selected.enabled",
       "selected.exclude_from_metrics",
       "selected.id",
+      "selected.case_template_document",
       "selected.loading",
       "selected.name",
       "selected.plugin_metadata",

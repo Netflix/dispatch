@@ -22,7 +22,7 @@
           </v-btn>
         </v-list-item>
       </template>
-      <info-widget text="Once created, your template can be associated with incident types." />
+      <info-widget text="Once created, your template can be associated with case or incident types." />
       <v-card flat>
         <v-card-text>
           <v-container grid-list-md>
@@ -66,7 +66,7 @@
                     label="Weblink"
                     :error-messages="errors"
                     :success="valid"
-                    hint="A weblink for the template."
+                    hint="A weblink for your template."
                     clearable
                     required
                   />
@@ -80,7 +80,7 @@
                     label="External Id"
                     :error-messages="errors"
                     :success="valid"
-                    hint="External identifier for document. Used for API integration (e.g. Google doc file id). Typically is the unique id in the weblink."
+                    hint="External identifier for the document template. Used for API integration (e.g. Google doc file id). Typically, the unique id in the weblink."
                     clearable
                   />
                 </ValidationProvider>
@@ -92,8 +92,7 @@
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                     </template>
-                    Dispatch will send the owner a reminder email to the resource owner, reminding
-                    them to keep the resource current.
+                    Dispatch will send an email reminder to the template owner to keep it up to date.
                   </v-tooltip></span
                 >
               </v-flex>
@@ -105,7 +104,7 @@
                     label="Owner"
                     :error-messages="errors"
                     :success="valid"
-                    hint="Owner of this document."
+                    hint="Owner of this document template."
                     clearable
                   />
                 </ValidationProvider>
@@ -119,7 +118,7 @@
                     :error-messages="errors"
                     :success="valid"
                     type="number"
-                    hint="Number of days that should elapse between reminders sent to the document owner."
+                    hint="Number of days that should elapse between reminders sent to the document template owner."
                     placeholder="90"
                     clearable
                     min="1"
@@ -129,7 +128,7 @@
               <v-flex xs12>
                 <v-checkbox
                   v-model="evergreen"
-                  hint="Enabling evergreen will send periodic reminders to the owner to update this document."
+                  hint="Enabling evergreen will send periodic reminders to the owner to update this document template."
                   label="Enabled"
                 />
               </v-flex>

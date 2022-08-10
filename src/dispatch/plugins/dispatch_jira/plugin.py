@@ -161,7 +161,7 @@ def create_case_issue_fields(
     assignee: dict,
     reporter: dict,
     assignee_username: str,
-    # document_weblink: str,
+    document_weblink: str,
     storage_weblink: str,
 ):
     """Creates Jira issue fields."""
@@ -171,13 +171,13 @@ def create_case_issue_fields(
     issue_fields.update({"reporter": reporter})
 
     description = Template(CASE_ISSUE_SUMMARY_TEMPLATE).render(
-        description=description,
-        resolution=resolution,
-        case_type=case_type,
-        case_severity=case_severity,
-        case_priority=case_priority,
         assignee_username=assignee_username,
-        # document_weblink=document_weblink,
+        case_priority=case_priority,
+        case_severity=case_severity,
+        case_type=case_type,
+        description=description,
+        document_weblink=document_weblink,
+        resolution=resolution,
         storage_weblink=storage_weblink,
     )
     issue_fields.update({"description": description})
@@ -360,7 +360,7 @@ class JiraTicketPlugin(TicketPlugin):
         status: str,
         assignee_email: str,
         # reporter_email: str,
-        # document_weblink: str,
+        document_weblink: str,
         storage_weblink: str,
         case_type_plugin_metadata: dict = {},
     ):
@@ -388,7 +388,7 @@ class JiraTicketPlugin(TicketPlugin):
             assignee=assignee,
             reporter=reporter,
             assignee_username=assignee_username,
-            # document_weblink=document_weblink,
+            document_weblink=document_weblink,
             storage_weblink=storage_weblink,
         )
 

@@ -6,24 +6,30 @@ import DocumentApi from "@/document/api"
 
 const getDefaultSelectedState = () => {
   return {
-    name: null,
-    resource_type: null,
-    resource_id: null,
-    weblink: null,
+    created_at: null,
     description: null,
-    id: null,
-    filters: [],
-    project: null,
     evergreen: null,
     evergreen_owner: null,
     evergreen_reminder_interval: null,
-    created_at: null,
+    filters: [],
+    id: null,
+    name: null,
+    project: null,
+    resource_id: null,
+    resource_type: null,
     updated_at: null,
+    weblink: null,
     loading: false,
   }
 }
 
 export const templateDocumentTypes = [
+  {
+    resource_type: "dispatch-case-document-template",
+    title: "Case",
+    description: "Create a new case template",
+    icon: "mdi-file-document-edit-outline",
+  },
   {
     resource_type: "dispatch-incident-document-template",
     title: "Incident",

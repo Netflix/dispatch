@@ -40,6 +40,10 @@ def create_storage(obj: Any, members: List[str], db_session: SessionLocal):
         {"resource_type": plugin.plugin.slug, "resource_id": external_storage["id"]}
     )
 
+    # we create folders to store logs and screengrabs
+    plugin.instance.create_file(external_storage["resource_id"], "Logs")
+    plugin.instance.create_file(external_storage["resource_id"], "Screengrabs")
+
     # we create the internal storage
     storage_in = StorageCreate(
         resource_id=external_storage["resource_id"],
@@ -71,11 +75,11 @@ def create_storage(obj: Any, members: List[str], db_session: SessionLocal):
     return storage
 
 
-def delete_storage(storage: Storage, db_session: SessionLocal):
+def delete_storage(storage: Storage, project_id: int, db_session: SessionLocal):
     """Deletes an existing storage."""
     # we delete the external storage
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=storage.case.project.id, plugin_type="storage"
+        db_session=db_session, project_id=project_id, plugin_type="storage"
     )
     if plugin:
         # TODO(mvilanova): implement deleting the external storage

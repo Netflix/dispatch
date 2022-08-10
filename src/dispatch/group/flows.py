@@ -81,11 +81,11 @@ def create_group(
     return group
 
 
-def delete_group(group: Group, db_session: SessionLocal):
+def delete_group(group: Group, project_id: int, db_session: SessionLocal):
     """Deletes an existing group."""
     # we delete the external group
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=group.case.project.id, plugin_type="participant-group"
+        db_session=db_session, project_id=project_id, plugin_type="participant-group"
     )
     if plugin:
         # TODO(mvilanova): implement deleting the external group

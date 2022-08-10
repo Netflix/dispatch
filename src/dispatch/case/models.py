@@ -24,6 +24,7 @@ from dispatch.case.severity.models import CaseSeverityRead
 from dispatch.case.type.models import CaseTypeRead
 from dispatch.data.source.models import SourceRead
 from dispatch.database.core import Base
+from dispatch.document.models import Document, DocumentRead
 from dispatch.enums import Visibility
 from dispatch.event.models import EventRead
 from dispatch.group.models import Group, GroupRead
@@ -114,21 +115,35 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     # relationships
     assignee_id = Column(Integer, ForeignKey("dispatch_core.dispatch_user.id"))
     assignee = relationship("DispatchUser", foreign_keys=[assignee_id], post_update=True)
+
     case_types = relationship("AssocCaseCaseType", backref="case")
     case_priorities = relationship("AssocCaseCasePriority", backref="case")
     case_severities = relationship("AssocCaseCaseSeverity", backref="case")
+
+    case_document_id = Column(Integer, ForeignKey("document.id"))
+    case_document = relationship("Document", foreign_keys=[case_document_id])
+    documents = relationship(
+        "Document", backref="case", cascade="all, delete-orphan", foreign_keys=[Document.case_id]
+    )
+
     duplicate_id = Column(Integer, ForeignKey("case.id"))
     duplicates = relationship("Case", remote_side=[id], uselist=True)
+
     events = relationship("Event", backref="case", cascade="all, delete-orphan")
+
     groups = relationship(
         "Group", backref="case", cascade="all, delete-orphan", foreign_keys=[Group.case_id]
     )
     tactical_group_id = Column(Integer, ForeignKey("group.id"))
     tactical_group = relationship("Group", foreign_keys=[tactical_group_id])
+
     incidents = relationship("Incident", backref="case")
+
     source = relationship("Source", uselist=False, backref="case")
     source_id = Column(Integer, ForeignKey("source.id"))
+
     storage = relationship("Storage", uselist=False, backref="case", cascade="all, delete-orphan")
+
     tags = relationship(
         "Tag",
         secondary=assoc_case_tags,
@@ -223,6 +238,7 @@ class CaseRead(CaseBase):
     case_type: CaseTypeRead
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
+    documents: Optional[List[DocumentRead]] = []
     duplicates: Optional[List[CaseReadNested]] = []
     escalated_at: Optional[datetime] = None
     events: Optional[List[EventRead]] = []

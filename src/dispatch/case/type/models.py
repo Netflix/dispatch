@@ -1,7 +1,7 @@
 from typing import List, Optional
 from pydantic import Field, validator
 
-from sqlalchemy import Column, Boolean, Integer, String, JSON
+from sqlalchemy import Column, Boolean, ForeignKey, Integer, String, JSON
 from sqlalchemy.event import listen
 from sqlalchemy.ext.hybrid import hybrid_method
 from sqlalchemy.orm import relationship
@@ -30,6 +30,9 @@ class CaseType(ProjectMixin, Base):
     # the catalog here is simple to help matching "named entities"
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
+    case_template_document_id = Column(Integer, ForeignKey("document.id"))
+    case_template_document = relationship("Document", foreign_keys=[case_template_document_id])
+
     @hybrid_method
     def get_meta(self, slug):
         if not self.plugin_metadata:
@@ -44,7 +47,17 @@ listen(CaseType.default, "set", ensure_unique_default_per_project)
 
 
 # Pydantic models
+class Document(DispatchBase):
+    description: Optional[str] = Field(None, nullable=True)
+    id: PrimaryKey
+    name: NameStr
+    resource_id: Optional[str] = Field(None, nullable=True)
+    resource_type: Optional[str] = Field(None, nullable=True)
+    weblink: str
+
+
 class CaseTypeBase(DispatchBase):
+    case_template_document: Optional[Document]
     default: Optional[bool] = False
     description: Optional[str] = Field(None, nullable=True)
     enabled: Optional[bool]

@@ -13,6 +13,7 @@ const getDefaultSelectedState = () => {
     case_type: null,
     closed_at: null,
     description: null,
+    documents: [],
     duplicates: [],
     escalated_at: null,
     events: [],

@@ -3,14 +3,14 @@ from datetime import datetime
 
 # from fastapi import status
 
-# from dispatch.case import service as case_service
 # from dispatch.case_type import service as case_type_service
 # from dispatch.enums import Visibility
 # from dispatch.plugin import service as plugin_service
-from dispatch.case import service as case_service
 from dispatch.case.models import CaseRead
 from dispatch.database.core import SessionLocal
 from dispatch.decorators import background_task
+from dispatch.document import flows as document_flows
+from dispatch.enums import DocumentResourceTypes
 from dispatch.event import service as event_service
 from dispatch.group import flows as group_flows
 from dispatch.group.enums import GroupType
@@ -18,6 +18,7 @@ from dispatch.storage import flows as storage_flows
 from dispatch.ticket import flows as ticket_flows
 
 from .models import Case, CaseStatus
+from .service import get, delete
 
 
 log = logging.getLogger(__name__)
@@ -26,15 +27,15 @@ log = logging.getLogger(__name__)
 @background_task
 def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=None):
     """Runs the case new creation flow."""
-    # we fetch the case
-    case = case_service.get(db_session=db_session, case_id=case_id)
+    # we get the case
+    case = get(db_session=db_session, case_id=case_id)
 
     # we create the ticket
     ticket = ticket_flows.create_case_ticket(case=case, db_session=db_session)
 
     if not ticket:
         # we delete the case
-        case_service.delete(db_session=db_session, case_id=case_id)
+        delete(db_session=db_session, case_id=case_id)
 
         # return {
         # 	  "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -52,10 +53,10 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
 
     if not group:
         # we delete the ticket
-        ticket_flows.delete_ticket(ticket=ticket, db_session=db_session)
+        ticket_flows.delete_ticket(ticket=ticket, project_id=case.project.id, db_session=db_session)
 
         # we delete the case
-        case_service.delete(db_session=db_session, case_id=case_id)
+        delete(db_session=db_session, case_id=case_id)
 
         # return {
         # 	  "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -67,40 +68,53 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
     storage = storage_flows.create_storage(obj=case, members=members, db_session=db_session)
     if not storage:
         # we delete the group
-        group_flows.delete_group(group=group, db_session=db_session)
+        group_flows.delete_group(group=group, project_id=case.project.id, db_session=db_session)
 
         # we delete the ticket
-        ticket_flows.delete_ticket(ticket=ticket, db_session=db_session)
+        ticket_flows.delete_ticket(ticket=ticket, project_id=case.project.id, db_session=db_session)
 
         # we delete the case
-        case_service.delete(db_session=db_session, case_id=case_id)
+        delete(db_session=db_session, case_id=case_id)
 
         # return {
         # 	  "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
         # 	  "msg": "Case not created. We encountered an error when trying to create the storage folder.",
         # }
 
-    # # we create the investigation document
-    # if not document:
-    # 	  # we delete the storage
-    # 	  storage_flows.delete_storage(storage=storage, db_session=db_session)
-    #
-    # 	  # we delete the group
-    # 	  group_flows.delete_group(group=group, db_session=db_session)
-    #
-    # 	  # we delete the ticket
-    # 	  ticket_flows.delete_ticket(ticket=ticket, db_session=db_session)
-    #
-    # 	  # we delete the case
-    # 	  case_service.delete(db_session=db_session, case_id=case_id)
-    #
-    # 	  return {
-    # 		  "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
-    # 		  "msg": "Case not created. We encountered an error when trying to create the investigation document.",
-    # 	  }
+    # we create the investigation document
+    document = document_flows.create_document(
+        obj=case,
+        document_type=DocumentResourceTypes.case,
+        document_template=case.case_type.case_template_document,
+        db_session=db_session,
+    )
+    if not document:
+        # we delete the storage
+        storage_flows.delete_storage(
+            storage=storage, project_id=case.project.id, db_session=db_session
+        )
+
+        # we delete the group
+        group_flows.delete_group(group=group, project_id=case.project.id, db_session=db_session)
+
+        # we delete the ticket
+        ticket_flows.delete_ticket(ticket=ticket, project_id=case.project.id, db_session=db_session)
+
+        # we delete the case
+        delete(db_session=db_session, case_id=case_id)
+
+        # return {
+        # 	  "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
+        # 	  "msg": "Case not created. We encountered an error when trying to create the investigation document.",
+        # }
 
     # we update the ticket
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
+    # we update the case document
+    document_flows.update_document(
+        document=document, project_id=case.project.id, db_session=db_session
+    )
 
     # we send out notifications
 
@@ -138,8 +152,8 @@ def case_update_flow(
     db_session=None,
 ):
     """Runs the case update flow."""
-    # we fetch the case
-    case = case_service.get(db_session=db_session, case_id=case_id)
+    # we get the case
+    case = get(db_session=db_session, case_id=case_id)
 
     # we run the transition flow based on the current and previous status of the case
     case_status_transition_flow_dispatcher(
