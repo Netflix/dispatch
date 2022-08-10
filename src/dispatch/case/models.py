@@ -139,6 +139,9 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
     incidents = relationship("Incident", backref="case")
 
+    related_id = Column(Integer, ForeignKey("case.id"))
+    related = relationship("Case", remote_side=[id], uselist=True)
+
     source = relationship("Source", uselist=False, backref="case")
     source_id = Column(Integer, ForeignKey("source.id"))
 
@@ -246,6 +249,7 @@ class CaseRead(CaseBase):
     incidents: List[Optional[IncidentRead]]
     name: Optional[NameStr]
     project: ProjectRead
+    related: Optional[List[CaseReadNested]] = []
     reported_at: Optional[datetime] = None
     source: Optional[SourceRead] = None
     storage: Optional[StorageRead] = None
@@ -259,7 +263,8 @@ class CaseUpdate(CaseBase):
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
-    duplicates: Optional[List[CaseReadNested]] = []
+    duplicates: Optional[List[CaseRead]] = []
+    related: Optional[List[CaseRead]] = []
     escalated_at: Optional[datetime] = None
     incidents: List[Optional[IncidentRead]]
     reported_at: Optional[datetime] = None

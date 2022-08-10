@@ -101,6 +101,9 @@
         <tag-filter-auto-complete label="Tags" v-model="tags" model="case" :model-id="id" />
       </v-flex>
       <v-flex xs12>
+        <case-filter-combobox label="Related" v-model="related" :project="project" />
+      </v-flex>
+      <v-flex xs12>
         <case-filter-combobox label="Duplicates" v-model="duplicates" :project="project" />
       </v-flex>
       <v-flex xs12>
@@ -169,6 +172,7 @@ export default {
       "selected.incidents",
       "selected.name",
       "selected.project",
+      "selected.related",
       "selected.reported_at",
       "selected.resolution",
       "selected.source",
