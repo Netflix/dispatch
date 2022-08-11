@@ -7,6 +7,7 @@ from datetime import date
 from starlette.requests import Request
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 # NOTE: define permissions before enabling the code block below
@@ -26,6 +27,7 @@ from dispatch.models import OrganizationSlug, PrimaryKey
 
 from .flows import (
     case_closed_create_flow,
+    case_delete_flow,
     case_escalated_create_flow,
     case_new_create_flow,
     case_triage_create_flow,
@@ -41,7 +43,7 @@ router = APIRouter()
 
 
 def get_current_case(*, db_session: Session = Depends(get_db), request: Request) -> Case:
-    """Fetches case or returns an HTTP 404."""
+    """Fetches a case or returns an HTTP 404."""
     case = get(db_session=db_session, case_id=request.path_params["case_id"])
     if not case:
         raise HTTPException(
@@ -51,13 +53,13 @@ def get_current_case(*, db_session: Session = Depends(get_db), request: Request)
     return case
 
 
-@router.get("", summary="Retrieve a list of all cases.")
+@router.get("", summary="Retrieves all cases.")
 def get_cases(
     *,
     common: dict = Depends(common_parameters),
     include: List[str] = Query([], alias="include[]"),
 ):
-    """Retrieve a list of all cases."""
+    """Retrieves all cases."""
     pagination = search_filter_sort_paginate(model="Case", **common)
 
     if include:
@@ -74,7 +76,7 @@ def get_cases(
     return json.loads(CasePagination(**pagination).json())
 
 
-@router.post("", response_model=CaseRead, summary="Create a new case.")
+@router.post("", response_model=CaseRead, summary="Creates a new case.")
 def create_case(
     *,
     db_session: Session = Depends(get_db),
@@ -129,7 +131,7 @@ def update_case(
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
-    """Update an existing case."""
+    """Updates an existing case."""
     # we store the previous state of the case in order to be able to detect changes
     previous_case = CaseRead.from_orm(current_case)
 
@@ -151,14 +153,33 @@ def update_case(
 @router.delete(
     "/{case_id}",
     response_model=CaseRead,
-    summary="Delete an case.",
+    summary="Deletes an existing case.",
     # dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
 )
 def delete_case(
     *,
-    case_id: PrimaryKey,
     db_session: Session = Depends(get_db),
-    current_case: Case = Depends(get_current_case),
+    organization: OrganizationSlug,
+    case_id: PrimaryKey,
+    background_tasks: BackgroundTasks,
 ):
-    """Delete an individual case."""
-    delete(db_session=db_session, case_id=current_case.id)
+    """Deletes an existing case."""
+    # we get the internal case
+    case = get(db_session=db_session, case_id=case_id)
+
+    # we run the case delete flow
+    case_delete_flow(case=case, db_session=db_session)
+
+    # we delete the internal case
+    try:
+        delete(db_session=db_session, case_id=case_id)
+    except IntegrityError as e:
+        log.exception(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=[
+                {
+                    "msg": f"Case {case.name} could not be deleted. Make sure the case has no relationships to other cases or incidents before deleting it."
+                }
+            ],
+        )

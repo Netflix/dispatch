@@ -393,3 +393,9 @@ class JiraTicketPlugin(TicketPlugin):
         )
 
         return update(self.configuration, client, issue, issue_fields, status)
+
+    def delete(self, ticket_id: str):
+        """Deletes a Jira issue."""
+        client = create_client(self.configuration)
+        issue = client.issue(ticket_id)
+        issue.delete()

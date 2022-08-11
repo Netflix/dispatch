@@ -100,10 +100,15 @@ instance.interceptors.response.use(
       }
 
       if (err.response.status == 500) {
+        let errorText = err.response.data.detail.map(({ msg }) => msg).join(" ")
+        if (errorText.length == 0) {
+          errorText =
+            "Something has gone wrong, please retry or let your admin know that you received this error."
+        }
         store.commit(
           "notification_backend/addBeNotification",
           {
-            text: "Something has gone wrong, please retry or let your admin know that you received this error.",
+            text: errorText,
             type: "error",
           },
           { root: true }
