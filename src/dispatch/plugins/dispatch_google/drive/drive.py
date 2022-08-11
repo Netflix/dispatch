@@ -255,8 +255,8 @@ def copy_file(client: Any, folder_id: str, file_id: str, new_file_name: str):
     )
 
 
-def delete_file(client: Any, folder_id: str, file_id: str):
-    """Deletes a file from a teamdrive."""
+def delete_file(client: Any, file_id: str):
+    """Deletes a folder or file from a Google Drive."""
     return make_call(client.files(), "delete", fileId=file_id, supportsAllDrives=True)
 
 
