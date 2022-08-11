@@ -6,9 +6,7 @@
           <v-list-item-content>
             <v-list-item-subtitle>{{ selected.length }} selected</v-list-item-subtitle>
           </v-list-item-content>
-
           <v-spacer />
-
           <v-list-item-icon>
             <v-btn text @click="saveBulk({ status: 'Active' })">
               <v-icon>mdi-check</v-icon>

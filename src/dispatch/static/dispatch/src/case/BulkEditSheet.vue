@@ -6,19 +6,23 @@
           <v-list-item-content>
             <v-list-item-subtitle>{{ selected.length }} selected</v-list-item-subtitle>
           </v-list-item-content>
-
           <v-spacer />
-
           <v-list-item-icon>
-            <v-btn text @click="saveBulk({ status: 'Active' })">
-              <v-icon>mdi-check</v-icon>
-              Mark Active
+            <v-btn text @click="saveBulk({ status: 'New' })">
+              <v-icon>mdi-alert-decagram</v-icon>
+              Mark New
             </v-btn>
           </v-list-item-icon>
           <v-list-item-icon>
-            <v-btn text @click="saveBulk({ status: 'Stable' })">
-              <v-icon>mdi-lock</v-icon>
-              Mark Stable
+            <v-btn text @click="saveBulk({ status: 'Triage' })">
+              <v-icon>mdi-check</v-icon>
+              Mark Triage
+            </v-btn>
+          </v-list-item-icon>
+          <v-list-item-icon>
+            <v-btn text @click="saveBulk({ status: 'Escalated' })">
+              <v-icon>mdi-swap-horizontal</v-icon>
+              Mark Escalated
             </v-btn>
           </v-list-item-icon>
           <v-list-item-icon>
