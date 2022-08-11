@@ -43,7 +43,7 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
 
     if not group:
         # we delete the ticket
-        ticket_flows.delete_ticket(ticket=ticket, project_id=case.project.id, db_session=db_session)
+        ticket_flows.delete_ticket(ticket=ticket, db_session=db_session)
 
         # we delete the case
         delete(db_session=db_session, case_id=case_id)
@@ -53,10 +53,10 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
     storage = storage_flows.create_storage(obj=case, members=members, db_session=db_session)
     if not storage:
         # we delete the group
-        group_flows.delete_group(group=group, project_id=case.project.id, db_session=db_session)
+        group_flows.delete_group(group=group, db_session=db_session)
 
         # we delete the ticket
-        ticket_flows.delete_ticket(ticket=ticket, project_id=case.project.id, db_session=db_session)
+        ticket_flows.delete_ticket(ticket=ticket, db_session=db_session)
 
         # we delete the case
         delete(db_session=db_session, case_id=case_id)
@@ -70,15 +70,13 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
     )
     if not document:
         # we delete the storage
-        storage_flows.delete_storage(
-            storage=storage, project_id=case.project.id, db_session=db_session
-        )
+        storage_flows.delete_storage(storage=storage, db_session=db_session)
 
         # we delete the group
-        group_flows.delete_group(group=group, project_id=case.project.id, db_session=db_session)
+        group_flows.delete_group(group=group, db_session=db_session)
 
         # we delete the ticket
-        ticket_flows.delete_ticket(ticket=ticket, project_id=case.project.id, db_session=db_session)
+        ticket_flows.delete_ticket(ticket=ticket, db_session=db_session)
 
         # we delete the case
         delete(db_session=db_session, case_id=case_id)
@@ -137,6 +135,22 @@ def case_update_flow(
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
     # we send the case updated notification
+
+
+def case_delete_flow(case: Case, db_session: SessionLocal):
+    """Runs the case delete flow."""
+    # we delete the external ticket
+    if case.ticket:
+        ticket_flows.delete_ticket(ticket=case.ticket, db_session=db_session)
+
+    # we delete the external groups
+    if case.groups:
+        for group in case.groups:
+            group_flows.delete_group(group=group, db_session=db_session)
+
+    # we delete the external storage
+    if case.storage:
+        storage_flows.delete_storage(storage=case.storage, db_session=db_session)
 
 
 def case_new_status_flow(case: Case, db_session=None):

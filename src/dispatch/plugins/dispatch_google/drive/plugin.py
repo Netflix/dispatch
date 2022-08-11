@@ -5,21 +5,21 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.plugins.bases import StoragePlugin, TaskPlugin
 from dispatch.plugins.dispatch_google import drive as google_drive_plugin
 from dispatch.plugins.dispatch_google.common import get_service
-
 from dispatch.plugins.dispatch_google.config import GoogleConfiguration
+
 from .drive import (
     Roles,
+    add_domain_permission,
     add_permission,
+    add_reply,
     copy_file,
     create_file,
     delete_file,
     download_google_document,
     list_files,
+    mark_as_readonly,
     move_file,
     remove_permission,
-    add_domain_permission,
-    add_reply,
-    mark_as_readonly,
 )
 from .task import get_task_activity
 
@@ -72,13 +72,13 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         role: str = "owner",
         user_type: str = "user",
     ):
-        """Adds participants to existing Google Drive."""
+        """Adds participants to an existing Google Drive."""
         client = get_service(self.configuration, "drive", "v3", self.scopes)
         for p in participants:
             add_permission(client, p, team_drive_or_file_id, role, user_type)
 
     def remove_participant(self, folder_id: str, participants: List[str]):
-        """Removes participants from existing Google Drive."""
+        """Removes participants from an existing Google Drive."""
         client = get_service(self.configuration, "drive", "v3", self.scopes)
         for p in participants:
             remove_permission(client, p, folder_id)
@@ -101,35 +101,34 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         role: str = Roles.writer,
         file_type: str = "folder",
     ):
-        """Creates a new file in existing Google Drive."""
+        """Creates a new file in an existing Google Drive."""
         client = get_service(self.configuration, "drive", "v3", self.scopes)
         response = create_file(client, parent_id, name, participants, role, file_type)
         response["weblink"] = response["webViewLink"]
         return response
 
-    def delete_file(self, folder_id: str, file_id: str):
-        """Removes a file from existing Google Drive."""
+    def delete_file(self, file_id: str):
+        """Deletes a file or folder from an existing Google Drive."""
         client = get_service(self.configuration, "drive", "v3", self.scopes)
-        response = delete_file(client, folder_id, file_id)
-        response["weblink"] = response["webViewLink"]
+        response = delete_file(client, file_id)
         return response
 
     def copy_file(self, folder_id: str, file_id: str, name: str):
-        """Creates a copy of the given file and places it in the specified team drive."""
+        """Creates a copy of the given file and places it in the specified Google Drive."""
         client = get_service(self.configuration, "drive", "v3", self.scopes)
         response = copy_file(client, folder_id, file_id, name)
         response["weblink"] = response["webViewLink"]
         return response
 
     def move_file(self, new_folder_id: str, file_id: str):
-        """Moves a file from one team drive to another."""
+        """Moves a file from one Google drive to another."""
         client = get_service(self.configuration, "drive", "v3", self.scopes)
         response = move_file(client, new_folder_id, file_id)
         response["weblink"] = response["webViewLink"]
         return response
 
     def list_files(self, folder_id: str, q: str = None):
-        """Lists all files in team drive."""
+        """Lists all files in a Google drive."""
         client = get_service(self.configuration, "drive", "v3", self.scopes)
         return list_files(client, folder_id, q)
 
