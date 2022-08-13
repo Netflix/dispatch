@@ -204,6 +204,9 @@ def update_incident_from_submitted_form(
     # we don't allow visibility to be set in slack so we copy it over
     incident_in.visibility = incident.visibility
 
+    # We don't (yet) present incident_costs field in Slack's modal; copy it over.
+    incident_in.incident_costs = incident.incident_costs
+
     updated_incident = incident_service.update(
         db_session=db_session, incident=incident, incident_in=incident_in
     )
