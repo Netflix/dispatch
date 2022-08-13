@@ -8,7 +8,7 @@ from dispatch.plugin import service as plugin_service
 
 from .enums import GroupType
 from .models import Group, GroupCreate
-from .service import create, delete
+from .service import create
 
 
 log = logging.getLogger(__name__)

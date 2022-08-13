@@ -7,7 +7,7 @@ from dispatch.event import service as event_service
 from dispatch.plugin import service as plugin_service
 
 from .models import Storage, StorageCreate
-from .service import create, delete
+from .service import create
 
 
 log = logging.getLogger(__name__)
