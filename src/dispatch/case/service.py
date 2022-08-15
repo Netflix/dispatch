@@ -1,10 +1,12 @@
 import logging
 
 from datetime import datetime, timedelta
+
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 from typing import List, Optional
 
 from dispatch.auth import service as auth_service
+from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.severity import service as case_severity_service
 from dispatch.case.type import service as case_type_service
@@ -123,7 +125,7 @@ def get_all_last_x_hours_by_status(
         )
 
 
-def create(*, db_session, case_in: CaseCreate) -> Case:
+def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser) -> Case:
     """Creates a new case."""
     project = project_service.get_by_name_or_default(
         db_session=db_session, project_in=case_in.project
@@ -143,16 +145,6 @@ def create(*, db_session, case_in: CaseCreate) -> Case:
         tags=tag_objs,
     )
 
-    if case_in.assignee:
-        case.assignee = auth_service.get_by_email(
-            db_session=db_session, email=case_in.assignee.email
-        )
-
-    if case_in.source:
-        case.source = source_service.get_by_name(
-            db_session=db_session, project_id=project.id, name=case_in.source.name
-        )
-
     case_type = case_type_service.get_by_name_or_default(
         db_session=db_session, project_id=project.id, case_type_in=case_in.case_type
     )
@@ -161,6 +153,17 @@ def create(*, db_session, case_in: CaseCreate) -> Case:
     case.visibility = case_type.visibility
     if case_in.visibility:
         case.visibility = case_in.visibility
+
+    if case_in.assignee:
+        case.assignee = auth_service.get_by_email(
+            db_session=db_session, email=case_in.assignee.email
+        )
+    else:
+        # TODO(mvilanova):
+        #   - Check if case type is mapped to an oncall service
+        #     - If so, then resolve the oncall and assign them the case
+        #     - If not, then use the current user
+        case.assignee = auth_service.get_by_email(db_session=db_session, email=current_user.email)
 
     case_severity = case_severity_service.get_by_name_or_default(
         db_session=db_session, project_id=project.id, case_severity_in=case_in.case_severity
@@ -171,6 +174,11 @@ def create(*, db_session, case_in: CaseCreate) -> Case:
         db_session=db_session, project_id=project.id, case_priority_in=case_in.case_priority
     )
     case.case_priorities.append(AssocCaseCasePriority(case_priority))
+
+    if case_in.source:
+        case.source = source_service.get_by_name(
+            db_session=db_session, project_id=project.id, name=case_in.source.name
+        )
 
     db_session.add(case)
     db_session.commit()
