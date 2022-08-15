@@ -188,7 +188,7 @@ murmurhash==1.0.7
     #   preshed
     #   spacy
     #   thinc
-numpy==1.23.1
+numpy==1.23.2
     # via
     #   -r requirements-base.in
     #   blis
