@@ -61,7 +61,7 @@ def get_organization_scope_from_channel_id(channel_id: str) -> SessionLocal:
 
 
 def get_organization_scope_from_slug(slug: str) -> SessionLocal:
-    """Iterate all organizations looking for a relevant channel_id."""
+    """Iterate all organizations looking for a matching slug."""
     db_session = SessionLocal()
     organization = organization_service.get_by_slug(db_session=db_session, slug=slug)
     db_session.close()
