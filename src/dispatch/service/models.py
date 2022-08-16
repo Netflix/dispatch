@@ -42,10 +42,12 @@ class Service(Base, TimeStampMixin, ProjectMixin, EvergreenMixin):
     type = Column(String, default="pagerduty-oncall")
     description = Column(String)
     external_id = Column(String)
-    incidents = relationship("Incident", secondary=assoc_service_incidents, backref="services")
 
     # Relationships
     filters = relationship("SearchFilter", secondary=assoc_service_filters, backref="services")
+    incidents = relationship(
+        "Incident", secondary=assoc_service_incidents, backref="services"
+    )  # NOTE Delete this relationship and its associated table. It doesn't appear we're using it.
 
     search_vector = Column(TSVectorType("name"))
 

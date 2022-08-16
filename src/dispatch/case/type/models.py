@@ -30,8 +30,12 @@ class CaseType(ProjectMixin, Base):
     # the catalog here is simple to help matching "named entities"
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
+    # relationships
     case_template_document_id = Column(Integer, ForeignKey("document.id"))
     case_template_document = relationship("Document", foreign_keys=[case_template_document_id])
+
+    oncall_service_id = Column(Integer, ForeignKey("service.id"))
+    oncall_service = relationship("Service", foreign_keys=[oncall_service_id])
 
     @hybrid_method
     def get_meta(self, slug):
@@ -56,6 +60,15 @@ class Document(DispatchBase):
     weblink: str
 
 
+class Service(DispatchBase):
+    description: Optional[str] = Field(None, nullable=True)
+    external_id: str
+    id: PrimaryKey
+    is_active: Optional[bool] = None
+    name: NameStr
+    type: Optional[str] = Field(None, nullable=True)
+
+
 class CaseTypeBase(DispatchBase):
     case_template_document: Optional[Document]
     default: Optional[bool] = False
@@ -63,6 +76,7 @@ class CaseTypeBase(DispatchBase):
     enabled: Optional[bool]
     exclude_from_metrics: Optional[bool] = False
     name: NameStr
+    oncall_service: Optional[Service]
     plugin_metadata: List[PluginMetadata] = []
     project: Optional[ProjectRead]
     visibility: Optional[str] = Field(None, nullable=True)
