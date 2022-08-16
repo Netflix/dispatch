@@ -60,6 +60,15 @@ class Document(DispatchBase):
     weblink: str
 
 
+class Service(DispatchBase):
+    description: Optional[str] = Field(None, nullable=True)
+    external_id: str
+    id: PrimaryKey
+    is_active: Optional[bool] = None
+    name: NameStr
+    type: Optional[str] = Field(None, nullable=True)
+
+
 class CaseTypeBase(DispatchBase):
     case_template_document: Optional[Document]
     default: Optional[bool] = False
@@ -67,6 +76,7 @@ class CaseTypeBase(DispatchBase):
     enabled: Optional[bool]
     exclude_from_metrics: Optional[bool] = False
     name: NameStr
+    oncall_service: Optional[Service]
     plugin_metadata: List[PluginMetadata] = []
     project: Optional[ProjectRead]
     visibility: Optional[str] = Field(None, nullable=True)

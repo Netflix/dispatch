@@ -14,6 +14,7 @@ const getDefaultSelectedState = () => {
     id: null,
     loading: false,
     name: null,
+    oncall_service: null,
     plugin_metadata: [],
     project: null,
     slug: null,

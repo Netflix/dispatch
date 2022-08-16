@@ -6,6 +6,7 @@ from sqlalchemy.sql.expression import true
 from dispatch.document import service as document_service
 from dispatch.exceptions import NotFoundError
 from dispatch.project import service as project_service
+from dispatch.service import service as service_service
 
 from .models import CaseType, CaseTypeCreate, CaseTypeRead, CaseTypeUpdate
 
@@ -115,7 +116,8 @@ def create(*, db_session, case_type_in: CaseTypeCreate) -> CaseType:
     )
 
     case_type = CaseType(
-        **case_type_in.dict(exclude={"case_template_document", "project"}), project=project
+        **case_type_in.dict(exclude={"case_template_document", "oncall_service", "project"}),
+        project=project
     )
 
     if case_type_in.case_template_document:
@@ -123,6 +125,12 @@ def create(*, db_session, case_type_in: CaseTypeCreate) -> CaseType:
             db_session=db_session, document_id=case_type_in.case_template_document.id
         )
         case_type.case_template_document = case_template_document
+
+    if case_type_in.oncall_service:
+        oncall_service = service_service.get(
+            db_session=db_session, service_id=case_type_in.oncall_service.id
+        )
+        case_type.oncall_service = oncall_service
 
     db_session.add(case_type)
     db_session.commit()
@@ -137,9 +145,17 @@ def update(*, db_session, case_type: CaseType, case_type_in: CaseTypeUpdate) -> 
         )
         case_type.case_template_document = case_template_document
 
+    if case_type_in.oncall_service:
+        oncall_service = service_service.get(
+            db_session=db_session, service_id=case_type_in.oncall_service.id
+        )
+        case_type.oncall_service = oncall_service
+
     case_type_data = case_type.dict()
 
-    update_data = case_type_in.dict(skip_defaults=True, exclude={"case_template_document"})
+    update_data = case_type_in.dict(
+        skip_defaults=True, exclude={"case_template_document", "oncall_service"}
+    )
 
     for field in case_type_data:
         if field in update_data:
