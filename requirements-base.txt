@@ -188,7 +188,7 @@ murmurhash==1.0.7
     #   preshed
     #   spacy
     #   thinc
-numpy==1.23.1
+numpy==1.23.2
     # via
     #   -r requirements-base.in
     #   blis
@@ -281,7 +281,7 @@ python-multipart==0.0.5
     # via -r requirements-base.in
 python-slugify==6.1.2
     # via -r requirements-base.in
-pytz==2022.2
+pytz==2022.2.1
     # via
     #   -r requirements-base.in
     #   pandas
