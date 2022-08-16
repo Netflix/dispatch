@@ -117,7 +117,7 @@ def create(*, db_session, case_type_in: CaseTypeCreate) -> CaseType:
 
     case_type = CaseType(
         **case_type_in.dict(exclude={"case_template_document", "oncall_service", "project"}),
-        project=project
+        project=project,
     )
 
     if case_type_in.case_template_document:
