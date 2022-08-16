@@ -30,8 +30,12 @@ class CaseType(ProjectMixin, Base):
     # the catalog here is simple to help matching "named entities"
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
+    # relationships
     case_template_document_id = Column(Integer, ForeignKey("document.id"))
     case_template_document = relationship("Document", foreign_keys=[case_template_document_id])
+
+    oncall_service_id = Column(Integer, ForeignKey("service.id"))
+    oncall_service = relationship("Service", foreign_keys=[oncall_service_id])
 
     @hybrid_method
     def get_meta(self, slug):

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -17,7 +18,7 @@ router = APIRouter()
 
 @router.get("", response_model=ServicePagination)
 def get_services(*, common: dict = Depends(common_parameters)):
-    """Retrieve all services."""
+    """Retrieves all services."""
     return search_filter_sort_paginate(model="Service", **common)
 
 
@@ -35,7 +36,7 @@ def create_service(
         },
     ),
 ):
-    """Create a new service."""
+    """Creates a new service."""
     service = get_by_external_id_and_project_name(
         db_session=db_session,
         external_id=service_in.external_id,
@@ -45,7 +46,7 @@ def create_service(
         raise ValidationError(
             [
                 ErrorWrapper(
-                    ExistsError(msg="A service with this external_id already exists."),
+                    ExistsError(msg="A service with this external id already exists."),
                     loc="external_id",
                 )
             ],
@@ -59,7 +60,7 @@ def create_service(
 def update_service(
     *, db_session: Session = Depends(get_db), service_id: PrimaryKey, service_in: ServiceUpdate
 ):
-    """Update an existing service."""
+    """Updates an existing service."""
     service = get(db_session=db_session, service_id=service_id)
     if not service:
         raise HTTPException(
@@ -80,7 +81,7 @@ def update_service(
 
 @router.get("/{service_id}", response_model=ServiceRead)
 def get_service(*, db_session: Session = Depends(get_db), service_id: PrimaryKey):
-    """Get a single service."""
+    """Gets a single service."""
     service = get(db_session=db_session, service_id=service_id)
     if not service:
         raise HTTPException(
@@ -92,7 +93,7 @@ def get_service(*, db_session: Session = Depends(get_db), service_id: PrimaryKey
 
 @router.delete("/{service_id}")
 def delete_service(*, db_session: Session = Depends(get_db), service_id: PrimaryKey):
-    """Delete a single service."""
+    """Deletes a single service."""
     service = get(db_session=db_session, service_id=service_id)
     if not service:
         raise HTTPException(
