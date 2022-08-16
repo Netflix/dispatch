@@ -201,7 +201,8 @@ def update_incident_from_submitted_form(
 
     previous_incident = IncidentRead.from_orm(incident)
 
-    # we don't allow visibility, incident_costs, terms & duplicates to be set in slack, so we copy it over
+    # we currently don't allow users to update the incident's visibility,
+    # costs, terms, or duplicates via Slack, so we copy them over
     incident_in.visibility = incident.visibility
     incident_in.incident_costs = incident.incident_costs
     incident_in.terms = incident.terms
