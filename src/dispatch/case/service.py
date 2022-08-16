@@ -15,6 +15,7 @@ from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
 from dispatch.incident import service as incident_service
 from dispatch.project import service as project_service
+from dispatch.service import flows as service_flows
 from dispatch.tag import service as tag_service
 
 from .enums import CaseStatus
@@ -155,15 +156,19 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser) -> Ca
         case.visibility = case_in.visibility
 
     if case_in.assignee:
-        case.assignee = auth_service.get_by_email(
-            db_session=db_session, email=case_in.assignee.email
-        )
+        # we assign the case to the assignee provided
+        assignee_email_adddress = case_in.assignee.email
     else:
-        # TODO(mvilanova):
-        #   - Check if case type is mapped to an oncall service
-        #     - If so, then resolve the oncall and assign them the case
-        #     - If not, then use the current user
-        case.assignee = auth_service.get_by_email(db_session=db_session, email=current_user.email)
+        if case_type.oncall_service:
+            # we assign the case to the oncall person for the given case type
+            assignee_email_adddress = service_flows.resolve_oncall(
+                service=case_type.oncall_service, db_session=db_session
+            )
+        else:
+            # we assign the case to the current user
+            assignee_email_adddress = current_user.email
+
+    case.assignee = auth_service.get_by_email(db_session=db_session, email=assignee_email_adddress)
 
     case_severity = case_severity_service.get_by_name_or_default(
         db_session=db_session, project_id=project.id, case_severity_in=case_in.case_severity
