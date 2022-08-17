@@ -198,7 +198,7 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser) -> Ca
     return case
 
 
-def update(*, db_session, case: Case, case_in: CaseUpdate) -> Case:
+def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: DispatchUser) -> Case:
     """Updates an existing case."""
     update_data = case_in.dict(
         skip_defaults=True,
@@ -221,7 +221,22 @@ def update(*, db_session, case: Case, case_in: CaseUpdate) -> Case:
     for field in update_data.keys():
         setattr(case, field, update_data[field])
 
-    case.assignee = auth_service.get_by_email(db_session=db_session, email=case_in.assignee.email)
+    if case.assignee.email != case_in.assignee.email:
+        case_assignee = auth_service.get_by_email(
+            db_session=db_session, email=case_in.assignee.email
+        )
+        if case_assignee:
+            case.assignee = case_assignee
+
+            event_service.log_case_event(
+                db_session=db_session,
+                source="Dispatch Core App",
+                description=f"Case assigned to {case_in.assignee.email} by {current_user.email}",
+                dispatch_user_id=current_user.id,
+                case_id=case.id,
+            )
+        else:
+            log.warning(f"Dispatch user with email address {case_in.assignee.email} not found.")
 
     if case_in.case_type:
         if case.case_type.name != case_in.case_type.name:
@@ -230,7 +245,21 @@ def update(*, db_session, case: Case, case_in: CaseUpdate) -> Case:
                 project_id=case.project.id,
                 name=case_in.case_type.name,
             )
-            case.case_types.append(AssocCaseCaseType(case_type))
+            if case_type:
+                case.case_types.append(AssocCaseCaseType(case_type))
+
+                event_service.log_case_event(
+                    db_session=db_session,
+                    source="Dispatch Core App",
+                    description=(
+                        f"Case type changed to {case_in.case_type.name.lower()} "
+                        f"by {current_user.email}"
+                    ),
+                    dispatch_user_id=current_user.id,
+                    case_id=case.id,
+                )
+            else:
+                log.warning(f"Case type with name {case_in.case_type.name.lower()} not found.")
 
     if case_in.case_severity:
         if case.case_severity.name != case_in.case_severity.name:
@@ -239,7 +268,23 @@ def update(*, db_session, case: Case, case_in: CaseUpdate) -> Case:
                 project_id=case.project.id,
                 name=case_in.case_severity.name,
             )
-            case.case_severities.append(AssocCaseCaseSeverity(case_severity))
+            if case_severity:
+                case.case_severities.append(AssocCaseCaseSeverity(case_severity))
+
+                event_service.log_case_event(
+                    db_session=db_session,
+                    source="Dispatch Core App",
+                    description=(
+                        f"Case severity changed to {case_in.case_severity.name.lower()} "
+                        f"by {current_user.email}"
+                    ),
+                    dispatch_user_id=current_user.id,
+                    case_id=case.id,
+                )
+            else:
+                log.warning(
+                    f"Case severity with name {case_in.case_severity.name.lower()} not found."
+                )
 
     if case_in.case_priority:
         if case.case_priority.name != case_in.case_priority.name:
@@ -248,13 +293,72 @@ def update(*, db_session, case: Case, case_in: CaseUpdate) -> Case:
                 project_id=case.project.id,
                 name=case_in.case_priority.name,
             )
-            case.case_priorities.append(AssocCaseCasePriority(case_priority))
+            if case_priority:
+                case.case_priorities.append(AssocCaseCasePriority(case_priority))
+
+                event_service.log_case_event(
+                    db_session=db_session,
+                    source="Dispatch Core App",
+                    description=(
+                        f"Case priority changed to {case_in.case_priority.name.lower()} "
+                        f"by {current_user.email}"
+                    ),
+                    dispatch_user_id=current_user.id,
+                    case_id=case.id,
+                )
+            else:
+                log.warning(
+                    f"Case priority with name {case_in.case_priority.name.lower()} not found."
+                )
 
     if case_in.source:
         if case.source.name != case_in.source.name:
-            case.source = source_service.get_by_name(
+            case_source = source_service.get_by_name(
                 db_session=db_session, project_id=case.project.id, name=case_in.source.name
             )
+
+            if case_source:
+                case.source = case_source
+
+                event_service.log_case_event(
+                    db_session=db_session,
+                    source="Dispatch Core App",
+                    description=(
+                        f"Case source changed to {case_in.source.name.lower()} "
+                        f"by {current_user.email}"
+                    ),
+                    dispatch_user_id=current_user.id,
+                    case_id=case.id,
+                )
+            else:
+                log.warning(f"Case source with name {case_in.source.name.lower()} not found.")
+
+    if case.status != case_in.status:
+        case.status = case_in.status
+
+        event_service.log_case_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=(
+                f"Case status changed to {case_in.status.lower()} " f"by {current_user.email}"
+            ),
+            dispatch_user_id=current_user.id,
+            case_id=case.id,
+        )
+
+    if case.visibility != case_in.visibility:
+        case.visibility = case_in.visibility
+
+        event_service.log_case_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=(
+                f"Case visibility changed to {case_in.visibility.lower()} "
+                f"by {current_user.email}"
+            ),
+            dispatch_user_id=current_user.id,
+            case_id=case.id,
+        )
 
     tags = []
     for t in case_in.tags:
@@ -275,9 +379,6 @@ def update(*, db_session, case: Case, case_in: CaseUpdate) -> Case:
     for i in case_in.incidents:
         incidents.append(incident_service.get(db_session=db_session, incident_id=i.id))
     case.incidents = incidents
-
-    case.status = case_in.status
-    case.visibility = case_in.visibility
 
     db_session.commit()
 
