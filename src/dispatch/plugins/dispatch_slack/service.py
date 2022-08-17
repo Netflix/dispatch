@@ -114,7 +114,8 @@ def make_call(client: Any, endpoint: str, **kwargs):
 
         # NOTE we've experienced a wide range of issues when Slack's performance is degraded
         if e.response["error"] == "fatal_error":
-            # we wait 5 minutes before trying again, as performance issues take time to troubleshoot and fix
+            # we wait 5 minutes before trying again, as performance issues
+            # take time to troubleshoot and fix
             time.sleep(300)
             raise TryAgain
 
@@ -309,12 +310,14 @@ def conversation_archived(client: Any, conversation_id: str):
 
 def add_users_to_conversation(client: Any, conversation_id: str, user_ids: List[str]):
     """Add users to conversation."""
-    # NOTE this will trigger a member_joined_channel event, which we will capture and run the incident.incident_add_or_reactivate_participant_flow() as a result
+    # NOTE this will trigger a member_joined_channel event, which we will capture and run
+    # the incident.incident_add_or_reactivate_participant_flow() as a result
     for c in chunks(user_ids, 30):  # NOTE api only allows 30 at a time.
         try:
             make_call(client, "conversations.invite", users=c, channel=conversation_id)
         except slack_sdk.errors.SlackApiError as e:
-            # sometimes slack sends duplicate member_join events that result in folks already existing in the channel.
+            # sometimes slack sends duplicate member_join events
+            # that result in folks already existing in the channel.
             if e.response["error"] == "already_in_channel":
                 pass
 
@@ -391,9 +394,9 @@ def message_filter(message):
     return message
 
 
-def is_user(config: SlackConversationConfiguration, slack_user: str):
-    """Returns true if it's a regular user, false if dispatch bot'."""
-    return slack_user != config.app_user_slug
+def is_user(config: SlackConversationConfiguration, user_id: str):
+    """Returns true if it's a regular user, false if Dispatch or Slackbot bot'."""
+    return user_id != config.app_user_slug and user_id != "USLACKBOT"
 
 
 def open_dialog_with_user(client: Any, trigger_id: str, dialog: dict):
