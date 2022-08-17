@@ -186,9 +186,23 @@ def case_delete_flow(case: Case, db_session: SessionLocal):
         storage_flows.delete_storage(storage=case.storage, db_session=db_session)
 
 
+def case_status_flow_common(case: Case, db_session=None):
+    """Runs tasks common across case status transition flows."""
+    # we update the ticket
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
+    # we update the timeline
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description=f"The case status has been changed to {case.status.lower()}",
+        case_id=case.id,
+    )
+
+
 def case_new_status_flow(case: Case, db_session=None):
     """Runs the case new transition flow."""
-    pass
+    case_status_flow_common(case=case, db_session=db_session)
 
 
 def case_triage_status_flow(case: Case, db_session=None):
@@ -198,6 +212,8 @@ def case_triage_status_flow(case: Case, db_session=None):
     db_session.add(case)
     db_session.commit()
 
+    case_status_flow_common(case=case, db_session=db_session)
+
 
 def case_escalated_status_flow(case: Case, db_session=None):
     """Runs the case escalated transition flow."""
@@ -206,6 +222,8 @@ def case_escalated_status_flow(case: Case, db_session=None):
     db_session.add(case)
     db_session.commit()
 
+    case_status_flow_common(case=case, db_session=db_session)
+
 
 def case_closed_status_flow(case: Case, db_session=None):
     """Runs the case closed transition flow."""
@@ -213,6 +231,8 @@ def case_closed_status_flow(case: Case, db_session=None):
     case.closed_at = datetime.utcnow()
     db_session.add(case)
     db_session.commit()
+
+    case_status_flow_common(case=case, db_session=db_session)
 
 
 def case_status_transition_flow_dispatcher(
@@ -270,14 +290,3 @@ def case_status_transition_flow_dispatcher(
         elif previous_status == CaseStatus.escalated:
             # Escalated -> Closed
             case_closed_status_flow(case, db_session)
-
-    if previous_status != current_status:
-        event_service.log_case_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=(
-                f"The case status has been changed from {previous_status.lower()} ",
-                f"to {current_status.lower()}",
-            ),
-            case_id=case.id,
-        )
