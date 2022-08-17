@@ -136,7 +136,9 @@ def update_case(
     previous_case = CaseRead.from_orm(current_case)
 
     # we update the case
-    case = update(db_session=db_session, case=current_case, case_in=case_in)
+    case = update(
+        db_session=db_session, case=current_case, case_in=case_in, current_user=current_user
+    )
 
     # we run the case update flow
     background_tasks.add_task(
