@@ -98,19 +98,52 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
 @background_task
 def case_triage_create_flow(*, case_id: int, organization_slug: str = None, db_session=None):
     """Runs the case triage creation flow."""
-    pass
+    # we run the case new creation flow
+    case_new_create_flow(
+        case_id=case_id, organization_slug=organization_slug, db_session=db_session
+    )
+
+    # we get the case
+    case = get(db_session=db_session, case_id=case_id)
+
+    # we transition the case to the triage state
+    case_triage_status_flow(case=case, db_session=db_session)
 
 
 @background_task
 def case_escalated_create_flow(*, case_id: int, organization_slug: str = None, db_session=None):
     """Runs the case escalated creation flow."""
-    pass
+    # we run the case new creation flow
+    case_new_create_flow(
+        case_id=case_id, organization_slug=organization_slug, db_session=db_session
+    )
+
+    # we get the case
+    case = get(db_session=db_session, case_id=case_id)
+
+    # we transition the case to the triage state
+    case_triage_status_flow(case=case, db_session=db_session)
+
+    # we transition the case to the escalated state
+    case_escalated_status_flow(case=case, db_session=db_session)
 
 
 @background_task
 def case_closed_create_flow(*, case_id: int, organization_slug: str = None, db_session=None):
     """Runs the case closed creation flow."""
-    pass
+    # we run the case new creation flow
+    case_new_create_flow(
+        case_id=case_id, organization_slug=organization_slug, db_session=db_session
+    )
+
+    # we get the case
+    case = get(db_session=db_session, case_id=case_id)
+
+    # we transition the case to the triage state
+    case_triage_status_flow(case=case, db_session=db_session)
+
+    # we transition the case to the closed state
+    case_closed_status_flow(case=case, db_session=db_session)
 
 
 @background_task
@@ -242,6 +275,9 @@ def case_status_transition_flow_dispatcher(
         event_service.log_case_event(
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"The case status has been changed from {previous_status.lower()} to {current_status.lower()}",
+            description=(
+                f"The case status has been changed from {previous_status.lower()} ",
+                f"to {current_status.lower()}",
+            ),
             case_id=case.id,
         )
