@@ -8,7 +8,7 @@ from dispatch.document import flows as document_flows
 from dispatch.enums import DocumentResourceTypes
 from dispatch.event import service as event_service
 from dispatch.group import flows as group_flows
-from dispatch.group.enums import GroupType
+from dispatch.group.enums import GroupType, GroupAction
 from dispatch.storage import flows as storage_flows
 from dispatch.ticket import flows as ticket_flows
 
@@ -166,6 +166,11 @@ def case_update_flow(
 
     # we update the ticket
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
+    # we update the group membership
+    group_flows.update_group(
+        group=case.tactical_group, group_action=GroupAction.add_member, db_session=db_session
+    )
 
     # we send the case updated notification
 
