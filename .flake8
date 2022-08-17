@@ -1,5 +1,5 @@
 [flake8]
-ignore =
+ignore = E203
 max-line-length = 100
 exclude =
 max-complexity = 10
