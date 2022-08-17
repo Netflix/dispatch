@@ -78,7 +78,7 @@ def send_welcome_ephemeral_message_to_participant(
     message_kwargs = {
         "name": incident.name,
         "title": incident.title,
-        "description": incident.description,
+        "description": f"{incident.description[:500]}...",
         "status": incident.status,
         "type": incident.incident_type.name,
         "type_description": incident.incident_type.description,
@@ -138,7 +138,7 @@ def send_welcome_email_to_participant(
     message_kwargs = {
         "name": incident.name,
         "title": incident.title,
-        "description": incident.description,
+        "description": f"{incident.description[:500]}...",
         "status": incident.status,
         "type": incident.incident_type.name,
         "type_description": incident.incident_type.description,
@@ -257,7 +257,7 @@ def send_incident_created_notifications(incident: Incident, db_session: SessionL
     notification_kwargs = {
         "name": incident.name,
         "title": incident.title,
-        "description": incident.description,
+        "description": f"{incident.description[:500]}...",
         "status": incident.status,
         "type": incident.incident_type.name,
         "type_description": incident.incident_type.description,
@@ -668,7 +668,7 @@ def send_incident_resources_ephemeral_message_to_participant(
 
     message_kwargs = {
         "title": incident.title,
-        "description": incident.description,
+        "description": f"{incident.description[:500]}...",
         "commander_fullname": incident.commander.individual.name,
         "commander_team": incident.commander.team,
         "commander_weblink": incident.commander.individual.weblink,
@@ -771,8 +771,8 @@ def send_incident_closed_information_review_reminder(incident: Incident, db_sess
         {
             "name": incident.name,
             "title": incident.title,
-            "description": f"{incident.description[:100]}",
-            "resolution": f"{incident.resolution[:100]}",
+            "description": f"{incident.description[:100]}...",
+            "resolution": f"{incident.resolution[:100]}...",
             "type": incident.incident_type.name,
             "priority": incident.incident_priority.name,
             "dispatch_ui_incident_url": f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{incident.name}",
