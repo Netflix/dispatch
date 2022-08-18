@@ -231,7 +231,6 @@ async def handle_menu(
     verify_timestamp(x_slack_request_timestamp)
 
     # We verify the signature
-    verify_signature(organization, raw_request_body, x_slack_request_timestamp, x_slack_signature)
     current_configuration = verify_signature(
         organization, raw_request_body, x_slack_request_timestamp, x_slack_signature
     )
@@ -248,5 +247,6 @@ async def handle_menu(
         config=current_configuration,
         client=slack_async_client,
         request=request,
+        organization=organization,
     )
     return JSONResponse(content=body)
