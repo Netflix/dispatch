@@ -107,14 +107,19 @@ def send(*, db_session, project_id: int, notification: Notification, notificatio
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project_id, plugin_type=notification.type
     )
+
     if plugin:
-        plugin.instance.send(
-            notification.target,
-            notification_params["text"],
-            notification_params["template"],
-            notification_params["type"],
-            **notification_params["kwargs"],
-        )
+        # Can raise exception "tenacity.RetryError: RetryError". (Email may still go through).
+        try:
+            plugin.instance.send(
+                notification.target,
+                notification_params["text"],
+                notification_params["template"],
+                notification_params["type"],
+                **notification_params["kwargs"],
+            )
+        except Exception as e:
+            log.error(f"Error in sending {notification_params['type']}: {e}")
     else:
         log.warning(
             f"Notification {notification.name} not sent. No {notification.type} plugin is active."

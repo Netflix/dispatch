@@ -17,7 +17,6 @@ from dispatch.plugin import service as plugin_service
 from .enums import ReportTypes
 from .models import Report
 
-
 log = logging.getLogger(__name__)
 
 
@@ -83,20 +82,27 @@ def send_tactical_report_to_tactical_group(
         return
 
     notification_text = "Tactical Report"
-    plugin.instance.send(
-        incident.tactical_group.email,
-        notification_text,
-        INCIDENT_TACTICAL_REPORT,
-        MessageType.incident_tactical_report,
-        name=incident.name,
-        title=incident.title,
-        conditions=tactical_report.details.get("conditions"),
-        actions=tactical_report.details.get("actions"),
-        needs=tactical_report.details.get("needs"),
-        contact_fullname=incident.commander.individual.name,
-        contact_team=incident.commander.team,
-        contact_weblink=incident.commander.individual.weblink,
-    )
+
+    # Can raise exception "tenacity.RetryError: RetryError". (Email may still go through).
+    try:
+        plugin.instance.send(
+            incident.tactical_group.email,
+            notification_text,
+            INCIDENT_TACTICAL_REPORT,
+            MessageType.incident_tactical_report,
+            name=incident.name,
+            title=incident.title,
+            conditions=tactical_report.details.get("conditions"),
+            actions=tactical_report.details.get("actions"),
+            needs=tactical_report.details.get("needs"),
+            contact_fullname=incident.commander.individual.name,
+            contact_team=incident.commander.team,
+            contact_weblink=incident.commander.individual.weblink,
+        )
+    except Exception as e:
+        log.error(
+            f"Error in sending {notification_text} email to {incident.tactical_group.email}: {e}"
+        )
 
     log.debug(f"Tactical report sent to tactical group {incident.tactical_group.email}.")
 

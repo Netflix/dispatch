@@ -61,15 +61,22 @@ def create_reminder(db_session, assignee_email, tasks):
     notification_template = INCIDENT_TASK_REMINDER
     notification_type = "incident-task-reminder"
     name = subject = notification_text = "Incident Task Reminder"
-    plugin.instance.send(
-        assignee_email,
-        notification_text,
-        notification_template,
-        notification_type,
-        name=name,
-        subject=subject,
-        items=items,  # plugin expect dicts
-    )
+
+    # Can raise exception "tenacity.RetryError: RetryError". (Email may still go through).
+    try:
+        plugin.instance.send(
+            assignee_email,
+            notification_text,
+            notification_template,
+            notification_type,
+            name=name,
+            subject=subject,
+            items=items,  # plugin expect dicts
+        )
+    except Exception as e:
+        log.error(
+            f"Error in sending {notification_text} email to {assignee_email}: {e}. Items: {items}"
+        )
 
     for task in tasks:
         task.last_reminder_at = datetime.utcnow()

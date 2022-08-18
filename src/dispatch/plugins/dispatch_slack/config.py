@@ -76,7 +76,7 @@ class SlackConversationConfiguration(SlackConfiguration):
     slack_command_assign_role: str = Field(
         "/dispatch-assign-role",
         title="Assign Role Command String",
-        description="Defines the string used assign a role in an incident. Must match what is defined in Slack.",
+        description="Defines the string used to assign a role in an incident. Must match what is defined in Slack.",
     )
     slack_command_update_incident: str = Field(
         "/dispatch-update-incident",

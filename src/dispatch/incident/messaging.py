@@ -174,13 +174,18 @@ def send_welcome_email_to_participant(
         )
 
     notification_text = "Incident Notification"
-    plugin.instance.send(
-        participant_email,
-        notification_text,
-        INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
-        MessageType.incident_participant_welcome,
-        **message_kwargs,
-    )
+
+    # Can raise exception "tenacity.RetryError: RetryError". (Email may still go through).
+    try:
+        plugin.instance.send(
+            participant_email,
+            notification_text,
+            INCIDENT_PARTICIPANT_WELCOME_MESSAGE,
+            MessageType.incident_participant_welcome,
+            **message_kwargs,
+        )
+    except Exception as e:
+        log.error(f"Error in sending welcome email to {participant_email}: {e}")
 
     log.debug(f"Welcome email sent to {participant_email}.")
 
