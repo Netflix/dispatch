@@ -44,17 +44,21 @@ def send_incident_feedback_daily_report(
     commander_fullname = feedback[0].incident.commander.individual.name
     commander_weblink = feedback[0].incident.commander.individual.weblink
 
-    plugin.instance.send(
-        commander_email,
-        notification_text,
-        INCIDENT_FEEDBACK_DAILY_REPORT,
-        MessageType.incident_feedback_daily_report,
-        name=name,
-        subject=subject,
-        cc=plugin.project.owner_email,
-        items=items,
-        contact_fullname=commander_fullname,
-        contact_weblink=commander_weblink,
-    )
+    # Can raise exception "tenacity.RetryError: RetryError". (Email may still go through).
+    try:
+        plugin.instance.send(
+            commander_email,
+            notification_text,
+            INCIDENT_FEEDBACK_DAILY_REPORT,
+            MessageType.incident_feedback_daily_report,
+            name=name,
+            subject=subject,
+            cc=plugin.project.owner_email,
+            items=items,
+            contact_fullname=commander_fullname,
+            contact_weblink=commander_weblink,
+        )
+    except Exception as e:
+        log.error(f"Error in sending {notification_text} email to {commander_email}: {e}")
 
     log.debug(f"Incident feedback daily report sent to {commander_email}.")
