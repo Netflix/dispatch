@@ -11,7 +11,7 @@ from dispatch.incident_type import service as incident_type_service
 from dispatch.plugin import service as plugin_service
 
 from .models import Ticket, TicketCreate
-from .service import create, delete
+from .service import create
 
 
 log = logging.getLogger(__name__)

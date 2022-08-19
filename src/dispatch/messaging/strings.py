@@ -713,6 +713,10 @@ def render_message_template(message_template: List[dict], **kwargs):
         if d.get("text"):
             d["text"] = Template(d["text"]).render(**kwargs)
 
+            # NOTE: we truncate the string to 2500 characters
+            # to prevent hitting limits on SaaS integrations (e.g. Slack)
+            d["text"] = d["text"] if len(d["text"]) <= 2500 else d["text"][:2500]
+
         # render a new button array given the template
         if d.get("buttons"):
             for button in d["buttons"]:

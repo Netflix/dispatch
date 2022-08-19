@@ -76,7 +76,15 @@
                   />
                 </ValidationObserver>
               </v-flex>
-
+              <v-flex xs12>
+                <ValidationObserver disabled>
+                  <service-select
+                    :project="project"
+                    label="Oncall Service"
+                    v-model="oncall_service"
+                  />
+                </ValidationObserver>
+              </v-flex>
               <v-flex xs 12>
                 <v-checkbox
                   v-model="exclude_from_metrics"
@@ -116,6 +124,7 @@ import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 
 import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
+import ServiceSelect from "@/service/ServiceSelect.vue"
 import TemplateSelect from "@/document/template/TemplateSelect.vue"
 
 extend("required", {
@@ -128,6 +137,7 @@ export default {
 
   components: {
     PluginMetadataInput,
+    ServiceSelect,
     TemplateSelect,
     ValidationObserver,
     ValidationProvider,
@@ -142,14 +152,15 @@ export default {
   computed: {
     ...mapFields("case_type", [
       "dialogs.showCreateEdit",
+      "selected.case_template_document",
       "selected.default",
       "selected.description",
       "selected.enabled",
       "selected.exclude_from_metrics",
       "selected.id",
-      "selected.case_template_document",
       "selected.loading",
       "selected.name",
+      "selected.oncall_service",
       "selected.plugin_metadata",
       "selected.project",
       "selected.slug",

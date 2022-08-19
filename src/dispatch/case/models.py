@@ -40,9 +40,11 @@ from .enums import CaseStatus
 # Assoc object for case and case types
 class AssocCaseCaseType(Base):
     __tablename__ = "assoc_case_case_type"
-    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"), primary_key=True)
-    case_type_id = Column(Integer, ForeignKey("case_type.id", ondelete="CASCADE"), primary_key=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+
+    id = Column(Integer(), primary_key=True)
+    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"), nullable=False)
+    case_type_id = Column(Integer, ForeignKey("case_type.id", ondelete="CASCADE"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     def __init__(self, case_type):
         self.case_type = case_type
@@ -53,11 +55,13 @@ class AssocCaseCaseType(Base):
 # Assoc object for case and case priorities
 class AssocCaseCasePriority(Base):
     __tablename__ = "assoc_case_case_priority"
-    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"), primary_key=True)
+
+    id = Column(Integer(), primary_key=True)
+    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"), nullable=False)
     case_priority_id = Column(
-        Integer, ForeignKey("case_priority.id", ondelete="CASCADE"), primary_key=True
+        Integer, ForeignKey("case_priority.id", ondelete="CASCADE"), nullable=False
     )
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     def __init__(self, case_priority):
         self.case_priority = case_priority
@@ -68,11 +72,13 @@ class AssocCaseCasePriority(Base):
 # Assoc object for case and case severities
 class AssocCaseCaseSeverity(Base):
     __tablename__ = "assoc_case_case_severity"
-    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"), primary_key=True)
+
+    id = Column(Integer(), primary_key=True)
+    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"), nullable=False)
     case_severity_id = Column(
-        Integer, ForeignKey("case_severity.id", ondelete="CASCADE"), primary_key=True
+        Integer, ForeignKey("case_severity.id", ondelete="CASCADE"), nullable=False
     )
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     def __init__(self, case_severity):
         self.case_severity = case_severity
@@ -280,7 +286,8 @@ class CaseUpdate(CaseBase):
             for v in exclusive_tags.values():
                 if len(v) > 1:
                     raise ValueError(
-                        f"Found multiple exclusive tags. Please ensure that only one tag of a given type is applied. Tags: {','.join([t.name for t in v])}"
+                        "Found multiple exclusive tags. Please ensure that only one tag of a given "
+                        f"type is applied. Tags: {','.join([t.name for t in v])}"
                     )
         return v
 

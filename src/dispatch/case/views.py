@@ -2,7 +2,6 @@ import logging
 from typing import List
 
 import json
-from datetime import date
 
 from starlette.requests import Request
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
@@ -17,8 +16,8 @@ from sqlalchemy.orm import Session
 #     PermissionsDependency,
 #     CaseViewPermission,
 # )
+from dispatch.auth import service as auth_service
 from dispatch.auth.models import DispatchUser
-from dispatch.auth.service import get_current_user
 from dispatch.case.enums import CaseStatus
 from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import get_db
@@ -82,10 +81,11 @@ def create_case(
     db_session: Session = Depends(get_db),
     organization: OrganizationSlug,
     case_in: CaseCreate,
+    current_user: DispatchUser = Depends(auth_service.get_current_user),
     background_tasks: BackgroundTasks,
 ):
     """Creates a new case."""
-    case = create(db_session=db_session, case_in=case_in)
+    case = create(db_session=db_session, case_in=case_in, current_user=current_user)
 
     if case.status == CaseStatus.triage:
         background_tasks.add_task(
@@ -128,7 +128,7 @@ def update_case(
     organization: OrganizationSlug,
     case_id: PrimaryKey,
     case_in: CaseUpdate,
-    current_user: DispatchUser = Depends(get_current_user),
+    current_user: DispatchUser = Depends(auth_service.get_current_user),
     background_tasks: BackgroundTasks,
 ):
     """Updates an existing case."""
@@ -136,7 +136,9 @@ def update_case(
     previous_case = CaseRead.from_orm(current_case)
 
     # we update the case
-    case = update(db_session=db_session, case=current_case, case_in=case_in)
+    case = update(
+        db_session=db_session, case=current_case, case_in=case_in, current_user=current_user
+    )
 
     # we run the case update flow
     background_tasks.add_task(
@@ -179,7 +181,10 @@ def delete_case(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=[
                 {
-                    "msg": f"Case {case.name} could not be deleted. Make sure the case has no relationships to other cases or incidents before deleting it."
+                    "msg": (
+                        f"Case {case.name} could not be deleted. Make sure the case has no ",
+                        "relationshipts to other cases or incidents before deleting it.",
+                    )
                 }
             ],
         )

@@ -18,7 +18,7 @@ click==8.1.3
     # via
     #   -r requirements-dev.in
     #   black
-coverage==6.4.3
+coverage==6.4.4
     # via -r requirements-dev.in
 decorator==5.1.1
     # via ipython
@@ -30,7 +30,7 @@ executing==0.9.1
     #   stack-data
 factory-boy==3.2.1
     # via -r requirements-dev.in
-faker==13.15.1
+faker==14.0.0
     # via
     #   -r requirements-dev.in
     #   factory-boy

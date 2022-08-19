@@ -187,7 +187,10 @@ def update(*, db_session, service: Service, service_in: ServiceUpdate) -> Servic
                 [
                     ErrorWrapper(
                         InvalidConfigurationError(
-                            f"Cannot enable service: {service.name}. Its associated plugin {oncall_plugin_instance.plugin.title} is not enabled."
+                            (
+                                f"Cannot enable service {service.name}. Its associated plugin ",
+                                f"{oncall_plugin_instance.plugin.title} is not enabled.",
+                            )
                         ),
                         loc="type",
                     )
