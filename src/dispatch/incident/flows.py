@@ -317,22 +317,21 @@ def create_incident_documents(incident: Incident, db_session: SessionLocal):
                 incident_document_name,
             )
             plugin.instance.move_file(incident.storage.resource_id, document["id"])
+            # TODO this logic should probably be pushed down into the plugins i.e. making them return
+            # the fields we expect instead of re-mapping. (kglisson)
+            document.update(
+                {
+                    "name": incident_document_name,
+                    "description": incident.incident_type.incident_template_document.description,
+                    "resource_type": DocumentResourceTypes.incident,
+                    "resource_id": document["id"],
+                }
+            )
         else:
             # create a blank document if no template is defined
             document = plugin.instance.create_file(
                 incident.storage.resource_id, incident_document_name, file_type="document"
             )
-
-        # TODO this logic should probably be pushed down into the plugins i.e. making them return
-        # the fields we expect instead of re-mapping. (kglisson)
-        document.update(
-            {
-                "name": incident_document_name,
-                "description": incident.incident_type.incident_template_document.description,
-                "resource_type": DocumentResourceTypes.incident,
-                "resource_id": document["id"],
-            }
-        )
 
         incident_documents.append(document)
 
@@ -344,15 +343,14 @@ def create_incident_documents(incident: Incident, db_session: SessionLocal):
         )
 
         sheet = None
+        incident_sheet_name = f"{incident.name} - Incident Tracking Sheet"
         if incident.incident_type.tracking_template_document:
-            incident_sheet_name = f"{incident.name} - Incident Tracking Sheet"
             sheet = plugin.instance.copy_file(
                 incident.storage.resource_id,
                 incident.incident_type.tracking_template_document.resource_id,
                 incident_sheet_name,
             )
             plugin.instance.move_file(incident.storage.resource_id, sheet["id"])
-
             sheet.update(
                 {
                     "name": incident_sheet_name,
@@ -362,14 +360,20 @@ def create_incident_documents(incident: Incident, db_session: SessionLocal):
                 }
             )
 
-            incident_documents.append(sheet)
-
-            event_service.log_incident_event(
-                db_session=db_session,
-                source=plugin.plugin.title,
-                description="Incident sheet created",
-                incident_id=incident.id,
+        else:
+            # Create a blank one
+            sheet = plugin.instance.create_file(
+                incident.storage.resource_id, incident_sheet_name, file_type="sheet"
             )
+
+        incident_documents.append(sheet)
+
+        event_service.log_incident_event(
+            db_session=db_session,
+            source=plugin.plugin.title,
+            description="Incident sheet created",
+            incident_id=incident.id,
+        )
 
         # we create folders to store logs and screengrabs
         plugin.instance.create_file(incident.storage.resource_id, "logs")
