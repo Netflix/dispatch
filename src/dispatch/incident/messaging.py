@@ -185,7 +185,7 @@ def send_welcome_email_to_participant(
             **message_kwargs,
         )
     except Exception as e:
-        log.error(f"Error in sending welcome email to {participant_email}: {e}.")
+        log.error(f"Error in sending welcome email to {participant_email}: {e}")
 
     log.debug(f"Welcome email sent to {participant_email}.")
 
