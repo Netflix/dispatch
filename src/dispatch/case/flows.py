@@ -8,7 +8,7 @@ from dispatch.document import flows as document_flows
 from dispatch.enums import DocumentResourceTypes
 from dispatch.event import service as event_service
 from dispatch.group import flows as group_flows
-from dispatch.group.enums import GroupType
+from dispatch.group.enums import GroupType, GroupAction
 from dispatch.storage import flows as storage_flows
 from dispatch.ticket import flows as ticket_flows
 
@@ -98,19 +98,52 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
 @background_task
 def case_triage_create_flow(*, case_id: int, organization_slug: str = None, db_session=None):
     """Runs the case triage creation flow."""
-    pass
+    # we run the case new creation flow
+    case_new_create_flow(
+        case_id=case_id, organization_slug=organization_slug, db_session=db_session
+    )
+
+    # we get the case
+    case = get(db_session=db_session, case_id=case_id)
+
+    # we transition the case to the triage state
+    case_triage_status_flow(case=case, db_session=db_session)
 
 
 @background_task
 def case_escalated_create_flow(*, case_id: int, organization_slug: str = None, db_session=None):
     """Runs the case escalated creation flow."""
-    pass
+    # we run the case new creation flow
+    case_new_create_flow(
+        case_id=case_id, organization_slug=organization_slug, db_session=db_session
+    )
+
+    # we get the case
+    case = get(db_session=db_session, case_id=case_id)
+
+    # we transition the case to the triage state
+    case_triage_status_flow(case=case, db_session=db_session)
+
+    # we transition the case to the escalated state
+    case_escalated_status_flow(case=case, db_session=db_session)
 
 
 @background_task
 def case_closed_create_flow(*, case_id: int, organization_slug: str = None, db_session=None):
     """Runs the case closed creation flow."""
-    pass
+    # we run the case new creation flow
+    case_new_create_flow(
+        case_id=case_id, organization_slug=organization_slug, db_session=db_session
+    )
+
+    # we get the case
+    case = get(db_session=db_session, case_id=case_id)
+
+    # we transition the case to the triage state
+    case_triage_status_flow(case=case, db_session=db_session)
+
+    # we transition the case to the closed state
+    case_closed_status_flow(case=case, db_session=db_session)
 
 
 @background_task
@@ -134,6 +167,11 @@ def case_update_flow(
     # we update the ticket
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
+    # we update the group membership
+    group_flows.update_group(
+        group=case.tactical_group, group_action=GroupAction.add_member, db_session=db_session
+    )
+
     # we send the case updated notification
 
 
@@ -153,9 +191,23 @@ def case_delete_flow(case: Case, db_session: SessionLocal):
         storage_flows.delete_storage(storage=case.storage, db_session=db_session)
 
 
+def case_status_flow_common(case: Case, db_session=None):
+    """Runs tasks common across case status transition flows."""
+    # we update the ticket
+    ticket_flows.update_case_ticket(case=case, db_session=db_session)
+
+    # we update the timeline
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description=f"The case status has been changed to {case.status.lower()}",
+        case_id=case.id,
+    )
+
+
 def case_new_status_flow(case: Case, db_session=None):
     """Runs the case new transition flow."""
-    pass
+    case_status_flow_common(case=case, db_session=db_session)
 
 
 def case_triage_status_flow(case: Case, db_session=None):
@@ -165,6 +217,8 @@ def case_triage_status_flow(case: Case, db_session=None):
     db_session.add(case)
     db_session.commit()
 
+    case_status_flow_common(case=case, db_session=db_session)
+
 
 def case_escalated_status_flow(case: Case, db_session=None):
     """Runs the case escalated transition flow."""
@@ -173,6 +227,8 @@ def case_escalated_status_flow(case: Case, db_session=None):
     db_session.add(case)
     db_session.commit()
 
+    case_status_flow_common(case=case, db_session=db_session)
+
 
 def case_closed_status_flow(case: Case, db_session=None):
     """Runs the case closed transition flow."""
@@ -180,6 +236,8 @@ def case_closed_status_flow(case: Case, db_session=None):
     case.closed_at = datetime.utcnow()
     db_session.add(case)
     db_session.commit()
+
+    case_status_flow_common(case=case, db_session=db_session)
 
 
 def case_status_transition_flow_dispatcher(
@@ -237,11 +295,3 @@ def case_status_transition_flow_dispatcher(
         elif previous_status == CaseStatus.escalated:
             # Escalated -> Closed
             case_closed_status_flow(case, db_session)
-
-    if previous_status != current_status:
-        event_service.log_case_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=f"The case status has been changed from {previous_status.lower()} to {current_status.lower()}",
-            case_id=case.id,
-        )
