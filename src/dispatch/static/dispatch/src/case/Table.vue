@@ -10,6 +10,8 @@
         <div class="headline">Cases</div>
       </v-col>
       <v-col cols="3">
+        <table-filter-dialog :projects="defaultUserProjects" />
+        <table-export-dialog />
         <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn>
       </v-col>
     </v-row>
@@ -115,6 +117,8 @@ import CaseStatus from "@/case/CaseStatus.vue"
 import DeleteDialog from "@/case/DeleteDialog.vue"
 import NewSheet from "@/case/NewSheet.vue"
 import RouterUtils from "@/router/utils"
+import TableExportDialog from "@/case/TableExportDialog.vue"
+import TableFilterDialog from "@/case/TableFilterDialog.vue"
 
 export default {
   name: "CaseTable",
@@ -126,6 +130,8 @@ export default {
     CaseStatus,
     DeleteDialog,
     NewSheet,
+    TableExportDialog,
+    TableFilterDialog,
   },
 
   props: {
@@ -161,6 +167,9 @@ export default {
       "table.options.descending",
       "table.options.filters",
       "table.options.filters.assignee",
+      "table.options.filters.case_priority",
+      "table.options.filters.case_severity",
+      "table.options.filters.case_type",
       "table.options.filters.project",
       "table.options.filters.reported_at",
       "table.options.filters.source",
@@ -221,16 +230,19 @@ export default {
 
     this.$watch(
       (vm) => [
-        vm.q,
-        vm.sortBy,
-        vm.itemsPerPage,
+        vm.case_priority,
+        vm.case_severity,
+        vm.case_type,
         vm.descending,
-        vm.reported_at.start,
-        vm.reported_at.end,
+        vm.itemsPerPage,
         vm.project,
+        vm.q,
+        vm.reported_at.end,
+        vm.reported_at.start,
+        vm.sortBy,
         vm.status,
-        vm.tag_type,
         vm.tag,
+        vm.tag_type,
       ],
       () => {
         this.page = 1

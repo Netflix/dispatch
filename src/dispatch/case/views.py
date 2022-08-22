@@ -52,7 +52,7 @@ def get_current_case(*, db_session: Session = Depends(get_db), request: Request)
     return case
 
 
-@router.get("", summary="Retrieves all cases.")
+@router.get("", summary="Retrieves a list of cases.")
 def get_cases(
     *,
     common: dict = Depends(common_parameters),

@@ -18,7 +18,7 @@
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No Incident Priorities matching "
+            No incident priorities matching "
             <strong>{{ search }}</strong
             >".
           </v-list-item-title>

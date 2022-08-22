@@ -76,7 +76,7 @@ let today = function () {
 }
 
 export default {
-  name: "IncidentWindowInput",
+  name: "DateWindowInput",
   props: {
     value: {
       type: Object,

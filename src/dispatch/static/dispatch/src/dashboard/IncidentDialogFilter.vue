@@ -12,12 +12,12 @@
       <v-list dense>
         <v-list-item>
           <v-list-item-content>
-            <incident-window-input v-model="filters.reported_at" />
+            <date-window-input v-model="filters.reported_at" label="Reported At" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-window-input label="Closed At" v-model="filters.closed_at" />
+            <date-window-input v-model="filters.closed_at" label="Closed At" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
@@ -56,10 +56,10 @@ import { mapFields } from "vuex-map-fields"
 import startOfMonth from "date-fns/startOfMonth"
 import subMonths from "date-fns/subMonths"
 
+import DateWindowInput from "@/components/DateWindowInput.vue"
 import IncidentApi from "@/incident/api"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
-import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import RouterUtils from "@/router/utils"
 import SearchUtils from "@/search/utils"
@@ -74,9 +74,9 @@ export default {
   name: "IncidentOverviewFilterDialog",
 
   components: {
+    DateWindowInput,
     IncidentPriorityCombobox,
     IncidentTypeCombobox,
-    IncidentWindowInput,
     ProjectCombobox,
     TagFilterAutoComplete,
   },

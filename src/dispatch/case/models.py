@@ -5,6 +5,7 @@ from typing import List, Optional
 from pydantic import validator
 from dispatch.models import NameStr, PrimaryKey
 from sqlalchemy import (
+    desc,
     Column,
     DateTime,
     ForeignKey,
@@ -13,15 +14,16 @@ from sqlalchemy import (
     String,
     Table,
     UniqueConstraint,
+    select,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.auth.models import UserRead
-from dispatch.case.priority.models import CasePriorityRead
-from dispatch.case.severity.models import CaseSeverityRead
-from dispatch.case.type.models import CaseTypeRead
+from dispatch.case.priority.models import CasePriority, CasePriorityRead
+from dispatch.case.severity.models import CaseSeverity, CaseSeverityRead
+from dispatch.case.type.models import CaseType, CaseTypeRead
 from dispatch.data.source.models import SourceRead
 from dispatch.database.core import Base
 from dispatch.document.models import Document, DocumentRead
@@ -168,6 +170,15 @@ class Case(Base, TimeStampMixin, ProjectMixin):
         if self.case_types:
             return sorted(self.case_types, key=lambda case_type: case_type.created_at)[-1].case_type
 
+    @case_type.expression
+    def case_type(cls):
+        return (
+            select([CaseType])
+            .where(CaseType.id == cls.case_types.case_type.id)
+            .order_by(desc("created_at"))
+            .first()
+        )
+
     @hybrid_property
     def case_priority(self):
         if self.case_priorities:
@@ -175,12 +186,30 @@ class Case(Base, TimeStampMixin, ProjectMixin):
                 -1
             ].case_priority
 
+    @case_priority.expression
+    def case_priority(cls):
+        return (
+            select([CasePriority])
+            .where(CasePriority.id == cls.case_priorities.case_priority.id)
+            .order_by(desc("created_at"))
+            .first()
+        )
+
     @hybrid_property
     def case_severity(self):
         if self.case_severities:
             return sorted(self.case_severities, key=lambda case_severity: case_severity.created_at)[
                 -1
             ].case_severity
+
+    @case_severity.expression
+    def case_severity(cls):
+        return (
+            select([CaseSeverity])
+            .where(CaseSeverity.id == cls.case_severities.case_severity.id)
+            .order_by(desc("created_at"))
+            .first()
+        )
 
 
 class ProjectRead(DispatchBase):

@@ -12,7 +12,7 @@
       <v-list dense>
         <v-list-item>
           <v-list-item-content>
-            <incident-window-input v-model="filters.created_at" label="Created At" />
+            <date-window-input v-model="filters.created_at" label="Created At" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
@@ -45,9 +45,9 @@ import { sum } from "lodash"
 import startOfMonth from "date-fns/startOfMonth"
 import subMonths from "date-fns/subMonths"
 
+import DateWindowInput from "@/components/DateWindowInput.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
-import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import RouterUtils from "@/router/utils"
 import SearchUtils from "@/search/utils"
@@ -62,10 +62,10 @@ export default {
   name: "TaskOverviewFilterDialog",
 
   components: {
-    IncidentTypeCombobox,
+    DateWindowInput,
     IncidentPriorityCombobox,
+    IncidentTypeCombobox,
     ProjectCombobox,
-    IncidentWindowInput,
   },
 
   props: {
@@ -127,7 +127,6 @@ export default {
 
       this.$emit("loading", "error")
       filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
-      // this.$emit("filterOptions", filterOptions)
       TaskApi.getAll(filterOptions).then((response) => {
         this.$emit("update", response.data.items)
         this.$emit("loading", false)

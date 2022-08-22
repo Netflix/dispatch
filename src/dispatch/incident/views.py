@@ -1,6 +1,5 @@
 import logging
 from typing import List
-from pydantic import Json
 
 import json
 import calendar
@@ -58,13 +57,13 @@ def get_current_incident(*, db_session: Session = Depends(get_db), request: Requ
     return incident
 
 
-@router.get("", summary="Retrieve a list of all incidents.")
+@router.get("", summary="Retrieve a list of incidents.")
 def get_incidents(
     *,
     common: dict = Depends(common_parameters),
     include: List[str] = Query([], alias="include[]"),
 ):
-    """Retrieve a list of all incidents."""
+    """Retrieves a list of incidents."""
     pagination = search_filter_sort_paginate(model="Incident", **common)
 
     if include:
@@ -84,7 +83,7 @@ def get_incidents(
 @router.get(
     "/{incident_id}",
     response_model=IncidentRead,
-    summary="Retrieve a single incident.",
+    summary="Retrieves a single incident.",
     dependencies=[Depends(PermissionsDependency([IncidentViewPermission]))],
 )
 def get_incident(
@@ -93,11 +92,11 @@ def get_incident(
     db_session: Session = Depends(get_db),
     current_incident: Incident = Depends(get_current_incident),
 ):
-    """Retrieve details about a specific incident."""
+    """Retrieves the details of a single incident."""
     return current_incident
 
 
-@router.post("", response_model=IncidentRead, summary="Create a new incident.")
+@router.post("", response_model=IncidentRead, summary="Creates a new incident.")
 def create_incident(
     *,
     db_session: Session = Depends(get_db),
@@ -106,7 +105,7 @@ def create_incident(
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
-    """Create a new incident."""
+    """Creates a new incident."""
     if not incident_in.reporter:
         incident_in.reporter = ParticipantUpdate(
             individual=IndividualContactRead(email=current_user.email)
@@ -132,7 +131,7 @@ def create_incident(
 @router.put(
     "/{incident_id}",
     response_model=IncidentRead,
-    summary="Update an existing incident.",
+    summary="Updates an existing incident.",
     dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
 )
 def update_incident(
@@ -145,7 +144,7 @@ def update_incident(
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
-    """Update an existing incident."""
+    """Updates an existing incident."""
     # we store the previous state of the incident in order to be able to detect changes
     previous_incident = IncidentRead.from_orm(current_incident)
 
@@ -168,7 +167,7 @@ def update_incident(
 
 @router.post(
     "/{incident_id}/join",
-    summary="Join an incident.",
+    summary="Joins an incident.",
     dependencies=[Depends(PermissionsDependency([IncidentJoinPermission]))],
 )
 def join_incident(
@@ -180,7 +179,7 @@ def join_incident(
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
-    """Join an individual incident."""
+    """Joins an incident."""
     background_tasks.add_task(
         incident_add_or_reactivate_participant_flow,
         current_user.email,
@@ -191,7 +190,7 @@ def join_incident(
 
 @router.post(
     "/{incident_id}/subscribe",
-    summary="Subscribe to an incident.",
+    summary="Subscribes to an incident.",
     dependencies=[Depends(PermissionsDependency([IncidentJoinPermission]))],
 )
 def subscribe_to_incident(
@@ -203,7 +202,7 @@ def subscribe_to_incident(
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
-    """Join an individual incident."""
+    """Subscribes to an incident."""
     background_tasks.add_task(
         incident_add_participant_to_tactical_group_flow,
         current_user.email,
@@ -214,7 +213,7 @@ def subscribe_to_incident(
 
 @router.post(
     "/{incident_id}/report/tactical",
-    summary="Create a tactical report.",
+    summary="Creates a tactical report.",
     dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
 )
 def create_tactical_report(
@@ -227,7 +226,7 @@ def create_tactical_report(
     current_incident: Incident = Depends(get_current_incident),
     background_tasks: BackgroundTasks,
 ):
-    """Creates a new tactical report."""
+    """Creates a tactical report."""
     background_tasks.add_task(
         report_flows.create_tactical_report,
         user_email=current_user.email,
@@ -239,7 +238,7 @@ def create_tactical_report(
 
 @router.post(
     "/{incident_id}/report/executive",
-    summary="Create an executive report.",
+    summary="Creates an executive report.",
     dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
 )
 def create_executive_report(
@@ -252,7 +251,7 @@ def create_executive_report(
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
-    """Creates a new executive report."""
+    """Creates an executive report."""
     background_tasks.add_task(
         report_flows.create_executive_report,
         user_email=current_user.email,
@@ -265,7 +264,7 @@ def create_executive_report(
 @router.delete(
     "/{incident_id}",
     response_model=IncidentRead,
-    summary="Delete an incident.",
+    summary="Deletes an incident.",
     dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
 )
 def delete_incident(
@@ -274,7 +273,7 @@ def delete_incident(
     db_session: Session = Depends(get_db),
     current_incident: Incident = Depends(get_current_incident),
 ):
-    """Delete an individual incident."""
+    """Deletes an incident."""
     delete(db_session=db_session, incident_id=current_incident.id)
 
 
@@ -287,13 +286,13 @@ def get_month_range(relative):
     return month_start, month_end
 
 
-@router.get("/metric/forecast", summary="Get incident forecast data.")
+@router.get("/metric/forecast", summary="Gets incident forecast data.")
 def get_incident_forecast(
     *,
     db_session: Session = Depends(get_db),
     common: dict = Depends(common_parameters),
 ):
-    """Get incident forecast data."""
+    """Gets incident forecast data."""
     categories = []
     predicted = []
     actual = []
