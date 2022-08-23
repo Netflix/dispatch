@@ -219,7 +219,7 @@ export const protectedRoute = [
       path: "dashboards",
       component: DashboardLayout,
       name: "dashboards",
-      redirect: { name: "IncidentOverview" },
+      redirect: { name: "CaseOverview" },
       meta: {
         title: "Dashboards",
         group: "dashboard",
@@ -229,25 +229,34 @@ export const protectedRoute = [
       },
       children: [
         {
+          path: "cases",
+          name: "CaseOverview",
+          meta: { title: "Cases", group: "type" },
+          component: () =>
+            import(/* webpackChunkName: "case-overview" */ "@/dashboard/case/CaseOverview.vue"),
+        },
+        {
           path: "incidents",
           name: "IncidentOverview",
           meta: { title: "Incidents", group: "type" },
           component: () =>
-            import(/* webpackChunkName: "incident-overview" */ "@/dashboard/IncidentOverview.vue"),
+            import(
+              /* webpackChunkName: "incident-overview" */ "@/dashboard/incident/IncidentOverview.vue"
+            ),
         },
         {
           path: "tasks",
           name: "TaskOverview",
           meta: { title: "Tasks", group: "type" },
           component: () =>
-            import(/* webpackChunkName: "task-overview" */ "@/dashboard/TaskOverview.vue"),
+            import(/* webpackChunkName: "task-overview" */ "@/dashboard/task/TaskOverview.vue"),
         },
         {
           path: "data",
           name: "DataOverview",
           meta: { title: "Data", group: "type" },
           component: () =>
-            import(/* webpackChunkName: "data-overview" */ "@/dashboard/DataOverview.vue"),
+            import(/* webpackChunkName: "data-overview" */ "@/dashboard/data/DataOverview.vue"),
         },
       ],
     },

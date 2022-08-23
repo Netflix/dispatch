@@ -118,7 +118,7 @@ import differenceInHours from "date-fns/differenceInHours"
 import IncidentActiveTimeCard from "@/incident/IncidentActiveTimeCard.vue"
 import IncidentCommandersLocationBarChartCard from "@/incident/IncidentCommandersLocationBarChartCard.vue"
 import IncidentCostBarChartCard from "@/incident/IncidentCostBarChartCard.vue"
-import IncidentDialogFilter from "@/dashboard/IncidentDialogFilter.vue"
+import IncidentDialogFilter from "@/dashboard/incident/IncidentDialogFilter.vue"
 import IncidentForecastCard from "@/incident/IncidentForecastCard.vue"
 import IncidentHeatmapCard from "@/incident/IncidentHeatmapCard.vue"
 import IncidentParticipantsLocationBarChartCard from "@/incident/IncidentParticipantsLocationBarChartCard.vue"
@@ -128,7 +128,7 @@ import IncidentReportersLocationBarChartCard from "@/incident/IncidentReportersL
 import IncidentResolveTimeCard from "@/incident/IncidentResolveTimeCard.vue"
 import IncidentTagsTreemapCard from "@/incident/IncidentTagsTreemapCard.vue"
 import IncidentTypeBarChartCard from "@/incident/IncidentTypeBarChartCard.vue"
-import IncidentsDrillDownSheet from "@/dashboard/IncidentsDrillDownSheet.vue"
+import IncidentsDrillDownSheet from "@/dashboard/incident/IncidentsDrillDownSheet.vue"
 import StatWidget from "@/components/StatWidget.vue"
 
 export default {

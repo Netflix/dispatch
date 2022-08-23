@@ -32,6 +32,8 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
         # we delete the case
         delete(db_session=db_session, case_id=case_id)
 
+        return
+
     # we create the tactical group
     group_participants = [case.assignee.email]
     group = group_flows.create_group(
@@ -48,6 +50,8 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
         # we delete the case
         delete(db_session=db_session, case_id=case_id)
 
+        return
+
     # we create the storage folder
     members = [group.email]
     storage = storage_flows.create_storage(obj=case, members=members, db_session=db_session)
@@ -60,6 +64,8 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
 
         # we delete the case
         delete(db_session=db_session, case_id=case_id)
+
+        return
 
     # we create the investigation document
     document = document_flows.create_document(
@@ -80,6 +86,8 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
 
         # we delete the case
         delete(db_session=db_session, case_id=case_id)
+
+        return
 
     # we update the ticket
     ticket_flows.update_case_ticket(case=case, db_session=db_session)

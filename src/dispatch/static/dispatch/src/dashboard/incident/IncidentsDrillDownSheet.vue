@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import IncidentDrillDownTable from "@/dashboard/IncidentDrillDownTable.vue"
+import IncidentDrillDownTable from "@/dashboard/incident/IncidentDrillDownTable.vue"
 
 export default {
   name: "IncidentsDrillDownSheet",
