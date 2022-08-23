@@ -219,7 +219,7 @@ export const protectedRoute = [
       path: "dashboards",
       component: DashboardLayout,
       name: "dashboards",
-      redirect: { name: "IncidentOverview" },
+      redirect: { name: "CaseOverview" },
       meta: {
         title: "Dashboards",
         group: "dashboard",
@@ -228,6 +228,13 @@ export const protectedRoute = [
         requiresAuth: true,
       },
       children: [
+        {
+          path: "cases",
+          name: "CaseOverview",
+          meta: { title: "Cases", group: "type" },
+          component: () =>
+            import(/* webpackChunkName: "case-overview" */ "@/dashboard/CaseOverview.vue"),
+        },
         {
           path: "incidents",
           name: "IncidentOverview",
