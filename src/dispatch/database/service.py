@@ -347,9 +347,12 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
     # this is required because by default sqlalchemy-filter's auto-join
     # knows nothing about how to join many-many relationships.
     model_map = {
-        (Case, "CasePriority"): (Case.case_priorities, True),
-        (Case, "CaseSeverity"): (Case.case_severities, True),
+        (Case, "CasePriority"): (Case.case_priority, True),
+        (Case, "CaseSeverity"): (Case.case_severity, True),
         (Case, "CaseType"): (Case.case_types, True),
+        # (Case, "CasePriority"): (Case.case_priorities, True),
+        # (Case, "CaseSeverity"): (Case.case_severities, True),
+        # (Case, "CaseType"): (Case.case_types, True),
         (Case, "Tag"): (Case.tags, True),
         (Case, "TagType"): (Case.tags, True),
         (DispatchUser, "Organization"): (DispatchUser.organizations, True),
