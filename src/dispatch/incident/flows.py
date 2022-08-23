@@ -1,12 +1,3 @@
-"""
-.. module: dispatch.incident.flows
-    :platform: Unix
-    :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
-    :license: Apache, see LICENSE for more details.
-
-.. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
-.. moduleauthor:: Marc Vilanova <mvilanova@netflix.com>
-"""
 import logging
 
 from datetime import datetime
@@ -29,6 +20,10 @@ from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
 from dispatch.incident_type import service as incident_type_service
 from dispatch.individual import service as individual_service
+from dispatch.messaging.strings import (
+    INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,
+    INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
+)
 from dispatch.participant import flows as participant_flows
 from dispatch.participant import service as participant_service
 from dispatch.participant.models import Participant
@@ -308,30 +303,34 @@ def create_incident_documents(incident: Incident, db_session: SessionLocal):
     )
 
     if plugin:
+        # we create the investigation document
         incident_document_name = f"{incident.name} - Incident Document"
+        incident_document_description = INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION
 
         if incident.incident_type.incident_template_document:
+            incident_document_description = (
+                incident.incident_type.incident_template_document.description,
+            )
             document = plugin.instance.copy_file(
                 incident.storage.resource_id,
                 incident.incident_type.incident_template_document.resource_id,
                 incident_document_name,
             )
             plugin.instance.move_file(incident.storage.resource_id, document["id"])
-            # TODO this logic should probably be pushed down into the plugins i.e. making them return
-            # the fields we expect instead of re-mapping. (kglisson)
-            document.update(
-                {
-                    "name": incident_document_name,
-                    "description": incident.incident_type.incident_template_document.description,
-                    "resource_type": DocumentResourceTypes.incident,
-                    "resource_id": document["id"],
-                }
-            )
         else:
-            # create a blank document if no template is defined
+            # we create a blank document if no template is defined
             document = plugin.instance.create_file(
                 incident.storage.resource_id, incident_document_name, file_type="document"
             )
+
+        document.update(
+            {
+                "name": incident_document_name,
+                "description": incident_document_description,
+                "resource_type": DocumentResourceTypes.incident,
+                "resource_id": document["id"],
+            }
+        )
 
         incident_documents.append(document)
 
@@ -342,29 +341,34 @@ def create_incident_documents(incident: Incident, db_session: SessionLocal):
             incident_id=incident.id,
         )
 
-        sheet = None
+        # we create the investigation sheet
         incident_sheet_name = f"{incident.name} - Incident Tracking Sheet"
+        incident_sheet_description = INCIDENT_INVESTIGATION_SHEET_DESCRIPTION
+
         if incident.incident_type.tracking_template_document:
+            incident_sheet_description = (
+                incident.incident_type.tracking_template_document.description
+            )
             sheet = plugin.instance.copy_file(
                 incident.storage.resource_id,
                 incident.incident_type.tracking_template_document.resource_id,
                 incident_sheet_name,
             )
             plugin.instance.move_file(incident.storage.resource_id, sheet["id"])
-            sheet.update(
-                {
-                    "name": incident_sheet_name,
-                    "description": incident.incident_type.tracking_template_document.description,
-                    "resource_type": DocumentResourceTypes.tracking,
-                    "resource_id": sheet["id"],
-                }
-            )
-
         else:
-            # Create a blank one
+            # we create a blank sheet if no template is defined
             sheet = plugin.instance.create_file(
                 incident.storage.resource_id, incident_sheet_name, file_type="sheet"
             )
+
+        sheet.update(
+            {
+                "name": incident_sheet_name,
+                "description": incident_sheet_description,
+                "resource_type": DocumentResourceTypes.tracking,
+                "resource_id": sheet["id"],
+            }
+        )
 
         incident_documents.append(sheet)
 
@@ -392,7 +396,8 @@ def create_post_incident_review_document(incident: Incident, db_session: Session
         log.warning("Post-incident review document not created. No storage plugin enabled.")
         return
 
-    # we create a copy of the incident review document template and we move it to the incident storage
+    # we create a copy of the incident review document template
+    # and we move it to the incident storage
     incident_review_document_name = f"{incident.name} - Post-Incident Review Document"
 
     # incident review document is optional
@@ -513,7 +518,7 @@ def set_conversation_topic(incident: Incident, db_session: SessionLocal):
         return
 
     conversation_topic = (
-        f":helmet_with_white_cross: {incident.commander.individual.name}, {incident.commander.team} - "
+        f":helmet_with_white_cross: {incident.commander.individual.name}, {incident.commander.team} - "  # noqa
         f"Type: {incident.incident_type.name} - "
         f"Priority: {incident.incident_priority.name} - "
         f"Status: {incident.status}"
@@ -1037,7 +1042,8 @@ def incident_closed_status_flow(incident: Incident, db_session=None):
                 )
 
             if storage_plugin.configuration.read_only:
-                # unfortunately this can't be applied at the folder level so we just mark the incident doc as available.
+                # unfortunately this can't be applied at the folder level
+                # so we just mark the incident doc as available.
                 storage_plugin.instance.mark_readonly(incident.incident_document.resource_id)
 
                 event_service.log_incident_event(
@@ -1094,7 +1100,7 @@ def conversation_topic_dispatcher(
         event_service.log_incident_event(
             db_session=db_session,
             source="Incident Participant",
-            description=f"{individual.name} changed the incident type to {incident.incident_type.name}",
+            description=f"{individual.name} changed the incident type to {incident.incident_type.name}",  # noqa
             incident_id=incident.id,
             individual_id=individual.id,
         )
@@ -1105,7 +1111,7 @@ def conversation_topic_dispatcher(
         event_service.log_incident_event(
             db_session=db_session,
             source="Incident Participant",
-            description=f"{individual.name} changed the incident priority to {incident.incident_priority.name}",
+            description=f"{individual.name} changed the incident priority to {incident.incident_priority.name}",  # noqa
             incident_id=incident.id,
             individual_id=individual.id,
         )
@@ -1166,7 +1172,7 @@ def status_flow_dispatcher(
         event_service.log_incident_event(
             db_session=db_session,
             source="Dispatch Core App",
-            description=f"The incident status has been changed from {previous_status.lower()} to {current_status.lower()}",
+            description=f"The incident status has been changed from {previous_status.lower()} to {current_status.lower()}",  # noqa
             incident_id=incident.id,
         )
 
@@ -1224,7 +1230,8 @@ def incident_update_flow(
             )
 
         # we add the team distributions lists to the notifications group
-        # we only have to do this for teams as new members will be added to the tactical group on incident join
+        # we only have to do this for teams as new members
+        # will be added to the tactical group on incident join
         group_plugin = plugin_service.get_active_instance(
             db_session=db_session, project_id=incident.project.id, plugin_type="participant-group"
         )
@@ -1259,7 +1266,7 @@ def incident_assign_role_flow(
         # NOTE: This is disabled until we can determine the source of the caller
         # we let the assigner know that the assignee already has this role
         # send_incident_participant_has_role_ephemeral_message(
-        #     assigner_email, assignee_contact_info, assignee_role, incident
+        # 	assigner_email, assignee_contact_info, assignee_role, incident
         # )
         return
 
@@ -1267,7 +1274,7 @@ def incident_assign_role_flow(
         # NOTE: This is disabled until we can determine the source of the caller
         # we let the assigner know that we were not able to assign the role
         # send_incident_participant_role_not_assigned_ephemeral_message(
-        #     assigner_email, assignee_contact_info, assignee_role, incident
+        # 	assigner_email, assignee_contact_info, assignee_role, incident
         # )
         return
 
@@ -1339,7 +1346,7 @@ def incident_engage_oncall_flow(
     if oncall_plugin:
         if oncall_plugin.plugin.slug != oncall_service.type:
             log.warning(
-                f"Unable to engage the oncall. Oncall plugin enabled not of type {oncall_plugin.plugin.slug}."
+                f"Unable to engage the oncall. Oncall plugin enabled not of type {oncall_plugin.plugin.slug}."  # noqa
             )
             return None, None
     else:
@@ -1488,7 +1495,8 @@ def incident_remove_participant_flow(
                 # we add the participant back to the conversation
                 add_participants_to_conversation([user_email], incident, db_session)
 
-                # we ask the participant to resolve or re-assign their tasks before leaving the incident
+                # we ask the participant to resolve or re-assign
+                # their tasks before leaving the incident
                 send_incident_open_tasks_ephemeral_message(user_email, incident, db_session)
 
                 return
