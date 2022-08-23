@@ -20,7 +20,7 @@
             <v-list dense>
               <v-list-item>
                 <v-list-item-content>
-                  <incident-window-input v-model="reported_at" label="Reported At" />
+                  <date-window-input v-model="reported_at" label="Reported At" />
                 </v-list-item-content>
               </v-list-item>
               <v-list-item>
@@ -104,13 +104,13 @@ import { mapActions } from "vuex"
 import SearchUtils from "@/search/utils"
 import Util from "@/util"
 
+import DateWindowInput from "@/components/DateWindowInput.vue"
 import IncidentApi from "@/incident/api"
 import IncidentPriority from "@/incident/IncidentPriority.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
 import IncidentStatus from "@/incident/IncidentStatus.vue"
 import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
-import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
@@ -119,12 +119,12 @@ export default {
   name: "IncidentTableExportDialog",
 
   components: {
+    DateWindowInput,
     IncidentPriority,
     IncidentPriorityCombobox,
     IncidentStatus,
     IncidentStatusMultiSelect,
     IncidentTypeCombobox,
-    IncidentWindowInput,
     ProjectCombobox,
     TagFilterAutoComplete,
     TagTypeFilterCombobox,

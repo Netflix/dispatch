@@ -62,7 +62,7 @@ import differenceInHours from "date-fns/differenceInHours"
 
 import StatWidget from "@/components/StatWidget.vue"
 import TaskActiveTimeCard from "@/task/TaskActiveTimeCard.vue"
-import TaskDialogFilter from "@/dashboard/TaskDialogFilter.vue"
+import TaskDialogFilter from "@/dashboard/task/TaskDialogFilter.vue"
 import TaskIncidentPriorityBarChartCard from "@/task/TaskIncidentPriorityBarChartCard.vue"
 import TaskIncidentTypeBarChartCard from "@/task/TaskIncidentTypeBarChartCard.vue"
 
@@ -70,11 +70,11 @@ export default {
   name: "TaskDashboard",
 
   components: {
-    TaskDialogFilter,
     StatWidget,
+    TaskActiveTimeCard,
+    TaskDialogFilter,
     TaskIncidentPriorityBarChartCard,
     TaskIncidentTypeBarChartCard,
-    TaskActiveTimeCard,
   },
 
   props: {
