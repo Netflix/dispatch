@@ -77,7 +77,7 @@
 import { filter, sumBy } from "lodash"
 import { mapFields } from "vuex-map-fields"
 
-import DialogFilter from "@/dashboard/DataDialogFilter.vue"
+import DialogFilter from "@/dashboard/data/DataDialogFilter.vue"
 import SourceTop5CostTableCard from "@/data/source/SourceTop5CostTableCard.vue"
 import SourceTop5IncidentTableCard from "@/data/source/SourceTop5IncidentTableCard.vue"
 import StatWidget from "@/components/StatWidget.vue"

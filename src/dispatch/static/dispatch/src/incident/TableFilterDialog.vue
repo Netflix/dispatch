@@ -12,7 +12,7 @@
       <v-list dense>
         <v-list-item>
           <v-list-item-content>
-            <incident-window-input v-model="local_reported_at" label="Reported At" />
+            <date-window-input v-model="local_reported_at" label="Reported At" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
@@ -63,10 +63,10 @@
 import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 
+import DateWindowInput from "@/components/DateWindowInput.vue"
 import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
 import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
 import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
-import IncidentWindowInput from "@/incident/IncidentWindowInput.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
@@ -75,10 +75,10 @@ export default {
   name: "IncidentTableFilterDialog",
 
   components: {
+    DateWindowInput,
     IncidentPriorityCombobox,
     IncidentStatusMultiSelect,
     IncidentTypeCombobox,
-    IncidentWindowInput,
     ProjectCombobox,
     TagFilterAutoComplete,
     TagTypeFilterCombobox,
