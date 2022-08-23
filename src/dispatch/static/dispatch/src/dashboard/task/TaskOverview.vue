@@ -70,11 +70,11 @@ export default {
   name: "TaskDashboard",
 
   components: {
-    TaskDialogFilter,
     StatWidget,
+    TaskActiveTimeCard,
+    TaskDialogFilter,
     TaskIncidentPriorityBarChartCard,
     TaskIncidentTypeBarChartCard,
-    TaskActiveTimeCard,
   },
 
   props: {
