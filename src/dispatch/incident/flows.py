@@ -309,7 +309,7 @@ def create_incident_documents(incident: Incident, db_session: SessionLocal):
 
         if incident.incident_type.incident_template_document:
             incident_document_description = (
-                incident.incident_type.incident_template_document.description,
+                incident.incident_type.incident_template_document.description
             )
             document = plugin.instance.copy_file(
                 incident.storage.resource_id,
