@@ -287,7 +287,7 @@ pytz==2022.2.1
     #   pandas
 pyyaml==6.0
     # via schemathesis
-requests==2.27.1
+requests==2.28.1
     # via
     #   -r requirements-base.in
     #   curlify
