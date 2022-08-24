@@ -71,14 +71,20 @@ def send_welcome_ephemeral_message_to_participant(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not plugin:
-        log.warning("Incident welcome message not sent, not conversation plugin enabled.")
+        log.warning("Incident welcome message not sent. No conversation plugin enabled.")
         return
+
+    incident_description = (
+        incident.description
+        if len(incident.description) <= 500
+        else f"{incident.description[:500]}..."
+    )
 
     # we send the ephemeral message
     message_kwargs = {
         "name": incident.name,
         "title": incident.title,
-        "description": f"{incident.description[:500]}...",
+        "description": incident_description,
         "status": incident.status,
         "type": incident.incident_type.name,
         "type_description": incident.incident_type.description,
@@ -135,10 +141,16 @@ def send_welcome_email_to_participant(
         log.warning("Participant welcome email not sent, not email plugin configured.")
         return
 
+    incident_description = (
+        incident.description
+        if len(incident.description) <= 500
+        else f"{incident.description[:500]}..."
+    )
+
     message_kwargs = {
         "name": incident.name,
         "title": incident.title,
-        "description": f"{incident.description[:500]}...",
+        "description": incident_description,
         "status": incident.status,
         "type": incident.incident_type.name,
         "type_description": incident.incident_type.description,
@@ -254,10 +266,16 @@ def send_incident_created_notifications(incident: Incident, db_session: SessionL
     else:
         notification_template.insert(0, INCIDENT_NAME)
 
+    incident_description = (
+        incident.description
+        if len(incident.description) <= 500
+        else f"{incident.description[:500]}..."
+    )
+
     notification_kwargs = {
         "name": incident.name,
         "title": incident.title,
-        "description": f"{incident.description[:500]}...",
+        "description": incident_description,
         "status": incident.status,
         "type": incident.incident_type.name,
         "type_description": incident.incident_type.description,
@@ -366,7 +384,7 @@ def send_incident_update_notifications(
             )
         else:
             log.debug(
-                "Incident updated notification not sent to incident conversation. No conversation plugin enabled."
+                "Incident updated notification not sent to incident conversation. No conversation plugin enabled."  # noqa
             )
 
     # we send a notification to the notification conversations and emails
@@ -523,7 +541,10 @@ def send_incident_participant_has_role_ephemeral_message(
     incident: Incident,
     db_session: SessionLocal,
 ):
-    """Sends an ephemeral message to the assigner to let them know that the assignee already has the role."""
+    """
+    Sends an ephemeral message to the assigner to let them know
+    that the assignee already has the role.
+    """
     notification_text = "Incident Assign Role Notification"
 
     plugin = plugin_service.get_active_instance(
@@ -544,7 +565,7 @@ def send_incident_participant_has_role_ephemeral_message(
                 "type": "section",
                 "text": {
                     "type": "plain_text",
-                    "text": f"{assignee_contact_info['fullname']} already has the {assignee_role} role.",
+                    "text": f"{assignee_contact_info['fullname']} already has the {assignee_role} role.",  # noqa
                 },
             }
         ],
@@ -560,7 +581,10 @@ def send_incident_participant_role_not_assigned_ephemeral_message(
     incident: Incident,
     db_session: SessionLocal,
 ):
-    """Sends an ephemeral message to the assigner to let them know that we were not able to assign the role."""
+    """
+    Sends an ephemeral message to the assigner to let them know
+    that we were not able to assign the role.
+    """
     notification_text = "Incident Assign Role Notification"
 
     plugin = plugin_service.get_active_instance(
@@ -568,7 +592,7 @@ def send_incident_participant_role_not_assigned_ephemeral_message(
     )
     if not plugin:
         log.warning(
-            "Unabled to send incident participant role not assigned message, no conversation plugin enabled."
+            "Unabled to send incident participant role not assigned message, no conversation plugin enabled."  # noqa
         )
         return
 
@@ -582,7 +606,7 @@ def send_incident_participant_role_not_assigned_ephemeral_message(
                 "type": "section",
                 "text": {
                     "type": "plain_text",
-                    "text": f"We were not able to assign the {assignee_role} role to {assignee_contact_info['fullname']}.",
+                    "text": f"We were not able to assign the {assignee_role} role to {assignee_contact_info['fullname']}.",  # noqa
                 },
             }
         ],
@@ -666,9 +690,15 @@ def send_incident_resources_ephemeral_message_to_participant(
         log.warning("Incident resource message not sent, no conversation plugin enabled.")
         return
 
+    incident_description = (
+        incident.description
+        if len(incident.description) <= 500
+        else f"{incident.description[:500]}..."
+    )
+
     message_kwargs = {
         "title": incident.title,
-        "description": f"{incident.description[:500]}...",
+        "description": incident_description,
         "commander_fullname": incident.commander.individual.name,
         "commander_team": incident.commander.team,
         "commander_weblink": incident.commander.individual.weblink,
@@ -715,7 +745,10 @@ def send_incident_resources_ephemeral_message_to_participant(
 
 
 def send_incident_close_reminder(incident: Incident, db_session: SessionLocal):
-    """Sends a direct message to the incident commander reminding them to close the incident if possible."""
+    """
+    Sends a direct message to the incident commander reminding
+    them to close the incident if possible.
+    """
     message_text = "Incident Status Reminder"
     message_template = INCIDENT_STATUS_REMINDER
 
@@ -763,19 +796,31 @@ def send_incident_closed_information_review_reminder(incident: Incident, db_sess
     )
     if not plugin:
         log.warning(
-            "Incident closed information review reminder message not sent, no conversation plugin enabled."
+            "Incident closed information review reminder message not sent, no conversation plugin enabled."  # noqa
         )
         return
+
+    incident_description = (
+        incident.description
+        if len(incident.description) <= 100
+        else f"{incident.description[:100]}..."
+    )
+
+    incident_resolution = (
+        incident.resolution
+        if len(incident.resolution) <= 100
+        else f"{incident.resolution[:100]}..."
+    )
 
     items = [
         {
             "name": incident.name,
             "title": incident.title,
-            "description": f"{incident.description[:100]}...",
-            "resolution": f"{incident.resolution[:100]}...",
+            "description": incident_description,
+            "resolution": incident_resolution,
             "type": incident.incident_type.name,
             "priority": incident.incident_priority.name,
-            "dispatch_ui_incident_url": f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{incident.name}",
+            "dispatch_ui_incident_url": f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{incident.name}",  # noqa
         }
     ]
 
@@ -788,7 +833,7 @@ def send_incident_closed_information_review_reminder(incident: Incident, db_sess
     )
 
     log.debug(
-        f"Incident closed information review reminder sent to {incident.commander.individual.email}."
+        f"Incident closed information review reminder sent to {incident.commander.individual.email}."  # noqa
     )
 
 
@@ -881,7 +926,7 @@ def send_incident_management_help_tips_message(incident: Incident, db_session: S
     )
 
     log.debug(
-        f"Incident management help tips message sent to incident commander with email {incident.commander.individual.email}."
+        f"Incident management help tips message sent to incident commander with email {incident.commander.individual.email}."  # noqa
     )
 
 
