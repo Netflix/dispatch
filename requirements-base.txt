@@ -28,7 +28,7 @@ attrs==21.4.0
     #   schemathesis
 backoff==2.1.2
     # via schemathesis
-bcrypt==3.2.2
+bcrypt==4.0.0
     # via -r requirements-base.in
 blis==0.7.8
     # via thinc
@@ -49,9 +49,7 @@ certifi==2022.6.15
     #   requests
     #   sentry-sdk
 cffi==1.15.1
-    # via
-    #   bcrypt
-    #   cryptography
+    # via cryptography
 chardet==5.0.0
     # via
     #   -r requirements-base.in
