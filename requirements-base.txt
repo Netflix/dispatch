@@ -406,7 +406,7 @@ urllib3==1.26.11
     #   pdpyras
     #   requests
     #   sentry-sdk
-uvicorn==0.18.2
+uvicorn==0.18.3
     # via -r requirements-base.in
 uvloop==0.16.0
     # via -r requirements-base.in
