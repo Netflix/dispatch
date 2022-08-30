@@ -29,6 +29,7 @@ from dispatch.enums import Visibility
 from dispatch.event.models import EventRead
 from dispatch.group.models import Group, GroupRead
 from dispatch.incident.models import IncidentRead
+from dispatch.messaging.strings import CASE_RESOLUTION_DEFAULT
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.storage.models import StorageRead
 from dispatch.tag.models import TagRead
@@ -103,8 +104,8 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     name = Column(String)
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
-    resolution = Column(String)
-    status = Column(String, default=CaseStatus.new)
+    resolution = Column(String, default=CASE_RESOLUTION_DEFAULT, nullable=False)
+    status = Column(String, default=CaseStatus.new, nullable=False)
     visibility = Column(String, default=Visibility.open, nullable=False)
 
     reported_at = Column(DateTime, default=datetime.utcnow)
@@ -194,7 +195,7 @@ class CaseBase(DispatchBase):
     title: str
     description: str
     resolution: Optional[str]
-    status: Optional[CaseStatus] = CaseStatus.new
+    status: Optional[CaseStatus]
     visibility: Optional[Visibility]
 
     @validator("title")
@@ -215,7 +216,7 @@ class CaseCreate(CaseBase):
     case_priority: Optional[CasePriorityRead]
     case_severity: Optional[CaseSeverityRead]
     case_type: Optional[CaseTypeRead]
-    project: ProjectRead
+    project: Optional[ProjectRead]
     source: Optional[SourceRead]
     tags: Optional[List[TagRead]] = []
 

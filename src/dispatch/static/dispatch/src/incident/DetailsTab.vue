@@ -41,6 +41,36 @@
         <project-select v-model="project" />
       </v-flex>
       <v-flex xs6>
+        <ValidationProvider name="Reporter" rules="required" immediate>
+          <participant-select
+            v-model="reporter"
+            slot-scope="{ errors, valid }"
+            label="Reporter"
+            :error-messages="errors"
+            :success="valid"
+            hint="The participant who reported the incident."
+            clearable
+            required
+            :project="project"
+          />
+        </ValidationProvider>
+      </v-flex>
+      <v-flex xs6>
+        <ValidationProvider name="Incident Commander" rules="required" immediate>
+          <participant-select
+            v-model="commander"
+            slot-scope="{ errors, valid }"
+            label="Incident Commander"
+            :error-messages="errors"
+            :success="valid"
+            hint="The participant acting as incident commander."
+            clearable
+            required
+            :project="project"
+          />
+        </ValidationProvider>
+      </v-flex>
+      <v-flex xs6>
         <v-select
           v-model="status"
           label="Status"
@@ -61,36 +91,6 @@
       </v-flex>
       <v-flex xs6>
         <incident-priority-select v-model="incident_priority" :project="project" />
-      </v-flex>
-      <v-flex xs6>
-        <ValidationProvider name="Commander" rules="required" immediate>
-          <participant-select
-            v-model="commander"
-            slot-scope="{ errors, valid }"
-            label="Commander"
-            :error-messages="errors"
-            :success="valid"
-            hint="The participant acting as incident commander."
-            clearable
-            required
-            :project="project"
-          />
-        </ValidationProvider>
-      </v-flex>
-      <v-flex xs6>
-        <ValidationProvider name="Reporter" rules="required" immediate>
-          <participant-select
-            v-model="reporter"
-            slot-scope="{ errors, valid }"
-            label="Reporter"
-            :error-messages="errors"
-            :success="valid"
-            hint="The participant who reported the incident."
-            clearable
-            required
-            :project="project"
-          />
-        </ValidationProvider>
       </v-flex>
       <v-flex xs12>
         <v-row>

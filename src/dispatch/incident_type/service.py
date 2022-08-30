@@ -33,7 +33,7 @@ def get_default_or_raise(*, db_session, project_id: int) -> IncidentType:
         raise ValidationError(
             [
                 ErrorWrapper(
-                    NotFoundError(msg="No default incident_type defined."),
+                    NotFoundError(msg="No default incident type defined."),
                     loc="incident_type",
                 )
             ],
@@ -65,7 +65,7 @@ def get_by_name_or_raise(
             [
                 ErrorWrapper(
                     NotFoundError(
-                        msg="IncidentType not found.", incident_type=incident_type_in.name
+                        msg="Incident type not found.", incident_type=incident_type_in.name
                     ),
                     loc="incident_type",
                 )

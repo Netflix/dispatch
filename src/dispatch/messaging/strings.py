@@ -168,6 +168,18 @@ DOCUMENT_DESCRIPTIONS = {
     DocumentResourceTypes.tracking: INCIDENT_INVESTIGATION_SHEET_DESCRIPTION,
 }
 
+INCIDENT_RESOLUTION_DEFAULT = """
+Description of the actions taken to resolve the incident.
+""".replace(
+    "\n", " "
+).strip()
+
+CASE_RESOLUTION_DEFAULT = """
+Description of the actions taken to resolve the incident.
+""".replace(
+    "\n", " "
+).strip()
+
 INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION = """
 You\'re being contacted because we think you may
 be able to help us during this information security incident.
