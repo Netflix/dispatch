@@ -38,6 +38,18 @@
         />
       </v-flex>
       <v-flex xs6>
+        <organization-member-combobox
+          v-model="assignee"
+          label="Assignee"
+          hint="The organization member to which the case is assigned."
+          clearable
+          :project="project"
+        />
+      </v-flex>
+      <v-flex xs6>
+        <project-select v-model="project" />
+      </v-flex>
+      <v-flex xs6>
         <v-select
           v-model="status"
           label="Status"
@@ -54,28 +66,16 @@
         />
       </v-flex>
       <v-flex xs6>
-        <organization-member-combobox
-          v-model="assignee"
-          label="Assignee"
-          hint="The organization member to which the case is assigned."
-          clearable
-          :project="project"
-        />
-      </v-flex>
-      <v-flex xs6>
-        <project-select v-model="project" />
-      </v-flex>
-      <v-flex xs6>
         <case-type-select v-model="case_type" :project="project" />
+      </v-flex>
+      <v-flex xs6>
+        <source-select v-model="source" :project="project" />
       </v-flex>
       <v-flex xs6>
         <case-severity-select v-model="case_severity" :project="project" />
       </v-flex>
       <v-flex xs6>
         <case-priority-select v-model="case_priority" :project="project" />
-      </v-flex>
-      <v-flex xs6>
-        <source-select v-model="source" :project="project" />
       </v-flex>
       <v-flex xs12>
         <v-row>

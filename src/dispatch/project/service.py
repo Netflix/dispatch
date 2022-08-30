@@ -61,10 +61,10 @@ def get_by_name_or_raise(*, db_session, project_in=ProjectRead) -> Project:
 
 def get_by_name_or_default(*, db_session, project_in=ProjectRead) -> Project:
     """Returns a project based on a name or the default if not specified."""
-    if project_in.name:
-        return get_by_name_or_raise(db_session=db_session, project_in=project_in)
-    else:
-        return get_default_or_raise(db_session=db_session)
+    if project_in:
+        if project_in.name:
+            return get_by_name_or_raise(db_session=db_session, project_in=project_in)
+    return get_default_or_raise(db_session=db_session)
 
 
 def get_all(*, db_session) -> List[Optional[Project]]:
