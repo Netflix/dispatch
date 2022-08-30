@@ -3,7 +3,6 @@ from collections import Counter, defaultdict
 from typing import List, Optional
 
 from pydantic import validator
-from sqlalchemy.sql.sqltypes import Numeric
 from dispatch.models import NameStr, PrimaryKey
 from sqlalchemy import (
     Column,
@@ -30,14 +29,14 @@ from dispatch.incident_priority.models import (
     IncidentPriorityCreate,
     IncidentPriorityRead,
 )
-from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
-from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
-from dispatch.participant.models import ParticipantRead, ParticipantUpdate
-from dispatch.participant_role.models import ParticipantRoleType
-from dispatch.report.enums import ReportTypes
 from dispatch.document.models import Document
 from dispatch.group.models import Group
+from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
+from dispatch.messaging.strings import INCIDENT_RESOLUTION_DEFAULT
+from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.participant.models import Participant
+from dispatch.participant.models import ParticipantRead, ParticipantUpdate
+from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
 from dispatch.tag.models import TagRead
@@ -70,8 +69,8 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     name = Column(String)
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
-    resolution = Column(String)
-    status = Column(String, default=IncidentStatus.active)
+    resolution = Column(String, default=INCIDENT_RESOLUTION_DEFAULT, nullable=False)
+    status = Column(String, default=IncidentStatus.active, nullable=False)
     visibility = Column(String, default=Visibility.open, nullable=False)
     participants_team = Column(String)
     participants_location = Column(String)
@@ -222,7 +221,7 @@ class IncidentBase(DispatchBase):
     title: str
     description: str
     resolution: Optional[str]
-    status: Optional[IncidentStatus] = IncidentStatus.active
+    status: Optional[IncidentStatus]
     visibility: Optional[Visibility]
 
     @validator("title")
@@ -256,7 +255,7 @@ class IncidentCreate(IncidentBase):
     commander: Optional[ParticipantUpdate]
     incident_priority: Optional[IncidentPriorityCreate]
     incident_type: Optional[IncidentTypeCreate]
-    project: ProjectRead
+    project: Optional[ProjectRead]
     reporter: Optional[ParticipantUpdate]
     tags: Optional[List[TagRead]] = []
 
@@ -284,7 +283,7 @@ class IncidentUpdate(IncidentBase):
             for v in exclusive_tags.values():
                 if len(v) > 1:
                     raise ValueError(
-                        f"Found multiple exclusive tags. Please ensure that only one tag of a given type is applied. Tags: {','.join([t.name for t in v])}"
+                        f"Found multiple exclusive tags. Please ensure that only one tag of a given type is applied. Tags: {','.join([t.name for t in v])}"  # noqa: E501
                     )
         return v
 
