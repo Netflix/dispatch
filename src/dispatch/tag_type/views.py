@@ -51,7 +51,6 @@ def create_tag_type(*, db_session: Session = Depends(get_db), tag_type_in: TagTy
             ],
             model=TagTypeCreate,
         )
-
     return tag_type
 
 
@@ -81,7 +80,7 @@ def update_tag_type(
     return tag_type
 
 
-@router.delete("/{tag_type_id}")
+@router.delete("/{tag_type_id}", response_model=None)
 def delete_tag_type(*, db_session: Session = Depends(get_db), tag_type_id: PrimaryKey):
     """Delete a tag type."""
     tag_type = get(db_session=db_session, tag_type_id=tag_type_id)

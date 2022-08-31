@@ -81,7 +81,7 @@ def update_service(
 
 @router.get("/{service_id}", response_model=ServiceRead)
 def get_service(*, db_session: Session = Depends(get_db), service_id: PrimaryKey):
-    """Gets a single service."""
+    """Gets a service."""
     service = get(db_session=db_session, service_id=service_id)
     if not service:
         raise HTTPException(
@@ -91,9 +91,9 @@ def get_service(*, db_session: Session = Depends(get_db), service_id: PrimaryKey
     return service
 
 
-@router.delete("/{service_id}")
+@router.delete("/{service_id}", response_model=None)
 def delete_service(*, db_session: Session = Depends(get_db), service_id: PrimaryKey):
-    """Deletes a single service."""
+    """Deletes a service."""
     service = get(db_session=db_session, service_id=service_id)
     if not service:
         raise HTTPException(

@@ -25,7 +25,7 @@ def get_tags(*, common: dict = Depends(common_parameters)):
 
 @router.get("/{tag_id}", response_model=TagRead)
 def get_tag(*, db_session: Session = Depends(get_db), tag_id: PrimaryKey):
-    """Given its unique ID, retrieve details about a single tag."""
+    """Given its unique id, retrieve details about a single tag."""
     tag = get(db_session=db_session, tag_id=tag_id)
     if not tag:
         raise HTTPException(
@@ -37,32 +37,30 @@ def get_tag(*, db_session: Session = Depends(get_db), tag_id: PrimaryKey):
 
 @router.post("", response_model=TagRead)
 def create_tag(*, db_session: Session = Depends(get_db), tag_in: TagCreate):
-    """Create a new tag."""
-    tag = create(db_session=db_session, tag_in=tag_in)
-    return tag
+    """Creates a new tag."""
+    return create(db_session=db_session, tag_in=tag_in)
 
 
 @router.put("/{tag_id}", response_model=TagRead)
 def update_tag(*, db_session: Session = Depends(get_db), tag_id: PrimaryKey, tag_in: TagUpdate):
-    """Update a tag."""
+    """Updates an exisiting tag."""
     tag = get(db_session=db_session, tag_id=tag_id)
     if not tag:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An tag with this ID does not exist."}],
+            detail=[{"msg": "A tag with this id does not exist."}],
         )
-    tag = update(db_session=db_session, tag=tag, tag_in=tag_in)
-    return tag
+    return update(db_session=db_session, tag=tag, tag_in=tag_in)
 
 
-@router.delete("/{tag_id}")
+@router.delete("/{tag_id}", response_model=None)
 def delete_tag(*, db_session: Session = Depends(get_db), tag_id: PrimaryKey):
-    """Delete a tag, returning only an HTTP 200 OK if successful."""
+    """Deletes a tag, returning only an HTTP 200 OK if successful."""
     tag = get(db_session=db_session, tag_id=tag_id)
     if not tag:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An tag with this ID does not exist."}],
+            detail=[{"msg": "A tag with this id does not exist."}],
         )
     delete(db_session=db_session, tag_id=tag_id)
 

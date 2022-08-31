@@ -31,7 +31,7 @@ def get_definition(*, db_session: Session = Depends(get_db), definition_id: Prim
     if not definition:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "The definition with this id does not exist."}],
+            detail=[{"msg": "A definition with this id does not exist."}],
         )
     return definition
 
@@ -50,8 +50,7 @@ def create_definition(*, db_session: Session = Depends(get_db), definition_in: D
             model=DefinitionRead,
         )
 
-    definition = create(db_session=db_session, definition_in=definition_in)
-    return definition
+    return create(db_session=db_session, definition_in=definition_in)
 
 
 @router.put("/{definition_id}", response_model=DefinitionRead)
@@ -66,19 +65,18 @@ def update_definition(
     if not definition:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "The definition with this id does not exist."}],
+            detail=[{"msg": "A definition with this id does not exist."}],
         )
-    definition = update(db_session=db_session, definition=definition, definition_in=definition_in)
-    return definition
+    return update(db_session=db_session, definition=definition, definition_in=definition_in)
 
 
-@router.delete("/{definition_id}")
+@router.delete("/{definition_id}", response_model=None)
 def delete_definition(*, db_session: Session = Depends(get_db), definition_id: PrimaryKey):
     """Delete a definition."""
     definition = get(db_session=db_session, definition_id=definition_id)
     if not definition:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "The definition with this id does not exist."}],
+            detail=[{"msg": "A definition with this id does not exist."}],
         )
     delete(db_session=db_session, definition_id=definition_id)

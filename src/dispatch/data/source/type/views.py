@@ -26,7 +26,7 @@ def get_source_types(*, common: dict = Depends(common_parameters)):
 
 @router.get("/{source_type_id}", response_model=SourceTypeRead)
 def get_source_type(*, db_session: Session = Depends(get_db), source_type_id: PrimaryKey):
-    """Given its unique ID, retrieve details about a single source type."""
+    """Given its unique id, retrieve details about a single source type."""
     source_type = get(db_session=db_session, source_type_id=source_type_id)
     if not source_type:
         raise HTTPException(
@@ -38,7 +38,7 @@ def get_source_type(*, db_session: Session = Depends(get_db), source_type_id: Pr
 
 @router.post("", response_model=SourceTypeRead)
 def create_source_type(*, db_session: Session = Depends(get_db), source_type_in: SourceTypeCreate):
-    """Create a new source type."""
+    """Creates a new source type."""
     return create(db_session=db_session, source_type_in=source_type_in)
 
 
@@ -49,23 +49,23 @@ def update_source_type(
     source_type_id: PrimaryKey,
     source_type_in: SourceTypeUpdate,
 ):
-    """Update a source type."""
+    """Updates a source type."""
     source_type = get(db_session=db_session, source_type_id=source_type_id)
     if not source_type:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An source type with this ID does not exist."}],
+            detail=[{"msg": "An source type with this id does not exist."}],
         )
     return update(db_session=db_session, source_type=source_type, source_type_in=source_type_in)
 
 
-@router.delete("/{source_type_id}")
+@router.delete("/{source_type_id}", response_model=None)
 def delete_source_type(*, db_session: Session = Depends(get_db), source_type_id: PrimaryKey):
-    """Delete a source type, returning only an HTTP 200 OK if successful."""
+    """Deletes a source type, returning only an HTTP 200 OK if successful."""
     source_type = get(db_session=db_session, source_type_id=source_type_id)
     if not source_type:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An source type with this ID does not exist."}],
+            detail=[{"msg": "An source type with this id does not exist."}],
         )
     delete(db_session=db_session, source_type_id=source_type_id)

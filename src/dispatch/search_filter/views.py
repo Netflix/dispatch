@@ -16,6 +16,7 @@ from .models import (
 )
 from .service import create, delete, get, update
 
+
 router = APIRouter()
 
 
@@ -73,7 +74,7 @@ def update_search_filter(
     return search_filter
 
 
-@router.delete("/{search_filter_id}")
+@router.delete("/{search_filter_id}", response_model=None)
 def delete_filter(*, db_session: Session = Depends(get_db), search_filter_id: PrimaryKey):
     """Delete a search filter."""
     search_filter = get(db_session=db_session, search_filter_id=search_filter_id)
@@ -82,5 +83,4 @@ def delete_filter(*, db_session: Session = Depends(get_db), search_filter_id: Pr
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "A search filter with this id does not exist."}],
         )
-
     delete(db_session=db_session, search_filter_id=search_filter_id)

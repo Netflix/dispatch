@@ -75,6 +75,7 @@ def update_notification(
 
 @router.delete(
     "/{notification_id}",
+    response_model=None,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def delete_notification(*, db_session: Session = Depends(get_db), notification_id: PrimaryKey):

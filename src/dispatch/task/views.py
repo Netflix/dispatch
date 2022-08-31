@@ -14,6 +14,7 @@ from dispatch.models import PrimaryKey
 from .models import TaskCreate, TaskUpdate, TaskRead, TaskPagination
 from .service import get, update, create, delete
 
+
 router = APIRouter()
 
 
@@ -48,8 +49,7 @@ def create_task(
 ):
     """Creates a new task."""
     task_in.creator = {"individual": {"email": current_user.email}}
-    task = create(db_session=db_session, task_in=task_in)
-    return task
+    return create(db_session=db_session, task_in=task_in)
 
 
 @router.put("/{task_id}", response_model=TaskRead, tags=["tasks"])
@@ -61,11 +61,10 @@ def update_task(*, db_session: Session = Depends(get_db), task_id: PrimaryKey, t
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "A task with this id does not exist."}],
         )
-    task = update(db_session=db_session, task=task, task_in=task_in)
-    return task
+    return update(db_session=db_session, task=task, task_in=task_in)
 
 
-@router.delete("/{task_id}", response_model=TaskRead, tags=["tasks"])
+@router.delete("/{task_id}", response_model=None, tags=["tasks"])
 def delete_task(*, db_session: Session = Depends(get_db), task_id: PrimaryKey):
     """Deletes an existing task."""
     task = get(db_session=db_session, task_id=task_id)
@@ -75,4 +74,3 @@ def delete_task(*, db_session: Session = Depends(get_db), task_id: PrimaryKey):
             detail=[{"msg": "A task with this id does not exist."}],
         )
     delete(db_session=db_session, task_id=task_id)
-    return task

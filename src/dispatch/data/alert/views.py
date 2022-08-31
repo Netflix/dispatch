@@ -16,7 +16,7 @@ router = APIRouter()
 
 @router.get("/{alert_id}", response_model=AlertRead)
 def get_alert(*, db_session: Session = Depends(get_db), alert_id: PrimaryKey):
-    """Given its unique ID, retrieve details about a single alert."""
+    """Given its unique id, retrieve details about a single alert."""
     alert = get(db_session=db_session, alert_id=alert_id)
     if not alert:
         raise HTTPException(
@@ -28,33 +28,31 @@ def get_alert(*, db_session: Session = Depends(get_db), alert_id: PrimaryKey):
 
 @router.post("", response_model=AlertRead)
 def create_alert(*, db_session: Session = Depends(get_db), alert_in: AlertCreate):
-    """Create a new alert."""
-    alert = create(db_session=db_session, alert_in=alert_in)
-    return alert
+    """Creates a new alert."""
+    return create(db_session=db_session, alert_in=alert_in)
 
 
 @router.put("/{alert_id}", response_model=AlertRead)
 def update_alert(
     *, db_session: Session = Depends(get_db), alert_id: PrimaryKey, alert_in: AlertUpdate
 ):
-    """Update a alert."""
+    """Updates an alert."""
     alert = get(db_session=db_session, alert_id=alert_id)
     if not alert:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An alert with this ID does not exist."}],
+            detail=[{"msg": "An alert with this id does not exist."}],
         )
-    alert = update(db_session=db_session, alert=alert, alert_in=alert_in)
-    return alert
+    return update(db_session=db_session, alert=alert, alert_in=alert_in)
 
 
-@router.delete("/{alert_id}")
+@router.delete("/{alert_id}", response_model=None)
 def delete_alert(*, db_session: Session = Depends(get_db), alert_id: PrimaryKey):
-    """Delete a alert, returning only an HTTP 200 OK if successful."""
+    """Deletes an alert, returning only an HTTP 200 OK if successful."""
     alert = get(db_session=db_session, alert_id=alert_id)
     if not alert:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An alert with this ID does not exist."}],
+            detail=[{"msg": "An alert with this id does not exist."}],
         )
     delete(db_session=db_session, alert_id=alert_id)

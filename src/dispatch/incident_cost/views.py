@@ -77,6 +77,7 @@ def update_incident_cost(
 
 @router.delete(
     "/{incident_cost_id}",
+    response_model=None,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def delete_incident_cost(*, db_session: Session = Depends(get_db), incident_cost_id: PrimaryKey):
