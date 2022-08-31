@@ -16,6 +16,18 @@ Cost: {{cost}}
 Incident Commander: [~{{commander_username}}]
 """
 
+INCIDENT_ISSUE_SUMMARY_NO_RESOURCES_TEMPLATE = """
+{color:red}*Confidential Information - For Internal Use Only*{color}
+
+*Incident Details*
+Description: {{description}}
+Type: {{incident_type}}
+Priority: {{priority}}
+Cost: {{cost}}
+
+Incident Commander: [~{{commander_username}}]
+"""
+
 CASE_ISSUE_SUMMARY_TEMPLATE = """
 {color:red}*Confidential Information - For Internal Use Only*{color}
 
