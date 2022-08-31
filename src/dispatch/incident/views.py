@@ -1,7 +1,5 @@
 import logging
 from typing import List
-from pydantic import Json
-
 import json
 import calendar
 from datetime import date
@@ -53,7 +51,7 @@ def get_current_incident(*, db_session: Session = Depends(get_db), request: Requ
     if not incident:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "The requested incident does not exist."}],
+            detail=[{"msg": "An incident with this id does not existt."}],
         )
     return incident
 
@@ -264,7 +262,7 @@ def create_executive_report(
 
 @router.delete(
     "/{incident_id}",
-    response_model=IncidentRead,
+    response_model=None,
     summary="Delete an incident.",
     dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
 )

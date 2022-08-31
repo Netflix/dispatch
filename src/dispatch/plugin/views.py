@@ -93,6 +93,7 @@ def update_plugin_instance(
 
 @router.delete(
     "/instances/{plugin_instance_id}",
+    response_model=None,
     dependencies=[Depends(PermissionsDependency([SensitiveProjectActionPermission]))],
 )
 def delete_plugin_instances(
@@ -107,5 +108,4 @@ def delete_plugin_instances(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "A plugin instance with this id does not exist."}],
         )
-
     delete_instance(db_session=db_session, plugin_instance_id=plugin_instance_id)

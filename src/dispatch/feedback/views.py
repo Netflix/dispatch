@@ -57,7 +57,7 @@ def update_feedback(
     return feedback
 
 
-@router.delete("/{feedback_id}")
+@router.delete("/{feedback_id}", response_model=None)
 def delete_feedback(*, db_session: Session = Depends(get_db), feedback_id: PrimaryKey):
     """Delete a feedback entry, returning only an HTTP 200 OK if successful."""
     feedback = get(db_session=db_session, feedback_id=feedback_id)

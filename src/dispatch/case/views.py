@@ -154,7 +154,7 @@ def update_case(
 
 @router.delete(
     "/{case_id}",
-    response_model=CaseRead,
+    response_model=None,
     summary="Deletes an existing case.",
     # dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
 )
@@ -183,7 +183,7 @@ def delete_case(
                 {
                     "msg": (
                         f"Case {case.name} could not be deleted. Make sure the case has no ",
-                        "relationshipts to other cases or incidents before deleting it.",
+                        "relationships to other cases or incidents before deleting it.",
                     )
                 }
             ],

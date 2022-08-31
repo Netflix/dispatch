@@ -36,33 +36,31 @@ def get_query(*, db_session: Session = Depends(get_db), query_id: PrimaryKey):
 
 @router.post("", response_model=QueryRead)
 def create_query(*, db_session: Session = Depends(get_db), query_in: QueryCreate):
-    """Create a new query."""
-    query = create(db_session=db_session, query_in=query_in)
-    return query
+    """Creates a new data query."""
+    return create(db_session=db_session, query_in=query_in)
 
 
 @router.put("/{query_id}", response_model=QueryRead)
 def update_query(
     *, db_session: Session = Depends(get_db), query_id: PrimaryKey, query_in: QueryUpdate
 ):
-    """Update a query."""
+    """Updates a data query."""
     query = get(db_session=db_session, query_id=query_id)
     if not query:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A query with this ID does not exist."}],
+            detail=[{"msg": "A data query with this id does not exist."}],
         )
-    query = update(db_session=db_session, query=query, query_in=query_in)
-    return query
+    return update(db_session=db_session, query=query, query_in=query_in)
 
 
-@router.delete("/{query_id}")
+@router.delete("/{query_id}", response_model=None)
 def delete_query(*, db_session: Session = Depends(get_db), query_id: PrimaryKey):
-    """Delete a query, returning only an HTTP 200 OK if successful."""
+    """Deletes a data query, returning only an HTTP 200 OK if successful."""
     query = get(db_session=db_session, query_id=query_id)
     if not query:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "A query with this ID does not exist."}],
+            detail=[{"msg": "A data query with this id does not exist."}],
         )
     delete(db_session=db_session, query_id=query_id)
