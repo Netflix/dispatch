@@ -1,8 +1,8 @@
 """
 .. module: dispatch.plugins.dispatch_jira.plugin
-    :platform: Unix
-    :copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
-    :license: Apache, see LICENSE for more details.
+:platform: Unix
+:copyright: (c) 2019 by Netflix Inc., see AUTHORS for more
+:license: Apache, see LICENSE for more details.
 """
 from enum import Enum
 from typing import Any
@@ -17,7 +17,11 @@ from dispatch.decorators import apply, counter, timer
 from dispatch.plugins import dispatch_jira as jira_plugin
 from dispatch.plugins.bases import TicketPlugin
 
-from .templates import INCIDENT_ISSUE_SUMMARY_TEMPLATE, CASE_ISSUE_SUMMARY_TEMPLATE
+from .templates import (
+    CASE_ISSUE_SUMMARY_TEMPLATE,
+    INCIDENT_ISSUE_SUMMARY_NO_RESOURCES_TEMPLATE,
+    INCIDENT_ISSUE_SUMMARY_TEMPLATE,
+)
 
 
 class HostingType(str, Enum):
@@ -135,17 +139,32 @@ def create_incident_issue_fields(
     issue_fields.update({"assignee": assignee})
     issue_fields.update({"reporter": reporter})
 
-    description = Template(INCIDENT_ISSUE_SUMMARY_TEMPLATE).render(
-        description=description,
-        incident_type=incident_type,
-        priority=priority,
-        cost=cost,
-        commander_username=commander_username,
-        document_weblink=document_weblink,
-        conference_weblink=conference_weblink,
-        conversation_weblink=conversation_weblink,
-        storage_weblink=storage_weblink,
-    )
+    if (
+        conversation_weblink is None
+        and document_weblink is None
+        and storage_weblink is None
+        and conference_weblink is None
+    ):
+        # the incident was opened as closed and we didn't create resources
+        description = Template(INCIDENT_ISSUE_SUMMARY_NO_RESOURCES_TEMPLATE).render(
+            description=description,
+            incident_type=incident_type,
+            priority=priority,
+            cost=cost,
+            commander_username=commander_username,
+        )
+    else:
+        description = Template(INCIDENT_ISSUE_SUMMARY_TEMPLATE).render(
+            description=description,
+            incident_type=incident_type,
+            priority=priority,
+            cost=cost,
+            commander_username=commander_username,
+            document_weblink=document_weblink,
+            conference_weblink=conference_weblink,
+            conversation_weblink=conversation_weblink,
+            storage_weblink=storage_weblink,
+        )
     issue_fields.update({"description": description})
 
     return issue_fields
