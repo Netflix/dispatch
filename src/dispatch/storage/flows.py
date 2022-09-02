@@ -33,7 +33,7 @@ def create_storage(obj: Any, members: List[str], db_session: SessionLocal):
         return
 
     if not external_storage:
-        log.error("Storage not created. Plugin {plugin.plugin.slug} encountered an error.")
+        log.error(f"Storage not created. Plugin {plugin.plugin.slug} encountered an error.")
         return
 
     external_storage.update(

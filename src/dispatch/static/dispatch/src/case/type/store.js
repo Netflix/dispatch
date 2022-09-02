@@ -12,6 +12,7 @@ const getDefaultSelectedState = () => {
     enabled: false,
     exclude_from_metrics: null,
     id: null,
+    incident_type: null,
     loading: false,
     name: null,
     oncall_service: null,

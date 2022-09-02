@@ -40,6 +40,16 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
+            <template v-slot:item.oncall_service.name="{ item }">
+              <v-chip v-if="item.oncall_service" small color="info" text-color="white">
+                {{ item.oncall_service.name }}
+              </v-chip>
+            </template>
+            <template v-slot:item.incident_type.name="{ item }">
+              <v-chip v-if="item.incident_type" small color="info" text-color="white">
+                {{ item.incident_type.name }}
+              </v-chip>
+            </template>
             <template v-slot:item.default="{ item }">
               <v-simple-checkbox v-model="item.default" disabled />
             </template>
@@ -88,6 +98,8 @@ export default {
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
         { text: "Visibility", value: "visibility", sortable: false },
+        { text: "Oncall Service", value: "oncall_service.name", sortable: false },
+        { text: "Incident Type", value: "incident_type.name", sortable: false },
         { text: "Default", value: "default", sortable: true },
         { text: "Enabled", value: "enabled", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
