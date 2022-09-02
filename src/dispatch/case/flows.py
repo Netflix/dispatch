@@ -9,6 +9,12 @@ from dispatch.enums import DocumentResourceTypes
 from dispatch.event import service as event_service
 from dispatch.group import flows as group_flows
 from dispatch.group.enums import GroupType, GroupAction
+from dispatch.incident import flows as incident_flows
+from dispatch.incident import service as incident_service
+from dispatch.incident.enums import IncidentStatus
+from dispatch.incident.models import IncidentCreate
+from dispatch.individual.models import IndividualContactRead
+from dispatch.participant.models import ParticipantUpdate
 from dispatch.storage import flows as storage_flows
 from dispatch.ticket import flows as ticket_flows
 
@@ -237,6 +243,8 @@ def case_escalated_status_flow(case: Case, db_session=None):
 
     case_status_flow_common(case=case, db_session=db_session)
 
+    case_to_incident_escalate_flow(case=case, db_session=db_session)
+
 
 def case_closed_status_flow(case: Case, db_session=None):
     """Runs the case closed transition flow."""
@@ -303,3 +311,35 @@ def case_status_transition_flow_dispatcher(
         elif previous_status == CaseStatus.escalated:
             # Escalated -> Closed
             case_closed_status_flow(case, db_session)
+
+
+def case_to_incident_escalate_flow(case: Case, db_session=None):
+    """Escalates a case to an incident if the case's type is mapped to an incident type."""
+    if not case.case_type.incident_type:
+        # the case type is not mapped to any incident type
+        return
+
+    # we make the assignee of the case the reporter of the incident
+    reporter = ParticipantUpdate(individual=IndividualContactRead(email=case.assignee.email))
+
+    # we create the incident
+    incident_in = IncidentCreate(
+        title=case.title,
+        description=case.description,
+        status=IncidentStatus.active,
+        incident_type=case.case_type.incident_type,
+        incident_priority=case.case_priority,
+        visibility=case.visibility,
+        project=case.case_type.incident_type.project,
+        reporter=reporter,
+    )
+
+    incident = incident_service.create(db_session=db_session, incident_in=incident_in)
+
+    # we run the incident creation flow
+    incident_flows.incident_create_flow(incident_id=incident.id, db_session=db_session)
+
+    # we map the case to the newly created incident
+    case.incidents.append(incident)
+
+    db_session.commit()
