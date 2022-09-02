@@ -144,7 +144,7 @@ def create_case_ticket(case: Case, db_session: SessionLocal):
         return
 
     if not ticket:
-        log.error("Case ticket not created. Plugin {plugin.plugin.slug} encountered an error.")
+        log.error(f"Case ticket not created. Plugin {plugin.plugin.slug} encountered an error.")
         return
 
     ticket.update({"resource_type": plugin.plugin.slug})

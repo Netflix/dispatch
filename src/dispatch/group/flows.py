@@ -33,7 +33,7 @@ def create_group(
         return
 
     if not external_group:
-        log.error("Group not created. Plugin {plugin.plugin.slug} encountered an error.")
+        log.error(f"Group not created. Plugin {plugin.plugin.slug} encountered an error.")
         return
 
     external_group.update(

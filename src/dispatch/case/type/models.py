@@ -37,6 +37,9 @@ class CaseType(ProjectMixin, Base):
     oncall_service_id = Column(Integer, ForeignKey("service.id"))
     oncall_service = relationship("Service", foreign_keys=[oncall_service_id])
 
+    incident_type_id = Column(Integer, ForeignKey("incident_type.id"))
+    incident_type = relationship("IncidentType", foreign_keys=[incident_type_id])
+
     @hybrid_method
     def get_meta(self, slug):
         if not self.plugin_metadata:
@@ -60,6 +63,13 @@ class Document(DispatchBase):
     weblink: str
 
 
+class IncidentType(DispatchBase):
+    id: PrimaryKey
+    description: Optional[str] = Field(None, nullable=True)
+    name: NameStr
+    visibility: Optional[str] = Field(None, nullable=True)
+
+
 class Service(DispatchBase):
     description: Optional[str] = Field(None, nullable=True)
     external_id: str
@@ -75,6 +85,7 @@ class CaseTypeBase(DispatchBase):
     description: Optional[str] = Field(None, nullable=True)
     enabled: Optional[bool]
     exclude_from_metrics: Optional[bool] = False
+    incident_type: Optional[IncidentType]
     name: NameStr
     oncall_service: Optional[Service]
     plugin_metadata: List[PluginMetadata] = []

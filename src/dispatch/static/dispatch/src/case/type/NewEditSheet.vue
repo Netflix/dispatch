@@ -85,6 +85,15 @@
                   />
                 </ValidationObserver>
               </v-flex>
+              <v-flex xs12>
+                <ValidationObserver disabled>
+                  <incident-type-select
+                    :project="project"
+                    label="Incident Type"
+                    v-model="incident_type"
+                  />
+                </ValidationObserver>
+              </v-flex>
               <v-flex xs 12>
                 <v-checkbox
                   v-model="exclude_from_metrics"
@@ -123,6 +132,7 @@ import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 
+import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
 import ServiceSelect from "@/service/ServiceSelect.vue"
 import TemplateSelect from "@/document/template/TemplateSelect.vue"
@@ -136,6 +146,7 @@ export default {
   name: "CaseTypeNewEditSheet",
 
   components: {
+    IncidentTypeSelect,
     PluginMetadataInput,
     ServiceSelect,
     TemplateSelect,
@@ -158,6 +169,7 @@ export default {
       "selected.enabled",
       "selected.exclude_from_metrics",
       "selected.id",
+      "selected.incident_type",
       "selected.loading",
       "selected.name",
       "selected.oncall_service",

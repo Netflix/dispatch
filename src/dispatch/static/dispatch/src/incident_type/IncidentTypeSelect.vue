@@ -4,7 +4,7 @@
     :items="items"
     :menu-props="{ maxHeight: '400' }"
     item-text="name"
-    label="Type"
+    :label="label"
     return-object
     :loading="loading"
   >
@@ -40,6 +40,12 @@ export default {
     project: {
       type: [Object],
       default: null,
+    },
+    label: {
+      type: String,
+      default: function () {
+        return "Type"
+      },
     },
   },
 
