@@ -309,15 +309,6 @@ def case_status_transition_flow_dispatcher(
             # Escalated -> Closed
             case_closed_status_flow(case=case, db_session=db_session)
 
-    if current_status != previous_status:
-        # we update the timeline
-        event_service.log_case_event(
-            db_session=db_session,
-            source="Dispatch Core App",
-            description=f"The case status has been changed to {case.status.lower()}",
-            case_id=case.id,
-        )
-
 
 def case_to_incident_escalate_flow(
     case: Case, organization_slug: OrganizationSlug, db_session=None
