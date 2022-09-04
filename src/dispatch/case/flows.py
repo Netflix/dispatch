@@ -192,7 +192,10 @@ def case_update_flow(
 
     # we update the group membership
     group_flows.update_group(
-        group=case.tactical_group, group_action=GroupAction.add_member, db_session=db_session
+        group=case.tactical_group,
+        group_action=GroupAction.add_member,
+        group_member=case.assignee.email,
+        db_session=db_session,
     )
 
     # we send the case updated notification
@@ -321,10 +324,16 @@ def case_to_incident_escalate_flow(
     # we make the assignee of the case the reporter of the incident
     reporter = ParticipantUpdate(individual=IndividualContactRead(email=case.assignee.email))
 
+    # we add information about the case in the incident's description
+    description = (
+        f"{case.description}\n\nThis incident was the result of escalating case {case.name} "
+        f"in the {case.project.name} project. Check out the case for additional context."
+    )
+
     # we create the incident
     incident_in = IncidentCreate(
         title=case.title,
-        description=case.description,
+        description=description,
         status=IncidentStatus.active,
         incident_type=case.case_type.incident_type,
         incident_priority=case.case_priority,
@@ -345,6 +354,21 @@ def case_to_incident_escalate_flow(
     event_service.log_case_event(
         db_session=db_session,
         source="Dispatch Core App",
-        description=f"The case has been linked to incident {incident.name} in the {incident.project.name} project",  # noqa: E501
+        description=f"The case has been linked to incident {incident.name} in the {incident.project.name} project",
+        case_id=case.id,
+    )
+
+    # we add the incident's tactical group to the case's tactical group
+    group_flows.update_group(
+        group=case.tactical_group,
+        group_action=GroupAction.add_member,
+        group_member=incident.tactical_group.email,
+        db_session=db_session,
+    )
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description=f"The incident's tactical group {incident.tactical_group.email} has been added to the case's tactical group {case.tactical_group.email}",
         case_id=case.id,
     )
