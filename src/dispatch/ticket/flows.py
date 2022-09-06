@@ -164,7 +164,7 @@ def create_case_ticket(case: Case, db_session: SessionLocal):
         case_id=case.id,
     )
 
-    return ticket
+    return case.ticket
 
 
 def update_case_ticket(

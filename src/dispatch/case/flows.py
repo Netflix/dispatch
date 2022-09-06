@@ -1,4 +1,5 @@
 import logging
+
 from datetime import datetime
 
 from dispatch.case.models import CaseRead
@@ -104,7 +105,7 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
         document=document, project_id=case.project.id, db_session=db_session
     )
 
-    # we send the case created notification
+    # TODO(mvilanova): we send the case created notification
 
     db_session.add(case)
     db_session.commit()
@@ -317,8 +318,12 @@ def case_to_incident_escalate_flow(
     case: Case, organization_slug: OrganizationSlug, db_session=None
 ):
     """Escalates a case to an incident if the case's type is mapped to an incident type."""
+    if case.incidents:
+        # we don't escalate the case if the case is already linked to incidents
+        return
+
     if not case.case_type.incident_type:
-        # the case type is not mapped to any incident type
+        # we don't escalate the case if its type is not mapped to an incident type
         return
 
     # we make the assignee of the case the reporter of the incident
@@ -327,7 +332,7 @@ def case_to_incident_escalate_flow(
     # we add information about the case in the incident's description
     description = (
         f"{case.description}\n\nThis incident was the result of escalating case {case.name} "
-        f"in the {case.project.name} project. Check out the case for additional context."
+        f"in the {case.project.name} project. Check out the case in the Dispatch Web UI for additional context."
     )
 
     # we create the incident
