@@ -38,7 +38,7 @@ flake8==4.0.1
     # via -r requirements-dev.in
 iniconfig==1.1.1
     # via pytest
-ipython==8.4.0
+ipython==8.5.0
     # via -r requirements-dev.in
 jedi==0.18.1
     # via ipython
@@ -102,6 +102,3 @@ vulture==2.5
     # via -r requirements-dev.in
 wcwidth==0.2.5
     # via prompt-toolkit
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools
