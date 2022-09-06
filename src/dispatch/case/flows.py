@@ -18,6 +18,7 @@ from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.storage import flows as storage_flows
+from dispatch.storage.enums import StorageAction
 from dispatch.ticket import flows as ticket_flows
 
 from .models import Case, CaseStatus
@@ -61,8 +62,10 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
         return
 
     # we create the storage folder
-    members = [group.email]
-    storage = storage_flows.create_storage(obj=case, members=members, db_session=db_session)
+    storage_members = [group.email]
+    storage = storage_flows.create_storage(
+        obj=case, storage_members=storage_members, db_session=db_session
+    )
     if not storage:
         # we delete the group
         group_flows.delete_group(group=group, db_session=db_session)
@@ -363,17 +366,18 @@ def case_to_incident_escalate_flow(
         case_id=case.id,
     )
 
-    # we add the incident's tactical group to the case's tactical group
-    group_flows.update_group(
-        group=case.tactical_group,
-        group_action=GroupAction.add_member,
-        group_member=incident.tactical_group.email,
+    # we add the incident's tactical group to the case's storage folder
+    # to allow incident participants to access the case's artifacts in the folder
+    storage_flows.update_storage(
+        obj=case,
+        storage_action=StorageAction.add_members,
+        storage_members=[incident.tactical_group.email],
         db_session=db_session,
     )
 
     event_service.log_case_event(
         db_session=db_session,
         source="Dispatch Core App",
-        description=f"The incident's tactical group {incident.tactical_group.email} has been added to the case's tactical group {case.tactical_group.email}",
+        description=f"The incident's tactical group {incident.tactical_group.email} has been added to the case's storage folder",
         case_id=case.id,
     )

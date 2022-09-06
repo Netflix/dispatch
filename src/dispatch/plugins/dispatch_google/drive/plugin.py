@@ -77,11 +77,11 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         for p in participants:
             add_permission(client, p, team_drive_or_file_id, role, user_type)
 
-    def remove_participant(self, folder_id: str, participants: List[str]):
+    def remove_participant(self, team_drive_or_file_id: str, participants: List[str]):
         """Removes participants from an existing Google Drive."""
         client = get_service(self.configuration, "drive", "v3", self.scopes)
         for p in participants:
-            remove_permission(client, p, folder_id)
+            remove_permission(client, p, team_drive_or_file_id)
 
     def open(self, folder_id: str):
         """Adds the domain permission to the folder."""

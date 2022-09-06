@@ -312,12 +312,12 @@ def add_permission(
     )
 
 
-def remove_permission(client: Any, email: str, folder_id: str):
+def remove_permission(client: Any, email: str, team_drive_or_file_id: str):
     """Removes permission from team drive or file."""
     permissions = make_call(
         client.permissions(),
         "list",
-        fileId=folder_id,
+        fileId=team_drive_or_file_id,
         fields="permissions(id, emailAddress)",
         supportsAllDrives=True,
     )
@@ -327,7 +327,7 @@ def remove_permission(client: Any, email: str, folder_id: str):
             make_call(
                 client.permissions(),
                 "delete",
-                fileId=folder_id,
+                fileId=team_drive_or_file_id,
                 permissionId=p["id"],
                 supportsAllDrives=True,
             )
