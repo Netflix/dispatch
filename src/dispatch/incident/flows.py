@@ -961,7 +961,7 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
                 log.warning("Incident commander not paged. No plugin of type oncall enabled.")
         else:
             log.warning(
-                "Incident commander not paged. No relationship between commander and an oncall service."  # noqa: E501
+                "Incident commander not paged. No relationship between commander and an oncall service."
             )
 
     # we send a message to the incident commander with tips on how to manage the incident
