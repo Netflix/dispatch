@@ -131,8 +131,9 @@ def create_case_ticket(case: Case, db_session: SessionLocal):
         case_type_in=case.case_type,
     ).get_meta(plugin.plugin.slug)
 
+    # we create the external case ticket
     try:
-        ticket = plugin.instance.create_case_ticket(
+        external_ticket = plugin.instance.create_case_ticket(
             case.id,
             title,
             case.assignee.email,
@@ -143,16 +144,17 @@ def create_case_ticket(case: Case, db_session: SessionLocal):
         log.exception(e)
         return
 
-    if not ticket:
+    if not external_ticket:
         log.error(f"Case ticket not created. Plugin {plugin.plugin.slug} encountered an error.")
         return
 
-    ticket.update({"resource_type": plugin.plugin.slug})
+    external_ticket.update({"resource_type": plugin.plugin.slug})
 
-    ticket_in = TicketCreate(**ticket)
-    case.ticket = create(db_session=db_session, ticket_in=ticket_in)
-
-    case.name = ticket["resource_id"]
+    # we create the internal case ticket
+    ticket_in = TicketCreate(**external_ticket)
+    ticket = create(db_session=db_session, ticket_in=ticket_in)
+    case.ticket = ticket
+    case.name = external_ticket["resource_id"]
 
     db_session.add(case)
     db_session.commit()
@@ -190,20 +192,25 @@ def update_case_ticket(
         case_type_in=case.case_type,
     ).get_meta(plugin.plugin.slug)
 
-    plugin.instance.update_case_ticket(
-        case.ticket.resource_id,
-        title,
-        description,
-        case.resolution,
-        case.case_type.name,
-        case.case_severity.name,
-        case.case_priority.name,
-        case.status.lower(),
-        case.assignee.email,
-        resolve_attr(case, "case_document.weblink"),
-        resolve_attr(case, "storage.weblink"),
-        case_type_plugin_metadata=case_type_plugin_metadata,
-    )
+    # we update the external case ticket
+    try:
+        plugin.instance.update_case_ticket(
+            case.ticket.resource_id,
+            title,
+            description,
+            case.resolution,
+            case.case_type.name,
+            case.case_severity.name,
+            case.case_priority.name,
+            case.status.lower(),
+            case.assignee.email,
+            resolve_attr(case, "case_document.weblink"),
+            resolve_attr(case, "storage.weblink"),
+            case_type_plugin_metadata=case_type_plugin_metadata,
+        )
+    except Exception as e:
+        log.exception(e)
+        return
 
     event_service.log_case_event(
         db_session=db_session,

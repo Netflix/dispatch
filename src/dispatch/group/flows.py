@@ -70,7 +70,7 @@ def create_group(
             description="Case group created",
             case_id=obj.id,
         )
-    else:
+    if obj_type == "incident":
         event_service.log_incident_event(
             db_session=db_session,
             source=plugin.plugin.title,
@@ -81,36 +81,55 @@ def create_group(
     return group
 
 
-def update_group(group: Group, group_action: GroupAction, db_session: SessionLocal):
+def update_group(
+    obj: Any, group: Group, group_action: GroupAction, group_member: str, db_session: SessionLocal
+):
     """Updates an existing group."""
     plugin = plugin_service.get_active_instance(
-        db_session=db_session, project_id=group.case.project.id, plugin_type="participant-group"
+        db_session=db_session, project_id=obj.project.id, plugin_type="participant-group"
     )
-    if plugin:
-        # we check if the assignee is a member of the group
+    if not plugin:
+        log.warning("Group not updated. No group plugin enabled.")
+        return
+
+    # we get the list of group members
+    try:
+        group_members = plugin.instance.list(email=group.email)
+    except Exception as e:
+        log.exception(e)
+        return
+
+    # we add the member to the group if it's not a member
+    if group_action == GroupAction.add_member and group_member not in group_members:
         try:
-            group_members = plugin.instance.list(email=group.email)
+            plugin.instance.add(email=group.email, participants=[group_member])
         except Exception as e:
             log.exception(e)
+            return
 
-        if (
-            group_action == GroupAction.add_member
-            and group.case.assignee.email not in group_members
-        ):
-            # we only try to add the user to the group if it's not a member
-            try:
-                plugin.instance.add(email=group.email, participants=[group.case.assignee.email])
-            except Exception as e:
-                log.exception(e)
+    # we remove the member from the group if it's a member
+    if group_action == GroupAction.remove_member and group_member in group_members:
+        try:
+            plugin.instance.remove(email=group.email, participants=[group_member])
+        except Exception as e:
+            log.exception(e)
+            return
 
-        if group_action == GroupAction.remove_member and group.case.assignee.email in group_members:
-            # we only try to remove the user from the group if it's a member
-            try:
-                plugin.instance.remove(email=group.email, participants=[group.case.assignee.email])
-            except Exception as e:
-                log.exception(e)
-    else:
-        log.warning("Group not updated. No group plugin enabled.")
+    obj_type = get_table_name_by_class_instance(obj)
+    if obj_type == "case":
+        event_service.log_case_event(
+            db_session=db_session,
+            source=plugin.plugin.title,
+            description="Case group updated",
+            case_id=obj.id,
+        )
+    if obj_type == "incident":
+        event_service.log_incident_event(
+            db_session=db_session,
+            source=plugin.plugin.title,
+            description="Incident group updated",
+            incident_id=obj.id,
+        )
 
 
 def delete_group(group: Group, db_session: SessionLocal):
