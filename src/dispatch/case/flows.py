@@ -196,6 +196,7 @@ def case_update_flow(
 
     # we update the group membership
     group_flows.update_group(
+        obj=case,
         group=case.tactical_group,
         group_action=GroupAction.add_member,
         group_member=case.assignee.email,
