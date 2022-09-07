@@ -9,6 +9,7 @@ from dispatch.plugins.dispatch_google.config import GoogleConfiguration
 
 from .drive import (
     Roles,
+    UserTypes,
     add_domain_permission,
     add_permission,
     add_reply,
@@ -69,8 +70,8 @@ class GoogleDriveStoragePlugin(StoragePlugin):
         self,
         team_drive_or_file_id: str,
         participants: List[str],
-        role: str = "owner",
-        user_type: str = "user",
+        role: str = Roles.writer,
+        user_type: str = UserTypes.user,
     ):
         """Adds participants to an existing Google Drive."""
         client = get_service(self.configuration, "drive", "v3", self.scopes)

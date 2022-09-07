@@ -191,9 +191,11 @@ def case_update_flow(
         db_session=db_session,
     )
 
+    # TODO(mvilanova): check if ticket has changed
     # we update the ticket
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
+    # TODO(mvilanova): check if assignee has changed
     # we update the group membership
     group_flows.update_group(
         obj=case,
@@ -335,7 +337,8 @@ def case_to_incident_escalate_flow(
 
     # we add information about the case in the incident's description
     description = (
-        f"{case.description}\n\nThis incident was the result of escalating case {case.name} "
+        f"{case.description}\n\n"
+        f"This incident was the result of escalating case {case.name} "
         f"in the {case.project.name} project. Check out the case in the Dispatch Web UI for additional context."
     )
 
@@ -369,16 +372,17 @@ def case_to_incident_escalate_flow(
 
     # we add the incident's tactical group to the case's storage folder
     # to allow incident participants to access the case's artifacts in the folder
+    storage_members = [incident.tactical_group.email]
     storage_flows.update_storage(
         obj=case,
         storage_action=StorageAction.add_members,
-        storage_members=[incident.tactical_group.email],
+        storage_members=storage_members,
         db_session=db_session,
     )
 
     event_service.log_case_event(
         db_session=db_session,
         source="Dispatch Core App",
-        description=f"The incident's tactical group {incident.tactical_group.email} has been added to the case's storage folder",
+        description=f"The members of the incident's tactical group {incident.tactical_group.email} have been given permission to access the case's storage folder",
         case_id=case.id,
     )
