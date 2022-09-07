@@ -133,6 +133,18 @@ For this plugin to work with your OIDC setup, you may need to set
 > Use `id_token` instead of default `access_token`. [Details](https://developer.okta.com/docs/reference/api/oidc/#tokens-and-claims)
 > Depends on the identity provider.
 
+#### Configuration for `dispatch-auth-provider-header`
+
+> Authenticate users based on HTTP request headers. Useful when Dispatch is behind a reverse proxy performing authentication.
+
+#### `DISPATCH_AUTHENTICATION_PROVIDER_HEADER_NAME` \['default': remote-user\]
+
+{% hint style="warning" %}
+Make sure the reverse proxy strips this header from incoming requests (i.e. user-provided). Failure to do so will result in authentication bypass.
+{% endhint %}
+
+> The HTTP request header to use as the user name, this value is case-insensitive.
+
 ### Persistence
 
 #### `DATABASE_HOSTNAME`
