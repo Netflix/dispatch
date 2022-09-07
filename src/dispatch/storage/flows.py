@@ -6,6 +6,7 @@ from dispatch.database.core import get_table_name_by_class_instance
 from dispatch.event import service as event_service
 from dispatch.plugin import service as plugin_service
 
+from .enums import StorageAction
 from .models import Storage, StorageCreate
 from .service import create
 
@@ -13,7 +14,7 @@ from .service import create
 log = logging.getLogger(__name__)
 
 
-def create_storage(obj: Any, members: List[str], db_session: SessionLocal):
+def create_storage(obj: Any, storage_members: List[str], db_session: SessionLocal):
     """Creates a storage."""
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=obj.project.id, plugin_type="storage"
@@ -26,14 +27,14 @@ def create_storage(obj: Any, members: List[str], db_session: SessionLocal):
     external_storage_root_id = plugin.configuration.root_id
     try:
         external_storage = plugin.instance.create_file(
-            parent_id=external_storage_root_id, name=obj.name, participants=members
+            parent_id=external_storage_root_id, name=obj.name, participants=storage_members
         )
     except Exception as e:
         log.exception(e)
         return
 
     if not external_storage:
-        log.error("Storage not created. Plugin {plugin.plugin.slug} encountered an error.")
+        log.error(f"Storage not created. Plugin {plugin.plugin.slug} encountered an error.")
         return
 
     external_storage.update(
@@ -64,7 +65,7 @@ def create_storage(obj: Any, members: List[str], db_session: SessionLocal):
             description="Case storage created",
             case_id=obj.id,
         )
-    else:
+    if obj_type == "incident":
         event_service.log_incident_event(
             db_session=db_session,
             source=plugin.plugin.title,
@@ -73,6 +74,57 @@ def create_storage(obj: Any, members: List[str], db_session: SessionLocal):
         )
 
     return storage
+
+
+def update_storage(
+    obj: Any,
+    storage_action: StorageAction,
+    storage_members: List[str],
+    db_session: SessionLocal,
+):
+    """Updates an exisiting storage."""
+    plugin = plugin_service.get_active_instance(
+        db_session=db_session, project_id=obj.project.id, plugin_type="storage"
+    )
+    if not plugin:
+        log.warning("Storage not updated. No storage plugin enabled.")
+        return
+
+    # we add the member(s) to the storage folder
+    if storage_action == StorageAction.add_members:
+        try:
+            plugin.instance.add_participant(
+                team_drive_or_file_id=obj.storage.resource_id, participants=storage_members
+            )
+        except Exception as e:
+            log.exception(e)
+            return
+
+    # we remove the member(s) from the storage folder
+    if storage_action == StorageAction.remove_members:
+        try:
+            plugin.instance.remove_participant(
+                team_drive_or_file_id=obj.storage.resource_id, participants=storage_members
+            )
+        except Exception as e:
+            log.exception(e)
+            return
+
+    obj_type = get_table_name_by_class_instance(obj)
+    if obj_type == "case":
+        event_service.log_case_event(
+            db_session=db_session,
+            source=plugin.plugin.title,
+            description="Case storage updated",
+            case_id=obj.id,
+        )
+    if obj_type == "incident":
+        event_service.log_incident_event(
+            db_session=db_session,
+            source=plugin.plugin.title,
+            description="Incident storage updated",
+            incident_id=obj.id,
+        )
 
 
 def delete_storage(storage: Storage, db_session: SessionLocal):

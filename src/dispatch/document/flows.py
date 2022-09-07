@@ -52,7 +52,7 @@ def create_document(
 
     if not external_document:
         log.error(
-            "{external_document_name} not created. Plugin {plugin.plugin.slug} encountered an error."
+            f"{external_document_name} not created. Plugin {plugin.plugin.slug} encountered an error."  # noqa: E501
         )
         return
 

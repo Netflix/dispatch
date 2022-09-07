@@ -138,6 +138,10 @@ if DISPATCH_AUTHENTICATION_PROVIDER_SLUG == "dispatch-auth-provider-pkce":
             "No PKCE JWKS url provided, this is required if you are using PKCE authentication."
         )
 
+DISPATCH_AUTHENTICATION_PROVIDER_HEADER_NAME = config(
+    "DISPATCH_AUTHENTICATION_PROVIDER_HEADER_NAME", default="remote-user"
+)
+
 # sentry middleware
 SENTRY_DSN = config("SENTRY_DSN", default="")
 

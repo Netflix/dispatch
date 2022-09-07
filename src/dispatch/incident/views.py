@@ -1,10 +1,10 @@
-import logging
-from typing import List
-
-import json
 import calendar
+import json
+import logging
+
 from datetime import date
 from dateutil.relativedelta import relativedelta
+from typing import List
 
 from starlette.requests import Request
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
@@ -16,6 +16,7 @@ from dispatch.auth.permissions import (
     PermissionsDependency,
     IncidentViewPermission,
 )
+
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.common.utils.views import create_pydantic_include
@@ -40,8 +41,8 @@ from .metrics import make_forecast, create_incident_metric_query
 from .models import Incident, IncidentCreate, IncidentPagination, IncidentRead, IncidentUpdate
 from .service import create, delete, get, update
 
-log = logging.getLogger(__name__)
 
+log = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -52,7 +53,7 @@ def get_current_incident(*, db_session: Session = Depends(get_db), request: Requ
     if not incident:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "The requested incident does not exist."}],
+            detail=[{"msg": "An incident with this id does not existt."}],
         )
     return incident
 
@@ -263,8 +264,8 @@ def create_executive_report(
 
 @router.delete(
     "/{incident_id}",
-    response_model=IncidentRead,
-    summary="Deletes an incident.",
+    response_model=None,
+    summary="Delete an incident.",
     dependencies=[Depends(PermissionsDependency([IncidentEditPermission]))],
 )
 def delete_incident(

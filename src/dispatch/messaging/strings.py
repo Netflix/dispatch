@@ -175,7 +175,7 @@ Description of the actions taken to resolve the incident.
 ).strip()
 
 CASE_RESOLUTION_DEFAULT = """
-Description of the actions taken to resolve the incident.
+Description of the actions taken to resolve the case.
 """.replace(
     "\n", " "
 ).strip()

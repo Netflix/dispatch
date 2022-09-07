@@ -31,6 +31,7 @@ class UserTypes(DispatchEnum):
 
 
 class Roles(DispatchEnum):
+    # NOTE: https://developers.google.com/drive/api/guides/ref-roles
     owner = "owner"
     organizer = "organizer"
     file_organizer = "fileOrganizer"
@@ -279,7 +280,7 @@ def add_domain_permission(
     role: Roles = Roles.commenter,
     user_type: UserTypes = UserTypes.domain,
 ):
-    """Adds a domain permission to team drive or file."""
+    """Adds a domain permission to a team drive or file."""
     permission = {"type": user_type, "role": role, "domain": domain}
     return make_call(
         client.permissions(),
@@ -299,7 +300,7 @@ def add_permission(
     role: Roles = Roles.owner,
     user_type: UserTypes = UserTypes.user,
 ):
-    """Adds a permission to team drive"""
+    """Adds a permission to a team drive or file."""
     permission = {"type": user_type, "role": role, "emailAddress": email}
     return make_call(
         client.permissions(),
@@ -312,12 +313,12 @@ def add_permission(
     )
 
 
-def remove_permission(client: Any, email: str, folder_id: str):
-    """Removes permission from team drive or file."""
+def remove_permission(client: Any, email: str, team_drive_or_file_id: str):
+    """Removes permission from a team drive or file."""
     permissions = make_call(
         client.permissions(),
         "list",
-        fileId=folder_id,
+        fileId=team_drive_or_file_id,
         fields="permissions(id, emailAddress)",
         supportsAllDrives=True,
     )
@@ -327,14 +328,14 @@ def remove_permission(client: Any, email: str, folder_id: str):
             make_call(
                 client.permissions(),
                 "delete",
-                fileId=folder_id,
+                fileId=team_drive_or_file_id,
                 permissionId=p["id"],
                 supportsAllDrives=True,
             )
 
 
 def move_file(client: Any, folder_id: str, file_id: str):
-    """Moves a file from one team drive to another"""
+    """Moves a file from one team drive to another."""
     f = make_call(client.files(), "get", fileId=file_id, fields="parents", supportsAllDrives=True)
 
     previous_parents = ",".join(f.get("parents"))

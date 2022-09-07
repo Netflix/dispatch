@@ -24,7 +24,7 @@ def get_sources(*, common: dict = Depends(common_parameters)):
 
 @router.get("/{source_id}", response_model=SourceRead)
 def get_source(*, db_session: Session = Depends(get_db), source_id: PrimaryKey):
-    """Given its unique ID, retrieve details about a single source."""
+    """Given its unique id, retrieve details about a single source."""
     source = get(db_session=db_session, source_id=source_id)
     if not source:
         raise HTTPException(
@@ -36,33 +36,31 @@ def get_source(*, db_session: Session = Depends(get_db), source_id: PrimaryKey):
 
 @router.post("", response_model=SourceRead)
 def create_source(*, db_session: Session = Depends(get_db), source_in: SourceCreate):
-    """Create a new source."""
-    source = create(db_session=db_session, source_in=source_in)
-    return source
+    """Creates a new source."""
+    return create(db_session=db_session, source_in=source_in)
 
 
 @router.put("/{source_id}", response_model=SourceRead)
 def update_source(
     *, db_session: Session = Depends(get_db), source_id: PrimaryKey, source_in: SourceUpdate
 ):
-    """Update a source."""
+    """Updates a source."""
     source = get(db_session=db_session, source_id=source_id)
     if not source:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An source with this ID does not exist."}],
+            detail=[{"msg": "A source with this id does not exist."}],
         )
-    source = update(db_session=db_session, source=source, source_in=source_in)
-    return source
+    return update(db_session=db_session, source=source, source_in=source_in)
 
 
-@router.delete("/{source_id}")
+@router.delete("/{source_id}", response_model=None)
 def delete_source(*, db_session: Session = Depends(get_db), source_id: PrimaryKey):
-    """Delete a source, returning only an HTTP 200 OK if successful."""
+    """Deletes a source, returning only an HTTP 200 OK if successful."""
     source = get(db_session=db_session, source_id=source_id)
     if not source:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=[{"msg": "An source with this ID does not exist."}],
+            detail=[{"msg": "A source with this id does not exist."}],
         )
     delete(db_session=db_session, source_id=source_id)

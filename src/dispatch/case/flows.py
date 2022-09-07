@@ -1,4 +1,5 @@
 import logging
+
 from datetime import datetime
 
 from dispatch.case.models import CaseRead
@@ -9,7 +10,15 @@ from dispatch.enums import DocumentResourceTypes
 from dispatch.event import service as event_service
 from dispatch.group import flows as group_flows
 from dispatch.group.enums import GroupType, GroupAction
+from dispatch.incident import flows as incident_flows
+from dispatch.incident import service as incident_service
+from dispatch.incident.enums import IncidentStatus
+from dispatch.incident.models import IncidentCreate
+from dispatch.individual.models import IndividualContactRead
+from dispatch.models import OrganizationSlug
+from dispatch.participant.models import ParticipantUpdate
 from dispatch.storage import flows as storage_flows
+from dispatch.storage.enums import StorageAction
 from dispatch.ticket import flows as ticket_flows
 
 from .models import Case, CaseStatus
@@ -20,7 +29,7 @@ log = logging.getLogger(__name__)
 
 
 @background_task
-def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=None):
+def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, db_session=None):
     """Runs the case new creation flow."""
     # we get the case
     case = get(db_session=db_session, case_id=case_id)
@@ -53,8 +62,10 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
         return
 
     # we create the storage folder
-    members = [group.email]
-    storage = storage_flows.create_storage(obj=case, members=members, db_session=db_session)
+    storage_members = [group.email]
+    storage = storage_flows.create_storage(
+        obj=case, storage_members=storage_members, db_session=db_session
+    )
     if not storage:
         # we delete the group
         group_flows.delete_group(group=group, db_session=db_session)
@@ -97,14 +108,14 @@ def case_new_create_flow(*, case_id: int, organization_slug: str, db_session=Non
         document=document, project_id=case.project.id, db_session=db_session
     )
 
-    # we send the case created notification
+    # TODO(mvilanova): we send the case created notification
 
     db_session.add(case)
     db_session.commit()
 
 
 @background_task
-def case_triage_create_flow(*, case_id: int, organization_slug: str = None, db_session=None):
+def case_triage_create_flow(*, case_id: int, organization_slug: OrganizationSlug, db_session=None):
     """Runs the case triage creation flow."""
     # we run the case new creation flow
     case_new_create_flow(
@@ -119,7 +130,9 @@ def case_triage_create_flow(*, case_id: int, organization_slug: str = None, db_s
 
 
 @background_task
-def case_escalated_create_flow(*, case_id: int, organization_slug: str = None, db_session=None):
+def case_escalated_create_flow(
+    *, case_id: int, organization_slug: OrganizationSlug, db_session=None
+):
     """Runs the case escalated creation flow."""
     # we run the case new creation flow
     case_new_create_flow(
@@ -133,11 +146,13 @@ def case_escalated_create_flow(*, case_id: int, organization_slug: str = None, d
     case_triage_status_flow(case=case, db_session=db_session)
 
     # we transition the case to the escalated state
-    case_escalated_status_flow(case=case, db_session=db_session)
+    case_escalated_status_flow(
+        case=case, organization_slug=organization_slug, db_session=db_session
+    )
 
 
 @background_task
-def case_closed_create_flow(*, case_id: int, organization_slug: str = None, db_session=None):
+def case_closed_create_flow(*, case_id: int, organization_slug: OrganizationSlug, db_session=None):
     """Runs the case closed creation flow."""
     # we run the case new creation flow
     case_new_create_flow(
@@ -160,7 +175,7 @@ def case_update_flow(
     case_id: int,
     previous_case: CaseRead,
     user_email: str,
-    organization_slug: str = None,
+    organization_slug: OrganizationSlug,
     db_session=None,
 ):
     """Runs the case update flow."""
@@ -169,15 +184,25 @@ def case_update_flow(
 
     # we run the transition flow based on the current and previous status of the case
     case_status_transition_flow_dispatcher(
-        case, case.status, previous_case.status, db_session=db_session
+        case=case,
+        current_status=case.status,
+        previous_status=previous_case.status,
+        organization_slug=organization_slug,
+        db_session=db_session,
     )
 
+    # TODO(mvilanova): check if ticket has changed
     # we update the ticket
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
+    # TODO(mvilanova): check if assignee has changed
     # we update the group membership
     group_flows.update_group(
-        group=case.tactical_group, group_action=GroupAction.add_member, db_session=db_session
+        obj=case,
+        group=case.tactical_group,
+        group_action=GroupAction.add_member,
+        group_member=case.assignee.email,
+        db_session=db_session,
     )
 
     # we send the case updated notification
@@ -199,23 +224,9 @@ def case_delete_flow(case: Case, db_session: SessionLocal):
         storage_flows.delete_storage(storage=case.storage, db_session=db_session)
 
 
-def case_status_flow_common(case: Case, db_session=None):
-    """Runs tasks common across case status transition flows."""
-    # we update the ticket
-    ticket_flows.update_case_ticket(case=case, db_session=db_session)
-
-    # we update the timeline
-    event_service.log_case_event(
-        db_session=db_session,
-        source="Dispatch Core App",
-        description=f"The case status has been changed to {case.status.lower()}",
-        case_id=case.id,
-    )
-
-
 def case_new_status_flow(case: Case, db_session=None):
     """Runs the case new transition flow."""
-    case_status_flow_common(case=case, db_session=db_session)
+    pass
 
 
 def case_triage_status_flow(case: Case, db_session=None):
@@ -225,17 +236,17 @@ def case_triage_status_flow(case: Case, db_session=None):
     db_session.add(case)
     db_session.commit()
 
-    case_status_flow_common(case=case, db_session=db_session)
 
-
-def case_escalated_status_flow(case: Case, db_session=None):
+def case_escalated_status_flow(case: Case, organization_slug: OrganizationSlug, db_session=None):
     """Runs the case escalated transition flow."""
     # we set the escalated_at time
     case.escalated_at = datetime.utcnow()
     db_session.add(case)
     db_session.commit()
 
-    case_status_flow_common(case=case, db_session=db_session)
+    case_to_incident_escalate_flow(
+        case=case, organization_slug=organization_slug, db_session=db_session
+    )
 
 
 def case_closed_status_flow(case: Case, db_session=None):
@@ -245,14 +256,13 @@ def case_closed_status_flow(case: Case, db_session=None):
     db_session.add(case)
     db_session.commit()
 
-    case_status_flow_common(case=case, db_session=db_session)
-
 
 def case_status_transition_flow_dispatcher(
     case: Case,
     current_status: CaseStatus,
     previous_status: CaseStatus,
-    db_session=SessionLocal,
+    organization_slug: OrganizationSlug,
+    db_session: SessionLocal,
 ):
     """Runs the correct flows based on the current and previous status of the case."""
     # we changed the status of the case to new
@@ -271,7 +281,7 @@ def case_status_transition_flow_dispatcher(
     elif current_status == CaseStatus.triage:
         if previous_status == CaseStatus.new:
             # New -> Triage
-            case_triage_status_flow(case, db_session)
+            case_triage_status_flow(case=case, db_session=db_session)
         elif previous_status == CaseStatus.escalated:
             # Escalated -> Triage
             pass
@@ -283,11 +293,15 @@ def case_status_transition_flow_dispatcher(
     elif current_status == CaseStatus.escalated:
         if previous_status == CaseStatus.new:
             # New -> Escalated
-            case_triage_status_flow(case, db_session)
-            case_escalated_status_flow(case, db_session)
+            case_triage_status_flow(case=case, db_session=db_session)
+            case_escalated_status_flow(
+                case=case, organization_slug=organization_slug, db_session=db_session
+            )
         elif previous_status == CaseStatus.triage:
             # Triage -> Escalated
-            case_escalated_status_flow(case, db_session)
+            case_escalated_status_flow(
+                case=case, organization_slug=organization_slug, db_session=db_session
+            )
         elif previous_status == CaseStatus.closed:
             # Closed -> Escalated
             pass
@@ -296,10 +310,79 @@ def case_status_transition_flow_dispatcher(
     elif current_status == CaseStatus.closed:
         if previous_status == CaseStatus.new:
             # New -> Closed
-            case_closed_status_flow(case, db_session)
+            case_triage_status_flow(case=case, db_session=db_session)
+            case_closed_status_flow(case=case, db_session=db_session)
         elif previous_status == CaseStatus.triage:
             # Triage -> Closed
-            case_closed_status_flow(case, db_session)
+            case_closed_status_flow(case=case, db_session=db_session)
         elif previous_status == CaseStatus.escalated:
             # Escalated -> Closed
-            case_closed_status_flow(case, db_session)
+            case_closed_status_flow(case=case, db_session=db_session)
+
+
+def case_to_incident_escalate_flow(
+    case: Case, organization_slug: OrganizationSlug, db_session=None
+):
+    """Escalates a case to an incident if the case's type is mapped to an incident type."""
+    if case.incidents:
+        # we don't escalate the case if the case is already linked to incidents
+        return
+
+    if not case.case_type.incident_type:
+        # we don't escalate the case if its type is not mapped to an incident type
+        return
+
+    # we make the assignee of the case the reporter of the incident
+    reporter = ParticipantUpdate(individual=IndividualContactRead(email=case.assignee.email))
+
+    # we add information about the case in the incident's description
+    description = (
+        f"{case.description}\n\n"
+        f"This incident was the result of escalating case {case.name} "
+        f"in the {case.project.name} project. Check out the case in the Dispatch Web UI for additional context."
+    )
+
+    # we create the incident
+    incident_in = IncidentCreate(
+        title=case.title,
+        description=description,
+        status=IncidentStatus.active,
+        incident_type=case.case_type.incident_type,
+        incident_priority=case.case_priority,
+        visibility=case.visibility,
+        project=case.case_type.incident_type.project,
+        reporter=reporter,
+    )
+    incident = incident_service.create(db_session=db_session, incident_in=incident_in)
+
+    # we map the case to the newly created incident
+    case.incidents.append(incident)
+
+    # we run the incident creation flow
+    incident_flows.incident_create_flow(
+        incident_id=incident.id, organization_slug=organization_slug, db_session=db_session
+    )
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description=f"The case has been linked to incident {incident.name} in the {incident.project.name} project",
+        case_id=case.id,
+    )
+
+    # we add the incident's tactical group to the case's storage folder
+    # to allow incident participants to access the case's artifacts in the folder
+    storage_members = [incident.tactical_group.email]
+    storage_flows.update_storage(
+        obj=case,
+        storage_action=StorageAction.add_members,
+        storage_members=storage_members,
+        db_session=db_session,
+    )
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description=f"The members of the incident's tactical group {incident.tactical_group.email} have been given permission to access the case's storage folder",
+        case_id=case.id,
+    )

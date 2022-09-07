@@ -42,6 +42,7 @@ from dispatch.plugins.bases import (
 
 from dispatch.config import (
     DISPATCH_AUTHENTICATION_PROVIDER_PKCE_JWKS,
+    DISPATCH_AUTHENTICATION_PROVIDER_HEADER_NAME,
     DISPATCH_PKCE_DONT_VERIFY_AT_HASH,
     DISPATCH_JWT_SECRET,
     DISPATCH_JWT_AUDIENCE,
@@ -129,6 +130,25 @@ class PKCEAuthProviderPlugin(AuthenticationProviderPlugin):
             return data[DISPATCH_JWT_EMAIL_OVERRIDE]
         else:
             return data["email"]
+
+
+class HeaderAuthProviderPlugin(AuthenticationProviderPlugin):
+    title = "Dispatch Plugin - HTTP Header Authentication Provider"
+    slug = "dispatch-auth-provider-header"
+    description = "Authenticate users based on HTTP request header."
+    version = dispatch_plugin.__version__
+
+    author = "Filippo Giunchedi"
+    author_url = "https://github.com/filippog"
+
+    def get_current_user(self, request: Request, **kwargs):
+        value: str = request.headers.get(DISPATCH_AUTHENTICATION_PROVIDER_HEADER_NAME)
+        if not value:
+            log.error(
+                f"Unable to authenticate. Header {DISPATCH_AUTHENTICATION_PROVIDER_HEADER_NAME} not found."
+            )
+            raise HTTPException(status_code=HTTP_401_UNAUTHORIZED)
+        return value
 
 
 class DispatchTicketPlugin(TicketPlugin):

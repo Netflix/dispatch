@@ -407,6 +407,7 @@ setup(
             "dispatch_document_resolver = dispatch.plugins.dispatch_core.plugin:DispatchDocumentResolverPlugin",
             "dispatch_participant_resolver = dispatch.plugins.dispatch_core.plugin:DispatchParticipantResolverPlugin",
             "dispatch_pkce_auth = dispatch.plugins.dispatch_core.plugin:PKCEAuthProviderPlugin",
+            "dispatch_header_auth = dispatch.plugins.dispatch_core.plugin:HeaderAuthProviderPlugin",
             "dispatch_ticket = dispatch.plugins.dispatch_core.plugin:DispatchTicketPlugin",
             "generic_workflow = dispatch.plugins.generic_workflow.plugin:GenericWorkflowPlugin",
             "github_monitor = dispatch.plugins.dispatch_github.plugin:GithubMonitorPlugin",
