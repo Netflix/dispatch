@@ -348,7 +348,6 @@ def case_to_incident_escalate_flow(
         status=IncidentStatus.active,
         incident_type=case.case_type.incident_type,
         incident_priority=case.case_priority,
-        visibility=case.visibility,
         project=case.case_type.incident_type.project,
         reporter=reporter,
     )
