@@ -69,9 +69,6 @@
         <case-type-select v-model="case_type" :project="project" />
       </v-flex>
       <v-flex xs6>
-        <source-select v-model="source" :project="project" />
-      </v-flex>
-      <v-flex xs6>
         <case-severity-select v-model="case_severity" :project="project" />
       </v-flex>
       <v-flex xs6>
@@ -126,7 +123,6 @@ import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import OrganizationMemberCombobox from "@/organization/OrganizationMemberCombobox.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
-import SourceSelect from "@/data/source/SourceSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
 extend("required", {
@@ -146,7 +142,6 @@ export default {
     IncidentFilterCombobox,
     OrganizationMemberCombobox,
     ProjectSelect,
-    SourceSelect,
     TagFilterAutoComplete,
     ValidationProvider,
   },
@@ -175,7 +170,6 @@ export default {
       "selected.related",
       "selected.reported_at",
       "selected.resolution",
-      "selected.source",
       "selected.status",
       "selected.tags",
       "selected.title",
