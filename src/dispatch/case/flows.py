@@ -191,19 +191,18 @@ def case_update_flow(
         db_session=db_session,
     )
 
-    # TODO(mvilanova): check if ticket has changed
     # we update the ticket
     ticket_flows.update_case_ticket(case=case, db_session=db_session)
 
-    # TODO(mvilanova): check if assignee has changed
-    # we update the group membership
-    group_flows.update_group(
-        obj=case,
-        group=case.tactical_group,
-        group_action=GroupAction.add_member,
-        group_member=case.assignee.email,
-        db_session=db_session,
-    )
+    # we update the tactical group if we have a new assignee
+    if previous_case.assignee.email != case.assignee.email:
+        group_flows.update_group(
+            obj=case,
+            group=case.tactical_group,
+            group_action=GroupAction.add_member,
+            group_member=case.assignee.email,
+            db_session=db_session,
+        )
 
     # we send the case updated notification
 
@@ -349,7 +348,6 @@ def case_to_incident_escalate_flow(
         status=IncidentStatus.active,
         incident_type=case.case_type.incident_type,
         incident_priority=case.case_priority,
-        visibility=case.visibility,
         project=case.case_type.incident_type.project,
         reporter=reporter,
     )
