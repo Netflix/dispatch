@@ -7,7 +7,7 @@
     </template>
     <v-card>
       <v-card-title>
-        <span class="headline">Incident Filters</span>
+        <span class="headline">Case Filters</span>
       </v-card-title>
       <v-list dense>
         <v-list-item>
@@ -27,17 +27,22 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-type-combobox v-model="local_incident_type" />
+            <case-type-combobox v-model="local_case_type" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-priority-combobox v-model="local_incident_priority" />
+            <case-severity-combobox v-model="local_case_severity" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <incident-status-multi-select v-model="local_status" />
+            <case-priority-combobox v-model="local_case_priority" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
+            <case-status-multi-select v-model="local_status" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
@@ -63,22 +68,24 @@
 import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 
+import CasePriorityCombobox from "@/case/priority/CasePriorityCombobox.vue"
+import CaseSeverityCombobox from "@/case/severity/CaseSeverityCombobox.vue"
+import CaseStatusMultiSelect from "@/case/CaseStatusMultiSelect.vue"
+import CaseTypeCombobox from "@/case/type/CaseTypeCombobox.vue"
 import DateWindowInput from "@/components/DateWindowInput.vue"
-import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
-import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
-import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 
 export default {
-  name: "IncidentTableFilterDialog",
+  name: "CaseTableFilterDialog",
 
   components: {
+    CasePriorityCombobox,
+    CaseSeverityCombobox,
+    CaseStatusMultiSelect,
+    CaseTypeCombobox,
     DateWindowInput,
-    IncidentPriorityCombobox,
-    IncidentStatusMultiSelect,
-    IncidentTypeCombobox,
     ProjectCombobox,
     TagFilterAutoComplete,
     TagTypeFilterCombobox,
@@ -96,36 +103,39 @@ export default {
   data() {
     return {
       display: false,
-      local_reported_at: {},
+      local_case_priority: [],
+      local_case_severity: [],
+      local_case_type: [],
       local_closed_at: {},
       local_project: this.projects,
-      local_incident_type: [],
-      local_incident_priority: [],
+      local_reported_at: {},
       local_status: [],
-      local_tag_type: [],
       local_tag: [],
+      local_tag_type: [],
     }
   },
 
   computed: {
-    ...mapFields("incident", [
-      "table.options.filters.reported_at",
+    ...mapFields("case_management", [
+      "table.options.filters.case_priority",
+      "table.options.filters.case_severity",
+      "table.options.filters.case_type",
       "table.options.filters.closed_at",
       "table.options.filters.project",
-      "table.options.filters.incident_type",
-      "table.options.filters.incident_priority",
+      "table.options.filters.reported_at",
       "table.options.filters.status",
-      "table.options.filters.tag_type",
       "table.options.filters.tag",
+      "table.options.filters.tag_type",
     ]),
     numFilters: function () {
       return sum([
-        this.incident_type.length,
-        this.incident_priority.length,
+        this.case_priority.length,
+        this.case_severity.length,
+        this.case_type.length,
         this.project.length,
+        this.status.length,
         this.tag.length,
         this.tag_type.length,
-        this.status.length,
       ])
     },
   },
@@ -133,14 +143,15 @@ export default {
   methods: {
     applyFilters() {
       // we set the filter values
-      this.reported_at = this.local_reported_at
+      this.case_priority = this.local_case_priority
+      this.case_severity = this.local_case_severity
+      this.case_type = this.local_case_type
       this.closed_at = this.local_closed_at
       this.project = this.local_project
-      this.incident_type = this.local_incident_type
-      this.incident_priority = this.local_incident_priority
+      this.reported_at = this.local_reported_at
       this.status = this.local_status
-      this.tag_type = this.local_tag_type
       this.tag = this.local_tag
+      this.tag_type = this.local_tag_type
 
       // we close the dialog
       this.display = false

@@ -6,12 +6,12 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy_utils import TSVectorType
 
-
 from dispatch.database.core import Base
 from dispatch.feedback.enums import FeedbackRating
 from dispatch.incident.models import IncidentReadNested
 from dispatch.models import DispatchBase, TimeStampMixin, PrimaryKey
 from dispatch.participant.models import ParticipantRead
+from dispatch.project.models import ProjectRead
 
 
 class Feedback(TimeStampMixin, Base):
@@ -50,6 +50,7 @@ class FeedbackUpdate(FeedbackBase):
 
 class FeedbackRead(FeedbackBase):
     id: PrimaryKey
+    project: Optional[ProjectRead]
 
 
 class FeedbackPagination(DispatchBase):

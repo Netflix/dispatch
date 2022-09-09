@@ -63,8 +63,8 @@ export default {
 
   components: {
     DateWindowInput,
-    IncidentTypeCombobox,
     IncidentPriorityCombobox,
+    IncidentTypeCombobox,
     ProjectCombobox,
   },
 
@@ -127,7 +127,6 @@ export default {
 
       this.$emit("loading", "error")
       filterOptions = SearchUtils.createParametersFromTableOptions(filterOptions)
-      // this.$emit("filterOptions", filterOptions)
       TaskApi.getAll(filterOptions).then((response) => {
         this.$emit("update", response.data.items)
         this.$emit("loading", false)

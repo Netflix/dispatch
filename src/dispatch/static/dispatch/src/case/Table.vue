@@ -10,6 +10,8 @@
         <div class="headline">Cases</div>
       </v-col>
       <v-col class="text-right">
+        <table-filter-dialog :projects="defaultUserProjects" />
+        <table-export-dialog />
         <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn>
       </v-col>
     </v-row>
@@ -44,11 +46,6 @@
             </template>
             <template v-slot:item.case_priority.name="{ item }">
               <case-priority :priority="item.case_priority.name" />
-            </template>
-            <template v-slot:item.source.name="{ item }">
-              <v-chip v-if="item.source" small color="info" text-color="white">
-                {{ item.source.name }}
-              </v-chip>
             </template>
             <template v-slot:item.status="{ item }">
               <case-status :status="item.status" :id="item.id" />
@@ -115,6 +112,8 @@ import CaseStatus from "@/case/CaseStatus.vue"
 import DeleteDialog from "@/case/DeleteDialog.vue"
 import NewSheet from "@/case/NewSheet.vue"
 import RouterUtils from "@/router/utils"
+import TableExportDialog from "@/case/TableExportDialog.vue"
+import TableFilterDialog from "@/case/TableFilterDialog.vue"
 
 export default {
   name: "CaseTable",
@@ -126,6 +125,8 @@ export default {
     CaseStatus,
     DeleteDialog,
     NewSheet,
+    TableExportDialog,
+    TableFilterDialog,
   },
 
   props: {
@@ -145,7 +146,6 @@ export default {
         { text: "Type", value: "case_type.name", sortable: true },
         { text: "Severity", value: "case_severity.name", sortable: true },
         { text: "Priority", value: "case_priority.name", sortable: true },
-        { text: "Source", value: "source.name", sortable: true },
         { text: "Project", value: "project.name", sortable: true },
         { text: "Reported At", value: "reported_at" },
         { text: "Closed At", value: "closed_at" },
@@ -161,9 +161,11 @@ export default {
       "table.options.descending",
       "table.options.filters",
       "table.options.filters.assignee",
+      "table.options.filters.case_priority",
+      "table.options.filters.case_severity",
+      "table.options.filters.case_type",
       "table.options.filters.project",
       "table.options.filters.reported_at",
-      "table.options.filters.source",
       "table.options.filters.status",
       "table.options.filters.tag",
       "table.options.filters.tag_type",
@@ -221,16 +223,19 @@ export default {
 
     this.$watch(
       (vm) => [
-        vm.q,
-        vm.sortBy,
-        vm.itemsPerPage,
+        vm.case_priority,
+        vm.case_severity,
+        vm.case_type,
         vm.descending,
-        vm.reported_at.start,
-        vm.reported_at.end,
+        vm.itemsPerPage,
         vm.project,
+        vm.q,
+        vm.reported_at.end,
+        vm.reported_at.start,
+        vm.sortBy,
         vm.status,
-        vm.tag_type,
         vm.tag,
+        vm.tag_type,
       ],
       () => {
         this.page = 1
