@@ -44,6 +44,11 @@
                 <span>{{ item.created_at | formatDate }}</span>
               </v-tooltip>
             </template>
+            <template v-slot:item.project.name="{ item }">
+              <v-chip small :color="item.project.color" text-color="white">
+                {{ item.project.name }}
+              </v-chip>
+            </template>
             <template v-slot:item.data-table-actions="{ item }">
               <v-menu bottom left>
                 <template v-slot:activator="{ on }">
@@ -91,7 +96,7 @@ export default {
         { text: "Feedback", value: "feedback", sortable: true },
         { text: "Participant", value: "participant", sortable: true },
         { text: "Incident", value: "incident.name", sortable: false },
-        { text: "Project", value: "incident.project.name", sortable: false },
+        { text: "Project", value: "project.name", sortable: false },
         { text: "Created At", value: "created_at", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],

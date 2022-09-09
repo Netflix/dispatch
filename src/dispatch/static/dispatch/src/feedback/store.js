@@ -6,11 +6,12 @@ import FeedbackApi from "@/feedback/api"
 
 const getDefaultSelectedState = () => {
   return {
+    feedback: null,
     id: null,
     incident: null,
     participant: null,
+    project: null,
     rating: null,
-    feedback: null,
     loading: false,
   }
 }
