@@ -24,9 +24,6 @@ from .models import (
     CaseCreate,
     CaseRead,
     CaseUpdate,
-    AssocCaseCaseType,
-    AssocCaseCaseSeverity,
-    AssocCaseCasePriority,
 )
 
 
@@ -103,7 +100,7 @@ def get_all_last_x_hours_by_status(
             db_session.query(Case)
             .filter(Case.project_id == project_id)
             .filter(Case.status == CaseStatus.triage)
-            .filter(Case.stable_at >= now - timedelta(hours=hours))
+            .filter(Case.triage_at >= now - timedelta(hours=hours))
             .all()
         )
 
@@ -112,7 +109,7 @@ def get_all_last_x_hours_by_status(
             db_session.query(Case)
             .filter(Case.project_id == project_id)
             .filter(Case.status == CaseStatus.escalated)
-            .filter(Case.closed_at >= now - timedelta(hours=hours))
+            .filter(Case.escalated_at >= now - timedelta(hours=hours))
             .all()
         )
 
@@ -136,7 +133,7 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser) -> Ca
     for t in case_in.tags:
         tag_objs.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
 
-    # TODO(mvilanova): allow to provide related cases and incidents and duplicated cases
+    # TODO(mvilanova): allow to provide related cases and incidents, and duplicated cases
 
     case = Case(
         title=case_in.title,
@@ -149,7 +146,7 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser) -> Ca
     case_type = case_type_service.get_by_name_or_default(
         db_session=db_session, project_id=project.id, case_type_in=case_in.case_type
     )
-    case.case_types.append(AssocCaseCaseType(case_type))
+    case.case_type = case_type
 
     case.visibility = case_type.visibility
     if case_in.visibility:
@@ -173,12 +170,12 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser) -> Ca
     case_severity = case_severity_service.get_by_name_or_default(
         db_session=db_session, project_id=project.id, case_severity_in=case_in.case_severity
     )
-    case.case_severities.append(AssocCaseCaseSeverity(case_severity))
+    case.case_severity = case_severity
 
     case_priority = case_priority_service.get_by_name_or_default(
         db_session=db_session, project_id=project.id, case_priority_in=case_in.case_priority
     )
-    case.case_priorities.append(AssocCaseCasePriority(case_priority))
+    case.case_priority = case_priority
 
     if case_in.source:
         case.source = source_service.get_by_name(
@@ -246,7 +243,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
                 name=case_in.case_type.name,
             )
             if case_type:
-                case.case_types.append(AssocCaseCaseType(case_type))
+                case.case_type = case_type
 
                 event_service.log_case_event(
                     db_session=db_session,
@@ -269,7 +266,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
                 name=case_in.case_severity.name,
             )
             if case_severity:
-                case.case_severities.append(AssocCaseCaseSeverity(case_severity))
+                case.case_severity = case_severity
 
                 event_service.log_case_event(
                     db_session=db_session,
@@ -294,7 +291,7 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
                 name=case_in.case_priority.name,
             )
             if case_priority:
-                case.case_priorities.append(AssocCaseCasePriority(case_priority))
+                case.case_priority = case_priority
 
                 event_service.log_case_event(
                     db_session=db_session,
