@@ -8,10 +8,10 @@ from itertools import chain
 from six import string_types
 from sortedcontainers import SortedSet
 
-from pydantic import BaseModel
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from pydantic.types import Json, constr
 from typing import List
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from pydantic import BaseModel
+from pydantic.types import Json, constr
 
 from fastapi import Depends, Query
 
@@ -24,7 +24,6 @@ from sqlalchemy_filters.models import Field, get_model_from_spec
 
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user, get_current_role
-from dispatch.case.models import Case
 from dispatch.data.query.models import Query as QueryModel
 from dispatch.data.source.models import Source
 from dispatch.enums import UserRoles, Visibility
@@ -316,29 +315,20 @@ def apply_filters(query, filter_spec, model_cls=None, do_auto_join=True):
         The :class:`sqlalchemy.orm.Query` instance after all the filters
         have been applied.
     """
-    print(f"Filter spec: {filter_spec}")
     filters = build_filters(filter_spec)
-    print(f"Filters: {filters}")
     default_model = get_default_model(query)
     if not default_model:
         default_model = model_cls
-
-    print(f"Default model: {default_model}")
-    print(f"Named models: {get_named_models(filters)}")
     filter_models = get_named_models(filters)[0]
-    print(f"Filter models: {filter_models}")
 
     if do_auto_join:
-        print("autojoin")
         query = auto_join(query, filter_models)
 
     sqlalchemy_filters = [filter.format_for_sqlalchemy(query, default_model) for filter in filters]
-    print(f"SQL filters: {sqlalchemy_filters}")
 
     if sqlalchemy_filters:
         query = query.filter(*sqlalchemy_filters)
 
-    print(query)
     return query
 
 
@@ -347,29 +337,21 @@ def apply_filter_specific_joins(model: Base, filter_spec: dict, query: orm.query
     # this is required because by default sqlalchemy-filter's auto-join
     # knows nothing about how to join many-many relationships.
     model_map = {
-        (Case, "CasePriority"): (Case.case_priority, True),
-        (Case, "CaseSeverity"): (Case.case_severity, True),
-        (Case, "CaseType"): (Case.case_types, True),
-        # (Case, "CasePriority"): (Case.case_priorities, True),
-        # (Case, "CaseSeverity"): (Case.case_severities, True),
-        # (Case, "CaseType"): (Case.case_types, True),
-        (Case, "Tag"): (Case.tags, True),
-        (Case, "TagType"): (Case.tags, True),
-        (DispatchUser, "Organization"): (DispatchUser.organizations, True),
-        (Feedback, "Incident"): (Incident, False),
         (Feedback, "Project"): (Incident, False),
-        (Incident, "Tag"): (Incident.tags, True),
-        (Incident, "TagType"): (Incident.tags, True),
-        (Incident, "Term"): (Incident.terms, True),
-        (PluginInstance, "Plugin"): (Plugin, False),
-        (QueryModel, "Tag"): (QueryModel.tags, True),
-        (QueryModel, "TagType"): (QueryModel.tags, True),
-        (Source, "Tag"): (Source.tags, True),
-        (Source, "TagType"): (Source.tags, True),
+        (Feedback, "Incident"): (Incident, False),
+        (Task, "Project"): (Incident, False),
         (Task, "Incident"): (Incident, False),
         (Task, "IncidentPriority"): (Incident, False),
         (Task, "IncidentType"): (Incident, False),
-        (Task, "Project"): (Incident, False),
+        (PluginInstance, "Plugin"): (Plugin, False),
+        (Source, "Tag"): (Source.tags, True),
+        (Source, "TagType"): (Source.tags, True),
+        (QueryModel, "Tag"): (QueryModel.tags, True),
+        (QueryModel, "TagType"): (QueryModel.tags, True),
+        (DispatchUser, "Organization"): (DispatchUser.organizations, True),
+        (Incident, "Tag"): (Incident.tags, True),
+        (Incident, "TagType"): (Incident.tags, True),
+        (Incident, "Term"): (Incident.terms, True),
     }
     filters = build_filters(filter_spec)
     filter_models = get_named_models(filters)[0]
@@ -479,12 +461,6 @@ def search_filter_sort_paginate(
 ):
     """Common functionality for searching, filtering, sorting, and pagination."""
     model_cls = get_class_by_tablename(model)
-
-    print(f"Model: {model}")
-    print(f"Query Str: {query_str}")
-    print(f"Filter Spec: {filter_spec}")
-    print(f"Model CLS: {model_cls}")
-
     try:
         query = db_session.query(model_cls)
 
@@ -543,8 +519,7 @@ def search_filter_sort_paginate(
 def restricted_incident_filter(query: orm.Query, current_user: DispatchUser, role: UserRoles):
     """Adds additional incident filters to query (usually for permissions)."""
     if role == UserRoles.member:
-        # We filter out resticted incidents for users with a member role
-        # if the user is not an incident participant
+        # We filter out resticted incidents for users with a member role if the user is not an incident participant
         query = (
             query.join(Participant, Incident.id == Participant.incident_id)
             .join(IndividualContact)
