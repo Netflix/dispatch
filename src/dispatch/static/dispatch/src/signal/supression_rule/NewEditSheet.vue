@@ -24,12 +24,12 @@
       </template>
       <v-card flat>
         <v-card-text>
-          <v-container grid-list-md>
-            <v-layout wrap>
-              <v-flex xs12>
-                <span class="subtitle-2">Details</span>
-              </v-flex>
-              <v-flex xs12>
+          <v-container>
+            <v-row>
+              <span class="subtitle-2">Details</span>
+            </v-row>
+            <v-row>
+              <v-col>
                 <ValidationProvider name="Name" rules="required" immediate>
                   <v-text-field
                     v-model="name"
@@ -37,13 +37,15 @@
                     :error-messages="errors"
                     :success="valid"
                     label="Name"
-                    hint="A name for your incident priority."
+                    hint="A name for your duplication rule."
                     clearable
                     required
                   />
                 </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
                 <ValidationProvider name="Description" rules="required" immediate>
                   <v-textarea
                     v-model="description"
@@ -51,84 +53,82 @@
                     label="Description"
                     :error-messages="errors"
                     :success="valid"
-                    hint="A description for your incident priority."
+                    hint="A description for your duplication rule."
                     clearable
                     required
                   />
                 </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="View Order" rules="required" immediate>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
+                <v-select
+                  v-model="mode"
+                  label="Mode"
+                  :items="modes"
+                  hint="The rules current mode."
+                />
+              </v-col>
+            </v-row>
+            <v-row>
+              <date-time-picker-menu label="Expires At" v-model="expiration" />
+            </v-row>
+            <v-row>
+              <v-col>
+                <span class="subtitle-2">
+                  Evergreen
+                  <v-tooltip max-width="250px" bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                    </template>
+                    Dispatch will send an email reminder to the template owner to keep it up to
+                    date.
+                  </v-tooltip>
+                </span>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
+                <ValidationProvider name="Owner" immediate>
                   <v-text-field
-                    v-model="view_order"
+                    v-model="evergreen_owner"
                     slot-scope="{ errors, valid }"
-                    label="View Order"
+                    label="Owner"
                     :error-messages="errors"
                     :success="valid"
-                    type="number"
-                    hint="Enter a value to indicate the order in which you want this priority to be shown in a list (lowest numbers are shown first)."
+                    hint="Owner of this document template."
                     clearable
-                    required
                   />
                 </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="Tactical Report Reminder" rules="required" immediate>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
+                <ValidationProvider name="Reminder Interval" immediate>
                   <v-text-field
-                    v-model="tactical_report_reminder"
+                    v-model="evergreen_reminder_interval"
                     slot-scope="{ errors, valid }"
-                    label="Tactical Report Reminder"
+                    label="Reminder Interval"
                     :error-messages="errors"
                     :success="valid"
                     type="number"
-                    hint="Number of hours to send a tactical report reminder to the incident commander."
+                    hint="Number of days that should elapse between reminders sent to the document template owner."
+                    placeholder="90"
                     clearable
-                    required
                     min="1"
                   />
                 </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationProvider name="Executive Report Reminder" rules="required" immediate>
-                  <v-text-field
-                    v-model="executive_report_reminder"
-                    slot-scope="{ errors, valid }"
-                    label="Executive Report Reminder"
-                    :error-messages="errors"
-                    :success="valid"
-                    type="number"
-                    hint="Number of hours to send an executive report reminder to the incident commander."
-                    clearable
-                    required
-                    min="1"
-                  />
-                </ValidationProvider>
-              </v-flex>
-              <v-flex xs12>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
                 <v-checkbox
-                  v-model="page_commander"
-                  label="Page Commander"
-                  hint="Would you like Dispatch to page the incident commander on incident creation?"
-                />
-              </v-flex>
-              <v-flex xs12>
-                <color-picker-input label="Color" v-model="color"></color-picker-input>
-              </v-flex>
-              <v-flex xs12>
-                <v-checkbox
-                  v-model="default_incident_priority"
-                  label="Default Incident Priority"
-                  hint="Check if this incident priority should be the default."
-                />
-              </v-flex>
-              <v-flex xs12>
-                <v-checkbox
-                  v-model="enabled"
+                  v-model="evergreen"
+                  hint="Enabling evergreen will send periodic reminders to the owner to update this document template."
                   label="Enabled"
-                  hint="Determines whether this incident priority is availible for new incidents."
                 />
-              </v-flex>
-            </v-layout>
+              </v-col>
+            </v-row>
           </v-container>
         </v-card-text>
       </v-card>
@@ -142,8 +142,6 @@ import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 
-import ColorPickerInput from "@/components/ColorPickerInput.vue"
-
 extend("required", {
   ...required,
   message: "This field is required",
@@ -153,30 +151,30 @@ export default {
   name: "SupressionRuleNewEditSheet",
 
   components: {
-    ColorPickerInput,
     ValidationObserver,
     ValidationProvider,
   },
 
   data() {
-    return {}
+    return {
+      modes: ["Active", "Monitor", "Inactive", "Expired"],
+    }
   },
 
   computed: {
     ...mapFields("signalSupressionRule", [
       "dialogs.showCreateEdit",
-      "selected.color",
-      "selected.default",
-      "selected.description",
-      "selected.enabled",
-      "selected.executive_report_reminder",
       "selected.id",
-      "selected.loading",
       "selected.name",
-      "selected.page_commander",
+      "selected.description",
+      "selected.expression",
+      "selected.mode",
+      "selected.expiration",
+      "selected.evergreen_owner",
+      "selected.evergreen",
+      "selected.evergreen_reminder_interval",
+      "selected.loading",
       "selected.project",
-      "selected.tactical_report_reminder",
-      "selected.view_order",
     ]),
     ...mapFields("signalSupressionRule", {
       default_incident_priority: "selected.default",

@@ -1,20 +1,20 @@
 <template>
   <v-container fluid>
     <new-edit-sheet />
-    <v-row align="center" justify="space-between" no-gutters>
-      <v-col>
-        <settings-breadcrumbs v-model="project" />
-      </v-col>
-      <v-col class="text-right">
-        <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
-      </v-col>
-    </v-row>
     <v-row no-gutters>
       <v-col>
         <v-alert dismissible icon="mdi-school" prominent text type="info"
           >Supression rules allow you to define the parameters for signals that should not have
           cases created for them.
         </v-alert>
+      </v-col>
+    </v-row>
+    <v-row align="center" justify="space-between" no-gutters>
+      <v-col cols="8">
+        <settings-breadcrumbs v-model="project" />
+      </v-col>
+      <v-col class="text-right">
+        <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -41,14 +41,13 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.page_commander="{ item }">
-              <v-simple-checkbox v-model="item.page_commander" disabled />
-            </template>
-            <template v-slot:item.default="{ item }">
-              <v-simple-checkbox v-model="item.default" disabled />
-            </template>
-            <template v-slot:item.enabled="{ item }">
-              <v-simple-checkbox v-model="item.enabled" disabled />
+            <template v-slot:item.expiration="{ item }">
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <span v-bind="attrs" v-on="on">{{ item.expiration | formatRelativeDate }}</span>
+                </template>
+                <span>{{ item.expiration | formatDate }}</span>
+              </v-tooltip>
             </template>
             <template v-slot:item.data-table-actions="{ item }">
               <v-menu bottom left>
@@ -90,12 +89,7 @@ export default {
       headers: [
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
-        { text: "Page Commander", value: "page_commander", sortable: true },
-        { text: "Default", value: "default", sortable: true },
-        { text: "Enabled", value: "enabled", sortable: true },
-        { text: "Tactical Report Reminder", value: "tactical_report_reminder", sortable: true },
-        { text: "Executive Report Reminder", value: "executive_report_reminder", sortable: true },
-        { text: "View Order", value: "view_order", sortable: true },
+        { text: "Mode", value: "mode", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }

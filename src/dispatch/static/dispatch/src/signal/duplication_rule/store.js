@@ -6,18 +6,13 @@ import DuplicationRuleApi from "@/signal/duplication_rule/api"
 
 const getDefaultSelectedState = () => {
   return {
-    color: null,
-    default: false,
-    description: null,
-    enabled: false,
-    executive_report_reminder: null,
     id: null,
-    loading: false,
     name: null,
-    page_commander: null,
+    description: null,
+    mode: null,
+    expression: null,
+    loading: false,
     project: null,
-    tactical_report_reminder: null,
-    view_order: null,
   }
 }
 
@@ -68,15 +63,15 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 500),
-  createEditShow({ commit }, incidentPriority) {
+  createEditShow({ commit }, duplicationRule) {
     commit("SET_DIALOG_CREATE_EDIT", true)
-    if (incidentPriority) {
-      commit("SET_SELECTED", incidentPriority)
+    if (duplicationRule) {
+      commit("SET_SELECTED", duplicationRule)
     }
   },
-  removeShow({ commit }, incidentPriority) {
+  removeShow({ commit }, duplicationRule) {
     commit("SET_DIALOG_DELETE", true)
-    commit("SET_SELECTED", incidentPriority)
+    commit("SET_SELECTED", duplicationRule)
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
@@ -97,7 +92,7 @@ const actions = {
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Incident priority created successfully.", type: "success" },
+            { text: "Duplication rule created successfully.", type: "success" },
             { root: true }
           )
         })
@@ -112,7 +107,7 @@ const actions = {
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Incident priority updated successfully.", type: "success" },
+            { text: "Duplication rule updated successfully.", type: "success" },
             { root: true }
           )
         })
@@ -127,7 +122,7 @@ const actions = {
       dispatch("getAll")
       commit(
         "notification_backend/addBeNotification",
-        { text: "Incident priority deleted successfully.", type: "success" },
+        { text: "Duplication rule deleted successfully.", type: "success" },
         { root: true }
       )
     })

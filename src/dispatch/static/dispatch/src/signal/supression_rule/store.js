@@ -6,18 +6,17 @@ import SupressionRuleApi from "@/signal/supression_rule/api"
 
 const getDefaultSelectedState = () => {
   return {
-    color: null,
-    default: false,
-    description: null,
-    enabled: false,
-    executive_report_reminder: null,
     id: null,
-    loading: false,
     name: null,
-    page_commander: null,
+    description: null,
+    mode: null,
+    expiration: null,
+    expression: null,
+    evergreen: null,
+    evergreen_owner: null,
+    evergreen_reminder_interval: null,
+    loading: false,
     project: null,
-    tactical_report_reminder: null,
-    view_order: null,
   }
 }
 

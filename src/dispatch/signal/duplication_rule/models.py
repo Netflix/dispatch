@@ -29,7 +29,6 @@ class DuplicationRule(Base, ProjectMixin, EvergreenMixin):
     creator = relationship("DispatchUser", backref="duplication_rules")
     signals = relationship("Signal", backref="duplication_rule")
     mode = Column(String, default=RuleMode.active, nullable=False)
-    expiration = Column(DateTime, nullable=True)
 
     search_vector = Column(
         TSVectorType("name", "description", weights={"name": "A", "description": "B"})
@@ -40,11 +39,8 @@ class DuplicationRule(Base, ProjectMixin, EvergreenMixin):
 class DuplicationRuleBase(DispatchBase):
     name: NameStr
     description: Optional[str] = Field(None, nullable=True)
-    expression: List[dict]
-    creator: UserRead
-    signals: List[SignalRead]
+    expression: Optional[List[dict]]
     mode: Optional[RuleMode]
-    expiration: Optional[datetime] = Field(None, nullable=True)
 
 
 class DuplicationRuleCreate(DuplicationRuleBase):
@@ -57,6 +53,8 @@ class DuplicationRuleUpdate(DuplicationRuleBase):
 
 class DuplicationRuleRead(DuplicationRuleBase):
     id: PrimaryKey
+    creator: UserRead
+    signals: List[SignalRead]
 
 
 class DuplicationRulePagination(DispatchBase):

@@ -5,6 +5,7 @@ from sqlalchemy_filters import apply_filters
 from dispatch.database.core import Base, get_class_by_tablename, get_table_name_by_class_instance
 from dispatch.database.service import apply_filter_specific_joins
 from dispatch.project import service as project_service
+from dispatch.auth.models import DispatchUser
 
 from .models import DuplicationRule, DuplicationRuleCreate, DuplicationRuleUpdate
 
@@ -38,32 +39,22 @@ def fingerprint(*, db_session, filter_spec: List[dict], class_instance: Base):
     return query.filter(model_cls.id == class_instance.id).one_or_none()
 
 
-def get_or_create(*, db_session, duplication_rule_in) -> DuplicationRule:
-    if duplication_rule_in.id:
-        q = db_session.query(DuplicationRule).filter(DuplicationRule.id == duplication_rule_in.id)
-    else:
-        q = db_session.query(DuplicationRule).filter_by(**duplication_rule_in.dict(exclude={"id"}))
-
-    instance = q.first()
-    if instance:
-        return instance
-
-    return create(db_session=db_session, duplication_rule_in=duplication_rule_in)
-
-
 def get_all(*, db_session):
     """Gets all duplication rules."""
     return db_session.query(DuplicationRule)
 
 
-def create(*, db_session, duplication_rule_in: DuplicationRuleCreate) -> DuplicationRule:
+def create(
+    *, db_session, duplication_rule_in: DuplicationRuleCreate, current_user: DispatchUser
+) -> DuplicationRule:
     """Creates a new duplication rule."""
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=duplication_rule_in.project
     )
-    duplication_rule = duplicationRule(
+    duplication_rule = DuplicationRule(
         **duplication_rule_in.dict(exclude={"project"}), project=project
     )
+    duplication_rule.creator = current_user
     db_session.add(duplication_rule)
     db_session.commit()
     return duplication_rule

@@ -7,6 +7,8 @@ from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
 from dispatch.models import PrimaryKey
+from dispatch.auth.models import DispatchUser
+from dispatch.auth import service as auth_service
 
 from .models import (
     DuplicationRuleCreate,
@@ -27,11 +29,18 @@ def get_rules(*, common: dict = Depends(common_parameters)):
 
 @router.post("", response_model=DuplicationRuleRead)
 def create_duplication_rule(
-    *, db_session: Session = Depends(get_db), duplication_rule_in: DuplicationRuleCreate
+    *,
+    db_session: Session = Depends(get_db),
+    duplication_rule_in: DuplicationRuleCreate,
+    current_user: DispatchUser = Depends(auth_service.get_current_user),
 ):
     """Create a new rule."""
     try:
-        return create(db_session=db_session, duplication_rule_in=Duplication_rule_in)
+        return create(
+            db_session=db_session,
+            duplication_rule_in=duplication_rule_in,
+            current_user=current_user,
+        )
     except IntegrityError:
         raise ValidationError(
             [

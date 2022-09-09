@@ -29,7 +29,6 @@ class SupressionRule(Base, ProjectMixin, EvergreenMixin):
     creator = relationship("DispatchUser", backref="supression_rule")
     signals = relationship("Signal", backref="supression_rule")
     mode = Column(String, default=RuleMode.active, nullable=False)
-
     expiration = Column(DateTime, nullable=True)
 
     search_vector = Column(
@@ -41,9 +40,7 @@ class SupressionRule(Base, ProjectMixin, EvergreenMixin):
 class SupressionRuleBase(DispatchBase):
     name: NameStr
     description: Optional[str] = Field(None, nullable=True)
-    expression: List[dict]
-    creator: UserRead
-    signals: List[SignalRead]
+    expression: Optional[List[dict]] = Field(None, nullable=True)
     mode: Optional[RuleMode]
     expiration: Optional[datetime] = Field(None, nullable=True)
 
@@ -58,6 +55,8 @@ class SupressionRuleUpdate(SupressionRuleBase):
 
 class SupressionRuleRead(SupressionRuleBase):
     id: PrimaryKey
+    creator: UserRead
+    signals: List[SignalRead]
 
 
 class SupressionRulePagination(DispatchBase):
