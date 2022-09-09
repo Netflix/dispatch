@@ -73,6 +73,28 @@ export const protectedRoute = [
         import(/* webpackChunkName: "incidents-report" */ "@/incident/ReportForm.vue"),
     },
     {
+      path: "signals",
+      component: DefaultLayout,
+      name: "signals",
+      meta: {
+        title: "Signals",
+        icon: "mdi-broadcast",
+        group: "signals",
+        requiresAuth: true,
+        menu: true,
+        showEditSheet: false,
+      },
+      redirect: { name: "SignalTable" },
+      children: [
+        {
+          path: "/:organization/signals",
+          name: "SignalTable",
+          meta: { title: "List" },
+          component: () => import(/* webpackChunkName: "signal-table" */ "@/signal/Table.vue"),
+        },
+      ],
+    },
+    {
       path: "cases",
       component: DefaultLayout,
       name: "cases",
@@ -321,6 +343,24 @@ export const protectedRoute = [
             meta: { title: "Workflows", subMenu: "project", group: "general" },
             component: () =>
               import(/* webpackChunkName: "workflows-table" */ "@/workflow/Table.vue"),
+          },
+          {
+            path: "signalSupressionRules",
+            name: "signalSupressionTable",
+            meta: { title: "Supression Rules", subMenu: "project", group: "signal" },
+            component: () =>
+              import(
+                /* webpackChunkName: "signal-supression-rule-table" */ "@/signal/supression_rule/Table.vue"
+              ),
+          },
+          {
+            path: "signalDuplicationRules",
+            name: "signalDuplicationTable",
+            meta: { title: "Duplication Rules", subMenu: "project", group: "signal" },
+            component: () =>
+              import(
+                /* webpackChunkName: "signal-duplication-rule-table" */ "@/signal/duplication_rule/Table.vue"
+              ),
           },
           {
             path: "caseTypes",

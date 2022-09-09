@@ -48,6 +48,10 @@ from dispatch.case.priority.views import router as case_priority_router
 from dispatch.case.severity.views import router as case_severity_router
 from dispatch.case.type.views import router as case_type_router
 
+from dispatch.signal.views import router as signal_router
+from dispatch.signal.duplication_rule.views import router as signal_duplication_rule_router
+from dispatch.signal.supression_rule.views import router as signal_supression_rule_router
+
 from .config import DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 
 
@@ -122,6 +126,16 @@ authenticated_organization_api_router.include_router(
 )
 authenticated_organization_api_router.include_router(
     alert_router, prefix="/data/alerts", tags=["alerts"]
+)
+
+authenticated_organization_api_router.include_router(
+    signal_router, prefix="/signals", tags="signals"
+)
+authenticated_organization_api_router.include_router(
+    signal_duplication_rule_router, prefix="/signals/duplication/rules", tags="duplications_rules"
+)
+authenticated_organization_api_router.include_router(
+    signal_supression_rule_router, prefix="/signals/supression/rules", tags="supression_rules"
 )
 
 authenticated_organization_api_router.include_router(user_router, prefix="/users", tags=["users"])

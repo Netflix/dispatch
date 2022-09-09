@@ -725,6 +725,63 @@ def run_server(log_level):
 dispatch_server.add_command(uvicorn.main, name="start")
 
 
+@dispatch_cli.group("signals")
+def signals_group():
+    """All commands for signal consumer manipulation."""
+    pass
+
+
+# Note these should be deamonized and run in seperate processes if decreased latency is required.
+@signals_group.command("start")
+@click.argument("plugins", nargs=-1)
+def start_signal_consumption(plugins):
+    """Starts a process that runs a signals consumption process until termination."""
+    import functools
+    import asyncio
+    import signal
+    from dispatch.database.core import SessionLocal
+    from dispatch.plugin import service as plugin_service
+    from dispatch.common.utils.cli import install_plugins
+
+    install_plugins()
+
+    db_session = SessionLocal()
+
+    available_plugins = []
+    for plugin_slug in plugins:
+        plugin = plugin_service.get_active_instance_by_slug(db_session=db_session, slug=plugin_slug)
+        if not plugin:
+            click.secho(
+                f"Plugin slug {plugin_slug} does not exist. Make sure you're passing the plugin's slug.",
+                fg="red",
+            )
+        else:
+            available_plugins.append(plugin)
+
+    loop = asyncio.get_event_loop()
+
+    def ask_exit(signame):
+        log.debug("got signal %s: exit" % signame)
+        loop.stop()
+
+    loop = asyncio.get_event_loop()
+    for signame in ("SIGINT", "SIGTERM"):
+        loop.add_signal_handler(getattr(signal, signame), functools.partial(ask_exit, signame))
+
+    async def consume(available_plugins):
+        while True:
+            for plugin in available_plugins:
+                loop.create_task(plugin.consume())
+            await asyncio.sleep(1)
+
+    try:
+        log.debug("Dispatch Signal Consumers Started")
+        loop.run_until_complete(consume)
+    finally:
+        log.debug("Dispatch Signal Consumer Closed")
+        loop.close()
+
+
 @dispatch_server.command("slack")
 @click.argument("organization")
 @click.argument("project")
