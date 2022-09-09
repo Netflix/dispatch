@@ -103,7 +103,7 @@ def get_all_last_x_hours_by_status(
             db_session.query(Case)
             .filter(Case.project_id == project_id)
             .filter(Case.status == CaseStatus.triage)
-            .filter(Case.stable_at >= now - timedelta(hours=hours))
+            .filter(Case.triage_at >= now - timedelta(hours=hours))
             .all()
         )
 
@@ -112,7 +112,7 @@ def get_all_last_x_hours_by_status(
             db_session.query(Case)
             .filter(Case.project_id == project_id)
             .filter(Case.status == CaseStatus.escalated)
-            .filter(Case.closed_at >= now - timedelta(hours=hours))
+            .filter(Case.escalated_at >= now - timedelta(hours=hours))
             .all()
         )
 
