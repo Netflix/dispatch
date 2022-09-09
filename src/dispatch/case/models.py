@@ -5,7 +5,6 @@ from typing import List, Optional
 from pydantic import validator
 from dispatch.models import NameStr, PrimaryKey
 from sqlalchemy import (
-    desc,
     Column,
     DateTime,
     ForeignKey,
@@ -14,6 +13,8 @@ from sqlalchemy import (
     String,
     Table,
     UniqueConstraint,
+    desc,
+    join,
     select,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -174,10 +175,11 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     @case_type.expression
     def case_type(cls):
         return (
-            select([CaseType])
-            .where(CaseType.id == cls.case_types.case_type.id)
-            .order_by(desc("created_at"))
-            .first()
+            select([CaseType]).join(
+                AssocCaseCaseType, CaseType.id == AssocCaseCaseType.case_type_id
+            )
+            # .order_by(desc("created_at"))
+            # .first()
         )
 
     @hybrid_property
@@ -189,12 +191,22 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
     @case_priority.expression
     def case_priority(cls):
-        return (
-            select([CasePriority])
-            .where(CasePriority.id == cls.case_priorities.case_priority.id)
-            .order_by(desc("created_at"))
-            .first()
+        # j = outerjoin(Task, Round, Task.game_id== Round.game_id)
+        # stmt = select([func.count(..)]).select_from(j).where(...).correlate_except(...)
+        j = join(
+            CasePriority,
+            AssocCaseCasePriority,
+            CasePriority.id == AssocCaseCasePriority.case_priority_id,
         )
+        stmt = (
+            select([CasePriority])
+            .select_from(j)
+            .where(cls.id == AssocCaseCasePriority.case_id)
+            .order_by(desc("created_at"))
+            .limit(1)
+        )
+        print(stmt)
+        return stmt
 
     @hybrid_property
     def case_severity(self):
@@ -206,10 +218,11 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     @case_severity.expression
     def case_severity(cls):
         return (
-            select([CaseSeverity])
-            .where(CaseSeverity.id == cls.case_severities.case_severity.id)
-            .order_by(desc("created_at"))
-            .first()
+            select([CaseSeverity]).join(
+                AssocCaseCaseSeverity, CaseSeverity.id == AssocCaseCaseSeverity.case_severity_id
+            )
+            # .order_by(desc("created_at"))
+            # .first()
         )
 
 
