@@ -9,17 +9,16 @@
     clearable
     deletable-chips
     hide-selected
-    item-text="name"
-    item-value="id"
+    item-text="id"
     multiple
     no-filter
-    v-model="incidentType"
+    v-model="caseSeverity"
   >
     <template v-slot:no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No incident types matching "
+            No case severities matching "
             <strong>{{ search }}</strong
             >".
           </v-list-item-title>
@@ -28,24 +27,18 @@
     </template>
     <template v-slot:selection="{ item, index }">
       <v-chip close @click:close="value.splice(index, 1)">
-        <span v-if="!project"
-          ><span v-if="item.project">{{ item.project.name }}/</span></span
-        >{{ item.name }}
+        <span v-if="!project"> {{ item.project.name }}/ </span>{{ item.name }}
       </v-chip>
     </template>
     <template v-slot:item="data">
-      <template>
-        <v-list-item-content>
-          <v-list-item-title>
-            <span v-if="!project"
-              ><span v-if="data.item.project">{{ data.item.project.name }}/</span></span
-            >{{ data.item.name }}
-          </v-list-item-title>
-          <v-list-item-subtitle style="width: 200px" class="text-truncate">
-            {{ data.item.description }}
-          </v-list-item-subtitle>
-        </v-list-item-content>
-      </template>
+      <v-list-item-content>
+        <v-list-item-title>
+          <span v-if="!project">{{ data.item.project.name }}/</span>{{ data.item.name }}
+        </v-list-item-title>
+        <v-list-item-subtitle style="width: 200px" class="text-truncate">
+          {{ data.item.description }}
+        </v-list-item-subtitle>
+      </v-list-item-content>
     </template>
     <template v-slot:append-item>
       <v-list-item v-if="more" @click="loadMore()">
@@ -61,10 +54,10 @@
 import { cloneDeep, debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import IncidentTypeApi from "@/incident_type/api"
+import CaseSeverityApi from "@/case/severity/api"
 
 export default {
-  name: "IncidentTypeComboBox",
+  name: "CaseSeverityComboBox",
 
   props: {
     value: {
@@ -76,7 +69,7 @@ export default {
     label: {
       type: String,
       default: function () {
-        return "Types"
+        return "Severities"
       },
     },
     project: {
@@ -96,25 +89,21 @@ export default {
   },
 
   computed: {
-    incidentType: {
+    caseSeverity: {
       get() {
         return cloneDeep(this.value)
       },
       set(value) {
         this.search = null
-        this._incidentTypes = value.filter((v) => {
+        this._caseSeverities = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
           return true
         })
-        this.$emit("input", this._incidentTypes)
+        this.$emit("input", this._caseSeverities)
       },
     },
-  },
-
-  created() {
-    this.fetchData()
   },
 
   methods: {
@@ -125,7 +114,6 @@ export default {
     fetchData() {
       this.error = null
       this.loading = "error"
-
       let filterOptions = {
         q: this.search,
         sortBy: ["name"],
@@ -144,7 +132,7 @@ export default {
 
       let enabledFilter = [
         {
-          model: "IncidentType",
+          model: "CaseSeverity",
           field: "enabled",
           op: "==",
           value: "true",
@@ -156,7 +144,7 @@ export default {
         enabledFilter
       )
 
-      IncidentTypeApi.getAll(filterOptions).then((response) => {
+      CaseSeverityApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.total = response.data.total
         this.loading = false
@@ -166,12 +154,17 @@ export default {
         } else {
           this.more = false
         }
+
         this.loading = false
       })
     },
     getFilteredData: debounce(function () {
       this.fetchData()
     }, 500),
+  },
+
+  created() {
+    this.fetchData()
   },
 }
 </script>

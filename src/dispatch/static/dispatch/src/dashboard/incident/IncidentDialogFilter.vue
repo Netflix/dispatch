@@ -12,12 +12,12 @@
       <v-list dense>
         <v-list-item>
           <v-list-item-content>
-            <date-window-input v-model="filters.reported_at" />
+            <date-window-input v-model="filters.reported_at" label="Reported At" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
-            <date-window-input label="Closed At" v-model="filters.closed_at" />
+            <date-window-input v-model="filters.closed_at" label="Closed At" />
           </v-list-item-content>
         </v-list-item>
         <v-list-item>
