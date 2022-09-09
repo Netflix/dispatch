@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <v-row no-gutters>
       <new-edit-sheet />
       <delete-dialog />
@@ -7,7 +7,7 @@
         <div class="headline">Tasks</div>
       </v-col>
       <v-spacer />
-      <v-col cols="3">
+      <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
         <table-export-dialog />
         <v-btn color="info" class="ml-2" @click="createEditShow()"> New </v-btn>

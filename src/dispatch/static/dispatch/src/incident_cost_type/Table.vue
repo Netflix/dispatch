@@ -1,12 +1,12 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <new-edit-sheet />
     <delete-dialog />
     <v-row align="center" justify="space-between" no-gutters>
       <v-col>
         <settings-breadcrumbs v-model="project" />
       </v-col>
-      <v-col cols="1">
+      <v-col class="text-right">
         <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
       </v-col>
     </v-row>

@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <div v-if="showEditSheet">
       <router-view />
     </div>
@@ -9,7 +9,7 @@
       <v-col>
         <div class="headline">Cases</div>
       </v-col>
-      <v-col cols="3">
+      <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
         <table-export-dialog />
         <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn>
@@ -46,11 +46,6 @@
             </template>
             <template v-slot:item.case_priority.name="{ item }">
               <case-priority :priority="item.case_priority.name" />
-            </template>
-            <template v-slot:item.source.name="{ item }">
-              <v-chip v-if="item.source" small color="info" text-color="white">
-                {{ item.source.name }}
-              </v-chip>
             </template>
             <template v-slot:item.status="{ item }">
               <case-status :status="item.status" :id="item.id" />
@@ -151,7 +146,6 @@ export default {
         { text: "Type", value: "case_type.name", sortable: true },
         { text: "Severity", value: "case_severity.name", sortable: true },
         { text: "Priority", value: "case_priority.name", sortable: true },
-        { text: "Source", value: "source.name", sortable: true },
         { text: "Project", value: "project.name", sortable: true },
         { text: "Reported At", value: "reported_at" },
         { text: "Closed At", value: "closed_at" },
@@ -172,7 +166,6 @@ export default {
       "table.options.filters.case_type",
       "table.options.filters.project",
       "table.options.filters.reported_at",
-      "table.options.filters.source",
       "table.options.filters.status",
       "table.options.filters.tag",
       "table.options.filters.tag_type",
