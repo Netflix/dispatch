@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <div v-if="showEditSheet">
       <router-view />
     </div>
@@ -10,7 +10,7 @@
       <v-col>
         <div class="headline">Incidents</div>
       </v-col>
-      <v-col cols="3">
+      <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
         <table-export-dialog />
         <v-btn color="info" class="ml-2" @click="showNewSheet()"> New </v-btn>

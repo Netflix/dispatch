@@ -1,6 +1,6 @@
 <template>
   <v-layout wrap>
-    <v-container>
+    <v-container fluid>
       <v-row align="center" justify="space-between" no-gutters>
         <v-col>
           <settings-breadcrumbs v-model="breadCrumbProject" />

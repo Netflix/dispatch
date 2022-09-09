@@ -1,11 +1,11 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <delete-dialog />
     <v-row no-gutters>
       <v-col>
         <div class="headline">Feedback</div>
       </v-col>
-      <v-col cols="1">
+      <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
       </v-col>
     </v-row>
