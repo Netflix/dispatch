@@ -1,20 +1,20 @@
 <template>
   <v-container fluid>
     <new-edit-sheet />
-    <v-row align="center" justify="space-between" no-gutters>
-      <v-col>
-        <settings-breadcrumbs v-model="project" />
-      </v-col>
-      <v-col class="text-right">
-        <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
-      </v-col>
-    </v-row>
     <v-row no-gutters>
       <v-col>
         <v-alert dismissible icon="mdi-school" prominent text type="info">
           Severities add another dimension to Dispatch's case categorization. They also allow for
           some configurability.
         </v-alert>
+      </v-col>
+    </v-row>
+    <v-row align="center" justify="space-between" no-gutters>
+      <v-col cols="8">
+        <settings-breadcrumbs v-model="project" />
+      </v-col>
+      <v-col class="text-right">
+        <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
       </v-col>
     </v-row>
     <v-row no-gutters>
