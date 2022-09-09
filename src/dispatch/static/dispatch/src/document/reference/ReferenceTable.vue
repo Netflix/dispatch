@@ -3,7 +3,7 @@
     <reference-new-edit-sheet />
     <delete-dialog />
     <v-row align="center" justify="space-between" no-gutters>
-      <v-col>
+      <v-col cols="8">
         <settings-breadcrumbs v-model="project" />
       </v-col>
     </v-row>

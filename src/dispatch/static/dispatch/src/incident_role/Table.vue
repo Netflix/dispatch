@@ -2,7 +2,7 @@
   <v-layout wrap>
     <v-container fluid>
       <v-row align="center" justify="space-between" no-gutters>
-        <v-col>
+        <v-col cols="8">
           <settings-breadcrumbs v-model="breadCrumbProject" />
         </v-col>
       </v-row>
