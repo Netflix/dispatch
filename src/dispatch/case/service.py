@@ -24,9 +24,6 @@ from .models import (
     CaseCreate,
     CaseRead,
     CaseUpdate,
-    AssocCaseCaseType,
-    AssocCaseCaseSeverity,
-    AssocCaseCasePriority,
 )
 
 
