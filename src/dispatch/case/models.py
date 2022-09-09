@@ -21,7 +21,6 @@ from dispatch.auth.models import UserRead
 from dispatch.case.priority.models import CasePriorityRead
 from dispatch.case.severity.models import CaseSeverityRead
 from dispatch.case.type.models import CaseTypeRead
-from dispatch.data.source.models import SourceRead
 from dispatch.database.core import Base
 from dispatch.document.models import Document, DocumentRead
 from dispatch.enums import Visibility
@@ -104,9 +103,6 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     related_id = Column(Integer, ForeignKey("case.id"))
     related = relationship("Case", remote_side=[id], uselist=True, foreign_keys=[related_id])
 
-    source = relationship("Source", uselist=False, backref="case")
-    source_id = Column(Integer, ForeignKey("source.id"))
-
     storage = relationship("Storage", uselist=False, backref="case", cascade="all, delete-orphan")
 
     tags = relationship(
@@ -151,7 +147,6 @@ class CaseCreate(CaseBase):
     case_severity: Optional[CaseSeverityRead]
     case_type: Optional[CaseTypeRead]
     project: Optional[ProjectRead]
-    source: Optional[SourceRead]
     tags: Optional[List[TagRead]] = []
 
 
@@ -167,7 +162,6 @@ class CaseReadNested(CaseBase):
     name: Optional[NameStr]
     project: ProjectRead
     reported_at: Optional[datetime] = None
-    source: Optional[SourceRead] = None
     triage_at: Optional[datetime] = None
 
 
@@ -189,7 +183,6 @@ class CaseRead(CaseBase):
     project: ProjectRead
     related: Optional[List[CaseReadNested]] = []
     reported_at: Optional[datetime] = None
-    source: Optional[SourceRead] = None
     storage: Optional[StorageRead] = None
     tags: Optional[List[TagRead]] = []
     ticket: Optional[TicketRead] = None
@@ -206,7 +199,6 @@ class CaseUpdate(CaseBase):
     escalated_at: Optional[datetime] = None
     incidents: Optional[List[IncidentRead]] = []
     reported_at: Optional[datetime] = None
-    source: Optional[SourceRead] = None
     tags: Optional[List[TagRead]] = []
     triage_at: Optional[datetime] = None
 

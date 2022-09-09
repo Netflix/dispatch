@@ -10,7 +10,6 @@ from dispatch.auth.models import DispatchUser
 from dispatch.case.priority import service as case_priority_service
 from dispatch.case.severity import service as case_severity_service
 from dispatch.case.type import service as case_type_service
-from dispatch.data.source import service as source_service
 from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
 from dispatch.incident import service as incident_service
@@ -177,11 +176,6 @@ def create(*, db_session, case_in: CaseCreate, current_user: DispatchUser) -> Ca
     )
     case.case_priority = case_priority
 
-    if case_in.source:
-        case.source = source_service.get_by_name(
-            db_session=db_session, project_id=project.id, name=case_in.source.name
-        )
-
     db_session.add(case)
     db_session.commit()
 
@@ -208,7 +202,6 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
             "incidents",
             "project",
             "related",
-            "source",
             "status",
             "tags",
             "visibility",
@@ -307,28 +300,6 @@ def update(*, db_session, case: Case, case_in: CaseUpdate, current_user: Dispatc
                 log.warning(
                     f"Case priority with name {case_in.case_priority.name.lower()} not found."
                 )
-
-    if case_in.source:
-        if case.source.name != case_in.source.name:
-            case_source = source_service.get_by_name(
-                db_session=db_session, project_id=case.project.id, name=case_in.source.name
-            )
-
-            if case_source:
-                case.source = case_source
-
-                event_service.log_case_event(
-                    db_session=db_session,
-                    source="Dispatch Core App",
-                    description=(
-                        f"Case source changed to {case_in.source.name.lower()} "
-                        f"by {current_user.email}"
-                    ),
-                    dispatch_user_id=current_user.id,
-                    case_id=case.id,
-                )
-            else:
-                log.warning(f"Case source with name {case_in.source.name.lower()} not found.")
 
     if case.status != case_in.status:
         case.status = case_in.status
