@@ -52,7 +52,7 @@ def get_current_case(*, db_session: Session = Depends(get_db), request: Request)
     return case
 
 
-@router.get("", summary="Retrieves all cases.")
+@router.get("", summary="Retrieves a list of cases.")
 def get_cases(
     *,
     common: dict = Depends(common_parameters),
@@ -182,7 +182,7 @@ def delete_case(
             detail=[
                 {
                     "msg": (
-                        f"Case {case.name} could not be deleted. Make sure the case has no ",
+                        f"Case {case.name} could not be deleted. Make sure the case has no "
                         "relationships to other cases or incidents before deleting it.",
                     )
                 }
