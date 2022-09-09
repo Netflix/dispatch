@@ -3,7 +3,7 @@
     <runbook-new-edit-sheet />
     <delete-dialog />
     <v-row align="center" justify="space-between" no-gutters>
-      <v-col class="grow">
+      <v-col cols="8">
         <settings-breadcrumbs v-model="project" />
       </v-col>
     </v-row>

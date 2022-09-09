@@ -2,20 +2,20 @@
   <v-container fluid>
     <new-edit-sheet />
     <delete-dialog />
-    <v-row align="center" justify="space-between" no-gutters>
-      <v-col>
-        <settings-breadcrumbs v-model="project" />
-      </v-col>
-      <v-col class="text-right">
-        <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
-      </v-col>
-    </v-row>
     <v-row no-gutters>
       <v-col>
         <v-alert dismissible icon="mdi-school" prominent text type="info"
           >Workflows extend Dispatch into existing workflow orchestration systems and can be used
           for nearly anything as long as they report back their status to Dispatch.
         </v-alert>
+      </v-col>
+    </v-row>
+    <v-row align="center" justify="space-between" no-gutters>
+      <v-col cols="8">
+        <settings-breadcrumbs v-model="project" />
+      </v-col>
+      <v-col class="text-right">
+        <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
       </v-col>
     </v-row>
     <v-row no-gutters>
