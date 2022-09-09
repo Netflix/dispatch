@@ -38,55 +38,6 @@ from dispatch.ticket.models import TicketRead
 from .enums import CaseStatus
 
 
-# Assoc object for case and case types
-class AssocCaseCaseType(Base):
-    __tablename__ = "assoc_case_case_type"
-
-    id = Column(Integer(), primary_key=True)
-    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"), nullable=False)
-    case_type_id = Column(Integer, ForeignKey("case_type.id", ondelete="CASCADE"), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-
-    def __init__(self, case_type):
-        self.case_type = case_type
-
-    case_type = relationship("CaseType")
-
-
-# Assoc object for case and case priorities
-class AssocCaseCasePriority(Base):
-    __tablename__ = "assoc_case_case_priority"
-
-    id = Column(Integer(), primary_key=True)
-    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"), nullable=False)
-    case_priority_id = Column(
-        Integer, ForeignKey("case_priority.id", ondelete="CASCADE"), nullable=False
-    )
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-
-    def __init__(self, case_priority):
-        self.case_priority = case_priority
-
-    case_priority = relationship("CasePriority")
-
-
-# Assoc object for case and case severities
-class AssocCaseCaseSeverity(Base):
-    __tablename__ = "assoc_case_case_severity"
-
-    id = Column(Integer(), primary_key=True)
-    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"), nullable=False)
-    case_severity_id = Column(
-        Integer, ForeignKey("case_severity.id", ondelete="CASCADE"), nullable=False
-    )
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-
-    def __init__(self, case_severity):
-        self.case_severity = case_severity
-
-    case_severity = relationship("CaseSeverity")
-
-
 # Assoc table for case and tags
 assoc_case_tags = Table(
     "assoc_case_tags",
@@ -123,9 +74,14 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     assignee_id = Column(Integer, ForeignKey("dispatch_core.dispatch_user.id"))
     assignee = relationship("DispatchUser", foreign_keys=[assignee_id], post_update=True)
 
-    case_types = relationship("AssocCaseCaseType", backref="case")
-    case_priorities = relationship("AssocCaseCasePriority", backref="case")
-    case_severities = relationship("AssocCaseCaseSeverity", backref="case")
+    case_type = relationship("CaseType", backref="case")
+    case_type_id = Column(Integer, ForeignKey("case_type.id"))
+
+    case_severity = relationship("CaseSeverity", backref="case")
+    case_severity_id = Column(Integer, ForeignKey("case_severity.id"))
+
+    case_priority = relationship("CasePriority", backref="case")
+    case_priority_id = Column(Integer, ForeignKey("case_priority.id"))
 
     case_document_id = Column(Integer, ForeignKey("document.id"))
     case_document = relationship("Document", foreign_keys=[case_document_id])
@@ -161,27 +117,6 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     )
 
     ticket = relationship("Ticket", uselist=False, backref="case", cascade="all, delete-orphan")
-
-    # hybrid properties
-
-    @hybrid_property
-    def case_type(self):
-        if self.case_types:
-            return sorted(self.case_types, key=lambda case_type: case_type.created_at)[-1].case_type
-
-    @hybrid_property
-    def case_priority(self):
-        if self.case_priorities:
-            return sorted(self.case_priorities, key=lambda case_priority: case_priority.created_at)[
-                -1
-            ].case_priority
-
-    @hybrid_property
-    def case_severity(self):
-        if self.case_severities:
-            return sorted(self.case_severities, key=lambda case_severity: case_severity.created_at)[
-                -1
-            ].case_severity
 
 
 class ProjectRead(DispatchBase):
