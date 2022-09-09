@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <new-edit-sheet />
     <delete-dialog />
     <v-row align="center" justify="space-between" no-gutters>

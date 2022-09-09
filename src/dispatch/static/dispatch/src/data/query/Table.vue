@@ -1,12 +1,12 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <new-edit-sheet />
     <v-row align="center" justify="space-between" no-gutters>
       <delete-dialog />
       <v-col>
         <div class="headline">Queries</div>
       </v-col>
-      <v-col cols="2">
+      <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
         <v-btn color="info" class="ml-2" @click="createEditShow()"> New </v-btn>
       </v-col>
