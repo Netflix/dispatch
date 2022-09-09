@@ -37,7 +37,7 @@
           clearable
         />
       </v-flex>
-      <v-flex xs6>
+      <v-flex xs12>
         <organization-member-combobox
           v-model="assignee"
           label="Assignee"
@@ -48,6 +48,15 @@
       </v-flex>
       <v-flex xs6>
         <project-select v-model="project" />
+      </v-flex>
+      <v-flex xs6>
+        <case-type-select v-model="case_type" :project="project" />
+      </v-flex>
+      <v-flex xs6>
+        <case-severity-select v-model="case_severity" :project="project" />
+      </v-flex>
+      <v-flex xs6>
+        <case-priority-select v-model="case_priority" :project="project" />
       </v-flex>
       <v-flex xs6>
         <v-select
@@ -64,15 +73,6 @@
           :items="visibilities"
           hint="The visibilty of the case."
         />
-      </v-flex>
-      <v-flex xs6>
-        <case-type-select v-model="case_type" :project="project" />
-      </v-flex>
-      <v-flex xs6>
-        <case-severity-select v-model="case_severity" :project="project" />
-      </v-flex>
-      <v-flex xs6>
-        <case-priority-select v-model="case_priority" :project="project" />
       </v-flex>
       <v-flex xs12>
         <v-row>
