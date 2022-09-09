@@ -82,7 +82,6 @@ export default {
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
         { text: "Mode", value: "mode", sortable: true },
-        { text: "Expiration", value: "expiration", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }

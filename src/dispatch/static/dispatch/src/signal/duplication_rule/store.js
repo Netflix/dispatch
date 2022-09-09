@@ -11,6 +11,9 @@ const getDefaultSelectedState = () => {
     description: null,
     mode: null,
     expression: null,
+    evergreen: null,
+    evergreen_owner: null,
+    evergreen_reminder_interval: null,
     loading: false,
     project: null,
   }

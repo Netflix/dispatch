@@ -402,6 +402,7 @@ setup(
     entry_points={
         "console_scripts": ["dispatch = dispatch.cli:entrypoint"],
         "dispatch.plugins": [
+            "aws_sqs_signal = dispatch.plugins.dispatch_aws.plugin:AWSSQSSignalConsumerPlugin",
             "dispatch_basic_auth = dispatch.plugins.dispatch_core.plugin:BasicAuthProviderPlugin",
             "dispatch_contact = dispatch.plugins.dispatch_core.plugin:DispatchContactPlugin",
             "dispatch_document_resolver = dispatch.plugins.dispatch_core.plugin:DispatchDocumentResolverPlugin",
@@ -420,6 +421,7 @@ setup(
             "jira_ticket = dispatch.plugins.dispatch_jira.plugin:JiraTicketPlugin",
             "opsgenie_oncall = dispatch.plugins.dispatch_opsgenie.plugin:OpsGenieOncallPlugin",
             "pagerduty_oncall = dispatch.plugins.dispatch_pagerduty.plugin:PagerDutyOncallPlugin",
+            "uptycs_signal = dispatch.plugins.dispatch_uptycs.plugin:UptycsSignalConsumerPlugin",
             "slack_contact = dispatch.plugins.dispatch_slack.plugin:SlackContactPlugin",
             "slack_conversation = dispatch.plugins.dispatch_slack.plugin:SlackConversationPlugin",
             "zoom_conference = dispatch.plugins.dispatch_zoom.plugin:ZoomConferencePlugin",

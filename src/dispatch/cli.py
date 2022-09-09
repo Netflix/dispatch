@@ -733,30 +733,43 @@ def signals_group():
 
 # Note these should be deamonized and run in seperate processes if decreased latency is required.
 @signals_group.command("start")
+@click.argument("organization")
+@click.argument("project")
 @click.argument("plugins", nargs=-1)
-def start_signal_consumption(plugins):
+def start_signal_consumption(organization, project, plugins):
     """Starts a process that runs a signals consumption process until termination."""
     import functools
     import asyncio
     import signal
-    from dispatch.database.core import SessionLocal
+    from dispatch.plugins.dispatch_slack.decorators import get_organization_scope_from_slug
     from dispatch.plugin import service as plugin_service
+    from dispatch.project import service as project_service
+
     from dispatch.common.utils.cli import install_plugins
 
     install_plugins()
 
-    db_session = SessionLocal()
-
+    db_session = get_organization_scope_from_slug(organization)
     available_plugins = []
-    for plugin_slug in plugins:
-        plugin = plugin_service.get_active_instance_by_slug(db_session=db_session, slug=plugin_slug)
-        if not plugin:
-            click.secho(
-                f"Plugin slug {plugin_slug} does not exist. Make sure you're passing the plugin's slug.",
-                fg="red",
+    if plugins:
+        for plugin_slug in plugins:
+            plugin = plugin_service.get_active_instance_by_slug(
+                db_session=db_session, slug=plugin_slug
             )
-        else:
-            available_plugins.append(plugin)
+            if not plugin:
+                click.secho(
+                    f"Plugin slug {plugin_slug} does not exist. Make sure you're passing the plugin's slug.",
+                    fg="red",
+                )
+            else:
+                available_plugins.append(plugin)
+    else:
+        click.echo("No plugins specified running all enabled signal plugins.")
+        for project in project_service.get_all(db_session=db_session):
+            for plugin in plugin_service.get_enabled_instances_by_type(
+                db_session=db_session, project_id=project.id, plugin_type="signal-consumer"
+            ):
+                available_plugins.append(plugin)
 
     loop = asyncio.get_event_loop()
 
@@ -771,12 +784,12 @@ def start_signal_consumption(plugins):
     async def consume(available_plugins):
         while True:
             for plugin in available_plugins:
-                loop.create_task(plugin.consume())
+                loop.create_task(plugin.instance.consume())
             await asyncio.sleep(1)
 
     try:
         log.debug("Dispatch Signal Consumers Started")
-        loop.run_until_complete(consume)
+        loop.run_in_executor(None, consume(available_plugins))
     finally:
         log.debug("Dispatch Signal Consumer Closed")
         loop.close()

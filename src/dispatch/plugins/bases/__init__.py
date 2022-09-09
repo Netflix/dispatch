@@ -17,3 +17,5 @@ from .ticket import TicketPlugin  # noqa
 from .workflow import WorkflowPlugin  # noqa
 from .monitor import MonitorPlugin  # noqa
 from .source import SourcePlugin  # noqa
+from .signal_consumer import SignalConsumerPlugin  # noqa
+from .signal_enrichment import SignalEnrichmentPlugin  # noqa

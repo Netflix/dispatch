@@ -68,6 +68,7 @@ class UptycsSignalConsumerPlugin(SignalConsumerPlugin):
     description = "Uses uptycs as a signal source."
     version = uptycs_plugin.__version__
 
+    author = "Netflix"
     author_url = "https://github.com/netflix/dispatch.git"
 
     def __init__(self):

@@ -1,6 +1,6 @@
-from pydantic import Field
+from pydantic import Field, SecretStr
 
-from dispatch.config import BaseConfigurationModel, SecretStr
+from dispatch.config import BaseConfigurationModel
 
 
 class UptycsConfiguration(BaseConfigurationModel):

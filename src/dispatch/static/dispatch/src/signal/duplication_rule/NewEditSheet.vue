@@ -70,6 +70,62 @@
                 />
               </v-col>
             </v-row>
+            <v-row>
+              <v-col>
+                <span class="subtitle-2">
+                  Evergreen
+                  <v-tooltip max-width="250px" bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
+                    </template>
+                    Dispatch will send an email reminder to the template owner to keep it up to
+                    date.
+                  </v-tooltip>
+                </span>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
+                <ValidationProvider name="Owner" immediate>
+                  <v-text-field
+                    v-model="evergreen_owner"
+                    slot-scope="{ errors, valid }"
+                    label="Owner"
+                    :error-messages="errors"
+                    :success="valid"
+                    hint="Owner of this document template."
+                    clearable
+                  />
+                </ValidationProvider>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
+                <ValidationProvider name="Reminder Interval" immediate>
+                  <v-text-field
+                    v-model="evergreen_reminder_interval"
+                    slot-scope="{ errors, valid }"
+                    label="Reminder Interval"
+                    :error-messages="errors"
+                    :success="valid"
+                    type="number"
+                    hint="Number of days that should elapse between reminders sent to the document template owner."
+                    placeholder="90"
+                    clearable
+                    min="1"
+                  />
+                </ValidationProvider>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
+                <v-checkbox
+                  v-model="evergreen"
+                  hint="Enabling evergreen will send periodic reminders to the owner to update this document template."
+                  label="Enabled"
+                />
+              </v-col>
+            </v-row>
           </v-container>
         </v-card-text>
       </v-card>
@@ -110,6 +166,9 @@ export default {
       "selected.description",
       "selected.expression",
       "selected.mode",
+      "selected.evergreen_owner",
+      "selected.evergreen",
+      "selected.evergreen_reminder_interval",
       "selected.loading",
       "selected.project",
     ]),
