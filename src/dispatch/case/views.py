@@ -182,7 +182,7 @@ def delete_case(
             detail=[
                 {
                     "msg": (
-                        f"Case {case.name} could not be deleted. Make sure the case has no ",
+                        f"Case {case.name} could not be deleted. Make sure the case has no "
                         "relationships to other cases or incidents before deleting it.",
                     )
                 }
