@@ -4,6 +4,10 @@
       <v-col>
         <div class="headline">Signals</div>
       </v-col>
+      <v-col class="text-right">
+        <table-filter-dialog :projects="defaultUserProjects" />
+        <table-export-dialog />
+      </v-col>
     </v-row>
     <v-row no-gutters>
       <v-col>
@@ -63,11 +67,16 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import RouterUtils from "@/router/utils"
+import TableExportDialog from "@/signal/TableExportDialog.vue"
+import TableFilterDialog from "@/signal/TableFilterDialog.vue"
 
 export default {
   name: "SignalTable",
 
-  components: {},
+  components: {
+    TableExportDialog,
+    TableFilterDialog,
+  },
 
   props: {
     name: {

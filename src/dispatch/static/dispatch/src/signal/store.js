@@ -16,7 +16,9 @@ const state = {
   selected: {
     ...getDefaultSelectedState(),
   },
-  dialogs: {},
+  dialogs: {
+    showExport: false,
+  },
   table: {
     rows: {
       items: [],
@@ -66,6 +68,12 @@ const actions = {
       commit("SET_SELECTED", response.data)
     })
   },
+  showExport({ commit }) {
+    commit("SET_DIALOG_SHOW_EXPORT", true)
+  },
+  closeExport({ commit }) {
+    commit("SET_DIALOG_SHOW_EXPORT", false)
+  },
 }
 
 const mutations = {
@@ -76,6 +84,9 @@ const mutations = {
   SET_TABLE_ROWS(state, value) {
     // reset selected on table load
     state.table.rows = value
+  },
+  SET_DIALOG_SHOW_EXPORT(state, value) {
+    state.dialogs.showExport = value
   },
 }
 

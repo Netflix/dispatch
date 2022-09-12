@@ -3,8 +3,8 @@
     :platform: Unix
     :license: Apache, see LICENSE for more details.
 """
+import time
 import logging
-from datetime import datetime
 
 import jwt
 import requests
@@ -29,10 +29,7 @@ def make_request(
 ):
     url = f"https://{hostname}/api/customers/{customer_id}/{endpoint}"
 
-    ts = datetime.utcnow().timestamp()
-    print(api_key.get_secret_value())
-    print(api_secret.get_secret_value())
-    msg = {"iss": api_key.get_secret_value(), "iat": ts, "exp": ts + 60}
+    msg = {"iss": api_key.get_secret_value(), "exp": time.time() + 60 * 60 * 24 * 30}
     auth = jwt.encode(msg, api_secret.get_secret_value(), algorithm="HS256")
 
     headers = {"Accept": "application/json", "Authorization": f"Bearer {auth}"}
@@ -64,5 +61,6 @@ class UptycsSignalConsumerPlugin(SignalConsumerPlugin):
             api_key=self.configuration.api_key,
             api_secret=self.configuration.api_secret,
         )
+        print(data)
         log.debug(f"Found {len(data['items'])} alerts.")
         return data
