@@ -66,6 +66,9 @@
       <!--     @detailsSelected="detailsSelected($event)" -->
       <!--   /> -->
       <!-- </v-flex> -->
+      <v-flex lg6 sm6 xs12>
+        <case-new-triage-average-time-card v-model="groupedItems" :loading="loading" />
+      </v-flex>
       <!-- Statistics Ends -->
     </v-layout>
   </v-container>
@@ -82,6 +85,7 @@ import CaseDialogFilter from "@/dashboard/case/CaseDialogFilter.vue"
 // import CasePriorityBarChartCard from "@/dashboard/case/CasePriorityBarChartCard.vue"
 import CaseSeverityBarChartCard from "@/dashboard/case/CaseSeverityBarChartCard.vue"
 import CaseTypeBarChartCard from "@/dashboard/case/CaseTypeBarChartCard.vue"
+import CaseNewTriageAverageTimeCard from "@/dashboard/case/CaseNewTriageAverageTimeCard.vue"
 import StatWidget from "@/components/StatWidget.vue"
 
 export default {
@@ -93,6 +97,7 @@ export default {
     CaseSeverityBarChartCard,
     CaseTypeBarChartCard,
     // CasesDrillDownSheet,
+    CaseNewTriageAverageTimeCard,
     StatWidget,
   },
 
