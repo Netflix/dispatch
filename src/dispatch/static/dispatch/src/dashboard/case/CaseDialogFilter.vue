@@ -155,12 +155,15 @@ export default {
           "case_type",
           "closed_at",
           "duplicates",
+          "escalated_at",
+          "incidents",
           "name",
           "project",
           "reported_at",
           "status",
           "tags",
           "title",
+          "triage_at",
         ],
       }
 

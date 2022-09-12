@@ -24,14 +24,24 @@
       </v-flex>
       <v-flex lg3 sm6 xs12>
         <stat-widget
-          icon="watch_later"
-          :title="totalHours | toNumberString"
-          sup-title="Total Hours"
+          icon="domain"
+          :title="totalCasesTriaged | toNumberString"
+          sup-title="Cases Triaged"
         />
       </v-flex>
       <v-flex lg3 sm6 xs12>
+        <stat-widget
+          icon="domain"
+          :title="totalCasesEscalated | toNumberString"
+          sup-title="Cases Escalated"
+        />
       </v-flex>
       <v-flex lg3 sm6 xs12>
+        <stat-widget
+          icon="watch_later"
+          :title="totalHours | toNumberString"
+          sup-title="Total Hours (New to Closed)"
+        />
       </v-flex>
       <!-- Widgets Ends -->
       <!-- Statistics Start -->
@@ -171,6 +181,21 @@ export default {
     },
     totalCases() {
       return this.items.length
+    },
+    totalCasesTriaged() {
+      return sumBy(this.items, function (item) {
+        if (item.triage_at) {
+          return 1
+        }
+      })
+    },
+    totalCasesEscalated() {
+      return sumBy(this.items, function (item) {
+        if (item.escalated_at && item.incidents.length > 0) {
+          console.log(item)
+          return 1
+        }
+      })
     },
     totalHours() {
       return sumBy(this.items, function (item) {
