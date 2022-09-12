@@ -29,6 +29,10 @@
           sup-title="Total Hours"
         />
       </v-flex>
+      <v-flex lg3 sm6 xs12>
+      </v-flex>
+      <v-flex lg3 sm6 xs12>
+      </v-flex>
       <!-- Widgets Ends -->
       <!-- Statistics Start -->
       <v-flex lg6 sm6 xs12>
