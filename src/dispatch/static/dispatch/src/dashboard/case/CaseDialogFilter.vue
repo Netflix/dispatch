@@ -30,21 +30,21 @@
             <tag-filter-auto-complete v-model="filters.tag" label="Tags" />
           </v-list-item-content>
         </v-list-item>
-        <!-- <v-list-item> -->
-        <!--   <v-list-item-content> -->
-        <!--     <case-type-combobox v-model="filters.case_type" /> -->
-        <!--   </v-list-item-content> -->
-        <!-- </v-list-item> -->
-        <!-- <v-list-item> -->
-        <!--   <v-list-item-content> -->
-        <!--     <case-severity-combobox v-model="filters.case_severity" /> -->
-        <!--   </v-list-item-content> -->
-        <!-- </v-list-item> -->
-        <!-- <v-list-item> -->
-        <!--   <v-list-item-content> -->
-        <!--     <case-priority-combobox v-model="filters.case_priority" /> -->
-        <!--   </v-list-item-content> -->
-        <!-- </v-list-item> -->
+        <v-list-item>
+          <v-list-item-content>
+            <case-type-combobox v-model="filters.case_type" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
+            <case-severity-combobox v-model="filters.case_severity" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
+            <case-priority-combobox v-model="filters.case_priority" />
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
       <v-card-actions>
         <v-spacer />
@@ -62,9 +62,9 @@ import startOfMonth from "date-fns/startOfMonth"
 import subMonths from "date-fns/subMonths"
 
 import CaseApi from "@/case/api"
-// import CasePriorityCombobox from "@/case/priority/CasePriorityCombobox.vue"
-// import CaseSeverityCombobox from "@/case/severity/CaseSeverityCombobox.vue"
-// import CaseTypeCombobox from "@/case/type/CaseTypeCombobox.vue"
+import CasePriorityCombobox from "@/case/priority/CasePriorityCombobox.vue"
+import CaseSeverityCombobox from "@/case/severity/CaseSeverityCombobox.vue"
+import CaseTypeCombobox from "@/case/type/CaseTypeCombobox.vue"
 import DateWindowInput from "@/components/DateWindowInput.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import RouterUtils from "@/router/utils"
@@ -80,9 +80,9 @@ export default {
   name: "CaseOverviewFilterDialog",
 
   components: {
-    // CasePriorityCombobox,
-    // CaseSeverityCombobox,
-    // CaseTypeCombobox,
+    CasePriorityCombobox,
+    CaseSeverityCombobox,
+    CaseTypeCombobox,
     DateWindowInput,
     ProjectCombobox,
     TagFilterAutoComplete,
@@ -103,9 +103,9 @@ export default {
       menuEnd: false,
       display: false,
       filters: {
-        // case_priority: [],
-        // case_severity: [],
-        // case_type: [],
+        case_priority: [],
+        case_severity: [],
+        case_type: [],
         project: this.projects,
         status: [],
         tag: [],
@@ -124,9 +124,9 @@ export default {
   computed: {
     numFilters: function () {
       return sum([
-        // this.filters.case_priority.length,
-        // this.filters.case_severity.length,
-        // this.filters.case_type.length,
+        this.filters.case_priority.length,
+        this.filters.case_severity.length,
+        this.filters.case_type.length,
         this.filters.project.length,
         this.filters.status.length,
         this.filters.tag.length,
