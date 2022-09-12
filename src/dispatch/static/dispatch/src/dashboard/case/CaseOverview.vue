@@ -38,13 +38,13 @@
           @detailsSelected="detailsSelected($event)"
         />
       </v-flex>
-      <!-- <v-flex lg6 sm6 xs12> -->
-      <!--   <case-severity-bar-chart-card -->
-      <!--     v-model="groupedItems" -->
-      <!--     :loading="loading" -->
-      <!--     @detailsSelected="detailsSelected($event)" -->
-      <!--   /> -->
-      <!-- </v-flex> -->
+      <v-flex lg6 sm6 xs12>
+        <case-severity-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+          @detailsSelected="detailsSelected($event)"
+        />
+      </v-flex>
       <!-- <v-flex lg6 sm6 xs12> -->
       <!--   <case-priority-bar-chart-card -->
       <!--     v-model="groupedItems" -->
@@ -66,7 +66,7 @@ import differenceInHours from "date-fns/differenceInHours"
 import CaseDialogFilter from "@/dashboard/case/CaseDialogFilter.vue"
 // import CasesDrillDownSheet from "@/dashboard/case/CasesDrillDownSheet.vue"
 // import CasePriorityBarChartCard from "@/dashboard/case/CasePriorityBarChartCard.vue"
-// import CaseSeverityBarChartCard from "@/dashboard/case/CaseSeverityBarChartCard.vue"
+import CaseSeverityBarChartCard from "@/dashboard/case/CaseSeverityBarChartCard.vue"
 import CaseTypeBarChartCard from "@/dashboard/case/CaseTypeBarChartCard.vue"
 import StatWidget from "@/components/StatWidget.vue"
 
@@ -76,7 +76,7 @@ export default {
   components: {
     CaseDialogFilter,
     // CasePriorityBarChartCard,
-    // CaseSeverityBarChartCard,
+    CaseSeverityBarChartCard,
     CaseTypeBarChartCard,
     // CasesDrillDownSheet,
     StatWidget,
