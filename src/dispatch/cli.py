@@ -612,6 +612,7 @@ def dispatch_scheduler():
     )
     from .monitor.scheduled import sync_active_stable_monitors  # noqa
     from .data.source.scheduled import sync_sources  # noqa
+    from .signal.scheduled import consume_signals  # noqa
 
 
 @dispatch_scheduler.command("list")
