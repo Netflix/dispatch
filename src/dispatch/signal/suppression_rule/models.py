@@ -18,7 +18,7 @@ from dispatch.signal.models import SignalRead
 from dispatch.project.models import ProjectRead
 
 
-class SupressionRule(Base, ProjectMixin, EvergreenMixin):
+class SuppressionRule(Base, ProjectMixin, EvergreenMixin):
     __table_args__ = (UniqueConstraint("name", "project_id"),)
 
     id = Column(Integer, primary_key=True)
@@ -26,8 +26,8 @@ class SupressionRule(Base, ProjectMixin, EvergreenMixin):
     description = Column(String)
     expression = Column(JSON, nullable=False, default=[])
     creator_id = Column(Integer, ForeignKey(DispatchUser.id))
-    creator = relationship("DispatchUser", backref="supression_rule")
-    signals = relationship("Signal", backref="supression_rule")
+    creator = relationship("DispatchUser", backref="suppression_rule")
+    signals = relationship("Signal", backref="suppression_rule")
     mode = Column(String, default=RuleMode.active, nullable=False)
     expiration = Column(DateTime, nullable=True)
 
@@ -37,7 +37,7 @@ class SupressionRule(Base, ProjectMixin, EvergreenMixin):
 
 
 # Pydantic models...
-class SupressionRuleBase(DispatchBase):
+class SuppressionRuleBase(DispatchBase):
     name: NameStr
     description: Optional[str] = Field(None, nullable=True)
     expression: Optional[List[dict]] = Field(None, nullable=True)
@@ -45,20 +45,20 @@ class SupressionRuleBase(DispatchBase):
     expiration: Optional[datetime] = Field(None, nullable=True)
 
 
-class SupressionRuleCreate(SupressionRuleBase):
+class SuppressionRuleCreate(SuppressionRuleBase):
     project: ProjectRead
 
 
-class SupressionRuleUpdate(SupressionRuleBase):
+class SuppressionRuleUpdate(SuppressionRuleBase):
     id: PrimaryKey = None
 
 
-class SupressionRuleRead(SupressionRuleBase):
+class SuppressionRuleRead(SuppressionRuleBase):
     id: PrimaryKey
     creator: UserRead
     signals: List[SignalRead]
 
 
-class SupressionRulePagination(DispatchBase):
-    items: List[SupressionRuleRead]
+class SuppressionRulePagination(DispatchBase):
+    items: List[SuppressionRuleRead]
     total: int

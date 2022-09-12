@@ -32,13 +32,7 @@
             :sort-desc.sync="descending"
             :loading="loading"
             loading-text="Loading... Please wait"
-            show-select
           >
-            <template v-slot:item.source.name="{ item }">
-              <v-chip v-if="item.source" small color="info" text-color="white">
-                {{ item.source.name }}
-              </v-chip>
-            </template>
             <template v-slot:item.status="{ item }">
               <case-status :status="item.status" :id="item.id" />
             </template>

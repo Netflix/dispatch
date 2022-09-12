@@ -1,9 +1,5 @@
-from typing import List, Optional
+from typing import Optional
 
-from sqlalchemy_filters import apply_filters
-
-from dispatch.database.core import Base, get_class_by_tablename, get_table_name_by_class_instance
-from dispatch.database.service import apply_filter_specific_joins
 from dispatch.project import service as project_service
 from dispatch.auth.models import DispatchUser
 
@@ -25,18 +21,6 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Duplicati
         .filter(DuplicationRule.project_id == project_id)
         .first()
     )
-
-
-# TODO
-def fingerprint(*, db_session, filter_spec: List[dict], class_instance: Base):
-    """Creates a fingerprint based on the duplication rule."""
-    table_name = get_table_name_by_class_instance(class_instance)
-    model_cls = get_class_by_tablename(table_name)
-    query = db_session.query(model_cls)
-
-    query = apply_filter_specific_joins(model_cls, filter_spec, query)
-    query = apply_filters(query, filter_spec)
-    return query.filter(model_cls.id == class_instance.id).one_or_none()
 
 
 def get_all(*, db_session):
@@ -82,3 +66,8 @@ def delete(*, db_session, duplication_rule_id: int):
     )
     db_session.delete(duplication_rule)
     db_session.commit()
+
+
+def match(*, db_session, signal):
+    """Find any matching duplication rules and match signals."""
+    return

@@ -345,12 +345,12 @@ export const protectedRoute = [
               import(/* webpackChunkName: "workflows-table" */ "@/workflow/Table.vue"),
           },
           {
-            path: "signalSupressionRules",
-            name: "signalSupressionTable",
-            meta: { title: "Supression Rules", subMenu: "project", group: "signal" },
+            path: "signalSuppressionRules",
+            name: "signalSuppressionTable",
+            meta: { title: "Suppression Rules", subMenu: "project", group: "signal" },
             component: () =>
               import(
-                /* webpackChunkName: "signal-supression-rule-table" */ "@/signal/supression_rule/Table.vue"
+                /* webpackChunkName: "signal-suppression-rule-table" */ "@/signal/suppression_rule/Table.vue"
               ),
           },
           {

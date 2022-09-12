@@ -4,7 +4,7 @@
     <v-row no-gutters>
       <v-col>
         <v-alert dismissible icon="mdi-school" prominent text type="info"
-          >Supression rules allow you to define the parameters for signals that should not have
+          >Suppression rules allow you to define the parameters for signals that should not have
           cases created for them.
         </v-alert>
       </v-col>
@@ -75,10 +75,10 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
-import NewEditSheet from "@/signal/supression_rule/NewEditSheet.vue"
+import NewEditSheet from "@/signal/suppression_rule/NewEditSheet.vue"
 
 export default {
-  name: "SupressionRuleTable",
+  name: "SuppressionRuleTable",
 
   components: {
     NewEditSheet,
@@ -96,7 +96,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("signalSupressionRule", [
+    ...mapFields("signalSuppressionRule", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
@@ -126,7 +126,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("signalSupressionRule", ["getAll", "createEditShow", "removeShow"]),
+    ...mapActions("signalSuppressionRule", ["getAll", "createEditShow", "removeShow"]),
   },
 }
 </script>

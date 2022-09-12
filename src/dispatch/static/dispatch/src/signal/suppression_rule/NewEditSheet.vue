@@ -6,7 +6,7 @@
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
             <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Supression Rule</v-list-item-subtitle>
+            <v-list-item-subtitle>Suppression Rule</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
             icon
@@ -148,7 +148,7 @@ extend("required", {
 })
 
 export default {
-  name: "SupressionRuleNewEditSheet",
+  name: "SuppressionRuleNewEditSheet",
 
   components: {
     ValidationObserver,
@@ -162,7 +162,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("signalSupressionRule", [
+    ...mapFields("signalSuppressionRule", [
       "dialogs.showCreateEdit",
       "selected.id",
       "selected.name",
@@ -176,14 +176,14 @@ export default {
       "selected.loading",
       "selected.project",
     ]),
-    ...mapFields("signalSupressionRule", {
+    ...mapFields("signalSuppressionRule", {
       default_incident_priority: "selected.default",
     }),
     ...mapFields("route", ["query"]),
   },
 
   methods: {
-    ...mapActions("signalSupressionRule", ["save", "closeCreateEdit"]),
+    ...mapActions("signalSuppressionRule", ["save", "closeCreateEdit"]),
   },
 
   created() {

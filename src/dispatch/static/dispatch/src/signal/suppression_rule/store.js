@@ -2,7 +2,7 @@ import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import SupressionRuleApi from "@/signal/supression_rule/api"
+import SuppressionRuleApi from "@/signal/suppression_rule/api"
 
 const getDefaultSelectedState = () => {
   return {
@@ -56,9 +56,9 @@ const actions = {
     commit("SET_TABLE_LOADING", "primary")
     let params = SearchUtils.createParametersFromTableOptions(
       { ...state.table.options },
-      "SupressionRule"
+      "SuppressionRule"
     )
-    return SupressionRuleApi.getAll(params)
+    return SuppressionRuleApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
@@ -67,15 +67,15 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 500),
-  createEditShow({ commit }, supressionRule) {
+  createEditShow({ commit }, suppressionRule) {
     commit("SET_DIALOG_CREATE_EDIT", true)
-    if (supressionRule) {
-      commit("SET_SELECTED", supressionRule)
+    if (suppressionRule) {
+      commit("SET_SELECTED", suppressionRule)
     }
   },
-  removeShow({ commit }, supressionRule) {
+  removeShow({ commit }, suppressionRule) {
     commit("SET_DIALOG_DELETE", true)
-    commit("SET_SELECTED", supressionRule)
+    commit("SET_SELECTED", suppressionRule)
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
@@ -89,14 +89,14 @@ const actions = {
     commit("SET_SELECTED_LOADING", true)
 
     if (!state.selected.id) {
-      return SupressionRuleApi.create(state.selected)
+      return SuppressionRuleApi.create(state.selected)
         .then(() => {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Supression rule created successfully.", type: "success" },
+            { text: "Suppression rule created successfully.", type: "success" },
             { root: true }
           )
         })
@@ -104,14 +104,14 @@ const actions = {
           commit("SET_SELECTED_LOADING", false)
         })
     } else {
-      return SupressionRuleApi.update(state.selected.id, state.selected)
+      return SuppressionRuleApi.update(state.selected.id, state.selected)
         .then(() => {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Supression rule updated successfully.", type: "success" },
+            { text: "Suppression rule updated successfully.", type: "success" },
             { root: true }
           )
         })
@@ -121,12 +121,12 @@ const actions = {
     }
   },
   remove({ commit, dispatch }) {
-    return SupressionRuleApi.delete(state.selected.id).then(function () {
+    return SuppressionRuleApi.delete(state.selected.id).then(function () {
       dispatch("closeRemove")
       dispatch("getAll")
       commit(
         "notification_backend/addBeNotification",
-        { text: "Supression rule deleted successfully.", type: "success" },
+        { text: "Suppression rule deleted successfully.", type: "success" },
         { root: true }
       )
     })

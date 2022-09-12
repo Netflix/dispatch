@@ -1,8 +1,7 @@
-from datetime import datetime
 from typing import List, Optional
 from pydantic import Field
 
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.sql.schema import UniqueConstraint
 
 from sqlalchemy.orm import relationship

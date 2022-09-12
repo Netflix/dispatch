@@ -69,7 +69,9 @@ try:
     from dispatch.signal.duplication_rule.models import (
         DuplicationRule,
     )  # noqa lgtm[py/unused-import]
-    from dispatch.signal.supression_rule.models import SupressionRule  # noqa lgtm[py/unused-import]
+    from dispatch.signal.suppression_rule.models import (
+        SuppressionRule,
+    )  # noqa lgtm[py/unused-import]
 except Exception:
     traceback.print_exc()
 

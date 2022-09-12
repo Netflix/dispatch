@@ -11,8 +11,9 @@ from dispatch.database.core import SessionLocal
 from dispatch.scheduler import scheduler
 from dispatch.project.models import Project
 from dispatch.plugin import service as plugin_service
-from dispatch.signal import service as signal_service
+from dispatch.signal import flows as signal_flows
 from dispatch.decorators import scheduled_project_task
+from dispatch.signal.models import SignalCreate
 
 log = logging.getLogger(__name__)
 
@@ -33,9 +34,12 @@ def consume_signals(db_session: SessionLocal, project: Project):
         return
 
     for plugin in plugins:
-        log.debug(f"Consuming signal. Signal Consumer: {plugin.plugin.slug}")
+        log.debug(f"Consuming signals. Signal Consumer: {plugin.plugin.slug}")
         signals = plugin.instance.consume()
 
-        if signals:
-            for signal in signals:
-                signal_service.create(db_session=db_session, signal_in=signal)
+        for signal in signals:
+            from pprint import pprint
+
+            pprint(signal)
+            signal_in = SignalCreate(**signal, project=project)
+            signal_flows.create_signal(db_session=db_session, signal_in=signal_in)
