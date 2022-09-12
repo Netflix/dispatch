@@ -31,13 +31,13 @@
       </v-flex>
       <!-- Widgets Ends -->
       <!-- Statistics Start -->
-      <!-- <v-flex lg6 sm6 xs12> -->
-      <!--   <case-type-bar-chart-card -->
-      <!--     v-model="groupedItems" -->
-      <!--     :loading="loading" -->
-      <!--     @detailsSelected="detailsSelected($event)" -->
-      <!--   /> -->
-      <!-- </v-flex> -->
+      <v-flex lg6 sm6 xs12>
+        <case-type-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+          @detailsSelected="detailsSelected($event)"
+        />
+      </v-flex>
       <!-- <v-flex lg6 sm6 xs12> -->
       <!--   <case-severity-bar-chart-card -->
       <!--     v-model="groupedItems" -->
@@ -67,7 +67,7 @@ import CaseDialogFilter from "@/dashboard/case/CaseDialogFilter.vue"
 // import CasesDrillDownSheet from "@/dashboard/case/CasesDrillDownSheet.vue"
 // import CasePriorityBarChartCard from "@/dashboard/case/CasePriorityBarChartCard.vue"
 // import CaseSeverityBarChartCard from "@/dashboard/case/CaseSeverityBarChartCard.vue"
-// import CaseTypeBarChartCard from "@/dashboard/case/CaseTypeBarChartCard.vue"
+import CaseTypeBarChartCard from "@/dashboard/case/CaseTypeBarChartCard.vue"
 import StatWidget from "@/components/StatWidget.vue"
 
 export default {
@@ -77,7 +77,7 @@ export default {
     CaseDialogFilter,
     // CasePriorityBarChartCard,
     // CaseSeverityBarChartCard,
-    // CaseTypeBarChartCard,
+    CaseTypeBarChartCard,
     // CasesDrillDownSheet,
     StatWidget,
   },
