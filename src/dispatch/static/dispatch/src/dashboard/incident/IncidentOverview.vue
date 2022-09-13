@@ -22,17 +22,17 @@
         <stat-widget icon="domain" :title="totalIncidents | toNumberString" sup-title="Incidents" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="attach_money" :title="totalCost | toUSD" sup-title="Total Cost" />
-      </v-flex>
-      <v-flex lg3 sm6 xs12>
-        <stat-widget icon="show_chart" :title="avgCost | toUSD" sup-title="Avg Cost" />
-      </v-flex>
-      <v-flex lg3 sm6 xs12>
         <stat-widget
           icon="watch_later"
-          :title="totalHours | toNumberString"
-          sup-title="Total Hours"
+          :title="totalResponseHours | toNumberString"
+          sup-title="Total Response Hours (Active -> Stable)"
         />
+      </v-flex>
+      <v-flex lg3 sm6 xs12>
+        <stat-widget icon="attach_money" :title="totalIncidentCost | toUSD" sup-title="Total Incidents Cost" />
+      </v-flex>
+      <v-flex lg3 sm6 xs12>
+        <stat-widget icon="show_chart" :title="avgIncidentCost | toUSD" sup-title="Average Incidents Cost" />
       </v-flex>
       <!-- Widgets Ends -->
       <!-- Statistics -->
@@ -238,13 +238,13 @@ export default {
     totalIncidents() {
       return this.items.length
     },
-    totalCost() {
+    totalIncidentsCost() {
       return sumBy(this.items, "total_cost")
     },
-    avgCost() {
+    avgIncidentsCost() {
       return this.totalCost / this.totalIncidents
     },
-    totalHours() {
+    totalResponseHours() {
       return sumBy(this.items, function (item) {
         let endTime = new Date().toISOString()
         if (item.stable_at) {
