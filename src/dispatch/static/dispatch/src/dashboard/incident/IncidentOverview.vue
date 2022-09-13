@@ -29,10 +29,18 @@
         />
       </v-flex>
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="attach_money" :title="totalIncidentCost | toUSD" sup-title="Total Incidents Cost" />
+        <stat-widget
+          icon="attach_money"
+          :title="totalIncidentsCost | toUSD"
+          sup-title="Total Incidents Cost"
+        />
       </v-flex>
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="show_chart" :title="avgIncidentCost | toUSD" sup-title="Average Incidents Cost" />
+        <stat-widget
+          icon="show_chart"
+          :title="averageIncidentCost | toUSD"
+          sup-title="Average Incident Cost"
+        />
       </v-flex>
       <!-- Widgets Ends -->
       <!-- Statistics -->
@@ -115,19 +123,19 @@ import { groupBy, sumBy, filter } from "lodash"
 import { parseISO } from "date-fns"
 import differenceInHours from "date-fns/differenceInHours"
 
-import IncidentActiveTimeCard from "@/incident/IncidentActiveTimeCard.vue"
-import IncidentCommandersLocationBarChartCard from "@/incident/IncidentCommandersLocationBarChartCard.vue"
-import IncidentCostBarChartCard from "@/incident/IncidentCostBarChartCard.vue"
+import IncidentActiveTimeCard from "@/dashboard/incident/IncidentActiveTimeCard.vue"
+import IncidentCommandersLocationBarChartCard from "@/dashboard/incident/IncidentCommandersLocationBarChartCard.vue"
+import IncidentCostBarChartCard from "@/dashboard/incident/IncidentCostBarChartCard.vue"
 import IncidentDialogFilter from "@/dashboard/incident/IncidentDialogFilter.vue"
-import IncidentForecastCard from "@/incident/IncidentForecastCard.vue"
-import IncidentHeatmapCard from "@/incident/IncidentHeatmapCard.vue"
-import IncidentParticipantsLocationBarChartCard from "@/incident/IncidentParticipantsLocationBarChartCard.vue"
-import IncidentParticipantsTeamBarChartCard from "@/incident/IncidentParticipantsTeamBarChartCard.vue"
-import IncidentPriorityBarChartCard from "@/incident/IncidentPriorityBarChartCard.vue"
-import IncidentReportersLocationBarChartCard from "@/incident/IncidentReportersLocationBarChartCard.vue"
-import IncidentResolveTimeCard from "@/incident/IncidentResolveTimeCard.vue"
-import IncidentTagsTreemapCard from "@/incident/IncidentTagsTreemapCard.vue"
-import IncidentTypeBarChartCard from "@/incident/IncidentTypeBarChartCard.vue"
+import IncidentForecastCard from "@/dashboard/incident/IncidentForecastCard.vue"
+import IncidentHeatmapCard from "@/dashboard/incident/IncidentHeatmapCard.vue"
+import IncidentParticipantsLocationBarChartCard from "@/dashboard/incident/IncidentParticipantsLocationBarChartCard.vue"
+import IncidentParticipantsTeamBarChartCard from "@/dashboard/incident/IncidentParticipantsTeamBarChartCard.vue"
+import IncidentPriorityBarChartCard from "@/dashboard/incident/IncidentPriorityBarChartCard.vue"
+import IncidentReportersLocationBarChartCard from "@/dashboard/incident/IncidentReportersLocationBarChartCard.vue"
+import IncidentResolveTimeCard from "@/dashboard/incident/IncidentResolveTimeCard.vue"
+import IncidentTagsTreemapCard from "@/dashboard/incident/IncidentTagsTreemapCard.vue"
+import IncidentTypeBarChartCard from "@/dashboard/incident/IncidentTypeBarChartCard.vue"
 import IncidentsDrillDownSheet from "@/dashboard/incident/IncidentsDrillDownSheet.vue"
 import StatWidget from "@/components/StatWidget.vue"
 
@@ -241,8 +249,8 @@ export default {
     totalIncidentsCost() {
       return sumBy(this.items, "total_cost")
     },
-    avgIncidentsCost() {
-      return this.totalCost / this.totalIncidents
+    averageIncidentCost() {
+      return this.totalIncidentsCost / this.totalIncidents
     },
     totalResponseHours() {
       return sumBy(this.items, function (item) {
