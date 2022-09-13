@@ -39,7 +39,7 @@
         <stat-widget
           icon="show_chart"
           :title="averageIncidentCost | toUSD"
-          sup-title="Average Incident Cost"
+          sup-title="Average Cost Per Incident"
         />
       </v-flex>
       <!-- Widgets Ends -->
