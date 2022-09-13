@@ -64,7 +64,10 @@ class UptycsSignalConsumerPlugin(SignalConsumerPlugin):
             translated_items.append(
                 {
                     "name": item["displayName"],
+                    "external_url": f"https://{self.configuration.hostname}/public/api/customers/{self.configuration.customer_id}/detections/{item['id']}",
+                    "external_id": item["id"],
                     "created_at": item["createdAt"],
+                    "severity": item["severity"],
                     "raw": item,
                 }
             )

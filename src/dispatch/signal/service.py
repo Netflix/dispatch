@@ -20,3 +20,13 @@ def create(*, db_session, signal_in: SignalCreate) -> Signal:
     db_session.add(signal)
     db_session.commit()
     return signal
+
+
+def match(*, db_session, signal_in: SignalCreate):
+    """Returns a default match for existing signals."""
+    return (
+        db_session.query(Signal)
+        .filter(Signal.external_id == signal_in.exteral_id)
+        .filter(Signal.source.name == signal_in.source.name)
+        .all()
+    )

@@ -16,6 +16,8 @@ from dispatch.data.source.models import SourceBase
 class Signal(Base, TimeStampMixin, ProjectMixin):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String)
+    external_url = Column(String)
+    external_id = Column(String)
     severity = Column(String)
     detection = Column(String)
     duplicate = Column(Boolean)

@@ -38,8 +38,5 @@ def consume_signals(db_session: SessionLocal, project: Project):
         signals = plugin.instance.consume()
 
         for signal in signals:
-            from pprint import pprint
-
-            pprint(signal)
             signal_in = SignalCreate(**signal, project=project)
             signal_flows.create_signal(db_session=db_session, signal_in=signal_in)

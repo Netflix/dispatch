@@ -70,4 +70,6 @@ def delete(*, db_session, duplication_rule_id: int):
 
 def match(*, db_session, signal):
     """Find any matching duplication rules and match signals."""
+    # exact match of a given field
+    # wildcard match of a given field
     return

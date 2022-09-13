@@ -10,6 +10,11 @@ from dispatch.signal.suppression_rule import service as suppression_service
 
 def create_signal(db_session: SessionLocal, signal_in: SignalRead):
     """Creates a signal and a case if necessary."""
+    # don't create "hard duplicates" due to sync issues (e.g. external_id + source)
+    match = signal_service.match(db_session=db_session, signal_in=signal_in)
+    if match:
+        return
+
     signal = signal_service.create(db_session=db_session, signal_in=signal_in)
     match = duplication_service.match(db_session=db_session, signal=signal_in)
     if match:
