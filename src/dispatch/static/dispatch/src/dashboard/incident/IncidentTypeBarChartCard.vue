@@ -11,11 +11,12 @@
 <script>
 import { map, filter } from "lodash"
 
-import IncidentTypeApi from "@/incident_type/api"
 import DashboardCard from "@/dashboard/DashboardCard.vue"
 import DashboardUtils from "@/dashboard/utils"
+import IncidentTypeApi from "@/incident_type/api"
+
 export default {
-  name: "IncidentBarChartCard",
+  name: "IncidentTypeBarChartCard",
 
   props: {
     value: {

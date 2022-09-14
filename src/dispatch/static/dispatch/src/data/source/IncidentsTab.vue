@@ -26,8 +26,8 @@ import { mapFields } from "vuex-map-fields"
 import { groupBy } from "lodash"
 import { parseISO } from "date-fns"
 
-import IncidentPriorityBarChartCard from "@/incident/IncidentPriorityBarChartCard.vue"
-import IncidentTypeBarChartCard from "@/incident/IncidentTypeBarChartCard.vue"
+import IncidentPriorityBarChartCard from "@/dashboard/incident/IncidentPriorityBarChartCard.vue"
+import IncidentTypeBarChartCard from "@/dashboard/incident/IncidentTypeBarChartCard.vue"
 import IncidentSummaryTable from "@/incident/IncidentSummaryTable.vue"
 
 export default {

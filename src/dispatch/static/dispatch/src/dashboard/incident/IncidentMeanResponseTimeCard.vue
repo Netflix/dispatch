@@ -4,7 +4,7 @@
     type="line"
     :options="chartOptions"
     :series="series"
-    title="Mean Active (Active -> Stable)"
+    title="Mean Response Time (Active -> Stable)"
   />
 </template>
 
@@ -14,8 +14,9 @@ import differenceInHours from "date-fns/differenceInHours"
 import parseISO from "date-fns/parseISO"
 
 import DashboardCard from "@/dashboard/DashboardCard.vue"
+
 export default {
-  name: "IncidentActiveTimeCard",
+  name: "IncidentMeanResponseTimeCard",
 
   props: {
     value: {
@@ -48,8 +49,11 @@ export default {
 
   computed: {
     series() {
-      let series = { name: "Average Hours Active", data: [] }
+      let series = { name: "Mean Response Time", data: [] }
       forEach(this.value, function (value) {
+        // we filter out active incidents
+        value = value.filter((v) => v.status !== "Active")
+
         series.data.push(
           Math.round(
             sumBy(value, function (item) {

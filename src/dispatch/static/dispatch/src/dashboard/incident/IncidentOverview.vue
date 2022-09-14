@@ -22,16 +22,24 @@
         <stat-widget icon="domain" :title="totalIncidents | toNumberString" sup-title="Incidents" />
       </v-flex>
       <v-flex lg3 sm6 xs12>
-        <stat-widget icon="attach_money" :title="totalCost | toUSD" sup-title="Total Cost" />
-      </v-flex>
-      <v-flex lg3 sm6 xs12>
-        <stat-widget icon="show_chart" :title="avgCost | toUSD" sup-title="Avg Cost" />
+        <stat-widget
+          icon="watch_later"
+          :title="totalResponseHours | toNumberString"
+          sup-title="Total Response Hours (Active -> Stable)"
+        />
       </v-flex>
       <v-flex lg3 sm6 xs12>
         <stat-widget
-          icon="watch_later"
-          :title="totalHours | toNumberString"
-          sup-title="Total Hours"
+          icon="attach_money"
+          :title="totalIncidentsCost | toUSD"
+          sup-title="Total Incidents Cost"
+        />
+      </v-flex>
+      <v-flex lg3 sm6 xs12>
+        <stat-widget
+          icon="show_chart"
+          :title="averageIncidentCost | toUSD"
+          sup-title="Average Cost Per Incident"
         />
       </v-flex>
       <!-- Widgets Ends -->
@@ -51,11 +59,7 @@
         />
       </v-flex>
       <v-flex lg6 sm6 xs12>
-        <incident-heatmap-card
-          v-model="groupedItems"
-          :loading="loading"
-          @detailsSelected="detailsSelected($event)"
-        />
+        <incident-mean-response-time-card v-model="groupedItems" :loading="loading" />
       </v-flex>
       <v-flex lg6 sm6 xs12>
         <incident-cost-bar-chart-card v-model="groupedItems" :loading="loading" />
@@ -64,40 +68,41 @@
         <incident-forecast-card />
       </v-flex>
       <v-flex lg6 sm6 xs12>
-        <incident-active-time-card v-model="groupedItems" :loading="loading" />
-      </v-flex>
-      <v-flex lg6 sm6 xs12>
-        <incident-resolve-time-card v-model="groupedItems" :loading="loading" />
-      </v-flex>
-      <v-flex lg12 sm12 xs12>
         <incident-reporters-location-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
         />
       </v-flex>
-      <v-flex lg12 sm12 xs12>
+      <v-flex lg6 sm6 xs12>
         <incident-commanders-location-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
         />
       </v-flex>
-      <v-flex lg12 sm12 xs12>
+      <v-flex lg6 sm6 xs12>
         <incident-participants-location-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
         />
       </v-flex>
-      <v-flex lg12 sm12 xs12>
+      <v-flex lg6 sm6 xs12>
         <incident-participants-team-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
         />
       </v-flex>
-      <v-flex lg12 sm12 xs12>
+      <v-flex lg6 sm6 xs12>
+        <incident-heatmap-card
+          v-model="groupedItems"
+          :loading="loading"
+          @detailsSelected="detailsSelected($event)"
+        />
+      </v-flex>
+      <v-flex lg6 sm6 xs12>
         <incident-tags-treemap-card
           v-model="items"
           :loading="loading"
@@ -115,19 +120,18 @@ import { groupBy, sumBy, filter } from "lodash"
 import { parseISO } from "date-fns"
 import differenceInHours from "date-fns/differenceInHours"
 
-import IncidentActiveTimeCard from "@/incident/IncidentActiveTimeCard.vue"
-import IncidentCommandersLocationBarChartCard from "@/incident/IncidentCommandersLocationBarChartCard.vue"
-import IncidentCostBarChartCard from "@/incident/IncidentCostBarChartCard.vue"
+import IncidentCommandersLocationBarChartCard from "@/dashboard/incident/IncidentCommandersLocationBarChartCard.vue"
+import IncidentCostBarChartCard from "@/dashboard/incident/IncidentCostBarChartCard.vue"
 import IncidentDialogFilter from "@/dashboard/incident/IncidentDialogFilter.vue"
-import IncidentForecastCard from "@/incident/IncidentForecastCard.vue"
-import IncidentHeatmapCard from "@/incident/IncidentHeatmapCard.vue"
-import IncidentParticipantsLocationBarChartCard from "@/incident/IncidentParticipantsLocationBarChartCard.vue"
-import IncidentParticipantsTeamBarChartCard from "@/incident/IncidentParticipantsTeamBarChartCard.vue"
-import IncidentPriorityBarChartCard from "@/incident/IncidentPriorityBarChartCard.vue"
-import IncidentReportersLocationBarChartCard from "@/incident/IncidentReportersLocationBarChartCard.vue"
-import IncidentResolveTimeCard from "@/incident/IncidentResolveTimeCard.vue"
-import IncidentTagsTreemapCard from "@/incident/IncidentTagsTreemapCard.vue"
-import IncidentTypeBarChartCard from "@/incident/IncidentTypeBarChartCard.vue"
+import IncidentForecastCard from "@/dashboard/incident/IncidentForecastCard.vue"
+import IncidentHeatmapCard from "@/dashboard/incident/IncidentHeatmapCard.vue"
+import IncidentMeanResponseTimeCard from "@/dashboard/incident/IncidentMeanResponseTimeCard.vue"
+import IncidentParticipantsLocationBarChartCard from "@/dashboard/incident/IncidentParticipantsLocationBarChartCard.vue"
+import IncidentParticipantsTeamBarChartCard from "@/dashboard/incident/IncidentParticipantsTeamBarChartCard.vue"
+import IncidentPriorityBarChartCard from "@/dashboard/incident/IncidentPriorityBarChartCard.vue"
+import IncidentReportersLocationBarChartCard from "@/dashboard/incident/IncidentReportersLocationBarChartCard.vue"
+import IncidentTagsTreemapCard from "@/dashboard/incident/IncidentTagsTreemapCard.vue"
+import IncidentTypeBarChartCard from "@/dashboard/incident/IncidentTypeBarChartCard.vue"
 import IncidentsDrillDownSheet from "@/dashboard/incident/IncidentsDrillDownSheet.vue"
 import StatWidget from "@/components/StatWidget.vue"
 
@@ -135,17 +139,16 @@ export default {
   name: "IncidentDashboard",
 
   components: {
-    IncidentActiveTimeCard,
     IncidentCommandersLocationBarChartCard,
     IncidentCostBarChartCard,
     IncidentDialogFilter,
     IncidentForecastCard,
     IncidentHeatmapCard,
+    IncidentMeanResponseTimeCard,
     IncidentParticipantsLocationBarChartCard,
     IncidentParticipantsTeamBarChartCard,
     IncidentPriorityBarChartCard,
     IncidentReportersLocationBarChartCard,
-    IncidentResolveTimeCard,
     IncidentTagsTreemapCard,
     IncidentTypeBarChartCard,
     IncidentsDrillDownSheet,
@@ -238,13 +241,13 @@ export default {
     totalIncidents() {
       return this.items.length
     },
-    totalCost() {
+    totalIncidentsCost() {
       return sumBy(this.items, "total_cost")
     },
-    avgCost() {
-      return this.totalCost / this.totalIncidents
+    averageIncidentCost() {
+      return this.totalIncidentsCost / this.totalIncidents
     },
-    totalHours() {
+    totalResponseHours() {
       return sumBy(this.items, function (item) {
         let endTime = new Date().toISOString()
         if (item.stable_at) {
