@@ -64,9 +64,9 @@
       <v-flex lg6 sm6 xs12>
         <incident-cost-bar-chart-card v-model="groupedItems" :loading="loading" />
       </v-flex>
-      <!-- <v-flex lg12 sm12 xs12> -->
-      <!--   <incident-forecast-card /> -->
-      <!-- </v-flex> -->
+      <v-flex lg12 sm12 xs12>
+        <incident-forecast-card />
+      </v-flex>
       <v-flex lg6 sm6 xs12>
         <incident-reporters-location-bar-chart-card
           v-model="groupedItems"
@@ -123,7 +123,7 @@ import differenceInHours from "date-fns/differenceInHours"
 import IncidentCommandersLocationBarChartCard from "@/dashboard/incident/IncidentCommandersLocationBarChartCard.vue"
 import IncidentCostBarChartCard from "@/dashboard/incident/IncidentCostBarChartCard.vue"
 import IncidentDialogFilter from "@/dashboard/incident/IncidentDialogFilter.vue"
-// import IncidentForecastCard from "@/dashboard/incident/IncidentForecastCard.vue"
+import IncidentForecastCard from "@/dashboard/incident/IncidentForecastCard.vue"
 import IncidentHeatmapCard from "@/dashboard/incident/IncidentHeatmapCard.vue"
 import IncidentMeanResponseTimeCard from "@/dashboard/incident/IncidentMeanResponseTimeCard.vue"
 import IncidentParticipantsLocationBarChartCard from "@/dashboard/incident/IncidentParticipantsLocationBarChartCard.vue"
@@ -142,7 +142,7 @@ export default {
     IncidentCommandersLocationBarChartCard,
     IncidentCostBarChartCard,
     IncidentDialogFilter,
-    // IncidentForecastCard,
+    IncidentForecastCard,
     IncidentHeatmapCard,
     IncidentMeanResponseTimeCard,
     IncidentParticipantsLocationBarChartCard,
