@@ -51,6 +51,9 @@ export default {
     series() {
       let series = { name: "Mean Response Time", data: [] }
       forEach(this.value, function (value) {
+        // we filter out active incidents
+        value = value.filter((v) => v.status !== "Active")
+
         series.data.push(
           Math.round(
             sumBy(value, function (item) {
