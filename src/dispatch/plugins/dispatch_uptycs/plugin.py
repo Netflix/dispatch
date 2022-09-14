@@ -4,7 +4,9 @@
     :license: Apache, see LICENSE for more details.
 """
 import time
+import json
 import logging
+from datetime import datetime, timedelta
 
 import jwt
 import requests
@@ -24,10 +26,14 @@ def make_request(
     customer_id: str,
     api_key: str,
     api_secret: str,
+    created_start_at: str,
+    created_end_at: str,
     **kwargs,
 ):
-    url = f"https://{hostname}/public/api/customers/{customer_id}/{endpoint}"
-
+    filter_str = requests.utils.quote(
+        json.dumps({"createdAt": {"between": [created_start_at, created_end_at]}})
+    )
+    url = f"https://{hostname}/public/api/customers/{customer_id}/{endpoint}?filter={filter_str}"
     msg = {"iss": api_key.get_secret_value(), "exp": time.time() + 60}
     auth = jwt.encode(msg, api_secret.get_secret_value(), algorithm="HS256")
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {auth}"}
@@ -51,12 +57,19 @@ class UptycsSignalConsumerPlugin(SignalConsumerPlugin):
 
     def consume(self):
         """Enriches an event."""
+
+        # create a 10 min window around current run time
+        now = datetime.utcnow()
+        start = now - timedelta(minutes=5)
+        end = now + timedelta(minutes=5)
         data = make_request(
             hostname=self.configuration.hostname,
             endpoint="detections",
             customer_id=self.configuration.customer_id,
             api_key=self.configuration.api_key,
             api_secret=self.configuration.api_secret,
+            created_start_at=start.isoformat() + "Z",
+            created_end_at=end.isoformat() + "Z",
         )
         log.debug(f"Found {len(data['items'])} detections.")
         translated_items = []

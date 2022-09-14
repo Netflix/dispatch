@@ -36,6 +36,8 @@ class SignalBase(DispatchBase):
     severity: Optional[Any]
     supressed: Optional[bool]
     duplicate: Optional[bool]
+    external_id: Optional[str]
+    external_url: Optional[str]
     source: Optional[SourceBase]
     created_at: Optional[datetime] = None
     project: ProjectRead

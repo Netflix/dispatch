@@ -30,4 +30,5 @@ def create_signal(db_session: SessionLocal, signal_in: SignalRead):
 
     case_in = CaseCreate(title=signal.name, description="Automatically created based on signal.")
     case = case_service.create(db_session=db_session, case_in=case_in)
-    return case_flows.case_new_create_flow(db_session=db_session, case_id=case.id)
+    print(case)
+    # return case_flows.case_new_create_flow(db_session=db_session, case_id=case.id)
