@@ -1,6 +1,6 @@
 ## Incident Types
 
-Dispatch allows you to define incident types. Incident types bucket or categorize your incidents and map various other Dispatch resources (e.g., services and individuals) to these types.
+Dispatch allows you to categorize your incidents by defining incidents types and to map them to various Dispatch resources (e.g. templates).
 
 ![](../../../.gitbook/assets/admin-ui-incident-types.png)
 
