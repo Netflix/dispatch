@@ -95,7 +95,7 @@ emails==0.6
     # via -r requirements-base.in
 exceptiongroup==1.0.0rc8
     # via hypothesis
-fastapi==0.83.0
+fastapi==0.84.0
     # via -r requirements-base.in
 frozenlist==1.3.0
     # via
