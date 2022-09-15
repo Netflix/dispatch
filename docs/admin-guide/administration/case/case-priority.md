@@ -1,19 +1,17 @@
-## Incident Priority
+## Case Priority
 
-In addition to incident types, Dispatch allows you to specify the incident's _priority_.
+In addition to case types, Dispatch allows you to specify the case's priority.
 
-![](../../../.gitbook/assets/admin-ui-incident-priorities.png)
+![](../../../.gitbook/assets/admin-ui-case-priorities.png)
 
-**Name:** The name of the incident priority presented to the user.
+**Name:** The name of the case priority presented to the user.
 
-**Description:** The incident priority description presented to the user when reporting.
+**Description:** The description of the case priority presented to the user.
 
-**View Order:** The ranked order which the priority will be listed in menus and dropdowns.
+**View Order:** The order in which the priority will be listed in menus and dropdowns.
 
-**Tactical Report Reminder:** Number of hours between reminders.
+**Color:** The color used for the case priority in the UI.
 
-**Executive Report Reminder:** Number of hours between reminders.
+**Default Case Priority:** If the reporter of a case does not provide a priority, a default will be used. Enable the setting to make this case priority the default.
 
-**Default Incident Priority:** If the reporter of an incident does not provide an incident priority, a default will be used. Enable the setting to make this incident priority the default.
-
-**Page Commander:** Ensures that the incident commander is paged for all incidents with this priority (if configured paging service and plugin allows).
+**Enabled:** Whether this case priority is enabled or not.
