@@ -10,7 +10,7 @@ There are several types of templates that Dispatch supports:
 - Review
 - Tracking
 
-![](../../../.gitbook/assets/admin-ui-create-edit-template.png)
+![](../../.gitbook/assets/admin-ui-create-edit-template.png)
 
 **Name:** Name of the template.
 
@@ -99,6 +99,6 @@ Case and incident templates can be associated to their corresponding types. This
 
 Additionally, templates can be associated with multiple case or incident types, if for example, you only want to use one template.
 
-![](../../../.gitbook/assets/admin-ui-associate-case-template.png)
+![](../../.gitbook/assets/admin-ui-associate-case-template.png)
 
-![](../../../.gitbook/assets/admin-ui-associate-incident-template.png)
+![](../../.gitbook/assets/admin-ui-associate-incident-template.png)
