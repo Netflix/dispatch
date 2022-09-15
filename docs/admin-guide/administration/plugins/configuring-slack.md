@@ -49,7 +49,7 @@ You will need to set the following configuration settings for your Slack app in 
 
 To enable Dispatch to process Slack events, ensure your bot is subscribed to the following events:
 
-![](../../../../.gitbook/assets/slack-setup-events.png)
+![](../../../.gitbook/assets/slack-setup-events.png)
 
 ### Interactivity
 
@@ -61,11 +61,11 @@ To enable Dispatch to generate interactive components such as dialogs and modals
 
 To enable Dispatch's slash commands, you must add them to your Slack app first. Ensure that the `Command` field in the Slack API Web UI matches the name of the command name in the Slack plugin in the Dispatch Web UI and that the `Request URL` points to the events command API endpoint of the Dispatch server at `/api/v1/<organization>/events/slack/command`.
 
-![](../../../../.gitbook/assets/slack-setup-commands-0.png)
+![](../../../.gitbook/assets/slack-setup-commands-0.png)
 
-![](../../../../.gitbook/assets/slack-setup-commands-1.png)
+![](../../../.gitbook/assets/slack-setup-commands-1.png)
 
-![](../../../../.gitbook/assets/slack-setup-commands-2.png)
+![](../../../.gitbook/assets/slack-setup-commands-2.png)
 
 ### OAuth & Permissions
 
@@ -147,7 +147,7 @@ The Dispatch Slack plugins for conversation management and resolving contact inf
 
 > The name of the slash commands that your Slack app will expose.
 
-![](../../../../.gitbook/assets/slack-plugin-conversation-management.png)
+![](../../../.gitbook/assets/slack-plugin-conversation-management.png)
 
 You can override their values if you wish to do so. Included below are their descriptions for easy cut & paste into your Slack app slash commands set-up.
 
@@ -196,4 +196,4 @@ You can override their values if you wish to do so. Included below are their des
 
 > The profile field ID where the weblink is mapped.
 
-![](../../../../.gitbook/assets/slack-plugin-contact-information-resolver.png)
+![](../../../.gitbook/assets/slack-plugin-contact-information-resolver.png)
