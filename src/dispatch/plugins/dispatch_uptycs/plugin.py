@@ -33,7 +33,7 @@ def make_request(
     filter_str = requests.utils.quote(
         json.dumps({"createdAt": {"between": [created_start_at, created_end_at]}})
     )
-    url = f"https://{hostname}/public/api/customers/{customer_id}/{endpoint}?filter={filter_str}"
+    url = f"https://{hostname}/public/api/customers/{customer_id}/{endpoint}?filters={filter_str}"
     msg = {"iss": api_key.get_secret_value(), "exp": time.time() + 60}
     auth = jwt.encode(msg, api_secret.get_secret_value(), algorithm="HS256")
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {auth}"}
