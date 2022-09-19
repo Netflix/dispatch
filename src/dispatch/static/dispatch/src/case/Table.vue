@@ -85,6 +85,14 @@
                       params: { name: item.name },
                     }"
                   >
+                    <v-list-item-title>Escalate as Incident</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item
+                    :to="{
+                      name: 'CaseTableEdit',
+                      params: { name: item.name },
+                    }"
+                  >
                     <v-list-item-title>View / Edit</v-list-item-title>
                   </v-list-item>
                   <v-list-item @click="showDeleteDialog(item)">

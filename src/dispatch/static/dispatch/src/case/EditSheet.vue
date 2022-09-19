@@ -11,6 +11,10 @@
               Reported - {{ reported_at | formatRelativeDate }}
             </v-list-item-subtitle>
           </v-list-item-content>
+          <v-btn color="error">
+            <v-icon left> error_outline </v-icon>
+            Escalate Case as Incident
+          </v-btn>
           <v-spacer />
           <v-btn
             icon
