@@ -52,6 +52,21 @@ def get_current_case(*, db_session: Session = Depends(get_db), request: Request)
     return case
 
 
+@router.get(
+    "/{case_id}",
+    response_model=CaseRead,
+    summary="Retrieves a single case.",
+)
+def get_case(
+    *,
+    case_id: PrimaryKey,
+    db_session: Session = Depends(get_db),
+    current_case: Case = Depends(get_current_case),
+):
+    """Retrieves the details of a single case."""
+    return current_case
+
+
 @router.get("", summary="Retrieves a list of cases.")
 def get_cases(
     *,
