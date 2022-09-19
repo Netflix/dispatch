@@ -41,7 +41,7 @@ def create_task_reminders(db_session: SessionLocal, project: Project):
     if tasks:
         grouped_tasks = group_tasks_by_assignee(tasks)
         for assignee, tasks in grouped_tasks.items():
-            create_reminder(db_session, assignee, tasks)
+            create_reminder(db_session, assignee, tasks, project.id)
 
 
 def sync_tasks(db_session, task_plugin, incidents, lookback: int = 60, notify: bool = False):
