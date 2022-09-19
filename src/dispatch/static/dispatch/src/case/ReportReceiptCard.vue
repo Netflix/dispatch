@@ -93,7 +93,7 @@
             </v-list-item>
             <v-list-item v-else>
               <v-list-item-content>
-                <v-list-item-title>Creating incident ticket...</v-list-item-title>
+                <v-list-item-title>Creating case ticket...</v-list-item-title>
                 <v-progress-linear indeterminate />
               </v-list-item-content>
             </v-list-item>
