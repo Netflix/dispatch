@@ -51,7 +51,7 @@
 import { mapActions } from "vuex"
 
 import CasePriority from "@/case/priority/CasePriority.vue"
-import CaseStatus from "@/case/CaseStatus"
+import CaseStatus from "@/case/CaseStatus.vue"
 
 export default {
   name: "CaseSummaryTable",
