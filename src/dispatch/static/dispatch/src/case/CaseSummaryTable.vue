@@ -14,9 +14,6 @@
       <template v-slot:item.status="{ item }">
         <case-status :status="item.status" :id="item.id" />
       </template>
-      <template v-slot:item.reporter="{ item }">
-        <case-participant :participant="item.reporter" />
-      </template>
       <template v-slot:item.project.name="{ item }">
         <v-chip small :color="item.project.color" text-color="white">
           {{ item.project.name }}

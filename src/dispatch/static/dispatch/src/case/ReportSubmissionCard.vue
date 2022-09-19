@@ -122,12 +122,9 @@ export default {
     ...mapFields("case_management", [
       "selected.case_priority",
       "selected.case_type",
-      "selected.commander",
       "selected.title",
       "selected.tags",
       "selected.description",
-      "selected.conversation",
-      "selected.conference",
       "selected.visibility",
       "selected.storage",
       "selected.documents",
