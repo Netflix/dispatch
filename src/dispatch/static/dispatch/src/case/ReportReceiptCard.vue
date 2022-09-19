@@ -1,7 +1,7 @@
 <template>
   <v-card class="mx-auto ma-4" max-width="600" flat outlined>
     <v-card-text>
-      <p class="display-2 text--primary">Incident Report</p>
+      <p class="display-2 text--primary">Issue Report</p>
       <p>
         This page will be populated with case resources as they are created (if available). If you
         have any questions, please feel free to review the Frequently Asked Questions (FAQ) document
@@ -24,7 +24,7 @@
               <v-list-item-content>
                 <v-list-item-title>Assignee</v-list-item-title>
                 <v-list-item-subtitle>
-                  <participant :participant="assignee" />
+                  {{ assignee.email }}
                 </v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
@@ -138,7 +138,7 @@
               <span v-else>
                 <v-list-item>
                   <v-list-item-content>
-                    <v-list-item-title>Creating incident documents... </v-list-item-title>
+                    <v-list-item-title>Creating case documents... </v-list-item-title>
                     <v-progress-linear indeterminate />
                   </v-list-item-content>
                 </v-list-item>
@@ -150,7 +150,7 @@
       </v-list>
       <v-container grid-list-md>
         <v-flex xs12>
-          <v-btn color="info" depressed @click="resetSelected()"> Report another incident </v-btn>
+          <v-btn color="info" depressed @click="resetSelected()"> Report another issue </v-btn>
         </v-flex>
       </v-container>
     </v-card-text>
@@ -162,16 +162,13 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { forEach, find } from "lodash"
 import DocumentApi from "@/document/api"
-import Participant from "@/incident/Participant.vue"
 
 import PluginApi from "@/plugin/api"
 
 export default {
   name: "CaseReportReceiptCard",
 
-  components: {
-    Participant,
-  },
+  components: {},
   data() {
     return {
       isSubmitted: false,
@@ -216,7 +213,7 @@ export default {
     })
   },
   computed: {
-    ...mapFields("case", [
+    ...mapFields("case_management", [
       "selected.case_priority",
       "selected.case_type",
       "selected.assignee",
@@ -257,7 +254,7 @@ export default {
         }
       })
     },
-    ...mapActions("case", ["report", "get", "resetSelected"]),
+    ...mapActions("case_management", ["report", "get", "resetSelected"]),
   },
 }
 </script>

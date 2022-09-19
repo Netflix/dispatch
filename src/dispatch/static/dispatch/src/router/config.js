@@ -69,7 +69,7 @@ export const protectedRoute = [
       path: "cases/report",
       name: "caseReport",
       meta: { title: "Case Report", requiresAuth: true },
-      component: () => import(/* webpackChunkName: "case-report" */ "@/case/CaseReportForm.vue"),
+      component: () => import(/* webpackChunkName: "case-report" */ "@/case/ReportForm.vue"),
     },
     {
       path: "incidents/status",

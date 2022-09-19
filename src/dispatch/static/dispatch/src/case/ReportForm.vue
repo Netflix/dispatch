@@ -6,7 +6,7 @@
           <span class="button font-weight-bold">D I S P A T C H</span>
         </router-link>
         <v-spacer />
-        <v-btn small color="info" :to="{ name: 'status' }"> Active Cases </v-btn>
+        <v-btn small color="info" :to="{ name: 'caseStatus' }"> Active Issues </v-btn>
       </v-app-bar>
       <organization-banner />
       <report-receipt-card v-if="id" />
@@ -40,7 +40,7 @@ export default {
     return {}
   },
   computed: {
-    ...mapFields("case", ["selected.id"]),
+    ...mapFields("case_management", ["selected.id"]),
   },
 }
 </script>

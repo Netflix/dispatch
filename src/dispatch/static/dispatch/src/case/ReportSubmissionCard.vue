@@ -119,7 +119,7 @@ export default {
   },
 
   computed: {
-    ...mapFields("case", [
+    ...mapFields("case_management", [
       "selected.case_priority",
       "selected.case_type",
       "selected.commander",
@@ -163,7 +163,7 @@ export default {
         }
       })
     },
-    ...mapActions("case", ["report", "get", "resetSelected"]),
+    ...mapActions("case_management", ["report", "get", "resetSelected"]),
   },
 
   created() {
