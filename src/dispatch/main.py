@@ -48,10 +48,10 @@ async def not_found(request, exc):
 exception_handlers = {404: not_found}
 
 # we create the ASGI for the app
-app = FastAPI(exception_handlers=exception_handlers)
+app = FastAPI(exception_handlers=exception_handlers, openapi_url="")
 
 # we create the ASGI for the frontend
-frontend = FastAPI()
+frontend = FastAPI(openapi_url="")
 
 
 @frontend.middleware("http")

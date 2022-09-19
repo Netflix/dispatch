@@ -24,27 +24,41 @@
       </v-flex>
       <v-flex lg3 sm6 xs12>
         <stat-widget
+          icon="domain"
+          :title="totalCasesTriaged | toNumberString"
+          sup-title="Cases Triaged"
+        />
+      </v-flex>
+      <v-flex lg3 sm6 xs12>
+        <stat-widget
+          icon="domain"
+          :title="totalCasesEscalated | toNumberString"
+          sup-title="Cases Escalated"
+        />
+      </v-flex>
+      <v-flex lg3 sm6 xs12>
+        <stat-widget
           icon="watch_later"
           :title="totalHours | toNumberString"
-          sup-title="Total Hours"
+          sup-title="Total Hours (New to Closed)"
         />
       </v-flex>
       <!-- Widgets Ends -->
       <!-- Statistics Start -->
-      <!-- <v-flex lg6 sm6 xs12> -->
-      <!--   <case-type-bar-chart-card -->
-      <!--     v-model="groupedItems" -->
-      <!--     :loading="loading" -->
-      <!--     @detailsSelected="detailsSelected($event)" -->
-      <!--   /> -->
-      <!-- </v-flex> -->
-      <!-- <v-flex lg6 sm6 xs12> -->
-      <!--   <case-severity-bar-chart-card -->
-      <!--     v-model="groupedItems" -->
-      <!--     :loading="loading" -->
-      <!--     @detailsSelected="detailsSelected($event)" -->
-      <!--   /> -->
-      <!-- </v-flex> -->
+      <v-flex lg6 sm6 xs12>
+        <case-type-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+          @detailsSelected="detailsSelected($event)"
+        />
+      </v-flex>
+      <v-flex lg6 sm6 xs12>
+        <case-severity-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+          @detailsSelected="detailsSelected($event)"
+        />
+      </v-flex>
       <!-- <v-flex lg6 sm6 xs12> -->
       <!--   <case-priority-bar-chart-card -->
       <!--     v-model="groupedItems" -->
@@ -52,6 +66,18 @@
       <!--     @detailsSelected="detailsSelected($event)" -->
       <!--   /> -->
       <!-- </v-flex> -->
+      <v-flex lg6 sm6 xs12>
+        <case-new-triage-average-time-card v-model="groupedItems" :loading="loading" />
+      </v-flex>
+      <v-flex lg6 sm6 xs12>
+        <case-triage-escalated-average-time-card v-model="groupedItems" :loading="loading" />
+      </v-flex>
+      <v-flex lg6 sm6 xs12>
+        <case-escalated-closed-average-time-card v-model="groupedItems" :loading="loading" />
+      </v-flex>
+      <v-flex lg6 sm6 xs12>
+        <case-new-closed-average-time-card v-model="groupedItems" :loading="loading" />
+      </v-flex>
       <!-- Statistics Ends -->
     </v-layout>
   </v-container>
@@ -66,8 +92,12 @@ import differenceInHours from "date-fns/differenceInHours"
 import CaseDialogFilter from "@/dashboard/case/CaseDialogFilter.vue"
 // import CasesDrillDownSheet from "@/dashboard/case/CasesDrillDownSheet.vue"
 // import CasePriorityBarChartCard from "@/dashboard/case/CasePriorityBarChartCard.vue"
-// import CaseSeverityBarChartCard from "@/dashboard/case/CaseSeverityBarChartCard.vue"
-// import CaseTypeBarChartCard from "@/dashboard/case/CaseTypeBarChartCard.vue"
+import CaseEscalatedClosedAverageTimeCard from "@/dashboard/case/CaseEscalatedClosedAverageTimeCard.vue"
+import CaseNewClosedAverageTimeCard from "@/dashboard/case/CaseNewClosedAverageTimeCard.vue"
+import CaseNewTriageAverageTimeCard from "@/dashboard/case/CaseNewTriageAverageTimeCard.vue"
+import CaseSeverityBarChartCard from "@/dashboard/case/CaseSeverityBarChartCard.vue"
+import CaseTriageEscalatedAverageTimeCard from "@/dashboard/case/CaseTriageEscalatedAverageTimeCard.vue"
+import CaseTypeBarChartCard from "@/dashboard/case/CaseTypeBarChartCard.vue"
 import StatWidget from "@/components/StatWidget.vue"
 
 export default {
@@ -76,9 +106,13 @@ export default {
   components: {
     CaseDialogFilter,
     // CasePriorityBarChartCard,
-    // CaseSeverityBarChartCard,
-    // CaseTypeBarChartCard,
+    CaseSeverityBarChartCard,
+    CaseTypeBarChartCard,
     // CasesDrillDownSheet,
+    CaseEscalatedClosedAverageTimeCard,
+    CaseNewClosedAverageTimeCard,
+    CaseNewTriageAverageTimeCard,
+    CaseTriageEscalatedAverageTimeCard,
     StatWidget,
   },
 
@@ -167,6 +201,21 @@ export default {
     },
     totalCases() {
       return this.items.length
+    },
+    totalCasesTriaged() {
+      return sumBy(this.items, function (item) {
+        if (item.triage_at) {
+          return 1
+        }
+      })
+    },
+    totalCasesEscalated() {
+      return sumBy(this.items, function (item) {
+        if (item.escalated_at && item.incidents.length > 0) {
+          console.log(item)
+          return 1
+        }
+      })
     },
     totalHours() {
       return sumBy(this.items, function (item) {

@@ -4,7 +4,7 @@
     type="line"
     :options="chartOptions"
     :series="series"
-    title="Mean Active (Active -> Stable)"
+    title="New to Closed Average Time (Hours)"
   />
 </template>
 
@@ -14,8 +14,9 @@ import differenceInHours from "date-fns/differenceInHours"
 import parseISO from "date-fns/parseISO"
 
 import DashboardCard from "@/dashboard/DashboardCard.vue"
+
 export default {
-  name: "IncidentActiveTimeCard",
+  name: "CaseNewClosedAverageTimeCard",
 
   props: {
     value: {
@@ -48,14 +49,14 @@ export default {
 
   computed: {
     series() {
-      let series = { name: "Average Hours Active", data: [] }
+      let series = { name: "New to Closed Average Time (Hours)", data: [] }
       forEach(this.value, function (value) {
         series.data.push(
           Math.round(
             sumBy(value, function (item) {
               let endTime = new Date().toISOString()
-              if (item.stable_at) {
-                endTime = item.stable_at
+              if (item.closed_at) {
+                endTime = item.closed_at
               }
               return differenceInHours(parseISO(endTime), parseISO(item.reported_at))
             }) / value.length
