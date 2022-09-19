@@ -113,7 +113,7 @@
             </v-list-item>
             <v-list-item v-else>
               <v-list-item-content>
-                <v-list-item-title>Creating incident storage...</v-list-item-title>
+                <v-list-item-title>Creating case storage...</v-list-item-title>
                 <v-progress-linear indeterminate />
               </v-list-item-content>
             </v-list-item>
