@@ -11,7 +11,7 @@
               Reported - {{ reported_at | formatRelativeDate }}
             </v-list-item-subtitle>
           </v-list-item-content>
-          <v-btn color="error">
+          <v-btn @click="showEscalateDialog(selected)" color="error">
             <v-icon left> error_outline </v-icon>
             Escalate Case as Incident
           </v-btn>
@@ -77,6 +77,7 @@ export default {
 
   computed: {
     ...mapFields("case_management", [
+      "selected",
       "selected.id",
       "selected.name",
       "selected.project",
@@ -100,7 +101,12 @@ export default {
     fetchDetails() {
       this.getDetails({ name: this.$route.params.name })
     },
-    ...mapActions("case_management", ["save", "getDetails", "closeEditSheet"]),
+    ...mapActions("case_management", [
+      "save",
+      "getDetails",
+      "closeEditSheet",
+      "showEscalateDialog",
+    ]),
   },
 }
 </script>

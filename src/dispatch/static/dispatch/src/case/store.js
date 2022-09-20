@@ -46,6 +46,7 @@ const state = {
     showEditSheet: false,
     showExport: false,
     showNewSheet: false,
+    showEscalateDialog: false,
   },
   table: {
     rows: {
@@ -166,6 +167,15 @@ const actions = {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
   },
+  showEscalateDialog({ commit }, value) {
+    commit("SET_DIALOG_ESCALATE", true)
+    commit("SET_SELECTED", value)
+  },
+  closeEscalateDialog({ commit }) {
+    commit("SET_DIALOG_ESCALATE", false)
+    commit("RESET_SELECTED")
+    commit("incident/RESET_SELECTED", null, { root: true })
+  },
   // showReportDialog({ commit }, value) {
   //   commit("SET_DIALOG_REPORT", true)
   //   commit("SET_SELECTED", value)
@@ -201,6 +211,27 @@ const actions = {
   //       commit("SET_SELECTED_LOADING", false)
   //     })
   // },
+  escalateCase({ commit, dispatch }, payload) {
+    commit("SET_SELECTED_LOADING", true)
+    return CaseApi.escalate(state.selected.id, payload)
+      .then((response) => {
+        commit("incident/SET_SELECTED", response.data, { root: true })
+        commit("SET_SELECTED_LOADING", false)
+        this.interval = setInterval(function () {
+          if (state.selected.id) {
+            dispatch("incident/get", null, { root: true })
+          }
+
+          // TODO this is fragile but we don't set anything as "created"
+          if (state.selected.conversation) {
+            clearInterval(this.interval)
+          }
+        }, 5000)
+      })
+      .catch(() => {
+        commit("SET_SELECTED_LOADING", false)
+      })
+  },
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
@@ -304,6 +335,9 @@ const mutations = {
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showDeleteDialog = value
+  },
+  SET_DIALOG_ESCALATE(state, value) {
+    state.dialogs.showEscalateDialog = value
   },
   SET_DIALOG_REPORT(state, value) {
     state.dialogs.showReportDialog = value
