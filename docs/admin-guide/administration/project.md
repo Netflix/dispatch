@@ -4,18 +4,28 @@ description: Overview of the Dispatch projects.
 
 # Projects
 
-Every incident within Dispatch is tied to a project. The project and its resources/configuration determine how the incident is run. This allows multiple teams to use Dispatch in different ways.
+Every case or incident within Dispatch is tied to a project. The project configuration determines how cases or incidents are created and managed. This allows multiple teams to use Dispatch in different ways.
 
-From having their own incident types and priorities to providing the team with a view of their incident metrics. Projects drive this scoping of incidents.
+From having their own case or incident types and priorities to providing the team with a view of their metrics.
 
 ### When should I create a new project vs using an existing one?
 
-Generally, you would create a new project when the teams involved have very little overlap when handling incidents.
+Generally, you would create a new project when the teams involved have very little overlap when handling cases or incidents.
 
-For example, you might create a `security` project for the handling of all security related incidents and a `reliability` project for all outage related incidents.
+For example, you might create a `security` project for the handling of all security-related cases or incidents and a `reliability` project for all outage-related incidents.
 
 ![](../../.gitbook/assets/admin-ui-project.png)
 
-**Name:** The name you wish to give your project.
+**Name:** A name for your project.
 
-**Description:** A brief description of the project.
+**Description:** A description for your project.
+
+**Color:** A color for your project, so you can visually differentiate it from other projects. 
+
+**Annual Employee Cost:** An annual average cost per employee.
+
+**Business Year Hours:** Number of working hours in a year. Used to calculate hourly rate.
+
+**Owner Email:** The email account of the project owner.
+
+**Owner Conversation:** The conversation of the project owner (e.g. Slack channel).

@@ -4,18 +4,23 @@
     type="bar"
     :options="chartOptions"
     :series="series"
-    title="Types"
+    title="Severities"
   />
 </template>
 
 <script>
-import { map, filter } from "lodash"
+import { map, sortBy } from "lodash"
 
-import IncidentTypeApi from "@/incident_type/api"
 import DashboardCard from "@/dashboard/DashboardCard.vue"
 import DashboardUtils from "@/dashboard/utils"
+import CaseSeverityApi from "@/case/severity/api"
+
 export default {
-  name: "IncidentBarChartCard",
+  name: "CaseSeverityarChartCard",
+
+  components: {
+    DashboardCard,
+  },
 
   props: {
     value: {
@@ -32,24 +37,24 @@ export default {
     },
   },
 
-  components: {
-    DashboardCard,
-  },
-
   data() {
     return {
-      types: [],
+      severities: [],
     }
   },
 
   created: function () {
-    IncidentTypeApi.getAll({ itemsPerPage: -1 }).then((response) => {
-      this.types = map(
-        filter(response.data.items, function (item) {
-          return !item.exclude_from_metrics
-        }),
-        "name"
-      )
+    CaseSeverityApi.getAll().then((response) => {
+      this.severities = [
+        ...new Set(
+          map(
+            sortBy(response.data.items, function (value) {
+              return value.view_order
+            }),
+            "name"
+          )
+        ),
+      ]
     })
   },
 
@@ -70,7 +75,6 @@ export default {
             },
           },
         },
-        colors: DashboardUtils.defaultColorTheme(),
         responsive: [
           {
             options: {
@@ -78,6 +82,16 @@ export default {
                 position: "top",
               },
             },
+          },
+        ],
+        colors: [
+          function ({ seriesIndex, w }) {
+            for (let i = 0; i < w.config.series[seriesIndex].data.length; i++) {
+              if (w.config.series[seriesIndex].data[i].items.length > 0) {
+                return w.config.series[seriesIndex].data[i].items[0].case_severity.color
+              }
+            }
+            return "#008FFB"
           },
         ],
         xaxis: {
@@ -95,7 +109,12 @@ export default {
       }
     },
     series() {
-      return DashboardUtils.createCountedSeriesData(this.value, "incident_type.name", this.types)
+      let series = DashboardUtils.createCountedSeriesData(
+        this.value,
+        "case_severity.name",
+        this.severities
+      )
+      return series
     },
     categoryData() {
       return Object.keys(this.value)
