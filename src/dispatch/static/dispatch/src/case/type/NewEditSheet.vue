@@ -87,11 +87,7 @@
               </v-flex>
               <v-flex xs12>
                 <ValidationObserver disabled>
-                  <incident-type-select
-                    :project="project"
-                    label="Incident Type"
-                    v-model="incident_type"
-                  />
+                  <incident-type-select label="Incident Type" v-model="incident_type" />
                 </ValidationObserver>
               </v-flex>
               <v-flex xs 12>
