@@ -60,6 +60,18 @@ export const protectedRoute = [
   },
   ...withPrefix("/:organization/", [
     {
+      path: "cases/status",
+      name: "caseStatus",
+      meta: { title: "Case Status", requiresAuth: true },
+      component: () => import(/* webpackChunkName: "case-table" */ "@/case/Status.vue"),
+    },
+    {
+      path: "cases/report",
+      name: "caseReport",
+      meta: { title: "Case Report", requiresAuth: true },
+      component: () => import(/* webpackChunkName: "case-report" */ "@/case/ReportForm.vue"),
+    },
+    {
       path: "incidents/status",
       name: "status",
       meta: { title: "Incident Status", requiresAuth: true },

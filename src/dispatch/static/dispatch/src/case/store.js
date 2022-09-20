@@ -37,6 +37,10 @@ const getDefaultSelectedState = () => {
   }
 }
 
+const getDefaultReportState = () => {
+  return {}
+}
+
 const state = {
   selected: {
     ...getDefaultSelectedState(),
@@ -46,6 +50,9 @@ const state = {
     showEditSheet: false,
     showExport: false,
     showNewSheet: false,
+  },
+  report: {
+    ...getDefaultReportState(),
   },
   table: {
     rows: {
@@ -166,41 +173,33 @@ const actions = {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
   },
-  // showReportDialog({ commit }, value) {
-  //   commit("SET_DIALOG_REPORT", true)
-  //   commit("SET_SELECTED", value)
-  // },
-  // closeReportDialog({ commit }) {
-  //   commit("SET_DIALOG_REPORT", false)
-  //   commit("RESET_SELECTED")
-  // },
   showExport({ commit }) {
     commit("SET_DIALOG_SHOW_EXPORT", true)
   },
   closeExport({ commit }) {
     commit("SET_DIALOG_SHOW_EXPORT", false)
   },
-  // report({ commit, dispatch }) {
-  //   commit("SET_SELECTED_LOADING", true)
-  //   return CaseApi.create(state.selected)
-  //     .then((response) => {
-  //       commit("SET_SELECTED", response.data)
-  //       commit("SET_SELECTED_LOADING", false)
-  //       this.interval = setInterval(function () {
-  //         if (state.selected.id) {
-  //           dispatch("get")
-  //         }
-  //
-  //         // TODO this is fragile but we don't set anything as "created"
-  //         if (state.selected.conversation) {
-  //           clearInterval(this.interval)
-  //         }
-  //       }, 5000)
-  //     })
-  //     .catch(() => {
-  //       commit("SET_SELECTED_LOADING", false)
-  //     })
-  // },
+  report({ commit, dispatch }) {
+    commit("SET_SELECTED_LOADING", true)
+    return CaseApi.create(state.selected)
+      .then((response) => {
+        commit("SET_SELECTED", response.data)
+        commit("SET_SELECTED_LOADING", false)
+        this.interval = setInterval(function () {
+          if (state.selected.id) {
+            dispatch("get")
+          }
+
+          // TODO this is fragile but we don't set anything as "created"
+          if (state.selected.conversation) {
+            clearInterval(this.interval)
+          }
+        }, 5000)
+      })
+      .catch(() => {
+        commit("SET_SELECTED_LOADING", false)
+      })
+  },
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
     if (!state.selected.id) {
