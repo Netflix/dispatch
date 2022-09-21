@@ -37,6 +37,10 @@ const getDefaultSelectedState = () => {
   }
 }
 
+const getDefaultReportState = () => {
+  return {}
+}
+
 const state = {
   selected: {
     ...getDefaultSelectedState(),
@@ -47,6 +51,9 @@ const state = {
     showExport: false,
     showNewSheet: false,
     showEscalateDialog: false,
+  },
+  report: {
+    ...getDefaultReportState(),
   },
   table: {
     rows: {
@@ -190,27 +197,6 @@ const actions = {
   closeExport({ commit }) {
     commit("SET_DIALOG_SHOW_EXPORT", false)
   },
-  // report({ commit, dispatch }) {
-  //   commit("SET_SELECTED_LOADING", true)
-  //   return CaseApi.create(state.selected)
-  //     .then((response) => {
-  //       commit("SET_SELECTED", response.data)
-  //       commit("SET_SELECTED_LOADING", false)
-  //       this.interval = setInterval(function () {
-  //         if (state.selected.id) {
-  //           dispatch("get")
-  //         }
-  //
-  //         // TODO this is fragile but we don't set anything as "created"
-  //         if (state.selected.conversation) {
-  //           clearInterval(this.interval)
-  //         }
-  //       }, 5000)
-  //     })
-  //     .catch(() => {
-  //       commit("SET_SELECTED_LOADING", false)
-  //     })
-  // },
   escalateCase({ commit, dispatch }, payload) {
     commit("SET_SELECTED_LOADING", true)
     return CaseApi.escalate(state.selected.id, payload)
@@ -220,6 +206,15 @@ const actions = {
         this.interval = setInterval(function () {
           if (state.selected.id) {
             dispatch("incident/get", null, { root: true })
+  report({ commit, dispatch }) {
+    commit("SET_SELECTED_LOADING", true)
+    return CaseApi.create(state.selected)
+      .then((response) => {
+        commit("SET_SELECTED", response.data)
+        commit("SET_SELECTED_LOADING", false)
+        this.interval = setInterval(function () {
+          if (state.selected.id) {
+            dispatch("get")
           }
 
           // TODO this is fragile but we don't set anything as "created"
