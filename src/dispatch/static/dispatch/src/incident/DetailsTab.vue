@@ -108,6 +108,9 @@
       <v-flex xs12>
         <incident-filter-combobox label="Duplicates" v-model="duplicates" :project="project" />
       </v-flex>
+      <v-flex xs12>
+        <case-filter-select label="Related Case" v-model="relatedCase" />
+      </v-flex>
     </v-layout>
   </v-container>
 </template>
@@ -117,6 +120,7 @@ import { ValidationProvider, extend } from "vee-validate"
 import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 
+import CaseFilterSelect from "@/case/CaseFilterSelect.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
@@ -134,6 +138,7 @@ export default {
   name: "IncidentDetailsTab",
 
   components: {
+    CaseFilterSelect,
     DateTimePickerMenu,
     IncidentFilterCombobox,
     IncidentPrioritySelect,
@@ -152,6 +157,7 @@ export default {
   },
 
   computed: {
+    ...mapFields("incident", { relatedCase: "selected.case" }),
     ...mapFields("incident", [
       "selected.commander",
       "selected.created_at",

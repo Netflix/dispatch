@@ -9,36 +9,34 @@
     clearable
     deletable-chips
     hide-selected
-    item-text="id"
+    item-text="name"
+    item-value="id"
     multiple
     no-filter
-    v-model="caseType"
+    v-model="cases"
   >
     <template v-slot:no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No case types matching "
+            No cases matching "
             <strong>{{ search }}</strong
-            >".
+            >"
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
     </template>
-    <template v-slot:selection="{ item, index }">
-      <v-chip close @click:close="value.splice(index, 1)">
-        <span v-if="!project"> {{ item.project.name }}/ </span>{{ item.name }}
-      </v-chip>
-    </template>
     <template v-slot:item="data">
-      <v-list-item-content>
-        <v-list-item-title>
-          <span v-if="!project">{{ data.item.project.name }}/</span>{{ data.item.name }}
-        </v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ data.item.description }}
-        </v-list-item-subtitle>
-      </v-list-item-content>
+      <template>
+        <v-list-item-content>
+          <v-list-item-title v-text="data.item.name" />
+          <v-list-item-subtitle
+            style="width: 200px"
+            class="text-truncate"
+            v-text="data.item.title"
+          />
+        </v-list-item-content>
+      </template>
     </template>
     <template v-slot:append-item>
       <v-list-item v-if="more" @click="loadMore()">
@@ -53,27 +51,22 @@
 <script>
 import { cloneDeep, debounce } from "lodash"
 
+import CaseApi from "@/case/api"
 import SearchUtils from "@/search/utils"
-import CaseTypeApi from "@/case/type/api"
 
 export default {
-  name: "CaseTypeComboBox",
+  name: "CaseFilterSelect",
+
   props: {
     value: {
-      type: Array,
+      type: Object,
       default: function () {
-        return []
+        return {}
       },
     },
     label: {
       type: String,
-      default: function () {
-        return "Types"
-      },
-    },
-    project: {
-      type: [Object],
-      default: null,
+      default: "Add Case",
     },
   },
 
@@ -88,21 +81,25 @@ export default {
   },
 
   computed: {
-    caseType: {
+    cases: {
       get() {
         return cloneDeep(this.value)
       },
       set(value) {
         this.search = null
-        this._caseTypes = value.filter((v) => {
+        this._cases = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
           return true
         })
-        this.$emit("input", this._caseTypes)
+        this.$emit("input", this._cases)
       },
     },
+  },
+
+  created() {
+    this.fetchData()
   },
 
   methods: {
@@ -113,6 +110,7 @@ export default {
     fetchData() {
       this.error = null
       this.loading = "error"
+
       let filterOptions = {
         q: this.search,
         sortBy: ["name"],
@@ -127,26 +125,11 @@ export default {
             project: [this.project],
           },
         }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
       }
-
-      let enabledFilter = [
-        {
-          model: "caseType",
-          field: "enabled",
-          op: "==",
-          value: "true",
-        },
-      ]
-
-      filterOptions = SearchUtils.createParametersFromTableOptions(
-        { ...filterOptions },
-        enabledFilter
-      )
-
-      CaseTypeApi.getAll(filterOptions).then((response) => {
+      CaseApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.total = response.data.total
-        this.loading = false
 
         if (this.items.length < this.total) {
           this.more = true
@@ -160,10 +143,6 @@ export default {
     getFilteredData: debounce(function () {
       this.fetchData()
     }, 500),
-  },
-
-  created() {
-    this.fetchData()
   },
 }
 </script>

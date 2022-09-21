@@ -216,6 +216,11 @@ class ProjectRead(DispatchBase):
     color: Optional[str]
 
 
+class CaseRead(DispatchBase):
+    id: PrimaryKey
+    name: Optional[NameStr]
+
+
 # Pydantic models...
 class IncidentBase(DispatchBase):
     title: str
@@ -290,6 +295,7 @@ class IncidentUpdate(IncidentBase):
 
 class IncidentReadMinimal(IncidentBase):
     id: PrimaryKey
+    case: Optional[CaseRead]
     closed_at: Optional[datetime] = None
     commander: Optional[ParticipantRead]
     commanders_location: Optional[str]
