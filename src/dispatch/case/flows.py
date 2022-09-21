@@ -395,6 +395,9 @@ def case_escalate_flow(case: Case, incident: Incident, db_session: SessionLocal)
     case.status = CaseStatus.escalated
     case.incidents.append(incident)
 
+    db_session.add(case)
+    db_session.commit()
+
     event_service.log_case_event(
         db_session=db_session,
         source="Dispatch Core App",

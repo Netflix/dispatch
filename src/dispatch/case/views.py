@@ -179,7 +179,6 @@ def escalate_case(
             individual=IndividualContactRead(email=current_user.email)
         )
 
-    print(current_case.case_type.incident_type.name)
     # allow for default values
     if not incident_in.incident_type:
         incident_in.incident_type = {"name": current_case.case_type.incident_type.name}
