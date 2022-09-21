@@ -55,3 +55,10 @@ class DocumentResourceTemplateTypes(DispatchEnum):
     incident = "dispatch-incident-document-template"
     review = "dispatch-incident-review-document-template"
     tracking = "dispatch-incident-sheet-template"
+
+
+class LogLevels(DispatchEnum):
+    info = "INFO"
+    warn = "WARN"
+    error = "ERROR"
+    debug = "DEBUG"
