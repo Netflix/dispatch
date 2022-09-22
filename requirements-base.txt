@@ -6,7 +6,7 @@
 #
 aiofiles==22.1.0
     # via -r requirements-base.in
-aiohttp==3.8.1
+aiohttp==3.8.3
     # via -r requirements-base.in
 aiosignal==1.2.0
     # via aiohttp
