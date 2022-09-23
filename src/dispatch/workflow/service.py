@@ -8,6 +8,7 @@ from dispatch.incident import service as incident_service
 from dispatch.case import service as case_service
 from dispatch.participant import service as participant_service
 from dispatch.document import service as document_service
+from dispatch.workflow.enums import WorkflowInstanceStatus
 
 from .models import (
     Workflow,
@@ -85,10 +86,25 @@ def get_instance(*, db_session, instance_id: int) -> WorkflowInstance:
     )
 
 
-def create_instance(*, db_session, instance_in: WorkflowInstanceCreate) -> WorkflowInstance:
+def get_running_instances(*, db_session) -> List[WorkflowInstance]:
+    """Fetches all running instances."""
+    return db_session.query(WorkflowInstance).filter(
+        WorkflowInstance.status.in_(
+            (
+                WorkflowInstanceStatus.created,
+                WorkflowInstanceStatus.running,
+                WorkflowInstanceStatus.submitted,
+            )
+        )
+    )
+
+
+def create_instance(
+    *, db_session, workflow, instance_in: WorkflowInstanceCreate
+) -> WorkflowInstance:
     """Creates a new workflow instance."""
     instance = WorkflowInstance(
-        **instance_in.dict(exclude={"incident", "case", "workflow", "creator", "artifacts"})
+        **instance_in.dict(exclude={"incident", "case", "creator", "artifacts"})
     )
 
     if instance_in.incident:
@@ -99,7 +115,6 @@ def create_instance(*, db_session, instance_in: WorkflowInstanceCreate) -> Workf
         case = case_service.get(db_session=db_session, case_id=instance_in.case.id)
         instance.case = case
 
-    workflow = get(db_session=db_session, workflow_id=instance_in.workflow.id)
     instance.workflow = workflow
 
     if instance_in.creator:
@@ -140,14 +155,20 @@ def update_instance(*, db_session, instance: WorkflowInstance, instance_in: Work
 
 
 def run(
-    *, db_session, workflow_id: PrimaryKey, workflow_instance_in: WorkflowInstanceCreate
+    *, db_session, workflow: Workflow, workflow_instance_in: WorkflowInstanceCreate
 ) -> WorkflowInstance:
     """Runs a workflow with the given parameters."""
     instance = create_instance(
-        db_session=db_session, instance_in=WorkflowInstanceCreate(**workflow_instance_in)
+        db_session=db_session,
+        workflow=workflow,
+        instance_in=WorkflowInstanceCreate(**workflow_instance_in.dict()),
     )
-    instance.workflow.plugin_instance.instance.run(
-        instance.workflow.resource_id, instance.workflow.parameters.params
-    )
+
+    # workflow plugins assume dictionary for params and does not accept none types
+    params = {}
+    for p in instance.workflow.parameters:
+        if p["value"]:
+            params.update(p)
+    instance.workflow.plugin_instance.instance.run(instance.workflow.resource_id, params)
 
     return instance

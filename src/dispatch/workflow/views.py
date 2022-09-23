@@ -12,6 +12,7 @@ from .models import (
     WorkflowInstanceCreate,
     WorkflowPagination,
     WorkflowRead,
+    WorkflowInstanceRead,
     WorkflowCreate,
     WorkflowUpdate,
 )
@@ -80,7 +81,7 @@ def delete_workflow(*, db_session: Session = Depends(get_db), workflow_id: Prima
     delete(db_session=db_session, workflow_id=workflow_id)
 
 
-@router.put("/{workflow_id}/run", response_model=WorkflowRead)
+@router.post("/{workflow_id}/run", response_model=WorkflowInstanceRead)
 def run_workflow(
     *,
     db_session: Session = Depends(get_db),
@@ -94,4 +95,4 @@ def run_workflow(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=[{"msg": "A workflow with this id does not exist."}],
         )
-    run(db_session=db_session, workflow_id=workflow, workflow_instance_in=workflow_instance_in)
+    return run(db_session=db_session, workflow=workflow, workflow_instance_in=workflow_instance_in)

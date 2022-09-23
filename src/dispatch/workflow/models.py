@@ -172,7 +172,7 @@ class WorkflowInstanceUpdate(WorkflowInstanceBase):
 class WorkflowInstanceRead(WorkflowInstanceBase):
     id: PrimaryKey
     workflow: WorkflowRead
-    creator: ParticipantRead
+    creator: Optional[ParticipantRead]
 
 
 class WorkflowInstancePagination(DispatchBase):
