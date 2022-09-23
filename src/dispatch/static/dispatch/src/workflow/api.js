@@ -19,6 +19,10 @@ export default {
     return API.put(`${resource}/${workflowId}`, payload)
   },
 
+  run(workflowId, payload) {
+    return API.post(`${resource}/${workflowId}/run}`, payload)
+  },
+
   delete(workflowId) {
     return API.delete(`${resource}/${workflowId}`)
   },

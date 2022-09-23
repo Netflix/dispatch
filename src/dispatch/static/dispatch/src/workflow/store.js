@@ -25,6 +25,7 @@ const state = {
   dialogs: {
     showCreateEdit: false,
     showRemove: false,
+    showRun: false,
   },
   table: {
     rows: {
@@ -70,6 +71,9 @@ const actions = {
     }
     commit("SET_DIALOG_CREATE_EDIT", true)
   },
+  showRun({ commit }) {
+    commit("SET_DIALOG_RUN", true)
+  },
   removeShow({ commit }, workflow) {
     commit("SET_DIALOG_DELETE", true)
     commit("SET_SELECTED", workflow)
@@ -81,6 +85,19 @@ const actions = {
   closeRemove({ commit }) {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
+  },
+  closeRun({ commit }) {
+    commit("SET_DIALOG_RUN", false)
+  },
+  run({ commit }, subject) {
+    let payload = { ...state.selected, ...subject }
+    return WorkflowApi.run(state.selected.id, payload)
+      .then(() => {
+        commit("SET_SELECTED_RUNNING", false)
+      })
+      .catch(() => {
+        commit("SET_SELECTED_LOADING", false)
+      })
   },
   save({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
@@ -148,6 +165,9 @@ const mutations = {
   },
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showRemove = value
+  },
+  SET_DIALOG_RUN(state, value) {
+    state.dialogs.showRun = value
   },
   RESET_SELECTED(state) {
     // do not reset project

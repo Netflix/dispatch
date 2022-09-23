@@ -1,9 +1,11 @@
 from typing import List, Optional
 
 from sqlalchemy.sql.expression import true
+from dispatch.models import PrimaryKey
 from dispatch.project import service as project_service
 from dispatch.plugin import service as plugin_service
 from dispatch.incident import service as incident_service
+from dispatch.case import service as case_service
 from dispatch.participant import service as participant_service
 from dispatch.document import service as document_service
 
@@ -86,19 +88,27 @@ def get_instance(*, db_session, instance_id: int) -> WorkflowInstance:
 def create_instance(*, db_session, instance_in: WorkflowInstanceCreate) -> WorkflowInstance:
     """Creates a new workflow instance."""
     instance = WorkflowInstance(
-        **instance_in.dict(exclude={"incident", "workflow", "creator", "artifacts"})
+        **instance_in.dict(exclude={"incident", "case", "workflow", "creator", "artifacts"})
     )
 
-    incident = incident_service.get(db_session=db_session, incident_id=instance_in.incident.id)
-    instance.incident = incident
+    if instance_in.incident:
+        incident = incident_service.get(db_session=db_session, incident_id=instance_in.incident.id)
+        instance.incident = incident
+
+    if instance_in.case:
+        case = case_service.get(db_session=db_session, case_id=instance_in.case.id)
+        instance.case = case
 
     workflow = get(db_session=db_session, workflow_id=instance_in.workflow.id)
     instance.workflow = workflow
 
-    creator = participant_service.get_by_incident_id_and_email(
-        db_session=db_session, incident_id=incident.id, email=instance_in.creator.individual.email
-    )
-    instance.creator = creator
+    if instance_in.creator:
+        creator = participant_service.get_by_incident_id_and_email(
+            db_session=db_session,
+            incident_id=incident.id,
+            email=instance_in.creator.individual.email,
+        )
+        instance.creator = creator
 
     for a in instance_in.artifacts:
         artifact_document = document_service.create(db_session=db_session, document_in=a)
@@ -126,4 +136,18 @@ def update_instance(*, db_session, instance: WorkflowInstance, instance_in: Work
             setattr(instance, field, update_data[field])
 
     db_session.commit()
+    return instance
+
+
+def run(
+    *, db_session, workflow_id: PrimaryKey, workflow_instance_in: WorkflowInstanceCreate
+) -> WorkflowInstance:
+    """Runs a workflow with the given parameters."""
+    instance = create_instance(
+        db_session=db_session, instance_in=WorkflowInstanceCreate(**workflow_instance_in)
+    )
+    instance.workflow.plugin_instance.instance.run(
+        instance.workflow.resource_id, instance.workflow.parameters.params
+    )
+
     return instance

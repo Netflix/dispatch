@@ -8,8 +8,14 @@ from dispatch.exceptions import NotFoundError
 from dispatch.models import PrimaryKey
 from dispatch.plugin import service as plugin_service
 
-from .models import WorkflowPagination, WorkflowRead, WorkflowCreate, WorkflowUpdate
-from .service import create, delete, get, update
+from .models import (
+    WorkflowInstanceCreate,
+    WorkflowPagination,
+    WorkflowRead,
+    WorkflowCreate,
+    WorkflowUpdate,
+)
+from .service import create, delete, get, update, run
 
 
 router = APIRouter()
@@ -72,3 +78,20 @@ def delete_workflow(*, db_session: Session = Depends(get_db), workflow_id: Prima
             detail=[{"msg": "A workflow with this id does not exist."}],
         )
     delete(db_session=db_session, workflow_id=workflow_id)
+
+
+@router.put("/{workflow_id}/run", response_model=WorkflowRead)
+def run_workflow(
+    *,
+    db_session: Session = Depends(get_db),
+    workflow_id: PrimaryKey,
+    workflow_instance_in: WorkflowInstanceCreate,
+):
+    """Runs a workflow with a given set of parameters."""
+    workflow = get(db_session=db_session, workflow_id=workflow_id)
+    if not workflow:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A workflow with this id does not exist."}],
+        )
+    run(db_session=db_session, workflow_id=workflow, workflow_instance_in=workflow_instance_in)

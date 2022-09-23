@@ -90,7 +90,7 @@ class WorkflowInstance(Base, ResourceMixin):
     run_reason = Column(String)
     creator_id = Column(Integer, ForeignKey("participant.id"))
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
-
+    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
     creator = relationship(
         "Participant", backref="created_workflow_instances", foreign_keys=[creator_id]
     )
@@ -101,6 +101,11 @@ class WorkflowInstance(Base, ResourceMixin):
 
 
 class WorkflowIncident(DispatchBase):
+    id: PrimaryKey
+    name: Optional[NameStr]
+
+
+class WorkflowCase(DispatchBase):
     id: PrimaryKey
     name: Optional[NameStr]
 
@@ -155,9 +160,9 @@ class WorkflowInstanceBase(ResourceBase):
 
 
 class WorkflowInstanceCreate(WorkflowInstanceBase):
-    creator: ParticipantRead
-    incident: WorkflowIncident
-    workflow: WorkflowRead
+    creator: Optional[ParticipantRead]
+    incident: Optional[WorkflowIncident]
+    case: Optional[WorkflowCase]
 
 
 class WorkflowInstanceUpdate(WorkflowInstanceBase):

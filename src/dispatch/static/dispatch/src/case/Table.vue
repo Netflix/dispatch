@@ -6,6 +6,7 @@
     <v-row no-gutters>
       <new-sheet />
       <delete-dialog />
+      <workflow-run-modal />
       <v-col>
         <div class="headline">Cases</div>
       </v-col>
@@ -87,6 +88,9 @@
                   >
                     <v-list-item-title>View / Edit</v-list-item-title>
                   </v-list-item>
+                  <v-list-item @click="showRun(item)">
+                    <v-list-item-title>Run Workflow</v-list-item-title>
+                  </v-list-item>
                   <v-list-item @click="showDeleteDialog(item)">
                     <v-list-item-title>Delete</v-list-item-title>
                   </v-list-item>
@@ -111,6 +115,7 @@ import CaseSeverity from "@/case/severity/CaseSeverity.vue"
 import CaseStatus from "@/case/CaseStatus.vue"
 import DeleteDialog from "@/case/DeleteDialog.vue"
 import NewSheet from "@/case/NewSheet.vue"
+import WorkflowRunModal from "@/workflow/RunModal.vue"
 import RouterUtils from "@/router/utils"
 import TableExportDialog from "@/case/TableExportDialog.vue"
 import TableFilterDialog from "@/case/TableFilterDialog.vue"
@@ -125,6 +130,7 @@ export default {
     CaseStatus,
     DeleteDialog,
     NewSheet,
+    WorkflowRunModal,
     TableExportDialog,
     TableFilterDialog,
   },
@@ -194,6 +200,7 @@ export default {
 
   methods: {
     ...mapActions("case_management", ["getAll", "showNewSheet", "showDeleteDialog"]),
+    ...mapActions("workflow", ["showRun"]),
   },
 
   watch: {
