@@ -206,7 +206,7 @@ def escalate_case(
 
     incident = incident_service.create(db_session=db_session, incident_in=incident_in)
     background_tasks.add_task(
-        case_escalate_flow, case=current_case, incident=incident, db_session=db_session
+        case_escalate_flow, case_id=current_case.id, incident_id=incident.id, db_session=db_session
     )
 
     return incident

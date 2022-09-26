@@ -969,6 +969,7 @@ def incident_create_flow(*, incident_id: int, db_session=None):
 
     db_session.add(incident)
     db_session.commit()
+    return incident
 
 
 def incident_active_status_flow(incident: Incident, db_session=None):
