@@ -1,7 +1,6 @@
 from typing import List, Optional
 
 from sqlalchemy.sql.expression import true
-from dispatch.models import PrimaryKey
 from dispatch.project import service as project_service
 from dispatch.plugin import service as plugin_service
 from dispatch.incident import service as incident_service

@@ -1,13 +1,9 @@
 import logging
-from re import I
 
 from schedule import every
-from dispatch.case.service import create
 from dispatch.database.core import SessionLocal
 
 from dispatch.decorators import scheduled_project_task
-from dispatch.incident import service as incident_service
-from dispatch.incident.enums import IncidentStatus
 from dispatch.messaging.strings import (
     INCIDENT_WORKFLOW_COMPLETE_NOTIFICATION,
     INCIDENT_WORKFLOW_UPDATE_NOTIFICATION,
