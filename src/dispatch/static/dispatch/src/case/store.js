@@ -199,13 +199,16 @@ const actions = {
   },
   escalateCase({ commit, dispatch }, payload) {
     commit("SET_SELECTED_LOADING", true)
-    return CaseApi.escalate(state.selected.id, payload)
-      .then((response) => {
-        commit("incident/SET_SELECTED", response.data, { root: true })
-        commit("SET_SELECTED_LOADING", false)
-        this.interval = setInterval(function () {
-          if (state.selected.id) {
-            dispatch("incident/get", null, { root: true })
+    return CaseApi.escalate(state.selected.id, payload).then((response) => {
+      commit("incident/SET_SELECTED", response.data, { root: true })
+      commit("SET_SELECTED_LOADING", false)
+      this.interval = setInterval(function () {
+        if (state.selected.id) {
+          dispatch("incident/get", null, { root: true })
+        }
+      })
+    })
+  },
   report({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
     return CaseApi.create(state.selected)
