@@ -1,25 +1,31 @@
 <template>
   <v-dialog v-model="showEscalateDialog" persistent max-width="800px">
-    <v-card>
+    <v-card v-if="incidentSelected.id">
+      <v-card-title>
+        <span class="headline">Case Escalated</span>
+      </v-card-title>
+      <v-card-text>
+        <report-receipt-resources />
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn color="blue en-1" text @click="closeEscalateDialog()"> Close </v-btn>
+      </v-card-actions>
+    </v-card>
+    <v-card v-else>
       <v-card-title>
         <span class="headline">Escalate Case?</span>
       </v-card-title>
       <v-card-text>
         Lets do it. Update information as needed or accept the pre-filled defaults.
-        <report-receipt-resources v-if="incidentSelected.id" />
-        <report-submission-form v-else />
+        <report-submission-form />
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <span v-if="incidentId">
-          <v-btn color="blue en-1" text @click="closeEscalateDialog()"> Close </v-btn>
-        </span>
-        <span v-else>
-          <v-btn color="blue en-1" text @click="closeEscalateDialog()"> Cancel </v-btn>
-          <v-btn color="red en-1" text :loading="loading" @click="escalateCase(incidentSelected)">
-            Escalate
-          </v-btn>
-        </span>
+        <v-btn color="blue en-1" text @click="closeEscalateDialog()"> Cancel </v-btn>
+        <v-btn color="red en-1" text :loading="loading" @click="escalate(incidentSelected)">
+          Escalate
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -69,7 +75,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("case_management", ["getDetails", "closeEscalateDialog", "escalateCase"]),
+    ...mapActions("case_management", ["getDetails", "closeEscalateDialog", "escalate"]),
     ...mapActions("incident", ["report", "resetSelected"]),
   },
 

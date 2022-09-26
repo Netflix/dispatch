@@ -197,16 +197,21 @@ const actions = {
   closeExport({ commit }) {
     commit("SET_DIALOG_SHOW_EXPORT", false)
   },
-  escalateCase({ commit, dispatch }, payload) {
+  escalate({ commit, dispatch }, payload) {
     commit("SET_SELECTED_LOADING", true)
     return CaseApi.escalate(state.selected.id, payload).then((response) => {
       commit("incident/SET_SELECTED", response.data, { root: true })
       commit("SET_SELECTED_LOADING", false)
       this.interval = setInterval(function () {
         if (state.selected.id) {
-          dispatch("incident/get", null, { root: true })
+          dispatch("incident/get", response.data.id, { root: true })
         }
-      })
+
+        // TODO this is fragile but we don't set anything as "created"
+        if (state.selected.conversation) {
+          clearInterval(this.interval)
+        }
+      }, 5000)
     })
   },
   report({ commit, dispatch }) {

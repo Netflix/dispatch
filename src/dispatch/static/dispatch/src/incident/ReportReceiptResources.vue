@@ -1,165 +1,84 @@
 <template>
-  <span>
-    <v-list three-line>
-      <v-list-group :value="true">
-        <template v-slot:activator>
-          <v-list-item-title class="title"> Incident Details </v-list-item-title>
-        </template>
-        <v-list-item-group>
-          <v-list-item>
+  <v-container>
+    <v-row dense>
+      <v-col cols="12">
+        <v-card outlined elevation="0">
+          <v-list-item two-line>
             <v-list-item-content>
-              <v-list-item-title>Commander</v-list-item-title>
-              <v-list-item-subtitle>
-                <participant :participant="commander" />
-              </v-list-item-subtitle>
+              <v-list-item-title class="text-h5"> Incident Details </v-list-item-title>
+              <v-list-item-subtitle>{{ reported_at | formatRelativeDate }}</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
-          <v-divider />
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title>Participants</v-list-item-title>
-              <v-list-item-subtitle>
-                <v-chip-group column>
-                  <v-item v-for="participant in participants" :key="participant.id">
-                    <participant :participant="participant" />
-                  </v-item>
-                </v-chip-group>
-              </v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider />
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title>Title</v-list-item-title>
-              <v-list-item-subtitle>{{ title }}</v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider />
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title>Description</v-list-item-title>
-              <v-list-item-subtitle>{{ description }}</v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider />
-          <v-list-item>
-            <v-list-item-content>
-              <v-list-item-title>Project</v-list-item-title>
-              <v-list-item-subtitle>{{ project.name }}</v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider />
-          <v-list-item>
-            <v-list-item-content>
+          <v-card-text>
+            <v-row align="center">
+              <v-col class="text-h5" cols="12"> {{ title }} </v-col>
+            </v-row>
+          </v-card-text>
+
+          <v-list class="transparent">
+            <v-list-item>
               <v-list-item-title>Type</v-list-item-title>
-              <v-list-item-subtitle>{{ incident_type.name }}</v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider />
-          <v-list-item>
-            <v-list-item-content>
+              <v-list-item-subtitle class="text-right">
+                {{ incident_type.name }}
+              </v-list-item-subtitle>
+            </v-list-item>
+            <v-list-item>
               <v-list-item-title>Priority</v-list-item-title>
-              <v-list-item-subtitle>{{ incident_priority.name }}</v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider />
-          <v-list-item>
+              <v-list-item-subtitle class="text-right">
+                <incident-priority :priority="incident_priority.name" />
+              </v-list-item-subtitle>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-title>Visability</v-list-item-title>
+              <v-list-item-subtitle class="text-right"> {{ visibility }} </v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+
+          <v-divider></v-divider>
+
+          <v-card-actions>
+            <v-list-item class="grow">
+              <v-list-item-avatar color="grey darken-3">
+                <span class="white--text text-h5">{{ commander.individual.name | initials }}</span>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title>{{ commander.individual.name }}</v-list-item-title>
+                <v-list-item-subtitle>Incident Commander</v-list-item-subtitle>
+              </v-list-item-content>
+              <v-row align="center" justify="end">
+                <v-btn
+                  v-if="commander.individual.phone"
+                  :href="'tel:' + commander.individual.phone"
+                  icon
+                  class="mr-1"
+                >
+                  <v-icon> mdi-phone </v-icon>
+                </v-btn>
+                <span class="mr-1"></span>
+                <v-btn :href="'mailto:' + commander.individual.email" icon class="mr-1">
+                  <v-icon> mdi-email </v-icon>
+                </v-btn>
+              </v-row>
+            </v-list-item>
+          </v-card-actions>
+        </v-card>
+      </v-col>
+      <v-col cols="12">
+        <v-card outlined elevation="0">
+          <v-list-item two-line>
             <v-list-item-content>
-              <v-list-item-title>Visibility</v-list-item-title>
-              <v-list-item-subtitle>{{ visibility }}</v-list-item-subtitle>
+              <v-list-item-title class="text-h6"> Incident Resources </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-        </v-list-item-group>
-      </v-list-group>
-    </v-list>
-    <v-list three-line>
-      <v-list-group :value="true">
-        <template v-slot:activator>
-          <v-list-item-title class="title"> Incident Resources </v-list-item-title>
-        </template>
-        <span v-if="activeResourcePlugins.ticket">
-          <v-list-item v-if="ticket" :href="ticket.weblink" target="_blank">
-            <v-list-item-content>
-              <v-list-item-title>Ticket</v-list-item-title>
-              <v-list-item-subtitle>{{ ticket.description }}</v-list-item-subtitle>
-            </v-list-item-content>
-            <v-list-item-action>
-              <v-list-item-icon>
-                <v-icon>open_in_new</v-icon>
-              </v-list-item-icon>
-            </v-list-item-action>
-          </v-list-item>
-          <v-list-item v-else>
-            <v-list-item-content>
-              <v-list-item-title>Creating incident ticket...</v-list-item-title>
-              <v-progress-linear indeterminate />
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider />
-        </span>
-        <span v-if="activeResourcePlugins.conference">
-          <v-list-item v-if="conference" :href="conference.weblink" target="_blank">
-            <v-list-item-content>
-              <v-list-item-title>Video Conference</v-list-item-title>
-              <v-list-item-subtitle>{{ conference.description }}</v-list-item-subtitle>
-            </v-list-item-content>
-            <v-list-item-action>
-              <v-list-item-icon>
-                <v-icon>open_in_new</v-icon>
-              </v-list-item-icon>
-            </v-list-item-action>
-          </v-list-item>
-          <v-list-item v-else>
-            <v-list-item-content>
-              <v-list-item-title>Creating incident video conference...</v-list-item-title>
-              <v-progress-linear indeterminate />
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider />
-        </span>
-        <span v-if="activeResourcePlugins.conversation">
-          <v-list-item v-if="conversation" :href="conversation.weblink" target="_blank">
-            <v-list-item-content>
-              <v-list-item-title>Conversation</v-list-item-title>
-              <v-list-item-subtitle>{{ conversation.description }}</v-list-item-subtitle>
-            </v-list-item-content>
-            <v-list-item-action>
-              <v-list-item-icon>
-                <v-icon>open_in_new</v-icon>
-              </v-list-item-icon>
-            </v-list-item-action>
-          </v-list-item>
-          <v-list-item v-else>
-            <v-list-item-content>
-              <v-list-item-title>Creating incident conversation...</v-list-item-title>
-              <v-progress-linear indeterminate />
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider />
-        </span>
-        <span v-if="activeResourcePlugins.storage">
-          <v-list-item v-if="storage" :href="storage.weblink" target="_blank">
-            <v-list-item-content>
-              <v-list-item-title>Storage</v-list-item-title>
-              <v-list-item-subtitle>{{ storage.description }}</v-list-item-subtitle>
-            </v-list-item-content>
-            <v-list-item-action>
-              <v-list-item-icon>
-                <v-icon>open_in_new</v-icon>
-              </v-list-item-icon>
-            </v-list-item-action>
-          </v-list-item>
-          <v-list-item v-else>
-            <v-list-item-content>
-              <v-list-item-title>Creating incident storage...</v-list-item-title>
-              <v-progress-linear indeterminate />
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider />
-          <span v-if="activeResourcePlugins.document">
-            <span v-if="documents.length">
-              <span v-for="document in documents" :key="document.resource_id">
-                <v-list-item :href="document.weblink" target="_blank">
+          <span v-for="pluginInstance in activeResourcePlugins" :key="pluginInstance.id">
+            <span v-if="pluginInstance.plugin.type === 'document'">
+              <span v-if="resourceData('documents').length">
+                <v-list-item
+                  v-for="document in resourceData('documents')"
+                  :key="document.resource_id"
+                  :href="document.weblink"
+                  target="_blank"
+                >
                   <v-list-item-content>
                     <v-list-item-title>{{ document.resource_type | deslug }}</v-list-item-title>
                     <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
@@ -172,28 +91,56 @@
                 </v-list-item>
                 <v-divider />
               </span>
+              <span v-else>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>Creating documents... </v-list-item-title>
+                    <v-progress-linear indeterminate />
+                  </v-list-item-content>
+                </v-list-item>
+              </span>
             </span>
             <span v-else>
-              <v-list-item>
+              <v-list-item
+                v-if="resourceData(pluginInstance.plugin.type)"
+                target="_blank"
+                :href="resourceData(pluginInstance.plugin.type).weblink"
+              >
                 <v-list-item-content>
-                  <v-list-item-title>Creating incident documents... </v-list-item-title>
+                  <v-list-item-title>{{
+                    pluginInstance.plugin.type | capitalize
+                  }}</v-list-item-title>
+                  <v-list-item-subtitle>{{
+                    pluginInstance.plugin.description
+                  }}</v-list-item-subtitle>
+                </v-list-item-content>
+                <v-list-item-action>
+                  <v-list-item-icon>
+                    <v-icon>open_in_new</v-icon>
+                  </v-list-item-icon>
+                </v-list-item-action>
+              </v-list-item>
+              <v-list-item v-else>
+                <v-list-item-content>
+                  <v-list-item-title
+                    >Creating {{ pluginInstance.plugin.type }} resource...</v-list-item-title
+                  >
                   <v-progress-linear indeterminate />
                 </v-list-item-content>
               </v-list-item>
+              <v-divider />
             </span>
-            <v-divider />
           </span>
-        </span>
-      </v-list-group>
-    </v-list>
-  </span>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import { forEach, find } from "lodash"
-import Participant from "@/incident/Participant.vue"
+import IncidentPriority from "@/incident/IncidentPriority.vue"
 
 import PluginApi from "@/plugin/api"
 
@@ -201,18 +148,13 @@ export default {
   name: "ReportReceiptCard",
 
   components: {
-    Participant,
+    IncidentPriority,
   },
   data() {
     return {
       isSubmitted: false,
-      activeResourcePlugins: {
-        document: null,
-        ticket: null,
-        storage: null,
-        conversation: null,
-        conference: null,
-      },
+      resourcePlugins: ["document", "ticket", "storage", "conversation", "conference"],
+      activeResourcePlugins: [],
       project_faq: null,
     }
   },
@@ -236,19 +178,19 @@ export default {
         ],
       }),
     }).then((response) => {
-      let data = response.data.items
-      let activeResourcePlugins = this.activeResourcePlugins
-      forEach(Object.keys(activeResourcePlugins), function (value) {
-        activeResourcePlugins[value] = find(data, function (o) {
-          return o.plugin.type === value
-        })
+      response.data.items.forEach((item) => {
+        if (this.resourcePlugins.includes(item.plugin.type)) {
+          this.activeResourcePlugins.push(item)
+        }
       })
     })
   },
   computed: {
     ...mapFields("incident", [
+      "selected",
       "selected.incident_priority",
       "selected.incident_type",
+      "selected.reported_at",
       "selected.commander",
       "selected.participants",
       "selected.title",
@@ -268,6 +210,9 @@ export default {
 
   methods: {
     ...mapActions("incident", ["report", "get", "resetSelected"]),
+    resourceData(pluginType) {
+      return this.selected[pluginType]
+    },
   },
 }
 </script>
