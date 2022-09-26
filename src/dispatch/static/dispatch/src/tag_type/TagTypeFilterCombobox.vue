@@ -56,6 +56,7 @@ import TagTypeApi from "@/tag_type/api"
 
 export default {
   name: "TagTypeCombobox",
+
   props: {
     value: {
       type: Array,
@@ -65,7 +66,7 @@ export default {
     },
     label: {
       type: String,
-      default: "Add Tags",
+      default: "Add Tag Types",
     },
     model: {
       type: String,
@@ -80,6 +81,7 @@ export default {
       default: null,
     },
   },
+
   data() {
     return {
       loading: false,
@@ -139,9 +141,8 @@ export default {
             project: [this.project],
           },
         }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
       }
-
-      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
       TagTypeApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
