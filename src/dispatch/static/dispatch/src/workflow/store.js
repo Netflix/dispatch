@@ -18,9 +18,22 @@ const getDefaultSelectedState = () => {
   }
 }
 
+const getDefaultSelectedInstanceState = () => {
+  return {
+    run_reason: null,
+    id: null,
+    parameters: [],
+    workflow: { id: null },
+    loading: false,
+  }
+}
+
 const state = {
   selected: {
     ...getDefaultSelectedState(),
+  },
+  selectedInstance: {
+    ...getDefaultSelectedInstanceState(),
   },
   dialogs: {
     showCreateEdit: false,
@@ -88,15 +101,19 @@ const actions = {
   },
   closeRun({ commit }) {
     commit("SET_DIALOG_RUN", false)
+    commit("RESET_SELECTED_INSTANCE")
   },
   run({ commit }, subject) {
-    let payload = { ...state.selected, ...subject }
-    return WorkflowApi.run(state.selected.id, payload)
+    let payload = { ...state.selectedInstance, ...subject }
+    commit("SET_SELECTED_INSTANCE_LOADING", true)
+    return WorkflowApi.run(state.selectedInstance.workflow.id, payload)
       .then(() => {
-        commit("SET_SELECTED_RUNNING", false)
+        commit("SET_SELECTED_INSTANCE_LOADING", false)
+        commit("RESET_SELECTED_INSTANCE")
       })
       .catch(() => {
-        commit("SET_SELECTED_LOADING", false)
+        commit("SET_SELECTED_INSTANCE_LOADING", false)
+        commit("RESET_SELECTED_INSTANCE")
       })
   },
   save({ commit, dispatch }) {
@@ -154,6 +171,12 @@ const mutations = {
   SET_SELECTED_LOADING(state, value) {
     state.selected.loading = value
   },
+  SET_SELECTED_INSTANCE(state, value) {
+    state.selectedInstance = Object.assign(state.selectedInstance, value)
+  },
+  SET_SELECTED_INSTANCE_LOADING(state, value) {
+    state.selectedInstance.loading = value
+  },
   SET_TABLE_LOADING(state, value) {
     state.table.loading = value
   },
@@ -168,6 +191,10 @@ const mutations = {
   },
   SET_DIALOG_RUN(state, value) {
     state.dialogs.showRun = value
+  },
+  RESET_SELECTED_INSTANCE(state) {
+    // do not reset project
+    state.selectedInstance = { ...getDefaultSelectedInstanceState() }
   },
   RESET_SELECTED(state) {
     // do not reset project

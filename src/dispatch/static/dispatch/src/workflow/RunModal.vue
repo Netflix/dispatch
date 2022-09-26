@@ -4,14 +4,23 @@
       <v-card-title>
         <span class="headline">Run Workflow</span>
       </v-card-title>
-      <v-card-text>
-        <workflow-select v-model="selected" />
-        <workflow-parameters-input v-model="parameters" />
+      <v-card-text v-if="id"> </v-card-text>
+      <v-card-text v-else>
+        <workflow-select v-model="workflow" />
+        <span v-if="workflow.id">
+          <workflow-parameters-input v-model="parameters" />
+          <v-textarea
+            v-model="run_reason"
+            label="Run Reason"
+            hint="Short note about why workflow is being run."
+            clearable
+          />
+        </span>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
         <v-btn color="blue en-1" text @click="closeRun()"> Cancel </v-btn>
-        <v-btn color="red en-1" text @click="run(value)"> Run </v-btn>
+        <v-btn color="red en-1" text :loading="loading" @click="run(value)"> Run </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -42,11 +51,29 @@ export default {
     WorkflowParametersInput,
   },
   computed: {
-    ...mapFields("workflow", ["dialogs.showRun", "selected", "selected.parameters"]),
+    ...mapFields("workflow", [
+      "dialogs.showRun",
+      "selected",
+      "selectedInstance.id",
+      "selectedInstance.loading",
+      "selectedInstance.workflow",
+      "selectedInstance.parameters",
+      "selectedInstance.run_reason",
+    ]),
   },
 
   methods: {
     ...mapActions("workflow", ["closeRun", "run"]),
+  },
+
+  created() {
+    this.$watch(
+      (vm) => [vm.workflow],
+      () => {
+        // create a copy of the workflow params
+        this.parameters = this.workflow.parameters
+      }
+    )
   },
 }
 </script>
