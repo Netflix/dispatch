@@ -13,7 +13,7 @@
           </v-list-item-content>
           <v-btn @click="showEscalateDialog(selected)" color="error">
             <v-icon left> error_outline </v-icon>
-            Escalate Case as Incident
+            Escalate Case
           </v-btn>
           <v-spacer />
           <v-btn
