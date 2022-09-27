@@ -17,7 +17,7 @@
         <span class="headline">Escalate Case?</span>
       </v-card-title>
       <v-card-text>
-        Lets do it. Update information as needed or accept the pre-filled defaults.
+        Update the fields or accept the pre-filled defaults.
         <report-submission-form />
       </v-card-text>
       <v-card-actions>
