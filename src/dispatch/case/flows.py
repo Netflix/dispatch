@@ -13,7 +13,7 @@ from dispatch.group.enums import GroupType, GroupAction
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
-from dispatch.incident.models import IncidentCreate, Incident
+from dispatch.incident.models import IncidentCreate
 from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.participant.models import ParticipantUpdate
@@ -239,9 +239,35 @@ def case_triage_status_flow(case: Case, db_session=None):
 def case_escalated_status_flow(case: Case, organization_slug: OrganizationSlug, db_session=None):
     """Runs the case escalated transition flow."""
     # we set the escalated_at time
-    case.escalated_at = datetime.utcnow()
-    db_session.add(case)
-    db_session.commit()
+    if case.incidents:
+        # we don't escalate the case if the case is already linked to incidents
+        return
+
+    if not case.case_type.incident_type:
+        # we don't escalate the case if its type is not mapped to an incident type
+        return
+
+    # we make the assignee of the case the reporter of the incident
+    reporter = ParticipantUpdate(individual=IndividualContactRead(email=case.assignee.email))
+
+    # we add information about the case in the incident's description
+    description = (
+        f"{case.description}\n\n"
+        f"This incident was the result of escalating case {case.name} "
+        f"in the {case.project.name} project. Check out the case in the Dispatch Web UI for additional context."
+    )
+
+    # we create the incident
+    incident_in = IncidentCreate(
+        title=case.title,
+        description=description,
+        status=IncidentStatus.active,
+        incident_type=case.case_type.incident_type,
+        incident_priority=case.case_priority,
+        project=case.case_type.incident_type.project,
+        reporter=reporter,
+    )
+    incident_service.create(db_session=db_session, incident_in=incident_in)
 
     case_to_incident_escalate_flow(
         case=case, organization_slug=organization_slug, db_session=db_session
