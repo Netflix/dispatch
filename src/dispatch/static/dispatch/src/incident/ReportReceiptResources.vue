@@ -6,7 +6,6 @@
           <v-list-item two-line>
             <v-list-item-content>
               <v-list-item-title class="text-h5"> Incident Details </v-list-item-title>
-              <v-list-item-subtitle>{{ reported_at | formatRelativeDate }}</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
           <v-card-text>

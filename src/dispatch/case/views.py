@@ -196,13 +196,12 @@ def escalate_case(
 
     # allow for default values
     if not incident_in.incident_type:
-        incident_in.incident_type = {"name": current_case.case_type.incident_type.name}
-
-    if not incident_in.incident_priority:
-        incident_in.incident_priority = {"name": current_case.case_priority.name}
+        if current_case.case_type.incident_type:
+            incident_in.incident_type = {"name": current_case.case_type.incident_type.name}
 
     if not incident_in.project:
-        incident_in.project = {"name": current_case.case_type.incident_type.project.name}
+        if current_case.case_type.incident_type:
+            incident_in.project = {"name": current_case.case_type.incident_type.project.name}
 
     incident = incident_service.create(db_session=db_session, incident_in=incident_in)
     background_tasks.add_task(

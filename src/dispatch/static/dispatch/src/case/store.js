@@ -183,14 +183,6 @@ const actions = {
     commit("RESET_SELECTED")
     commit("incident/RESET_SELECTED", null, { root: true })
   },
-  // showReportDialog({ commit }, value) {
-  //   commit("SET_DIALOG_REPORT", true)
-  //   commit("SET_SELECTED", value)
-  // },
-  // closeReportDialog({ commit }) {
-  //   commit("SET_DIALOG_REPORT", false)
-  //   commit("RESET_SELECTED")
-  // },
   showExport({ commit }) {
     commit("SET_DIALOG_SHOW_EXPORT", true)
   },
@@ -341,9 +333,6 @@ const mutations = {
   },
   SET_DIALOG_ESCALATE(state, value) {
     state.dialogs.showEscalateDialog = value
-  },
-  SET_DIALOG_REPORT(state, value) {
-    state.dialogs.showReportDialog = value
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())
