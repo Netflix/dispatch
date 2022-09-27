@@ -5,7 +5,7 @@
         <v-card outlined elevation="0">
           <v-list-item two-line>
             <v-list-item-content>
-              <v-list-item-title class="text-h5"> Incident Details </v-list-item-title>
+              <v-list-item-title class="text-h6"> Incident Details </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
           <v-card-text>
@@ -72,23 +72,20 @@
           <span v-for="pluginInstance in activeResourcePlugins" :key="pluginInstance.id">
             <span v-if="pluginInstance.plugin.type === 'document'">
               <span v-if="resourceData('documents').length">
-                <v-list-item
-                  v-for="document in resourceData('documents')"
-                  :key="document.resource_id"
-                  :href="document.weblink"
-                  target="_blank"
-                >
-                  <v-list-item-content>
-                    <v-list-item-title>{{ document.resource_type | deslug }}</v-list-item-title>
-                    <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
-                  </v-list-item-content>
-                  <v-list-item-action>
-                    <v-list-item-icon>
-                      <v-icon>open_in_new</v-icon>
-                    </v-list-item-icon>
-                  </v-list-item-action>
-                </v-list-item>
-                <v-divider />
+                <span v-for="document in resourceData('documents')" :key="document.resource_id">
+                  <v-list-item :href="document.weblink" target="_blank">
+                    <v-list-item-content>
+                      <v-list-item-title>{{ document.resource_type | deslug }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ document.description }}</v-list-item-subtitle>
+                    </v-list-item-content>
+                    <v-list-item-action>
+                      <v-list-item-icon>
+                        <v-icon>open_in_new</v-icon>
+                      </v-list-item-icon>
+                    </v-list-item-action>
+                  </v-list-item>
+                  <v-divider />
+                </span>
               </span>
               <span v-else>
                 <v-list-item>
