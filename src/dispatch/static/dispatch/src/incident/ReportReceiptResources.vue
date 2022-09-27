@@ -29,7 +29,7 @@
               </v-list-item-subtitle>
             </v-list-item>
             <v-list-item>
-              <v-list-item-title>Visability</v-list-item-title>
+              <v-list-item-title>Visibility</v-list-item-title>
               <v-list-item-subtitle class="text-right"> {{ visibility }} </v-list-item-subtitle>
             </v-list-item>
           </v-list>
