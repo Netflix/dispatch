@@ -107,7 +107,7 @@
                     pluginInstance.plugin.type | capitalize
                   }}</v-list-item-title>
                   <v-list-item-subtitle>{{
-                    pluginInstance.plugin.description
+                    resourceData(pluginInstance.plugin.type).description
                   }}</v-list-item-subtitle>
                 </v-list-item-content>
                 <v-list-item-action>
