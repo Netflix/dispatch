@@ -242,7 +242,6 @@ def case_escalated_status_flow(case: Case, organization_slug: OrganizationSlug, 
     case.escalated_at = datetime.utcnow()
     db_session.add(case)
     db_session.commit()
-    incident_service.create(db_session=db_session, incident_in=incident_in)
 
     case_to_incident_escalate_flow(
         case=case, organization_slug=organization_slug, db_session=db_session
