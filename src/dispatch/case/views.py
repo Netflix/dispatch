@@ -208,7 +208,7 @@ def escalate_case(
         case_to_incident_endpoint_escalate_flow,
         case_id=current_case.id,
         incident_id=incident.id,
-        db_session=db_session,
+        organization_slug=organization,
     )
 
     return incident
