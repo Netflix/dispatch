@@ -239,34 +239,9 @@ def case_triage_status_flow(case: Case, db_session=None):
 def case_escalated_status_flow(case: Case, organization_slug: OrganizationSlug, db_session=None):
     """Runs the case escalated transition flow."""
     # we set the escalated_at time
-    if case.incidents:
-        # we don't escalate the case if the case is already linked to incidents
-        return
-
-    if not case.case_type.incident_type:
-        # we don't escalate the case if its type is not mapped to an incident type
-        return
-
-    # we make the assignee of the case the reporter of the incident
-    reporter = ParticipantUpdate(individual=IndividualContactRead(email=case.assignee.email))
-
-    # we add information about the case in the incident's description
-    description = (
-        f"{case.description}\n\n"
-        f"This incident was the result of escalating case {case.name} "
-        f"in the {case.project.name} project. Check out the case in the Dispatch Web UI for additional context."
-    )
-
-    # we create the incident
-    incident_in = IncidentCreate(
-        title=case.title,
-        description=description,
-        status=IncidentStatus.active,
-        incident_type=case.case_type.incident_type,
-        incident_priority=case.case_priority,
-        project=case.case_type.incident_type.project,
-        reporter=reporter,
-    )
+    case.escalated_at = datetime.utcnow()
+    db_session.add(case)
+    db_session.commit()
     incident_service.create(db_session=db_session, incident_in=incident_in)
 
     case_to_incident_escalate_flow(
@@ -412,8 +387,12 @@ def case_to_incident_escalate_flow(
     )
 
 
+@background_task
 def case_to_incident_endpoint_escalate_flow(
-    case_id: PrimaryKey, incident_id: PrimaryKey, organization_slug: OrganizationSlug, db_session=None
+    case_id: PrimaryKey,
+    incident_id: PrimaryKey,
+    organization_slug: OrganizationSlug,
+    db_session=None,
 ):
     """Allows for a case to be escalated to an incident while modifying its properties."""
     case = get(case_id=case_id, db_session=db_session)
@@ -449,4 +428,3 @@ def case_to_incident_endpoint_escalate_flow(
         description=f"The members of the incident's tactical group {incident.tactical_group.email} have been given permission to access the case's storage folder",
         case_id=case.id,
     )
-    return incident
