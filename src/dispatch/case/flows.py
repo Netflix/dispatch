@@ -395,7 +395,9 @@ def case_to_incident_endpoint_escalate_flow(
 ):
     """Allows for a case to be escalated to an incident while modifying its properties."""
     case = get(case_id=case_id, db_session=db_session)
-    incident = incident_flows.incident_create_flow(incident_id=incident_id, db_session=db_session)
+    incident = incident_flows.incident_create_flow(
+        incident_id=incident_id, organization_slug=organization_slug, db_session=db_session
+    )
 
     case.escalated_at = datetime.utcnow()
     case.status = CaseStatus.escalated
