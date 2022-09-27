@@ -32,7 +32,7 @@ from .flows import (
     case_closed_create_flow,
     case_delete_flow,
     case_escalated_create_flow,
-    case_escalate_flow,
+    case_to_incident_endpoint_escalate_flow,
     case_new_create_flow,
     case_triage_create_flow,
     case_update_flow,
@@ -205,7 +205,10 @@ def escalate_case(
 
     incident = incident_service.create(db_session=db_session, incident_in=incident_in)
     background_tasks.add_task(
-        case_escalate_flow, case_id=current_case.id, incident_id=incident.id, db_session=db_session
+        case_to_incident_endpoint_escalate_flow,
+        case_id=current_case.id,
+        incident_id=incident.id,
+        db_session=db_session,
     )
 
     return incident

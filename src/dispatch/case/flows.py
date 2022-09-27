@@ -412,7 +412,9 @@ def case_to_incident_escalate_flow(
     )
 
 
-def case_escalate_flow(case_id: PrimaryKey, incident_id: PrimaryKey, db_session: SessionLocal):
+def case_to_incident_endpoint_escalate_flow(
+    case_id: PrimaryKey, incident_id: PrimaryKey, db_session: SessionLocal
+):
     """Allows for a case to be escalated to an incident while modifying its properties."""
     case = get(case_id=case_id, db_session=db_session)
     incident = incident_flows.incident_create_flow(incident_id=incident_id, db_session=db_session)
