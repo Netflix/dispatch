@@ -30,6 +30,7 @@
         <v-tab key="details"> Details </v-tab>
         <v-tab key="resources"> Resources </v-tab>
         <v-tab key="timeline"> Timeline </v-tab>
+        <v-tab key="workflows"> Workflows </v-tab>
       </v-tabs>
       <v-tabs-items v-model="tab">
         <v-tab-item key="details">
@@ -40,6 +41,9 @@
         </v-tab-item>
         <v-tab-item key="timeline">
           <case-timeline-tab />
+        </v-tab-item>
+        <v-tab-item key="workflow_instances">
+          <case-workflow-instance-tab />
         </v-tab-item>
       </v-tabs-items>
     </v-navigation-drawer>
@@ -54,6 +58,7 @@ import { ValidationObserver } from "vee-validate"
 import CaseDetailsTab from "@/case/DetailsTab.vue"
 import CaseResourcesTab from "@/case/ResourcesTab.vue"
 import CaseTimelineTab from "@/case/TimelineTab.vue"
+import IncidentWorkflowInstanceTab from "@/case/WorkflowInstanceTab.vue"
 
 export default {
   name: "CaseEditSheet",
@@ -62,6 +67,7 @@ export default {
     CaseDetailsTab,
     CaseResourcesTab,
     CaseTimelineTab,
+    CaseWorkflowInstanceTab,
     ValidationObserver,
   },
 
