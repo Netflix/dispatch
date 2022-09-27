@@ -81,7 +81,7 @@
                 </template>
                 <v-list>
                   <v-list-item @click="showEscalateDialog(item)">
-                    <v-list-item-title>Escalate as Incident</v-list-item-title>
+                    <v-list-item-title>Escalate</v-list-item-title>
                   </v-list-item>
                   <v-list-item
                     :to="{
