@@ -88,8 +88,8 @@
                   >
                     <v-list-item-title>View / Edit</v-list-item-title>
                   </v-list-item>
-                  <v-list-item @click="showRun(item)">
-                    <v-list-item-title>Run Workflow</v-list-item-title>
+                  <v-list-item @click="showRun({ type: 'case', data: item })">
+                    <v-list-item-title>Run Workflow {{ item }}</v-list-item-title>
                   </v-list-item>
                   <v-list-item @click="showDeleteDialog(item)">
                     <v-list-item-title>Delete</v-list-item-title>

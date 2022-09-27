@@ -54,6 +54,8 @@ export default {
     ...mapFields("workflow", [
       "dialogs.showRun",
       "selected",
+      "selectedInstance.case",
+      "selectedInstance.incident",
       "selectedInstance.id",
       "selectedInstance.loading",
       "selectedInstance.workflow",

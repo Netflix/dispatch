@@ -15,6 +15,8 @@ const getDefaultSelectedState = () => {
     name: null,
     id: null,
     loading: false,
+    case: null,
+    incident: null,
   }
 }
 
@@ -84,8 +86,14 @@ const actions = {
     }
     commit("SET_DIALOG_CREATE_EDIT", true)
   },
-  showRun({ commit }) {
+  showRun({ commit }, payload) {
     commit("SET_DIALOG_RUN", true)
+    console.log(payload)
+    if (payload.type === "incident") {
+      commit("SET_SELECTED_INSTANCE_INCIDENT", payload.data)
+    } else if (payload.type === "case") {
+      commit("SET_SELECTED_INSTANCE_CASE", payload.data)
+    }
   },
   removeShow({ commit }, workflow) {
     commit("SET_DIALOG_DELETE", true)
@@ -103,13 +111,14 @@ const actions = {
     commit("SET_DIALOG_RUN", false)
     commit("RESET_SELECTED_INSTANCE")
   },
-  run({ commit }, subject) {
-    let payload = { ...state.selectedInstance, ...subject }
+  run({ commit }) {
+    let payload = { ...state.selectedInstance }
     commit("SET_SELECTED_INSTANCE_LOADING", true)
     return WorkflowApi.run(state.selectedInstance.workflow.id, payload)
-      .then(() => {
+      .then((response) => {
         commit("SET_SELECTED_INSTANCE_LOADING", false)
         commit("RESET_SELECTED_INSTANCE")
+        return response.data
       })
       .catch(() => {
         commit("SET_SELECTED_INSTANCE_LOADING", false)
@@ -191,6 +200,12 @@ const mutations = {
   },
   SET_DIALOG_RUN(state, value) {
     state.dialogs.showRun = value
+  },
+  SET_SELECTED_INSTANCE_CASE(state, value) {
+    state.selectedInstance.case = value
+  },
+  SET_SELECTED_INSTANCE_INCIDENT(state, value) {
+    state.selectedInstance.incident = value
   },
   RESET_SELECTED_INSTANCE(state) {
     // do not reset project

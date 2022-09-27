@@ -7,7 +7,7 @@
       <new-sheet />
       <delete-dialog />
       <report-dialog />
-      <workflow-run-modal />
+      <workflow-run-modal v-model="selected" />
       <v-col>
         <div class="headline">Incidents</div>
       </v-col>
@@ -92,7 +92,7 @@
                   >
                     <v-list-item-title>View / Edit</v-list-item-title>
                   </v-list-item>
-                  <v-list-item @click="showRun(item)">
+                  <v-list-item @click="showRun('incident', item)">
                     <v-list-item-title>Run Workflow</v-list-item-title>
                   </v-list-item>
                   <v-list-item @click="showReportDialog(item)" :disabled="item.status == 'Closed'">

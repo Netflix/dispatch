@@ -43,7 +43,7 @@
           <case-timeline-tab />
         </v-tab-item>
         <v-tab-item key="workflow_instances">
-          <case-workflow-instance-tab />
+          <workflow-instance-tab v-model="workflows" />
         </v-tab-item>
       </v-tabs-items>
     </v-navigation-drawer>
@@ -58,7 +58,7 @@ import { ValidationObserver } from "vee-validate"
 import CaseDetailsTab from "@/case/DetailsTab.vue"
 import CaseResourcesTab from "@/case/ResourcesTab.vue"
 import CaseTimelineTab from "@/case/TimelineTab.vue"
-import IncidentWorkflowInstanceTab from "@/case/WorkflowInstanceTab.vue"
+import WorkflowInstanceTab from "@/workflow/WorkflowInstanceTab.vue"
 
 export default {
   name: "CaseEditSheet",
@@ -67,7 +67,7 @@ export default {
     CaseDetailsTab,
     CaseResourcesTab,
     CaseTimelineTab,
-    CaseWorkflowInstanceTab,
+    WorkflowInstanceTab,
     ValidationObserver,
   },
 
@@ -84,6 +84,7 @@ export default {
       "selected.project",
       "selected.reported_at",
       "selected.loading",
+      "selected.workflows",
       "dialogs.showEditSheet",
     ]),
   },
