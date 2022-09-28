@@ -186,7 +186,6 @@ export default {
       "selected",
       "selected.incident_priority",
       "selected.incident_type",
-      "selected.reported_at",
       "selected.commander",
       "selected.participants",
       "selected.title",
