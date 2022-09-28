@@ -23,6 +23,13 @@
         />
       </v-list-item-content>
     </template>
+    <template v-slot:append-item>
+      <v-list-item v-if="more" @click="loadMore()">
+        <v-list-item-content>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
   </v-select>
 </template>
 
@@ -58,6 +65,8 @@ export default {
     return {
       loading: false,
       items: [],
+      more: false,
+      numItems: 5,
     }
   },
 
@@ -73,14 +82,18 @@ export default {
   },
 
   methods: {
+    loadMore() {
+      this.numItems = this.numItems + 5
+      this.fetchData()
+    },
     fetchData() {
       this.error = null
       this.loading = "error"
 
       let filterOptions = {
-        itemsPerPage: 50,
-        sortBy: ["name"],
+        sortBy: ["project.name"],
         descending: [false],
+        itemsPerPage: this.numItems,
       }
 
       if (this.project) {
@@ -90,6 +103,7 @@ export default {
             project: [this.project],
           },
         }
+        filterOptions.sortBy = ["name"]
       }
 
       let enabledFilter = [
@@ -108,6 +122,15 @@ export default {
 
       IncidentTypeApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
+        this.total = response.data.total
+        this.loading = false
+
+        if (this.items.length < this.total) {
+          this.more = true
+        } else {
+          this.more = false
+        }
+
         this.loading = false
       })
     },

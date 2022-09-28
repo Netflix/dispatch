@@ -58,6 +58,7 @@ import CaseTypeApi from "@/case/type/api"
 
 export default {
   name: "CaseTypeComboBox",
+
   props: {
     value: {
       type: Array,
@@ -113,6 +114,7 @@ export default {
     fetchData() {
       this.error = null
       this.loading = "error"
+
       let filterOptions = {
         q: this.search,
         sortBy: ["name"],
