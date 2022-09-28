@@ -87,7 +87,7 @@ class Source(Base, TimeStampMixin, ProjectMixin):
     tags = relationship("Tag", secondary=assoc_source_tags, backref="sources")
     alerts = relationship("Alert", backref="source", cascade="all, delete-orphan")
 
-    search_vector = Column(TSVectorType("name"))
+    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
 class QueryReadNested(DispatchBase):

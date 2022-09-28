@@ -21,7 +21,12 @@ class Term(Base, ProjectMixin):
     id = Column(Integer, primary_key=True)
     text = Column(String)
     discoverable = Column(Boolean, default=True)
-    search_vector = Column(TSVectorType("text"))
+    search_vector = Column(
+        TSVectorType(
+            "text",
+            regconfig="pg_catalog.simple",
+        )
+    )
 
 
 # Pydantic models...

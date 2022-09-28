@@ -15,7 +15,7 @@ class Alert(Base, TimeStampMixin):
     orginator = Column(String)
     external_link = Column(String)
     source_id = Column(Integer, ForeignKey("source.id"))
-    search_vector = Column(TSVectorType("name"))
+    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
 # Pydantic models

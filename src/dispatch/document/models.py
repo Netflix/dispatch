@@ -40,7 +40,7 @@ class Document(ProjectMixin, ResourceMixin, EvergreenMixin, Base):
 
     filters = relationship("SearchFilter", secondary=assoc_document_filters, backref="documents")
 
-    search_vector = Column(TSVectorType("name"))
+    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
 # Pydantic models...
