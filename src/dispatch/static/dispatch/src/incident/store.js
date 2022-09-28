@@ -129,9 +129,12 @@ const actions = {
       })
   }, 500),
   get({ commit, state }) {
-    return IncidentApi.get(state.selected.id).then((response) => {
-      commit("SET_SELECTED", response.data)
-    })
+    // noop if no selected id available
+    if (state.selected.id) {
+      return IncidentApi.get(state.selected.id).then((response) => {
+        commit("SET_SELECTED", response.data)
+      })
+    }
   },
   getDetails({ commit, state }, payload) {
     commit("SET_SELECTED_LOADING", true)

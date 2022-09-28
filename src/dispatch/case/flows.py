@@ -15,7 +15,7 @@ from dispatch.incident import service as incident_service
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentCreate
 from dispatch.individual.models import IndividualContactRead
-from dispatch.models import OrganizationSlug
+from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.participant.models import ParticipantUpdate
 from dispatch.storage import flows as storage_flows
 from dispatch.storage.enums import StorageAction
@@ -360,6 +360,51 @@ def case_to_incident_escalate_flow(
     incident_flows.incident_create_flow(
         incident_id=incident.id, organization_slug=organization_slug, db_session=db_session
     )
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description=f"The case has been linked to incident {incident.name} in the {incident.project.name} project",
+        case_id=case.id,
+    )
+
+    # we add the incident's tactical group to the case's storage folder
+    # to allow incident participants to access the case's artifacts in the folder
+    storage_members = [incident.tactical_group.email]
+    storage_flows.update_storage(
+        obj=case,
+        storage_action=StorageAction.add_members,
+        storage_members=storage_members,
+        db_session=db_session,
+    )
+
+    event_service.log_case_event(
+        db_session=db_session,
+        source="Dispatch Core App",
+        description=f"The members of the incident's tactical group {incident.tactical_group.email} have been given permission to access the case's storage folder",
+        case_id=case.id,
+    )
+
+
+@background_task
+def case_to_incident_endpoint_escalate_flow(
+    case_id: PrimaryKey,
+    incident_id: PrimaryKey,
+    organization_slug: OrganizationSlug,
+    db_session=None,
+):
+    """Allows for a case to be escalated to an incident while modifying its properties."""
+    case = get(case_id=case_id, db_session=db_session)
+    incident = incident_flows.incident_create_flow(
+        incident_id=incident_id, organization_slug=organization_slug, db_session=db_session
+    )
+
+    case.escalated_at = datetime.utcnow()
+    case.status = CaseStatus.escalated
+    case.incidents.append(incident)
+
+    db_session.add(case)
+    db_session.commit()
 
     event_service.log_case_event(
         db_session=db_session,

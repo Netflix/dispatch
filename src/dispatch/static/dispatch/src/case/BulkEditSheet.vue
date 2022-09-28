@@ -19,12 +19,12 @@
               Mark Triage
             </v-btn>
           </v-list-item-icon>
-          <v-list-item-icon>
+          <!--<v-list-item-icon>
             <v-btn text @click="saveBulk({ status: 'Escalated' })">
               <v-icon>mdi-swap-horizontal</v-icon>
               Mark Escalated
             </v-btn>
-          </v-list-item-icon>
+          </v-list-item-icon>-->
           <v-list-item-icon>
             <v-btn text @click="saveBulk({ status: 'Closed' })">
               <v-icon>mdi-close</v-icon>
