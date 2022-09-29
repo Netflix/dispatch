@@ -25,7 +25,13 @@ class CaseSeverity(Base, ProjectMixin):
     # Lower numbers will be shown first.
     view_order = Column(Integer, default=9999)
 
-    search_vector = Column(TSVectorType("name", "description"))
+    search_vector = Column(
+        TSVectorType(
+            "name",
+            "description",
+            regconfig="pg_catalog.simple",
+        )
+    )
 
 
 listen(CaseSeverity.default, "set", ensure_unique_default_per_project)

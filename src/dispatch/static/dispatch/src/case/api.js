@@ -21,6 +21,10 @@ export default {
     return API.put(`/${resource}/${caseId}`, payload)
   },
 
+  escalate(caseId, payload) {
+    return API.put(`/${resource}/${caseId}/escalate`, payload)
+  },
+
   bulkUpdate(cases, payload) {
     return Promise.all(
       cases.map((case_obj) => {

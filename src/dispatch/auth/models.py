@@ -57,7 +57,9 @@ class DispatchUser(Base, TimeStampMixin):
     # relationships
     events = relationship("Event", backref="dispatch_user")
 
-    search_vector = Column(TSVectorType("email", weights={"email": "A"}))
+    search_vector = Column(
+        TSVectorType("email", regconfig="pg_catalog.simple", weights={"email": "A"})
+    )
 
     def check_password(self, password):
         return bcrypt.checkpw(password.encode("utf-8"), self.password)

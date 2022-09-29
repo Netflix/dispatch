@@ -50,6 +50,7 @@ const state = {
     showEditSheet: false,
     showExport: false,
     showNewSheet: false,
+    showEscalateDialog: false,
   },
   report: {
     ...getDefaultReportState(),
@@ -173,11 +174,37 @@ const actions = {
     commit("SET_DIALOG_DELETE", false)
     commit("RESET_SELECTED")
   },
+  showEscalateDialog({ commit }, value) {
+    commit("SET_DIALOG_ESCALATE", true)
+    commit("SET_SELECTED", value)
+  },
+  closeEscalateDialog({ commit }) {
+    commit("SET_DIALOG_ESCALATE", false)
+    commit("RESET_SELECTED")
+    commit("incident/RESET_SELECTED", null, { root: true })
+  },
   showExport({ commit }) {
     commit("SET_DIALOG_SHOW_EXPORT", true)
   },
   closeExport({ commit }) {
     commit("SET_DIALOG_SHOW_EXPORT", false)
+  },
+  escalate({ commit, dispatch }, payload) {
+    commit("SET_SELECTED_LOADING", true)
+    return CaseApi.escalate(state.selected.id, payload).then((response) => {
+      commit("incident/SET_SELECTED", response.data, { root: true })
+      commit("SET_SELECTED_LOADING", false)
+      this.interval = setInterval(function () {
+        if (state.selected.id) {
+          dispatch("incident/get", response.data.id, { root: true })
+        }
+
+        // TODO this is fragile but we don't set anything as "created"
+        if (state.selected.conversation) {
+          clearInterval(this.interval)
+        }
+      }, 5000)
+    })
   },
   report({ commit, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
@@ -304,8 +331,8 @@ const mutations = {
   SET_DIALOG_DELETE(state, value) {
     state.dialogs.showDeleteDialog = value
   },
-  SET_DIALOG_REPORT(state, value) {
-    state.dialogs.showReportDialog = value
+  SET_DIALOG_ESCALATE(state, value) {
+    state.dialogs.showEscalateDialog = value
   },
   RESET_SELECTED(state) {
     state.selected = Object.assign(state.selected, getDefaultSelectedState())

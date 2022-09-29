@@ -23,11 +23,16 @@ from dispatch.common.utils.views import create_pydantic_include
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.models import OrganizationSlug, PrimaryKey
+from dispatch.incident.models import IncidentCreate, IncidentRead
+from dispatch.incident import service as incident_service
+from dispatch.participant.models import ParticipantUpdate
+from dispatch.individual.models import IndividualContactRead
 
 from .flows import (
     case_closed_create_flow,
     case_delete_flow,
     case_escalated_create_flow,
+    case_to_incident_endpoint_escalate_flow,
     case_new_create_flow,
     case_triage_create_flow,
     case_update_flow,
@@ -165,6 +170,48 @@ def update_case(
     )
 
     return case
+
+
+@router.put(
+    "/{case_id}/escalate",
+    response_model=IncidentRead,
+    summary="Escalates an existing case.",
+    # dependencies=[Depends(PermissionsDependency([CaseEditPermission]))],
+)
+def escalate_case(
+    *,
+    db_session: Session = Depends(get_db),
+    current_case: Case = Depends(get_current_case),
+    organization: OrganizationSlug,
+    incident_in: IncidentCreate,
+    current_user: DispatchUser = Depends(auth_service.get_current_user),
+    background_tasks: BackgroundTasks,
+):
+    """Escalates an existing case."""
+    # current user is better than assignee (although likely the same)
+    if not incident_in.reporter:
+        incident_in.reporter = ParticipantUpdate(
+            individual=IndividualContactRead(email=current_user.email)
+        )
+
+    # allow for default values
+    if not incident_in.incident_type:
+        if current_case.case_type.incident_type:
+            incident_in.incident_type = {"name": current_case.case_type.incident_type.name}
+
+    if not incident_in.project:
+        if current_case.case_type.incident_type:
+            incident_in.project = {"name": current_case.case_type.incident_type.project.name}
+
+    incident = incident_service.create(db_session=db_session, incident_in=incident_in)
+    background_tasks.add_task(
+        case_to_incident_endpoint_escalate_flow,
+        case_id=current_case.id,
+        incident_id=incident.id,
+        organization_slug=organization,
+    )
+
+    return incident
 
 
 @router.delete(

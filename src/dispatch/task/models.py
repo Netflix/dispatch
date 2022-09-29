@@ -77,7 +77,12 @@ class Task(Base, ResourceMixin):
     # relationships
     tickets = relationship("Ticket", secondary=assoc_task_tickets, backref="tasks")
 
-    search_vector = Column(TSVectorType("description"))
+    search_vector = Column(
+        TSVectorType(
+            "description",
+            regconfig="pg_catalog.simple",
+        )
+    )
 
     @hybrid_property
     def project(self):
