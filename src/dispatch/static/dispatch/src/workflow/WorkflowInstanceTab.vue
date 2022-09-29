@@ -21,7 +21,7 @@
                 </v-list-item-icon>
               </v-list-item>
 
-              <v-list-item :href="instance.creator.individual.weblink">
+              <v-list-item v-if="instance.creator" :href="instance.creator.individual.weblink">
                 <v-list-item-content>
                   <v-list-item-title>{{ instance.creator.individual.name }}</v-list-item-title>
                   <v-list-item-subtitle>Creator</v-list-item-subtitle>

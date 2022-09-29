@@ -20,7 +20,7 @@
       <v-card-actions>
         <v-spacer />
         <v-btn color="blue en-1" text @click="closeRun()"> Cancel </v-btn>
-        <v-btn color="red en-1" text :loading="loading" @click="run(value)"> Run </v-btn>
+        <v-btn color="red en-1" text :loading="loading" @click="run()"> Run </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

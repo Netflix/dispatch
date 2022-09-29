@@ -43,7 +43,7 @@
           <case-timeline-tab />
         </v-tab-item>
         <v-tab-item key="workflow_instances">
-          <workflow-instance-tab v-model="workflows" />
+          <workflow-instance-tab v-model="workflow_instances" />
         </v-tab-item>
       </v-tabs-items>
     </v-navigation-drawer>
@@ -84,7 +84,7 @@ export default {
       "selected.project",
       "selected.reported_at",
       "selected.loading",
-      "selected.workflows",
+      "selected.workflow_instances",
       "dialogs.showEditSheet",
     ]),
   },

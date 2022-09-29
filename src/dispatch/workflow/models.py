@@ -157,6 +157,8 @@ class WorkflowInstanceBase(ResourceBase):
     run_reason: Optional[str] = Field(None, nullable=True)
     status: Optional[WorkflowInstanceStatus]
     updated_at: Optional[datetime] = None
+    incident: Optional[WorkflowIncident]
+    case: Optional[WorkflowCase]
 
 
 class WorkflowInstanceCreate(WorkflowInstanceBase):

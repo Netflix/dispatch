@@ -32,7 +32,7 @@ const getDefaultSelectedState = () => {
     title: null,
     triage_at: null,
     visibility: null,
-    // workflow_instances: null,
+    workflow_instances: null,
     loading: false,
   }
 }

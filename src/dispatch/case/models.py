@@ -32,6 +32,7 @@ from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.storage.models import StorageRead
 from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
+from dispatch.workflow.models import WorkflowInstanceRead
 
 from .enums import CaseStatus
 
@@ -191,6 +192,7 @@ class CaseRead(CaseBase):
     tags: Optional[List[TagRead]] = []
     ticket: Optional[TicketRead] = None
     triage_at: Optional[datetime] = None
+    workflow_instances: Optional[List[WorkflowInstanceRead]] = []
 
 
 class CaseUpdate(CaseBase):
