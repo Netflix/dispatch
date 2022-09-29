@@ -51,7 +51,13 @@ class Notification(Base, TimeStampMixin, ProjectMixin, EvergreenMixin):
         "SearchFilter", secondary=assoc_notification_filters, backref="notifications"
     )
 
-    search_vector = Column(TSVectorType("name", "description"))
+    search_vector = Column(
+        TSVectorType(
+            "name",
+            "description",
+            regconfig="pg_catalog.simple",
+        )
+    )
 
 
 # Pydantic models

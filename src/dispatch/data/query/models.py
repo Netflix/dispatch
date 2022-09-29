@@ -39,7 +39,7 @@ class Query(Base, TimeStampMixin, ProjectMixin):
     source_id = Column(Integer, ForeignKey("source.id"))
     source = relationship("Source", backref="queries")
     tags = relationship("Tag", secondary=assoc_query_tags, backref="queries")
-    search_vector = Column(TSVectorType("name"))
+    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
 # Pydantic models

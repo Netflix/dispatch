@@ -17,7 +17,7 @@ class TagType(Base, TimeStampMixin, ProjectMixin):
     name = Column(String)
     description = Column(String)
     exclusive = Column(Boolean, default=False)
-    search_vector = Column(TSVectorType("name"))
+    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
 # Pydantic models

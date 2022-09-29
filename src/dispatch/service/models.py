@@ -49,7 +49,7 @@ class Service(Base, TimeStampMixin, ProjectMixin, EvergreenMixin):
         "Incident", secondary=assoc_service_incidents, backref="services"
     )  # NOTE Delete this relationship and its associated table. It doesn't appear we're using it.
 
-    search_vector = Column(TSVectorType("name"))
+    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
 # Pydantic models...
