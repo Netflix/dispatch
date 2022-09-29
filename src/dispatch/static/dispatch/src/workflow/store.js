@@ -88,7 +88,6 @@ const actions = {
   },
   showRun({ commit }, payload) {
     commit("SET_DIALOG_RUN", true)
-    console.log(payload)
     if (payload.type === "incident") {
       commit("SET_SELECTED_INSTANCE_INCIDENT", payload.data)
     } else if (payload.type === "case") {
@@ -117,7 +116,20 @@ const actions = {
     return WorkflowApi.run(state.selectedInstance.workflow.id, payload)
       .then((response) => {
         commit("SET_SELECTED_INSTANCE_LOADING", false)
-        commit("RESET_SELECTED_INSTANCE")
+        commit("SET_SELECTED_INSTANCE", response.data)
+        this.interval = setInterval(function () {
+          if (!state.selectedInstance.id) {
+            clearInterval(this.interval)
+          }
+          WorkflowApi.getInstance(state.selectedInstance.id).then((response) => {
+            commit("SET_SELECTED_INSTANCE", response.data)
+          })
+
+          // TODO this is fragile but we don't set anything as "created"
+          if (state.selectedInstance.status == "Completed") {
+            clearInterval(this.interval)
+          }
+        }, 5000)
         return response.data
       })
       .catch(() => {

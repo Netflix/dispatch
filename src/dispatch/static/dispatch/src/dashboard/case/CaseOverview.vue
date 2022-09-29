@@ -212,7 +212,6 @@ export default {
     totalCasesEscalated() {
       return sumBy(this.items, function (item) {
         if (item.escalated_at && item.incidents.length > 0) {
-          console.log(item)
           return 1
         }
       })

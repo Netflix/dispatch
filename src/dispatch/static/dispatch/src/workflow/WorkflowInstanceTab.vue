@@ -1,68 +1,27 @@
 <template>
-  <div>
-    <div v-if="value && value.length">
-      <span v-for="instance in value" :key="instance.id">
-        <v-card>
-          <div>
-            <v-card-title class="headline">
-              {{ instance.workflow.name }}
-            </v-card-title>
-            <v-card-subtitle>{{ instance.workflow.description }}</v-card-subtitle>
-            <v-list subheader>
-              <v-subheader>Details</v-subheader>
-              <v-list-item :href="instance.weblink">
-                <v-list-item-content>
-                  <v-list-item-title>{{ instance.status | capitalize }}</v-list-item-title>
-                  <v-list-item-subtitle>Status</v-list-item-subtitle>
-                </v-list-item-content>
-
-                <v-list-item-icon>
-                  <v-icon>open_in_new</v-icon>
-                </v-list-item-icon>
-              </v-list-item>
-
-              <v-list-item v-if="instance.creator" :href="instance.creator.individual.weblink">
-                <v-list-item-content>
-                  <v-list-item-title>{{ instance.creator.individual.name }}</v-list-item-title>
-                  <v-list-item-subtitle>Creator</v-list-item-subtitle>
-                </v-list-item-content>
-
-                <v-list-item-icon>
-                  <v-icon>open_in_new</v-icon>
-                </v-list-item-icon>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-content>
-                  <code>{{ instance.parameters }}</code>
-                  <v-list-item-subtitle>Parameters</v-list-item-subtitle>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
-            <v-list subheader>
-              <v-subheader>Artifacts</v-subheader>
-              <span v-for="artifact in instance.artifacts" :key="artifact.id">
-                <v-list-item :href="artifact.weblink">
-                  <v-list-item-content>
-                    <v-list-item-title>{{ artifact.name }}</v-list-item-title>
-                    <v-list-item-subtitle>Name</v-list-item-subtitle>
-                  </v-list-item-content>
-                  <v-list-item-icon>
-                    <v-icon>open_in_new</v-icon>
-                  </v-list-item-icon>
-                </v-list-item>
-              </span>
-            </v-list>
-          </div>
-        </v-card>
-      </span>
-    </div>
-    <div v-else>
-      <p class="text-center">No workflow data available.</p>
-    </div>
-  </div>
+  <v-data-table
+    :headers="headers"
+    :items="value"
+    :items-per-page="-1"
+    disabled-pagination
+    hide-default-footer
+  >
+    <template v-slot:item.parameters="{ item }">
+      <workflow-instance-detail-menu :value="item" />
+    </template>
+    <template v-slot:item.created_at="{ item }">
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
+        </template>
+        <span>{{ item.created_at | formatDate }}</span>
+      </v-tooltip>
+    </template>
+  </v-data-table>
 </template>
 
 <script>
+import WorkflowInstanceDetailMenu from "@/workflow/WorkflowInstanceDetailMenu.vue"
 export default {
   name: "WorkflowInstanceTab",
   props: {
@@ -72,6 +31,22 @@ export default {
         return []
       },
     },
+  },
+  components: {
+    WorkflowInstanceDetailMenu,
+  },
+  data() {
+    return {
+      menu: false,
+      headers: [
+        { text: "Name", value: "workflow.name" },
+        { text: "Status", value: "status" },
+        { text: "Creator", value: "creator" },
+        { text: "Run Reason", value: "run_reason" },
+        { text: "Created At", value: "created_at" },
+        { text: "", value: "parameters" },
+      ],
+    }
   },
 }
 </script>

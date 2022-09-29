@@ -11,6 +11,10 @@ export default {
     return API.get(`${resource}/${workflowId}`)
   },
 
+  getInstance(workflowInstanceId) {
+    return API.get(`${resource}/instances/${workflowInstanceId}`)
+  },
+
   create(payload) {
     return API.post(`${resource}`, payload)
   },

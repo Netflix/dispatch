@@ -16,7 +16,7 @@ from .models import (
     WorkflowCreate,
     WorkflowUpdate,
 )
-from .service import create, delete, get, update, run
+from .service import create, delete, get, update, run, get_instance
 
 
 router = APIRouter()
@@ -38,6 +38,20 @@ def get_workflow(*, db_session: Session = Depends(get_db), workflow_id: PrimaryK
             detail=[{"msg": "A workflow with this id does not exist."}],
         )
     return workflow
+
+
+@router.get("/instances/{workflow_instance_id}", response_model=WorkflowInstanceRead)
+def get_workflow_instance(
+    *, db_session: Session = Depends(get_db), workflow_instance_id: PrimaryKey
+):
+    """Get a workflow instance."""
+    workflow_instance = get_instance(db_session=db_session, instance_id=workflow_instance_id)
+    if not workflow_instance:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A workflow instance with this id does not exist."}],
+        )
+    return workflow_instance
 
 
 @router.post("", response_model=WorkflowRead)

@@ -4,24 +4,49 @@
       <v-card-title>
         <span class="headline">Run Workflow</span>
       </v-card-title>
-      <v-card-text v-if="id"> </v-card-text>
-      <v-card-text v-else>
-        <workflow-select v-model="workflow" />
-        <span v-if="workflow.id">
-          <workflow-parameters-input v-model="parameters" />
-          <v-textarea
-            v-model="run_reason"
-            label="Run Reason"
-            hint="Short note about why workflow is being run."
-            clearable
-          />
-        </span>
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn color="blue en-1" text @click="closeRun()"> Cancel </v-btn>
-        <v-btn color="red en-1" text :loading="loading" @click="run()"> Run </v-btn>
-      </v-card-actions>
+      <span v-if="id">
+        <v-card-text>
+          <v-row dense>
+            <v-col cols="12">
+              <v-card outlined elevation="0">
+                <v-list-item two-line>
+                  <v-list-item-content>
+                    <v-list-item-title class="text-h6"> Workflow Details </v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-card-text>
+                  <v-row align="center">
+                    <v-col class="text-h5" cols="12"> {{ title }} </v-col>
+                  </v-row>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn color="blue en-1" text @click="closeRun()"> Close </v-btn>
+        </v-card-actions>
+      </span>
+      <span v-else>
+        <v-card-text>
+          <workflow-select v-model="workflow" />
+          <span v-if="workflow.id">
+            <workflow-parameters-input v-model="parameters" />
+            <v-textarea
+              v-model="run_reason"
+              label="Run Reason"
+              hint="Short note about why workflow is being run."
+              clearable
+            />
+          </span>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn color="blue en-1" text @click="closeRun()"> Cancel </v-btn>
+          <v-btn color="red en-1" text :loading="loading" @click="run()"> Run </v-btn>
+        </v-card-actions>
+      </span>
     </v-card>
   </v-dialog>
 </template>
