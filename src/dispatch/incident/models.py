@@ -115,8 +115,6 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
             return sorted(self.executive_reports, key=lambda r: r.created_at)[-1]
 
     # resources
-    case_id = Column(Integer, ForeignKey("case.id"))
-
     incident_costs = relationship(
         "IncidentCost",
         backref="incident",
@@ -216,6 +214,11 @@ class ProjectRead(DispatchBase):
     color: Optional[str]
 
 
+class CaseRead(DispatchBase):
+    id: PrimaryKey
+    name: Optional[NameStr]
+
+
 # Pydantic models...
 class IncidentBase(DispatchBase):
     title: str
@@ -261,6 +264,7 @@ class IncidentCreate(IncidentBase):
 
 
 class IncidentUpdate(IncidentBase):
+    cases: Optional[List[CaseRead]] = []
     commander: Optional[ParticipantUpdate]
     duplicates: Optional[List[IncidentReadNested]] = []
     incident_costs: Optional[List[IncidentCostUpdate]] = []
@@ -290,6 +294,7 @@ class IncidentUpdate(IncidentBase):
 
 class IncidentReadMinimal(IncidentBase):
     id: PrimaryKey
+    cases: Optional[List[CaseRead]]
     closed_at: Optional[datetime] = None
     commander: Optional[ParticipantRead]
     commanders_location: Optional[str]

@@ -7,6 +7,7 @@ import router from "@/router"
 
 const getDefaultSelectedState = () => {
   return {
+    cases: [],
     commander: null,
     conference: null,
     conversation: null,

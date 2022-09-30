@@ -10,9 +10,10 @@ from datetime import datetime, timedelta
 from typing import List, Optional
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
+from dispatch.case import service as case_service
 from dispatch.database.core import SessionLocal
-from dispatch.exceptions import NotFoundError
 from dispatch.event import service as event_service
+from dispatch.exceptions import NotFoundError
 from dispatch.incident_cost import service as incident_cost_service
 from dispatch.incident_priority import service as incident_priority_service
 from dispatch.incident_role.service import resolve_role
@@ -269,6 +270,10 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
         incident_priority_in=incident_in.incident_priority,
     )
 
+    cases = []
+    for c in incident_in.cases:
+        cases.append(case_service.get(db_session=db_session, case_id=c.id))
+
     tags = []
     for t in incident_in.tags:
         tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
@@ -292,6 +297,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
     update_data = incident_in.dict(
         skip_defaults=True,
         exclude={
+            "cases",
             "commander",
             "duplicates",
             "incident_costs",
@@ -309,6 +315,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
     for field in update_data.keys():
         setattr(incident, field, update_data[field])
 
+    incident.cases = cases
     incident.duplicates = duplicates
     incident.incident_costs = incident_costs
     incident.incident_priority = incident_priority
