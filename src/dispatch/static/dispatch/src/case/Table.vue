@@ -5,8 +5,8 @@
     </div>
     <v-row no-gutters>
       <new-sheet />
-      <delete-dialog />
       <escalate-dialog />
+      <delete-dialog />
       <v-col>
         <div class="headline">Cases</div>
       </v-col>
@@ -90,6 +90,9 @@
                     }"
                   >
                     <v-list-item-title>View / Edit</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="showEscalateDialog(item)">
+                    <v-list-item-title>Escalate</v-list-item-title>
                   </v-list-item>
                   <v-list-item @click="showDeleteDialog(item)">
                     <v-list-item-title>Delete</v-list-item-title>
