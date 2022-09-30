@@ -80,7 +80,7 @@
                   </v-btn>
                 </template>
                 <v-list>
-                  <v-list-item @click="showEscalateDialog(item)">
+                  <v-list-item v-if="item.status != 'Escalated'" @click="showEscalateDialog(item)">
                     <v-list-item-title>Escalate</v-list-item-title>
                   </v-list-item>
                   <v-list-item
