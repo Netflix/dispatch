@@ -118,6 +118,5 @@ def sync_all_workflows(db_session: SessionLocal, project: Project):
         return
 
     instances = workflow_service.get_running_instances(db_session=db_session)
-
     for i in instances:
         sync_workflow(db_session, project, workflow_plugin, i)

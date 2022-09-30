@@ -87,14 +87,18 @@ def get_instance(*, db_session, instance_id: int) -> WorkflowInstance:
 
 def get_running_instances(*, db_session) -> List[WorkflowInstance]:
     """Fetches all running instances."""
-    return db_session.query(WorkflowInstance).filter(
-        WorkflowInstance.status.in_(
-            (
-                WorkflowInstanceStatus.created,
-                WorkflowInstanceStatus.running,
-                WorkflowInstanceStatus.submitted,
+    return (
+        db_session.query(WorkflowInstance)
+        .filter(
+            WorkflowInstance.status.in_(
+                (
+                    WorkflowInstanceStatus.created,
+                    WorkflowInstanceStatus.running,
+                    WorkflowInstanceStatus.submitted,
+                )
             )
         )
+        .all()
     )
 
 
@@ -165,9 +169,12 @@ def run(
 
     # workflow plugins assume dictionary for params and does not accept none types
     params = {}
-    for p in instance.workflow.parameters:
+    for p in instance.parameters:
         if p["value"]:
-            params.update(p)
+            params.update({p["key"]: p["value"]})
+
+    params.update({"incident_id": "foo", "incident_name": "bar", "instance_id": instance.id})
+    print(params)
     instance.workflow.plugin_instance.instance.run(instance.workflow.resource_id, params)
 
     return instance

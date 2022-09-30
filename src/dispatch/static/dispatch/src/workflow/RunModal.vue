@@ -16,7 +16,7 @@
                 </v-list-item>
                 <v-card-text>
                   <v-row align="center">
-                    <v-col class="text-h5" cols="12"> {{ title }} </v-col>
+                    <v-col class="text-h5" cols="12"> {{ workflow.title }} </v-col>
                   </v-row>
                 </v-card-text>
               </v-card>

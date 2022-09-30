@@ -186,7 +186,11 @@ def run_workflow_submitted_form(
         ),
     )
     params.update(
-        {"incident_id": incident.id, "incident_name": incident.name, "instance_id": instance.id}
+        {
+            "incident_id": incident.id,
+            "incident_name": incident.name,
+            "instance_id": instance.id,
+        }
     )
 
     workflow.plugin_instance.instance.run(workflow.resource_id, params)

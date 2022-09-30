@@ -117,17 +117,17 @@ const actions = {
       .then((response) => {
         commit("SET_SELECTED_INSTANCE_LOADING", false)
         commit("SET_SELECTED_INSTANCE", response.data)
-        this.interval = setInterval(function () {
-          if (!state.selectedInstance.id) {
-            clearInterval(this.interval)
+        var interval = setInterval(function () {
+          if (state.selectedInstance.id == null) {
+            clearInterval(interval)
+            return
           }
           WorkflowApi.getInstance(state.selectedInstance.id).then((response) => {
             commit("SET_SELECTED_INSTANCE", response.data)
           })
 
-          // TODO this is fragile but we don't set anything as "created"
           if (state.selectedInstance.status == "Completed") {
-            clearInterval(this.interval)
+            clearInterval(interval)
           }
         }, 5000)
         return response.data
