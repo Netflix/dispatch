@@ -97,18 +97,6 @@
               <template v-slot:item.incident_type.name="{ item }">
                 {{ item.incident.incident_type.name }}
               </template>
-              <template v-slot:item.tickets="{ item }">
-                <a
-                  v-for="ticket in item.tickets"
-                  :key="ticket.weblink"
-                  :href="ticket.weblink"
-                  target="_blank"
-                  style="text-decoration: none"
-                >
-                  Ticket
-                  <v-icon small>open_in_new</v-icon>
-                </a>
-              </template>
               <template v-slot:item.assignees="{ item }">
                 <participant
                   v-for="assignee in item.assignees"
@@ -185,7 +173,6 @@ export default {
         { text: "Assignees", value: "assignees[].individual.email", sortable: false },
         { text: "Description", value: "description", sortable: false },
         { text: "Source", value: "source", sortable: false },
-        { text: "Tickets", value: "tickets", sortable: false },
         { text: "Due By", value: "resolve_by", sortable: true },
         { text: "Created At", value: "created_at", sortable: true },
         { text: "Resolved At", value: "resolved_at", sortable: true },
