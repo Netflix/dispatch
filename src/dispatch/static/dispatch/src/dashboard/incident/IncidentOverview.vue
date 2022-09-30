@@ -25,7 +25,7 @@
         <stat-widget
           icon="watch_later"
           :title="totalResponseHours | toNumberString"
-          sup-title="Total Response Hours (Active -> Stable)"
+          sup-title="Total Response Hours"
         />
       </v-flex>
       <v-flex lg3 sm6 xs12>
