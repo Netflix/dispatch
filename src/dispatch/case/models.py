@@ -3,7 +3,6 @@ from collections import defaultdict
 from typing import List, Optional
 
 from pydantic import validator
-from dispatch.models import NameStr, PrimaryKey
 from sqlalchemy import (
     Column,
     DateTime,
@@ -29,6 +28,7 @@ from dispatch.group.models import Group, GroupRead
 from dispatch.incident.models import IncidentRead
 from dispatch.messaging.strings import CASE_RESOLUTION_DEFAULT
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
+from dispatch.models import NameStr, PrimaryKey
 from dispatch.storage.models import StorageRead
 from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
@@ -43,6 +43,15 @@ assoc_case_tags = Table(
     Column("case_id", Integer, ForeignKey("case.id", ondelete="CASCADE")),
     Column("tag_id", Integer, ForeignKey("tag.id", ondelete="CASCADE")),
     PrimaryKeyConstraint("case_id", "tag_id"),
+)
+
+# Assoc table for cases and incidents
+assoc_cases_incidents = Table(
+    "assoc_case_incidents",
+    Base.metadata,
+    Column("case_id", Integer, ForeignKey("case.id", ondelete="CASCADE")),
+    Column("incident_id", Integer, ForeignKey("incident.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("case_id", "incident_id"),
 )
 
 
@@ -95,10 +104,11 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     groups = relationship(
         "Group", backref="case", cascade="all, delete-orphan", foreign_keys=[Group.case_id]
     )
+
+    incidents = relationship("Incident", secondary=assoc_cases_incidents, backref="cases")
+
     tactical_group_id = Column(Integer, ForeignKey("group.id"))
     tactical_group = relationship("Group", foreign_keys=[tactical_group_id])
-
-    incidents = relationship("Incident", backref="case")
 
     related_id = Column(Integer, ForeignKey("case.id"))
     related = relationship("Case", remote_side=[id], uselist=True, foreign_keys=[related_id])
