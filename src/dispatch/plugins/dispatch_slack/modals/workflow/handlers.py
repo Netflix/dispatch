@@ -1,3 +1,4 @@
+from dispatch.config import DISPATCH_UI_URL
 from dispatch.incident import service as incident_service
 from dispatch.messaging.strings import INCIDENT_WORKFLOW_CREATED_NOTIFICATION
 from dispatch.participant import service as participant_service
@@ -185,11 +186,15 @@ def run_workflow_submitted_form(
             parameters=named_params,
         ),
     )
+
+    for p in instance.parameters:
+        if p["value"]:
+            params.update({p["key"]: p["value"]})
+
     params.update(
         {
-            "incident_id": incident.id,
-            "incident_name": incident.name,
-            "instance_id": instance.id,
+            "externalRef": f"{DISPATCH_UI_URL}/{instance.incident.project.organization.name}/incidents/{instance.incident.name}?project={instance.incident.project.name}",
+            "workflowInstanceId": instance.id,
         }
     )
 
