@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from sqlalchemy.sql.expression import true
+from dispatch.config import DISPATCH_UI_URL
 from dispatch.project import service as project_service
 from dispatch.plugin import service as plugin_service
 from dispatch.incident import service as incident_service
@@ -167,13 +168,27 @@ def run(
         instance_in=WorkflowInstanceCreate(**workflow_instance_in.dict()),
     )
 
-    # workflow plugins assume dictionary for params and does not accept none types
+    # workflow plugins assume dictionary for params and do not accept none types
     params = {}
     for p in instance.parameters:
         if p["value"]:
             params.update({p["key"]: p["value"]})
 
-    params.update({"incident_id": "foo", "incident_name": "bar", "instance_id": instance.id})
+    if instance.incident:
+        params.update(
+            {
+                "externalRef": f"{DISPATCH_UI_URL}/{instance.incident.project.organization.name}/incidents/{instance.incident.name}?project={instance.incident.project.name}",
+            }
+        )
+
+    if instance.case:
+        params.update(
+            {
+                "externalRef": f"{DISPATCH_UI_URL}/{instance.case.project.organization.name}/cases/{instance.case.name}?project={instance.case.project.name}",
+            }
+        )
+
+    params.update({"workflowInstanceId": instance.id})
     print(params)
     instance.workflow.plugin_instance.instance.run(instance.workflow.resource_id, params)
 

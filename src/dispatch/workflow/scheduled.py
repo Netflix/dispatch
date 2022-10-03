@@ -23,20 +23,6 @@ log = logging.getLogger(__name__)
 WORKFLOW_SYNC_INTERVAL = 30  # seconds
 
 
-def create_tags(instance):
-    """Creates the tags use to find the external instance."""
-    tags = []
-    if instance.incident:
-        tags.append(f"incidentId:{instance.incident.id}")
-        tags.append(f"incidentName:{instance.incident.title}")
-
-    if instance.case:
-        tags.append(f"caseId:{instance.case.id}")
-        tags.append(f"caseName:{instance.case.title}")
-
-    return tags
-
-
 def sync_workflow(db_session, project, workflow_plugin, instance, notify: bool = False):
     """Performs workflow sync."""
     log.debug(
@@ -45,7 +31,7 @@ def sync_workflow(db_session, project, workflow_plugin, instance, notify: bool =
     instance_data = workflow_plugin.instance.get_workflow_instance(
         workflow_id=instance.workflow.resource_id,
         workflow_instance_id=instance.id,
-        tags=create_tags(instance),
+        tags=[f"workflowInstanceId:{instance.id}"],
     )
 
     log.debug(f"Retrieved instance data from plugin. Data: {instance_data}")
@@ -55,9 +41,6 @@ def sync_workflow(db_session, project, workflow_plugin, instance, notify: bool =
         log.warning(
             f"Unabled to sync instance data. WorkflowId: {instance.workflow.resource_id} WorkflowInstanceId: {instance.id}"
         )
-        instance.status = WorkflowInstanceStatus.failed
-        db_session.add(instance)
-        db_session.commit()
         return
 
     instance_status_old = instance.status
@@ -111,6 +94,7 @@ def sync_all_workflows(db_session: SessionLocal, project: Project):
     workflow_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=project.id, plugin_type="workflow"
     )
+
     if not workflow_plugin:
         log.warning(
             f"No workflow plugin is enabled. Project: {project.name}. Organization: {project.organization.name}"

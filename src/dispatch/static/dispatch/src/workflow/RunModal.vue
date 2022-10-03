@@ -12,13 +12,25 @@
                 <v-list-item two-line>
                   <v-list-item-content>
                     <v-list-item-title class="text-h6"> Workflow Details </v-list-item-title>
+                    <v-list-item-subtitle
+                      >{{ workflow.name }} - {{ workflow.resource_id }}</v-list-item-subtitle
+                    >
                   </v-list-item-content>
                 </v-list-item>
-                <v-card-text>
-                  <v-row align="center">
-                    <v-col class="text-h5" cols="12"> {{ workflow.title }} </v-col>
-                  </v-row>
-                </v-card-text>
+                <v-list class="transparent">
+                  <v-list-item>
+                    <v-list-item-title>Status</v-list-item-title>
+                    <v-list-item-subtitle class="text-right">
+                      {{ status }}
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                  <v-list-item v-for="artifact in artifacts" :key="artifact.id">
+                    <v-list-item-title>Name</v-list-item-title>
+                    <v-list-item-subtitle class="text-right">
+                      {{ artifact.name }}
+                    </v-list-item-subtitle>
+                  </v-list-item>
+                </v-list>
               </v-card>
             </v-col>
           </v-row>
@@ -82,9 +94,11 @@ export default {
       "selectedInstance.case",
       "selectedInstance.incident",
       "selectedInstance.id",
+      "selectedInstance.status",
       "selectedInstance.loading",
       "selectedInstance.workflow",
       "selectedInstance.parameters",
+      "selectedInstance.artifacts",
       "selectedInstance.run_reason",
     ]),
   },
