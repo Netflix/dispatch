@@ -5,9 +5,9 @@
     </div>
     <v-row no-gutters>
       <new-sheet />
-      <delete-dialog />
       <workflow-run-modal />
       <escalate-dialog />
+      <delete-dialog />
       <v-col>
         <div class="headline">Cases</div>
       </v-col>
@@ -92,7 +92,10 @@
                   <v-list-item @click="showRun({ type: 'case', data: item })">
                     <v-list-item-title>Run Workflow</v-list-item-title>
                   </v-list-item>
-                  <v-list-item @click="showEscalateDialog(item)">
+                  <v-list-item
+                    v-if="item.status == 'New' || item.status == 'Triage'"
+                    @click="showEscalateDialog(item)"
+                  >
                     <v-list-item-title>Escalate</v-list-item-title>
                   </v-list-item>
                   <v-list-item @click="showDeleteDialog(item)">

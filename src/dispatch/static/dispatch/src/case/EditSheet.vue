@@ -11,7 +11,11 @@
               Reported - {{ reported_at | formatRelativeDate }}
             </v-list-item-subtitle>
           </v-list-item-content>
-          <v-btn @click="showEscalateDialog(selected)" color="error">
+          <v-btn
+            v-if="status == 'New' || status == 'Triage'"
+            @click="showEscalateDialog(selected)"
+            color="error"
+          >
             <v-icon left> error_outline </v-icon>
             Escalate Case
           </v-btn>
@@ -88,6 +92,7 @@ export default {
       "selected.name",
       "selected.project",
       "selected.reported_at",
+      "selected.status",
       "selected.loading",
       "selected.workflow_instances",
       "dialogs.showEditSheet",

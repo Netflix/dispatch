@@ -3,12 +3,11 @@ from typing import List, Optional
 
 from sqlalchemy import or_
 
-from dispatch.incident.models import Incident
-from dispatch.plugin import service as plugin_service
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident.flows import incident_service
-from dispatch.ticket import service as ticket_service
+from dispatch.incident.models import Incident
+from dispatch.plugin import service as plugin_service
 
 from .enums import TaskStatus
 from .models import Task, TaskUpdate, TaskCreate
@@ -67,12 +66,6 @@ def get_overdue_tasks(*, db_session, project_id: int) -> List[Optional[Task]]:
 def create(*, db_session, task_in: TaskCreate) -> Task:
     """Create a new task."""
     incident = incident_service.get(db_session=db_session, incident_id=task_in.incident.id)
-    tickets = [
-        ticket_service.get_or_create_by_weblink(
-            db_session=db_session, weblink=t.weblink, resource_type="task-ticket"
-        )
-        for t in task_in.tickets
-    ]
 
     assignees = []
     for i in task_in.assignees:
@@ -114,12 +107,11 @@ def create(*, db_session, task_in: TaskCreate) -> Task:
         owner = incident.commander
 
     task = Task(
-        **task_in.dict(exclude={"assignees", "owner", "incident", "creator", "tickets"}),
+        **task_in.dict(exclude={"assignees", "owner", "incident", "creator"}),
         creator=creator,
         owner=owner,
         assignees=assignees,
         incident=incident,
-        tickets=tickets,
     )
 
     event_service.log_incident_event(
@@ -162,7 +154,7 @@ def update(*, db_session, task: Task, task_in: TaskUpdate, sync_external: bool =
             )
 
     update_data = task_in.dict(
-        skip_defaults=True, exclude={"assignees", "owner", "creator", "incident", "tickets"}
+        skip_defaults=True, exclude={"assignees", "owner", "creator", "incident"}
     )
 
     for field in update_data.keys():
