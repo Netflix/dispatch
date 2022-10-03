@@ -189,7 +189,6 @@ def run(
         )
 
     params.update({"workflowInstanceId": instance.id})
-    print(params)
     instance.workflow.plugin_instance.instance.run(instance.workflow.resource_id, params)
 
     return instance
