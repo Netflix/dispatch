@@ -2,7 +2,15 @@
   <ValidationObserver v-slot="{ invalid, validated }">
     <v-card class="mx-auto ma-4" max-width="600" flat outlined :loading="loading">
       <v-card-text>
-        <p class="display-1 text--primary">Report Issue</p>
+        <p class="display-1 text--primary">
+          Report Issue
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-btn icon v-on="on" @click="copyView"><v-icon>mdi-content-copy</v-icon></v-btn>
+            </template>
+            <span>Copy current fields as template.</span>
+          </v-tooltip>
+        </p>
         <p>
           If you suspect a security issue and need help, please fill out this form to the best of
           your abilities.
@@ -88,6 +96,7 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
+import router from "@/router"
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
@@ -138,53 +147,90 @@ export default {
 
   methods: {
     getFAQ() {
-      DocumentApi.getAll({
-        filter: JSON.stringify({
-          and: [
+      if (this.project) {
+        DocumentApi.getAll({
+          filter: JSON.stringify({
+            and: [
+              {
+                field: "resource_type",
+                op: "==",
+                value: "dispatch-faq-reference-document",
+              },
+              {
+                model: "Project",
+                field: "name",
+                op: "==",
+                value: this.project.name,
+              },
+            ],
+          }),
+        }).then((response) => {
+          if (response.data.items.length) {
+            this.project_faq = response.data.items[0]
+          }
+        })
+      }
+    },
+    copyView: function () {
+      let store = this.$store
+      this.$copyText(window.location).then(
+        function () {
+          store.commit(
+            "notification_backend/addBeNotification",
             {
-              field: "resource_type",
-              op: "==",
-              value: "dispatch-faq-reference-document",
+              text: "View copied to clipboard.",
             },
+            { root: true }
+          )
+        },
+        function () {
+          store.commit(
+            "notification_backend/addBeNotification",
             {
-              model: "Project",
-              field: "name",
-              op: "==",
-              value: this.project.name,
+              text: "Failed to copy view to clipboard.",
+              color: "red",
             },
-          ],
-        }),
-      }).then((response) => {
-        if (response.data.items.length) {
-          this.project_faq = response.data.items[0]
+            { root: true }
+          )
         }
-      })
+      )
     },
     ...mapActions("case_management", ["report", "get", "resetSelected"]),
   },
 
   created() {
-    this.project = { name: "" }
     if (this.query.project) {
       this.project = { name: this.query.project }
     }
 
-    this.case_type = { name: "" }
     if (this.query.case_type) {
       this.case_type = { name: this.query.case_type }
     }
 
-    this.case_priority = { name: "" }
     if (this.query.case_priority) {
       this.case_priority = { name: this.query.case_priority }
     }
 
     this.getFAQ()
-
     this.$watch(
       (vm) => [vm.project],
       () => {
         this.getFAQ()
+      }
+    )
+
+    this.$watch(
+      (vm) => [vm.project, vm.case_priority, vm.case_type],
+      () => {
+        var queryParams = {
+          project: this.project ? this.project.name : null,
+          case_priority: this.case_priority ? this.case_priority.name : null,
+          case_type: this.case_type ? this.case_type.name : null,
+        }
+        Object.keys(queryParams).forEach((key) => (queryParams[key] ? {} : delete queryParams[key]))
+        router.replace({
+          query: queryParams,
+        })
       }
     )
 

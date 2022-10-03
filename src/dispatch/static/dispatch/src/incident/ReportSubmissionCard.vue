@@ -2,7 +2,15 @@
   <ValidationObserver v-slot="{ invalid, validated }">
     <v-card class="mx-auto ma-4" max-width="600" flat outlined :loading="loading">
       <v-card-text>
-        <p class="display-1 text--primary">Report Incident</p>
+        <p class="display-1 text--primary">
+          Report Incident
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-btn icon v-on="on" @click="copyView"><v-icon>mdi-content-copy</v-icon></v-btn>
+            </template>
+            <span>Copy current fields as template.</span>
+          </v-tooltip>
+        </p>
         <p>
           If you suspect an incident and need help, please fill out this form to the best of your
           abilities.
@@ -88,6 +96,7 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
+import router from "@/router"
 import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
 import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
@@ -141,43 +150,66 @@ export default {
 
   methods: {
     getFAQ() {
-      DocumentApi.getAll({
-        filter: JSON.stringify({
-          and: [
+      if (this.project) {
+        DocumentApi.getAll({
+          filter: JSON.stringify({
+            and: [
+              {
+                field: "resource_type",
+                op: "==",
+                value: "dispatch-faq-reference-document",
+              },
+              {
+                model: "Project",
+                field: "name",
+                op: "==",
+                value: this.project.name,
+              },
+            ],
+          }),
+        }).then((response) => {
+          if (response.data.items.length) {
+            this.project_faq = response.data.items[0]
+          }
+        })
+      }
+    },
+    copyView: function () {
+      let store = this.$store
+      this.$copyText(window.location).then(
+        function () {
+          store.commit(
+            "notification_backend/addBeNotification",
             {
-              field: "resource_type",
-              op: "==",
-              value: "dispatch-faq-reference-document",
+              text: "View copied to clipboard.",
             },
+            { root: true }
+          )
+        },
+        function () {
+          store.commit(
+            "notification_backend/addBeNotification",
             {
-              model: "Project",
-              field: "name",
-              op: "==",
-              value: this.project.name,
+              text: "Failed to copy view to clipboard.",
+              color: "red",
             },
-          ],
-        }),
-      }).then((response) => {
-        if (response.data.items.length) {
-          this.project_faq = response.data.items[0]
+            { root: true }
+          )
         }
-      })
+      )
     },
     ...mapActions("incident", ["report", "get", "resetSelected"]),
   },
 
   created() {
-    this.project = { name: "" }
     if (this.query.project) {
       this.project = { name: this.query.project }
     }
 
-    this.incident_type = { name: "" }
     if (this.query.incident_type) {
       this.incident_type = { name: this.query.incident_type }
     }
 
-    this.incident_priority = { name: "" }
     if (this.query.incident_priority) {
       this.incident_priority = { name: this.query.incident_priority }
     }
@@ -188,6 +220,21 @@ export default {
       (vm) => [vm.project],
       () => {
         this.getFAQ()
+      }
+    )
+
+    this.$watch(
+      (vm) => [vm.project, vm.incident_priority, vm.incident_type],
+      () => {
+        var queryParams = {
+          project: this.project ? this.project.name : null,
+          incident_priority: this.incident_priority ? this.incident_priority.name : null,
+          incident_type: this.incident_type ? this.incident_type.name : null,
+        }
+        Object.keys(queryParams).forEach((key) => (queryParams[key] ? {} : delete queryParams[key]))
+        router.replace({
+          query: queryParams,
+        })
       }
     )
 
