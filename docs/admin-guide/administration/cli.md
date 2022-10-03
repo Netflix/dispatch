@@ -220,7 +220,7 @@ The `plugin` command contains all of the logic for dealing with Dispatch's plugi
 The `list` command lists all currently available plugins. This command is useful in determining which plugins are available to be used via configuration variables.
 
 ```bash
-> dispatch database list
+> dispatch plugins list
 Title                             Slug                            Version     Type               Author         Description
 --------------------------------  ------------------------------  ----------  -----------------  -------------  ---------------------------------------------------------
 Dispatch - Document Resolver      dispatch-document-resolver      0.1.0       document-resolver  Kevin Glisson  Uses dispatch itself to resolve incident documents.
