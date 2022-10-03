@@ -11,3 +11,7 @@ By default, no plugins are _required_ to create an incident. As you enable plugi
 ![](../../../.gitbook/assets/admin-ui-incident-plugins.png)
 
 Looking to add your own functionality to Dispatch via plugins? See the [contributing](../../../contributing/plugins/README.md) documentation.
+
+# Install plugins
+
+Before being able to configure and use the available plugins, use the [CLI](../cli.md) to install them. Running `dispatch plugins install` will attempt to install all available plugins.
