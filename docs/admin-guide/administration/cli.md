@@ -220,7 +220,7 @@ The `plugin` command contains all of the logic for dealing with Dispatch's plugi
 The `list` command lists all currently available plugins. This command is useful in determining which plugins are available to be used via configuration variables.
 
 ```bash
-> dispatch database list
+> dispatch plugins list
 Title                             Slug                            Version     Type               Author         Description
 --------------------------------  ------------------------------  ----------  -----------------  -------------  ---------------------------------------------------------
 Dispatch - Document Resolver      dispatch-document-resolver      0.1.0       document-resolver  Kevin Glisson  Uses dispatch itself to resolve incident documents.
@@ -229,3 +229,19 @@ Google Docs - Document            google-docs-document            0.1.0       do
 Google Group - Participant Group  google-group-participant-group  0.1.0       participant_group  Kevin Glisson  Uses Google Groups to help manage participant membership.
 ...
 ```
+
+### Install
+
+The `install` command will try installing all available plugins.
+
+```bash
+> dispatch plugins install
+INFO:dispatch.common.utils.cli:Attempting to load plugin: dispatch_basic_auth
+INFO:dispatch.common.utils.cli:Successfully loaded plugin: dispatch_basic_auth
+INFO:dispatch.common.utils.cli:Attempting to load plugin: dispatch_contact
+INFO:dispatch.common.utils.cli:Successfully loaded plugin: dispatch_contact
+INFO:dispatch.common.utils.cli:Attempting to load plugin: dispatch_document_resolver
+...
+```
+
+Keep in mind that this will only make plugins available. To enable them [create and configure the plugin instance](./plugins/README.md)

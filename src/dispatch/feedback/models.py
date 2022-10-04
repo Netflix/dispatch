@@ -24,7 +24,13 @@ class Feedback(TimeStampMixin, Base):
     incident_id = Column(Integer, ForeignKey("incident.id", ondelete="CASCADE"))
     participant_id = Column(Integer, ForeignKey("participant.id"))
 
-    search_vector = Column(TSVectorType("feedback", "rating"))
+    search_vector = Column(
+        TSVectorType(
+            "feedback",
+            "rating",
+            regconfig="pg_catalog.simple",
+        )
+    )
 
     @hybrid_property
     def project(self):

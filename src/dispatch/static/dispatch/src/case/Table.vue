@@ -5,6 +5,7 @@
     </div>
     <v-row no-gutters>
       <new-sheet />
+      <escalate-dialog />
       <delete-dialog />
       <v-col>
         <div class="headline">Cases</div>
@@ -87,6 +88,12 @@
                   >
                     <v-list-item-title>View / Edit</v-list-item-title>
                   </v-list-item>
+                  <v-list-item
+                    v-if="item.status == 'New' || item.status == 'Triage'"
+                    @click="showEscalateDialog(item)"
+                  >
+                    <v-list-item-title>Escalate</v-list-item-title>
+                  </v-list-item>
                   <v-list-item @click="showDeleteDialog(item)">
                     <v-list-item-title>Delete</v-list-item-title>
                   </v-list-item>
@@ -110,6 +117,7 @@ import CasePriority from "@/case/priority/CasePriority.vue"
 import CaseSeverity from "@/case/severity/CaseSeverity.vue"
 import CaseStatus from "@/case/CaseStatus.vue"
 import DeleteDialog from "@/case/DeleteDialog.vue"
+import EscalateDialog from "@/case/EscalateDialog.vue"
 import NewSheet from "@/case/NewSheet.vue"
 import RouterUtils from "@/router/utils"
 import TableExportDialog from "@/case/TableExportDialog.vue"
@@ -124,6 +132,7 @@ export default {
     CaseSeverity,
     CaseStatus,
     DeleteDialog,
+    EscalateDialog,
     NewSheet,
     TableExportDialog,
     TableFilterDialog,
@@ -193,7 +202,12 @@ export default {
   },
 
   methods: {
-    ...mapActions("case_management", ["getAll", "showNewSheet", "showDeleteDialog"]),
+    ...mapActions("case_management", [
+      "getAll",
+      "showNewSheet",
+      "showDeleteDialog",
+      "showEscalateDialog",
+    ]),
   },
 
   watch: {

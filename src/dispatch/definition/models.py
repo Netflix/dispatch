@@ -40,7 +40,12 @@ class Definition(Base, ProjectMixin):
     source = Column(String, default="dispatch")
     terms = relationship("Term", secondary=definition_terms, backref="definitions")
     teams = relationship("TeamContact", secondary=definition_teams)
-    search_vector = Column(TSVectorType("text"))
+    search_vector = Column(
+        TSVectorType(
+            "text",
+            regconfig="pg_catalog.simple",
+        )
+    )
 
 
 class DefinitionTerm(DispatchBase):

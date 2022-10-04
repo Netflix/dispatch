@@ -20,7 +20,7 @@ class SourceEnvironment(Base, ProjectMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
-    search_vector = Column(TSVectorType("name"))
+    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
 class SourceEnvironmentBase(DispatchBase):
