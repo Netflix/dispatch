@@ -47,15 +47,19 @@ You will need to set the following configuration settings for your Slack app in 
 
 ### Event Subscriptions
 
-To enable Dispatch to process Slack events, ensure your bot is subscribed to the following events:
+To enable Dispatch to process Slack events, under `Events Subscriptions`, ensure that the `Request URL` points to the events subscription API endpoint of the Dispatch server at `/api/v1/<organization>/events/slack/event`. Replace `<organization>` with your organization's name. The default one is `default`.
 
-![](../../../.gitbook/assets/slack-setup-events.png)
+Then, under the `Subscribe to bot events` section, add the following bot user events:
+
+|Event Name | Description |
+|---|---|
+| member_joined_channel | A user joined a public or private channel |
+| member_left_channel | A user left a public or private channel |
+| message.groups | A message was posted to a private channel |
 
 ### Interactivity
 
-To enable Dispatch to generate interactive components such as dialogs and modals, ensure that the `Request URL` points to the events action API endpoint of the Dispatch server at `/api/v1/<organization>?events/slack/action`.
-
-![](../../../../.gitbook/assets/slack-setup-dialogs.png)
+To enable Dispatch to generate interactive components such as dialogs and modals, ensure that the `Request URL` points to the events action API endpoint of the Dispatch server at `/api/v1/<organization>/events/slack/action`. Replace `<organization>` with your organization's name. The default one is `default`.
 
 ### Slash Commands
 
@@ -164,7 +168,7 @@ You can override their values if you wish to do so. Included below are their des
 | `/dispatch-list-workflows`     | List workflows previously run during this incident.                                                             |
 | `/dispatch-report-executive`   | Opens a dialog to write an executive report.                                                                    |
 | `/dispatch-report-incident <organization-slug\|'default'>` | Opens a dialog to report an incident. This command can be run from non-incident channels where the Dispatch bot is a member. |
-| `/dispatch-report-tactical`    | Opens a dialog to write a tactical report.                                                                      | 
+| `/dispatch-report-tactical`    | Opens a dialog to write a tactical report.                                                                      |
 | `/dispatch-run-workflow`       | Run a workflow and associate artifacts with this incident.                                                      |
 | `/dispatch-update-incident`    | Opens a dialog to update the incident.                                                                          |
 | `/dispatch-notifications-group` | Opens a dialog to edit the notifications group.                                                                |
