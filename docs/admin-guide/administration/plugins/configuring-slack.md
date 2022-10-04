@@ -59,7 +59,7 @@ Then, under the `Subscribe to bot events` section, add the following bot user ev
 
 ### Interactivity
 
-To enable Dispatch to generate interactive components such as dialogs and modals, ensure that the `Request URL` points to the events action API endpoint of the Dispatch server at `/api/v1/<organization>/events/slack/action`.
+To enable Dispatch to generate interactive components such as dialogs and modals, ensure that the `Request URL` points to the events action API endpoint of the Dispatch server at `/api/v1/<organization>/events/slack/action`. Replace `<organization>` with your organization's name. The default one is `default`.
 
 ### Slash Commands
 
