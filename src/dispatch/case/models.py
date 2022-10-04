@@ -111,8 +111,6 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     tactical_group_id = Column(Integer, ForeignKey("group.id"))
     tactical_group = relationship("Group", foreign_keys=[tactical_group_id])
 
-    incidents = relationship("Incident", backref="case")
-
     workflow_instances = relationship(
         "WorkflowInstance", backref="case", cascade="all, delete-orphan"
     )
