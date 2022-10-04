@@ -1,5 +1,6 @@
 <template>
   <v-app>
+    <notification-snackbars-wrapper />
     <v-main>
       <v-app-bar app flat class="v-bar--underline" color="background0">
         <router-link :to="{ name: 'CaseOverview' }" style="text-decoration: none">
@@ -17,6 +18,7 @@
 
 <script>
 import { mapFields } from "vuex-map-fields"
+import NotificationSnackbarsWrapper from "@/components/NotificationSnackbarsWrapper.vue"
 import ReportSubmissionCard from "@/case/ReportSubmissionCard.vue"
 import ReportReceiptCard from "@/case/ReportReceiptCard.vue"
 import OrganizationBanner from "@/organization/OrganizationBanner.vue"
@@ -35,6 +37,7 @@ export default {
     ReportSubmissionCard,
     ReportReceiptCard,
     OrganizationBanner,
+    NotificationSnackbarsWrapper,
   },
   data() {
     return {}
