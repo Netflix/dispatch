@@ -47,7 +47,7 @@ You will need to set the following configuration settings for your Slack app in 
 
 ### Event Subscriptions
 
-To enable Dispatch to process Slack events, under `Events Subscriptions`, ensure that the `Request URL` points to the events subscription API endpoint of the Dispatch server at `/api/v1/organization/events/slack/event`.
+To enable Dispatch to process Slack events, under `Events Subscriptions`, ensure that the `Request URL` points to the events subscription API endpoint of the Dispatch server at `/api/v1/<organization>/events/slack/event`. Replace `<organization>` with your organization's name. The default one is `default`.
 
 Then, under the `Subscribe to bot events` section, add the following bot user events:
 
