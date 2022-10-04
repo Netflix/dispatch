@@ -319,7 +319,7 @@ scipy==1.8.1
     # via statsmodels
 sentry-asgi==0.2.0
     # via -r requirements-base.in
-sentry-sdk==1.9.9
+sentry-sdk==1.9.10
     # via
     #   -r requirements-base.in
     #   sentry-asgi
@@ -338,7 +338,7 @@ six==1.16.0
     #   python-multipart
     #   sqlalchemy-filters
     #   validators
-slack-sdk==3.18.4
+slack-sdk==3.18.5
     # via -r requirements-base.in
 smart-open==5.2.1
     # via pathy
