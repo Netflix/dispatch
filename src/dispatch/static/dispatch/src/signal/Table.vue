@@ -83,6 +83,8 @@ export default {
     return {
       headers: [
         { text: "Name", value: "name", align: "left", width: "10%" },
+        { text: "Severity", value: "severity", sortable: true },
+        { text: "Detection", value: "detection", sortable: true },
         { text: "Source", value: "source.name", sortable: true },
         { text: "Project", value: "project.name", sortable: true },
         { text: "Created At", value: "created_at" },

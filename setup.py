@@ -414,6 +414,7 @@ setup(
             "github_monitor = dispatch.plugins.dispatch_github.plugin:GithubMonitorPlugin",
             "google_calendar_conference = dispatch.plugins.dispatch_google.calendar.plugin:GoogleCalendarConferencePlugin",
             "google_docs_document = dispatch.plugins.dispatch_google.docs.plugin:GoogleDocsDocumentPlugin",
+            "google_sheets_signal = dispatch.plugins.dispatch_google.sheets.plugin:GoogleSheetsSignalConsumerPlugin",
             "google_drive_storage = dispatch.plugins.dispatch_google.drive.plugin:GoogleDriveStoragePlugin",
             "google_drive_task = dispatch.plugins.dispatch_google.drive.plugin:GoogleDriveTaskPlugin",
             "google_gmail_email = dispatch.plugins.dispatch_google.gmail.plugin:GoogleGmailEmailPlugin",

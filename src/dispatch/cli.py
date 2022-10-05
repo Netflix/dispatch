@@ -99,7 +99,6 @@ def install_plugins(force):
                 multiple=p.multiple,
                 description=p.description,
             )
-            db_session.add(record)
 
         if force:
             click.secho(f"Updating plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
@@ -110,8 +109,8 @@ def install_plugins(force):
             record.author_url = p.author_url
             record.description = p.description
             record.type = p.type
-            db_session.add(record)
 
+        db_session.add(record)
         db_session.commit()
 
 

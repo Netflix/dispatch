@@ -13,7 +13,7 @@
     item-value="id"
     multiple
     no-filter
-    v-model="signalss"
+    v-model="signals"
   >
     <template v-slot:no-data>
       <v-list-item>

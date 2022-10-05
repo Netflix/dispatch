@@ -3,8 +3,9 @@ from datetime import datetime
 from typing import Any, List, Optional
 
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin
@@ -20,13 +21,15 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     external_id = Column(String)
     severity = Column(String)
     detection = Column(String)
-    duplicate = Column(Boolean)
-    supressed = Column(Boolean)
+    detection_variant = Column(String)
     raw = Column(JSONB)
     source = relationship("Source", backref="signals")
     source_id = Column(Integer, ForeignKey("source.id"))
+    case_id = Column(Integer, ForeignKey("case.id"))
     duplication_rule_id = Column(Integer, ForeignKey("duplication_rule.id"))
     suppression_rule_id = Column(Integer, ForeignKey("suppression_rule.id"))
+
+    search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
 # Pydantic models...
@@ -34,8 +37,6 @@ class SignalBase(DispatchBase):
     name: str
     raw: Any
     severity: Optional[Any]
-    supressed: Optional[bool]
-    duplicate: Optional[bool]
     external_id: Optional[str]
     external_url: Optional[str]
     source: Optional[SourceBase]
