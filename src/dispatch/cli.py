@@ -99,16 +99,16 @@ def install_plugins(force):
                 multiple=p.multiple,
                 description=p.description,
             )
-
-        if force:
-            click.secho(f"Updating plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
-            # we only update values that should change
-            record.title = p.title
-            record.version = p.version
-            record.author = p.author
-            record.author_url = p.author_url
-            record.description = p.description
-            record.type = p.type
+        else:
+            if force:
+                click.secho(f"Updating plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
+                # we only update values that should change
+                record.title = p.title
+                record.version = p.version
+                record.author = p.author
+                record.author_url = p.author_url
+                record.description = p.description
+                record.type = p.type
 
         db_session.add(record)
         db_session.commit()

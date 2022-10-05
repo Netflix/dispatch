@@ -142,6 +142,8 @@ import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 
+import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
+
 extend("required", {
   ...required,
   message: "This field is required",
@@ -153,6 +155,7 @@ export default {
   components: {
     ValidationObserver,
     ValidationProvider,
+    DateTimePickerMenu,
   },
 
   data() {
