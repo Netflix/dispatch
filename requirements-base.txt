@@ -338,7 +338,7 @@ six==1.16.0
     #   python-multipart
     #   sqlalchemy-filters
     #   validators
-slack-sdk==3.18.5
+slack-sdk==3.19.0
     # via -r requirements-base.in
 smart-open==5.2.1
     # via pathy
