@@ -402,7 +402,6 @@ setup(
     entry_points={
         "console_scripts": ["dispatch = dispatch.cli:entrypoint"],
         "dispatch.plugins": [
-            "aws_sqs_signal = dispatch.plugins.dispatch_aws.plugin:AWSSQSSignalConsumerPlugin",
             "dispatch_basic_auth = dispatch.plugins.dispatch_core.plugin:BasicAuthProviderPlugin",
             "dispatch_contact = dispatch.plugins.dispatch_core.plugin:DispatchContactPlugin",
             "dispatch_document_resolver = dispatch.plugins.dispatch_core.plugin:DispatchDocumentResolverPlugin",
