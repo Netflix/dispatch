@@ -5,7 +5,7 @@
       <v-col>
         <v-alert dismissible icon="mdi-school" prominent text type="info">
           Duplication rules allow you to specify the parameters which should be considered by the
-          signal fingerprinting mechanism in order to correctly deduplication a signal.
+          signal fingerprinting mechanism in order to correctly deduplicate a signal.
         </v-alert>
       </v-col>
     </v-row>
