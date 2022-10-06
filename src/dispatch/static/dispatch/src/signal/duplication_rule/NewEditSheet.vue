@@ -93,7 +93,7 @@
                     label="Owner"
                     :error-messages="errors"
                     :success="valid"
-                    hint="Owner of this document template."
+                    hint="Owner of this duplication rule."
                     clearable
                   />
                 </ValidationProvider>
