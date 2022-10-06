@@ -22,7 +22,7 @@ router = APIRouter()
 
 
 @router.get("", response_model=SuppressionRulePagination)
-def get_ruless(*, common: dict = Depends(common_parameters)):
+def get_rules(*, common: dict = Depends(common_parameters)):
     """Retrieve filters."""
     return search_filter_sort_paginate(model="SuppressionRule", **common)
 
