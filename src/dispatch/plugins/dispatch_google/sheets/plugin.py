@@ -41,7 +41,7 @@ class GoogleSheetSignalConfiguration(GoogleConfiguration):
 class GoogleSheetsSignalConsumerPlugin(SignalConsumerPlugin):
     title = "Google Sheet Plugin - Signal Consumer"
     slug = "google-sheets-signal-consumer"
-    description = "Uses Google sheets to as a source for new signals."
+    description = "Uses Google sheets as a source for new signals."
     version = google_sheets_plugin.__version__
 
     author = "Netflix"
