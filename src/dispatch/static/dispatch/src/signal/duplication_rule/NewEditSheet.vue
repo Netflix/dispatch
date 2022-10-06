@@ -109,7 +109,7 @@
                     :error-messages="errors"
                     :success="valid"
                     type="number"
-                    hint="Number of days that should elapse between reminders sent to the document template owner."
+                    hint="Number of days that should elapse between reminders sent to the duplication rule owner."
                     placeholder="90"
                     clearable
                     min="1"
