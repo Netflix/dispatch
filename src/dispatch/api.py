@@ -132,7 +132,7 @@ authenticated_organization_api_router.include_router(
     signal_router, prefix="/signals", tags="signals"
 )
 authenticated_organization_api_router.include_router(
-    signal_duplication_rule_router, prefix="/signals/duplication/rules", tags="duplications_rules"
+    signal_duplication_rule_router, prefix="/signals/duplication/rules", tags="duplication_rules"
 )
 authenticated_organization_api_router.include_router(
     signal_suppression_rule_router, prefix="/signals/suppression/rules", tags="suppression_rules"
