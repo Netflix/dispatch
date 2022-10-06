@@ -121,7 +121,7 @@
               <v-col>
                 <v-checkbox
                   v-model="evergreen"
-                  hint="Enabling evergreen will send periodic reminders to the owner to update this document template."
+                  hint="Enabling evergreen will send periodic reminders to the owner to update this duplication rule."
                   label="Enabled"
                 />
               </v-col>
