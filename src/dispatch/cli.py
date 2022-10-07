@@ -99,19 +99,18 @@ def install_plugins(force):
                 multiple=p.multiple,
                 description=p.description,
             )
-            db_session.add(record)
+        else:
+            if force:
+                click.secho(f"Updating plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
+                # we only update values that should change
+                record.title = p.title
+                record.version = p.version
+                record.author = p.author
+                record.author_url = p.author_url
+                record.description = p.description
+                record.type = p.type
 
-        if force:
-            click.secho(f"Updating plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
-            # we only update values that should change
-            record.title = p.title
-            record.version = p.version
-            record.author = p.author
-            record.author_url = p.author_url
-            record.description = p.description
-            record.type = p.type
-            db_session.add(record)
-
+        db_session.add(record)
         db_session.commit()
 
 
@@ -612,6 +611,7 @@ def dispatch_scheduler():
     )
     from .monitor.scheduled import sync_active_stable_monitors  # noqa
     from .data.source.scheduled import sync_sources  # noqa
+    from .signal.scheduled import consume_signals  # noqa
 
 
 @dispatch_scheduler.command("list")
@@ -723,6 +723,12 @@ def run_server(log_level):
 
 
 dispatch_server.add_command(uvicorn.main, name="start")
+
+
+@dispatch_cli.group("signals")
+def signals_group():
+    """All commands for signal consumer manipulation."""
+    pass
 
 
 @dispatch_server.command("slack")

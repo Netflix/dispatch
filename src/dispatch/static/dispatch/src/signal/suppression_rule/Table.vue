@@ -1,7 +1,14 @@
 <template>
   <v-container fluid>
     <new-edit-sheet />
-    <delete-dialog />
+    <v-row no-gutters>
+      <v-col>
+        <v-alert dismissible icon="mdi-school" prominent text type="info"
+          >Suppression rules allow you to define the parameters for signals that should not have
+          cases created for them.
+        </v-alert>
+      </v-col>
+    </v-row>
     <v-row align="center" justify="space-between" no-gutters>
       <v-col cols="8">
         <settings-breadcrumbs v-model="project" />
@@ -34,8 +41,13 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.discoverable="{ item }">
-              <v-simple-checkbox v-model="item.discoverable" disabled />
+            <template v-slot:item.expiration="{ item }">
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <span v-bind="attrs" v-on="on">{{ item.expiration | formatRelativeDate }}</span>
+                </template>
+                <span>{{ item.expiration | formatDate }}</span>
+              </v-tooltip>
             </template>
             <template v-slot:item.data-table-actions="{ item }">
               <v-menu bottom left>
@@ -47,9 +59,6 @@
                 <v-list>
                   <v-list-item @click="createEditShow(item)">
                     <v-list-item-title>View / Edit</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item @click="removeShow(item)">
-                    <v-list-item-title>Delete</v-list-item-title>
                   </v-list-item>
                 </v-list>
               </v-menu>
@@ -66,29 +75,28 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
-import DeleteDialog from "@/term/DeleteDialog.vue"
-import NewEditSheet from "@/term/NewEditSheet.vue"
+import NewEditSheet from "@/signal/suppression_rule/NewEditSheet.vue"
 
 export default {
-  name: "TermTable",
+  name: "SuppressionRuleTable",
 
   components: {
-    DeleteDialog,
     NewEditSheet,
     SettingsBreadcrumbs,
   },
   data() {
     return {
       headers: [
-        { text: "Text", value: "text", sortable: true },
-        { text: "Discoverable", value: "discoverable", sortable: true },
+        { text: "Name", value: "name", sortable: true },
+        { text: "Description", value: "description", sortable: false },
+        { text: "Mode", value: "mode", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },
 
   computed: {
-    ...mapFields("term", [
+    ...mapFields("signalSuppressionRule", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
@@ -99,21 +107,13 @@ export default {
       "table.rows.items",
       "table.rows.total",
     ]),
-    ...mapFields("route", ["query"]),
+    ...mapFields("route", ["query", "params"]),
   },
 
   created() {
-    if (this.query.project) {
-      this.project = [{ name: this.query.project }]
-    }
+    this.project = [{ name: this.query.project }]
 
     this.getAll()
-    this.$watch(
-      (vm) => [vm.page],
-      () => {
-        this.getAll()
-      }
-    )
 
     this.$watch(
       (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project],
@@ -126,7 +126,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("term", ["getAll", "createEditShow", "removeShow"]),
+    ...mapActions("signalSuppressionRule", ["getAll", "createEditShow", "removeShow"]),
   },
 }
 </script>
