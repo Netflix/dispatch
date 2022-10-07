@@ -30,7 +30,12 @@ class DuplicationRule(Base, ProjectMixin, EvergreenMixin):
     mode = Column(String, default=RuleMode.active, nullable=False)
 
     search_vector = Column(
-        TSVectorType("name", "description", weights={"name": "A", "description": "B"}, regconfig="pg_catalog.simple")
+        TSVectorType(
+            "name",
+            "description",
+            weights={"name": "A", "description": "B"},
+            regconfig="pg_catalog.simple",
+        )
     )
 
 

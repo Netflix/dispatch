@@ -32,7 +32,12 @@ class SuppressionRule(Base, ProjectMixin, EvergreenMixin):
     expiration = Column(DateTime, nullable=True)
 
     search_vector = Column(
-        TSVectorType("name", "description", weights={"name": "A", "description": "B"}, regconfig="pg_catalog.simple")
+        TSVectorType(
+            "name",
+            "description",
+            weights={"name": "A", "description": "B"},
+            regconfig="pg_catalog.simple",
+        )
     )
 
 
