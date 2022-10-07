@@ -66,7 +66,7 @@
                   v-model="mode"
                   label="Mode"
                   :items="modes"
-                  hint="The rules current mode."
+                  hint="The rule's current mode."
                 />
               </v-col>
             </v-row>
