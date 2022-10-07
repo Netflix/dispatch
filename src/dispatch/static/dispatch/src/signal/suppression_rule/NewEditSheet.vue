@@ -96,7 +96,7 @@
                     label="Owner"
                     :error-messages="errors"
                     :success="valid"
-                    hint="Owner of this document template."
+                    hint="Owner of this supression rule template."
                     clearable
                   />
                 </ValidationProvider>
@@ -112,7 +112,7 @@
                     :error-messages="errors"
                     :success="valid"
                     type="number"
-                    hint="Number of days that should elapse between reminders sent to the document template owner."
+                    hint="Number of days that should elapse between reminders sent to the supression rule template owner."
                     placeholder="90"
                     clearable
                     min="1"
@@ -124,7 +124,7 @@
               <v-col>
                 <v-checkbox
                   v-model="evergreen"
-                  hint="Enabling evergreen will send periodic reminders to the owner to update this document template."
+                  hint="Enabling evergreen will send periodic reminders to the owner to update this supression rule template."
                   label="Enabled"
                 />
               </v-col>
