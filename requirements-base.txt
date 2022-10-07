@@ -232,7 +232,7 @@ protobuf==3.20.0
     #   -r requirements-base.in
     #   google-api-core
     #   googleapis-common-protos
-psycopg2-binary==2.9.3
+psycopg2-binary==2.9.4
     # via -r requirements-base.in
 py==1.11.0
     # via pytest
@@ -375,7 +375,7 @@ starlette==0.19.1
     #   schemathesis
 statsmodels==0.13.2
     # via -r requirements-base.in
-tabulate==0.8.10
+tabulate==0.9.0
     # via -r requirements-base.in
 tenacity==8.1.0
     # via -r requirements-base.in
