@@ -103,17 +103,12 @@ export const protectedRoute = [
           name: "CaseTable",
           meta: { title: "List" },
           component: () => import(/* webpackChunkName: "case-table" */ "@/case/Table.vue"),
-          children: [
-            {
-              path: "/:organization/cases/:name",
-              name: "CaseTableEdit",
-              component: () => import(/* webpackChunkName: "case-table" */ "@/case/EditSheet.vue"),
-              props: true,
-              meta: {
-                showEditSheet: true,
-              },
-            },
-          ],
+        },
+        {
+          path: "/:organization/cases/:name",
+          name: "CaseTableEdit",
+          meta: { title: "View" },
+          component: () => import(/* webpackChunkName: "case-table-edit" */ "@/case/EditView.vue"),
         },
       ],
     },

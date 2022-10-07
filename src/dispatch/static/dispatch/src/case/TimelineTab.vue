@@ -1,19 +1,30 @@
+<style scoped>
+.v-input--selection-controls {
+  padding-top: 15px;
+}
+</style>
 <template>
   <v-container>
-    <v-row justify="end">
-      <v-switch v-model="showDetails" label="Show details" />
-      <v-btn
-        color="secondary"
-        class="ml-2 mr-2 mt-3"
-        @click="exportToCSV()"
-        :loading="exportLoading"
-      >
-        Export
+    <v-toolbar style="border-bottom: 1px solid #dddddd" flat dense>
+      <v-text-field
+        v-model="searchTerm"
+        prepend-icon="search"
+        label="Filter"
+        single-line
+        hide-details
+        solo
+        flat
+        class="pb-1"
+      />
+      <v-spacer />
+      <v-switch dense v-model="showDetails" inset />
+      <v-btn icon @click="exportToCSV()" :loading="exportLoading">
+        <v-icon>mdi-table-arrow-right</v-icon>
       </v-btn>
-    </v-row>
+    </v-toolbar>
     <v-timeline v-if="events && events.length" dense clipped>
       <v-timeline-item
-        v-for="event in sortedEvents"
+        v-for="event in filteredEvents"
         :key="event.id"
         class="mb-4"
         color="blue"
@@ -59,6 +70,7 @@ export default {
     return {
       showDetails: false,
       exportLoading: false,
+      searchTerm: "",
     }
   },
 
@@ -67,6 +79,15 @@ export default {
 
     sortedEvents: function () {
       return this.events.slice().sort((a, b) => new Date(a.started_at) - new Date(b.started_at))
+    },
+    filteredEvents() {
+      if (this.searchTerm.length) {
+        return this.events.filter((event) => {
+          return !event.description.toLowerCase().includes(this.searchTerm.toLowerCase())
+        })
+      } else {
+        return this.events
+      }
     },
   },
 
