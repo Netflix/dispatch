@@ -66,7 +66,7 @@
                   v-model="mode"
                   label="Mode"
                   :items="modes"
-                  hint="The rules current mode."
+                  hint="The rule's current mode."
                 />
               </v-col>
             </v-row>
@@ -78,7 +78,7 @@
                     <template v-slot:activator="{ on, attrs }">
                       <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
                     </template>
-                    Dispatch will send an email reminder to the template owner to keep it up to
+                    Dispatch will send an email reminder to the duplication rule owner to keep it up to
                     date.
                   </v-tooltip>
                 </span>
