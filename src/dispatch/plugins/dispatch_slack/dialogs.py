@@ -90,7 +90,7 @@ def create_engage_oncall_dialog(
         oncall_service_options.append(
             {"label": oncall_service.name, "value": oncall_service.external_id}
         )
-    #sort on-call service options alphabetically
+    # sort on-call service options alphabetically
     oncall_service_options.sort(key=lambda x: x["label"])
     page_options = [{"label": "Yes", "value": "Yes"}, {"label": "No", "value": "No"}]
     dialog = {
