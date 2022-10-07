@@ -97,7 +97,12 @@ export default {
         })
       }
       if (subFilter.length > 0) {
-        filterExpression.push({ or: subFilter })
+       //include "and" condition to filter with visibility
+        if (key == "visibility") {
+          filterExpression.push({ and: subFilter })
+        } else {
+          filterExpression.push({ or: subFilter })
+        }
       }
     })
 
