@@ -1,5 +1,6 @@
 from typing import Optional
 from dispatch.project import service as project_service
+from dispatch.tag import service as tag_service
 
 from .models import Signal, SignalCreate
 
@@ -15,18 +16,14 @@ def create(*, db_session, signal_in: SignalCreate) -> Signal:
         db_session=db_session, project_in=signal_in.project
     )
 
-    signal = Signal(**signal_in.dict(exclude={"project"}), project=project)
+    signal = Signal(**signal_in.dict(exclude={"project", "tags"}), project=project)
+
+    tags = []
+    for t in signal_in.tags:
+        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
+
+    signal.tags = tags
 
     db_session.add(signal)
     db_session.commit()
     return signal
-
-
-def match(*, db_session, signal_in: SignalCreate):
-    """Returns a default match for existing signals."""
-    return (
-        db_session.query(Signal)
-        .filter(Signal.external_id == signal_in.external_id)
-        .filter(Signal.source.name == signal_in.source.name)
-        .all()
-    )

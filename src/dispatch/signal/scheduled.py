@@ -13,7 +13,7 @@ from dispatch.project.models import Project
 from dispatch.plugin import service as plugin_service
 from dispatch.signal import flows as signal_flows
 from dispatch.decorators import scheduled_project_task
-from dispatch.signal.models import SignalCreate
+from dispatch.signal.models import SignalInstanceCreate
 
 log = logging.getLogger(__name__)
 
@@ -38,5 +38,7 @@ def consume_signals(db_session: SessionLocal, project: Project):
         signals = plugin.instance.consume()
 
         for signal in signals:
-            signal_in = SignalCreate(**signal, project=project)
-            signal_flows.create_signal(db_session=db_session, signal_in=signal_in)
+            signal_instance_in = SignalInstanceCreate(**signal, project=project)
+            signal_flows.create_signal_instance(
+                db_session=db_session, signal_instance_in=signal_instance_in
+            )

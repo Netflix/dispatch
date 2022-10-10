@@ -4,26 +4,32 @@ from dispatch.case import service as case_service
 from dispatch.case import flows as case_flows
 from dispatch.signal import service as signal_service
 from dispatch.signal.duplication_rule import service as duplication_service
-from dispatch.signal.models import SignalRead
+from dispatch.signal.models import SignalInstanceRead
 from dispatch.signal.suppression_rule import service as suppression_service
 
 
-def create_signal(db_session: SessionLocal, signal_in: SignalRead):
+def create_signal_instance(db_session: SessionLocal, signal_instance_in: SignalInstanceRead):
     """Creates a signal and a case if necessary."""
-    signal = signal_service.create(db_session=db_session, signal_in=signal_in)
-    match = duplication_service.match(db_session=db_session, signal=signal_in)
-    if match:
-        signal.duplication_rule_id = match.id
+    signal_instance = signal_service.create_instance(
+        db_session=db_session, signal_instance_in=signal_instance_in
+    )
+
+    suppressed = suppression_service.supress(db_session=db_session, signal_instance=signal_instance)
+    if suppressed:
         return
 
-    match = suppression_service.match(db_session=db_session, signal=signal)
-    if match:
-        signal.suppression_rule_id = match.id
+    duplicate = duplication_service.deduplicate(
+        db_session=db_session, signal_instance=signal_instance
+    )
+    if duplicate:
         return
 
-    case_in = CaseCreate(title=signal.name, description="Automatically created based on signal.")
+    # create a case if not duplicate or supressed
+    case_in = CaseCreate(
+        title=signal_instance.signal.name, description="Automatically created based on signal."
+    )
     case = case_service.create(db_session=db_session, case_in=case_in)
-    case.signals.append(signal)
+    case.signal_instances.append(signal_instance)
     return case_flows.case_new_create_flow(
         db_session=db_session, organization_slug=None, case_id=case.id
     )

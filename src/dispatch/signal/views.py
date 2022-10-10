@@ -13,7 +13,7 @@ router = APIRouter()
 
 @router.get("", response_model=SignalPagination)
 def get_signals(*, common: dict = Depends(common_parameters)):
-    """Get all signals."""
+    """Get all signal definitions."""
     return search_filter_sort_paginate(model="Signal", **common)
 
 

@@ -2,7 +2,7 @@
   <v-container fluid>
     <v-row no-gutters>
       <v-col>
-        <div class="headline">Signals</div>
+        <div class="headline">Signal Definitions</div>
       </v-col>
       <v-col class="text-right">
         <table-filter-dialog :projects="defaultUserProjects" />
@@ -83,9 +83,9 @@ export default {
     return {
       headers: [
         { text: "Name", value: "name", align: "left", width: "10%" },
-        { text: "Severity", value: "severity", sortable: true },
-        { text: "Detection", value: "detection", sortable: true },
         { text: "Source", value: "source.name", sortable: true },
+        { text: "Variant", value: "variant", sortable: true },
+        { text: "Description", value: "description", sortable: false },
         { text: "Project", value: "project.name", sortable: true },
         { text: "Created At", value: "created_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },

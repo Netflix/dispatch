@@ -1,10 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
+from dispatch.enums import RuleMode
 from dispatch.auth.models import DispatchUser
 
-from dispatch.enums import RuleMode
 from dispatch.project import service as project_service
+from dispatch.signal.models import Signal
 
 from .models import SuppressionRule, SuppressionRuleCreate, SuppressionRuleUpdate
 
@@ -26,13 +27,24 @@ def get_by_name(*, db_session, project_id: int, name: str) -> Optional[Suppressi
     )
 
 
+def get_active(*, db_session, project_id: int, signal_name: str) -> Optional[SuppressionRule]:
+    """Gets active suppression rules for a given signal."""
+    return (
+        db_session.query(SuppressionRule)
+        .filter(SuppressionRule.signal_name == signal_name)
+        .filter(SuppressionRule.project_id == project_id)
+        .filter(SuppressionRule.mode == RuleMode.active)
+        .one()
+    )
+
+
 def get_all(*, db_session):
     """Gets all suppression rules."""
     return db_session.query(SuppressionRule)
 
 
 def get_all_active(*, db_session):
-    """Gets all active supression rules."""
+    """Gets all active suppression rules."""
     current_time = datetime.utcnow()
 
     return (
@@ -83,7 +95,21 @@ def delete(*, db_session, suppression_rule_id: int):
     db_session.commit()
 
 
-def match(*, db_session, signal):
-    """Matches a class instance with a given suppression rule."""
-    for rule in get_all_active(db_session=db_session):
-        return
+def supress(*, db_session, signal):
+    """Find any matching suppression rules and match signals."""
+    supressed = False
+    rule = get_active(db_session=db_session, signal_name=signal.name)
+
+    if not rule:
+        return supressed
+
+    if rule.expiration:
+        if rule.expiration <= datetime.now():
+            return supressed
+
+    if fingerprint == suppression_hash:
+        supressed = True
+        signal.suppression_rule_id = rule.id
+
+    db_session.commit()
+    return supressed

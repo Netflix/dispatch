@@ -1,11 +1,9 @@
 from typing import List, Optional
 from pydantic import Field
 
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.sql.schema import UniqueConstraint
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, PrimaryKeyConstraint
 
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.sqltypes import JSON
 from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
@@ -13,21 +11,33 @@ from dispatch.models import DispatchBase, EvergreenMixin, NameStr, ProjectMixin,
 
 from dispatch.enums import RuleMode
 from dispatch.auth.models import DispatchUser, UserRead
-from dispatch.signal.models import SignalRead
+from dispatch.signal.models import SignalRead, Signal
 from dispatch.project.models import ProjectRead
+
+assoc_duplication_tag_types = Table(
+    "assoc_duplication_rule_tag_types",
+    Base.metadata,
+    Column("duplication_id", Integer, ForeignKey("duplication_rule.id", ondelete="CASCADE")),
+    Column("tag_type_id", Integer, ForeignKey("tag_type.id", ondelete="CASCADE")),
+    PrimaryKeyConstraint("duplication_rule33_id", "tag_type_id"),
+)
 
 
 class DuplicationRule(Base, ProjectMixin, EvergreenMixin):
-    __table_args__ = (UniqueConstraint("name", "project_id"),)
-
     id = Column(Integer, primary_key=True)
-    name = Column(String)
-    description = Column(String)
-    expression = Column(JSON, nullable=False, default=[])
     creator_id = Column(Integer, ForeignKey(DispatchUser.id))
     creator = relationship("DispatchUser", backref="duplication_rules")
-    signals = relationship("Signal", backref="duplication_rule")
+    signal_id = Column(Integer, ForeignKey(Signal.id))
+    signal = relationship("Signal", backref="duplication_rules")
     mode = Column(String, default=RuleMode.active, nullable=False)
+
+    # number of seconds for duplication lookback default to 1 hour
+    window = Column(int, default=(60 * 60))
+
+    # the tag types to use for deduplication
+    tag_types = relationship(
+        "TagType", secondary=assoc_duplication_tag_types, backref="duplication_rules"
+    )
 
     search_vector = Column(
         TSVectorType(

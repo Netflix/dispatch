@@ -123,7 +123,6 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     )
 
     ticket = relationship("Ticket", uselist=False, backref="case", cascade="all, delete-orphan")
-    signals = relationship("Signal", backref="case")
 
 
 class ProjectRead(DispatchBase):
