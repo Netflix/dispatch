@@ -28,7 +28,7 @@ attrs==21.4.0
     #   schemathesis
 backoff==2.1.2
     # via schemathesis
-bcrypt==4.0.0
+bcrypt==4.0.1
     # via -r requirements-base.in
 blis==0.7.8
     # via thinc
