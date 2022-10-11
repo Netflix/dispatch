@@ -18,6 +18,7 @@ const getDefaultSelectedState = () => {
     escalated_at: null,
     events: [],
     groups: [],
+    signals: [],
     id: null,
     incidents: [],
     name: null,

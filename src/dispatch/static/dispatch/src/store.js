@@ -32,6 +32,9 @@ import sourceEnvironment from "@/data/source/environment/store"
 import sourceStatus from "@/data/source/status/store"
 import sourceTransport from "@/data/source/transport/store"
 import sourceType from "@/data/source/type/store"
+import signal from "@/signal/store"
+import signalSuppressionRule from "@/signal/suppression_rule/store"
+import signalDuplicationRule from "@/signal/duplication_rule/store"
 import tag from "@/tag/store"
 import tag_type from "@/tag_type/store"
 import task from "@/task/store"
@@ -80,6 +83,9 @@ export default new Vuex.Store({
     sourceStatus,
     sourceTransport,
     sourceType,
+    signal,
+    signalDuplicationRule,
+    signalSuppressionRule,
     tag,
     tag_type,
     task,

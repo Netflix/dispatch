@@ -45,7 +45,7 @@
     <chip-list label="Tags" v-model="tags" :project="project" />
     <chip-list label="Related Cases" v-model="related" :project="project" />
     <chip-list label="Duplicate Cases" v-model="duplicates" :project="project" />
-    <chip-list label="Linked Incidents" v-model="incidents" :project="project" />
+    <chip-list label="Linked Incidents" v-model="incidents" :project="project" />      
   </v-container>
 </template>
 
@@ -54,6 +54,7 @@ import { mapFields } from "vuex-map-fields"
 
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import CaseSeveritySelect from "@/case/severity/CaseSeveritySelect.vue"
+import SignalFilterCombobox from "@/signal/SignalFilterCombobox.vue"
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import ChipList from "@/components/ChipList.vue"
 
@@ -65,6 +66,7 @@ export default {
     CaseSeveritySelect,
     CaseTypeSelect,
     ChipList,
+
   },
 
   data() {
@@ -87,6 +89,7 @@ export default {
       "selected.id",
       "selected.incidents",
       "selected.name",
+      "selected.signals",
       "selected.project",
       "selected.related",
       "selected.reported_at",
