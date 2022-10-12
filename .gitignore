@@ -95,10 +95,6 @@ src/dispatch/static/test/e2e/reports/
 local_settings.py
 db.sqlite3
 
-# Flask stuff:
-instance/
-.webassets-cache
-
 # Scrapy stuff:
 .scrapy
 

@@ -5,8 +5,14 @@ from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
-from .models import SignalCreate, SignalPagination, SignalRead
-from .service import create, get
+from .models import (
+    SignalCreate,
+    SignalPagination,
+    SignalRead,
+    SignalInstanceRead,
+    SignalInstanceCreate,
+)
+from .service import create, get, create_instance
 
 router = APIRouter()
 
@@ -33,3 +39,11 @@ def get_signal(*, db_session: Session = Depends(get_db), signal_id: PrimaryKey):
 def create_signal(*, db_session: Session = Depends(get_db), signal_in: SignalCreate):
     """Create a new signal."""
     return create(db_session=db_session, signal_in=signal_in)
+
+
+@router.post("/{signal_id}/instances", response_model=SignalInstanceRead)
+def create_signal_instance(
+    *, db_session: Session = Depends(get_db), signal_instance_in: SignalInstanceCreate
+):
+    """Create a new signal instance."""
+    return create_instance(db_session=db_session, signal_instance_in=signal_instance_in)

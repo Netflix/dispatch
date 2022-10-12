@@ -96,13 +96,14 @@ export const protectedRoute = [
         menu: true,
         showEditSheet: false,
       },
-      redirect: { name: "SignalTable" },
+      redirect: { name: "SignalInstanceTable" },
       children: [
         {
           path: "/:organization/signals",
-          name: "SignalTable",
+          name: "SignalInstanceTable",
           meta: { title: "List" },
-          component: () => import(/* webpackChunkName: "signal-table" */ "@/signal/Table.vue"),
+          component: () =>
+            import(/* webpackChunkName: "signal-instance-table" */ "@/signal/TableInstance.vue"),
         },
       ],
     },
@@ -357,22 +358,10 @@ export const protectedRoute = [
               import(/* webpackChunkName: "workflows-table" */ "@/workflow/Table.vue"),
           },
           {
-            path: "signalSuppressionRules",
-            name: "signalSuppressionTable",
-            meta: { title: "Suppression Rules", subMenu: "project", group: "signal" },
-            component: () =>
-              import(
-                /* webpackChunkName: "signal-suppression-rule-table" */ "@/signal/suppression_rule/Table.vue"
-              ),
-          },
-          {
-            path: "signalDuplicationRules",
-            name: "signalDuplicationTable",
-            meta: { title: "Duplication Rules", subMenu: "project", group: "signal" },
-            component: () =>
-              import(
-                /* webpackChunkName: "signal-duplication-rule-table" */ "@/signal/duplication_rule/Table.vue"
-              ),
+            path: "signals",
+            name: "SignalTable",
+            meta: { title: "Signals", subMenu: "project", group: "general" },
+            component: () => import(/* webpackChunkName: "signals-table" */ "@/signal/Table.vue"),
           },
           {
             path: "caseTypes",

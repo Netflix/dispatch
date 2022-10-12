@@ -1,12 +1,21 @@
 <template>
   <v-container fluid>
+    <new-edit-dialog />
+    <delete-dialog />
+    <v-row no-gutters>
+      <v-col>
+        <v-alert dismissible icon="mdi-school" prominent text type="info"
+          >Signal definitions determine how a signal is processed. Allowing you to map case types,
+          supression and duplication rules for each signal.
+        </v-alert>
+      </v-col>
+    </v-row>
     <v-row no-gutters>
       <v-col>
         <div class="headline">Signal Definitions</div>
       </v-col>
       <v-col class="text-right">
-        <table-filter-dialog :projects="defaultUserProjects" />
-        <table-export-dialog />
+        <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -61,16 +70,13 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import RouterUtils from "@/router/utils"
-import TableExportDialog from "@/signal/TableExportDialog.vue"
-import TableFilterDialog from "@/signal/TableFilterDialog.vue"
+import NewEditDialog from "@/signal/NewEditSheet.vue"
+import DeleteDialog from "@/signal/DeleteDialog.vue"
 
 export default {
   name: "SignalTable",
 
-  components: {
-    TableExportDialog,
-    TableFilterDialog,
-  },
+  components: { NewEditDialog, DeleteDialog },
 
   props: {
     name: {
@@ -122,7 +128,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("signal", ["getAll"]),
+    ...mapActions("signal", ["getAll", "createEditShow", "removeShow"]),
   },
 
   created() {
