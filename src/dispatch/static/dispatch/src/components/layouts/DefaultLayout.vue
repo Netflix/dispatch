@@ -9,9 +9,7 @@
     <refresh />
     <v-main>
       <div>
-        <v-container ma-0 pa-0 fluid>
-          <router-view />
-        </v-container>
+        <v-container ma-0 pa-0 fluid> <router-view :key="$route.path" /> </v-container>
       </div>
     </v-main>
     <!-- Go to top -->

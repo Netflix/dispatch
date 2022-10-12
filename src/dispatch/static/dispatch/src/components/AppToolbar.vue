@@ -1,5 +1,6 @@
 <template>
   <v-app-bar clipped-left clipped-right app flat class="v-bar--underline" color="background0">
+    <organization-member-new-sheet />
     <organization-create-edit-dialog />
     <!--<v-app-bar-nav-icon @click="handleDrawerToggle" />-->
     <router-link :to="{ name: 'IncidentOverview' }" style="text-decoration: none">
@@ -59,7 +60,7 @@
           </v-list-item>
         </v-list>
       </v-menu>
-      <v-menu offset-y>
+      <v-menu offset-y :close-on-content-click="false">
         <template v-slot:activator="{ on }">
           <v-btn icon large text v-on="on">
             <v-avatar size="30px">
@@ -81,6 +82,16 @@
               <v-list-item-action>
                 <v-tooltip bottom>
                   <template v-slot:activator="{ on }">
+                    <v-btn icon v-on="on" @click="editShow(currentUser())"
+                      ><v-icon>edit</v-icon></v-btn
+                    >
+                  </template>
+                  <span>Edit</span>
+                </v-tooltip>
+              </v-list-item-action>
+              <v-list-item-action>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on }">
                     <v-btn icon v-on="on" @click="logout()"><v-icon>logout</v-icon></v-btn>
                   </template>
                   <span>Logout</span>
@@ -88,10 +99,25 @@
               </v-list-item-action>
             </v-list-item>
             <v-divider></v-divider>
-            <v-subheader>Organizations</v-subheader>
+            <v-subheader>My Organizations</v-subheader>
             <v-list-item v-for="(item, i) in organizations" :key="i">
+              <v-list-item-action>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on }">
+                    <v-btn icon v-on="on" @click="makeDefault(item)">
+                      <v-icon v-if="item.default">mdi-star</v-icon>
+                      <v-icon v-else="item.default">mdi-star-outline</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Mark as Default</span>
+                </v-tooltip>
+              </v-list-item-action>
               <v-list-item-content>
-                <v-list-item-title>{{ item.name }}</v-list-item-title>
+                <v-list-item-title
+                  ><router-link :to="{ params: { organization: item.slug }, force: true }">{{
+                    item.name
+                  }}</router-link></v-list-item-title
+                >
                 <v-list-item-subtitle>{{ item.description }}</v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
@@ -102,16 +128,6 @@
                     >
                   </template>
                   <span>Edit Organization</span>
-                </v-tooltip>
-              </v-list-item-action>
-              <v-list-item-action>
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on }">
-                    <v-btn @click="switchOrganizations(item.slug)" icon v-on="on"
-                      ><v-icon>mdi-swap-horizontal</v-icon></v-btn
-                    >
-                  </template>
-                  <span>Switch Organization</span>
                 </v-tooltip>
               </v-list-item-action>
             </v-list-item>
@@ -134,6 +150,8 @@ import { mapActions, mapMutations, mapState } from "vuex"
 
 import Util from "@/util"
 import OrganizationApi from "@/organization/api"
+import OrganizationMemberNewSheet from "@/organization/OrganizationMemberEdit.vue"
+
 import OrganizationCreateEditDialog from "@/organization/CreateEditDialog.vue"
 
 export default {
@@ -143,6 +161,7 @@ export default {
   }),
   components: {
     OrganizationCreateEditDialog,
+    OrganizationMemberNewSheet,
   },
   computed: {
     queryString: {
@@ -169,12 +188,21 @@ export default {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark
       localStorage.setItem("dark_theme", this.$vuetify.theme.dark.toString())
     },
-    switchOrganizations(slug) {
+    switchOrganization(slug) {
       this.$router.push({ params: { organization: slug } })
       this.$router.go(this.$router.currentRoute)
     },
+    makeDefault(defaultOrganization) {
+      this.organizations.forEach(function (organization) {
+        if (organization.id === defaultOrganization.id) {
+          organization.default = true
+        } else {
+          organization.default = false
+        }
+      })
+    },
     ...mapState("auth", ["currentUser", "userAvatarUrl"]),
-    ...mapActions("auth", ["logout"]),
+    ...mapActions("auth", ["logout", "editShow"]),
     ...mapActions("search", ["setQuery"]),
     ...mapActions("organization", ["showCreateEditDialog"]),
     ...mapMutations("search", ["SET_QUERY"]),

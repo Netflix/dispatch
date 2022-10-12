@@ -11,6 +11,7 @@ const getDefaultSelectedState = () => {
     email: null,
     loading: false,
     projects: null,
+    organizations: null,
     role: null,
   }
 }
@@ -21,6 +22,7 @@ const state = {
     token: null,
     email: "",
     projects: [],
+    organizations: [],
     role: null,
   },
   selected: {

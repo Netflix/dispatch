@@ -6,7 +6,6 @@ import store from "@/store"
 import pkceAuthProvider from "@/auth/pkceAuthProvider"
 import basicAuthProvider from "@/auth/basicAuthProvider"
 import customAuthProvider from "@/auth/customAuthProvider"
-import userSettings from "@/auth/userSettings"
 
 const routes = protectedRoute.concat(publicRoute)
 
@@ -45,15 +44,8 @@ router.beforeEach((to, from, next) => {
         pkceAuthProvider.login(to, from, next)
       } else {
         // defaults to none, allows custom providers
-        customAuthProvider
-          .login(to, from, next)
-          .then(function () {
-            return userSettings.load()
-          })
-          .then(next)
+        customAuthProvider.login(to, from, next).then(next)
       }
-    } else {
-      userSettings.load().then(next)
     }
   } else {
     next()

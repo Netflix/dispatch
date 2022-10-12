@@ -8,7 +8,7 @@
     <v-main>
       <organization-banner />
       <div class="page-wrapper">
-        <router-view />
+        <router-view :key="$route.path" />
       </div>
     </v-main>
   </v-app>

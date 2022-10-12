@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <div class="app-root">
-      <router-view />
+      <router-view :key="$route.path" />
       <v-snackbar bottom right :value="updateExists" :timeout="-1" color="info">
         An update is available
         <template v-slot:action="{ attrs }">

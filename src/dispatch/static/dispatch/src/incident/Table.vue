@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
     <div v-if="showEditSheet">
-      <router-view />
+      <router-view :key="$route.path" />
     </div>
     <v-row no-gutters>
       <new-sheet />
