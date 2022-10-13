@@ -236,6 +236,7 @@ export default {
         tag: [],
         project: [],
         tag_type: [],
+        visibility: [],
       },
     }
   },
@@ -307,6 +308,7 @@ export default {
         vm.filters.status,
         vm.filters.tag,
         vm.filters.tag_type,
+        vm.filters.visibility,
       ],
       () => {
         this.expression = SearchUtils.createFilterExpression(this.filters)
