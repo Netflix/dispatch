@@ -90,7 +90,7 @@ def create_engage_oncall_dialog(
         oncall_service_options.append(
             {"label": oncall_service.name, "value": oncall_service.external_id}
         )
-        
+
     page_options = [{"label": "Yes", "value": "Yes"}, {"label": "No", "value": "No"}]
     dialog = {
         "callback_id": command["command"],
