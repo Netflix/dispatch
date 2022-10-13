@@ -104,8 +104,11 @@ def update_user(
             detail=[{"msg": "A user with this id does not exist."}],
         )
 
-    if user_in.role:
-        user_organization_role = user.get_organization_role(organization)
+    # allow considerations for updating their own preferences
+    user_organization_role = user.get_organization_role(organization)
+    if current_user.id == user_id:
+        pass
+    else:
         if user_organization_role != user_in.role:
             current_user_organization_role = current_user.get_organization_role(organization)
             if current_user_organization_role != UserRoles.owner:
@@ -117,11 +120,6 @@ def update_user(
                         }
                     ],
                 )
-
-    # add organization information
-    user_in.organizations = [
-        UserOrganization(role=user_in.role, organization=OrganizationRead(name=organization))
-    ]
 
     return update(db_session=db_session, user=user, user_in=user_in)
 

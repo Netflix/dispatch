@@ -89,6 +89,7 @@ class DispatchUserOrganization(Base, TimeStampMixin):
     organization_id = Column(Integer, ForeignKey(Organization.id), primary_key=True)
     organization = relationship(Organization, backref="users")
 
+    default = Column(Boolean, default=False)
     role = Column(String, default=UserRoles.member)
 
 
@@ -100,7 +101,6 @@ class DispatchUserProject(Base, TimeStampMixin):
     project = relationship(Project, backref="users")
 
     default = Column(Boolean, default=False)
-
     role = Column(String, nullable=False, default=UserRoles.member)
 
 
@@ -163,7 +163,6 @@ class UserUpdate(DispatchBase):
     password: Optional[str] = Field(None, nullable=True)
     projects: Optional[List[UserProject]]
     organizations: Optional[List[UserOrganization]]
-    role: Optional[str] = Field(None, nullable=True)
 
     @validator("password", pre=True)
     def hash(cls, v):

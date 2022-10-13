@@ -1,8 +1,5 @@
 <template>
   <v-app-bar clipped-left clipped-right app flat class="v-bar--underline" color="background0">
-    <organization-member-new-sheet />
-    <organization-create-edit-dialog />
-    <!--<v-app-bar-nav-icon @click="handleDrawerToggle" />-->
     <router-link :to="{ name: 'IncidentOverview' }" style="text-decoration: none">
       <span class="button font-weight-bold">D I S P A T C H</span>
     </router-link>
@@ -60,108 +57,25 @@
           </v-list-item>
         </v-list>
       </v-menu>
-      <v-menu offset-y :close-on-content-click="false">
-        <template v-slot:activator="{ on }">
-          <v-btn icon large text v-on="on">
-            <v-avatar size="30px">
-              <v-icon> account_circle </v-icon>
-            </v-avatar>
-          </v-btn>
-        </template>
-        <v-card width="400">
-          <v-list>
-            <v-list-item class="px-2">
-              <v-list-item-avatar>
-                <v-icon size="30px"> account_circle </v-icon>
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title class="title" v-text="currentUser().name || currentUser().email">
-                </v-list-item-title>
-                <v-list-item-subtitle> {{ currentUser().email }} </v-list-item-subtitle>
-              </v-list-item-content>
-              <v-list-item-action>
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on }">
-                    <v-btn icon v-on="on" @click="editShow(currentUser())"
-                      ><v-icon>edit</v-icon></v-btn
-                    >
-                  </template>
-                  <span>Edit</span>
-                </v-tooltip>
-              </v-list-item-action>
-              <v-list-item-action>
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on }">
-                    <v-btn icon v-on="on" @click="logout()"><v-icon>logout</v-icon></v-btn>
-                  </template>
-                  <span>Logout</span>
-                </v-tooltip>
-              </v-list-item-action>
-            </v-list-item>
-            <v-divider></v-divider>
-            <v-subheader>My Organizations</v-subheader>
-            <v-list-item v-for="(item, i) in organizations" :key="i">
-              <v-list-item-action>
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on }">
-                    <v-btn icon v-on="on" @click="makeDefault(item)">
-                      <v-icon v-if="item.default">mdi-star</v-icon>
-                      <v-icon v-else="item.default">mdi-star-outline</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Mark as Default</span>
-                </v-tooltip>
-              </v-list-item-action>
-              <v-list-item-content>
-                <v-list-item-title
-                  ><router-link :to="{ params: { organization: item.slug }, force: true }">{{
-                    item.name
-                  }}</router-link></v-list-item-title
-                >
-                <v-list-item-subtitle>{{ item.description }}</v-list-item-subtitle>
-              </v-list-item-content>
-              <v-list-item-action>
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on }">
-                    <v-btn icon v-on="on" @click="showCreateEditDialog(item)"
-                      ><v-icon>mdi-pencil-outline</v-icon></v-btn
-                    >
-                  </template>
-                  <span>Edit Organization</span>
-                </v-tooltip>
-              </v-list-item-action>
-            </v-list-item>
-          </v-list>
-          <v-list-item @click="showCreateEditDialog()">
-            <v-list-item-avatar>
-              <v-icon size="30px">mdi-plus</v-icon>
-            </v-list-item-avatar>
-            <v-list-item-content>
-              <v-list-item-title>Create a new organization</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-card>
-      </v-menu>
+      <organization-menu />
+      <organization-member-edit-dialog />
+      <organization-create-edit-dialog />
     </v-toolbar-items>
   </v-app-bar>
 </template>
 <script>
-import { mapActions, mapMutations, mapState } from "vuex"
+import { mapActions, mapMutations } from "vuex"
 
 import Util from "@/util"
-import OrganizationApi from "@/organization/api"
-import OrganizationMemberNewSheet from "@/organization/OrganizationMemberEdit.vue"
-
-import OrganizationCreateEditDialog from "@/organization/CreateEditDialog.vue"
-
+import OrganizationMenu from "@/organization/OrganizationMenu.vue"
+import OrganizationMemberEditDialog from "@/organization/OrganizationMemberEditDialog.vue"
+import OrganizationCreateEditDialog from "@/organization/OrganizationCreateEditDialog.vue"
 export default {
   name: "AppToolbar",
-  data: () => ({
-    organizations: [],
-  }),
   components: {
+    OrganizationMenu,
     OrganizationCreateEditDialog,
-    OrganizationMemberNewSheet,
+    OrganizationMemberEditDialog,
   },
   computed: {
     queryString: {
@@ -188,35 +102,11 @@ export default {
       this.$vuetify.theme.dark = !this.$vuetify.theme.dark
       localStorage.setItem("dark_theme", this.$vuetify.theme.dark.toString())
     },
-    switchOrganization(slug) {
-      this.$router.push({ params: { organization: slug } })
-      this.$router.go(this.$router.currentRoute)
-    },
-    makeDefault(defaultOrganization) {
-      this.organizations.forEach(function (organization) {
-        if (organization.id === defaultOrganization.id) {
-          organization.default = true
-        } else {
-          organization.default = false
-        }
-      })
-    },
-    ...mapState("auth", ["currentUser", "userAvatarUrl"]),
-    ...mapActions("auth", ["logout", "editShow"]),
     ...mapActions("search", ["setQuery"]),
-    ...mapActions("organization", ["showCreateEditDialog"]),
     ...mapMutations("search", ["SET_QUERY"]),
   },
 
   created() {
-    this.error = null
-    this.loading = "error"
-    let filterOptions = {
-      itemsPerPage: 50,
-      sortBy: ["name"],
-      descending: [false],
-    }
-
     let theme = localStorage.getItem("dark_theme")
     if (theme) {
       if (theme === "true") {
@@ -225,11 +115,6 @@ export default {
         this.$vuetify.theme.dark = false
       }
     }
-
-    OrganizationApi.getAll(filterOptions).then((response) => {
-      this.organizations = response.data.items
-      this.loading = false
-    })
   },
 }
 </script>

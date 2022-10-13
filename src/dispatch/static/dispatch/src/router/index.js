@@ -44,14 +44,15 @@ router.beforeEach((to, from, next) => {
         pkceAuthProvider.login(to, from, next)
       } else {
         // defaults to none, allows custom providers
-        customAuthProvider.login(to, from, next).then(next)
+        customAuthProvider.login(to, from, next)
       }
+    } else {
+      next()
     }
   } else {
     next()
   }
 })
-
 function hasQueryParams(route) {
   return !!Object.keys(route.query).length
 }
