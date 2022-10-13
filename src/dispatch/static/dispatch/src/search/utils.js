@@ -97,8 +97,8 @@ export default {
         })
       }
       if (subFilter.length > 0) {
-       //include "and" condition to filter with visibility
         if (key == "visibility") {
+          // use "and" condition to filter with visibility
           filterExpression.push({ and: subFilter })
         } else {
           filterExpression.push({ or: subFilter })
