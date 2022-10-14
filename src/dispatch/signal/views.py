@@ -1,18 +1,23 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
+
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from dispatch.database.core import get_db
+from dispatch.exceptions import ExistsError
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.models import PrimaryKey
 
 from .models import (
     SignalCreate,
+    SignalUpdate,
     SignalPagination,
     SignalRead,
     SignalInstanceRead,
     SignalInstanceCreate,
 )
-from .service import create, get, create_instance
+from .service import create, update, get, create_instance
 
 router = APIRouter()
 
@@ -39,6 +44,29 @@ def get_signal(*, db_session: Session = Depends(get_db), signal_id: PrimaryKey):
 def create_signal(*, db_session: Session = Depends(get_db), signal_in: SignalCreate):
     """Create a new signal."""
     return create(db_session=db_session, signal_in=signal_in)
+
+
+@router.put("/{signal_id}", response_model=SignalRead)
+def update_signal(
+    *, db_session: Session = Depends(get_db), signal_id: PrimaryKey, signal_in: SignalUpdate
+):
+    """Updates an existing signal."""
+    signal = get(db_session=db_session, signal_id=signal_id)
+    if not signal:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A signal with this id does not exist."}],
+        )
+
+    try:
+        signal = update(db_session=db_session, signal=signal, signal_in=signal_in)
+    except IntegrityError:
+        raise ValidationError(
+            [ErrorWrapper(ExistsError(msg="A signal with this name already exists."), loc="name")],
+            model=SignalUpdate,
+        )
+
+    return signal
 
 
 @router.post("/{signal_id}/instances", response_model=SignalInstanceRead)

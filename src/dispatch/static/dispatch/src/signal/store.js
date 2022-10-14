@@ -7,6 +7,17 @@ import SignalApi from "@/signal/api"
 const getDefaultSelectedState = () => {
   return {
     id: null,
+    name: null,
+    description: null,
+    variant: null,
+    owner: null,
+    external_id: null,
+    external_url: null,
+    case_type: null,
+    case_priority: null,
+    duplication_rule: { tag_types: null, window: null },
+    source: null,
+    project: null,
     created_at: null,
     loading: false,
   }

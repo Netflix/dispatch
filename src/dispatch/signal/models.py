@@ -1,6 +1,8 @@
+from turtle import back
 import uuid
 from datetime import datetime
 from typing import Any, List, Optional
+from colorama import Fore
 
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, PrimaryKeyConstraint, DateTime
@@ -9,12 +11,13 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.enums import DispatchEnum
-from dispatch.auth.models import DispatchUser, UserRead
+from dispatch.auth.models import DispatchUser
 
 from dispatch.incident.models import CaseRead
-from dispatch.models import DispatchBase, EvergreenMixin, TimeStampMixin, ProjectMixin
+from dispatch.models import DispatchBase, EvergreenMixin, PrimaryKey, TimeStampMixin, ProjectMixin
 
 from dispatch.case.type.models import CaseTypeRead, CaseType
+from dispatch.case.priority.models import CasePriority, CasePriorityRead
 from dispatch.tag.models import TagRead
 from dispatch.project.models import ProjectRead
 from dispatch.data.source.models import SourceBase
@@ -63,7 +66,9 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     source_id = Column(Integer, ForeignKey("source.id"))
     variant = Column(String)
     case_type_id = Column(Integer, ForeignKey(CaseType.id))
-    case_type = relationship("CaseType", backref="signal")
+    case_type = relationship("CaseType", backref="signals")
+    case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
+    case_priority = relationship("CasePriority", backref="signals")
     instances = relationship("SignalInstance", backref="Signal")
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
@@ -99,8 +104,6 @@ class SuppressionRule(Base, ProjectMixin, EvergreenMixin):
 
 class DuplicationRule(Base, ProjectMixin, EvergreenMixin):
     id = Column(Integer, primary_key=True)
-    creator_id = Column(Integer, ForeignKey(DispatchUser.id))
-    creator = relationship("DispatchUser", backref="duplication_rules")
     signal_id = Column(Integer, ForeignKey(Signal.id))
     signal = relationship("Signal", backref="duplication_rules")
     mode = Column(String, default=RuleMode.active, nullable=False)
@@ -116,7 +119,6 @@ class DuplicationRule(Base, ProjectMixin, EvergreenMixin):
 
 # Pydantic models...
 class SignalRuleBase(DispatchBase):
-    creator: UserRead
     mode: Optional[RuleMode] = RuleMode.active
 
 
@@ -125,7 +127,7 @@ class DuplicationRuleBase(SignalRuleBase):
     tag_types: List[TagTypeRead]
 
 
-class SupressionRuleBase(SignalRuleBase):
+class SuppressionRuleBase(SignalRuleBase):
     expiration: Optional[datetime]
     tags: List[TagRead]
 
@@ -133,14 +135,15 @@ class SupressionRuleBase(SignalRuleBase):
 class SignalBase(DispatchBase):
     name: str
     owner: str
-    description: str
-    variant: str
+    description: Optional[str]
+    variant: Optional[str]
     case_type: Optional[CaseTypeRead]
-    external_id: Optional[str]
+    case_priority: Optional[CasePriorityRead]
+    external_id: str
     external_url: Optional[str]
     source: Optional[SourceBase]
     created_at: Optional[datetime] = None
-    supression_rule: Optional[SupressionRuleBase]
+    supression_rule: Optional[SuppressionRuleBase]
     duplication_rule: Optional[DuplicationRuleBase]
     project: ProjectRead
 
@@ -149,8 +152,12 @@ class SignalCreate(SignalBase):
     pass
 
 
+class SignalUpdate(SignalBase):
+    id: PrimaryKey
+
+
 class SignalRead(SignalBase):
-    id: uuid.UUID
+    id: PrimaryKey
 
 
 class SignalPagination(DispatchBase):

@@ -3,33 +3,47 @@ from dispatch.database.core import SessionLocal
 from dispatch.case import service as case_service
 from dispatch.case import flows as case_flows
 from dispatch.signal import service as signal_service
-from dispatch.signal.duplication_rule import service as duplication_service
 from dispatch.signal.models import SignalInstanceRead
-from dispatch.signal.suppression_rule import service as suppression_service
 
 
 def create_signal_instance(db_session: SessionLocal, signal_instance_in: SignalInstanceRead):
     """Creates a signal and a case if necessary."""
+    signal = signal_service.get_by_external_id_and_variant(
+        db_session=db_session,
+        external_id=signal_instance_in.external_id,
+        variant=signal_instance_in.variant,
+    )
+
     signal_instance = signal_service.create_instance(
         db_session=db_session, signal_instance_in=signal_instance_in
     )
 
-    suppressed = suppression_service.supress(db_session=db_session, signal_instance=signal_instance)
+    signal_instance.signal = signal
+
+    suppressed = signal_service.supress(
+        db_session=db_session,
+        signal_instance=signal_instance,
+        supression_rule=signal.supression_rule,
+    )
     if suppressed:
         return
 
-    duplicate = duplication_service.deduplicate(
-        db_session=db_session, signal_instance=signal_instance
+    duplicate = signal_service.deduplicate(
+        db_session=db_session,
+        signal_instance=signal_instance,
+        duplication_rule=signal.duplication_rule,
     )
     if duplicate:
         return
 
     # create a case if not duplicate or supressed
     case_in = CaseCreate(
-        title=signal_instance.signal.name, description="Automatically created based on signal."
+        title=signal.name,
+        description=signal.description,
+        case_priority=signal.case_priority,
+        case_type=signal.case_type,
     )
     case = case_service.create(db_session=db_session, case_in=case_in)
-    case.signal_instances.append(signal_instance)
     return case_flows.case_new_create_flow(
         db_session=db_session, organization_slug=None, case_id=case.id
     )
