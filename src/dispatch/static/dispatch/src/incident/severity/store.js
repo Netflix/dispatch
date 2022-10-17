@@ -65,15 +65,15 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 500),
-  createEditShow({ commit }, caseSeverity) {
+  createEditShow({ commit }, incidentSeverity) {
     commit("SET_DIALOG_CREATE_EDIT", true)
-    if (caseSeverity) {
-      commit("SET_SELECTED", caseSeverity)
+    if (incidentSeverity) {
+      commit("SET_SELECTED", incidentSeverity)
     }
   },
-  removeShow({ commit }, caseSeverity) {
+  removeShow({ commit }, incidentSeverity) {
     commit("SET_DIALOG_DELETE", true)
-    commit("SET_SELECTED", caseSeverity)
+    commit("SET_SELECTED", incidentSeverity)
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
