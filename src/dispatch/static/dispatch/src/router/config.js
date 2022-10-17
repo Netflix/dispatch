@@ -333,7 +333,7 @@ export const protectedRoute = [
             group: "settings",
           },
           name: "ProjectSettings",
-          redirect: { name: "CaseTypeTable" },
+          redirect: { name: "PluginTable" },
         },
         ...withPrefix("projects/", [
           {
