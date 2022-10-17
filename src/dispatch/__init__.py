@@ -32,6 +32,7 @@ try:
     from dispatch.incident_cost_type.models import IncidentCostType  # noqa lgtm[py/unused-import]
     from dispatch.incident_role.models import IncidentRole  # noqa lgtm[py/unused-import]
     from dispatch.incident.priority.models import IncidentPriority  # noqa lgtm[py/unused-import]
+    from dispatch.incident.severity.models import IncidentSeverity  # noqa lgtm[py/unused-import]
     from dispatch.incident.type.models import IncidentType  # noqa lgtm[py/unused-import]
     from dispatch.individual.models import IndividualContact  # noqa lgtm[py/unused-import]
     from dispatch.notification.models import Notification  # noqa lgtm[py/unused-import]
