@@ -37,9 +37,6 @@
           clearable
         />
       </v-flex>
-      <v-flex xs12>
-        <project-select v-model="project" />
-      </v-flex>
       <v-flex xs6>
         <ValidationProvider name="Reporter" rules="required" immediate>
           <participant-select
@@ -71,6 +68,18 @@
         </ValidationProvider>
       </v-flex>
       <v-flex xs6>
+        <project-select v-model="project" />
+      </v-flex>
+      <v-flex xs6>
+        <incident-type-select v-model="incident_type" :project="project" />
+      </v-flex>
+      <v-flex xs6>
+        <incident-severity-select v-model="incident_severity" :project="project" />
+      </v-flex>
+      <v-flex xs6>
+        <incident-priority-select v-model="incident_priority" :project="project" />
+      </v-flex>
+      <v-flex xs6>
         <v-select
           v-model="status"
           label="Status"
@@ -85,12 +94,6 @@
           :items="visibilities"
           hint="The visibilty of the incident."
         />
-      </v-flex>
-      <v-flex xs6>
-        <incident-type-select v-model="incident_type" :project="project" />
-      </v-flex>
-      <v-flex xs6>
-        <incident-priority-select v-model="incident_priority" :project="project" />
       </v-flex>
       <v-flex xs12>
         <v-row>
@@ -124,6 +127,7 @@ import CaseFilterCombobox from "@/case/CaseFilterCombobox.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
 import IncidentPrioritySelect from "@/incident/priority/IncidentPrioritySelect.vue"
+import IncidentSeveritySelect from "@/incident/severity/IncidentSeveritySelect.vue"
 import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
 import ParticipantSelect from "@/incident/ParticipantSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
@@ -142,6 +146,7 @@ export default {
     DateTimePickerMenu,
     IncidentFilterCombobox,
     IncidentPrioritySelect,
+    IncidentSeveritySelect,
     IncidentTypeSelect,
     ParticipantSelect,
     ProjectSelect,
@@ -165,6 +170,7 @@ export default {
       "selected.duplicates",
       "selected.id",
       "selected.incident_priority",
+      "selected.incident_severity",
       "selected.incident_type",
       "selected.name",
       "selected.project",
