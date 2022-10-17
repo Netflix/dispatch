@@ -339,7 +339,6 @@ six==1.16.0
     #   python-dateutil
     #   python-multipart
     #   sqlalchemy-filters
-    #   validators
 slack-sdk==3.19.1
     # via -r requirements-base.in
 smart-open==5.2.1
@@ -412,7 +411,7 @@ uvicorn==0.18.3
     # via -r requirements-base.in
 uvloop==0.17.0
     # via -r requirements-base.in
-validators==0.18.2
+validators==0.20.0
     # via -r requirements-base.in
 wasabi==0.10.0
     # via
