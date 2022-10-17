@@ -357,45 +357,6 @@ export const protectedRoute = [
               import(/* webpackChunkName: "workflows-table" */ "@/workflow/Table.vue"),
           },
           {
-            path: "signalSuppressionRules",
-            name: "signalSuppressionTable",
-            meta: { title: "Suppression Rules", subMenu: "project", group: "signal" },
-            component: () =>
-              import(
-                /* webpackChunkName: "signal-suppression-rule-table" */ "@/signal/suppression_rule/Table.vue"
-              ),
-          },
-          {
-            path: "signalDuplicationRules",
-            name: "signalDuplicationTable",
-            meta: { title: "Duplication Rules", subMenu: "project", group: "signal" },
-            component: () =>
-              import(
-                /* webpackChunkName: "signal-duplication-rule-table" */ "@/signal/duplication_rule/Table.vue"
-              ),
-          },
-          {
-            path: "caseTypes",
-            name: "CaseTypeTable",
-            meta: { title: "Types", subMenu: "project", group: "case" },
-            component: () =>
-              import(/* webpackChunkName: "case-type-table" */ "@/case/type/Table.vue"),
-          },
-          {
-            path: "caseSeverities",
-            name: "caseSeverityTable",
-            meta: { title: "Severities", subMenu: "project", group: "case" },
-            component: () =>
-              import(/* webpackChunkName: "case-severity-table" */ "@/case/severity/Table.vue"),
-          },
-          {
-            path: "casePriorities",
-            name: "casePriorityTable",
-            meta: { title: "Priorities", subMenu: "project", group: "case" },
-            component: () =>
-              import(/* webpackChunkName: "case-priority-table" */ "@/case/priority/Table.vue"),
-          },
-          {
             path: "incidentTypes",
             name: "IncidentTypeTable",
             meta: { title: "Types", subMenu: "project", group: "incident" },
@@ -409,6 +370,15 @@ export const protectedRoute = [
             component: () =>
               import(
                 /* webpackChunkName: "incident-priority-table" */ "@/incident/priority/Table.vue"
+              ),
+          },
+          {
+            path: "incidentSeverities",
+            name: "IncidentSeverityTable",
+            meta: { title: "Severities", subMenu: "project", group: "incident" },
+            component: () =>
+              import(
+                /* webpackChunkName: "incident-severity-table" */ "@/incident/severity/Table.vue"
               ),
           },
           {
@@ -427,6 +397,84 @@ export const protectedRoute = [
             component: () =>
               import(
                 /* webpackChunkName: "incident-cost-type-table" */ "@/incident_role/Table.vue"
+              ),
+          },
+          {
+            path: "caseTypes",
+            name: "CaseTypeTable",
+            meta: { title: "Types", subMenu: "project", group: "case" },
+            component: () =>
+              import(/* webpackChunkName: "case-type-table" */ "@/case/type/Table.vue"),
+          },
+          {
+            path: "casePriorities",
+            name: "casePriorityTable",
+            meta: { title: "Priorities", subMenu: "project", group: "case" },
+            component: () =>
+              import(/* webpackChunkName: "case-priority-table" */ "@/case/priority/Table.vue"),
+          },
+          {
+            path: "caseSeverities",
+            name: "caseSeverityTable",
+            meta: { title: "Severities", subMenu: "project", group: "case" },
+            component: () =>
+              import(/* webpackChunkName: "case-severity-table" */ "@/case/severity/Table.vue"),
+          },
+          {
+            path: "signalSuppressionRules",
+            name: "signalSuppressionTable",
+            meta: { title: "Suppression Rules", subMenu: "project", group: "signal" },
+            component: () =>
+              import(
+                /* webpackChunkName: "signal-suppression-rule-table" */ "@/signal/suppression_rule/Table.vue"
+              ),
+          },
+          {
+            path: "signalDuplicationRules",
+            name: "signalDuplicationTable",
+            meta: { title: "Duplication Rules", subMenu: "project", group: "signal" },
+            component: () =>
+              import(
+                /* webpackChunkName: "signal-duplication-rule-table" */ "@/signal/duplication_rule/Table.vue"
+              ),
+          },
+          {
+            path: "source/types",
+            name: "SourceTypeTable",
+            meta: { title: "Source Types", subMenu: "project", group: "data" },
+            component: () =>
+              import(/* webpackChunkName: "source-type-table" */ "@/data/source/type/Table.vue"),
+          },
+          {
+            path: "source/environments",
+            name: "SourceEnvironmentTable",
+            meta: { title: "Source Environments", subMenu: "project", group: "data" },
+            component: () =>
+              import(
+                /* webpackChunkName: "environment-table" */ "@/data/source/environment/Table.vue"
+              ),
+          },
+          {
+            path: "source/statuses",
+            name: "SourceStatusTable",
+            meta: { title: "Source Statuses", subMenu: "project", group: "data" },
+            component: () =>
+              import(/* webpackChunkName: "status-table" */ "@/data/source/status/Table.vue"),
+          },
+          {
+            path: "source/transports",
+            name: "SourceTransportTable",
+            meta: { title: "Source Transports", subMenu: "project", group: "data" },
+            component: () =>
+              import(/* webpackchunkname: "transport-table" */ "@/data/source/transport/Table.vue"),
+          },
+          {
+            path: "source/dataFormats",
+            name: "SourceDataFormatTable",
+            meta: { title: "Source Data Formats", subMenu: "project", group: "data" },
+            component: () =>
+              import(
+                /* webpackChunkName: "dataFormat-table" */ "@/data/source/dataFormat/Table.vue"
               ),
           },
           {
@@ -500,45 +548,6 @@ export const protectedRoute = [
             name: "TermTable",
             meta: { title: "Terms", subMenu: "project", group: "knowledge" },
             component: () => import(/* webpackChunkName: "term-table" */ "@/term/Table.vue"),
-          },
-          {
-            path: "source/types",
-            name: "SourceTypeTable",
-            meta: { title: "Source Types", subMenu: "project", group: "data" },
-            component: () =>
-              import(/* webpackChunkName: "source-type-table" */ "@/data/source/type/Table.vue"),
-          },
-          {
-            path: "source/environments",
-            name: "SourceEnvironmentTable",
-            meta: { title: "Source Environments", subMenu: "project", group: "data" },
-            component: () =>
-              import(
-                /* webpackChunkName: "environment-table" */ "@/data/source/environment/Table.vue"
-              ),
-          },
-          {
-            path: "source/statuses",
-            name: "SourceStatusTable",
-            meta: { title: "Source Statuses", subMenu: "project", group: "data" },
-            component: () =>
-              import(/* webpackChunkName: "status-table" */ "@/data/source/status/Table.vue"),
-          },
-          {
-            path: "source/transports",
-            name: "SourceTransportTable",
-            meta: { title: "Source Transports", subMenu: "project", group: "data" },
-            component: () =>
-              import(/* webpackchunkname: "transport-table" */ "@/data/source/transport/Table.vue"),
-          },
-          {
-            path: "source/dataFormats",
-            name: "SourceDataFormatTable",
-            meta: { title: "Source Data Formats", subMenu: "project", group: "data" },
-            component: () =>
-              import(
-                /* webpackChunkName: "dataFormat-table" */ "@/data/source/dataFormat/Table.vue"
-              ),
           },
         ]),
       ],

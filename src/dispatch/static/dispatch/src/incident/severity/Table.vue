@@ -4,8 +4,8 @@
     <v-row no-gutters>
       <v-col>
         <v-alert dismissible icon="mdi-school" prominent text type="info">
-          Severities add another dimension to Dispatch's incident categorization. They also allow for
-          some configurability.
+          Severities add another dimension to Dispatch's incident categorization. They also allow
+          for some configurability.
         </v-alert>
       </v-col>
     </v-row>
