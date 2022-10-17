@@ -85,24 +85,81 @@ export const protectedRoute = [
         import(/* webpackChunkName: "incidents-report" */ "@/incident/ReportForm.vue"),
     },
     {
-      path: "signals",
-      component: DefaultLayout,
-      name: "signals",
+      path: "dashboards",
+      component: DashboardLayout,
+      name: "dashboards",
+      redirect: { name: "CaseOverview" },
       meta: {
-        title: "Signals",
-        icon: "mdi-broadcast",
-        group: "signals",
+        title: "Dashboards",
+        group: "dashboard",
+        icon: "mdi-monitor-dashboard",
+        menu: true,
+        requiresAuth: true,
+      },
+      children: [
+        {
+          path: "cases",
+          name: "CaseOverview",
+          meta: { title: "Cases", group: "type" },
+          component: () =>
+            import(/* webpackChunkName: "case-overview" */ "@/dashboard/case/CaseOverview.vue"),
+        },
+        {
+          path: "incidents",
+          name: "IncidentOverview",
+          meta: { title: "Incidents", group: "type" },
+          component: () =>
+            import(
+              /* webpackChunkName: "incident-overview" */ "@/dashboard/incident/IncidentOverview.vue"
+            ),
+        },
+        {
+          path: "tasks",
+          name: "TaskOverview",
+          meta: { title: "Tasks", group: "type" },
+          component: () =>
+            import(/* webpackChunkName: "task-overview" */ "@/dashboard/task/TaskOverview.vue"),
+        },
+        {
+          path: "data",
+          name: "DataOverview",
+          meta: { title: "Data", group: "type" },
+          component: () =>
+            import(/* webpackChunkName: "data-overview" */ "@/dashboard/data/DataOverview.vue"),
+        },
+      ],
+    },
+    {
+      path: "incidents",
+      component: DefaultLayout,
+      name: "incidents",
+      meta: {
+        title: "Incidents",
+        icon: "mdi-file-multiple",
+        group: "incidents",
         requiresAuth: true,
         menu: true,
         showEditSheet: false,
       },
-      redirect: { name: "SignalTable" },
+      redirect: { name: "IncidentTable" },
       children: [
         {
-          path: "/:organization/signals",
-          name: "SignalTable",
+          path: "/:organization/incidents",
+          name: "IncidentTable",
           meta: { title: "List" },
-          component: () => import(/* webpackChunkName: "signal-table" */ "@/signal/Table.vue"),
+          component: () => import(/* webpackChunkName: "incident-table" */ "@/incident/Table.vue"),
+          children: [
+            {
+              path: "/:organization/incidents/:name",
+              name: "IncidentTableEdit",
+              component: () =>
+                import(/* webpackChunkName: "incident-table" */ "@/incident/EditSheet.vue"),
+              props: true,
+              meta: {
+                showEditSheet: true,
+              },
+            },
+          ],
         },
       ],
     },
@@ -140,36 +197,58 @@ export const protectedRoute = [
       ],
     },
     {
-      path: "incidents",
+      path: "signals",
       component: DefaultLayout,
-      name: "incidents",
+      name: "signals",
       meta: {
-        title: "Incidents",
-        icon: "mdi-file-multiple",
-        group: "incidents",
+        title: "Signals",
+        icon: "mdi-broadcast",
+        group: "signals",
         requiresAuth: true,
         menu: true,
         showEditSheet: false,
       },
-      redirect: { name: "IncidentTable" },
+      redirect: { name: "SignalTable" },
       children: [
         {
-          path: "/:organization/incidents",
-          name: "IncidentTable",
+          path: "/:organization/signals",
+          name: "SignalTable",
           meta: { title: "List" },
-          component: () => import(/* webpackChunkName: "incident-table" */ "@/incident/Table.vue"),
-          children: [
-            {
-              path: "/:organization/incidents/:name",
-              name: "IncidentTableEdit",
-              component: () =>
-                import(/* webpackChunkName: "incident-table" */ "@/incident/EditSheet.vue"),
-              props: true,
-              meta: {
-                showEditSheet: true,
-              },
-            },
-          ],
+          component: () => import(/* webpackChunkName: "signal-table" */ "@/signal/Table.vue"),
+        },
+      ],
+    },
+    {
+      path: "data",
+      component: DefaultLayout,
+      name: "Data",
+      redirect: { name: "SourceTable" },
+      meta: {
+        title: "Data",
+        icon: "mdi-database",
+        group: "data",
+        menu: true,
+        requiresAuth: true,
+      },
+      children: [
+        {
+          path: "/:organization/data/sources",
+          name: "SourceTable",
+          meta: { title: "Sources", group: "data" },
+          component: () => import(/* webpackChunkName: "source-table" */ "@/data/source/Table.vue"),
+        },
+        {
+          path: "/:organization/data/sources/:name/:tab",
+          name: "SourceDetail",
+          meta: { title: "Source Detail" },
+          component: () =>
+            import(/* webpackChunkName: "source-table" */ "@/data/source/Detail.vue"),
+        },
+        {
+          path: "/:organization/data/queries",
+          name: "QueryTable",
+          meta: { title: "Queries", group: "data" },
+          component: () => import(/* webpackChunkName: "query-table" */ "@/data/query/Table.vue"),
         },
       ],
     },
@@ -212,85 +291,6 @@ export const protectedRoute = [
           name: "FeedbackTable",
           meta: { title: "Feedback" },
           component: () => import(/* webpackChunkName: "feedback-table" */ "@/feedback/Table.vue"),
-        },
-      ],
-    },
-    {
-      path: "data",
-      component: DefaultLayout,
-      name: "Data",
-      redirect: { name: "SourceTable" },
-      meta: {
-        title: "Data",
-        icon: "mdi-database",
-        group: "data",
-        menu: true,
-        requiresAuth: true,
-      },
-      children: [
-        {
-          path: "/:organization/data/sources",
-          name: "SourceTable",
-          meta: { title: "Sources", group: "data" },
-          component: () => import(/* webpackChunkName: "source-table" */ "@/data/source/Table.vue"),
-        },
-        {
-          path: "/:organization/data/sources/:name/:tab",
-          name: "SourceDetail",
-          meta: { title: "Source Detail" },
-          component: () =>
-            import(/* webpackChunkName: "source-table" */ "@/data/source/Detail.vue"),
-        },
-        {
-          path: "/:organization/data/queries",
-          name: "QueryTable",
-          meta: { title: "Queries", group: "data" },
-          component: () => import(/* webpackChunkName: "query-table" */ "@/data/query/Table.vue"),
-        },
-      ],
-    },
-    {
-      path: "dashboards",
-      component: DashboardLayout,
-      name: "dashboards",
-      redirect: { name: "CaseOverview" },
-      meta: {
-        title: "Dashboards",
-        group: "dashboard",
-        icon: "mdi-monitor-dashboard",
-        menu: true,
-        requiresAuth: true,
-      },
-      children: [
-        {
-          path: "cases",
-          name: "CaseOverview",
-          meta: { title: "Cases", group: "type" },
-          component: () =>
-            import(/* webpackChunkName: "case-overview" */ "@/dashboard/case/CaseOverview.vue"),
-        },
-        {
-          path: "incidents",
-          name: "IncidentOverview",
-          meta: { title: "Incidents", group: "type" },
-          component: () =>
-            import(
-              /* webpackChunkName: "incident-overview" */ "@/dashboard/incident/IncidentOverview.vue"
-            ),
-        },
-        {
-          path: "tasks",
-          name: "TaskOverview",
-          meta: { title: "Tasks", group: "type" },
-          component: () =>
-            import(/* webpackChunkName: "task-overview" */ "@/dashboard/task/TaskOverview.vue"),
-        },
-        {
-          path: "data",
-          name: "DataOverview",
-          meta: { title: "Data", group: "type" },
-          component: () =>
-            import(/* webpackChunkName: "data-overview" */ "@/dashboard/data/DataOverview.vue"),
         },
       ],
     },
