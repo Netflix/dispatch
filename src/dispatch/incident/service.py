@@ -15,6 +15,7 @@ from dispatch.database.core import SessionLocal
 from dispatch.event import service as event_service
 from dispatch.exceptions import NotFoundError
 from dispatch.incident.priority import service as incident_priority_service
+from dispatch.incident.severity import service as incident_severity_service
 from dispatch.incident.type import service as incident_type_service
 from dispatch.incident_cost import service as incident_cost_service
 from dispatch.incident_role.service import resolve_role
@@ -161,6 +162,11 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
         incident_priority_in=incident_in.incident_priority,
     )
 
+    incident_severity = incident_severity_service.get_default(
+        db_session=db_session,
+        project_id=project.id,
+    )
+
     visibility = incident_type.visibility
     if incident_in.visibility:
         visibility = incident_in.visibility
@@ -171,15 +177,17 @@ def create(*, db_session, incident_in: IncidentCreate) -> Incident:
 
     # We create the incident
     incident = Incident(
-        title=incident_in.title,
         description=incident_in.description,
-        status=incident_in.status,
-        incident_type=incident_type,
         incident_priority=incident_priority,
-        visibility=visibility,
-        tags=tag_objs,
+        incident_severity=incident_severity,
+        incident_type=incident_type,
         project=project,
+        status=incident_in.status,
+        tags=tag_objs,
+        title=incident_in.title,
+        visibility=visibility,
     )
+
     db_session.add(incident)
     db_session.commit()
 
@@ -270,6 +278,12 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
         incident_priority_in=incident_in.incident_priority,
     )
 
+    incident_severity = incident_severity_service.get_by_name_or_default(
+        db_session=db_session,
+        project_id=incident.project.id,
+        incident_severity_in=incident_in.incident_severity,
+    )
+
     cases = []
     for c in incident_in.cases:
         cases.append(case_service.get(db_session=db_session, case_id=c.id))
@@ -302,6 +316,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
             "duplicates",
             "incident_costs",
             "incident_priority",
+            "incident_severity",
             "incident_type",
             "project",
             "reporter",
@@ -319,6 +334,7 @@ def update(*, db_session, incident: Incident, incident_in: IncidentUpdate) -> In
     incident.duplicates = duplicates
     incident.incident_costs = incident_costs
     incident.incident_priority = incident_priority
+    incident.incident_severity = incident_severity
     incident.incident_type = incident_type
     incident.status = incident_in.status
     incident.tags = tags
