@@ -54,23 +54,11 @@ export const protectedRoute = [
     path: "/",
     meta: { requiresAuth: true },
     redirect: {
-      name: "IncidentOverview",
+      name: "IncidentTable",
       params: { organization: "default" },
     },
   },
   ...withPrefix("/:organization/", [
-    {
-      path: "cases/status",
-      name: "caseStatus",
-      meta: { title: "Case Status", requiresAuth: true },
-      component: () => import(/* webpackChunkName: "case-table" */ "@/case/Status.vue"),
-    },
-    {
-      path: "cases/report",
-      name: "caseReport",
-      meta: { title: "Case Report", requiresAuth: true },
-      component: () => import(/* webpackChunkName: "case-report" */ "@/case/ReportForm.vue"),
-    },
     {
       path: "incidents/status",
       name: "status",
@@ -83,6 +71,18 @@ export const protectedRoute = [
       meta: { title: "Report", requiresAuth: true },
       component: () =>
         import(/* webpackChunkName: "incidents-report" */ "@/incident/ReportForm.vue"),
+    },
+    {
+      path: "cases/status",
+      name: "caseStatus",
+      meta: { title: "Case Status", requiresAuth: true },
+      component: () => import(/* webpackChunkName: "case-table" */ "@/case/Status.vue"),
+    },
+    {
+      path: "cases/report",
+      name: "caseReport",
+      meta: { title: "Case Report", requiresAuth: true },
+      component: () => import(/* webpackChunkName: "case-report" */ "@/case/ReportForm.vue"),
     },
     {
       path: "dashboards",
