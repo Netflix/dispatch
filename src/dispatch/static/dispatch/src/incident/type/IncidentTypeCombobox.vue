@@ -9,16 +9,17 @@
     clearable
     deletable-chips
     hide-selected
-    item-text="id"
+    item-text="name"
+    item-value="id"
     multiple
     no-filter
-    v-model="incidentPriority"
+    v-model="incidentType"
   >
     <template v-slot:no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No incident priorities matching "
+            No incident types matching "
             <strong>{{ search }}</strong
             >".
           </v-list-item-title>
@@ -27,18 +28,24 @@
     </template>
     <template v-slot:selection="{ item, index }">
       <v-chip close @click:close="value.splice(index, 1)">
-        <span v-if="!project"> {{ item.project.name }}/ </span>{{ item.name }}
+        <span v-if="!project"
+          ><span v-if="item.project">{{ item.project.name }}/</span></span
+        >{{ item.name }}
       </v-chip>
     </template>
     <template v-slot:item="data">
-      <v-list-item-content>
-        <v-list-item-title>
-          <span v-if="!project">{{ data.item.project.name }}/</span>{{ data.item.name }}
-        </v-list-item-title>
-        <v-list-item-subtitle style="width: 200px" class="text-truncate">
-          {{ data.item.description }}
-        </v-list-item-subtitle>
-      </v-list-item-content>
+      <template>
+        <v-list-item-content>
+          <v-list-item-title>
+            <span v-if="!project"
+              ><span v-if="data.item.project">{{ data.item.project.name }}/</span></span
+            >{{ data.item.name }}
+          </v-list-item-title>
+          <v-list-item-subtitle style="width: 200px" class="text-truncate">
+            {{ data.item.description }}
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </template>
     </template>
     <template v-slot:append-item>
       <v-list-item v-if="more" @click="loadMore()">
@@ -54,10 +61,11 @@
 import { cloneDeep, debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import IncidentPriorityApi from "@/incident_priority/api"
+import IncidentTypeApi from "@/incident/type/api"
 
 export default {
-  name: "IncidentPriorityComboBox",
+  name: "IncidentTypeComboBox",
+
   props: {
     value: {
       type: Array,
@@ -68,7 +76,7 @@ export default {
     label: {
       type: String,
       default: function () {
-        return "Priorities"
+        return "Types"
       },
     },
     project: {
@@ -88,21 +96,25 @@ export default {
   },
 
   computed: {
-    incidentPriority: {
+    incidentType: {
       get() {
         return cloneDeep(this.value)
       },
       set(value) {
         this.search = null
-        this._incidentPriorities = value.filter((v) => {
+        this._incidentTypes = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
           return true
         })
-        this.$emit("input", this._incidentPriorities)
+        this.$emit("input", this._incidentTypes)
       },
     },
+  },
+
+  created() {
+    this.fetchData()
   },
 
   methods: {
@@ -113,6 +125,7 @@ export default {
     fetchData() {
       this.error = null
       this.loading = "error"
+
       let filterOptions = {
         q: this.search,
         sortBy: ["name"],
@@ -131,7 +144,7 @@ export default {
 
       let enabledFilter = [
         {
-          model: "IncidentPriority",
+          model: "IncidentType",
           field: "enabled",
           op: "==",
           value: "true",
@@ -143,7 +156,7 @@ export default {
         enabledFilter
       )
 
-      IncidentPriorityApi.getAll(filterOptions).then((response) => {
+      IncidentTypeApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.total = response.data.total
         this.loading = false
@@ -153,17 +166,12 @@ export default {
         } else {
           this.more = false
         }
-
         this.loading = false
       })
     },
     getFilteredData: debounce(function () {
       this.fetchData()
     }, 500),
-  },
-
-  created() {
-    this.fetchData()
   },
 }
 </script>

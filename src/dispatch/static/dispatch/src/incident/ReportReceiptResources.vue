@@ -136,8 +136,8 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import IncidentPriority from "@/incident/IncidentPriority.vue"
 
+import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
 import PluginApi from "@/plugin/api"
 
 export default {

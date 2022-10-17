@@ -400,7 +400,7 @@ export const protectedRoute = [
             name: "IncidentTypeTable",
             meta: { title: "Types", subMenu: "project", group: "incident" },
             component: () =>
-              import(/* webpackChunkName: "incident-type-table" */ "@/incident_type/Table.vue"),
+              import(/* webpackChunkName: "incident-type-table" */ "@/incident/type/Table.vue"),
           },
           {
             path: "incidentPriorities",
@@ -408,7 +408,7 @@ export const protectedRoute = [
             meta: { title: "Priorities", subMenu: "project", group: "incident" },
             component: () =>
               import(
-                /* webpackChunkName: "incident-priority-table" */ "@/incident_priority/Table.vue"
+                /* webpackChunkName: "incident-priority-table" */ "@/incident/priority/Table.vue"
               ),
           },
           {

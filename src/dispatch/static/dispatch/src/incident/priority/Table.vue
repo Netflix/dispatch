@@ -4,8 +4,8 @@
     <v-row no-gutters>
       <v-col>
         <v-alert dismissible icon="mdi-school" prominent text type="info"
-          >Types categorize incidents. Dispatch allows for configuration on a per-incident type
-          basis.
+          >Priorities adds another dimension to Dispatch's incident categorization. They also allow
+          for some configurability (e.g. only page a command for 'high' priority incidents).
         </v-alert>
       </v-col>
     </v-row>
@@ -41,6 +41,9 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
+            <template v-slot:item.page_commander="{ item }">
+              <v-simple-checkbox v-model="item.page_commander" disabled />
+            </template>
             <template v-slot:item.default="{ item }">
               <v-simple-checkbox v-model="item.default" disabled />
             </template>
@@ -72,11 +75,11 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
+import NewEditSheet from "@/incident/priority/NewEditSheet.vue"
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
-import NewEditSheet from "@/incident_type/NewEditSheet.vue"
 
 export default {
-  name: "IncidentTypeTable",
+  name: "IncidentPriorityTable",
 
   components: {
     NewEditSheet,
@@ -87,17 +90,19 @@ export default {
       headers: [
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
-        { text: "Incident Document", value: "incident_template_document.name", sortable: false },
-        { text: "Visibility", value: "visibility", sortable: false },
+        { text: "Page Commander", value: "page_commander", sortable: true },
         { text: "Default", value: "default", sortable: true },
         { text: "Enabled", value: "enabled", sortable: true },
+        { text: "Tactical Report Reminder", value: "tactical_report_reminder", sortable: true },
+        { text: "Executive Report Reminder", value: "executive_report_reminder", sortable: true },
+        { text: "View Order", value: "view_order", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },
 
   computed: {
-    ...mapFields("incident_type", [
+    ...mapFields("incident_priority", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
@@ -108,20 +113,13 @@ export default {
       "table.rows.items",
       "table.rows.total",
     ]),
-    ...mapFields("route", ["query"]),
+    ...mapFields("route", ["query", "params"]),
   },
 
   created() {
     this.project = [{ name: this.query.project }]
 
     this.getAll()
-
-    this.$watch(
-      (vm) => [vm.page],
-      () => {
-        this.getAll()
-      }
-    )
 
     this.$watch(
       (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project],
@@ -134,7 +132,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident_type", ["getAll", "createEditShow", "removeShow"]),
+    ...mapActions("incident_priority", ["getAll", "createEditShow", "removeShow"]),
   },
 }
 </script>

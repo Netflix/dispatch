@@ -2,22 +2,25 @@ import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import IncidentPriorityApi from "@/incident_priority/api"
+import IncidentTypeApi from "@/incident/type/api"
 
 const getDefaultSelectedState = () => {
   return {
-    color: null,
-    default: false,
-    description: null,
-    enabled: false,
-    executive_report_reminder: null,
     id: null,
-    loading: false,
+    slug: null,
     name: null,
-    page_commander: null,
+    description: null,
+    visibility: null,
+    incident_template_document: null,
+    tracking_template_document: null,
+    review_template_document: null,
+    executive_template_document: null,
+    loading: false,
+    plugin_metadata: [],
+    exclude_from_metrics: null,
+    enabled: false,
+    default: false,
     project: null,
-    tactical_report_reminder: null,
-    view_order: null,
   }
 }
 
@@ -38,7 +41,7 @@ const state = {
       q: "",
       page: 1,
       itemsPerPage: 10,
-      sortBy: ["view_order"],
+      sortBy: ["name"],
       descending: [false],
       filters: {
         project: [],
@@ -57,9 +60,9 @@ const actions = {
     commit("SET_TABLE_LOADING", "primary")
     let params = SearchUtils.createParametersFromTableOptions(
       { ...state.table.options },
-      "IncidentPriority"
+      "IncidentType"
     )
-    return IncidentPriorityApi.getAll(params)
+    return IncidentTypeApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
@@ -68,15 +71,15 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 500),
-  createEditShow({ commit }, incidentPriority) {
+  createEditShow({ commit }, incidentType) {
     commit("SET_DIALOG_CREATE_EDIT", true)
-    if (incidentPriority) {
-      commit("SET_SELECTED", incidentPriority)
+    if (incidentType) {
+      commit("SET_SELECTED", incidentType)
     }
   },
-  removeShow({ commit }, incidentPriority) {
+  removeShow({ commit }, incidentType) {
     commit("SET_DIALOG_DELETE", true)
-    commit("SET_SELECTED", incidentPriority)
+    commit("SET_SELECTED", incidentType)
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
@@ -88,16 +91,15 @@ const actions = {
   },
   save({ commit, state, dispatch }) {
     commit("SET_SELECTED_LOADING", true)
-
     if (!state.selected.id) {
-      return IncidentPriorityApi.create(state.selected)
+      return IncidentTypeApi.create(state.selected)
         .then(() => {
-          commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
+          commit("SET_SELECTED_LOADING", false)
           commit(
             "notification_backend/addBeNotification",
-            { text: "Incident priority created successfully.", type: "success" },
+            { text: "Incident type created successfully.", type: "success" },
             { root: true }
           )
         })
@@ -105,14 +107,14 @@ const actions = {
           commit("SET_SELECTED_LOADING", false)
         })
     } else {
-      return IncidentPriorityApi.update(state.selected.id, state.selected)
+      return IncidentTypeApi.update(state.selected.id, state.selected)
         .then(() => {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Incident priority updated successfully.", type: "success" },
+            { text: "Incident type updated successfully.", type: "success" },
             { root: true }
           )
         })
@@ -122,12 +124,12 @@ const actions = {
     }
   },
   remove({ commit, dispatch }) {
-    return IncidentPriorityApi.delete(state.selected.id).then(function () {
+    return IncidentTypeApi.delete(state.selected.id).then(function () {
       dispatch("closeRemove")
       dispatch("getAll")
       commit(
         "notification_backend/addBeNotification",
-        { text: "Incident priority deleted successfully.", type: "success" },
+        { text: "Incident type deleted successfully.", type: "success" },
         { root: true }
       )
     })

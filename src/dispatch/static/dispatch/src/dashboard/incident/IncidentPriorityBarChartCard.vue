@@ -10,9 +10,10 @@
 
 <script>
 import { map, sortBy } from "lodash"
+
 import DashboardCard from "@/dashboard/DashboardCard.vue"
 import DashboardUtils from "@/dashboard/utils"
-import IncidentPriorityApi from "@/incident_priority/api"
+import IncidentPriorityApi from "@/incident/priority/api"
 
 export default {
   name: "IncidentPriorityBarChartCard",
