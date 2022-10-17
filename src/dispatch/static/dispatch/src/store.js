@@ -14,6 +14,7 @@ import feedback from "@/feedback/store"
 import incident from "@/incident/store"
 import incident_cost_type from "@/incident_cost_type/store"
 import incident_priority from "@/incident/priority/store"
+import incident_severity from "@/incident/severity/store"
 import incident_type from "@/incident/type/store"
 import individual from "@/individual/store"
 import notification from "@/notification/store"
@@ -59,6 +60,7 @@ export default new Vuex.Store({
     incident,
     incident_cost_type,
     incident_priority,
+    incident_severity,
     incident_type,
     individual,
     notification,
