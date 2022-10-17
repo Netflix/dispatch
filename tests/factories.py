@@ -20,6 +20,7 @@ from dispatch.feedback.models import Feedback
 from dispatch.group.models import Group
 from dispatch.incident.models import Incident
 from dispatch.incident.priority.models import IncidentPriority
+from dispatch.incident.severity.models import IncidentSeverity
 from dispatch.incident.type.models import IncidentType
 from dispatch.incident_cost.models import IncidentCost
 from dispatch.incident_cost_type.models import IncidentCostType
@@ -330,6 +331,19 @@ class IncidentPriorityFactory(BaseFactory):
         """Factory Configuration."""
 
         model = IncidentPriority
+
+
+class IncidentSeverityFactory(BaseFactory):
+    """Incident Severity Factory."""
+
+    name = FuzzyText()
+    description = FuzzyText()
+    project = SubFactory(ProjectFactory)
+
+    class Meta:
+        """Factory Configuration."""
+
+        model = IncidentSeverity
 
 
 class IncidentTypeFactory(BaseFactory):
@@ -665,6 +679,7 @@ class IncidentFactory(BaseFactory):
     status = FuzzyChoice(["Active", "Stable", "Closed"])
     incident_type = SubFactory(IncidentTypeFactory)
     incident_priority = SubFactory(IncidentPriorityFactory)
+    incident_severity = SubFactory(IncidentSeverityFactory)
     project = SubFactory(ProjectFactory)
 
     class Meta:
