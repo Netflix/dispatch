@@ -5,10 +5,10 @@ from sqlalchemy.orm import Session
 
 from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident
-from dispatch.incident_priority import service as incident_priority_service
-from dispatch.incident_priority.models import IncidentPriority
-from dispatch.incident_type import service as incident_type_service
-from dispatch.incident_type.models import IncidentType
+from dispatch.incident.priority import service as incident_priority_service
+from dispatch.incident.priority.models import IncidentPriority
+from dispatch.incident.type import service as incident_type_service
+from dispatch.incident.type.models import IncidentType
 from dispatch.participant.models import Participant
 from dispatch.project import service as project_service
 from dispatch.tag.models import Tag

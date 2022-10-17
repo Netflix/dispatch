@@ -18,7 +18,7 @@ from dispatch.group import service as group_service
 from dispatch.group.models import GroupCreate
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
-from dispatch.incident_type import service as incident_type_service
+from dispatch.incident.type import service as incident_type_service
 from dispatch.individual import service as individual_service
 from dispatch.messaging.strings import (
     INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,

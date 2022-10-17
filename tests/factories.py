@@ -19,11 +19,11 @@ from dispatch.event.models import Event
 from dispatch.feedback.models import Feedback
 from dispatch.group.models import Group
 from dispatch.incident.models import Incident
+from dispatch.incident.priority.models import IncidentPriority
+from dispatch.incident.type.models import IncidentType
 from dispatch.incident_cost.models import IncidentCost
 from dispatch.incident_cost_type.models import IncidentCostType
-from dispatch.incident_priority.models import IncidentPriority
 from dispatch.incident_role.models import IncidentRole
-from dispatch.incident_type.models import IncidentType
 from dispatch.individual.models import IndividualContact
 from dispatch.notification.models import Notification
 from dispatch.organization.models import Organization

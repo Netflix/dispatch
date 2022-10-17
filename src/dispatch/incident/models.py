@@ -3,7 +3,6 @@ from collections import Counter, defaultdict
 from typing import List, Optional
 
 from pydantic import validator
-from dispatch.models import NameStr, PrimaryKey
 from sqlalchemy import (
     Column,
     DateTime,
@@ -20,20 +19,21 @@ from sqlalchemy_utils import TSVectorType, observes
 from dispatch.conference.models import ConferenceRead
 from dispatch.conversation.models import ConversationRead
 from dispatch.database.core import Base
+from dispatch.document.models import Document
 from dispatch.document.models import DocumentRead
 from dispatch.enums import Visibility
 from dispatch.event.models import EventRead
-from dispatch.incident_cost.models import IncidentCostRead, IncidentCostUpdate
-from dispatch.incident_priority.models import (
+from dispatch.group.models import Group
+from dispatch.incident.priority.models import (
     IncidentPriorityBase,
     IncidentPriorityCreate,
     IncidentPriorityRead,
 )
-from dispatch.document.models import Document
-from dispatch.group.models import Group
-from dispatch.incident_type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
+from dispatch.incident.type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
+from dispatch.incident_cost.models import IncidentCostRead, IncidentCostUpdate
 from dispatch.messaging.strings import INCIDENT_RESOLUTION_DEFAULT
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
+from dispatch.models import NameStr, PrimaryKey
 from dispatch.participant.models import Participant
 from dispatch.participant.models import ParticipantRead, ParticipantUpdate
 from dispatch.report.enums import ReportTypes

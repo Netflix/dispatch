@@ -7,7 +7,7 @@ from dispatch.enums import Visibility
 from dispatch.event import service as event_service
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import Incident
-from dispatch.incident_type import service as incident_type_service
+from dispatch.incident.type import service as incident_type_service
 from dispatch.plugin import service as plugin_service
 
 from .models import Ticket, TicketCreate
