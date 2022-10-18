@@ -30,6 +30,7 @@ from dispatch.messaging.strings import (
     INCIDENT_PRIORITY_CHANGE,
     INCIDENT_RESOURCES_MESSAGE,
     INCIDENT_REVIEW_DOCUMENT,
+    INCIDENT_SEVERITY_CHANGE,
     INCIDENT_STATUS_CHANGE,
     INCIDENT_STATUS_REMINDER,
     INCIDENT_TYPE_CHANGE,
@@ -336,6 +337,9 @@ def send_incident_update_notifications(
         if previous_incident.incident_type.name != incident.incident_type.name:
             notification_template.append(INCIDENT_TYPE_CHANGE)
 
+        if previous_incident.incident_severity.name != incident.incident_severity.name:
+            notification_template.append(INCIDENT_SEVERITY_CHANGE)
+
         if previous_incident.incident_priority.name != incident.incident_priority.name:
             notification_template.append(INCIDENT_PRIORITY_CHANGE)
     else:
@@ -344,12 +348,16 @@ def send_incident_update_notifications(
                 change = True
                 notification_template.append(INCIDENT_TYPE_CHANGE)
 
+            if previous_incident.incident_severity.name != incident.incident_severity.name:
+                change = True
+                notification_template.append(INCIDENT_SEVERITY_CHANGE)
+
             if previous_incident.incident_priority.name != incident.incident_priority.name:
                 change = True
                 notification_template.append(INCIDENT_PRIORITY_CHANGE)
 
     if not change:
-        # we don't need to notify
+        # we don't need to send notifications
         log.debug("Incident updated notifications not sent.")
         return
 

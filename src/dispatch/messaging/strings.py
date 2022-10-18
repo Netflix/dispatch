@@ -283,6 +283,7 @@ Thanks for closing incident {{name}}. Please, take a minute to review and update
 \n • Incident Description: {{description}}
 \n • Incident Resolution: {{resolution}}
 \n • Incident Type: {{type}}
+\n • Incident Severity: {{severity}}
 \n • Incident Priority: {{priority}}
 \n\n
 Also, please consider taking the following actions:
@@ -304,13 +305,18 @@ Hey, I see you're the Incident Commander for {{name}} ("{{title}}"). Here are a 
 To find a Slack command, simply type `/` in the message field or click the lightning bolt icon to the left of the message field.
 """
 
+INCIDENT_STATUS_CHANGE_DESCRIPTION = """
+The incident status has been changed from {{ incident_status_old }} to {{ incident_status_new }}.""".replace(
+    "\n", " "
+).strip()
+
 INCIDENT_TYPE_CHANGE_DESCRIPTION = """
 The incident type has been changed from {{ incident_type_old }} to {{ incident_type_new }}.""".replace(
     "\n", " "
 ).strip()
 
-INCIDENT_STATUS_CHANGE_DESCRIPTION = """
-The incident status has been changed from {{ incident_status_old }} to {{ incident_status_new }}.""".replace(
+INCIDENT_SEVERITY_CHANGE_DESCRIPTION = """
+The incident severity has been changed from {{ incident_severity_old }} to {{ incident_severity_new }}.""".replace(
     "\n", " "
 ).strip()
 
@@ -372,6 +378,15 @@ INCIDENT_STATUS = {
 
 INCIDENT_TYPE = {"title": "Type - {{type}}", "text": "{{type_description}}"}
 
+INCIDENT_SEVERITY = {
+    "title": "Severity - {{severity}}",
+    "text": "{{severity_description}}",
+}
+
+INCIDENT_SEVERITY_FYI = {
+    "title": "Severity - {{severity}}",
+    "text": "{{severity_description}}",
+}
 INCIDENT_PRIORITY = {
     "title": "Priority - {{priority}}",
     "text": "{{priority_description}}",
@@ -430,11 +445,16 @@ INCIDENT_FAQ_DOCUMENT = {
     "text": INCIDENT_FAQ_DOCUMENT_DESCRIPTION,
 }
 
-INCIDENT_TYPE_CHANGE = {"title": "Incident Type Change", "text": INCIDENT_TYPE_CHANGE_DESCRIPTION}
-
 INCIDENT_STATUS_CHANGE = {
     "title": "Status Change",
     "text": INCIDENT_STATUS_CHANGE_DESCRIPTION,
+}
+
+INCIDENT_TYPE_CHANGE = {"title": "Incident Type Change", "text": INCIDENT_TYPE_CHANGE_DESCRIPTION}
+
+INCIDENT_SEVERITY_CHANGE = {
+    "title": "Severity Change",
+    "text": INCIDENT_SEVERITY_CHANGE_DESCRIPTION,
 }
 
 INCIDENT_PRIORITY_CHANGE = {
@@ -460,6 +480,7 @@ INCIDENT_PARTICIPANT_WELCOME_MESSAGE = [
     INCIDENT_DESCRIPTION,
     INCIDENT_STATUS,
     INCIDENT_TYPE,
+    INCIDENT_SEVERITY,
     INCIDENT_PRIORITY,
     INCIDENT_REPORTER,
     INCIDENT_COMMANDER,
@@ -491,6 +512,7 @@ INCIDENT_NOTIFICATION.extend(
         INCIDENT_DESCRIPTION,
         INCIDENT_STATUS,
         INCIDENT_TYPE,
+        INCIDENT_SEVERITY_FYI,
         INCIDENT_PRIORITY_FYI,
         INCIDENT_REPORTER,
         INCIDENT_COMMANDER,
@@ -681,6 +703,7 @@ INCIDENT = [
     INCIDENT_TITLE,
     INCIDENT_STATUS,
     INCIDENT_TYPE,
+    INCIDENT_SEVERITY,
     INCIDENT_PRIORITY,
     INCIDENT_COMMANDER,
 ]
