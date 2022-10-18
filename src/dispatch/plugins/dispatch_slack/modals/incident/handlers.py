@@ -110,6 +110,7 @@ def report_incident_from_submitted_form(
         title=parsed_form_data[IncidentBlockId.title],
         description=parsed_form_data[IncidentBlockId.description],
         incident_type=parsed_form_data[IncidentBlockId.type]["value"],
+        incident_severity=parsed_form_data[IncidentBlockId.severity]["value"],
         incident_priority=parsed_form_data[IncidentBlockId.priority]["value"],
     )
 
@@ -132,6 +133,7 @@ def report_incident_from_submitted_form(
         title=parsed_form_data[IncidentBlockId.title],
         description=parsed_form_data[IncidentBlockId.description],
         incident_type={"name": parsed_form_data[IncidentBlockId.type]["value"]},
+        incident_severity={"name": parsed_form_data[IncidentBlockId.severity]["value"]},
         incident_priority={"name": parsed_form_data[IncidentBlockId.priority]["value"]},
         project=project,
         tags=tags,
@@ -194,6 +196,7 @@ def update_incident_from_submitted_form(
         description=parsed_form_data[IncidentBlockId.description],
         resolution=parsed_form_data[IncidentBlockId.resolution],
         incident_type={"name": parsed_form_data[IncidentBlockId.type]["value"]},
+        incident_severity={"name": parsed_form_data[IncidentBlockId.severity]["value"]},
         incident_priority={"name": parsed_form_data[IncidentBlockId.priority]["value"]},
         status=parsed_form_data[IncidentBlockId.status]["value"],
         tags=tags,

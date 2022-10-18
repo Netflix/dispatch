@@ -7,6 +7,8 @@ from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import Incident
 from dispatch.incident.priority import service as incident_priority_service
 from dispatch.incident.priority.models import IncidentPriority
+from dispatch.incident.severity import service as incident_severity_service
+from dispatch.incident.severity.models import IncidentSeverity
 from dispatch.incident.type import service as incident_type_service
 from dispatch.incident.type.models import IncidentType
 from dispatch.participant.models import Participant
@@ -69,6 +71,41 @@ def incident_type_select_block(
             "type": "static_select",
             "placeholder": {"type": "plain_text", "text": "Select Type"},
             "options": incident_type_options,
+        },
+    }
+
+    if initial_option:
+        block["element"].update(
+            {
+                "initial_option": option_from_template(
+                    text=initial_option.name, value=initial_option.name
+                )
+            }
+        )
+
+    return block
+
+
+def incident_severity_select_block(
+    db_session: Session, initial_option: IncidentSeverity = None, project_id: int = None
+):
+    """Builds the incident severity select block."""
+    incident_severity_options = []
+    for incident_severity in incident_severity_service.get_all_enabled(
+        db_session=db_session, project_id=project_id
+    ):
+        incident_severity_options.append(
+            option_from_template(text=incident_severity.name, value=incident_severity.name)
+        )
+
+    block = {
+        "block_id": IncidentBlockId.severity,
+        "type": "input",
+        "label": {"type": "plain_text", "text": "Severity", "emoji": True},
+        "element": {
+            "type": "static_select",
+            "placeholder": {"type": "plain_text", "text": "Select Severity"},
+            "options": incident_severity_options,
         },
     }
 
