@@ -229,7 +229,7 @@ preshed==3.0.6
     # via
     #   spacy
     #   thinc
-protobuf==4.21.7
+protobuf==3.20.0
     # via
     #   -r requirements-base.in
     #   google-api-core
@@ -281,7 +281,7 @@ python-multipart==0.0.5
     # via -r requirements-base.in
 python-slugify==6.1.2
     # via -r requirements-base.in
-pytz==2022.4
+pytz==2022.5
     # via
     #   -r requirements-base.in
     #   pandas
@@ -339,6 +339,7 @@ six==1.16.0
     #   python-dateutil
     #   python-multipart
     #   sqlalchemy-filters
+    #   validators
 slack-sdk==3.19.1
     # via -r requirements-base.in
 smart-open==5.2.1
@@ -411,7 +412,7 @@ uvicorn==0.18.3
     # via -r requirements-base.in
 uvloop==0.17.0
     # via -r requirements-base.in
-validators==0.20.0
+validators==0.18.2
     # via -r requirements-base.in
 wasabi==0.10.0
     # via
