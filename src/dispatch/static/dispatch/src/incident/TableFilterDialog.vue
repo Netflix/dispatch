@@ -32,6 +32,11 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
+            <incident-severity-combobox v-model="local_incident_severity" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
             <incident-priority-combobox v-model="local_incident_priority" />
           </v-list-item-content>
         </v-list-item>
@@ -65,6 +70,7 @@ import { mapFields } from "vuex-map-fields"
 
 import DateWindowInput from "@/components/DateWindowInput.vue"
 import IncidentPriorityCombobox from "@/incident/priority/IncidentPriorityCombobox.vue"
+import IncidentSeverityCombobox from "@/incident/severity/IncidentSeverityCombobox.vue"
 import IncidentStatusMultiSelect from "@/incident/status/IncidentStatusMultiSelect.vue"
 import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
@@ -77,6 +83,7 @@ export default {
   components: {
     DateWindowInput,
     IncidentPriorityCombobox,
+    IncidentSeverityCombobox,
     IncidentStatusMultiSelect,
     IncidentTypeCombobox,
     ProjectCombobox,
@@ -96,36 +103,39 @@ export default {
   data() {
     return {
       display: false,
-      local_reported_at: {},
       local_closed_at: {},
-      local_project: this.projects,
-      local_incident_type: [],
       local_incident_priority: [],
+      local_incident_severity: [],
+      local_incident_type: [],
+      local_project: this.projects,
+      local_reported_at: {},
       local_status: [],
-      local_tag_type: [],
       local_tag: [],
+      local_tag_type: [],
     }
   },
 
   computed: {
     ...mapFields("incident", [
-      "table.options.filters.reported_at",
       "table.options.filters.closed_at",
-      "table.options.filters.project",
-      "table.options.filters.incident_type",
       "table.options.filters.incident_priority",
+      "table.options.filters.incident_severity",
+      "table.options.filters.incident_type",
+      "table.options.filters.project",
+      "table.options.filters.reported_at",
       "table.options.filters.status",
-      "table.options.filters.tag_type",
       "table.options.filters.tag",
+      "table.options.filters.tag_type",
     ]),
     numFilters: function () {
       return sum([
-        this.incident_type.length,
         this.incident_priority.length,
+        this.incident_severity.length,
+        this.incident_type.length,
         this.project.length,
+        this.status.length,
         this.tag.length,
         this.tag_type.length,
-        this.status.length,
       ])
     },
   },
@@ -133,14 +143,15 @@ export default {
   methods: {
     applyFilters() {
       // we set the filter values
-      this.reported_at = this.local_reported_at
       this.closed_at = this.local_closed_at
-      this.project = this.local_project
-      this.incident_type = this.local_incident_type
       this.incident_priority = this.local_incident_priority
+      this.incident_severity = this.local_incident_severity
+      this.incident_type = this.local_incident_type
+      this.project = this.local_project
+      this.reported_at = this.local_reported_at
       this.status = this.local_status
-      this.tag_type = this.local_tag_type
       this.tag = this.local_tag
+      this.tag_type = this.local_tag_type
 
       // we close the dialog
       this.display = false

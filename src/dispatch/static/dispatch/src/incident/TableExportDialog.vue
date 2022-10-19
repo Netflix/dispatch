@@ -45,6 +45,11 @@
               </v-list-item>
               <v-list-item>
                 <v-list-item-content>
+                  <incident-severity-combobox v-model="incident_severity" />
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-content>
                   <incident-priority-combobox v-model="incident_priority" />
                 </v-list-item-content>
               </v-list-item>
@@ -78,6 +83,9 @@
               :items="items"
               :loading="previewRowsLoading"
             >
+              <template v-slot:item.incident_severity.name="{ item }">
+                <incident-severity :severity="item.incident_severity.name" />
+              </template>
               <template v-slot:item.incident_priority.name="{ item }">
                 <incident-priority :priority="item.incident_priority.name" />
               </template>
@@ -108,6 +116,8 @@ import DateWindowInput from "@/components/DateWindowInput.vue"
 import IncidentApi from "@/incident/api"
 import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
 import IncidentPriorityCombobox from "@/incident/priority/IncidentPriorityCombobox.vue"
+import IncidentSeverity from "@/incident/severity/IncidentSeverity.vue"
+import IncidentSeverityCombobox from "@/incident/severity/IncidentSeverityCombobox.vue"
 import IncidentStatus from "@/incident/status/IncidentStatus.vue"
 import IncidentStatusMultiSelect from "@/incident/status/IncidentStatusMultiSelect.vue"
 import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
@@ -122,6 +132,8 @@ export default {
     DateWindowInput,
     IncidentPriority,
     IncidentPriorityCombobox,
+    IncidentSeverity,
+    IncidentSeverityCombobox,
     IncidentStatus,
     IncidentStatusMultiSelect,
     IncidentTypeCombobox,
@@ -140,7 +152,7 @@ export default {
         { text: "Resolution", value: "resolution", sortable: false },
         { text: "Status", value: "status", sortable: false },
         { text: "Incident Type", value: "incident_type.name", sortable: false },
-        { text: "Incident Priority", value: "incident_priority.name", sortable: false },
+        { text: "Incident Severity", value: "incident_severity.name", sortable: false },
       ],
       allFields: [
         { text: "Name", value: "name", sortable: false },
@@ -151,6 +163,7 @@ export default {
         { text: "Description", value: "description", sortable: false },
         { text: "Resolution", value: "resolution", sortable: false },
         { text: "Incident Type", value: "incident_type.name", sortable: false },
+        { text: "Incident Severity", value: "incident_severity.name", sortable: false },
         { text: "Incident Priority", value: "incident_priority.name", sortable: false },
         { text: "Reporter", value: "reporter.individual.email", sortable: false },
         { text: "Commander", value: "commander.individual.email", sortable: false },
@@ -176,17 +189,18 @@ export default {
 
   computed: {
     ...mapFields("incident", [
-      "table.options.filters.incident_type",
-      "table.options.filters.incident_priority",
-      "table.options.filters.project",
-      "table.options.filters.status",
-      "table.options.filters.tag_type",
-      "table.options.filters.tag",
-      "table.options.filters.reported_at",
+      "dialogs.showExport",
       "table.options",
+      "table.options.filters.incident_priority",
+      "table.options.filters.incident_severity",
+      "table.options.filters.incident_type",
+      "table.options.filters.project",
+      "table.options.filters.reported_at",
+      "table.options.filters.status",
+      "table.options.filters.tag",
+      "table.options.filters.tag_type",
       "table.rows.items",
       "table.rows.total",
-      "dialogs.showExport",
     ]),
   },
 
@@ -224,13 +238,14 @@ export default {
   created() {
     this.$watch(
       (vm) => [
-        vm.incident_type,
         vm.incident_priority,
-        vm.status,
+        vm.incident_severity,
+        vm.incident_type,
         vm.project,
+        vm.reported_at,
+        vm.status,
         vm.tag,
         vm.tag_type,
-        vm.reported_at,
       ],
       () => {
         this.getPreviewData()
