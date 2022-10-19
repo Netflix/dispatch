@@ -394,8 +394,8 @@ def sync_trigger(conn, table, tsvector_column, indexed_columns, metadata=None, o
         conn=conn,
     )
     classes = [
-        # DropSearchTriggerSQL,
-        # DropSearchFunctionSQL,
+        DropSearchTriggerSQL,
+        DropSearchFunctionSQL,
         CreateSearchFunctionSQL,
         CreateSearchTriggerSQL,
     ]
