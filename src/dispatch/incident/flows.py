@@ -136,9 +136,6 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     ticket = plugin.instance.create(
         incident.id,
         title,
-        incident.incident_type.name,
-        incident.incident_severity.name,
-        incident.incident_priority.name,
         incident.commander.individual.email,
         incident.reporter.individual.email,
         incident_type_plugin_metadata,
