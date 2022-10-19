@@ -44,8 +44,15 @@
       </v-flex>
       <!-- Widgets Ends -->
       <!-- Statistics -->
-      <v-flex lg6 sm6 xs12>
+      <v-flex lg12 sm12 xs12>
         <incident-type-bar-chart-card
+          v-model="groupedItems"
+          :loading="loading"
+          @detailsSelected="detailsSelected($event)"
+        />
+      </v-flex>
+      <v-flex lg6 sm6 xs12>
+        <incident-severity-bar-chart-card
           v-model="groupedItems"
           :loading="loading"
           @detailsSelected="detailsSelected($event)"
@@ -118,6 +125,7 @@
 import { mapFields } from "vuex-map-fields"
 import { groupBy, sumBy, filter } from "lodash"
 import { parseISO } from "date-fns"
+
 import differenceInHours from "date-fns/differenceInHours"
 
 import IncidentCommandersLocationBarChartCard from "@/dashboard/incident/IncidentCommandersLocationBarChartCard.vue"
@@ -130,6 +138,7 @@ import IncidentParticipantsLocationBarChartCard from "@/dashboard/incident/Incid
 import IncidentParticipantsTeamBarChartCard from "@/dashboard/incident/IncidentParticipantsTeamBarChartCard.vue"
 import IncidentPriorityBarChartCard from "@/dashboard/incident/IncidentPriorityBarChartCard.vue"
 import IncidentReportersLocationBarChartCard from "@/dashboard/incident/IncidentReportersLocationBarChartCard.vue"
+import IncidentSeverityBarChartCard from "@/dashboard/incident/IncidentSeverityBarChartCard.vue"
 import IncidentTagsTreemapCard from "@/dashboard/incident/IncidentTagsTreemapCard.vue"
 import IncidentTypeBarChartCard from "@/dashboard/incident/IncidentTypeBarChartCard.vue"
 import IncidentsDrillDownSheet from "@/dashboard/incident/IncidentsDrillDownSheet.vue"
@@ -149,6 +158,7 @@ export default {
     IncidentParticipantsTeamBarChartCard,
     IncidentPriorityBarChartCard,
     IncidentReportersLocationBarChartCard,
+    IncidentSeverityBarChartCard,
     IncidentTagsTreemapCard,
     IncidentTypeBarChartCard,
     IncidentsDrillDownSheet,
