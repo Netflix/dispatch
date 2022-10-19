@@ -88,7 +88,7 @@ export const protectedRoute = [
       path: "dashboards",
       component: DashboardLayout,
       name: "dashboards",
-      redirect: { name: "CaseOverview" },
+      redirect: { name: "IncidentOverview" },
       meta: {
         title: "Dashboards",
         group: "dashboard",
@@ -98,13 +98,6 @@ export const protectedRoute = [
       },
       children: [
         {
-          path: "cases",
-          name: "CaseOverview",
-          meta: { title: "Cases", group: "type" },
-          component: () =>
-            import(/* webpackChunkName: "case-overview" */ "@/dashboard/case/CaseOverview.vue"),
-        },
-        {
           path: "incidents",
           name: "IncidentOverview",
           meta: { title: "Incidents", group: "type" },
@@ -112,6 +105,13 @@ export const protectedRoute = [
             import(
               /* webpackChunkName: "incident-overview" */ "@/dashboard/incident/IncidentOverview.vue"
             ),
+        },
+        {
+          path: "cases",
+          name: "CaseOverview",
+          meta: { title: "Cases", group: "type" },
+          component: () =>
+            import(/* webpackChunkName: "case-overview" */ "@/dashboard/case/CaseOverview.vue"),
         },
         {
           path: "tasks",
