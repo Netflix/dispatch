@@ -1,34 +1,24 @@
 <template>
   <v-select
-    v-model="incident_type"
+    v-model="incidentSeverity"
     :items="items"
-    :menu-props="{ maxHeight: '400' }"
     item-text="name"
-    :label="label"
+    :menu-props="{ maxHeight: '400' }"
+    label="Severity"
     return-object
     :loading="loading"
   >
     <template v-slot:item="data">
-      <v-list-item-content>
-        <v-list-item-title v-if="!project">
-          {{ data.item.project.name }}/{{ data.item.name }}
-        </v-list-item-title>
-        <v-list-item-title v-else>
-          {{ data.item.name }}
-        </v-list-item-title>
-        <v-list-item-subtitle
-          style="width: 200px"
-          class="text-truncate"
-          v-text="data.item.description"
-        />
-      </v-list-item-content>
-    </template>
-    <template v-slot:append-item>
-      <v-list-item v-if="more" @click="loadMore()">
+      <template>
         <v-list-item-content>
-          <v-list-item-subtitle> Load More </v-list-item-subtitle>
+          <v-list-item-title v-text="data.item.name" />
+          <v-list-item-subtitle
+            style="width: 200px"
+            class="text-truncate"
+            v-text="data.item.description"
+          />
         </v-list-item-content>
-      </v-list-item>
+      </template>
     </template>
   </v-select>
 </template>
@@ -37,10 +27,10 @@
 import { cloneDeep } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import IncidentTypeApi from "@/incident_type/api"
+import IncidentSeverityApi from "@/incident/severity/api"
 
 export default {
-  name: "IncidentTypeSelect",
+  name: "IncidentSeveritySelect",
 
   props: {
     value: {
@@ -53,25 +43,17 @@ export default {
       type: [Object],
       default: null,
     },
-    label: {
-      type: String,
-      default: function () {
-        return "Type"
-      },
-    },
   },
 
   data() {
     return {
       loading: false,
       items: [],
-      more: false,
-      numItems: 5,
     }
   },
 
   computed: {
-    incident_type: {
+    incidentSeverity: {
       get() {
         return cloneDeep(this.value)
       },
@@ -82,18 +64,13 @@ export default {
   },
 
   methods: {
-    loadMore() {
-      this.numItems = this.numItems + 5
-      this.fetchData()
-    },
     fetchData() {
       this.error = null
       this.loading = "error"
 
       let filterOptions = {
-        sortBy: ["project.name"],
+        sortBy: ["view_order"],
         descending: [false],
-        itemsPerPage: this.numItems,
       }
 
       if (this.project) {
@@ -103,12 +80,11 @@ export default {
             project: [this.project],
           },
         }
-        filterOptions.sortBy = ["name"]
       }
 
       let enabledFilter = [
         {
-          model: "IncidentType",
+          model: "IncidentSeverity",
           field: "enabled",
           op: "==",
           value: "true",
@@ -120,17 +96,8 @@ export default {
         enabledFilter
       )
 
-      IncidentTypeApi.getAll(filterOptions).then((response) => {
+      IncidentSeverityApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
-        this.total = response.data.total
-        this.loading = false
-
-        if (this.items.length < this.total) {
-          this.more = true
-        } else {
-          this.more = false
-        }
-
         this.loading = false
       })
     },

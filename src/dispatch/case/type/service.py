@@ -5,7 +5,7 @@ from sqlalchemy.sql.expression import true
 
 from dispatch.document import service as document_service
 from dispatch.exceptions import NotFoundError
-from dispatch.incident_type import service as incident_type_service
+from dispatch.incident.type import service as incident_type_service
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service
 

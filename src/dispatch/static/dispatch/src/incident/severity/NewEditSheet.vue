@@ -6,7 +6,7 @@
           <v-list-item-content>
             <v-list-item-title v-if="id" class="title"> Edit </v-list-item-title>
             <v-list-item-title v-else class="title"> New </v-list-item-title>
-            <v-list-item-subtitle>Case Type</v-list-item-subtitle>
+            <v-list-item-subtitle>Incident severity</v-list-item-subtitle>
           </v-list-item-content>
           <v-btn
             icon
@@ -37,7 +37,7 @@
                     :error-messages="errors"
                     :success="valid"
                     label="Name"
-                    hint="A name for your case type."
+                    hint="A name for your incident severity."
                     clearable
                     required
                   />
@@ -51,68 +51,43 @@
                     label="Description"
                     :error-messages="errors"
                     :success="valid"
-                    hint="A description for your case type."
+                    hint="A description for your incident severity."
                     clearable
                     required
                   />
                 </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <v-select
-                  v-model="visibility"
-                  label="Visibility"
-                  :items="visibilities"
-                  hint="A visibility for your case type"
-                  clearable
-                />
-              </v-flex>
-              <v-flex xs12>
-                <ValidationObserver disabled>
-                  <template-select
-                    :project="project"
-                    label="Case Template"
-                    v-model="case_template_document"
-                    resource-type="dispatch-case-document-template"
+                <ValidationProvider name="View Order" rules="required" immediate>
+                  <v-text-field
+                    v-model="view_order"
+                    slot-scope="{ errors, valid }"
+                    label="View Order"
+                    :error-messages="errors"
+                    :success="valid"
+                    type="number"
+                    hint="Enter a value to indicate the order in which you want this severity to be shown in a list (lowest numbers are shown first)."
+                    clearable
+                    required
                   />
-                </ValidationObserver>
+                </ValidationProvider>
               </v-flex>
               <v-flex xs12>
-                <ValidationObserver disabled>
-                  <service-select
-                    :project="project"
-                    label="Oncall Service"
-                    v-model="oncall_service"
-                  />
-                </ValidationObserver>
-              </v-flex>
-              <v-flex xs12>
-                <ValidationObserver disabled>
-                  <incident-type-select label="Incident Type" v-model="incident_type" />
-                </ValidationObserver>
-              </v-flex>
-              <v-flex xs 12>
-                <v-checkbox
-                  v-model="exclude_from_metrics"
-                  label="Exclude From Metrics"
-                  hint="Check if this case type should be excluded from all metrics."
-                />
+                <color-picker-input label="Color" v-model="color"></color-picker-input>
               </v-flex>
               <v-flex xs12>
                 <v-checkbox
-                  v-model="default_case_type"
-                  label="Default Case Type"
-                  hint="Check this if this case type should be the default."
+                  v-model="default_incident_severity"
+                  label="Default Incident Severity"
+                  hint="Check if this incident severity should be the default."
                 />
               </v-flex>
               <v-flex xs12>
                 <v-checkbox
                   v-model="enabled"
                   label="Enabled"
-                  hint="Determines whether this case type is availible for new cases."
+                  hint="Determines whether this incident severity is availible for new incidents."
                 />
-              </v-flex>
-              <v-flex xs12>
-                <plugin-metadata-input v-model="plugin_metadata" :project="project" />
               </v-flex>
             </v-layout>
           </v-container>
@@ -128,10 +103,7 @@ import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 
-import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
-import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
-import ServiceSelect from "@/service/ServiceSelect.vue"
-import TemplateSelect from "@/document/template/TemplateSelect.vue"
+import ColorPickerInput from "@/components/ColorPickerInput.vue"
 
 extend("required", {
   ...required,
@@ -139,50 +111,41 @@ extend("required", {
 })
 
 export default {
-  name: "CaseTypeNewEditSheet",
+  name: "IncidentSeverityNewEditSheet",
 
   components: {
-    IncidentTypeSelect,
-    PluginMetadataInput,
-    ServiceSelect,
-    TemplateSelect,
+    ColorPickerInput,
     ValidationObserver,
     ValidationProvider,
   },
 
   data() {
-    return {
-      visibilities: ["Open", "Restricted"],
-    }
+    return {}
   },
 
   computed: {
-    ...mapFields("case_type", [
+    ...mapFields("incident_severity", [
       "dialogs.showCreateEdit",
-      "selected.case_template_document",
+      "selected.color",
       "selected.default",
       "selected.description",
       "selected.enabled",
-      "selected.exclude_from_metrics",
       "selected.id",
-      "selected.incident_type",
       "selected.loading",
       "selected.name",
-      "selected.oncall_service",
-      "selected.plugin_metadata",
       "selected.project",
-      "selected.slug",
-      "selected.visibility",
+      "selected.view_order",
     ]),
-    ...mapFields("case_type", {
-      default_case_type: "selected.default",
+    ...mapFields("incident_severity", {
+      default_incident_severity: "selected.default",
     }),
     ...mapFields("route", ["query"]),
   },
 
   methods: {
-    ...mapActions("case_type", ["save", "closeCreateEdit"]),
+    ...mapActions("incident_severity", ["save", "closeCreateEdit"]),
   },
+
   created() {
     if (this.query.project) {
       this.project = { name: this.query.project }

@@ -37,6 +37,11 @@
         </v-list-item>
         <v-list-item>
           <v-list-item-content>
+            <incident-severity-combobox v-model="filters.incident_severity" />
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-content>
             <incident-priority-combobox v-model="filters.incident_priority" />
           </v-list-item-content>
         </v-list-item>
@@ -58,8 +63,9 @@ import subMonths from "date-fns/subMonths"
 
 import DateWindowInput from "@/components/DateWindowInput.vue"
 import IncidentApi from "@/incident/api"
-import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
-import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
+import IncidentPriorityCombobox from "@/incident/priority/IncidentPriorityCombobox.vue"
+import IncidentSeverityCombobox from "@/incident/severity/IncidentSeverityCombobox.vue"
+import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import RouterUtils from "@/router/utils"
 import SearchUtils from "@/search/utils"
@@ -76,6 +82,7 @@ export default {
   components: {
     DateWindowInput,
     IncidentPriorityCombobox,
+    IncidentSeverityCombobox,
     IncidentTypeCombobox,
     ProjectCombobox,
     TagFilterAutoComplete,
@@ -96,9 +103,10 @@ export default {
       menuEnd: false,
       display: false,
       filters: {
-        project: this.projects,
-        incident_type: [],
         incident_priority: [],
+        incident_severity: [],
+        incident_type: [],
+        project: this.projects,
         status: [],
         tag: [],
         reported_at: {
@@ -116,11 +124,12 @@ export default {
   computed: {
     numFilters: function () {
       return sum([
-        this.filters.tag.length,
         this.filters.incident_priority.length,
+        this.filters.incident_severity.length,
         this.filters.incident_type.length,
-        this.filters.status.length,
         this.filters.project.length,
+        this.filters.status.length,
+        this.filters.tag.length,
         1,
       ])
     },
@@ -146,6 +155,7 @@ export default {
           "created_at",
           "duplicates",
           "incident_priority",
+          "incident_severity",
           "incident_type",
           "name",
           "participants_location",

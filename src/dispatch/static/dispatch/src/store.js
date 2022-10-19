@@ -13,8 +13,9 @@ import document from "@/document/store"
 import feedback from "@/feedback/store"
 import incident from "@/incident/store"
 import incident_cost_type from "@/incident_cost_type/store"
-import incident_priority from "@/incident_priority/store"
-import incident_type from "@/incident_type/store"
+import incident_priority from "@/incident/priority/store"
+import incident_severity from "@/incident/severity/store"
+import incident_type from "@/incident/type/store"
 import individual from "@/individual/store"
 import notification from "@/notification/store"
 import notification_backend from "@/app/notificationStore"
@@ -26,15 +27,15 @@ import reference from "@/document/reference/store"
 import runbook from "@/document/runbook/store"
 import search from "@/search/store"
 import service from "@/service/store"
+import signal from "@/signal/store"
+import signalDuplicationRule from "@/signal/duplication_rule/store"
+import signalSuppressionRule from "@/signal/suppression_rule/store"
 import source from "@/data/source/store"
 import sourceDataFormat from "@/data/source/dataFormat/store"
 import sourceEnvironment from "@/data/source/environment/store"
 import sourceStatus from "@/data/source/status/store"
 import sourceTransport from "@/data/source/transport/store"
 import sourceType from "@/data/source/type/store"
-import signal from "@/signal/store"
-import signalSuppressionRule from "@/signal/suppression_rule/store"
-import signalDuplicationRule from "@/signal/duplication_rule/store"
 import tag from "@/tag/store"
 import tag_type from "@/tag_type/store"
 import task from "@/task/store"
@@ -59,6 +60,7 @@ export default new Vuex.Store({
     incident,
     incident_cost_type,
     incident_priority,
+    incident_severity,
     incident_type,
     individual,
     notification,
@@ -77,15 +79,15 @@ export default new Vuex.Store({
     runbook,
     search,
     service,
+    signal,
+    signalDuplicationRule,
+    signalSuppressionRule,
     source,
     sourceDataFormat,
     sourceEnvironment,
     sourceStatus,
     sourceTransport,
     sourceType,
-    signal,
-    signalDuplicationRule,
-    signalSuppressionRule,
     tag,
     tag_type,
     task,

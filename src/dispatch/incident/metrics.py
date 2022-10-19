@@ -13,7 +13,7 @@ from statsmodels.tsa.api import ExponentialSmoothing
 from sqlalchemy import and_
 
 from dispatch.database.service import apply_filters, apply_filter_specific_joins
-from dispatch.incident_type.models import IncidentType
+from dispatch.incident.type.models import IncidentType
 
 from .models import Incident
 

@@ -81,8 +81,9 @@
 
 <script>
 import { mapActions } from "vuex"
+
+import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
 import NewEditSheet from "@/task/NewEditSheet.vue"
-import IncidentPriority from "@/incident/IncidentPriority.vue"
 import Participant from "@/incident/Participant.vue"
 
 export default {
