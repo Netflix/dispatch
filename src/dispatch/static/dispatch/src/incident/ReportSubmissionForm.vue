@@ -39,7 +39,11 @@
             <project-select v-model="project" />
           </v-flex>
           <v-flex xs12>
-            <incident-type-select :project="project" v-model="incident_type" />
+            <incident-type-select
+              :project="project"
+              v-model="incident_type"
+              value="this.incidentType"
+            />
           </v-flex>
           <v-flex xs12>
             <incident-priority-select :project="project" v-model="incident_priority" />
@@ -72,12 +76,21 @@ export default {
   name: "ReportSubmissionForm",
 
   components: {
-    ValidationProvider,
-    ValidationObserver,
-    IncidentTypeSelect,
     IncidentPrioritySelect,
+    IncidentTypeSelect,
     ProjectSelect,
     TagFilterAutoComplete,
+    ValidationObserver,
+    ValidationProvider,
+  },
+
+  props: {
+    incidentType: {
+      type: Object,
+      default: function () {
+        return {}
+      },
+    },
   },
 
   data() {
@@ -88,21 +101,21 @@ export default {
 
   computed: {
     ...mapFields("incident", [
+      "selected.commander",
+      "selected.conference",
+      "selected.conversation",
+      "selected.description",
+      "selected.documents",
+      "selected.id",
       "selected.incident_priority",
       "selected.incident_type",
-      "selected.commander",
-      "selected.title",
-      "selected.tags",
-      "selected.description",
-      "selected.conversation",
-      "selected.conference",
-      "selected.visibility",
-      "selected.storage",
-      "selected.documents",
       "selected.loading",
-      "selected.ticket",
       "selected.project",
-      "selected.id",
+      "selected.storage",
+      "selected.tags",
+      "selected.ticket",
+      "selected.title",
+      "selected.visibility",
     ]),
     ...mapFields("route", ["query"]),
   },
