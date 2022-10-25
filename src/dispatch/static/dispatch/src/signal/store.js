@@ -15,7 +15,7 @@ const getDefaultSelectedState = () => {
     external_url: null,
     case_type: null,
     case_priority: null,
-    duplication_rule: { tag_types: null, window: null },
+    duplication_rule: null,
     source: null,
     project: null,
     created_at: null,

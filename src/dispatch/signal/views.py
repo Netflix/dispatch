@@ -17,7 +17,7 @@ from .models import (
     SignalInstanceRead,
     SignalInstanceCreate,
 )
-from .service import create, update, get, create_instance
+from .service import create, update, get, create_instance, delete
 
 router = APIRouter()
 
@@ -67,6 +67,18 @@ def update_signal(
         )
 
     return signal
+
+
+@router.delete("/{signal_id}", response_model=None)
+def delete_signal(*, db_session: Session = Depends(get_db), signal_id: PrimaryKey):
+    """Deletes a signal."""
+    signal = get(db_session=db_session, signal_id=signal_id)
+    if not signal:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=[{"msg": "A signal with this id does not exist."}],
+        )
+    delete(db_session=db_session, signal_id=signal_id)
 
 
 @router.post("/{signal_id}/instances", response_model=SignalInstanceRead)

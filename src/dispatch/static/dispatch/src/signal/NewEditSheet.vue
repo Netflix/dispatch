@@ -24,7 +24,7 @@
       </template>
       <v-row no-gutters>
         <v-col cols="12">
-          <v-card flat tile outlined>
+          <v-card flat tile>
             <v-card-text>
               <v-row no-gutters>
                 <v-col cols="12">
@@ -117,8 +117,8 @@
           </v-card>
         </v-col>
         <v-col cols="12">
-          <v-card flat tile outlined>
-            <v-app-bar flat>
+          <v-card flat tile>
+            <v-app-bar color="white" flat>
               <v-toolbar-title class="subtitle-2"> Case Configuration </v-toolbar-title>
               <v-spacer></v-spacer>
               <v-tooltip max-width="250px" bottom>
@@ -142,40 +142,7 @@
           </v-card>
         </v-col>
         <v-col cols="12">
-          <v-card flat tile outlined>
-            <v-app-bar flat>
-              <v-toolbar-title class="subtitle-2"> Duplication Configuration </v-toolbar-title>
-              <v-spacer></v-spacer>
-              <v-tooltip max-width="250px" bottom>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-icon v-bind="attrs" v-on="on"> help_outline </v-icon>
-                </template>
-                Dispatch will attempt to deduplicate signals that match the given criteria.
-              </v-tooltip>
-            </v-app-bar>
-            <v-card-text>
-              <v-row no-gutters>
-                <v-col cols="12">
-                  <tag-type-combobox
-                    label="Anchors"
-                    v-model="duplication_rule.tag_types"
-                  ></tag-type-combobox>
-                </v-col>
-                <v-col cols="12">
-                  <v-select
-                    v-model="duplication_rule.window"
-                    :items="windows"
-                    item-text="label"
-                    item-value="value"
-                    hint="This is a sliding window, all signals that were created in the given window will be
-                considered for duplication."
-                    persistent-hint
-                    label="Window"
-                  ></v-select>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-card>
+          <duplication-rule-card v-model="duplication_rule"></duplication-rule-card>
         </v-col>
       </v-row>
     </v-navigation-drawer>
@@ -190,7 +157,8 @@ import { required } from "vee-validate/dist/rules"
 
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
-import TagTypeCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
+
+import DuplicationRuleCard from "@/signal/DuplicationRule.vue"
 
 extend("required", {
   ...required,
@@ -204,7 +172,7 @@ export default {
     ValidationProvider,
     CaseTypeSelect,
     CasePrioritySelect,
-    TagTypeCombobox,
+    DuplicationRuleCard,
   },
 
   data() {

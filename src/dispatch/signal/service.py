@@ -29,7 +29,7 @@ def create_duplication_rule(
 
     tag_types = []
     for t in duplication_rule_in.tag_types:
-        tag_types.append(tag_type_service.get(db_session=db_session, tag_type_in=t))
+        tag_types.append(tag_type_service.get(db_session=db_session, tag_type_id=t.id))
 
     rule.tag_types = tag_types
     db_session.add(rule)
@@ -159,6 +159,14 @@ def update(*, db_session, signal: Signal, signal_in: SignalUpdate) -> Signal:
 
     db_session.commit()
     return signal
+
+
+def delete(*, db_session, signal_id: int):
+    """Deletes a signal definition."""
+    signal = db_session.query(Signal).filter(Signal.id == signal_id).one()
+    db_session.delete(signal)
+    db_session.commit()
+    return signal_id
 
 
 def create_instance(*, db_session, signal_instance_in: SignalInstanceCreate) -> SignalInstance:

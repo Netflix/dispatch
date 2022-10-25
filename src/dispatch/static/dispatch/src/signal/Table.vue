@@ -50,13 +50,18 @@
                 {{ item.project.name }}
               </v-chip>
             </template>
-            <template v-slot:item.case_type.name="{ item }">
-              <v-chip small color="info" text-color="white">
+            <template v-slot:item.case_type="{ item }">
+              <v-chip v-if="item.case_type" small color="info" text-color="white">
                 {{ item.case_type.name }}
               </v-chip>
             </template>
-            <template v-slot:item.case_priority.name="{ item }">
-              <v-chip small :color="item.case_priority.color" text-color="white">
+            <template v-slot:item.case_priority="{ item }">
+              <v-chip
+                v-if="item.case_priority"
+                small
+                :color="item.case_priority.color"
+                text-color="white"
+              >
                 {{ item.case_priority.name }}
               </v-chip>
             </template>
@@ -117,8 +122,8 @@ export default {
         { text: "Description", value: "description", sortable: false },
         { text: "Project", value: "project.name", sortable: true },
         { text: "Owner", value: "owner" },
-        { text: "Case Type", value: "case_type.name" },
-        { text: "Case Priority", value: "case_priority.name" },
+        { text: "Case Type", value: "case_type" },
+        { text: "Case Priority", value: "case_priority" },
         { text: "", value: "external_url", sortable: false },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],

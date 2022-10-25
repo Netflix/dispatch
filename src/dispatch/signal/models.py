@@ -1,8 +1,6 @@
-from turtle import back
 import uuid
 from datetime import datetime
 from typing import Any, List, Optional
-from colorama import Fore
 
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, PrimaryKeyConstraint, DateTime
@@ -11,7 +9,6 @@ from sqlalchemy_utils import TSVectorType
 
 from dispatch.database.core import Base
 from dispatch.enums import DispatchEnum
-from dispatch.auth.models import DispatchUser
 
 from dispatch.incident.models import CaseRead
 from dispatch.models import DispatchBase, EvergreenMixin, PrimaryKey, TimeStampMixin, ProjectMixin
@@ -55,6 +52,28 @@ assoc_suppression_tags = Table(
 )
 
 
+class SuppressionRule(Base, ProjectMixin, EvergreenMixin):
+    id = Column(Integer, primary_key=True)
+    mode = Column(String, default=RuleMode.active, nullable=False)
+    expiration = Column(DateTime, nullable=True)
+
+    # the tags to use for suppression
+    tags = relationship("Tag", secondary=assoc_suppression_tags, backref="suppression_rules")
+
+
+class DuplicationRule(Base, ProjectMixin, EvergreenMixin):
+    id = Column(Integer, primary_key=True)
+    mode = Column(String, default=RuleMode.active, nullable=False)
+
+    # number of seconds for duplication lookback default to 1 hour
+    window = Column(Integer, default=(60 * 60))
+
+    # the tag types to use for deduplication
+    tag_types = relationship(
+        "TagType", secondary=assoc_duplication_tag_types, backref="duplication_rules"
+    )
+
+
 class Signal(Base, TimeStampMixin, ProjectMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -69,7 +88,9 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     case_type = relationship("CaseType", backref="signals")
     case_priority_id = Column(Integer, ForeignKey(CasePriority.id))
     case_priority = relationship("CasePriority", backref="signals")
-    instances = relationship("SignalInstance", backref="Signal")
+    duplication_rule_id = Column(Integer, ForeignKey(DuplicationRule.id))
+    duplication_rule = relationship("DuplicationRule", backref="signal")
+    supression_rule_id = Column(Integer, ForeignKey(SuppressionRule.id))
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
@@ -78,7 +99,7 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     case_id = Column(Integer, ForeignKey("case.id"))
     case = relationship("Case", backref="signal_instances")
     signal_id = Column(Integer, ForeignKey("signal.id"))
-    signal = relationship("Signal", backref="signal_instances")
+    signal = relationship("Signal", backref="instances")
     fingerprint = Column(String)
     severity = Column(String)
     raw = Column(JSONB)
@@ -89,41 +110,13 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     )
 
 
-class SuppressionRule(Base, ProjectMixin, EvergreenMixin):
-    id = Column(Integer, primary_key=True)
-    creator_id = Column(Integer, ForeignKey(DispatchUser.id))
-    creator = relationship("DispatchUser", backref="suppression_rule")
-    signal_id = Column(Integer, ForeignKey(Signal.id))
-    signal = relationship("Signal", backref="suppression_rule")
-    mode = Column(String, default=RuleMode.active, nullable=False)
-    expiration = Column(DateTime, nullable=True)
-
-    # the tags to use for suppression
-    tags = relationship("Tag", secondary=assoc_suppression_tags, backref="suppression_rules")
-
-
-class DuplicationRule(Base, ProjectMixin, EvergreenMixin):
-    id = Column(Integer, primary_key=True)
-    signal_id = Column(Integer, ForeignKey(Signal.id))
-    signal = relationship("Signal", backref="duplication_rules")
-    mode = Column(String, default=RuleMode.active, nullable=False)
-
-    # number of seconds for duplication lookback default to 1 hour
-    window = Column(Integer, default=(60 * 60))
-
-    # the tag types to use for deduplication
-    tag_types = relationship(
-        "TagType", secondary=assoc_duplication_tag_types, backref="duplication_rules"
-    )
-
-
 # Pydantic models...
 class SignalRuleBase(DispatchBase):
     mode: Optional[RuleMode] = RuleMode.active
 
 
 class DuplicationRuleBase(SignalRuleBase):
-    window: Optional[int] = 60 * 60
+    window: Optional[int] = 600
     tag_types: List[TagTypeRead]
 
 
