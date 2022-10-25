@@ -4,30 +4,29 @@ import datetime
 
 from typing import List
 from pydantic import BaseModel
+
 from sqlalchemy import func
 
-from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.conversation import service as conversation_service
+from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.event import service as event_service
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
-from dispatch.plugins.dispatch_slack.config import (
-    SlackConversationConfiguration,
-)
-from dispatch.tag import service as tag_service
 from dispatch.individual import service as individual_service
-from dispatch.participant import service as participant_service
-from dispatch.participant_role.models import ParticipantRoleType
-from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
-from dispatch.plugin import service as plugin_service
 from dispatch.monitor import service as monitor_service
-from dispatch.conversation.enums import ConversationButtonActions
+from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
+from dispatch.participant import service as participant_service
+from dispatch.participant_role import service as participant_role_service
+from dispatch.participant_role.models import ParticipantRoleType
+from dispatch.plugin import service as plugin_service
+from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
+from dispatch.plugins.dispatch_slack.config import SlackConversationConfiguration
+from dispatch.tag import service as tag_service
 from dispatch.tag.models import Tag
 
-
 from .decorators import slack_background_task, get_organization_scope_from_channel_id
-from .service import get_user_email
 from .models import MonitorButton
+from .service import get_user_email
 
 
 log = logging.getLogger(__name__)
@@ -97,11 +96,12 @@ def event_functions(event: EventEnvelope):
         "member_joined_channel": [member_joined_channel],
         "member_left_channel": [member_left_channel],
         "message": [
-            increment_activity,
-            after_hours,
+            after_hours_message,
             ban_threads_warning,
-            message_tagging,
+            increment_participant_activity,
+            change_participant_role,
             message_monitor,
+            message_tagging,
         ],
         "message.groups": [],
         "message.im": [],
@@ -193,7 +193,7 @@ def handle_reaction_added_event(
 
 
 @slack_background_task
-def increment_activity(
+def increment_participant_activity(
     config: SlackConversationConfiguration,
     user_id: str,
     user_email: str,
@@ -203,12 +203,12 @@ def increment_activity(
     db_session=None,
     slack_client=None,
 ):
-    # increment activity for user
+    """Increments the participant's activity counter."""
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident_id, email=user_email
     )
 
-    # member join also creates a message but they aren't yet a participant
+    # the member_joint event also creates a message, but they're not a participant yet
     if participant:
         if participant.activity:
             participant.activity += 1
@@ -218,6 +218,46 @@ def increment_activity(
         db_session.commit()
 
 
+@slack_background_task
+def change_participant_role(
+    config: SlackConversationConfiguration,
+    user_id: str,
+    user_email: str,
+    channel_id: str,
+    incident_id: int,
+    event: EventEnvelope = None,
+    db_session=None,
+    slack_client=None,
+):
+    """Changes the participant's role based on their activity counter."""
+    participant = participant_service.get_by_incident_id_and_email(
+        db_session=db_session, incident_id=incident_id, email=user_email
+    )
+
+    if participant:
+        if participant.activity >= 10:  # ten messages
+            active_participant_roles = participant.active_roles
+            for participant_role in active_participant_roles:
+                if participant_role.role == ParticipantRoleType.observer:
+                    # we change the observer role for the participant one
+                    participant_role_service.renounce_role(
+                        db_session=db_session, participant_role=participant_role
+                    )
+                    participant_role_service.add_role(
+                        db_session=db_session,
+                        participant_id=participant.id,
+                        participant_role=ParticipantRoleType.participant,
+                    )
+
+                    # we log the event
+                    event_service.log_incident_event(
+                        db_session=db_session,
+                        source="Slack Plugin - Conversation Management",
+                        description=f"{participant.individual.name}'s role changed from {ParticipantRoleType.observer} to {ParticipantRoleType.participant} due to activity in the incident channel.",
+                        incident_id=incident_id,
+                    )
+
+
 def is_business_hours(commander_tz: str):
     """Determines if it's currently office hours where the incident commander is located."""
     now = datetime.datetime.now(pytz.timezone(commander_tz))
@@ -225,7 +265,7 @@ def is_business_hours(commander_tz: str):
 
 
 @slack_background_task
-def after_hours(
+def after_hours_message(
     config: SlackConversationConfiguration,
     user_id: str,
     user_email: str,
