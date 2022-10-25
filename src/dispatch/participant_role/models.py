@@ -1,20 +1,13 @@
 from datetime import datetime
-from dispatch.models import PrimaryKey
+
+from typing import List, Optional
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 
-from typing import List, Optional
-from dispatch.enums import DispatchEnum
 from dispatch.database.core import Base
-from dispatch.models import DispatchBase
+from dispatch.models import DispatchBase, PrimaryKey
 
-
-class ParticipantRoleType(DispatchEnum):
-    incident_commander = "Incident Commander"
-    scribe = "Scribe"
-    liaison = "Liaison"
-    participant = "Participant"
-    reporter = "Reporter"
+from .enums import ParticipantRoleType
 
 
 class ParticipantRole(Base):
