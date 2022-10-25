@@ -111,14 +111,15 @@ def calculate_incident_response_cost(
 
     participants_total_response_time_seconds = 0
     for participant in incident.participants:
-        # skip participants that have no activity
+        # skip calculating cost for participants that have no
+        # messaging activity in the incident channel
         if not participant.activity:
             continue
 
         participant_total_roles_time_seconds = 0
         for participant_role in participant.participant_roles:
-            if participant_role == ParticipantRoleType.observer:
-                # skip time spent in the observer role
+            if participant_role.role == ParticipantRoleType.observer:
+                # skip calculating cost for time spent in the observer role
                 continue
 
             participant_role_assumed_at = participant_role.assumed_at
