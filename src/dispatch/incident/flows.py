@@ -928,7 +928,11 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
     # wait until all resources are created before adding suggested participants
     for individual, service_id in individual_participants:
         incident_add_or_reactivate_participant_flow(
-            individual.email, incident.id, service_id=service_id, db_session=db_session
+            individual.email,
+            incident.id,
+            participant_role=ParticipantRoleType.observer,
+            service_id=service_id,
+            db_session=db_session,
         )
 
     event_service.log_incident_event(
@@ -1247,7 +1251,11 @@ def incident_update_flow(
 
         for individual, service_id in individual_participants:
             incident_add_or_reactivate_participant_flow(
-                individual.email, incident.id, service_id=service_id, db_session=db_session
+                individual.email,
+                incident.id,
+                participant_role=ParticipantRoleType.observer,
+                service_id=service_id,
+                db_session=db_session,
             )
 
         # we add the team distributions lists to the notifications group
@@ -1435,6 +1443,7 @@ def incident_add_participant_to_tactical_group_flow(
 def incident_add_or_reactivate_participant_flow(
     user_email: str,
     incident_id: int,
+    participant_role: ParticipantRoleType = ParticipantRoleType.participant,
     service_id: int = 0,
     event: dict = None,
     organization_slug: str = None,
@@ -1470,7 +1479,7 @@ def incident_add_or_reactivate_participant_flow(
     else:
         # we add the participant to the incident
         participant = participant_flows.add_participant(
-            user_email, incident, db_session, service_id=service_id
+            user_email, incident, db_session, service_id=service_id, role=participant_role
         )
 
     # we add the participant to the tactical group

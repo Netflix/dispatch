@@ -289,7 +289,7 @@ def member_joined_channel(
     db_session=None,
     slack_client=None,
 ):
-    """Handles the member_joined_channel slack event."""
+    """Handles the member_joined_channel Slack event."""
     participant = incident_flows.incident_add_or_reactivate_participant_flow(
         user_email=user_email, incident_id=incident_id, db_session=db_session
     )
@@ -297,7 +297,7 @@ def member_joined_channel(
     if event.event.inviter:
         # we update the participant's metadata
         if not dispatch_slack_service.is_user(config, event.event.inviter):
-            # we default to the incident commander when we don't know how the user was added
+            # we default to the incident commander when we don't know who added the user
             added_by_participant = participant_service.get_by_incident_id_and_role(
                 db_session=db_session,
                 incident_id=incident_id,
