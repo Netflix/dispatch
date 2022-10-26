@@ -1307,39 +1307,41 @@ def incident_assign_role_flow(
         # )
         return
 
-    if assignee_role != ParticipantRoleType.participant:
-        # we resolve the assigner and assignee's contact information
-        contact_plugin = plugin_service.get_active_instance(
-            db_session=db_session, project_id=incident.project.id, plugin_type="contact"
-        )
-
-        if contact_plugin:
-            assigner_contact_info = contact_plugin.instance.get(
-                assigner_email, db_session=db_session
+    if incident.status != IncidentStatus.closed:
+        if (
+            assignee_role != ParticipantRoleType.observer
+            and assignee_role != ParticipantRoleType.participant
+        ):
+            # we resolve the assigner and assignee contact information
+            contact_plugin = plugin_service.get_active_instance(
+                db_session=db_session, project_id=incident.project.id, plugin_type="contact"
             )
-            assignee_contact_info = contact_plugin.instance.get(
-                assignee_email, db_session=db_session
-            )
-        else:
-            assigner_contact_info = {
-                "email": assigner_email,
-                "fullname": "Unknown",
-                "weblink": "",
-            }
-            assignee_contact_info = {
-                "email": assignee_email,
-                "fullname": "Unknown",
-                "weblink": "",
-            }
 
-        if incident.status != IncidentStatus.closed:
+            if contact_plugin:
+                assigner_contact_info = contact_plugin.instance.get(
+                    assigner_email, db_session=db_session
+                )
+                assignee_contact_info = contact_plugin.instance.get(
+                    assignee_email, db_session=db_session
+                )
+            else:
+                assigner_contact_info = {
+                    "email": assigner_email,
+                    "fullname": "Unknown",
+                    "weblink": "",
+                }
+                assignee_contact_info = {
+                    "email": assignee_email,
+                    "fullname": "Unknown",
+                    "weblink": "",
+                }
+
             # we send a notification to the incident conversation
             send_incident_new_role_assigned_notification(
                 assigner_contact_info, assignee_contact_info, assignee_role, incident, db_session
             )
 
-    if assignee_role == ParticipantRoleType.incident_commander:
-        if incident.status != IncidentStatus.closed:
+        if assignee_role == ParticipantRoleType.incident_commander:
             # we update the conversation topic
             set_conversation_topic(incident, db_session)
 

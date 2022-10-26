@@ -208,7 +208,7 @@ def increment_participant_activity(
         db_session=db_session, incident_id=incident_id, email=user_email
     )
 
-    # the member_joint event also creates a message, but they're not a participant yet
+    # the member_joined_channel event also creates a message, but they're not a participant yet
     if participant:
         if participant.activity:
             participant.activity += 1
