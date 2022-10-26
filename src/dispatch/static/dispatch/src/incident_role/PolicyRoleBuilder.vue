@@ -113,10 +113,10 @@ import draggable from "vuedraggable"
 
 import IncidentRoleApi from "@/incident_role/api"
 
-import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
-import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import IncidentPriorityCombobox from "@/incident/priority/IncidentPriorityCombobox.vue"
+import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import ServiceSelectNew from "@/service/ServiceSelectNew.vue"
+import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
 export default {
   name: "RolePolicyBuilder",

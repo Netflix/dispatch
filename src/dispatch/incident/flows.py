@@ -18,7 +18,7 @@ from dispatch.group import service as group_service
 from dispatch.group.models import GroupCreate
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import IncidentRead
-from dispatch.incident_type import service as incident_type_service
+from dispatch.incident.type import service as incident_type_service
 from dispatch.individual import service as individual_service
 from dispatch.messaging.strings import (
     INCIDENT_INVESTIGATION_DOCUMENT_DESCRIPTION,
@@ -70,6 +70,7 @@ def get_incident_participants(incident: Incident, db_session: SessionLocal):
             db_session=db_session, project_id=incident.project.id, plugin_type="participant"
         )
         if plugin:
+            # TODO(mvilanova): add support for resolving participants based on severity
             individual_contacts, team_contacts = plugin.instance.get(
                 incident,
                 db_session=db_session,
@@ -135,8 +136,6 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     ticket = plugin.instance.create(
         incident.id,
         title,
-        incident.incident_type.name,
-        incident.incident_priority.name,
         incident.commander.individual.email,
         incident.reporter.individual.email,
         incident_type_plugin_metadata,
@@ -188,6 +187,7 @@ def update_external_incident_ticket(
         title,
         description,
         incident.incident_type.name,
+        incident.incident_severity.name,
         incident.incident_priority.name,
         incident.status.lower(),
         incident.commander.individual.email,
@@ -471,7 +471,7 @@ def update_document(document_resource_id: str, incident: Incident, db_session: S
     )
 
     if not document_plugin:
-        log.warning("No document plugin enabled. Document not updated.")
+        log.warning("Document not updated. No document plugin enabled.")
         return
 
     document_plugin.instance.update(
@@ -485,6 +485,7 @@ def update_document(document_resource_id: str, incident: Incident, db_session: S
         name=incident.name,
         priority=incident.incident_priority.name,
         resolution=incident.resolution,
+        severity=incident.incident_severity.name,
         status=incident.status,
         storage_weblink=resolve_attr(incident, "storage.weblink"),
         ticket_weblink=resolve_attr(incident, "ticket.weblink"),
@@ -514,15 +515,17 @@ def create_conversation(incident: Incident, db_session: SessionLocal):
 def set_conversation_topic(incident: Incident, db_session: SessionLocal):
     """Sets the conversation topic."""
     if not incident.conversation:
-        log.warning("Conversation topic not set because incident has no conversation.")
+        log.warning("Conversation topic not set. No conversation available for this incident.")
         return
 
     conversation_topic = (
-        f":helmet_with_white_cross: {incident.commander.individual.name}, {incident.commander.team} - "  # noqa
+        f":helmet_with_white_cross: {incident.commander.individual.name}, {incident.commander.team} - "
         f"Type: {incident.incident_type.name} - "
+        f"Severity: {incident.incident_severity.name} - "
         f"Priority: {incident.incident_priority.name} - "
         f"Status: {incident.status}"
     )
+
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
@@ -869,19 +872,20 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
             try:
                 document_plugin.instance.update(
                     incident.incident_document.resource_id,
+                    commander_fullname=incident.commander.individual.name,
+                    conference_challenge=resolve_attr(incident, "conference.challenge"),
+                    conference_weblink=resolve_attr(incident, "conference.weblink"),
+                    conversation_weblink=resolve_attr(incident, "conversation.weblink"),
+                    description=incident.description,
+                    document_weblink=resolve_attr(incident, "incident_document.weblink"),
                     name=incident.name,
                     priority=incident.incident_priority.name,
+                    severity=incident.incident_severity.name,
                     status=incident.status,
-                    type=incident.incident_type.name,
-                    title=incident.title,
-                    description=incident.description,
-                    commander_fullname=incident.commander.individual.name,
-                    conversation_weblink=resolve_attr(incident, "conversation.weblink"),
-                    document_weblink=resolve_attr(incident, "incident_document.weblink"),
                     storage_weblink=resolve_attr(incident, "storage.weblink"),
                     ticket_weblink=resolve_attr(incident, "ticket.weblink"),
-                    conference_weblink=resolve_attr(incident, "conference.weblink"),
-                    conference_challenge=resolve_attr(incident, "conference.challenge"),
+                    title=incident.title,
+                    type=incident.incident_type.name,
                 )
             except Exception as e:
                 event_service.log_incident_event(
@@ -1106,7 +1110,18 @@ def conversation_topic_dispatcher(
         event_service.log_incident_event(
             db_session=db_session,
             source="Incident Participant",
-            description=f"{individual.name} changed the incident type to {incident.incident_type.name}",  # noqa
+            description=f"{individual.name} changed the incident type to {incident.incident_type.name}",
+            incident_id=incident.id,
+            individual_id=individual.id,
+        )
+
+    if previous_incident.incident_severity.name != incident.incident_severity.name:
+        conversation_topic_change = True
+
+        event_service.log_incident_event(
+            db_session=db_session,
+            source="Incident Participant",
+            description=f"{individual.name} changed the incident severity to {incident.incident_severity.name}",
             incident_id=incident.id,
             individual_id=individual.id,
         )
@@ -1117,7 +1132,7 @@ def conversation_topic_dispatcher(
         event_service.log_incident_event(
             db_session=db_session,
             source="Incident Participant",
-            description=f"{individual.name} changed the incident priority to {incident.incident_priority.name}",  # noqa
+            description=f"{individual.name} changed the incident priority to {incident.incident_priority.name}",
             incident_id=incident.id,
             individual_id=individual.id,
         )

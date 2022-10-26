@@ -21,6 +21,7 @@ from .enums import (
 from .fields import (
     description_input_block,
     incident_priority_select_block,
+    incident_severity_select_block,
     incident_type_select_block,
     option_from_template,
     participants_select_block,
@@ -45,7 +46,7 @@ def update_incident(db_session: SessionLocal, channel_id: str, incident_id: int 
                 "elements": [
                     {
                         "type": "mrkdwn",
-                        "text": "Use this form to update the details of the incident.",
+                        "text": "Use this form to update the incident details.",
                     }
                 ],
             },
@@ -56,6 +57,11 @@ def update_incident(db_session: SessionLocal, channel_id: str, incident_id: int 
             incident_type_select_block(
                 db_session=db_session,
                 initial_option=incident.incident_type,
+                project_id=incident.project.id,
+            ),
+            incident_severity_select_block(
+                db_session=db_session,
+                initial_option=incident.incident_severity,
                 project_id=incident.project.id,
             ),
             incident_priority_select_block(
@@ -92,8 +98,8 @@ def report_incident(
                 "elements": [
                     {
                         "type": "mrkdwn",
-                        "text": "If you suspect an incident and require help, "
-                        "please fill out the following to the best of your abilities.",
+                        "text": "If you suspect an incident and need help, "
+                        "please fill out this form to the best of your abilities.",
                     }
                 ],
             },
@@ -130,7 +136,7 @@ def update_participant(incident: Incident, participant: Participant = None):
                 "elements": [
                     {
                         "type": "mrkdwn",
-                        "text": "Use this form to update why a participant was added to this incident.",
+                        "text": "Use this form to update the reason why the participant was added to the incident.",
                     }
                 ],
             },

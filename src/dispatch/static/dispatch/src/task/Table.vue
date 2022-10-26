@@ -126,7 +126,7 @@ import { mapActions } from "vuex"
 
 import BulkEditSheet from "@/task/BulkEditSheet.vue"
 import DeleteDialog from "@/task/DeleteDialog.vue"
-import IncidentPriority from "@/incident/IncidentPriority.vue"
+import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
 import NewEditSheet from "@/task/NewEditSheet.vue"
 import Participant from "@/incident/Participant.vue"
 import RouterUtils from "@/router/utils"

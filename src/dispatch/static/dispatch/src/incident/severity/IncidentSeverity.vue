@@ -30,7 +30,7 @@
 
 <script>
 export default {
-  name: "CaseSeverity",
+  name: "IncidentSeverity",
 
   props: {
     severity: {

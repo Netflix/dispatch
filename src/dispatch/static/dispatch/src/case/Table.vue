@@ -89,8 +89,8 @@
                     <v-list-item-title>View / Edit</v-list-item-title>
                   </v-list-item>
                   <v-list-item
-                    v-if="item.status == 'New' || item.status == 'Triage'"
                     @click="showEscalateDialog(item)"
+                    :disabled="item.status == 'Escalated' || item.status == 'Closed'"
                   >
                     <v-list-item-title>Escalate</v-list-item-title>
                   </v-list-item>
@@ -151,11 +151,11 @@ export default {
         { text: "Name", value: "name", align: "left", width: "10%" },
         { text: "Title", value: "title", sortable: false },
         { text: "Status", value: "status" },
-        { text: "Assignee", value: "assignee.email", sortable: true },
         { text: "Type", value: "case_type.name", sortable: true },
         { text: "Severity", value: "case_severity.name", sortable: true },
         { text: "Priority", value: "case_priority.name", sortable: true },
         { text: "Project", value: "project.name", sortable: true },
+        { text: "Assignee", value: "assignee.email", sortable: true },
         { text: "Reported At", value: "reported_at" },
         { text: "Closed At", value: "closed_at" },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },

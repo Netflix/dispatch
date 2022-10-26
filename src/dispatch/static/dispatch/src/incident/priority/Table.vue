@@ -75,8 +75,8 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
+import NewEditSheet from "@/incident/priority/NewEditSheet.vue"
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
-import NewEditSheet from "@/incident_priority/NewEditSheet.vue"
 
 export default {
   name: "IncidentPriorityTable",

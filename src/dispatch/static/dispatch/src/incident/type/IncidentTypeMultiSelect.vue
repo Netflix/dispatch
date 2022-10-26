@@ -16,7 +16,7 @@
 import { cloneDeep } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import IncidentTypeApi from "@/incident_type/api"
+import IncidentTypeApi from "@/incident/type/api"
 
 export default {
   name: "IncidentTypeMultiSelect",

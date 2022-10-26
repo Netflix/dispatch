@@ -137,15 +137,15 @@ import { mapActions } from "vuex"
 import Util from "@/util"
 import SearchUtils from "@/search/utils"
 
-import TaskApi from "@/task/api"
 import IncidentCombobox from "@/incident/IncidentCombobox.vue"
-import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
-import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
-import ProjectCombobox from "@/project/ProjectCombobox.vue"
-import TaskStatusMultiSelect from "@/task/TaskStatusMultiSelect.vue"
-import IncidentStatus from "@/incident/IncidentStatus.vue"
-import IncidentPriority from "@/incident/IncidentPriority.vue"
+import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
+import IncidentPriorityCombobox from "@/incident/priority/IncidentPriorityCombobox.vue"
+import IncidentStatus from "@/incident/status/IncidentStatus.vue"
+import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import Participant from "@/incident/Participant.vue"
+import ProjectCombobox from "@/project/ProjectCombobox.vue"
+import TaskApi from "@/task/api"
+import TaskStatusMultiSelect from "@/task/TaskStatusMultiSelect.vue"
 
 export default {
   name: "TaskTableExportDialog",

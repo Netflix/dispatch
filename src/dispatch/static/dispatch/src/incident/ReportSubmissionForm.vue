@@ -39,7 +39,11 @@
             <project-select v-model="project" />
           </v-flex>
           <v-flex xs12>
-            <incident-type-select :project="project" v-model="incident_type" />
+            <incident-type-select
+              :project="project"
+              v-model="incident_type"
+              value="this.incidentType"
+            />
           </v-flex>
           <v-flex xs12>
             <incident-priority-select :project="project" v-model="incident_priority" />
@@ -54,11 +58,12 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
-import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
-import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
+
+import IncidentPrioritySelect from "@/incident/priority/IncidentPrioritySelect.vue"
+import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
 import ProjectSelect from "@/project/ProjectSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
@@ -71,12 +76,21 @@ export default {
   name: "ReportSubmissionForm",
 
   components: {
-    ValidationProvider,
-    ValidationObserver,
-    IncidentTypeSelect,
     IncidentPrioritySelect,
+    IncidentTypeSelect,
     ProjectSelect,
     TagFilterAutoComplete,
+    ValidationObserver,
+    ValidationProvider,
+  },
+
+  props: {
+    incidentType: {
+      type: Object,
+      default: function () {
+        return {}
+      },
+    },
   },
 
   data() {
@@ -87,21 +101,21 @@ export default {
 
   computed: {
     ...mapFields("incident", [
+      "selected.commander",
+      "selected.conference",
+      "selected.conversation",
+      "selected.description",
+      "selected.documents",
+      "selected.id",
       "selected.incident_priority",
       "selected.incident_type",
-      "selected.commander",
-      "selected.title",
-      "selected.tags",
-      "selected.description",
-      "selected.conversation",
-      "selected.conference",
-      "selected.visibility",
-      "selected.storage",
-      "selected.documents",
       "selected.loading",
-      "selected.ticket",
       "selected.project",
-      "selected.id",
+      "selected.storage",
+      "selected.tags",
+      "selected.ticket",
+      "selected.title",
+      "selected.visibility",
     ]),
     ...mapFields("route", ["query"]),
   },

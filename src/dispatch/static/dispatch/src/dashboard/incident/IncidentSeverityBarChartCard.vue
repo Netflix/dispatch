@@ -4,7 +4,7 @@
     type="bar"
     :options="chartOptions"
     :series="series"
-    title="Priorities"
+    title="Severities"
   />
 </template>
 
@@ -13,10 +13,10 @@ import { map, sortBy } from "lodash"
 
 import DashboardCard from "@/dashboard/DashboardCard.vue"
 import DashboardUtils from "@/dashboard/utils"
-import IncidentPriorityApi from "@/incident/priority/api"
+import IncidentSeverityApi from "@/incident/severity/api"
 
 export default {
-  name: "IncidentPriorityBarChartCard",
+  name: "IncidentSeverityBarChartCard",
 
   props: {
     value: {
@@ -39,13 +39,13 @@ export default {
 
   data() {
     return {
-      priorities: [],
+      severities: [],
     }
   },
 
   created: function () {
-    IncidentPriorityApi.getAll().then((response) => {
-      this.priorities = [
+    IncidentSeverityApi.getAll().then((response) => {
+      this.severities = [
         ...new Set(
           map(
             sortBy(response.data.items, function (value) {
@@ -88,7 +88,7 @@ export default {
           function ({ seriesIndex, w }) {
             for (let i = 0; i < w.config.series[seriesIndex].data.length; i++) {
               if (w.config.series[seriesIndex].data[i].items.length > 0) {
-                return w.config.series[seriesIndex].data[i].items[0].incident_priority.color
+                return w.config.series[seriesIndex].data[i].items[0].incident_severity.color
               }
             }
             return "#008FFB"
@@ -111,8 +111,8 @@ export default {
     series() {
       let series = DashboardUtils.createCountedSeriesData(
         this.value,
-        "incident_priority.name",
-        this.priorities
+        "incident_severity.name",
+        this.severities
       )
       return series
     },

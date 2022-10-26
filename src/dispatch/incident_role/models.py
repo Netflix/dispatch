@@ -6,16 +6,15 @@ from sqlalchemy import Boolean, Column, Integer, String, PrimaryKeyConstraint, T
 from sqlalchemy.orm import relationship
 
 from dispatch.database.core import Base
-from dispatch.models import PrimaryKey
-from dispatch.project.models import ProjectRead
-from dispatch.tag.models import TagRead
-from dispatch.incident_priority.models import IncidentPriorityRead
-from dispatch.incident_type.models import IncidentTypeRead
-from dispatch.participant_role.models import ParticipantRoleType
+from dispatch.incident.priority.models import IncidentPriorityRead
+from dispatch.incident.type.models import IncidentTypeRead
 from dispatch.individual.models import IndividualContactRead
-from dispatch.service.models import ServiceRead
-
 from dispatch.models import DispatchBase, TimeStampMixin, ProjectMixin
+from dispatch.models import PrimaryKey
+from dispatch.participant_role.models import ParticipantRoleType
+from dispatch.project.models import ProjectRead
+from dispatch.service.models import ServiceRead
+from dispatch.tag.models import TagRead
 
 assoc_incident_roles_tags = Table(
     "incident_role_tag",

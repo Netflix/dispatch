@@ -605,6 +605,7 @@ def list_incidents(
                                     f"*<{ticket_weblink}|{incident.name}>*\n"
                                     f"*Title*: {incident.title}\n"
                                     f"*Type*: {incident.incident_type.name}\n"
+                                    f"*Severity*: {incident.incident_severity.name}\n"
                                     f"*Priority*: {incident.incident_priority.name}\n"
                                     f"*Status*: {incident.status}\n"
                                     f"*Incident Commander*: <{incident.commander.individual.weblink}|{incident.commander.individual.name}>\n"

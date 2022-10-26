@@ -628,8 +628,9 @@ def list_tasks():
 
 @dispatch_scheduler.command("start")
 @click.argument("tasks", nargs=-1)
+@click.option("--exclude", multiple=True, help="Specifically exclude tasks you do no wish to run.")
 @click.option("--eager", is_flag=True, default=False, help="Run the tasks immediately.")
-def start_tasks(tasks, eager):
+def start_tasks(tasks, exclude, eager):
     """Starts the scheduler."""
     from dispatch.common.utils.cli import install_plugins
 
@@ -638,6 +639,11 @@ def start_tasks(tasks, eager):
     if tasks:
         for task in scheduler.registered_tasks:
             if task["name"] not in tasks:
+                scheduler.remove(task)
+
+    if exclude:
+        for task in scheduler.registered_tasks:
+            if task["name"] in exclude:
                 scheduler.remove(task)
 
     if eager:
