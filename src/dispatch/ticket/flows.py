@@ -7,7 +7,7 @@ from dispatch.enums import Visibility
 from dispatch.event import service as event_service
 from dispatch.incident import service as incident_service
 from dispatch.incident.models import Incident
-from dispatch.incident_type import service as incident_type_service
+from dispatch.incident.type import service as incident_type_service
 from dispatch.plugin import service as plugin_service
 
 from .models import Ticket, TicketCreate
@@ -39,8 +39,9 @@ def create_incident_ticket(incident: Incident, db_session: SessionLocal):
     ticket = plugin.instance.create(
         incident.id,
         title,
-        incident.incident_type.name,
-        incident.incident_priority.name,
+        # incident.incident_type.name,
+        # incident.incident_severity.name,
+        # incident.incident_priority.name,
         incident.commander.individual.email,
         incident.reporter.individual.email,
         incident_type_plugin_metadata,
@@ -92,6 +93,7 @@ def update_incident_ticket(
         title,
         description,
         incident.incident_type.name,
+        incident.incident_severity.name,
         incident.incident_priority.name,
         incident.status.lower(),
         incident.commander.individual.email,

@@ -13,7 +13,7 @@ import { map, filter } from "lodash"
 
 import DashboardCard from "@/dashboard/DashboardCard.vue"
 import DashboardUtils from "@/dashboard/utils"
-import IncidentTypeApi from "@/incident_type/api"
+import IncidentTypeApi from "@/incident/type/api"
 
 export default {
   name: "IncidentTypeBarChartCard",

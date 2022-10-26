@@ -4,16 +4,15 @@ from typing import List, Optional
 from operator import attrgetter
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
-
-from dispatch.incident.models import Incident, ProjectRead
 from dispatch.exceptions import NotFoundError
-from dispatch.participant_role.models import ParticipantRoleType
-from dispatch.tag import service as tag_service
-from dispatch.incident_type import service as incident_type_service
-from dispatch.incident_priority import service as incident_priority_service
+from dispatch.incident.models import Incident, ProjectRead
+from dispatch.incident.priority import service as incident_priority_service
+from dispatch.incident.type import service as incident_type_service
 from dispatch.individual import service as individual_contact_service
+from dispatch.participant_role.models import ParticipantRoleType
 from dispatch.project import service as project_service
 from dispatch.service import service as service_service
+from dispatch.tag import service as tag_service
 
 from .models import (
     IncidentRole,

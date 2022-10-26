@@ -12,13 +12,13 @@
     item-text="id"
     multiple
     no-filter
-    v-model="incidentPriority"
+    v-model="incidentSeverity"
   >
     <template v-slot:no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No incident priorities matching "
+            No incident severities matching "
             <strong>{{ search }}</strong
             >".
           </v-list-item-title>
@@ -54,10 +54,11 @@
 import { cloneDeep, debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import IncidentPriorityApi from "@/incident_priority/api"
+import IncidentSeverityApi from "@/incident/severity/api"
 
 export default {
-  name: "IncidentPriorityComboBox",
+  name: "IncidentSeverityComboBox",
+
   props: {
     value: {
       type: Array,
@@ -68,7 +69,7 @@ export default {
     label: {
       type: String,
       default: function () {
-        return "Priorities"
+        return "Severities"
       },
     },
     project: {
@@ -88,19 +89,19 @@ export default {
   },
 
   computed: {
-    incidentPriority: {
+    incidentSeverity: {
       get() {
         return cloneDeep(this.value)
       },
       set(value) {
         this.search = null
-        this._incidentPriorities = value.filter((v) => {
+        this._incidentSeverities = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
           return true
         })
-        this.$emit("input", this._incidentPriorities)
+        this.$emit("input", this._incidentSeverities)
       },
     },
   },
@@ -131,7 +132,7 @@ export default {
 
       let enabledFilter = [
         {
-          model: "IncidentPriority",
+          model: "IncidentSeverity",
           field: "enabled",
           op: "==",
           value: "true",
@@ -143,7 +144,7 @@ export default {
         enabledFilter
       )
 
-      IncidentPriorityApi.getAll(filterOptions).then((response) => {
+      IncidentSeverityApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.total = response.data.total
         this.loading = false

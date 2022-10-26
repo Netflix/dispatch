@@ -7,23 +7,39 @@ from starlette.responses import JSONResponse
 
 from dispatch.auth.service import get_current_user
 from dispatch.auth.views import user_router, auth_router
+from dispatch.case.priority.views import router as case_priority_router
+from dispatch.case.severity.views import router as case_severity_router
+from dispatch.case.type.views import router as case_type_router
+from dispatch.case.views import router as case_router
+from dispatch.data.alert.views import router as alert_router
+from dispatch.data.query.views import router as query_router
+from dispatch.data.source.data_format.views import router as source_data_format_router
+from dispatch.data.source.environment.views import router as source_environment_router
+from dispatch.data.source.status.views import router as source_status_router
+from dispatch.data.source.transport.views import router as source_transport_router
+from dispatch.data.source.type.views import router as source_type_router
+from dispatch.data.source.views import router as source_router
 from dispatch.definition.views import router as definition_router
 from dispatch.document.views import router as document_router
 from dispatch.feedback.views import router as feedback_router
+from dispatch.incident.priority.views import router as incident_priority_router
+from dispatch.incident.severity.views import router as incident_severity_router
+from dispatch.incident.type.views import router as incident_type_router
 from dispatch.incident.views import router as incident_router
 from dispatch.incident_cost.views import router as incident_cost_router
 from dispatch.incident_cost_type.views import router as incident_cost_type_router
-from dispatch.incident_priority.views import router as incident_priority_router
 from dispatch.incident_role.views import router as incident_role_router
-from dispatch.incident_type.views import router as incident_type_router
 from dispatch.individual.views import router as individual_contact_router
 from dispatch.models import OrganizationSlug
 from dispatch.notification.views import router as notification_router
 from dispatch.organization.views import router as organization_router
-
-# from dispatch.route.views import router as route_router
 from dispatch.plugin.views import router as plugin_router
 from dispatch.project.views import router as project_router
+
+
+from dispatch.signal.views import router as signal_router
+
+# from dispatch.route.views import router as route_router
 from dispatch.search.views import router as search_router
 from dispatch.search_filter.views import router as search_filter_router
 from dispatch.service.views import router as service_router
@@ -33,22 +49,6 @@ from dispatch.task.views import router as task_router
 from dispatch.team.views import router as team_contact_router
 from dispatch.term.views import router as term_router
 from dispatch.workflow.views import router as workflow_router
-
-from dispatch.data.alert.views import router as alert_router
-from dispatch.data.query.views import router as query_router
-from dispatch.data.source.data_format.views import router as source_data_format_router
-from dispatch.data.source.environment.views import router as source_environment_router
-from dispatch.data.source.status.views import router as source_status_router
-from dispatch.data.source.transport.views import router as source_transport_router
-from dispatch.data.source.type.views import router as source_type_router
-from dispatch.data.source.views import router as source_router
-
-from dispatch.case.views import router as case_router
-from dispatch.case.priority.views import router as case_priority_router
-from dispatch.case.severity.views import router as case_severity_router
-from dispatch.case.type.views import router as case_type_router
-
-from dispatch.signal.views import router as signal_router
 
 
 class ErrorMessage(BaseModel):
@@ -161,12 +161,17 @@ authenticated_organization_api_router.include_router(
     incident_router, prefix="/incidents", tags=["incidents"]
 )
 authenticated_organization_api_router.include_router(
-    incident_type_router, prefix="/incident_types", tags=["incident_types"]
-)
-authenticated_organization_api_router.include_router(
     incident_priority_router,
     prefix="/incident_priorities",
     tags=["incident_priorities"],
+)
+authenticated_organization_api_router.include_router(
+    incident_severity_router,
+    prefix="/incident_severities",
+    tags=["incident_severities"],
+)
+authenticated_organization_api_router.include_router(
+    incident_type_router, prefix="/incident_types", tags=["incident_types"]
 )
 authenticated_organization_api_router.include_router(case_router, prefix="/cases", tags=["cases"])
 authenticated_organization_api_router.include_router(

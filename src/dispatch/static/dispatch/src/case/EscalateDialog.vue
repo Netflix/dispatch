@@ -18,7 +18,7 @@
       </v-card-title>
       <v-card-text>
         Update the fields or accept the pre-filled defaults.
-        <report-submission-form />
+        <report-submission-form incident-type="this.incidentType" />
       </v-card-text>
       <v-card-actions>
         <v-spacer />
@@ -34,8 +34,9 @@
 <script>
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
-import ReportSubmissionForm from "@/incident/ReportSubmissionForm.vue"
+
 import ReportReceiptResources from "@/incident/ReportReceiptResources.vue"
+import ReportSubmissionForm from "@/incident/ReportSubmissionForm.vue"
 
 export default {
   name: "CaseEscalateDialog",
@@ -45,32 +46,32 @@ export default {
   },
 
   components: {
-    ReportSubmissionForm,
     ReportReceiptResources,
+    ReportSubmissionForm,
   },
 
   computed: {
     ...mapFields("incident", {
-      incidentPriority: "selected.incident_priority",
-      incidentType: "selected.incident_type",
-      incidentTitle: "selected.title",
-      incidentTags: "selected.tags",
       incidentDescription: "selected.description",
-      incidentLoading: "selected.loading",
-      incidentProject: "selected.project",
       incidentId: "selected.id",
+      incidentLoading: "selected.loading",
+      incidentPriority: "selected.incident_priority",
+      incidentProject: "selected.project",
       incidentSelected: "selected",
+      incidentTags: "selected.tags",
+      incidentTitle: "selected.title",
+      incidentType: "selected.incident_type",
     }),
     ...mapFields("case_management", {
-      showEscalateDialog: "dialogs.showEscalateDialog",
-      loading: "selected.loading",
-      caseId: "selected.id",
-      caseTitle: "selected.title",
-      caseProject: "selected.project",
       caseDescription: "selected.description",
-      caseType: "selected.case_type",
+      caseId: "selected.id",
       casePriority: "selected.case_priority",
+      caseProject: "selected.project",
       caseSeverity: "selected.case_severity",
+      caseTitle: "selected.title",
+      caseType: "selected.case_type",
+      loading: "selected.loading",
+      showEscalateDialog: "dialogs.showEscalateDialog",
     }),
   },
 
@@ -83,9 +84,10 @@ export default {
     this.$watch(
       (vm) => [vm.caseTitle, vm.caseProject, vm.caseDescription],
       () => {
-        this.incidentTitle = this.caseTitle
-        this.incidentProject = this.caseProject
         this.incidentDescription = this.caseDescription
+        this.incidentProject = this.caseProject
+        this.incidentTitle = this.caseTitle
+        this.incidentType = this.caseType.incident_type
       }
     )
   },
