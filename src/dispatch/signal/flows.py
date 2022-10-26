@@ -45,6 +45,10 @@ def create_signal_instance(db_session: SessionLocal, signal_instance_data: dict)
         case_type=signal.case_type,
     )
     case = case_service.create(db_session=db_session, case_in=case_in)
+
+    signal_instance.case = case
+    db_session.commit()
+
     return case_flows.case_new_create_flow(
         db_session=db_session, organization_slug=None, case_id=case.id
     )

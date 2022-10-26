@@ -52,20 +52,18 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
         db_session=db_session,
     )
 
-    if not group:
-        # we delete the ticket
-        ticket_flows.delete_ticket(ticket=ticket, db_session=db_session)
+    # if not group:
+    # we delete the ticket
+    # ticket_flows.delete_ticket(ticket=ticket, db_session=db_session)
 
-        # we delete the case
-        delete(db_session=db_session, case_id=case_id)
+    # we delete the case
+    #    delete(db_session=db_session, case_id=case_id)
 
-        return
+    #    return
 
     # we create the storage folder
-    storage_members = [group.email]
-    storage = storage_flows.create_storage(
-        obj=case, storage_members=storage_members, db_session=db_session
-    )
+    # storage_members = [group.email]
+    storage = storage_flows.create_storage(obj=case, storage_members=[], db_session=db_session)
     if not storage:
         # we delete the group
         group_flows.delete_group(group=group, db_session=db_session)

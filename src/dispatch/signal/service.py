@@ -1,6 +1,6 @@
 import hashlib
 from typing import Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dispatch.enums import RuleMode
 from dispatch.project import service as project_service
 from dispatch.tag import service as tag_service
@@ -213,15 +213,15 @@ def deduplicate(*, db_session, signal_instance: SignalInstance, duplication_rule
     if duplication_rule.mode != RuleMode.active:
         return duplicate
 
-    window = datetime.now() - timedelta(seconds=duplication_rule.window)
-
+    window = datetime.now(timezone.utc) - timedelta(seconds=duplication_rule.window)
     fingerprint = create_instance_fingerprint(duplication_rule.tag_types, signal_instance)
 
     instances = (
         db_session.query(SignalInstance)
         .filter(Signal.id == signal_instance.signal.id)
+        .filter(SignalInstance.id != signal_instance.id)
         .filter(SignalInstance.created_at >= window)
-        .filter(SignalInstance.fingerprint == signal_instance.fingerprint)
+        .filter(SignalInstance.fingerprint == fingerprint)
         .all()
     )
 

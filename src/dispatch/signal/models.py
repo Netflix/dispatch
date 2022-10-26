@@ -10,9 +10,9 @@ from sqlalchemy_utils import TSVectorType
 from dispatch.database.core import Base
 from dispatch.enums import DispatchEnum
 
-from dispatch.incident.models import CaseRead
 from dispatch.models import DispatchBase, EvergreenMixin, PrimaryKey, TimeStampMixin, ProjectMixin
 
+from dispatch.case.models import CaseRead
 from dispatch.case.type.models import CaseTypeRead, CaseType
 from dispatch.case.priority.models import CasePriority, CasePriorityRead
 from dispatch.tag.models import TagRead
@@ -103,9 +103,9 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     signal = relationship("Signal", backref="instances")
     fingerprint = Column(String)
     duplication_rule_id = Column(Integer, ForeignKey(DuplicationRule.id))
-    duplication_rule = relationship("DuplicationRule", backref="signal")
+    duplication_rule = relationship("DuplicationRule", backref="signal_instances")
     suppression_rule_id = Column(Integer, ForeignKey(SuppressionRule.id))
-    suppression_rule = relationship("SuppressionRule", backref="signal")
+    suppression_rule = relationship("SuppressionRule", backref="signal_instances")
 
     raw = Column(JSONB)
     tags = relationship(

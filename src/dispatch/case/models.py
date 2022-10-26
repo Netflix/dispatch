@@ -32,7 +32,6 @@ from dispatch.models import NameStr, PrimaryKey
 from dispatch.storage.models import StorageRead
 from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
-from dispatch.signal.models import SignalRead
 
 from .enums import CaseStatus
 
@@ -188,7 +187,7 @@ class CaseRead(CaseBase):
     duplicates: Optional[List[CaseReadNested]] = []
     escalated_at: Optional[datetime] = None
     events: Optional[List[EventRead]] = []
-    signals: Optional[List[SignalRead]] = []
+    # signals: Optional[List[SignalRead]] = []
     groups: Optional[List[GroupRead]] = []
     incidents: Optional[List[IncidentRead]] = []
     name: Optional[NameStr]
