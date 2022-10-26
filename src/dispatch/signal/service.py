@@ -37,7 +37,7 @@ def create_duplication_rule(
     return rule
 
 
-def create_supression_rule(
+def create_suppression_rule(
     *, db_session, suppression_rule_in: SuppressionRuleBase
 ) -> SuppressionRule:
     """Creates a new supression rule."""
@@ -85,7 +85,7 @@ def create(*, db_session, signal_in: SignalCreate) -> Signal:
                 "case_type",
                 "case_priority",
                 "source",
-                "supression_rule",
+                "suppression_rule",
                 "duplication_rule",
             }
         ),
@@ -98,8 +98,8 @@ def create(*, db_session, signal_in: SignalCreate) -> Signal:
         )
         signal.duplication_rule = duplication_rule
 
-    if signal_in.supression_rule:
-        suppression_rule = create_supression_rule(
+    if signal_in.suppression_rule:
+        suppression_rule = create_suppression_rule(
             db_session=db_session, suppression_rule_in=signal.suppression_rule
         )
         signal.suppression_rule = suppression_rule
@@ -137,8 +137,8 @@ def update(*, db_session, signal: Signal, signal_in: SignalUpdate) -> Signal:
         )
         signal.duplication_rule = duplication_rule
 
-    if signal_in.supression_rule:
-        suppression_rule = create_supression_rule(
+    if signal_in.suppression_rule:
+        suppression_rule = create_suppression_rule(
             db_session=db_session, suppression_rule_in=signal.suppression_rule
         )
         signal.suppression_rule = suppression_rule
@@ -198,7 +198,7 @@ def create_instance_fingerprint(tag_types, tags):
         if tag.tag_type.name in tag_type_names:
             tag_values = tag.tag_type.name
 
-    return hashlib.sha1("-".join(sorted(tag_values)))
+    return hashlib.sha1("-".join(sorted(tag_values)).encode("utf-8")).hexdigest()
 
 
 def deduplicate(*, db_session, signal_instance: SignalInstance, duplication_rule: DuplicationRule):
@@ -207,7 +207,7 @@ def deduplicate(*, db_session, signal_instance: SignalInstance, duplication_rule
     if not duplication_rule:
         return duplicate
 
-    if duplication_rule.status != RuleMode.active:
+    if duplication_rule.mode != RuleMode.active:
         return duplicate
 
     window = datetime.now() - timedelta(seconds=duplication_rule.window)

@@ -62,9 +62,9 @@ export default {
   },
 
   computed: {
-    ...mapFields("signal_instance", [
-      "table.options.filters.created_at",
-      "table.options.filters.project",
+    ...mapFields("signal", [
+      "instanceTable.options.filters.created_at",
+      "instanceTable.options.filters.project",
     ]),
     numFilters: function () {
       return sum([this.project.length])

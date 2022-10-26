@@ -16,10 +16,17 @@ from .models import (
     SignalRead,
     SignalInstanceRead,
     SignalInstanceCreate,
+    SignalInstancePagination,
 )
 from .service import create, update, get, create_instance, delete
 
 router = APIRouter()
+
+
+@router.get("/instances", response_model=SignalInstancePagination)
+def get_signal_instances(*, common: dict = Depends(common_parameters)):
+    """Get all signal instances."""
+    return search_filter_sort_paginate(model="SignalInstance", **common)
 
 
 @router.get("", response_model=SignalPagination)

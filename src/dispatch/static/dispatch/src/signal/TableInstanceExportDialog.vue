@@ -103,19 +103,19 @@ export default {
   },
 
   computed: {
-    ...mapFields("signalInstance", [
-      "table.options.filters.project",
-      "table.options.filters.status",
-      "table.options.filters.created_at",
-      "table.options",
-      "table.rows.items",
-      "table.rows.total",
+    ...mapFields("signal", [
+      "instanceTable.options.filters.project",
+      "instanceTable.options.filters.status",
+      "instanceTable.options.filters.created_at",
+      "instanceTable.options",
+      "instanceTable.rows.items",
+      "instanceTable.rows.total",
       "dialogs.showExport",
     ]),
   },
 
   methods: {
-    ...mapActions("signalInstance", ["getAll", "closeExport"]),
+    ...mapActions("signal", ["getAllInstances", "closeExport"]),
 
     getPreviewData() {
       this.previewRowsLoading = "error"

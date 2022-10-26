@@ -6,12 +6,14 @@ from dispatch.signal import service as signal_service
 from dispatch.signal.models import SignalInstanceRead
 
 
-def create_signal_instance(db_session: SessionLocal, signal_instance_in: SignalInstanceRead):
+def create_signal_instance(
+    db_session: SessionLocal, external_id: str, variant: str, signal_instance_in: SignalInstanceRead
+):
     """Creates a signal and a case if necessary."""
     signal = signal_service.get_by_external_id_and_variant(
         db_session=db_session,
-        external_id=signal_instance_in.external_id,
-        variant=signal_instance_in.variant,
+        external_id=external_id,
+        variant=variant,
     )
 
     signal_instance = signal_service.create_instance(
@@ -23,7 +25,7 @@ def create_signal_instance(db_session: SessionLocal, signal_instance_in: SignalI
     suppressed = signal_service.supress(
         db_session=db_session,
         signal_instance=signal_instance,
-        supression_rule=signal.supression_rule,
+        suppression_rule=signal.suppression_rule,
     )
     if suppressed:
         return

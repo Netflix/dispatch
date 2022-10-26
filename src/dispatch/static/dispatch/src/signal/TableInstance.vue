@@ -33,8 +33,14 @@
             :loading="loading"
             loading-text="Loading... Please wait"
           >
-            <template v-slot:item.status="{ item }">
-              <case-status :status="item.status" :id="item.id" />
+            <template v-slot:item.case="{ item }">
+              <case-popover v-if="item.case" v-model="item.case" />
+            </template>
+            <template v-slot:item.raw="{ item }">
+              <raw-signal-viewer v-model="item.raw" />
+            </template>
+            <template v-slot:item.signal="{ item }">
+              <signal-popover v-model="item.signal" />
             </template>
             <template v-slot:item.project.name="{ item }">
               <v-chip small :color="item.project.color" text-color="white">
@@ -63,6 +69,9 @@ import { mapActions } from "vuex"
 import RouterUtils from "@/router/utils"
 import TableInstanceExportDialog from "@/signal/TableInstanceExportDialog.vue"
 import TableInstanceFilterDialog from "@/signal/TableInstanceFilterDialog.vue"
+import SignalPopover from "@/signal/SignalPopover.vue"
+import CasePopover from "@/case/CasePopover.vue"
+import RawSignalViewer from "@/signal/RawSignalViewer.vue"
 
 export default {
   name: "SignalInstanceTable",
@@ -70,40 +79,35 @@ export default {
   components: {
     TableInstanceExportDialog,
     TableInstanceFilterDialog,
-  },
-
-  props: {
-    name: {
-      type: String,
-      default: null,
-    },
+    SignalPopover,
+    CasePopover,
+    RawSignalViewer,
   },
 
   data() {
     return {
       headers: [
-        { text: "Name", value: "signal.name", align: "left", width: "10%" },
-        { text: "Severity", value: "severity", sortable: true },
-        { text: "Case", value: "case.name", sortable: false },
+        { text: "Case", value: "case", sortable: false },
+        { text: "Signal", value: "signal", sortable: false },
         { text: "Project", value: "project.name", sortable: true },
         { text: "Tags", value: "tags", sortable: false },
+        { text: "Raw", value: "raw", sortable: false },
         { text: "Created At", value: "created_at" },
       ],
-      showEditSheet: false,
     }
   },
 
   computed: {
-    ...mapFields("signalInstance", [
-      "table.loading",
-      "table.options.descending",
-      "table.options.filters",
-      "table.options.itemsPerPage",
-      "table.options.page",
-      "table.options.q",
-      "table.options.sortBy",
-      "table.rows.items",
-      "table.rows.total",
+    ...mapFields("signal", [
+      "instanceTable.loading",
+      "instanceTable.options.descending",
+      "instanceTable.options.filters",
+      "instanceTable.options.itemsPerPage",
+      "instanceTable.options.page",
+      "instanceTable.options.q",
+      "instanceTable.options.sortBy",
+      "instanceTable.rows.items",
+      "instanceTable.rows.total",
     ]),
     ...mapFields("route", ["query"]),
     ...mapFields("auth", ["currentUser.projects"]),
@@ -121,7 +125,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("signal", ["getAll"]),
+    ...mapActions("signal", ["getAllInstances"]),
   },
 
   created() {
@@ -131,12 +135,12 @@ export default {
       project: this.defaultUserProjects,
     }
 
-    this.getAll()
+    this.getAllInstances()
 
     this.$watch(
       (vm) => [vm.page],
       () => {
-        this.getAll()
+        this.getAllInstances()
       }
     )
 
@@ -145,7 +149,7 @@ export default {
       () => {
         this.page = 1
         RouterUtils.updateURLFilters(this.filters)
-        this.getAll()
+        this.getAllInstances()
       }
     )
   },

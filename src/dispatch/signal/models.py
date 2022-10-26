@@ -90,7 +90,8 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
     case_priority = relationship("CasePriority", backref="signals")
     duplication_rule_id = Column(Integer, ForeignKey(DuplicationRule.id))
     duplication_rule = relationship("DuplicationRule", backref="signal")
-    supression_rule_id = Column(Integer, ForeignKey(SuppressionRule.id))
+    suppression_rule_id = Column(Integer, ForeignKey(SuppressionRule.id))
+    suppression_rule = relationship("SuppressionRule", backref="signal")
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
 
@@ -101,7 +102,6 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     signal_id = Column(Integer, ForeignKey("signal.id"))
     signal = relationship("Signal", backref="instances")
     fingerprint = Column(String)
-    severity = Column(String)
     raw = Column(JSONB)
     tags = relationship(
         "Tag",
@@ -136,7 +136,7 @@ class SignalBase(DispatchBase):
     external_url: Optional[str]
     source: Optional[SourceBase]
     created_at: Optional[datetime] = None
-    supression_rule: Optional[SuppressionRuleBase]
+    suppression_rule: Optional[SuppressionRuleBase]
     duplication_rule: Optional[DuplicationRuleBase]
     project: ProjectRead
 
@@ -159,23 +159,23 @@ class SignalPagination(DispatchBase):
 
 
 class SignalInstanceBase(DispatchBase):
-    raw: Any
-    severity: Optional[Any]
-    created_at: Optional[datetime] = None
-    fingerprint: str
+    signal: SignalRead
     project: ProjectRead
     case: Optional[CaseRead]
-    tags: Optional[List[TagRead]]
+    tags: Optional[List[TagRead]] = []
+    raw: Any
+    created_at: Optional[datetime] = None
 
 
-class SignalInstanceCreate(SignalBase):
+class SignalInstanceCreate(SignalInstanceBase):
     pass
 
 
-class SignalInstanceRead(SignalBase):
+class SignalInstanceRead(SignalInstanceBase):
     id: uuid.UUID
+    fingerprint: str
 
 
 class SignalInstancePagination(DispatchBase):
-    items: List[SignalRead]
+    items: List[SignalInstanceRead]
     total: int
