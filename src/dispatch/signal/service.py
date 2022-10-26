@@ -190,15 +190,18 @@ def create_instance(*, db_session, signal_instance_in: SignalInstanceCreate) -> 
     return signal_instance
 
 
-def create_instance_fingerprint(tag_types, tags):
+def create_instance_fingerprint(tag_types, signal_instance: SignalInstance) -> str:
     """Given a list of tag_types and tags creates a hash of their values."""
-    tag_values = []
-    tag_type_names = [t.name for t in tag_types]
-    for tag in tags:
-        if tag.tag_type.name in tag_type_names:
-            tag_values = tag.tag_type.name
+    hash_values = []
+    if signal_instance.tags:
+        tag_type_names = [t.name for t in tag_types]
+        for tag in signal_instance.tags:
+            if tag.tag_type.name in tag_type_names:
+                hash_values.append(tag.tag_type.name)
+    else:
+        hash_values = signal_instance.raw.values()
 
-    return hashlib.sha1("-".join(sorted(tag_values)).encode("utf-8")).hexdigest()
+    return hashlib.sha1("-".join(sorted(hash_values)).encode("utf-8")).hexdigest()
 
 
 def deduplicate(*, db_session, signal_instance: SignalInstance, duplication_rule: DuplicationRule):
@@ -212,7 +215,7 @@ def deduplicate(*, db_session, signal_instance: SignalInstance, duplication_rule
 
     window = datetime.now() - timedelta(seconds=duplication_rule.window)
 
-    fingerprint = create_instance_fingerprint(duplication_rule.tag_types, signal_instance.tags)
+    fingerprint = create_instance_fingerprint(duplication_rule.tag_types, signal_instance)
 
     instances = (
         db_session.query(SignalInstance)

@@ -3,18 +3,17 @@ from dispatch.database.core import SessionLocal
 from dispatch.case import service as case_service
 from dispatch.case import flows as case_flows
 from dispatch.signal import service as signal_service
-from dispatch.signal.models import SignalInstanceRead
+from dispatch.signal.models import SignalInstanceCreate
 
 
-def create_signal_instance(
-    db_session: SessionLocal, external_id: str, variant: str, signal_instance_in: SignalInstanceRead
-):
+def create_signal_instance(db_session: SessionLocal, signal_instance_data: dict):
     """Creates a signal and a case if necessary."""
     signal = signal_service.get_by_external_id_and_variant(
         db_session=db_session,
-        external_id=external_id,
-        variant=variant,
+        external_id=signal_instance_data["id"],
+        variant=signal_instance_data.get("variant"),
     )
+    signal_instance_in = SignalInstanceCreate(**signal_instance_data, project=signal.project)
 
     signal_instance = signal_service.create_instance(
         db_session=db_session, signal_instance_in=signal_instance_in

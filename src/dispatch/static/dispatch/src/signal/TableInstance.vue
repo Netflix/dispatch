@@ -36,9 +36,6 @@
             <template v-slot:item.case="{ item }">
               <case-popover v-if="item.case" v-model="item.case" />
             </template>
-            <template v-slot:item.raw="{ item }">
-              <raw-signal-viewer v-model="item.raw" />
-            </template>
             <template v-slot:item.signal="{ item }">
               <signal-popover v-model="item.signal" />
             </template>
@@ -53,6 +50,15 @@
                   <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
                 </template>
                 <span>{{ item.created_at | formatDate }}</span>
+              </v-tooltip>
+            </template>
+            <template v-slot:item.data-table-actions="{ item }">
+              <raw-signal-viewer v-model="item.raw" />
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-icon v-bind="attrs" v-on="on"> mdi-fingerprint </v-icon>
+                </template>
+                <span>{{ item.fingerprint }}</span>
               </v-tooltip>
             </template>
           </v-data-table>
@@ -93,6 +99,7 @@ export default {
         { text: "Tags", value: "tags", sortable: false },
         { text: "Raw", value: "raw", sortable: false },
         { text: "Created At", value: "created_at" },
+        { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },

@@ -102,6 +102,11 @@ class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     signal_id = Column(Integer, ForeignKey("signal.id"))
     signal = relationship("Signal", backref="instances")
     fingerprint = Column(String)
+    duplication_rule_id = Column(Integer, ForeignKey(DuplicationRule.id))
+    duplication_rule = relationship("DuplicationRule", backref="signal")
+    suppression_rule_id = Column(Integer, ForeignKey(SuppressionRule.id))
+    suppression_rule = relationship("SuppressionRule", backref="signal")
+
     raw = Column(JSONB)
     tags = relationship(
         "Tag",
@@ -159,11 +164,12 @@ class SignalPagination(DispatchBase):
 
 
 class SignalInstanceBase(DispatchBase):
-    signal: SignalRead
     project: ProjectRead
     case: Optional[CaseRead]
     tags: Optional[List[TagRead]] = []
     raw: Any
+    suppression_rule: Optional[SuppressionRuleBase]
+    duplication_rule: Optional[DuplicationRuleBase]
     created_at: Optional[datetime] = None
 
 
@@ -174,6 +180,7 @@ class SignalInstanceCreate(SignalInstanceBase):
 class SignalInstanceRead(SignalInstanceBase):
     id: uuid.UUID
     fingerprint: str
+    signal: SignalRead
 
 
 class SignalInstancePagination(DispatchBase):
