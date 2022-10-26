@@ -94,7 +94,9 @@ email-validator==1.3.0
 emails==0.6
     # via -r requirements-base.in
 exceptiongroup==1.0.0rc8
-    # via hypothesis
+    # via
+    #   hypothesis
+    #   pytest
 fastapi==0.84.0
     # via -r requirements-base.in
 frozenlist==1.3.0
@@ -236,8 +238,6 @@ protobuf==3.20.0
     #   googleapis-common-protos
 psycopg2-binary==2.9.5
     # via -r requirements-base.in
-py==1.11.0
-    # via pytest
 pyasn1==0.4.8
     # via
     #   oauth2client
@@ -264,7 +264,7 @@ pyparsing==3.0.9
     #   packaging
 pyrsistent==0.18.1
     # via jsonschema
-pytest==7.1.3
+pytest==7.2.0
     # via
     #   pytest-subtests
     #   schemathesis
