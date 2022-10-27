@@ -115,8 +115,11 @@ def calculate_incident_response_cost(
         participant_total_roles_time_seconds = 0
 
         for participant_role in participant.participant_roles:
-            if participant_role.role == ParticipantRoleType.observer:
-                # skip calculating cost for observer roles
+            if (
+                participant_role.role == ParticipantRoleType.observer
+                or participant_role.role == ParticipantRoleType.reporter
+            ):
+                # skip calculating cost for the observer and reporter roles
                 continue
 
             if not participant_role.activity:
