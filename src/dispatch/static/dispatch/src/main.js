@@ -29,6 +29,7 @@ if (process.env.VUE_APP_SENTRY_ENABLED) {
     dsn: DSN,
     integrations: [new Integrations.Vue({ Vue, attachProps: true })],
   })
+  console.log(process.env)
   process.env.VUE_APP_SENTRY_TAGS.split(",").forEach(function (item) {
     var parts = item.split(":")
     Sentry.setTag(parts[0], parts[1])
