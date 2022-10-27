@@ -234,7 +234,7 @@ protobuf==3.20.0
     #   -r requirements-base.in
     #   google-api-core
     #   googleapis-common-protos
-psycopg2-binary==2.9.4
+psycopg2-binary==2.9.5
     # via -r requirements-base.in
 py==1.11.0
     # via pytest
