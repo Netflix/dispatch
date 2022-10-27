@@ -98,8 +98,8 @@ def event_functions(event: EventEnvelope):
         "message": [
             after_hours_message,
             ban_threads_warning,
-            increment_participant_activity,
-            change_participant_role,
+            increment_participant_role_activity,
+            assess_participant_role_change,
             message_monitor,
             message_tagging,
         ],
@@ -193,7 +193,7 @@ def handle_reaction_added_event(
 
 
 @slack_background_task
-def increment_participant_activity(
+def increment_participant_role_activity(
     config: SlackConversationConfiguration,
     user_id: str,
     user_email: str,
@@ -216,12 +216,11 @@ def increment_participant_activity(
                 participant_role.activity += 1
             else:
                 participant_role.activity = 1
-
             db_session.commit()
 
 
 @slack_background_task
-def change_participant_role(
+def assess_participant_role_change(
     config: SlackConversationConfiguration,
     user_id: str,
     user_email: str,
@@ -231,17 +230,19 @@ def change_participant_role(
     db_session=None,
     slack_client=None,
 ):
-    """Changes the participant's role based on their activity counter."""
+    """Assesses the need of changing a participant's role based on its activity and changes it if needed."""
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident_id, email=user_email
     )
 
     if participant:
-        if participant.activity >= 10:  # ten messages
-            active_participant_roles = participant.active_roles
-            for participant_role in active_participant_roles:
-                if participant_role.role == ParticipantRoleType.observer:
-                    # we change the observer role for the participant one
+        for participant_role in participant.active_roles:
+            if (
+                participant_role.role == ParticipantRoleType.observer
+                or participant_role.role == ParticipantRoleType.reporter
+            ):
+                if participant_role.activity >= 10:  # ten messages sent to the incident channel
+                    # we change the participant's role to the participant one
                     participant_role_service.renounce_role(
                         db_session=db_session, participant_role=participant_role
                     )
@@ -255,7 +256,10 @@ def change_participant_role(
                     event_service.log_incident_event(
                         db_session=db_session,
                         source="Slack Plugin - Conversation Management",
-                        description=f"{participant.individual.name}'s role changed from {ParticipantRoleType.observer} to {ParticipantRoleType.participant} due to activity in the incident channel.",
+                        description=(
+                            f"{participant.individual.name}'s role changed from {participant_role.role} to "
+                            f"{ParticipantRoleType.participant} due to activity in the incident channel."
+                        ),
                         incident_id=incident_id,
                     )
 
