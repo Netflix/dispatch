@@ -16,6 +16,7 @@ const getDefaultSelectedState = () => {
     case_type: null,
     case_priority: null,
     duplication_rule: null,
+    suppression_rule: null,
     source: null,
     project: null,
     created_at: null,
@@ -144,7 +145,7 @@ const actions = {
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "signal created successfully.", type: "success" },
+            { text: "Signal Definition created successfully.", type: "success" },
             { root: true }
           )
         })
@@ -159,7 +160,7 @@ const actions = {
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "signal updated successfully.", type: "success" },
+            { text: "Signal Defintion updated successfully.", type: "success" },
             { root: true }
           )
         })
@@ -174,7 +175,7 @@ const actions = {
       dispatch("getAll")
       commit(
         "notification_backend/addBeNotification",
-        { text: "signal deleted successfully.", type: "success" },
+        { text: "Signal Definition deleted successfully.", type: "success" },
         { root: true }
       )
     })

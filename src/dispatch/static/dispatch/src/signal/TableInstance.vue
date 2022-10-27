@@ -4,24 +4,10 @@
       <v-col>
         <div class="headline">Signals</div>
       </v-col>
-      <v-col class="text-right">
-        <table-instance-filter-dialog :projects="defaultUserProjects" />
-        <table-instance-export-dialog />
-      </v-col>
     </v-row>
     <v-row no-gutters>
       <v-col>
         <v-card elevation="0">
-          <v-card-title>
-            <v-text-field
-              v-model="q"
-              append-icon="search"
-              label="Search"
-              single-line
-              hide-details
-              clearable
-            />
-          </v-card-title>
           <v-data-table
             :headers="headers"
             :items="items"
@@ -68,7 +54,7 @@
               <raw-signal-viewer v-model="item.raw" />
               <v-tooltip bottom>
                 <template v-slot:activator="{ on, attrs }">
-                  <v-icon v-bind="attrs" v-on="on"> mdi-fingerprint </v-icon>
+                  <v-icon v-bind="attrs" v-on="on" class="mr-2"> mdi-fingerprint </v-icon>
                 </template>
                 <span>{{ item.fingerprint }}</span>
               </v-tooltip>
@@ -85,8 +71,6 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import RouterUtils from "@/router/utils"
-import TableInstanceExportDialog from "@/signal/TableInstanceExportDialog.vue"
-import TableInstanceFilterDialog from "@/signal/TableInstanceFilterDialog.vue"
 import SignalPopover from "@/signal/SignalPopover.vue"
 import CasePopover from "@/case/CasePopover.vue"
 import RawSignalViewer from "@/signal/RawSignalViewer.vue"
@@ -95,8 +79,6 @@ export default {
   name: "SignalInstanceTable",
 
   components: {
-    TableInstanceExportDialog,
-    TableInstanceFilterDialog,
     SignalPopover,
     CasePopover,
     RawSignalViewer,

@@ -44,6 +44,7 @@ export default {
       type: Object,
       default: function () {
         return {
+          id: null,
           window: 600,
           tag_types: [],
         }
@@ -73,7 +74,7 @@ export default {
         return this.value ? cloneDeep(this.value.window) : 600
       },
       set(value) {
-        this.$emit("input", { window: value, tag_types: this.tag_types })
+        this.$emit("input", { id: this.id, window: value, tag_types: this.tag_types })
       },
     },
     tag_types: {
@@ -81,7 +82,12 @@ export default {
         return this.value ? cloneDeep(this.value.tag_types) : []
       },
       set(value) {
-        this.$emit("input", { window: this.window, tag_types: value })
+        this.$emit("input", { id: this.id, window: this.window, tag_types: value })
+      },
+    },
+    id: {
+      get() {
+        return this.value ? cloneDeep(this.value.id) : null
       },
     },
   },

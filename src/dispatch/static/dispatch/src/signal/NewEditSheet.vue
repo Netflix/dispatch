@@ -35,21 +35,8 @@
                       :error-messages="errors"
                       :success="valid"
                       label="Name"
-                      hint="A human readable display name for this signal."
-                      clearable
-                    />
-                  </ValidationProvider>
-                </v-col>
-                <v-col cols="12">
-                  <ValidationProvider name="variant" immediate>
-                    <v-text-field
-                      v-model="variant"
-                      slot-scope="{ errors, valid }"
-                      :error-messages="errors"
-                      :success="valid"
-                      label="Variant"
-                      hint="The same signal can have multiple variants with different defintions."
                       persistent-hint
+                      hint="A human readable display name for this signal."
                       clearable
                     />
                   </ValidationProvider>
@@ -65,6 +52,20 @@
                       rows="1"
                       auto-grow
                       hint="A short description of the signal."
+                      persistent-hint
+                      clearable
+                    />
+                  </ValidationProvider>
+                </v-col>
+                <v-col cols="12">
+                  <ValidationProvider name="variant" immediate>
+                    <v-text-field
+                      v-model="variant"
+                      slot-scope="{ errors, valid }"
+                      :error-messages="errors"
+                      :success="valid"
+                      label="Variant"
+                      hint="The same signal can have multiple variants with different defintions."
                       persistent-hint
                       clearable
                     />
@@ -144,6 +145,9 @@
         <v-col cols="12">
           <duplication-rule-card v-model="duplication_rule"></duplication-rule-card>
         </v-col>
+        <v-col cols="12">
+          <suppression-rule v-model="suppression_rule"></suppression-rule>
+        </v-col>
       </v-row>
     </v-navigation-drawer>
   </ValidationObserver>
@@ -159,6 +163,7 @@ import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 
 import DuplicationRuleCard from "@/signal/DuplicationRule.vue"
+import SuppressionRule from "./SuppressionRule.vue"
 
 extend("required", {
   ...required,
@@ -173,6 +178,7 @@ export default {
     CaseTypeSelect,
     CasePrioritySelect,
     DuplicationRuleCard,
+    SuppressionRule,
   },
 
   data() {
@@ -200,6 +206,7 @@ export default {
       "selected.case_type",
       "selected.case_priority",
       "selected.duplication_rule",
+      "selected.suppression_rule",
       "selected.source",
       "selected.project",
       "selected.loading",

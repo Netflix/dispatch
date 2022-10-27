@@ -39,7 +39,7 @@
             </v-list-item-action>
             <v-list-item-subtitle>{{ value.description }}</v-list-item-subtitle>
           </v-list-item>
-          <v-list-item :href="value.external_url" target="_blank">
+          <v-list-item v-if="value.external_url" :href="value.external_url" target="_blank">
             <v-list-item-action>
               <v-icon>open_in_new</v-icon>
             </v-list-item-action>

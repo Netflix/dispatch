@@ -125,9 +125,33 @@ class DuplicationRuleBase(SignalRuleBase):
     tag_types: List[TagTypeRead]
 
 
+class DuplicationRuleCreate(DuplicationRuleBase):
+    pass
+
+
+class DuplicationRuleUpdate(DuplicationRuleBase):
+    id: Optional[PrimaryKey]
+
+
+class DuplicationRuleRead(DuplicationRuleBase):
+    id: PrimaryKey
+
+
 class SuppressionRuleBase(SignalRuleBase):
     expiration: Optional[datetime]
     tags: List[TagRead]
+
+
+class SuppressionRuleCreate(SuppressionRuleBase):
+    pass
+
+
+class SuppressionRuleUpdate(SuppressionRuleBase):
+    id: Optional[PrimaryKey]
+
+
+class SuppressionRuleRead(SuppressionRuleBase):
+    id: PrimaryKey
 
 
 class SignalBase(DispatchBase):
@@ -141,21 +165,26 @@ class SignalBase(DispatchBase):
     external_url: Optional[str]
     source: Optional[SourceBase]
     created_at: Optional[datetime] = None
-    suppression_rule: Optional[SuppressionRuleBase]
+    suppression_rule: Optional[SuppressionRuleRead]
     duplication_rule: Optional[DuplicationRuleBase]
     project: ProjectRead
 
 
 class SignalCreate(SignalBase):
-    pass
+    suppression_rule: Optional[SuppressionRuleCreate]
+    duplication_rule: Optional[DuplicationRuleCreate]
 
 
 class SignalUpdate(SignalBase):
     id: PrimaryKey
+    suppression_rule: Optional[SuppressionRuleUpdate]
+    duplication_rule: Optional[DuplicationRuleUpdate]
 
 
 class SignalRead(SignalBase):
     id: PrimaryKey
+    suppression_rule: Optional[SuppressionRuleRead]
+    duplication_rule: Optional[DuplicationRuleRead]
 
 
 class SignalPagination(DispatchBase):

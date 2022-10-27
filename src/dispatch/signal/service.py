@@ -16,13 +16,15 @@ from .models import (
     SuppressionRule,
     DuplicationRule,
     SignalInstanceCreate,
-    DuplicationRuleBase,
-    SuppressionRuleBase,
+    DuplicationRuleCreate,
+    DuplicationRuleUpdate,
+    SuppressionRuleCreate,
+    SuppressionRuleUpdate,
 )
 
 
 def create_duplication_rule(
-    *, db_session, duplication_rule_in: DuplicationRuleBase
+    *, db_session, duplication_rule_in: DuplicationRuleCreate
 ) -> DuplicationRule:
     """Creates a new duplication rule."""
     rule = DuplicationRule(**duplication_rule_in.dict(exclude={"tag_types"}))
@@ -37,11 +39,48 @@ def create_duplication_rule(
     return rule
 
 
+def update_duplication_rule(
+    *, db_session, duplication_rule_in: DuplicationRuleUpdate
+) -> DuplicationRule:
+    """Updates an 1existing duplication rule."""
+    rule = (
+        db_session.query(DuplicationRule).filter(DuplicationRule.id == duplication_rule_in.id).one()
+    )
+
+    tag_types = []
+    for t in duplication_rule_in.tag_types:
+        tag_types.append(tag_type_service.get(db_session=db_session, tag_type_id=t.id))
+
+    rule.tag_types = tag_types
+    rule.window = duplication_rule_in.window
+    db_session.add(rule)
+    db_session.commit()
+    return rule
+
+
 def create_suppression_rule(
-    *, db_session, suppression_rule_in: SuppressionRuleBase
+    *, db_session, suppression_rule_in: SuppressionRuleCreate
 ) -> SuppressionRule:
     """Creates a new supression rule."""
     rule = SuppressionRule(**suppression_rule_in.dict(exclude={"tags"}))
+
+    tags = []
+    for t in suppression_rule_in.tags:
+        tags.append(tag_service.get_or_create(db_session=db_session, tag_in=t))
+
+    rule.tags = tags
+    db_session.add(rule)
+    db_session.commit()
+    return rule
+
+
+def update_suppression_rule(
+    *, db_session, suppression_rule_in: SuppressionRuleUpdate
+) -> SuppressionRule:
+    """Updates an existing supression rule."""
+    rule = (
+        db_session.query(SuppressionRule).filter(SuppressionRule.id == suppression_rule_in.id).one()
+    )
 
     tags = []
     for t in suppression_rule_in.tags:
@@ -124,7 +163,6 @@ def create(*, db_session, signal_in: SignalCreate) -> Signal:
 def update(*, db_session, signal: Signal, signal_in: SignalUpdate) -> Signal:
     """Creates a new signal."""
     signal_data = signal.dict()
-
     update_data = signal_in.dict(skip_defaults=True)
 
     for field in signal_data:
@@ -132,16 +170,26 @@ def update(*, db_session, signal: Signal, signal_in: SignalUpdate) -> Signal:
             setattr(signal, field, update_data[field])
 
     if signal_in.duplication_rule:
-        duplication_rule = create_duplication_rule(
-            db_session=db_session, duplication_rule_in=signal_in.duplication_rule
-        )
-        signal.duplication_rule = duplication_rule
+        if signal_in.duplication_rule.id:
+            update_duplication_rule(
+                db_session=db_session, duplication_rule_in=signal_in.duplication_rule
+            )
+        else:
+            duplication_rule = create_duplication_rule(
+                db_session=db_session, duplication_rule_in=signal_in.duplication_rule
+            )
+            signal.duplication_rule = duplication_rule
 
     if signal_in.suppression_rule:
-        suppression_rule = create_suppression_rule(
-            db_session=db_session, suppression_rule_in=signal.suppression_rule
-        )
-        signal.suppression_rule = suppression_rule
+        if signal_in.suppression_rule.id:
+            update_suppression_rule(
+                db_session=db_session, suppression_rule_in=signal_in.suppression_rule
+            )
+        else:
+            suppression_rule = create_suppression_rule(
+                db_session=db_session, suppression_rule_in=signal_in.suppression_rule
+            )
+            signal.suppression_rule = suppression_rule
 
     if signal_in.case_priority:
         case_priority = case_priority_service.get_by_name_or_default(
@@ -199,12 +247,14 @@ def create_instance_fingerprint(tag_types, signal_instance: SignalInstance) -> s
             if tag.tag_type.name in tag_type_names:
                 hash_values.append(tag.tag_type.name)
     else:
-        hash_values = signal_instance.raw.values()
+        hash_values = signal_instance.raw.values()  # fall back to creating a hash of all values
 
     return hashlib.sha1("-".join(sorted(hash_values)).encode("utf-8")).hexdigest()
 
 
-def deduplicate(*, db_session, signal_instance: SignalInstance, duplication_rule: DuplicationRule):
+def deduplicate(
+    *, db_session, signal_instance: SignalInstance, duplication_rule: DuplicationRule
+) -> bool:
     """Find any matching duplication rules and match signals."""
     duplicate = False
     if not duplication_rule:
@@ -236,14 +286,16 @@ def deduplicate(*, db_session, signal_instance: SignalInstance, duplication_rule
     return duplicate
 
 
-def supress(*, db_session, signal_instance: SignalInstance, suppression_rule: SuppressionRule):
+def supress(
+    *, db_session, signal_instance: SignalInstance, suppression_rule: SuppressionRule
+) -> bool:
     """Find any matching suppression rules and match instances."""
     supressed = False
 
     if not suppression_rule:
         return supressed
 
-    if suppression_rule.status != RuleMode.active:
+    if suppression_rule.mode != RuleMode.active:
         return supressed
 
     if suppression_rule.expiration:
