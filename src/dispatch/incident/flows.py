@@ -928,7 +928,11 @@ def incident_create_flow(*, organization_slug: str, incident_id: int, db_session
     # wait until all resources are created before adding suggested participants
     for individual, service_id in individual_participants:
         incident_add_or_reactivate_participant_flow(
-            individual.email, incident.id, service_id=service_id, db_session=db_session
+            individual.email,
+            incident.id,
+            participant_role=ParticipantRoleType.observer,
+            service_id=service_id,
+            db_session=db_session,
         )
 
     event_service.log_incident_event(
@@ -1247,7 +1251,11 @@ def incident_update_flow(
 
         for individual, service_id in individual_participants:
             incident_add_or_reactivate_participant_flow(
-                individual.email, incident.id, service_id=service_id, db_session=db_session
+                individual.email,
+                incident.id,
+                participant_role=ParticipantRoleType.observer,
+                service_id=service_id,
+                db_session=db_session,
             )
 
         # we add the team distributions lists to the notifications group
@@ -1299,39 +1307,41 @@ def incident_assign_role_flow(
         # )
         return
 
-    if assignee_role != ParticipantRoleType.participant:
-        # we resolve the assigner and assignee's contact information
-        contact_plugin = plugin_service.get_active_instance(
-            db_session=db_session, project_id=incident.project.id, plugin_type="contact"
-        )
-
-        if contact_plugin:
-            assigner_contact_info = contact_plugin.instance.get(
-                assigner_email, db_session=db_session
+    if incident.status != IncidentStatus.closed:
+        if (
+            assignee_role != ParticipantRoleType.observer
+            and assignee_role != ParticipantRoleType.participant
+        ):
+            # we resolve the assigner and assignee contact information
+            contact_plugin = plugin_service.get_active_instance(
+                db_session=db_session, project_id=incident.project.id, plugin_type="contact"
             )
-            assignee_contact_info = contact_plugin.instance.get(
-                assignee_email, db_session=db_session
-            )
-        else:
-            assigner_contact_info = {
-                "email": assigner_email,
-                "fullname": "Unknown",
-                "weblink": "",
-            }
-            assignee_contact_info = {
-                "email": assignee_email,
-                "fullname": "Unknown",
-                "weblink": "",
-            }
 
-        if incident.status != IncidentStatus.closed:
+            if contact_plugin:
+                assigner_contact_info = contact_plugin.instance.get(
+                    assigner_email, db_session=db_session
+                )
+                assignee_contact_info = contact_plugin.instance.get(
+                    assignee_email, db_session=db_session
+                )
+            else:
+                assigner_contact_info = {
+                    "email": assigner_email,
+                    "fullname": "Unknown",
+                    "weblink": "",
+                }
+                assignee_contact_info = {
+                    "email": assignee_email,
+                    "fullname": "Unknown",
+                    "weblink": "",
+                }
+
             # we send a notification to the incident conversation
             send_incident_new_role_assigned_notification(
                 assigner_contact_info, assignee_contact_info, assignee_role, incident, db_session
             )
 
-    if assignee_role == ParticipantRoleType.incident_commander:
-        if incident.status != IncidentStatus.closed:
+        if assignee_role == ParticipantRoleType.incident_commander:
             # we update the conversation topic
             set_conversation_topic(incident, db_session)
 
@@ -1435,6 +1445,7 @@ def incident_add_participant_to_tactical_group_flow(
 def incident_add_or_reactivate_participant_flow(
     user_email: str,
     incident_id: int,
+    participant_role: ParticipantRoleType = ParticipantRoleType.participant,
     service_id: int = 0,
     event: dict = None,
     organization_slug: str = None,
@@ -1470,7 +1481,7 @@ def incident_add_or_reactivate_participant_flow(
     else:
         # we add the participant to the incident
         participant = participant_flows.add_participant(
-            user_email, incident, db_session, service_id=service_id
+            user_email, incident, db_session, service_id=service_id, role=participant_role
         )
 
     # we add the participant to the tactical group
