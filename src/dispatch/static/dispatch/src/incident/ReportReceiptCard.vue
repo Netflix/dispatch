@@ -22,28 +22,6 @@
           <v-list-item-group>
             <v-list-item>
               <v-list-item-content>
-                <v-list-item-title>Commander</v-list-item-title>
-                <v-list-item-subtitle>
-                  <participant :participant="commander" />
-                </v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-            <v-divider />
-            <v-list-item>
-              <v-list-item-content>
-                <v-list-item-title>Participants</v-list-item-title>
-                <v-list-item-subtitle>
-                  <v-chip-group column>
-                    <v-item v-for="participant in participants" :key="participant.id">
-                      <participant :participant="participant" />
-                    </v-item>
-                  </v-chip-group>
-                </v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-            <v-divider />
-            <v-list-item>
-              <v-list-item-content>
                 <v-list-item-title>Title</v-list-item-title>
                 <v-list-item-subtitle>{{ title }}</v-list-item-subtitle>
               </v-list-item-content>
@@ -81,6 +59,40 @@
               <v-list-item-content>
                 <v-list-item-title>Visibility</v-list-item-title>
                 <v-list-item-subtitle>{{ visibility }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>Incident Commander</v-list-item-title>
+                <v-list-item-subtitle>
+                  <participant :participant="commander" />
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>Incident Commander Paged?</v-list-item-title>
+                <v-list-item-subtitle>
+                  <span v-if="incident_priority.page_commander">
+                    The incident commander was paged.
+                  </span>
+                  <span v-else>The incident commander no was paged.</span>
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider />
+            <v-list-item>
+              <v-list-item-content>
+                <v-list-item-title>Incident Participants</v-list-item-title>
+                <v-list-item-subtitle>
+                  <v-chip-group column>
+                    <v-item v-for="participant in participants" :key="participant.id">
+                      <participant :participant="participant" />
+                    </v-item>
+                  </v-chip-group>
+                </v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
           </v-list-item-group>
