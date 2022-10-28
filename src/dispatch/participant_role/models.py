@@ -15,7 +15,7 @@ class ParticipantRole(Base):
     assumed_at = Column(DateTime, default=datetime.utcnow)
     renounced_at = Column(DateTime)
     role = Column(String, default=ParticipantRoleType.participant)
-    activity = Column(Integer)
+    activity = Column(Integer, default=0)
     participant_id = Column(Integer, ForeignKey("participant.id", ondelete="CASCADE"))
 
 
@@ -36,7 +36,7 @@ class ParticipantRoleRead(ParticipantRoleBase):
     id: PrimaryKey
     assumed_at: Optional[datetime] = None
     renounced_at: Optional[datetime] = None
-    activity: Optional[int] = 0
+    activity: Optional[int]
 
 
 class ParticipantRolePagination(ParticipantRoleBase):

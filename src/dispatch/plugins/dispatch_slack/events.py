@@ -212,10 +212,7 @@ def increment_participant_role_activity(
     if participant:
         active_participant_roles = participant.active_roles
         for participant_role in active_participant_roles:
-            if participant_role.activity:
-                participant_role.activity += 1
-            else:
-                participant_role.activity = 1
+            participant_role.activity += 1
             db_session.commit()
 
 
@@ -258,7 +255,7 @@ def assess_participant_role_change(
                         source="Slack Plugin - Conversation Management",
                         description=(
                             f"{participant.individual.name}'s role changed from {participant_role.role} to "
-                            f"{ParticipantRoleType.participant} due to activity in the incident channel."
+                            f"{ParticipantRoleType.participant} due to activity in the incident channel"
                         ),
                         incident_id=incident_id,
                     )

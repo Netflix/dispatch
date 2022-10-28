@@ -122,7 +122,7 @@ def calculate_incident_response_cost(
                 # skip calculating cost for the observer and reporter roles
                 continue
 
-            if not participant_role.activity:
+            if participant_role.activity == 0:
                 # skip calculating cost for roles that have no activity
                 continue
 
