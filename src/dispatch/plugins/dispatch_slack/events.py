@@ -204,16 +204,20 @@ def increment_participant_role_activity(
     slack_client=None,
 ):
     """Increments the participant role's activity counter."""
+    if event.event.subtype == "channel_join" or event.event.subtype == "channel_leave":
+        # we don't increment the counter for channel_join or channel_leave messages
+        return
+
     participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident_id, email=user_email
     )
 
-    # the member_joined_channel event also creates a message, but they're not a participant yet
     if participant:
         active_participant_roles = participant.active_roles
         for participant_role in active_participant_roles:
             participant_role.activity += 1
-            db_session.commit()
+
+        db_session.commit()
 
 
 @slack_background_task
