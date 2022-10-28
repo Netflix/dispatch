@@ -21,6 +21,7 @@ const getDefaultSelectedState = () => {
       tag: [],
       tag_type: [],
       project: [],
+      visibility: [],
     },
   }
 }

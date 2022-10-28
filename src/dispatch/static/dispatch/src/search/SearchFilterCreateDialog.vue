@@ -68,6 +68,18 @@
                           <incident-status-multi-select v-model="filters.status" />
                         </v-list-item-content>
                       </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-select
+                            :items="visibilities"
+                            v-model="filters.visibility"
+                            name="visibility"
+                            item-text="name"
+                            return-object
+                            label="Visibility"
+                          />
+                        </v-list-item-content>
+                      </v-list-item>
                     </v-list>
                   </v-tab-item>
                   <v-tab-item>
@@ -198,6 +210,7 @@ export default {
 
   data() {
     return {
+      visibilities: [{ name: "Open" }, { name: "Restricted" }],
       editorOptions: {
         automaticLayout: true,
         renderValidationDecorations: "on",
@@ -222,6 +235,7 @@ export default {
         tag: [],
         project: [],
         tag_type: [],
+        visibility: [],
       },
     }
   },
@@ -293,6 +307,7 @@ export default {
         vm.filters.status,
         vm.filters.tag,
         vm.filters.tag_type,
+        vm.filters.visibility,
       ],
       () => {
         this.expression = SearchUtils.createFilterExpression(this.filters)
