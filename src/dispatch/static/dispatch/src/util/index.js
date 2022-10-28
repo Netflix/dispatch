@@ -1,9 +1,3 @@
-import { Parser } from "json2csv"
-
-const {
-  transforms: { flatten },
-} = require("json2csv")
-
 const toggleFullScreen = () => {
   let doc = window.document
   let docEl = doc.documentElement

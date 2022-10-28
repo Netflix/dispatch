@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "cross-env NODE_ENV=dev NODE_OPTIONS='--max-http-header-size=100000' vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
-    "build-report": "vue-cli-service build --report"
+    "serve": "cross-env NODE_ENV=dev NODE_OPTIONS='--max-http-header-size=100000' vite --open",
+    "preview": "vite preview --open --port 8080",
+    "build": "vite build --out-dir dist",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
   },
   "dependencies": {
     "@koumoul/vjsf": "^2.5.2",
@@ -18,12 +19,10 @@
     "date-fns": "^2.21.1",
     "date-fns-tz": "^1.1.6",
     "font-awesome": "^4.7.0",
-    "json2csv": "^5.0.6",
     "lodash": "^4.17.21",
     "mjml": "^4.9.3",
-    "monaco-editor": "^0.23.0",
+    "monaco-editor": "^0.33.0",
     "monaco-editor-vue": "^1.0.10",
-    "monaco-editor-webpack-plugin": "^3.0.1",
     "register-service-worker": "^1.7.2",
     "roboto-fontface": "*",
     "vee-validate": "^3.4.5",
@@ -41,12 +40,11 @@
   "devDependencies": {
     "@mdi/font": "^5.9.55",
     "@typescript-eslint/parser": "^4.22.0",
-    "@vue/cli-plugin-babel": "^4.5.12",
-    "@vue/cli-plugin-eslint": "^4.5.12",
-    "@vue/cli-plugin-pwa": "^4.5.12",
-    "@vue/cli-service": "^4.1.1",
+    "@vitejs/plugin-vue2": "^2.0.0",
+    "@vue/compiler-sfc": "^3.0.11",
     "@vue/eslint-config-prettier": "^6.0.0",
     "babel-eslint": "^10.1.0",
+    "babel-runtime": "^6.26.0",
     "cross-env": "^7.0.3",
     "eslint": "^6.7.2",
     "eslint-config-prettier": "^6.15.0",
@@ -58,9 +56,12 @@
     "prettier": "^2.2.1",
     "prettier-eslint": "^9.0.2",
     "sass": "~1.32.12",
-    "sass-loader": "^8.0.2",
     "stylus": "^0.54.8",
     "stylus-loader": "^3.0.2",
+    "unplugin-vue-components": "^0.22.9",
+    "vite": "^3.2.1",
+    "vite-plugin-babel": "^1.1.2",
+    "vite-plugin-monaco-editor": "^1.1.0",
     "vue-cli-plugin-vuetify": "^2.3.1",
     "vue-template-compiler": "^2.6.12",
     "vuetify-loader": "^1.7.2",
@@ -76,7 +77,6 @@
       "@vue/prettier"
     ],
     "parserOptions": {
-      "parser": "babel-eslint",
       "ecmaVersion": 6
     },
     "env": {

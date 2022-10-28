@@ -14,11 +14,11 @@ import store from "@/store"
 const requestor = new FetchRequestor()
 
 function login(to, from, next) {
-  const clientId = process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID
-  const openIdConnectUrl =
-    process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL
+  const clientId = import.meta.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID
+  const openIdConnectUrl = import.meta.env
+    .VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL
   const scope = "openid profile email"
-  const useIdToken = process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_USE_ID_TOKEN
+  const useIdToken = import.meta.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_USE_ID_TOKEN
 
   const notifier = new AuthorizationNotifier()
 
