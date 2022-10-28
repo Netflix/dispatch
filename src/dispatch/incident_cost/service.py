@@ -110,13 +110,21 @@ def calculate_incident_response_cost(
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
     participants_total_response_time_seconds = 0
-    for participant in incident.participants:
-        # skip participants that have no activity
-        if not participant.activity:
-            continue
 
+    for participant in incident.participants:
         participant_total_roles_time_seconds = 0
+
         for participant_role in participant.participant_roles:
+            if (
+                participant_role.role == ParticipantRoleType.observer
+                or participant_role.role == ParticipantRoleType.reporter
+            ):
+                # skip calculating cost for the observer and reporter roles
+                continue
+
+            if not participant_role.activity:
+                # skip calculating cost for roles that have no activity
+                continue
 
             participant_role_assumed_at = participant_role.assumed_at
 
