@@ -78,7 +78,7 @@
                   <span v-if="incident_priority.page_commander">
                     The incident commander was paged.
                   </span>
-                  <span v-else>The incident commander no was paged.</span>
+                  <span v-else>The incident commander was not paged.</span>
                 </v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
