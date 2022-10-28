@@ -1308,10 +1308,7 @@ def incident_assign_role_flow(
         return
 
     if incident.status != IncidentStatus.closed:
-        if (
-            assignee_role != ParticipantRoleType.observer
-            and assignee_role != ParticipantRoleType.participant
-        ):
+        if assignee_role != ParticipantRoleType.participant:
             # we resolve the assigner and assignee contact information
             contact_plugin = plugin_service.get_active_instance(
                 db_session=db_session, project_id=incident.project.id, plugin_type="contact"
