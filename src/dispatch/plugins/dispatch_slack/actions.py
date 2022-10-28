@@ -530,8 +530,6 @@ def handle_assign_role_action(
         db_session=db_session,
     )
 
-    print(assignee_role)
-
     if (
         assignee_role == ParticipantRoleType.reporter
         or assignee_role == ParticipantRoleType.incident_commander
