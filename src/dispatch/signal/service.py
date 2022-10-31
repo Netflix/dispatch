@@ -257,6 +257,12 @@ def deduplicate(
 ) -> bool:
     """Find any matching duplication rules and match signals."""
     duplicate = False
+
+    # always fingerprint
+    fingerprint = create_instance_fingerprint(duplication_rule.tag_types, signal_instance)
+    signal_instance.fingerprint = fingerprint
+    db_session.commit()
+
     if not duplication_rule:
         return duplicate
 
@@ -281,7 +287,6 @@ def deduplicate(
         signal_instance.case_id = instances[0].case_id
         signal_instance.duplication_rule_id = duplication_rule.id
 
-    signal_instance.fingerprint = fingerprint
     db_session.commit()
     return duplicate
 
