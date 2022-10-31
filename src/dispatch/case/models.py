@@ -1,6 +1,6 @@
 from datetime import datetime
 from collections import defaultdict
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from pydantic import validator
 from sqlalchemy import (
@@ -129,6 +129,24 @@ class Case(Base, TimeStampMixin, ProjectMixin):
     ticket = relationship("Ticket", uselist=False, backref="case", cascade="all, delete-orphan")
 
 
+class SignalRead(DispatchBase):
+    id: PrimaryKey
+    name: str
+    owner: str
+    description: Optional[str]
+    variant: Optional[str]
+    external_id: str
+    external_url: Optional[str]
+
+
+class SignalInstanceRead(DispatchBase):
+    signal: SignalRead
+    tags: Optional[List[TagRead]] = []
+    raw: Any
+    fingerprint: str
+    created_at: datetime
+
+
 class ProjectRead(DispatchBase):
     id: Optional[PrimaryKey]
     name: NameStr
@@ -186,6 +204,7 @@ class CaseRead(CaseBase):
     case_priority: CasePriorityRead
     case_severity: CaseSeverityRead
     case_type: CaseTypeRead
+    signal_instances: Optional[List[SignalInstanceRead]] = []
     closed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     documents: Optional[List[DocumentRead]] = []
