@@ -24,13 +24,13 @@
             hint="Each plugin type can only ever have one enabled plugin. Existing enabled plugins will be de-activated."
             label="Enabled"
           />
-          <v-jsf
+          <json-form
             v-if="!plugin"
             v-model="configuration"
             :schema="configuration_schema"
             :options="options"
           />
-          <v-jsf
+          <json-form
             v-else
             v-model="configuration"
             :schema="plugin.configuration_schema"
@@ -43,7 +43,7 @@
 </template>
 
 <script>
-import VJsf from "@koumoul/vjsf"
+import jsonForm from "@koumoul/vjsf"
 import "@koumoul/vjsf/dist/main.css"
 import { mapFields } from "vuex-map-fields"
 import { mapActions, mapMutations } from "vuex"
@@ -54,7 +54,7 @@ export default {
   name: "PluginEditSheet",
 
   components: {
-    VJsf,
+    jsonForm,
     PluginCombobox,
   },
 

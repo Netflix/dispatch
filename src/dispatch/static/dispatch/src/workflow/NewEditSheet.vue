@@ -101,8 +101,8 @@ import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
 import { required } from "vee-validate/dist/rules"
 
-import PluginInstanceCombobox from "@/plugin/PluginInstanceCombobox"
-import WorkflowParametersInput from "@/workflow/WorkflowParametersInput"
+import PluginInstanceCombobox from "@/plugin/PluginInstanceCombobox.vue"
+import WorkflowParametersInput from "@/workflow/WorkflowParametersInput.vue"
 
 extend("required", {
   ...required,

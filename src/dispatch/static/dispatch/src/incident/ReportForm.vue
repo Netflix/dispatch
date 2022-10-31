@@ -3,7 +3,7 @@
     <notification-snackbars-wrapper />
 
     <v-main>
-      <v-app-bar app flat class="v-bar--underline" color="background0">
+      <v-app-bar app flat style="border-bottom: 1px solid #d2d2d2 !important" color="background0">
         <router-link :to="{ name: 'IncidentOverview' }" style="text-decoration: none">
           <span class="button font-weight-bold">D I S P A T C H</span>
         </router-link>

@@ -1,5 +1,12 @@
 <template>
-  <v-app-bar clipped-left clipped-right app flat class="v-bar--underline" color="background0">
+  <v-app-bar
+    clipped-left
+    clipped-right
+    app
+    flat
+    style="border-bottom: 1px solid #d2d2d2 !important"
+    color="background0"
+  >
     <organization-create-edit-dialog />
     <!--<v-app-bar-nav-icon @click="handleDrawerToggle" />-->
     <router-link :to="{ name: 'IncidentOverview' }" style="text-decoration: none">

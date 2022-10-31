@@ -9,7 +9,7 @@ const instance = axios.create({
 })
 
 const authProviderSlug =
-  process.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG || "dispatch-auth-provider-basic"
+  import.meta.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG || "dispatch-auth-provider-basic"
 
 instance.interceptors.request.use(
   (config) => {

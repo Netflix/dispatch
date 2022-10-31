@@ -19,8 +19,8 @@
 </template>
 
 <script>
-import AppDrawer from "@/components/AppDrawer"
-import AppToolbar from "@/components/AppToolbar"
+import AppDrawer from "@/components/AppDrawer.vue"
+import AppToolbar from "@/components/AppToolbar.vue"
 import Refresh from "@/components/Refresh.vue"
 import NotificationSnackbarsWrapper from "@/components/NotificationSnackbarsWrapper.vue"
 import OrganizationBanner from "@/organization/OrganizationBanner.vue"
