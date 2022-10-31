@@ -725,7 +725,7 @@ def run_server(log_level):
             env=envvars,
         )
         atexit.register(p.terminate)
-    uvicorn.run("dispatch.main:app", debug=True, log_level=log_level)
+    uvicorn.run("dispatch.main:app", reload=True, log_level=log_level)
 
 
 dispatch_server.add_command(uvicorn.main, name="start")

@@ -1,3 +1,5 @@
+import { Parser, flatten } from "json2csv/dist/json2csv.umd"
+
 const toggleFullScreen = () => {
   let doc = window.document
   let docEl = doc.documentElement
