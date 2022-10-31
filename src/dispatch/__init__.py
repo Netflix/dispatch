@@ -67,12 +67,6 @@ try:
     from dispatch.case.severity.models import CaseSeverity  # noqa lgtm[py/unused-import]
     from dispatch.case.type.models import CaseType  # noqa lgtm[py/unused-import]
     from dispatch.signal.models import Signal  # noqa lgtm[py/unused-import]
-    from dispatch.signal.duplication_rule.models import (
-        DuplicationRule,
-    )  # noqa lgtm[py/unused-import]
-    from dispatch.signal.suppression_rule.models import (
-        SuppressionRule,
-    )  # noqa lgtm[py/unused-import]
 except Exception:
     traceback.print_exc()
 

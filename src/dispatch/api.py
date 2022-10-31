@@ -36,13 +36,13 @@ from dispatch.organization.views import router as organization_router
 from dispatch.plugin.views import router as plugin_router
 from dispatch.project.views import router as project_router
 
+
+from dispatch.signal.views import router as signal_router
+
 # from dispatch.route.views import router as route_router
 from dispatch.search.views import router as search_router
 from dispatch.search_filter.views import router as search_filter_router
 from dispatch.service.views import router as service_router
-from dispatch.signal.duplication_rule.views import router as signal_duplication_rule_router
-from dispatch.signal.suppression_rule.views import router as signal_suppression_rule_router
-from dispatch.signal.views import router as signal_router
 from dispatch.tag.views import router as tag_router
 from dispatch.tag_type.views import router as tag_type_router
 from dispatch.task.views import router as task_router
@@ -126,12 +126,6 @@ authenticated_organization_api_router.include_router(
 
 authenticated_organization_api_router.include_router(
     signal_router, prefix="/signals", tags="signals"
-)
-authenticated_organization_api_router.include_router(
-    signal_duplication_rule_router, prefix="/signals/duplication/rules", tags="duplication_rules"
-)
-authenticated_organization_api_router.include_router(
-    signal_suppression_rule_router, prefix="/signals/suppression/rules", tags="suppression_rules"
 )
 
 authenticated_organization_api_router.include_router(user_router, prefix="/users", tags=["users"])

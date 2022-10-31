@@ -1,12 +1,21 @@
 <template>
   <v-container fluid>
+    <new-edit-dialog />
+    <delete-dialog />
     <v-row no-gutters>
       <v-col>
-        <div class="headline">Signals</div>
+        <v-alert dismissible icon="mdi-school" prominent text type="info"
+          >Signal definitions determine how a signal is processed. Allowing you to map case types,
+          supression and duplication rules for each signal.
+        </v-alert>
+      </v-col>
+    </v-row>
+    <v-row no-gutters>
+      <v-col>
+        <div class="headline">Signal Definitions</div>
       </v-col>
       <v-col class="text-right">
-        <table-filter-dialog :projects="defaultUserProjects" />
-        <table-export-dialog />
+        <v-btn color="info" class="mr-2" @click="createEditShow()"> New </v-btn>
       </v-col>
     </v-row>
     <v-row no-gutters>
@@ -41,13 +50,42 @@
                 {{ item.project.name }}
               </v-chip>
             </template>
-            <template v-slot:item.created_at="{ item }">
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on, attrs }">
-                  <span v-bind="attrs" v-on="on">{{ item.created_at | formatRelativeDate }}</span>
+            <template v-slot:item.case_type="{ item }">
+              <v-chip v-if="item.case_type" small color="info" text-color="white">
+                {{ item.case_type.name }}
+              </v-chip>
+            </template>
+            <template v-slot:item.case_priority="{ item }">
+              <v-chip
+                v-if="item.case_priority"
+                small
+                :color="item.case_priority.color"
+                text-color="white"
+              >
+                {{ item.case_priority.name }}
+              </v-chip>
+            </template>
+            <template v-slot:item.external_url="{ item }">
+              <v-btn v-if="item.external_url" :href="item.external_url" target="_blank" icon>
+                <v-icon>mdi-open-in-new</v-icon>
+              </v-btn>
+            </template>
+            <template v-slot:item.data-table-actions="{ item }">
+              <v-menu bottom left>
+                <template v-slot:activator="{ on }">
+                  <v-btn icon v-on="on">
+                    <v-icon>mdi-dots-vertical</v-icon>
+                  </v-btn>
                 </template>
-                <span>{{ item.created_at | formatDate }}</span>
-              </v-tooltip>
+                <v-list>
+                  <v-list-item @click="createEditShow(item)">
+                    <v-list-item-title>View / Edit</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="removeShow(item)">
+                    <v-list-item-title>Delete</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
             </template>
           </v-data-table>
         </v-card>
@@ -61,16 +99,13 @@ import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
 import RouterUtils from "@/router/utils"
-import TableExportDialog from "@/signal/TableExportDialog.vue"
-import TableFilterDialog from "@/signal/TableFilterDialog.vue"
+import NewEditDialog from "@/signal/NewEditSheet.vue"
+import DeleteDialog from "@/signal/DeleteDialog.vue"
 
 export default {
   name: "SignalTable",
 
-  components: {
-    TableExportDialog,
-    TableFilterDialog,
-  },
+  components: { NewEditDialog, DeleteDialog },
 
   props: {
     name: {
@@ -83,11 +118,13 @@ export default {
     return {
       headers: [
         { text: "Name", value: "name", align: "left", width: "10%" },
-        { text: "Severity", value: "severity", sortable: true },
-        { text: "Detection", value: "detection", sortable: true },
-        { text: "Source", value: "source.name", sortable: true },
+        { text: "Variant", value: "variant", sortable: true },
+        { text: "Description", value: "description", sortable: false },
         { text: "Project", value: "project.name", sortable: true },
-        { text: "Created At", value: "created_at" },
+        { text: "Owner", value: "owner" },
+        { text: "Case Type", value: "case_type" },
+        { text: "Case Priority", value: "case_priority" },
+        { text: "", value: "external_url", sortable: false },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
       showEditSheet: false,
@@ -122,7 +159,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("signal", ["getAll"]),
+    ...mapActions("signal", ["getAll", "createEditShow", "removeShow"]),
   },
 
   created() {

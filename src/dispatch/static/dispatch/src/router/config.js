@@ -208,13 +208,14 @@ export const protectedRoute = [
         menu: true,
         showEditSheet: false,
       },
-      redirect: { name: "SignalTable" },
+      redirect: { name: "SignalInstanceTable" },
       children: [
         {
           path: "/:organization/signals",
-          name: "SignalTable",
+          name: "SignalInstanceTable",
           meta: { title: "List" },
-          component: () => import(/* webpackChunkName: "signal-table" */ "@/signal/Table.vue"),
+          component: () =>
+            import(/* webpackChunkName: "signal-instance-table" */ "@/signal/TableInstance.vue"),
         },
       ],
     },
@@ -357,6 +358,33 @@ export const protectedRoute = [
               import(/* webpackChunkName: "workflows-table" */ "@/workflow/Table.vue"),
           },
           {
+            path: "signals",
+            name: "SignalTable",
+            meta: { title: "Signals", subMenu: "project", group: "general" },
+            component: () => import(/* webpackChunkName: "signals-table" */ "@/signal/Table.vue"),
+          },
+          {
+            path: "caseTypes",
+            name: "CaseTypeTable",
+            meta: { title: "Types", subMenu: "project", group: "case" },
+            component: () =>
+              import(/* webpackChunkName: "case-type-table" */ "@/case/type/Table.vue"),
+          },
+          {
+            path: "caseSeverities",
+            name: "caseSeverityTable",
+            meta: { title: "Severities", subMenu: "project", group: "case" },
+            component: () =>
+              import(/* webpackChunkName: "case-severity-table" */ "@/case/severity/Table.vue"),
+          },
+          {
+            path: "casePriorities",
+            name: "casePriorityTable",
+            meta: { title: "Priorities", subMenu: "project", group: "case" },
+            component: () =>
+              import(/* webpackChunkName: "case-priority-table" */ "@/case/priority/Table.vue"),
+          },
+          {
             path: "incidentTypes",
             name: "IncidentTypeTable",
             meta: { title: "Types", subMenu: "project", group: "incident" },
@@ -419,24 +447,6 @@ export const protectedRoute = [
             meta: { title: "Severities", subMenu: "project", group: "case" },
             component: () =>
               import(/* webpackChunkName: "case-severity-table" */ "@/case/severity/Table.vue"),
-          },
-          {
-            path: "signalSuppressionRules",
-            name: "signalSuppressionTable",
-            meta: { title: "Suppression Rules", subMenu: "project", group: "signal" },
-            component: () =>
-              import(
-                /* webpackChunkName: "signal-suppression-rule-table" */ "@/signal/suppression_rule/Table.vue"
-              ),
-          },
-          {
-            path: "signalDuplicationRules",
-            name: "signalDuplicationTable",
-            meta: { title: "Duplication Rules", subMenu: "project", group: "signal" },
-            component: () =>
-              import(
-                /* webpackChunkName: "signal-duplication-rule-table" */ "@/signal/duplication_rule/Table.vue"
-              ),
           },
           {
             path: "source/types",

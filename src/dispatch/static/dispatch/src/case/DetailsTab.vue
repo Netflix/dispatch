@@ -106,9 +106,6 @@
       <v-flex xs12>
         <incident-filter-combobox label="Incidents" v-model="incidents" :project="project" />
       </v-flex>
-      <v-flex xs12>
-        <signal-filter-combobox label="Signals" v-model="signals" :project="project" />
-      </v-flex>
     </v-layout>
   </v-container>
 </template>
@@ -121,7 +118,6 @@ import { required } from "vee-validate/dist/rules"
 import CaseFilterCombobox from "@/case/CaseFilterCombobox.vue"
 import CasePrioritySelect from "@/case/priority/CasePrioritySelect.vue"
 import CaseSeveritySelect from "@/case/severity/CaseSeveritySelect.vue"
-import SignalFilterCombobox from "@/signal/SignalFilterCombobox.vue"
 import CaseTypeSelect from "@/case/type/CaseTypeSelect.vue"
 import DateTimePickerMenu from "@/components/DateTimePickerMenu.vue"
 import IncidentFilterCombobox from "@/incident/IncidentFilterCombobox.vue"
@@ -142,7 +138,6 @@ export default {
     CasePrioritySelect,
     CaseSeveritySelect,
     CaseTypeSelect,
-    SignalFilterCombobox,
     DateTimePickerMenu,
     IncidentFilterCombobox,
     OrganizationMemberCombobox,
