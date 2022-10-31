@@ -13,37 +13,28 @@
     item-value="id"
     multiple
     no-filter
-    v-model="incidentType"
+    v-model="signals"
   >
     <template v-slot:no-data>
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title>
-            No incident types matching "
+            No signals matching "
             <strong>{{ search }}</strong
-            >".
+            >"
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
     </template>
-    <template v-slot:selection="{ item, index }">
-      <v-chip close @click:close="value.splice(index, 1)">
-        <span v-if="!project"
-          ><span v-if="item.project">{{ item.project.name }}/</span></span
-        >{{ item.name }}
-      </v-chip>
-    </template>
     <template v-slot:item="data">
       <template>
         <v-list-item-content>
-          <v-list-item-title>
-            <span v-if="!project"
-              ><span v-if="data.item.project">{{ data.item.project.name }}/</span></span
-            >{{ data.item.name }}
-          </v-list-item-title>
-          <v-list-item-subtitle style="width: 200px" class="text-truncate">
-            {{ data.item.description }}
-          </v-list-item-subtitle>
+          <v-list-item-title v-text="data.item.name" />
+          <v-list-item-subtitle
+            style="width: 200px"
+            class="text-truncate"
+            v-text="data.item.title"
+          />
         </v-list-item-content>
       </template>
     </template>
@@ -60,11 +51,11 @@
 <script>
 import { cloneDeep, debounce } from "lodash"
 
+import SignalApi from "@/signal/api"
 import SearchUtils from "@/search/utils"
-import IncidentTypeApi from "@/incident_type/api"
 
 export default {
-  name: "IncidentTypeComboBox",
+  name: "SignalFilterCombobox",
 
   props: {
     value: {
@@ -75,13 +66,7 @@ export default {
     },
     label: {
       type: String,
-      default: function () {
-        return "Types"
-      },
-    },
-    project: {
-      type: [Object],
-      default: null,
+      default: "Add Signals",
     },
   },
 
@@ -96,19 +81,19 @@ export default {
   },
 
   computed: {
-    incidentType: {
+    signals: {
       get() {
         return cloneDeep(this.value)
       },
       set(value) {
         this.search = null
-        this._incidentTypes = value.filter((v) => {
+        this._signals = value.filter((v) => {
           if (typeof v === "string") {
             return false
           }
           return true
         })
-        this.$emit("input", this._incidentTypes)
+        this.$emit("input", this._signals)
       },
     },
   },
@@ -140,32 +125,18 @@ export default {
             project: [this.project],
           },
         }
+        filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
       }
-
-      let enabledFilter = [
-        {
-          model: "IncidentType",
-          field: "enabled",
-          op: "==",
-          value: "true",
-        },
-      ]
-
-      filterOptions = SearchUtils.createParametersFromTableOptions(
-        { ...filterOptions },
-        enabledFilter
-      )
-
-      IncidentTypeApi.getAll(filterOptions).then((response) => {
+      SignalApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.total = response.data.total
-        this.loading = false
 
         if (this.items.length < this.total) {
           this.more = true
         } else {
           this.more = false
         }
+
         this.loading = false
       })
     },

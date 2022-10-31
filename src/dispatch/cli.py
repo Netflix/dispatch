@@ -99,19 +99,18 @@ def install_plugins(force):
                 multiple=p.multiple,
                 description=p.description,
             )
-            db_session.add(record)
+        else:
+            if force:
+                click.secho(f"Updating plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
+                # we only update values that should change
+                record.title = p.title
+                record.version = p.version
+                record.author = p.author
+                record.author_url = p.author_url
+                record.description = p.description
+                record.type = p.type
 
-        if force:
-            click.secho(f"Updating plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
-            # we only update values that should change
-            record.title = p.title
-            record.version = p.version
-            record.author = p.author
-            record.author_url = p.author_url
-            record.description = p.description
-            record.type = p.type
-            db_session.add(record)
-
+        db_session.add(record)
         db_session.commit()
 
 
@@ -611,6 +610,7 @@ def dispatch_scheduler():
     )
     from .monitor.scheduled import sync_active_stable_monitors  # noqa
     from .data.source.scheduled import sync_sources  # noqa
+    from .signal.scheduled import consume_signals  # noqa
 
 
 @dispatch_scheduler.command("list")
@@ -627,8 +627,9 @@ def list_tasks():
 
 @dispatch_scheduler.command("start")
 @click.argument("tasks", nargs=-1)
+@click.option("--exclude", multiple=True, help="Specifically exclude tasks you do no wish to run.")
 @click.option("--eager", is_flag=True, default=False, help="Run the tasks immediately.")
-def start_tasks(tasks, eager):
+def start_tasks(tasks, exclude, eager):
     """Starts the scheduler."""
     from dispatch.common.utils.cli import install_plugins
 
@@ -637,6 +638,11 @@ def start_tasks(tasks, eager):
     if tasks:
         for task in scheduler.registered_tasks:
             if task["name"] not in tasks:
+                scheduler.remove(task)
+
+    if exclude:
+        for task in scheduler.registered_tasks:
+            if task["name"] in exclude:
                 scheduler.remove(task)
 
     if eager:
@@ -722,6 +728,12 @@ def run_server(log_level):
 
 
 dispatch_server.add_command(uvicorn.main, name="start")
+
+
+@dispatch_cli.group("signals")
+def signals_group():
+    """All commands for signal consumer manipulation."""
+    pass
 
 
 @dispatch_server.command("slack")

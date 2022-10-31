@@ -7,6 +7,7 @@ class IncidentBlockId(DispatchEnum):
     priority = "incident_priority_field"
     project = "project_field"
     resolution = "resolution_field"
+    severity = "incident_severity_field"
     status = "status_field"
     tags = "tags_select_field"
     title = "title_field"

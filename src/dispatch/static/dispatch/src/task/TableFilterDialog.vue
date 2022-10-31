@@ -52,8 +52,8 @@ import { sum } from "lodash"
 import { mapFields } from "vuex-map-fields"
 
 import IncidentCombobox from "@/incident/IncidentCombobox.vue"
-import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
-import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
+import IncidentPriorityCombobox from "@/incident/priority/IncidentPriorityCombobox.vue"
+import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import ProjectCombobox from "@/project/ProjectCombobox.vue"
 import TaskStatusMultiSelect from "@/task/TaskStatusMultiSelect.vue"
 

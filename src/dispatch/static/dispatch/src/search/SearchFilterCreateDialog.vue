@@ -68,6 +68,18 @@
                           <incident-status-multi-select v-model="filters.status" />
                         </v-list-item-content>
                       </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-select
+                            :items="visibilities"
+                            v-model="filters.visibility"
+                            name="visibility"
+                            item-text="name"
+                            return-object
+                            label="Visibility"
+                          />
+                        </v-list-item-content>
+                      </v-list-item>
                     </v-list>
                   </v-tab-item>
                   <v-tab-item>
@@ -167,21 +179,20 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { mapActions } from "vuex"
+import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 
-import { mapActions } from "vuex"
-
 import IncidentApi from "@/incident/api"
-import IncidentStatusMultiSelect from "@/incident/IncidentStatusMultiSelect.vue"
-import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
-import IncidentTypeCombobox from "@/incident_type/IncidentTypeCombobox.vue"
-import IncidentPriorityCombobox from "@/incident_priority/IncidentPriorityCombobox.vue"
-import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
-import IncidentStatus from "@/incident/IncidentStatus.vue"
-import IncidentPriority from "@/incident/IncidentPriority.vue"
+import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
+import IncidentPriorityCombobox from "@/incident/priority/IncidentPriorityCombobox.vue"
+import IncidentStatus from "@/incident/status/IncidentStatus.vue"
+import IncidentStatusMultiSelect from "@/incident/status/IncidentStatusMultiSelect.vue"
+import IncidentTypeCombobox from "@/incident/type/IncidentTypeCombobox.vue"
 import SearchUtils from "@/search/utils"
+import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
+import TagTypeFilterCombobox from "@/tag_type/TagTypeFilterCombobox.vue"
 
 extend("required", {
   ...required,
@@ -199,6 +210,7 @@ export default {
 
   data() {
     return {
+      visibilities: [{ name: "Open" }, { name: "Restricted" }],
       editorOptions: {
         automaticLayout: true,
         renderValidationDecorations: "on",
@@ -223,6 +235,7 @@ export default {
         tag: [],
         project: [],
         tag_type: [],
+        visibility: [],
       },
     }
   },
@@ -294,6 +307,7 @@ export default {
         vm.filters.status,
         vm.filters.tag,
         vm.filters.tag_type,
+        vm.filters.visibility,
       ],
       () => {
         this.expression = SearchUtils.createFilterExpression(this.filters)

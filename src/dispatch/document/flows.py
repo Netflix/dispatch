@@ -141,6 +141,7 @@ def update_document(document: Document, project_id: int, db_session: SessionLoca
             "name": document.incident.name,
             "priority": document.incident.incident_priority.name,
             "resolution": document.incident.resolution,
+            "severity": document.incident.incident_severity.name,
             "status": document.incident.status,
             "storage_weblink": resolve_attr(document.incident, "storage.weblink"),
             "ticket_weblink": resolve_attr(document.incident, "ticket.weblink"),

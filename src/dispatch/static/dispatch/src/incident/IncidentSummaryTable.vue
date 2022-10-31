@@ -46,9 +46,9 @@
 <script>
 import { mapActions } from "vuex"
 
-import IncidentPriority from "@/incident/IncidentPriority.vue"
-import IncidentStatus from "@/incident/IncidentStatus"
 import IncidentParticipant from "@/incident/Participant.vue"
+import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
+import IncidentStatus from "@/incident/status/IncidentStatus.vue"
 
 export default {
   name: "IncidentSummaryTable",

@@ -27,14 +27,40 @@ def assign_role_flow(
         - "assignee_has_role", if assignee already has the role.
 
     """
-    # we get the participant that holds the role assigned to the assignee
-    participant_with_assignee_role = participant_service.get_by_incident_id_and_role(
-        db_session=db_session, incident_id=incident.id, role=assignee_role
-    )
-
     # we get the participant for the assignee
     assignee_participant = participant_service.get_by_incident_id_and_email(
         db_session=db_session, incident_id=incident.id, email=assignee_email
+    )
+
+    if assignee_role == ParticipantRoleType.observer:
+        # we make the assignee renounce to the participant role
+        participant_active_roles = get_all_active_roles(
+            db_session=db_session, participant_id=assignee_participant.id
+        )
+        for participant_active_role in participant_active_roles:
+            if participant_active_role.role == ParticipantRoleType.participant:
+                renounce_role(db_session=db_session, participant_role=participant_active_role)
+                break
+
+        # we give the assignee the new role
+        add_role(
+            db_session=db_session,
+            participant_id=assignee_participant.id,
+            participant_role=assignee_role,
+        )
+
+        event_service.log_incident_event(
+            db_session=db_session,
+            source="Dispatch Core App",
+            description=f"{assignee_participant.individual.name} has been assigned the role of {assignee_role}",
+            incident_id=incident.id,
+        )
+
+        return "role_assigned"
+
+    # we get the participant that holds the role assigned to the assignee
+    participant_with_assignee_role = participant_service.get_by_incident_id_and_role(
+        db_session=db_session, incident_id=incident.id, role=assignee_role
     )
 
     if participant_with_assignee_role is assignee_participant:

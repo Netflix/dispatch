@@ -30,7 +30,7 @@ from dispatch.enums import UserRoles, Visibility
 from dispatch.exceptions import FieldNotFoundError, InvalidFilterError
 from dispatch.feedback.models import Feedback
 from dispatch.incident.models import Incident
-from dispatch.incident_type.models import IncidentType
+from dispatch.incident.type.models import IncidentType
 from dispatch.individual.models import IndividualContact
 from dispatch.participant.models import Participant
 from dispatch.plugin.models import Plugin, PluginInstance
@@ -198,10 +198,10 @@ def get_query_models(query):
     """Get models from query.
 
     :param query:
-        A :class:`sqlalchemy.orm.Query` instance.
+                    A :class:`sqlalchemy.orm.Query` instance.
 
     :returns:
-        A dictionary with all the models included in the query.
+                    A dictionary with all the models included in the query.
     """
     models = [col_desc["entity"] for col_desc in query.column_descriptions]
     models.extend(mapper.class_ for mapper in query._join_entities)
@@ -284,36 +284,36 @@ def apply_filters(query, filter_spec, model_cls=None, do_auto_join=True):
     """Apply filters to a SQLAlchemy query.
 
     :param query:
-        A :class:`sqlalchemy.orm.Query` instance.
+                    A :class:`sqlalchemy.orm.Query` instance.
 
     :param filter_spec:
-        A dict or an iterable of dicts, where each one includes
-        the necesary information to create a filter to be applied to the
-        query.
+                    A dict or an iterable of dicts, where each one includes
+                    the necesary information to create a filter to be applied to the
+                    query.
 
-        Example::
+                    Example::
 
-            filter_spec = [
-                {'model': 'Foo', 'field': 'name', 'op': '==', 'value': 'foo'},
-            ]
+                                    filter_spec = [
+                                                    {'model': 'Foo', 'field': 'name', 'op': '==', 'value': 'foo'},
+                                    ]
 
-        If the query being modified refers to a single model, the `model` key
-        may be omitted from the filter spec.
+                    If the query being modified refers to a single model, the `model` key
+                    may be omitted from the filter spec.
 
-        Filters may be combined using boolean functions.
+                    Filters may be combined using boolean functions.
 
-        Example:
+                    Example:
 
-            filter_spec = {
-                'or': [
-                    {'model': 'Foo', 'field': 'id', 'op': '==', 'value': '1'},
-                    {'model': 'Bar', 'field': 'id', 'op': '==', 'value': '2'},
-                ]
-            }
+                                    filter_spec = {
+                                                    'or': [
+                                                                    {'model': 'Foo', 'field': 'id', 'op': '==', 'value': '1'},
+                                                                    {'model': 'Bar', 'field': 'id', 'op': '==', 'value': '2'},
+                                                    ]
+                                    }
 
     :returns:
-        The :class:`sqlalchemy.orm.Query` instance after all the filters
-        have been applied.
+                    The :class:`sqlalchemy.orm.Query` instance after all the filters
+                    have been applied.
     """
     filters = build_filters(filter_spec)
     default_model = get_default_model(query)
@@ -373,7 +373,7 @@ def composite_search(*, db_session, query_str: str, models: List[Base], current_
 
     # TODO can we do this with composite filtering?
     # for model in models:
-    #    query = apply_model_specific_filters(model, query, current_user)
+    # 	 query = apply_model_specific_filters(model, query, current_user)
 
     return s.search(query=query)
 

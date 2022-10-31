@@ -1,26 +1,43 @@
 <template>
-  <v-select
-    v-model="incident_type"
+  <v-combobox
     :items="items"
-    :menu-props="{ maxHeight: '400' }"
-    item-text="name"
     :label="label"
-    return-object
     :loading="loading"
+    :search-input.sync="search"
+    @update:search-input="getFilteredData()"
+    chips
+    clearable
+    deletable-chips
+    hide-selected
+    item-text="id"
+    multiple
+    no-filter
+    v-model="incidentPriority"
   >
+    <template v-slot:no-data>
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title>
+            No incident priorities matching "
+            <strong>{{ search }}</strong
+            >".
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
+    <template v-slot:selection="{ item, index }">
+      <v-chip close @click:close="value.splice(index, 1)">
+        <span v-if="!project"> {{ item.project.name }}/ </span>{{ item.name }}
+      </v-chip>
+    </template>
     <template v-slot:item="data">
       <v-list-item-content>
-        <v-list-item-title v-if="!project">
-          {{ data.item.project.name }}/{{ data.item.name }}
+        <v-list-item-title>
+          <span v-if="!project">{{ data.item.project.name }}/</span>{{ data.item.name }}
         </v-list-item-title>
-        <v-list-item-title v-else>
-          {{ data.item.name }}
-        </v-list-item-title>
-        <v-list-item-subtitle
-          style="width: 200px"
-          class="text-truncate"
-          v-text="data.item.description"
-        />
+        <v-list-item-subtitle style="width: 200px" class="text-truncate">
+          {{ data.item.description }}
+        </v-list-item-subtitle>
       </v-list-item-content>
     </template>
     <template v-slot:append-item>
@@ -30,34 +47,33 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-  </v-select>
+  </v-combobox>
 </template>
 
 <script>
-import { cloneDeep } from "lodash"
+import { cloneDeep, debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import IncidentTypeApi from "@/incident_type/api"
+import IncidentPriorityApi from "@/incident/priority/api"
 
 export default {
-  name: "IncidentTypeSelect",
-
+  name: "IncidentPriorityComboBox",
   props: {
     value: {
-      type: Object,
+      type: Array,
       default: function () {
-        return {}
+        return []
+      },
+    },
+    label: {
+      type: String,
+      default: function () {
+        return "Priorities"
       },
     },
     project: {
       type: [Object],
       default: null,
-    },
-    label: {
-      type: String,
-      default: function () {
-        return "Type"
-      },
     },
   },
 
@@ -67,16 +83,24 @@ export default {
       items: [],
       more: false,
       numItems: 5,
+      search: null,
     }
   },
 
   computed: {
-    incident_type: {
+    incidentPriority: {
       get() {
         return cloneDeep(this.value)
       },
       set(value) {
-        this.$emit("input", value)
+        this.search = null
+        this._incidentPriorities = value.filter((v) => {
+          if (typeof v === "string") {
+            return false
+          }
+          return true
+        })
+        this.$emit("input", this._incidentPriorities)
       },
     },
   },
@@ -89,9 +113,9 @@ export default {
     fetchData() {
       this.error = null
       this.loading = "error"
-
       let filterOptions = {
-        sortBy: ["project.name"],
+        q: this.search,
+        sortBy: ["name"],
         descending: [false],
         itemsPerPage: this.numItems,
       }
@@ -103,12 +127,11 @@ export default {
             project: [this.project],
           },
         }
-        filterOptions.sortBy = ["name"]
       }
 
       let enabledFilter = [
         {
-          model: "IncidentType",
+          model: "IncidentPriority",
           field: "enabled",
           op: "==",
           value: "true",
@@ -120,7 +143,7 @@ export default {
         enabledFilter
       )
 
-      IncidentTypeApi.getAll(filterOptions).then((response) => {
+      IncidentPriorityApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.total = response.data.total
         this.loading = false
@@ -134,16 +157,13 @@ export default {
         this.loading = false
       })
     },
+    getFilteredData: debounce(function () {
+      this.fetchData()
+    }, 500),
   },
 
   created() {
     this.fetchData()
-    this.$watch(
-      (vm) => [vm.project],
-      () => {
-        this.fetchData()
-      }
-    )
   },
 }
 </script>

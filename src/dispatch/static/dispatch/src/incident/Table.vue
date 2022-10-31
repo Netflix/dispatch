@@ -48,6 +48,9 @@
                 {{ item.project.name }}
               </v-chip>
             </template>
+            <template v-slot:item.incident_severity.name="{ item }">
+              <incident-severity :severity="item.incident_severity.name" />
+            </template>
             <template v-slot:item.incident_priority.name="{ item }">
               <incident-priority :priority="item.incident_priority.name" />
             </template>
@@ -120,8 +123,9 @@ import BulkEditSheet from "@/incident/BulkEditSheet.vue"
 import DeleteDialog from "@/incident/DeleteDialog.vue"
 import IncidentCostCard from "@/incident_cost/IncidentCostCard.vue"
 import IncidentParticipant from "@/incident/Participant.vue"
-import IncidentPriority from "@/incident/IncidentPriority.vue"
-import IncidentStatus from "@/incident/IncidentStatus.vue"
+import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
+import IncidentSeverity from "@/incident/severity/IncidentSeverity.vue"
+import IncidentStatus from "@/incident/status/IncidentStatus.vue"
 import NewSheet from "@/incident/NewSheet.vue"
 import WorkflowRunModal from "@/workflow/RunModal.vue"
 import ReportDialog from "@/incident/ReportDialog.vue"
@@ -138,6 +142,7 @@ export default {
     IncidentCostCard,
     IncidentParticipant,
     IncidentPriority,
+    IncidentSeverity,
     IncidentStatus,
     NewSheet,
     ReportDialog,
@@ -160,6 +165,7 @@ export default {
         { text: "Title", value: "title", sortable: false },
         { text: "Status", value: "status" },
         { text: "Type", value: "incident_type.name" },
+        { text: "Severity", value: "incident_severity.name", width: "10%" },
         { text: "Priority", value: "incident_priority.name", width: "10%" },
         { text: "Project", value: "project.name", sortable: true },
         { text: "Commander", value: "commander", sortable: false },
@@ -174,25 +180,26 @@ export default {
 
   computed: {
     ...mapFields("incident", [
-      "table.options.q",
-      "table.options.page",
-      "table.options.itemsPerPage",
-      "table.options.sortBy",
+      "table.loading",
+      "table.options.descending",
       "table.options.filters",
       "table.options.filters.commander",
-      "table.options.filters.reporter",
-      "table.options.filters.incident_type",
       "table.options.filters.incident_priority",
-      "table.options.filters.status",
+      "table.options.filters.incident_severity",
+      "table.options.filters.incident_type",
+      "table.options.filters.project",
       "table.options.filters.reported_at",
+      "table.options.filters.reporter",
+      "table.options.filters.status",
       "table.options.filters.tag",
       "table.options.filters.tag_type",
-      "table.options.filters.project",
-      "table.options.descending",
-      "table.loading",
+      "table.options.itemsPerPage",
+      "table.options.page",
+      "table.options.q",
+      "table.options.sortBy",
       "table.rows.items",
-      "table.rows.total",
       "table.rows.selected",
+      "table.rows.total",
     ]),
     ...mapFields("route", ["query"]),
     ...mapFields("auth", ["currentUser.projects"]),
@@ -241,18 +248,19 @@ export default {
 
     this.$watch(
       (vm) => [
-        vm.q,
-        vm.sortBy,
-        vm.itemsPerPage,
         vm.descending,
-        vm.reported_at.start,
-        vm.reported_at.end,
-        vm.project,
-        vm.incident_type,
         vm.incident_priority,
+        vm.incident_severity,
+        vm.incident_type,
+        vm.itemsPerPage,
+        vm.project,
+        vm.q,
+        vm.reported_at.end,
+        vm.reported_at.start,
+        vm.sortBy,
         vm.status,
-        vm.tag_type,
         vm.tag,
+        vm.tag_type,
       ],
       () => {
         this.page = 1

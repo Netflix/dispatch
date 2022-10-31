@@ -128,7 +128,7 @@ import { mapActions } from "vuex"
 import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
 
-import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
+import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
 import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
 import ServiceSelect from "@/service/ServiceSelect.vue"
 import TemplateSelect from "@/document/template/TemplateSelect.vue"

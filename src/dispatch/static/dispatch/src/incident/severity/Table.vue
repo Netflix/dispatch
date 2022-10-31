@@ -3,9 +3,9 @@
     <new-edit-sheet />
     <v-row no-gutters>
       <v-col>
-        <v-alert dismissible icon="mdi-school" prominent text type="info"
-          >Types categorize incidents. Dispatch allows for configuration on a per-incident type
-          basis.
+        <v-alert dismissible icon="mdi-school" prominent text type="info">
+          Severities add another dimension to Dispatch's incident categorization. They also allow
+          for some configurability.
         </v-alert>
       </v-col>
     </v-row>
@@ -72,32 +72,32 @@
 import { mapFields } from "vuex-map-fields"
 import { mapActions } from "vuex"
 
+import NewEditSheet from "@/incident/severity/NewEditSheet.vue"
 import SettingsBreadcrumbs from "@/components/SettingsBreadcrumbs.vue"
-import NewEditSheet from "@/incident_type/NewEditSheet.vue"
 
 export default {
-  name: "IncidentTypeTable",
+  name: "IncidentSeverityTable",
 
   components: {
     NewEditSheet,
     SettingsBreadcrumbs,
   },
+
   data() {
     return {
       headers: [
         { text: "Name", value: "name", sortable: true },
         { text: "Description", value: "description", sortable: false },
-        { text: "Incident Document", value: "incident_template_document.name", sortable: false },
-        { text: "Visibility", value: "visibility", sortable: false },
         { text: "Default", value: "default", sortable: true },
         { text: "Enabled", value: "enabled", sortable: true },
+        { text: "View Order", value: "view_order", sortable: true },
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
   },
 
   computed: {
-    ...mapFields("incident_type", [
+    ...mapFields("incident_severity", [
       "table.options.q",
       "table.options.page",
       "table.options.itemsPerPage",
@@ -108,20 +108,13 @@ export default {
       "table.rows.items",
       "table.rows.total",
     ]),
-    ...mapFields("route", ["query"]),
+    ...mapFields("route", ["query", "params"]),
   },
 
   created() {
     this.project = [{ name: this.query.project }]
 
     this.getAll()
-
-    this.$watch(
-      (vm) => [vm.page],
-      () => {
-        this.getAll()
-      }
-    )
 
     this.$watch(
       (vm) => [vm.q, vm.itemsPerPage, vm.sortBy, vm.descending, vm.project],
@@ -134,7 +127,7 @@ export default {
   },
 
   methods: {
-    ...mapActions("incident_type", ["getAll", "createEditShow", "removeShow"]),
+    ...mapActions("incident_severity", ["getAll", "createEditShow", "removeShow"]),
   },
 }
 </script>

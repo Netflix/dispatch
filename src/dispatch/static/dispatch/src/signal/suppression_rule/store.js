@@ -2,22 +2,21 @@ import { getField, updateField } from "vuex-map-fields"
 import { debounce } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import IncidentPriorityApi from "@/incident_priority/api"
+import SuppressionRuleApi from "@/signal/suppression_rule/api"
 
 const getDefaultSelectedState = () => {
   return {
-    color: null,
-    default: false,
-    description: null,
-    enabled: false,
-    executive_report_reminder: null,
     id: null,
-    loading: false,
     name: null,
-    page_commander: null,
+    description: null,
+    mode: null,
+    expiration: null,
+    expression: null,
+    evergreen: null,
+    evergreen_owner: null,
+    evergreen_reminder_interval: null,
+    loading: false,
     project: null,
-    tactical_report_reminder: null,
-    view_order: null,
   }
 }
 
@@ -38,7 +37,7 @@ const state = {
       q: "",
       page: 1,
       itemsPerPage: 10,
-      sortBy: ["view_order"],
+      sortBy: ["name"],
       descending: [false],
       filters: {
         project: [],
@@ -57,9 +56,9 @@ const actions = {
     commit("SET_TABLE_LOADING", "primary")
     let params = SearchUtils.createParametersFromTableOptions(
       { ...state.table.options },
-      "IncidentPriority"
+      "SuppressionRule"
     )
-    return IncidentPriorityApi.getAll(params)
+    return SuppressionRuleApi.getAll(params)
       .then((response) => {
         commit("SET_TABLE_LOADING", false)
         commit("SET_TABLE_ROWS", response.data)
@@ -68,15 +67,15 @@ const actions = {
         commit("SET_TABLE_LOADING", false)
       })
   }, 500),
-  createEditShow({ commit }, incidentPriority) {
+  createEditShow({ commit }, suppressionRule) {
     commit("SET_DIALOG_CREATE_EDIT", true)
-    if (incidentPriority) {
-      commit("SET_SELECTED", incidentPriority)
+    if (suppressionRule) {
+      commit("SET_SELECTED", suppressionRule)
     }
   },
-  removeShow({ commit }, incidentPriority) {
+  removeShow({ commit }, suppressionRule) {
     commit("SET_DIALOG_DELETE", true)
-    commit("SET_SELECTED", incidentPriority)
+    commit("SET_SELECTED", suppressionRule)
   },
   closeCreateEdit({ commit }) {
     commit("SET_DIALOG_CREATE_EDIT", false)
@@ -90,14 +89,14 @@ const actions = {
     commit("SET_SELECTED_LOADING", true)
 
     if (!state.selected.id) {
-      return IncidentPriorityApi.create(state.selected)
+      return SuppressionRuleApi.create(state.selected)
         .then(() => {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Incident priority created successfully.", type: "success" },
+            { text: "Suppression rule created successfully.", type: "success" },
             { root: true }
           )
         })
@@ -105,14 +104,14 @@ const actions = {
           commit("SET_SELECTED_LOADING", false)
         })
     } else {
-      return IncidentPriorityApi.update(state.selected.id, state.selected)
+      return SuppressionRuleApi.update(state.selected.id, state.selected)
         .then(() => {
           commit("SET_SELECTED_LOADING", false)
           dispatch("closeCreateEdit")
           dispatch("getAll")
           commit(
             "notification_backend/addBeNotification",
-            { text: "Incident priority updated successfully.", type: "success" },
+            { text: "Suppression rule updated successfully.", type: "success" },
             { root: true }
           )
         })
@@ -122,12 +121,12 @@ const actions = {
     }
   },
   remove({ commit, dispatch }) {
-    return IncidentPriorityApi.delete(state.selected.id).then(function () {
+    return SuppressionRuleApi.delete(state.selected.id).then(function () {
       dispatch("closeRemove")
       dispatch("getAll")
       commit(
         "notification_backend/addBeNotification",
-        { text: "Incident priority deleted successfully.", type: "success" },
+        { text: "Suppression rule deleted successfully.", type: "success" },
         { root: true }
       )
     })

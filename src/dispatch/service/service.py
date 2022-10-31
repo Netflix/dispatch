@@ -143,6 +143,7 @@ def get_all_by_project_id_and_status(
         db_session.query(Service)
         .filter(Service.project_id == project_id)
         .filter(Service.is_active.is_(is_active))
+        .order_by(Service.name)
     )
 
 

@@ -4,7 +4,8 @@ INCIDENT_ISSUE_SUMMARY_TEMPLATE = """
 *Incident Details*
 Description: {{description}}
 Type: {{incident_type}}
-Priority: {{priority}}
+Severity: {{incident_severity}}
+Priority: {{incident_priority}}
 Cost: {{cost}}
 
 *Incident Resources*
@@ -22,7 +23,8 @@ INCIDENT_ISSUE_SUMMARY_NO_RESOURCES_TEMPLATE = """
 *Incident Details*
 Description: {{description}}
 Type: {{incident_type}}
-Priority: {{priority}}
+Severity: {{incident_severity}}
+Priority: {{incident_priority}}
 Cost: {{cost}}
 
 Incident Commander: [~{{commander_username}}]

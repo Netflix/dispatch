@@ -92,7 +92,6 @@ def create_engage_oncall_dialog(
         )
 
     page_options = [{"label": "Yes", "value": "Yes"}, {"label": "No", "value": "No"}]
-
     dialog = {
         "callback_id": command["command"],
         "title": "Engage Oncall",

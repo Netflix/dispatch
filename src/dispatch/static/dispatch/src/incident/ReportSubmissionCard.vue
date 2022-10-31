@@ -92,15 +92,17 @@
 </template>
 
 <script>
-import { mapFields } from "vuex-map-fields"
-import { mapActions } from "vuex"
 import { ValidationObserver, ValidationProvider, extend } from "vee-validate"
+import { mapActions } from "vuex"
+import { mapFields } from "vuex-map-fields"
 import { required } from "vee-validate/dist/rules"
+
 import router from "@/router"
-import IncidentTypeSelect from "@/incident_type/IncidentTypeSelect.vue"
-import IncidentPrioritySelect from "@/incident_priority/IncidentPrioritySelect.vue"
-import ProjectSelect from "@/project/ProjectSelect.vue"
+
 import DocumentApi from "@/document/api"
+import IncidentPrioritySelect from "@/incident/priority/IncidentPrioritySelect.vue"
+import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
+import ProjectSelect from "@/project/ProjectSelect.vue"
 import TagFilterAutoComplete from "@/tag/TagFilterAutoComplete.vue"
 
 extend("required", {

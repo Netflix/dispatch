@@ -31,8 +31,9 @@ try:
     from dispatch.incident_cost.models import IncidentCost  # noqa lgtm[py/unused-import]
     from dispatch.incident_cost_type.models import IncidentCostType  # noqa lgtm[py/unused-import]
     from dispatch.incident_role.models import IncidentRole  # noqa lgtm[py/unused-import]
-    from dispatch.incident_priority.models import IncidentPriority  # noqa lgtm[py/unused-import]
-    from dispatch.incident_type.models import IncidentType  # noqa lgtm[py/unused-import]
+    from dispatch.incident.priority.models import IncidentPriority  # noqa lgtm[py/unused-import]
+    from dispatch.incident.severity.models import IncidentSeverity  # noqa lgtm[py/unused-import]
+    from dispatch.incident.type.models import IncidentType  # noqa lgtm[py/unused-import]
     from dispatch.individual.models import IndividualContact  # noqa lgtm[py/unused-import]
     from dispatch.notification.models import Notification  # noqa lgtm[py/unused-import]
     from dispatch.participant.models import Participant  # noqa lgtm[py/unused-import]
@@ -65,6 +66,13 @@ try:
     from dispatch.case.priority.models import CasePriority  # noqa lgtm[py/unused-import]
     from dispatch.case.severity.models import CaseSeverity  # noqa lgtm[py/unused-import]
     from dispatch.case.type.models import CaseType  # noqa lgtm[py/unused-import]
+    from dispatch.signal.models import Signal  # noqa lgtm[py/unused-import]
+    from dispatch.signal.duplication_rule.models import (
+        DuplicationRule,
+    )  # noqa lgtm[py/unused-import]
+    from dispatch.signal.suppression_rule.models import (
+        SuppressionRule,
+    )  # noqa lgtm[py/unused-import]
 except Exception:
     traceback.print_exc()
 
