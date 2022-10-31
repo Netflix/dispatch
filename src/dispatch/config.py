@@ -92,7 +92,7 @@ ENV = config("ENV", default="local")
 ENV_TAG_LIST = config("ENV_TAGS", cast=CommaSeparatedStrings, default="")
 ENV_TAGS = get_env_tags(ENV_TAG_LIST)
 
-DISPATCH_UI_URL = config("DISPATCH_UI_URL", default="http://localhost:8000")
+DISPATCH_UI_URL = config("DISPATCH_UI_URL", default="http://localhost:8080")
 DISPATCH_ENCRYPTION_KEY = config("DISPATCH_ENCRYPTION_KEY", cast=Secret)
 
 # authentication

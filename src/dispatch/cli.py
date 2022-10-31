@@ -606,8 +606,7 @@ def dispatch_scheduler():
     )  # noqa
     from .term.scheduled import sync_terms  # noqa
     from .workflow.scheduled import (
-        daily_sync_workflow,  # noqa
-        sync_active_stable_workflows,  # noqa
+        sync_workflow,  # noqa
     )
     from .monitor.scheduled import sync_active_stable_monitors  # noqa
     from .data.source.scheduled import sync_sources  # noqa
