@@ -28,8 +28,6 @@ import runbook from "@/document/runbook/store"
 import search from "@/search/store"
 import service from "@/service/store"
 import signal from "@/signal/store"
-import signalDuplicationRule from "@/signal/duplication_rule/store"
-import signalSuppressionRule from "@/signal/suppression_rule/store"
 import source from "@/data/source/store"
 import sourceDataFormat from "@/data/source/dataFormat/store"
 import sourceEnvironment from "@/data/source/environment/store"
@@ -79,15 +77,13 @@ export default new Vuex.Store({
     runbook,
     search,
     service,
-    signal,
-    signalDuplicationRule,
-    signalSuppressionRule,
     source,
     sourceDataFormat,
     sourceEnvironment,
     sourceStatus,
     sourceTransport,
     sourceType,
+    signal,
     tag,
     tag_type,
     task,

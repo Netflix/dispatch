@@ -89,7 +89,7 @@ def install_plugins(force):
         record = plugin_service.get_by_slug(db_session=db_session, slug=p.slug)
         if not record:
             click.secho(f"Installing plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
-            record = Plugin(
+            plugin = Plugin(
                 title=p.title,
                 slug=p.slug,
                 type=p.type,
@@ -99,6 +99,7 @@ def install_plugins(force):
                 multiple=p.multiple,
                 description=p.description,
             )
+            db_session.add(plugin)
         else:
             if force:
                 click.secho(f"Updating plugin... Slug: {p.slug} Version: {p.version}", fg="blue")
@@ -110,7 +111,6 @@ def install_plugins(force):
                 record.description = p.description
                 record.type = p.type
 
-        db_session.add(record)
         db_session.commit()
 
 
@@ -606,8 +606,7 @@ def dispatch_scheduler():
     )  # noqa
     from .term.scheduled import sync_terms  # noqa
     from .workflow.scheduled import (
-        daily_sync_workflow,  # noqa
-        sync_active_stable_workflows,  # noqa
+        sync_workflow,  # noqa
     )
     from .monitor.scheduled import sync_active_stable_monitors  # noqa
     from .data.source.scheduled import sync_sources  # noqa

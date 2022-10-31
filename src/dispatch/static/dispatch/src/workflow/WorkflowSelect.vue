@@ -1,10 +1,10 @@
 <template>
   <v-select
-    v-model="incident_priorities"
+    v-model="workflow"
     :items="items"
     item-text="name"
     :menu-props="{ maxHeight: '400' }"
-    label="Priority"
+    label="Workflow"
     return-object
     :loading="loading"
   >
@@ -12,7 +12,11 @@
       <template>
         <v-list-item-content>
           <v-list-item-title v-text="data.item.name" />
-          <v-list-item-subtitle v-text="data.item.description" />
+          <v-list-item-subtitle
+            style="width: 200px"
+            class="text-truncate"
+            v-text="data.item.description"
+          />
         </v-list-item-content>
       </template>
     </template>
@@ -23,10 +27,10 @@
 import { cloneDeep } from "lodash"
 
 import SearchUtils from "@/search/utils"
-import IncidentPriorityApi from "@/incident/priority/api"
+import WorkflowApi from "@/workflow/api"
 
 export default {
-  name: "IncidentPrioritySelect",
+  name: "WorkflowSelect",
   props: {
     value: {
       type: Object,
@@ -48,7 +52,7 @@ export default {
   },
 
   computed: {
-    incident_priorities: {
+    workflow: {
       get() {
         return cloneDeep(this.value)
       },
@@ -64,7 +68,7 @@ export default {
       this.loading = "error"
 
       let filterOptions = {
-        sortBy: ["view_order"],
+        sortBy: ["name"],
         descending: [false],
       }
 
@@ -79,7 +83,7 @@ export default {
 
       let enabledFilter = [
         {
-          model: "IncidentPriority",
+          model: "Workflow",
           field: "enabled",
           op: "==",
           value: "true",
@@ -91,7 +95,7 @@ export default {
         enabledFilter
       )
 
-      IncidentPriorityApi.getAll(filterOptions).then((response) => {
+      WorkflowApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
       })

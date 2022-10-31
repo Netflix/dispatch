@@ -81,8 +81,7 @@ class GenericWorkflowPlugin(WorkflowPlugin):
         self,
         workflow_id: str,
         workflow_instance_id: int,
-        incident_id: int,
-        incident_name: str,
+        tags: list[str],
         **kwargs,
     ):
         api_url = self.configuration.api_url
@@ -93,8 +92,7 @@ class GenericWorkflowPlugin(WorkflowPlugin):
         fields = {
             "workflow_id": workflow_id,
             "workflow_instance_id": workflow_instance_id,
-            "incident_id": incident_id,
-            "incident_name": incident_name,
+            "tags": tags,
         }
         resp = requests.get(api_url, params=fields, headers=headers)
 

@@ -5,6 +5,7 @@
     </div>
     <v-row no-gutters>
       <new-sheet />
+      <workflow-run-modal />
       <escalate-dialog />
       <delete-dialog />
       <v-col>
@@ -88,6 +89,9 @@
                   >
                     <v-list-item-title>View / Edit</v-list-item-title>
                   </v-list-item>
+                  <v-list-item @click="showRun({ type: 'case', data: item })">
+                    <v-list-item-title>Run Workflow</v-list-item-title>
+                  </v-list-item>
                   <v-list-item
                     @click="showEscalateDialog(item)"
                     :disabled="item.status == 'Escalated' || item.status == 'Closed'"
@@ -119,6 +123,7 @@ import CaseStatus from "@/case/CaseStatus.vue"
 import DeleteDialog from "@/case/DeleteDialog.vue"
 import EscalateDialog from "@/case/EscalateDialog.vue"
 import NewSheet from "@/case/NewSheet.vue"
+import WorkflowRunModal from "@/workflow/RunModal.vue"
 import RouterUtils from "@/router/utils"
 import TableExportDialog from "@/case/TableExportDialog.vue"
 import TableFilterDialog from "@/case/TableFilterDialog.vue"
@@ -134,6 +139,7 @@ export default {
     DeleteDialog,
     EscalateDialog,
     NewSheet,
+    WorkflowRunModal,
     TableExportDialog,
     TableFilterDialog,
   },
@@ -202,6 +208,7 @@ export default {
   },
 
   methods: {
+    ...mapActions("workflow", ["showRun"]),
     ...mapActions("case_management", [
       "getAll",
       "showNewSheet",

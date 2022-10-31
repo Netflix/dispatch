@@ -7,6 +7,7 @@
       <new-sheet />
       <delete-dialog />
       <report-dialog />
+      <workflow-run-modal />
       <v-col>
         <div class="headline">Incidents</div>
       </v-col>
@@ -94,6 +95,9 @@
                   >
                     <v-list-item-title>View / Edit</v-list-item-title>
                   </v-list-item>
+                  <v-list-item @click="showRun({ type: 'incident', data: item })">
+                    <v-list-item-title>Run Workflow</v-list-item-title>
+                  </v-list-item>
                   <v-list-item @click="showReportDialog(item)" :disabled="item.status == 'Closed'">
                     <v-list-item-title>Create Report</v-list-item-title>
                   </v-list-item>
@@ -123,6 +127,7 @@ import IncidentPriority from "@/incident/priority/IncidentPriority.vue"
 import IncidentSeverity from "@/incident/severity/IncidentSeverity.vue"
 import IncidentStatus from "@/incident/status/IncidentStatus.vue"
 import NewSheet from "@/incident/NewSheet.vue"
+import WorkflowRunModal from "@/workflow/RunModal.vue"
 import ReportDialog from "@/incident/ReportDialog.vue"
 import RouterUtils from "@/router/utils"
 import TableExportDialog from "@/incident/TableExportDialog.vue"
@@ -141,6 +146,7 @@ export default {
     IncidentStatus,
     NewSheet,
     ReportDialog,
+    WorkflowRunModal,
     TableExportDialog,
     TableFilterDialog,
   },
@@ -212,6 +218,7 @@ export default {
 
   methods: {
     ...mapActions("incident", ["getAll", "showNewSheet", "showDeleteDialog", "showReportDialog"]),
+    ...mapActions("workflow", ["showRun"]),
   },
 
   watch: {
