@@ -1,5 +1,7 @@
 import json
+
 from pydantic import ValidationError
+
 from fastapi import BackgroundTasks
 
 from dispatch.conversation import service as conversation_service
@@ -13,9 +15,10 @@ from dispatch.messaging.strings import (
     INCIDENT_MONITOR_CREATED_NOTIFICATION,
     INCIDENT_MONITOR_IGNORE_NOTIFICATION,
 )
-from dispatch.monitor.models import MonitorCreate
 from dispatch.monitor import service as monitor_service
+from dispatch.monitor.models import MonitorCreate
 from dispatch.participant import service as participant_service
+from dispatch.participant_role.enums import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.report import flows as report_flows
@@ -513,7 +516,7 @@ def handle_assign_role_action(
     db_session=None,
     slack_client=None,
 ):
-    """Massages slack dialog data into something that Dispatch can use."""
+    """Handles assign role actions."""
     assignee_user_id = action["submission"]["participant"]
     assignee_role = action["submission"]["role"]
     assignee_email = get_user_email(client=slack_client, user_id=assignee_user_id)
@@ -527,8 +530,14 @@ def handle_assign_role_action(
         db_session=db_session,
     )
 
-    # we update the ticket
-    incident_flows.update_external_incident_ticket(incident_id=incident_id, db_session=db_session)
+    if (
+        assignee_role == ParticipantRoleType.reporter
+        or assignee_role == ParticipantRoleType.incident_commander
+    ):
+        # we update the external ticket
+        incident_flows.update_external_incident_ticket(
+            incident_id=incident_id, db_session=db_session
+        )
 
 
 def dialog_action_functions(config: SlackConfiguration, action: str):

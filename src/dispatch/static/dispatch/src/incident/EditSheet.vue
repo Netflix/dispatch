@@ -48,7 +48,7 @@
           <incident-timeline-tab />
         </v-tab-item>
         <v-tab-item key="workflow_instances">
-          <incident-workflow-instance-tab />
+          <workflow-instance-tab v-model="workflow_instances" />
         </v-tab-item>
         <v-tab-item key="costs">
           <incident-costs-tab />
@@ -67,8 +67,8 @@ import IncidentDetailsTab from "@/incident/DetailsTab.vue"
 import IncidentResourcesTab from "@/incident/ResourcesTab.vue"
 import IncidentParticipantsTab from "@/incident/ParticipantsTab.vue"
 import IncidentTimelineTab from "@/incident/TimelineTab.vue"
-import IncidentWorkflowInstanceTab from "@/incident/WorkflowInstanceTab.vue"
 import IncidentCostsTab from "@/incident/CostsTab.vue"
+import WorkflowInstanceTab from "@/workflow/WorkflowInstanceTab.vue"
 
 export default {
   name: "IncidentEditSheet",
@@ -79,8 +79,8 @@ export default {
     IncidentResourcesTab,
     IncidentParticipantsTab,
     IncidentTimelineTab,
-    IncidentWorkflowInstanceTab,
     IncidentCostsTab,
+    WorkflowInstanceTab,
   },
 
   data() {
@@ -96,6 +96,7 @@ export default {
       "selected.project",
       "selected.reported_at",
       "selected.loading",
+      "selected.workflow_instances",
       "dialogs.showEditSheet",
     ]),
   },

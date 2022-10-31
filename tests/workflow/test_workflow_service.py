@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_get(session, workflow):
     from dispatch.workflow.service import get
 
@@ -62,11 +59,12 @@ def test_create_instance(session, incident, workflow, participant, project, work
         run_reason=run_reason,
         status=status,
         incident=incident,
-        workflow=workflow,
         creator=participant,
         artifacts=artifacts,
     )
-    workflow_instance = create_instance(db_session=session, instance_in=instance_in)
+    workflow_instance = create_instance(
+        db_session=session, workflow=workflow, instance_in=instance_in
+    )
     assert workflow_instance
 
 

@@ -32,6 +32,8 @@ from dispatch.models import NameStr, PrimaryKey
 from dispatch.storage.models import StorageRead
 from dispatch.tag.models import TagRead
 from dispatch.ticket.models import TicketRead
+from dispatch.workflow.models import WorkflowInstanceRead
+from dispatch.signal.models import SignalRead
 
 from .enums import CaseStatus
 
@@ -109,6 +111,10 @@ class Case(Base, TimeStampMixin, ProjectMixin):
 
     tactical_group_id = Column(Integer, ForeignKey("group.id"))
     tactical_group = relationship("Group", foreign_keys=[tactical_group_id])
+
+    workflow_instances = relationship(
+        "WorkflowInstance", backref="case", cascade="all, delete-orphan"
+    )
 
     related_id = Column(Integer, ForeignKey("case.id"))
     related = relationship("Case", remote_side=[id], uselist=True, foreign_keys=[related_id])
@@ -198,6 +204,7 @@ class CaseRead(CaseBase):
     tags: Optional[List[TagRead]] = []
     ticket: Optional[TicketRead] = None
     triage_at: Optional[datetime] = None
+    workflow_instances: Optional[List[WorkflowInstanceRead]] = []
 
 
 class CaseUpdate(CaseBase):
