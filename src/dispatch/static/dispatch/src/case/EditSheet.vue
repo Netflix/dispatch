@@ -39,6 +39,7 @@
         <v-tab key="resources"> Resources </v-tab>
         <v-tab key="timeline"> Timeline </v-tab>
         <v-tab key="workflows"> Workflows </v-tab>
+        <v-tab key="signals">Signals</v-tab>
       </v-tabs>
       <v-tabs-items v-model="tab">
         <v-tab-item key="details">
@@ -52,6 +53,9 @@
         </v-tab-item>
         <v-tab-item key="workflow_instances">
           <workflow-instance-tab v-model="workflow_instances" />
+        </v-tab-item>
+        <v-tab-item key="signal_instances">
+          <signal-instance-tab v-model="signal_instances" />
         </v-tab-item>
       </v-tabs-items>
     </v-navigation-drawer>
@@ -67,6 +71,7 @@ import CaseDetailsTab from "@/case/DetailsTab.vue"
 import CaseResourcesTab from "@/case/ResourcesTab.vue"
 import CaseTimelineTab from "@/case/TimelineTab.vue"
 import WorkflowInstanceTab from "@/workflow/WorkflowInstanceTab.vue"
+import SignalInstanceTab from "@/signal/SignalInstanceTab.vue"
 
 export default {
   name: "CaseEditSheet",
@@ -76,6 +81,7 @@ export default {
     CaseResourcesTab,
     CaseTimelineTab,
     WorkflowInstanceTab,
+    SignalInstanceTab,
     ValidationObserver,
   },
 
@@ -94,6 +100,7 @@ export default {
       "selected.reported_at",
       "selected.status",
       "selected.loading",
+      "selected.signal_instances",
       "selected.workflow_instances",
       "dialogs.showEditSheet",
     ]),
