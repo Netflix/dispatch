@@ -238,10 +238,7 @@ def assess_participant_role_change(
 
     if participant:
         for participant_role in participant.active_roles:
-            if (
-                participant_role.role == ParticipantRoleType.observer
-                or participant_role.role == ParticipantRoleType.reporter
-            ):
+            if participant_role.role == ParticipantRoleType.observer:
                 if participant_role.activity >= 10:  # ten messages sent to the incident channel
                     # we change the participant's role to the participant one
                     participant_role_service.renounce_role(
@@ -263,6 +260,7 @@ def assess_participant_role_change(
                         ),
                         incident_id=incident_id,
                     )
+                break
 
 
 def is_business_hours(commander_tz: str):
