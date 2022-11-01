@@ -98,6 +98,7 @@ def get_engagement_multiplier(participant_role: str):
         ParticipantRoleType.liaison: 0.75,
         ParticipantRoleType.participant: 0.5,
         ParticipantRoleType.reporter: 0.5,
+        # ParticipantRoleType.observer: 0, # NOTE: set to 0. It's not used, as we don't calculate cost for participants with observer role
     }
 
     return engagement_mappings.get(participant_role)
@@ -115,11 +116,8 @@ def calculate_incident_response_cost(
         participant_total_roles_time_seconds = 0
 
         for participant_role in participant.participant_roles:
-            if (
-                participant_role.role == ParticipantRoleType.observer
-                or participant_role.role == ParticipantRoleType.reporter
-            ):
-                # skip calculating cost for the observer and reporter roles
+            if participant_role.role == ParticipantRoleType.observer:
+                # skip calculating cost for participants with the observer role
                 continue
 
             if participant_role.activity == 0:

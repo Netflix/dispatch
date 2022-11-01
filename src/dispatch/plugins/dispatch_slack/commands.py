@@ -79,9 +79,11 @@ def check_command_restrictions(
         ],
         config.slack_command_assign_role: [
             ParticipantRoleType.incident_commander,
-            ParticipantRoleType.reporter,
             ParticipantRoleType.liaison,
             ParticipantRoleType.scribe,
+            ParticipantRoleType.reporter,
+            ParticipantRoleType.participant,
+            ParticipantRoleType.observer,
         ],
         config.slack_command_report_executive: [
             ParticipantRoleType.incident_commander,
