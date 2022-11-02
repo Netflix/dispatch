@@ -340,7 +340,7 @@ const actions = {
       commit(
         "notification_backend/addBeNotification",
         {
-          text: "You have successfully subscribed to the incident. You will recieve all incident tactical reports.",
+          text: "You have successfully subscribed to the incident. You will receive all tactical reports about this incident via email.",
           type: "success",
         },
         { root: true }
