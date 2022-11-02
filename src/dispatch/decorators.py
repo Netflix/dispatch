@@ -92,7 +92,7 @@ def background_task(func):
             log.exception(e)
         finally:
             if background:
-                kwargs["db_session"].close()
+                kwargs["db_session"].remove()
 
     return wrapper
 

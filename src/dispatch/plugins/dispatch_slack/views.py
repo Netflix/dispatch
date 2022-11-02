@@ -70,8 +70,9 @@ def verify_signature(organization: str, request_data: str, timestamp: int, signa
         h = hmac.new(slack_signing_secret, req, hashlib.sha256).hexdigest()
         result = hmac.compare_digest(f"v0={h}", signature)
         if result:
+            session.close()
             return p.instance.configuration
-
+    session.close()
     raise HTTPException(status_code=403, detail=[{"msg": "Invalid request signature"}])
 
 
