@@ -143,6 +143,8 @@ async def handle_slack_event(*, config, client, event, background_tasks):
                     event=event,
                 )
 
+        db_session.close()
+
     return {"ok": ""}
 
 
