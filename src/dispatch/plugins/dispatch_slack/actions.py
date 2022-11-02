@@ -7,6 +7,7 @@ from fastapi import BackgroundTasks
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.enums import ConversationButtonActions
 from dispatch.conversation.messaging import send_feedack_to_user
+from dispatch.enums import Visibility
 from dispatch.exceptions import DispatchException
 from dispatch.incident import flows as incident_flows
 from dispatch.incident import service as incident_service
@@ -240,14 +241,15 @@ def add_user_to_tactical_group(
     """Adds a user to the incident tactical group."""
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     if not incident:
-        message = "Sorry, we cannot add you to this incident. It does not exist."
-        dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
+        message = "Sorry, we cannot subscribe you to this incident. It does not exist."
+    elif incident.visibility == Visibility.restricted:
+        message = f"Sorry, we cannot subscribe you to an incident with restricted visibility. Please, reach out to the incident commander ({incident.commander.individual.name}) if you have any questions."
     else:
         incident_flows.add_participant_to_tactical_group(
             user_email=user_email, incident=incident, db_session=db_session
         )
-        message = f"Success! We've subscribed you to incident {incident.name}. You will receive all tactical reports about this incident."
-        dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
+        message = f"Success! We've subscribed you to incident {incident.name}. You will receive all tactical reports about this incident via email."
+    dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
 
 
 @slack_background_task
@@ -265,16 +267,16 @@ def add_user_to_conversation(
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
     if not incident:
         message = "Sorry, we cannot add you to this incident. It does not exist."
-        dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
+    elif incident.visibility == Visibility.restricted:
+        message = f"Sorry, we cannot add you to an incident with restricted visibility. Please, reach out to the incident commander ({incident.commander.individual.name}) if you have any questions."
     elif incident.status == IncidentStatus.closed:
-        message = f"Sorry, we cannot add you to a closed incident. Please, reach out to the incident commander ({incident.commander.individual.name}) for details."
-        dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
+        message = f"Sorry, we cannot add you to an incident that has already been closed. Please, reach out to the incident commander ({incident.commander.individual.name}) for details."
     else:
         dispatch_slack_service.add_users_to_conversation(
             slack_client, incident.conversation.channel_id, [user_id]
         )
-        message = f"Success! We've added you to incident {incident.name}. Please, check your sidebar for the new incident channel."
-        dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
+        message = f"Success! We've added you to incident {incident.name}. Please, check your Slack sidebar for the new incident channel."
+    dispatch_slack_service.send_ephemeral_message(slack_client, channel_id, user_id, message)
 
 
 @slack_background_task

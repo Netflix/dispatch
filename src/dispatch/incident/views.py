@@ -12,7 +12,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, s
 from sqlalchemy.orm import Session
 from dispatch.auth.permissions import (
     IncidentEditPermission,
-    IncidentJoinPermission,
+    IncidentJoinOrSubscribePermission,
     PermissionsDependency,
     IncidentViewPermission,
 )
@@ -168,8 +168,8 @@ def update_incident(
 
 @router.post(
     "/{incident_id}/join",
-    summary="Joins an incident.",
-    dependencies=[Depends(PermissionsDependency([IncidentJoinPermission]))],
+    summary="Adds an individual to an incident.",
+    dependencies=[Depends(PermissionsDependency([IncidentJoinOrSubscribePermission]))],
 )
 def join_incident(
     *,
@@ -180,7 +180,7 @@ def join_incident(
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
-    """Joins an incident."""
+    """Adds an individual to an incident."""
     background_tasks.add_task(
         incident_add_or_reactivate_participant_flow,
         current_user.email,
@@ -191,8 +191,8 @@ def join_incident(
 
 @router.post(
     "/{incident_id}/subscribe",
-    summary="Subscribes to an incident.",
-    dependencies=[Depends(PermissionsDependency([IncidentJoinPermission]))],
+    summary="Subscribes an individual to an incident.",
+    dependencies=[Depends(PermissionsDependency([IncidentJoinOrSubscribePermission]))],
 )
 def subscribe_to_incident(
     *,
@@ -203,7 +203,7 @@ def subscribe_to_incident(
     current_user: DispatchUser = Depends(get_current_user),
     background_tasks: BackgroundTasks,
 ):
-    """Subscribes to an incident."""
+    """Subscribes an individual to an incident."""
     background_tasks.add_task(
         incident_add_participant_to_tactical_group_flow,
         current_user.email,
