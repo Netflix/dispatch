@@ -241,6 +241,8 @@ async def handle_incident_conversation_commands(config, client, request, backgro
             command=request,
         )
 
+    db_session.close()
+
     return get_incident_conversation_command_message(config, command)
 
 
