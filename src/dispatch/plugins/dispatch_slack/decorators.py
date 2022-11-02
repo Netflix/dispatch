@@ -90,7 +90,7 @@ def get_default_organization_scope() -> str:
     """Iterate all organizations looking for matching organization."""
     db_session = SessionLocal()
     organization = organization_service.get_default(db_session=db_session)
-    db_session.remove()
+    db_session.close()
 
     schema_engine = engine.execution_options(
         schema_translate_map={
@@ -180,6 +180,6 @@ and provide them with the following token: '{slack_interaction_guid}'."""
             )
         finally:
             if background:
-                kwargs["db_session"].remove()
+                kwargs["db_session"].close()
 
     return wrapper
