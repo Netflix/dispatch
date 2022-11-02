@@ -204,7 +204,7 @@ class ProjectUpdatePermission(BasePermission):
         )
 
 
-class IncidentJoinPermission(BasePermission):
+class IncidentJoinOrSubscribePermission(BasePermission):
     def has_required_permissions(
         self,
         request: Request,
