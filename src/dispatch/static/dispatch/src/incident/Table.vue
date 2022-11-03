@@ -95,11 +95,11 @@
                   >
                     <v-list-item-title>View / Edit</v-list-item-title>
                   </v-list-item>
-                  <v-list-item @click="showRun({ type: 'incident', data: item })">
-                    <v-list-item-title>Run Workflow</v-list-item-title>
-                  </v-list-item>
                   <v-list-item @click="showReportDialog(item)" :disabled="item.status == 'Closed'">
                     <v-list-item-title>Create Report</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item @click="showRun({ type: 'incident', data: item })" :disabled="item.status == 'Closed'">
+                    <v-list-item-title>Run Workflow</v-list-item-title>
                   </v-list-item>
                   <v-list-item @click="showDeleteDialog(item)">
                     <v-list-item-title>Delete</v-list-item-title>
