@@ -89,7 +89,10 @@
                   >
                     <v-list-item-title>View / Edit</v-list-item-title>
                   </v-list-item>
-                  <v-list-item @click="showRun({ type: 'case', data: item })">
+                  <v-list-item
+                    @click="showRun({ type: 'case', data: item })"
+                    :disabled="item.status == 'Escalated' || item.status == 'Closed'"
+                  >
                     <v-list-item-title>Run Workflow</v-list-item-title>
                   </v-list-item>
                   <v-list-item
