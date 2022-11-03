@@ -343,12 +343,6 @@ export const protectedRoute = [
             component: () => import("@/workflow/Table.vue"),
           },
           {
-            path: "signals",
-            name: "SignalTable",
-            meta: { title: "Signals", subMenu: "project", group: "general" },
-            component: () => import("@/signal/Table.vue"),
-          },
-          {
             path: "incidentTypes",
             name: "IncidentTypeTable",
             meta: { title: "Types", subMenu: "project", group: "incident" },
@@ -395,6 +389,12 @@ export const protectedRoute = [
             name: "caseSeverityTable",
             meta: { title: "Severities", subMenu: "project", group: "case" },
             component: () => import("@/case/severity/Table.vue"),
+          },
+          {
+            path: "signals",
+            name: "SignalTable",
+            meta: { title: "Definitions", subMenu: "project", group: "signal" },
+            component: () => import("@/signal/Table.vue"),
           },
           {
             path: "source/types",
