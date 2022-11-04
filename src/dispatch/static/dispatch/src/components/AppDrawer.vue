@@ -65,6 +65,8 @@
         </template>
       </v-navigation-drawer>
       <v-list dense nav class="grow">
+        <v-text-field v-model="q" append-icon="search" label="Filter" single-line hide-details>
+        </v-text-field>
         <span v-for="(subRoutes, group, idx) in children" :key="group">
           <v-subheader>
             {{ group | capitalize }}
@@ -144,6 +146,7 @@ export default {
       maxScrollbarLength: 160,
     },
     mini: false,
+    q: "",
   }),
 
   created() {
@@ -176,7 +179,10 @@ export default {
     },
     showChildPane() {
       if (Object.keys(this.children).length) {
-        return Object.values(this.children)[0].length > 1
+        return Object.values(this.children)[0].length || this.q.length
+      }
+      if (this.q.length) {
+        return true
       }
       return false
     },
@@ -198,9 +204,22 @@ export default {
         return child.meta.group
       })
 
-      return groupBy(children, function (child) {
+      // Filter children if we have a filter string
+      let q = this.q
+      if (q.length) {
+        children = children.filter(function (item) {
+          let metadata =
+            item.meta.group.toLowerCase() +
+            item.meta.subMenu.toLowerCase() +
+            item.meta.title.toLowerCase()
+          return metadata.includes(q.toLowerCase())
+        })
+      }
+
+      children = groupBy(children, function (child) {
         return child.meta.group
       })
+      return children
     },
     ...mapState("app", ["toggleDrawer"]),
   },
