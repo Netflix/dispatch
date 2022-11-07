@@ -133,20 +133,22 @@ def daily_report(db_session: SessionLocal, project: Project):
             for idx, incident in enumerate(incidents):
                 try:
                     item = {
+                        "buttons": [],
                         "commander_fullname": incident.commander.individual.name,
                         "commander_team": incident.commander.team,
                         "commander_weblink": incident.commander.individual.weblink,
                         "incident_id": incident.id,
                         "name": incident.name,
+                        "organization_slug": incident.project.organization.slug,
                         "priority": incident.incident_priority.name,
                         "priority_description": incident.incident_priority.description,
+                        "severity": incident.incident_severity.name,
+                        "severity_description": incident.incident_severity.description,
                         "status": incident.status,
                         "ticket_weblink": resolve_attr(incident, "ticket.weblink"),
                         "title": incident.title,
                         "type": incident.incident_type.name,
                         "type_description": incident.incident_type.description,
-                        "organization_slug": incident.project.organization.slug,
-                        "buttons": [],
                     }
 
                     if incident.status != IncidentStatus.closed:
