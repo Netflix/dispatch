@@ -374,20 +374,6 @@ def upgrade_database(tag, sql, revision, revision_type):
                 alembic_cfg.set_main_option("script_location", path)
                 alembic_command.upgrade(alembic_cfg, revision, sql=sql, tag=tag)
 
-    # ensure triggers
-    conn.execute("set search_path to dispatch_core")
-    setup_fulltext_search(conn, get_core_tables())
-
-    for s in inspect(engine).get_schema_names():
-        if not s.startswith("dispatch_organization_"):
-            continue
-
-        tenant_tables = get_tenant_tables()
-        for t in tenant_tables:
-            t.schema = s
-        conn.execute(f"set search_path to {s}")
-        setup_fulltext_search(conn, tenant_tables)
-
     click.secho("Success.", fg="green")
 
 
@@ -776,6 +762,7 @@ def run_slack_websocket(organization: str, project: str):
         )
         return
 
+    session.close()
     click.secho("Slack websocket process started...", fg="blue")
     asyncio.run(socket_mode.run_websocket_process(instance.configuration))
 

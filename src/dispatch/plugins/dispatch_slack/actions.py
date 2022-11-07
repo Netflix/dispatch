@@ -188,6 +188,8 @@ def handle_dialog_action(
             action=action,
         )
 
+    db_session.close()
+
 
 def handle_block_action(
     config: SlackConversationConfiguration, action: dict, background_tasks: BackgroundTasks
