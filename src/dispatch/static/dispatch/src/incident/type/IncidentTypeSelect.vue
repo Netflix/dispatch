@@ -91,7 +91,7 @@ export default {
       this.loading = "error"
 
       let filterOptions = {
-        sortBy: ["project.name"],
+        sortBy: ["name"],
         descending: [false],
         itemsPerPage: this.numItems,
       }
@@ -101,24 +101,12 @@ export default {
           ...filterOptions,
           filters: {
             project: [this.project],
+            enabled: ["true"],
           },
         }
-        filterOptions.sortBy = ["name"]
       }
 
-      let enabledFilter = [
-        {
-          model: "IncidentType",
-          field: "enabled",
-          op: "==",
-          value: "true",
-        },
-      ]
-
-      filterOptions = SearchUtils.createParametersFromTableOptions(
-        { ...filterOptions },
-        enabledFilter
-      )
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
       IncidentTypeApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
@@ -130,8 +118,6 @@ export default {
         } else {
           this.more = false
         }
-
-        this.loading = false
       })
     },
   },

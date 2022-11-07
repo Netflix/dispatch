@@ -18,6 +18,13 @@
         />
       </v-list-item-content>
     </template>
+    <template v-slot:append-item>
+      <v-list-item v-if="more" @click="loadMore()">
+        <v-list-item-content>
+          <v-list-item-subtitle> Load More </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
   </v-select>
 </template>
 
@@ -41,12 +48,20 @@ export default {
       type: [Object],
       default: null,
     },
+    label: {
+      type: String,
+      default: function () {
+        return "Type"
+      },
+    },
   },
 
   data() {
     return {
       loading: false,
       items: [],
+      more: false,
+      numItems: 5,
     }
   },
 
@@ -62,14 +77,18 @@ export default {
   },
 
   methods: {
+    loadMore() {
+      this.numItems = this.numItems + 5
+      this.fetchData()
+    },
     fetchData() {
       this.error = null
       this.loading = "error"
 
       let filterOptions = {
-        itemsPerPage: 50,
         sortBy: ["name"],
         descending: [false],
+        itemsPerPage: this.numItems,
       }
 
       if (this.project) {
@@ -77,27 +96,23 @@ export default {
           ...filterOptions,
           filters: {
             project: [this.project],
+            enabled: ["true"],
           },
         }
       }
 
-      let enabledFilter = [
-        {
-          model: "CaseType",
-          field: "enabled",
-          op: "==",
-          value: "true",
-        },
-      ]
-
-      filterOptions = SearchUtils.createParametersFromTableOptions(
-        { ...filterOptions },
-        enabledFilter
-      )
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
 
       CaseTypeApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
+        this.total = response.data.total
         this.loading = false
+
+        if (this.items.length < this.total) {
+          this.more = true
+        } else {
+          this.more = false
+        }
       })
     },
   },
