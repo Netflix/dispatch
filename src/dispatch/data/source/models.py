@@ -105,7 +105,7 @@ class SourceBase(DispatchBase):
         None,
         nullable=True,
         title="Sampling Rate",
-        lt=100,
+        lt=101,
         gt=1,
         description="Rate at which data is sampled (as a percentage) 100% meaning all data is captured.",
     )
