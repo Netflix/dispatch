@@ -2,6 +2,8 @@ import { defineConfig } from "vite"
 import vue2 from "@vitejs/plugin-vue2"
 import monacoEditorPlugin from "vite-plugin-monaco-editor"
 import { VuetifyResolver } from "unplugin-vue-components/resolvers"
+import { VitePWA } from "vite-plugin-pwa"
+
 import Components from "unplugin-vue-components/vite"
 
 import path from "path"
@@ -9,6 +11,7 @@ import path from "path"
 export default defineConfig({
   plugins: [
     vue2(),
+    VitePWA(),
     monacoEditorPlugin({ languageWorkers: ["json"] }),
     Components({
       resolvers: [
