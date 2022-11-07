@@ -19,6 +19,10 @@
 </template>
 
 <script>
+import { mapFields } from "vuex-map-fields"
+import SearchUtils from "@/search/utils"
+import RouterUtils from "@/router/utils"
+
 import IncidentApi from "@/incident/api"
 import IncidentSummaryTable from "@/incident/IncidentSummaryTable.vue"
 import OrganizationBanner from "@/organization/OrganizationBanner.vue"
@@ -35,28 +39,37 @@ export default {
     return {
       items: [],
       loading: false,
+      filters: { status: ["Active"] },
     }
   },
 
   created() {
+    this.filters = {
+      ...this.filters,
+      ...RouterUtils.deserializeFilters(this.query),
+    }
     this.getActive()
+  },
+
+  computed: {
+    ...mapFields("route", ["query"]),
   },
 
   methods: {
     getActive() {
+      this.error = null
       this.loading = "error"
-      IncidentApi.getAll({
-        filter: JSON.stringify({
-          and: [
-            {
-              model: "Incident",
-              field: "status",
-              op: "==",
-              value: "Active",
-            },
-          ],
-        }),
-      }).then((response) => {
+
+      let filterOptions = {
+        sortBy: ["reported_at"],
+        descending: [true],
+        itemsPerPage: -1,
+        filters: { ...this.filters },
+      }
+
+      filterOptions = SearchUtils.createParametersFromTableOptions({ ...filterOptions })
+
+      IncidentApi.getAll(filterOptions).then((response) => {
         this.items = response.data.items
         this.loading = false
       })
