@@ -123,13 +123,6 @@ class ResourceBase(DispatchBase):
     resource_id: Optional[str] = Field(None, nullable=True)
     weblink: Optional[str] = Field(None, nullable=True)
 
-    @validator("weblink")
-    def sanitize_weblink(cls, v):
-        if v:
-            if not validators.url(v):
-                raise ValueError("Weblink must be a valid url.")
-        return v
-
 
 class ContactBase(DispatchBase):
     email: EmailStr
