@@ -92,5 +92,4 @@ export default new Vuex.Store({
     term,
     workflow,
   },
-  strict: import.meta.env.NODE_ENV !== "production",
 })

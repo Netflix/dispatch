@@ -12,10 +12,6 @@ Dispatch uses the same configuration system as [Starlette](https://www.starlette
 By default, the config is read from environment variables or `.env` files.
 
 {% hint style="info" %}
-All config items prefixed with `VUE_APP` are envvars for the Vue frontend. These variables are used only during the building of the javascript bundle. See [here](https://cli.vuejs.org/guide/mode-and-env.html) for details. You will want to include these variables in `src/dispatch/static/dispatch/.env` during build time.
-{% endhint %}
-
-{% hint style="info" %}
 In general, do not include any quotation marks when adding configuration values.
 {% endhint %}
 
@@ -48,10 +44,6 @@ In general, do not include any quotation marks when adding configuration values.
 #### `MJML_PATH` \[default: /node_modules/.bin]
 
 > Dispatch uses [MJML](https://mjml.io/documentation/) to generate its HTML emails. This package also requires the `node` binary to be available on the standard path (or set in Dispatch's path). Use this variable to adjust the location where Dispatch should look for the `mjml` command. **If you are using the stock docker image of Dispatch you must manually set this field to the default path.**
-
-#### `VUE_APP_SENTRY_DSN` \[default: none\]
-
-> Optional configuration for using Sentry to report Dispatch errors.
 
 #### `DISPATCH_UI_URL`
 
@@ -119,16 +111,16 @@ For this plugin to work with your OIDC setup, you may need to set
 > Depending on what values your OIDC provider sends, you may need to set this to `true` for the Dispatch backend
 > to be able to decode the JWT token.
 
-#### `VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL`
+#### `DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL`
 
 > The well-known configuration URL for your OIDC provider, without a trailing slash. Used by the Dispatch
 > Web UI to authenticate a user via Proof Key Code Exchange \(PKCE\).
 
-#### `VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID`
+#### `DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID`
 
 > The client id to send to the OpenID Connect endpoint.
 
-#### `VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_USE_ID_TOKEN` \['default': false\]
+#### `DISPATCH_AUTHENTICATION_PROVIDER_USE_ID_TOKEN` \['default': false\]
 
 > Use `id_token` instead of default `access_token`. [Details](https://developer.okta.com/docs/reference/api/oidc/#tokens-and-claims)
 > Depends on the identity provider.

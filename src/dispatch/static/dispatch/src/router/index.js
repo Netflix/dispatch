@@ -18,8 +18,6 @@ const router = new Router({
   routes: routes,
 })
 
-const authProviderSlug = import.meta.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG
-
 const originalPush = Router.prototype.push
 Router.prototype.push = function push(location, onResolve, onReject) {
   if (onResolve || onReject) return originalPush.call(this, location, onResolve, onReject)
@@ -38,6 +36,7 @@ router.beforeEach((to, from, next) => {
   store.dispatch("app/setLoading", true)
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     if (!store.state.auth.currentUser.loggedIn) {
+      let authProviderSlug = localStorage.getItem("DISPATCH_AUTHENTICATION_PROVIDER_SLUG")
       if (authProviderSlug === "dispatch-auth-provider-basic") {
         basicAuthProvider.login(to, from, next)
       } else if (authProviderSlug === "dispatch-auth-provider-pkce") {
