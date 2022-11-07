@@ -18,8 +18,7 @@ const router = new Router({
   routes: routes,
 })
 
-const authProviderSlug =
-  import.meta.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG || "dispatch-auth-provider-basic"
+const authProviderSlug = import.meta.env.VUE_APP_DISPATCH_AUTHENTICATION_PROVIDER_SLUG
 
 const originalPush = Router.prototype.push
 Router.prototype.push = function push(location, onResolve, onReject) {
