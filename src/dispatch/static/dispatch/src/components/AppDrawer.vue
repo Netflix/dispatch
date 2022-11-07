@@ -65,6 +65,15 @@
         </template>
       </v-navigation-drawer>
       <v-list dense nav class="grow">
+        <v-text-field
+          v-if="showFilter"
+          v-model="q"
+          append-icon="search"
+          label="Filter"
+          single-line
+          hide-details
+        >
+        </v-text-field>
         <span v-for="(subRoutes, group, idx) in children" :key="group">
           <v-subheader>
             {{ group | capitalize }}
@@ -140,10 +149,9 @@ export default {
   },
 
   data: () => ({
-    scrollSettings: {
-      maxScrollbarLength: 160,
-    },
     mini: false,
+    q: "",
+    showFilter: false,
   }),
 
   created() {
@@ -151,12 +159,6 @@ export default {
   },
 
   methods: {
-    subIsActive(input) {
-      const paths = Array.isArray(input) ? input : [input]
-      return paths.some((path) => {
-        return this.$route.path.indexOf(path) === 0 // current path starts with this path string
-      })
-    },
     toggleMiniNav() {
       this.mini = !this.mini
       localStorage.setItem("mini_nav", this.mini)
@@ -176,7 +178,10 @@ export default {
     },
     showChildPane() {
       if (Object.keys(this.children).length) {
-        return Object.values(this.children)[0].length > 1
+        return Object.values(this.children)[0].length || this.q.length
+      }
+      if (this.q.length) {
+        return true
       }
       return false
     },
@@ -198,9 +203,30 @@ export default {
         return child.meta.group
       })
 
-      return groupBy(children, function (child) {
+      // Filter children if we have a filter string
+      if (this.$router.currentRoute.query.project) {
+        this.showFilter = true
+        let q = this.q
+        if (q.length) {
+          children = children.filter(function (item) {
+            let metadata = item.meta.group.toLowerCase() + item.meta.title.toLowerCase()
+
+            if (item.meta.subMenu) {
+              metadata = metadata + item.meta.subMenu.toLowerCase()
+            }
+            return metadata.includes(q.toLowerCase())
+          })
+        }
+      } else {
+        this.showFilter = false
+        this.q = ""
+      }
+
+      children = groupBy(children, function (child) {
         return child.meta.group
       })
+
+      return children
     },
     ...mapState("app", ["toggleDrawer"]),
   },
