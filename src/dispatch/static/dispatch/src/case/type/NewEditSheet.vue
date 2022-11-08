@@ -85,9 +85,16 @@
                   />
                 </ValidationObserver>
               </v-flex>
-              <v-flex xs12>
+              <v-flex xs6>
+                <project-select label="Incident Project" v-model="incidentProject" />
+              </v-flex>
+              <v-flex xs6>
                 <ValidationObserver disabled>
-                  <incident-type-select label="Incident Type" v-model="incident_type" />
+                  <incident-type-select
+                    label="Incident Type"
+                    :project="incidentProject"
+                    v-model="incident_type"
+                  />
                 </ValidationObserver>
               </v-flex>
               <v-flex xs 12>
@@ -131,6 +138,7 @@ import { required } from "vee-validate/dist/rules"
 import IncidentTypeSelect from "@/incident/type/IncidentTypeSelect.vue"
 import PluginMetadataInput from "@/plugin/PluginMetadataInput.vue"
 import ServiceSelect from "@/service/ServiceSelect.vue"
+import ProjectSelect from "@/project/ProjectSelect.vue"
 import TemplateSelect from "@/document/template/TemplateSelect.vue"
 
 extend("required", {
@@ -145,6 +153,7 @@ export default {
     IncidentTypeSelect,
     PluginMetadataInput,
     ServiceSelect,
+    ProjectSelect,
     TemplateSelect,
     ValidationObserver,
     ValidationProvider,
@@ -153,6 +162,7 @@ export default {
   data() {
     return {
       visibilities: ["Open", "Restricted"],
+      incidentProject: {},
     }
   },
 
@@ -186,6 +196,7 @@ export default {
   created() {
     if (this.query.project) {
       this.project = { name: this.query.project }
+      this.incidentProject = this.project
     }
   },
 }
