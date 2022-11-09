@@ -97,7 +97,7 @@ class Signal(Base, TimeStampMixin, ProjectMixin):
 
 class SignalInstance(Base, TimeStampMixin, ProjectMixin):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    case_id = Column(Integer, ForeignKey("case.id"))
+    case_id = Column(Integer, ForeignKey("case.id", ondelete="CASCADE"))
     case = relationship("Case", backref="signal_instances")
     signal_id = Column(Integer, ForeignKey("signal.id"))
     signal = relationship("Signal", backref="instances")
