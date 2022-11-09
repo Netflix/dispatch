@@ -98,19 +98,28 @@ def send_task_notification(
     # we send a notification to the incident conversation
     notification_text = "Incident Notification"
     notification_type = "incident-notification"
+
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
-    plugin.instance.send(
-        incident.conversation.channel_id,
-        notification_text,
-        message_template,
-        notification_type,
-        task_creator=creator.individual.email,
-        task_assignees=[x.individual.email for x in assignees],
-        task_description=description,
-        task_weblink=weblink,
-    )
+
+    if not plugin:
+        log.warning("Task notification not sent. No conversation plugin enabled.")
+        return
+
+    task_assignees = [x.individual.email for x in assignees]
+
+    for assignee in task_assignees:
+        plugin.instance.send_ephemeral(
+            incident.conversation.channel_id,
+            assignee,
+            notification_text,
+            message_template=message_template,
+            notification_type=notification_type,
+            task_creator=creator.individual.email,
+            task_description=description,
+            task_weblink=weblink,
+        )
 
 
 def create_or_update_task(

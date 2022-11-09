@@ -221,15 +221,15 @@ you can use `{{command}}` in the conversation to assist you in closing your inci
 ).strip()
 
 INCIDENT_TASK_NEW_DESCRIPTION = """
-The following incident task has been created in the incident document.\n\n*Description:* {{task_description}}\n\n*Creator*: {{task_creator}}\n\n*Assignees:* {{task_assignees|join(',')}}"""
+The following incident task has been created and assigned to you by {{task_creator}}: {{task_description}}"""
 
 INCIDENT_TASK_RESOLVED_DESCRIPTION = """
-The following incident task has been resolved in the incident document.\n\n*Description:* {{task_description}}\n\n*Creator*: {{task_creator}}\n\n*Assignees:* {{task_assignees|join(',')}}"""
+The following incident task has been resolved: {{task_description}}"""
 
 INCIDENT_TASK_REMINDER_DESCRIPTION = """
-You are assigned to the following incident tasks.
+The following incident tasks are assigned to you.
 This is a reminder that these tasks have passed their due date.
-Please review and update them as appropriate. Resolving them will stop the reminders.""".replace(
+Please review and mark them as resolved if appropriate. Resolving them will stop the reminders.""".replace(
     "\n", " "
 ).strip()
 

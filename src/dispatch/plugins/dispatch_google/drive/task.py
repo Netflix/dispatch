@@ -65,10 +65,14 @@ def get_tickets(replies: List[dict]):
 
 def get_user_email(client: Any, person_id: str) -> str:
     """Resolves the email address for the actor of the activity."""
-    # fetch the email from the people api
-    person_data = get_person(client, person_id)
+    try:
+        # fetch the email from the people api
+        person_data = get_person(client, person_id)
+        email_address = person_data["emailAddresses"][0]["value"]
+    except KeyError:
+        return "unknown@example.com"
 
-    return person_data["emailAddresses"][0]["value"]
+    return email_address
 
 
 def get_task_activity(
