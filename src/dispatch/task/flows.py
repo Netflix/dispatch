@@ -107,7 +107,7 @@ def send_task_notification(
         log.warning("Task notification not sent. No conversation plugin enabled.")
         return
 
-    task_assignees = ([x.individual.email for x in assignees],)
+    task_assignees = [x.individual.email for x in assignees]
 
     for assignee in task_assignees:
         plugin.instance.send_ephemeral(
@@ -117,7 +117,6 @@ def send_task_notification(
             message_template=message_template,
             notification_type=notification_type,
             task_creator=creator.individual.email,
-            task_assignees=[x.individual.email for x in assignees],
             task_description=description,
             task_weblink=weblink,
         )
