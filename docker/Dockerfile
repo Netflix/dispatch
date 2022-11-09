@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 RUN set -x \
-    && wget --quiet -O - https://deb.nodesource.com/setup_12.x | bash - \
+    && wget --quiet -O - https://deb.nodesource.com/setup_16.x | bash - \
     && apt-get install -y nodejs
 
 ARG SOURCE_COMMIT
