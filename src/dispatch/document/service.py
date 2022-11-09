@@ -1,7 +1,9 @@
 from typing import List, Optional
-from datetime import datetime, timedelta
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from datetime import datetime
 
 from dispatch.enums import DocumentResourceReferenceTypes
+from dispatch.exceptions import ExistsError
 from dispatch.project import service as project_service
 from dispatch.search_filter import service as search_filter_service
 
@@ -64,9 +66,31 @@ def get_all(*, db_session) -> List[Optional[Document]]:
 
 def create(*, db_session, document_in: DocumentCreate) -> Document:
     """Creates a new document."""
+    # handle the special case of only allowing 1 FAQ document per-project
     project = project_service.get_by_name_or_raise(
         db_session=db_session, project_in=document_in.project
     )
+
+    if document_in.resource_type == DocumentResourceReferenceTypes.faq:
+        faq_doc = (
+            db_session.query(Document)
+            .filter(Document.resource_type == DocumentResourceReferenceTypes.faq)
+            .filter(Document.project_id == project.id)
+            .one_or_none()
+        )
+        if faq_doc:
+            raise ValidationError(
+                [
+                    ErrorWrapper(
+                        ExistsError(
+                            msg="FAQ document already defined for this project.",
+                            document=faq_doc.name,
+                        ),
+                        loc="document",
+                    )
+                ],
+                model=DocumentCreate,
+            )
 
     filters = [
         search_filter_service.get(db_session=db_session, search_filter_id=f.id)
