@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "cross-env NODE_ENV=dev NODE_OPTIONS='--max-http-header-size=100000' vite --open",
+    "serve": "cross-env NODE_ENV=dev NODE_OPTIONS='--max-http-header-size=100000' vite",
     "preview": "vite preview --open --port 8080",
     "build": "vite build --out-dir dist",
     "lint": "eslint src",
