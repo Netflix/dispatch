@@ -130,8 +130,6 @@ ipython_config.py
 
 # Environments
 .env
-!.devcontainer/.env
-!.devcontainer/dispatch-sample-data.dump
 .venv
 env/
 venv/
