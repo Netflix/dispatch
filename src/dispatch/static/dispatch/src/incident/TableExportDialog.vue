@@ -228,7 +228,8 @@ export default {
           this.exportLoading = false
           this.closeExport()
         })
-        .catch(() => {
+        .catch((error) => {
+          console.log(error)
           this.exportLoading = false
           this.closeExport()
         })
