@@ -1,5 +1,5 @@
-import { Parser } from '@json2csv/plainjs'
-import { flatten } from '@json2csv/transforms';
+import { Parser } from "@json2csv/plainjs"
+import { flatten } from "@json2csv/transforms"
 
 const toggleFullScreen = () => {
   let doc = window.document
