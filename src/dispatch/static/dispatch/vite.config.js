@@ -8,7 +8,6 @@ import Components from "unplugin-vue-components/vite"
 
 import path from "path"
 
-
 export default defineConfig({
   plugins: [
     vue2(),
@@ -25,7 +24,7 @@ export default defineConfig({
     port: 8080,
     proxy: {
       "^/api": {
-        target: `http://localhost:8000`,
+        target: "http://127.0.0.1:8000",
         ws: false,
         changeOrigin: true,
       },
