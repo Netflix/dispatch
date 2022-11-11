@@ -1,4 +1,5 @@
-import { Parser, flatten } from "json2csv/dist/json2csv.umd"
+import { Parser } from "@json2csv/plainjs"
+import { flatten } from "@json2csv/transforms"
 
 const toggleFullScreen = () => {
   let doc = window.document
@@ -28,9 +29,8 @@ const toggleFullScreen = () => {
 }
 
 const exportCSV = function (items, fileName) {
-  const opts = { transforms: [flatten()] }
-  const parser = new Parser(opts)
-  const csv = parser.parse(items)
+  const json2csvParser = new Parser({ transforms: [flatten()] })
+  const csv = json2csvParser.parse(items)
   const data = "data:text/csv;charset=utf-8," + encodeURIComponent(csv)
   const link = document.createElement("a")
   link.setAttribute("href", data)

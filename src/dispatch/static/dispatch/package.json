@@ -10,6 +10,8 @@
     "lint:fix": "eslint src --fix"
   },
   "dependencies": {
+    "@json2csv/plainjs": "^6.1.1",
+    "@json2csv/transforms": "^6.1.1",
     "@koumoul/vjsf": "^2.5.2",
     "@openid/appauth": "^1.3.1",
     "@sentry/browser": "^6.3.5",
@@ -19,7 +21,6 @@
     "date-fns": "^2.21.1",
     "date-fns-tz": "^1.1.6",
     "font-awesome": "^4.7.0",
-    "json2csv": "^5.0.7",
     "lodash": "^4.17.21",
     "mjml": "^4.9.3",
     "monaco-editor": "^0.33.0",
