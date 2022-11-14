@@ -110,7 +110,6 @@ def report_incident_from_submitted_form(
         title=parsed_form_data[IncidentBlockId.title],
         description=parsed_form_data[IncidentBlockId.description],
         incident_type=parsed_form_data[IncidentBlockId.type]["value"],
-        incident_severity=parsed_form_data[IncidentBlockId.severity]["value"],
         incident_priority=parsed_form_data[IncidentBlockId.priority]["value"],
     )
 
