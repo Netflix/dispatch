@@ -15,7 +15,8 @@
 	"forwardPorts": [
 		8000,
 		8080,
-		5432
+		5432,
+		5555
 	],
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "./.devcontainer/postCreateCommand.sh"
