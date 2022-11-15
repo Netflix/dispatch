@@ -18,13 +18,14 @@ services:
     # Uncomment the next line to use a non-root user for all processes.
     # user: vscode
 
-    # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
-    # (Adding the "ports" property to this file will not forward from a Codespace.)
   admin:
     image: dpage/pgadmin4
     environment:
       PGADMIN_DEFAULT_EMAIL: dispatch@netflix.com
       PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_PROXY_X_HOST_COUNT: 1
+      PGADMIN_CONFIG_PROXY_X_PREFIX_COUNT: 1
+      PGADMIN_LISTEN_PORT: 80
     restart: unless-stopped
     network_mode: service:db
 
@@ -37,9 +38,6 @@ services:
       POSTGRES_USER: dispatch
       POSTGRES_DB: dispatch
       POSTGRES_PASSWORD: dispatch
-
-    # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
-    # (Adding the "ports" property to this file will not forward from a Codespace.)
 
 volumes:
   postgres-data:
