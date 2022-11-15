@@ -1216,23 +1216,25 @@ def incident_update_flow(
     # we load the incident
     incident = incident_service.get(db_session=db_session, incident_id=incident_id)
 
-    # we update the commander if needed
-    incident_assign_role_flow(
-        incident_id=incident_id,
-        assigner_email=user_email,
-        assignee_email=commander_email,
-        assignee_role=ParticipantRoleType.incident_commander,
-        db_session=db_session,
-    )
+    if incident.commander.individual.email != commander_email:
+        # we assign the commander role to another participant
+        incident_assign_role_flow(
+            incident_id=incident_id,
+            assigner_email=user_email,
+            assignee_email=commander_email,
+            assignee_role=ParticipantRoleType.incident_commander,
+            db_session=db_session,
+        )
 
-    # we update the reporter if needed
-    incident_assign_role_flow(
-        incident_id=incident_id,
-        assigner_email=user_email,
-        assignee_email=reporter_email,
-        assignee_role=ParticipantRoleType.reporter,
-        db_session=db_session,
-    )
+    if incident.reporter.individual.email != reporter_email:
+        # we assign the reporter role to another participant
+        incident_assign_role_flow(
+            incident_id=incident_id,
+            assigner_email=user_email,
+            assignee_email=reporter_email,
+            assignee_role=ParticipantRoleType.reporter,
+            db_session=db_session,
+        )
 
     # we run the active, stable or closed flows based on incident status change
     status_flow_dispatcher(
