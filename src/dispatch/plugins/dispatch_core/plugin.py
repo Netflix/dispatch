@@ -164,10 +164,8 @@ class DispatchTicketPlugin(TicketPlugin):
         self,
         incident_id: int,
         title: str,
-        incident_type: str,
-        incident_priority: str,
-        commander: str,
-        reporter: str,
+        commander_email: str,
+        reporter_email: str,
         plugin_metadata: dict,
         db_session=None,
     ):
@@ -189,14 +187,15 @@ class DispatchTicketPlugin(TicketPlugin):
         title: str,
         description: str,
         incident_type: str,
-        priority: str,
+        incident_severity: str,
+        incident_priority: str,
         status: str,
         commander_email: str,
         reporter_email: str,
         conversation_weblink: str,
-        conference_weblink: str,
         document_weblink: str,
         storage_weblink: str,
+        conference_weblink: str,
         cost: float,
         incident_type_plugin_metadata: dict = {},
     ):
@@ -207,12 +206,9 @@ class DispatchTicketPlugin(TicketPlugin):
         self,
         case_id: int,
         title: str,
-        case_type: str,
-        case_severity: str,
-        incident_priority: str,
-        assignee: str,
+        assignee_email: str,
         # reporter: str,
-        plugin_metadata: dict,
+        case_type_plugin_metadata: dict,
         db_session=None,
     ):
         """Creates a Dispatch case ticket."""
@@ -238,9 +234,9 @@ class DispatchTicketPlugin(TicketPlugin):
         status: str,
         assignee_email: str,
         # reporter_email: str,
-        # document_weblink: str,
-        # storage_weblink: str,
-        incident_type_plugin_metadata: dict = {},
+        document_weblink: str,
+        storage_weblink: str,
+        case_type_plugin_metadata: dict = {},
     ):
         """Updates a Dispatch case ticket."""
         return
