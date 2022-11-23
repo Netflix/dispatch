@@ -1,7 +1,7 @@
 import { getField, updateField } from "vuex-map-fields"
 import router from "@/router"
 
-const getDefaulRefreshState = () => {
+const getDefaultRefreshState = () => {
   return {
     show: false,
     message: "",
@@ -11,7 +11,7 @@ const getDefaulRefreshState = () => {
 const state = {
   toggleDrawer: true,
   refresh: {
-    ...getDefaulRefreshState(),
+    ...getDefaultRefreshState(),
   },
   loading: false,
 }
@@ -46,7 +46,7 @@ const mutations = {
     state.loading = value
   },
   RESET_REFRESH(state) {
-    state.refresh = Object.assign(state.refresh, getDefaulRefreshState())
+    state.refresh = Object.assign(state.refresh, getDefaultRefreshState())
   },
 }
 
