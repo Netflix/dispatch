@@ -31,6 +31,7 @@ function initialize() {
       }
     })
   }
+  return Promise.resolve()
 }
 
 initialize().then(() => {
