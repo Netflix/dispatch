@@ -18,11 +18,19 @@ import VueMarkdown from "vue-markdown"
 
 // initialize the app settings before mounting the app
 function initialize() {
-  return axios.get("/api/v1/settings").then((response) => {
-    for (const [key, value] of Object.entries(response.data)) {
-      localStorage.setItem(key, value)
-    }
-  })
+  // Only attempt to setup app context on full page / app reload. This is needed because
+  // SSO providers will likely protect the /api/v1/settings endpoint _before_ we can initialize the SSO
+  // libraries. On full app load the SSO flow will executed for the static files themselves and this call will succeed.
+  //
+  // On simple page refresh this is not always the case so we re-use the existing settings and do not attempt to fetch them.
+
+  if (!localStorage.getItem("DISPATCH_AUTHENTICATION_PROVIDER_SLUG")) {
+    return axios.get("/api/v1/settings").then((response) => {
+      for (const [key, value] of Object.entries(response.data)) {
+        localStorage.setItem(key, value)
+      }
+    })
+  }
 }
 
 initialize().then(() => {
