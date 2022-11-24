@@ -24,13 +24,13 @@ function initialize() {
   //
   // On simple page refresh this is not always the case so we re-use the existing settings and do not attempt to fetch them.
 
-  if (!localStorage.getItem("DISPATCH_AUTHENTICATION_PROVIDER_SLUG")) {
-    return axios.get("/api/v1/settings").then((response) => {
-      for (const [key, value] of Object.entries(response.data)) {
-        localStorage.setItem(key, value)
-      }
-    })
-  }
+  //if (!localStorage.getItem("DISPATCH_AUTHENTICATION_PROVIDER_SLUG")) {
+  //  return axios.get("/api/v1/settings").then((response) => {
+  //    for (const [key, value] of Object.entries(response.data)) {
+  //      localStorage.setItem(key, value)
+  //    }
+  //  })
+  //}
   return Promise.resolve()
 }
 
