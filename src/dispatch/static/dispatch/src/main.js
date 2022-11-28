@@ -3,7 +3,7 @@ import App from "./App.vue"
 import vuetify from "./vuetify/"
 import router from "./router/"
 import store from "./store"
-import axios from "axios"
+// import axios from "axios"
 
 import "./filters.js"
 import "roboto-fontface/css/roboto/roboto-fontface.css"
