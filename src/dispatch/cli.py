@@ -699,6 +699,7 @@ def run_server(log_level):
 
         # take our frontend vars and export them for the frontend to consume
         envvars = os.environ.copy()
+        envvars.update({x: getattr(config, x) for x in dir(config) if x.startswith("VITE_")})
         is_windows = os.name == "nt"
         windows_cmds = ["cmd", "/c"]
         default_cmds = ["npm", "run", "serve"]

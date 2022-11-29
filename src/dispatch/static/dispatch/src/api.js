@@ -8,6 +8,9 @@ const instance = axios.create({
   baseURL: "/api/v1",
 })
 
+const authProviderSlug =
+  import.meta.env.VITE_DISPATCH_AUTHENTICATION_PROVIDER_SLUG || "dispatch-auth-provider-basic"
+
 instance.interceptors.request.use(
   (config) => {
     // we don't want to send null/empty values to the API
@@ -45,7 +48,6 @@ instance.interceptors.response.use(
     return res
   },
   function (err) {
-    let authProviderSlug = localStorage.getItem("DISPATCH_AUTHENTICATION_PROVIDER_SLUG")
     if (err.response) {
       if (err.response.status == 401) {
         if (authProviderSlug === "dispatch-auth-provider-basic") {
