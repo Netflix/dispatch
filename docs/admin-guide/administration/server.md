@@ -12,6 +12,10 @@ Dispatch uses the same configuration system as [Starlette](https://www.starlette
 By default, the config is read from environment variables or `.env` files.
 
 {% hint style="info" %}
+All config items prefixed with `VITE_` are envvars for the Vue frontend. These variables are used only during the building of the javascript bundle. See [here](https://vitejs.dev/guide/env-and-mode.html) for details. You will want to include these variables in `src/dispatch/static/dispatch/.env` during build time.
+{% endhint %}
+
+{% hint style="info" %}
 In general, do not include any quotation marks when adding configuration values.
 {% endhint %}
 

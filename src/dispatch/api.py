@@ -49,7 +49,6 @@ from dispatch.task.views import router as task_router
 from dispatch.team.views import router as team_contact_router
 from dispatch.term.views import router as term_router
 from dispatch.workflow.views import router as workflow_router
-from .settings import router as settings_router
 
 
 class ErrorMessage(BaseModel):
@@ -80,8 +79,6 @@ def get_organization_path(organization: OrganizationSlug):
 
 
 api_router.include_router(auth_router, prefix="/{organization}/auth", tags=["auth"])
-
-api_router.include_router(settings_router, prefix="/settings", tags=["settings"])
 
 # NOTE: All api routes should be authenticated by default
 authenticated_api_router.include_router(
