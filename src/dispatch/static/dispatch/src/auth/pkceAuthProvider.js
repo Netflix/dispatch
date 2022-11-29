@@ -14,12 +14,11 @@ import store from "@/store"
 const requestor = new FetchRequestor()
 
 function login(to, from, next) {
-  const clientId = localStorage.getItem("DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID")
-  const openIdConnectUrl = localStorage.getItem(
-    "DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL"
-  )
+  const clientId = import.meta.env.VITE_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_CLIENT_ID
+  const openIdConnectUrl = import.meta.env
+    .VITE_DISPATCH_AUTHENTICATION_PROVIDER_PKCE_OPEN_ID_CONNECT_URL
   const scope = "openid profile email"
-  const useIdToken = localStorage.getItem("DISPATCH_AUTHENTICATION_PROVIDER_USE_ID_TOKEN")
+  const useIdToken = import.meta.env.VITE_DISPATCH_AUTHENTICATION_PROVIDER_USE_ID_TOKEN
 
   const notifier = new AuthorizationNotifier()
 
