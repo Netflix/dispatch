@@ -1,0 +1,42 @@
+default_case_severities = [
+    {
+        "title": "Undetermined",
+        "description": "The severity of the case has not yet been determined.",
+        "view_order": "1",
+        "color": "#9e9e9e",
+        "default": True,
+        "enabled": True,
+    },
+    {
+        "title": "Low",
+        "description": "Low severity.",
+        "view_order": "2",
+        "color": "#8bc34a",
+        "default": False,
+        "enabled": True,
+    },
+    {
+        "title": "Medium",
+        "description": "Medium severity.",
+        "view_order": "3",
+        "color": "#ffeb3b",
+        "default": False,
+        "enabled": True,
+    },
+    {
+        "title": "High",
+        "description": "High severity.",
+        "view_order": "4",
+        "color": "#ff9800",
+        "default": False,
+        "enabled": True,
+    },
+    {
+        "title": "Critical",
+        "description": "Critical severity.",
+        "view_order": "5",
+        "color": "#e53935",
+        "default": False,
+        "enabled": True,
+    },
+]
