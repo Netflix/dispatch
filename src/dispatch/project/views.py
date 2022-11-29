@@ -12,7 +12,7 @@ from dispatch.auth.permissions import (
 from dispatch.database.core import get_db
 from dispatch.database.service import common_parameters, search_filter_sort_paginate
 from dispatch.exceptions import ExistsError
-from dispatch.models import PrimaryKey
+from dispatch.models import OrganizationSlug, PrimaryKey
 
 from .flows import project_create_flow
 from .models import (
@@ -42,6 +42,7 @@ def get_projects(common: dict = Depends(common_parameters)):
 def create_project(
     *,
     db_session: Session = Depends(get_db),
+    organization: OrganizationSlug,
     project_in: ProjectCreate,
     background_tasks: BackgroundTasks,
 ):
@@ -54,7 +55,9 @@ def create_project(
         )
 
     project = create(db_session=db_session, project_in=project_in)
-    background_tasks.add_task(project_create_flow, project_id=project.id)
+    background_tasks.add_task(
+        project_create_flow, project_id=project.id, organization_slug=organization
+    )
     return project
 
 
