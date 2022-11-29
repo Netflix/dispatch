@@ -22,7 +22,6 @@ from dispatch.organization import service as organization_service
 from dispatch.organization.models import OrganizationRead
 from dispatch.plugins.base import plugins
 from dispatch.project import service as project_service
-from dispatch.project.models import ProjectRead
 
 from .models import (
     DispatchUser,
