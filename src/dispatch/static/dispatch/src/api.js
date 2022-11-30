@@ -52,6 +52,8 @@ instance.interceptors.response.use(
       if (err.response.status == 401) {
         if (authProviderSlug === "dispatch-auth-provider-basic") {
           router.push({ name: "BasicLogin" })
+        } else {
+          router.go()
         }
       }
 
