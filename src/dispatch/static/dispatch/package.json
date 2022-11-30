@@ -60,7 +60,6 @@
     "vite-plugin-babel": "^1.1.2",
     "vite-plugin-eslint": "^1.8.1",
     "vite-plugin-monaco-editor": "^1.1.0",
-    "vite-plugin-pwa": "^0.13.3",
     "vue-cli-plugin-vuetify": "^2.3.1",
     "vue-template-compiler": "^2.6.12",
     "vuetify-loader": "^1.7.2",
