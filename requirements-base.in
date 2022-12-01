@@ -19,7 +19,7 @@ numpy
 oauth2client
 pandas
 pdpyras
-protobuf==3.20.0
+protobuf
 psycopg2-binary
 pyparsing
 python-dateutil
