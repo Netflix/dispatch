@@ -236,7 +236,7 @@ Please review and mark them as resolved if appropriate. Resolving them will stop
 INCIDENT_TASK_LIST_DESCRIPTION = """The following are open incident tasks."""
 
 INCIDENT_OPEN_TASKS_DESCRIPTION = """
-Please resolve or transfer ownership of all the open incident tasks owned by you in the incident documents or using the <{{dispatch_ui_url}}|Dispatch Web UI>,
+Please resolve or transfer ownership of all the open incident tasks assigned to you in the incident documents or using the <{{dispatch_ui_url}}|Dispatch Web UI>,
 then wait about 30 seconds for Dispatch to update the tasks before leaving the incident conversation.
 """.replace(
     "\n", " "
