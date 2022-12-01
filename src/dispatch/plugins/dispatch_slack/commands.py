@@ -28,7 +28,6 @@ from dispatch.task.models import Task
 
 from .config import SlackConfiguration, SlackConversationConfiguration
 
-
 from .decorators import (
     get_organization_scope_from_channel_id,
     slack_background_task,
@@ -72,8 +71,8 @@ def check_command_restrictions(
 ) -> bool:
     """Checks the current user's role to determine what commands they are allowed to run."""
     # some commands are sensitive and we only let non-participants execute them
-    command_permissons = {
-        config.slack_command_update_incident: [
+    command_permissions = {
+        config.slack_command_add_timeline_event: [
             ParticipantRoleType.incident_commander,
             ParticipantRoleType.scribe,
         ],
@@ -93,10 +92,18 @@ def check_command_restrictions(
             ParticipantRoleType.incident_commander,
             ParticipantRoleType.scribe,
         ],
+        config.slack_command_update_incident: [
+            ParticipantRoleType.incident_commander,
+            ParticipantRoleType.scribe,
+        ],
+        config.slack_command_update_notifications_group: [
+            ParticipantRoleType.incident_commander,
+            ParticipantRoleType.scribe,
+        ],
     }
 
     # no permissions have been defined
-    if command not in command_permissons.keys():
+    if command not in command_permissions.keys():
         return True
 
     participant = participant_service.get_by_incident_id_and_email(
@@ -105,7 +112,7 @@ def check_command_restrictions(
 
     # if any required role is active, allow command
     for active_role in participant.active_roles:
-        for allowed_role in command_permissons[command]:
+        for allowed_role in command_permissions[command]:
             if active_role.role == allowed_role:
                 return True
 
@@ -121,14 +128,14 @@ def command_functions(config: SlackConfiguration, command: str):
         config.slack_command_list_participants: [list_participants],
         config.slack_command_list_resources: [list_resources],
         config.slack_command_list_tasks: [list_tasks],
+        config.slack_command_list_workflows: [list_workflows],
         config.slack_command_report_executive: [create_executive_report_dialog],
         config.slack_command_report_incident: [create_report_incident_modal],
         config.slack_command_report_tactical: [create_tactical_report_dialog],
+        config.slack_command_run_workflow: [create_run_workflow_modal],
+        config.slack_command_update_incident: [create_update_incident_modal],
         config.slack_command_update_notifications_group: [create_update_notifications_group_modal],
         config.slack_command_update_participant: [create_update_participant_modal],
-        config.slack_command_update_incident: [create_update_incident_modal],
-        config.slack_command_run_workflow: [create_run_workflow_modal],
-        config.slack_command_list_workflows: [list_workflows],
     }
 
     return command_mappings.get(command, [])
