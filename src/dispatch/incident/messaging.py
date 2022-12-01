@@ -954,7 +954,7 @@ def send_incident_open_tasks_ephemeral_message(
 ):
     """
     Sends an ephemeral message to the participant asking them to resolve or re-assign
-    their open tasks before leaving the incident.
+    their open tasks before leaving the incident conversation.
     """
     convo_plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
