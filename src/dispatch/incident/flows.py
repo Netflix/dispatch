@@ -1522,15 +1522,16 @@ def incident_remove_participant_flow(
 
     for task in incident.tasks:
         if task.status == TaskStatus.open:
-            if task.owner == participant:
-                # we add the participant back to the conversation
-                add_participants_to_conversation([user_email], incident, db_session)
+            for assignee in task.assignees:
+                if assignee == participant:
+                    # we add the participant back to the conversation
+                    add_participants_to_conversation([user_email], incident, db_session)
 
-                # we ask the participant to resolve or re-assign
-                # their tasks before leaving the incident
-                send_incident_open_tasks_ephemeral_message(user_email, incident, db_session)
+                    # we ask the participant to resolve or re-assign
+                    # their tasks before leaving the incident conversation
+                    send_incident_open_tasks_ephemeral_message(user_email, incident, db_session)
 
-                return
+                    return
 
     if user_email == incident.commander.individual.email:
         # we add the incident commander back to the conversation
