@@ -95,10 +95,6 @@ email-validator==1.3.0
     # via -r requirements-base.in
 emails==0.6
     # via -r requirements-base.in
-exceptiongroup==1.0.4
-    # via
-    #   hypothesis
-    #   pytest
 fastapi==0.88.0
     # via -r requirements-base.in
 frozenlist==1.3.3
@@ -344,7 +340,7 @@ six==1.16.0
     #   python-multipart
     #   sqlalchemy-filters
     #   validators
-slack-sdk==3.19.4
+slack-sdk==3.19.5
     # via -r requirements-base.in
 smart-open==5.2.1
     # via pathy
@@ -391,9 +387,7 @@ text-unidecode==1.3
 thinc==8.1.5
     # via spacy
 tomli==2.0.1
-    # via
-    #   pytest
-    #   schemathesis
+    # via schemathesis
 tomli-w==1.0.0
     # via schemathesis
 tqdm==4.64.1
@@ -406,7 +400,6 @@ typing-extensions==4.4.0
     # via
     #   pydantic
     #   schemathesis
-    #   starlette
 uritemplate==4.1.1
     # via google-api-python-client
 urllib3==1.26.13
