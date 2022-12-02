@@ -285,8 +285,7 @@ Thanks for closing incident {{name}}. Please, take a minute to review and update
 \n • Incident Type: {{type}}
 \n • Incident Severity: {{severity}}
 \n • Incident Priority: {{priority}}
-\n\n
-Also, please consider taking the following actions:
+\n Also, please consider taking the following actions:
 \n • Update or add any relevant tags to the incident using the <{{dispatch_ui_incident_url}}|Dispatch Web UI>.
 \n • Add any relevant, non-operational costs to the incident using the <{{dispatch_ui_incident_url}}|Dispatch Web UI>.
 \n • Review and close any incident tasks that are no longer relevant or required.
@@ -299,7 +298,7 @@ INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE_DESCRIPTION = """
 Hey, I see you're the Incident Commander for {{name}} ("{{title}}"). Here are a few things to consider when managing the incident:
 \n • Keep the incident and its status up to date using the Slack `{{update_command}}` command.
 \n • Invite incident participants and team oncalls by mentioning them in the incident channel or using the Slack `{{engage_oncall_command}}` command.
-\n • Keep incident participants and stakeholders informed using the `{{tactical_report_command}}` and `{{executive_report_command}}` commands.
+\n • Keep incident participants and stakeholders informed by creating tactical and executive reports using the `{{tactical_report_command}}` and `{{executive_report_command}}` commands.
 \n • Get links to all incident resources including the Slack commands reference sheet and Security Incident Response FAQ by running the `{{list_resources_command}}` command.
 \n
 To find a Slack command, simply type `/` in the message field or click the lightning bolt icon to the left of the message field.
