@@ -142,7 +142,7 @@ It is shared with all incident participants.""".replace(
 ).strip()
 
 INCIDENT_FAQ_DOCUMENT_DESCRIPTION = """
-First time responding to an information security incident? This
+First time responding to an incident? This
 document answers common questions encountered when
 helping us respond to an incident.""".replace(
     "\n", " "
@@ -181,10 +181,9 @@ Description of the actions taken to resolve the case.
 ).strip()
 
 INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION = """
-You\'re being contacted because we think you may
-be able to help us during this information security incident.
-Please review the content below and join us in the
-incident Slack channel.""".replace(
+You\'ve been added to this incident, because we think you may
+be able to help resolve it. Please review the content below and join us in the
+incident conversation.""".replace(
     "\n", " "
 ).strip()
 
