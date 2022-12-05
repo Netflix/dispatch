@@ -10,13 +10,13 @@ from starlette.requests import Request
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 
 from sqlalchemy.orm import Session
+
 from dispatch.auth.permissions import (
     IncidentEditPermission,
     IncidentJoinOrSubscribePermission,
-    PermissionsDependency,
     IncidentViewPermission,
+    PermissionsDependency,
 )
-
 from dispatch.auth.models import DispatchUser
 from dispatch.auth.service import get_current_user
 from dispatch.common.utils.views import create_pydantic_include

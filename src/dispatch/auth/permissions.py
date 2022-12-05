@@ -271,8 +271,9 @@ class IncidentReporterPermission(BasePermission):
         if not current_incident:
             return False
 
-        if current_incident.reporter.individual.email == current_user.email:
-            return True
+        if current_incident.reporter:
+            if current_incident.reporter.individual.email == current_user.email:
+                return True
 
 
 class IncidentCommanderPermission(BasePermission):
@@ -285,7 +286,7 @@ class IncidentCommanderPermission(BasePermission):
             db_session=request.state.db, incident_id=request.path_params["incident_id"]
         )
         if not current_incident:
-            return
+            return False
 
         if current_incident.commander:
             if current_incident.commander.individual.email == current_user.email:
