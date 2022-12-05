@@ -182,8 +182,8 @@ Description of the actions taken to resolve the case.
 
 INCIDENT_PARTICIPANT_WELCOME_DESCRIPTION = """
 You\'ve been added to this incident, because we think you may
-be able to help resolve it. Please review the content below and join us in the
-incident conversation.""".replace(
+be able to help resolve it. Please review the incident details below and
+reach out to the incident commander if you have any questions.""".replace(
     "\n", " "
 ).strip()
 
