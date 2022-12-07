@@ -116,9 +116,14 @@ def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[Inci
             db_session.query(IncidentSeverity)
             .filter(IncidentSeverity.project_id == project_id)
             .filter(IncidentSeverity.enabled == true())
+            .order_by(IncidentSeverity.view_order)
         )
 
-    return db_session.query(IncidentSeverity).filter(IncidentSeverity.enabled == true())
+    return (
+        db_session.query(IncidentSeverity)
+        .filter(IncidentSeverity.enabled == true())
+        .order_by(IncidentSeverity.view_order)
+    )
 
 
 def create(*, db_session, incident_severity_in: IncidentSeverityCreate) -> IncidentSeverity:

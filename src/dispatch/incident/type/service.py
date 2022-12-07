@@ -112,8 +112,13 @@ def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[Inci
             db_session.query(IncidentType)
             .filter(IncidentType.project_id == project_id)
             .filter(IncidentType.enabled == true())
+            .order_by(IncidentType.name)
         )
-    return db_session.query(IncidentType).filter(IncidentType.enabled == true())
+    return (
+        db_session.query(IncidentType)
+        .filter(IncidentType.enabled == true())
+        .order_by(IncidentType.name)
+    )
 
 
 def create(*, db_session, incident_type_in: IncidentTypeCreate) -> IncidentType:

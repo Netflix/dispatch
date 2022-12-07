@@ -113,8 +113,13 @@ def get_all_enabled(*, db_session, project_id: int = None) -> List[Optional[Inci
             db_session.query(IncidentPriority)
             .filter(IncidentPriority.project_id == project_id)
             .filter(IncidentPriority.enabled == true())
+            .order_by(IncidentPriority.view_order)
         )
-    return db_session.query(IncidentPriority).filter(IncidentPriority.enabled == true())
+    return (
+        db_session.query(IncidentPriority)
+        .filter(IncidentPriority.enabled == true())
+        .order_by(IncidentPriority.view_order)
+    )
 
 
 def create(*, db_session, incident_priority_in: IncidentPriorityCreate) -> IncidentPriority:
