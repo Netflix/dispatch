@@ -67,7 +67,7 @@ NOTE: All variables must be enclosed in a `{{}}`
 - `resolution` - The incident's resolution
 - `commander_fullname` - The current commander's name
 - `type` - The incident's type
-- `prioritity` - The incident's priority
+- `priority` - The incident's priority
 - `status` - The incident's status
 - `conversation_weblink` - Link to the conversation resource (if any)
 - `conference_weblink` - Link to the conference resource (if any)
