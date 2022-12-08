@@ -230,7 +230,7 @@ preshed==3.0.8
     # via
     #   spacy
     #   thinc
-protobuf==4.21.10
+protobuf==4.21.11
     # via
     #   -r requirements-base.in
     #   google-api-core
