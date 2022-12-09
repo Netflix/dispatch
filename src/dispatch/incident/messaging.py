@@ -16,6 +16,7 @@ from dispatch.notification import service as notification_service
 from dispatch.messaging.strings import (
     INCIDENT_CLOSED_INFORMATION_REVIEW_REMINDER_NOTIFICATION,
     INCIDENT_CLOSED_RATING_FEEDBACK_NOTIFICATION,
+    INCIDENT_CLOSE_REMINDER,
     INCIDENT_COMMANDER,
     INCIDENT_COMMANDER_READDED_NOTIFICATION,
     INCIDENT_MANAGEMENT_HELP_TIPS_MESSAGE,
@@ -32,7 +33,6 @@ from dispatch.messaging.strings import (
     INCIDENT_REVIEW_DOCUMENT,
     INCIDENT_SEVERITY_CHANGE,
     INCIDENT_STATUS_CHANGE,
-    INCIDENT_STATUS_REMINDER,
     INCIDENT_TYPE_CHANGE,
     MessageType,
 )
@@ -767,14 +767,14 @@ def send_incident_close_reminder(incident: Incident, db_session: SessionLocal):
     Sends a direct message to the incident commander reminding
     them to close the incident if possible.
     """
-    message_text = "Incident Status Reminder"
-    message_template = INCIDENT_STATUS_REMINDER
+    message_text = "Incident Close Reminder"
+    message_template = INCIDENT_CLOSE_REMINDER
 
     plugin = plugin_service.get_active_instance(
         db_session=db_session, project_id=incident.project.id, plugin_type="conversation"
     )
     if not plugin:
-        log.warning("Incident close reminder message not sent, no conversation plugin enabled.")
+        log.warning("Incident close reminder message not sent. No conversation plugin enabled.")
         return
 
     update_command = plugin.instance.get_command_name(ConversationCommands.update_incident)

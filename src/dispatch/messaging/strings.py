@@ -214,8 +214,8 @@ You can use `{{command}}` in the conversation to assist you in writing one.""".r
     "\n", " "
 ).strip()
 
-INCIDENT_STATUS_REMINDER_DESCRIPTION = """You have not updated the status for this incident recently. If the incident has been resolved,
-you can use `{{command}}` in the conversation to assist you in closing your incident.""".replace(
+INCIDENT_CLOSE_REMINDER_DESCRIPTION = """The status of this incident hasn't been updated recently.
+You can use `{{command}}` in the conversation to close the incident if it has been resolved and can be closed.""".replace(
     "\n", " "
 ).strip()
 
@@ -541,11 +541,11 @@ INCIDENT_REPORT_REMINDER = [
 ]
 
 
-INCIDENT_STATUS_REMINDER = [
+INCIDENT_CLOSE_REMINDER = [
     {
-        "title": "{{name}} Incident - Status Reminder",
+        "title": "{{name}} Incident - Close Reminder",
         "title_link": "{{ticket_weblink}}",
-        "text": INCIDENT_STATUS_REMINDER_DESCRIPTION,
+        "text": INCIDENT_CLOSE_REMINDER_DESCRIPTION,
     },
     INCIDENT_TITLE,
     INCIDENT_STATUS,

@@ -338,13 +338,7 @@ def upgrade_database(tag, sql, revision, revision_type):
     from alembic.config import Config as AlembicConfig
 
     from .database.core import engine
-
-    from .database.manage import (
-        get_core_tables,
-        get_tenant_tables,
-        init_database,
-        setup_fulltext_search,
-    )
+    from .database.manage import init_database
 
     alembic_cfg = AlembicConfig(config.ALEMBIC_INI_PATH)
 
@@ -581,7 +575,7 @@ def dispatch_scheduler():
     from .document.scheduled import sync_document_terms  # noqa
     from .evergreen.scheduled import create_evergreen_reminders  # noqa
     from .feedback.scheduled import daily_report  # noqa
-    from .incident.scheduled import daily_report, auto_tagger, close_incident_reminder  # noqa
+    from .incident.scheduled import daily_report, auto_tagger, incident_close_reminder  # noqa
     from .incident_cost.scheduled import calculate_incidents_response_cost  # noqa
     from .report.scheduled import incident_report_reminders  # noqa
     from .tag.scheduled import sync_tags, build_tag_models  # noqa
@@ -591,9 +585,7 @@ def dispatch_scheduler():
         sync_active_stable_tasks,
     )  # noqa
     from .term.scheduled import sync_terms  # noqa
-    from .workflow.scheduled import (
-        sync_workflow,  # noqa
-    )
+    from .workflow.scheduled import sync_workflow  # noqa
     from .monitor.scheduled import sync_active_stable_monitors  # noqa
     from .data.source.scheduled import sync_sources  # noqa
     from .signal.scheduled import consume_signals  # noqa
