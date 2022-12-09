@@ -14,16 +14,6 @@ from dispatch.project.models import ProjectRead
 from dispatch.search_filter.models import SearchFilterRead
 
 
-# Association tables for many to many relationships
-assoc_service_incidents = Table(
-    "service_incident",
-    Base.metadata,
-    Column("incident_id", Integer, ForeignKey("incident.id")),
-    Column("service_id", Integer, ForeignKey("service.id")),
-    PrimaryKeyConstraint("incident_id", "service_id"),
-)
-
-
 assoc_service_filters = Table(
     "assoc_service_filters",
     Base.metadata,
@@ -45,9 +35,6 @@ class Service(Base, TimeStampMixin, ProjectMixin, EvergreenMixin):
 
     # Relationships
     filters = relationship("SearchFilter", secondary=assoc_service_filters, backref="services")
-    incidents = relationship(
-        "Incident", secondary=assoc_service_incidents, backref="services"
-    )  # NOTE Delete this relationship and its associated table. It doesn't appear we're using it.
 
     search_vector = Column(TSVectorType("name", regconfig="pg_catalog.simple"))
 
