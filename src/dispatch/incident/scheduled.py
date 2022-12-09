@@ -196,17 +196,18 @@ def daily_report(db_session: SessionLocal, project: Project):
             )
 
 
-@scheduler.add(every(1).day.at("18:00"), name="incident-status-reminder")
+@scheduler.add(every(1).day.at("18:00"), name="incident-close-reminder")
 @scheduled_project_task
-def close_incident_reminder(db_session: SessionLocal, project: Project):
-    """Sends a reminder to the IC to close out their incident."""
+def incident_close_reminder(db_session: SessionLocal, project: Project):
+    """Sends a reminder to the incident commander to close out their incident."""
     incidents = get_all_by_status(
         db_session=db_session, project_id=project.id, status=IncidentStatus.stable
     )
 
     for incident in incidents:
         span = datetime.utcnow() - incident.stable_at
-        q, r = divmod(span.days, 7)  # only for incidents that have been stable longer than a week
-        if q >= 1 and r == 0:
-            if date.today().isoweekday() == 1:  # lets only send on mondays
-                send_incident_close_reminder(incident, db_session)
+        q, r = divmod(span.days, 7)
+        if q >= 1 and date.today().isoweekday() == 1:
+            # we only send the reminder for incidents that have been stable
+            # longer than a week and only on Mondays
+            send_incident_close_reminder(incident, db_session)
