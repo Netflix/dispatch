@@ -22,6 +22,7 @@ from blockkit import (
 )
 from sqlalchemy import func
 
+from dispatch.config import DISPATCH_UI_URL
 from dispatch.database.core import resolve_attr
 from dispatch.database.service import search_filter_sort_paginate
 from dispatch.document import service as document_service
@@ -172,6 +173,11 @@ def configure(config):
         user_middleware,
     ]
 
+    # don't need an incident context
+    app.command(config.slack_command_list_incidents, middleware=[db_middleware])(
+        handle_list_incidents_command
+    )
+
     # non-sensitive-commands
     app.command(config.slack_command_list_tasks, middleware=middleware)(handle_list_tasks_command)
     app.command(config.slack_command_list_my_tasks, middleware=middleware)(
@@ -182,9 +188,6 @@ def configure(config):
     )
     app.command(config.slack_command_update_participant, middleware=middleware)(
         handle_update_participant_command
-    )
-    app.command(config.slack_command_list_incidents, middleware=middleware)(
-        handle_list_incidents_command
     )
     app.command(config.slack_command_report_incident, middleware=middleware)(
         handle_report_incident_command
@@ -332,7 +335,7 @@ async def handle_project_select_action(ack, body, client, context, db_session):
 
 
 # COMMANDS
-async def handle_list_incidents_command(ack, body, respond, db_session, context):
+async def handle_list_incidents_command(ack, payload, respond, db_session, context):
     """Handles the list incidents command."""
     await ack()
     projects = []
@@ -343,7 +346,7 @@ async def handle_list_incidents_command(ack, body, respond, db_session, context)
         projects.append(incident.project)
     else:
         # command was run in a non-incident conversation
-        args = body["command"]["text"].split(" ")
+        args = payload["command"].split(" ")
 
         if len(args) == 2:
             project = project_service.get_by_name(db_session=db_session, name=args[1])
@@ -385,15 +388,17 @@ async def handle_list_incidents_command(ack, body, respond, db_session, context)
             )
         )
 
-    blocks = [Context(text="Incident List")]
+    blocks = [Section(text="Incident List")]
 
     if incidents:
         for incident in incidents:
             if incident.visibility == Visibility.open:
+                incident_weblink = f"{DISPATCH_UI_URL}/{incident.project.organization.name}/incidents/{incident.name}?project={incident.project.name}"
+
+                blocks.append(Section(text=f"*<{incident_weblink}|{incident.name}>*"))
                 blocks.append(
                     Section(
                         fields=[
-                            f"*<{incident.ticket.weblink}|{incident.name}>*",
                             f"*Title*:\n {incident.title}",
                             f"*Type*:\n {incident.incident_type.name}",
                             f"*Severity*:\n {incident.incident_severity.name}",
@@ -404,6 +409,7 @@ async def handle_list_incidents_command(ack, body, respond, db_session, context)
                         ]
                     )
                 )
+                blocks.append(Divider())
 
     blocks = Message(blocks=blocks).build()["blocks"]
     await respond(text="Incident List", blocks=blocks, response_type="ephemeral")

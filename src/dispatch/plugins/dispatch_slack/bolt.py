@@ -1,11 +1,14 @@
 import logging
 from slack_bolt.app.async_app import AsyncApp
 from slack_bolt.adapter.starlette.async_handler import AsyncSlackRequestHandler
+from slack_bolt.response import BoltResponse
 
 
 from fastapi import APIRouter
 
 from starlette.requests import Request
+
+from .exceptions import ContextError, RoleError
 
 app = AsyncApp(token="xoxb-valid", raise_error_for_unhandled_request=True)
 router = APIRouter()
@@ -14,12 +17,22 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 @app.error
-async def errors(error, body, context, logger, respond):
+async def errors(error, payload, client, respond, logger):
+
+    print(error)
+
+    message = "An unknown error has occured."
+    if isinstance(error, ContextError):
+        message = str(error)
+
+    elif isinstance(error, RoleError):
+        message = str(error)
+
+    await respond(text=message, response_type="ephemeral")
+
     logger.exception(error)
     logger.debug(error)
-    from pprint import pprint
-
-    pprint(body)
+    return BoltResponse(status=200, body="")
 
 
 handler = AsyncSlackRequestHandler(app)

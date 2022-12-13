@@ -12,6 +12,7 @@ from dispatch.participant import service as participant_service
 from dispatch.participant_role.enums import ParticipantRoleType
 
 from .models import SubjectMetadata
+from .exceptions import ContextError, RoleError
 
 
 def resolve_conversation_from_context(
@@ -76,7 +77,7 @@ async def message_context_middleware(context, next):
             }
         )
     else:
-        raise Exception("Unable to determine context.")
+        raise ContextError("Unable to determine context for message.")
 
     await next()
 
@@ -94,7 +95,9 @@ async def restricted_command_middleware(context, db_session, user, next):
             if active_role.role == allowed_role:
                 return await next()
 
-    raise Exception("Unauthorized.")
+    raise RoleError(
+        f"User does not have correct role. allowedRoles: {','.join(['r.name for r in allowed_roles'])}"
+    )
 
 
 async def user_middleware(body, payload, db_session, client, context, next):
@@ -111,6 +114,9 @@ async def user_middleware(body, payload, db_session, client, context, next):
     # for commands
     if payload.get("user_id"):
         user_id = payload["user_id"]
+
+    if not user_id:
+        raise ContextError("Unabled to determine user from context.")
 
     email = (await client.users_info(user=user_id))["user"]["profile"]["email"]
     context["user"] = user_service.get_or_create(
@@ -172,7 +178,8 @@ async def configuration_context_middleware(context, db_session, next):
     await next()
 
 
-async def command_context_middleware(context, next):
+# NOTE we don't need to handle cases because commands are not available in threads.
+async def command_context_middleware(context, payload, next):
     conversation = resolve_conversation_from_context(channel_id=context["channel_id"])
     if conversation:
         context.update(
@@ -186,7 +193,9 @@ async def command_context_middleware(context, next):
             }
         )
     else:
-        raise Exception("Unable to determine context.")
+        raise ContextError(
+            f"Sorry, I can't determine the correct context to run the command '{payload['command']}'. Are you running this command in an incident channel?"
+        )
 
     await next()
 
