@@ -6,7 +6,6 @@
 """
 import logging
 from typing import List, Optional
-from jinja2 import Template
 
 from dispatch.messaging.strings import (
     EVERGREEN_REMINDER_DESCRIPTION,
@@ -18,48 +17,6 @@ from dispatch.messaging.strings import (
 )
 
 log = logging.getLogger(__name__)
-
-
-INCIDENT_CONVERSATION_COMMAND_RUN_IN_NONINCIDENT_CONVERSATION = """
-I see you tried to run `{{command}}` in an non-incident conversation.
-Incident-specifc commands can only be run in incident conversations.""".replace(
-    "\n", " "
-).strip()
-
-INCIDENT_CONVERSATION_COMMAND_RUN_BY_NON_PRIVILEGED_USER = """
-I see you tried to run `{{command}}`.
-This is a sensitive command and cannot be run with the incident role you are currently assigned.""".replace(
-    "\n", " "
-).strip()
-
-INCIDENT_CONVERSATION_COMMAND_RUN_IN_CONVERSATION_WHERE_BOT_NOT_PRESENT = """
-Looks like you tried to run `{{command}}` in a conversation where the Dispatch bot is not present.
-Add the bot to your conversation or run the command in one of the following conversations: {{conversations}}""".replace(
-    "\n", " "
-).strip()
-
-
-def create_command_run_in_nonincident_conversation_message(command: str):
-    """Creates a message for when an incident specific command is run in an nonincident conversation."""
-    return {
-        "response_type": "ephemeral",
-        "text": Template(INCIDENT_CONVERSATION_COMMAND_RUN_IN_NONINCIDENT_CONVERSATION).render(
-            command=command
-        ),
-    }
-
-
-def create_command_run_in_conversation_where_bot_not_present_message(
-    command: str, conversations: List
-):
-    """Creates a message for when a non-incident specific command is run in a conversation where the Dispatch bot is not present."""
-    conversations = (", ").join([f"#{conversation}" for conversation in conversations])
-    return {
-        "response_type": "ephemeral",
-        "text": Template(
-            INCIDENT_CONVERSATION_COMMAND_RUN_IN_CONVERSATION_WHERE_BOT_NOT_PRESENT
-        ).render(command=command, conversations=conversations),
-    }
 
 
 def get_template(message_type: MessageType):
