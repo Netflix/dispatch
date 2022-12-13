@@ -1,6 +1,9 @@
 import time
 import logging
 import functools
+import inspect
+from pydantic import BaseModel
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 import slack_sdk
 from slack_sdk.web.async_client import AsyncWebClient
@@ -9,9 +12,85 @@ from typing import Any, Dict, List, Optional
 
 from tenacity import TryAgain, retry, retry_if_exception_type, stop_after_attempt
 
+from dispatch.exceptions import NotFoundError
+from dispatch.database.core import SessionLocal, sessionmaker, engine
+from dispatch.conversation import service as conversation_service
+from dispatch.organization import service as organization_service
 from .config import SlackConversationConfiguration
 
 log = logging.getLogger(__name__)
+
+
+# we need a way to determine which organization to use for a given
+# event, we use the unique channel id to determine which organization the
+# event belongs to.
+def get_organization_scope_from_channel_id(channel_id: str) -> SessionLocal:
+    """Iterate all organizations looking for a relevant channel_id."""
+    db_session = SessionLocal()
+    organization_slugs = [o.slug for o in organization_service.get_all(db_session=db_session)]
+    db_session.close()
+
+    for slug in organization_slugs:
+        schema_engine = engine.execution_options(
+            schema_translate_map={
+                None: f"dispatch_organization_{slug}",
+            }
+        )
+
+        scoped_db_session = sessionmaker(bind=schema_engine)()
+        conversation = conversation_service.get_by_channel_id_ignoring_channel_type(
+            db_session=scoped_db_session, channel_id=channel_id
+        )
+        if conversation:
+            return scoped_db_session
+
+        scoped_db_session.close()
+
+
+def get_organization_scope_from_slug(slug: str) -> SessionLocal:
+    """Iterate all organizations looking for a matching slug."""
+    db_session = SessionLocal()
+    organization = organization_service.get_by_slug(db_session=db_session, slug=slug)
+    db_session.close()
+
+    if organization:
+        schema_engine = engine.execution_options(
+            schema_translate_map={
+                None: f"dispatch_organization_{slug}",
+            }
+        )
+
+        return sessionmaker(bind=schema_engine)()
+
+    raise ValidationError(
+        [
+            ErrorWrapper(
+                NotFoundError(msg=f"Organization slug '{slug}' not found. Check your spelling."),
+                loc="organization",
+            )
+        ],
+        model=BaseModel,
+    )
+
+
+def get_default_organization_scope() -> str:
+    """Iterate all organizations looking for matching organization."""
+    db_session = SessionLocal()
+    organization = organization_service.get_default(db_session=db_session)
+    db_session.close()
+
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: f"dispatch_organization_{organization.slug}",
+        }
+    )
+
+    return sessionmaker(bind=schema_engine)()
+
+
+def fullname(o):
+    module = inspect.getmodule(o)
+    return f"{module.__name__}.{o.__qualname__}"
 
 
 def create_slack_client(config: SlackConversationConfiguration, run_async: bool = False):
@@ -182,11 +261,24 @@ def get_user_info_by_email(client: Any, email: str):
     return make_call(client, "users.lookupByEmail", email=email)["user"]
 
 
+async def get_user_info_by_email_async(client: Any, email: str):
+    """Gets profile information about a user by email."""
+    return (await make_call_async(client, "users.lookupByEmail", email=email))["user"]
+
+
 @functools.lru_cache()
 def get_user_profile_by_email(client: Any, email: str):
     """Gets extended profile information about a user by email."""
     user = make_call(client, "users.lookupByEmail", email=email)["user"]
     profile = make_call(client, "users.profile.get", user=user["id"])["profile"]
+    profile["tz"] = user["tz"]
+    return profile
+
+
+async def get_user_profile_by_email_async(client: Any, email: str):
+    """Gets extended profile information about a user by email."""
+    user = (await make_call(client, "users.lookupByEmail", email=email))["user"]
+    profile = (await make_call(client, "users.profile.get", user=user["id"]))["profile"]
     profile["tz"] = user["tz"]
     return profile
 
@@ -213,28 +305,9 @@ def get_user_avatar_url(client: Any, email: str):
     return get_user_info_by_email(client, email)["profile"]["image_512"]
 
 
-# @functools.lru_cache()
-async def get_conversations_by_user_id_async(client: Any, user_id: str):
-    """Gets the list of public and private conversations a user is a member of."""
-    result = await make_call_async(
-        client,
-        "users.conversations",
-        user=user_id,
-        types="public_channel",
-        exclude_archived="true",
-    )
-    public_conversations = [c["name"] for c in result["channels"]]
-
-    result = await make_call_async(
-        client,
-        "users.conversations",
-        user=user_id,
-        types="private_channel",
-        exclude_archived="true",
-    )
-    private_conversations = [c["name"] for c in result["channels"]]
-
-    return public_conversations, private_conversations
+async def get_user_avatar_url_async(client: Any, email: str):
+    """Gets the user's avatar url."""
+    return (await get_user_info_by_email_async(client, email))["profile"]["image_512"]
 
 
 # note this will get slower over time, we might exclude archived to make it sane
@@ -243,19 +316,6 @@ def get_conversation_by_name(client: Any, name: str):
     for c in list_conversations(client):
         if c["name"] == name:
             return c
-
-
-async def get_conversation_name_by_id_async(client: Any, conversation_id: str):
-    """Fetches a conversation by id and returns its name."""
-    try:
-        return (await make_call_async(client, "conversations.info", channel=conversation_id))[
-            "channel"
-        ]["name"]
-    except slack_sdk.errors.SlackApiError as e:
-        if e.response["error"] == "channel_not_found":
-            return None
-        else:
-            raise e
 
 
 def set_conversation_topic(client: Any, conversation_id: str, topic: str):
@@ -392,24 +452,3 @@ def message_filter(message):
         return
 
     return message
-
-
-def is_user(config: SlackConversationConfiguration, user_id: str):
-    """Returns true if it's a regular user, false if Dispatch or Slackbot bot'."""
-    return user_id != config.app_user_slug and user_id != "USLACKBOT"
-
-
-def open_dialog_with_user(client: Any, trigger_id: str, dialog: dict):
-    """Opens a dialog with a user."""
-    return make_call(client, "dialog.open", trigger_id=trigger_id, dialog=dialog)
-
-
-def open_modal_with_user(client: Any, trigger_id: str, modal: dict):
-    """Opens a modal with a user."""
-    # the argument should be view in the make call, since slack api expects view
-    return make_call(client, "views.open", trigger_id=trigger_id, view=modal)
-
-
-def update_modal_with_user(client: Any, trigger_id: str, view_id: str, modal: dict):
-    """Updates a modal with a user."""
-    return make_call(client, "views.update", trigger_id=trigger_id, view_id=view_id, view=modal)

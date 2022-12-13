@@ -146,41 +146,6 @@ def create_command_run_in_conversation_where_bot_not_present_message(
     }
 
 
-def create_incident_reported_confirmation_message(
-    title: str, description: str, incident_type: str, incident_priority: str
-):
-    """Creates an incident reported confirmation message."""
-    return [
-        {
-            "type": "header",
-            "text": {
-                "type": "plain_text",
-                "text": "Security Incident Reported",
-            },
-        },
-        {
-            "type": "section",
-            "text": {
-                "type": "mrkdwn",
-                "text": "This is a confirmation that you have reported a security incident with the following information. You'll get invited to a Slack conversation soon.",
-            },
-        },
-        {"type": "section", "text": {"type": "mrkdwn", "text": f"*Incident Title*: {title}"}},
-        {
-            "type": "section",
-            "text": {"type": "mrkdwn", "text": f"*Incident Description*: {description}"},
-        },
-        {
-            "type": "section",
-            "text": {"type": "mrkdwn", "text": f"*Incident Type*: {incident_type}"},
-        },
-        {
-            "type": "section",
-            "text": {"type": "mrkdwn", "text": f"*Incident Priority*: {incident_priority}"},
-        },
-    ]
-
-
 def get_template(message_type: MessageType):
     """Fetches the correct template based on message type."""
     template_map = {
@@ -244,14 +209,18 @@ def default_notification(items: list):
             block = {"type": "actions", "elements": []}
             for button in item["buttons"]:
                 if button.get("button_text") and button.get("button_value"):
-                    block["elements"].append(
-                        {
-                            "action_id": button["button_action"],
-                            "type": "button",
-                            "text": {"type": "plain_text", "text": button["button_text"]},
-                            "value": button["button_value"],
-                        }
-                    )
+                    element = {
+                        "action_id": button["button_action"],
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": button["button_text"]},
+                        "value": button["button_value"],
+                    }
+
+                    if button.get("button_url"):
+                        element.update({"url": button["button_url"]})
+
+                    block["elements"].append(element)
+
             blocks.append(block)
 
     return blocks
@@ -277,8 +246,11 @@ def create_message_blocks(
         blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": description}})
 
     for item in items:
-        rendered_items = render_message_template(message_template, **item)
-        blocks += template_func(rendered_items)
+        if message_template:
+            rendered_items = render_message_template(message_template, **item)
+            blocks += template_func(rendered_items)
+        else:
+            blocks += template_func(**item)["blocks"]
 
     blocks_grouped = []
     if items:
