@@ -1,24 +1,14 @@
 import logging
-
-from typing import Dict, Any, Optional
-
 from slack_bolt.app.async_app import AsyncApp
-from slack_bolt.response import BoltResponse
-from slack_bolt.request import BoltRequest
 from slack_bolt.adapter.starlette.async_handler import AsyncSlackRequestHandler
 
 
 from fastapi import APIRouter
 
 from starlette.requests import Request
-from starlette.responses import Response
-
-from .listeners import MultiMessageListener
 
 app = AsyncApp(token="xoxb-valid", raise_error_for_unhandled_request=True)
 router = APIRouter()
-
-# app.use(MultiMessageListener)
 
 logging.basicConfig(level=logging.DEBUG)
 

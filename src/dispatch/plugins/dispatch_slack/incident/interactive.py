@@ -1,6 +1,8 @@
+import logging
 from datetime import datetime
 from typing import List
 
+import inspect
 import pytz
 from blockkit import (
     Actions,
@@ -107,6 +109,8 @@ from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
 
+log = logging.getLogger(__file__)
+
 
 class TaskMetadata(SubjectMetadata):
     resource_id: str
@@ -114,6 +118,49 @@ class TaskMetadata(SubjectMetadata):
 
 class MonitorMetadata(SubjectMetadata):
     weblink: str
+
+
+class MessageDispatcher:
+    """Dispatches current message to any registered function."""
+
+    registered_funcs = []
+
+    def add(self, *args, **kwargs):
+        """Adds a function to the dispatcher."""
+
+        def decorator(func):
+            if not kwargs.get("name"):
+                name = func.__name__
+            else:
+                name = kwargs.pop("name")
+
+            self.registered_funcs.append({"name": name, "func": func})
+
+        return decorator
+
+    async def dispatch(self, *args, **kwargs):
+        """Runs all registered functions."""
+        for f in self.registered_funcs:
+            # only inject the args the function cares about
+            func_args = inspect.getfullargspec(inspect.unwrap(f["func"])).args
+            injected_args = (kwargs[a] for a in func_args)
+
+            try:
+                await f["func"](*injected_args)
+            except Exception as e:
+                log.exception(e)
+                log.debug(f"Failed to run dispatched function ({e})")
+
+
+message_dispatcher = MessageDispatcher()
+
+
+@app.event(
+    {"type": "message"}, middleware=[message_context_middleware, db_middleware, user_middleware]
+)
+async def handle_message_events(ack, payload, context, body, client, respond, user, db_session):
+    """Container function for all message functions."""
+    await message_dispatcher.dispatch(**locals())
 
 
 def configure(config):
@@ -362,7 +409,7 @@ async def handle_list_incidents_command(ack, body, respond, db_session, context)
     await respond(text="Incident List", blocks=blocks, response_type="ephemeral")
 
 
-async def handle_list_participants_command(ack, body, respond, client, db_session, context):
+async def handle_list_participants_command(ack, respond, client, db_session, context):
     """Handles list participants command."""
     await ack()
     blocks = [Section(text="*Incident Participants*")]
@@ -439,7 +486,7 @@ def filter_tasks_by_assignee_and_creator(tasks: List[Task], by_assignee: str, by
     return filtered_tasks
 
 
-async def handle_list_tasks_command(ack, user, body, respond, context, db_session):
+async def handle_list_tasks_command(ack, user, respond, context, db_session):
     """Handles the list tasks command."""
     await ack()
     blocks = []
@@ -494,7 +541,7 @@ async def handle_list_tasks_command(ack, user, body, respond, context, db_sessio
     await respond(text="Incident Task List", blocks=message, response_type="ephermeral")
 
 
-async def handle_list_resources_command(ack, body, respond, client, db_session, context, logger):
+async def handle_list_resources_command(ack, respond, db_session, context):
     """Handles the list resources command."""
     await ack()
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
@@ -552,7 +599,7 @@ async def handle_list_resources_command(ack, body, respond, client, db_session, 
 # EVENTS
 
 
-async def handle_timeline_added_event(ack, body, client, context, db_session):
+async def handle_timeline_added_event(client, context, db_session):
     """Handles an event where a reaction is added to a message."""
     conversation_id = context["channel_id"]
     message_ts = context["ts"]
@@ -587,9 +634,7 @@ async def handle_timeline_added_event(ack, body, client, context, db_session):
         )
 
 
-@app.event(
-    {"type": "message"}, middleware=[message_context_middleware, db_middleware, user_middleware]
-)
+@message_dispatcher.add()
 async def handle_participant_role_activity(ack, db_session, context, user):
     """Increments the participant role's activity counter."""
     await ack()
@@ -630,17 +675,13 @@ async def handle_participant_role_activity(ack, db_session, context, user):
                     )
 
 
-@app.event(
-    {"type": "message"}, middleware=[message_context_middleware, user_middleware, db_middleware]
-)
-async def handle_after_hours_message(ack, context, body, client, respond, user, db_session):
+@message_dispatcher.add(exclude={"subtype": ["channel_join", "group_join"]})
+async def handle_after_hours_message(ack, context, client, payload, user, db_session):
     """Notifies the user that this incident is current in after hours mode."""
     # we ignore user channel and group join messages
     await ack()
 
-    if body["subtype"] in ["channel_join", "group_join"]:
-        return
-
+    # TODO add case support
     if context["subject"].type == "case":
         return
 
@@ -653,21 +694,143 @@ async def handle_after_hours_message(ack, context, body, client, respond, user, 
         )
 
         # get their timezone from slack
-        owner_tz = dispatch_slack_service.get_user_info_by_email(client, email=owner_email)["tz"]
+        owner_tz = (
+            await dispatch_slack_service.get_user_info_by_email_async(client, email=owner_email)
+        )["tz"]
 
         message = f"Responses may be delayed. The current incident priority is *{incident.incident_priority.name}* and your message was sent outside of the Incident Commander's working hours (Weekdays, 9am-5pm, {owner_tz} timezone)."
 
-    now = datetime.datetime.now(pytz.timezone(owner_tz))
+    now = datetime.now(pytz.timezone(owner_tz))
     is_business_hours = now.weekday() not in [5, 6] and 9 <= now.hour < 17
 
     if not is_business_hours:
         if not participant.after_hours_notification:
-            blocks = [Section(text=message)]
             participant.after_hours_notification = True
             db_session.add(participant)
             db_session.commit()
-            blocks = Message(blocks=blocks).build()["blocks"]
-            await respond(blocks=blocks, response_type="ephemeral")
+            await client.chat_postEphemeral(
+                text=message,
+                channel=payload["channel"],
+                user=payload["user"],
+            )
+
+
+@message_dispatcher.add()
+async def handle_thread_creation(client, payload, context):
+    """Sends the user an ephemeral message if they use threads."""
+    # TODO figure out how to pass current slack config
+    # if not context["config"].ban_threads:
+    #    return
+
+    if context["subject"].type == "incident":
+        if payload.get("thread_ts"):
+            message = "Please refrain from using threads in incident related channels. Threads make it harder for incident participants to maintain context."
+            await client.chat_postEphemeral(
+                text=message,
+                channel=payload["channel"],
+                thread_ts=payload["thread_ts"],
+                user=payload["user"],
+            )
+
+
+@message_dispatcher.add()
+async def handle_message_tagging(db_session, payload, context):
+    """Looks for incident tags in incident messages."""
+
+    # TODO handle case tagging
+    if context["subject"].type == "incident":
+        text = payload["text"]
+        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+        tags = tag_service.get_all(db_session=db_session, project_id=incident.project.id).all()
+        tag_strings = [t.name.lower() for t in tags if t.discoverable]
+        phrases = build_term_vocab(tag_strings)
+        matcher = build_phrase_matcher("dispatch-tag", phrases)
+        extracted_tags = list(set(extract_terms_from_text(text, matcher)))
+
+        matched_tags = (
+            db_session.query(Tag)
+            .filter(func.upper(Tag.name).in_([func.upper(t) for t in extracted_tags]))
+            .all()
+        )
+
+        incident.tags.extend(matched_tags)
+        db_session.commit()
+
+
+@message_dispatcher.add()
+async def handle_message_monitor(ack, payload, context, client, db_session):
+    """Looks strings that are available for monitoring (usually links)."""
+    await ack()
+    # TODO handle cases
+    if context["subject"].type == "incident":
+        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
+        project_id = incident.project.id
+
+    else:
+        return
+
+    plugins = plugin_service.get_active_instances(
+        db_session=db_session, project_id=project_id, plugin_type="monitor"
+    )
+
+    for p in plugins:
+        for matcher in p.instance.get_matchers():
+            for match in matcher.finditer(payload["text"]):
+                match_data = match.groupdict()
+                monitor = monitor_service.get_by_weblink(
+                    db_session=db_session, weblink=match_data["weblink"]
+                )
+
+                # silence ignored matches
+                if monitor:
+                    continue
+
+                current_status = p.instance.get_match_status(match_data)
+                if current_status:
+                    status_text = ""
+                    for k, v in current_status.items():
+                        status_text += f"*{k.title()}*:\n{v.title()}\n"
+
+                    button_metadata = MonitorMetadata(
+                        type="incident",
+                        organization_slug=incident.project.organization.slug,
+                        id=incident.id,
+                        project_id=incident.project.id,
+                        channel_id=context["channel_id"],
+                        weblink=match_data["weblink"],
+                    )
+
+                    blocks = [
+                        Section(
+                            text="Hi! Dispatch is able to help track the status of: \n {match_data['weblink']} \n\n Would you like for changes in it's status to be propagated to this incident channel?"
+                        ),
+                        Section(text=status_text),
+                        Actions(
+                            block_id=LinkMonitorBlockIds.monitor,
+                            elements=[
+                                Button(
+                                    text="Monitor",
+                                    action_id=LinkMonitorActionIds.monitor,
+                                    style="primary",
+                                    value=button_metadata,
+                                ),
+                                Button(
+                                    text="Ignore",
+                                    action_id=LinkMonitorActionIds.ignore,
+                                    style="primary",
+                                    value=button_metadata,
+                                ),
+                            ],
+                        ),
+                    ]
+                    blocks = Message(blocks=blocks).build()["blocks"]
+                    await client.chat_postEphemeral(
+                        text="Link Monitor",
+                        channel=payload["channel"],
+                        thread_ts=payload["thread_ts"],
+                        blocks=blocks,
+                        user=payload["user"],
+                    )
 
 
 @app.event("member_joined", middleware=[action_context_middleware, user_middleware, db_middleware])
@@ -702,112 +865,6 @@ async def handle_member_left_channel(ack, context, db_session, user):
     incident_flows.incident_remove_participant_flow(
         user.email, context["subject"].id, db_session=db_session
     )
-
-
-@app.event(
-    {"type": "message", "subtype": "message_replied"}, middleware=[action_context_middleware]
-)
-async def handle_thread_creation(ack, respond, client, context):
-    """Sends the user an ephemeral message if they use threads."""
-    # if not context["config"].ban_threads:
-    #    return
-
-    message = "Please refrain from using threads in incident related channels. Threads make it harder for incident participants to maintain context."
-    await respond(text=message, response_type="ephemeral")
-
-
-@app.event({"type": "message"}, middleware=[message_context_middleware, db_middleware])
-async def handle_message_tagging(ack, db_session, context):
-    """Looks for incident tags in incident messages."""
-
-    # TODO handle case tagging
-    if context["subject"].type == "incident":
-        text = context["text"]
-        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-        tags = tag_service.get_all(db_session=db_session, project_id=incident.project.id).all()
-        tag_strings = [t.name.lower() for t in tags if t.discoverable]
-        phrases = build_term_vocab(tag_strings)
-        matcher = build_phrase_matcher("dispatch-tag", phrases)
-        extracted_tags = list(set(extract_terms_from_text(text, matcher)))
-
-        matched_tags = (
-            db_session.query(Tag)
-            .filter(func.upper(Tag.name).in_([func.upper(t) for t in extracted_tags]))
-            .all()
-        )
-
-        incident.tags.extend(matched_tags)
-        db_session.commit()
-
-
-@app.event({"type": "message"}, middleware=[message_context_middleware, db_middleware])
-async def handle_message_monitor(ack, respond, body, context, db_session):
-    """Looks strings that are available for monitoring (usually links)."""
-    await ack()
-    # TODO handle cases
-    if context["subject"].type == "incident":
-        incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
-        project_id = incident.project.id
-        button_metadata = MonitorMetadata(
-            type="incident",
-            organization_slug=incident.project.organization.slug,
-            id=incident.id,
-            project_id=incident.project.id,
-            channel_id=context["channel_id"],
-        )
-
-    else:
-        return
-
-    plugins = plugin_service.get_active_instances(
-        db_session=db_session, project_id=project_id, plugin_type="monitor"
-    )
-
-    for p in plugins:
-        for matcher in p.instance.get_matchers():
-            for match in matcher.finditer(body["text"]):
-                match_data = match.groupdict()
-                monitor = monitor_service.get_by_weblink(
-                    db_session=db_session, weblink=match_data["weblink"]
-                )
-
-                # silence ignored matches
-                if monitor:
-                    continue
-
-                current_status = p.instance.get_match_status(match_data)
-                if current_status:
-                    status_text = ""
-                    for k, v in current_status.items():
-                        status_text += f"*{k.title()}*:\n{v.title()}\n"
-
-                    button_metadata.weblink = match_data["weblink"]
-
-                    blocks = [
-                        Section(
-                            text="Hi! Dispatch is able to help track the status of: \n {match_data['weblink']} \n\n Would you like for changes in it's status to be propagated to this incident channel?"
-                        ),
-                        Section(text=status_text),
-                        Actions(
-                            block_id=LinkMonitorBlockIds.monitor,
-                            elements=[
-                                Button(
-                                    text="Monitor",
-                                    action_id=LinkMonitorActionIds.monitor,
-                                    style="primary",
-                                    value=button_metadata,
-                                ),
-                                Button(
-                                    text="Ignore",
-                                    action_id=LinkMonitorActionIds.ignore,
-                                    style="primary",
-                                    value=button_metadata,
-                                ),
-                            ],
-                        ),
-                    ]
-                    blocks = Message(blocks=blocks).build()["blocks"]
-                    await respond(blocks=blocks, response_type="ephemeral")
 
 
 # MODALS
