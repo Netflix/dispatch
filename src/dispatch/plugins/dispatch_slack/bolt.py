@@ -1,4 +1,5 @@
 import logging
+from blockkit import Modal
 from slack_bolt.app.async_app import AsyncApp
 from slack_bolt.adapter.starlette.async_handler import AsyncSlackRequestHandler
 from slack_bolt.response import BoltResponse
@@ -17,7 +18,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 @app.error
-async def errors(error, payload, client, respond, logger):
+async def errors(ack, error, body, respond, logger):
 
     print(error)
 
@@ -28,7 +29,11 @@ async def errors(error, payload, client, respond, logger):
     elif isinstance(error, RoleError):
         message = str(error)
 
-    await respond(text=message, response_type="ephemeral")
+    if body.get("view"):
+        pass
+
+    else:
+        await respond(text=message, response_type="ephemeral")
 
     logger.exception(error)
     logger.debug(error)

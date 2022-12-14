@@ -177,6 +177,9 @@ def configure(config):
     app.command(config.slack_command_list_incidents, middleware=[db_middleware])(
         handle_list_incidents_command
     )
+    app.command(config.slack_command_report_incident, middleware=[db_middleware])(
+        handle_report_incident_command
+    )
 
     # non-sensitive-commands
     app.command(config.slack_command_list_tasks, middleware=middleware)(handle_list_tasks_command)
@@ -188,9 +191,6 @@ def configure(config):
     )
     app.command(config.slack_command_update_participant, middleware=middleware)(
         handle_update_participant_command
-    )
-    app.command(config.slack_command_report_incident, middleware=middleware)(
-        handle_report_incident_command
     )
     app.command(config.slack_command_list_resources, middleware=middleware)(
         handle_list_resources_command
@@ -561,42 +561,41 @@ async def handle_list_resources_command(ack, respond, db_session, context):
     blocks = [
         Section(text=f"*<{incident.title}|https://google.com>*"),
         Section(text=f"*Description* \n {incident_description}"),
-        Section(
-            text=f"*Commander* \n <{incident.commander.individual.weblink}|{incident.commander.individual.name}>"
-        ),
-        Section(
-            text=f"*Reporter* \n <{incident.reporter.individual.weblink}|{incident.reporter.individual.name}>"
-        ),
+    ]
+
+    fields = [
+        f"*Commander* \n <{incident.commander.individual.weblink}|{incident.commander.individual.name}>",
+        f"*Reporter* \n <{incident.reporter.individual.weblink}|{incident.reporter.individual.name}>",
     ]
 
     if resolve_attr(incident, "incident_document.weblink"):
-        blocks.append(Section(text=f"*<{incident.incident_document.weblink}|Incident Document>*"))
+        fields.append(f"*Incident Document* \n <{incident.incident_document.weblink}|Link>")
 
     if resolve_attr(incident, "storage.weblink"):
-        blocks.append(Section(text=f"*<{incident.storage.weblink}|Storage>*"))
+        fields.append(f"*Storage* \n <{incident.storage.weblink}|Link>")
 
     if resolve_attr(incident, "ticket.weblink"):
-        blocks.append(Section(text=f"*<{incident.ticket.weblink}|Ticket>*"))
+        fields.append(f"*Ticket* \n <{incident.ticket.weblink}|Link>")
 
     if resolve_attr(incident, "conference.weblink"):
-        blocks.append(Section(text=f"*<{incident.conference.weblink}|Conference>*"))
+        fields.append(f"*Conference* \n <{incident.conference.weblink}|Link>")
 
     if resolve_attr(incident, "incident_review_document"):
-        blocks.append(
-            Section(text=f"*<{incident.incident_review_document}|Incident Review Document>(")
-        )
+        fields.append(f"*Incident Review Document* \n <{incident.incident_review_document}|Link>")
 
     faq_doc = document_service.get_incident_faq_document(
         db_session=db_session, project_id=incident.project_id
     )
     if faq_doc:
-        blocks.append(Section(text=f"*<{faq_doc.weblink}|FAQ Document>*"))
+        fields.append(f"*FAQ Document* \n <{faq_doc.weblink}|Link>")
 
     conversation_reference = document_service.get_conversation_reference_document(
         db_session=db_session, project_id=incident.project_id
     )
     if conversation_reference:
-        blocks.append(Section(text=f"*<{conversation_reference.weblink}|Command Reference>*"))
+        fields.append(f"*Command Reference* \n <{conversation_reference.weblink}|Link>")
+
+    blocks.append(Section(fields=fields))
 
     blocks = Message(blocks=blocks).build()["blocks"]
     await respond(text="Incident Resources Message", blocks=blocks, response_type="ephemeral")
@@ -1598,11 +1597,25 @@ async def handle_report_incident_submission_event(ack, user, client, body, db_se
         tags.append(tag)
 
     project = {"name": form_data[DefaultBlockIds.project_select]["name"]}
+
+    incident_type = None
+    if form_data.get(DefaultBlockIds.incident_type_select):
+        incident_type = {"name": form_data[DefaultBlockIds.incident_type_select]["name"]}
+
+    incident_priority = None
+    if form_data.get(DefaultBlockIds.incident_priority_select):
+        incident_priority = {"name": form_data[DefaultBlockIds.incident_priority_select]["name"]}
+
+    incident_severity = None
+    if form_data.get(DefaultBlockIds.incident_severity_select):
+        incident_severity = {"name": form_data[DefaultBlockIds.incident_severity_select]["name"]}
+
     incident_in = IncidentCreate(
         title=form_data[DefaultBlockIds.title_input],
         description=form_data[DefaultBlockIds.description_input],
-        incident_type={"name": form_data[DefaultBlockIds.incident_type_select]["name"]},
-        incident_priority={"name": form_data[DefaultBlockIds.incident_priority_select]["name"]},
+        incident_type=incident_type,
+        incident_priority=incident_priority,
+        incident_severity=incident_severity,
         project=project,
         reporter=ParticipantUpdate(individual=IndividualContactRead(email=user.email)),
         tags=tags,
