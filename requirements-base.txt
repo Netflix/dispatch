@@ -343,7 +343,9 @@ six==1.16.0
 slack-sdk==3.19.5
     # via -r requirements-base.in
 smart-open==5.2.1
-    # via pathy
+    # via
+    #   pathy
+    #   spacy
 sniffio==1.3.0
     # via
     #   anyio
@@ -351,7 +353,7 @@ sniffio==1.3.0
     #   httpx
 sortedcontainers==2.4.0
     # via hypothesis
-spacy==3.4.3
+spacy==3.4.4
     # via -r requirements-base.in
 spacy-legacy==3.0.10
     # via spacy
