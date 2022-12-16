@@ -38,7 +38,11 @@ def consume_signals(db_session: SessionLocal, project: Project):
         signal_instances = plugin.instance.consume()
 
         for signal_instance_data in signal_instances:
-            signal_flows.create_signal_instance(
-                db_session=db_session,
-                signal_instance_data=signal_instance_data,
-            )
+            try:
+                signal_flows.create_signal_instance(
+                    db_session=db_session,
+                    signal_instance_data=signal_instance_data,
+                )
+            except Exception as e:
+                log.debug(signal_instance_data)
+                log.exception(e)

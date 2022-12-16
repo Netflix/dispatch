@@ -8,10 +8,10 @@ from dispatch.signal.models import SignalInstanceCreate
 
 def create_signal_instance(db_session: SessionLocal, signal_instance_data: dict):
     """Creates a signal and a case if necessary."""
-    signal = signal_service.get_by_external_id_and_variant(
+    signal = signal_service.get_by_variant_or_external_id(
         db_session=db_session,
         external_id=signal_instance_data["id"],
-        variant=signal_instance_data.get("variant"),
+        variant=signal_instance_data["variant"],
     )
     signal_instance_in = SignalInstanceCreate(**signal_instance_data, project=signal.project)
 
@@ -30,6 +30,9 @@ def create_signal_instance(db_session: SessionLocal, signal_instance_data: dict)
     if suppressed:
         return
 
+    from pprint import pprint
+
+    pprint(signal_instance_data)
     duplicate = signal_service.deduplicate(
         db_session=db_session,
         signal_instance=signal_instance,

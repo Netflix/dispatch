@@ -192,6 +192,17 @@ class SignalPagination(DispatchBase):
     total: int
 
 
+class RawSignal(DispatchBase):
+    action = Optional[List[dict]]
+    additionalMetadata = Optional[List[dict]]
+    asset = Optional[List[dict]]
+    identity = Optional[dict]
+    originLocation = Optional[List[Dict]]
+    variant = Optional[str]
+    createdAt = DateTime
+    id = str
+
+
 class SignalInstanceBase(DispatchBase):
     project: ProjectRead
     case: Optional[CaseRead]
