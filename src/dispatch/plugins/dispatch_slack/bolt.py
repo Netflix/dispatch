@@ -10,7 +10,9 @@ from starlette.requests import Request
 
 from .exceptions import ContextError, RoleError
 
-app = AsyncApp(token="xoxb-valid", raise_error_for_unhandled_request=True)
+app = AsyncApp(
+    token="xoxb-valid", raise_error_for_unhandled_request=True, process_before_response=True
+)
 router = APIRouter()
 
 logging.basicConfig(level=logging.DEBUG)

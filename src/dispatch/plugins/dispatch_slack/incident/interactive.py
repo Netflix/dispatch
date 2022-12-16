@@ -248,10 +248,25 @@ async def external_data_source_handler(ack, body):
         await ack(options=all_options)
 
 
-async def submission():
+async def submission(body, client):
     import time
 
+    raise Exception
+
     time.sleep(10)
+
+    modal = Modal(
+        title="Incident Update",
+        close="Close",
+        blocks=[Section(text="The incident is being updated...")],
+    ).build()
+
+    await client.views_update(
+        view_id=body["view"]["id"],
+        hash=body["view"]["hash"],
+        trigger_id=body["trigger_id"],
+        view=modal,
+    )
 
 
 app.view("socket_modal_submission")(ack=ack_shortcut, lazy=[submission])
