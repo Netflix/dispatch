@@ -1,5 +1,4 @@
 import logging
-from blockkit import Modal
 from slack_bolt.app.async_app import AsyncApp
 from slack_bolt.adapter.starlette.async_handler import AsyncSlackRequestHandler
 from slack_bolt.response import BoltResponse
@@ -35,6 +34,10 @@ async def errors(ack, error, body, respond, logger):
     else:
         await respond(text=message, response_type="ephemeral")
 
+    logger.debug(body)
+    from pprint import pprint
+
+    pprint(body)
     logger.exception(error)
     logger.debug(error)
     return BoltResponse(status=200, body="")

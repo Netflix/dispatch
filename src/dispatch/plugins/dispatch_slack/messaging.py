@@ -7,6 +7,8 @@
 import logging
 from typing import List, Optional
 
+from blockkit import Section, Divider, Button, Context, MarkdownText, PlainText, Actions
+
 from dispatch.messaging.strings import (
     EVERGREEN_REMINDER_DESCRIPTION,
     INCIDENT_PARTICIPANT_SUGGESTED_READING_DESCRIPTION,
@@ -53,8 +55,7 @@ def format_default_text(item: dict):
 
 def default_notification(items: list):
     """Creates blocks for a default notification."""
-    blocks = []
-    blocks.append({"type": "divider"})
+    blocks = [Divider()]
     for item in items:
         if isinstance(item, list):  # handle case where we are passing multiple grouped items
             blocks += default_notification(item)
@@ -63,38 +64,34 @@ def default_notification(items: list):
             continue
 
         if item.get("type"):
-            block = {
-                "type": item["type"],
-            }
             if item["type"] == "context":
-                block.update({"elements": [{"type": "mrkdwn", "text": format_default_text(item)}]})
+                blocks.append(Context(elements=[MarkdownText(text=format_default_text(item))]))
             else:
-                block.update({"text": {"type": "plain_text", "text": format_default_text(item)}})
-            blocks.append(block)
+                blocks.append(PlainText(text=format_default_text(item)))
         else:
-            block = {
-                "type": "section",
-                "text": {"type": "mrkdwn", "text": format_default_text(item)},
-            }
-            blocks.append(block)
+            blocks.append(Section(text=format_default_text(item)))
 
         if item.get("buttons"):
-            block = {"type": "actions", "elements": []}
+            elements = []
             for button in item["buttons"]:
                 if button.get("button_text") and button.get("button_value"):
-                    element = {
-                        "action_id": button["button_action"],
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": button["button_text"]},
-                        "value": button["button_value"],
-                    }
-
                     if button.get("button_url"):
-                        element.update({"url": button["button_url"]})
+                        element = Button(
+                            action_id=button["button_action"],
+                            text=button["button_text"],
+                            value=button["button_value"],
+                            url=button["button_url"],
+                        )
+                    else:
+                        element = Button(
+                            action_id=button["button_action"],
+                            text=button["button_text"],
+                            value=button["button_value"],
+                            url=button["button_url"],
+                        )
 
-                    block["elements"].append(element)
-
-            blocks.append(block)
+                    elements.append(element)
+            blocks.append(Actions(elements=elements))
 
     return blocks
 
@@ -116,7 +113,7 @@ def create_message_blocks(
 
     blocks = []
     if description:  # include optional description text (based on message type)
-        blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": description}})
+        blocks.append(Section(text=description))
 
     for item in items:
         if message_template:

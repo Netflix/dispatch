@@ -5,17 +5,19 @@
     :license: Apache, see LICENSE for more details.
 .. moduleauthor:: Kevin Glisson <kglisson@netflix.com>
 """
-from joblib import Memory
-from typing import List, Optional
 import logging
 import os
 import re
+from typing import List, Optional
+
+from blockkit import Message
+from joblib import Memory
 
 from dispatch.conversation.enums import ConversationCommands
 from dispatch.decorators import apply, counter, timer
 from dispatch.exceptions import DispatchPluginException
 from dispatch.plugins import dispatch_slack as slack_plugin
-from dispatch.plugins.bases import ConversationPlugin, DocumentPlugin, ContactPlugin
+from dispatch.plugins.bases import ContactPlugin, ConversationPlugin, DocumentPlugin
 from dispatch.plugins.dispatch_slack.config import (
     SlackConfiguration,
     SlackContactConfiguration,
@@ -44,7 +46,6 @@ from .service import (
     set_conversation_topic,
     unarchive_conversation,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +84,9 @@ class SlackConversationPlugin(ConversationPlugin):
         """Sends a new message based on data and type."""
         client = create_slack_client(self.configuration)
         if not blocks:
-            blocks = create_message_blocks(message_template, notification_type, items, **kwargs)
+            blocks = Message(
+                blocks=create_message_blocks(message_template, notification_type, items, **kwargs)
+            ).build()["blocks"]
 
         messages = []
         for c in chunks(blocks, 50):
@@ -105,7 +108,9 @@ class SlackConversationPlugin(ConversationPlugin):
         user_id = resolve_user(client, user)["id"]
 
         if not blocks:
-            blocks = create_message_blocks(message_template, notification_type, items, **kwargs)
+            blocks = Message(
+                blocks=create_message_blocks(message_template, notification_type, items, **kwargs)
+            ).build()["blocks"]
 
         return send_message(client, user_id, text, blocks)
 
@@ -125,7 +130,9 @@ class SlackConversationPlugin(ConversationPlugin):
         user_id = resolve_user(client, user)["id"]
 
         if not blocks:
-            blocks = create_message_blocks(message_template, notification_type, items, **kwargs)
+            blocks = Message(
+                blocks=create_message_blocks(message_template, notification_type, items, **kwargs)
+            ).build()["block"]
 
         archived = conversation_archived(client, conversation_id)
         if not archived:

@@ -23,6 +23,7 @@ from blockkit import (
 from sqlalchemy import func
 
 from dispatch.config import DISPATCH_UI_URL
+from dispatch.messaging.strings import INCIDENT_RESOURCES_MESSAGE
 from dispatch.database.core import resolve_attr
 from dispatch.database.service import search_filter_sort_paginate
 from dispatch.document import service as document_service
@@ -98,6 +99,11 @@ from dispatch.plugins.dispatch_slack.service import (
     get_user_email_async,
     get_user_profile_by_email_async,
 )
+from dispatch.plugins.dispatch_slack.messaging import create_message_blocks
+from dispatch.plugins.dispatch_slack.service import chunks
+
+from dispatch.messaging.strings import MessageType
+
 from dispatch.project import service as project_service
 from dispatch.report import flows as report_flows
 from dispatch.report import service as report_service
@@ -109,6 +115,7 @@ from dispatch.tag.models import Tag
 from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
+
 
 log = logging.getLogger(__file__)
 
@@ -154,6 +161,100 @@ class MessageDispatcher:
 
 
 message_dispatcher = MessageDispatcher()
+
+
+async def ack_shortcut(ack):
+    await ack()
+
+
+async def open_modal(body, client):
+    await client.views_open(
+        trigger_id=body["trigger_id"],
+        view={
+            "type": "modal",
+            "callback_id": "socket_modal_submission",
+            "submit": {
+                "type": "plain_text",
+                "text": "Submit",
+            },
+            "close": {
+                "type": "plain_text",
+                "text": "Cancel",
+            },
+            "title": {
+                "type": "plain_text",
+                "text": "Socket Modal",
+            },
+            "blocks": [
+                {
+                    "type": "input",
+                    "block_id": "q1",
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Write anything here!",
+                    },
+                    "element": {
+                        "action_id": "feedback",
+                        "type": "plain_text_input",
+                    },
+                },
+                {
+                    "type": "input",
+                    "block_id": "q2",
+                    "label": {
+                        "type": "plain_text",
+                        "text": "Can you tell us your favorites?",
+                    },
+                    "element": {
+                        "type": "external_select",
+                        "action_id": "favorite-animal",
+                        "min_query_length": 0,
+                        "placeholder": {
+                            "type": "plain_text",
+                            "text": "Select your favorites",
+                        },
+                    },
+                },
+            ],
+        },
+    )
+
+
+app.shortcut("socket-mode")(ack=ack_shortcut, lazy=[open_modal])
+
+all_options = [
+    {
+        "text": {"type": "plain_text", "text": ":cat: Cat"},
+        "value": "cat",
+    },
+    {
+        "text": {"type": "plain_text", "text": ":dog: Dog"},
+        "value": "dog",
+    },
+    {
+        "text": {"type": "plain_text", "text": ":bear: Bear"},
+        "value": "bear",
+    },
+]
+
+
+@app.options("favorite-animal")
+async def external_data_source_handler(ack, body):
+    keyword = body.get("value")
+    if keyword is not None and len(keyword) > 0:
+        options = [o for o in all_options if keyword in o["text"]["text"]]
+        await ack(options=options)
+    else:
+        await ack(options=all_options)
+
+
+async def submission():
+    import time
+
+    time.sleep(10)
+
+
+app.view("socket_modal_submission")(ack=ack_shortcut, lazy=[submission])
 
 
 @app.event(
@@ -399,20 +500,21 @@ async def handle_list_incidents_command(ack, payload, respond, db_session, conte
                 blocks.append(
                     Section(
                         fields=[
-                            f"*Title*:\n {incident.title}",
-                            f"*Type*:\n {incident.incident_type.name}",
-                            f"*Severity*:\n {incident.incident_severity.name}",
-                            f"*Priority*:\n {incident.incident_priority.name}",
-                            f"*Status*:\n{incident.status}",
-                            f"*Incident Commander*:\n<{incident.commander.individual.weblink}|{incident.commander.individual.name}>",
-                            f"*Project*:\n{incident.project.name}",
+                            f"*Title*\n {incident.title}",
+                            f"*Commander*\n<{incident.commander.individual.weblink}|{incident.commander.individual.name}>",
+                            f"*Project*\n{incident.project.name}",
+                            f"*Status*\n{incident.status}",
+                            f"*Type*\n {incident.incident_type.name}",
+                            f"*Severity*\n {incident.incident_severity.name}",
+                            f"*Priority*\n {incident.incident_priority.name}",
                         ]
                     )
                 )
                 blocks.append(Divider())
 
-    blocks = Message(blocks=blocks).build()["blocks"]
-    await respond(text="Incident List", blocks=blocks, response_type="ephemeral")
+    for c in chunks(blocks, 50):
+        blocks = Message(blocks=c).build()["blocks"]
+        await respond(text="Incident List", blocks=blocks, response_type="ephemeral")
 
 
 async def handle_list_participants_command(ack, respond, client, db_session, context):
@@ -550,6 +652,7 @@ async def handle_list_tasks_command(ack, user, respond, context, db_session):
 async def handle_list_resources_command(ack, respond, db_session, context):
     """Handles the list resources command."""
     await ack()
+
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     incident_description = (
@@ -558,47 +661,41 @@ async def handle_list_resources_command(ack, respond, db_session, context):
         else f"{incident.description[:500]}..."
     )
 
-    blocks = [
-        Section(text=f"*<{incident.title}|https://google.com>*"),
-        Section(text=f"*Description* \n {incident_description}"),
-    ]
-
-    fields = [
-        f"*Commander* \n <{incident.commander.individual.weblink}|{incident.commander.individual.name}>",
-        f"*Reporter* \n <{incident.reporter.individual.weblink}|{incident.reporter.individual.name}>",
-    ]
-
-    if resolve_attr(incident, "incident_document.weblink"):
-        fields.append(f"*Incident Document* \n <{incident.incident_document.weblink}|Link>")
-
-    if resolve_attr(incident, "storage.weblink"):
-        fields.append(f"*Storage* \n <{incident.storage.weblink}|Link>")
-
-    if resolve_attr(incident, "ticket.weblink"):
-        fields.append(f"*Ticket* \n <{incident.ticket.weblink}|Link>")
-
-    if resolve_attr(incident, "conference.weblink"):
-        fields.append(f"*Conference* \n <{incident.conference.weblink}|Link>")
-
-    if resolve_attr(incident, "incident_review_document"):
-        fields.append(f"*Incident Review Document* \n <{incident.incident_review_document}|Link>")
+    # we send the ephemeral message
+    message_kwargs = {
+        "title": incident.title,
+        "description": incident_description,
+        "commander_fullname": incident.commander.individual.name,
+        "commander_team": incident.commander.team,
+        "commander_weblink": incident.commander.individual.weblink,
+        "reporter_fullname": incident.reporter.individual.name,
+        "reporter_team": incident.reporter.team,
+        "reporter_weblink": incident.reporter.individual.weblink,
+        "document_weblink": resolve_attr(incident, "incident_document.weblink"),
+        "storage_weblink": resolve_attr(incident, "storage.weblink"),
+        "conference_weblink": resolve_attr(incident, "conference.weblink"),
+        "conference_challenge": resolve_attr(incident, "conference.conference_challenge"),
+    }
 
     faq_doc = document_service.get_incident_faq_document(
         db_session=db_session, project_id=incident.project_id
     )
     if faq_doc:
-        fields.append(f"*FAQ Document* \n <{faq_doc.weblink}|Link>")
+        message_kwargs.update({"faq_weblink": faq_doc.weblink})
 
     conversation_reference = document_service.get_conversation_reference_document(
         db_session=db_session, project_id=incident.project_id
     )
     if conversation_reference:
-        fields.append(f"*Command Reference* \n <{conversation_reference.weblink}|Link>")
+        message_kwargs.update(
+            {"conversation_commands_reference_document_weblink": conversation_reference.weblink}
+        )
 
-    blocks.append(Section(fields=fields))
-
+    blocks = create_message_blocks(
+        INCIDENT_RESOURCES_MESSAGE, MessageType.incident_resources_message, **message_kwargs
+    )
     blocks = Message(blocks=blocks).build()["blocks"]
-    await respond(text="Incident Resources Message", blocks=blocks, response_type="ephemeral")
+    await respond(text="Incident Resources", blocks=blocks, response_type="ephemeral")
 
 
 # EVENTS
@@ -1193,8 +1290,6 @@ async def handle_engage_oncall_command(ack, respond, context, body, client, db_s
 )
 async def handle_engage_oncall_submission_event(ack, user, context, db_session, form_data):
     """Handles the engage oncall submission"""
-    await ack()
-
     oncall_service_external_id = form_data[EngageOncallBlockIds.service]["value"]
     page = form_data.get(EngageOncallBlockIds.page, {"value": None})["value"]
 
@@ -1369,27 +1464,13 @@ async def handle_report_executive_command(ack, body, client, respond, context, d
     ReportExecutiveActions.submit,
     middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
 )
-async def handle_report_executive_submission_event(
-    user, client, body, context, db_session, form_data
-):
+async def handle_report_executive_submission_event(ack, user, context, db_session, form_data):
     """Handles the report executive submission"""
+    await ack(response_type="close")
     executive_report_in = ExecutiveReportCreate(
         current_status=form_data[ReportExecutiveBlockIds.current_status],
         overview=form_data[ReportExecutiveBlockIds.overview],
         next_steps=form_data[ReportExecutiveBlockIds.next_steps],
-    )
-
-    modal = Modal(
-        title="Executive Report",
-        close="Close",
-        blocks=[Section(text="Creating report and sending it to recipients...")],
-    ).build()
-
-    stack = await client.views_update(
-        view_id=body["view"]["id"],
-        hash=body["view"]["hash"],
-        trigger_id=body["trigger_id"],
-        view=modal,
     )
 
     report_flows.create_executive_report(
@@ -1397,19 +1478,6 @@ async def handle_report_executive_submission_event(
         incident_id=context["subject"].id,
         executive_report_in=executive_report_in,
         db_session=db_session,
-    )
-
-    modal = Modal(
-        title="Executive Report",
-        close="Close",
-        blocks=[Section(text="Creating report and sending it to recipients... Success!")],
-    ).build()
-
-    await client.views_update(
-        view_id=stack["view"]["id"],
-        hash=stack["view"]["hash"],
-        trigger_id=stack["trigger_id"],
-        view=modal,
     )
 
 
@@ -1477,7 +1545,7 @@ async def handle_update_incident_command(ack, body, client, context, db_session)
     middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
 )
 async def handle_update_incident_submission_event(
-    ack, body, client, user, context, db_session, form_data
+    body, client, user, context, db_session, form_data
 ):
     """Handles the update incident submission"""
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
@@ -1589,7 +1657,7 @@ async def handle_report_incident_command(ack, body, context, db_session, client)
 )
 async def handle_report_incident_submission_event(ack, user, client, body, db_session, form_data):
     """Handles the report incident submission"""
-    await ack()
+
     tags = []
     for t in form_data.get(DefaultBlockIds.tags_multi_select, []):
         # we have to fetch as only the IDs are embedded in slack
@@ -1621,6 +1689,19 @@ async def handle_report_incident_submission_event(ack, user, client, body, db_se
         tags=tags,
     )
 
+    blocks = [
+        Section(text="Creating your incident..."),
+    ]
+
+    modal = Modal(title="Incident Report", blocks=blocks, close="Close").build()
+
+    result = await client.views_update(
+        view_id=body["view"]["id"],
+        hash=body["view"]["hash"],
+        trigger_id=body["trigger_id"],
+        view=modal,
+    )
+
     # Create the incident
     incident = incident_service.create(db_session=db_session, incident_in=incident_in)
 
@@ -1628,24 +1709,25 @@ async def handle_report_incident_submission_event(ack, user, client, body, db_se
         Section(
             text="This is a confirmation that you have reported a incident with the following information. You will be invited to an incident slack conversation shortly."
         ),
-        Section(text=f"*Incident Title*\n {incident.title}"),
+        Section(text=f"*Title*\n {incident.title}"),
         Section(text=f"*Description*\n {incident.description}"),
         Section(
             fields=[
-                MarkdownText(text=f"*Commander* \n {incident.commander.individual.name}"),
+                MarkdownText(
+                    text=f"*Commander*\n<{incident.commander.individual.weblink}|{incident.commander.individual.name}>"
+                ),
                 MarkdownText(text=f"*Type*\n {incident.incident_type.name}"),
                 MarkdownText(text=f"*Severity*\n {incident.incident_severity.name}"),
                 MarkdownText(text=f"*Priority*\n {incident.incident_priority.name}"),
             ]
         ),
     ]
-
     modal = Modal(title="Incident Report", blocks=blocks, close="Close").build()
 
-    await client.views_update(
-        view_id=body["view"]["id"],
-        hash=body["view"]["hash"],
-        trigger_id=body["trigger_id"],
+    result = await client.views_update(
+        view_id=result["view"]["id"],
+        hash=result["view"]["hash"],
+        trigger_id=result["trigger_id"],
         view=modal,
     )
 
