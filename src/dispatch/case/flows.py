@@ -17,6 +17,7 @@ from dispatch.incident.models import IncidentCreate
 from dispatch.individual.models import IndividualContactRead
 from dispatch.models import OrganizationSlug, PrimaryKey
 from dispatch.participant.models import ParticipantUpdate
+from dispatch.plugin import service as plugin_service
 from dispatch.storage import flows as storage_flows
 from dispatch.storage.enums import StorageAction
 from dispatch.ticket import flows as ticket_flows
@@ -105,6 +106,26 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
     document_flows.update_document(
         document=document, project_id=case.project.id, db_session=db_session
     )
+
+    if case.case_priority:
+        if case.case_type.oncall_service:
+            service_id = case.case_type.oncall_service.external_id
+            oncall_plugin = plugin_service.get_active_instance(
+                db_session=db_session, project_id=case.project.id, plugin_type="oncall"
+            )
+            if oncall_plugin:
+                oncall_plugin.instance.page(
+                    service_id=service_id,
+                    incident_name=case.name,
+                    incident_title=case.title,
+                    incident_description=case.description,
+                )
+            else:
+                log.warning("Case assignee not paged. No plugin of type oncall enabled.")
+        else:
+            log.warning(
+                "Case assignee not paged. No relationship between case type and an oncall service."
+            )
 
     # TODO(mvilanova): we send the case created notification
 
