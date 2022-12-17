@@ -30,9 +30,6 @@ def create_signal_instance(db_session: SessionLocal, signal_instance_data: dict)
     if suppressed:
         return
 
-    from pprint import pprint
-
-    pprint(signal_instance_data)
     duplicate = signal_service.deduplicate(
         db_session=db_session,
         signal_instance=signal_instance,
