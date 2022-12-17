@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     :headers="headers"
-    :items="value"
+    :items="signal_instances"
     :items-per-page="-1"
     disabled-pagination
     hide-default-footer
@@ -36,19 +36,13 @@
 </template>
 
 <script>
+import { mapFields } from "vuex-map-fields"
+
 import SignalPopover from "@/signal/SignalPopover.vue"
 import RawSignalViewer from "@/signal/RawSignalViewer.vue"
 
 export default {
   name: "SignalInstanceTab",
-  props: {
-    value: {
-      type: Array,
-      default: function () {
-        return []
-      },
-    },
-  },
   components: {
     SignalPopover,
     RawSignalViewer,
@@ -65,6 +59,9 @@ export default {
         { text: "", value: "data-table-actions", sortable: false, align: "end" },
       ],
     }
+  },
+  computed: {
+    ...mapFields("case_management", ["selected.signal_instances"]),
   },
 }
 </script>
