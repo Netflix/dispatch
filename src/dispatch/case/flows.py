@@ -107,7 +107,7 @@ def case_new_create_flow(*, case_id: int, organization_slug: OrganizationSlug, d
         document=document, project_id=case.project.id, db_session=db_session
     )
 
-    if case.case_priority:
+    if case.case_priority.page_assignee:
         if case.case_type.oncall_service:
             service_id = case.case_type.oncall_service.external_id
             oncall_plugin = plugin_service.get_active_instance(
