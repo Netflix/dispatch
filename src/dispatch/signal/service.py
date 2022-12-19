@@ -97,17 +97,12 @@ def get(*, db_session, signal_id: int) -> Optional[Signal]:
     return db_session.query(Signal).filter(Signal.id == signal_id).one()
 
 
-def get_by_external_id_and_variant(
-    *, db_session, external_id: str, variant: str = None
+def get_by_variant_or_external_id(
+    *, db_session, external_id: str = None, variant: str = None
 ) -> Optional[Signal]:
     """Gets a signal it's external id (and variant if supplied)."""
     if variant:
-        return (
-            db_session.query(Signal)
-            .filter(Signal.external_id == external_id)
-            .filter(Signal.variant == variant)
-            .one()
-        )
+        return db_session.query(Signal).filter(Signal.variant == variant).one()
     return db_session.query(Signal).filter(Signal.external_id == external_id).one()
 
 

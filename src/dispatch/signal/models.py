@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Dict
+from pydantic import Field
 
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, PrimaryKeyConstraint, DateTime
@@ -190,6 +191,17 @@ class SignalRead(SignalBase):
 class SignalPagination(DispatchBase):
     items: List[SignalRead]
     total: int
+
+
+class RawSignal(DispatchBase):
+    action: Optional[List[Dict]] = []
+    additional_metadata: Optional[List[Dict]] = Field([], alias="additionalMetadata")
+    asset: Optional[List[Dict]] = []
+    identity: Optional[Dict] = {}
+    origin_location: Optional[List[Dict]] = Field([], alias="originLocation")
+    variant: Optional[str] = None
+    created_at: Optional[datetime] = Field(None, alias="createdAt")
+    id: str
 
 
 class SignalInstanceBase(DispatchBase):
