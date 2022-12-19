@@ -31,16 +31,16 @@
             />
           </v-card-title>
           <v-data-table
-              :headers="headers"
-              :items="items"
-              :server-items-length="total"
-              :page.sync="page"
-              :items-per-page.sync="itemsPerPage"
-              :sort-by.sync="sortBy"
-              :sort-desc.sync="descending"
-              :loading="loading"
-              loading-text="Loading... Please wait"
-            >
+            :headers="headers"
+            :items="items"
+            :server-items-length="total"
+            :page.sync="page"
+            :items-per-page.sync="itemsPerPage"
+            :sort-by.sync="sortBy"
+            :sort-desc.sync="descending"
+            :loading="loading"
+            loading-text="Loading... Please wait"
+          >
             <template v-slot:item.page_assignee="{ item }">
               <v-simple-checkbox v-model="item.page_assignee" disabled />
             </template>
