@@ -13,13 +13,12 @@ from dispatch.project.models import Project
 from dispatch.plugin import service as plugin_service
 from dispatch.signal import flows as signal_flows
 from dispatch.decorators import scheduled_project_task
-from dispatch.signal.models import SignalInstanceCreate
 
 log = logging.getLogger(__name__)
 
 
 # TODO do we want per signal source flexibility?
-@scheduler.add(every(5).minutes, name="signal-consume")
+@scheduler.add(every(1).minutes, name="signal-consume")
 @scheduled_project_task
 def consume_signals(db_session: SessionLocal, project: Project):
     """Consume signals from external sources."""
@@ -38,7 +37,11 @@ def consume_signals(db_session: SessionLocal, project: Project):
         signal_instances = plugin.instance.consume()
 
         for signal_instance_data in signal_instances:
-            signal_flows.create_signal_instance(
-                db_session=db_session,
-                signal_instance_data=signal_instance_data,
-            )
+            try:
+                signal_flows.create_signal_instance(
+                    db_session=db_session,
+                    signal_instance_data=signal_instance_data,
+                )
+            except Exception as e:
+                log.debug(signal_instance_data)
+                log.exception(e)
