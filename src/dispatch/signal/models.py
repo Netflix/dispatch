@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Dict
+from pydantic import Field
 
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, PrimaryKeyConstraint, DateTime
@@ -193,14 +194,14 @@ class SignalPagination(DispatchBase):
 
 
 class RawSignal(DispatchBase):
-    action = Optional[List[dict]]
-    additionalMetadata = Optional[List[dict]]
-    asset = Optional[List[dict]]
-    identity = Optional[dict]
-    originLocation = Optional[List[dict]]
-    variant = Optional[str]
-    createdAt = DateTime
-    id = str
+    action: Optional[List[Dict]] = []
+    additional_metadata: Optional[List[Dict]] = Field([], alias="additionalMetadata")
+    asset: Optional[List[Dict]] = []
+    identity: Optional[Dict] = {}
+    origin_location: Optional[List[Dict]] = Field([], alias="originLocation")
+    variant: Optional[str] = None
+    created_at: Optional[datetime] = Field(None, alias="createdAt")
+    id: str
 
 
 class SignalInstanceBase(DispatchBase):
