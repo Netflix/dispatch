@@ -197,7 +197,7 @@ class RawSignal(DispatchBase):
     additionalMetadata = Optional[List[dict]]
     asset = Optional[List[dict]]
     identity = Optional[dict]
-    originLocation = Optional[List[Dict]]
+    originLocation = Optional[List[dict]]
     variant = Optional[str]
     createdAt = DateTime
     id = str
