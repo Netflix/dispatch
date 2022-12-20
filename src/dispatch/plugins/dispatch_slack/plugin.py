@@ -132,7 +132,7 @@ class SlackConversationPlugin(ConversationPlugin):
         if not blocks:
             blocks = Message(
                 blocks=create_message_blocks(message_template, notification_type, items, **kwargs)
-            ).build()["block"]
+            ).build()["blocks"]
 
         archived = conversation_archived(client, conversation_id)
         if not archived:
