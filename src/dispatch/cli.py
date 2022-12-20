@@ -8,6 +8,8 @@ from dispatch.enums import UserRoles
 from dispatch.plugin.models import PluginInstance
 
 from .scheduler import scheduler
+from .extensions import configure_extensions
+
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -21,6 +23,8 @@ def dispatch_cli():
     from .logging import configure_logging
 
     configure_logging()
+
+    configure_extensions()
 
 
 @dispatch_cli.group("plugins")
