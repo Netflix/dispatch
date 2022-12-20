@@ -32,7 +32,7 @@ async def app_error_handler(error, client, body, logger):
 
     logger.exception(f"Error: {error}")
     logger.info(f"Request body: {body}")
-    return BoltResponse(body="", code=200)
+    return BoltResponse(body="", status=200)
 
 
 @app.event(
