@@ -6,7 +6,6 @@ from pydantic import BaseModel
 from pydantic.error_wrappers import ErrorWrapper, ValidationError
 
 import slack_sdk
-import slack_bolt.app
 from slack_sdk.web.async_client import AsyncWebClient
 
 from typing import Any, Dict, List, Optional
@@ -99,11 +98,6 @@ def create_slack_client(config: SlackConversationConfiguration, run_async: bool 
     if not run_async:
         return slack_sdk.WebClient(token=config.api_bot_token.get_secret_value())
     return AsyncWebClient(token=config.api_bot_token.get_secret_value())
-
-
-def create_bolt_slack_app(config: SlackConversationConfiguration):
-    """Creates a Slack Bolt App."""
-    return slack_bolt.app.App(token=config.api_bot_token.get_secret_value())
 
 
 def resolve_user(client: Any, user_id: str):
@@ -329,9 +323,11 @@ def set_conversation_topic(client: Any, conversation_id: str, topic: str):
     return make_call(client, "conversations.setTopic", channel=conversation_id, topic=topic)
 
 
-def set_conversation_bookmark(app: Any, conversation_id: str, weblink, title: str):
+def set_conversation_bookmark(client: Any, conversation_id: str, weblink, title: str):
     """Sets a bookmark for the specified conversation."""
-    return app.client.bookmarks_add(
+    return make_call(
+        client,
+        "bookmarks.add",
         channel_id=conversation_id,
         title=title,
         type="link",

@@ -171,8 +171,8 @@ class SlackConversationPlugin(ConversationPlugin):
 
     def set_bookmark(self, conversation_id: str, weblink: str, title: str):
         """Sets the conversation bookmark."""
-        app = create_bolt_slack_app(self.configuration)
-        return set_conversation_bookmark(app, conversation_id, weblink, title)
+        client = create_slack_client(self.configuration)
+        return set_conversation_bookmark(client, conversation_id, weblink, title)
 
     def get_command_name(self, command: str):
         """Gets the command name."""
