@@ -33,7 +33,6 @@ from .service import (
     conversation_archived,
     create_conversation,
     create_slack_client,
-    create_bolt_slack_app,
     get_conversation_by_name,
     get_user_avatar_url,
     get_user_info_by_id,
