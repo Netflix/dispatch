@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy.orm.session import Session
 
 from dispatch.auth import service as user_service
-from dispatch.auth.models import DispatchUser
+from dispatch.auth.models import UserRegister
 from dispatch.conversation import service as conversation_service
 from dispatch.conversation.models import Conversation
 from dispatch.database.core import SessionLocal, engine, sessionmaker
@@ -122,7 +122,7 @@ async def user_middleware(body, payload, db_session, client, context, next):
     context["user"] = user_service.get_or_create(
         db_session=db_session,
         organization=context["subject"].organization_slug,
-        user_in=DispatchUser(email=email),
+        user_in=UserRegister(email=email),
     )
     await next()
 
