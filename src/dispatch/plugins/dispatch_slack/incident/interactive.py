@@ -1633,7 +1633,7 @@ async def ack_report_incident_submission_event(ack):
         close="Close",
         blocks=[Section(text="Creating incident resources...")],
     ).build()
-    ack(response_action="update", view=modal)
+    await ack(response_action="update", view=modal)
 
 
 async def handle_report_incident_submission_event(user, client, body, form_data):
