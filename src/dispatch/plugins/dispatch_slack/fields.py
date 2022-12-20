@@ -503,7 +503,7 @@ def participant_select(
     **kwargs,
 ):
     """Creates a static select of available participants."""
-    participants = [{"text": p.individual.name, "value": p.individual.id} for p in participants]
+    participants = [{"text": p.individual.name, "value": p.id} for p in participants]
     return static_select_block(
         placeholder="Select Participant",
         options=participants,

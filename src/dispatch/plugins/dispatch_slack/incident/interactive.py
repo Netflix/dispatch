@@ -2,7 +2,6 @@ import logging
 from datetime import datetime
 from typing import List
 
-import inspect
 import pytz
 from blockkit import (
     Actions,
@@ -23,8 +22,7 @@ from blockkit import (
 from sqlalchemy import func
 
 from dispatch.config import DISPATCH_UI_URL
-from dispatch.messaging.strings import INCIDENT_RESOURCES_MESSAGE
-from dispatch.database.core import resolve_attr
+from dispatch.database.core import engine, resolve_attr, sessionmaker
 from dispatch.database.service import search_filter_sort_paginate
 from dispatch.document import service as document_service
 from dispatch.enums import Visibility
@@ -35,6 +33,7 @@ from dispatch.incident.enums import IncidentStatus
 from dispatch.incident.models import IncidentCreate, IncidentRead, IncidentUpdate
 from dispatch.individual import service as individual_service
 from dispatch.individual.models import IndividualContactRead
+from dispatch.messaging.strings import INCIDENT_RESOURCES_MESSAGE, MessageType
 from dispatch.monitor import service as monitor_service
 from dispatch.nlp import build_phrase_matcher, build_term_vocab, extract_terms_from_text
 from dispatch.participant import service as participant_service
@@ -44,6 +43,7 @@ from dispatch.participant_role.enums import ParticipantRoleType
 from dispatch.plugin import service as plugin_service
 from dispatch.plugins.dispatch_slack import service as dispatch_slack_service
 from dispatch.plugins.dispatch_slack.bolt import app
+from dispatch.plugins.dispatch_slack.decorators import message_dispatcher
 from dispatch.plugins.dispatch_slack.fields import (
     DefaultActionIds,
     DefaultBlockIds,
@@ -84,26 +84,22 @@ from dispatch.plugins.dispatch_slack.incident.enums import (
     UpdateParticipantActions,
     UpdateParticipantBlockIds,
 )
+from dispatch.plugins.dispatch_slack.messaging import create_message_blocks
 from dispatch.plugins.dispatch_slack.middleware import (
     action_context_middleware,
     command_context_middleware,
     configuration_context_middleware,
     db_middleware,
-    message_context_middleware,
     modal_submit_middleware,
-    user_middleware,
     restricted_command_middleware,
+    user_middleware,
 )
 from dispatch.plugins.dispatch_slack.models import SubjectMetadata
 from dispatch.plugins.dispatch_slack.service import (
+    chunks,
     get_user_email_async,
     get_user_profile_by_email_async,
 )
-from dispatch.plugins.dispatch_slack.messaging import create_message_blocks
-from dispatch.plugins.dispatch_slack.service import chunks
-
-from dispatch.messaging.strings import MessageType
-
 from dispatch.project import service as project_service
 from dispatch.report import flows as report_flows
 from dispatch.report import service as report_service
@@ -116,7 +112,6 @@ from dispatch.task import service as task_service
 from dispatch.task.enums import TaskStatus
 from dispatch.task.models import Task
 
-
 log = logging.getLogger(__file__)
 
 
@@ -126,158 +121,6 @@ class TaskMetadata(SubjectMetadata):
 
 class MonitorMetadata(SubjectMetadata):
     weblink: str
-
-
-class MessageDispatcher:
-    """Dispatches current message to any registered function."""
-
-    registered_funcs = []
-
-    def add(self, *args, **kwargs):
-        """Adds a function to the dispatcher."""
-
-        def decorator(func):
-            if not kwargs.get("name"):
-                name = func.__name__
-            else:
-                name = kwargs.pop("name")
-
-            self.registered_funcs.append({"name": name, "func": func})
-
-        return decorator
-
-    async def dispatch(self, *args, **kwargs):
-        """Runs all registered functions."""
-        for f in self.registered_funcs:
-            # only inject the args the function cares about
-            func_args = inspect.getfullargspec(inspect.unwrap(f["func"])).args
-            injected_args = (kwargs[a] for a in func_args)
-
-            try:
-                await f["func"](*injected_args)
-            except Exception as e:
-                log.exception(e)
-                log.debug(f"Failed to run dispatched function ({e})")
-
-
-message_dispatcher = MessageDispatcher()
-
-
-async def ack_shortcut(ack):
-    await ack()
-
-
-async def open_modal(body, client):
-    await client.views_open(
-        trigger_id=body["trigger_id"],
-        view={
-            "type": "modal",
-            "callback_id": "socket_modal_submission",
-            "submit": {
-                "type": "plain_text",
-                "text": "Submit",
-            },
-            "close": {
-                "type": "plain_text",
-                "text": "Cancel",
-            },
-            "title": {
-                "type": "plain_text",
-                "text": "Socket Modal",
-            },
-            "blocks": [
-                {
-                    "type": "input",
-                    "block_id": "q1",
-                    "label": {
-                        "type": "plain_text",
-                        "text": "Write anything here!",
-                    },
-                    "element": {
-                        "action_id": "feedback",
-                        "type": "plain_text_input",
-                    },
-                },
-                {
-                    "type": "input",
-                    "block_id": "q2",
-                    "label": {
-                        "type": "plain_text",
-                        "text": "Can you tell us your favorites?",
-                    },
-                    "element": {
-                        "type": "external_select",
-                        "action_id": "favorite-animal",
-                        "min_query_length": 0,
-                        "placeholder": {
-                            "type": "plain_text",
-                            "text": "Select your favorites",
-                        },
-                    },
-                },
-            ],
-        },
-    )
-
-
-app.shortcut("socket-mode")(ack=ack_shortcut, lazy=[open_modal])
-
-all_options = [
-    {
-        "text": {"type": "plain_text", "text": ":cat: Cat"},
-        "value": "cat",
-    },
-    {
-        "text": {"type": "plain_text", "text": ":dog: Dog"},
-        "value": "dog",
-    },
-    {
-        "text": {"type": "plain_text", "text": ":bear: Bear"},
-        "value": "bear",
-    },
-]
-
-
-@app.options("favorite-animal")
-async def external_data_source_handler(ack, body):
-    keyword = body.get("value")
-    if keyword is not None and len(keyword) > 0:
-        options = [o for o in all_options if keyword in o["text"]["text"]]
-        await ack(options=options)
-    else:
-        await ack(options=all_options)
-
-
-async def submission(body, client):
-    import time
-
-    raise Exception
-
-    time.sleep(10)
-
-    modal = Modal(
-        title="Incident Update",
-        close="Close",
-        blocks=[Section(text="The incident is being updated...")],
-    ).build()
-
-    await client.views_update(
-        view_id=body["view"]["id"],
-        hash=body["view"]["hash"],
-        trigger_id=body["trigger_id"],
-        view=modal,
-    )
-
-
-app.view("socket_modal_submission")(ack=ack_shortcut, lazy=[submission])
-
-
-@app.event(
-    {"type": "message"}, middleware=[message_context_middleware, db_middleware, user_middleware]
-)
-async def handle_message_events(ack, payload, context, body, client, respond, user, db_session):
-    """Container function for all message functions."""
-    await message_dispatcher.dispatch(**locals())
 
 
 def configure(config):
@@ -1012,12 +855,24 @@ async def handle_add_timeline_event_command(ack, body, client, context):
     )
 
 
-@app.view(
-    AddTimelineEventActions.submit,
-    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
-)
-async def handle_add_timeline_submission_event(ack, user, client, context, db_session, form_data):
+async def ack_add_timeline_submission_event(ack):
+    """Handles the add timeline submission event acknowledgement."""
+    modal = Modal(
+        title="Add Timeline Event", close="Close", blocks=[Section(text="Adding timeline event...")]
+    ).build()
+    await ack(response_action="update", view=modal)
+
+
+async def handle_add_timeline_submission_event(body, user, client, context, form_data):
     """Handles the add timeline submission event."""
+    # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
+    # in the future
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: f"dispatch_organization_{context['subject'].organization_slug}",
+        }
+    )
+    db_session = sessionmaker(bind=schema_engine)()
     event_date = form_data.get(DefaultBlockIds.date_picker_input)
     event_hour = form_data.get(DefaultBlockIds.hour_picker_input)["value"]
     event_minute = form_data.get(DefaultBlockIds.minute_picker_input)["value"]
@@ -1046,16 +901,22 @@ async def handle_add_timeline_submission_event(ack, user, client, context, db_se
         individual_id=participant.individual.id,
     )
 
-    blocks = [Section(text="Success!")]
-
     modal = Modal(
-        title="Timeline Event Added",
+        title="Add Timeline Event",
         close="Close",
-        blocks=blocks,
-        private_metadata=context["subject"].json(),
+        blocks=[Section(text="Adding timeline event... Success!")],
     ).build()
 
-    await ack(response_action="update", view=modal)
+    await client.views_update(
+        view_id=body["view"]["id"],
+        view=modal,
+    )
+
+
+app.view(
+    AddTimelineEventActions.submit,
+    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
+)(ack=ack_add_timeline_submission_event, lazy=[handle_add_timeline_submission_event])
 
 
 async def handle_update_participant_command(ack, respond, body, context, db_session, client):
@@ -1097,15 +958,49 @@ async def handle_update_participant_command(ack, respond, body, context, db_sess
     await client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-@app.view(
+async def ack_update_participant_submission_event(ack):
+    """Handles the update participant submission event."""
+    modal = Modal(
+        title="Update Participant", close="Close", blocks=[Section(text="Updating participant...")]
+    ).build()
+    await ack(response_action="update", view=modal)
+
+
+async def handle_update_participant_submission_event(body, client, context, db_session, form_data):
+    """Handles the update participant submission event."""
+    # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
+    # in the future
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: f"dispatch_organization_{context['subject'].organization_slug}",
+        }
+    )
+    db_session = sessionmaker(bind=schema_engine)()
+    added_reason = form_data.get(UpdateParticipantBlockIds.reason)
+    participant_id = int(form_data.get(UpdateParticipantBlockIds.participant)["value"])
+    selected_participant = participant_service.get(
+        db_session=db_session, participant_id=participant_id
+    )
+    participant_service.update(
+        db_session=db_session,
+        participant=selected_participant,
+        participant_in=ParticipantUpdate(added_reason=added_reason),
+    )
+    modal = Modal(
+        title="Update Participant",
+        close="Close",
+        blocks=[Section(text="Updating participant...Success!")],
+    ).build()
+    await client.views_update(
+        view_id=body["view"]["id"],
+        view=modal,
+    )
+
+
+app.view(
     UpdateParticipantActions.submit,
     middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
-)
-async def handle_update_participant_submission_event(
-    ack, user, client, context, db_session, form_data
-):
-    """Handles the update participant submission event."""
-    ack()
+)(ack=ack_update_participant_submission_event, lazy=[handle_update_participant_submission_event])
 
 
 async def handle_update_notifications_group_command(ack, body, context, client, db_session):
@@ -1155,15 +1050,30 @@ async def handle_update_notifications_group_command(ack, body, context, client, 
     await client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-@app.view(
-    UpdateNotificationGroupActions.submit,
-    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
-)
+async def ack_update_notifications_group_submission_event(ack):
+    """Handles the update notifications group submission acknowledgement."""
+    modal = Modal(
+        title="Update Notifications Group",
+        close="Close",
+        blocks=[Section(text="Updating notifications group...")],
+    ).build()
+    await ack(response_action="update", view=modal)
+
+
 async def handle_update_notifications_group_submission_event(
     ack, user, client, context, db_session, form_data
 ):
     """Handles the update notifications group submission"""
     ack()
+
+
+app.view(
+    UpdateNotificationGroupActions.submit,
+    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
+)(
+    ack=ack_update_notifications_group_submission_event,
+    lazy=[handle_update_notifications_group_submission_event],
+)
 
 
 async def handle_assign_role_command(ack, context, body, client):
@@ -1205,12 +1115,24 @@ async def handle_assign_role_command(ack, context, body, client):
     await client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-@app.view(
-    AssignRoleActions.submit,
-    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
-)
-async def handle_assign_role_submission_event(ack, user, client, context, db_session, form_data):
+async def ack_assign_role_submission_event(ack):
+    """Handles the assign role submission acknowledgement."""
+    modal = Modal(
+        title="Assign Role", close="Close", blocks=[Section(text="Assigning role...")]
+    ).build()
+    await ack(response_action="update", view=modal)
+
+
+async def handle_assign_role_submission_event(body, user, client, context, form_data):
     """Handles the assign role submission."""
+    # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
+    # in the future
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: f"dispatch_organization_{context['subject'].organization_slug}",
+        }
+    )
+    db_session = sessionmaker(bind=schema_engine)()
     assignee_user_id = form_data[AssignRoleBlockIds.user]["value"]
     assignee_role = form_data[AssignRoleBlockIds.role]["value"]
     assignee_email = await get_user_email_async(client=client, user_id=assignee_user_id)
@@ -1230,11 +1152,19 @@ async def handle_assign_role_submission_event(ack, user, client, context, db_ses
     ):
         # we update the external ticket
         incident_flows.update_external_incident_ticket(
-            incident_id=context["subject"].id, db_session=db_session
+            incident_id=context["subject"].id, db_session=context["subject"].organization_slug
         )
 
-    modal = Modal(title="Engagement", blocks=[Section(text="Success!")], close="Close").build()
-    await ack(response_action="update", view=modal)
+    modal = Modal(
+        title="Assign Role", blocks=[Section(text="Assigning role... Success!")], close="Close"
+    ).build()
+    await client.views_update(view_id=body["view"]["id"], view=modal)
+
+
+app.view(
+    AssignRoleActions.submit,
+    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
+)(ack=ack_assign_role_submission_event, lazy=[handle_assign_role_submission_event])
 
 
 async def handle_engage_oncall_command(ack, respond, context, body, client, db_session):
@@ -1388,16 +1318,16 @@ async def handle_report_tactical_command(ack, client, respond, context, db_sessi
     await client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-@app.view(
-    ReportTacticalActions.submit,
-    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
-)
-async def handle_report_tactical_submission_event(
-    ack, user, client, context, db_session, form_data
-):
-    """Handles the report tactical submission"""
-    await ack()
+async def ack_report_tactical_submission_event(ack):
+    """Handles report tactical submission event."""
+    modal = Modal(
+        title="Report Tactical", close="Close", blocks=[Section(text="Creating tactical report...")]
+    ).build()
+    await ack(response_action="update", view=modal)
 
+
+async def handle_report_tactical_submission_event(user, context, form_data):
+    """Handles the report tactical submission"""
     tactical_report_in = TacticalReportCreate(
         conditions=form_data[ReportTacticalBlockIds.conditions],
         actions=form_data[ReportTacticalBlockIds.actions],
@@ -1408,8 +1338,14 @@ async def handle_report_tactical_submission_event(
         user_email=user.email,
         incident_id=context["subject"].id,
         tactical_report_in=tactical_report_in,
-        db_session=db_session,
+        db_session=context["subject"].organization_slug,
     )
+
+
+app.view(
+    ReportTacticalActions.submit,
+    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
+)(ack=ack_report_tactical_submission_event, lazy=[handle_report_tactical_submission_event])
 
 
 async def handle_report_executive_command(ack, body, client, respond, context, db_session):
@@ -1475,13 +1411,18 @@ async def handle_report_executive_command(ack, body, client, respond, context, d
     await client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-@app.view(
-    ReportExecutiveActions.submit,
-    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
-)
-async def handle_report_executive_submission_event(ack, user, context, db_session, form_data):
+async def ack_report_executive_submission_event(ack):
+    """Handles executive submission acknowledgement."""
+    modal = Modal(
+        title="Executive Report",
+        close="Close",
+        blocks=[Section(text="Sending executive report...")],
+    ).build()
+    await ack(response_action="update", view=modal)
+
+
+async def handle_report_executive_submission_event(client, body, user, context, form_data):
     """Handles the report executive submission"""
-    await ack(response_type="close")
     executive_report_in = ExecutiveReportCreate(
         current_status=form_data[ReportExecutiveBlockIds.current_status],
         overview=form_data[ReportExecutiveBlockIds.overview],
@@ -1492,8 +1433,24 @@ async def handle_report_executive_submission_event(ack, user, context, db_sessio
         user_email=user.email,
         incident_id=context["subject"].id,
         executive_report_in=executive_report_in,
-        db_session=db_session,
+        organization_slug=context["subject"].organization_slug,
     )
+    modal = Modal(
+        title="Executive Report",
+        blocks=[Section(text="Sending executive report... Success!")],
+        close="Close",
+    ).build()
+
+    await client.views_update(
+        view_id=body["view"]["id"],
+        view=modal,
+    )
+
+
+app.view(
+    ReportExecutiveActions.submit,
+    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
+)(ack=ack_report_executive_submission_event, lazy=[handle_report_executive_submission_event])
 
 
 async def handle_update_incident_command(ack, body, client, context, db_session):
@@ -1555,14 +1512,28 @@ async def handle_update_incident_command(ack, body, client, context, db_session)
     await client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-@app.view(
-    IncidentUpdateActions.submit,
-    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
-)
+async def ack_incident_update_submission_event(ack):
+    """Handles incident update submission event."""
+    modal = Modal(
+        title="Incident Update",
+        close="Close",
+        blocks=[Section(text="The incident is being updated...")],
+    ).build()
+    await ack(response_action="update", view=modal)
+
+
 async def handle_update_incident_submission_event(
     body, client, user, context, db_session, form_data
 ):
     """Handles the update incident submission"""
+    # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
+    # in the future
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: f"dispatch_organization_{context['subject'].organization_slug}",
+        }
+    )
+    db_session = sessionmaker(bind=schema_engine)()
     incident = incident_service.get(db_session=db_session, incident_id=context["subject"].id)
 
     tags = []
@@ -1595,19 +1566,6 @@ async def handle_update_incident_submission_event(
         db_session=db_session, incident=incident, incident_in=incident_in
     )
 
-    modal = Modal(
-        title="Incident Update",
-        close="Close",
-        blocks=[Section(text="The incident is being updated...")],
-    ).build()
-
-    stack = await client.views_update(
-        view_id=body["view"]["id"],
-        hash=body["view"]["hash"],
-        trigger_id=body["trigger_id"],
-        view=modal,
-    )
-
     commander_email = updated_incident.commander.individual.email
     reporter_email = updated_incident.reporter.individual.email
 
@@ -1619,24 +1577,26 @@ async def handle_update_incident_submission_event(
         previous_incident,
         db_session=db_session,
     )
-
     modal = Modal(
         title="Incident Update",
         close="Close",
-        blocks=[Section(text="The incident has been successfully updated!")],
+        blocks=[Section(text="The incident is being updated...success!")],
     ).build()
 
     await client.views_update(
-        view_id=stack["view"]["id"],
-        hash=stack["view"]["hash"],
-        trigger_id=stack["trigger_id"],
+        view_id=body["view"]["id"],
         view=modal,
     )
 
 
+app.view(
+    IncidentUpdateActions.submit,
+    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
+)(ack=ack_incident_update_submission_event, lazy=[handle_update_incident_submission_event])
+
+
 async def handle_report_incident_command(ack, body, context, db_session, client):
     """Handles the report incident command."""
-    await ack()
     blocks = [
         Context(
             elements=[
@@ -1666,12 +1626,28 @@ async def handle_report_incident_command(ack, body, context, db_session, client)
     await client.views_open(trigger_id=body["trigger_id"], view=modal)
 
 
-@app.view(
-    IncidentReportActions.submit,
-    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
-)
-async def handle_report_incident_submission_event(ack, user, client, body, db_session, form_data):
+async def ack_report_incident_submission_event(ack):
+    """Handles the report incident submission event acknowledgment."""
+    modal = Modal(
+        title="Report Incident",
+        close="Close",
+        blocks=[Section(text="Creating incident resources...")],
+    ).build()
+    ack(response_action="update", view=modal)
+
+
+async def handle_report_incident_submission_event(user, client, body, form_data):
     """Handles the report incident submission"""
+    # refetch session as we can't pass a db_session lazily, these could be moved to @background_task functions
+    # in the future
+
+    # TODO handle multiple organizations during submission
+    schema_engine = engine.execution_options(
+        schema_translate_map={
+            None: "dispatch_organization_default",
+        }
+    )
+    db_session = sessionmaker(bind=schema_engine)()
 
     tags = []
     for t in form_data.get(DefaultBlockIds.tags_multi_select, []):
@@ -1751,6 +1727,12 @@ async def handle_report_incident_submission_event(ack, user, client, body, db_se
         db_session=db_session,
         organization_slug=incident.project.organization.slug,
     )
+
+
+app.view(
+    IncidentReportActions.submit,
+    middleware=[action_context_middleware, db_middleware, user_middleware, modal_submit_middleware],
+)(ack=ack_report_incident_submission_event, lazy=[handle_report_incident_submission_event])
 
 
 @app.action(
