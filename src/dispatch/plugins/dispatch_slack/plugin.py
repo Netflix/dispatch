@@ -44,6 +44,7 @@ from .service import (
     send_ephemeral_message,
     send_message,
     set_conversation_topic,
+    set_conversation_bookmark,
     unarchive_conversation,
 )
 
@@ -166,6 +167,11 @@ class SlackConversationPlugin(ConversationPlugin):
         """Sets the conversation topic."""
         client = create_slack_client(self.configuration)
         return set_conversation_topic(client, conversation_id, topic)
+
+    def set_bookmark(self, conversation_id: str, weblink: str, title: str):
+        """Sets the conversation bookmark."""
+        client = create_slack_client(self.configuration)
+        return set_conversation_bookmark(client, conversation_id, weblink, title)
 
     def get_command_name(self, command: str):
         """Gets the command name."""
