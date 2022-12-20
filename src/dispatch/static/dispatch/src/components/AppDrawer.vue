@@ -22,7 +22,7 @@
     class="background1"
     v-if="showChildPane"
   >
-    <v-row class="fill-height" no-gutters>
+    <v-layout fill-height no-gutters>
       <v-navigation-drawer width="220" permanent :mini-variant="mini">
         <v-list dense flat nav>
           <span v-for="(route, index) in routes" :key="index" :to="route.path">
@@ -64,33 +64,37 @@
           </div>
         </template>
       </v-navigation-drawer>
-      <v-list dense nav class="grow">
-        <v-text-field
-          v-if="showFilter"
-          v-model="q"
-          append-icon="search"
-          label="Filter"
-          single-line
-          hide-details
-        >
-        </v-text-field>
-        <span v-for="(subRoutes, group, idx) in children" :key="group">
-          <v-subheader>
-            {{ group | capitalize }}
-          </v-subheader>
-          <v-list-item
-            v-for="(route, subIndex) in subRoutes"
-            :key="subIndex"
-            :to="{ name: route.name, query: childrenQueryParams }"
-          >
-            <v-list-item-content>
-              <v-list-item-title>{{ route.meta.title }}</v-list-item-title>
-            </v-list-item-content>
+      <v-navigation-drawer width="220">
+        <v-list dense nav>
+          <v-list-item>
+            <v-text-field
+              v-if="showFilter"
+              v-model="q"
+              append-icon="search"
+              label="Filter"
+              single-line
+              hide-details
+            >
+            </v-text-field>
           </v-list-item>
-          <v-divider v-if="idx != Object.keys(children).length - 1" />
-        </span>
-      </v-list>
-    </v-row>
+          <span v-for="(subRoutes, group, idx) in children" :key="group">
+            <v-subheader>
+              {{ group | capitalize }}
+            </v-subheader>
+            <v-list-item
+              v-for="(route, subIndex) in subRoutes"
+              :key="subIndex"
+              :to="{ name: route.name, query: childrenQueryParams }"
+            >
+              <v-list-item-content>
+                <v-list-item-title>{{ route.meta.title }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider v-if="idx != Object.keys(children).length - 1" />
+          </span>
+        </v-list>
+      </v-navigation-drawer>
+    </v-layout>
   </v-navigation-drawer>
   <v-navigation-drawer app permanent width="220" :mini-variant="mini" clipped v-else>
     <v-list dense nav>
