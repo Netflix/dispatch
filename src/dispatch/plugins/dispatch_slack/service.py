@@ -329,7 +329,8 @@ def set_conversation_topic(client: Any, conversation_id: str, topic: str):
     return make_call(client, "conversations.setTopic", channel=conversation_id, topic=topic)
 
 
-def set_conversation_bookmark(app, conversation_id, weblink, title):
+def set_conversation_bookmark(app: Any, conversation_id: str, weblink, title: str):
+    """Sets a bookmark for the specified conversation."""
     return app.client.bookmarks_add(
         channel_id=conversation_id,
         title=title,
