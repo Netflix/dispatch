@@ -48,5 +48,5 @@ class TagTypeReadMinimal(DispatchBase):
 
 
 class TagTypePagination(DispatchBase):
-    items: List[TagTypeRead]
+    items: List[TagTypeReadMinimal]
     total: int

@@ -35,7 +35,3 @@ class StorageRead(StorageBase):
     def set_description(cls, v):
         """Sets the description"""
         return STORAGE_DESCRIPTION
-
-
-class StorageNested(StorageBase):
-    pass

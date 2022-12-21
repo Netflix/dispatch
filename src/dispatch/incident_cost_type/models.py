@@ -55,10 +55,6 @@ class IncidentCostTypeRead(IncidentCostTypeBase):
     id: PrimaryKey
 
 
-class IncidentCostTypeNested(IncidentCostTypeBase):
-    id: PrimaryKey
-
-
 class IncidentCostTypePagination(DispatchBase):
     total: int
     items: List[IncidentCostTypeRead] = []

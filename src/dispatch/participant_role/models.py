@@ -45,4 +45,4 @@ class ParticipantRoleReadMinimal(ParticipantRoleRead):
 
 class ParticipantRolePagination(ParticipantRoleBase):
     total: int
-    items: List[ParticipantRoleRead] = []
+    items: List[ParticipantRoleReadMinimal] = []
