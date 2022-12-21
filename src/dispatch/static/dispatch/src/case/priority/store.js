@@ -9,6 +9,7 @@ const getDefaultSelectedState = () => {
     color: null,
     default: false,
     description: null,
+    page_assignee: null,
     enabled: false,
     id: null,
     loading: false,

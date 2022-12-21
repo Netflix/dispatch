@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import Field
+from pydantic import StrictBool, Field
 from pydantic.color import Color
 
 from sqlalchemy import Column, Integer, String, Boolean
@@ -17,6 +17,7 @@ class CasePriority(Base, ProjectMixin):
     id = Column(Integer, primary_key=True)
     name = Column(String)
     description = Column(String)
+    page_assignee = Column(Boolean, default=False)
     color = Column(String)
     enabled = Column(Boolean, default=True)
     default = Column(Boolean, default=False)
@@ -35,6 +36,7 @@ listen(CasePriority.default, "set", ensure_unique_default_per_project)
 class CasePriorityBase(DispatchBase):
     color: Optional[Color] = Field(None, nullable=True)
     default: Optional[bool]
+    page_assignee: Optional[StrictBool]
     description: Optional[str] = Field(None, nullable=True)
     enabled: Optional[bool]
     name: NameStr
