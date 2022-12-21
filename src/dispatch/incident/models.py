@@ -164,6 +164,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
         "Participant",
         backref="incident",
         cascade="all, delete-orphan",
+        lazy="joined",
         foreign_keys=[Participant.incident_id],
     )
     reports = relationship("Report", backref="incident", cascade="all, delete-orphan")
@@ -173,6 +174,7 @@ class Incident(Base, TimeStampMixin, ProjectMixin):
     tags = relationship(
         "Tag",
         secondary=assoc_incident_tags,
+        lazy="joined",
         backref="incidents",
     )
     tasks = relationship("Task", backref="incident", cascade="all, delete-orphan")
