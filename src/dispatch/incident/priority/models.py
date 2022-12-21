@@ -62,6 +62,19 @@ class IncidentPriorityRead(IncidentPriorityBase):
     id: PrimaryKey
 
 
+class IncidentPriorityReadMinimal(DispatchBase):
+    id: PrimaryKey
+    name: NameStr
+    description: Optional[str] = Field(None, nullable=True)
+    page_commander: Optional[StrictBool]
+    tactical_report_reminder: Optional[int]
+    executive_report_reminder: Optional[int]
+    default: Optional[bool]
+    enabled: Optional[bool]
+    view_order: Optional[int]
+    color: Optional[Color] = Field(None, nullable=True)
+
+
 class IncidentPriorityPagination(DispatchBase):
     total: int
     items: List[IncidentPriorityRead] = []

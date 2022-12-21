@@ -60,6 +60,15 @@ class IncidentSeverityRead(IncidentSeverityBase):
     id: PrimaryKey
 
 
+class IncidentSeverityReadMinimal(DispatchBase):
+    id: PrimaryKey
+    color: Optional[Color] = Field(None, nullable=True)
+    default: Optional[bool]
+    description: Optional[str] = Field(None, nullable=True)
+    enabled: Optional[bool]
+    name: NameStr
+
+
 class IncidentSeverityPagination(DispatchBase):
     total: int
     items: List[IncidentSeverityRead] = []

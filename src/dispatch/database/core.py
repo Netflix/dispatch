@@ -1,12 +1,15 @@
-import re
 import functools
+import re
 from typing import Any
-from pydantic.error_wrappers import ErrorWrapper, ValidationError
-from pydantic import BaseModel
+import time
+import logging
 
-from sqlalchemy import create_engine, inspect
+from pydantic import BaseModel
+from pydantic.error_wrappers import ErrorWrapper, ValidationError
+from sqlalchemy import create_engine, event, inspect
+from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import sessionmaker, object_session
+from sqlalchemy.orm import object_session, sessionmaker
 from sqlalchemy.sql.expression import true
 from sqlalchemy_utils import get_mapper
 from starlette.requests import Request
@@ -15,12 +18,30 @@ from dispatch import config
 from dispatch.exceptions import NotFoundError
 from dispatch.search.fulltext import make_searchable
 
-
 engine = create_engine(
     config.SQLALCHEMY_DATABASE_URI,
     pool_size=config.DATABASE_ENGINE_POOL_SIZE,
     max_overflow=config.DATABASE_ENGINE_MAX_OVERFLOW,
 )
+
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+
+@event.listens_for(Engine, "before_cursor_execute")
+def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    conn.info.setdefault("query_start_time", []).append(time.time())
+    logger.debug("Start Query: %s", statement)
+
+
+@event.listens_for(Engine, "after_cursor_execute")
+def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    total = time.time() - conn.info["query_start_time"].pop(-1)
+    logger.debug("Query Complete!")
+    logger.debug("Total Time: %f", total)
+
+
 SessionLocal = sessionmaker(bind=engine)
 
 

@@ -1,6 +1,6 @@
 from datetime import datetime
 from collections import Counter, defaultdict
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from pydantic import validator
 from sqlalchemy import (
@@ -28,23 +28,30 @@ from dispatch.incident.priority.models import (
     IncidentPriorityBase,
     IncidentPriorityCreate,
     IncidentPriorityRead,
+    IncidentPriorityReadMinimal,
 )
 from dispatch.incident.severity.models import (
     IncidentSeverityCreate,
     IncidentSeverityRead,
+    IncidentSeverityReadMinimal,
     IncidentSeverityBase,
 )
-from dispatch.incident.type.models import IncidentTypeCreate, IncidentTypeRead, IncidentTypeBase
+from dispatch.incident.type.models import (
+    IncidentTypeCreate,
+    IncidentTypeRead,
+    IncidentTypeReadMinimal,
+    IncidentTypeBase,
+)
 from dispatch.incident_cost.models import IncidentCostRead, IncidentCostUpdate
 from dispatch.messaging.strings import INCIDENT_RESOLUTION_DEFAULT
 from dispatch.models import DispatchBase, ProjectMixin, TimeStampMixin
 from dispatch.models import NameStr, PrimaryKey
 from dispatch.participant.models import Participant
-from dispatch.participant.models import ParticipantRead, ParticipantUpdate
+from dispatch.participant.models import ParticipantRead, ParticipantReadMinimal, ParticipantUpdate
 from dispatch.report.enums import ReportTypes
 from dispatch.report.models import ReportRead
 from dispatch.storage.models import StorageRead
-from dispatch.tag.models import TagRead
+from dispatch.tag.models import TagRead, TagReadMinimal
 from dispatch.term.models import TermRead
 from dispatch.ticket.models import TicketRead
 from dispatch.workflow.models import WorkflowInstanceRead
@@ -341,8 +348,31 @@ class IncidentRead(IncidentReadMinimal):
     workflow_instances: Optional[List[WorkflowInstanceRead]] = []
 
 
+class IncidentReadBulk(DispatchBase):
+    id: PrimaryKey
+    closed_at: Optional[datetime] = None
+    commander: Optional[ParticipantReadMinimal]
+    commanders_location: Optional[str]
+    created_at: Optional[datetime] = None
+    incident_costs: Optional[List[IncidentCostRead]] = []
+    incident_priority: IncidentPriorityReadMinimal
+    incident_severity: IncidentSeverityReadMinimal
+    incident_type: IncidentTypeReadMinimal
+    name: Optional[NameStr]
+    participants_location: Optional[str]
+    participants_team: Optional[str]
+    project: ProjectRead
+    reported_at: Optional[datetime] = None
+    reporter: Optional[ParticipantReadMinimal]
+    reporters_location: Optional[str]
+    stable_at: Optional[datetime] = None
+    tags: Optional[List[TagReadMinimal]] = []
+    total_cost: Optional[float]
+    duplicates: Optional[List[Any]] = []
+
+
 class IncidentPagination(DispatchBase):
     total: int
     itemsPerPage: int
     page: int
-    items: List[IncidentRead] = []
+    items: List[IncidentReadBulk] = []

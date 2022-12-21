@@ -77,6 +77,15 @@ class IndividualContactRead(IndividualContactBase):
     updated_at: Optional[datetime] = None
 
 
+class IndividualContactReadMinimal(DispatchBase):
+    id: Optional[PrimaryKey]
+    weblink: Optional[str] = Field(None, nullable=True)
+    mobile_phone: Optional[str] = Field(None, nullable=True)
+    office_phone: Optional[str] = Field(None, nullable=True)
+    title: Optional[str] = Field(None, nullable=True)
+    external_id: Optional[str] = Field(None, nullable=True)
+
+
 class IndividualContactPagination(DispatchBase):
     total: int
     items: List[IndividualContactRead] = []

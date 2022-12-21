@@ -57,6 +57,15 @@ class TagRead(TagBase):
     project: ProjectRead
 
 
+class TagReadMinimal(DispatchBase):
+    id: PrimaryKey
+    name: Optional[str] = Field(None, nullable=True)
+    source: Optional[str] = Field(None, nullable=True)
+    uri: Optional[str] = Field(None, nullable=True)
+    discoverable: Optional[bool] = True
+    description: Optional[str] = Field(None, nullable=True)
+
+
 class TagPagination(DispatchBase):
     items: List[TagRead]
     total: int
