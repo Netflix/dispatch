@@ -1596,6 +1596,7 @@ app.view(
 
 
 async def handle_report_incident_command(ack, body, context, db_session, client):
+    await ack()
     """Handles the report incident command."""
     blocks = [
         Context(

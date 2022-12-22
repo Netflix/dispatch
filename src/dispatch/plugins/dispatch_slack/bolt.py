@@ -25,10 +25,11 @@ async def app_error_handler(error, client, body, logger):
         title="Error", close="Close", blocks=[Section(text="Something went wrong...")]
     ).build()
 
-    await client.views_update(
-        view_id=body["view"]["id"],
-        view=modal,
-    )
+    if body and body.get("view"):
+        await client.views_update(
+            view_id=body["view"]["id"],
+            view=modal,
+        )
 
     logger.exception(f"Error: {error}")
     logger.info(f"Request body: {body}")
