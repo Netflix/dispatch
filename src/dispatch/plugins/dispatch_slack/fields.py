@@ -78,7 +78,7 @@ class DefaultActionIds(DispatchEnum):
 
 class TimezoneOptions(DispatchEnum):
     local = "Local Time (based on your slack profile)"
-    utc = "Coordinated Universal Time (UTC)"
+    utc = "UTC"
 
 
 def date_picker_input(
