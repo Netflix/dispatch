@@ -1326,7 +1326,7 @@ async def ack_report_tactical_submission_event(ack):
     await ack(response_action="update", view=modal)
 
 
-async def handle_report_tactical_submission_event(user, context, form_data):
+async def handle_report_tactical_submission_event(client, body, user, context, form_data):
     """Handles the report tactical submission"""
     tactical_report_in = TacticalReportCreate(
         conditions=form_data[ReportTacticalBlockIds.conditions],
@@ -1338,7 +1338,17 @@ async def handle_report_tactical_submission_event(user, context, form_data):
         user_email=user.email,
         incident_id=context["subject"].id,
         tactical_report_in=tactical_report_in,
-        db_session=context["subject"].organization_slug,
+        organization_slug=context["subject"].organization_slug,
+    )
+    modal = Modal(
+        title="Tactical Report",
+        blocks=[Section(text="Sending tactical report... Success!")],
+        close="Close",
+    ).build()
+
+    await client.views_update(
+        view_id=body["view"]["id"],
+        view=modal,
     )
 
 
