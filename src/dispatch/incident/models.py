@@ -276,7 +276,7 @@ class IncidentCreate(IncidentBase):
 class IncidentReadMinimal(IncidentBase):
     id: PrimaryKey
     closed_at: Optional[datetime] = None
-    commander: ParticipantReadMinimal
+    commander: Optional[ParticipantReadMinimal]
     commanders_location: Optional[str]
     created_at: Optional[datetime] = None
     incident_priority: IncidentPriorityReadMinimal
@@ -287,7 +287,7 @@ class IncidentReadMinimal(IncidentBase):
     participants_team: Optional[str]
     project: ProjectRead
     reported_at: Optional[datetime] = None
-    reporter: ParticipantReadMinimal
+    reporter: Optional[ParticipantReadMinimal]
     reporters_location: Optional[str]
     stable_at: Optional[datetime] = None
     tags: Optional[List[TagReadMinimal]] = []
